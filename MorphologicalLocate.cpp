@@ -24,7 +24,6 @@
 #include "Text_parsing.h"
 #include "Error.h"
 #include "BitArray.h"
-#include "Buffer.h"
 #include "Transitions.h"
 #include "Alphabet.h"
 #include "TransductionStack.h"

@@ -28,7 +28,6 @@
 #include "DELA.h"
 #include "AbstractDelaLoad.h"
 #include "CompoundWordHashTable.h"
-#include "Buffer.h"
 #include "BitArray.h"
 #include "LocateMatches.h"
 

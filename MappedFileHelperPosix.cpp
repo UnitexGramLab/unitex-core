@@ -55,7 +55,7 @@ MAPFILE* iomap_open_mapfile(const char*name)
     if (mfr -> f == NULL)
     {
         free(mfr);
-        mfr = NULL;
+        return NULL;
     }
 	fseek(mfr->f,0,SEEK_END);
     mfr->filesize=ftell(mfr->f);
