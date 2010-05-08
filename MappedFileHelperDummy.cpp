@@ -44,7 +44,7 @@ struct _MAPFILE_REAL {
         };
 typedef struct _MAPFILE_REAL MAPFILE_REAL;
 
-MAPFILE* iomap_open_mapfile(const char*name)
+MAPFILE* iomap_open_mapfile(const char*name,int /* option*/, size_t /*value_for_option*/)
 {
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)malloc(sizeof(MAPFILE_REAL));
     if (mfr == NULL) {

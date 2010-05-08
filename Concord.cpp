@@ -333,7 +333,7 @@ if (options->working_directory[0]=='\0') {
 }
 /* We compute the name of the files associated to the text */
 struct snt_files* snt_files=new_snt_files_from_path(options->working_directory);
-ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod);
+ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod,MAPFILE_OPTION_READ,0);
 if (text==NULL) {
 	error("Cannot open file %s\n",snt_files->text_cod);
 	u_fclose(concor);

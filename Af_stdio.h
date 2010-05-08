@@ -38,8 +38,10 @@ struct _ABSTRACTMAPFILE {
         };
 typedef struct _ABSTRACTMAPFILE ABSTRACTMAPFILE;
 
-ABSTRACTMAPFILE* af_open_mapfile(const char*name);
-ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char*name);
+#define MAPFILE_OPTION_READ ((int)0x00000001)
+
+ABSTRACTMAPFILE* af_open_mapfile(const char*name,int options, size_t value_for_option);
+ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char*name,int options, size_t value_for_option);
 
 size_t af_get_mapfile_size(ABSTRACTMAPFILE*);
 const void* af_get_mapfile_pointer(ABSTRACTMAPFILE*, size_t pos=0, size_t sizemap=0);

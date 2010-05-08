@@ -128,7 +128,7 @@ if (vars->optind!=argc-1) {
 strcpy(text_name,argv[vars->optind]);
 
 struct snt_files* snt_files=new_snt_files(text_name);
-ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod);
+ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod,MAPFILE_OPTION_READ,0);
 if (text==NULL) {
    error("Cannot open %s\n",snt_files->text_cod);
    return 1;

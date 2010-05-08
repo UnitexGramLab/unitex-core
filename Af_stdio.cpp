@@ -162,8 +162,14 @@ typedef struct _ABSTRACTMAPFILE_REAL
 {
 	union
 	{
-		MAPFILE* f;
-		ABSTRACTFILE_PTR fabstr;
+        struct {
+		  MAPFILE* f;
+        } mf;
+        struct {
+          ABSTRACTFILE_PTR fabstr;
+          int options_for_mapfile;
+          size_t size_for_options_for_mapfile;
+        } af;
 	} ;
 	const AbstractFileSpace * afs;
 } ABSTRACTMAPFILE_REAL;
@@ -549,7 +555,7 @@ int af_ungetc(int ch, ABSTRACTFILE* stream)
 
 
 
-ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char* name)
+ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char* name,int options, size_t value_for_option)
 {
 	ABSTRACTMAPFILE_REAL* vf= (ABSTRACTMAPFILE_REAL*)malloc(sizeof(ABSTRACTMAPFILE_REAL));
 	const AbstractFileSpace * pafs ;
@@ -558,11 +564,17 @@ ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char* name)
 		return NULL;
 	}
 
+    /*
+     * in the future, if options can have write/create value,
+     * take a look at af_setsizereservation and fnc_memLowLevelSetSizeReservation
+     * for set size
+     */
+
 	pafs = GetFileSpaceForFileName(name);
 	vf->afs = pafs;
 	if (pafs == NULL) {
-		vf->f = iomap_open_mapfile(name);
-		if (vf->f == NULL) {
+		vf->mf.f = iomap_open_mapfile(name,options, value_for_option);
+		if (vf->mf.f == NULL) {
 			free(vf);
 			vf = NULL;
 		}
@@ -573,10 +585,12 @@ ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char* name)
         TypeOpen = OPEN_READ_MF;
 
 		vf->afs = pafs;
-		vf->fabstr = (*(pafs->func_array.fnc_memOpenLowLevel))(name, TypeOpen,
+		vf->af.fabstr = (*(pafs->func_array.fnc_memOpenLowLevel))(name, TypeOpen,
 			                      pafs->privateSpacePtr);
+        vf->af.options_for_mapfile = options;
+        vf->af.size_for_options_for_mapfile = value_for_option;
 
-        if (vf->fabstr == NULL)
+        if (vf->af.fabstr == NULL)
         {
             free(vf);
             vf= NULL;
@@ -594,9 +608,9 @@ void af_close_mapfile_unlogged(ABSTRACTMAPFILE* stream)
 	ABSTRACTMAPFILE_REAL abfr=*p_abfr;
 	free(p_abfr);
 	if (abfr.afs == NULL)
-		return iomap_close_mapfile(abfr.f);
+		return iomap_close_mapfile(abfr.mf.f);
 	else
-		/*return*/ (*(abfr.afs->func_array.fnc_memLowLevelClose))(abfr.fabstr,abfr.afs->privateSpacePtr);
+		/*return*/ (*(abfr.afs->func_array.fnc_memLowLevelClose))(abfr.af.fabstr,abfr.afs->privateSpacePtr);
 }
 
 
@@ -606,10 +620,10 @@ size_t af_get_mapfile_size(ABSTRACTMAPFILE* streammap)
     if (p_abfr == NULL)
         return 0;
 	if (p_abfr->afs == NULL)
-		return iomap_get_mapfile_size(p_abfr->f);
+		return iomap_get_mapfile_size(p_abfr->mf.f);
 	else {
 		afs_size_type pos=0;
-        (*(p_abfr->afs->func_array.fnc_memLowLevelGetSize))(p_abfr->fabstr, &pos,p_abfr->afs->privateSpacePtr);
+        (*(p_abfr->afs->func_array.fnc_memLowLevelGetSize))(p_abfr->af.fabstr, &pos,p_abfr->afs->privateSpacePtr);
         return (size_t)pos;
 	}
 }
@@ -628,11 +642,14 @@ const void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_
         return NULL;
 
 	if (p_abfr->afs == NULL)
-		return iomap_get_mapfile_pointer(p_abfr->f,pos,sizemap);
+		return iomap_get_mapfile_pointer(p_abfr->mf.f,pos,sizemap);
 	else {
 		afs_size_type pos=0;
         if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL)
-            return (*(p_abfr->afs->func_array.fnc_memFile_getMapPointer))(p_abfr->fabstr, pos, sizemap,p_abfr->afs->privateSpacePtr);
+            return (*(p_abfr->afs->func_array.fnc_memFile_getMapPointer))(p_abfr->af.fabstr,
+                        pos, sizemap,
+                        p_abfr->af.options_for_mapfile,p_abfr->af.size_for_options_for_mapfile,
+                        p_abfr->afs->privateSpacePtr);
         else
         {
             void* buf=malloc(sizemap);
@@ -641,11 +658,11 @@ const void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_
             }
             afs_size_type prev_pos=0 ;
             int success=1;
-            (*(p_abfr->afs->func_array.fnc_memLowLevelTell))(p_abfr->fabstr, &prev_pos, p_abfr->afs->privateSpacePtr);
-            (*(p_abfr->afs->func_array.fnc_memLowLevelSeek))(p_abfr->fabstr, pos, SEEK_SET, p_abfr->afs->privateSpacePtr);
-            if ((*(p_abfr->afs->func_array.fnc_memLowLevelRead))(p_abfr->fabstr, buf, sizemap, p_abfr->afs->privateSpacePtr) != sizemap)
+            (*(p_abfr->afs->func_array.fnc_memLowLevelTell))(p_abfr->af.fabstr, &prev_pos, p_abfr->afs->privateSpacePtr);
+            (*(p_abfr->afs->func_array.fnc_memLowLevelSeek))(p_abfr->af.fabstr, pos, SEEK_SET, p_abfr->afs->privateSpacePtr);
+            if ((*(p_abfr->afs->func_array.fnc_memLowLevelRead))(p_abfr->af.fabstr, buf, sizemap, p_abfr->afs->privateSpacePtr) != sizemap)
                 success=0;
-            (*(p_abfr->afs->func_array.fnc_memLowLevelSeek))(p_abfr->fabstr, prev_pos, SEEK_SET , p_abfr->afs->privateSpacePtr);
+            (*(p_abfr->afs->func_array.fnc_memLowLevelSeek))(p_abfr->af.fabstr, prev_pos, SEEK_SET , p_abfr->afs->privateSpacePtr);
 
             if (success==0) {
                 free(buf);
@@ -662,11 +679,11 @@ void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, const void* buf, size
     if (p_abfr == NULL)
         return ;
 	if (p_abfr->afs == NULL)
-		return iomap_release_mapfile_pointer(p_abfr->f,buf);
+		return iomap_release_mapfile_pointer(p_abfr->mf.f,buf);
 	else {
         if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL) {
             if (p_abfr->afs->func_array.fnc_memFile_releaseMapPointer != NULL) {
-                (*(p_abfr->afs->func_array.fnc_memFile_releaseMapPointer))(p_abfr->fabstr, buf, sizemap,p_abfr->afs->privateSpacePtr);
+                (*(p_abfr->afs->func_array.fnc_memFile_releaseMapPointer))(p_abfr->af.fabstr, buf, sizemap,p_abfr->afs->privateSpacePtr);
             }
         }
         else
@@ -802,12 +819,12 @@ int af_fclose(ABSTRACTFILE* stream)
 }
 
 
-ABSTRACTMAPFILE* af_open_mapfile(const char*name)
+ABSTRACTMAPFILE* af_open_mapfile(const char*name,int options,size_t value_for_option)
 {
     ABSTRACTMAPFILE* stream;
     //Call_logger_fnc_before_af_fopen(name,MODE);
     Call_logger_fnc_before_af_fopen(name,"rb");
-    stream = af_open_mapfile_unlogged(name);
+    stream = af_open_mapfile_unlogged(name,options,value_for_option);
     //Call_logger_fnc_after_af_fopen(name,MODE,stream);
     Call_logger_fnc_after_af_fopen(name,"rb",NULL);
     return stream;

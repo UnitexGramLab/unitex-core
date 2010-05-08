@@ -151,7 +151,7 @@ int locate_pattern(char* text_cod,char* tokens,char* fst2_name,char* dlf,char* d
 U_FILE* out;
 U_FILE* info;
 struct locate_parameters* p=new_locate_parameters();
-p->text_cod=af_open_mapfile(text_cod);
+p->text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
 p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
 long text_size=(long)af_get_mapfile_size(p->text_cod)/sizeof(int);
 p->buffer_size=text_size;

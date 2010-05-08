@@ -566,7 +566,7 @@ struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(
 if (info==NULL) {
    fatal_alloc_error("init_dico_application");
 }
-info->map_text_cod=af_open_mapfile(text_cod);
+info->map_text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
 info->text_cod_buf=(const int*)af_get_mapfile_pointer(info->map_text_cod);
 info->text_cod_size_nb_int=(int)(af_get_mapfile_size(info->map_text_cod)/sizeof(int));
 info->tokens=tokens;

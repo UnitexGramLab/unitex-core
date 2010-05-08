@@ -193,7 +193,7 @@ const unsigned char* load_abstract_BIN_file(const char* name,struct BIN_free_inf
 		}
         */
         ABSTRACTMAPFILE *amf;
-        amf=af_open_mapfile(name);
+        amf=af_open_mapfile(name,MAPFILE_OPTION_READ,0);
         if (amf != NULL) {
             res=(unsigned char*)af_get_mapfile_pointer(amf);
             if (res == NULL) {

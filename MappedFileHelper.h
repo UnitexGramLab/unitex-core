@@ -36,7 +36,7 @@ struct _MAPFILE {
         };
 typedef struct _MAPFILE MAPFILE;
 
-MAPFILE* iomap_open_mapfile(const char*name);
+MAPFILE* iomap_open_mapfile(const char*name,int /* option*/, size_t /*value_for_option*/);
 
 size_t iomap_get_mapfile_size(MAPFILE*);
 const void* iomap_get_mapfile_pointer(MAPFILE*, size_t pos=0, size_t sizemap=0);
