@@ -27,6 +27,7 @@
 #define MOT_BUFFER_TOKEN_SIZE (1000)
 
 #define CAPACITY_LIMIT 16384
+#define MINIMAL_SIZE_PRELOADED_TEXT (2048+1)
 
 void build_state_token_trees(struct fst2txt_parameters*);
 void parse_text(struct fst2txt_parameters*);
@@ -217,7 +218,7 @@ int within_tag=0;
 
 while (p->current_origin<p->text_buffer->size) {
       if (!p->text_buffer->end_of_file
-          && p->current_origin>(p->text_buffer->size-2000)) {
+          && p->current_origin>(p->text_buffer->size-MINIMAL_SIZE_PRELOADED_TEXT)) {
          /* If must change of block, we update the absolute offset, and we fill the
           * buffer. */
          p->absolute_offset=p->absolute_offset+p->current_origin;

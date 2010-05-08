@@ -137,31 +137,45 @@ int n_element_read=-1;
 int OK=1;
 switch (buffer->type) {
    case INTEGER_BUFFER: {
-      int* array=buffer->int_buffer;
-      for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
-        /* First, we copy the end of the buffer at the beginning */
-        array[i-pos]=array[i];
+      int* i_array=buffer->int_buffer;
+      /* if the two buffer don't overlap, we use optimized memcpy */
+      if (((buffer->MAXIMUM_BUFFER_SIZE-pos) < pos) && ((buffer->MAXIMUM_BUFFER_SIZE-pos)>=0)) {
+          memcpy(&i_array[0],&i_array[pos],(buffer->MAXIMUM_BUFFER_SIZE-pos)*sizeof(int));
+      }
+      else
+      {
+         for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
+            /* First, we copy the end of the buffer at the beginning */
+            i_array[i-pos]=i_array[i];
+         }
       }
       new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
-      n_element_read=(int)fread(&(array[new_position]),sizeof(int),pos,f);
+      n_element_read=(int)fread(&(i_array[new_position]),sizeof(int),pos,f);
       break;
    }
    case UNICHAR_BUFFER: {
-      unichar* array=buffer->unichar_buffer;
-      for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
-        /* First, we copy the end of the buffer at the beginning */
-        array[i-pos]=array[i];
+      unichar* u_array=buffer->unichar_buffer;
+      /* if the two buffer don't overlap, we use optimized memcpy */
+      if (((buffer->MAXIMUM_BUFFER_SIZE-pos) < pos) && ((buffer->MAXIMUM_BUFFER_SIZE-pos)>=0)) {
+          memcpy(&u_array[0],&u_array[pos],(buffer->MAXIMUM_BUFFER_SIZE-pos)*sizeof(unichar));
+      }
+      else
+      {
+         for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
+            /* First, we copy the end of the buffer at the beginning */
+            u_array[i-pos]=u_array[i];
+         }
       }
       new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
       /* Here, we must not use a 'fread', since it would not unify \r\n
        * into the single \n that is used in Unitex programs */
       int tmp;
-      n_element_read=u_fread(&(array[new_position]),pos,f,&tmp);
+      n_element_read=u_fread(&(u_array[new_position]),pos,f,&tmp);
       if (!tmp) {
          OK=0;
       }
       /* We add an extra \0 in order for string parsing reasons */
-      array[new_position+n_element_read]='\0';
+      u_array[new_position+n_element_read]='\0';
       break;
    }
    default: fatal_error("Invalid buffer type in fill_buffer\n");
