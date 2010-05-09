@@ -178,7 +178,7 @@ CFLAGS = $(INCS)  -Wall
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0
 else
-CFLAGS += -O2
+CFLAGS += -O3
 endif
 
 
@@ -257,8 +257,9 @@ CFLAGS = $(INCS)  -Wall
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0
 else
-CFLAGS += -O2
+CFLAGS += -O3
 endif
+
 
 LIBTRE   = libtre.a
 

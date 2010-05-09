@@ -75,7 +75,7 @@ return 1;
 const char* usage_Fst2Check =
          "Usage : Fst2Check [OPTIONS] <fst2>\n"
          "\n"
-         "  <grf>: main graph of grammar (must be an absolute path)\n"
+         "  <fst2>: the grammar to be checked\n"
          "\n"
          "OPTIONS:\n"
          "  -y/--loop_check: enables the loops/left-recursion detection\n"
@@ -88,8 +88,7 @@ const char* usage_Fst2Check =
          "  -s/--statistics: display statistics about fst2 file.\n"
          "  -h/--help: this help\n"
          "\n"
-         "Compiles the grammar <grf> and saves the result in a FST2 file\n"
-         "stored in the same directory as <grf>.\n";
+         "This program check if a fst2 graph has no error for locate.\n";
 
 
 static void usage() {
