@@ -72,10 +72,13 @@ InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log)
 
     /* we want "mini log" with only list */
 
+    ule.size_of_struct = sizeof(ule);
     ule.privateUnloggerData = NULL;
     ule.szPathLog = NULL;
+    ule.szNameLog = NULL;
     ule.store_file_out_content = real_content_in_log;
     ule.store_list_file_out_content = 1;
+    ule.store_std_out_content = ule.store_std_err_content = real_content_in_log;
 
     ule.store_file_in_content = real_content_in_log;
     ule.store_list_file_in_content = real_content_in_log;

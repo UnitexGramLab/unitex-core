@@ -22,8 +22,14 @@
 #include "IOBuffer.h"
 #include "UnitexTool.h"
 #include "Copyright.h"
-#include "logger/UniRunLogger.h"
 
+
+#include "ActivityLogger.h"
+#include "ActivityLoggerPlugCallback.h"
+
+#include "logger/UniLogger.h"
+#include "logger/UniRunLogger.h"
+#include "logger/UniLoggerAutoInstall.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -49,19 +55,53 @@ if (argc <= 1) {
     return 0;
 }
 
-if (argc>1) {
-    if (strcmp(argv[1],"RunLog")==0)
-    {
-        return main_RunLog(argc-1,argv+1);
-    }
-}
+int ret=0;
+int done=0;
+int skip_arg=0;
+
+InstallLogger* pInstallLogger=NULL;
 
 if (argc>3) {
-    if (strcmp(argv[1],"RunUnitexLog")==0)
+    if ((strcmp(argv[1],"{")==0) && (strcmp(argv[2],"CreateLog")==0))
     {
-        return RunLog(argv[2],argv[3],(argc > 4) ? argv[4] : NULL);
+        for (int i=2;i<argc;i++) {
+            if (strcmp(argv[i],"}") == 0) {
+                skip_arg=i;
+                break;
+            }
+        }
+    }
+    
+    if (skip_arg == 0) {
+        pInstallLogger = new InstallLogger();
+    }
+    else {
+        pInstallLogger = new InstallLogger(skip_arg-2,argv+2);
+    }
+
+}
+
+if ((argc-skip_arg)>1) {
+    if (strcmp(argv[1+skip_arg],"RunLog")==0)
+    {
+        done = 1;
+        ret = main_RunLog(argc-(skip_arg+1),argv+skip_arg+1);
     }
 }
 
-return main_UnitexTool(argc,argv);
+if (((argc-skip_arg)>3) && (done == 0)) {
+    if (strcmp(argv[1+skip_arg],"RunUnitexLog")==0)
+    {
+        ret = RunLog(argv[2+skip_arg],argv[3+skip_arg],((argc-skip_arg) > 4) ? argv[4+skip_arg] : NULL);
+        done = 1;
+    }
+}
+
+if (done == 0) {
+  ret = main_UnitexTool(argc-skip_arg,argv+skip_arg);
+}
+
+if (pInstallLogger != NULL)
+    delete(pInstallLogger);
+return ret;
 }

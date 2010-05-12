@@ -178,6 +178,9 @@ struct ExecutionLogging {
     int store_file_in_content;
     int store_list_file_in_content;
 
+    int store_std_out_content;
+    int store_std_err_content;
+
     char* portion_ignore_pathname;
 } ;
 
@@ -336,6 +339,7 @@ struct ExecutionLogging* InitExecutionLogging(const char*pathZip)
 
     pEL -> store_file_out_content = pEL -> store_list_file_out_content = 
     pEL -> store_file_in_content = pEL -> store_list_file_in_content = 0;
+    pEL -> store_std_out_content = pEL -> store_std_err_content = 1;
 
     pEL->portion_ignore_pathname = NULL;
 
@@ -421,6 +425,9 @@ struct ExecutionLogging* BuildAllocInitExecutionLogging(void* privateLoggerPtr,c
 
     pEL->store_file_out_content = pULS->store_file_out_content;
     pEL->store_list_file_out_content = pULS->store_list_file_out_content;
+
+    pEL->store_std_out_content = pULS->store_std_out_content;
+    pEL->store_std_err_content = pULS->store_std_err_content;
 
     pEL->store_file_in_content = pULS->store_file_in_content;
     pEL->store_list_file_in_content = pULS->store_list_file_in_content;
@@ -521,6 +528,8 @@ static struct ExecutionLogging* BuildAllocInitExecutionLoggingForIncrementedNumb
     struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
     struct ActivityLoggerPrivateData* pALPD = (struct ActivityLoggerPrivateData*) pULS->privateUnloggerData;
 
+    char szNumFileSuffix[256];
+
 
     if (pULS -> auto_increment_logfilename == 0)
     {
@@ -529,48 +538,53 @@ static struct ExecutionLogging* BuildAllocInitExecutionLoggingForIncrementedNumb
     /* we take a mutex, to be sure two thread don't increment and use same number at same time */
     SyncGetMutex(pALPD->pMutexLog);
 
-    unsigned int current_number = 0;
-    const char* szNumFile = buildDupFileNameWithPrefixDir(pULS->szPathLog,"unitex_logging_parameters_count.txt");
+    if (pULS->szNameLog == NULL) {
 
-    /* here : we will need protect with a mutex */
-    ABSTRACTFILE *af_fin = af_fopen_unlogged(szNumFile,"rb");
-    if (af_fin!=NULL)
-    {
-        size_t size_num_file=0;
 
-        if (af_fseek(af_fin, 0, SEEK_END) == 0)
+        unsigned int current_number = 0;
+        const char* szNumFile = buildDupFileNameWithPrefixDir(pULS->szPathLog,"unitex_logging_parameters_count.txt");
+
+        /* here : we will need protect with a mutex */
+        ABSTRACTFILE *af_fin = af_fopen_unlogged(szNumFile,"rb");
+        if (af_fin!=NULL)
         {
-	        size_num_file = af_ftell(af_fin);
-            af_fseek(af_fin, 0, SEEK_SET);
+            size_t size_num_file=0;
+
+            if (af_fseek(af_fin, 0, SEEK_END) == 0)
+            {
+	            size_num_file = af_ftell(af_fin);
+                af_fseek(af_fin, 0, SEEK_SET);
+            }
+
+            char* buf_num_file=(char*)malloc(size_num_file+1);
+            *(buf_num_file+size_num_file)=0;
+            if (af_fread(buf_num_file,1,size_num_file,af_fin) == size_num_file)
+            {
+                sscanf(buf_num_file,"%u",&current_number);
+            }
+            af_fclose(af_fin);
+            free(buf_num_file);        
         }
 
-        char* buf_num_file=(char*)malloc(size_num_file+1);
-        *(buf_num_file+size_num_file)=0;
-        if (af_fread(buf_num_file,1,size_num_file,af_fin) == size_num_file)
+        current_number++;
+
+
+        ABSTRACTFILE *af_fout = af_fopen_unlogged(szNumFile,"wb");
+        if (af_fout!=NULL)
         {
-            sscanf(buf_num_file,"%u",&current_number);
+            char szNumOut[32];
+            sprintf(szNumOut,"%010u",current_number);
+            af_fwrite(szNumOut,1,strlen(szNumOut),af_fout);
+            af_fclose(af_fout);
         }
-        af_fclose(af_fin);
-        free(buf_num_file);        
+        free((void*)szNumFile);
+        sprintf(szNumFileSuffix,"unitex_log_%08u.ulp",current_number);
     }
-
-    current_number++;
-
-
-    ABSTRACTFILE *af_fout = af_fopen_unlogged(szNumFile,"wb");
-    if (af_fout!=NULL)
-    {
-        char szNumOut[32];
-        sprintf(szNumOut,"%010u",current_number);
-        af_fwrite(szNumOut,1,strlen(szNumOut),af_fout);
-        af_fclose(af_fout);
+    else {
+        sprintf(szNumFileSuffix,"%s",pULS->szNameLog);
     }
-    free((void*)szNumFile);
-
     SyncReleaseMutex(pALPD->pMutexLog);
-
-    char szNumFileSuffix[64];
-    sprintf(szNumFileSuffix,"unitex_log_%08u.ulp",current_number);
+    
     const char* szLogFileName = buildDupFileNameWithPrefixDir(pULS->szPathLog,szNumFileSuffix);
 
     pEL=BuildAllocInitExecutionLogging(privateLoggerPtr,szLogFileName);
@@ -905,11 +919,11 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
 
     unsigned int len_std_out = GetNbItemPtrArrayExpanding(pEL->pAE_StdOut);
-    if (len_std_out != 0)
+    if ((len_std_out != 0) && (pEL->store_std_out_content != 0))
         DumpMemToPack(pEL,"test_info/std_out.txt",GetItemPtrArrayExpanding(pEL->pAE_StdOut,0),len_std_out);
 
     unsigned int len_std_err = GetNbItemPtrArrayExpanding(pEL->pAE_StdErr);
-    if (len_std_err != 0)
+    if ((len_std_err != 0) && (pEL->store_std_err_content != 0))
         DumpMemToPack(pEL,"test_info/std_err.txt",GetItemPtrArrayExpanding(pEL->pAE_StdErr,0),len_std_err);
 
     unsigned int len_list_in = GetNbItemPtrArrayExpanding(pEL->pAE_FileReadList);
