@@ -35,9 +35,10 @@
 #include <string.h>
 
 
-const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog\n"
-                                "or \n";;
-
+const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\n"
+                                "or \n"
+                                "Usage: UnitexToolLogger { CreateLog [OPTIONS] } <Utility> [OPTIONS]\n"
+                                "or \n";
 static void disp_usage_RunLog_mini() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog_mini);

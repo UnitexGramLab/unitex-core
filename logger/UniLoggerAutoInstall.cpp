@@ -68,28 +68,17 @@ void InstallLogger::LoadParamFile(const char* parameter_filename)
             write_file_out+=0;
             if ((*szPath) != 0)
             {
-                ule.size_of_struct = sizeof(ule);
-                ule.privateUnloggerData = NULL;
+                ClearUniLoggerSpaceStruct(0);
+
                 ule.szPathLog = szPath;
                 ule.szNameLog = NULL;
                 ule.store_file_out_content = write_file_out;
-                ule.store_list_file_out_content = 1;
-
-                ule.store_file_in_content = 1;
-                ule.store_list_file_in_content = 1;
-
-                ule.store_std_out_content = ule.store_std_err_content = 1;
-
-                ule.auto_increment_logfilename = 1;
 
                 if (AddActivityLogger(&ule) != 0)
                     init_done = 1;
                 else
                 {
-                    if (ule.szPathLog != NULL) {
-                        free((char*)ule.szPathLog);
-                        ule.szPathLog = NULL;
-                    }
+                    ClearUniLoggerSpaceStruct(1);
                 }
             }
             else
@@ -109,8 +98,11 @@ const char* usage_CreateLog =
          "Usage: CreateLog [OPTIONS]\n"
          "\n"
          "OPTIONS:\n"
-         "  -p XXX/--param_file=XXX: load a parameters file like unitex_logging_parameters.txt\n"
-         "                                   Incompatible with others options.\n"
+         "  -g/--no_create_log: do not create any log file.\n"
+         "                                   Incompatible with all others options.\n"
+         "\n"
+         "  -p XXX/--param_file=XXX: load a parameters file like unitex_logging_parameters.txt.\n"
+         "                                   Incompatible with all others options.\n"
          "\n"
          "  -d XXX/--directory=XXX: location directory where log file to create.\n"
          "  -l XXX/--log_file=XXX: filename of log file to create.\n"
@@ -134,9 +126,11 @@ u_printf(usage_CreateLog);
 }
 
 
-const char* optstring_CreateLog=":hniofrtusk:q:p:l:d:";
+const char* optstring_CreateLog=":hgp:niofrtusk:q:l:d:";
 const struct option_TS lopts_CreateLog[]= {
       {"help",no_argument_TS,NULL,'h'},
+      {"no_create_log",no_argument_TS,NULL,'g'},
+      {"param_file",required_argument_TS,NULL,'p'},
       {"no_store_input_file",no_argument_TS,NULL,'n'},
       {"store_input_file",no_argument_TS,NULL,'i'},
       {"store_output_file",no_argument_TS,NULL,'o'},
@@ -146,7 +140,6 @@ const struct option_TS lopts_CreateLog[]= {
       {"store_list_output_file",no_argument_TS,NULL,'r'},
       {"no_store_list_output_file",no_argument_TS,NULL,'f'},
       {"log_file",required_argument_TS,NULL,'l'},
-      {"param_file",required_argument_TS,NULL,'p'},
       {"directory",required_argument_TS,NULL,'d'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -157,23 +150,12 @@ InstallLogger::InstallLogger(int argc,char* argv[])
 {
 init_done=0;
 
-memset(&ule,0,sizeof(ule));
-ule.size_of_struct = sizeof(ule);
+ClearUniLoggerSpaceStruct(0);
 
-
-ule.privateUnloggerData = NULL;
-ule.szPathLog = NULL;
-ule.szNameLog = NULL;
-ule.store_file_out_content = 0;
-ule.store_list_file_out_content = 1;
-
-ule.store_file_in_content = 1;
-ule.store_list_file_in_content = 1;
-
-ule.store_std_out_content = ule.store_std_err_content = 1;
-
-ule.auto_increment_logfilename = 1;
-
+if (argc==1) {
+    usage();
+    return;
+}
 
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -214,9 +196,14 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CreateLog,lopts_CreateLog,&i
              decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
 
+   case 'g': ClearUniLoggerSpaceStruct(1);
+             free_OptVars(vars);
+             return;
+
    case 'p': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty param file\n");
              }
+             ClearUniLoggerSpaceStruct(1);
              LoadParamFile(vars->optarg);
              free_OptVars(vars);
              return;
@@ -251,6 +238,15 @@ if (AddActivityLogger(&ule) != 0)
     init_done = 1;
 else
 {
+    ClearUniLoggerSpaceStruct(1);
+}
+
+free_OptVars(vars);
+}
+
+void InstallLogger::ClearUniLoggerSpaceStruct(int clear_memory)
+{
+if (clear_memory != 0) {
     if (ule.szPathLog != NULL) {
         free((char*)ule.szPathLog);
         ule.szPathLog = NULL;
@@ -261,7 +257,22 @@ else
     }
 }
 
-free_OptVars(vars);
+memset(&ule,0,sizeof(ule));
+ule.size_of_struct = sizeof(ule);
+
+
+ule.privateUnloggerData = NULL;
+ule.szPathLog = NULL;
+ule.szNameLog = NULL;
+ule.store_file_out_content = 0;
+ule.store_list_file_out_content = 1;
+
+ule.store_file_in_content = 1;
+ule.store_list_file_in_content = 1;
+
+ule.store_std_out_content = ule.store_std_err_content = 1;
+
+ule.auto_increment_logfilename = 1;
 }
 
 InstallLogger::~InstallLogger()
