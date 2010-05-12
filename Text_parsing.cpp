@@ -92,7 +92,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				== DONT_START_WITH_SPACE) && !get_value(p->failfast,
 				current_token)) {
 
-			if (consult_cache(p->buffer, p->current_origin,
+			if (0 && consult_cache(p->buffer, p->current_origin,
 					p->buffer_size, p->match_cache,
 					p->cached_match_vector)) {
 				/* If we have found matches in the cache, we use them */
@@ -1635,9 +1635,12 @@ void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_
 		l = p->match_list;
 		/* We unify identical matches, i.e. matches with same range (start and end),
 		 * taking the output into account if ambiguous outputs are allowed. */
-		while (l != NULL && !(l->m.start_pos_in_token == start
-				&& l->m.end_pos_in_token == end && (p->ambiguous_output_policy
-				!= ALLOW_AMBIGUOUS_OUTPUTS || u_strcmp(l->output, output)))) {
+		while (l != NULL) {
+			if (l->m.start_pos_in_token == start
+				&& l->m.end_pos_in_token == end
+				&& (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS || !u_strcmp(l->output, output))) {
+				break;
+			}
 			l = l->next;
 		}
 		if (l == NULL) {
