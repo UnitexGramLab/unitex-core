@@ -145,7 +145,7 @@ int first_token=tab[start];
 if (first_token==-1) {
 	return 0;
 }
-explore_cache_node(tab,start,tab_size,caches[first_token],res);
+explore_cache_node(tab,start+1,tab_size,caches[first_token],res);
 return res->nbelems!=0;
 }
 
