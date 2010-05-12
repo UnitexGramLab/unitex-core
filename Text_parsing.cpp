@@ -92,7 +92,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				== DONT_START_WITH_SPACE) && !get_value(p->failfast,
 				current_token)) {
 
-			if (0 && consult_cache(p->buffer, p->current_origin,
+			if (consult_cache(p->buffer, p->current_origin,
 					p->buffer_size, p->match_cache,
 					p->cached_match_vector)) {
 				/* If we have found matches in the cache, we use them */
@@ -1756,17 +1756,10 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
  */
 struct match_list* save_matches(struct match_list* l, int current_position,
 		U_FILE* f, struct locate_parameters* p, Abstract_allocator prv_alloc) {
-	struct match_list *ptr;
-#if 0
-	ptr=l;
-while (ptr!=NULL) {
-	error("%d %d %S   ",ptr->m.start_pos_in_token,ptr->m.end_pos_in_token,ptr->output);
-	ptr=ptr->next;
-}
-error("\n");
-#endif
-	if (l == NULL)
-		return NULL;
+struct match_list *ptr;
+
+if (l == NULL)
+	return NULL;
 	if (l->m.end_pos_in_token < current_position) {
 		/* we can save the match (necessary for SHORTEST_MATCHES: there
 		 * may be no shorter match) */
