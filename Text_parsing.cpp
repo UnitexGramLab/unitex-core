@@ -1567,6 +1567,32 @@ void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_a
 	p->match_cache_last = m;
 }
 
+
+void insert_in_all_matches_mode(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
+int start = m->m.start_pos_in_token;
+int end = m->m.end_pos_in_token;
+unichar* output = m->output;
+struct match_list* *L=&(p->match_list);
+while (*L != NULL) {
+	if ((*L)->m.start_pos_in_token == start
+		&& (*L)->m.end_pos_in_token == end
+		&& (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS || !u_strcmp((*L)->output, output))) {
+		/* The match is already there, nothing to do */
+		return;
+	}
+	if (start<(*L)->m.start_pos_in_token ||
+			(start==(*L)->m.start_pos_in_token && end<(*L)->m.end_pos_in_token)) {
+		/* We have to insert at the current position */
+		(*L)=new_match(start, end, output, *L, prv_alloc);
+		return;
+	}
+	L = &((*L)->next);
+}
+/* End of list? We add the match */
+(*L) = new_match(start, end, output, NULL, prv_alloc);
+}
+
+
 /**
  * Adds a match to the global list of matches. The function takes into
  * account the match policy. For instance, we don't take [2;3] into account
@@ -1631,22 +1657,10 @@ void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_
 		break;
 
 	case ALL_MATCHES:
-		/* We put new matches at the beginning of the list */
-		l = p->match_list;
 		/* We unify identical matches, i.e. matches with same range (start and end),
 		 * taking the output into account if ambiguous outputs are allowed. */
-		while (l != NULL) {
-			if (l->m.start_pos_in_token == start
-				&& l->m.end_pos_in_token == end
-				&& (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS || !u_strcmp(l->output, output))) {
-				break;
-			}
-			l = l->next;
-		}
-		if (l == NULL) {
-			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
-		}
-		break;
+		insert_in_all_matches_mode(m,p,prv_alloc);
+		return;
 
 	case SHORTEST_MATCHES:
 		/* We put the new match at the beginning of the list, but before, we
@@ -1743,6 +1757,14 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 struct match_list* save_matches(struct match_list* l, int current_position,
 		U_FILE* f, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	struct match_list *ptr;
+#if 0
+	ptr=l;
+while (ptr!=NULL) {
+	error("%d %d %S   ",ptr->m.start_pos_in_token,ptr->m.end_pos_in_token,ptr->output);
+	ptr=ptr->next;
+}
+error("\n");
+#endif
 	if (l == NULL)
 		return NULL;
 	if (l->m.end_pos_in_token < current_position) {
