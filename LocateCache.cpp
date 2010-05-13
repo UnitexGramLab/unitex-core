@@ -88,9 +88,14 @@ if (token>(*c)->token) {
 /* We have the correct token */
 if (token==-1) {
 	/* If we are in a final node that already existed, we just add
-	 * the new match */
-	match->next=(*c)->matches;
-	(*c)->matches=match;
+	 * the new match at the end of the match list to get the same match order as
+	 * if the cache system had not been used */
+	struct match_list* *ptr=&((*c)->matches);
+	while ((*ptr)!=NULL) {
+		ptr=&((*ptr)->next);
+	}
+	match->next=NULL;
+	(*ptr)=match;
 	return;
 }
 cache_match_internal(match,tab,start+1,end,&((*c)->middle),prv_alloc);
