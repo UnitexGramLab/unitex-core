@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include "LocateCache.h"
 #include "Error.h"
+#include "Match.h"
 
 
 /**
@@ -89,12 +90,20 @@ if (token>(*c)->token) {
 if (token==-1) {
 	/* If we are in a final node that already existed, we just add
 	 * the new match at the end of the match list to get the same match order as
-	 * if the cache system had not been used */
+	 * if the cache system had not been used, but only if the match is not already present */
 	struct match_list* *ptr=&((*c)->matches);
+	struct match_list* z;
+	match->next=NULL;
 	while ((*ptr)!=NULL) {
+		z=*ptr;
+		if (compare_matches(&(z->m),&(match->m))==A_EQUALS_B &&
+				!u_strcmp(z->output,match->output)) {
+			/* We discard a match that was already in cache */
+			free_match_list_element(match,prv_alloc);
+			return;
+		}
 		ptr=&((*ptr)->next);
 	}
-	match->next=NULL;
 	(*ptr)=match;
 	return;
 }
