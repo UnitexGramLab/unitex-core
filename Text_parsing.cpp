@@ -1576,7 +1576,7 @@ struct match_list* *L=&(p->match_list);
 while (*L != NULL) {
 	if ((*L)->m.start_pos_in_token == start
 		&& (*L)->m.end_pos_in_token == end
-		&& (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS || !u_strcmp((*L)->output, output))) {
+		&& (p->ambiguous_output_policy != ALLOW_AMBIGUOUS_OUTPUTS || !u_strcmp((*L)->output, output))) {
 		/* The match is already there, nothing to do */
 		return;
 	}
