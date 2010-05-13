@@ -160,10 +160,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 						 * context could cause problems. We have to set tmp->next to NULL because
 						 * we just want to consider this single match */
 						tmp->next=NULL;
-						error("    on cache %d %d %S\n",
-								tmp->m.start_pos_in_token,
-								tmp->m.end_pos_in_token,
-								tmp->output);
 						cache_match(tmp, p->buffer,
 								tmp->m.start_pos_in_token,
 								tmp->m.end_pos_in_token,
@@ -382,8 +378,6 @@ struct Token_error_ctx* p_token_error_ctx,
 			} else {
 				p->stack->stack[stack_top + 1] = '\0';
 				if (pos > 0) {
-					error("match %d %d %S\n",p->current_origin,pos + p->current_origin-1,
-							p->stack->stack + p->left_ctx_base);
 					add_match(pos + p->current_origin-1,
 							p->stack->stack + p->left_ctx_base, p, prv_alloc);
 				} else {
