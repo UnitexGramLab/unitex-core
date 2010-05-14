@@ -80,15 +80,15 @@ const char* usage_Fst2Check =
          "OPTIONS:\n"
          "  -y/--loop_check: enables the loops/left-recursion detection\n"
          "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
-         "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
+         "  -t/--tfst_check: checks if the given .fst2 can be considered as a valid sentence\n"
          "                   automaton\n"
          "  -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
          "  -o OUT/--output=OUT: output file for error message\n"
-         "  -a/--append: to open the output file in append mode.\n"
-         "  -s/--statistics: display statistics about fst2 file.\n"
+         "  -a/--append: opens the message output file in append mode\n"
+         "  -s/--statistics: displays statistics about the .fst2 file\n"
          "  -h/--help: this help\n"
          "\n"
-         "This program check if a fst2 graph has no error for locate.\n";
+         "This program checks if a .fst2 file has no error for Locate.\n";
 
 
 static void usage() {
