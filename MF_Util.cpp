@@ -1,21 +1,21 @@
 /*
- * Unitex 
+ * Unitex
  *
- * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2010 UniversitÃ© Paris-Est Marne-la-VallÃ©e <unitex@univ-mlv.fr>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
 
@@ -36,7 +36,7 @@
 
 /****************************************************************/
 /* Verifier si le caractere c a un correspondant parmi les 	*/
-/* elements de la chaine qui ne sont pas encore marqués dans 	*/
+/* elements de la chaine qui ne sont pas encore marquï¿½s dans 	*/
 /* "where". Si oui, inscrire 1 dans "where" a la position du	*/
 /* correspondant et returner cette position. Sinon retourner -1.*/
 int u_member(unichar c, const unichar *str, int *where) {
@@ -269,8 +269,8 @@ int u_scan_while_char(unichar *dest, const unichar *source, int max,
 /****************************************************************/
 
 /****************************************************************/
-/* Trier un tableau de chaines de charactères et enlever les	*/
-/* doublons (bubble sort). len = longeur d'un élément du tableau*/
+/* Trier un tableau de chaines de charactï¿½res et enlever les	*/
+/* doublons (bubble sort). len = longeur d'un ï¿½lï¿½ment du tableau*/
 void u_tri_a(void *T, int *cnt, int len) {
    int i, j;
    unichar tmp[MAX_STR_LEN];
@@ -292,7 +292,7 @@ void u_tri_a(void *T, int *cnt, int len) {
 
    /* Enlever les doublons */
    for (i=0, j=1; i<*cnt; i++) {
-      /* Omettre tous les éléments éguax à TAB[i].*/
+      /* Omettre tous les ï¿½lï¿½ments ï¿½guax ï¿½ TAB[i].*/
       while ((j<*cnt) && (!u_strcmp(TAB + i*len, TAB + j*len)))
          j++;
       if (j == *cnt) // Fin du tableau

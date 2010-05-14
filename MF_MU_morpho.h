@@ -1,23 +1,23 @@
 /*
-  * Unitex 
-  *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version 2
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * You should have received a copy of the GNU General Public License
-  * along with this program; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  *
-  */
+ * Unitex
+ *
+ * Copyright (C) 2001-2010 UniversitÃ© Paris-Est Marne-la-VallÃ©e <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
  */
@@ -35,7 +35,7 @@
 
 ////////////////////////////////////////////
 // For a given multi-word unit, generates all the inflected forms,
-// e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
+// e.g. {["mï¿½moire vive",{Gen=fem,Nb=sing}],["mï¿½moires vives",{Gen=fem,Nb=pl}]}
 // Returns 0 on success, 1 otherwise.   
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* lemma, MU_forms_T* forms);
 
@@ -46,10 +46,10 @@ void MU_delete_inflection(MU_forms_T* forms);
 /*
 ////////////////////////////////////////////
 // Returns the word form's identifier on the basis of the form, its lemma, its inflection paradigm, and its inflection features.
-// MU_form : form and its inflection features, e.g. ["mémoires vives",{Gen=fem,Nb=pl]
+// MU_form : form and its inflection features, e.g. ["mï¿½moires vives",{Gen=fem,Nb=pl]
 // MU_lemma : lemma and its inflection paradigm, 
-//                e.g. [[[word,"mémoires",->[mémoire],2],[sep," "],[word,"vives",->[vif],4]],noun,NC76,{"Conc"},"computing"]
-// Returns the pointer to the forms identifier on success (e.g. ->([mémoire vive,noun,NC76,{"Conc"},"computing"],2)), NULL otherwise.
+//                e.g. [[[word,"mï¿½moires",->[mï¿½moire],2],[sep," "],[word,"vives",->[vif],4]],noun,NC76,{"Conc"},"computing"]
+// Returns the pointer to the forms identifier on success (e.g. ->([mï¿½moire vive,noun,NC76,{"Conc"},"computing"],2)), NULL otherwise.
 MU_id_T*  MU_get_id(MU_f_T* MU_form, MU_lemma_T* MU_lemma);
 */
 

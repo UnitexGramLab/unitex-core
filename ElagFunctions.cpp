@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2010 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@
 /* elag-functions.cpp */
 /* Date         : juin 98 */
 /* Auteur(s)    : MAYER Laurent et al. Olivier Blanc */
-/* Objet        :  fonction principale de levee */
+/* Objet        : fonction principale de levee */
 /*                d'ambiguite */
 
 #include <stdio.h>

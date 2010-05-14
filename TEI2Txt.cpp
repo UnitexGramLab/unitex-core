@@ -1,3 +1,24 @@
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "Copyright.h"
@@ -11,15 +32,13 @@
 
 void tei2txt(char*, char*, Encoding, int);
 
-
-
 const char* usage_TEI2Txt =
          "Usage: TEI2Txt [OPTIONS] <xml>\n"
          "\n"
          "  <xml>: the input TEI file\n"
          "\n"
          "OPTIONS:\n"
-	      "  -o TXT/--output=TXT: optional output file name (default: file.xml > file.txt)\n"
+	     "  -o TXT/--output=TXT: optional output file name (default: file.xml > file.txt)\n"
          "  -h/--help: this help\n"
          "\n"
          "Produces a raw text file from the given TEI file.\n";

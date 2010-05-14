@@ -1,23 +1,23 @@
- /*
-  * Unitex
-  *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
-  *
-  * This library is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU Lesser General Public
-  * License as published by the Free Software Foundation; either
-  * version 2.1 of the License, or (at your option) any later version.
-  *
-  * This library is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Lesser General Public License for more details.
-  * 
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this library; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
-  *
-  */
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2010 UniversitÃ© Paris-Est Marne-la-VallÃ©e <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
 
 #ifndef RegularExpressionsH
 #define RegularExpressionsH
@@ -104,7 +104,7 @@ Grammaire
    10  | ' ' Y
 
 
-Terminaux, suivis des règles où ils apparaissent
+Terminaux, suivis des rï¿½gles oï¿½ ils apparaissent
 
 $end (0) 0
 ' ' (32) 9 10
@@ -118,19 +118,19 @@ error (256)
 TOKEN (258) 8
 
 
-Non-terminaux, suivis des règles où ils apparaissent
+Non-terminaux, suivis des rï¿½gles oï¿½ ils apparaissent
 
 $accept (11)
-    à gauche: 0
+    ï¿½ gauche: 0
 S (12)
-    à gauche: 1, à droite: 0
+    ï¿½ gauche: 1, ï¿½ droite: 0
 E (13)
-    à gauche: 2 3 4 5 6 7 8, à droite: 1 2 3 4 5 6 7
+    ï¿½ gauche: 2 3 4 5 6 7 8, ï¿½ droite: 1 2 3 4 5 6 7
 Y (14)
-    à gauche: 9 10, à droite: 5 10
+    ï¿½ gauche: 9 10, ï¿½ droite: 5 10
 
 
-état 0
+ï¿½tat 0
 
     0 $accept: . S $end
     1 S: . E '0'
@@ -142,21 +142,21 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  décalage et aller à l'état 1
-    '('    décalage et aller à l'état 2
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
 
-    S  aller à l'état 3
-    E  aller à l'état 4
+    S  aller ï¿½ l'ï¿½tat 3
+    E  aller ï¿½ l'ï¿½tat 4
 
 
-état 1
+ï¿½tat 1
 
     8 E: TOKEN .
 
-    $défaut  réduction par utilisation de la règle 8 (E)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 8 (E)
 
 
-état 2
+ï¿½tat 2
 
     2 E: . E '+' E
     3  | . E '.' E
@@ -167,20 +167,20 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  décalage et aller à l'état 1
-    '('    décalage et aller à l'état 2
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
 
-    E  aller à l'état 5
+    E  aller ï¿½ l'ï¿½tat 5
 
 
-état 3
+ï¿½tat 3
 
     0 $accept: S . $end
 
-    $end  décalage et aller à l'état 6
+    $end  dï¿½calage et aller ï¿½ l'ï¿½tat 6
 
 
-état 4
+ï¿½tat 4
 
     1 S: E . '0'
     2 E: . E '+' E
@@ -198,19 +198,19 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    TOKEN  décalage et aller à l'état 1
-    '+'    décalage et aller à l'état 7
-    '.'    décalage et aller à l'état 8
-    ' '    décalage et aller à l'état 9
-    '*'    décalage et aller à l'état 10
-    '0'    décalage et aller à l'état 11
-    '('    décalage et aller à l'état 2
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '+'    dï¿½calage et aller ï¿½ l'ï¿½tat 7
+    '.'    dï¿½calage et aller ï¿½ l'ï¿½tat 8
+    ' '    dï¿½calage et aller ï¿½ l'ï¿½tat 9
+    '*'    dï¿½calage et aller ï¿½ l'ï¿½tat 10
+    '0'    dï¿½calage et aller ï¿½ l'ï¿½tat 11
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
 
-    E  aller à l'état 12
-    Y  aller à l'état 13
+    E  aller ï¿½ l'ï¿½tat 12
+    Y  aller ï¿½ l'ï¿½tat 13
 
 
-état 5
+ï¿½tat 5
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -228,26 +228,26 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    TOKEN  décalage et aller à l'état 1
-    '+'    décalage et aller à l'état 7
-    '.'    décalage et aller à l'état 8
-    ' '    décalage et aller à l'état 9
-    '*'    décalage et aller à l'état 10
-    '('    décalage et aller à l'état 2
-    ')'    décalage et aller à l'état 14
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '+'    dï¿½calage et aller ï¿½ l'ï¿½tat 7
+    '.'    dï¿½calage et aller ï¿½ l'ï¿½tat 8
+    ' '    dï¿½calage et aller ï¿½ l'ï¿½tat 9
+    '*'    dï¿½calage et aller ï¿½ l'ï¿½tat 10
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
+    ')'    dï¿½calage et aller ï¿½ l'ï¿½tat 14
 
-    E  aller à l'état 12
-    Y  aller à l'état 13
+    E  aller ï¿½ l'ï¿½tat 12
+    Y  aller ï¿½ l'ï¿½tat 13
 
 
-état 6
+ï¿½tat 6
 
     0 $accept: S $end .
 
-    $défaut  accepter
+    $dï¿½faut  accepter
 
 
-état 7
+ï¿½tat 7
 
     2 E: . E '+' E
     2  | E '+' . E
@@ -258,13 +258,13 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  décalage et aller à l'état 1
-    '('    décalage et aller à l'état 2
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
 
-    E  aller à l'état 15
+    E  aller ï¿½ l'ï¿½tat 15
 
 
-état 8
+ï¿½tat 8
 
     2 E: . E '+' E
     3  | . E '.' E
@@ -275,41 +275,41 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  décalage et aller à l'état 1
-    '('    décalage et aller à l'état 2
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
 
-    E  aller à l'état 16
+    E  aller ï¿½ l'ï¿½tat 16
 
 
-état 9
+ï¿½tat 9
 
     9 Y: . ' '  [TOKEN, '(']
     9  | ' ' .  [TOKEN, '(']
    10  | . ' ' Y
    10  | ' ' . Y
 
-    ' '  décalage et aller à l'état 9
+    ' '  dï¿½calage et aller ï¿½ l'ï¿½tat 9
 
-    $défaut  réduction par utilisation de la règle 9 (Y)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 9 (Y)
 
-    Y  aller à l'état 17
+    Y  aller ï¿½ l'ï¿½tat 17
 
 
-état 10
+ï¿½tat 10
 
     7 E: E '*' .
 
-    $défaut  réduction par utilisation de la règle 7 (E)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 7 (E)
 
 
-état 11
+ï¿½tat 11
 
     1 S: E '0' .
 
-    $défaut  réduction par utilisation de la règle 1 (S)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 1 (S)
 
 
-état 12
+ï¿½tat 12
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -327,20 +327,20 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    '*'    décalage et aller à l'état 10
+    '*'    dï¿½calage et aller ï¿½ l'ï¿½tat 10
 
-    TOKEN    [réduction par utilisation de la règle 4 (E)]
-    '+'      [réduction par utilisation de la règle 4 (E)]
-    '.'      [réduction par utilisation de la règle 4 (E)]
-    ' '      [réduction par utilisation de la règle 4 (E)]
-    '('      [réduction par utilisation de la règle 4 (E)]
-    $défaut  réduction par utilisation de la règle 4 (E)
+    TOKEN    [rï¿½duction par utilisation de la rï¿½gle 4 (E)]
+    '+'      [rï¿½duction par utilisation de la rï¿½gle 4 (E)]
+    '.'      [rï¿½duction par utilisation de la rï¿½gle 4 (E)]
+    ' '      [rï¿½duction par utilisation de la rï¿½gle 4 (E)]
+    '('      [rï¿½duction par utilisation de la rï¿½gle 4 (E)]
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 4 (E)
 
-    E  aller à l'état 12
-    Y  aller à l'état 13
+    E  aller ï¿½ l'ï¿½tat 12
+    Y  aller ï¿½ l'ï¿½tat 13
 
 
-état 13
+ï¿½tat 13
 
     2 E: . E '+' E
     3  | . E '.' E
@@ -351,20 +351,20 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  décalage et aller à l'état 1
-    '('    décalage et aller à l'état 2
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
 
-    E  aller à l'état 18
+    E  aller ï¿½ l'ï¿½tat 18
 
 
-état 14
+ï¿½tat 14
 
     6 E: '(' E ')' .
 
-    $défaut  réduction par utilisation de la règle 6 (E)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 6 (E)
 
 
-état 15
+ï¿½tat 15
 
     2 E: . E '+' E  [TOKEN, '+', '0', '(', ')']
     2  | E . '+' E  [TOKEN, '+', '0', '(', ')']
@@ -382,23 +382,23 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    TOKEN  décalage et aller à l'état 1
-    '.'    décalage et aller à l'état 8
-    ' '    décalage et aller à l'état 9
-    '*'    décalage et aller à l'état 10
-    '('    décalage et aller à l'état 2
-    $défaut  réduction par utilisation de la règle 2 (E)
+    TOKEN  dï¿½calage et aller ï¿½ l'ï¿½tat 1
+    '.'    dï¿½calage et aller ï¿½ l'ï¿½tat 8
+    ' '    dï¿½calage et aller ï¿½ l'ï¿½tat 9
+    '*'    dï¿½calage et aller ï¿½ l'ï¿½tat 10
+    '('    dï¿½calage et aller ï¿½ l'ï¿½tat 2
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 2 (E)
 
-    E  aller à l'état 12
-    Y  aller à l'état 13
+    E  aller ï¿½ l'ï¿½tat 12
+    Y  aller ï¿½ l'ï¿½tat 13
 
-Conflit entre la règle 2 et le jeton '+' résolu par réduction (%left '+').
-Conflit entre la règle 2 et le jeton '.' résolu par décalage ('+' < '.').
-Conflit entre la règle 2 et le jeton ' ' résolu par décalage ('+' < ' ').
-Conflit entre la règle 2 et le jeton '*' résolu par décalage ('+' < '*').
+Conflit entre la rï¿½gle 2 et le jeton '+' rï¿½solu par rï¿½duction (%left '+').
+Conflit entre la rï¿½gle 2 et le jeton '.' rï¿½solu par dï¿½calage ('+' < '.').
+Conflit entre la rï¿½gle 2 et le jeton ' ' rï¿½solu par dï¿½calage ('+' < ' ').
+Conflit entre la rï¿½gle 2 et le jeton '*' rï¿½solu par dï¿½calage ('+' < '*').
 
 
-état 16
+ï¿½tat 16
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -416,28 +416,28 @@ Conflit entre la règle 2 et le jeton '*' résolu par décalage ('+' < '*').
     9 Y: . ' '
    10  | . ' ' Y
 
-    '*'    décalage et aller à l'état 10
-   TOKEN   réduction par utilisation de la règle 3 (E)
-    '('    réduction par utilisation de la règle 3 (E)
-    $défaut  réduction par utilisation de la règle 3 (E)
+    '*'    dï¿½calage et aller ï¿½ l'ï¿½tat 10
+   TOKEN   rï¿½duction par utilisation de la rï¿½gle 3 (E)
+    '('    rï¿½duction par utilisation de la rï¿½gle 3 (E)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 3 (E)
 
-    E  aller à l'état 12
-    Y  aller à l'état 13
+    E  aller ï¿½ l'ï¿½tat 12
+    Y  aller ï¿½ l'ï¿½tat 13
 
-Conflit entre la règle 3 et le jeton '+' résolu par réduction ('+' < '.').
-Conflit entre la règle 3 et le jeton '.' résolu par réduction (%left '.').
-Conflit entre la règle 3 et le jeton ' ' résolu par réduction (%left ' ').
-Conflit entre la règle 3 et le jeton '*' résolu par décalage ('.' < '*').
+Conflit entre la rï¿½gle 3 et le jeton '+' rï¿½solu par rï¿½duction ('+' < '.').
+Conflit entre la rï¿½gle 3 et le jeton '.' rï¿½solu par rï¿½duction (%left '.').
+Conflit entre la rï¿½gle 3 et le jeton ' ' rï¿½solu par rï¿½duction (%left ' ').
+Conflit entre la rï¿½gle 3 et le jeton '*' rï¿½solu par dï¿½calage ('.' < '*').
 
 
-état 17
+ï¿½tat 17
 
    10 Y: ' ' Y .
 
-    $défaut  réduction par utilisation de la règle 10 (Y)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 10 (Y)
 
 
-état 18
+ï¿½tat 18
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -455,16 +455,16 @@ Conflit entre la règle 3 et le jeton '*' résolu par décalage ('.' < '*').
     9 Y: . ' '
    10  | . ' ' Y
 
-    '*'    décalage et aller à l'état 10
-    TOKEN  réduction par utilisation de la règle 5 (E)
-    '+'    réduction par utilisation de la règle 5 (E)
-    '.'    réduction par utilisation de la règle 5 (E)
-    ' '    réduction par utilisation de la règle 5 (E)
-    '('    réduction par utilisation de la règle 5 (E)
-    $défaut  réduction par utilisation de la règle 5 (E)
+    '*'    dï¿½calage et aller ï¿½ l'ï¿½tat 10
+    TOKEN  rï¿½duction par utilisation de la rï¿½gle 5 (E)
+    '+'    rï¿½duction par utilisation de la rï¿½gle 5 (E)
+    '.'    rï¿½duction par utilisation de la rï¿½gle 5 (E)
+    ' '    rï¿½duction par utilisation de la rï¿½gle 5 (E)
+    '('    rï¿½duction par utilisation de la rï¿½gle 5 (E)
+    $dï¿½faut  rï¿½duction par utilisation de la rï¿½gle 5 (E)
 
-    E  aller à l'état 12
-    Y  aller à l'état 13
+    E  aller ï¿½ l'ï¿½tat 12
+    Y  aller ï¿½ l'ï¿½tat 13
 */
 
 #endif
