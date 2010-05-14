@@ -272,7 +272,7 @@
     <ClCompile Include="..\Fst2Check.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Fst2Chk.cpp">
+    <ClCompile Include="..\Fst2Check_lib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Fst2List.cpp">

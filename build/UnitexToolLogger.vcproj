@@ -767,7 +767,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Fst2Chk.cpp"
+				RelativePath="..\Fst2Check_lib.cpp"
 				>
 			</File>
 			<File
