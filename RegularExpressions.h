@@ -104,7 +104,7 @@ Grammaire
    10  | ' ' Y
 
 
-Terminaux, suivis des r�gles o� ils apparaissent
+Terminaux, suivis des règles où ils apparaissent
 
 $end (0) 0
 ' ' (32) 9 10
@@ -118,7 +118,7 @@ error (256)
 TOKEN (258) 8
 
 
-Non-terminaux, suivis des r�gles o� ils apparaissent
+Non-terminaux, suivis des règles où ils apparaissent
 
 $accept (11)
     � gauche: 0
@@ -130,7 +130,7 @@ Y (14)
     � gauche: 9 10, � droite: 5 10
 
 
-�tat 0
+état 0
 
     0 $accept: . S $end
     1 S: . E '0'
@@ -142,21 +142,21 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '('    d�calage et aller � l'�tat 2
+    TOKEN  décalage et aller à l'état 1
+    '('    décalage et aller à l'état 2
 
-    S  aller � l'�tat 3
-    E  aller � l'�tat 4
+    S  aller à l'état 3
+    E  aller à l'état 4
 
 
-�tat 1
+état 1
 
     8 E: TOKEN .
 
-    $d�faut  r�duction par utilisation de la r�gle 8 (E)
+    $défaut  réduction par utilisation de la règle 8 (E)
 
 
-�tat 2
+état 2
 
     2 E: . E '+' E
     3  | . E '.' E
@@ -167,20 +167,20 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '('    d�calage et aller � l'�tat 2
+    TOKEN  décalage et aller à l'état 1
+    '('    décalage et aller à l'état 2
 
-    E  aller � l'�tat 5
+    E  aller à l'état 5
 
 
-�tat 3
+état 3
 
     0 $accept: S . $end
 
-    $end  d�calage et aller � l'�tat 6
+    $end  décalage et aller à l'état 6
 
 
-�tat 4
+état 4
 
     1 S: E . '0'
     2 E: . E '+' E
@@ -198,19 +198,19 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '+'    d�calage et aller � l'�tat 7
-    '.'    d�calage et aller � l'�tat 8
-    ' '    d�calage et aller � l'�tat 9
-    '*'    d�calage et aller � l'�tat 10
-    '0'    d�calage et aller � l'�tat 11
-    '('    d�calage et aller � l'�tat 2
+    TOKEN  décalage et aller à l'état 1
+    '+'    décalage et aller à l'état 7
+    '.'    décalage et aller à l'état 8
+    ' '    décalage et aller à l'état 9
+    '*'    décalage et aller à l'état 10
+    '0'    décalage et aller à l'état 11
+    '('    décalage et aller à l'état 2
 
-    E  aller � l'�tat 12
-    Y  aller � l'�tat 13
+    E  aller à l'état 12
+    Y  aller à l'état 13
 
 
-�tat 5
+état 5
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -228,26 +228,26 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '+'    d�calage et aller � l'�tat 7
-    '.'    d�calage et aller � l'�tat 8
-    ' '    d�calage et aller � l'�tat 9
-    '*'    d�calage et aller � l'�tat 10
-    '('    d�calage et aller � l'�tat 2
-    ')'    d�calage et aller � l'�tat 14
+    TOKEN  décalage et aller à l'état 1
+    '+'    décalage et aller à l'état 7
+    '.'    décalage et aller à l'état 8
+    ' '    décalage et aller à l'état 9
+    '*'    décalage et aller à l'état 10
+    '('    décalage et aller à l'état 2
+    ')'    décalage et aller à l'état 14
 
-    E  aller � l'�tat 12
-    Y  aller � l'�tat 13
+    E  aller à l'état 12
+    Y  aller à l'état 13
 
 
-�tat 6
+état 6
 
     0 $accept: S $end .
 
-    $d�faut  accepter
+    $défaut  accepter
 
 
-�tat 7
+état 7
 
     2 E: . E '+' E
     2  | E '+' . E
@@ -258,13 +258,13 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '('    d�calage et aller � l'�tat 2
+    TOKEN  décalage et aller à l'état 1
+    '('    décalage et aller à l'état 2
 
-    E  aller � l'�tat 15
+    E  aller à l'état 15
 
 
-�tat 8
+état 8
 
     2 E: . E '+' E
     3  | . E '.' E
@@ -275,41 +275,41 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '('    d�calage et aller � l'�tat 2
+    TOKEN  décalage et aller à l'état 1
+    '('    décalage et aller à l'état 2
 
-    E  aller � l'�tat 16
+    E  aller à l'état 16
 
 
-�tat 9
+état 9
 
     9 Y: . ' '  [TOKEN, '(']
     9  | ' ' .  [TOKEN, '(']
    10  | . ' ' Y
    10  | ' ' . Y
 
-    ' '  d�calage et aller � l'�tat 9
+    ' '  décalage et aller à l'état 9
 
-    $d�faut  r�duction par utilisation de la r�gle 9 (Y)
+    $défaut  réduction par utilisation de la règle 9 (Y)
 
-    Y  aller � l'�tat 17
+    Y  aller à l'état 17
 
 
-�tat 10
+état 10
 
     7 E: E '*' .
 
-    $d�faut  r�duction par utilisation de la r�gle 7 (E)
+    $défaut  réduction par utilisation de la règle 7 (E)
 
 
-�tat 11
+état 11
 
     1 S: E '0' .
 
-    $d�faut  r�duction par utilisation de la r�gle 1 (S)
+    $défaut  réduction par utilisation de la règle 1 (S)
 
 
-�tat 12
+état 12
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -327,20 +327,20 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    '*'    d�calage et aller � l'�tat 10
+    '*'    décalage et aller à l'état 10
 
-    TOKEN    [r�duction par utilisation de la r�gle 4 (E)]
-    '+'      [r�duction par utilisation de la r�gle 4 (E)]
-    '.'      [r�duction par utilisation de la r�gle 4 (E)]
-    ' '      [r�duction par utilisation de la r�gle 4 (E)]
-    '('      [r�duction par utilisation de la r�gle 4 (E)]
-    $d�faut  r�duction par utilisation de la r�gle 4 (E)
+    TOKEN    [réduction par utilisation de la règle 4 (E)]
+    '+'      [réduction par utilisation de la règle 4 (E)]
+    '.'      [réduction par utilisation de la règle 4 (E)]
+    ' '      [réduction par utilisation de la règle 4 (E)]
+    '('      [réduction par utilisation de la règle 4 (E)]
+    $défaut  réduction par utilisation de la règle 4 (E)
 
-    E  aller � l'�tat 12
-    Y  aller � l'�tat 13
+    E  aller à l'état 12
+    Y  aller à l'état 13
 
 
-�tat 13
+état 13
 
     2 E: . E '+' E
     3  | . E '.' E
@@ -351,20 +351,20 @@ Y (14)
     7  | . E '*'
     8  | . TOKEN
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '('    d�calage et aller � l'�tat 2
+    TOKEN  décalage et aller à l'état 1
+    '('    décalage et aller à l'état 2
 
-    E  aller � l'�tat 18
+    E  aller à l'état 18
 
 
-�tat 14
+état 14
 
     6 E: '(' E ')' .
 
-    $d�faut  r�duction par utilisation de la r�gle 6 (E)
+    $défaut  réduction par utilisation de la règle 6 (E)
 
 
-�tat 15
+état 15
 
     2 E: . E '+' E  [TOKEN, '+', '0', '(', ')']
     2  | E . '+' E  [TOKEN, '+', '0', '(', ')']
@@ -382,23 +382,23 @@ Y (14)
     9 Y: . ' '
    10  | . ' ' Y
 
-    TOKEN  d�calage et aller � l'�tat 1
-    '.'    d�calage et aller � l'�tat 8
-    ' '    d�calage et aller � l'�tat 9
-    '*'    d�calage et aller � l'�tat 10
-    '('    d�calage et aller � l'�tat 2
-    $d�faut  r�duction par utilisation de la r�gle 2 (E)
+    TOKEN  décalage et aller à l'état 1
+    '.'    décalage et aller à l'état 8
+    ' '    décalage et aller à l'état 9
+    '*'    décalage et aller à l'état 10
+    '('    décalage et aller à l'état 2
+    $défaut  réduction par utilisation de la règle 2 (E)
 
-    E  aller � l'�tat 12
-    Y  aller � l'�tat 13
+    E  aller à l'état 12
+    Y  aller à l'état 13
 
-Conflit entre la r�gle 2 et le jeton '+' r�solu par r�duction (%left '+').
-Conflit entre la r�gle 2 et le jeton '.' r�solu par d�calage ('+' < '.').
-Conflit entre la r�gle 2 et le jeton ' ' r�solu par d�calage ('+' < ' ').
-Conflit entre la r�gle 2 et le jeton '*' r�solu par d�calage ('+' < '*').
+Conflit entre la règle 2 et le jeton '+' résolu par réduction (%left '+').
+Conflit entre la règle 2 et le jeton '.' résolu par décalage ('+' < '.').
+Conflit entre la règle 2 et le jeton ' ' résolu par décalage ('+' < ' ').
+Conflit entre la règle 2 et le jeton '*' résolu par décalage ('+' < '*').
 
 
-�tat 16
+état 16
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -416,28 +416,28 @@ Conflit entre la r�gle 2 et le jeton '*' r�solu par d�calage ('+' < '*').
     9 Y: . ' '
    10  | . ' ' Y
 
-    '*'    d�calage et aller � l'�tat 10
-   TOKEN   r�duction par utilisation de la r�gle 3 (E)
-    '('    r�duction par utilisation de la r�gle 3 (E)
-    $d�faut  r�duction par utilisation de la r�gle 3 (E)
+    '*'    décalage et aller à l'état 10
+   TOKEN   réduction par utilisation de la règle 3 (E)
+    '('    réduction par utilisation de la règle 3 (E)
+    $défaut  réduction par utilisation de la règle 3 (E)
 
-    E  aller � l'�tat 12
-    Y  aller � l'�tat 13
+    E  aller à l'état 12
+    Y  aller à l'état 13
 
-Conflit entre la r�gle 3 et le jeton '+' r�solu par r�duction ('+' < '.').
-Conflit entre la r�gle 3 et le jeton '.' r�solu par r�duction (%left '.').
-Conflit entre la r�gle 3 et le jeton ' ' r�solu par r�duction (%left ' ').
-Conflit entre la r�gle 3 et le jeton '*' r�solu par d�calage ('.' < '*').
+Conflit entre la règle 3 et le jeton '+' résolu par réduction ('+' < '.').
+Conflit entre la règle 3 et le jeton '.' résolu par réduction (%left '.').
+Conflit entre la règle 3 et le jeton ' ' résolu par réduction (%left ' ').
+Conflit entre la règle 3 et le jeton '*' résolu par décalage ('.' < '*').
 
 
-�tat 17
+état 17
 
    10 Y: ' ' Y .
 
-    $d�faut  r�duction par utilisation de la r�gle 10 (Y)
+    $défaut  réduction par utilisation de la règle 10 (Y)
 
 
-�tat 18
+état 18
 
     2 E: . E '+' E
     2  | E . '+' E
@@ -455,16 +455,16 @@ Conflit entre la r�gle 3 et le jeton '*' r�solu par d�calage ('.' < '*').
     9 Y: . ' '
    10  | . ' ' Y
 
-    '*'    d�calage et aller � l'�tat 10
-    TOKEN  r�duction par utilisation de la r�gle 5 (E)
-    '+'    r�duction par utilisation de la r�gle 5 (E)
-    '.'    r�duction par utilisation de la r�gle 5 (E)
-    ' '    r�duction par utilisation de la r�gle 5 (E)
-    '('    r�duction par utilisation de la r�gle 5 (E)
-    $d�faut  r�duction par utilisation de la r�gle 5 (E)
+    '*'    décalage et aller à l'état 10
+    TOKEN  réduction par utilisation de la règle 5 (E)
+    '+'    réduction par utilisation de la règle 5 (E)
+    '.'    réduction par utilisation de la règle 5 (E)
+    ' '    réduction par utilisation de la règle 5 (E)
+    '('    réduction par utilisation de la règle 5 (E)
+    $défaut  réduction par utilisation de la règle 5 (E)
 
-    E  aller � l'�tat 12
-    Y  aller � l'�tat 13
+    E  aller à l'état 12
+    Y  aller à l'état 13
 */
 
 #endif

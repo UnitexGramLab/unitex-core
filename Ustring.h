@@ -31,7 +31,7 @@
  * unicode strings.
  *
  * Author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 
 /**

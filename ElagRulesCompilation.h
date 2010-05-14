@@ -30,7 +30,7 @@
  *
  * Authors: Laurent Mayer et al (1998)
  *          Olivier Blanc (2002-2006)
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 
 

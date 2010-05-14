@@ -629,7 +629,7 @@ free(info);
  * This function launches the application of the given .bin dictionary.
  *
  * @author Alexis Neme
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 int dico_application(char* name_bin,struct dico_application_info* info,int priority) {
 char name_inf[FILENAME_MAX];
@@ -697,7 +697,7 @@ info->tag_sequences[(info->n_tag_sequences)++]=match;
 
 /**
  * @author Alexis Neme
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 int merge_dic_locate_results(struct dico_application_info* info,char* concord_filename,
                              int priority,int export_to_morpho_dic) {

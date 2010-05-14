@@ -222,7 +222,7 @@ strcpy(&(result[length_without_separator+1]),name);
 /**
  * This function copies the file 'src' into 'dest'.
  * Author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 void copy_file(char* dest,char* src) {
 U_FILE* input=u_fopen(ASCII,src,U_READ);

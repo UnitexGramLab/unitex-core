@@ -1582,7 +1582,7 @@ int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
  * - (0 < len < size-1) : means that we have read a complete line (str[len-1]=='\n', unless EOF)
  *
  * Author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 int u_fgets(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
 return u_fgets_buffered(encoding,line,1,size,f,0,0,NULL);
@@ -1609,7 +1609,7 @@ return u_fgets_buffered(encoding,line,1,size,f,1,supress_null,found_null);
  *      this function is useful to don't have to remove the \n at end of line
  *
  * Original author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  * option limit2 by Gilles Vollant
  */
 int u_fgets_limit2(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
@@ -1858,7 +1858,7 @@ int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pB
  *
  * - %U works in the same way than %H, but it invokes 'URLize'
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
 int u_vfprintf(U_FILE* ufile,const char* format,va_list list) {
@@ -2042,7 +2042,7 @@ return n_printed;
  * Unicode version of fprintf. See u_vfprintf for supported format options.
  *
  * Author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 int u_fprintf(U_FILE* f,const char* format,...) {
 va_list list;
@@ -2081,7 +2081,7 @@ return n;
  * - %US for printing a unicode string as a URL (see URLize)
  * - %UR for printing the reversed of a unicode string as a URL (see URLize)
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
 int u_vsprintf(unichar* dest,const char* format,va_list list) {
@@ -2287,7 +2287,7 @@ return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
  * Note 2: if yout type u_fscanf(f,"%d\n",&i); the function will skip any separator that is
  *         not '\n' after the integer, so that the line " 45   \t   \n" will be entirely read.
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  */
 int u_vfscanf(U_FILE* ufile,const char* format,va_list list) {
 Encoding encoding=ufile->enc;
@@ -2516,7 +2516,7 @@ return n_variables;
 /**
  * Unicode version of fscanf. See u_vfscanf for supported format options.
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  */
 int u_fscanf(U_FILE* f,const char* format,...) {
 va_list list;
@@ -2530,7 +2530,7 @@ return n;
 /**
  * Unicode version of sscanf. See u_vfscanf for supported format options.
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  */
 int u_vsscanf(unichar* s,const char* format,va_list list) {
 int c;
@@ -2705,7 +2705,7 @@ return n_variables;
 /**
  * Unicode version of sscanf. See u_vfscanf for supported format options.
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  */
 int u_sscanf(unichar* input,const char* format,...) {
 va_list list;
@@ -3116,7 +3116,7 @@ return u_strcpy(res,str);
  * occurrence, protected by a backslash or not.
  *
  * Author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 unichar* u_strchr(const unichar* s,unichar c,int unprotected) {
 if (s==NULL) return NULL;
@@ -3154,7 +3154,7 @@ return u_strchr(s,c,0);
  * because such a cast would cause invalid matches.
  *
  * Author: Olivier Blanc
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 const char* u_strchr(const char* s,unichar c) {
 if (s==NULL) return NULL;
@@ -3259,7 +3259,7 @@ return !u_strcmp(s+(l1-l2),suffix);
  * Converts the unichar* src into a char* dest.
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
  *
- * Author: S�bastien Paumier
+ * Author: Sébastien Paumier
  * Modified by S?bastian Nagel
  */
 void u_to_char(char *dest,unichar *src) {

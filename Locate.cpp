@@ -322,7 +322,7 @@ return (!OK);
  * program.
  *
  * @author Alexis Neme
- * Modified by S�bastien Paumier
+ * Modified by Sébastien Paumier
  */
 int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                              char* text_snt,char* fst2,char* alphabet,

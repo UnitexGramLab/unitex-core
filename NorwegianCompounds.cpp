@@ -29,8 +29,8 @@
  * complete information about the analysis of Norwegian words can be
  * found in:
  *
- * Paumier S�bastien & Harald Ulland, 2005. Analyse automatique de mots
- * polylexicaux en norv�gien. Lingvistic� Investigationes 28:2,
+ * Paumier Sébastien & Harald Ulland, 2005. Analyse automatique de mots
+ * polylexicaux en norvégien. Lingvistic� Investigationes 28:2,
  * Amsterdam-Philadelphia : John Benjamins Publishing Company.
  */
 

@@ -28,7 +28,7 @@
  * token sequences. Such compound words are stored into a hash table.
  * 
  * Author: Alexis Neme
- * Modified by: S�bastien Paumier
+ * Modified by: Sébastien Paumier
  */
  
 #include "Unicode.h"

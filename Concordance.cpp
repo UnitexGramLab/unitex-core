@@ -761,14 +761,14 @@ return 1;
  * when applied on raw reversed text. For more information (written in French),
  * see chapter 3.1 in:
  *
- * Paumier S�bastien, 2003. De la reconnaissance de formes linguistiques �
- * l'analyse syntaxique, Ph.D., Universit� Paris-Est Marne-la-Vall�e. Downloadable
+ * Paumier Sébastien, 2003. De la reconnaissance de formes linguistiques à
+ * l'analyse syntaxique, Ph.D., Université Paris-Est Marne-la-Vallée. Downloadable
  * at: http://igm.univ-mlv.fr/LabInfo/theses/
  *
  * You can also consult (in French too):
  *
- * Kosawat Krit, 2003. M�thodes de segmentation et d'analyse automatique de
- * textes tha�, Ph.D., Universit� Paris-Est Marne-la-Vall�e. Downloadable
+ * Kosawat Krit, 2003. Méthodes de segmentation et d'analyse automatique de
+ * textes tha�, Ph.D., Université Paris-Est Marne-la-Vallée. Downloadable
  * at: http://igm.univ-mlv.fr/LabInfo/theses/
  */
 void reverse_initial_vowels_thai(unichar* s) {

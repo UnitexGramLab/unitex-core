@@ -44,7 +44,7 @@
 
 /**
  * This enhanced version of Dico was rewritten by Alexis Neme,
- * based on the original version written by S�bastien Paumier
+ * based on the original version written by Sébastien Paumier
  * 15 Novembre 2005
  * This new version take into account not only compiled dictionnary but also
  * local grammars representent by an FST2 as part of the lexical identification
