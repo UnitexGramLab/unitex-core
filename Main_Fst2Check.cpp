@@ -20,7 +20,7 @@
  */
 
 #include "IOBuffer.h"
-#include "Fst2Chk.h"
+#include "Fst2Check.h"
 
 int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,

@@ -23,7 +23,6 @@
 #include <string.h>
 
 #include "Unicode.h"
-
 #include "CheckDic.h"
 #include "Compress.h"
 #include "Concord.h"
@@ -36,7 +35,7 @@
 #include "Evamb.h"
 #include "Extract.h"
 #include "Flatten.h"
-#include "Fst2Chk.h"
+#include "Fst2Check.h"
 #include "Fst2List.h"
 #include "Fst2Txt.h"
 #include "Grf2Fst2.h"

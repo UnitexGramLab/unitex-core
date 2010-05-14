@@ -33,7 +33,7 @@
 #include "getopt.h"
 #include "ProgramInvoker.h"
 
-#include "Fst2Chk.h"
+#include "Fst2Check.h"
 
 
 
