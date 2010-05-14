@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include "Unicode.h"
 #include "Fst2.h"
-#include "Fst2Check.h"
+#include "Fst2Check_lib.h"
 #include "Copyright.h"
 #include "Alphabet.h"
 #include "File.h"

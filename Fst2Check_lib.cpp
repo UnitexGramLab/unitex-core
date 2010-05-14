@@ -19,7 +19,7 @@
  *
  */
 
-#include "Fst2Check.h"
+#include "Fst2Check_lib.h"
 #include "Error.h"
 #include "BitMasks.h"
 #include "Transitions.h"
