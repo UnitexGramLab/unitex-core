@@ -160,9 +160,16 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 						 * context could cause problems. We have to set tmp->next to NULL because
 						 * we just want to consider this single match */
 						tmp->next=NULL;
+						/* We have to cache the match using the longest possible context and not
+						 * only the end of the match. Imagine that the text contains the
+						 * sequence "...volley-ball..." with the matches "volley" and
+						 * "volley-ball". If we cache these two matches with their own ends,
+						 * then, if the text contains "volley ball meeting", we will find
+						 * "volley" in cache and skip longer matches like "volley ball".
+						 */
 						cache_match(tmp, p->buffer,
 								tmp->m.start_pos_in_token,
-								tmp->m.end_pos_in_token,
+								p->last_matched_position,
 								&(p->match_cache[current_token]), prv_alloc);
 					} else {
 						free_match_list_element(tmp, prv_alloc);
