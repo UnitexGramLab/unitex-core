@@ -590,6 +590,12 @@ UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o Unicode.o Abstr
                    getopt.o IOBuffer.o $(SYSLIBMAPPED)
 
 
+UNTOKENIZE       = Untokenize
+UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o Unicode.o AbstractAllocator.o DELA.o AbstractDelaLoad.o \
+                   String_hash.o StringParsing.o List_int.o List_ustring.o Text_tokens.o Alphabet.o Af_stdio.o ActivityLogger.o\
+                   getopt.o IOBuffer.o $(SYSLIBMAPPED)
+
+
 UNITEXTOOL   = UnitexTool
 UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
@@ -613,7 +619,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Ustring.o XMLizer.o DuplicateFile.o \
-                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Tagger.o\
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o $(SYSLIBMAPPED)
 
 
@@ -642,7 +648,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Ustring.o XMLizer.o DuplicateFile.o \
-                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Tagger.o\
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o $(SYSLIBMAPPED)
 
 
@@ -666,7 +672,7 @@ PROGS = $(BUILDKRMWUDIC) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONV
 		$(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
-		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
+		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
 
 #PROGS = $(TEST)
 
@@ -681,7 +687,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) 
 		$(RECONSTRUCAO_OBJS) $(REG2GRF_OBJS) $(SORTTXT_OBJS) $(STATS_OBJS) $(TABLE2GRF_OBJS)\
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
-		$(UNCOMPRESS_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
+		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
 		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
@@ -1097,6 +1103,9 @@ $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNCOMPRESS)$(EXTENSION): $(UNCOMPRESS_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(UNTOKENIZE)$(EXTENSION): $(UNTOKENIZE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)

@@ -196,6 +196,7 @@
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\Untokenize.h" />
     <ClInclude Include="..\UserCancelling.h" />
     <ClInclude Include="..\UserCancellingPlugCallback.h" />
   </ItemGroup>
@@ -360,6 +361,7 @@
     <ClCompile Include="..\Uncompress.cpp" />
     <ClCompile Include="..\Unicode.cpp" />
     <ClCompile Include="..\UnitexTool.cpp" />
+    <ClCompile Include="..\Untokenize.cpp" />
     <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\Ustring.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />

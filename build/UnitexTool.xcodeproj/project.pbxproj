@@ -174,6 +174,7 @@
 		225FE86511256AB900F33C2A /* TaggingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86011256AB900F33C2A /* TaggingProcess.cpp */; };
 		225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86211256AB900F33C2A /* TrainingTagger.cpp */; };
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
+		2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294EE7C11A01195003CE92B /* Untokenize.cpp */; };
 		229851AA111A6F2000503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */; };
 		22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */; };
 		22EA01E11121ED9D00A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01DE1121ED9D00A89AD4 /* AbstractAllocator.cpp */; };
@@ -551,6 +552,8 @@
 		225FE86311256AB900F33C2A /* TrainingTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingTagger.h; path = ../TrainingTagger.h; sourceTree = SOURCE_ROOT; };
 		225FE87811256B7B00F33C2A /* TrainingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingProcess.cpp; path = ../TrainingProcess.cpp; sourceTree = SOURCE_ROOT; };
 		225FE87911256B7B00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
+		2294EE7B11A0118E003CE92B /* Untokenize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Untokenize.h; path = ../Untokenize.h; sourceTree = SOURCE_ROOT; };
+		2294EE7C11A01195003CE92B /* Untokenize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Untokenize.cpp; path = ../Untokenize.cpp; sourceTree = SOURCE_ROOT; };
 		229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Check_lib.cpp; path = ../Fst2Check_lib.cpp; sourceTree = SOURCE_ROOT; };
 		229851A9111A6F2000503A07 /* Fst2Check_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Check_lib.h; path = ../Fst2Check_lib.h; sourceTree = SOURCE_ROOT; };
 		22B2EB5C118B168100E00A77 /* MappedFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MappedFileHelper.h; path = ../MappedFileHelper.h; sourceTree = SOURCE_ROOT; };
@@ -919,6 +922,8 @@
 				222F78F41107A48400C91CC7 /* Unicode.h */,
 				222F78F51107A48400C91CC7 /* UnitexTool.cpp */,
 				222F78F61107A48400C91CC7 /* UnitexTool.h */,
+				2294EE7C11A01195003CE92B /* Untokenize.cpp */,
+				2294EE7B11A0118E003CE92B /* Untokenize.h */,
 				222F78F71107A48400C91CC7 /* UnusedParameter.h */,
 				222F78F81107A48400C91CC7 /* UserCancelling.cpp */,
 				222F78F91107A48400C91CC7 /* UserCancelling.h */,
@@ -1203,6 +1208,7 @@
 				225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */,
 				22FE4747117A22990011D758 /* LocateCache.cpp in Sources */,
 				22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */,
+				2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -292,6 +292,7 @@
     <ClInclude Include="..\TrainingProcess.h" />
     <ClInclude Include="..\TrainingTagger.h" />
     <ClInclude Include="..\TransductionVariables.h" />
+    <ClInclude Include="..\Untokenize.h" />
     <ClInclude Include="..\UserCancelling.h" />
     <ClInclude Include="..\UserCancellingPlugCallback.h" />
   </ItemGroup>
@@ -464,6 +465,7 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="..\UnitexTool.cpp" />
+    <ClCompile Include="..\Untokenize.cpp" />
     <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\ustring.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />

@@ -558,15 +558,7 @@
 				RelativePath="..\Af_stdio.h"
 				>
 			</File>
-      <File
-				RelativePath="..\MappedFileHelper.h"
-				>
-      </File>
-      <File
-				RelativePath="..\MappedFileHelperWin.cpp"
-				>
-      </File>
-      <File
+			<File
 				RelativePath="..\Alphabet.cpp"
 				>
 			</File>
@@ -888,6 +880,14 @@
 			</File>
 			<File
 				RelativePath="..\Main_UnitexTool.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\MappedFileHelper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MappedFileHelperWin.cpp"
 				>
 			</File>
 			<File
@@ -1264,6 +1264,14 @@
 			</File>
 			<File
 				RelativePath="..\UnitexTool.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Untokenize.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Untokenize.h"
 				>
 			</File>
 			<File
