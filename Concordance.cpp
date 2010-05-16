@@ -516,7 +516,8 @@ while (pos>=0 && count<option->left_context) {
 	if (l<0) {
 		/* If we must change of token */
 		if (option->left_context_until_eos
-                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->skip+pos]],"{S}"))
+//                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->skip+pos]],"{S}"))
+                    && (buffer->int_buffer_[buffer->skip+pos] != tokens->SENTENCE_MARKER))
                   break; /* token was "{S}" */
 		pos--;
 		if (pos>=0) {
@@ -635,7 +636,8 @@ while (pos<buffer->size && count<right_context_length) {
 	if (s[l]=='\0') {
 		/* If we must change of token */
 		if (option->right_context_until_eos
-                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->skip+pos]],"{S}"))
+//                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->skip+pos]],"{S}"))
+                    && (buffer->int_buffer_[buffer->skip+pos] != tokens->SENTENCE_MARKER))
                   break; /* token was "{S}" */
 		pos++;
 		if (pos<buffer->size) {
@@ -1035,6 +1037,7 @@ int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*t
 //fseek(text,address,SEEK_SET);
 buf_map_int_pseudo_seek(buffer,current_global_position);
 int last_pos_to_be_loaded=match_end+1;
+#ifdef IMPOSSIBLE
 while ((last_pos_to_be_loaded-current_global_position) > (int)buffer->nb_item) {
 	/* If the distance between current position and final position is larger than
 	 * the buffer size, then we read a full buffer. */
@@ -1049,6 +1052,7 @@ while ((last_pos_to_be_loaded-current_global_position) > (int)buffer->nb_item) {
 	}
 	current_global_position=current_global_position+(int)buffer->nb_item;
 }
+#endif
 /* We read what we want to write in the output file + all the tokens of the match */
 //buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(last_pos_to_be_loaded-current_global_position),text);
 buffer->size=(int)buf_map_int_pseudo_read(buffer,(last_pos_to_be_loaded-current_global_position));
