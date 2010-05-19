@@ -620,11 +620,11 @@ struct Token_error_ctx* p_token_error_ctx,
 					 * if we are at the end of the token buffer. */
 					start = pos;
 					end = pos;
-					if (token != -1) {
-						/* We don't update the position if # has matched because of the
-						 * end of the buffer */
-						update_last_position(p, pos);
-					}
+				}
+				if (token != -1) {
+					/* We don't update the position if # has matched because of the
+					 * end of the buffer */
+					update_last_position(p, pos);
 				}
 				break;
 
