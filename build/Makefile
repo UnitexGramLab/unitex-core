@@ -25,7 +25,9 @@
 #
 # The option
 #    make UNITEXTOOLONLY=yes
-# build only the UnitexTool executable target
+# build only the UnitexTool and UnitexToolLogger executable target
+#    make UNITEXTOOLLOGGERONLY=yes
+# build only the UnitexToolLogger executable target
 #
 #    you can mix somes parameters
 #
@@ -658,6 +660,14 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
 ################################
 ################################
 
+ifeq ($(UNITEXTOOLLOGGERONLY), yes)
+
+
+PROGS = $(UNITEXTOOL_LOGGER)
+OBJS = $(UNITEXTOOL_LOGGER_OBJS)
+
+else
+
 ifeq ($(UNITEXTOOLONLY), yes)
 
 
@@ -694,6 +704,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) 
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS)
 
+endif
 endif
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
