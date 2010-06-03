@@ -118,7 +118,7 @@ for (int h=0;h<new_fst2->number_of_states;h++) {
 }
 check_accessibility(new_fst2->states,0);
 remove_epsilon_transitions(new_fst2,1);
-remove_useless_states(new_fst2);
+remove_useless_states(new_fst2,NULL);
 /* We minimize the new main graph */
 u_printf("Minimization...\n");
 minimize(new_fst2,0);
@@ -161,7 +161,7 @@ u_fprintf(res,"%010d\n",(RTN?n_graphs_to_keep:1));
 /* We save the new main graph */
 u_printf("Writing grammar...\n");
 save_fst2_subgraph(res,new_fst2,-1,origin->graph_names[1]);
-free_SingleGraph(new_fst2);
+free_SingleGraph(new_fst2,NULL);
 /* Then, we save the subgraphs, if we have to */
 if (RTN && (result == EQUIVALENT_RTN)) {
    u_printf("Saving remaining subgraphs...\n");

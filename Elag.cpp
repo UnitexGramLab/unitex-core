@@ -155,7 +155,7 @@ if ((grammars=load_elag_grammars(rule_file,lang,directory)) == NULL) {
 u_printf("Grammars are loaded.\n");
 remove_ambiguities(input_tfst,grammars,output_tfst,encoding_output,bom_output,lang);
 free_language_t(lang);
-free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+free_vector_ptr(grammars,(release_f)free_Fst2Automaton_excluding_symbols);
 free_OptVars(vars);
 return 0;
 }

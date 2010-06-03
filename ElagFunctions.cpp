@@ -83,7 +83,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
-      elag_determinize(language,tfst->automaton);
+      elag_determinize(language,tfst->automaton,NULL);
       elag_minimize(tfst->automaton);
       int is_rejected=0;
       if (current_sentence % 100 == 0) {
@@ -93,7 +93,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          /* If the sentence is empty, we replace the sentence automaton
           * by a 1-state automaton with no transition. */
     	 error("Sentence %d is empty\n",current_sentence);
-         free_SingleGraph(tfst->automaton);
+         free_SingleGraph(tfst->automaton,NULL);
          tfst->automaton=new_SingleGraph(1,PTR_TAGS);
          SingleGraphState initial_state=add_state(tfst->automaton);
          set_initial_state(initial_state);
@@ -110,15 +110,15 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
             for (int j=0;j< gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
                SingleGraph temp=elag_intersection(language,tfst->automaton,grammar->automaton,TEXT_GRAMMAR);
-               trim(temp);
-               free_SingleGraph(tfst->automaton);
+               trim(temp,NULL);
+               free_SingleGraph(tfst->automaton,NULL);
                tfst->automaton=temp;
                if (tfst->automaton->number_of_states<2) {
                   /* If the sentence has been rejected by the grammar */
                   error("Sentence %d rejected\n\n",current_sentence);
                   j=gramms->nbelems; /* We don't go on intersecting with other grammars */
                   n_rejected_sentences++;
-                  free_SingleGraph(tfst->automaton);
+                  free_SingleGraph(tfst->automaton,NULL);
                   tfst->automaton=new_SingleGraph(1,PTR_TAGS);
                   SingleGraphState initial_state=add_state(tfst->automaton);
                   set_initial_state(initial_state);
@@ -127,8 +127,8 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
             }
          }
          if (!is_rejected) {
-            elag_determinize(language,tfst->automaton);
-            trim(tfst->automaton);
+            elag_determinize(language,tfst->automaton,NULL);
+            trim(tfst->automaton,NULL);
             elag_minimize(tfst->automaton);
             remove_sentence_delimiters(tfst,language);
             after = evaluate_ambiguity(tfst->automaton,&min,&max);
@@ -224,7 +224,7 @@ void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
-      elag_determinize(language,tfst->automaton);
+      elag_determinize(language,tfst->automaton,NULL);
       elag_minimize(tfst->automaton);
       if (current_sentence % 100 == 0) {
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);
@@ -261,7 +261,7 @@ while (af_fgets(buf,FILENAME_MAX,f->f) != NULL) {
    char* p=strchr(buf,'>');
    if (p==NULL) {
       error("In %s: at line '%s': delimiter '>' not found\n",filename,buf);
-      free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+      free_vector_ptr(grammars,(release_f)free_Fst2Automaton_excluding_symbols);
       u_fclose(f);
       return NULL;
    }
@@ -276,7 +276,7 @@ while (af_fgets(buf,FILENAME_MAX,f->f) != NULL) {
    Fst2Automaton* A=load_elag_grammar_automaton(buf2,language);
    if (A==NULL) {
       error("Unable to load '%s' automaton\n",buf2);
-      free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+      free_vector_ptr(grammars,(release_f)free_Fst2Automaton_excluding_symbols);
       u_fclose(f);
       return NULL;
    }
@@ -343,7 +343,7 @@ return list;
  * Removes the {S} delimiters previously added by add_sentence_delimiters.
  */
 static void remove_sentence_delimiters(Tfst* tfst,language_t* language) {
-topological_sort(tfst->automaton);
+topological_sort(tfst->automaton,NULL);
 if (tfst->automaton->number_of_states<4 || get_initial_state(tfst->automaton)!=0
     || tfst->automaton->states[0]->outgoing_transitions==NULL
     || tfst->automaton->states[0]->outgoing_transitions->next!=NULL
@@ -375,8 +375,8 @@ for (int q=1;q<final_state_index;q++) {
    }
 }
 unset_final_state(tfst->automaton->states[final_state_index]);
-trim(tfst->automaton);
-topological_sort(tfst->automaton);
+trim(tfst->automaton,NULL);
+topological_sort(tfst->automaton,NULL);
 }
 
 

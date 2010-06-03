@@ -138,8 +138,8 @@ void free_elRule(elRule* rule) {
 if (rule==NULL) return;
 if (rule->name!=NULL) free(rule->name);
 for (int i=0;i<rule->nbContexts;i++) {
-   free_SingleGraph(rule->contexts[i].right);
-   free_SingleGraph(rule->contexts[i].left);
+   free_SingleGraph(rule->contexts[i].right,NULL);
+   free_SingleGraph(rule->contexts[i].left,NULL);
 }
 free(rule->contexts);
 free(rule);
@@ -157,23 +157,23 @@ u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->n
  * transitions tagged with symbol_t* and not integers */
 for (int c=0;c<rule->nbContexts;c++) {
    //convert_transitions_to_elag_ones(rule->contexts[c].left);
-   elag_determinize(language,rule->contexts[c].left);
-   trim(rule->contexts[c].left);
+   elag_determinize(language,rule->contexts[c].left,NULL);
+   trim(rule->contexts[c].left,NULL);
    //convert_transitions_to_elag_ones(rule->contexts[c].right);
-   elag_determinize(language,rule->contexts[c].right);
-   trim(rule->contexts[c].right);
+   elag_determinize(language,rule->contexts[c].right,NULL);
+   trim(rule->contexts[c].right,NULL);
 }
 /* We build A*.R1 */
 prefix_with_everything(rule->contexts[0].left);
 //u_printf("------------- anything_R1 -------------\n");
 //print_graph(rule->contexts[0].left);
-elag_determinize(language,rule->contexts[0].left);
+elag_determinize(language,rule->contexts[0].left,NULL);
 //print_graph(rule->contexts[0].left);
 elag_minimize(rule->contexts[0].left);
 SingleGraph anything_R1=rule->contexts[0].left;
 /* and R2.A* */
 suffix_with_everything(rule->contexts[0].right);
-elag_determinize(language,rule->contexts[0].right);
+elag_determinize(language,rule->contexts[0].right,NULL);
 elag_minimize(rule->contexts[0].right);
 SingleGraph R2_anything=rule->contexts[0].right;
 /* We compute the number of constraint combinations */
@@ -188,7 +188,7 @@ for (int ens=0;ens<p;ens++) {
    SingleGraph a1=combine_constraints(rule,ens,anything_R1,R2_anything,language);
    /* And we make the union of it with the current automaton */
    build_union(result,a1);
-   elag_determinize(language,result);
+   elag_determinize(language,result,NULL);
    elag_minimize(result);
 }
 /* Finally, we take the complement of the automaton that rejects wrong paths.
@@ -203,7 +203,7 @@ elag_complementation(language,result);
 //u_printf("------------- AFTER COMPL -------------\n");
 //print_graph(result);
 
-trim(result);
+trim(result,NULL);
 
 if (result->number_of_states==0) {
    error("Grammar %s forbids everything\n",rule->name);
@@ -232,7 +232,7 @@ if (A==NULL) {
 }
 free_elRule(rule);
 save_automaton(A,elg_file,encoding_output,bom_output,FST_GRAMMAR);
-free_Fst2Automaton(A);
+free_Fst2Automaton(A,NULL);
 return 0;
 }
 
@@ -311,9 +311,9 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       /* If there is already an automaton, we intersect it with the new one */
       SingleGraph tmp=res->automaton;
       res->automaton=elag_intersection(language,tmp,A->automaton,GRAMMAR_GRAMMAR);
-      free_SingleGraph(tmp);
-      free_Fst2Automaton(A);
-      trim(res->automaton);
+      free_SingleGraph(tmp,NULL);
+      free_Fst2Automaton(A,NULL);
+      trim(res->automaton,NULL);
    } else {
       res=A;
    }
@@ -329,7 +329,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       free(res->name);
       res->name=u_strdup(ustr->str);
       save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
-      free_Fst2Automaton(res);
+      free_Fst2Automaton(res,NULL);
       res=NULL;
    }
 }
@@ -343,7 +343,7 @@ if (res!=NULL) {
    free(res->name);
    res->name=u_strdup(ustr->str);
    save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
-   free_Fst2Automaton(res);
+   free_Fst2Automaton(res,NULL);
 }
 time_t end_time=time(0);
 u_fclose(frules);
@@ -363,7 +363,7 @@ return 0;
  */
 Fst2Automaton* make_locate_automaton(elRule* rule,language_t* language) {
 Fst2Automaton* res=new_Fst2Automaton(NULL);
-res->automaton=clone(rule->contexts[0].left);
+res->automaton=clone(rule->contexts[0].left,NULL);
 /* We concatenate the left and right contexts */
 elag_concat(language,res->automaton,rule->contexts[0].right);
 /* Then we add loops with ignorable POS on each state */
@@ -456,7 +456,7 @@ strcat(buf,"-conc.fst2");
 /* We create the.fst2 to be used by Locate */
 Fst2Automaton* locate=make_locate_automaton(rule,language);
 save_automaton(locate,buf,encoding_output,bom_output,FST_LOCATE);
-free_Fst2Automaton(locate);
+free_Fst2Automaton(locate,NULL);
 }
 
 
@@ -671,47 +671,47 @@ for (int c=1,dpc=1;c<rule->nbContexts;c++,dpc=dpc<<1) {
    if (dpc & constraint_set) {
       /* If the cth bit of the constraint set is set to 1, then we must
        * add the cth constraint's left part to a1 */
-      build_union(a1,clone(rule->contexts[c].left));
-      elag_determinize(language,a1);
+      build_union(a1,clone(rule->contexts[c].left,NULL));
+      elag_determinize(language,a1,NULL);
       elag_minimize(a1);
    } else {
       /* Otherwise, we add the cth constraint's right part to a2 */
-      build_union(a2,clone(rule->contexts[c].right));
-      elag_determinize(language,a2);
+      build_union(a2,clone(rule->contexts[c].right,NULL));
+      elag_determinize(language,a2,NULL);
       elag_minimize(a2);
    }
 }
 
 prefix_with_everything(a1);
-elag_determinize(language,a1);
+elag_determinize(language,a1,NULL);
 elag_minimize(a1);
 elag_complementation(language,a1);
-trim(a1);
+trim(a1,NULL);
 SingleGraph tmp=a1;
 a1=elag_intersection(language,a1,anything_R1,GRAMMAR_GRAMMAR);
-free_SingleGraph(tmp);
-trim(a1);
+free_SingleGraph(tmp,NULL);
+trim(a1,NULL);
 elag_minimize(a1);
 
 suffix_with_everything(a2);
-elag_determinize(language,a2);
+elag_determinize(language,a2,NULL);
 elag_minimize(a2);
 elag_complementation(language,a2);
-trim(a2);
+trim(a2,NULL);
 tmp=a2;
 a2=elag_intersection(language,a2,R2_anything,GRAMMAR_GRAMMAR);
-free_SingleGraph(tmp);
-trim(a2);
+free_SingleGraph(tmp,NULL);
+trim(a2,NULL);
 elag_minimize(a2);
 elag_concat(language,a1,a2);
 
-free_SingleGraph(a2);
-trim(a1);
+free_SingleGraph(a2,NULL);
+trim(a1,NULL);
 //print_graph(a1);
-elag_determinize(language,a1);
+elag_determinize(language,a1,NULL);
 //print_graph(a1);
 
-trim(a1);
+trim(a1,NULL);
 elag_minimize(a1);
 return a1;
 }

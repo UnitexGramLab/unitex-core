@@ -1115,7 +1115,7 @@ free_hash_table(hash);
 free_hash_table(transition_hash);
 free_fifo(fifo);
 /* Finally, we replace the old graph by the new one */
-move_SingleGraph(graph,&new_graph);
+move_SingleGraph(graph,&new_graph,NULL);
 }
 
 
@@ -1198,7 +1198,7 @@ u_fprintf(fst2,"f \n");
  * a state #x to a state #y, we have x<y. Note that the given automaton
  * must be an acyclic automaton.
  */
-void topological_sort(SingleGraph graph) {
+void topological_sort(SingleGraph graph,void(*free_elag_symbol)(symbol_t*)) {
 /* First, we compute for each state its number of incoming transitions */
 int* incoming=(int*)malloc(graph->number_of_states*sizeof(int));
 if (incoming==NULL) {
@@ -1260,7 +1260,7 @@ for (q=0;q<graph->number_of_states;q++) {
 }
 /* We free the previous state array */
 for (q=0;q<graph->number_of_states;q++) {
-   free_SingleGraphState(graph->states[q]);
+   free_SingleGraphState(graph->states[q],free_elag_symbol);
 }
 free(graph->states);
 graph->states=new_states;
@@ -1356,7 +1356,7 @@ if (max==NULL) {
 if (min==NULL) {
    min=&dumbmin;
 }
-topological_sort(graph);
+topological_sort(graph,NULL);
 /* We create and initialize a matrix to know, for each couple of state
  * (x,y) if there is a direct transition from x to y. */
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY

@@ -35,7 +35,7 @@
  * The color flavor of this implementation is dued to Eric Laporte.
  * 
  * Author: Eric Laporte
- * Cleaned and commented by S�bastien Paumier
+ * Cleaned and commented by Sébastien Paumier
  */
 
 void elag_minimize(SingleGraph,int level=0);

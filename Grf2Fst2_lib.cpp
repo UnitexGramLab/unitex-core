@@ -817,7 +817,7 @@ U_FILE* f=u_fopen_existing_versatile_encoding(infos->mask_encoding_compatibility
 if (f==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
-   free_SingleGraph(graph);
+   free_SingleGraph(graph,NULL);
    if (n==0) return 0;
    return 1;
 }
@@ -829,7 +829,7 @@ while ((c=u_fgetc(f))!=EOF && c!='#') {}
 if (c==EOF) {
    error("Invalid graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
-   free_SingleGraph(graph);
+   free_SingleGraph(graph,NULL);
    if (n==0) return 0;
    return 1;
 }
@@ -850,7 +850,7 @@ for (i=0;i<n_states;i++) {
    if (result==0) {
       /* In case of error, we dump the graph and return */
       write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
-      free_SingleGraph(graph);
+      free_SingleGraph(graph,NULL);
       u_fclose(f);
       if (n==1) return 0;
       return 1;
@@ -867,11 +867,11 @@ compute_reverse_transitions(graph);
 check_co_accessibility(graph->states,1);
 remove_epsilon_transitions(graph,1);
 check_accessibility(graph->states,0);
-remove_useless_states(graph);
+remove_useless_states(graph,NULL);
 if (graph->states[0]==NULL) {
    /* If the graph has been emptied */
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
-   free_SingleGraph(graph);
+   free_SingleGraph(graph,NULL);
    if (infos->no_empty_graph_warning) return 1;
    if (n==0) {
       error("ERROR: Main graph %S.grf has been emptied\n",infos->graph_names->value[n]);
@@ -884,7 +884,7 @@ if (graph->states[0]==NULL) {
 minimize(graph,0);
 /* And we save it */
 write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
-free_SingleGraph(graph);
+free_SingleGraph(graph,NULL);
 return 1;
 }
 

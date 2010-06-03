@@ -288,7 +288,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
    for (int i=0;i<original_number_of_tags;i++) {
       free_list_int(renumbering[i]);
    }
-   trim(g);
+   trim(g,NULL);
    if (g->number_of_states!=0) {
       minimize(g,1);
    }

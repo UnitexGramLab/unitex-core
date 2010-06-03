@@ -84,7 +84,7 @@ SingleGraph new_SingleGraph(int,TagType);
 SingleGraph new_SingleGraph(int);
 SingleGraph new_SingleGraph(TagType);
 SingleGraph new_SingleGraph();
-void free_SingleGraph(SingleGraph,void(*f)(symbol_t*)=NULL);
+void free_SingleGraph(SingleGraph,void(*f)(symbol_t*));
 
 int is_final_state(SingleGraphState);
 void set_final_state(SingleGraphState);
@@ -99,7 +99,7 @@ void set_co_accessible_state(SingleGraphState);
 void reset_accessibility_info(SingleGraphState);
 
 SingleGraphState new_SingleGraphState();
-void free_SingleGraphState(SingleGraphState,void (*free_elag_symbol)(symbol_t*)=NULL);
+void free_SingleGraphState(SingleGraphState,void (*free_elag_symbol)(symbol_t*));
 void add_outgoing_transition(SingleGraphState,int,int);
 void add_outgoing_transition(SingleGraphState,symbol_t*,int);
 void add_all_outgoing_transitions(SingleGraphState,symbol_t*,int);
@@ -108,20 +108,20 @@ int get_initial_state(SingleGraph);
 void set_state_array_capacity(SingleGraph,int);
 void resize(SingleGraph);
 SingleGraphState add_state(SingleGraph);
-void move_SingleGraph(SingleGraph,SingleGraph*,void (*free_elag_symbol)(symbol_t*)=NULL);
+void move_SingleGraph(SingleGraph,SingleGraph*,void (*free_elag_symbol)(symbol_t*));
 
 void compute_reverse_transitions(SingleGraph);
 void check_accessibility(SingleGraphState*,int);
 void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph,int);
-void remove_useless_states(SingleGraph,void (*free_elag_symbol)(symbol_t*)=NULL);
+void remove_useless_states(SingleGraph,void (*free_elag_symbol)(symbol_t*));
 void reverse(SingleGraph);
-SingleGraph clone(SingleGraph,symbol_t*(*clone_elag_symbol)(const symbol_t*)=NULL);
+SingleGraph clone(SingleGraph,symbol_t*(*clone_elag_symbol)(const symbol_t*));
 
-void trim(SingleGraph,void (*free_elag_symbol)(symbol_t*)=NULL);
+void trim(SingleGraph,void (*free_elag_symbol)(symbol_t*));
 void determinize(SingleGraph);
 void minimize(SingleGraph,int);
-void topological_sort(SingleGraph);
+void topological_sort(SingleGraph,void (*free_elag_symbol)(symbol_t*));
 void build_union(SingleGraph,SingleGraph);
 
 //SingleGraph get_subgraph(Fst2*,int);

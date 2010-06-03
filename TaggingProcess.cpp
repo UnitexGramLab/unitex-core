@@ -534,7 +534,7 @@ for(int i=state_sequence[1];i<=index;i=state_sequence[i]){
 free(trans_table);
 free(state_sequence);
 /* "trim" aims at deleting non accessible nodes */
-trim(graph);
+trim(graph,NULL);
 /* we return the new vector of tags of the pruned automata */
 return new_tags;
 }
@@ -546,7 +546,7 @@ return new_tags;
 vector_ptr* do_viterbi(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,Tfst* input_tfst,int form_type){
 SingleGraph automaton = input_tfst->automaton;
 int index_matrix = 2;
-topological_sort(automaton);
+topological_sort(automaton,NULL);
 compute_reverse_transitions(automaton);
 struct matrix_entry** matrix = initialize_viterbi_matrix(automaton,form_type);
 for(int i=0;i<automaton->number_of_states;i++){

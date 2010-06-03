@@ -943,7 +943,7 @@ if (we_must_clean) {
    /* If necessary, we apply the "good paths" heuristic */
    keep_best_paths(tfst->automaton,tmp_tags);
 }
-trim(tfst->automaton);
+trim(tfst->automaton,NULL);
 if (tfst->automaton->number_of_states==0) {
    /* Case 1: the automaton has been emptied because of the tagset filtering */
    error("Sentence %d is empty\n",tfst->current_sentence);

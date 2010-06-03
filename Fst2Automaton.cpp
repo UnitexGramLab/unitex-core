@@ -49,11 +49,20 @@ return aut;
  * Frees all the memory associated to the given automaton, except
  * the symbols.
  */
-void free_Fst2Automaton(Fst2Automaton* A) {
+void free_Fst2Automaton(Fst2Automaton* A,void (*free_elag_symbol)(symbol_t*)) {
 if (A==NULL) return;
 if (A->name!=NULL) free(A->name);
-free_SingleGraph(A->automaton);
+free_SingleGraph(A->automaton,free_elag_symbol);
 free(A);
+}
+
+
+void free_Fst2Automaton_excluding_symbols(Fst2Automaton* A) {
+free_Fst2Automaton(A,NULL);
+}
+
+void free_Fst2Automaton_including_symbols(Fst2Automaton* A) {
+free_Fst2Automaton(A,free_symbol);
 }
 
 
