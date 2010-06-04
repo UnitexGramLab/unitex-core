@@ -94,7 +94,7 @@ if (argc==1) {
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
-int is_korean;
+int is_korean=0;
 MultiFlex_ctx* p_multiFlex_ctx;
 //Current language's alphabet
 Alphabet* alph=NULL;
