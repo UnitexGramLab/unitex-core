@@ -288,6 +288,20 @@ state->outgoing_transitions=new_Transition(label,state_number,state->outgoing_tr
 
 
 /**
+ * Creates and adds an outgoing transition to the given state. No test
+ * is performs to check whether the transition already exists.
+ * Note that it is the responsability to the caller to deal with
+ * the corresponding reverted incoming transition, if needed.
+ *
+ * The diffetence with 'add_outgoing_transition' is that this one does not make
+ * a copy of the given symbol.
+ */
+void add_outgoing_transition_no_dup(SingleGraphState state,symbol_t* label,int state_number) {
+state->outgoing_transitions=new_Transition_no_dup(label,state_number,state->outgoing_transitions);
+}
+
+
+/**
  * Creates and adds an incoming transition into the given state. No test
  * is performs to check whether the transition already exists.
  * Note that it is the responsability to the caller to deal with
@@ -1466,7 +1480,9 @@ for (q=0;q<B->number_of_states;q++) {
    int def=B->states[q]->default_state;
    A->states[shift+q]->default_state=(def!=-1)?(shift+def):-1;
 }
-/* We free B */
+/* We free B, but not its symbols if any, because they are now part of A. Note
+ * that it should make no difference since all B's states have now no transitions, but
+ * it seems safe to explain it */
 free_SingleGraph(B,NULL);
 }
 

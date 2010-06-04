@@ -67,7 +67,7 @@ return transition;
 /**
  * The same than above, except that it does not duplicate the given symbol.
  */
-Transition* new_Transition_no_copy(symbol_t* label,int state_number,Transition* next,Abstract_allocator prv_alloc) {
+Transition* new_Transition_no_dup(symbol_t* label,int state_number,Transition* next,Abstract_allocator prv_alloc) {
 Transition* transition;
 transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {

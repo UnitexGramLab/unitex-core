@@ -102,6 +102,7 @@ SingleGraphState new_SingleGraphState();
 void free_SingleGraphState(SingleGraphState,void (*free_elag_symbol)(symbol_t*));
 void add_outgoing_transition(SingleGraphState,int,int);
 void add_outgoing_transition(SingleGraphState,symbol_t*,int);
+void add_outgoing_transition_no_dup(SingleGraphState,symbol_t*,int);
 void add_all_outgoing_transitions(SingleGraphState,symbol_t*,int);
 struct list_int* get_initial_states(SingleGraph);
 int get_initial_state(SingleGraph);

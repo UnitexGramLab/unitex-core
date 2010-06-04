@@ -37,7 +37,7 @@ if (aut==NULL) {
 }
 aut->name=u_strdup(name);
 if (size>=0) {
-   aut->automaton=new_SingleGraph(size);
+   aut->automaton=new_SingleGraph(size,PTR_TAGS);
 } else {
    aut->automaton=NULL;
 }

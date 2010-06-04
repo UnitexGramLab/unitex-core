@@ -32,13 +32,13 @@
  * for by ELAG programs.
  */
 typedef struct {
-   /* The name of the automaton. For a text .fst2, it will
-    * be the original sentence. For a grammar, it will be the
+   /* For a grammar, it will be the
     * name of the subgraph. */
    unichar* name;
 
-   /* The automaton itself */
+   /* The automaton itself, with the PTR_TAGS type */
    SingleGraph automaton;
+
 } Fst2Automaton;
 
 

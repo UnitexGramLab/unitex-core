@@ -371,7 +371,7 @@ while (trans!=NULL) {
    }
    symbol_t* symbol=trans->label;
    if (symbol->next!=NULL) {
-      trans->next=new_Transition_no_copy(symbol->next,trans->state_number,trans->next);
+      trans->next=new_Transition_no_dup(symbol->next,trans->state_number,trans->next);
       symbol->next=NULL;
    }
    trans=trans->next;

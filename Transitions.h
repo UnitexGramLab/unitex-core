@@ -72,7 +72,7 @@ typedef struct transition_ Transition;
 Transition* new_Transition(int,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 Transition* new_Transition(int,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 Transition* new_Transition(symbol_t*,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-Transition* new_Transition_no_copy(symbol_t*,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Transition* new_Transition_no_dup(symbol_t*,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 Transition* new_Transition(symbol_t*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Transition_list(Transition*,void(*)(symbol_t*),Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Transition_list(Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);

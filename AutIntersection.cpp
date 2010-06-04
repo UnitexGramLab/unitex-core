@@ -94,9 +94,6 @@ while (transA!=NULL) {
       /* If there is such a transition, we merge A and B's transitions */
       destination=intersect_states_grammar_grammar(language,res,A,transa->state_number,B,transb->state_number,renumber);
       add_outgoing_transition(res->states[q],transa->label,destination);
-      /* We NULL transa so that we can free transa without affecting
-       * the transition we have just added to q */
-      transa->label=NULL;
       /* And we can free B's one */
       free_Transition(transb,free_symbol);
    } else {
@@ -105,8 +102,6 @@ while (transA!=NULL) {
          /* ...it can match however with B's default transition, if any */
          destination=intersect_states_grammar_grammar(language,res,A,transa->state_number,B,B->states[q2]->default_state,renumber);
          add_outgoing_transition(res->states[q],transa->label,destination);
-         /* See above */
-         transa->label=NULL;
       }
    }
    /* We don't need transa anymore */
@@ -120,8 +115,6 @@ if (A->states[q1]->default_state!=-1) {
       transB=transB->next;
       destination=intersect_states_grammar_grammar(language,res,A,A->states[q1]->default_state,B,transb->state_number,renumber);
       add_outgoing_transition(res->states[q],transb->label,destination);
-      /* See above */
-      transb->label=NULL;
       free_Transition(transb,free_symbol);
    }
    if (B->states[q2]->default_state!=-1) {

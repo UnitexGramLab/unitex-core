@@ -77,7 +77,7 @@ symbol_t res;
 res.next=NULL;
 symbol_t* end=&res;
 for (i=0;i<language->POSs->size;i++) {
-   concat_symbols(end,POS[i],&end);
+   concat_symbols(end,POS[i],NULL);
 }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 free(POS);
@@ -112,6 +112,9 @@ for (int q=0;q<A->number_of_states;q++) {
           * we replace it by a list of transitions, each one of them
           * tagged with a single symbol */
          flatten_transition(A->states[q]->outgoing_transitions);
+         /* Important to use free_symbols and not free_symbol, because
+          * s represents a symbol list */
+         free_symbols(s);
       }
    }
 }

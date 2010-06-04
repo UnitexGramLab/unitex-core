@@ -76,11 +76,12 @@ while (*s!='\0') {
  */
 void prefix_with_everything(SingleGraph A) {
 struct list_int* list=get_initial_states(A);
+struct list_int* tmp=list;
 while (list!=NULL) {
-   add_outgoing_transition(A->states[list->n],new_symbol(S_LEXIC,-1),list->n);
+   add_outgoing_transition_no_dup(A->states[list->n],new_symbol(S_LEXIC,-1),list->n);
    list=list->next;
 }
-free_list_int(list);
+free_list_int(tmp);
 }
 
 
@@ -95,9 +96,9 @@ for (int i=0;i<A->number_of_states;i++) {
        * its transitions, since the Kleene star transition will
        * include them. We use NULL since we don't want to NULL the
        * symbols that tag transitions, because these symbols can be shared */
-      free_Transition_list(A->states[i]->outgoing_transitions);
+      free_Transition_list(A->states[i]->outgoing_transitions,free_symbol);
       A->states[i]->outgoing_transitions=NULL;
-      add_outgoing_transition(A->states[i],new_symbol(S_LEXIC,-1),i);
+      add_outgoing_transition_no_dup(A->states[i],new_symbol(S_LEXIC,-1),i);
     }
   }
 }
@@ -138,10 +139,11 @@ void free_elRule(elRule* rule) {
 if (rule==NULL) return;
 if (rule->name!=NULL) free(rule->name);
 for (int i=0;i<rule->nbContexts;i++) {
-   free_SingleGraph(rule->contexts[i].right,NULL);
-   free_SingleGraph(rule->contexts[i].left,NULL);
+   free_SingleGraph(rule->contexts[i].right,free_symbol);
+   free_SingleGraph(rule->contexts[i].left,free_symbol);
 }
 free(rule->contexts);
+free_Fst2Automaton(rule->automaton,free_symbol);
 free(rule);
 }
 
@@ -157,29 +159,29 @@ u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->n
  * transitions tagged with symbol_t* and not integers */
 for (int c=0;c<rule->nbContexts;c++) {
    //convert_transitions_to_elag_ones(rule->contexts[c].left);
-   elag_determinize(language,rule->contexts[c].left,NULL);
-   trim(rule->contexts[c].left,NULL);
+   elag_determinize(language,rule->contexts[c].left,free_symbol);
+   trim(rule->contexts[c].left,free_symbol);
    //convert_transitions_to_elag_ones(rule->contexts[c].right);
-   elag_determinize(language,rule->contexts[c].right,NULL);
-   trim(rule->contexts[c].right,NULL);
+   elag_determinize(language,rule->contexts[c].right,free_symbol);
+   trim(rule->contexts[c].right,free_symbol);
 }
 /* We build A*.R1 */
 prefix_with_everything(rule->contexts[0].left);
 //u_printf("------------- anything_R1 -------------\n");
 //print_graph(rule->contexts[0].left);
-elag_determinize(language,rule->contexts[0].left,NULL);
+elag_determinize(language,rule->contexts[0].left,free_symbol);
 //print_graph(rule->contexts[0].left);
 elag_minimize(rule->contexts[0].left);
 SingleGraph anything_R1=rule->contexts[0].left;
 /* and R2.A* */
 suffix_with_everything(rule->contexts[0].right);
-elag_determinize(language,rule->contexts[0].right,NULL);
+elag_determinize(language,rule->contexts[0].right,free_symbol);
 elag_minimize(rule->contexts[0].right);
 SingleGraph R2_anything=rule->contexts[0].right;
 /* We compute the number of constraint combinations */
 int p=((rule->nbContexts-1)>=0) ? ((int)(1 << (rule->nbContexts-1))) : 0;
 /* We allocate the resulting automaton */
-SingleGraph result=new_SingleGraph();
+SingleGraph result=new_SingleGraph(PTR_TAGS);
 
 
 for (int ens=0;ens<p;ens++) {
@@ -188,7 +190,7 @@ for (int ens=0;ens<p;ens++) {
    SingleGraph a1=combine_constraints(rule,ens,anything_R1,R2_anything,language);
    /* And we make the union of it with the current automaton */
    build_union(result,a1);
-   elag_determinize(language,result,NULL);
+   elag_determinize(language,result,free_symbol);
    elag_minimize(result);
 }
 /* Finally, we take the complement of the automaton that rejects wrong paths.
@@ -203,7 +205,7 @@ elag_complementation(language,result);
 //u_printf("------------- AFTER COMPL -------------\n");
 //print_graph(result);
 
-trim(result,NULL);
+trim(result,free_symbol);
 
 if (result->number_of_states==0) {
    error("Grammar %s forbids everything\n",rule->name);
@@ -232,7 +234,7 @@ if (A==NULL) {
 }
 free_elRule(rule);
 save_automaton(A,elg_file,encoding_output,bom_output,FST_GRAMMAR);
-free_Fst2Automaton(A,NULL);
+free_Fst2Automaton(A,free_symbol);
 return 0;
 }
 
@@ -362,8 +364,8 @@ return 0;
  * matching of the rule's context.
  */
 Fst2Automaton* make_locate_automaton(elRule* rule,language_t* language) {
-Fst2Automaton* res=new_Fst2Automaton(NULL);
-res->automaton=clone(rule->contexts[0].left,NULL);
+Fst2Automaton* res=new_Fst2Automaton(NULL,-1);
+res->automaton=clone(rule->contexts[0].left,dup_symbol);
 /* We concatenate the left and right contexts */
 elag_concat(language,res->automaton,rule->contexts[0].right);
 /* Then we add loops with ignorable POS on each state */
@@ -375,6 +377,7 @@ for (int i=0;i<language->POSs->size;i++) {
       for (int q=1;q<res->automaton->number_of_states;q++) {
          symbol_t* s=new_symbol_POS(PoS,-1);
          add_outgoing_transition(res->automaton->states[q],s,q);
+         free_symbol(s);
       }
    }
 }
@@ -416,10 +419,10 @@ for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t
          if (rule->contexts[0].left!=NULL) {
             fatal_error("Too much '<!>' tags\n",rule->name);
          }
-         rule->contexts[0].left=new_SingleGraph();
+         rule->contexts[0].left=new_SingleGraph(PTR_TAGS);
          /* We look for the end of the first part of the rule */
          endR1=get_sub_automaton(rule->automaton->automaton,rule->contexts[0].left,t->state_number,0,S_EXCLAM);
-         rule->contexts[0].right=new_SingleGraph();
+         rule->contexts[0].right=new_SingleGraph(PTR_TAGS);
          endR2=get_sub_automaton(rule->automaton->automaton,rule->contexts[0].right,endR1,0,S_EXCLAM);
          if (endR1==ELAG_UNDEFINED || endR2==ELAG_UNDEFINED
              || !is_final_state(rule->automaton->automaton->states[endR2])) {
@@ -433,9 +436,9 @@ for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t
             fatal_error("Non deterministic .fst2 file\n");
          }
          for (c=0;c<nbConstraints;c++) {
-            rule->contexts[c+1].left=new_SingleGraph();
+            rule->contexts[c+1].left=new_SingleGraph(PTR_TAGS);
             get_sub_automaton(rule->automaton->automaton,rule->contexts[c+1].left,t->state_number,1,constraints[c]);
-            rule->contexts[c+1].right=new_SingleGraph();
+            rule->contexts[c+1].right=new_SingleGraph(PTR_TAGS);
             endC2=get_sub_automaton(rule->automaton->automaton,rule->contexts[c+1].right,constraints[c],0,S_EQUAL);
             if (endC2==ELAG_UNDEFINED || !is_final_state(rule->automaton->automaton->states[endC2])) {
                fatal_error("split_elag_rule: %s: parse error in <=> part\n",rule->name);
@@ -456,7 +459,7 @@ strcat(buf,"-conc.fst2");
 /* We create the.fst2 to be used by Locate */
 Fst2Automaton* locate=make_locate_automaton(rule,language);
 save_automaton(locate,buf,encoding_output,bom_output,FST_LOCATE);
-free_Fst2Automaton(locate,NULL);
+free_Fst2Automaton(locate,free_symbol);
 }
 
 
@@ -593,7 +596,7 @@ for (Transition* t=src->states[current_state]->outgoing_transitions;t!=NULL;t=t-
          renumber[t->state_number]=aut_dest->number_of_states;
          add_state(aut_dest);
          SingleGraphState state=aut_dest->states[renumber[current_state]];
-         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+         add_outgoing_transition(state,t->label,renumber[t->state_number]);
          /* We copy recursively this part of 'aut_src' that we don't yet know */
          f=get_sub_automaton(src,aut_dest,t->state_number,delim,renumber);
          if (f!=ELAG_UNDEFINED) {
@@ -606,7 +609,7 @@ for (Transition* t=src->states[current_state]->outgoing_transitions;t!=NULL;t=t-
          /* If the state already exists, we just add a transition, because
           * there is no need to explore again the state. */
          SingleGraphState state=aut_dest->states[renumber[current_state]];
-         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+         add_outgoing_transition(state,t->label,renumber[t->state_number]);
       }
    }
 }
@@ -640,13 +643,13 @@ for (Transition* t=src->states[current_state]->outgoing_transitions;t!=NULL;t=t-
          renumber[t->state_number]=dest->number_of_states;
          add_state(dest);
          SingleGraphState state=dest->states[renumber[current_state]];
-         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+         add_outgoing_transition(state,t->label,renumber[t->state_number]);
          if (get_left_constraint_part(src,dest,t->state_number,final,renumber)) {
             found=1;
          }
       } else {
          SingleGraphState state=dest->states[renumber[current_state]];
-         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+         add_outgoing_transition(state,t->label,renumber[t->state_number]);
       }
    }
 }
@@ -662,56 +665,56 @@ SingleGraph combine_constraints(elRule* rule,int constraint_set,SingleGraph anyt
                                 SingleGraph R2_anything,language_t* language) {
 /* a1 will be the union of all the left parts of the constraints of the
  * given constraint set */
-SingleGraph a1=new_SingleGraph();
+SingleGraph a1=new_SingleGraph(PTR_TAGS);
 /* a2 will be the union of all the right parts of the constraints that
  * are not in the given constraint set */
-SingleGraph a2=new_SingleGraph();
+SingleGraph a2=new_SingleGraph(PTR_TAGS);
 /* dpc = pow(2,c-1) */
 for (int c=1,dpc=1;c<rule->nbContexts;c++,dpc=dpc<<1) {
    if (dpc & constraint_set) {
       /* If the cth bit of the constraint set is set to 1, then we must
        * add the cth constraint's left part to a1 */
-      build_union(a1,clone(rule->contexts[c].left,NULL));
-      elag_determinize(language,a1,NULL);
+      build_union(a1,clone(rule->contexts[c].left,dup_symbol));
+      elag_determinize(language,a1,free_symbol);
       elag_minimize(a1);
    } else {
       /* Otherwise, we add the cth constraint's right part to a2 */
-      build_union(a2,clone(rule->contexts[c].right,NULL));
-      elag_determinize(language,a2,NULL);
+      build_union(a2,clone(rule->contexts[c].right,dup_symbol));
+      elag_determinize(language,a2,free_symbol);
       elag_minimize(a2);
    }
 }
 
 prefix_with_everything(a1);
-elag_determinize(language,a1,NULL);
+elag_determinize(language,a1,free_symbol);
 elag_minimize(a1);
 elag_complementation(language,a1);
-trim(a1,NULL);
+trim(a1,free_symbol);
 SingleGraph tmp=a1;
 a1=elag_intersection(language,a1,anything_R1,GRAMMAR_GRAMMAR);
-free_SingleGraph(tmp,NULL);
-trim(a1,NULL);
+free_SingleGraph(tmp,free_symbol);
+trim(a1,free_symbol);
 elag_minimize(a1);
 
 suffix_with_everything(a2);
-elag_determinize(language,a2,NULL);
+elag_determinize(language,a2,free_symbol);
 elag_minimize(a2);
 elag_complementation(language,a2);
-trim(a2,NULL);
+trim(a2,free_symbol);
 tmp=a2;
 a2=elag_intersection(language,a2,R2_anything,GRAMMAR_GRAMMAR);
-free_SingleGraph(tmp,NULL);
-trim(a2,NULL);
+free_SingleGraph(tmp,free_symbol);
+trim(a2,free_symbol);
 elag_minimize(a2);
 elag_concat(language,a1,a2);
 
-free_SingleGraph(a2,NULL);
-trim(a1,NULL);
+free_SingleGraph(a2,free_symbol);
+trim(a1,free_symbol);
 //print_graph(a1);
-elag_determinize(language,a1,NULL);
+elag_determinize(language,a1,free_symbol);
 //print_graph(a1);
 
-trim(a1,NULL);
+trim(a1,free_symbol);
 elag_minimize(a1);
 return a1;
 }
