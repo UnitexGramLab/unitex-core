@@ -105,7 +105,7 @@ DEFFLAGS = -D_NOT_UNDER_WINDOWS
 #                                 -DBDB
 CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0 -pg
+CFLAGS += -g -O0
 else
 CFLAGS += -O3
 endif
