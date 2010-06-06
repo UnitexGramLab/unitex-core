@@ -106,6 +106,7 @@ DEFFLAGS = -D_NOT_UNDER_WINDOWS
 CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0
+UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 else
 CFLAGS += -O3
 endif

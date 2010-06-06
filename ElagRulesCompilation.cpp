@@ -345,7 +345,7 @@ if (res!=NULL) {
    free(res->name);
    res->name=u_strdup(ustr->str);
    save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
-   free_Fst2Automaton(res,NULL);
+   free_Fst2Automaton(res,free_symbol);
 }
 time_t end_time=time(0);
 u_fclose(frules);
