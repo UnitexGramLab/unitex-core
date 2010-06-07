@@ -142,6 +142,7 @@ if (strcmp(tmp_file,argv[vars->optind])) {
 free_OptVars(vars);
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
 free(dest_file);
+malloc(12);
 return result;
 }
 
