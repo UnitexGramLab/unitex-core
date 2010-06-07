@@ -1337,13 +1337,13 @@ if (number_of_paths[q1]!=-1) {
    return;
 }
 number_of_paths[q1]=0;
-min_path_length[q1]=INT_MAX;
+min_path_length[q1]=-1;
 max_path_length[q1]=0;
 for (Transition* t=graph->states[q1]->outgoing_transitions;t!=NULL;t=t->next) {
    count_paths(graph,t->state_number,q2,min_path_length,max_path_length,number_of_paths);
    number_of_paths[q1]=number_of_paths[q1]+number_of_paths[t->state_number];
    /* We use +1 because we must count the transition from q1 to t->state_number */
-   if ((min_path_length[t->state_number]+1)<min_path_length[q1]) {
+   if (min_path_length[q1]==-1 || (min_path_length[t->state_number]+1)<min_path_length[q1]) {
       min_path_length[q1]=min_path_length[t->state_number]+1;
    }
    if ((max_path_length[t->state_number]+1)>max_path_length[q1]) {
