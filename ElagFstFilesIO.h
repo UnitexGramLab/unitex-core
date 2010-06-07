@@ -88,20 +88,6 @@ typedef struct tfst_file_in_t {
    /* The language definition for the tfst's language */
    language_t* language;
 
-   /* This structure will contain all the symbols of the grammar */
-   struct string_hash_ptr* symbols;
-
-   /* This array is used to renumber tags that can have been made
-    * equivalent. For instance, when we load a text automaton, we can
-    * have different tags like "<comme,.CONJS+5>" and "<comme,.CONJS+8>".
-    * However, these tags will both be taken by TagsetNormFst2 as
-    * "<comme,.CONJS>", since semantic value "5" and "8" are not defined
-    * in the tagset file. So, at the time of loading the text .fst2,
-    * we will really load "<comme,.CONJS>" into 'symbols' and we will
-    * set renumber[i]=renumber[j]=x where i and j are the tag numbers for
-    * "<comme,.CONJS+5>" and "<comme,.CONJS+8>" in the original .fst2,
-    * and x is the index of "<comme,.CONJS>" in 'symbols->value'. */
-   int* renumber;
 } Elag_Tfst_file_in;
 
 

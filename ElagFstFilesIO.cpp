@@ -493,8 +493,6 @@ if (fstf==NULL) {
 }
 fstf->tfst=open_text_automaton(fname);
 fstf->language=language;
-fstf->symbols=NULL;
-fstf->renumber=NULL;
 return fstf;
 }
 
@@ -515,81 +513,41 @@ return t;
 
 
 
+
+
 /**
  * Loads the given sentence automaton and converts its transitions tagged with integers
  * into transitions tagged with symbol_t*
  */
 void load_tfst_sentence_automaton(Elag_Tfst_file_in* input,int n) {
 load_sentence(input->tfst,n);
-/* We free previously used fields */
-free_string_hash_ptr(input->symbols,(void(*)(void*))free_symbols);
-free(input->renumber);
-/* We convert the transitions. To do that, we first allocate the renumber array */
-int n_tags=0;
-int size=16;
-input->renumber=(int*)malloc(16*sizeof(int));
-if (input->renumber==NULL) {
-   fatal_alloc_error("load_tfst_sentence_automaton");
-}
-/* And we compute all the symbol_t* from the tags */
-input->symbols=new_string_hash_ptr(input->tfst->tags->size);
-Ustring* ustr=new_Ustring(256);
-Ustring* tmp_content=new_Ustring(256);
-for (int i=0;i<input->tfst->tags->nbelems;i++) {
-   TfstTag* tag=(TfstTag*)input->tfst->tags->tab[i];
-   symbol_t* symbol=load_text_symbol(input->language,tag->content,i);
-   /* If 'symbol' is NULL, then an error message has already
-    * been printed. Moreover, we want to associate NULL to the
-    * string, so that we don't exit the function. Whatever it is,
-    * we add the symbol to the symbols of the .fst2 */
-   int index;
-   unichar* content;
-   if (symbol!=NULL && u_strcmp(tag->content,"<E>")) {
-      /* We convert the symbol into a string in order to avoid
-       * duplicates after the normalization. For instance,
-       * "N+z2:ms" and "N+z3:ms" would become equivalent if "z2" and
-       * "z3" are optional codes. */
-      symbol_to_text_label(symbol,ustr);
-      content=ustr->str;
-   }
-   else {
-      content=tag->content;
-   }
-   /* We must take into account the positions in the original text. So,
-    * we build a string key that contains those positions. It has no side effect,
-    * since this key is used only here to check whether a given symbol already
-    * exists or not
-    */
-   Match m=tag->m;
-   u_sprintf(tmp_content,"%S\t%d.%d.%d-%d.%d.%d",content
-                        ,m.start_pos_in_token,m.start_pos_in_char,m.start_pos_in_letter
-                        ,m.end_pos_in_token,m.end_pos_in_char,m.end_pos_in_letter);
-   index=get_value_index(tmp_content->str,input->symbols,INSERT_IF_NEEDED,symbol);
-   if (n_tags==size && input->renumber!=NULL) {
-      /* If necessary, we double the size of the renumbering array */
-      size=size*2;
-      input->renumber=(int*)realloc(input->renumber,size*sizeof(int));
-      if (input->renumber==NULL) {
-         fatal_alloc_error("load_tfst_sentence_automaton");
-      }
-   }
-   input->renumber[n_tags++]=index;
-}
-free_Ustring(ustr);
-free_Ustring(tmp_content);
-/* Now, we must replace integer transitions by symbol transitions */
+/* We must replace integer transitions by symbol transitions */
 for (int i=0;i<input->tfst->automaton->number_of_states;i++) {
    SingleGraphState state=input->tfst->automaton->states[i];
    Transition* t=state->outgoing_transitions;
    while (t!=NULL) {
-      t->label=(symbol_t*)input->symbols->value[input->renumber[t->tag_number]];
+	   /* We constructs the symbol list corresponding to the transition tag number */
+	  TfstTag* tag=(TfstTag*)input->tfst->tags->tab[t->tag_number];
+	  symbol_t* symbols=load_text_symbol(input->language,tag->content,t->tag_number);
+	  t->label=symbols;
+	  /* And we replace a single transition with a symbol list by several transitions
+	   * with one symbol each */
+	  if (t->label!=NULL) {
+		  while (t->label->next!=NULL) {
+			  Transition* foo=new_Transition_no_dup(t->label->next,t->state_number,t->next);
+			  t->label->next=NULL;
+			  t->next=foo;
+			  t=t->next;
+		  }
+	  }
       t=t->next;
    }
    state->outgoing_transitions=filter_NULL_symbols(state->outgoing_transitions);
 }
-/* We must indicate that now we deal a pointer tags */
+/* Finally, we must indicate that now we deal a pointer tags */
 input->tfst->automaton->tag_type=PTR_TAGS;
 }
+
 
 
 /**
@@ -600,7 +558,5 @@ if (fstf==NULL) return;
 close_text_automaton(fstf->tfst);
 /* We MUST NOT free the language since we have not allocated it in load_tfst_file */
 //free_language_t(fstf->language);
-free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
-if (fstf->renumber!=NULL) free(fstf->renumber);
 free(fstf);
 }

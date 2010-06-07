@@ -1370,7 +1370,7 @@ if (max==NULL) {
 if (min==NULL) {
    min=&dumbmin;
 }
-topological_sort(graph,NULL);
+topological_sort(graph,free_symbol);
 /* We create and initialize a matrix to know, for each couple of state
  * (x,y) if there is a direct transition from x to y. */
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY

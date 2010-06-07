@@ -998,6 +998,9 @@ if (entry->n_inflectional_codes==0) {
    return symbol;
 }
 model=symbol;
+if (model->next!=NULL) {
+	fatal_error("load_dic_entry: symbol list should not happen\n");
+}
 symbol=NULL;
 for (i=0;i<entry->n_inflectional_codes;i++) {
    symbol_t* tmp=dup_symbol(model);

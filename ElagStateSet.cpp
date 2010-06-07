@@ -153,7 +153,7 @@ TRANS_t* T=(TRANS_t*)malloc(sizeof(TRANS_t));
 if (T==NULL) {
    fatal_alloc_error("new_TRANS_t");
 }
-T->label=s;
+T->label=dup_symbol(s);
 T->destination=new_state_set();
 T->next=next;
 return T;
@@ -168,6 +168,7 @@ return T;
 void free_TRANS_t(TRANS_t* T) {
 if (T==NULL) return;
 free_state_set(T->destination);
+free_symbol(T->label);
 free(T);
 }
 

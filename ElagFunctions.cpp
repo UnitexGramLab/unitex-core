@@ -83,7 +83,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
-      elag_determinize(language,tfst->automaton,NULL);
+      elag_determinize(language,tfst->automaton,free_symbol);
       elag_minimize(tfst->automaton);
       int is_rejected=0;
       if (current_sentence % 100 == 0) {
@@ -93,7 +93,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          /* If the sentence is empty, we replace the sentence automaton
           * by a 1-state automaton with no transition. */
     	 error("Sentence %d is empty\n",current_sentence);
-         free_SingleGraph(tfst->automaton,NULL);
+         free_SingleGraph(tfst->automaton,free_symbol);
          tfst->automaton=new_SingleGraph(1,PTR_TAGS);
          SingleGraphState initial_state=add_state(tfst->automaton);
          set_initial_state(initial_state);
@@ -107,28 +107,29 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          if (tfst->automaton->number_of_states<2) {
             error("Sentence %d is empty\n",current_sentence) ;
          } else {
-            for (int j=0;j< gramms->nbelems;j++) {
+            for (int j=0;j<gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
                SingleGraph temp=elag_intersection(language,tfst->automaton,grammar->automaton,TEXT_GRAMMAR);
-               trim(temp,NULL);
-               free_SingleGraph(tfst->automaton,NULL);
+               trim(temp,free_symbol);
+               free_SingleGraph(tfst->automaton,free_symbol);
                tfst->automaton=temp;
                if (tfst->automaton->number_of_states<2) {
                   /* If the sentence has been rejected by the grammar */
                   error("Sentence %d rejected\n\n",current_sentence);
                   j=gramms->nbelems; /* We don't go on intersecting with other grammars */
                   n_rejected_sentences++;
-                  free_SingleGraph(tfst->automaton,NULL);
+                  free_SingleGraph(tfst->automaton,free_symbol);
                   tfst->automaton=new_SingleGraph(1,PTR_TAGS);
                   SingleGraphState initial_state=add_state(tfst->automaton);
                   set_initial_state(initial_state);
                   is_rejected=1;
+                  break;
                }
             }
          }
          if (!is_rejected) {
-            elag_determinize(language,tfst->automaton,NULL);
-            trim(tfst->automaton,NULL);
+            elag_determinize(language,tfst->automaton,free_symbol);
+            trim(tfst->automaton,free_symbol);
             elag_minimize(tfst->automaton);
             remove_sentence_delimiters(tfst,language);
             after = evaluate_ambiguity(tfst->automaton,&min,&max);
@@ -139,6 +140,8 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
       vector_ptr* new_tags=convert_elag_symbols_to_tfst_tags(input);
       save_current_sentence(input->tfst,output_tfst,output_tind,(unichar**)new_tags->tab,new_tags->nbelems);
       free_vector_ptr(new_tags,free);
+      free_SingleGraph(tfst->automaton,NULL);
+      tfst->automaton=NULL;
    }
    u_printf("\n");
    int N=input->tfst->N;
@@ -331,7 +334,7 @@ if (list->state_number==n) {
    (*flag)=1;
    Transition* tmp=list->next;
    list->next=NULL;
-   free_Transition(list);
+   free_Transition(list,free_symbol);
    return tmp;
 }
 list->next=remove_transition_to_state(n,list->next,flag);
@@ -343,7 +346,7 @@ return list;
  * Removes the {S} delimiters previously added by add_sentence_delimiters.
  */
 static void remove_sentence_delimiters(Tfst* tfst,language_t* language) {
-topological_sort(tfst->automaton,NULL);
+topological_sort(tfst->automaton,free_symbol);
 if (tfst->automaton->number_of_states<4 || get_initial_state(tfst->automaton)!=0
     || tfst->automaton->states[0]->outgoing_transitions==NULL
     || tfst->automaton->states[0]->outgoing_transitions->next!=NULL
@@ -362,7 +365,7 @@ if (u_strcmp(language_get_form(language,tfst->automaton->states[0]->outgoing_tra
 #pragma message("warning : we could do the same at a lower cost by shifting the 1->N-2 states to 0->N-3")
 #endif
 unset_initial_state(tfst->automaton->states[0]);
-free_Transition_list(tfst->automaton->states[0]->outgoing_transitions);
+free_Transition_list(tfst->automaton->states[0]->outgoing_transitions,free_symbol);
 tfst->automaton->states[0]->outgoing_transitions=NULL;
 set_initial_state(tfst->automaton->states[1]);
 int final_state_index=tfst->automaton->number_of_states-1;
@@ -375,8 +378,8 @@ for (int q=1;q<final_state_index;q++) {
    }
 }
 unset_final_state(tfst->automaton->states[final_state_index]);
-trim(tfst->automaton,NULL);
-topological_sort(tfst->automaton,NULL);
+trim(tfst->automaton,free_symbol);
+topological_sort(tfst->automaton,free_symbol);
 }
 
 
@@ -438,6 +441,7 @@ for (int i=0;i<automaton->number_of_states;i++) {
       symbol_to_tfst_tag(symbol,original_tag,foo_tag,foo_content,tmp);
       t->tag_number=insert_tag(tags,tmp);
       t=t->next;
+      free_symbol(symbol);
    }
 }
 free_Ustring(foo_content);

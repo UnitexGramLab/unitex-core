@@ -63,8 +63,10 @@ for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) 
          /* If we have to create a new state in the result automaton */
          index=state_set_array_add(ARRAY,T->destination);
       }
-      //add_outgoing_transition(q,T->label,index);
-      add_all_outgoing_transitions(q,T->label,index);
+      if (T->label->next!=NULL) {
+    	  fatal_error("elag_determinize: symbol list error should not happen\n");
+      }
+      add_outgoing_transition(q,T->label,index);
    }
    if (Q->default_transition!=NULL && Q->default_transition->size!=0) {
       /* We deal with the default transition, if any */
