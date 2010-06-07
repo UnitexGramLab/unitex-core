@@ -79,9 +79,6 @@ if (argc==1) {
 	usage();
 	return 0;
 }
-argv[150]="jkhkuh";
-return 0;
-
 int mode=KEEP_CARRIAGE_RETURN;
 char rules[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -144,6 +141,7 @@ if (strcmp(tmp_file,argv[vars->optind])) {
 }
 free_OptVars(vars);
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
+free(dest_file);
 return result;
 }
 
