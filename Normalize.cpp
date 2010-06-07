@@ -79,6 +79,7 @@ if (argc==1) {
 	usage();
 	return 0;
 }
+argv[150]="jkhkuh";
 return 0;
 
 int mode=KEEP_CARRIAGE_RETURN;
