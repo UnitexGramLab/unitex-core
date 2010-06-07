@@ -89,6 +89,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
       if (current_sentence % 100 == 0) {
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);
       }
+      u_printf("Sentence %d\n",current_sentence);
       if (tfst->automaton->number_of_states<2) {
          /* If the sentence is empty, we replace the sentence automaton
           * by a 1-state automaton with no transition. */

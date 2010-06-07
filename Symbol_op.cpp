@@ -621,7 +621,7 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
 
   if (a->type == S_LEXIC) { return false; }
 
-  if (a->POS != b->POS) { return false;; }
+  if (a->POS != b->POS) { return false; }
 
   bool res =  false;
 

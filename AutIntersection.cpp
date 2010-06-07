@@ -135,6 +135,9 @@ return q;
  * Returns the index of the corresponding state in the result
  * automaton. This function is supposed to be used when we
  * intersect an elag grammar with a sentence automaton.
+ *
+ * A is the text
+ * B is the grammar
  */
 int intersect_states_text_grammar(SingleGraph res,const SingleGraph A,int q1,
                      const SingleGraph B,int q2,int** renumber) {
@@ -158,7 +161,7 @@ for (Transition* transA=A->states[q1]->outgoing_transitions;transA!=NULL;transA=
    int found=0;
    for (Transition* transB=B->states[q2]->outgoing_transitions;transB!=NULL;transB=transB->next) {
       if (symbol_in_symbol(transA->label,transB->label)) {
-         if (found) {
+     	 if (found) {
             fatal_error("intersect_states_text_grammar: non deterministic automaton\n");
          }
          found=1;
