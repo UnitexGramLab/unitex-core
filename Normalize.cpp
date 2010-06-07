@@ -79,7 +79,7 @@ if (argc==1) {
 	usage();
 	return 0;
 }
-
+return 0;
 
 int mode=KEEP_CARRIAGE_RETURN;
 char rules[FILENAME_MAX]="";
