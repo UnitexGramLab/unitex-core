@@ -20,6 +20,8 @@
  */
 
 #include "Arabic.h"
+#include "String_hash.h"
+#include "Error.h"
 
 
 unichar to_buckwalter(unichar c) {
@@ -146,5 +148,58 @@ case AR_YEH:
 case AR_ALEF_WASLA:	return 1;
 default: return 0;
 }
+}
 
+
+/**
+ * Returns 1 if the rule name is in the hash with the value "YES"; 0 otherwise.
+ */
+static unsigned int test(struct string_hash* h,const char* rule_name) {
+unichar key[128];
+u_strcpy(key,rule_name);
+int i=get_value_index(key,h,DONT_INSERT);
+if (i==-1 || u_strcmp(h->value[i],"YES")) return 0;
+return 1;
+}
+
+
+/**
+ * Loads the rule configuration file. Returns 1 in case of success; 0 otherwise.
+ * "YES" value means 1, any other value means 0;
+ */
+int load_arabic_typo_rules(char* name,ArabicTypoRules *rules) {
+if (name==NULL) {
+	fatal_error("NULL arabic rule configuration file name!\n");
+}
+if (rules==NULL) {
+	fatal_error("Unexpected NULL pointer in load_arabic_typo_rules\n");
+}
+struct string_hash* h=load_key_value_list(name,DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,'=');
+if (h==NULL) return 0;
+(*rules).fatha_omission=test(h,FATHA_OMISSION);
+(*rules).damma_omission=test(h,DAMMA_OMISSION);
+(*rules).kasra_omission=test(h,KASRA_OMISSION);
+(*rules).sukun_omission=test(h,SUKUN_OMISSION);
+(*rules).superscript_alef_omission=test(h,SUPERSCRIPT_ALEF_OMISSION);
+(*rules).fathatan_omission_at_end=test(h,FATHATAN_OMISSION_AT_END);
+(*rules).dammatan_omission_at_end=test(h,DAMMATAN_OMISSION_AT_END);
+(*rules).kasratan_omission_at_end=test(h,KASRATAN_OMISSION_AT_END);
+(*rules).shadda_fatha_omission_at_end=test(h,SHADDA_FATHA_OMISSION_AT_END);
+(*rules).shadda_damma_omission_at_end=test(h,SHADDA_DAMMA_OMISSION_AT_END);
+(*rules).shadda_kasra_omission_at_end=test(h,SHADDA_KASRA_OMISSION_AT_END);
+(*rules).shadda_fathatan_omission_at_end=test(h,SHADDA_FATHATAN_OMISSION_AT_END);
+(*rules).shadda_dammatan_omission_at_end=test(h,SHADDA_DAMMATAN_OMISSION_AT_END);
+(*rules).shadda_kasratan_omission_at_end=test(h,SHADDA_KASRATAN_OMISSION_AT_END);
+(*rules).shadda_fatha_omission=test(h,SHADDA_FATHA_OMISSION);
+(*rules).shadda_damma_omission=test(h,SHADDA_DAMMA_OMISSION);
+(*rules).shadda_kasra_omission=test(h,SHADDA_KASRA_OMISSION);
+(*rules).shadda_superscript_alef_omission=test(h,SHADDA_SUPERSCRIPT_ALEF_OMISSION);
+(*rules).solar_assimilation=test(h,SOLAR_ASSIMILATION);
+(*rules).lunar_assimilation=test(h,LUNAR_ASSIMILATION);
+(*rules).al_with_wasla=test(h,AL_WITH_WASLA);
+(*rules).alef_hamza_above_O=test(h,ALEF_HAMZA_ABOVE_O);
+(*rules).alef_hamza_below_I_to_A=test(h,ALEF_HAMZA_BELOW_I_TO_A);
+(*rules).alef_hamza_below_I_to_L=test(h,ALEF_HAMZA_BELOW_I_TO_L);
+free_string_hash(h);
+return 1;
 }

@@ -24,6 +24,12 @@
 
 #include "Unicode.h"
 
+/* This macro is for debug only. You should not use it unless you are me. SP */
+#define AR_WORK_ON_TRANSLITERATED_FORMS
+
+
+#ifndef AR_WORK_ON_TRANSLITERATED_FORMS
+
 /* Plain letters */
 #define AR_HAMZA 						0x0621
 #define AR_ALEF_WITH_MADDA_ABOVE 		0x0622
@@ -75,6 +81,61 @@
 /* Hamza variant */
 #define AR_ALEF_WASLA					0x0671
 
+#else
+/* Here are the Buckwalter++ transliterated forms */
+#define AR_HAMZA 						'c'
+#define AR_ALEF_WITH_MADDA_ABOVE 		'C'
+#define AR_ALEF_WITH_HAMZA_ABOVE 		'O'
+#define AR_WAW_WITH_HAMZA_ABOVE 		'W'
+#define AR_ALEF_WITH_HAMZA_BELOW 		'I'
+#define AR_YEH_WITH_HAMZA_ABOVE 		'e'
+#define AR_ALEF 						'A'
+#define AR_BEH 						 	'b'
+#define AR_TEH_MARBUTA 					'p'
+#define AR_TEH 							't'
+#define AR_THEH 						'v'
+#define AR_JEEM 						'j'
+#define AR_HAH 							'H'
+#define AR_KHAH 						'x'
+#define AR_DAL 							'd'
+#define AR_THAL							'J'
+#define AR_REH 							'r'
+#define AR_ZAIN							'z'
+#define AR_SEEN 						's'
+#define AR_SHEEN 						'M'
+#define AR_SAD	 						'S'
+#define AR_DAD	 						'D'
+#define AR_TAH	 						'T'
+#define AR_ZAH	 						'Z'
+#define AR_AIN	 						'E'
+#define AR_GHAIN						'g'
+#define AR_TATWEEL 						'_'
+#define AR_FEH	 						'f'
+#define AR_QAF	 						'q'
+#define AR_KAF	 						'k'
+#define AR_LAM	 						'l'
+#define AR_MEEM	 						'm'
+#define AR_NOON	 						'n'
+#define AR_HEH	 						'h'
+#define AR_WAW	 						'w'
+#define AR_ALEF_MAQSURA					'Y'
+#define AR_YEH	 						'y'
+/* Diacritics */
+#define AR_FATHATAN						'F'
+#define AR_DAMMATAN						'N'
+#define AR_KASRATAN						'K'
+#define AR_FATHA						'a'
+#define AR_DAMMA						'u'
+#define AR_KASRA						'i'
+#define AR_SHADDA						'U'
+#define AR_SUKUN						'o'
+#define AR_SUPERSCRIPT_ALEF				'R'
+/* Hamza variant */
+#define AR_ALEF_WASLA					'L'
+
+#endif
+
+
 
 /* Replacement rules for one diacritic that can be omitted regardless
  * its position in the token */
@@ -110,11 +171,11 @@
 #define LUNAR_ASSIMILATION "lunar assimilation"
 /* Al special rule: it can be written Ll (alef -> alef wasla) */
 #define AL_WITH_WASLA "Al with wasla"
-/* An initial alif hamza above O may be written A */
-#define ALIF_HAMZA_ABOVE_O "alif hamza above O"
-/* An initial alif hamza below I may be written A or L */
-#define ALIF_HAMZA_BELOW_I_TO_A "alif hamza below I to A"
-#define ALIF_HAMZA_BELOW_I_TO_L "alif hamza below I to L"
+/* An initial alef hamza above O may be written A */
+#define ALEF_HAMZA_ABOVE_O "alef hamza above O"
+/* An initial alef hamza below I may be written A or L */
+#define ALEF_HAMZA_BELOW_I_TO_A "alef hamza below I to A"
+#define ALEF_HAMZA_BELOW_I_TO_L "alef hamza below I to L"
 /* There is also an extra rule that always applies: tatweel in
  * the text can be ignored if not present in the dictionary */
 
@@ -128,13 +189,13 @@ typedef struct {
 	unsigned int sukun_omission: 1;
 	unsigned int superscript_alef_omission: 1;
 	unsigned int fathatan_omission_at_end: 1;
-	unsigned int dammhatan_omission_at_end: 1;
+	unsigned int dammatan_omission_at_end: 1;
 	unsigned int kasratan_omission_at_end: 1;
 	unsigned int shadda_fatha_omission_at_end: 1;
 	unsigned int shadda_damma_omission_at_end: 1;
 	unsigned int shadda_kasra_omission_at_end: 1;
 	unsigned int shadda_fathatan_omission_at_end: 1;
-	unsigned int shadda_dammhatan_omission_at_end: 1;
+	unsigned int shadda_dammatan_omission_at_end: 1;
 	unsigned int shadda_kasratan_omission_at_end: 1;
 	unsigned int shadda_fatha_omission: 1;
 	unsigned int shadda_damma_omission: 1;
@@ -153,5 +214,7 @@ unichar to_buckwalter(unichar);
 unichar to_buckwalter_plusplus(unichar);
 int is_solar(unichar);
 int is_lunar(unichar);
+int load_arabic_typo_rules(char* f,ArabicTypoRules *rules);
+
 
 #endif

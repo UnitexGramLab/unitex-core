@@ -346,7 +346,8 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o\
-				HTMLCharacters.o AsciiSearchTree.o getopt.o Arabic.o $(SYSLIBMAPPED)
+				HTMLCharacters.o AsciiSearchTree.o getopt.o Arabic.o String_hash.o StringParsing.o\
+				$(SYSLIBMAPPED)
 
 DICO      = Dico
 DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
