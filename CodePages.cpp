@@ -24,6 +24,7 @@
 #include "CodePages.h"
 #include "HTMLCharacters.h"
 #include "Error.h"
+#include "Arabic.h"
 
 
 /**
@@ -813,6 +814,17 @@ for (i=0;i<256;i++) {
 }
 
 
+
+int u_fputc_buckwalter(unichar c,ABSTRACTFILE* f) {
+return u_fputc_UTF16LE_raw(to_buckwalter(c),f);
+}
+
+
+int u_fputc_buckwalter_plusplus(unichar c,ABSTRACTFILE* f) {
+return u_fputc_UTF16LE_raw(to_buckwalter_plusplus(c),f);
+}
+
+
 void usage_windows_1252() {
 u_printf("Microsoft Windows Codepage 1252 - Latin I (Western Europe & USA)\n");
 u_printf("  Supported Languages :\n");
@@ -1107,6 +1119,15 @@ u_printf("This encoding doesn't requires that the 2 first bytes of a file are FE
 u_printf("Bytes are encoded in the big endian order, that is to say higher\n");
 u_printf("byte first.\n");
 }
+
+void usage_buckwalter() {
+u_printf("UTF16 Little-Endian Buckwalter transliteration\n");
+}
+
+void usage_buckwalter_plusplus() {
+u_printf("UTF16 Little-Endian Buckwalter++ transliteration, a version modified for Unitex\n");
+}
+
 
 /**
  * This function reads a 1 byte character from the given file
@@ -1642,21 +1663,21 @@ encoding->usage_function=usage_function;
  * We consider that a multi-bytes encoding can encode any character.
  */
 encoding->can_be_encoded_function=can_always_encode;
-if (aliases==NULL) {
-	/* If there is no aliases, we can return */
-}
 int i=0;
-while (aliases[i]!=NULL) {
-	encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
-	if (encoding->aliases==NULL) {
-	   fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
+if (aliases!=NULL) {
+	/* If there are aliases, we take care of them */
+	while (aliases[i]!=NULL) {
+		encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
+		if (encoding->aliases==NULL) {
+		fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
+		}
+		encoding->aliases[i]=strdup(aliases[i]);
+		strtolower(encoding->aliases[i]);
+		if (encoding->aliases[i]==NULL) {
+		fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
+		}
+		i++;
 	}
-	encoding->aliases[i]=strdup(aliases[i]);
-	strtolower(encoding->aliases[i]);
-	if (encoding->aliases[i]==NULL) {
-	   fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
-	}
-	i++;
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
@@ -1792,6 +1813,10 @@ install_one_byte_encoding(ctx,"ms-windows-1258",init_windows_1258,usage_windows_
  */
 const char* aliases_NeXTSTEP[2]={"next-step",NULL};
 install_one_byte_encoding(ctx,"nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTSTEP);
+
+/* Not real encodings, transliterations for Arabic */
+install_multi_bytes_encoding(ctx,"buckwalter",E_UTF16_LE,u_fgetc_UTF16LE,u_fputc_buckwalter,usage_buckwalter,NULL);
+install_multi_bytes_encoding(ctx,"buckwalter++",E_UTF16_LE,u_fgetc_UTF16LE,u_fputc_buckwalter_plusplus,usage_buckwalter_plusplus,NULL);
 
 return (void*)ectx;
 }

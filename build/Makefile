@@ -346,7 +346,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o\
-				HTMLCharacters.o AsciiSearchTree.o getopt.o $(SYSLIBMAPPED)
+				HTMLCharacters.o AsciiSearchTree.o getopt.o Arabic.o $(SYSLIBMAPPED)
 
 DICO      = Dico
 DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
@@ -623,7 +623,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Ustring.o XMLizer.o DuplicateFile.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
-                  TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o $(SYSLIBMAPPED)
+                  TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -652,7 +652,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Ustring.o XMLizer.o DuplicateFile.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
-                  TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o $(SYSLIBMAPPED)
+                  TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o $(SYSLIBMAPPED)
 
 
 ################################
