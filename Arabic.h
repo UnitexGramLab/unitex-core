@@ -76,7 +76,82 @@
 #define AR_ALEF_WASLA					0x0671
 
 
+/* Replacement rules for one diacritic that can be omitted regardless
+ * its position in the token */
+#define FATHA_OMISSION "fatha omission"
+#define DAMMA_OMISSION "damma omission"
+#define KASRA_OMISSION "kasra omission"
+#define SUKUN_OMISSION "sukun omission"
+#define SUPERSCRIPT_ALEF_OMISSION "superscript alef omission"
+/* Replacement rules for one diacritic that can be omitted but
+ * only at the end of the token */
+#define FATHATAN_OMISSION_AT_END "fathatan omission at end"
+#define DAMMATAN_OMISSION_AT_END "dammatan omission at end"
+#define KASRATAN_OMISSION_AT_END "kasratan omission at end"
+/* Replacement rules for two diacritics at the end of the token.
+ * For "shadda X", any or both diacritics can be omitted */
+#define SHADDA_FATHA_OMISSION_AT_END "shadda fatha omission at end"
+#define SHADDA_DAMMA_OMISSION_AT_END "shadda damma omission at end"
+#define SHADDA_KASRA_OMISSION_AT_END "shadda kasra omission at end"
+#define SHADDA_FATHATAN_OMISSION_AT_END "shadda fathatan omission at end"
+#define SHADDA_DAMMATAN_OMISSION_AT_END "shadda dammatan omission at end"
+#define SHADDA_KASRATAN_OMISSION_AT_END "shadda kasratan omission at end"
+/* Replacement rules for two diacritics not at the end of the token.
+ * For "shadda X", X or both diacritics can be omitted */
+#define SHADDA_FATHA_OMISSION "shadda fatha omission"
+#define SHADDA_DAMMA_OMISSION "shadda damma omission"
+#define SHADDA_KASRA_OMISSION "shadda kasra omission"
+#define SHADDA_SUPERSCRIPT_ALEF_OMISSION "shadda superscript alef omission"
+/* Solar assimilation rule for Al: shadda can appear after the first letter following
+ * 'Al' if this letter is a solar one. Example: Al + raeiysu => AlrUaeiysu */
+#define SOLAR_ASSIMILATION "solar assimilation"
+/* Lunar assimilation rule for Al: sukun can appear before the first letter following
+ * 'Al' if this letter is a lunar one. Example: Al + qamaru => Aloqamaru */
+#define LUNAR_ASSIMILATION "lunar assimilation"
+/* Al special rule: it can be written Ll (alef -> alef wasla) */
+#define AL_WITH_WASLA "Al with wasla"
+/* An initial alif hamza above O may be written A */
+#define ALIF_HAMZA_ABOVE_O "alif hamza above O"
+/* An initial alif hamza below I may be written A or L */
+#define ALIF_HAMZA_BELOW_I_TO_A "alif hamza below I to A"
+#define ALIF_HAMZA_BELOW_I_TO_L "alif hamza below I to L"
+/* There is also an extra rule that always applies: tatweel in
+ * the text can be ignored if not present in the dictionary */
+
+
+/* This bit-field structure is used to know which rules must be applied
+ * during the dictionary lookup in morphological mode */
+typedef struct {
+	unsigned int fatha_omission: 1;
+	unsigned int damma_omission: 1;
+	unsigned int kasra_omission: 1;
+	unsigned int sukun_omission: 1;
+	unsigned int superscript_alef_omission: 1;
+	unsigned int fathatan_omission_at_end: 1;
+	unsigned int dammhatan_omission_at_end: 1;
+	unsigned int kasratan_omission_at_end: 1;
+	unsigned int shadda_fatha_omission_at_end: 1;
+	unsigned int shadda_damma_omission_at_end: 1;
+	unsigned int shadda_kasra_omission_at_end: 1;
+	unsigned int shadda_fathatan_omission_at_end: 1;
+	unsigned int shadda_dammhatan_omission_at_end: 1;
+	unsigned int shadda_kasratan_omission_at_end: 1;
+	unsigned int shadda_fatha_omission: 1;
+	unsigned int shadda_damma_omission: 1;
+	unsigned int shadda_kasra_omission: 1;
+	unsigned int shadda_superscript_alef_omission: 1;
+	unsigned int solar_assimilation: 1;
+	unsigned int lunar_assimilation: 1;
+	unsigned int al_with_wasla: 1;
+	unsigned int alef_hamza_above_O: 1;
+	unsigned int alef_hamza_below_I_to_A: 1;
+	unsigned int alef_hamza_below_I_to_L: 1;
+} ArabicTypoRules;
+
+
 unichar to_buckwalter(unichar);
 unichar to_buckwalter_plusplus(unichar);
+int is_solar(unichar);
+int is_lunar(unichar);
 
 #endif

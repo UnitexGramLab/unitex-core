@@ -100,3 +100,51 @@ default: 	return c;
 }
 }
 
+
+int is_solar(unichar c) {
+switch (c) {
+case AR_TEH:
+case AR_THEH:
+case AR_JEEM:
+case AR_DAL:
+case AR_THAL:
+case AR_REH:
+case AR_ZAIN:
+case AR_SEEN:
+case AR_SHEEN:
+case AR_SAD:
+case AR_DAD:
+case AR_TAH:
+case AR_ZAH:
+case AR_LAM:
+case AR_NOON: return 1;
+default: return 0;
+}
+}
+
+
+int is_lunar(unichar c) {
+switch(c) {
+case AR_HAMZA:
+case AR_ALEF_WITH_MADDA_ABOVE:
+case AR_ALEF_WITH_HAMZA_ABOVE:
+case AR_WAW_WITH_HAMZA_ABOVE:
+case AR_ALEF_WITH_HAMZA_BELOW:
+case AR_YEH_WITH_HAMZA_ABOVE:
+case AR_BEH:
+case AR_HAH:
+case AR_KHAH:
+case AR_AIN:
+case AR_GHAIN:
+case AR_FEH:
+case AR_QAF:
+case AR_KAF:
+case AR_MEEM:
+case AR_HEH:
+case AR_WAW:
+case AR_YEH:
+case AR_ALEF_WASLA:	return 1;
+default: return 0;
+}
+
+}
