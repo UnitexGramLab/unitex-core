@@ -65,6 +65,7 @@ const char* usage_Locate =
          "  -d X/--sntdir=X: uses directory X instead of the text directory; note that X must be\n"
          "                   (back)slash terminated\n"
          "  -K/--korean: tells Locate that it works on Korean\n"
+         "  -u X/--arabic-rules=X: Arabic typographic rule configuration file\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -85,8 +86,8 @@ const char* usage_Locate =
          "  -M/--merge\n"
          "  -R/--replace\n"
          "  -p/--protect_dic_chars: when -M or -R mode is used, -p protects some input characters\n"
-		   "                          with a backslash. This is useful when Locate is called by Dico\n"
-		   "                          in order to avoid producing bad lines like \"3,14,.PI.NUM\"\n"
+		 "                          with a backslash. This is useful when Locate is called by Dico\n"
+		 "                          in order to avoid producing bad lines like \"3,14,.PI.NUM\"\n"
          "\n"
          "Ambiguous output options:\n"
          "  -b/--ambiguous_outputs: allows the production of several matches with same input\n"
@@ -118,7 +119,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:o:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:o:u:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -147,6 +148,7 @@ const struct option_TS lopts_Locate[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
+      {"arabic-rules",required_argument_TS,NULL,'u'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -166,6 +168,7 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char dynamicSntDir[FILENAME_MAX]="";
+char arabic_rules[FILENAME_MAX]="";
 char* morpho_dic=NULL;
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
@@ -261,6 +264,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
+   case 'u': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty arabic rule configuration file name\n");
+             }
+             strcpy(arabic_rules,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Locate[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -307,7 +315,8 @@ strcat(err,"err");
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
-               ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,max_count_call,max_count_call_warning);
+               ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
+               max_count_call,max_count_call_warning,arabic_rules);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
@@ -327,7 +336,7 @@ return (!OK);
 int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                              char* text_snt,char* fst2,char* alphabet,
                               OutputPolicy output_policy,char* morpho_dic,
-                              int protect_dic_chars,int is_korean) {
+                              int protect_dic_chars,int is_korean,char* arabic_rules) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
 char lang[FILENAME_MAX];
@@ -387,6 +396,10 @@ if (protect_dic_chars) {
 }
 if (is_korean) {
 	add_argument(invoker,"-K");
+}
+if (arabic_rules && arabic_rules[0]!='\0') {
+   sprintf(tmp,"--arabic_rules=%s",arabic_rules);
+   add_argument(invoker,tmp);
 }
 add_argument(invoker,fst2);
 /* Finally, we call the main function of Locate */

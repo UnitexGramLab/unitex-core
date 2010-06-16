@@ -924,9 +924,200 @@ free(content_buffer);
 
 
 /**
- * Tries to find something in the dictionary that match both text content and given pattern.
+ * Tries to find something in the dictionary that match both text content and
+ * given pattern. This version of the function handles the all languages but Arabic.
  */
 void explore_dic_in_morpho_mode__(struct locate_parameters* p,
+                                const unsigned char* bin,const struct INF_codes* inf,
+                                int offset,unichar* current_token,unichar* inflected,
+                                int pos_in_current_token,
+                                int pos_in_inflected,int pos_offset,
+                                struct parsing_info* *matches,struct pattern* pattern,
+                                int save_dic_entry,unichar* jamo,int pos_in_jamo,
+                                unichar *line_buffer) {
+int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
+offset=offset+2;
+if (!(n_transitions & 32768)) {
+	//error("\narriba!\n\n\n");
+   /* If this node is final, we get the INF line number */
+   inflected[pos_in_inflected]='\0';
+   if (pattern==NULL && !save_dic_entry) {
+      /* If any word will do. Note that we don't save DELAF entries
+       * for the <DIC> pattern */
+      (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),NULL,jamo,pos_in_jamo);
+   } else {
+      /* If we have to check the pattern */
+      int inf_number=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
+      //unichar line[DIC_LINE_SIZE];
+      unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
+      struct list_ustring* tmp=inf->codes[inf_number];
+      while (tmp!=NULL) {
+         /* For each compressed code of the INF line, we save the corresponding
+          * DELAF line in 'info->dlc' */
+         uncompress_entry(inflected,tmp->string,line);
+     	 //error("\non decompresse la ligne _%S_\n",line);
+         struct dela_entry* dela_entry=tokenize_DELAF_line_opt(line);
+         if (dela_entry!=NULL && (pattern==NULL || is_entry_compatible_with_pattern(dela_entry,pattern))) {
+            //error("et ca matche!!\n");
+            (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),
+            		                              save_dic_entry?dela_entry:NULL,jamo,pos_in_jamo);
+         }
+         free_dela_entry(dela_entry);
+         tmp=tmp->next;
+      }
+   }
+}
+
+if (current_token[pos_in_current_token]=='\0') {
+	if (jamo==NULL) {
+		/* If we have reached the end of the current token in a non Korean language */
+		pos_offset++;
+		int token_number=p->buffer[pos_offset+p->current_origin];
+		if (token_number==-1 || token_number==p->STOP) {
+			/* Remember 1) that we must not be out of the array's bounds and
+			 *          2) that the token {STOP} must never be matched */
+			return;
+		}
+		current_token=p->tokens->value[token_number];
+		pos_in_current_token=0;
+	} else {
+		/* We are in Korean mode */
+		if (jamo[pos_in_jamo]=='\0') {
+			/* In korean, we perform a token change only if we have used all the token's jamos */
+			pos_offset++;
+			int token_number=p->buffer[pos_offset+p->current_origin];
+			if (token_number==-1 || token_number==p->STOP) {
+				/* Remember 1) that we must not be out of the array's bounds and
+				 *          2) that the token {STOP} must never be matched */
+				return;
+			}
+			current_token=p->tokens->value[token_number];
+			pos_in_current_token=0;
+			pos_in_jamo=0;
+			jamo=p->jamo_tags[token_number];
+		}
+	}
+}
+int after_syllab_bound=0;
+if (jamo!=NULL) {
+	/* We test wether we are in the middle of a syllable or just after a syllable bound */
+    if (jamo[pos_in_jamo]==KR_SYLLABLE_BOUND) {
+    	/* If we have a syllable bound */
+    	after_syllab_bound=1;
+    	pos_in_jamo++;
+    }
+    else if (pos_in_jamo>0 && jamo[pos_in_jamo-1]==KR_SYLLABLE_BOUND) {
+    	/* If we are just after a syllable bound */
+    	after_syllab_bound=1;
+    }
+    else {
+    	/* By default, we must be in the middle of a syllable, and there's nothing to do */
+    }
+}
+
+/* We look for outgoing transitions */
+if (n_transitions & 32768) {
+   /* If we are in a normal node, we remove the control bit to
+    * have the good number of transitions */
+   n_transitions=n_transitions-32768;
+} else {
+   /* If we are in a final node, we must jump after the reference to the INF line number */
+   offset=offset+3;
+}
+for (int i=0;i<n_transitions;i++) {
+    update_last_position(p,pos_offset);
+   unichar c=(unichar)(((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1]);
+   offset=offset+2;
+   int adr=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
+   offset=offset+3;
+
+   if (jamo==NULL) {
+	   /* Non Korean mode */
+	   if (is_equal_or_uppercase(c,current_token[pos_in_current_token],p->alphabet)) {
+		   /* We explore the rest of the dictionary only if the
+		    * dictionary char is compatible with the token char. In that case,
+		    * we copy in 'inflected' the exact character that is in the dictionary. */
+		   inflected[pos_in_inflected]=c;
+		   explore_dic_in_morpho_mode__(p,bin,inf,adr,current_token,inflected,
+				   pos_in_current_token+1,pos_in_inflected+1,
+				   pos_offset,matches,pattern,save_dic_entry,
+				   jamo,pos_in_jamo,line_buffer);
+	   }
+   } else {
+	   //debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	   /* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
+	    * after a syllable bound */
+	   unichar c2[2];
+	   c2[0]=c;
+	   c2[1]='\0';
+	   /* We try to match all the jamo sequence found in the dictionary */
+	   int new_pos_in_current_token=pos_in_current_token;
+	   int new_pos_in_jamo=pos_in_jamo;
+	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,current_token);
+	   if (result!=0) {
+	      //error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+		   /* Nothing to do if the match failed */
+		   int new_pos_offset=pos_offset;
+		   unichar* new_jamo=jamo;
+		   unichar* new_current_token=current_token;
+		   if (result==1) {
+			   /* The text token has been fully matched, so we go on the next one */
+			   new_pos_in_current_token=0;
+			   new_pos_offset=pos_offset+1;
+			   int token_number=p->buffer[new_pos_offset+p->current_origin];
+				if (token_number==-1 || token_number==p->STOP) {
+					/* Remember 1) that we must not be out of the array's bounds and
+					 *          2) that the token {STOP} must never be matched */
+					return;
+				}
+				new_current_token=p->tokens->value[token_number];
+				new_jamo=p->jamo_tags[token_number];
+ 			    new_pos_in_jamo=0;
+           }
+		   /* If we have a jamo letter match */
+		   inflected[pos_in_inflected]=c;
+		   explore_dic_in_morpho_mode__(p,bin,inf,adr,new_current_token,inflected,
+		   				   new_pos_in_current_token,pos_in_inflected+1,
+		   				   new_pos_offset,matches,pattern,save_dic_entry,
+		   				   new_jamo,new_pos_in_jamo,line_buffer);
+	   }
+	   /* Then we try to match a hangul, but only if we are just after a syllable bound */
+	   //error("after syllable=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
+#if 0
+	   if (after_syllab_bound && c==current_token[pos_in_current_token]) {
+			/* We explore the rest of the dictionary only if the
+			 * dictionary char is compatible with the token char. In that case,
+			 * we copy in 'inflected' the exact character that is in the dictionary. */
+			inflected[pos_in_inflected]=c;
+			//error("yes!\n\n\n");
+			int new_pos_in_current_token=pos_in_current_token+1;
+			int new_pos_in_jamo=pos_in_jamo;
+			if (current_token[new_pos_in_current_token]=='\0') {
+				/* If we matched the last character of the token, we must reset the jamo position to 0 */
+				new_pos_in_jamo=0;
+				//error("we did it\n");
+			} else {
+				/* Otherwise, we must update the jamo position */
+				while (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+					new_pos_in_jamo++;
+				}
+			}
+			explore_dic_in_morpho_mode__(p,bin,inf,adr,current_token,inflected,
+					new_pos_in_current_token,pos_in_inflected+1,
+					   pos_offset,matches,pattern,save_dic_entry,
+					   jamo,new_pos_in_jamo,line_buffer);
+	   }
+#endif
+   }
+}
+}
+
+
+/**
+ * Tries to find something in the dictionary that match both text content
+ * and given pattern. This version of the function is dedicated to Arabic.
+ */
+void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
                                 const unsigned char* bin,const struct INF_codes* inf,
                                 int offset,unichar* current_token,unichar* inflected,
                                 int pos_in_current_token,
@@ -1131,9 +1322,15 @@ unichar* line_buffer = buffer_line_buffer_inflected + 4096;
 for (int i=0;i<p->n_morpho_dics;i++) {
    if (p->morpho_dic_bin[i]!=NULL) {
       /* Can't match anything in an empty dictionary */
-      explore_dic_in_morpho_mode__(p,p->morpho_dic_bin[i],p->morpho_dic_inf[i],4,
+	   if (p->arabic.rules_enabled) {
+		   explore_dic_in_morpho_mode_arabic(p,p->morpho_dic_bin[i],p->morpho_dic_inf[i],4,
     		                       p->tokens->value[p->buffer[p->current_origin+pos]],inflected,pos_in_token,
                                    0,pos,matches,pattern,save_dic_entry,jamo,pos_in_jamo,line_buffer);
+	   } else {
+		   explore_dic_in_morpho_mode__(p,p->morpho_dic_bin[i],p->morpho_dic_inf[i],4,
+    		                       p->tokens->value[p->buffer[p->current_origin+pos]],inflected,pos_in_token,
+                                   0,pos,matches,pattern,save_dic_entry,jamo,pos_in_jamo,line_buffer);
+	   }
    }
 }
 free(buffer_line_buffer_inflected);

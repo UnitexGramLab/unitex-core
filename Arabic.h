@@ -183,6 +183,12 @@
 /* This bit-field structure is used to know which rules must be applied
  * during the dictionary lookup in morphological mode */
 typedef struct {
+	/* This field is used to know if we really have a rule set or not.
+	 * It is used to avoid something like a test to NULL on a structure
+	 * pointer before testing the structure itself
+	 */
+	unsigned int rules_enabled: 1;
+
 	unsigned int fatha_omission: 1;
 	unsigned int damma_omission: 1;
 	unsigned int kasra_omission: 1;

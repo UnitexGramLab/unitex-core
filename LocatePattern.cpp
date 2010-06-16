@@ -146,7 +146,8 @@ int locate_pattern(char* text_cod,char* tokens,char* fst2_name,char* dlf,char* d
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
-                   int is_korean,int max_count_call,int max_count_call_warning) {
+                   int is_korean,int max_count_call,int max_count_call_warning,
+                   char* arabic_rules) {
 
 U_FILE* out;
 U_FILE* info;
@@ -185,6 +186,10 @@ strcat(concord_info,"concord.n");
 char morpho_bin[FILENAME_MAX];
 strcpy(morpho_bin,dynamicDir);
 strcat(morpho_bin,"morpho.bin");
+
+if (arabic_rules!=NULL && arabic_rules[0]!='\0') {
+	load_arabic_typo_rules(arabic_rules,&(p->arabic));
+}
 
 out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
 if (out==NULL) {

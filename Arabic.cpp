@@ -164,10 +164,12 @@ return 1;
 
 
 /**
- * Loads the rule configuration file. Returns 1 in case of success; 0 otherwise.
+ * Loads the rule configuration file. Returns 1 in case of success; 0 otherwise and *rules
+ * is set to 0.
  * "YES" value means 1, any other value means 0;
  */
 int load_arabic_typo_rules(char* name,ArabicTypoRules *rules) {
+memset(rules,0,sizeof(ArabicTypoRules));
 if (name==NULL) {
 	fatal_error("NULL arabic rule configuration file name!\n");
 }
@@ -176,6 +178,7 @@ if (rules==NULL) {
 }
 struct string_hash* h=load_key_value_list(name,DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,'=');
 if (h==NULL) return 0;
+(*rules).rules_enabled=1;
 (*rules).fatha_omission=test(h,FATHA_OMISSION);
 (*rules).damma_omission=test(h,DAMMA_OMISSION);
 (*rules).kasra_omission=test(h,KASRA_OMISSION);

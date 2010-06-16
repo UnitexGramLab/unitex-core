@@ -68,7 +68,8 @@ const char* usage_Dico =
          "  -m DICS/--morpho=DICS: specifies that DICS is the .bin dictionary\n"
          "                         list to use in Locate's morphological mode. .bin names are\n"
          "                         supposed to be separated with semi-colons.\n"
-		   "  -K/--korean: tells Dico that it works on Korean\n"
+		 "  -K/--korean: tells Dico that it works on Korean\n"
+         "  -u X/--arabic-rules=X: Arabic typographic rule configuration file\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
@@ -137,7 +138,7 @@ u_fclose(f);
 }
 
 
-const char* optstring_Dico=":t:a:m:Khk:q:";
+const char* optstring_Dico=":t:a:m:Khk:q:u:";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -146,6 +147,7 @@ const struct option_TS lopts_Dico[]= {
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
+      {"arabic-rules",required_argument_TS,NULL,'u'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -160,6 +162,7 @@ int ret=0;
 int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
+char arabic_rules[FILENAME_MAX]="";
 char* morpho_dic=NULL;
 int is_korean=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -188,6 +191,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
    case 'K': is_korean=1;
              break;
    case 'h': usage(); return 0;
+   case 'u': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty arabic rule configuration file name\n");
+             }
+             strcpy(arabic_rules,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Dico[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -328,7 +336,8 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,text,argv[i],alph,policy,morpho_dic,1,is_korean);
+            launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,
+            		text,argv[i],alph,policy,morpho_dic,1,is_korean,arabic_rules);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
