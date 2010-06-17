@@ -69,7 +69,7 @@ const char* usage_Dico =
          "                         list to use in Locate's morphological mode. .bin names are\n"
          "                         supposed to be separated with semi-colons.\n"
 		 "  -K/--korean: tells Dico that it works on Korean\n"
-         "  -u X/--arabic-rules=X: Arabic typographic rule configuration file\n"
+         "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
@@ -147,7 +147,7 @@ const struct option_TS lopts_Dico[]= {
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
-      {"arabic-rules",required_argument_TS,NULL,'u'},
+      {"arabic_rules",required_argument_TS,NULL,'u'},
       {NULL,no_argument_TS,NULL,0}
 };
 

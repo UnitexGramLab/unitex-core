@@ -65,7 +65,7 @@ const char* usage_Locate =
          "  -d X/--sntdir=X: uses directory X instead of the text directory; note that X must be\n"
          "                   (back)slash terminated\n"
          "  -K/--korean: tells Locate that it works on Korean\n"
-         "  -u X/--arabic-rules=X: Arabic typographic rule configuration file\n"
+         "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -148,7 +148,7 @@ const struct option_TS lopts_Locate[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
-      {"arabic-rules",required_argument_TS,NULL,'u'},
+      {"arabic_rules",required_argument_TS,NULL,'u'},
       {NULL,no_argument_TS,NULL,0}
 };
 
