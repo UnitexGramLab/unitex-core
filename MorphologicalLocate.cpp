@@ -76,7 +76,7 @@ void get_content(unichar* content, struct locate_parameters* p, int pos,
 }
 
 /**
- * Returns 1 if the given string is of the form $XXX$ where XXX is a valid
+ * Returns 1 if the given string is of the form $YYY$ where YYY is a valid
  * variable name; 0 otherwise.
  */
 int is_morpho_variable_output(unichar* s, unichar* var_name) {
@@ -269,7 +269,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 		/* If there are subgraphs, we process them */
 		int old_StackBase;
 		old_StackBase = p->stack_base;
-		/* In morphological mode, we cannot modify variables because $xxx( and $xxx) tags are
+		/* In morphological mode, we cannot modify variables because $yyy( and $yyy) tags are
 		 * not allowed. However, we can have to modify DELAF entry variables */
 		struct dic_variable* dic_variables_backup = clone_dic_variable_list(
 				p->dic_variables);
@@ -1447,7 +1447,8 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					NOTHING_EXPECTED, c);
 		}
 		if (p->arabic.superscript_alef_omission && c == AR_SUPERSCRIPT_ALEF
-				&& current_token[pos_in_current_token] != AR_SUPERSCRIPT_ALEF) {
+				&& current_token[pos_in_current_token] != AR_SUPERSCRIPT_ALEF
+				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
 			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
@@ -1455,28 +1456,31 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					NOTHING_EXPECTED, c);
 		}
 		if (p->arabic.fathatan_omission_at_end && c == AR_FATHATAN
-				&& current_token[pos_in_current_token] != AR_FATHATAN) {
+				&& current_token[pos_in_current_token] != AR_FATHATAN
+				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
 			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					END_OF_WORD_EXPECTED, c);
 		}
 		if (p->arabic.dammatan_omission_at_end && c == AR_DAMMATAN
-				&& current_token[pos_in_current_token] != AR_DAMMATAN) {
+				&& current_token[pos_in_current_token] != AR_DAMMATAN
+				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
 			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					END_OF_WORD_EXPECTED, c);
 		}
 		if (p->arabic.kasratan_omission_at_end && c == AR_KASRATAN
-				&& current_token[pos_in_current_token] != AR_KASRATAN) {
+				&& current_token[pos_in_current_token] != AR_KASRATAN
+				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
 			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					END_OF_WORD_EXPECTED, c);
 		}
 		/* If the dictionary contains a shadda that we may be allowed to skip */
 		if (c == AR_SHADDA && current_token[pos_in_current_token] != AR_SHADDA
