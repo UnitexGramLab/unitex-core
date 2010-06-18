@@ -70,7 +70,7 @@ const char* usage_Convert =
          "\n"
          "Other options:\n"
          "  -m/--main-names: to get the list of the encoding main names\n"
-         "  -a/--aliases: to get the list of the encoding aliases\n"
+         "  -a/--aliases: to get the whole list (main names+aliases)\n"
          "  -A/--all-infos: to display all the information about all the encodings\n"
          "  -i X/--info=X: to get information about the encoding X\n"
          "  -h/--help: this help\n"
@@ -158,7 +158,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Convert,lopts_Convert,&index
 
 
    case 'm': print_encoding_main_names(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
-   case 'a': print_encoding_aliases(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
+   case 'a': print_encoding_main_names(encoding_ctx); print_encoding_aliases(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
    case 'A': print_information_for_all_encodings(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
    case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty encoding\n");
