@@ -176,6 +176,9 @@
 /* An initial alef hamza below I may be written A or L */
 #define ALEF_HAMZA_BELOW_I_TO_A "alef hamza below I to A"
 #define ALEF_HAMZA_BELOW_I_TO_L "alef hamza below I to L"
+/* Two normalization rules */
+#define FATHATAN_ALEF_EQUIV_ALEF_FATHATAN "fathatan alef equiv alef fathatan"
+#define FATHATAN_ALEF_MAQSURA_EQUIV_ALEF_MAQSURA_FATHATAN "fathatan alef maqsura equiv alef maqsura fathatan"
 /* There is also an extra rule that always applies: tatweel in
  * the text can be ignored if not present in the dictionary */
 
@@ -213,6 +216,8 @@ typedef struct {
 	unsigned int alef_hamza_above_O: 1;
 	unsigned int alef_hamza_below_I_to_A: 1;
 	unsigned int alef_hamza_below_I_to_L: 1;
+	unsigned int fathatan_alef_equiv_alef_fathatan: 1;
+	unsigned int fathatan_alef_maqsura_equiv_alef_maqsura_fathatan: 1;
 } ArabicTypoRules;
 
 

@@ -30,62 +30,67 @@
 #include "DicVariables.h"
 #include "ParsingInfo.h"
 
-
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
-   see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
+ see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-void morphological_locate(int,int,int,int,int,struct parsing_info**,int,struct list_int*,
-		                  struct locate_parameters*,struct Token_error_ctx*,unichar*,int,
-		                  unichar*);
-void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*,Abstract_allocator prv_alloc);
+void morphological_locate(int, int, int, int, int, struct parsing_info**, int,
+		struct list_int*, struct locate_parameters*, struct Token_error_ctx*,
+		unichar*, int, unichar*);
+void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
+		struct list_int*, struct locate_parameters*, struct Token_error_ctx*,
+		Abstract_allocator prv_alloc);
 int input_is_token(Fst2Tag tag);
-void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_token,
-                                struct parsing_info* *matches,struct pattern* pattern,
-                                int save_dela_entry,unichar* jamo,int pos_in_jamo);
-int is_entry_compatible_with_pattern(struct dela_entry* entry,struct pattern* pattern);
-
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+		int pos_in_token, struct parsing_info* *matches,
+		struct pattern* pattern, int save_dela_entry, unichar* jamo,
+		int pos_in_jamo);
+int is_entry_compatible_with_pattern(struct dela_entry* entry,
+		struct pattern* pattern);
 
 /**
  * Stores in 'content' the string corresponding to the given range.
  */
-void get_content(unichar* content,struct locate_parameters* p,int pos,int pos_in_token,int pos2,int pos_in_token2) {
-int i=0;
-unichar* current_token=p->tokens->value[p->buffer[pos+p->current_origin]];
-while (!(pos==pos2 && pos_in_token==pos_in_token2)) {
-   content[i++]=current_token[pos_in_token++];
-   if (current_token[pos_in_token]=='\0' && !(pos==pos2 && pos_in_token==pos_in_token2)) {
-      pos++;
-      pos_in_token=0;
-      int token_number=p->buffer[pos+p->current_origin];
-      if (token_number==-1 || token_number==p->STOP) {
-         fatal_error("Unexpected end of array or {STOP} tag in get_content\n");
-      }
-      current_token=p->tokens->value[token_number];
-   }
+void get_content(unichar* content, struct locate_parameters* p, int pos,
+		int pos_in_token, int pos2, int pos_in_token2) {
+	int i = 0;
+	unichar* current_token =
+			p->tokens->value[p->buffer[pos + p->current_origin]];
+	while (!(pos == pos2 && pos_in_token == pos_in_token2)) {
+		content[i++] = current_token[pos_in_token++];
+		if (current_token[pos_in_token] == '\0' && !(pos == pos2
+				&& pos_in_token == pos_in_token2)) {
+			pos++;
+			pos_in_token = 0;
+			int token_number = p->buffer[pos + p->current_origin];
+			if (token_number == -1 || token_number == p->STOP) {
+				fatal_error(
+						"Unexpected end of array or {STOP} tag in get_content\n");
+			}
+			current_token = p->tokens->value[token_number];
+		}
+	}
+	content[i] = '\0';
 }
-content[i]='\0';
-}
-
-
 
 /**
  * Returns 1 if the given string is of the form $XXX$ where XXX is a valid
  * variable name; 0 otherwise.
  */
-int is_morpho_variable_output(unichar* s,unichar* var_name) {
-if (s==NULL || s[0]!='$') return 0;
-int i,j=0;
-for (i=1;s[i]!='$' && s[i]!='\0';i++) {
-   if (!is_variable_char(s[i])) return 0;
-   var_name[j++]=s[i];
+int is_morpho_variable_output(unichar* s, unichar* var_name) {
+	if (s == NULL || s[0] != '$')
+		return 0;
+	int i, j = 0;
+	for (i = 1; s[i] != '$' && s[i] != '\0'; i++) {
+		if (!is_variable_char(s[i]))
+			return 0;
+		var_name[j++] = s[i];
+	}
+	var_name[j] = '\0';
+	return (i != 1 && s[i] == '$' && s[i + 1] == '\0');
 }
-var_name[j]='\0';
-return (i!=1 && s[i]=='$' && s[i+1]=='\0');
-}
-
 
 /**
  * Tries to match all the given tag token against the given jamo sequence. Return values:
@@ -93,1109 +98,1459 @@ return (i!=1 && s[i]=='$' && s[i+1]=='\0');
  * 1=the tag matches the whole jamo sequence (i.e. we will have to go on the next text token
  * 2=the tag matches a part of the jamo sequence
  */
-int get_jamo_longest_prefix(unichar* jamo,int *new_pos_in_jamo,int *new_pos_in_token,unichar* tag_token,
-		struct locate_parameters* p,unichar* token) {
-unichar tmp[128];
-if (tag_token[0]==KR_SYLLABLE_BOUND && tag_token[1]=='\0') {
-   u_strcpy(tmp,tag_token);
-} else {
-   Hanguls_to_Jamos(tag_token,tmp,p->korean,0);
-}
-int i=0;
-if (token==NULL) {
-	token=tag_token;
-}
-//set_debug(0 && token[0]==0xB2A5);
-//debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
-while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
-	/* We ignore syllable bounds in both tfst and fst2 tags */
-	if (tmp[i]==KR_SYLLABLE_BOUND) {
+int get_jamo_longest_prefix(unichar* jamo, int *new_pos_in_jamo,
+		int *new_pos_in_token, unichar* tag_token, struct locate_parameters* p,
+		unichar* token) {
+	unichar tmp[128];
+	if (tag_token[0] == KR_SYLLABLE_BOUND && tag_token[1] == '\0') {
+		u_strcpy(tmp, tag_token);
+	} else {
+		Hanguls_to_Jamos(tag_token, tmp, p->korean, 0);
+	}
+	int i = 0;
+	if (token == NULL) {
+		token = tag_token;
+	}
+	//set_debug(0 && token[0]==0xB2A5);
+	//debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
+	while (tmp[i] != '\0' && jamo[(*new_pos_in_jamo)] != '\0') {
+		/* We ignore syllable bounds in both tfst and fst2 tags */
+		if (tmp[i] == KR_SYLLABLE_BOUND) {
+			i++;
+			//debug("ignoring . in tag: %S\n",tmp+i);
+			continue;
+		}
+		/*if (jamo[(*new_pos_in_jamo)]!=KR_SYLLAB_BOUND && !u_is_Hangul_Jamo(jamo[(*new_pos_in_jamo)])) {
+		 // If we have a non jamo character, then we have to go on in the text token
+		 (*new_pos_in_token)++;
+		 debug("new pos in token=%d\n",(*new_pos_in_token));
+		 }*/
+		if (jamo[(*new_pos_in_jamo)] == KR_SYLLABLE_BOUND) {
+			(*new_pos_in_jamo)++;
+			(*new_pos_in_token)++;
+			//debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
+			continue;
+		}
+		if (tmp[i] != jamo[(*new_pos_in_jamo)]) {
+			/* If a character doesn't match */
+			//debug("match failed between text=%S and fst2=%S\n",jamo,tmp);
+			return 0;
+		}
 		i++;
-		//debug("ignoring . in tag: %S\n",tmp+i);
-		continue;
-	}
-	/*if (jamo[(*new_pos_in_jamo)]!=KR_SYLLAB_BOUND && !u_is_Hangul_Jamo(jamo[(*new_pos_in_jamo)])) {
-		// If we have a non jamo character, then we have to go on in the text token
-		(*new_pos_in_token)++;
-		debug("new pos in token=%d\n",(*new_pos_in_token));
-	}*/
-	if (jamo[(*new_pos_in_jamo)]==KR_SYLLABLE_BOUND) {
 		(*new_pos_in_jamo)++;
-		(*new_pos_in_token)++;
-		//debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
-		continue;
+		//debug("moving in tag: %S\n",tmp+i);
+		//debug("moving in text: %S\n",jamo+((*new_pos_in_jamo)));
 	}
-	if (tmp[i]!=jamo[(*new_pos_in_jamo)]) {
-	   /* If a character doesn't match */
-	   //debug("match failed between text=%S and fst2=%S\n",jamo,tmp);
-	   return 0;
+	if (tmp[i] == '\0' && jamo[(*new_pos_in_jamo)] == '\0') {
+		/* If we are at both ends of strings, it's a full match */
+		//debug("XX full match between text=%S and fst2=%S\n",jamo,tmp);
+		return 1;
 	}
-	i++;
-	(*new_pos_in_jamo)++;
-	//debug("moving in tag: %S\n",tmp+i);
-	//debug("moving in text: %S\n",jamo+((*new_pos_in_jamo)));
-}
-if (tmp[i]=='\0' && jamo[(*new_pos_in_jamo)]=='\0') {
-   /* If we are at both ends of strings, it's a full match */
-   //debug("XX full match between text=%S and fst2=%S\n",jamo,tmp);
-   return 1;
-}
-if (tmp[i]=='\0') {
-	/* If the tag has not consumed all the jamo sequence, it's a partial match */
-    //debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
-	return 2;
-}
-/* If we are at the end of the jamo sequence, but not at the end of the tag, it's a failure */
-//debug("match failed #2 between text=%S and fst2=%S\n",jamo,tmp);
-//set_debug(0);
-return 0;
+	if (tmp[i] == '\0') {
+		/* If the tag has not consumed all the jamo sequence, it's a partial match */
+		//debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
+		return 2;
+	}
+	/* If we are at the end of the jamo sequence, but not at the end of the tag, it's a failure */
+	//debug("match failed #2 between text=%S and fst2=%S\n",jamo,tmp);
+	//set_debug(0);
+	return 0;
 }
 
-
-static void update_last_position(struct locate_parameters* p,int pos) {
-if (pos>p->last_tested_position) {
-	p->last_tested_position=pos;
+static void update_last_position(struct locate_parameters* p, int pos) {
+	if (pos > p->last_tested_position) {
+		p->last_tested_position = pos;
+	}
 }
-}
-
 
 /**
  * This is the core function of the morphological mode.
  */
 void morphological_locate(int graph_depth, /* 0 means that we are in the top level graph */
-            int current_state_index, /* current state in the grammar */
-            int pos, /* position in the token buffer, relative to the current origin */
-            int pos_in_token, /* position in the token in characters */
-            int depth, /* number of nested calls to 'locate' */
-            struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-            int n_matches, /* number of sequences that have matched. It may be different from
-                            * the length of the 'matches' list if a given sequence can be
-                            * matched in several ways. It is used to detect combinatory
-                            * explosions due to bad written grammars. */
-            struct list_int* ctx, /* information about the current context, if any */
-            struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-            struct Token_error_ctx* p_token_error_ctx,
-            unichar* jamo, int pos_in_jamo,
-            unichar* content_buffer /* reusable unichar 4096 buffer for content */
-            ) {
-OptimizedFst2State current_state=p->optimized_states[current_state_index];
-Fst2State current_state_old=p->fst2->states[current_state_index];
-int token;
-Transition* t;
-int stack_top=p->stack->stack_pointer;
-/* The following static variable holds the number of matches at
- * one position in text. */
-if (depth==0) {
-   /* We reset if this is first call to 'locate' from a given position in the text */
-   p_token_error_ctx->n_matches_at_token_pos__morphological_locate=0;
-}
-if (depth>STACK_MAX) {
-   /* If there are too much recursive calls */
-   error_at_token_pos("\nMaximal stack size reached!\n"
-                      "(There may be longer matches not recognized!)",
-                      p->current_origin,pos,p,p_token_error_ctx);
-   return;
-}
-if ((p_token_error_ctx->n_matches_at_token_pos__morphological_locate) > MAX_MATCHES_AT_TOKEN_POS) {
-   /* If there are too much matches from the current origin in the text */
-   error_at_token_pos("\nToo many (ambiguous) matches starting from one position in text!",
-                      p->current_origin,pos,p,p_token_error_ctx);
-   return;
-}
-if (current_state->control & 1) {
-   /* If we are in a final state... */
-   /* In we are in the top level graph, it's an error, since we are not supposed
-    * to reach the end of the graph (we should find a $>) */
-   if (graph_depth==0) {
-      fatal_error("Unexpected end of graph in morphological mode!\n");
-   }
-   else {
-      /* If we are in a subgraph */
-      if (n_matches==MAX_MATCHES_PER_SUBGRAPH) {
-         /* If there are too much matches, we suspect an error in the grammar
-          * like an infinite recursion */
-         error_at_token_pos("\nMaximal number of matches per subgraph reached!",
-                            p->current_origin,pos,p,p_token_error_ctx);
-         return;
-      }
-      else {
-         /* If everything is fine, we add this match to the match list of the
-          * current graph level */
-         n_matches++;
-         p->stack->stack[stack_top+1]='\0';
-         if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=insert_if_different(pos,pos_in_token,-1,(*matches),p->stack->stack_pointer,
-            		                       &(p->stack->stack[p->stack_base+1]),p->variables,
-            		                       p->dic_variables,-1,-1,jamo,pos_in_jamo);
-         } else {
-            (*matches)=insert_if_absent(pos,pos_in_token,-1,(*matches),p->stack->stack_pointer,
-            		                    &(p->stack->stack[p->stack_base+1]),p->variables,
-            		                    p->dic_variables,-1,-1,jamo,pos_in_jamo);
-         }
-      }
-   }
-}
+int current_state_index, /* current state in the grammar */
+int pos, /* position in the token buffer, relative to the current origin */
+int pos_in_token, /* position in the token in characters */
+int depth, /* number of nested calls to 'locate' */
+struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
+int n_matches, /* number of sequences that have matched. It may be different from
+ * the length of the 'matches' list if a given sequence can be
+ * matched in several ways. It is used to detect combinatory
+ * explosions due to bad written grammars. */
+struct list_int* ctx, /* information about the current context, if any */
+struct locate_parameters* p, /* miscellaneous parameters needed by the function */
+struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
+		unichar* content_buffer /* reusable unichar 4096 buffer for content */
+) {
+	OptimizedFst2State current_state = p->optimized_states[current_state_index];
+	Fst2State current_state_old = p->fst2->states[current_state_index];
+	int token;
+	Transition* t;
+	int stack_top = p->stack->stack_pointer;
+	/* The following static variable holds the number of matches at
+	 * one position in text. */
+	if (depth == 0) {
+		/* We reset if this is first call to 'locate' from a given position in the text */
+		p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
+	}
+	if (depth > STACK_MAX) {
+		/* If there are too much recursive calls */
+		error_at_token_pos("\nMaximal stack size reached!\n"
+			"(There may be longer matches not recognized!)", p->current_origin,
+				pos, p, p_token_error_ctx);
+		return;
+	}
+	if ((p_token_error_ctx->n_matches_at_token_pos__morphological_locate)
+			> MAX_MATCHES_AT_TOKEN_POS) {
+		/* If there are too much matches from the current origin in the text */
+		error_at_token_pos(
+				"\nToo many (ambiguous) matches starting from one position in text!",
+				p->current_origin, pos, p, p_token_error_ctx);
+		return;
+	}
+	if (current_state->control & 1) {
+		/* If we are in a final state... */
+		/* In we are in the top level graph, it's an error, since we are not supposed
+		 * to reach the end of the graph (we should find a $>) */
+		if (graph_depth == 0) {
+			fatal_error("Unexpected end of graph in morphological mode!\n");
+		} else {
+			/* If we are in a subgraph */
+			if (n_matches == MAX_MATCHES_PER_SUBGRAPH) {
+				/* If there are too much matches, we suspect an error in the grammar
+				 * like an infinite recursion */
+				error_at_token_pos(
+						"\nMaximal number of matches per subgraph reached!",
+						p->current_origin, pos, p, p_token_error_ctx);
+				return;
+			} else {
+				/* If everything is fine, we add this match to the match list of the
+				 * current graph level */
+				n_matches++;
+				p->stack->stack[stack_top + 1] = '\0';
+				if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
+					(*matches) = insert_if_different(pos, pos_in_token, -1,
+							(*matches), p->stack->stack_pointer,
+							&(p->stack->stack[p->stack_base + 1]),
+							p->variables, p->dic_variables, -1, -1, jamo,
+							pos_in_jamo);
+				} else {
+					(*matches) = insert_if_absent(pos, pos_in_token, -1,
+							(*matches), p->stack->stack_pointer,
+							&(p->stack->stack[p->stack_base + 1]),
+							p->variables, p->dic_variables, -1, -1, jamo,
+							pos_in_jamo);
+				}
+			}
+		}
+	}
 
-/* If we have reached the end of the token buffer, we indicate it by setting
- * the current tokens to -1 */
-if (pos+p->current_origin>=p->buffer_size) {
-   token=-1;
-} else {
-   token=p->buffer[pos+p->current_origin];
-}
-unichar* current_token;
-int current_token_length=0;
-if (token==-1 || token==p->STOP) {
-   current_token=NULL;
-   jamo=NULL;
-} else {
-   current_token=p->tokens->value[p->buffer[p->current_origin+pos]];
-   current_token_length=u_strlen(current_token);
-}
+	/* If we have reached the end of the token buffer, we indicate it by setting
+	 * the current tokens to -1 */
+	if (pos + p->current_origin >= p->buffer_size) {
+		token = -1;
+	} else {
+		token = p->buffer[pos + p->current_origin];
+	}
+	unichar* current_token;
+	int current_token_length = 0;
+	if (token == -1 || token == p->STOP) {
+		current_token = NULL;
+		jamo = NULL;
+	} else {
+		current_token = p->tokens->value[p->buffer[p->current_origin + pos]];
+		current_token_length = u_strlen(current_token);
+	}
 
-/**
- * SUBGRAPHS
- */
-struct opt_graph_call* graph_call_list=current_state->graph_calls;
-if (graph_call_list!=NULL) {
-   /* If there are subgraphs, we process them */
-   int old_StackBase;
-   old_StackBase=p->stack_base;
-   /* In morphological mode, we cannot modify variables because $xxx( and $xxx) tags are
-    * not allowed. However, we can have to modify DELAF entry variables */
-   struct dic_variable* dic_variables_backup=clone_dic_variable_list(p->dic_variables);
-   do {
-      /* For each graph call, we look all the reachable states */
-      t=graph_call_list->transition;
-      while (t!=NULL) {
-         struct parsing_info* L=NULL;
-         p->stack_base=p->stack->stack_pointer;
-         morphological_locate(graph_depth+1, /* Exploration of the subgraph */
-                p->fst2->initial_states[graph_call_list->graph_number],
-                pos,pos_in_token,depth+1,&L,0,NULL,p,p_token_error_ctx,jamo,pos_in_jamo,content_buffer);
-         p->stack_base=old_StackBase;
-         if (L!=NULL) {
-            struct parsing_info* L_first=L;
-            /* If there is at least one match, we process the match list */
-            do  {
-               /* We restore the settings of the current graph level */
-               if (p->output_policy!=IGNORE_OUTPUTS) {
-                  u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
-                  p->stack->stack_pointer=L->stack_pointer;
-                  p->dic_variables=L->dic_variable_backup;
-               }
-               /* And we continue the exploration */
-               morphological_locate(graph_depth,t->state_number,L->position,L->pos_in_token,depth+1,
-            		                matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo,content_buffer);
-               p->stack->stack_pointer=stack_top;
-               L=L->next;
-            } while (L!=NULL);
-            /* We free all subgraph matches */
-            free_parsing_info(L_first);
-         }
-         p->dic_variables=clone_dic_variable_list(dic_variables_backup);
-         t=t->next;
-      } /* end of while (t!=NULL) */
-   } while ((graph_call_list=graph_call_list->next)!=NULL);
-   /* Finally, we have to restore the stack and other backup stuff */
-   p->stack->stack_pointer=stack_top;
-   p->stack_base=old_StackBase; /* May be changed by recursive subgraph calls */
+	/**
+	 * SUBGRAPHS
+	 */
+	struct opt_graph_call* graph_call_list = current_state->graph_calls;
+	if (graph_call_list != NULL) {
+		/* If there are subgraphs, we process them */
+		int old_StackBase;
+		old_StackBase = p->stack_base;
+		/* In morphological mode, we cannot modify variables because $xxx( and $xxx) tags are
+		 * not allowed. However, we can have to modify DELAF entry variables */
+		struct dic_variable* dic_variables_backup = clone_dic_variable_list(
+				p->dic_variables);
+		do {
+			/* For each graph call, we look all the reachable states */
+			t = graph_call_list->transition;
+			while (t != NULL) {
+				struct parsing_info* L = NULL;
+				p->stack_base = p->stack->stack_pointer;
+				morphological_locate(graph_depth + 1, /* Exploration of the subgraph */
+				p->fst2->initial_states[graph_call_list->graph_number], pos,
+						pos_in_token, depth + 1, &L, 0, NULL, p,
+						p_token_error_ctx, jamo, pos_in_jamo, content_buffer);
+				p->stack_base = old_StackBase;
+				if (L != NULL) {
+					struct parsing_info* L_first = L;
+					/* If there is at least one match, we process the match list */
+					do {
+						/* We restore the settings of the current graph level */
+						if (p->output_policy != IGNORE_OUTPUTS) {
+							u_strcpy(&(p->stack->stack[stack_top + 1]),
+									L->stack);
+							p->stack->stack_pointer = L->stack_pointer;
+							p->dic_variables = L->dic_variable_backup;
+						}
+						/* And we continue the exploration */
+						morphological_locate(graph_depth, t->state_number,
+								L->position, L->pos_in_token, depth + 1,
+								matches, n_matches, ctx, p, p_token_error_ctx,
+								L->jamo, L->pos_in_jamo, content_buffer);
+						p->stack->stack_pointer = stack_top;
+						L = L->next;
+					} while (L != NULL);
+					/* We free all subgraph matches */
+					free_parsing_info(L_first);
+				}
+				p->dic_variables
+						= clone_dic_variable_list(dic_variables_backup);
+				t = t->next;
+			} /* end of while (t!=NULL) */
+		} while ((graph_call_list = graph_call_list->next) != NULL);
+		/* Finally, we have to restore the stack and other backup stuff */
+		p->stack->stack_pointer = stack_top;
+		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 
-   /* NOTE: we don't have to take care of normal variables, since they cannot be
-    *       modified in morphological mode */
-   clear_dic_variable_list(&dic_variables_backup);
-} /* End of processing subgraphs */
+		/* NOTE: we don't have to take care of normal variables, since they cannot be
+		 *       modified in morphological mode */
+		clear_dic_variable_list(&dic_variables_backup);
+	} /* End of processing subgraphs */
 
+	/**
+	 * METAS
+	 */
+	struct opt_meta* meta_list = current_state->metas;
+	while (meta_list != NULL) {
+		/* We process all the meta of the list */
+		t = meta_list->transition;
+		int match_one_letter;
+		while (t != NULL) {
+			match_one_letter = 0;
+			switch (meta_list->meta) {
 
-/**
- * METAS
- */
-struct opt_meta* meta_list=current_state->metas;
-while (meta_list!=NULL) {
-   /* We process all the meta of the list */
-   t=meta_list->transition;
-   int match_one_letter;
-   while (t!=NULL) {
-      match_one_letter=0;
-      switch (meta_list->meta) {
+			case META_EPSILON:
+				/* We could have an output associated to an epsilon, so we handle this case */
+				if (p->output_policy != IGNORE_OUTPUTS) {
+					if (!process_output(p->tags[t->tag_number]->output, p)) {
+						break;
+					}
+				}
+				morphological_locate(graph_depth,
+						meta_list->transition->state_number, pos, pos_in_token,
+						depth + 1, matches, n_matches, ctx, p,
+						p_token_error_ctx, jamo, pos_in_jamo, content_buffer);
+				p->stack->stack_pointer = stack_top;
+				break;
 
-         case META_EPSILON:
-            /* We could have an output associated to an epsilon, so we handle this case */
-            if (p->output_policy!=IGNORE_OUTPUTS) {
-               if (!process_output(p->tags[t->tag_number]->output,p)) {
-                  break;
-               }
-            }
-            morphological_locate(graph_depth,meta_list->transition->state_number,pos,pos_in_token,depth+1,
-                                 matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo,content_buffer);
-            p->stack->stack_pointer=stack_top;
-            break;
+			case META_SHARP:
+				fatal_error("Unexpected # tag in morphological mode\n");
+				break;
 
-         case META_SHARP:
-            fatal_error("Unexpected # tag in morphological mode\n");
-            break;
+			case META_SPACE:
+				if (token == -1)
+					break;
+				update_last_position(p, pos);
+				if (token == p->STOP)
+					break;
+				if (current_token[pos_in_token] == ' ') {
+					match_one_letter = 1;
+				}
+				break;
 
-         case META_SPACE:
-            if (token==-1) break;
-            update_last_position(p,pos);
-            if (token==p->STOP) break;
-            if (current_token[pos_in_token]==' ') {
-               match_one_letter=1;
-            }
-            break;
+			case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
+			 the alphabet file */
+				if (token == -1)
+					break;
+				update_last_position(p, pos);
+				if (token == p->STOP)
+					break;
+				if (XOR(is_letter(current_token[pos_in_token], p->alphabet),
+						meta_list->negation)) {
+					match_one_letter = 1;
+				}
+				break;
 
-         case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
-                           the alphabet file */
-             if (token==-1) break;
-             update_last_position(p,pos);
-             if (token==p->STOP) break;
-            if (XOR(is_letter(current_token[pos_in_token],p->alphabet),meta_list->negation)) {
-               match_one_letter=1;
-            }
-            break;
-
-         case META_DIC: {
-             if (token==-1) break;
-             update_last_position(p,pos);
-             if (token==p->STOP) break;
-            struct parsing_info* L2=NULL;
-            int len_var_name=0;
-            if (p->tags[t->tag_number]->output != NULL) {
-              len_var_name = 31;//u_strlen(p->tags[t->tag_number]->output);
-            }
+			case META_DIC: {
+				if (token == -1)
+					break;
+				update_last_position(p, pos);
+				if (token == p->STOP)
+					break;
+				struct parsing_info* L2 = NULL;
+				int len_var_name = 0;
+				if (p->tags[t->tag_number]->output != NULL) {
+					len_var_name = 31;//u_strlen(p->tags[t->tag_number]->output);
+				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-            unichar *var_name;
-            var_name=(unichar*)malloc(sizeof(unichar)*(len_var_name+1));
-            if (var_name==NULL) {
-              fatal_alloc_error("morphological_locate");
-            }
+				unichar *var_name;
+				var_name=(unichar*)malloc(sizeof(unichar)*(len_var_name+1));
+				if (var_name==NULL) {
+					fatal_alloc_error("morphological_locate");
+				}
 #else
-            unichar var_name[len_var_name+1];
+				unichar var_name[len_var_name + 1];
 #endif
-            int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(p->tags[t->tag_number]->output,var_name));
-            explore_dic_in_morpho_mode(p,pos,pos_in_token,&L2,NULL,save_dic_entry,jamo,pos_in_jamo);
-            unichar *content1=content_buffer;
-            if (L2!=NULL) {
-               struct parsing_info* L_first=L2;
-               /* If there is at least one match, we process the match list */
-               do  {
-                  get_content(content1,p,pos,pos_in_token,L2->position,L2->pos_in_token);
-                  #ifdef TRE_WCHAR
-                  int filter_number=p->tags[t->tag_number]->filter_number;
-                  int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content1,filter_number,p->recyclable_wchart_buffer));
-                  if (!morpho_filter_OK) {
-                     p->stack->stack_pointer=stack_top;
-                     L2=L2->next;
-                     continue;
-                  }
-                  #endif
-
-                  /* WARNING: we don't process the tag's output as usual if it
-                   *          is a variable declaration like $abc$. Note that it could
-                   *          make a difference if a variable with the same
-                   *          name was declared before entering the morphological mode */
-                  if (!save_dic_entry && p->output_policy!=IGNORE_OUTPUTS) {
-                     if (!process_output(p->tags[t->tag_number]->output,p)) {
-                        break;
-                     }
-                  }
-                  if (p->output_policy==MERGE_OUTPUTS) {
-                     push_input_string(p->stack,content1,p->protect_dic_chars);
-                  }
-                  unichar* reached_token=p->tokens->value[p->buffer[p->current_origin+L2->position]];
-                  int new_pos,new_pos_in_token;
-                  if (reached_token[L2->pos_in_token]=='\0') {
-                     /* If we are at the end of the last token matched by the <DIC> tag */
-                     new_pos=L2->position+1;
-                     new_pos_in_token=0;
-                  } else {
-                     /* If not */
-                     new_pos=L2->position;
-                     new_pos_in_token=L2->pos_in_token;
-                  }
-                  /* We continue the exploration */
-                  struct dela_entry* old_value=NULL;
-                  if (save_dic_entry) {
-                     old_value=clone_dela_entry(get_dic_variable(var_name,p->dic_variables));
-                     set_dic_variable(var_name,L2->dic_entry,&(p->dic_variables));
-                  }
-                  morphological_locate(graph_depth,meta_list->transition->state_number,
-                                    new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,
-                                    p,p_token_error_ctx,
-                                    L2->jamo,L2->pos_in_jamo,content_buffer);
-                  if (save_dic_entry) {
-                     set_dic_variable(var_name,old_value,&(p->dic_variables));
-                     free_dela_entry(old_value);
-                  }
-                  p->stack->stack_pointer=stack_top;
-                  L2=L2->next;
-               } while (L2!=NULL);
-               free_parsing_info(L_first);
-            }
-#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-            free(var_name);
+				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
+						&& is_morpho_variable_output(
+								p->tags[t->tag_number]->output, var_name));
+				explore_dic_in_morpho_mode(p, pos, pos_in_token, &L2, NULL,
+						save_dic_entry, jamo, pos_in_jamo);
+				unichar *content1 = content_buffer;
+				if (L2 != NULL) {
+					struct parsing_info* L_first = L2;
+					/* If there is at least one match, we process the match list */
+					do {
+						get_content(content1, p, pos, pos_in_token,
+								L2->position, L2->pos_in_token);
+#ifdef TRE_WCHAR
+						int filter_number =
+								p->tags[t->tag_number]->filter_number;
+						int morpho_filter_OK = (filter_number == -1
+								|| string_match_filter(p->filters, content1,
+										filter_number,
+										p->recyclable_wchart_buffer));
+						if (!morpho_filter_OK) {
+							p->stack->stack_pointer = stack_top;
+							L2 = L2->next;
+							continue;
+						}
 #endif
-            /* end of usage of content1 */
-            break;
-         }
 
-         case META_SDIC:
-            fatal_error("Unexpected <SDIC> tag in morphological mode\n");
-            break;
-
-         case META_CDIC:
-            fatal_error("Unexpected <CDIC> tag in morphological mode\n");
-            break;
-
-         case META_TDIC:
-            fatal_error("Unexpected <TDIC> tag in morphological mode\n");
-            break;
-
-         case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
-                           the alphabet file */
-             if (token==-1) break;
-             update_last_position(p,pos);
-             if (token==p->STOP) break;
-            if (XOR(is_upper(current_token[pos_in_token],p->alphabet),meta_list->negation)) {
-               match_one_letter=1;
-            }
-            break;
-
-         case META_MIN: /* In morphological mode, this tag matches a lowercase letter, as defined in
-                           the alphabet file */
-             if (token==-1) break;
-             update_last_position(p,pos);
-             if (token==p->STOP) break;
-            if (XOR(is_lower(current_token[pos_in_token],p->alphabet),meta_list->negation)) {
-               match_one_letter=1;
-            }
-            break;
-
-         case META_PRE:
-            fatal_error("Unexpected <PRE> tag in morphological mode\n");
-            break;
-
-         case META_NB:
-            fatal_error("Unexpected <NB> tag in morphological mode\n");
-            break;
-
-         case META_TOKEN: {
-             if (token==-1) break;
-             update_last_position(p,pos);
-             if (token==p->STOP) break;
-            unichar one_letter[2];
-            one_letter[0]=current_token[pos_in_token];
-            one_letter[1]='\0';
-            #ifdef TRE_WCHAR
-            int filter_number=p->tags[t->tag_number]->filter_number;
-            int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,one_letter,filter_number,p->recyclable_wchart_buffer));
-            if (morpho_filter_OK) {
-               match_one_letter=1;
-            }
-            #endif
-            break;
-         }
-
-         case META_LEFT_CONTEXT:
-            fatal_error("Unexpected left context mark in morphological mode\n");
-            break;
-
-         case META_BEGIN_MORPHO:
-            fatal_error("Unexpected morphological mode begin tag $<\n");
-            break;
-
-         case META_END_MORPHO:
-            /* Should happen, but only at the same level than the $< tag */
-            if (graph_depth!=0) {
-               fatal_error("Unexpected end of morphological mode at a different\nlevel than the $< tag\n");
-            }
-            if (pos_in_token!=0 || (jamo!=NULL && pos_in_jamo!=0)) {
-               /* If the end of the morphological mode occurs in the middle
-                * of a token, we don't take this "match" into account */
-               break;
-            }
-            /* If the end of the morphological mode occurs at the beginning of a token,
-             * then we have a match. We note the state number that corresponds to the state
-             * that follows the current $> tag transition, so that we know where to continue
-             * the exploration in the 'enter_morphological_mode' function. */
-            p->stack->stack[stack_top+1]='\0';
-            if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-               (*matches)=insert_if_different(pos,pos_in_token,t->state_number,(*matches),p->stack->stack_pointer,
-            		                          &(p->stack->stack[p->stack_base+1]),p->variables,
-            		                          p->dic_variables,-1,-1,jamo,pos_in_jamo);
-            } else {
-               (*matches)=insert_if_absent(pos,pos_in_token,t->state_number,(*matches),p->stack->stack_pointer,
-            		                       &(p->stack->stack[p->stack_base+1]),p->variables,
-            		                       p->dic_variables,-1,-1,jamo,pos_in_jamo);
-            }
-            break;
-
-      } /* End of the switch */
-      if (match_one_letter) {
-         /* We factorize here the cases <MOT>, <MIN> and <MAJ> that all correspond
-          * to matching one letter */
-         if (p->output_policy!=IGNORE_OUTPUTS) {
-            if (!process_output(p->tags[t->tag_number]->output,p)) {
-               goto next;
-            }
-         }
-         if (p->output_policy==MERGE_OUTPUTS) {
-            /* If needed, we push the character that was matched */
-            push_input_char(p->stack,current_token[pos_in_token],p->protect_dic_chars);
-         }
-         int new_pos;
-         int new_pos_in_token;
-         unichar* new_jamo=NULL;
-         int new_pos_in_jamo=0;
-         if (pos_in_token+1==current_token_length) {
-            /* If we are at the end of the current token */
-            new_pos=pos+1;
-            new_pos_in_token=0;
-            /* We also update the Jamo things */
-			   new_jamo=NULL;
-			   if (p->jamo_tags != NULL) {
-			      new_jamo=p->jamo_tags[p->buffer[new_pos+p->current_origin]];
-			   }
-            new_pos_in_jamo=0;
-         } else {
-            /* If not */
-            new_pos=pos;
-            new_pos_in_token=pos_in_token+1;
-            new_jamo=jamo;
-            /* If we are in Korean mode, we have to move in the Jamo sequence */
-            if (jamo!=NULL) {
-               new_pos_in_jamo=pos_in_jamo+1;
-               while (jamo[new_pos_in_jamo]!='\0') {
-            	   if (jamo[new_pos_in_jamo]==KR_SYLLABLE_BOUND) {
-            		   /* A syllable bound is OK: we go on the following Jamo */
-               		new_pos_in_jamo++;
-               		if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-               			fatal_error("Unexpected non Jamo character after a syllable bound\n");
-            	   	}
-            		   break;
-            	   }
-            	   if (u_is_Hangul(jamo[new_pos_in_jamo])) {
-            		   /* A Hangul is OK */
-            		   break;
-            	   }
-               	if (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-               		/* If we have a Jamo, we must go on */
-               		new_pos_in_jamo++;
-               	} else {
-               		/* Any other char is OK */
-            	   	break;
-            	   }
-               }
-               if (jamo[new_pos_in_jamo]!='\0') {
-            	   fatal_error("Unexpected end of Jamo sequence\n");
-               }
-            }
-         }
-         morphological_locate(graph_depth,t->state_number,new_pos,new_pos_in_token,depth+1,
-                                 matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo,content_buffer);
-         p->stack->stack_pointer=stack_top;
-      }
-      next: t=t->next;
-   }
-   meta_list=meta_list->next;
-}
-
-if (token==-1 || token==p->STOP) {
-   /* We can't match anything if we are at the end of the buffer or if
-    * we have the forbidden token {STOP} that must never be matched. */
-   return;
-}
-
-
-/**
- * VARIABLE STARTS
- */
-struct opt_variable* variable_list=current_state->variable_starts;
-if (variable_list!=NULL) {
-   fatal_error("Unexpected use of variable in morphological mode\n");
-}
-
-/**
- * VARIABLE ENDS
- */
-variable_list=current_state->variable_ends;
-if (variable_list!=NULL) {
-   fatal_error("Unexpected use of variable in morphological mode\n");
-}
-
-/**
- * CONTEXTS
- */
-struct opt_contexts* contexts=current_state->contexts;
-if (contexts!=NULL) {
-   fatal_error("Unexpected use of contexts in morphological mode\n");
-}
-
-/**
- * TOKENS
- */
-Transition* trans=current_state_old->transitions;
-while (trans!=NULL) {
-   if (trans->tag_number<0) {
-      /* We don't take subgraph transitions into account */
-      trans=trans->next;
-      continue;
-   }
-   Fst2Tag tag=p->tags[trans->tag_number];
-   if (tag->pattern!=NULL) {
-       update_last_position(p,pos);
-      if (tag->pattern->type==TOKEN_PATTERN) {
-         unichar* tag_token=tag->pattern->inflected;
-         int comma=-1;
-         if (tag_token[0]=='{' && u_strcmp(tag_token,"{") && u_strcmp(tag_token,"{S}")) {
-        	 /* If we have a tag like {eats,eat.V:P3s} */
-        	 tag_token++; /* We ignore the { */
-        	 while (tag_token[comma]!=',') {
-        		 comma++;
-        	 }
-        	 /* We want to avoid a copy */
-        	 tag_token[comma]='\0';
-         }
-         int tag_token_length=u_strlen(tag_token);
-         if (jamo!=NULL) {
-        	/* KOREAN token matching */
-            int new_pos_in_jamo=pos_in_jamo;
-            int new_pos_in_token=pos_in_token;
-            int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_token,tag_token,p,current_token);
-            if (comma!=-1) {
-            	/* If necessary, we restore the tag */
-            	tag_token[comma]=',';
-            }
-            if (result!=0) {
-            	/* Nothing to do if the match failed */
-            	int new_pos=pos;
-            	unichar* new_jamo=jamo;
-            	if (result==1) {
-            		/* The text token has been fully matched, so we go on the next one */
-            		new_pos_in_token=0;
-            		new_pos=pos+1;
-            	    new_jamo=p->jamo_tags[p->buffer[new_pos+p->current_origin]];
-            	    new_pos_in_jamo=0;
-                }
-            	/* If we can match the tag's token, we process the output, if we have to */
-            	if (p->output_policy!=IGNORE_OUTPUTS) {
-            	    if (!process_output(tag->output,p)) {
-            	        continue;
-            	    }
-            	}
-            	if (p->output_policy==MERGE_OUTPUTS) {
-            		fatal_error("Unsupported MERGE mode in Korean morphological mode\n");
-            	    //push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
-            	}
-            	morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,
-            	                                    matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo,content_buffer);
-            	p->stack->stack_pointer=stack_top;
-            }
-         	/* End of KOREAN token matching */
-         } else {
-            /* Non Korean token matching*/
-            int prefix_length;
-            if (tag->control&RESPECT_CASE_TAG_BIT_MASK) {
-               /* If we must have a perfect match */
-               prefix_length=get_longuest_prefix(current_token+pos_in_token,tag_token);
-            } else {
-               prefix_length=get_longuest_prefix_ignoring_case(current_token+pos_in_token,tag_token,p->alphabet);
-            }
-            if (prefix_length==tag_token_length) {
-               /* If we can match the tag's token, we process the output, if we have to */
-               if (p->output_policy!=IGNORE_OUTPUTS) {
-                  if (!process_output(tag->output,p)) {
-                     continue;
-                  }
-               }
-               if (p->output_policy==MERGE_OUTPUTS) {
-                  push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
-               }
-               int new_pos,new_pos_in_token;
-               if (pos_in_token+prefix_length<current_token_length) {
-                  /* If we didn't reach the end of the current token */
-                  new_pos=pos;
-                  new_pos_in_token=pos_in_token+prefix_length;
-               } else {
-                  /* If we must go on the next token */
-                  new_pos=pos+1;
-                  new_pos_in_token=0;
-               }
-               morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,
-                                    matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo,content_buffer);
-               p->stack->stack_pointer=stack_top;
-            } else {
-           	   /* No else here, because a grammar tag is not supposed to match a sequence that
-        	       * overlaps two text tokens. */
-            }
-            /* End of non Korean token matching */
-         }
-      } else {
-         /* Here, we deal with all the "real" patterns: <be>, <N+z1:ms>, <be.V:K> and <am,be.V> */
-         struct parsing_info* L=NULL;
-         int len_var_name=0;
-         if (tag->output != NULL) {
-           len_var_name = 31;//u_strlen(tag->output);
-         }
+						/* WARNING: we don't process the tag's output as usual if it
+						 *          is a variable declaration like $abc$. Note that it could
+						 *          make a difference if a variable with the same
+						 *          name was declared before entering the morphological mode */
+						if (!save_dic_entry && p->output_policy
+								!= IGNORE_OUTPUTS) {
+							if (!process_output(p->tags[t->tag_number]->output,
+									p)) {
+								break;
+							}
+						}
+						if (p->output_policy == MERGE_OUTPUTS) {
+							push_input_string(p->stack, content1,
+									p->protect_dic_chars);
+						}
+						unichar* reached_token =
+								p->tokens->value[p->buffer[p->current_origin
+										+ L2->position]];
+						int new_pos, new_pos_in_token;
+						if (reached_token[L2->pos_in_token] == '\0') {
+							/* If we are at the end of the last token matched by the <DIC> tag */
+							new_pos = L2->position + 1;
+							new_pos_in_token = 0;
+						} else {
+							/* If not */
+							new_pos = L2->position;
+							new_pos_in_token = L2->pos_in_token;
+						}
+						/* We continue the exploration */
+						struct dela_entry* old_value = NULL;
+						if (save_dic_entry) {
+							old_value = clone_dela_entry(get_dic_variable(
+									var_name, p->dic_variables));
+							set_dic_variable(var_name, L2->dic_entry,
+									&(p->dic_variables));
+						}
+						morphological_locate(graph_depth,
+								meta_list->transition->state_number, new_pos,
+								new_pos_in_token, depth + 1, matches,
+								n_matches, ctx, p, p_token_error_ctx, L2->jamo,
+								L2->pos_in_jamo, content_buffer);
+						if (save_dic_entry) {
+							set_dic_variable(var_name, old_value,
+									&(p->dic_variables));
+							free_dela_entry(old_value);
+						}
+						p->stack->stack_pointer = stack_top;
+						L2 = L2->next;
+					} while (L2 != NULL);
+					free_parsing_info(L_first);
+				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-         unichar *var_name;
-         var_name=(unichar*)malloc(sizeof(unichar)*(len_var_name+1));
-         if (var_name==NULL) {
-            fatal_alloc_error("morphological_locate");
-         }
+				free(var_name);
+#endif
+				/* end of usage of content1 */
+				break;
+			}
+
+			case META_SDIC:
+				fatal_error("Unexpected <SDIC> tag in morphological mode\n");
+				break;
+
+			case META_CDIC:
+				fatal_error("Unexpected <CDIC> tag in morphological mode\n");
+				break;
+
+			case META_TDIC:
+				fatal_error("Unexpected <TDIC> tag in morphological mode\n");
+				break;
+
+			case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
+			 the alphabet file */
+				if (token == -1)
+					break;
+				update_last_position(p, pos);
+				if (token == p->STOP)
+					break;
+				if (XOR(is_upper(current_token[pos_in_token], p->alphabet),
+						meta_list->negation)) {
+					match_one_letter = 1;
+				}
+				break;
+
+			case META_MIN: /* In morphological mode, this tag matches a lowercase letter, as defined in
+			 the alphabet file */
+				if (token == -1)
+					break;
+				update_last_position(p, pos);
+				if (token == p->STOP)
+					break;
+				if (XOR(is_lower(current_token[pos_in_token], p->alphabet),
+						meta_list->negation)) {
+					match_one_letter = 1;
+				}
+				break;
+
+			case META_PRE:
+				fatal_error("Unexpected <PRE> tag in morphological mode\n");
+				break;
+
+			case META_NB:
+				fatal_error("Unexpected <NB> tag in morphological mode\n");
+				break;
+
+			case META_TOKEN: {
+				if (token == -1)
+					break;
+				update_last_position(p, pos);
+				if (token == p->STOP)
+					break;
+				unichar one_letter[2];
+				one_letter[0] = current_token[pos_in_token];
+				one_letter[1] = '\0';
+#ifdef TRE_WCHAR
+				int filter_number = p->tags[t->tag_number]->filter_number;
+				int morpho_filter_OK = (filter_number == -1
+						|| string_match_filter(p->filters, one_letter,
+								filter_number, p->recyclable_wchart_buffer));
+				if (morpho_filter_OK) {
+					match_one_letter = 1;
+				}
+#endif
+				break;
+			}
+
+			case META_LEFT_CONTEXT:
+				fatal_error(
+						"Unexpected left context mark in morphological mode\n");
+				break;
+
+			case META_BEGIN_MORPHO:
+				fatal_error("Unexpected morphological mode begin tag $<\n");
+				break;
+
+			case META_END_MORPHO:
+				/* Should happen, but only at the same level than the $< tag */
+				if (graph_depth != 0) {
+					fatal_error(
+							"Unexpected end of morphological mode at a different\nlevel than the $< tag\n");
+				}
+				if (pos_in_token != 0 || (jamo != NULL && pos_in_jamo != 0)) {
+					/* If the end of the morphological mode occurs in the middle
+					 * of a token, we don't take this "match" into account */
+					break;
+				}
+				/* If the end of the morphological mode occurs at the beginning of a token,
+				 * then we have a match. We note the state number that corresponds to the state
+				 * that follows the current $> tag transition, so that we know where to continue
+				 * the exploration in the 'enter_morphological_mode' function. */
+				p->stack->stack[stack_top + 1] = '\0';
+				if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
+					(*matches) = insert_if_different(pos, pos_in_token,
+							t->state_number, (*matches),
+							p->stack->stack_pointer,
+							&(p->stack->stack[p->stack_base + 1]),
+							p->variables, p->dic_variables, -1, -1, jamo,
+							pos_in_jamo);
+				} else {
+					(*matches) = insert_if_absent(pos, pos_in_token,
+							t->state_number, (*matches),
+							p->stack->stack_pointer,
+							&(p->stack->stack[p->stack_base + 1]),
+							p->variables, p->dic_variables, -1, -1, jamo,
+							pos_in_jamo);
+				}
+				break;
+
+			} /* End of the switch */
+			if (match_one_letter) {
+				/* We factorize here the cases <MOT>, <MIN> and <MAJ> that all correspond
+				 * to matching one letter */
+				if (p->output_policy != IGNORE_OUTPUTS) {
+					if (!process_output(p->tags[t->tag_number]->output, p)) {
+						goto next;
+					}
+				}
+				if (p->output_policy == MERGE_OUTPUTS) {
+					/* If needed, we push the character that was matched */
+					push_input_char(p->stack, current_token[pos_in_token],
+							p->protect_dic_chars);
+				}
+				int new_pos;
+				int new_pos_in_token;
+				unichar* new_jamo = NULL;
+				int new_pos_in_jamo = 0;
+				if (pos_in_token + 1 == current_token_length) {
+					/* If we are at the end of the current token */
+					new_pos = pos + 1;
+					new_pos_in_token = 0;
+					/* We also update the Jamo things */
+					new_jamo = NULL;
+					if (p->jamo_tags != NULL) {
+						new_jamo = p->jamo_tags[p->buffer[new_pos
+								+ p->current_origin]];
+					}
+					new_pos_in_jamo = 0;
+				} else {
+					/* If not */
+					new_pos = pos;
+					new_pos_in_token = pos_in_token + 1;
+					new_jamo = jamo;
+					/* If we are in Korean mode, we have to move in the Jamo sequence */
+					if (jamo != NULL) {
+						new_pos_in_jamo = pos_in_jamo + 1;
+						while (jamo[new_pos_in_jamo] != '\0') {
+							if (jamo[new_pos_in_jamo] == KR_SYLLABLE_BOUND) {
+								/* A syllable bound is OK: we go on the following Jamo */
+								new_pos_in_jamo++;
+								if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+									fatal_error(
+											"Unexpected non Jamo character after a syllable bound\n");
+								}
+								break;
+							}
+							if (u_is_Hangul(jamo[new_pos_in_jamo])) {
+								/* A Hangul is OK */
+								break;
+							}
+							if (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+								/* If we have a Jamo, we must go on */
+								new_pos_in_jamo++;
+							} else {
+								/* Any other char is OK */
+								break;
+							}
+						}
+						if (jamo[new_pos_in_jamo] != '\0') {
+							fatal_error("Unexpected end of Jamo sequence\n");
+						}
+					}
+				}
+				morphological_locate(graph_depth, t->state_number, new_pos,
+						new_pos_in_token, depth + 1, matches, n_matches, ctx,
+						p, p_token_error_ctx, new_jamo, new_pos_in_jamo,
+						content_buffer);
+				p->stack->stack_pointer = stack_top;
+			}
+			next: t = t->next;
+		}
+		meta_list = meta_list->next;
+	}
+
+	if (token == -1 || token == p->STOP) {
+		/* We can't match anything if we are at the end of the buffer or if
+		 * we have the forbidden token {STOP} that must never be matched. */
+		return;
+	}
+
+	/**
+	 * VARIABLE STARTS
+	 */
+	struct opt_variable* variable_list = current_state->variable_starts;
+	if (variable_list != NULL) {
+		fatal_error("Unexpected use of variable in morphological mode\n");
+	}
+
+	/**
+	 * VARIABLE ENDS
+	 */
+	variable_list = current_state->variable_ends;
+	if (variable_list != NULL) {
+		fatal_error("Unexpected use of variable in morphological mode\n");
+	}
+
+	/**
+	 * CONTEXTS
+	 */
+	struct opt_contexts* contexts = current_state->contexts;
+	if (contexts != NULL) {
+		fatal_error("Unexpected use of contexts in morphological mode\n");
+	}
+
+	/**
+	 * TOKENS
+	 */
+	Transition* trans = current_state_old->transitions;
+	while (trans != NULL) {
+		if (trans->tag_number < 0) {
+			/* We don't take subgraph transitions into account */
+			trans = trans->next;
+			continue;
+		}
+		Fst2Tag tag = p->tags[trans->tag_number];
+		if (tag->pattern != NULL) {
+			update_last_position(p, pos);
+			if (tag->pattern->type == TOKEN_PATTERN) {
+				unichar* tag_token = tag->pattern->inflected;
+				int comma = -1;
+				if (tag_token[0] == '{' && u_strcmp(tag_token, "{")
+						&& u_strcmp(tag_token, "{S}")) {
+					/* If we have a tag like {eats,eat.V:P3s} */
+					tag_token++; /* We ignore the { */
+					while (tag_token[comma] != ',') {
+						comma++;
+					}
+					/* We want to avoid a copy */
+					tag_token[comma] = '\0';
+				}
+				int tag_token_length = u_strlen(tag_token);
+				if (jamo != NULL) {
+					/* KOREAN token matching */
+					int new_pos_in_jamo = pos_in_jamo;
+					int new_pos_in_token = pos_in_token;
+					int result = get_jamo_longest_prefix(jamo,
+							&new_pos_in_jamo, &new_pos_in_token, tag_token, p,
+							current_token);
+					if (comma != -1) {
+						/* If necessary, we restore the tag */
+						tag_token[comma] = ',';
+					}
+					if (result != 0) {
+						/* Nothing to do if the match failed */
+						int new_pos = pos;
+						unichar* new_jamo = jamo;
+						if (result == 1) {
+							/* The text token has been fully matched, so we go on the next one */
+							new_pos_in_token = 0;
+							new_pos = pos + 1;
+							new_jamo = p->jamo_tags[p->buffer[new_pos
+									+ p->current_origin]];
+							new_pos_in_jamo = 0;
+						}
+						/* If we can match the tag's token, we process the output, if we have to */
+						if (p->output_policy != IGNORE_OUTPUTS) {
+							if (!process_output(tag->output, p)) {
+								continue;
+							}
+						}
+						if (p->output_policy == MERGE_OUTPUTS) {
+							fatal_error(
+									"Unsupported MERGE mode in Korean morphological mode\n");
+							//push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
+						}
+						morphological_locate(graph_depth, trans->state_number,
+								new_pos, new_pos_in_token, depth + 1, matches,
+								n_matches, ctx, p, p_token_error_ctx, new_jamo,
+								new_pos_in_jamo, content_buffer);
+						p->stack->stack_pointer = stack_top;
+					}
+					/* End of KOREAN token matching */
+				} else {
+					/* Non Korean token matching*/
+					int prefix_length;
+					if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
+						/* If we must have a perfect match */
+						prefix_length = get_longuest_prefix(current_token
+								+ pos_in_token, tag_token);
+					} else {
+						prefix_length = get_longuest_prefix_ignoring_case(
+								current_token + pos_in_token, tag_token,
+								p->alphabet);
+					}
+					if (prefix_length == tag_token_length) {
+						/* If we can match the tag's token, we process the output, if we have to */
+						if (p->output_policy != IGNORE_OUTPUTS) {
+							if (!process_output(tag->output, p)) {
+								continue;
+							}
+						}
+						if (p->output_policy == MERGE_OUTPUTS) {
+							push_input_substring(p->stack, current_token
+									+ pos_in_token, prefix_length,
+									p->protect_dic_chars);
+						}
+						int new_pos, new_pos_in_token;
+						if (pos_in_token + prefix_length < current_token_length) {
+							/* If we didn't reach the end of the current token */
+							new_pos = pos;
+							new_pos_in_token = pos_in_token + prefix_length;
+						} else {
+							/* If we must go on the next token */
+							new_pos = pos + 1;
+							new_pos_in_token = 0;
+						}
+						morphological_locate(graph_depth, trans->state_number,
+								new_pos, new_pos_in_token, depth + 1, matches,
+								n_matches, ctx, p, p_token_error_ctx, jamo,
+								pos_in_jamo, content_buffer);
+						p->stack->stack_pointer = stack_top;
+					} else {
+						/* No else here, because a grammar tag is not supposed to match a sequence that
+						 * overlaps two text tokens. */
+					}
+					/* End of non Korean token matching */
+				}
+			} else {
+				/* Here, we deal with all the "real" patterns: <be>, <N+z1:ms>, <be.V:K> and <am,be.V> */
+				struct parsing_info* L = NULL;
+				int len_var_name = 0;
+				if (tag->output != NULL) {
+					len_var_name = 31;//u_strlen(tag->output);
+				}
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+				unichar *var_name;
+				var_name=(unichar*)malloc(sizeof(unichar)*(len_var_name+1));
+				if (var_name==NULL) {
+					fatal_alloc_error("morphological_locate");
+				}
 #else
-         unichar var_name[len_var_name+1];
+				unichar var_name[len_var_name + 1];
 #endif
-         int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(tag->output,var_name));
-         explore_dic_in_morpho_mode(p,pos,pos_in_token,&L,tag->pattern,save_dic_entry,jamo,pos_in_jamo);
-         unichar *content2=content_buffer;
-         if (L!=NULL) {
-            struct parsing_info* L_first=L;
-            /* If there is at least one match, we process the match list */
-            do  {
-               get_content(content2,p,pos,pos_in_token,L->position,L->pos_in_token);
-               #ifdef TRE_WCHAR
-               int filter_number=p->tags[trans->tag_number]->filter_number;
-               int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content2,filter_number,p->recyclable_wchart_buffer));
-               if (!morpho_filter_OK) {
-                  p->stack->stack_pointer=stack_top;
-                  L=L->next;
-                  continue;
-               }
-               #endif
-               /* WARNING: we don't process the tag's output as usual if it
-                *          is a variable declaration like $abc$. Note that it could
-                *          make a difference if a variable with the same
-                *          name was declared before entering the morphological mode */
-               if (!save_dic_entry && p->output_policy!=IGNORE_OUTPUTS) {
-                  if (!process_output(tag->output,p)) {
-                     continue;
-                  }
-               }
-               if (p->output_policy==MERGE_OUTPUTS) {
-                  push_input_string(p->stack,content2,p->protect_dic_chars);
-               }
-               unichar* reached_token=p->tokens->value[p->buffer[p->current_origin+L->position]];
-               int new_pos,new_pos_in_token;
-               if (reached_token[L->pos_in_token]=='\0') {
-                  /* If we are at the end of the last token matched by the dictionary search */
-                  new_pos=L->position+1;
-                  new_pos_in_token=0;
-               } else {
-                  /* If not */
-                  new_pos=L->position;
-                  new_pos_in_token=L->pos_in_token;
-               }
-               /* We continue the exploration */
-               struct dela_entry* old_value=NULL;
-               if (save_dic_entry) {
-                  old_value=clone_dela_entry(get_dic_variable(var_name,p->dic_variables));
-                  set_dic_variable(var_name,L->dic_entry,&(p->dic_variables));
-               }
-               morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,
-            		                depth+1,matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo,content_buffer);
-               if (save_dic_entry) {
-                  set_dic_variable(var_name,old_value,&(p->dic_variables));
-                  free_dela_entry(old_value);
-               }
-               p->stack->stack_pointer=stack_top;
-               L=L->next;
-            } while (L!=NULL);
-            free_parsing_info(L_first);
-         }
+				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
+						&& is_morpho_variable_output(tag->output, var_name));
+				explore_dic_in_morpho_mode(p, pos, pos_in_token, &L,
+						tag->pattern, save_dic_entry, jamo, pos_in_jamo);
+				unichar *content2 = content_buffer;
+				if (L != NULL) {
+					struct parsing_info* L_first = L;
+					/* If there is at least one match, we process the match list */
+					do {
+						get_content(content2, p, pos, pos_in_token,
+								L->position, L->pos_in_token);
+#ifdef TRE_WCHAR
+						int filter_number =
+								p->tags[trans->tag_number]->filter_number;
+						int morpho_filter_OK = (filter_number == -1
+								|| string_match_filter(p->filters, content2,
+										filter_number,
+										p->recyclable_wchart_buffer));
+						if (!morpho_filter_OK) {
+							p->stack->stack_pointer = stack_top;
+							L = L->next;
+							continue;
+						}
+#endif
+						/* WARNING: we don't process the tag's output as usual if it
+						 *          is a variable declaration like $abc$. Note that it could
+						 *          make a difference if a variable with the same
+						 *          name was declared before entering the morphological mode */
+						if (!save_dic_entry && p->output_policy
+								!= IGNORE_OUTPUTS) {
+							if (!process_output(tag->output, p)) {
+								continue;
+							}
+						}
+						if (p->output_policy == MERGE_OUTPUTS) {
+							push_input_string(p->stack, content2,
+									p->protect_dic_chars);
+						}
+						unichar* reached_token =
+								p->tokens->value[p->buffer[p->current_origin
+										+ L->position]];
+						int new_pos, new_pos_in_token;
+						if (reached_token[L->pos_in_token] == '\0') {
+							/* If we are at the end of the last token matched by the dictionary search */
+							new_pos = L->position + 1;
+							new_pos_in_token = 0;
+						} else {
+							/* If not */
+							new_pos = L->position;
+							new_pos_in_token = L->pos_in_token;
+						}
+						/* We continue the exploration */
+						struct dela_entry* old_value = NULL;
+						if (save_dic_entry) {
+							old_value = clone_dela_entry(get_dic_variable(
+									var_name, p->dic_variables));
+							set_dic_variable(var_name, L->dic_entry,
+									&(p->dic_variables));
+						}
+						morphological_locate(graph_depth, trans->state_number,
+								new_pos, new_pos_in_token, depth + 1, matches,
+								n_matches, ctx, p, p_token_error_ctx, L->jamo,
+								L->pos_in_jamo, content_buffer);
+						if (save_dic_entry) {
+							set_dic_variable(var_name, old_value,
+									&(p->dic_variables));
+							free_dela_entry(old_value);
+						}
+						p->stack->stack_pointer = stack_top;
+						L = L->next;
+					} while (L != NULL);
+					free_parsing_info(L_first);
+				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-         free(var_name);
+				free(var_name);
 #endif
-         /* end of usage of content2 */
-      }
-   }
-   trans=trans->next;
+				/* end of usage of content2 */
+			}
+		}
+		trans = trans->next;
+	}
 }
-}
-
-
 
 /**
  * Tests whether this tag has an input that is a token and not something like <...>.
  * Returns 1 in that case; 0 otherwise.
  */
 int input_is_token(Fst2Tag tag) {
-return (tag->input[0]!='<' || tag->input[1]=='\0');
+	return (tag->input[0] != '<' || tag->input[1] == '\0');
 }
-
-
 
 /**
  * This is function that starts matching things in morphological mode.
  */
 void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top level graph */
-            int state, /* current state in the grammar */
-            int pos, /* position in the token buffer, relative to the current origin */
-            int depth, /* number of nested calls to 'locate' */
-            struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-            int n_matches, /* number of sequences that have matched. It may be different from
-                            * the length of the 'matches' list if a given sequence can be
-                            * matched in several ways. It is used to detect combinatory
-                            * explosions due to bad written grammars. */
-            struct list_int* ctx, /* information about the current context, if any */
-            struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-            struct Token_error_ctx* p_token_error_ctx,
-            Abstract_allocator prv_alloc
-            ) {
-unichar* content_buffer=(unichar*)malloc(sizeof(unichar)*4096);
-if (content_buffer==NULL) {
-   fatal_alloc_error("enter_morphological_mode");
-}
-int* var_backup=NULL;
-int old_StackBase;
-int stack_top=p->stack->stack_pointer;
-old_StackBase=p->stack_base;
-if (p->output_policy!=IGNORE_OUTPUTS) {
-   /* For better performance when ignoring outputs */
-   var_backup=create_variable_backup(p->variables);
-}
-struct parsing_info* L=NULL;
-p->stack_base=p->stack->stack_pointer;
-struct dic_variable* dic_variable_backup=clone_dic_variable_list(p->dic_variables);
-int current_token=p->buffer[pos+p->current_origin];
-//error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
-morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,p_token_error_ctx,(p->jamo_tags!=NULL)?p->jamo_tags[current_token]:NULL,0,content_buffer);
-clear_dic_variable_list(&(p->dic_variables));
-p->stack_base=old_StackBase;
-if (L!=NULL) {
-   struct parsing_info* L_first=L;
-   /* If there is at least one match, we process the match list */
-   do  {
-      /* We restore the settings of the current graph level */
-      if (p->output_policy!=IGNORE_OUTPUTS) {
-         u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
-         p->stack->stack_pointer=L->stack_pointer;
-         install_variable_backup(p->variables,L->variable_backup);
-      }
-      p->dic_variables=clone_dic_variable_list(L->dic_variable_backup);
-      /* And we continue the exploration */
+int state, /* current state in the grammar */
+int pos, /* position in the token buffer, relative to the current origin */
+int depth, /* number of nested calls to 'locate' */
+struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
+int n_matches, /* number of sequences that have matched. It may be different from
+ * the length of the 'matches' list if a given sequence can be
+ * matched in several ways. It is used to detect combinatory
+ * explosions due to bad written grammars. */
+struct list_int* ctx, /* information about the current context, if any */
+struct locate_parameters* p, /* miscellaneous parameters needed by the function */
+struct Token_error_ctx* p_token_error_ctx, Abstract_allocator prv_alloc) {
+	unichar* content_buffer = (unichar*) malloc(sizeof(unichar) * 4096);
+	if (content_buffer == NULL) {
+		fatal_alloc_error("enter_morphological_mode");
+	}
+	int* var_backup = NULL;
+	int old_StackBase;
+	int stack_top = p->stack->stack_pointer;
+	old_StackBase = p->stack_base;
+	if (p->output_policy != IGNORE_OUTPUTS) {
+		/* For better performance when ignoring outputs */
+		var_backup = create_variable_backup(p->variables);
+	}
+	struct parsing_info* L = NULL;
+	p->stack_base = p->stack->stack_pointer;
+	struct dic_variable* dic_variable_backup = clone_dic_variable_list(
+			p->dic_variables);
+	int current_token = p->buffer[pos + p->current_origin];
+	//error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
+	morphological_locate(0, state, pos, 0, depth + 1, &L, 0, NULL, p,
+			p_token_error_ctx,
+			(p->jamo_tags != NULL) ? p->jamo_tags[current_token] : NULL, 0,
+			content_buffer);
+	clear_dic_variable_list(&(p->dic_variables));
+	p->stack_base = old_StackBase;
+	if (L != NULL) {
+		struct parsing_info* L_first = L;
+		/* If there is at least one match, we process the match list */
+		do {
+			/* We restore the settings of the current graph level */
+			if (p->output_policy != IGNORE_OUTPUTS) {
+				u_strcpy(&(p->stack->stack[stack_top + 1]), L->stack);
+				p->stack->stack_pointer = L->stack_pointer;
+				install_variable_backup(p->variables, L->variable_backup);
+			}
+			p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
+			/* And we continue the exploration */
 
-      variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(p->variables);
-      int count_cancel_trying=0;
-      int count_call=0;
-      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying,&count_call,prv_alloc);
-      if ((p->max_count_call > 0) && (count_call>=p->max_count_call)) {
-          u_printf("stop computing token %u after %u step computing\n",p->current_origin,count_call);
-      }
-      else
-      if ((p->max_count_call_warning > 0) && (count_call>=p->max_count_call_warning)) {
-          u_printf("warning : computing token %u take %u step computing\n",p->current_origin,count_call);
-      }
+			variable_backup_memory_reserve* backup_reserve =
+					create_variable_backup_memory_reserve(p->variables);
+			int count_cancel_trying = 0;
+			int count_call = 0;
+			locate(graph_depth, p->optimized_states[L->state_number],
+					L->position, depth + 1, matches, n_matches, ctx, p,
+					p_token_error_ctx, backup_reserve, &count_cancel_trying,
+					&count_call, prv_alloc);
+			if ((p->max_count_call > 0) && (count_call >= p->max_count_call)) {
+				u_printf("stop computing token %u after %u step computing\n",
+						p->current_origin, count_call);
+			} else if ((p->max_count_call_warning > 0) && (count_call
+					>= p->max_count_call_warning)) {
+				u_printf(
+						"warning : computing token %u take %u step computing\n",
+						p->current_origin, count_call);
+			}
 
-      free_reserve(backup_reserve);
+			free_reserve(backup_reserve);
 
-      p->stack->stack_pointer=stack_top;
-      if (graph_depth==0) {
-         /* If we are at the top graph level, we restore the variables */
-         if (p->output_policy!=IGNORE_OUTPUTS) {
-            install_variable_backup(p->variables,var_backup);
-         }
-      }
-      if (ctx==NULL || L->next!=NULL) {
-         /* If we are inside a context, we don't want to free all the dic_variables that
-          * have been set, in order to allow extracting morphological information from contexts.
-          * To do that, we arbitrarily keep the dic_variables of the last path match. */
-         clear_dic_variable_list(&(p->dic_variables));
-      }
-      L=L->next;
-   } while (L!=NULL);
-   free_parsing_info(L_first); /* free all morphological matches */
+			p->stack->stack_pointer = stack_top;
+			if (graph_depth == 0) {
+				/* If we are at the top graph level, we restore the variables */
+				if (p->output_policy != IGNORE_OUTPUTS) {
+					install_variable_backup(p->variables, var_backup);
+				}
+			}
+			if (ctx == NULL || L->next != NULL) {
+				/* If we are inside a context, we don't want to free all the dic_variables that
+				 * have been set, in order to allow extracting morphological information from contexts.
+				 * To do that, we arbitrarily keep the dic_variables of the last path match. */
+				clear_dic_variable_list(&(p->dic_variables));
+			}
+			L = L->next;
+		} while (L != NULL);
+		free_parsing_info(L_first); /* free all morphological matches */
+	}
+	/* Finally, we have to restore the stack and other backup stuff */
+	p->stack->stack_pointer = stack_top;
+	p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
+	if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
+		install_variable_backup(p->variables, var_backup);
+		free_variable_backup(var_backup);
+	}
+	if (ctx == NULL) {
+		p->dic_variables = dic_variable_backup;
+	} else {
+		clear_dic_variable_list(&dic_variable_backup);
+	}
+	free(content_buffer);
 }
-/* Finally, we have to restore the stack and other backup stuff */
-p->stack->stack_pointer=stack_top;
-p->stack_base=old_StackBase; /* May be changed by recursive subgraph calls */
-if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
-   install_variable_backup(p->variables,var_backup);
-   free_variable_backup(var_backup);
-}
-if (ctx==NULL) {
-   p->dic_variables=dic_variable_backup;
-} else {
-   clear_dic_variable_list(&dic_variable_backup);
-}
-free(content_buffer);
-}
-
-
 
 /**
  * Tries to find something in the dictionary that match both text content and
  * given pattern. This version of the function handles the all languages but Arabic.
  */
 void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
-                                const unsigned char* bin,const struct INF_codes* inf,
-                                int offset,unichar* current_token,unichar* inflected,
-                                int pos_in_current_token,
-                                int pos_in_inflected,int pos_offset,
-                                struct parsing_info* *matches,struct pattern* pattern,
-                                int save_dic_entry,unichar* jamo,int pos_in_jamo,
-                                unichar *line_buffer) {
-int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
-offset=offset+2;
-if (!(n_transitions & 32768)) {
-	//error("\narriba!\n\n\n");
-   /* If this node is final, we get the INF line number */
-   inflected[pos_in_inflected]='\0';
-   if (pattern==NULL && !save_dic_entry) {
-      /* If any word will do with no entry saving */
-      (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),NULL,jamo,pos_in_jamo);
-   } else {
-      /* If we have to check the pattern */
-      int inf_number=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
-      //unichar line[DIC_LINE_SIZE];
-      unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
-      struct list_ustring* tmp=inf->codes[inf_number];
-      while (tmp!=NULL) {
-         /* For each compressed code of the INF line, we save the corresponding
-          * DELAF line in 'info->dlc' */
-         uncompress_entry(inflected,tmp->string,line);
-     	 //error("\non decompresse la ligne _%S_\n",line);
-         struct dela_entry* dela_entry=tokenize_DELAF_line_opt(line);
-         if (dela_entry!=NULL && (pattern==NULL || is_entry_compatible_with_pattern(dela_entry,pattern))) {
-            //error("et ca matche!!\n");
-            (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),
-            		                              save_dic_entry?dela_entry:NULL,jamo,pos_in_jamo);
-         }
-         free_dela_entry(dela_entry);
-         tmp=tmp->next;
-      }
-   }
-}
-
-if (current_token[pos_in_current_token]=='\0') {
-	if (jamo==NULL) {
-		/* If we have reached the end of the current token in a non Korean language */
-		pos_offset++;
-		int token_number=p->buffer[pos_offset+p->current_origin];
-		if (token_number==-1 || token_number==p->STOP) {
-			/* Remember 1) that we must not be out of the array's bounds and
-			 *          2) that the token {STOP} must never be matched */
-			return;
+		const unsigned char* bin, const struct INF_codes* inf, int offset,
+		unichar* current_token, unichar* inflected, int pos_in_current_token,
+		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
+		struct pattern* pattern, int save_dic_entry, unichar* jamo,
+		int pos_in_jamo, unichar *line_buffer) {
+	int n_transitions = ((unsigned char) bin[offset]) * 256
+			+ (unsigned char) bin[offset + 1];
+	offset = offset + 2;
+	if (!(n_transitions & 32768)) {
+		//error("\narriba!\n\n\n");
+		/* If this node is final, we get the INF line number */
+		inflected[pos_in_inflected] = '\0';
+		if (pattern == NULL && !save_dic_entry) {
+			/* If any word will do with no entry saving */
+			(*matches) = insert_morphological_match(pos_offset,
+					pos_in_current_token, -1, (*matches), NULL, jamo,
+					pos_in_jamo);
+		} else {
+			/* If we have to check the pattern */
+			int inf_number = ((unsigned char) bin[offset]) * 256 * 256
+					+ ((unsigned char) bin[offset + 1]) * 256
+					+ (unsigned char) bin[offset + 2];
+			//unichar line[DIC_LINE_SIZE];
+			unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
+			struct list_ustring* tmp = inf->codes[inf_number];
+			while (tmp != NULL) {
+				/* For each compressed code of the INF line, we save the corresponding
+				 * DELAF line in 'info->dlc' */
+				uncompress_entry(inflected, tmp->string, line);
+				//error("\non decompresse la ligne _%S_\n",line);
+				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line);
+				if (dela_entry != NULL
+						&& (pattern == NULL
+								|| is_entry_compatible_with_pattern(dela_entry,
+										pattern))) {
+					//error("et ca matche!!\n");
+					(*matches) = insert_morphological_match(pos_offset,
+							pos_in_current_token, -1, (*matches),
+							save_dic_entry ? dela_entry : NULL, jamo,
+							pos_in_jamo);
+				}
+				free_dela_entry(dela_entry);
+				tmp = tmp->next;
+			}
 		}
-		current_token=p->tokens->value[token_number];
-		pos_in_current_token=0;
-	} else {
-		/* We are in Korean mode */
-		if (jamo[pos_in_jamo]=='\0') {
-			/* In korean, we perform a token change only if we have used all the token's jamos */
+	}
+
+	if (current_token[pos_in_current_token] == '\0') {
+		if (jamo == NULL) {
+			/* If we have reached the end of the current token in a non Korean language */
 			pos_offset++;
-			int token_number=p->buffer[pos_offset+p->current_origin];
-			if (token_number==-1 || token_number==p->STOP) {
+			int token_number = p->buffer[pos_offset + p->current_origin];
+			if (token_number == -1 || token_number == p->STOP) {
 				/* Remember 1) that we must not be out of the array's bounds and
 				 *          2) that the token {STOP} must never be matched */
 				return;
 			}
-			current_token=p->tokens->value[token_number];
-			pos_in_current_token=0;
-			pos_in_jamo=0;
-			jamo=p->jamo_tags[token_number];
-		}
-	}
-}
-int after_syllab_bound=0;
-if (jamo!=NULL) {
-	/* We test wether we are in the middle of a syllable or just after a syllable bound */
-    if (jamo[pos_in_jamo]==KR_SYLLABLE_BOUND) {
-    	/* If we have a syllable bound */
-    	after_syllab_bound=1;
-    	pos_in_jamo++;
-    }
-    else if (pos_in_jamo>0 && jamo[pos_in_jamo-1]==KR_SYLLABLE_BOUND) {
-    	/* If we are just after a syllable bound */
-    	after_syllab_bound=1;
-    }
-    else {
-    	/* By default, we must be in the middle of a syllable, and there's nothing to do */
-    }
-}
-
-/* We look for outgoing transitions */
-if (n_transitions & 32768) {
-   /* If we are in a normal node, we remove the control bit to
-    * have the good number of transitions */
-   n_transitions=n_transitions-32768;
-} else {
-   /* If we are in a final node, we must jump after the reference to the INF line number */
-   offset=offset+3;
-}
-for (int i=0;i<n_transitions;i++) {
-    update_last_position(p,pos_offset);
-   unichar c=(unichar)(((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1]);
-   offset=offset+2;
-   int adr=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
-   offset=offset+3;
-
-   if (jamo==NULL) {
-	   /* Non Korean mode */
-	   if (is_equal_or_uppercase(c,current_token[pos_in_current_token],p->alphabet)) {
-		   /* We explore the rest of the dictionary only if the
-		    * dictionary char is compatible with the token char. In that case,
-		    * we copy in 'inflected' the exact character that is in the dictionary. */
-		   inflected[pos_in_inflected]=c;
-		   explore_dic_in_morpho_mode_standard(p,bin,inf,adr,current_token,inflected,
-				   pos_in_current_token+1,pos_in_inflected+1,
-				   pos_offset,matches,pattern,save_dic_entry,
-				   jamo,pos_in_jamo,line_buffer);
-	   }
-   } else {
-	   //debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
-	   /* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
-	    * after a syllable bound */
-	   unichar c2[2];
-	   c2[0]=c;
-	   c2[1]='\0';
-	   /* We try to match all the jamo sequence found in the dictionary */
-	   int new_pos_in_current_token=pos_in_current_token;
-	   int new_pos_in_jamo=pos_in_jamo;
-	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,current_token);
-	   if (result!=0) {
-	      //error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
-		   /* Nothing to do if the match failed */
-		   int new_pos_offset=pos_offset;
-		   unichar* new_jamo=jamo;
-		   unichar* new_current_token=current_token;
-		   if (result==1) {
-			   /* The text token has been fully matched, so we go on the next one */
-			   new_pos_in_current_token=0;
-			   new_pos_offset=pos_offset+1;
-			   int token_number=p->buffer[new_pos_offset+p->current_origin];
-				if (token_number==-1 || token_number==p->STOP) {
+			current_token = p->tokens->value[token_number];
+			pos_in_current_token = 0;
+		} else {
+			/* We are in Korean mode */
+			if (jamo[pos_in_jamo] == '\0') {
+				/* In korean, we perform a token change only if we have used all the token's jamos */
+				pos_offset++;
+				int token_number = p->buffer[pos_offset + p->current_origin];
+				if (token_number == -1 || token_number == p->STOP) {
 					/* Remember 1) that we must not be out of the array's bounds and
 					 *          2) that the token {STOP} must never be matched */
 					return;
 				}
-				new_current_token=p->tokens->value[token_number];
-				new_jamo=p->jamo_tags[token_number];
- 			    new_pos_in_jamo=0;
-           }
-		   /* If we have a jamo letter match */
-		   inflected[pos_in_inflected]=c;
-		   explore_dic_in_morpho_mode_standard(p,bin,inf,adr,new_current_token,inflected,
-		   				   new_pos_in_current_token,pos_in_inflected+1,
-		   				   new_pos_offset,matches,pattern,save_dic_entry,
-		   				   new_jamo,new_pos_in_jamo,line_buffer);
-	   }
-	   /* Then we try to match a hangul, but only if we are just after a syllable bound */
-	   //error("after syllable=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
-#if 0
-	   if (after_syllab_bound && c==current_token[pos_in_current_token]) {
-			/* We explore the rest of the dictionary only if the
-			 * dictionary char is compatible with the token char. In that case,
-			 * we copy in 'inflected' the exact character that is in the dictionary. */
-			inflected[pos_in_inflected]=c;
-			//error("yes!\n\n\n");
-			int new_pos_in_current_token=pos_in_current_token+1;
-			int new_pos_in_jamo=pos_in_jamo;
-			if (current_token[new_pos_in_current_token]=='\0') {
-				/* If we matched the last character of the token, we must reset the jamo position to 0 */
-				new_pos_in_jamo=0;
-				//error("we did it\n");
-			} else {
-				/* Otherwise, we must update the jamo position */
-				while (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-					new_pos_in_jamo++;
-				}
+				current_token = p->tokens->value[token_number];
+				pos_in_current_token = 0;
+				pos_in_jamo = 0;
+				jamo = p->jamo_tags[token_number];
 			}
-			explore_dic_in_morpho_mode_standard(p,bin,inf,adr,current_token,inflected,
-					new_pos_in_current_token,pos_in_inflected+1,
-					   pos_offset,matches,pattern,save_dic_entry,
-					   jamo,new_pos_in_jamo,line_buffer);
-	   }
+		}
+	}
+	int after_syllab_bound = 0;
+	if (jamo != NULL) {
+		/* We test wether we are in the middle of a syllable or just after a syllable bound */
+		if (jamo[pos_in_jamo] == KR_SYLLABLE_BOUND) {
+			/* If we have a syllable bound */
+			after_syllab_bound = 1;
+			pos_in_jamo++;
+		} else if (pos_in_jamo > 0 && jamo[pos_in_jamo - 1]
+				== KR_SYLLABLE_BOUND) {
+			/* If we are just after a syllable bound */
+			after_syllab_bound = 1;
+		} else {
+			/* By default, we must be in the middle of a syllable, and there's nothing to do */
+		}
+	}
+
+	/* We look for outgoing transitions */
+	if (n_transitions & 32768) {
+		/* If we are in a normal node, we remove the control bit to
+		 * have the good number of transitions */
+		n_transitions = n_transitions - 32768;
+	} else {
+		/* If we are in a final node, we must jump after the reference to the INF line number */
+		offset = offset + 3;
+	}
+	for (int i = 0; i < n_transitions; i++) {
+		update_last_position(p, pos_offset);
+		unichar c = (unichar) (((unsigned char) bin[offset]) * 256
+				+ (unsigned char) bin[offset + 1]);
+		offset = offset + 2;
+		int adr = ((unsigned char) bin[offset]) * 256 * 256
+				+ ((unsigned char) bin[offset + 1]) * 256
+				+ (unsigned char) bin[offset + 2];
+		offset = offset + 3;
+
+		if (jamo == NULL) {
+			/* Non Korean mode */
+			if (is_equal_or_uppercase(c, current_token[pos_in_current_token],
+					p->alphabet)) {
+				/* We explore the rest of the dictionary only if the
+				 * dictionary char is compatible with the token char. In that case,
+				 * we copy in 'inflected' the exact character that is in the dictionary. */
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_standard(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, jamo, pos_in_jamo, line_buffer);
+			}
+		} else {
+			//debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+			/* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
+			 * after a syllable bound */
+			unichar c2[2];
+			c2[0] = c;
+			c2[1] = '\0';
+			/* We try to match all the jamo sequence found in the dictionary */
+			int new_pos_in_current_token = pos_in_current_token;
+			int new_pos_in_jamo = pos_in_jamo;
+			int result = get_jamo_longest_prefix(jamo, &new_pos_in_jamo,
+					&new_pos_in_current_token, c2, p, current_token);
+			if (result != 0) {
+				//error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+				/* Nothing to do if the match failed */
+				int new_pos_offset = pos_offset;
+				unichar* new_jamo = jamo;
+				unichar* new_current_token = current_token;
+				if (result == 1) {
+					/* The text token has been fully matched, so we go on the next one */
+					new_pos_in_current_token = 0;
+					new_pos_offset = pos_offset + 1;
+					int token_number = p->buffer[new_pos_offset
+							+ p->current_origin];
+					if (token_number == -1 || token_number == p->STOP) {
+						/* Remember 1) that we must not be out of the array's bounds and
+						 *          2) that the token {STOP} must never be matched */
+						return;
+					}
+					new_current_token = p->tokens->value[token_number];
+					new_jamo = p->jamo_tags[token_number];
+					new_pos_in_jamo = 0;
+				}
+				/* If we have a jamo letter match */
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_standard(p, bin, inf, adr,
+						new_current_token, inflected, new_pos_in_current_token,
+						pos_in_inflected + 1, new_pos_offset, matches, pattern,
+						save_dic_entry, new_jamo, new_pos_in_jamo, line_buffer);
+			}
+			/* Then we try to match a hangul, but only if we are just after a syllable bound */
+			//error("after syllable=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
+#if 0
+			if (after_syllab_bound && c==current_token[pos_in_current_token]) {
+				/* We explore the rest of the dictionary only if the
+				 * dictionary char is compatible with the token char. In that case,
+				 * we copy in 'inflected' the exact character that is in the dictionary. */
+				inflected[pos_in_inflected]=c;
+				//error("yes!\n\n\n");
+				int new_pos_in_current_token=pos_in_current_token+1;
+				int new_pos_in_jamo=pos_in_jamo;
+				if (current_token[new_pos_in_current_token]=='\0') {
+					/* If we matched the last character of the token, we must reset the jamo position to 0 */
+					new_pos_in_jamo=0;
+					//error("we did it\n");
+				} else {
+					/* Otherwise, we must update the jamo position */
+					while (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+						new_pos_in_jamo++;
+					}
+				}
+				explore_dic_in_morpho_mode_standard(p,bin,inf,adr,current_token,inflected,
+						new_pos_in_current_token,pos_in_inflected+1,
+						pos_offset,matches,pattern,save_dic_entry,
+						jamo,new_pos_in_jamo,line_buffer);
+			}
 #endif
-   }
-}
+		}
+	}
 }
 
+int shadda_may_be_omitted(ArabicTypoRules r) {
+	return r.shadda_damma_omission || r.shadda_damma_omission_at_end
+			|| r.shadda_dammatan_omission_at_end || r.shadda_fatha_omission
+			|| r.shadda_fatha_omission_at_end
+			|| r.shadda_fathatan_omission_at_end || r.shadda_kasra_omission
+			|| r.shadda_kasra_omission_at_end
+			|| r.shadda_kasratan_omission_at_end
+			|| r.shadda_superscript_alef_omission;
+}
 
 /**
  * Tries to find something in the dictionary that match both text content
  * and given pattern. This version of the function is dedicated to Arabic.
  */
-void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
-                                const unsigned char* bin,const struct INF_codes* inf,
-                                int offset,unichar* current_token,unichar* inflected,
-                                int pos_in_current_token,
-                                int pos_in_inflected,int pos_offset,
-                                struct parsing_info* *matches,struct pattern* pattern,
-                                int save_dic_entry,unichar *line_buffer) {
-int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
-offset=offset+2;
-if (!(n_transitions & 32768)) {
-   /* If this node is final, we get the INF line number */
-   inflected[pos_in_inflected]='\0';
-   if (pattern==NULL && !save_dic_entry) {
-      /* If any word will do with no entry saving */
-      (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),NULL,NULL,0);
-   } else {
-      /* If we have to check the pattern */
-      int inf_number=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
-      //unichar line[DIC_LINE_SIZE];
-      unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
-      struct list_ustring* tmp=inf->codes[inf_number];
-      while (tmp!=NULL) {
-         /* For each compressed code of the INF line, we save the corresponding
-          * DELAF line in 'info->dlc' */
-         uncompress_entry(inflected,tmp->string,line);
-     	 //error("\non decompresse la ligne _%S_\n",line);
-         struct dela_entry* dela_entry=tokenize_DELAF_line_opt(line);
-         if (dela_entry!=NULL && (pattern==NULL || is_entry_compatible_with_pattern(dela_entry,pattern))) {
-            //error("et ca matche!!\n");
-            (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),
-            		                              save_dic_entry?dela_entry:NULL,NULL,0);
-         }
-         free_dela_entry(dela_entry);
-         tmp=tmp->next;
-      }
-   }
-}
+#define NOTHING_EXPECTED 0
+#define END_OF_WORD_EXPECTED 1
+#define NO_END_OF_WORD_EXPECTED 2
 
-if (current_token[pos_in_current_token]=='\0') {
-	/* If we have reached the end of the current token in a non Korean language */
-	pos_offset++;
-	int token_number=p->buffer[pos_offset+p->current_origin];
-	if (token_number==-1 || token_number==p->STOP) {
-		/* Remember 1) that we must not be out of the array's bounds and
-		 *          2) that the token {STOP} must never be matched */
+void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
+		const unsigned char* bin, const struct INF_codes* inf, int offset,
+		unichar* current_token, unichar* inflected, int pos_in_current_token,
+		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
+		struct pattern* pattern, int save_dic_entry, unichar *line_buffer,
+		int expected, unichar last_dic_char) {
+	int n_transitions = ((unsigned char) bin[offset]) * 256
+			+ (unsigned char) bin[offset + 1];
+	offset = offset + 2;
+	if (!(n_transitions & 32768)) {
+		if (expected & NO_END_OF_WORD_EXPECTED) {
+			/* If we were not supposed to find the end of the word */
+			return;
+		}
+		/* If this node is final, we get the INF line number */
+		inflected[pos_in_inflected] = '\0';
+		if (pattern == NULL && !save_dic_entry) {
+			/* If any word will do with no entry saving */
+			(*matches) = insert_morphological_match(pos_offset,
+					pos_in_current_token, -1, (*matches), NULL, NULL, 0);
+		} else {
+			/* If we have to check the pattern */
+			int inf_number = ((unsigned char) bin[offset]) * 256 * 256
+					+ ((unsigned char) bin[offset + 1]) * 256
+					+ (unsigned char) bin[offset + 2];
+			//unichar line[DIC_LINE_SIZE];
+			unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
+			struct list_ustring* tmp = inf->codes[inf_number];
+			while (tmp != NULL) {
+				/* For each compressed code of the INF line, we save the corresponding
+				 * DELAF line in 'info->dlc' */
+				uncompress_entry(inflected, tmp->string, line);
+				//error("\non decompresse la ligne _%S_\n",line);
+				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line);
+				if (dela_entry != NULL
+						&& (pattern == NULL
+								|| is_entry_compatible_with_pattern(dela_entry,
+										pattern))) {
+					//error("et ca matche!!\n");
+					(*matches) = insert_morphological_match(pos_offset,
+							pos_in_current_token, -1, (*matches),
+							save_dic_entry ? dela_entry : NULL, NULL, 0);
+				}
+				free_dela_entry(dela_entry);
+				tmp = tmp->next;
+			}
+		}
+	}
+	if (expected & END_OF_WORD_EXPECTED) {
+		/* If we were supposed to reach the end of the word, then we don't have to
+		 * explore more transitions */
 		return;
 	}
-	current_token=p->tokens->value[token_number];
-	pos_in_current_token=0;
-}
+	if (current_token[pos_in_current_token] == '\0') {
+		/* If we have reached the end of the current token */
+		pos_offset++;
+		int token_number = p->buffer[pos_offset + p->current_origin];
+		if (token_number == -1 || token_number == p->STOP) {
+			/* Remember 1) that we must not be out of the array's bounds and
+			 *          2) that the token {STOP} must never be matched */
+			return;
+		}
+		current_token = p->tokens->value[token_number];
+		pos_in_current_token = 0;
+	}
 
-/* We look for outgoing transitions */
-if (n_transitions & 32768) {
-   /* If we are in a normal node, we remove the control bit to
-    * have the good number of transitions */
-   n_transitions=n_transitions-32768;
-} else {
-   /* If we are in a final node, we must jump after the reference to the INF line number */
-   offset=offset+3;
-}
-for (int i=0;i<n_transitions;i++) {
-    update_last_position(p,pos_offset);
-   unichar c=(unichar)(((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1]);
-   offset=offset+2;
-   int adr=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
-   offset=offset+3;
+	/* We look for outgoing transitions */
+	if (n_transitions & 32768) {
+		/* If we are in a normal node, we remove the control bit to
+		 * have the good number of transitions */
+		n_transitions = n_transitions - 32768;
+	} else {
+		/* If we are in a final node, we must jump after the reference to the INF line number */
+		offset = offset + 3;
+	}
+	for (int i = 0; i < n_transitions; i++) {
+		update_last_position(p, pos_offset);
+		unichar c = (unichar) (((unsigned char) bin[offset]) * 256
+				+ (unsigned char) bin[offset + 1]);
+		offset = offset + 2;
+		int adr = ((unsigned char) bin[offset]) * 256 * 256
+				+ ((unsigned char) bin[offset + 1]) * 256
+				+ (unsigned char) bin[offset + 2];
+		offset = offset + 3;
 
-   if (is_equal_or_uppercase(c,current_token[pos_in_current_token],p->alphabet)) {
-	   /* We explore the rest of the dictionary only if the
-	    * dictionary char is compatible with the token char. In that case,
-	    * we copy in 'inflected' the exact character that is in the dictionary. */
-	   inflected[pos_in_inflected]=c;
-	   explore_dic_in_morpho_mode_arabic(p,bin,inf,adr,current_token,inflected,
-			   pos_in_current_token+1,pos_in_inflected+1,
-			   pos_offset,matches,pattern,save_dic_entry,line_buffer);
-   }
-}
-}
+		/* Standard case: matching the char in the dictionary */
+		if (is_equal_or_uppercase(c, current_token[pos_in_current_token],
+				p->alphabet)) {
+			/* We explore the rest of the dictionary only if the
+			 * dictionary char is compatible with the token char. In that case,
+			 * we copy in 'inflected' the exact character that is in the dictionary. */
+			int can_go_on=0;
+			int next = NOTHING_EXPECTED;
+			if (last_dic_char == AR_SHADDA && (pos_in_current_token == 0
+					|| current_token[pos_in_current_token - 1] != AR_SHADDA)) {
+				/* Additional test: if we have matched X, we must check whether there was a shadda X
+				 * rule pending with a omitted shadda. In that case, we must check whether we are
+				 * allowed to go on or not. Moreover, we must determine the end of word is
+				 * expected now or not */
+				switch (c) {
+				case AR_FATHATAN: {
+					if (p->arabic.shadda_fathatan_omission_at_end) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					break;
+				}
+				case AR_DAMMATAN: {
+					if (p->arabic.shadda_dammatan_omission_at_end) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					break;
+				}
+				case AR_KASRATAN: {
+					if (p->arabic.shadda_kasratan_omission_at_end) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					break;
+				}
+				case AR_FATHA: {
+					if (p->arabic.shadda_fatha_omission) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					if (p->arabic.shadda_fatha_omission_at_end) can_go_on=1;
+					break;
+				}
+				case AR_DAMMA: {
+					if (p->arabic.shadda_damma_omission) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					if (p->arabic.shadda_damma_omission_at_end) can_go_on=1;
+					break;
+				}
+				case AR_KASRA: {
+					if (p->arabic.shadda_kasra_omission) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					if (p->arabic.shadda_kasra_omission_at_end) can_go_on=1;
+					break;
+				}
+				case AR_SUPERSCRIPT_ALEF: {
+					if (p->arabic.shadda_superscript_alef_omission) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+					break;
+				}
+				default:
+					fatal_error("Invalid switch value %C in explore_dic_in_morpho_mode_arabic!\n",c);
+				}
+			} else {
+				can_go_on=1;
+			}
 
-
+			//error("on compare %C et %C pour le token %S\n",c,current_token[pos_in_current_token],current_token);
+			if (can_go_on) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, next, c);
+			}
+		}
+		/* Rule that always applies about tatweel */
+		if (c != AR_TATWEEL && current_token[pos_in_current_token]
+				== AR_TATWEEL) {
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token + 1, pos_in_inflected,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.fatha_omission && c == AR_FATHA
+				&& current_token[pos_in_current_token] != AR_FATHA
+				&& last_dic_char != AR_SHADDA) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.damma_omission && c == AR_DAMMA
+				&& current_token[pos_in_current_token] != AR_DAMMA
+				&& last_dic_char != AR_SHADDA) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.kasra_omission && c == AR_KASRA
+				&& current_token[pos_in_current_token] != AR_KASRA
+				&& last_dic_char != AR_SHADDA) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.sukun_omission && c == AR_SUKUN
+				&& current_token[pos_in_current_token] != AR_SUKUN) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.superscript_alef_omission && c == AR_SUPERSCRIPT_ALEF
+				&& current_token[pos_in_current_token] != AR_SUPERSCRIPT_ALEF) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.fathatan_omission_at_end && c == AR_FATHATAN
+				&& current_token[pos_in_current_token] != AR_FATHATAN) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.dammatan_omission_at_end && c == AR_DAMMATAN
+				&& current_token[pos_in_current_token] != AR_DAMMATAN) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		if (p->arabic.kasratan_omission_at_end && c == AR_KASRATAN
+				&& current_token[pos_in_current_token] != AR_KASRATAN) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		/* If the dictionary contains a shadda that we may be allowed to skip */
+		if (c == AR_SHADDA && current_token[pos_in_current_token] != AR_SHADDA
+				&& shadda_may_be_omitted(p->arabic)) {
+			inflected[pos_in_inflected] = c;
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+					inflected, pos_in_current_token, pos_in_inflected + 1,
+					pos_offset, matches, pattern, save_dic_entry, line_buffer,
+					NOTHING_EXPECTED, c);
+		}
+		/* If the dictionary contains a shadda X, and the text contains either only shadda or nothing.
+		 * The test (c!=current_token[pos_in_current_token]) is used to avoid
+		 * duplicate calculus with the normal case */
+		if (last_dic_char==AR_SHADDA
+				/* The rules are the same regardless if the previous token char was a shadda or not,
+				 * so the following test must not be performed. We keep it in comment to
+				 * remind that it is pure luck that we can factorize two cases by skipping it
+				 *
+				 * && (pos_in_current_token>0 && current_token[pos_in_current_token-1]==AR_SHADDA)*/
+				&& c!=current_token[pos_in_current_token]) {
+			int can_go_on=0;
+			int next=NOTHING_EXPECTED;
+			switch(c) {
+			case AR_FATHA: {
+				if (p->arabic.shadda_fatha_omission || p->arabic.shadda_fatha_omission_at_end) can_go_on=1;
+				break;
+			}
+			case AR_FATHATAN: {
+				if (p->arabic.shadda_fathatan_omission_at_end) {
+					can_go_on=1;
+					/* I know a simple affectation could work, but I prefer doing it
+					 * the general case to prevent bugs if one day, several flags can co-occur */
+					next=next | END_OF_WORD_EXPECTED;
+				}
+				break;
+			}
+			case AR_DAMMA: {
+				if (p->arabic.shadda_damma_omission || p->arabic.shadda_damma_omission_at_end) can_go_on=1;
+				break;
+			}
+			case AR_DAMMATAN: {
+				if (p->arabic.shadda_dammatan_omission_at_end) {
+					can_go_on=1;
+					next=next | END_OF_WORD_EXPECTED;
+				}
+				break;
+			}
+			case AR_KASRA: {
+				if (p->arabic.shadda_kasra_omission || p->arabic.shadda_kasra_omission_at_end) can_go_on=1;
+				break;
+			}
+			case AR_KASRATAN: {
+				if (p->arabic.shadda_kasratan_omission_at_end) {
+					can_go_on=1;
+					next=next | END_OF_WORD_EXPECTED;
+				}
+				break;
+			}
+			case AR_SUPERSCRIPT_ALEF: {
+				if (p->arabic.shadda_superscript_alef_omission) can_go_on=1;
+				break;
+			}
+			default: fatal_error("Invalid switch value #2 %C in explore_dic_in_morpho_mode_arabic!\n",c);
+			}
+			if (can_go_on) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+						inflected, pos_in_current_token, pos_in_inflected + 1,
+						pos_offset, matches, pattern, save_dic_entry, line_buffer,
+						next, c);
+			}
+		}
+	}
+}
 
 /**
  * This function tries to find something in p's morphological dictionary that
@@ -1203,29 +1558,35 @@ for (int i=0;i<n_transitions;i++) {
  * anything found in the dictionary will do. It is used to represent the <DIC>
  * pattern.
  */
-void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_token,
-                                struct parsing_info* *matches,struct pattern* pattern,
-                                int save_dic_entry,unichar* jamo,int pos_in_jamo) {
-unichar* buffer_line_buffer_inflected;
-buffer_line_buffer_inflected = (unichar*)malloc(sizeof(unichar)*(4096+DIC_LINE_SIZE));
-if (buffer_line_buffer_inflected==NULL) {
-   fatal_alloc_error("explore_dic_in_morpho_mode");
-}
-unichar* inflected = buffer_line_buffer_inflected;
-unichar* line_buffer = buffer_line_buffer_inflected + 4096;
-for (int i=0;i<p->n_morpho_dics;i++) {
-   if (p->morpho_dic_bin[i]!=NULL) {
-      /* Can't match anything in an empty dictionary */
-	   if (p->arabic.rules_enabled) {
-		   explore_dic_in_morpho_mode_arabic(p,p->morpho_dic_bin[i],p->morpho_dic_inf[i],4,
-    		                       p->tokens->value[p->buffer[p->current_origin+pos]],inflected,pos_in_token,
-                                   0,pos,matches,pattern,save_dic_entry,line_buffer);
-	   } else {
-		   explore_dic_in_morpho_mode_standard(p,p->morpho_dic_bin[i],p->morpho_dic_inf[i],4,
-    		                       p->tokens->value[p->buffer[p->current_origin+pos]],inflected,pos_in_token,
-                                   0,pos,matches,pattern,save_dic_entry,jamo,pos_in_jamo,line_buffer);
-	   }
-   }
-}
-free(buffer_line_buffer_inflected);
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+		int pos_in_token, struct parsing_info* *matches,
+		struct pattern* pattern, int save_dic_entry, unichar* jamo,
+		int pos_in_jamo) {
+	unichar* buffer_line_buffer_inflected;
+	buffer_line_buffer_inflected = (unichar*) malloc(sizeof(unichar) * (4096
+			+ DIC_LINE_SIZE));
+	if (buffer_line_buffer_inflected == NULL) {
+		fatal_alloc_error("explore_dic_in_morpho_mode");
+	}
+	unichar* inflected = buffer_line_buffer_inflected;
+	unichar* line_buffer = buffer_line_buffer_inflected + 4096;
+	for (int i = 0; i < p->n_morpho_dics; i++) {
+		if (p->morpho_dic_bin[i] != NULL) {
+			/* Can't match anything in an empty dictionary */
+			if (p->arabic.rules_enabled) {
+				explore_dic_in_morpho_mode_arabic(p, p->morpho_dic_bin[i],
+						p->morpho_dic_inf[i], 4,
+						p->tokens->value[p->buffer[p->current_origin + pos]],
+						inflected, pos_in_token, 0, pos, matches, pattern,
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0');
+			} else {
+				explore_dic_in_morpho_mode_standard(p, p->morpho_dic_bin[i],
+						p->morpho_dic_inf[i], 4,
+						p->tokens->value[p->buffer[p->current_origin + pos]],
+						inflected, pos_in_token, 0, pos, matches, pattern,
+						save_dic_entry, jamo, pos_in_jamo, line_buffer);
+			}
+		}
+	}
+	free(buffer_line_buffer_inflected);
 }

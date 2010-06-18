@@ -203,6 +203,8 @@ if (h==NULL) return 0;
 (*rules).alef_hamza_above_O=test(h,ALEF_HAMZA_ABOVE_O);
 (*rules).alef_hamza_below_I_to_A=test(h,ALEF_HAMZA_BELOW_I_TO_A);
 (*rules).alef_hamza_below_I_to_L=test(h,ALEF_HAMZA_BELOW_I_TO_L);
+(*rules).fathatan_alef_equiv_alef_fathatan=test(h,FATHATAN_ALEF_EQUIV_ALEF_FATHATAN);
+(*rules).fathatan_alef_maqsura_equiv_alef_maqsura_fathatan=test(h,FATHATAN_ALEF_MAQSURA_EQUIV_ALEF_MAQSURA_FATHATAN);
 free_string_hash(h);
 return 1;
 }
