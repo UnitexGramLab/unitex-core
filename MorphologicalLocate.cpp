@@ -1234,6 +1234,7 @@ int shadda_may_be_omitted(ArabicTypoRules r) {
 #define NOTHING_EXPECTED 0
 #define END_OF_WORD_EXPECTED 1
 #define NO_END_OF_WORD_EXPECTED 2
+#define AL_EXPECTED 4
 
 void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		const unsigned char* bin, const struct INF_codes* inf, int offset,
@@ -1249,6 +1250,10 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		if (expected & NO_END_OF_WORD_EXPECTED) {
 			/* If we were not supposed to find the end of the word */
 			return;
+		}
+		if (expected & AL_EXPECTED) {
+			/* If we were only supposed to match a Al */
+			if (pos_in_inflected!=2 || inflected[pos_in_inflected-1]!=AR_LAM) return;
 		}
 		/* If this node is final, we get the INF line number */
 		inflected[pos_in_inflected] = '\0';
@@ -1412,9 +1417,36 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, AL_EXPECTED, c);
+			}
+			/* or it may be because of an initial O written A */
+			else if (c==AR_ALEF_WITH_HAMZA_ABOVE && current_token[pos_in_current_token]==AR_ALEF
+					&& pos_in_inflected==0 && p->arabic.alef_hamza_above_O) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
 			}
-			/* Or it may be because of the solar assimilation rule */
+			/* or it may be because of an initial I written A */
+			else if (c==AR_ALEF_WITH_HAMZA_BELOW && current_token[pos_in_current_token]==AR_ALEF
+					&& pos_in_inflected==0 && p->arabic.alef_hamza_below_I_to_A) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
+			}
+			/* or it may be because of an initial I written L */
+			else if (c==AR_ALEF_WITH_HAMZA_BELOW && current_token[pos_in_current_token]==AR_ALEF_WASLA
+					&& pos_in_inflected==0 && p->arabic.alef_hamza_below_I_to_L) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
+			}
+			/* ir it may be because of the solar assimilation rule */
 			else if (p->arabic.solar_assimilation
 					&& current_token[pos_in_current_token]==AR_SHADDA && pos_in_inflected==1
 					&& is_solar(inflected[0])
