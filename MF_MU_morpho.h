@@ -37,7 +37,9 @@
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
 // Returns 0 on success, 1 otherwise.   
-int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* lemma, MU_forms_T* forms);
+int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
+		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+		MU_lemma_T* lemma, MU_forms_T* forms,char* pkgdir);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

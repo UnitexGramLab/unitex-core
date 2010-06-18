@@ -154,7 +154,8 @@ for (int i = 1; i <= tfst->N; i++) {
    if (fexists(grfname)) {
       /* If there is a .grf for the current sentence, then we must
        * take it into account */
-      if (0==pseudo_main_Grf2Fst2(encoding_output,bom_output,mask_encoding_compatibility_input,grfname,0,NULL,1,1)) {
+      if (0==pseudo_main_Grf2Fst2(encoding_output,bom_output,mask_encoding_compatibility_input,
+    		  grfname,0,NULL,1,1,NULL)) {
          /* We proceed only if the graph compilation was a success */
          char fst2name[FILENAME_MAX];
          sprintf(fst2name, "%ssentence%d.fst2", basedir, i);

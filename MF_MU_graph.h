@@ -118,7 +118,9 @@ void MU_graph_free_all_graphs(MultiFlex_ctx* p_multiFlex_ctx);
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
 // (initially, 'forms' does not have its space allocated).
 //Returns 0 on success, 1 otherwise. 
-int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms);
+int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
+		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+		MU_lemma_T* MU_lemma, MU_forms_T* forms,char* pkgdir);
 
 /////////////////////////////////////////////////
 // Creates a MU_graph label from two strings.    

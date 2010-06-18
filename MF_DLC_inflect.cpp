@@ -56,7 +56,7 @@ int inflect(char* DLC, char* DLCF,
 		    Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
 		    int config_files_status,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
-		    Korean* korean) {
+		    Korean* korean,char* pkgdir) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
 	unichar input_line[DIC_LINE_SIZE]; //current DELAS/DELAC line
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line
@@ -108,7 +108,7 @@ int inflect(char* DLC, char* DLCF,
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
 			err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,DELAS_entry->lemma, inflection_code,
-					DELAS_entry->filters, &forms, semitic, korean);
+					DELAS_entry->filters, &forms, semitic, korean,pkgdir);
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
@@ -161,7 +161,8 @@ int inflect(char* DLC, char* DLCF,
 				if (!err) {
 					//Inflect the entry
 					MU_init_forms(&MU_forms);
-					err = MU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,dlc_entry->lemma, &MU_forms);
+					err = MU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,
+							mask_encoding_compatibility_input,dlc_entry->lemma, &MU_forms,pkgdir);
 					if (!err) {
 						int f; //index of the current inflected form
 						//Inform the user if no form generated

@@ -60,7 +60,7 @@ struct inflect_infos {
 
 //////////////////////////////
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
-		         Korean* korean);
+		         Korean* korean,char* pkgdir);
 int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, int, int, unichar* var_name, unsigned int, unichar **,
@@ -119,13 +119,14 @@ int SU_delete_lemma(SU_lemma_T* l);
 // Returns 0 on success, 1 otherwise.
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
-		         int semitic,Korean* korean) {
+		         int semitic,Korean* korean,char* pkgdir) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
 	unichar local_sem_code[MAX_CHARS_IN_STACK];
 	inflection_codes[0] = '\0';
-	int T = get_transducer(p_multiFlex_ctx,SU_id->lemma->paradigm,encoding_output,bom_output,mask_encoding_compatibility_input);
+	int T = get_transducer(p_multiFlex_ctx,SU_id->lemma->paradigm,encoding_output,bom_output,
+			mask_encoding_compatibility_input,pkgdir);
 	if (p_multiFlex_ctx->fst2[p_multiFlex_ctx->T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
@@ -148,14 +149,15 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encod
  */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                unichar* lemma, char* inflection_code, unichar** filters,
-		SU_forms_T* forms, int semitic,Korean* korean) {
+		SU_forms_T* forms, int semitic,Korean* korean,char* pkgdir) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
 	unichar local_semantic_code[MAX_CHARS_IN_STACK];
 
 	inflection_codes[0] = '\0';
-	int T = get_transducer(p_multiFlex_ctx,inflection_code,encoding_output,bom_output,mask_encoding_compatibility_input);
+	int T = get_transducer(p_multiFlex_ctx,inflection_code,encoding_output,bom_output,
+			mask_encoding_compatibility_input,pkgdir);
 	if (p_multiFlex_ctx->fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
