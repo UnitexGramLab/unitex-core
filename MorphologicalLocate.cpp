@@ -1235,6 +1235,8 @@ int shadda_may_be_omitted(ArabicTypoRules r) {
 #define END_OF_WORD_EXPECTED 1
 #define NO_END_OF_WORD_EXPECTED 2
 #define AL_EXPECTED 4
+#define AF_EXPECTED 8
+#define YF_EXPECTED 16
 
 void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		const unsigned char* bin, const struct INF_codes* inf, int offset,
@@ -1446,7 +1448,45 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
 			}
-			/* ir it may be because of the solar assimilation rule */
+			/* or it may be because of the FA -> AF rule, matching the first char */
+			else if (c==AR_FATHATAN && current_token[pos_in_current_token]==AR_ALEF
+					&& p->arabic.fathatan_alef_equiv_alef_fathatan) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, AF_EXPECTED, c);
+			}
+			/* or it may be because of the FA -> AF rule, matching the second char */
+			else if (c==AR_ALEF && current_token[pos_in_current_token]==AR_FATHATAN
+					&& expected==AF_EXPECTED
+					&& p->arabic.fathatan_alef_equiv_alef_fathatan) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c);
+			}
+			/* or it may be because of the FY -> YF rule, matching the first char */
+			else if (c==AR_FATHATAN && current_token[pos_in_current_token]==AR_ALEF_MAQSURA
+					&& p->arabic.fathatan_alef_maqsura_equiv_alef_maqsura_fathatan) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, YF_EXPECTED, c);
+			}
+			/* or it may be because of the FY -> YF rule, matching the second char */
+			else if (c==AR_ALEF_MAQSURA && current_token[pos_in_current_token]==AR_FATHATAN
+					&& expected==YF_EXPECTED
+					&& p->arabic.fathatan_alef_maqsura_equiv_alef_maqsura_fathatan) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c);
+			}
+			/* or it may be because of the solar assimilation rule */
 			else if (p->arabic.solar_assimilation
 					&& current_token[pos_in_current_token]==AR_SHADDA && pos_in_inflected==1
 					&& is_solar(inflected[0])
