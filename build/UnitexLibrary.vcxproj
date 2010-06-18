@@ -179,6 +179,7 @@
     <ClInclude Include="..\ActivityLogger.h" />
     <ClInclude Include="..\ActivityLoggerPlugCallback.h" />
     <ClInclude Include="..\Af_stdio.h" />
+    <ClInclude Include="..\Arabic.h" />
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
@@ -209,6 +210,7 @@
     <ClInclude Include="..\MappedFileHelperWin.cpp" />
     <ClCompile Include="..\Alphabet.cpp" />
     <ClCompile Include="..\ApplyDic.cpp" />
+    <ClCompile Include="..\Arabic.cpp" />
     <ClCompile Include="..\AsciiSearchTree.cpp" />
     <ClCompile Include="..\AutComplementation.cpp" />
     <ClCompile Include="..\AutConcat.cpp" />

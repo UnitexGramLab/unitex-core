@@ -176,6 +176,7 @@
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
 		2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294EE7C11A01195003CE92B /* Untokenize.cpp */; };
 		229851AA111A6F2000503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */; };
+		229D935B11CB4138007BC1B4 /* Arabic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229D935911CB4138007BC1B4 /* Arabic.cpp */; };
 		22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */; };
 		22EA01E11121ED9D00A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01DE1121ED9D00A89AD4 /* AbstractAllocator.cpp */; };
 		22FE4747117A22990011D758 /* LocateCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22FE4745117A22990011D758 /* LocateCache.cpp */; };
@@ -556,6 +557,8 @@
 		2294EE7C11A01195003CE92B /* Untokenize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Untokenize.cpp; path = ../Untokenize.cpp; sourceTree = SOURCE_ROOT; };
 		229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Check_lib.cpp; path = ../Fst2Check_lib.cpp; sourceTree = SOURCE_ROOT; };
 		229851A9111A6F2000503A07 /* Fst2Check_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Check_lib.h; path = ../Fst2Check_lib.h; sourceTree = SOURCE_ROOT; };
+		229D935911CB4138007BC1B4 /* Arabic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Arabic.cpp; path = ../Arabic.cpp; sourceTree = SOURCE_ROOT; };
+		229D935A11CB4138007BC1B4 /* Arabic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Arabic.h; path = ../Arabic.h; sourceTree = SOURCE_ROOT; };
 		22B2EB5C118B168100E00A77 /* MappedFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MappedFileHelper.h; path = ../MappedFileHelper.h; sourceTree = SOURCE_ROOT; };
 		22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MappedFileHelperPosix.cpp; path = ../MappedFileHelperPosix.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01DE1121ED9D00A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
@@ -623,6 +626,8 @@
 				222F77991107A48300C91CC7 /* Any.h */,
 				222F779A1107A48300C91CC7 /* ApplyDic.cpp */,
 				222F779B1107A48300C91CC7 /* ApplyDic.h */,
+				229D935911CB4138007BC1B4 /* Arabic.cpp */,
+				229D935A11CB4138007BC1B4 /* Arabic.h */,
 				222F779C1107A48300C91CC7 /* AsciiSearchTree.cpp */,
 				222F779D1107A48300C91CC7 /* AsciiSearchTree.h */,
 				222F779E1107A48300C91CC7 /* AutComplementation.cpp */,
@@ -1209,6 +1214,7 @@
 				22FE4747117A22990011D758 /* LocateCache.cpp in Sources */,
 				22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */,
 				2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */,
+				229D935B11CB4138007BC1B4 /* Arabic.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1247,7 +1253,7 @@
 		1DEB923608733DC60010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1273,6 +1279,7 @@
 					korean,
 					mac,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.1;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.4;
@@ -1282,7 +1289,7 @@
 		1DEB923708733DC60010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"_NOT_UNDER_WINDOWS=1",
@@ -1307,6 +1314,7 @@
 					korean,
 					mac,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.1;
 				PREBINDING = NO;
 				SDKROOT = macosx10.4;
 			};

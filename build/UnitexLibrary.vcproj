@@ -401,6 +401,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Arabic.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Arabic.h"
+				>
+			</File>
+			<File
 				RelativePath="..\AsciiSearchTree.cpp"
 				>
 			</File>
