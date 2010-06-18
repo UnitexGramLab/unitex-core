@@ -208,3 +208,72 @@ if (h==NULL) return 0;
 free_string_hash(h);
 return 1;
 }
+
+
+/**
+ * This function takes a token and a position and checks whether there is
+ * a valid sequence with Al before the given position. This function considers
+ * the optional prepositions b(i) and k(a), as well as the optional
+ * conjunctions w(a) and f(a).
+ *
+ * Examples:
+ * 		Alraeiysu + pos=2 => OK
+ * 		lilraeiysu + pos=3 => OK
+ * 		llraeiysu + pos=2 => OK, but only if the i omission rule is active
+ */
+int was_Al_before(unichar* token,int pos,ArabicTypoRules rules) {
+if (pos<=1) return 0;
+pos--;
+if (token[pos--]!=AR_LAM) return 0;
+int ok=0;
+int lil=0;
+if (token[pos]==AR_ALEF) { ok=1; pos--; }								/* Al */
+else if (token[pos]==AR_ALEF_WASLA) { ok=rules.al_with_wasla; pos--; }	/* Ll */
+else if (token[pos]==AR_LAM) { ok=rules.kasra_omission; pos--; lil=1; }	/* ll */
+else if (pos>0 && token[pos]==AR_KASRA && token[pos-1]==AR_LAM) {		/* lil */
+	ok=1;
+	pos=pos-2;
+	lil=1;
+}
+if (!ok) return 0;
+if (pos==-1) return 1;
+if (!lil) {
+	/* Before Al or Ll, we can find bi or ka */
+	if (token[pos]==AR_KASRA && pos>0 && token[pos-1]==AR_BEH) {	/* bi */
+		pos=pos-2;
+	} else if (token[pos]==AR_BEH) {								/* b */
+		if (!rules.kasra_omission) return 0;
+		pos--;
+	} else if (token[pos]==AR_FATHA) {
+		/* If we have a 'a', it can be 'ka', or 'wa'/'fa' */
+		if (pos==-1) return 0;
+		if (token[pos]==AR_WAW || token[pos]==AR_FEH) { 			/* wa or fa */
+			/* We must be at the beginning of the word */
+			return pos==0;
+		} else if (token[pos]==AR_KAF) {							/* ka */
+			pos--;
+		} else {
+			return 0;
+		}
+	} else if (token[pos]==AR_KAF) {								/* k */
+		if (!rules.fatha_omission) return 0;
+		pos--;
+	} else if (token[pos]==AR_WAW) {								/* w */
+		return pos==0 && rules.fatha_omission;
+	} else if (token[pos]==AR_BEH) {								/* b */
+		return pos==0 && rules.fatha_omission;
+	} else {
+		return 0;
+	}
+}
+if (pos==-1) return 1;
+if (token[pos]==AR_WAW || token[pos]==AR_FEH) { 					/* w or f */
+	/* We must be at the beginning of the word */
+	return pos==0 && rules.fatha_omission;
+} else if (token[pos]==AR_FATHA) {									/* wa or fa */
+	pos--;
+	return pos==0 && (token[pos]==AR_WAW || token[pos]==AR_FEH);
+} else {
+	return 0;
+}
+}

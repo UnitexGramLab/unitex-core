@@ -1241,6 +1241,7 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar *line_buffer,
 		int expected, unichar last_dic_char) {
+	int old_offset=offset;
 	int n_transitions = ((unsigned char) bin[offset]) * 256
 			+ (unsigned char) bin[offset + 1];
 	offset = offset + 2;
@@ -1267,13 +1268,13 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
 				uncompress_entry(inflected, tmp->string, line);
-				//error("\non decompresse la ligne _%S_\n",line);
+				//error("on a decompresse la ligne %S\n",line);
 				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line);
 				if (dela_entry != NULL
 						&& (pattern == NULL
 								|| is_entry_compatible_with_pattern(dela_entry,
 										pattern))) {
-					//error("et ca matche!!\n");
+					//error("et ca matche!\n");
 					(*matches) = insert_morphological_match(pos_offset,
 							pos_in_current_token, -1, (*matches),
 							save_dic_entry ? dela_entry : NULL, NULL, 0);
@@ -1321,8 +1322,7 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		offset = offset + 3;
 
 		/* Standard case: matching the char in the dictionary */
-		if (is_equal_or_uppercase(c, current_token[pos_in_current_token],
-				p->alphabet)) {
+		if (c==current_token[pos_in_current_token]) {
 			/* We explore the rest of the dictionary only if the
 			 * dictionary char is compatible with the token char. In that case,
 			 * we copy in 'inflected' the exact character that is in the dictionary. */
@@ -1402,11 +1402,44 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, next, c);
 			}
+		} else {
+			/* If the dictionary char and the text char have not matched:
+			 *
+			 * it may be because of Al written Ll */
+			if (c==AR_ALEF && current_token[pos_in_current_token]==AR_ALEF_WASLA
+					&& pos_in_inflected==0 && p->arabic.al_with_wasla) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected + 1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
+			}
+			/* Or it may be because of the solar assimilation rule */
+			else if (p->arabic.solar_assimilation
+					&& current_token[pos_in_current_token]==AR_SHADDA && pos_in_inflected==1
+					&& is_solar(inflected[0])
+					&& was_Al_before(current_token,pos_in_current_token-1,p->arabic)) {
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, old_offset,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+			}
+			/* Or it may be because of the lunar assimilation rule */
+			else if (p->arabic.lunar_assimilation
+					&& pos_in_inflected==0
+					&& is_lunar(c)
+					&& current_token[pos_in_current_token]==AR_SUKUN
+					&& was_Al_before(current_token,pos_in_current_token,p->arabic)) {
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, old_offset,
+						current_token, inflected, pos_in_current_token + 1,
+						pos_in_inflected, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+			}
 		}
 		/* Rule that always applies about tatweel */
 		if (c != AR_TATWEEL && current_token[pos_in_current_token]
 				== AR_TATWEEL) {
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, bin, inf, old_offset, current_token,
 					inflected, pos_in_current_token + 1, pos_in_inflected,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
