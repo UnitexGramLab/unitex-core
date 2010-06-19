@@ -44,13 +44,13 @@
 // Returns 0 on success, 1 otherwise.
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,
 		int bom_output,int mask_encoding_compatibility_input,SU_id_T* SU_id,f_morpho_T* feat,
-		SU_forms_T* forms,int,Korean* korean,char* pkgdir);
+		SU_forms_T* forms,int,Korean* korean,const char* pkgdir);
 
 /* This prototype has been added in order to deal with simple words */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,
 		int bom_output,int mask_encoding_compatibility_input,unichar* lemma,
 		char* inflection_code,unichar **filters,SU_forms_T* forms,
-		int,Korean* korean,char* pkgdir);
+		int,Korean* korean,const char* pkgdir);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

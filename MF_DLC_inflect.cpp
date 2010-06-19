@@ -56,7 +56,7 @@ int inflect(char* DLC, char* DLCF,
 		    Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
 		    int config_files_status,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
-		    Korean* korean,char* pkgdir) {
+		    Korean* korean,const char* pkgdir) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
 	unichar input_line[DIC_LINE_SIZE]; //current DELAS/DELAC line
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line

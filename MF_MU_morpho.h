@@ -39,7 +39,7 @@
 // Returns 0 on success, 1 otherwise.   
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-		MU_lemma_T* lemma, MU_forms_T* forms,char* pkgdir);
+		MU_lemma_T* lemma, MU_forms_T* forms,const char* pkgdir);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

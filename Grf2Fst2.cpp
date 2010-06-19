@@ -70,7 +70,7 @@ u_printf(usage_Grf2Fst2);
 int pseudo_main_Grf2Fst2(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                          char* name,int yes_or_no,char* alphabet,
                          int no_empty_graph_warning,int tfst_check,
-                         char* pkgdir) {
+                         const char* pkgdir) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Grf2Fst2,"main_Grf2Fst2");
 add_argument(invoker,name);
 add_argument(invoker,yes_or_no?"-y":"-n");

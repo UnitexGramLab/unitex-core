@@ -46,7 +46,7 @@ void free_transition(struct transition* t);
 void free_node(struct node* n);
 struct transition* get_transition(char c,struct transition* t,struct node** n);
 int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,Encoding,int,int,
-		int pos,struct node* n,char* pkgdir);
+		int pos,struct node* n,const char* pkgdir);
 
 ///////////////////////////////
 //Initiate the tree for inflection transducers' names
@@ -71,7 +71,7 @@ free_node(p_multiFlex_ctx->root);
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array. Returns -1 if the transducer cannot be loaded
 int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex,Encoding encoding_output,
-		int bom_output,int mask_encoding_compatibility_input,char* pkgdir) {
+		int bom_output,int mask_encoding_compatibility_input,const char* pkgdir) {
 return get_node(p_multiFlex_ctx,flex,encoding_output,bom_output,mask_encoding_compatibility_input,
 		0,p_multiFlex_ctx->root,pkgdir);
 }
@@ -166,7 +166,7 @@ return (get_file_date(grf)>=get_file_date(fst2));
 // Look for the path to 'flex', creating it if necessary
 // The current node is n, and pos is the position in the flex string
 int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,Encoding encoding_output,int bom_output,
-		int mask_encoding_compatibility_input,int pos,struct node* n,char* pkgdir) {
+		int mask_encoding_compatibility_input,int pos,struct node* n,const char* pkgdir) {
 if (flex[pos]=='\0') {
     // we are at the final node for flex (a leaf)
     if (n->final!=-1) {

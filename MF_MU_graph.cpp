@@ -34,23 +34,23 @@
 
 
 
-int MU_graph_explore_graph(MultiFlex_ctx*,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms,char* pkgdir);
+int MU_graph_explore_graph(MultiFlex_ctx*,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms,const char* pkgdir);
 int MU_graph_init_graphs(MultiFlex_ctx*);
 void MU_graph_free_graphs(MultiFlex_ctx*);
-Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,char* pkgdir);
-int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,Fst2State q,MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
+Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* pkgdir);
+int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,Fst2State q,MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
-int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms,char* pkgdir);
-int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
-int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,char* pkgdir);
+int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms,const char* pkgdir);
+int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
+int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir);
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
 int MU_graph_scan_label_in(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* label, MU_graph_in_T* MU_label_in);
 int MU_graph_scan_label_out(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* label, MU_graph_out_T* MU_label_out);
@@ -66,7 +66,7 @@ void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho);
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                           MU_lemma_T* MU_l, MU_forms_T* forms,char* pkgdir) {
+                           MU_lemma_T* MU_l, MU_forms_T* forms,const char* pkgdir) {
   int res;
 
  //Initialize the current muli-word unit
@@ -110,7 +110,7 @@ void MU_graph_free_graphs(MultiFlex_ctx* p_multiFlex_ctx) {
 // In the graph not yet loaded loads it otherwise searches for it in the structure.
 // On success returns the graph's initial state, otherwise returns NULL.
 Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name,Encoding encoding_output,
-		int bom_output,int mask_encoding_compatibility_input,char* pkgdir) {
+		int bom_output,int mask_encoding_compatibility_input,const char* pkgdir) {
   //Get the index of the tranducer in the transducer table
   p_multiFlex_ctx->T=get_transducer(p_multiFlex_ctx,graph_name,encoding_output,bom_output,
 		  mask_encoding_compatibility_input,pkgdir);
@@ -134,7 +134,7 @@ Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name,E
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-		Fst2State q, MU_forms_T* forms,char* pkgdir) {
+		Fst2State q, MU_forms_T* forms,const char* pkgdir) {
   int err;
   MU_graph_label_T* lab;
   Fst2State q_bis;
@@ -194,7 +194,7 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-		MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms,char* pkgdir) {
+		MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms,const char* pkgdir) {
   int err;
   //If the current unit is a reference to a lemma's unit (e.g. <$2>)
   if (l->in && l->in->unit.type!=cst) {
@@ -275,7 +275,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Etat_fst q_bis, MU_forms_T* forms
 int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms,char* pkgdir) {
+		Fst2State q_bis, MU_forms_T* forms,const char* pkgdir) {
   int err;
   f_morpho_T feat;   //A set of the already treated morphological features contained in the label's input
   feat.no_cats = 0;
@@ -302,7 +302,7 @@ int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho
 int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat,
-		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,char* pkgdir) {
+		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,const char* pkgdir) {
   int err = 0;
 
   /////////////////////////////////////////////////////////////////
@@ -382,7 +382,7 @@ int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_mo
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-		SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms,char* pkgdir) {
+		SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms,const char* pkgdir) {
   int err;
   f_morpho_T old_feat;  //Features that the current unit has in the lemma of the MWU
 
@@ -422,7 +422,7 @@ int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct 
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho,
 		f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis,
-		MU_forms_T* forms,char* pkgdir) {
+		MU_forms_T* forms,const char* pkgdir) {
   int err;
 
   //Add the current label's category-value pair to the features of the single unit to be generated
@@ -458,7 +458,7 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,struct 
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho,
 		f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis,
-		MU_forms_T* forms,char* pkgdir) {
+		MU_forms_T* forms,const char* pkgdir) {
   int err;
   int new_instant=0;  //Controls if an instantiation occured in the current instance of the function
 
@@ -532,7 +532,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho,
 		f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis,
-		MU_forms_T* forms,char* pkgdir) {
+		MU_forms_T* forms,const char* pkgdir) {
   int err;  //Result of a function called
 
   unichar* var;  //Unification variable's identifier
@@ -631,7 +631,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-		MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms,char* pkgdir) {
+		MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms,const char* pkgdir) {
   int err;
   f_morpho_T feat;   //A set of the amready treated morphological features contained in the label's input
   f_init_morpho(&feat);
@@ -654,7 +654,7 @@ int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis,
-		MU_forms_T* forms,char* pkgdir) {
+		MU_forms_T* forms,const char* pkgdir) {
   int err = 0;
 
   //If no morphology in the output label, then go to the next state
@@ -729,7 +729,7 @@ int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,struct l_morph
 int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
-		Fst2State q_bis, MU_forms_T* forms,char* pkgdir) {
+		Fst2State q_bis, MU_forms_T* forms,const char* pkgdir) {
   int err;
   //Add the current label's category-value pair to the features of the single unit to be generated
   err = f_add_morpho(feat,c->cat,c->val.value);
@@ -758,7 +758,7 @@ int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,struct
 int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
 		MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
-		Fst2State q_bis, MU_forms_T* forms,char* pkgdir) {
+		Fst2State q_bis, MU_forms_T* forms,const char* pkgdir) {
   int err;  //Result of a function called
 
   unichar* var;  //Unification variable's identifier
