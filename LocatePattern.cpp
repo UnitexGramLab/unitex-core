@@ -103,7 +103,7 @@ p->match_cache_first=NULL;
 p->match_cache_last=NULL;
 p->match_cache=NULL;
 p->cached_match_vector=new_vector_ptr(16);
-p->arabic.rules_enabled=0;
+memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 return p;
 }
 
