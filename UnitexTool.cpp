@@ -60,6 +60,7 @@
 #include "Tokenize.h"
 #include "Txt2Tfst.h"
 #include "Uncompress.h"
+#include "Untokenize.h"
 #include "XMLizer.h"
 
 #include "Copyright.h"
@@ -140,6 +141,7 @@ const struct utility_item utility_array[]=
 	{ "TrainingTagger", 14, &main_TrainingTagger, usage_TrainingTagger, optstring_TrainingTagger, lopts_TrainingTagger } ,
 	{ "Txt2Tfst", 8, &main_Txt2Tfst, usage_Txt2Tfst, optstring_Txt2Tfst, lopts_Txt2Tfst } ,
 	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
+	{ "Untokenize", 10, &main_Untokenize, usage_Untokenize, optstring_Untokenize, lopts_Untokenize } ,
 	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,
 #endif
 
