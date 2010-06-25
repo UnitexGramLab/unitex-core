@@ -39,7 +39,7 @@ struct dic_variable {
 
 
 void clear_dic_variable_list(struct dic_variable* *list);
-void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list);
+void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list,int must_clone);
 struct dela_entry* get_dic_variable(unichar* name,struct dic_variable* list);
 struct dic_variable* clone_dic_variable_list(struct dic_variable* list);
 

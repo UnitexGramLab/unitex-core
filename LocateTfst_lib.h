@@ -30,6 +30,7 @@
 #include "LocateConstants.h"
 #include "Korean.h"
 #include "OptimizedTfstTagMatching.h"
+#include "DicVariables.h"
 
 /* Following values must be !=-1, because -1 is used in
  * OptimizedTfstTagMatching to indicate that the result of a match
@@ -66,6 +67,7 @@ struct locate_tfst_infos {
 	 * 'filters' is a structure used to store the filters.
 	 */
 	FilterSet* filters;
+	#endif
 
 	MatchPolicy match_policy;
 	OutputPolicy output_policy;
@@ -73,6 +75,7 @@ struct locate_tfst_infos {
 	VariableErrorPolicy variable_error_policy;
 	
 	Variables* variables;
+	struct dic_variable* dic_variables;
 
 	/* The total number of outputs. It may be different from the number
 	 * of matches if ambiguous outputs are allowed. */
@@ -98,7 +101,6 @@ struct locate_tfst_infos {
 	
 	LocateTfstTagMatchingCache* cache;
 	struct opt_contexts** contexts;
-	#endif
 };
 
 

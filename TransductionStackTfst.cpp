@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Match.h"
 #include "Tfst.h"
+#include "DELA.h"
 
 
 /**
@@ -37,7 +38,12 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
 /**
  * Pushes the given character.
  */
-void push_input_char_tfst(Ustring* s,unichar c) {
+void push_input_char_tfst(Ustring* s,unichar c,int protect_dic_chars) {
+if (protect_dic_chars && (c==',' || c=='.')) {
+	/* We want to protect dots and commas because the Locate program can be used
+	 * by Dico to generate dictionary entries */
+	u_strcat(s,"\\");
+}
 u_strcat(s,c);
 }
 
@@ -53,13 +59,13 @@ void push_output_char_tfst(Ustring* s,unichar c) {
 /**
  * Pushes the given string to the output, if not NULL.
  */
-void push_input_string_tfst(Ustring* stack,unichar* s) {
+void push_input_string_tfst(Ustring* stack,unichar* s,int protect_dic_chars) {
 int i;
 if (s==NULL) {
    return;
 }
 for (i=0;s[i]!='\0';i++) {
-    push_input_char_tfst(stack,s[i]);
+    push_input_char_tfst(stack,s[i],protect_dic_chars);
 }
 }
 
@@ -73,7 +79,7 @@ if (s==NULL) {
    return;
 }
 for (i=0;i<length && s[i]!='\0';i++) {
-   push_input_char_tfst(stack,s[i]);
+   push_input_char_tfst(stack,s[i],0);
 }
 }
 
@@ -147,7 +153,7 @@ while (s[i]!='\0') {
       }
       name[l]='\0';
       if (s[i]!='$' && s[i]!='.') {
-         switch (p->variable_error_policy) {
+    	 switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: {
@@ -157,7 +163,7 @@ while (s[i]!='\0') {
             }
          }
       }
-      if (s[i]=='.') {
+      else if (s[i]=='.') {
          /* Here we deal with the case of a field like $a.SET$ */
          unichar field[MAX_TRANSDUCTION_FIELD_LENGTH];
          l=0;
@@ -202,90 +208,49 @@ while (s[i]!='\0') {
                   return 0;
                }
             }
-         }
-
-         /* Dic variables are not currently not handled */
-         switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error with:\n%S\n\nYou may try to use dictionary variables that are not allowed by LocateTfst\n",s);
-            case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: {
-               stack->len=old_length;
-               stack->str[old_length]='\0';
-               return 0;
-            }
-         }
-      #if 0
-         /* Here we deal with the case of a field like $a.CODE$ */
-         unichar field[128];
-         l=0;
-         i++;
-         while (s[i]!='\0' && s[i]!='$') {
-            field[l++]=s[i++];
-         }
-         field[l]='\0';
-         if (s[i]=='\0') {
-            switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
-               case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: {
-                  stack->len=old_length;
-                  stack->str[old_length]='\0';
-                  return 0;
-               }
-            }
-         }
-         if (field[0]=='\0') {
-            switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
-               case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: {
-                  stack->len=old_length;
-                  stack->str[old_length]='\0';
-                  return 0;
-               }
-            }
-         }
-         i++;
-         struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
-         if (entry==NULL) {
-            switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
-               case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: {
-                  stack->len=old_length;
-                  stack->str[old_length]='\0';
-                  return 0;
-               }
-            }
-         }
-         if (!u_strcmp(field,"INFLECTED")) {
-            /* We use push_input_string because it can protect special chars */
-            push_input_string(p->stack,entry->inflected,1);
-         } else if (!u_strcmp(field,"LEMMA")) {
-        	 push_input_string(p->stack,entry->lemma,1);
-         } else if (!u_strcmp(field,"CODE")) {
-        	 push_output_string(p->stack,entry->semantic_codes[0]);
-            for (int i=1;i<entry->n_semantic_codes;i++) {
-               push_output_char(p->stack,'+');
-               push_output_string(p->stack,entry->semantic_codes[i]);
-            }
-            for (int i=0;i<entry->n_inflectional_codes;i++) {
-            	push_output_char(p->stack,':');
-               push_output_string(p->stack,entry->inflectional_codes[i]);
-            }
          } else {
-            switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
-               case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: {
-                  stack->len=old_length;
-                  stack->str[old_length]='\0';
-                  return 0;
-               }
-            }
+        	 /* Here we deal with dictionary variable things like $a.CODE$ */
+        	 struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+        	 if (entry==NULL) {
+        		 switch (p->variable_error_policy) {
+					 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
+					 case IGNORE_VARIABLE_ERRORS: continue;
+					 case BACKTRACK_ON_VARIABLE_ERRORS: {
+						 stack->len=old_length;
+						 stack->str[old_length]='\0';
+						 return 0;
+					 }
+        		 }
+        	 }
+        	 if (!u_strcmp(field,"INFLECTED")) {
+        		 /* We use push_input_string because it can protect special chars */
+        		 push_input_string_tfst(stack,entry->inflected,1);
+        	 } else if (!u_strcmp(field,"LEMMA")) {
+        		 push_input_string_tfst(stack,entry->lemma,1);
+        	 } else if (!u_strcmp(field,"CODE")) {
+        		 push_output_string_tfst(stack,entry->semantic_codes[0]);
+        		 for (int i=1;i<entry->n_semantic_codes;i++) {
+        			 push_output_char_tfst(stack,'+');
+        			 push_output_string_tfst(stack,entry->semantic_codes[i]);
+        		 }
+        		 for (int i=0;i<entry->n_inflectional_codes;i++) {
+        			 push_output_char_tfst(stack,':');
+        			 push_output_string_tfst(stack,entry->inflectional_codes[i]);
+        		 }
+        	 } else {
+        		 switch (p->variable_error_policy) {
+					 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
+					 case IGNORE_VARIABLE_ERRORS: continue;
+					 case BACKTRACK_ON_VARIABLE_ERRORS: {
+						 stack->len=old_length;
+						 stack->str[old_length]='\0';
+						 return 0;
+					 }
+        		 }
+        	 }
+        	 i++;
+        	 continue;
          }
-         continue;
-      #endif
       }
       i++;
       if (l==0) {

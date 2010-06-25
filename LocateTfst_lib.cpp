@@ -135,6 +135,7 @@ infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
 infos.variable_error_policy=variable_error_policy;
 infos.variables=new_Variables(infos.fst2->variables);
+infos.dic_variables=NULL;
 infos.number_of_outputs=0;
 infos.start_position_last_printed_match_token=-1;
 infos.end_position_last_printed_match_token=-1;
@@ -175,6 +176,7 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	free(visits);
 #endif
 	save_tfst_matches(&infos);
+	clear_dic_variable_list(&(infos.dic_variables));
 }
 u_printf("\rDone.                                    \n");
 /* We save some infos */

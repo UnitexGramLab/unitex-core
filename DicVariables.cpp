@@ -26,13 +26,18 @@
 /**
  * Allocates, initializes and returns a dic_variable.
  */
-struct dic_variable* new_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* next) {
+struct dic_variable* new_dic_variable(unichar* name,struct dela_entry* dic_entry,
+									struct dic_variable* next,int must_clone) {
 struct dic_variable* tmp=(struct dic_variable*)malloc(sizeof(struct dic_variable));
 if (tmp==NULL) {
    fatal_alloc_error("new_dic_variable");
 }
 tmp->name=u_strdup(name);
-tmp->dic_entry=clone_dela_entry(dic_entry);
+if (must_clone) {
+	tmp->dic_entry=clone_dela_entry(dic_entry);
+} else {
+	tmp->dic_entry=dic_entry;
+}
 tmp->next=next;
 return tmp;
 }
@@ -68,18 +73,22 @@ while (*list!=NULL) {
 /**
  * Sets the given dic variable, inserting it in the variable list if absent.
  */
-void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list) {
+void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list,int must_clone) {
 while (*list!=NULL) {
    if (!u_strcmp((*list)->name,name)) {
       /* If we have found the variable we were looking for */
       /* We have to free the previous value */
       free_dela_entry((*list)->dic_entry);
-      (*list)->dic_entry=clone_dela_entry(dic_entry);
+      if (must_clone) {
+    	  (*list)->dic_entry=clone_dela_entry(dic_entry);
+      } else {
+    	  (*list)->dic_entry=dic_entry;
+      }
       return;
    }
    list=&((*list)->next);
 }
-*list=new_dic_variable(name,dic_entry,NULL);
+*list=new_dic_variable(name,dic_entry,NULL,must_clone);
 }
 
 
@@ -106,5 +115,5 @@ return NULL;
  */
 struct dic_variable* clone_dic_variable_list(struct dic_variable* list) {
 if (list==NULL) return NULL;
-return new_dic_variable(list->name,list->dic_entry,clone_dic_variable_list(list->next));
+return new_dic_variable(list->name,list->dic_entry,clone_dic_variable_list(list->next),1);
 }

@@ -25,6 +25,7 @@
 #include "Tfst.h"
 #include "List_pointer.h"
 #include "TransductionStackTfst.h"
+#include "DicVariables.h"
 
 
 /* This special negative value is used to indicate that a $* tag was found, and that
@@ -411,14 +412,63 @@ vector_ptr_add(items,list);
 }
 
 
+static int is_variable_char(unichar c) {
+return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_');
+}
+
 /**
- * Inserts the output of the given Fst2 tag in the stack and returns 1 in
- * case of success. Returns 0 if a variable is not correctly defined and if
- * we are in BACKTRACK_ON_VARIABLE_ERRORS mode.
+ * Returns 1 if output is of the form $:XYZ$ and saves XYZ in name; 0 otherwise.
  */
-int process_output_for_tfst_match(struct locate_tfst_infos* infos,Ustring* output,int fst2_tag_number) {
-unichar* s=infos->fst2->tags[fst2_tag_number]->output;
-return process_output_tfst(output,s,infos);
+int is_capture_variable(unichar* output,unichar* name) {
+if (output==NULL || output[0]!='$' || output[1]!=':') return 0;
+int i=2,j=0;
+while (is_variable_char(output[i])) {
+	name[j++]=output[i++];
+}
+if (output[i]!='$' || output[i+1]!='\0') return 0;
+name[j]='\0';
+return 1;
+}
+
+
+/**
+ * Performs the variable capture. Returns 1 in case of success; 0 otherwise.
+ * Note that 1 is also returned if there is an error while the variable error
+ * policy is IGNORE_VARIABLE_ERROR.
+ */
+int do_variable_capture(int tfst_tag_number, int fst2_tag_number,
+		struct locate_tfst_infos* infos, unichar* name) {
+if (tfst_tag_number == -1) {
+	/* If we have a text independent match like <E>/$:X$, it's an error case */
+	switch (infos->variable_error_policy) {
+		case EXIT_ON_VARIABLE_ERRORS:
+			fatal_error(
+				"Should not have capture variable $:%S$ associated to text independent input %S\n",
+				name, infos->fst2->tags[fst2_tag_number]->input);
+		case IGNORE_VARIABLE_ERRORS: return 1;
+		case BACKTRACK_ON_VARIABLE_ERRORS: return 0;
+	}
+}
+TfstTag* tag = (TfstTag*) (infos->tfst->tags->tab[tfst_tag_number]);
+if (tag->content[0] != '{' || tag->content[1] == '\0') {
+	/* If we have a non tagged token like "foo" */
+	switch (infos->variable_error_policy) {
+		case EXIT_ON_VARIABLE_ERRORS:
+			fatal_error(
+				"Should not have capture variable $:%S$ associated to a tag that may capture untagged tokens: %S\n",
+				name, infos->fst2->tags[fst2_tag_number]->input);
+		case IGNORE_VARIABLE_ERRORS: return 1;
+		case BACKTRACK_ON_VARIABLE_ERRORS: return 0;
+	}
+}
+/* We can capture the tag */
+struct dela_entry* e=tokenize_tag_token(tag->content);
+if (e==NULL) {
+	/* Should not happen */
+	fatal_error("Unexpected tag tokenization error in do_variable_capture for tag:\n%S\n",tag->content);
+}
+set_dic_variable(name,e,&(infos->dic_variables),0);
+return 1;
 }
 
 
@@ -428,7 +478,7 @@ return process_output_tfst(output,s,infos);
  * If *var_starts!=NULL, it means that there are pending $var_start( tags
  * that wait for being taken into account when a text dependent tag is found.
  */
-void explore_match_for_MERGE_mode(struct locate_tfst_infos* infos,
+void explore_match_for_MERGE_or_REPLACE_mode(struct locate_tfst_infos* infos,
                                   struct tfst_simple_match_list* element,
                                   vector_ptr* items,int current_item,Ustring* s,
                                   int last_text_dependent_tfst_tag,
@@ -447,6 +497,17 @@ if (item==NULL) {
    fatal_error("Unexpected NULL item in explore_match_for_MERGE_mode\n");
 }
 
+unichar* output=infos->fst2->tags[item->fst2_transition->tag_number]->output;
+
+unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
+int capture;
+struct dela_entry* old_value=NULL;
+if ((capture=is_capture_variable(output,name))) {
+	/* If we have a capture variable $:X$, we must save the previous value
+	 * for this dictionary variable */
+	old_value=clone_dela_entry(get_dic_variable(name,infos->dic_variables));
+}
+
 Match saved_element=element->m;
 struct list_int* text_tags=item->text_tag_numbers;
 /* We explore all the text tags */
@@ -454,14 +515,24 @@ while (text_tags!=NULL) {
    /* First, we restore the output string */
    s->len=len;
    s->str[len]='\0';
-   /* We add the fst2 tag output, if any */
-   if (item->first_time) {
-      if (!process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number)) {
+   /* We deal with the fst2 tag output, if any */
+   if (capture) {
+	   /* If we have a capture variable, then we have to check whether the tfst tag
+	    * is a tagged token or not */
+	   int tfst_tag_number=text_tags->n;
+	   int fst2_tag_number=item->fst2_transition->tag_number;
+	   if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
+		   goto restore_dic_variable;
+	   }
+   } else if (item->first_time) {
+	   /* If the output is not a variable capture, we only have to process it once,
+	    * since it will have the same effect on all tfst tags */
+	  if (!process_output_tfst(s,output,infos)) {
          /* We do not take into account matches with variable errors if the
           * process_output_for_tfst_match function has decided that backtracking
           * was necessary, either because of a variable error of because of a
           * $a.SET$ or $a.UNSET$ test */
-         return;
+		  goto restore_dic_variable;
       }
    }
    int last_tag=last_text_dependent_tfst_tag;
@@ -477,7 +548,7 @@ while (text_tags!=NULL) {
          /* We add the address of the start field to our list */
          (*var_starts)=new_list_pointer(&(v->start),(var_starts==NULL)?NULL:(*var_starts));
          /* Then, we go on the next item */
-         explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+         explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
          /* After the exploration, there are 2 cases:
           * 1) *var_starts is NULL: nothing to do
           * 2) *var_starts is not NULL: we reached the end of the items without findind any
@@ -487,22 +558,22 @@ while (text_tags!=NULL) {
          v->start=old_value;
          /* If we have a $a( tag, we know that we can only have just one text tag 
           * with special value -1 */
-         return;
+         goto restore_dic_variable;
       } else if (fst2_tag->type==END_VAR_TAG) {
          /* If we have found a $a) tag */
          if (last_tag==-1) {
             /* If we have no tfst tag to use, then it's a variable definition error,
              * and we have nothing special to do */
-            explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
-            return;
+            explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+            goto restore_dic_variable;
          } else {
             /* We can set the end of the variable, it's 'last_tag' */
             struct transduction_variable* v=get_transduction_variable(infos->variables,fst2_tag->variable);
             int old_value=v->end;
             v->end=last_tag;
-            explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+            explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
             v->end=old_value;
-            return;
+            goto restore_dic_variable;
          }
       } else if (fst2_tag->type==LEFT_CONTEXT_TAG) {
          /* If we have found a $* tag, we must reset the stack string and the 
@@ -516,7 +587,7 @@ while (text_tags!=NULL) {
          element->m.start_pos_in_token=LEFT_CONTEXT_PENDING;
          /* We must reset last_tag to -1, because is not, we will have an 
           * extra space on the left of the match */
-         explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,-1,var_starts);
+         explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,-1,var_starts);
          
          /* And we restore previous values */
          element->m.start_pos_in_token=old_pos_token;
@@ -526,7 +597,7 @@ while (text_tags!=NULL) {
          free(old_stack);
          /* If we have a $* tag, we know that we can only have just one text tag 
           * with special value -1 */
-         return;
+         goto restore_dic_variable;
       }
    } else {
       current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
@@ -569,8 +640,10 @@ while (text_tags!=NULL) {
       }
       /* Here we have to insert the text that is between current_start and current_end,
        * and then, the ouput of the fst2 transition */
-      insert_text_interval_tfst(infos,s,previous_start_token,previous_start_char,
+      if (infos->output_policy==MERGE_OUTPUTS) {
+    	  insert_text_interval_tfst(infos,s,previous_start_token,previous_start_char,
                  current_tag->m.end_pos_in_token,current_tag->m.end_pos_in_char);
+      }
    }
    /* Then, we go on the next item */
    struct list_pointer* ptr2=NULL;
@@ -579,7 +652,7 @@ while (text_tags!=NULL) {
       element->m.start_pos_in_char=current_tag->m.start_pos_in_char;
       element->m.start_pos_in_letter=current_tag->m.start_pos_in_letter;
    }
-   explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag
+   explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag
          ,&ptr2 /* We have encountered a text dependent tag, so there is no
                  * more pending start tag like $a( */
          );
@@ -589,9 +662,15 @@ while (text_tags!=NULL) {
    if (infos->ambiguous_output_policy==IGNORE_AMBIGUOUS_OUTPUTS) {
       /* If we don't want ambiguous outputs, then the first path is
        * enough for our purpose */ 
-      return;
+      goto restore_dic_variable;
    }
    text_tags=text_tags->next;
+}
+restore_dic_variable:
+if (capture) {
+	/* If we have a capture variable $:X$, we must restore the previous value
+	 * for this dictionary variable */
+	set_dic_variable(name,old_value,&(infos->dic_variables),0);
 }
 }
 
@@ -607,44 +686,10 @@ void explore_match_to_get_outputs(struct locate_tfst_infos* infos,struct tfst_ma
 vector_ptr* items=new_vector_ptr(16);
 fill_vector(items,m);
 Ustring* s=new_Ustring(1024);
-if (infos->output_policy==REPLACE_OUTPUTS) {
-   /* Simplest case: we don't have to take the text automaton into account */
-	for (int i=0;i<items->nbelems;i++) {
-		struct tfst_match* item=(struct tfst_match*)(items->tab[i]);
-		int fst2_tag_number=item->fst2_transition->tag_number;
-		if (item->first_time) {
-		   /* We don't want to consider a single fst2 transition more than once
-		    * (see comment in declaration of (struct tfst_match) */
-		   if (!process_output_for_tfst_match(infos,s,fst2_tag_number)) {
-		      free_Ustring(s);
-		      free_vector_ptr(items); 
-		      return;
-		   }
-		}
-	}
-	/* Trick: as 'element' is a variable that will soon be destroyed, 
-	 * we don't need to u_strdup s->str */
-	element->output=s->str;
-	infos->matches=add_element_to_list(infos,infos->matches,element);
-	element->output=NULL;
-} else {
-	/* In MERGE mode, we have to explore the combination of partial matches */
-   /*for (int i=0;i<items->nbelems;i++) {
-      struct tfst_match* toto=(struct tfst_match*)(items->tab[i]);
-      struct list_int* rr=toto->text_tag_numbers;
-      error("i=%d:  ",i);
-      while (rr!=NULL) {
-         error("%d ",rr->n);
-         rr=rr->next;
-      }
-      error("\n");
-   }*/
-   
-   empty(s);
-   struct list_pointer* ptr=NULL;
-   explore_match_for_MERGE_mode(infos,element,items,0,s,-1,&ptr);
-   free_list_pointer(ptr);
-}
+/* In MERGE/REPLACE mode, we have to explore the combination of partial matches */
+struct list_pointer* ptr=NULL;
+explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,0,s,-1,&ptr);
+free_list_pointer(ptr);
 free_Ustring(s);
 free_vector_ptr(items);
 }

@@ -454,7 +454,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 							old_value = clone_dela_entry(get_dic_variable(
 									var_name, p->dic_variables));
 							set_dic_variable(var_name, L2->dic_entry,
-									&(p->dic_variables));
+									&(p->dic_variables),1);
 						}
 						morphological_locate(graph_depth,
 								meta_list->transition->state_number, new_pos,
@@ -463,8 +463,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 								L2->pos_in_jamo, content_buffer);
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
-									&(p->dic_variables));
-							free_dela_entry(old_value);
+									&(p->dic_variables),0);
 						}
 						p->stack->stack_pointer = stack_top;
 						L2 = L2->next;
@@ -878,7 +877,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 							old_value = clone_dela_entry(get_dic_variable(
 									var_name, p->dic_variables));
 							set_dic_variable(var_name, L->dic_entry,
-									&(p->dic_variables));
+									&(p->dic_variables),1);
 						}
 						morphological_locate(graph_depth, trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
@@ -886,8 +885,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 								L->pos_in_jamo, content_buffer);
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
-									&(p->dic_variables));
-							free_dela_entry(old_value);
+									&(p->dic_variables),0);
 						}
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
