@@ -185,7 +185,7 @@ while (s[i]!='\0') {
                last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
             }
 #ifdef __GNUC__
-#warning maintenant qu'on peut avoir des dic variables, il faut changer le code pour SET et UNSET
+#warning maintenant qu on peut avoir des dic variables, il faut changer le code pour SET et UNSET
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
 #pragma message("warning maintenant qu'on peut avoir des dic variables, il faut changer le code pour SET et UNSET")
 #endif
