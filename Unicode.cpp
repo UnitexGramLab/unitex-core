@@ -2749,7 +2749,7 @@ while (s[i]!='\0') {
 /**
  * Unicode version of strlen.
  */
-int u_strlen(const unichar* s) {
+unsigned int u_strlen(const unichar* s) {
 register int i=0;
 while (s[i++]) {}
 return (i-1);
@@ -2773,7 +2773,7 @@ return s;
 /**
  * unicode version of strncpy
  */
-unichar* u_strncpy(unichar *dest,const unichar *src,int n) {
+unichar* u_strncpy(unichar *dest,const unichar *src,unsigned int n) {
 register unichar c;
 unichar *s = dest; // backup pointer to start of destination string
 do {
@@ -3044,12 +3044,9 @@ return u_strdup(key);
  *
  * Author: Olivier Blanc
  */
-unichar* u_strdup(const unichar* str,int n) {
+unichar* u_strdup(const unichar* str,unsigned int n) {
 if (str==NULL) return NULL;
-if (n<0) {
-   fatal_error("Invalid length in u_strdup\n");
-}
-int length=u_strlen(str);
+unsigned int length=u_strlen(str);
 if (length<n) {
    n=length;
 }

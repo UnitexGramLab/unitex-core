@@ -228,10 +228,10 @@ int u_sscanf(unichar*,const char*,...);
 int u_vsscanf(unichar*,const char*,va_list);
 
 /* ------------------- String functions ------------------- */
-int u_strlen(const unichar*);
+unsigned int u_strlen(const unichar*);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
-unichar* u_strncpy(unichar *dest,const unichar *src,int n);
+unichar* u_strncpy(unichar *dest,const unichar *src,unsigned int n);
 unichar* u_strcpy_sized(unichar*,size_t,const unichar*);
 unichar* u_strcpy_sized(unichar*,size_t,const char*);
 unichar* u_strcat(unichar*,const unichar*);
@@ -242,7 +242,7 @@ int u_equal(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
 unichar* u_strdup(const unichar*);
 unichar* keycopy(unichar*);
-unichar* u_strdup(const unichar*,int);
+unichar* u_strdup(const unichar*,unsigned int);
 unichar* u_strdup(const char*);
 unichar* u_strchr(const unichar*,unichar,int);
 unichar* u_strchr(const unichar*,unichar);

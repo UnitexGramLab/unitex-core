@@ -65,6 +65,8 @@ enum tag_type {
                     // list of tokens that can be matched
    BEGIN_VAR_TAG, // $a(
    END_VAR_TAG,   // $a)
+   BEGIN_OUTPUT_VAR_TAG, // $|a(
+   END_OUTPUT_VAR_TAG,   // $|a)
    BEGIN_POSITIVE_CONTEXT_TAG, // $[
    BEGIN_NEGATIVE_CONTEXT_TAG, // $![
    END_CONTEXT_TAG,            // $]
@@ -202,8 +204,9 @@ struct fst2 {
     int* number_of_states_per_graphs;
 
     /* List of variables used in the graph. This list is initialized from
-     * the $a( and $a) deaclarations found in the tags. */
-    struct list_ustring* variables;
+     * the $a( and $a) declarations found in the tags. */
+    struct list_ustring* input_variables;
+    struct list_ustring* output_variables;
 };
 typedef struct fst2 Fst2;
 

@@ -719,7 +719,7 @@ void process_grf_state(unichar* box_content,struct list_int* transitions,
 unichar input[MAX_GRF_BOX_CONTENT];
 unichar output[MAX_GRF_BOX_CONTENT];
 if (transitions==NULL) {
-   /* If the state has not outoing transition, it will be discarded when the
+   /* If the state has no outgoing transition, it will be discarded when the
     * graph is cleaned, so it's not necessary to process it. */
    return;
 }

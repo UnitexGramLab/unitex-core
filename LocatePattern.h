@@ -33,6 +33,7 @@
 #include "OptimizedFst2.h"
 #include "Text_parsing.h"
 #include "TransductionVariables.h"
+#include "OutputTransductionVariables.h"
 #include "LocateConstants.h"
 #include "BitArray.h"
 /* $CD$ begin */
@@ -169,7 +170,8 @@ struct locate_parameters {
    int search_limit;
 
    /* The transduction variables of the fst2 */
-   Variables* variables;
+   Variables* input_variables;
+   OutputVariables* output_variables;
 
    /* This is the stack used to process outputs */
    struct stack_unichar* stack;

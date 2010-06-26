@@ -42,23 +42,23 @@ typedef struct {
    unichar* str;
 
    /* Its maximum capacity */
-   int size;
+   unsigned int size;
 
    /* The actual length of the string being represented */
-   int len;
+   unsigned int len;
 } Ustring;
 
 
 
 Ustring* new_Ustring(const unichar*);
 Ustring* new_Ustring();
-Ustring* new_Ustring(int);
+Ustring* new_Ustring(unsigned int);
 void free_Ustring(Ustring * ustr);
 
 static inline void empty(Ustring * ustr);
 
-void u_strcat(Ustring*,const unichar*,int);
-void u_strcat(Ustring*,const char*,int);
+void u_strcat(Ustring*,const unichar*,unsigned int);
+void u_strcat(Ustring*,const char*,unsigned int);
 void u_strcat(Ustring*,unichar);
 static inline void u_strcat(Ustring*,const Ustring*);
 static inline void u_strcat(Ustring*,const unichar*);
@@ -178,6 +178,19 @@ if (ustr->len>0 && ustr->str[ustr->len-1]=='\n') {
    ustr->len--;
    ustr->str[ustr->len]='\0';
 }
+}
+
+
+/**
+ * Removes n chars from the string. If n>len, the string is emptied.
+ */
+static inline void remove_n_chars(Ustring* ustr,unsigned int n) {
+if (ustr==NULL) {
+   fatal_error("NULL Ustring error in remove_n_chars\n");
+}
+if (n>ustr->len) n=ustr->len;
+ustr->len=ustr->len-n;
+ustr->str[ustr->len]='\0';
 }
 
 #endif

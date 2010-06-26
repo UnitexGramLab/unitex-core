@@ -24,7 +24,6 @@
 
 #include "Unicode.h"
 #include "LocatePattern.h"
-#include "TransductionVariables.h"
 
 #define TRANSDUCTION_STACK_SIZE 10000
 

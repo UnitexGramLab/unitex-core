@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Fst2.h"
 #include "TransductionVariables.h"
+#include "OutputTransductionVariables.h"
 #include "MetaSymbols.h"
 #include "Transitions.h"
 #include "Contexts.h"
@@ -97,8 +98,10 @@ struct optimizedFst2State {
   struct opt_pattern* patterns;
   struct opt_pattern* compound_patterns;
   struct opt_token* token_list;
-  struct opt_variable* variable_starts;
-  struct opt_variable* variable_ends;
+  struct opt_variable* input_variable_starts;
+  struct opt_variable* input_variable_ends;
+  struct opt_variable* output_variable_starts;
+  struct opt_variable* output_variable_ends;
   struct opt_contexts* contexts;
   int* tokens;
   int number_of_tokens;
@@ -108,7 +111,7 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Variables*,Fst2*,Abstract_allocator);
+OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,Abstract_allocator);
 void free_optimized_states(OptimizedFst2State*,int,Abstract_allocator);
 
 #endif

@@ -134,7 +134,7 @@ infos.match_policy=match_policy;
 infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
 infos.variable_error_policy=variable_error_policy;
-infos.variables=new_Variables(infos.fst2->variables);
+infos.variables=new_Variables(infos.fst2->input_variables);
 infos.dic_variables=NULL;
 infos.number_of_outputs=0;
 infos.start_position_last_printed_match_token=-1;
@@ -745,6 +745,8 @@ if (grammar_tag->type==BEGIN_MORPHO_TAG
  * We want to match something that is text independent */
 if (grammar_tag->type==BEGIN_VAR_TAG
    || grammar_tag->type==END_VAR_TAG
+   || grammar_tag->type==BEGIN_OUTPUT_VAR_TAG
+   || grammar_tag->type==END_OUTPUT_VAR_TAG
    || grammar_tag->type==LEFT_CONTEXT_TAG
    || !u_strcmp(grammar_tag->input,"<E>")) {
    return TEXT_INDEPENDENT_MATCH;

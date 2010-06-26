@@ -24,6 +24,7 @@
 
 #include "Unicode.h"
 #include "TransductionVariables.h"
+#include "OutputTransductionVariables.h"
 #include "DicVariables.h"
 #include "DELA.h"
 
@@ -54,10 +55,13 @@ struct parsing_info {
    int stack_pointer;
 
    /* A copy of the variable ranges */
-   int* variable_backup;
+   int* input_variable_backup;
 
-   /* size of the variable_backup copy (number of variable) */
+   /* size of the variable_backup copy (number of variables) */
    int variable_backup_size;
+
+   /* A copy of the output variables */
+   unichar* output_variable_backup;
 
    /* A copy of the DELAF entry variables */
    struct dic_variable* dic_variable_backup;
@@ -81,12 +85,13 @@ struct parsing_info {
 
 
 
-struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,struct dic_variable*,
-		                              int,int,unichar*,int);
+struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,OutputVariables*,
+										struct dela_entry* dic_entry,struct dic_variable*,
+										int,int,unichar*,int);
 void free_parsing_info(struct parsing_info*);
-struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,
+struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,OutputVariables*,
 		                              struct dic_variable*,int,int,unichar*,int);
-struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,
+struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,OutputVariables*,
 		                                 struct dic_variable*,int,int,unichar*,int);
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,
                                                 struct parsing_info* list,struct dela_entry*,

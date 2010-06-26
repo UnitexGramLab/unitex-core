@@ -211,7 +211,7 @@ if (s!=NULL) push_output_string(p,s);
 void parse_text(struct fst2txt_parameters* p) {
 fill_buffer(p->text_buffer,p->f_input);
 int debut=p->fst2->initial_states[1];
-p->variables=new_Variables(p->fst2->variables);
+p->variables=new_Variables(p->fst2->input_variables);
 int n_blocks=0;
 u_printf("Block %d",n_blocks);
 int within_tag=0;
@@ -378,7 +378,7 @@ if (is_final_state(etat_courant)) {
     }
   } else { // in a subgraph
     (*liste_arrivee)=insert_if_absent(pos,-1,-1,(*liste_arrivee),p->stack->stack_pointer+1,
-                                      p->stack->stack,p->variables,NULL,-1,-1,NULL,-1   );
+                                      p->stack->stack,p->variables,NULL,NULL,-1,-1,NULL,-1   );
   }
 }
 
@@ -480,6 +480,12 @@ while (t!=NULL) {
          Fst2Tag etiq=p->fst2->tags[n_etiq];
          unichar* contenu=etiq->input;
          int contenu_len_possible_match=u_len_possible_match(contenu);
+         if (etiq->type==BEGIN_OUTPUT_VAR_TAG) {
+        	 fatal_error("Unsupported $|XXX( tags in Fst2Txt\n");
+         }
+         if (etiq->type==END_OUTPUT_VAR_TAG) {
+           	 fatal_error("Unsupported $|XXX) tags in Fst2Txt\n");
+         }
          if (etiq->type==BEGIN_VAR_TAG) {
             // case of a $a( variable tag
             //int old;
@@ -795,8 +801,11 @@ while (t!=NULL) {
 
 int not_a_letter_sequence(Fst2Tag e,Alphabet* alphabet) {
 // we return false only if e is a letter sequence like %hello
-if (e->control&RESPECT_CASE_TAG_BIT_MASK || e->type==BEGIN_VAR_TAG
-    || e->type==END_VAR_TAG) {
+if (e->control&RESPECT_CASE_TAG_BIT_MASK
+	|| e->type==BEGIN_VAR_TAG
+    || e->type==END_VAR_TAG
+    || e->type==BEGIN_OUTPUT_VAR_TAG
+    || e->type==END_OUTPUT_VAR_TAG) {
    // case of @hello $a( and $a)
    return 1;
 }

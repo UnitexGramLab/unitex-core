@@ -516,18 +516,21 @@ while (text_tags!=NULL) {
    s->len=len;
    s->str[len]='\0';
    /* We deal with the fst2 tag output, if any */
-   if (capture) {
-	   /* If we have a capture variable, then we have to check whether the tfst tag
-	    * is a tagged token or not */
-	   int tfst_tag_number=text_tags->n;
-	   int fst2_tag_number=item->fst2_transition->tag_number;
-	   if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
-		   goto restore_dic_variable;
-	   }
-   } else if (item->first_time) {
-	   /* If the output is not a variable capture, we only have to process it once,
-	    * since it will have the same effect on all tfst tags */
-	  if (!process_output_tfst(s,output,infos)) {
+   if (item->first_time) {
+	   /* We only have to process the output only once,
+	    * since it will have the same effect on all tfst tags.
+	    *
+	    * Example: the fst2 tag "cybercrime/ZZ" may match the two tfst tags "cyber" and
+	    * "crime", but we must process the "ZZ" output only before the first tfst tag "cyber" */
+	   if (capture) {
+		   /* If we have a capture variable, then we have to check whether the tfst tag
+	   	    * is a tagged token or not */
+	   	   int tfst_tag_number=text_tags->n;
+	   	   int fst2_tag_number=item->fst2_transition->tag_number;
+	   	   if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
+	   		   goto restore_dic_variable;
+	   	   }
+	   } else if (!process_output_tfst(s,output,infos)) {
          /* We do not take into account matches with variable errors if the
           * process_output_for_tfst_match function has decided that backtracking
           * was necessary, either because of a variable error of because of a
@@ -541,6 +544,11 @@ while (text_tags!=NULL) {
       /* We have a text independent match */
       Fst2Tag fst2_tag=infos->fst2->tags[item->fst2_transition->tag_number];
       if (fst2_tag->type==BEGIN_VAR_TAG) {
+    	  /* If we an output variable start $|a( */
+      } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
+#warning TODO gérer les output var
+    	  /* If we an output variable end $|a) */
+      } else if (fst2_tag->type==BEGIN_VAR_TAG) {
          /* If we have a variable start tag $a(, we add it to our 
           * variable tag list */
          struct transduction_variable* v=get_transduction_variable(infos->variables,fst2_tag->variable);

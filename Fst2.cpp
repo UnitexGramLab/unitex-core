@@ -80,7 +80,8 @@ a->number_of_tags=0;
 a->initial_states=NULL;
 a->graph_names=NULL;
 a->number_of_states_per_graphs=NULL;
-a->variables=NULL;
+a->input_variables=NULL;
+a->output_variables=NULL;
 return a;
 }
 
@@ -113,7 +114,8 @@ if (fst2->graph_names!=NULL) {
 }
 free_cb(fst2->initial_states,prv_alloc);
 free_cb(fst2->number_of_states_per_graphs,prv_alloc);
-free_list_ustring(fst2->variables,prv_alloc);
+free_list_ustring(fst2->input_variables,prv_alloc);
+free_list_ustring(fst2->output_variables,prv_alloc);
 free_cb(fst2,prv_alloc);
 }
 
@@ -259,13 +261,24 @@ if (!u_strcmp(input,"$>")) {
 int length=u_strlen(input);
 if (input[0]=='$' &&
     (input[length-1]=='(' || input[length-1]==')')) {
-   tag->variable=u_strdup(&(input[1]),length-2,prv_alloc);
-   fst2->variables=sorted_insert(tag->variable,fst2->variables,prv_alloc);
-   if (input[length-1]=='(') {
-      tag->type=BEGIN_VAR_TAG;
-   }
-   else {
-      tag->type=END_VAR_TAG;
+	int output_var=(input[1]=='|');
+   tag->variable=u_strdup(&(input[1+output_var]),length-2-output_var,prv_alloc);
+   if (!output_var) {
+	   fst2->input_variables=sorted_insert(tag->variable,fst2->input_variables,prv_alloc);
+	   if (input[length-1]=='(') {
+		   tag->type=BEGIN_VAR_TAG;
+	   }
+	   else {
+		   tag->type=END_VAR_TAG;
+	   }
+   } else {
+	   fst2->output_variables=sorted_insert(tag->variable,fst2->output_variables,prv_alloc);
+	   if (input[length-1]=='(') {
+		   tag->type=BEGIN_OUTPUT_VAR_TAG;
+	   }
+	   else {
+		   tag->type=END_OUTPUT_VAR_TAG;
+	   }
    }
 }
 return tag;
@@ -879,7 +892,8 @@ Fst2* fst2ret;
         fst2ret->initial_states = NULL;
         fst2ret->graph_names = NULL;
         fst2ret->number_of_states_per_graphs = NULL;
-        fst2ret->variables = NULL;
+        fst2ret->input_variables = NULL;
+        fst2ret->output_variables = NULL;
 
         fst2ret->states = (Fst2State*)malloc_cb(sizeof(Fst2State)*fst2ret->number_of_states,prv_alloc);
         for (i=0;i<fst2org->number_of_states;i++)
@@ -927,10 +941,13 @@ Fst2* fst2ret;
           }
         }
 
-	    if (fst2org->variables!=NULL)
-	    {
-		    fst2ret->variables = clone(fst2org->variables,prv_alloc);
-		    if (fst2ret->variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
+	    if (fst2org->input_variables!=NULL) {
+		    fst2ret->input_variables = clone(fst2org->input_variables,prv_alloc);
+		    if (fst2ret->input_variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
+	    }
+	    if (fst2org->output_variables!=NULL) {
+		    fst2ret->output_variables = clone(fst2org->output_variables,prv_alloc);
+		    if (fst2ret->output_variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
 	    }
 
     }

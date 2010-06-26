@@ -23,6 +23,8 @@
 #include "Error.h"
 #include "DicVariables.h"
 #include "Korean.h"
+#include "TransductionVariables.h"
+#include "OutputTransductionVariables.h"
 
 
 /**
@@ -168,7 +170,7 @@ for (;;) {
          if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
             /* If we have $a.SET$, we must go on only if the variable a is set, no
              * matter if it is a normal or a dictionary variable */
-            struct transduction_variable* v=get_transduction_variable(p->variables,name);
+            struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
             if (v==NULL) {
                /* We do nothing, since this normal variable may not exist */
             } else {
@@ -194,7 +196,34 @@ for (;;) {
                }
             }
             /* If we arrive here, the variable was not a normal one, so we
-             * try to match dictionary one */
+             * try to match an output one */
+            Ustring* output=get_output_variable(p->output_variables,name);
+            if (output==NULL) {
+            	/* We do nothing, since this output variable may not exist */
+            } else {
+               if (output->len==0) {
+                  /* If the variable is empty */
+                  if (field[0]=='S') {
+                     /* $a.SET$ is false, we backtrack */
+                     p->stack->stack_pointer=old_stack_pointer; return 0;
+                  } else {
+                     /* $a.UNSET$ is true, we go on */
+                     continue;
+                  }
+               } else {
+                  /* If the variable is non empty */
+                  if (field[0]=='S') {
+                     /* $a.SET$ is true, we go on */
+                     continue;
+                  } else {
+                     /* $a.UNSET$ is false, we backtrack */
+                     p->stack->stack_pointer=old_stack_pointer; return 0;
+                  }
+               }
+            }
+
+            /* If we arrive here, the variable was neither a normal one nor an output one,
+             * so we try to match dictionary one */
             struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
             if (entry==NULL) {
                /* If the variable is not defined properly */
@@ -296,38 +325,42 @@ for (;;) {
     	  push_output_char(p->stack,'$');
          continue;
       }
-      struct transduction_variable* v=get_transduction_variable(p->variables,name);
+      /* Case of a variable like $a$ that can be either a normal one or an output one */
+      struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
       if (v==NULL) {
-         switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
-            case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
-         }
-      }
-      if (v->start==UNDEF_VAR_BOUND) {
+    	  /* Not a normal one ? Maybe an output one */
+    	  Ustring* output=get_output_variable(p->output_variables,name);
+    	  if (output==NULL) {
+    		  switch (p->variable_error_policy) {
+				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
+				  case IGNORE_VARIABLE_ERRORS: continue;
+				  case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+    		  }
+    	  }
+    	  push_output_string(p->stack,output->str);
+      } else if (v->start==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-      }
-      if (v->end==UNDEF_VAR_BOUND) {
+      } else if (v->end==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-      }
-      if (v->start>v->end) {
+      } else if (v->start>v->end) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-      }
-      /* If the variable definition is correct */
-      for (int k=v->start;k<v->end;k++) {
-         push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
+      } else {
+    	  /* If the normal variable definition is correct */
+    	  for (int k=v->start;k<v->end;k++) {
+    		  push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
+    	  }
       }
    }
 }

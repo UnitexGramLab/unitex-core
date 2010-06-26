@@ -74,7 +74,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
 	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
 	variable_backup_memory_reserve* backup_reserve =
-			create_variable_backup_memory_reserve(p->variables);
+			create_variable_backup_memory_reserve(p->input_variables);
 	int current_token;
 	while (p->current_origin < p->buffer_size && p->number_of_matches
 			!= p->search_limit) {
@@ -312,7 +312,7 @@ struct Token_error_ctx* p_token_error_ctx,
 	Transition* t;
 	int stack_top = p->stack->stack_pointer;
 	unichar* output;
-
+int captured_chars;
 	//(*p_count_call)++;
 
 	if ((*p_count_cancel_trying) == -1) {
@@ -410,13 +410,13 @@ struct Token_error_ctx* p_token_error_ctx,
 					(*matches) = insert_if_different(pos, -1, -1, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
-							p->variables, p->dic_variables, p->left_ctx_shift,
+							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
 							p->left_ctx_base, NULL, -1);
 				} else {
 					(*matches) = insert_if_absent(pos, -1, -1, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
-							p->variables, p->dic_variables, p->left_ctx_shift,
+							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
 							p->left_ctx_base, NULL, -1);
 				}
 			}
@@ -452,37 +452,39 @@ struct Token_error_ctx* p_token_error_ctx,
 	struct opt_graph_call* graph_call_list = current_state->graph_calls;
 	if (graph_call_list != NULL) {
 		/* If there are subgraphs, we process them */
-
 		int* save_previous_ptr_var = NULL;
 		int* var_backup = NULL;
 		int create_new_reserve_done = 0;
 		variable_backup_memory_reserve* reserve_used = backup_reserve;
 		struct dic_variable* dic_variables_backup = NULL;
 		int old_StackBase = p->stack_base;
+		unichar* output_var_backup=NULL;
 		if (p->output_policy != IGNORE_OUTPUTS) {
 			/* For better performance when ignoring outputs */
 
-			if (is_enough_memory_in_reserve_for_two_set_variables(p->variables,
+			if (is_enough_memory_in_reserve_for_two_set_variables(p->input_variables,
 					reserve_used) == 0) {
 				reserve_used = create_variable_backup_memory_reserve(
-						p->variables);
+						p->input_variables);
 				create_new_reserve_done = 1;
 			}
 
-			var_backup = create_variable_backup_using_reserve(p->variables,
+			var_backup = create_variable_backup_using_reserve(p->input_variables,
 					reserve_used);
 			dic_variables_backup = p->dic_variables;
+			output_var_backup=create_output_variable_backup(p->output_variables);
 		}
 
 		do {
 			/* For each graph call, we look all the reachable states */
 			t = graph_call_list->transition;
 			while (t != NULL) {
+				/* We reset some parameters before exploring the subgraph */
 				struct parsing_info* L = NULL;
 				p->stack_base = p->stack->stack_pointer;
 				p->dic_variables
 						= clone_dic_variable_list(dic_variables_backup);
-
+				install_output_variable_backup(p->output_variables,output_var_backup);
 				locate(
 						graph_depth + 1, /* Exploration of the subgraph */
 						p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
@@ -498,7 +500,7 @@ struct Token_error_ctx* p_token_error_ctx,
 					/* If there is at least one match, we process the match list */
 					do {
 
-						/* We restore the settings of the current graph level */
+						/* We restore the settings that we had at the end of the subgraph exploration */
 						if (p->output_policy != IGNORE_OUTPUTS) {
 							u_strcpy(&(p->stack->stack[stack_top + 1]),
 									L->stack);
@@ -507,15 +509,16 @@ struct Token_error_ctx* p_token_error_ctx,
 							if (save_previous_ptr_var == NULL) {
 								save_previous_ptr_var
 										= install_variable_backup_preserving(
-												p->variables, reserve_used,
-												L->variable_backup);
+												p->input_variables, reserve_used,
+												L->input_variable_backup);
 							} else {
-								install_variable_backup(p->variables,
-										L->variable_backup);
+								install_variable_backup(p->input_variables,
+										L->input_variable_backup);
 							}
 
 							p->dic_variables = clone_dic_variable_list(
 									L->dic_variable_backup);
+							install_output_variable_backup(p->output_variables,L->output_variable_backup);
 						}
 						/* And we continue the exploration */
 						int old_left_ctx_shift = p->left_ctx_shift;
@@ -537,7 +540,7 @@ struct Token_error_ctx* p_token_error_ctx,
 							/* If we are at the top graph level, we restore the variables */
 							if (p->output_policy != IGNORE_OUTPUTS) {
 								if (save_previous_ptr_var != NULL) {
-									restore_variable_array(p->variables,
+									restore_variable_array(p->input_variables,
 											reserve_used, save_previous_ptr_var);
 									save_previous_ptr_var = NULL;
 								}
@@ -556,7 +559,7 @@ struct Token_error_ctx* p_token_error_ctx,
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 		if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
 			if (save_previous_ptr_var != NULL) {
-				restore_variable_array(p->variables, reserve_used,
+				restore_variable_array(p->input_variables, reserve_used,
 						save_previous_ptr_var);
 				save_previous_ptr_var = NULL;
 			}
@@ -568,7 +571,8 @@ struct Token_error_ctx* p_token_error_ctx,
 			}
 			if (create_new_reserve_done == 1)
 				free_reserve(reserve_used);
-
+			install_output_variable_backup(p->output_variables,output_var_backup);
+			free_output_variable_backup(output_var_backup);
 		}
 		p->dic_variables = dic_variables_backup;
 	} /* End of processing subgraphs */
@@ -694,16 +698,19 @@ struct Token_error_ctx* p_token_error_ctx,
 							 * As we don't want to process lists of [start,end[ ranges, we
 							 * directly handle here the case of a token sequence. */
 							if (p->output_policy == MERGE_OUTPUTS && pos2
-									!= pos) {
+									!= pos && !capture_mode(p->output_variables)) {
 								push_input_char(p->stack, ' ',
 										p->protect_dic_chars);
 							}
+							captured_chars=0;
 							if (p->output_policy != IGNORE_OUTPUTS) {
-								if (!process_output(output, p)) {
+								if (capture_mode(p->output_variables)) {
+									captured_chars=add_string_to_output_variables(p->output_variables,output);
+								} else if (!process_output(output, p)) {
 									break;
 								}
 							}
-							if (p->output_policy == MERGE_OUTPUTS) {
+							if (!capture_mode(p->output_variables) && p->output_policy == MERGE_OUTPUTS) {
 								for (int x = pos2; x <= end_of_compound; x++) {
 									push_input_string(p->stack,
 											p->tokens->value[p->buffer[x
@@ -718,6 +725,7 @@ struct Token_error_ctx* p_token_error_ctx,
 									backup_reserve, p_count_cancel_trying,
 									p_count_call, prv_alloc);
 							p->stack->stack_pointer = stack_top;
+							remove_chars_from_output_variables(p->output_variables,captured_chars);
 						}
 					}
 					/* Now, we look for a simple word */
@@ -778,15 +786,18 @@ struct Token_error_ctx* p_token_error_ctx,
 						 * tag token like "{black-eyed,.A}". As we don't want to process lists
 						 * of [start,end[ ranges, we directly handle here the case of a
 						 * token sequence. */
-						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
+						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
 							push_input_char(p->stack, ' ', p->protect_dic_chars);
 						}
+						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (!process_output(output, p)) {
+							if (capture_mode(p->output_variables)) {
+								captured_chars=add_string_to_output_variables(p->output_variables,output);
+							} else if (!process_output(output, p)) {
 								break;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS) {
+						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 							for (int x = pos2; x <= end_of_compound; x++) {
 								push_input_string(p->stack,
 										p->tokens->value[p->buffer[x
@@ -800,6 +811,7 @@ struct Token_error_ctx* p_token_error_ctx,
 								n_matches, ctx, p, p_token_error_ctx,
 								backup_reserve, p_count_cancel_trying,
 								p_count_call, prv_alloc);
+						remove_chars_from_output_variables(p->output_variables,captured_chars);
 						p->stack->stack_pointer = stack_top;
 					}
 				}
@@ -940,15 +952,14 @@ struct Token_error_ctx* p_token_error_ctx,
 					/* The {STOP} tag must NEVER be matched by any pattern */
 					break;
 				}
-				if (p->output_policy == MERGE_OUTPUTS) {
+				if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 					if (pos2 != pos)
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 				}
-				/* we don't known if enter_morphological_mode will modify variable
+				/* we don't know if enter_morphological_mode will modify variable
 				 so we increment the dirty flag, without any associated decrement, to be sure
 				 having no problem */
-				inc_dirty(backup_reserve)
-				;
+				inc_dirty(backup_reserve);
 				enter_morphological_mode(graph_depth, t->state_number, pos2,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, prv_alloc);
@@ -992,16 +1003,19 @@ struct Token_error_ctx* p_token_error_ctx,
 			if (start != -1) {
 				/* If the transition has matched */
 				if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2
-						!= pos) {
+						!= pos && !capture_mode(p->output_variables)) {
 					push_input_char(p->stack, ' ', p->protect_dic_chars);
 				}
+				captured_chars=0;
 				if (p->output_policy != IGNORE_OUTPUTS) {
 					/* We process its output */
-					if (!process_output(output, p)) {
+					if (capture_mode(p->output_variables)) {
+						captured_chars=add_string_to_output_variables(p->output_variables,output);
+					} else if (!process_output(output, p)) {
 						goto next;
 					}
 				}
-				if (p->output_policy == MERGE_OUTPUTS) {
+				if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 					/* Then, if we are in merge mode, we push the tokens that have
 					 * been read to the output */
 					for (int y = start; y < end; y++) {
@@ -1018,22 +1032,52 @@ struct Token_error_ctx* p_token_error_ctx,
 						p_count_cancel_trying, p_count_call, prv_alloc);
 				/* Once we have finished, we restore the stack */
 				p->stack->stack_pointer = stack_top;
+				remove_chars_from_output_variables(p->output_variables,captured_chars);
 			}
 			next: t = t->next;
 		}
 		meta_list = meta_list->next;
 	}
 
+/**
+ * OUTPUT VARIABLE STARTS
+ */
+struct opt_variable* output_variable_list = current_state->output_variable_starts;
+while (output_variable_list != NULL) {
+	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+	locate(graph_depth,
+			p->optimized_states[output_variable_list->transition->state_number],
+			pos, depth + 1, matches, n_matches, ctx, p, p_token_error_ctx,
+			backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
+	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+	p->stack->stack_pointer = stack_top;
+	output_variable_list=output_variable_list->next;
+}
+/**
+ * OUTPUT VARIABLE ENDS
+ */
+output_variable_list = current_state->output_variable_ends;
+while (output_variable_list != NULL) {
+	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+	locate(graph_depth,
+			p->optimized_states[output_variable_list->transition->state_number],
+			pos, depth + 1, matches, n_matches, ctx, p, p_token_error_ctx,
+			backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
+	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+	p->stack->stack_pointer = stack_top;
+	output_variable_list=output_variable_list->next;
+}
+
 	/**
 	 * VARIABLE STARTS
 	 */
-	struct opt_variable* variable_list = current_state->variable_starts;
+	struct opt_variable* variable_list = current_state->input_variable_starts;
 	while (variable_list != NULL) {
 
 		inc_dirty(backup_reserve);
-		int old = get_variable_start(p->variables,
+		int old = get_variable_start(p->input_variables,
 				variable_list->variable_number);
-		set_variable_start(p->variables, variable_list->variable_number, pos2);
+		set_variable_start(p->input_variables, variable_list->variable_number, pos2);
 
 		locate(graph_depth,
 				p->optimized_states[variable_list->transition->state_number],
@@ -1044,7 +1088,7 @@ struct Token_error_ctx* p_token_error_ctx,
 			/* We do not restore previous value if we are inside a context, in order
 			 * to allow extracting things from contexts (see the
 			 * "the cat is white" example in Unitex manual). */
-			set_variable_start(p->variables, variable_list->variable_number,
+			set_variable_start(p->input_variables, variable_list->variable_number,
 					old);
 			dec_dirty(backup_reserve);
 			// restore dirty
@@ -1055,13 +1099,13 @@ struct Token_error_ctx* p_token_error_ctx,
 	/**
 	 * VARIABLE ENDS
 	 */
-	variable_list = current_state->variable_ends;
+	variable_list = current_state->input_variable_ends;
 	while (variable_list != NULL) {
 
 		inc_dirty(backup_reserve);
 		int old =
-				get_variable_end(p->variables, variable_list->variable_number);
-		set_variable_end(p->variables, variable_list->variable_number, pos);
+				get_variable_end(p->input_variables, variable_list->variable_number);
+		set_variable_end(p->input_variables, variable_list->variable_number, pos);
 
 		locate(graph_depth,
 				p->optimized_states[variable_list->transition->state_number],
@@ -1072,7 +1116,7 @@ struct Token_error_ctx* p_token_error_ctx,
 			/* We do not restore previous value if we are inside a context, in order
 			 * to allow extracting things from contexts (see the
 			 * "the cat is white" example in Unitex manual). */
-			set_variable_end(p->variables, variable_list->variable_number, old);
+			set_variable_end(p->input_variables, variable_list->variable_number, old);
 			dec_dirty(backup_reserve);
 		}
 		variable_list = variable_list->next;
@@ -1190,15 +1234,18 @@ struct Token_error_ctx* p_token_error_ctx,
 				}
 #endif
 				if (OK) {
-					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
+					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
+					captured_chars=0;
 					if (p->output_policy != IGNORE_OUTPUTS) {
-						if (!process_output(output, p)) {
+						if (capture_mode(p->output_variables)) {
+							captured_chars=add_string_to_output_variables(p->output_variables,output);
+						} else if (!process_output(output, p)) {
 							goto next4;
 						}
 					}
-					if (p->output_policy == MERGE_OUTPUTS) {
+					if (p->output_policy == MERGE_OUTPUTS && ! capture_mode(p->output_variables)) {
 						for (int x = pos2; x <= end_of_compound; x++) {
 							push_input_string(p->stack,
 									p->tokens->value[p->buffer[x
@@ -1211,6 +1258,7 @@ struct Token_error_ctx* p_token_error_ctx,
 							ctx, p, p_token_error_ctx, backup_reserve,
 							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
+					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
 			}
 			next4: t = t->next;
@@ -1249,15 +1297,18 @@ struct Token_error_ctx* p_token_error_ctx,
 				}
 #endif
 				if (OK) {
-					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
+					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
+					captured_chars=0;
 					if (p->output_policy != IGNORE_OUTPUTS) {
-						if (!process_output(output, p)) {
+						if (capture_mode(p->output_variables)) {
+							captured_chars=add_string_to_output_variables(p->output_variables,output);
+						} else if (!process_output(output, p)) {
 							goto next6;
 						}
 					}
-					if (p->output_policy == MERGE_OUTPUTS) {
+					if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 						for (int x = pos2; x <= end_of_compound; x++) {
 							push_input_string(p->stack,
 									p->tokens->value[p->buffer[x
@@ -1270,6 +1321,7 @@ struct Token_error_ctx* p_token_error_ctx,
 							ctx, p, p_token_error_ctx, backup_reserve,
 							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
+					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
 				/* This useless empty block is just here to enable the declaration of the next6 label */
 				next6: {
@@ -1287,15 +1339,19 @@ struct Token_error_ctx* p_token_error_ctx,
 					if (XOR(get_value(p->matching_patterns[token2],
 							pattern_list->pattern_number),
 							pattern_list->negation)) {
-						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
+						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos
+								&& !capture_mode(p->output_variables)) {
 							push_input_char(p->stack, ' ', p->protect_dic_chars);
 						}
+						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (!process_output(output, p)) {
+							if (capture_mode(p->output_variables)) {
+								captured_chars=add_string_to_output_variables(p->output_variables,output);
+							} else if (!process_output(output, p)) {
 								goto next2;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS) {
+						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 							push_input_string(p->stack,
 									p->tokens->value[token2],
 									p->protect_dic_chars);
@@ -1306,21 +1362,25 @@ struct Token_error_ctx* p_token_error_ctx,
 								p_token_error_ctx, backup_reserve,
 								p_count_cancel_trying, p_count_call, prv_alloc);
 						p->stack->stack_pointer = stack_top;
+						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
 				} else {
 					/* If the token matches no pattern, then it can match a pattern negation
 					 * like <!V> */
 					if (pattern_list->negation && (p->token_control[token2]
 							& MOT_TOKEN_BIT_MASK)) {
-						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
+						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
 							push_input_char(p->stack, ' ', p->protect_dic_chars);
 						}
+						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (!process_output(output, p)) {
+							if (capture_mode(p->output_variables)) {
+								captured_chars=add_string_to_output_variables(p->output_variables,output);
+							} else if (!process_output(output, p)) {
 								goto next2;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS) {
+						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 							push_input_string(p->stack,
 									p->tokens->value[token2],
 									p->protect_dic_chars);
@@ -1331,6 +1391,7 @@ struct Token_error_ctx* p_token_error_ctx,
 								p_token_error_ctx, backup_reserve,
 								p_count_cancel_trying, p_count_call, prv_alloc);
 						p->stack->stack_pointer = stack_top;
+						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
 				}
 			}
@@ -1356,15 +1417,18 @@ struct Token_error_ctx* p_token_error_ctx,
 #endif
 				{
 					output = p->tags[t->tag_number]->output;
-					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
+					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
+					captured_chars=0;
 					if (p->output_policy != IGNORE_OUTPUTS) {
-						if (!process_output(output, p)) {
+						if (capture_mode(p->output_variables)) {
+							captured_chars=add_string_to_output_variables(p->output_variables,output);
+						} else if (!process_output(output, p)) {
 							goto next3;
 						}
 					}
-					if (p->output_policy == MERGE_OUTPUTS) {
+					if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
 						push_input_string(p->stack, p->tokens->value[token2],
 								p->protect_dic_chars);
 					}
@@ -1373,6 +1437,7 @@ struct Token_error_ctx* p_token_error_ctx,
 							p_token_error_ctx, backup_reserve,
 							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
+					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
 				next3: t = t->next;
 			}

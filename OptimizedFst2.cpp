@@ -283,7 +283,8 @@ add_transition_if_not_present(&(ptr->transition),transition->tag_number,transiti
 /**
  * Allocates, initializes and returns a new optimized variable.
  */
-struct opt_variable* new_opt_variable(int variable_number,Transition* transition,Abstract_allocator prv_alloc) {
+struct opt_variable* new_opt_variable(int variable_number,Transition* transition,
+										Abstract_allocator prv_alloc) {
 struct opt_variable* v;
 v=(struct opt_variable*)malloc_cb(sizeof(struct opt_variable),prv_alloc);
 if (v==NULL) {
@@ -316,7 +317,22 @@ while (list!=NULL) {
  * No tests is done to check if there is already a transition with the
  * given variable, because it cannot happen if the grammar is deterministic.
  */
-void add_variable(Variables* var,unichar* variable,Transition* transition,struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
+void add_input_variable(Variables* var,unichar* variable,Transition* transition,
+		struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
+int n=get_value_index(variable,var->variable_index,DONT_INSERT);
+struct opt_variable* v=new_opt_variable(n,transition,prv_alloc);
+v->next=(*variable_list);
+(*variable_list)=v;
+}
+
+
+/**
+ * This function adds the given variable to the given variable list.
+ * No tests is done to check if there is already a transition with the
+ * given variable, because it cannot happen if the grammar is deterministic.
+ */
+void add_output_variable(OutputVariables* var,unichar* variable,Transition* transition,
+		struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
 int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition,prv_alloc);
 v->next=(*variable_list);
@@ -365,7 +381,8 @@ state->contexts->end_mark=new_Transition(transition->tag_number,transition->stat
 /**
  * This function optimizes the given transition.
  */
-void optimize_transition(Variables* v,Fst2* fst2,Transition* transition,OptimizedFst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
+void optimize_transition(Variables* v,OutputVariables* output,Fst2* fst2,Transition* transition,
+						OptimizedFst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (transition->tag_number<0) {
    /* If the transition is a graph call */
    add_graph_call(transition,&(state->graph_calls),prv_alloc);
@@ -388,9 +405,13 @@ switch (tag->type) {
                             return;
    case META_TAG: add_meta(tag->meta,transition,&(state->metas),negation,prv_alloc);
                            return;
-   case BEGIN_VAR_TAG: add_variable(v,tag->variable,transition,&(state->variable_starts),prv_alloc);
+   case BEGIN_VAR_TAG: add_input_variable(v,tag->variable,transition,&(state->input_variable_starts),prv_alloc);
                        return;
-   case END_VAR_TAG: add_variable(v,tag->variable,transition,&(state->variable_ends),prv_alloc);
+   case END_VAR_TAG: add_input_variable(v,tag->variable,transition,&(state->input_variable_ends),prv_alloc);
+                     return;
+   case BEGIN_OUTPUT_VAR_TAG: add_output_variable(output,tag->variable,transition,&(state->output_variable_starts),prv_alloc);
+                       return;
+   case END_OUTPUT_VAR_TAG: add_output_variable(output,tag->variable,transition,&(state->output_variable_ends),prv_alloc);
                      return;
    case BEGIN_POSITIVE_CONTEXT_TAG: add_positive_context(fst2,state,transition,prv_alloc); return;
    case BEGIN_NEGATIVE_CONTEXT_TAG: add_negative_context(fst2,state,transition,prv_alloc); return;
@@ -461,8 +482,10 @@ state->token_list=NULL;
 state->tokens=NULL;
 state->token_transitions=NULL;
 state->number_of_tokens=0;
-state->variable_starts=NULL;
-state->variable_ends=NULL;
+state->input_variable_starts=NULL;
+state->input_variable_ends=NULL;
+state->output_variable_starts=NULL;
+state->output_variable_ends=NULL;
 state->contexts=NULL;
 return state;
 }
@@ -478,8 +501,10 @@ free_opt_meta(state->metas,prv_alloc);
 free_opt_pattern(state->patterns,prv_alloc);
 free_opt_pattern(state->compound_patterns,prv_alloc);
 free_opt_token(state->token_list,prv_alloc);
-free_opt_variable(state->variable_starts,prv_alloc);
-free_opt_variable(state->variable_ends,prv_alloc);
+free_opt_variable(state->input_variable_starts,prv_alloc);
+free_opt_variable(state->input_variable_ends,prv_alloc);
+free_opt_variable(state->output_variable_starts,prv_alloc);
+free_opt_variable(state->output_variable_ends,prv_alloc);
 free_opt_contexts(state->contexts,prv_alloc);
 if (state->tokens!=NULL) free_cb(state->tokens,prv_alloc);
 if (state->token_transitions!=NULL) {
@@ -497,13 +522,14 @@ free_cb(state,prv_alloc);
  * and returns an equivalent optimized state, or NULL if the given state
  * was NULL.
  */
-OptimizedFst2State optimize_state(Variables* v,Fst2* fst2,Fst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
+OptimizedFst2State optimize_state(Variables* v,OutputVariables* output,Fst2* fst2,Fst2State state,
+									Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state(prv_alloc);
 new_state->control=state->control;
 Transition* ptr=state->transitions;
 while (ptr!=NULL) {
-   optimize_transition(v,fst2,ptr,new_state,tags,prv_alloc);
+   optimize_transition(v,output,fst2,ptr,new_state,tags,prv_alloc);
    ptr=ptr->next;
 }
 token_list_2_token_array(new_state,prv_alloc);
@@ -515,13 +541,13 @@ return new_state;
  * This function takes a fst2 and returns an array containing the corresponding
  * optimized states.
  */
-OptimizedFst2State* build_optimized_fst2_states(Variables* v,Fst2* fst2,Abstract_allocator prv_alloc) {
+OptimizedFst2State* build_optimized_fst2_states(Variables* v,OutputVariables* output,Fst2* fst2,Abstract_allocator prv_alloc) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc_cb(fst2->number_of_states*sizeof(OptimizedFst2State),prv_alloc);
 if (optimized_states==NULL) {
    fatal_alloc_error("build_optimized_fst2_states");
 }
 for (int i=0;i<fst2->number_of_states;i++) {
-   optimized_states[i]=optimize_state(v,fst2,fst2->states[i],fst2->tags,prv_alloc);
+   optimized_states[i]=optimize_state(v,output,fst2,fst2->states[i],fst2->tags,prv_alloc);
 }
 return optimized_states;
 }
