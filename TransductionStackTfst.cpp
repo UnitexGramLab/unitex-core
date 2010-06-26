@@ -177,13 +177,14 @@ while (s[i]!='\0') {
          field[l]='\0';
          if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
             /* We only accept those 2 fields. We look if a variable exists */
-            struct transduction_variable* v=get_transduction_variable(p->variables,name);
+            struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
             TfstTag* first_tag=NULL;
             TfstTag* last_tag=NULL;
             if (v!=NULL) {
                first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
                last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
             }
+#warning maintenant qu'on peut avoir des dic variables, il faut changer le code pour SET et UNSET
             if (v==NULL || v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
                   || !valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
                /* If the variable is not defined properly */
@@ -258,7 +259,7 @@ while (s[i]!='\0') {
      	   push_output_char_tfst(stack,'$');
          continue;
       }
-      struct transduction_variable* v=get_transduction_variable(p->variables,name);
+      struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
       if (v==NULL) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);

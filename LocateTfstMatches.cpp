@@ -551,7 +551,7 @@ while (text_tags!=NULL) {
       } else if (fst2_tag->type==BEGIN_VAR_TAG) {
          /* If we have a variable start tag $a(, we add it to our 
           * variable tag list */
-         struct transduction_variable* v=get_transduction_variable(infos->variables,fst2_tag->variable);
+         struct transduction_variable* v=get_transduction_variable(infos->input_variables,fst2_tag->variable);
          int old_value=v->start;
          /* We add the address of the start field to our list */
          (*var_starts)=new_list_pointer(&(v->start),(var_starts==NULL)?NULL:(*var_starts));
@@ -576,7 +576,7 @@ while (text_tags!=NULL) {
             goto restore_dic_variable;
          } else {
             /* We can set the end of the variable, it's 'last_tag' */
-            struct transduction_variable* v=get_transduction_variable(infos->variables,fst2_tag->variable);
+            struct transduction_variable* v=get_transduction_variable(infos->input_variables,fst2_tag->variable);
             int old_value=v->end;
             v->end=last_tag;
             explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);

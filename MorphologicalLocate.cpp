@@ -353,7 +353,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 					}
 				}
 				morphological_locate(graph_depth,
-						meta_list->transition->state_number, pos, pos_in_token,
+						t->state_number, pos, pos_in_token,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, jamo, pos_in_jamo, content_buffer);
 				p->stack->stack_pointer = stack_top;
@@ -474,7 +474,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 									&(p->dic_variables),1);
 						}
 						morphological_locate(graph_depth,
-								meta_list->transition->state_number, new_pos,
+								t->state_number, new_pos,
 								new_pos_in_token, depth + 1, matches,
 								n_matches, ctx, p, p_token_error_ctx, L2->jamo,
 								L2->pos_in_jamo, content_buffer);

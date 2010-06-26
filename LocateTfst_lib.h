@@ -31,6 +31,8 @@
 #include "Korean.h"
 #include "OptimizedTfstTagMatching.h"
 #include "DicVariables.h"
+#include "TransductionVariables.h"
+#include "OutputTransductionVariables.h"
 
 /* Following values must be !=-1, because -1 is used in
  * OptimizedTfstTagMatching to indicate that the result of a match
@@ -74,7 +76,8 @@ struct locate_tfst_infos {
 	AmbiguousOutputPolicy ambiguous_output_policy;
 	VariableErrorPolicy variable_error_policy;
 	
-	Variables* variables;
+	Variables* input_variables;
+	OutputVariables* output_variables;
 	struct dic_variable* dic_variables;
 
 	/* The total number of outputs. It may be different from the number

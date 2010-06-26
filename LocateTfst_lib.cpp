@@ -134,7 +134,8 @@ infos.match_policy=match_policy;
 infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
 infos.variable_error_policy=variable_error_policy;
-infos.variables=new_Variables(infos.fst2->input_variables);
+infos.input_variables=new_Variables(infos.fst2->input_variables);
+infos.output_variables=new_OutputVariables(infos.fst2->output_variables);
 infos.dic_variables=NULL;
 infos.number_of_outputs=0;
 infos.start_position_last_printed_match_token=-1;
@@ -209,7 +210,8 @@ free_FilterSet(infos.filters);
 #endif
 u_fclose(infos.output);
 free_alphabet(infos.alphabet);
-free_Variables(infos.variables);
+free_Variables(infos.input_variables);
+free_OutputVariables(infos.output_variables);
 free_Korean_stuffs(&infos);
 free_LocateTfstTagMatchingCache(infos.cache);
 for (int i=0;i<infos.fst2->number_of_states;i++) {
