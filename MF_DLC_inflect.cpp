@@ -273,7 +273,7 @@ int DLC_line2entry(Alphabet* alph,struct l_morpho_t* pL_MORPHO,unichar* line, DL
 	if (!entry->lemma->paradigm) {
 		fatal_alloc_error("DLC_line2entry");
 	}
-	for (int c = 0; c <= u_strlen(tmp); c++) //Convert to char and copy
+	for (unsigned int c = 0; c <= u_strlen(tmp); c++) //Convert to char and copy
 		entry->lemma->paradigm[c] = (char) tmp[c];
 
 	//Determine the class (e.g. noun)
@@ -372,7 +372,7 @@ int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unicha
 		if (!u->lemma->paradigm) {
 			fatal_alloc_error("DLC_scan_unit");
 		}
-		for (int c = 0; c <= u_strlen(u_para); c++)
+		for (unsigned int c = 0; c <= u_strlen(u_para); c++)
 			u->lemma->paradigm[c] = (char) u_para[c];
 
 		//Determine the lemma's inflection class (noun, adj, etc.)

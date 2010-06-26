@@ -41,7 +41,7 @@
 /* correspondant et returner cette position. Sinon retourner -1.*/
 int u_member(unichar c, const unichar *str, int *where) {
 
-   int i;
+   unsigned int i;
 
    for (i=0; i<u_strlen(str); i++)
       if ( (c == str[i]) && (!where[i])) {
@@ -59,7 +59,7 @@ int u_member(unichar c, const unichar *str, int *where) {
 /* Retourner 1 si str1 contient str2, sinon 0.			*/
 int u_contient(const unichar *str1, const unichar *str2) {
 
-   int len, i;
+   unsigned int len, i;
    int w, where[MAX_STR_LEN];
 
    /*Si str1 plus court que str2, alors str1 ne contient pas str2*/

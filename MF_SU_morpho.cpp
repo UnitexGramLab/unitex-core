@@ -514,7 +514,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
           * to letters in the lemma. We must deal this way with values >9, because
           * the graph compiler would split "12" in "1" and "2" */
 	      val--;
-	      if (val<0 || val>=u_strlen(lemma)) {
+	      if (val<0 || val>=((int)u_strlen(lemma))) {
 	         error("Invalid reference in %S.fst2 to consonant #%d for skeleton \"%S\"\n",
                   a->graph_names[1], val+1, lemma);
             free(p_SU_buf);
@@ -712,7 +712,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				} else if (semitic) {
 				   int pos_letter=p_SU_buf->tag[pos_tag++]-'0';
 					int i = pos_letter-1; /* Numbering from 0, always... */
-					if (i >= u_strlen(lemma)) {
+					if (i >= ((int)u_strlen(lemma))) {
 						error(
 								"Invalid reference in %S.fst2 to consonant #%C for skeleton \"%S\"\n",
 								a->graph_names[1], p_SU_buf->tag[pos_tag - 1], lemma);

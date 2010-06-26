@@ -249,7 +249,7 @@ void d_init_class_equiv(struct l_morpho_t* pL_MORPHO,d_class_equiv_T *D_CLASS_EQ
 /* in the calling function (by f_delete_morpho).                                                           */
 f_morpho_T* d_get_feat_str(struct l_morpho_t* pL_MORPHO,unichar* feat_str) {
   int e;  //index of the current equivalence
-  int f;  //index of the current feature in the string 'feat_str'
+  unsigned int f;  //index of the current feature in the string 'feat_str'
   int found;
   f_morpho_T* feat;
   feat = (f_morpho_T*) malloc(sizeof(f_morpho_T));
