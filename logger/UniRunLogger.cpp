@@ -621,7 +621,7 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
       return 0;
 }
 
-UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
                                         const char* SelectTool,
                                         int clean_file,
                                         InstallLoggerForRunner &InstallLoggerForRunnerSingleton,
@@ -1135,7 +1135,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                                         Exec_status* p_exec_status)
 {
     InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
-    return RunLogParam(LogNameRead,FileRunPath,LogNameWrite,
+    return RunLogParamInstallLoggerClass(LogNameRead,FileRunPath,LogNameWrite,
                                         SelectTool,
                                         clean_file,
                                         InstallLoggerForRunnerSingleton,
@@ -1153,7 +1153,7 @@ UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPa
     char*summary=NULL;
     char*summaryError=NULL;
     InstallLoggerForRunner InstallLoggerForRunnerSingleton(1);
-    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,NULL,1,InstallLoggerForRunnerSingleton,NULL,&summary,&summaryError,1,NULL,NULL,NULL);
+    int ret= RunLogParamInstallLoggerClass(LogNameRead,FileRunPath,LogNameWrite,NULL,1,InstallLoggerForRunnerSingleton,NULL,&summary,&summaryError,1,NULL,NULL,NULL);
     if (summary!=NULL)
     {
         u_printf("%s",summary);
@@ -1477,7 +1477,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         }
 
         
-        RunLogParam(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
+        RunLogParamInstallLoggerClass(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
                               p_RunLog_ctx->clean,
                               *p_RunLog_ctx->pInstallLoggerForRunnerSingleton,
                               p_RunLog_ctx->LocationUnfoundVirtualRessource,
