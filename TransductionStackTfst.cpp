@@ -184,7 +184,11 @@ while (s[i]!='\0') {
                first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
                last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
             }
+#ifdef __GNUC__
 #warning maintenant qu'on peut avoir des dic variables, il faut changer le code pour SET et UNSET
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning maintenant qu'on peut avoir des dic variables, il faut changer le code pour SET et UNSET")
+#endif
             if (v==NULL || v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
                   || !valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
                /* If the variable is not defined properly */

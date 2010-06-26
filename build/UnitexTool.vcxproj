@@ -288,6 +288,7 @@
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
+    <ClInclude Include="..\OutputTransductionVariables.h" />
     <ClInclude Include="..\Tagger.h" />
     <ClInclude Include="..\TaggingProcess.h" />
     <ClInclude Include="..\TrainingProcess.h" />
@@ -406,6 +407,7 @@
     <ClCompile Include="..\NorwegianCompounds.cpp" />
     <ClCompile Include="..\OptimizedFst2.cpp" />
     <ClCompile Include="..\OptimizedTfstTagMatching.cpp" />
+    <ClCompile Include="..\OutputTransductionVariables.cpp" />
     <ClCompile Include="..\ParsingInfo.cpp" />
     <ClCompile Include="..\Pattern.cpp" />
     <ClCompile Include="..\PatternTree.cpp" />

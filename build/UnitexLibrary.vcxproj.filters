@@ -110,6 +110,9 @@
     <ClInclude Include="..\Arabic.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\OutputTransductionVariables.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -662,6 +665,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Arabic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OutputTransductionVariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

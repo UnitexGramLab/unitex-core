@@ -987,6 +987,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\OutputTransductionVariables.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ParsingInfo.cpp"
 				>
 			</File>

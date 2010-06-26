@@ -546,7 +546,11 @@ while (text_tags!=NULL) {
       if (fst2_tag->type==BEGIN_VAR_TAG) {
     	  /* If we an output variable start $|a( */
       } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
+#ifdef __GNUC__
 #warning TODO gérer les output var
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning TODO gerer les output var")
+#endif
     	  /* If we an output variable end $|a) */
       } else if (fst2_tag->type==BEGIN_VAR_TAG) {
          /* If we have a variable start tag $a(, we add it to our 
