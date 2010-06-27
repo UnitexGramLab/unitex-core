@@ -70,6 +70,9 @@ void install_output_variable_backup(OutputVariables*,unichar*);
 
 void set_output_variable_pending(OutputVariables* var,int index);
 void unset_output_variable_pending(OutputVariables* var,int index);
+void set_output_variable_pending(OutputVariables* var,unichar* var_name);
+void unset_output_variable_pending(OutputVariables* var,unichar* var_name);
+
 unsigned int add_string_to_output_variables(OutputVariables*,unichar*);
 void remove_chars_from_output_variables(OutputVariables*,unsigned int);
 

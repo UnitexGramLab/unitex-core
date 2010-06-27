@@ -155,8 +155,8 @@ while (v->pending!=NULL) {
 /* Then we add all pending variables of the backup */
 int l=v->variable_index->size;
 for (int i=0;i<l;i++) {
-
-	if ((v->is_pending[i]=(backup[i]?1:0))) {
+	v->is_pending[i]=(backup[i]?1:0);
+	if (backup[i]) {
 		/* We also add pending variables to the 'pending' list */
 		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);
 	}
@@ -257,3 +257,20 @@ void unset_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=0;
 remove_output_variable_from_pending_list(&(var->pending),var->variables[index]);
 }
+
+
+/**
+ * Sets the given variable as being pending.
+ */
+void set_output_variable_pending(OutputVariables* var,unichar* var_name) {
+set_output_variable_pending(var,get_value_index(var_name,var->variable_index,DONT_INSERT));
+}
+
+
+/**
+ * Unsets the given variable as being pending.
+ */
+void unset_output_variable_pending(OutputVariables* var,unichar* var_name) {
+unset_output_variable_pending(var,get_value_index(var_name,var->variable_index,DONT_INSERT));
+}
+
