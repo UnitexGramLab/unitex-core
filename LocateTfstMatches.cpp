@@ -502,7 +502,8 @@ unichar* output=infos->fst2->tags[item->fst2_transition->tag_number]->output;
 unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
 int capture;
 struct dela_entry* old_value=NULL;
-if ((capture=is_capture_variable(output,name))) {
+capture=is_capture_variable(output,name);
+if (capture) {
 	/* If we have a capture variable $:X$, we must save the previous value
 	 * for this dictionary variable */
 	old_value=clone_dela_entry(get_dic_variable(name,infos->dic_variables));
