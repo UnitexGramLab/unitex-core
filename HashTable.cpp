@@ -41,8 +41,8 @@ static void set_hash_capacity(struct hash_table* h,unsigned int capacity_set) {
  * Allocates, initializes and return a new hash table for pointer elements.
  */
 struct hash_table* new_hash_table(int capacity,float ratio,HASH_FUNCTION hash,
-                                  EQUAL_FUNCTION equal,FREE_FUNCTION free_element,
-                                  KEYCOPY_FUNCTION keycopy) {
+                                  EQUAL_FUNCTION equal,FREE_FUNCTION free_key,
+                                  FREE_FUNCTION free_ptr_value,KEYCOPY_FUNCTION keycopy) {
 if (ratio<=0 || ratio >=1) {
    fatal_error("Invalid ratio in new_hash_table\n");
 }
@@ -68,10 +68,11 @@ if (equal==NULL) {
    fatal_error("NULL equal function error in new_hash_table\n");
 }
 h->equal=equal;
-if (free_element==NULL) {
+if (free_key==NULL) {
    fatal_error("NULL free function error in new_hash_table\n");
 }
-h->free=free_element;
+h->free_key=free_key;
+h->free_ptr_value=free_ptr_value;
 h->keycopy=keycopy;
 h->number_of_elements=0;
 h->allocator_hash_list=create_abstract_allocator("new_hash_table",
@@ -86,8 +87,9 @@ return h;
  * default ratio and capacity.
  */
 struct hash_table* new_hash_table(HASH_FUNCTION hash,EQUAL_FUNCTION equal,
-                                  FREE_FUNCTION free_element,KEYCOPY_FUNCTION keycopy) {
-return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO,hash,equal,free_element,keycopy);
+                                  FREE_FUNCTION free_key,FREE_FUNCTION free_ptr_value,
+                                  KEYCOPY_FUNCTION keycopy) {
+return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO,hash,equal,free_key,free_ptr_value,keycopy);
 }
 
 
@@ -114,7 +116,8 @@ for (int i=0;i<capacity;i++) {
 }
 h->hash=NULL;
 h->equal=NULL;
-h->free=NULL;
+h->free_key=NULL;
+h->free_ptr_value=NULL;
 h->number_of_elements=0;
 h->allocator_hash_list=create_abstract_allocator("new_hash_table",
                                                  AllocatorCreationFlagAutoFreePrefered | AllocatorFreeOnlyAtAllocatorDelete,
@@ -165,13 +168,18 @@ return list;
 /**
  * Frees a list of elements.
  */
-void free_hash_list(struct hash_list* list,void (*free_element)(void*),int free_hash_list_struct,struct hash_table* h) {
+void free_hash_list(struct hash_list* list,void (*free_key)(void*),void (*free_ptr_value)(void*),
+			int free_hash_list_struct,struct hash_table* h) {
 while (list!=NULL) {
    struct hash_list* tmp=list;
    list=list->next;
-   if (free_element!=NULL) {
+   if (free_key!=NULL) {
       /* If we have pointer elements, we must free them */
-      free_element(tmp->ptr_key);
+      free_key(tmp->ptr_key);
+   }
+   if (free_ptr_value!=NULL) {
+      /* If we have pointer values in elements, we must free them */
+      free_ptr_value(tmp->value._ptr);
    }
    if (free_hash_list_struct) {
        free_cb(tmp,h->allocator_hash_list);
@@ -189,7 +197,7 @@ int free_hash_list_struct=(get_allocator_cb_flag(h->allocator_hash_list) & Alloc
 if (h->table!=NULL) {
    /* This case should always happen, but we never know... */
    for (unsigned int i=0;i<h->capacity;i++) {
-      free_hash_list(h->table[i],h->free,free_hash_list_struct,h);
+      free_hash_list(h->table[i],h->free_key,h->free_ptr_value,free_hash_list_struct,h);
    }
    free(h->table);
 }
@@ -207,7 +215,7 @@ int free_hash_list_struct=(get_allocator_cb_flag(h->allocator_hash_list) & Alloc
 if (h->table!=NULL) {
    /* This case should always happen, but we never know... */
    for (unsigned int i=0;i<h->capacity;i++) {
-      free_hash_list(h->table[i],h->free,free_hash_list_struct,h);
+      free_hash_list(h->table[i],h->free_key,h->free_ptr_value,free_hash_list_struct,h);
       h->table[i]=NULL;
    }
 }
@@ -461,3 +469,13 @@ int i;
 return get_value(h,key,insert_policy,&i);
 }
 
+
+/**
+ * Frees a pointer any structure applying 'free' to the pointer field.
+ */
+void free_any_ptr(void* any_ptr) {
+if (any_ptr==NULL) return;
+struct any* a=(struct any*)any_ptr;
+free(a->_ptr);
+free(a);
+}

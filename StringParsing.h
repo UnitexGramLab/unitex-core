@@ -54,6 +54,7 @@
  */
 #define P_EMPTY U_EMPTY
 extern const unichar P_SPACE[] ;
+extern const unichar P_TAB[] ;
 extern const unichar P_COMMA[] ;
 extern const unichar P_DOT[] ;
 extern const unichar P_EQUAL[] ;

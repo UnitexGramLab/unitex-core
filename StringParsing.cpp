@@ -27,6 +27,7 @@
  * many times.
  */
 const unichar P_SPACE []= { ' ', 0 };
+const unichar P_TAB []= { '\t', 0 };
 const unichar P_COMMA[] = { ',', 0 };
 const unichar P_DOT[] = { '.', 0 };
 const unichar P_EQUAL[] = { '=', 0 };

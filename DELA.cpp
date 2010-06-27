@@ -1210,8 +1210,8 @@ explore_all_paths(4,content,0,bin,inf,output);
 /**
  * This function parses a DELAF and stores all its grammatical and
  * semantic codes into the 'hash' structure. This structure is later
- * used in the Locate program in order to know if XXX can be such a
- * code when there is a pattern like "<XXX>".
+ * used in the Locate program in order to know if XYZ can be such a
+ * code when there is a pattern like "<XYZ>".
  */
 void extract_semantic_codes(const char* delaf,struct string_hash* hash) {
 U_FILE* f=u_fopen_existing_unitex_text_format(delaf,U_READ);
@@ -1677,3 +1677,82 @@ for (int i=0;i<src->n_inflectional_codes;i++) {
 }
 }
 
+
+
+/**
+ * Looks for an exact match of the given string 'str'. Returns its INF code number or
+ * -1 is not found.
+ *
+ * NOTE: this is an EXACT matching. No alphabet equivalency is used here.
+ */
+int explore_for_exact_match(unsigned char* bin,int offset,unichar* str,int pos) {
+/* We compute the number of transitions that outgo from the current node */
+int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
+offset=offset+2;
+if (str[pos]=='\0') {
+   /* If we are at the end of the token */
+   if (!(n_transitions & 32768)) {
+      /* If the node is final */
+      int inf_number=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
+      return inf_number;
+   }
+   /* If the string is not in the dictionary */
+   return -1;
+}
+if ((n_transitions & 32768)) {
+   /* If we are in a normal node, we remove the control bit to
+    * have the good number of transitions */
+   n_transitions=n_transitions-32768;
+} else {
+   /* If we are in a final node, we must jump after the reference to the INF
+    * line number */
+   offset=offset+3;
+}
+for (int i=0;i<n_transitions;i++) {
+   /* For each outgoing transition, we look if the transition character is
+    * the one we look for */
+   unichar c=(unichar)(((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1]);
+   offset=offset+2;
+   int offset_dest=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
+   offset=offset+3;
+   if (c==str[pos]) {
+      return explore_for_exact_match(bin,offset_dest,str,pos+1);
+   }
+}
+return -1;
+}
+
+
+/**
+ * Returns the INF code associated to the given string or -1 if not found.
+ *
+ * NOTE: this is an EXACT matching. No alphabet equivalency is used here.
+ */
+int get_inf_code_exact_match(unsigned char* bin,unichar* str) {
+return explore_for_exact_match(bin,4,str,0);
+}
+
+
+/**
+ * Prints the given entry to the error stream.
+ *
+ * WARNING: use for debug only, since it does not handle special char protection
+ */
+void debug_print_entry(struct dela_entry* e) {
+error("%S,%S.%S",e->inflected,e->lemma,e->semantic_codes[0]);
+for (int i=1;i<e->n_semantic_codes;i++) {
+	error("+%S",e->semantic_codes[i]);
+}
+for (int i=0;i<e->n_inflectional_codes;i++) {
+	error(":%S",e->inflectional_codes[i]);
+}
+}
+
+
+/**
+ * The same than above, with a new line
+ */
+void debug_println_entry(struct dela_entry* e) {
+debug_print_entry(e);
+error("\n");
+}

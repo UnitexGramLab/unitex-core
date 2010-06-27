@@ -71,7 +71,7 @@ if (cache==NULL) {
 }
 cache->n_fst2_tags=n_fst2_tags;
 cache->table=new_hash_table(size,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
-      (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
+      (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 cache->elements=new_vector_ptr(size);
 cache->cached_tfst_tags_index=NULL;
 return cache;

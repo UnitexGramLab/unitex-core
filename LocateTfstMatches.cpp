@@ -543,14 +543,12 @@ while (text_tags!=NULL) {
    if (text_tags->n==-1) {
       /* We have a text independent match */
       Fst2Tag fst2_tag=infos->fst2->tags[item->fst2_transition->tag_number];
-      if (fst2_tag->type==BEGIN_VAR_TAG) {
+      if (fst2_tag->type==BEGIN_OUTPUT_VAR_TAG) {
     	  /* If we an output variable start $|a( */
+    	  set_output_variable_pending(infos->output_variables,fst2_tag->variable);
+
+    	  unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
       } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
-#ifdef __GNUC__
-#warning TODO gérer les output var
-#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("warning TODO gerer les output var")
-#endif
     	  /* If we an output variable end $|a) */
       } else if (fst2_tag->type==BEGIN_VAR_TAG) {
          /* If we have a variable start tag $a(, we add it to our 

@@ -81,8 +81,10 @@ struct hash_table {
    /* The equal function must return a non null value if the two elements are
     * identical; 0 otherwise. */
    EQUAL_FUNCTION equal;
-   /* The function to use for freeing an element of the hash table */
-   FREE_FUNCTION free;
+   /* The function to use for freeing a key of the hash table */
+   FREE_FUNCTION free_key;
+   /* The function to use for freeing the pointers contained in the hash list cell any values */
+   FREE_FUNCTION free_ptr_value;
    /* The function to use to duplicate the given key when it has to be inserted
     * in the table. This is useful when we look for a key that may already be in the table:
     * in such a case, we don't want to malloc a key that finally will have to be freed. */
@@ -91,8 +93,8 @@ struct hash_table {
 };
 
 
-struct hash_table* new_hash_table(int,float,HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
-struct hash_table* new_hash_table(HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
+struct hash_table* new_hash_table(int,float,HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
+struct hash_table* new_hash_table(HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
 struct hash_table* new_hash_table(int,float);
 struct hash_table* new_hash_table();
 void free_hash_table(struct hash_table*);
@@ -101,6 +103,7 @@ struct any* get_value(struct hash_table*,void*,int,int*);
 struct any* get_value(struct hash_table*,int,int,int*);
 struct any* get_value(struct hash_table*,void*,int);
 struct any* get_value(struct hash_table*,int,int);
+void free_any_ptr(void*);
 
 #endif
 

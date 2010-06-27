@@ -33,7 +33,7 @@
 #include "MF_Global.h"
 #include "MF_InflectTransd.h"
 #include "MF_LangMorpho.h"
-
+#include "File.h"
 
 const char* usage_BuildKrMwuDic =
         "Usage: BuildKrMwuDic [OPTIONS] <dic>\n"
@@ -45,6 +45,7 @@ const char* usage_BuildKrMwuDic =
         "  -d DIR/--directory=DIR: specifies the directory that contains the inflection graphs\n"
         "                          required to produce morphological variants of roots\n"
         "  -a ALPH/--alphabet=ALPH: specifies the alphabet file to use\n"
+        "  -b BIN/--binary=BIN: binary simple word dictionary\n"
         "\n";
 
 
@@ -57,11 +58,12 @@ u_printf(usage_BuildKrMwuDic);
 
 
 
-const char* optstring_BuildKrMwuDic="o:d:a:hk:q:";
+const char* optstring_BuildKrMwuDic="o:d:a:b:hk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"directory",required_argument_TS,NULL,'d'},
       {"alphabet",required_argument_TS,NULL,'a'},
+      {"binary",required_argument_TS,NULL,'b'},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -83,6 +85,8 @@ int val,index=-1;
 char output[FILENAME_MAX]="";
 char inflection_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
+char dic_bin[FILENAME_MAX]="";
+char dic_inf[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -103,6 +107,13 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrM
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
              strcpy(alphabet,vars->optarg);
+             break;
+   case 'b': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty binary dictionary name\n");
+             }
+             strcpy(dic_bin,vars->optarg);
+             remove_extension(dic_bin,dic_inf);
+             strcat(dic_inf,".inf");
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -135,6 +146,9 @@ if (inflection_dir[0]=='\0') {
 if (alphabet[0]=='\0') {
    fatal_error("Alphabet file must be specified\n");
 }
+if (dic_bin[0]=='\0') {
+   fatal_error("Binary dictionary must be specified\n");
+}
 
 U_FILE* delas=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (delas==NULL) {
@@ -162,10 +176,14 @@ if (pL_MORPHO == NULL) {
    fatal_error("init_langage_morph error\n");
 }
 
+unsigned char* bin=load_BIN_file(dic_bin);
+struct INF_codes* inf=load_INF_file(dic_inf);
 
 create_mwu_dictionary(delas,grf,multiFlex_ctx,korean,pL_MORPHO,encoding_output,
-       bom_output,mask_encoding_compatibility_input);
+       bom_output,mask_encoding_compatibility_input,bin,inf);
 
+free(bin);
+free_INF_codes(inf);
 u_fclose(delas);
 u_fclose(grf);
 free_alphabet(alph);

@@ -232,7 +232,7 @@ vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
-                                            (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
+                                            (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 if (token_file[0]!='\0') {
    load_token_file(token_file,mask_encoding_compatibility_input,tokens,hashtable,n_occur);
 }

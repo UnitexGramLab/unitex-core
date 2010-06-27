@@ -446,7 +446,7 @@ void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod
 	int hash_ret;
 
 	vector_ptr* allMatches = new_vector_ptr();
-	hash_table* countPerMatch = new_hash_table(hash_vector_int, vectors_equal, free_vec, copy_vec);
+	hash_table* countPerMatch = new_hash_table(hash_vector_int, vectors_equal, free_vec, free,copy_vec);
 	vector_int* currentMatchList;
 	vec_CS_tag* currentKey;
 
@@ -532,7 +532,8 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 	int i;
 
 	vector_int* allMatches = new_vector_int();
-	hash_table* countPerCollocate = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, copy_token_as_int);
+	hash_table* countPerCollocate = new_hash_table(hash_token_as_int, tokens_as_int_equal,
+					free_token_as_int, NULL, copy_token_as_int);
 	vector_int* currentMatchList;
 	vector_int* tmpMatchList;
 
@@ -633,7 +634,8 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 
 	// now we build z_score hash per collocate
 
-	hash_table* zret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, copy_token_as_int);
+	hash_table* zret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, free,
+								copy_token_as_int);
 	double *tmpZScore;
 	int K, Fc;
 	double p;
@@ -686,7 +688,8 @@ void count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int 
 		fatal_error("Error in count_collocates, ret_hash cannot be null!");
 	}
 
-	hash_table* ret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, copy_token_as_int);
+	hash_table* ret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, free,
+						copy_token_as_int);
 	int* buffer = NULL;
 	long bufferStart, bufferEnd;
 	long codSize = get_file_size(cod) / sizeof(int);

@@ -239,7 +239,7 @@ public:
       initJamoMap();
       alphabet=alph;
       table=new_hash_table(1024,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
-      	      (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
+    		  (FREE_FUNCTION)free,(FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
    };
 
    ~Korean() {

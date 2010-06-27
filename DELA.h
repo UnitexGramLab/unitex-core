@@ -146,6 +146,10 @@ int same_inflectional_codes(const struct dela_entry*,const struct dela_entry*);
 int same_codes(const struct dela_entry*,const struct dela_entry*);
 void merge_inflectional_codes(struct dela_entry*,const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int one_inflectional_codes_contains_the_other(const unichar*,const unichar*);
+int get_inf_code_exact_match(unsigned char* bin,unichar* str);
+
+void debug_print_entry(struct dela_entry*);
+void debug_println_entry(struct dela_entry*);
 
 #endif
 
