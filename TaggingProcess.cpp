@@ -251,7 +251,8 @@ char* code = (char*)malloc(sizeof(char)*u_strlen(tmp->string));
 if(code == NULL){
 	fatal_alloc_error("get_inf_value");
 }
-for(unsigned int i=0;i<u_strlen(tmp->string);i++){
+unsigned int l=u_strlen(tmp->string);
+for(unsigned int i=0;i<l;i++){
 	code[i] = (char)tmp->string[i+1];
 }
 /* conversion string to int value */
@@ -455,7 +456,8 @@ return state_sequence;
  * returns 0 otherwise.
  */
 int is_compound_word(unichar* token){
-for(unsigned int i=0;i<u_strlen(token);i++){
+unsigned int l=u_strlen(token);
+for(unsigned int i=0;i<l;i++){
 	if(token[i] == ' '){
 		return 1;
 	}
