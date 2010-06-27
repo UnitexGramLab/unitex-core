@@ -180,37 +180,64 @@ while (s[i]!='\0') {
             struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
             TfstTag* first_tag=NULL;
             TfstTag* last_tag=NULL;
-            if (v!=NULL) {
+            if (v==NULL) {
+            	/* We do nothing, since this normal variable may not exist */
+            } else {
                first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
                last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
-            }
-#ifdef __GNUC__
-#warning maintenant qu on peut avoir des dic variables, il faut changer le code pour SET et UNSET
-#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("warning maintenant qu'on peut avoir des dic variables, il faut changer le code pour SET et UNSET")
-#endif
-            if (v==NULL || v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
+               if (v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
                   || !valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
-               /* If the variable is not defined properly */
-               if (field[0]=='S') {
-                  /* $a.SET$ is false, we backtrack */
-                  stack->len=old_length;
-                  stack->str[old_length]='\0';
-                  return 0;
+            	   /* If the variable is not defined properly */
+            	   if (field[0]=='S') {
+            		   /* $a.SET$ is false, we backtrack */
+            		   stack->len=old_length;
+            		   stack->str[old_length]='\0';
+            		   return 0;
+            	   } else {
+            		   /* $a.UNSET$ is true, we go on */
+            		   continue;
+            	   }
                } else {
-                  /* $a.UNSET$ is true, we go on */
-                  continue;
+            	   /* If the variable is correctly defined */
+            	   if (field[0]=='S') {
+            		   /* $a.SET$ is true, we go on */
+            		   continue;
+            	   } else {
+            		   /* $a.UNSET$ is false, we backtrack */
+            		   stack->len=old_length;
+            		   stack->str[old_length]='\0';
+            		   return 0;
+            	   }
                }
+            }
+            /* If we arrive here, the variable was not a normal one, so we
+             * try to match an output one */
+            Ustring* output=get_output_variable(p->output_variables,name);
+            if (output==NULL) {
+            	/* We do nothing, since this output variable may not exist */
             } else {
-               /* If the variable is correctly defined */
-               if (field[0]=='S') {
-                  /* $a.SET$ is true, we go on */
-                  continue;
+               if (output->len==0) {
+                  /* If the variable is empty */
+                  if (field[0]=='S') {
+                	  /* $a.SET$ is false, we backtrack */
+                	  stack->len=old_length;
+                	  stack->str[old_length]='\0';
+                	  return 0;
+                  } else {
+                     /* $a.UNSET$ is true, we go on */
+                     continue;
+                  }
                } else {
-                  /* $a.UNSET$ is false, we backtrack */
-                  stack->len=old_length;
-                  stack->str[old_length]='\0';
-                  return 0;
+                  /* If the variable is non empty */
+                  if (field[0]=='S') {
+                	  /* $a.SET$ is true, we go on */
+                	  continue;
+                  } else {
+                	  /* $a.UNSET$ is false, we backtrack */
+                	  stack->len=old_length;
+                	  stack->str[old_length]='\0';
+                	  return 0;
+                  }
                }
             }
          } else {
@@ -265,15 +292,19 @@ while (s[i]!='\0') {
       }
       struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
       if (v==NULL) {
-         switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
-            case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: {
-               stack->len=old_length;
-               stack->str[old_length]='\0';
-               return 0;
-            }
-         }
+       	  /* Not a normal one ? Maybe an output one */
+       	  Ustring* output=get_output_variable(p->output_variables,name);
+       	  if (output==NULL) {
+       		  switch (p->variable_error_policy) {
+   				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
+   				  case IGNORE_VARIABLE_ERRORS: continue;
+   				  case BACKTRACK_ON_VARIABLE_ERRORS:
+					  stack->len=old_length;
+					  stack->str[old_length]='\0';
+					  return 0;
+       		  }
+       	  }
+       	  push_output_string_tfst(stack,output->str);
       }
       if (v->start==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {

@@ -155,7 +155,8 @@ while (v->pending!=NULL) {
 /* Then we add all pending variables of the backup */
 int l=v->variable_index->size;
 for (int i=0;i<l;i++) {
-	if ((v->is_pending[i]=backup[i])) {
+
+	if ((v->is_pending[i]=(backup[i]?1:0))) {
 		/* We also add pending variables to the 'pending' list */
 		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);
 	}
