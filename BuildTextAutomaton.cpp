@@ -28,13 +28,14 @@
 #include "NormalizationFst2.h"
 #include "BitMasks.h"
 #include "Transitions.h"
-#include "SingleGraph.h"
+#include "HashTable.h"
 #include "Vector.h"
 #include "Tfst.h"
 #include "Korean.h"
 #include "File.h"
 #include "AbstractFst2Load.h"
 #include "UnusedParameter.h"
+#include "TfstStats.h"
 
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
@@ -148,7 +149,7 @@ while (trans!=NULL) {
 
 
 /**
- * Returns 1 if the given tag description seems to describe a {xxx,xxx.xxx} tag; 0 otherwise.
+ * Returns 1 if the given tag description seems to describe a {xx,xx.xx} tag; 0 otherwise.
  */
 int is_high_weight_tag(unichar* s) {
 if (u_starts_with(s,"@<E>\n")) {
@@ -271,8 +272,8 @@ free(weight);
 struct output_info {
    /* The output to a appear in the .tfst */
    unichar* output;
-   /* The content of the tag. If the tag is of the form {xxx,yyy.zzz},
-    * it means xxx; otherwise it is the same than 'output'. */
+   /* The content of the tag. If the tag is of the form {xx,yyy.zzz},
+    * it means xx; otherwise it is the same than 'output'. */
    unichar* content;
    /* Bounds of the sequence in the sentence, given in the form (X,Y) (W,Z) where
     * X is the start position in tokens, Y is the position in char in this token,
@@ -471,7 +472,7 @@ while(everything_still_OK) {
       }
       /* We are not at the last tag, so we have to move to the next tag.
        * However, we have to deal with the special case of tags like
-       * {<E>,xxx.yyy}. For those tags, we don't move in the text token,
+       * {<E>,xx.yy}. For those tags, we don't move in the text token,
        * and we have to set end_pos_letter=-1. As we don't know if several
        * <E> tags can be combined, we use a loop for safety */
       for (;;) {
@@ -492,7 +493,7 @@ while(everything_still_OK) {
          tab[current_tag]->start_pos_letter=UNDEF_KR_TAG_START;//current_pos_in_letter_in_token;
          current_index_in_jamo_tag=0;
          if (!u_strcmp(tab[current_tag]->content,"<E>")) {
-            /* If we have a {<E>,xxx.yyy} tag */
+            /* If we have a {<E>,xx.yy} tag */
             tab[current_tag]->start_pos_char=current_pos_in_char_in_token;
             tab[current_tag]->start_pos_letter=current_pos_in_letter_in_token-1;
             tab[current_tag]->end_pos=tab[current_tag]->start_pos;
@@ -826,7 +827,8 @@ void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
                                struct match_list* *tag_list,
                                int current_global_position_in_tokens,
                                int current_global_position_in_chars,
-                               language_t* language,Korean* korean) {
+                               language_t* language,Korean* korean,
+                               struct hash_table* form_frequencies) {
 /* We declare the graph that will represent the sentence as well as
  * a temporary string_hash 'tmp_tags' that will be used to store the tags of this
  * graph. We don't put tags directly in the main 'tags', because a tag can
@@ -959,6 +961,9 @@ if (tfst->automaton->number_of_states==0) {
    /* We minimize the sentence automaton. It will remove the unused states and may
     * factorize suffixes introduced during the application of the normalization tree. */
    minimize(tfst->automaton,1);
+   /* Before renumbering transition tags, we compute form frequencies */
+   compute_form_frequencies(tfst->automaton,tmp_tags->value,tmp_tags->size,form_frequencies);
+
    /* We explore all the transitions of the automaton in order to renumber transitions */
    for (i=0;i<tfst->automaton->number_of_states;i++) {
       Transition* trans=tfst->automaton->states[i]->outgoing_transitions;

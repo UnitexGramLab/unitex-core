@@ -32,6 +32,7 @@
 #include "LocateMatches.h"
 #include "LanguageDefinition.h"
 #include "Korean.h"
+#include "HashTable.h"
 
 #define MAX_TOKENS_IN_SENTENCE 2000
 
@@ -41,6 +42,7 @@ void build_sentence_automaton(int*,int,struct text_tokens*,
                               Alphabet*,U_FILE*,U_FILE*,int,int,
                               struct normalization_tree*,
                               struct match_list**,int,int,
-                              language_t*,Korean* korean);
+                              language_t*,Korean* korean,
+                              struct hash_table* form_frequencies);
 
 #endif

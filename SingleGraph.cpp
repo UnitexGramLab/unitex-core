@@ -633,11 +633,11 @@ delete_epsilon_transitions(graph);
  * if we have the following transitions:
  *
  * A --epsilon--> B
- * B --XXX--> C
+ * B --XX--> C
  *
  * we have to remove the first one and then to add the following new one:
  *
- * A --XXX--> C
+ * A --XX--> C
  */
 add_transitions_according_to_epsilon_closure(closures,graph,add_reversed_transitions);
 /* Finally, we free the closures */
@@ -1329,8 +1329,8 @@ return graph;
 void count_paths(SingleGraph graph,int q1,int q2,int* min_path_length,int* max_path_length,
                  int* number_of_paths) {
 if (q1==q2) {
-   min_path_length[q1]=0;
-   max_path_length[q1]=0;
+   if (min_path_length!=NULL) min_path_length[q1]=0;
+   if (max_path_length!=NULL) max_path_length[q1]=0;
    number_of_paths[q1]=1;
 }
 if (number_of_paths[q1]!=-1) {
@@ -1339,16 +1339,17 @@ if (number_of_paths[q1]!=-1) {
    return;
 }
 number_of_paths[q1]=0;
-min_path_length[q1]=-1;
-max_path_length[q1]=0;
+if (min_path_length!=NULL) min_path_length[q1]=-1;
+if (max_path_length!=NULL) max_path_length[q1]=0;
 for (Transition* t=graph->states[q1]->outgoing_transitions;t!=NULL;t=t->next) {
    count_paths(graph,t->state_number,q2,min_path_length,max_path_length,number_of_paths);
    number_of_paths[q1]=number_of_paths[q1]+number_of_paths[t->state_number];
    /* We use +1 because we must count the transition from q1 to t->state_number */
-   if (min_path_length[q1]==-1 || (min_path_length[t->state_number]+1)<min_path_length[q1]) {
+   if (min_path_length!=NULL &&
+		   (min_path_length[q1]==-1 || (min_path_length[t->state_number]+1)<min_path_length[q1])) {
       min_path_length[q1]=min_path_length[t->state_number]+1;
    }
-   if ((max_path_length[t->state_number]+1)>max_path_length[q1]) {
+   if (max_path_length!=NULL && (max_path_length[t->state_number]+1)>max_path_length[q1]) {
       max_path_length[q1]=max_path_length[t->state_number]+1;
    }
 }

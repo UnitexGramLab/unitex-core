@@ -537,7 +537,7 @@ for (n=0;n<tokens->nbelems;n++) {
 
 
 
-int partition_pour_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
+int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 int pivot;
 int tmp;
 unichar* tmp_char;
@@ -566,7 +566,7 @@ for (;;) {
 void quicksort_by_frequence(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
 if (first<last) {
-  p=partition_pour_quicksort_by_frequence(first,last,tokens,n_occur);
+  p=partition_for_quicksort_by_frequence(first,last,tokens,n_occur);
   quicksort_by_frequence(first,p,tokens,n_occur);
   quicksort_by_frequence(p+1,last,tokens,n_occur);
 }
@@ -574,7 +574,7 @@ if (first<last) {
 
 
 
-int partition_pour_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
+int partition_for_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 unichar* pivot;
 unichar* tmp;
 int tmp_int;
@@ -603,7 +603,7 @@ for (;;) {
 void quicksort_by_alph_order(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
 if (first<last) {
-  p=partition_pour_quicksort_by_alph_order(first,last,tokens,n_occur);
+  p=partition_for_quicksort_by_alph_order(first,last,tokens,n_occur);
   quicksort_by_alph_order(first,p,tokens,n_occur);
   quicksort_by_alph_order(p+1,last,tokens,n_occur);
 }

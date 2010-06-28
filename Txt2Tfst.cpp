@@ -42,6 +42,8 @@
 #include "NewLineShifts.h"
 #include "Txt2Tfst.h"
 #include "Korean.h"
+#include "HashTable.h"
+#include "TfstStats.h"
 
 
 /**
@@ -298,18 +300,16 @@ int current_global_position_in_chars=0;
 u_fprintf(tfst,"0000000000\n");
 u_printf("Constructing text automaton...\n");
 Ustring* text=new_Ustring(2048);
-char phrase_cod[FILENAME_MAX];
-char exe_path[FILENAME_MAX];
-get_path(argv[0],exe_path);
-get_snt_path(argv[vars->optind],phrase_cod);
-strcat(phrase_cod ,"phrase.cod");
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+        (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
+
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
    build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
             current_global_position_in_tokens,
             current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-            language,korean);
+            language,korean,form_frequencies);
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
    current_global_position_in_tokens=current_global_position_in_tokens+total;
@@ -320,6 +320,26 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
 u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");
 u_fclose(f);
 free(enter_pos);
+/* Finally, we save statistics */
+char tfst_tags_by_freq[FILENAME_MAX];
+char tfst_tags_by_alph[FILENAME_MAX];
+get_snt_path(argv[vars->optind],tfst_tags_by_freq);
+strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
+get_snt_path(argv[vars->optind],tfst_tags_by_alph);
+strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
+U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+if (f_tfst_tags_by_freq==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_freq);
+}
+U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+if (f_tfst_tags_by_alph==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_alph);
+}
+sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+u_fclose(f_tfst_tags_by_freq);
+u_fclose(f_tfst_tags_by_alph);
+
+free_hash_table(form_frequencies);
 free_Ustring(text);
 u_fclose(tfst);
 u_fclose(tind);

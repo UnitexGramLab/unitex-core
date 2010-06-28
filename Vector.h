@@ -47,6 +47,13 @@ typedef struct vector_int {
 } vector_int;
 
 
+typedef struct vector_float {
+  int nbelems;
+  float* tab;
+  int size;
+} vector_float;
+
+
 inline vector_ptr* new_vector_ptr(int size=16) {
 vector_ptr* vec=(vector_ptr*)malloc(sizeof(vector_ptr));
 if (vec==NULL) {
@@ -146,6 +153,55 @@ vec->size=size;
 inline int vector_int_add(vector_int* vec,int data) {
 while (vec->nbelems>=vec->size) {
    vector_int_resize(vec,vec->size*2);
+}
+vec->tab[vec->nbelems++]=data;
+return vec->nbelems-1;
+}
+
+
+inline vector_float* new_vector_float(int size=16) {
+vector_float* vec=(vector_float*)malloc(sizeof(vector_float));
+if (vec==NULL) {
+   fatal_alloc_error("new_vector_float");
+}
+if (size<=0) {
+   size=1;
+}
+vec->tab=(float*)malloc(size*sizeof(float));
+if (vec==NULL) {
+   fatal_alloc_error("new_vector_float");
+}
+vec->size=size;
+vec->nbelems=0;
+return vec;
+}
+
+
+inline void free_vector_float(vector_float* vec) {
+if (vec==NULL) return;
+free(vec->tab);
+free(vec);
+}
+
+
+inline void vector_float_resize(vector_float* vec,int size) {
+if (size<=0) {
+   size=1;
+}
+if (size<vec->nbelems) {
+   fatal_error("vector_float_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
+}
+vec->tab=(float*)realloc(vec->tab,size*sizeof(float));
+if (vec->tab==NULL) {
+   fatal_alloc_error("vector_float_resize");
+}
+vec->size=size;
+}
+
+
+inline int vector_float_add(vector_float* vec,float data) {
+while (vec->nbelems>=vec->size) {
+   vector_float_resize(vec,vec->size*2);
 }
 vec->tab[vec->nbelems++]=data;
 return vec->nbelems-1;

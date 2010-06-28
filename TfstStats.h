@@ -19,24 +19,21 @@
  *
  */
 
-#ifndef AnyH
-#define AnyH
+#ifndef TfstStatsH
+#define TfstStatsH
 
-#include "Unicode.h"
 
 /**
- * This structure is used to handle a value of any type. If we want to
- * use a new type, we just have to add the corresponding line in the union.
+ * This library provides functions for computing form frequencies
+ * in text automata.
  */
-struct any {
-   union {
-      int _int;
-      char _char;
-      unichar _unichar;
-      void* _ptr;
-      float _float;
-   };
-};
+#include "Unicode.h"
+#include "SingleGraph.h"
+#include "HashTable.h"
+#include "Vector.h"
+
+void compute_form_frequencies(SingleGraph g,unichar** string_tags,int n_string_tags,
+								struct hash_table* hash);
+void sort_and_save_tfst_stats(struct hash_table* form_frequencies,U_FILE* by_freq,U_FILE* by_alph);
 
 #endif
-
