@@ -465,6 +465,7 @@
     <ClCompile Include="..\Tfst.cpp" />
     <ClCompile Include="..\Tfst2Grf.cpp" />
     <ClCompile Include="..\Tfst2Unambig.cpp" />
+    <ClCompile Include="..\TfstStats.cpp" />
     <ClCompile Include="..\Thai.cpp" />
     <ClCompile Include="..\Tokenization.cpp" />
     <ClCompile Include="..\Tokenize.cpp" />

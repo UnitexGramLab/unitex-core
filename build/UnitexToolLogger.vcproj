@@ -615,6 +615,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BuildKrMwuDic.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\BuildTextAutomaton.cpp"
 				>
 			</File>
@@ -824,6 +828,10 @@
 			</File>
 			<File
 				RelativePath="..\Korean.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\KrMwuDic.cpp"
 				>
 			</File>
 			<File
@@ -1204,6 +1212,10 @@
 			</File>
 			<File
 				RelativePath="..\Tfst2Unambig.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TfstStats.cpp"
 				>
 			</File>
 			<File
