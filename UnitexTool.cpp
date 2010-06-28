@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "Unicode.h"
+#include "BuildKrMwuDic.h"
 #include "CheckDic.h"
 #include "Compress.h"
 #include "Concord.h"
@@ -83,6 +84,7 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
+	{ "BuildKrMwuDic", 13, &main_BuildKrMwuDic, usage_BuildKrMwuDic, optstring_BuildKrMwuDic, lopts_BuildKrMwuDic } ,
 	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
 	{ "Compress", 8, &main_Compress, usage_Compress, optstring_Compress, lopts_Compress } ,
 	{ "Concord", 7, &main_Concord, usage_Concord, optstring_Concord, lopts_Concord } ,
