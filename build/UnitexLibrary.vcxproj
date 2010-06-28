@@ -222,6 +222,7 @@
     <ClCompile Include="..\BitArray.cpp" />
     <ClCompile Include="..\BitMasks.cpp" />
     <ClCompile Include="..\Buffer.cpp" />
+    <ClCompile Include="..\BuildKrMwuDic.cpp" />
     <ClCompile Include="..\BuildTextAutomaton.cpp" />
     <ClCompile Include="..\CheckDic.cpp" />
     <ClCompile Include="..\CodePages.cpp" />
@@ -274,6 +275,7 @@
     <ClCompile Include="..\ImplodeTfst.cpp" />
     <ClCompile Include="..\IOBuffer.cpp" />
     <ClCompile Include="..\Korean.cpp" />
+    <ClCompile Include="..\KrMwuDic.cpp" />
     <ClCompile Include="..\LanguageDefinition.cpp" />
     <ClCompile Include="..\LemmaTree.cpp" />
     <ClCompile Include="..\LinearAutomaton2Txt.cpp" />

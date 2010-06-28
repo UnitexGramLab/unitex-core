@@ -169,6 +169,7 @@
 		222F7C6C1107A68E00C91CC7 /* Ustring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F7B951107A68E00C91CC7 /* Ustring.cpp */; };
 		222F7C6D1107A68E00C91CC7 /* XMLizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F7B981107A68E00C91CC7 /* XMLizer.cpp */; };
 		2237A5B411D68EFA00D247CF /* OutputTransductionVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */; };
+		2237A6C111D8492500D247CF /* BuildKrMwuDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */; };
 		225CCA8210DA9DB1003F0910 /* regcomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92210DA9DB1003F0910 /* regcomp.c */; };
 		225CCA8310DA9DB1003F0910 /* regerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92310DA9DB1003F0910 /* regerror.c */; };
 		225CCA8410DA9DB1003F0910 /* regexec.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92510DA9DB1003F0910 /* regexec.c */; };
@@ -552,6 +553,8 @@
 		222F7B991107A68E00C91CC7 /* XMLizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XMLizer.h; path = ../XMLizer.h; sourceTree = SOURCE_ROOT; };
 		2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OutputTransductionVariables.cpp; path = ../OutputTransductionVariables.cpp; sourceTree = SOURCE_ROOT; };
 		2237A5B311D68EFA00D247CF /* OutputTransductionVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OutputTransductionVariables.h; path = ../OutputTransductionVariables.h; sourceTree = SOURCE_ROOT; };
+		2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BuildKrMwuDic.cpp; path = ../BuildKrMwuDic.cpp; sourceTree = SOURCE_ROOT; };
+		2237A6C011D8492500D247CF /* BuildKrMwuDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BuildKrMwuDic.h; path = ../BuildKrMwuDic.h; sourceTree = SOURCE_ROOT; };
 		225CC91F10DA9DB1003F0910 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		225CC92010DA9DB1003F0910 /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
 		225CC92110DA9DB1003F0910 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -626,6 +629,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */,
+				2237A6C011D8492500D247CF /* BuildKrMwuDic.h */,
 				2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */,
 				2237A5B311D68EFA00D247CF /* OutputTransductionVariables.h */,
 				22B2EB66118B169600E00A77 /* MappedFileHelper.h */,
@@ -1289,6 +1294,7 @@
 				2294EE7611A0116E003CE92B /* Untokenize.cpp in Sources */,
 				229D935811CB412D007BC1B4 /* Arabic.cpp in Sources */,
 				2237A5B411D68EFA00D247CF /* OutputTransductionVariables.cpp in Sources */,
+				2237A6C111D8492500D247CF /* BuildKrMwuDic.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
