@@ -119,7 +119,9 @@ if (vars->optind!=argc-1) {
 strcpy(input_tfst,argv[vars->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
-
+char foo[FILENAME_MAX];
+remove_path(input_tfst,foo);
+int elag=!strcmp(foo,"text-elag.tfst");
 int no_explicit_output=0;
 if (output_tfst[0]=='\0') {
    no_explicit_output=1;
@@ -152,13 +154,13 @@ close_text_automaton(tfst);
 char tfst_tags_by_freq[FILENAME_MAX];
 char tfst_tags_by_alph[FILENAME_MAX];
 get_path(input_tfst,tfst_tags_by_freq);
-if (!no_explicit_output) {
+if (elag) {
 	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
 } else {
 	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
 }
 get_path(input_tfst,tfst_tags_by_alph);
-if (!no_explicit_output) {
+if (elag) {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");

@@ -148,6 +148,9 @@ strcpy(tfst,argv[vars->optind]);
 remove_extension(argv[vars->optind],tind);
 strcat(tind,".tind");
 int no_explicit_output=0;
+char foo2[FILENAME_MAX];
+remove_path(tfst,foo2);
+int elag=!strcmp(foo2,"text-elag.tfst");
 if (output_tfst[0]=='\0') {
    no_explicit_output=1;
    sprintf(output_tfst,"%s.new",tfst);
@@ -326,13 +329,13 @@ u_fclose(out_tind);
 char tfst_tags_by_freq[FILENAME_MAX];
 char tfst_tags_by_alph[FILENAME_MAX];
 get_path(tfst,tfst_tags_by_freq);
-if (!no_explicit_output) {
+if (elag) {
 	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
 } else {
 	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
 }
 get_path(tfst,tfst_tags_by_alph);
-if (!no_explicit_output) {
+if (elag) {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
