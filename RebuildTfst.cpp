@@ -33,7 +33,8 @@
 #include "Tfst.h"
 #include "Grf2Fst2.h"
 #include "RebuildTfst.h"
-
+#include "HashTable.h"
+#include "TfstStats.h"
 
 
 const char* usage_RebuildTfst =
@@ -140,6 +141,10 @@ if ((f_tind = u_fopen(BINARY,output_tind,U_WRITE)) == NULL) {
    u_fclose(f_tfst);
    fatal_error("Unable to open %s for writing\n", output_tind);
 }
+/* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+        (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
+
 u_fprintf(f_tfst,"%010d\n",tfst->N);
 for (int i = 1; i <= tfst->N; i++) {
    if ((i % 100) == 0) {
@@ -170,6 +175,12 @@ for (int i = 1; i <= tfst->N; i++) {
          error("Error: %s is not a valid sentence automaton\n",grfname);
       }
    }
+   /* We compute form frequencies */
+   if (tags!=NULL) {
+	   compute_form_frequencies(tfst->automaton,tags,n_tags,form_frequencies);
+   } else {
+	   compute_form_frequencies(tfst->automaton,(TfstTag**)(tfst->tags->tab),form_frequencies);
+   }
    save_current_sentence(tfst,f_tfst,f_tind,tags,n_tags);
    if (tags!=NULL) {
       /* If necessary, we free the tags we created */
@@ -183,6 +194,28 @@ u_printf("Text automaton rebuilt.\n");
 close_text_automaton(tfst);
 u_fclose(f_tfst);
 u_fclose(f_tind);
+
+/* Finally, we save statistics */
+char tfst_tags_by_freq[FILENAME_MAX];
+char tfst_tags_by_alph[FILENAME_MAX];
+strcpy(tfst_tags_by_freq,basedir);
+strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
+strcpy(tfst_tags_by_alph,basedir);
+strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
+U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+if (f_tfst_tags_by_freq==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_freq);
+}
+U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+if (f_tfst_tags_by_alph==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_alph);
+}
+sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+u_fclose(f_tfst_tags_by_freq);
+u_fclose(f_tfst_tags_by_alph);
+
+free_hash_table(form_frequencies);
+
 
 /* make a backup and replace old automaton with new */
 char backup_tfst[FILENAME_MAX];

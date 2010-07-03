@@ -496,7 +496,8 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o Activi
                    Transitions.o DELA.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                    getopt.o Tfst.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
-                   HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o $(SYSLIBMAPPED)
+                   HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o \
+                   TfstStats.o $(SYSLIBMAPPED)
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\

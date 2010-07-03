@@ -23,6 +23,7 @@
 
 #include "TfstStats.h"
 #include "BitArray.h"
+#include "Tfst.h"
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -31,9 +32,23 @@
 #endif
 
 
-static void compute_form_frequencies(SingleGraph g,unichar** tags,struct hash_table* hash);
+static void compute_form_frequencies(SingleGraph g,void** tags,int tfst_tags,struct hash_table* hash);
 static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
-									unichar** tags,struct hash_table* form_frequencies);
+									void** tags,int tfst_tags,struct hash_table* form_frequencies);
+
+/**
+ * Computes the form frequencies for the given sentence automaton as follows:
+ *
+ * if there are n concurrent paths, then the frequency of each tag of each path
+ * is increased by 1/n.
+ *
+ * 'hash' is supposed to be a hash table associating float values to strings.
+ */
+void compute_form_frequencies(SingleGraph g,TfstTag** tags,
+								struct hash_table* form_frequencies) {
+compute_form_frequencies(g,(void**)tags,1,form_frequencies);
+}
+
 
 /**
  * Computes the form frequencies for the given sentence automaton as follows:
@@ -76,7 +91,7 @@ for (int i=1;i<n_string_tags;i++) {
 	tags[i]=u_strdup(foo->str);
 }
 free_Ustring(foo);
-compute_form_frequencies(g,tags,form_frequencies);
+compute_form_frequencies(g,(void**)tags,0,form_frequencies);
 for (int i=0;i<n_string_tags;i++) {
 	free(tags[i]);
 }
@@ -87,7 +102,7 @@ free(tags);
 /**
  * The same than above, but it takes only tag contents like "{be,.V:W}"
  */
-static void compute_form_frequencies(SingleGraph g,unichar** tags,struct hash_table* form_frequencies) {
+static void compute_form_frequencies(SingleGraph g,void** tags,int tfst_tags,struct hash_table* form_frequencies) {
 topological_sort(g,NULL);
 /* We create and initialize a matrix to know, for each couple of state
  * (x,y) if there is a direct transition from x to y. */
@@ -160,7 +175,7 @@ while (q2<g->number_of_states-1) {
  * form frequencies */
 for (int i=0;i<g->number_of_states;i++) {
 	if (factorizing[i]) {
-		explore_for_form_frequencies(g,i,factorizing,(float)(1./number_of_paths[i]),tags,form_frequencies);
+		explore_for_form_frequencies(g,i,factorizing,(float)(1./number_of_paths[i]),tags,tfst_tags,form_frequencies);
 	}
 }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
@@ -176,17 +191,24 @@ free(number_of_paths);
  * transition we go through, we add 'freq' to its tag frequency.
  */
 static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
-									unichar** tags,struct hash_table* form_frequencies) {
+									void** tags,int tfst_tags,struct hash_table* form_frequencies) {
 Transition* t=g->states[state]->outgoing_transitions;
 int n=0,foo;
 while (t!=NULL) {
 	int ret;
-	struct any* value=get_value(form_frequencies,tags[t->tag_number],HT_INSERT_IF_NEEDED,&ret);
+	unichar* content;
+	if (tfst_tags) {
+		TfstTag* tmp=(TfstTag*)(tags[t->tag_number]);
+		content=tmp->content;
+	} else {
+		content=(unichar*)(tags[t->tag_number]);
+	}
+	struct any* value=get_value(form_frequencies,content,HT_INSERT_IF_NEEDED,&ret);
 	if (ret!=HT_KEY_ALREADY_THERE) {
 		value->_float=0;
 	}
 	if (!factorizing[t->state_number]) {
-		foo=explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,form_frequencies);
+		foo=explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,tfst_tags,form_frequencies);
 		n=n+foo;
 		value->_float=value->_float+freq*foo;
 	} else {

@@ -34,6 +34,8 @@
 
 void compute_form_frequencies(SingleGraph g,unichar** string_tags,int n_string_tags,
 								struct hash_table* hash);
+void compute_form_frequencies(SingleGraph g,TfstTag** tags,
+								struct hash_table* hash);
 void sort_and_save_tfst_stats(struct hash_table* form_frequencies,U_FILE* by_freq,U_FILE* by_alph);
 
 #endif
