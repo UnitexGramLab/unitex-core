@@ -19,8 +19,16 @@
  *
  */
 
+
+
 #include "TfstStats.h"
 #include "BitArray.h"
+
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+   see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
 
 
 static void compute_form_frequencies(SingleGraph g,unichar** tags,struct hash_table* hash);
@@ -152,7 +160,7 @@ while (q2<g->number_of_states-1) {
  * form frequencies */
 for (int i=0;i<g->number_of_states;i++) {
 	if (factorizing[i]) {
-		explore_for_form_frequencies(g,i,factorizing,1./number_of_paths[i],tags,form_frequencies);
+		explore_for_form_frequencies(g,i,factorizing,(float)(1./number_of_paths[i]),tags,form_frequencies);
 	}
 }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
