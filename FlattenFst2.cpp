@@ -28,7 +28,7 @@
 #include "Transitions.h"
 
 
-static struct list_int** dependencies;
+//static struct list_int** dependencies;
 
 /**
  * During the flatten operation, some graphs may be kept and some
@@ -40,8 +40,8 @@ static struct list_int** dependencies;
 
 struct list_int** compute_dependencies(Fst2*);
 void compute_dependencies_for_subgraph(Fst2*,int,struct list_int**);
-void print_dependencies(Fst2*);
-int* check_for_graphs_to_keep(Fst2*,int);
+void print_dependencies(Fst2*,struct list_int**);
+int* check_for_graphs_to_keep(Fst2*,int,struct list_int**);
 int renumber_graphs_to_keep(Fst2*,int*);
 int flatten_graph(Fst2*,int,int,int,
                   SingleGraph,
@@ -78,9 +78,10 @@ u_printf("%d transitions\n",n);
 
 u_printf("Computing grammar dependencies...\n");
 /* We build the dependency tree of the grammar */
+struct list_int** dependencies;
 dependencies=compute_dependencies(origin);
 /* And we use it in order to know which graphs will be kept */
-int* new_graph_number=check_for_graphs_to_keep(origin,depth);
+int* new_graph_number=check_for_graphs_to_keep(origin,depth,dependencies);
 int n_graphs_to_keep=renumber_graphs_to_keep(origin,new_graph_number);
 #ifdef DEBUG
   print_dependencies(origin);
@@ -181,15 +182,15 @@ return result;
  * This function computes for each subgraph of a grammar its subgraph list.
  */
 struct list_int** compute_dependencies(Fst2* grammar) {
-struct list_int** dependencies=(struct list_int**)malloc(sizeof(struct list_int*)*(1+grammar->number_of_graphs));
-if (dependencies==NULL) {
+struct list_int** dependencies_cur=(struct list_int**)malloc(sizeof(struct list_int*)*(1+grammar->number_of_graphs));
+if (dependencies_cur==NULL) {
    fatal_alloc_error("compute_dependencies");
 }
 for (int i=1;i<=grammar->number_of_graphs;i++) {
-   dependencies[i]=NULL;
-   compute_dependencies_for_subgraph(grammar,i,&dependencies[i]);
+   dependencies_cur[i]=NULL;
+   compute_dependencies_for_subgraph(grammar,i,&dependencies_cur[i]);
 }
-return dependencies;
+return dependencies_cur;
 }
 
 
@@ -214,7 +215,7 @@ for (int state=grammar->initial_states[n];state<last_state;state++) {
 /**
  * This function prints the grammar dependencies.
  */
-void print_dependencies(Fst2* grammar) {
+void print_dependencies(Fst2* grammar,struct list_int** dependencies) {
 for (int i=1;i<=grammar->number_of_graphs;i++) {
    if (dependencies[i]!=NULL) {
       u_printf("graph %d %S calls:\n",i,grammar->graph_names[i]);
@@ -233,13 +234,13 @@ for (int i=1;i<=grammar->number_of_graphs;i++) {
  * in the resulting fst2. Its effect is to set new_graph_number[k] to
  * 1 if the graph number k must be kept.
  */
-void check_if_subgraphs_must_be_kept(int* new_graph_number,int N,int depth,int max_depth) {
+void check_if_subgraphs_must_be_kept(int* new_graph_number,int N,int depth,int max_depth,struct list_int** dependencies) {
 /* If we have not overpassed the maximum flattening depth,
  * we just go on */
 if (depth<=max_depth) {
    struct list_int* l=dependencies[N];
    while (l!=NULL) {
-      check_if_subgraphs_must_be_kept(new_graph_number,l->n,depth+1,max_depth);
+      check_if_subgraphs_must_be_kept(new_graph_number,l->n,depth+1,max_depth,dependencies);
       l=l->next;
    }
 }
@@ -250,7 +251,7 @@ else {
       new_graph_number[N]=1;
       struct list_int* l=dependencies[N];
       while (l!=NULL) {
-         check_if_subgraphs_must_be_kept(new_graph_number,l->n,depth+1,max_depth);
+         check_if_subgraphs_must_be_kept(new_graph_number,l->n,depth+1,max_depth,dependencies);
          l=l->next;
       }
    }
@@ -263,7 +264,7 @@ else {
  * will remain in the resulting fst2. It returns an array indicating for
  * each graph if it must be kept (value=1) or not (value=0).
  */
-int* check_for_graphs_to_keep(Fst2* grammar,int depth) {
+int* check_for_graphs_to_keep(Fst2* grammar,int depth,struct list_int** dependencies) {
 int* new_graph_number=(int*)malloc((1+grammar->number_of_graphs)*sizeof(int));
 if (new_graph_number==NULL) {
    fatal_alloc_error("check_for_graphs_to_keep");
@@ -273,7 +274,7 @@ new_graph_number[1]=1;
 for (int i=2;i<=grammar->number_of_graphs;i++) {
    new_graph_number[i]=0;
 }
-check_if_subgraphs_must_be_kept(new_graph_number,1,0,depth);
+check_if_subgraphs_must_be_kept(new_graph_number,1,0,depth,dependencies);
 return new_graph_number;
 }
 
