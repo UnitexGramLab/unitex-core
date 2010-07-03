@@ -1442,9 +1442,6 @@ while (output_variable_list != NULL) {
 	}
 }
 
-//modifier mode morpho
-//ajouter fail fast si on n'a pas dépassé le premier token et qu'on n'a rien matché
-
 
 /**
  * Looks for 'a' in the given array. Returns its position or -1 if not found.
