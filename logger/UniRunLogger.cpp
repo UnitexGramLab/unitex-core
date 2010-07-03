@@ -757,7 +757,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
       pdlfc = build_list_dir_for_clean();
       int nb_listfile_in=0;
 
-      for (int i2=0;i2<gi1.number_entry;i2++)
+      for (uLong i2=0;i2<gi1.number_entry;i2++)
       {
           char filename_inzip[256];
           unz_file_info file_info;
