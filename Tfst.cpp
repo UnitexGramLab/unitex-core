@@ -76,7 +76,7 @@ Tfst* open_text_automaton(char* tfst) {
 char tind[FILENAME_MAX];
 remove_extension(tfst,tind);
 strcat(tind,".tind");
-int size=get_file_size(tind);
+int size=(int)get_file_size(tind);
 if (size==-1) {
    error("Cannot get size of file %s\n",tind);
    return NULL;

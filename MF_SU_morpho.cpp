@@ -478,7 +478,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
     }
 
 
-	int i, l, ind, retour;
+	int i, ln, ind, retour;
 	//static unichar var_name[100];
 	retour = 1;
 
@@ -537,8 +537,8 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				p_multiFlex_ctx->save_pos = pos;
 				ind = get_indice_var_op(var_name);
 				if (get_flag_var(ind, var_in_use)) {
-					l = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
-					for (i = 0; i < l; i++, pos++)
+					ln = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
+					for (i = 0; i < ln; i++, pos++)
 						p_SU_buf->stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 				}
 				//if (VERBOSE) fprintf(stderr,"COPIE VAR \n");
@@ -606,13 +606,13 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					src[0]=p_SU_buf->stack[pos-1];
 					src[1]='\0';
 					Hanguls_to_Jamos(src,tmp,korean,0);
-					int l=u_strlen(tmp);
+					int len=u_strlen(tmp);
 					/* Now, we copy the jamo sequence
 					 * in place of the hangul syllable. We use l-1 because we take into
 					 * account the hangul syllable */
 					pos--;
-					for (int i=0;i<l;i++) {
-						p_SU_buf->stack[pos++]=tmp[i];
+					for (int il=0;il<len;il++) {
+						p_SU_buf->stack[pos++]=tmp[il];
 					}
 				}
 				if (u_is_Hangul_Jamo_consonant(p_SU_buf->stack[pos-1])) {
@@ -649,16 +649,16 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
                    hangul[1]='\0';
                    unichar tmp[32];
                    Hanguls_to_Jamos(hangul,tmp,korean,0);
-                   int l=u_strlen(tmp);
-                   int i;
-                   for (i=z+1;i<pos;i++) {
-                	  if (p_SU_buf->stack[i]!=KR_SYLLABLE_BOUND) {
+                   int len2=u_strlen(tmp);
+                   int ip;
+                   for (ip=z+1;ip<pos;ip++) {
+                	  if (p_SU_buf->stack[ip]!=KR_SYLLABLE_BOUND) {
                 		  /* The syllable bound must be ignored when we have to recombine
                 		   * jamos with an hangul */
-                		  tmp[l++]=p_SU_buf->stack[i];
+                		  tmp[len2++]=p_SU_buf->stack[ip];
                 	  }
                    }
-                   tmp[l]='\0';
+                   tmp[len2]='\0';
                    unichar tmp2[32];
                    convert_jamo_to_hangul(tmp,tmp2,korean);
                    u_strcpy(p_SU_buf->stack+z,tmp2);
@@ -704,22 +704,22 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					pos = p_multiFlex_ctx->save_pos;
 					ind = get_indice_var_op(var_name);
 					if (get_flag_var(ind, var_in_use)) {
-						l = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
-						for (i = 0; i < l; i++, pos++)
+						ln = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
+						for (i = 0; i < ln; i++, pos++)
 							p_SU_buf->stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 					}
 					pos_tag++;
 				} else if (semitic) {
 				   int pos_letter=p_SU_buf->tag[pos_tag++]-'0';
-					int i = pos_letter-1; /* Numbering from 0, always... */
-					if (i >= ((int)u_strlen(lemma))) {
+					int ip = pos_letter-1; /* Numbering from 0, always... */
+					if (ip >= ((int)u_strlen(lemma))) {
 						error(
 								"Invalid reference in %S.fst2 to consonant #%C for skeleton \"%S\"\n",
 								a->graph_names[1], p_SU_buf->tag[pos_tag - 1], lemma);
                         free(p_SU_buf);
 						return 0;
 					}
-					p_SU_buf->stack[pos++] = lemma[i];
+					p_SU_buf->stack[pos++] = lemma[ip];
 				}
 				break;
 
@@ -727,9 +727,9 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 			default: {
 				unichar tmp[32];
 				single_HGJ_to_Jamos(p_SU_buf->tag[pos_tag],tmp,korean);
-				int l=u_strlen(tmp);
-				u_strncpy(p_SU_buf->stack+pos,tmp,l);
-				pos=pos+l;
+				int len3=u_strlen(tmp);
+				u_strncpy(p_SU_buf->stack+pos,tmp,len3);
+				pos=pos+len3;
 				//old version before Korean: stack[pos++] = tag[pos_tag];
 				pos_tag++;
 				break;

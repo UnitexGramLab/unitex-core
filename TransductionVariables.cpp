@@ -221,7 +221,7 @@ variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables*
 {
 int size_variable_index = v->variable_index->size;
 int size_unaligned = (size_variable_index*2);
-int size_aligned = ((((size_unaligned+4) * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int);
+int size_aligned = (int)(((((size_unaligned+4) * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int));
 
 int nb_item_allocated=suggest_size_backup_reserve(size_aligned);
 variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
@@ -234,7 +234,7 @@ if (ptr==NULL) {
 ptr->nb_backup_possible_array = nb_item_allocated / size_aligned;
 ptr->pos_used = 0;
 ptr->size_variable_index = size_variable_index;
-ptr->size_copydata = size_unaligned*sizeof(int);
+ptr->size_copydata = (int)(size_unaligned*sizeof(int));
 ptr->size_aligned = size_aligned;
 
 /* we set Dirty to one, because where there is no filling varriable array, we

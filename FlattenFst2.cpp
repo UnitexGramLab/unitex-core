@@ -28,8 +28,6 @@
 #include "Transitions.h"
 
 
-//static struct list_int** dependencies;
-
 /**
  * During the flatten operation, some graphs may be kept and some
  * may not. We use the 'new_graph_number' array to know for each graph

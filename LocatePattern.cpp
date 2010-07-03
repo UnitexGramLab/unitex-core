@@ -157,12 +157,12 @@ struct locate_parameters* p=new_locate_parameters();
 p->text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
 p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
 long text_size=(long)af_get_mapfile_size(p->text_cod)/sizeof(int);
-p->buffer_size=text_size;
+p->buffer_size=(int)text_size;
 if (max_count_call == -1) {
-   max_count_call = text_size;
+   max_count_call = (int)text_size;
 }
 if (max_count_call_warning == -1) {
-   max_count_call_warning = text_size;
+   max_count_call_warning = (int)text_size;
 }
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;

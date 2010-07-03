@@ -82,10 +82,10 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
    line_number++;
    if (size_line==MAX_LINE_SIZE-1) {
       error("Line %d ignored because it is too long (>%d chars)\n",line_number,MAX_LINE_SIZE-1);
-      int foo;
+      int character;
       /* We skip the remaining characters of the line */
-      while ((foo=u_fgetc(delas))!=EOF && foo!='\n') {}
-      if (foo==EOF) {
+      while ((character=u_fgetc(delas))!=EOF && character!='\n') {}
+      if (character==EOF) {
          /* If the failing line was the last one, we exit the main loop */
          break;
       }
@@ -259,7 +259,7 @@ for (int i=0;i<n_parts-1;i++) {
       /* If this is the n_parts-2 component, we may have to generate several outputs
        * transitions, so we use the offset+0000000000 trick again */
       u_fprintf(grf,"}{\" %d %d %d ",400+i*500,20+(*line)*50,forms.no_forms);
-      foo_offset=ftell(grf);
+      foo_offset=(int)ftell(grf);
       for (int k=0;k<forms.no_forms;k++) {
          u_fprintf(grf,"0000000000 ");
       }
@@ -278,7 +278,7 @@ for (int i = 0; i < forms.no_forms; i++,(*line)++) {
    fseek(grf,foo_offset,SEEK_SET);
    u_fprintf(grf,"%010d ",(*current_state)-1);
    /* We note the new offset and we return at the end of the file */
-   foo_offset=ftell(grf);
+   foo_offset=(int)ftell(grf);
    fseek(grf,0,SEEK_END);
 
    (*current_state)++;
@@ -354,12 +354,12 @@ u_fprintf(grf,"DRST n\n");
 u_fprintf(grf,"FITS 100\n");
 u_fprintf(grf,"PORIENT L\n");
 u_fprintf(grf,"#\n");
-(*offset)=ftell(grf);
+(*offset)=(int)ftell(grf);
 u_fprintf(grf,"0000000000\n");
 u_fprintf(grf,"\"<E>\" 70 20 1 2 \n");
 u_fprintf(grf,"\"\" 3800 20 0 \n");
 u_fprintf(grf,"\"$<\" 105 20 1 ");
-(*start_state_offset)=ftell(grf);
+(*start_state_offset)=(int)ftell(grf);
 u_fprintf(grf,"0000000000 \n");
 /*
  * We don't write this one, since it must written as the last state of the grf,

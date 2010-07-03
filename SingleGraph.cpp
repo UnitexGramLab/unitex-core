@@ -1099,9 +1099,9 @@ while (!is_empty(fifo)) {
          elements_to_process--;
          /* We get the number of the state that corresponds to the
           * state set */
-         int created;
-         int dest_state=get_state_number(new_graph,hash,(struct list_int*)(list->value._ptr),&created);
-         if (created) {
+         int created_state;
+         int dest_state=get_state_number(new_graph,hash,(struct list_int*)(list->value._ptr),&created_state);
+         if (created_state) {
             /* If the destination state has not already been processed, we add it to
              * the FIFO */
             put_ptr(fifo,list->value._ptr);
@@ -1118,9 +1118,9 @@ while (!is_empty(fifo)) {
           *               table, so freeing it would destroy some content of the hash table
           *         or 2) it was already freed
           */
-         struct hash_list* tmp=list;
+         struct hash_list* tmp_list=list;
          list=list->next;
-         free_cb(tmp,transition_hash->allocator_hash_list);
+         free_cb(tmp_list,transition_hash->allocator_hash_list);
       }
       transition_hash->table[i]=NULL;
    }

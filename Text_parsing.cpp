@@ -72,7 +72,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 	clock_t currentTime;
 
 
-	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
+	unite = (int)(((text_size / 100) > 1000) ? (text_size / 100) : 1000);
 	variable_backup_memory_reserve* backup_reserve =
 			create_variable_backup_memory_reserve(p->input_variables);
 	int current_token;
@@ -309,7 +309,7 @@ struct Token_error_ctx* p_token_error_ctx,
 #endif
 	int pos2 = -1, ctrl = 0, end_of_compound;
 	int token, token2;
-	Transition* t;
+	Transition* t1;
 	int stack_top = p->stack->stack_pointer;
 	unichar* output;
 int captured_chars;
@@ -477,8 +477,8 @@ int captured_chars;
 
 		do {
 			/* For each graph call, we look all the reachable states */
-			t = graph_call_list->transition;
-			while (t != NULL) {
+			t1 = graph_call_list->transition;
+			while (t1 != NULL) {
 				/* We reset some parameters before exploring the subgraph */
 				struct parsing_info* L = NULL;
 				p->stack_base = p->stack->stack_pointer;
@@ -527,7 +527,7 @@ int captured_chars;
 						p->left_ctx_base = L->left_ctx_base;
 
 						locate(graph_depth,
-								p->optimized_states[t->state_number],
+								p->optimized_states[t1->state_number],
 								L->position, depth + 1, matches, n_matches,
 								ctx, p, p_token_error_ctx, backup_reserve,
 								p_count_cancel_trying, p_count_call, prv_alloc);
@@ -551,7 +551,7 @@ int captured_chars;
 					free_parsing_info(L_first); //  free all subgraph matches
 				}
 				/* As free_parsing_info has freed p->dic_variables, we must restore it */
-				t = t->next;
+				t1 = t1->next;
 			} /* end of while (t!=NULL) */
 		} while ((graph_call_list = graph_call_list->next) != NULL);
 		/* Finally, we have to restore the stack and other backup stuff */
@@ -591,17 +591,17 @@ int captured_chars;
 	}
 	while (meta_list != NULL) {
 		/* We process all the meta of the list */
-		t = meta_list->transition;
-		while (t != NULL) {
+		t1 = meta_list->transition;
+		while (t1 != NULL) {
 			/* We cache the output of the current tag, as well as values indicating if the
 			 * current pos2 tokens matches the tag's morphological filter, if any. */
-			output = p->tags[t->tag_number]->output;
+			output = p->tags[t1->tag_number]->output;
 			/* If there is no morphological filter, we act as if there was a matching one, except
 			 * if we are at the end of the token buffer. With this trick, the morphofilter test
 			 * will avoid overpassing the end of the token buffer. */
 			int morpho_filter_OK = (token2 != -1) ? 1 : 0;
 #ifdef TRE_WCHAR
-			filter_number = p->tags[t->tag_number]->filter_number;
+			filter_number = p->tags[t1->tag_number]->filter_number;
 			if (token2 != -1) {
 				morpho_filter_OK = (filter_number == -1 || token_match_filter(
 						p->filter_match_index, token2, filter_number));
@@ -719,7 +719,7 @@ int captured_chars;
 								}
 							}
 							locate(graph_depth,
-									p->optimized_states[t->state_number],
+									p->optimized_states[t1->state_number],
 									end_of_compound + 1, depth + 1, matches,
 									n_matches, ctx, p, p_token_error_ctx,
 									backup_reserve, p_count_cancel_trying,
@@ -806,7 +806,7 @@ int captured_chars;
 							}
 						}
 						locate(graph_depth,
-								p->optimized_states[t->state_number],
+								p->optimized_states[t1->state_number],
 								end_of_compound + 1, depth + 1, matches,
 								n_matches, ctx, p, p_token_error_ctx,
 								backup_reserve, p_count_cancel_trying,
@@ -960,7 +960,7 @@ int captured_chars;
 				 so we increment the dirty flag, without any associated decrement, to be sure
 				 having no problem */
 				inc_dirty(backup_reserve);
-				enter_morphological_mode(graph_depth, t->state_number, pos2,
+				enter_morphological_mode(graph_depth, t1->state_number, pos2,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, prv_alloc);
 				p->stack->stack_pointer = stack_top;
@@ -985,7 +985,7 @@ int captured_chars;
 				 var_backup=create_variable_backup(p->variables);
 				 shift_variable_bounds(p->variables,real_origin-p->current_origin);
 				 }*/
-				locate(graph_depth, p->optimized_states[t->state_number], pos2,
+				locate(graph_depth, p->optimized_states[t1->state_number], pos2,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, backup_reserve,
 						p_count_cancel_trying, p_count_call, prv_alloc);
@@ -1026,7 +1026,7 @@ int captured_chars;
 					}
 				}
 				/* Then, we continue the exploration of the grammar */
-				locate(graph_depth, p->optimized_states[t->state_number], end,
+				locate(graph_depth, p->optimized_states[t1->state_number], end,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, backup_reserve,
 						p_count_cancel_trying, p_count_call, prv_alloc);
@@ -1034,7 +1034,7 @@ int captured_chars;
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
 			}
-			next: t = t->next;
+			next: t1 = t1->next;
 		}
 		meta_list = meta_list->next;
 	}
@@ -1127,13 +1127,13 @@ while (output_variable_list != NULL) {
 	 */
 	struct opt_contexts* contexts = current_state->contexts;
 	if (contexts != NULL) {
-		Transition* t;
+		Transition* t2;
 		for (int n_ctxt = 0; n_ctxt < contexts->size_positive; n_ctxt = n_ctxt
 				+ 2) {
-			t = contexts->positive_mark[n_ctxt];
+			t2 = contexts->positive_mark[n_ctxt];
 			/* We look for a positive context from the current position */
 			struct list_int* c = new_list_int(0, ctx);
-			locate(graph_depth, p->optimized_states[t->state_number], pos,
+			locate(graph_depth, p->optimized_states[t2->state_number], pos,
 					depth + 1, NULL, 0, c, p, p_token_error_ctx,
 					backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
 			/* Note that there is no matches to free since matches cannot be built within a context */
@@ -1156,10 +1156,10 @@ while (output_variable_list != NULL) {
 		}
 		for (int n_ctxt = 0; n_ctxt < contexts->size_negative; n_ctxt = n_ctxt
 				+ 2) {
-			t = contexts->negative_mark[n_ctxt];
+			t2 = contexts->negative_mark[n_ctxt];
 			/* We look for a negative context from the current position */
 			struct list_int* c = new_list_int(0, ctx);
-			locate(graph_depth, p->optimized_states[t->state_number], pos,
+			locate(graph_depth, p->optimized_states[t2->state_number], pos,
 					depth + 1, NULL, 0, c, p, p_token_error_ctx,
 					backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
 			/* Note that there is no matches to free since matches cannot be built within a context */
@@ -1181,7 +1181,7 @@ while (output_variable_list != NULL) {
 			/* We just want to free the cell we created */
 			free(c);
 		}
-		if ((t = contexts->end_mark) != NULL) {
+		if ((t2 = contexts->end_mark) != NULL) {
 			/* If we have a closing context mark */
 			if (ctx == NULL) {
 				/* If there was no current opened context, it's an error */
@@ -1211,12 +1211,12 @@ while (output_variable_list != NULL) {
 	 */
 	struct opt_pattern* pattern_list = current_state->compound_patterns;
 	while (pattern_list != NULL) {
-		t = pattern_list->transition;
-		while (t != NULL) {
+		t1 = pattern_list->transition;
+		while (t1 != NULL) {
 #ifdef TRE_WCHAR
-			filter_number = p->tags[t->tag_number]->filter_number;
+			filter_number = p->tags[t1->tag_number]->filter_number;
 #endif
-			output = p->tags[t->tag_number]->output;
+			output = p->tags[t1->tag_number]->output;
 			end_of_compound = find_compound_word(pos2,
 					pattern_list->pattern_number, p->DLC_tree, p);
 			if (end_of_compound != -1 && !(pattern_list->negation)) {
@@ -1253,7 +1253,7 @@ while (output_variable_list != NULL) {
 									p->protect_dic_chars);
 						}
 					}
-					locate(graph_depth, p->optimized_states[t->state_number],
+					locate(graph_depth, p->optimized_states[t1->state_number],
 							end_of_compound + 1, depth + 1, matches, n_matches,
 							ctx, p, p_token_error_ctx, backup_reserve,
 							p_count_cancel_trying, p_count_call, prv_alloc);
@@ -1261,7 +1261,7 @@ while (output_variable_list != NULL) {
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
 			}
-			next4: t = t->next;
+			next4: t1 = t1->next;
 		}
 		pattern_list = pattern_list->next;
 	}
@@ -1273,12 +1273,12 @@ while (output_variable_list != NULL) {
 	 */
 	pattern_list = current_state->patterns;
 	while (pattern_list != NULL) {
-		t = pattern_list->transition;
-		while (t != NULL) {
+		t1 = pattern_list->transition;
+		while (t1 != NULL) {
 #ifdef TRE_WCHAR
-			filter_number = p->tags[t->tag_number]->filter_number;
+			filter_number = p->tags[t1->tag_number]->filter_number;
 #endif
-			output = p->tags[t->tag_number]->output;
+			output = p->tags[t1->tag_number]->output;
 			/* We try to match a compound word */
 			end_of_compound = find_compound_word(pos2,
 					pattern_list->pattern_number, p->DLC_tree, p);
@@ -1316,7 +1316,7 @@ while (output_variable_list != NULL) {
 									p->protect_dic_chars);
 						}
 					}
-					locate(graph_depth, p->optimized_states[t->state_number],
+					locate(graph_depth, p->optimized_states[t1->state_number],
 							end_of_compound + 1, depth + 1, matches, n_matches,
 							ctx, p, p_token_error_ctx, backup_reserve,
 							p_count_cancel_trying, p_count_call, prv_alloc);
@@ -1357,7 +1357,7 @@ while (output_variable_list != NULL) {
 									p->protect_dic_chars);
 						}
 						locate(graph_depth,
-								p->optimized_states[t->state_number], pos2 + 1,
+								p->optimized_states[t1->state_number], pos2 + 1,
 								depth + 1, matches, n_matches, ctx, p,
 								p_token_error_ctx, backup_reserve,
 								p_count_cancel_trying, p_count_call, prv_alloc);
@@ -1386,7 +1386,7 @@ while (output_variable_list != NULL) {
 									p->protect_dic_chars);
 						}
 						locate(graph_depth,
-								p->optimized_states[t->state_number], pos2 + 1,
+								p->optimized_states[t1->state_number], pos2 + 1,
 								depth + 1, matches, n_matches, ctx, p,
 								p_token_error_ctx, backup_reserve,
 								p_count_cancel_trying, p_count_call, prv_alloc);
@@ -1395,7 +1395,7 @@ while (output_variable_list != NULL) {
 					}
 				}
 			}
-			next2: t = t->next;
+			next2: t1 = t1->next;
 		}
 		pattern_list = pattern_list->next;
 	}
@@ -1408,15 +1408,15 @@ while (output_variable_list != NULL) {
 		int n = binary_search(token2, current_state->tokens,
 				current_state->number_of_tokens);
 		if (n != -1) {
-			t = current_state->token_transitions[n];
-			while (t != NULL) {
+			t1 = current_state->token_transitions[n];
+			while (t1 != NULL) {
 #ifdef TRE_WCHAR
-				filter_number = p->tags[t->tag_number]->filter_number;
+				filter_number = p->tags[t1->tag_number]->filter_number;
 				if (filter_number == -1 || token_match_filter(
 						p->filter_match_index, token2, filter_number))
 #endif
 				{
-					output = p->tags[t->tag_number]->output;
+					output = p->tags[t1->tag_number]->output;
 					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
@@ -1432,14 +1432,14 @@ while (output_variable_list != NULL) {
 						push_input_string(p->stack, p->tokens->value[token2],
 								p->protect_dic_chars);
 					}
-					locate(graph_depth, p->optimized_states[t->state_number],
+					locate(graph_depth, p->optimized_states[t1->state_number],
 							pos2 + 1, depth + 1, matches, n_matches, ctx, p,
 							p_token_error_ctx, backup_reserve,
 							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
-				next3: t = t->next;
+				next3: t1 = t1->next;
 			}
 		}
 	}

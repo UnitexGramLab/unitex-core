@@ -275,9 +275,9 @@ for (int i=0;i<n_states;i++) {
          /* Otherwise, we create transitions */
          Transition* tmp=tfst->automaton->states[trans->state_number]->outgoing_transitions;
          /* +2 because of the grf states 0 and 1 that are reserved */
-         int j=2+n_transitions_before_state[trans->state_number];
+         int k=2+n_transitions_before_state[trans->state_number];
          while (tmp!=NULL) {
-            add_transition_to_grf_state(grf_states[N_GRF_STATES],j++);
+            add_transition_to_grf_state(grf_states[N_GRF_STATES],k++);
             tmp=tmp->next;
          }
       }

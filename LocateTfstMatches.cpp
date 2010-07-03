@@ -501,12 +501,12 @@ unichar* output=infos->fst2->tags[item->fst2_transition->tag_number]->output;
 
 unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
 int capture;
-struct dela_entry* old_value=NULL;
+struct dela_entry* old_value_dela=NULL;
 capture=is_capture_variable(output,name);
 if (capture) {
 	/* If we have a capture variable $:X$, we must save the previous value
 	 * for this dictionary variable */
-	old_value=clone_dela_entry(get_dic_variable(name,infos->dic_variables));
+	old_value_dela=clone_dela_entry(get_dic_variable(name,infos->dic_variables));
 }
 
 Match saved_element=element->m;
@@ -681,7 +681,7 @@ restore_dic_variable:
 if (capture) {
 	/* If we have a capture variable $:X$, we must restore the previous value
 	 * for this dictionary variable */
-	set_dic_variable(name,old_value,&(infos->dic_variables),0);
+	set_dic_variable(name,old_value_dela,&(infos->dic_variables),0);
 }
 }
 

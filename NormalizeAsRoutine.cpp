@@ -131,7 +131,7 @@ int normalize(char *fin, char *fout,
     long file_size_input=ftell(input);
     fseek(input,save_pos,SEEK_SET);
 
-    int line_buffer_size = ((file_size_input+1) < MAX_LINE_BUFFER_SIZE) ? (file_size_input+1) : MAX_LINE_BUFFER_SIZE;
+    int line_buffer_size = (int)(((file_size_input+1) < MAX_LINE_BUFFER_SIZE) ? (file_size_input+1) : MAX_LINE_BUFFER_SIZE);
 
     unichar *line_read;
     line_read=(unichar*)malloc((line_buffer_size+0x10)*sizeof(unichar));
@@ -197,10 +197,10 @@ int normalize(char *fin, char *fout,
                 int nb_to_keep = result_read-current_start_pos;
                 for (i=0;i<nb_to_keep;i++)
                     line_read[i]=line_read[current_start_pos+i];
-                int found_null=0;
-                int result_read_continue = u_fgets_treat_cr_as_lf(line_read+nb_to_keep,line_buffer_size-nb_to_keep,input,1,&found_null);
+                int found_null_read=0;
+                int result_read_continue = u_fgets_treat_cr_as_lf(line_read+nb_to_keep,line_buffer_size-nb_to_keep,input,1,&found_null_read);
 
-                if ((found_null != 0) && (corrupted_file==0)) {
+                if ((found_null_read != 0) && (corrupted_file==0)) {
                     corrupted_file=1;
                     error("Corrupted text file containing NULL characters!\n");
                     error("They have been ignored by Normalize, but you should clean your text\n");

@@ -85,7 +85,7 @@ if(mx == NULL){
 	fatal_alloc_error("create_matrix_entry");
 }
 (*mx)->predecessor = -1;
-(*mx)->partial_prob = 0.0;
+(*mx)->partial_prob = (float)0.0;
 (*mx)->tag_number = tag_number;
 (*mx)->state_number = state_number;
 int verbose = 0;
@@ -281,7 +281,7 @@ return get_inf_value(inf,inf_index);
  * In our case, the tokens could be "N" and "dog". The result is a
  * new unichar "N\dog".
  */
-unichar* create_bigram_sequence(unichar* first_token,unichar* second_token,int tabulation){
+unichar* create_bigram_sequence(const unichar* first_token,const unichar* second_token,int tabulation){
 unichar* sequence = (unichar*)malloc(sizeof(unichar)*(2+u_strlen(first_token)+u_strlen(second_token)));
 if(sequence == NULL){
 	fatal_alloc_error("create_bigram_sequence");
@@ -297,7 +297,7 @@ return sequence;
 /**
  * Same as create_bigram_sequence but the first token is there a char*.
  */
-unichar* create_bigram_sequence(char* first_token,unichar* second_token,int tabulation){
+unichar* create_bigram_sequence(const char* first_token,const unichar* second_token,int tabulation){
 /* we convert first token in a unichar* string sequence */
 unichar* tmp_first = u_strdup(first_token);
 unichar* sequence = create_bigram_sequence(tmp_first,second_token,tabulation);
@@ -343,12 +343,12 @@ return suffix;
  * This probability is a float value between 0 and 1.
  */
 float compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,unichar* tag,unichar* inflected){
-char prefix[] = "word_";
-unichar* new_inflected = create_bigram_sequence(prefix,inflected,0);
-unichar* sequence = create_bigram_sequence(tag,new_inflected,1);
+const char prefix1[] = "word_";
+unichar* new_inflected = create_bigram_sequence(prefix1,inflected,0);
+unichar* sequence1 = create_bigram_sequence(tag,new_inflected,1);
 long int N1 = get_sequence_integer(new_inflected,bin,inf,alphabet);
-long int N2 = get_sequence_integer(sequence,bin,inf,alphabet);
-free(sequence);
+long int N2 = get_sequence_integer(sequence1,bin,inf,alphabet);
+free(sequence1);
 free(new_inflected);
 if(N1 == -1){
 	/* current inflected token is unknown, we apply
@@ -362,12 +362,12 @@ if(N1 == -1){
 		suffix_length = u_strlen(inflected) - 2;
 	}
 	unichar* suffix = u_strnsuffix(inflected,suffix_length);
-	char prefix[] = "suff_";
-	unichar* seq_suff = create_bigram_sequence(prefix,suffix,0);
+	const char prefix2[] = "suff_";
+	unichar* seq_suff = create_bigram_sequence(prefix2,suffix,0);
 	N1 = get_sequence_integer(seq_suff,bin,inf,alphabet);
-	unichar* sequence = create_bigram_sequence(tag,seq_suff,1);
-	N2 = get_sequence_integer(sequence,bin,inf,alphabet);
-	free(sequence);
+	unichar* sequence2 = create_bigram_sequence(tag,seq_suff,1);
+	N2 = get_sequence_integer(sequence2,bin,inf,alphabet);
+	free(sequence2);
 	free(suffix);
 	free(seq_suff);
 }
@@ -378,7 +378,7 @@ if(N2 == -1){
 	N2 = 0;
 }
 /* we compute the emit probability thanks to this smoothed formula */
-return N2/(1+float(N1));
+return (float)(N2/(1+float(N1)));
 }
 
 /**
@@ -400,7 +400,7 @@ if(C1 == -1){
 if(C2 == -1){
 	C2 = 1;
 }
-return C1/float(C2);
+return (float)(C1/float(C2));
 }
 
 /**
@@ -604,7 +604,7 @@ long int value = get_sequence_integer(code_type,bin,inf,alphabet);
 if(value == -1){
 	fatal_error("Bad value in get_form_type\n");
 }
-return value;
+return (int)value;
 }
 
 /**

@@ -644,7 +644,6 @@ const void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_
 	if (p_abfr->afs == NULL)
 		return iomap_get_mapfile_pointer(p_abfr->mf.f,pos,sizemap);
 	else {
-		afs_size_type pos=0;
         if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL)
             return (*(p_abfr->afs->func_array.fnc_memFile_getMapPointer))(p_abfr->af.fabstr,
                         pos, sizemap,

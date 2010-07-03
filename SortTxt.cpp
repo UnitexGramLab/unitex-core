@@ -681,8 +681,8 @@ if (N==0x10000) {
 }
 if (N>1) quicksort(inf->transitions,0,N-1,inf);
 /* After sorting, we copy the result into the transitions of n */
-for (int i=0;i<N-1;i++) {
-   inf->transitions[i]->next=inf->transitions[i+1];
+for (int j=0;j<N-1;j++) {
+   inf->transitions[j]->next=inf->transitions[j+1];
 }
 if (N>0) {
    inf->transitions[N-1]->next=NULL;

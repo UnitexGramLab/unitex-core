@@ -126,8 +126,8 @@ else{
 	if(entry->overall_codes == NULL){
 		fatal_alloc_error("new_corpus_entry");
 	}
-	unichar* tmp = u_strcpy_sized(entry->pos_code,code_pos-pos,&line[pos+1]);
-	u_strcat(tmp,"\0");
+	unichar* tmp2 = u_strcpy_sized(entry->pos_code,code_pos-pos,&line[pos+1]);
+	u_strcat(tmp2,"\0");
 	u_strcpy(entry->overall_codes,&line[pos+1]);
 }
 /* if the token is not annotated in the corpus, we put "UNK" */

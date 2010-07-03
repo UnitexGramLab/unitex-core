@@ -270,7 +270,7 @@ for (unsigned int k=0;k<=H;k++) {
    quicksort(0,size-1,transitions);
    merge(size,transitions);
    z=(float)(100.0*(float)(k)/(float)H);
-   if (z>100.0) z=100.0;
+   if (z>100.0) z=(float)100.0;
    u_printf("%2.0f%% completed...    \r",z);
 }
 u_printf("Minimization done.                     \n");

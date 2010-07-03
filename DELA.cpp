@@ -288,8 +288,8 @@ if (line[i]=='/' && !comments_allowed) {
    return NULL;
 }
 /* We check if a character appears several times in an inflectional code like :KKms */
-for (int i=0;i<res->n_inflectional_codes;i++) {
-   if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[i])) {
+for (int il=0;il<res->n_inflectional_codes;il++) {
+   if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[il])) {
       if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
       free_dela_entry(res,prv_alloc);
@@ -297,10 +297,10 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
    }
 }
 /* We check if an inflectional code is a subset of another like :Kms:ms */
-for (int i=0;i<res->n_inflectional_codes;i++) {
+for (int il=0;il<res->n_inflectional_codes;il++) {
    for (int j=0;j<res->n_inflectional_codes;j++) {
-      if (i==j) continue;
-      if (one_inflectional_codes_contains_the_other(res->inflectional_codes[i],
+      if (il==j) continue;
+      if (one_inflectional_codes_contains_the_other(res->inflectional_codes[il],
                                                     res->inflectional_codes[j])) {
          if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
@@ -310,10 +310,10 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
    }
 }
 /* We check if a semantic code appears twice as in V+z1+z1 */
-for (int i=0;i<res->n_semantic_codes;i++) {
+for (int il=0;il<res->n_semantic_codes;il++) {
    for (int j=0;j<res->n_semantic_codes;j++) {
-      if (i==j) continue;
-      if (!u_strcmp(res->semantic_codes[i],res->semantic_codes[j])) {
+      if (il==j) continue;
+      if (!u_strcmp(res->semantic_codes[il],res->semantic_codes[j])) {
          if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
          free_dela_entry(res,prv_alloc);
@@ -696,8 +696,8 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    (res->n_inflectional_codes)++;
 }
 /* We check if a character appears several times in an inflectional code like :KKms */
-for (int i=0;i<res->n_inflectional_codes;i++) {
-   if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[i])) {
+for (int il=0;il<res->n_inflectional_codes;il++) {
+   if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[il])) {
       if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
       free_dela_entry(res,prv_alloc);
@@ -705,10 +705,10 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
    }
 }
 /* We check if an inflectional code is a subset of another like :Kms:ms */
-for (int i=0;i<res->n_inflectional_codes;i++) {
+for (int il=0;il<res->n_inflectional_codes;il++) {
    for (int j=0;j<res->n_inflectional_codes;j++) {
-      if (i==j) continue;
-      if (one_inflectional_codes_contains_the_other(res->inflectional_codes[i],
+      if (il==j) continue;
+      if (one_inflectional_codes_contains_the_other(res->inflectional_codes[il],
                                                     res->inflectional_codes[j])) {
          if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
@@ -718,10 +718,10 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
    }
 }
 /* We check if a semantic code appears twice as in V+z1+z1 */
-for (int i=0;i<res->n_semantic_codes;i++) {
+for (int il=0;il<res->n_semantic_codes;il++) {
    for (int j=0;j<res->n_semantic_codes;j++) {
-      if (i==j) continue;
-      if (!u_strcmp(res->semantic_codes[i],res->semantic_codes[j])) {
+      if (il==j) continue;
+      if (!u_strcmp(res->semantic_codes[il],res->semantic_codes[j])) {
          if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
          free_dela_entry(res,prv_alloc);

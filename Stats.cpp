@@ -822,9 +822,9 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 	if (descriptor != NULL)
 	{
 		// we set where left context ends (last token of left context)
-		descriptor->leftEndsAt = match->m.start_pos_in_token - 1 - (startFrom + 1);
+		descriptor->leftEndsAt = (int)(match->m.start_pos_in_token - 1 - (startFrom + 1));
 		// we set where right context starts (first token of right context)
-		descriptor->rightStartsAt = match->m.end_pos_in_token + 1 - (startFrom + 1);
+		descriptor->rightStartsAt = (int)(match->m.end_pos_in_token + 1 - (startFrom + 1));
 	}
 
 	while(endAt <= totalSize-1 && foundRight < rightContext)
@@ -954,7 +954,7 @@ void get_buffer_around_token(U_FILE* inputFile, int** buffer, long tokenPosition
 	long seekTo = max_long(0, tokenPosition - leftSize);
 	long endReadingAt = min_long(fileSize/sizeof(int) - 1, tokenPosition + rightSize);
 
-	int bufferSize = endReadingAt - seekTo + 1;
+	int bufferSize = (int)(endReadingAt - seekTo + 1);
 
 	*buffer = (int*)malloc(sizeof(int) * bufferSize);
 

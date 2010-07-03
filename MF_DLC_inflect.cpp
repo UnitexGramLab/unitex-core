@@ -390,7 +390,7 @@ int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unicha
 		pos += l;
 
 		//Scan the unit's inflection features
-		unichar tmp[DIC_LINE_SIZE];
+		unichar tmp_scan[DIC_LINE_SIZE];
 		if (line[pos] != (unichar) ':') {
 			error("Colon missing after a unit's lemma:\n%S\n", line);
 			free(u->form);
@@ -398,7 +398,7 @@ int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unicha
 			return -1;
 		}
 		pos++; //Omit the colon
-		l = u_scan_until_char(tmp, &(line[pos]), DIC_LINE_SIZE - 1, ")", 1);
+		l = u_scan_until_char(tmp_scan, &(line[pos]), DIC_LINE_SIZE - 1, ")", 1);
 		if (l <= 0) {
 			error("Inflection features missing after ':' for a unit:\n%S\n",
 					line);
@@ -414,7 +414,7 @@ int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unicha
 			return -1;
 		}
 		pos++; //Omit the ')'
-		u->feat = d_get_feat_str(pL_MORPHO,tmp);
+		u->feat = d_get_feat_str(pL_MORPHO,tmp_scan);
 		if (!u->feat) {
 			error("Incorrect inflection features in a unit:\n%S\n", line);
 			free(u->form);

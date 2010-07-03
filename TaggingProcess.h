@@ -74,8 +74,8 @@ void get_INF_code(unsigned char*,unichar*,int,int,int,Alphabet*,int*);
 long int get_inf_value(const struct INF_codes*,int);
 long int get_sequence_integer(unichar*,unsigned char*,const struct INF_codes*,Alphabet*);
 
-unichar* create_bigram_sequence(unichar*,unichar*,int);
-unichar* create_bigram_sequence(char*,unichar*,int);
+unichar* create_bigram_sequence(const unichar*,const unichar*,int);
+unichar* create_bigram_sequence(const char*,const unichar*,int);
 unichar* create_trigram_sequence(unichar*,unichar*,unichar*);
 unichar* u_strnsuffix(unichar*,int);
 

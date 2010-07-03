@@ -476,16 +476,16 @@ verboseMode  = 0;
 		}
 
 		struct cyclePathMark *pCyc = getLoopId(offset);
-		struct linkCycle **a = &((*cnode)->cycInfos);
-		while(*a){
-			if(pCyc->index == (*a)->cyc->index) return;
-			if((*a)->cyc->index < pCyc->index) break;
-			a = &((*a)->next);
+		struct linkCycle **alc = &((*cnode)->cycInfos);
+		while(*alc){
+			if(pCyc->index == (*alc)->cyc->index) return;
+			if((*alc)->cyc->index < pCyc->index) break;
+			alc = &((*alc)->next);
 		}
-		*a = new struct linkCycle;
-		if(!(*a)) fatal_error(StrMemLack);
-		(*a)->next = 0;
-		(*a)->cyc = pCyc;
+		*alc = new struct linkCycle;
+		if(!(*alc)) fatal_error(StrMemLack);
+		(*alc)->next = 0;
+		(*alc)->cyc = pCyc;
 
 	}
 	struct cyclePathMark *getLoopId(int offset)
@@ -1224,7 +1224,6 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 					if(stopPath){
 					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
-                              char charBuffOut[1024];
                               u_printf(" sub-call[%s] %d\n",
                                   getUtoChar(charBuffOut,a->graph_names[inx]),
                                   numOfIgnore[inx]);

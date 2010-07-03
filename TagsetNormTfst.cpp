@@ -224,8 +224,8 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
                unichar* old_first_code=e->inflectional_codes[0];
                e->inflectional_codes[0]=e->inflectional_codes[j];
                build_tag(e,NULL,foo);
-               int index=get_tfst_tag_index(txtin->tfst->tags,foo,&(t->m));
-               renumbering[i]=new_list_int(index,renumbering[i]);
+               int index2=get_tfst_tag_index(txtin->tfst->tags,foo,&(t->m));
+               renumbering[i]=new_list_int(index2,renumbering[i]);
                if (j!=0) {
                   free(e->inflectional_codes[0]);
                }
@@ -243,9 +243,9 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
    TfstTag** tags=(TfstTag**)(txtin->tfst->tags->tab);
    unichar tmp[4096];
    struct string_hash* tmp_tags=new_string_hash(txtin->tfst->tags->nbelems);
-   unichar EPSILON[]={'@','<','E','>','\n','.','\n','\0'};
+   const unichar EPSILON_KEY[]={'@','<','E','>','\n','.','\n','\0'};
    /* The epsilon tag is always the first one */
-   get_value_index(EPSILON,tmp_tags);
+   get_value_index(EPSILON_KEY,tmp_tags);
    for (int i=0;i<g->number_of_states;i++) {
       Transition** t=&(g->states[i]->outgoing_transitions);
       while ((*t)!=NULL) {
@@ -269,9 +269,9 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
          } else if (tags[(*t)->tag_number]->content==NULL) {
             /* If we must remove the current transition, because its
              * tag has been rejected by the tagset */
-            Transition* foo=(*t);
+            Transition* foo_t=(*t);
             (*t)=(*t)->next;
-            free_Transition(foo,NULL);
+            free_Transition(foo_t,NULL);
             t=&(*t);
          } else if (renumbering[(*t)->tag_number]==NULL) {
             /* If we have not modified the original transition */

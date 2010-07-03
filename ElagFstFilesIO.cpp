@@ -110,7 +110,7 @@ if (!u_is_digit(*buf)) {
 fstf->nb_automata=u_parse_int(buf);
 fstf->language=language;
 fstf->type=FST_GRAMMAR;
-fstf->pos0=ftell(fstf->f);
+fstf->pos0=(int)ftell(fstf->f);
 fstf->symbols=new_string_hash_ptr(64);
 fstf->renumber=NULL;
 if (load_elag_fst2_tags(fstf)==-1) {

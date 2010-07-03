@@ -36,6 +36,6 @@ u_sprintf(COPYRIGHT,"This program is part of Unitex 2.1\nCopyright %C 2001-2010 
 return 0;
 }
 
-static int foo=init_copyright();
+static int foo_copyright=init_copyright();
 
 #endif

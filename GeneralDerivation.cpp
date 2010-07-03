@@ -1155,11 +1155,11 @@ void explore_state (int adresse,
             rule_list_new = tmp;
 	      }
 	      else {
-            struct rule_list* t = rule_list_new;
-            while ( t->next != 0 ) {
-               t=t->next;
+            struct rule_list* trl = rule_list_new;
+            while ( trl->next != 0 ) {
+               trl=trl->next;
             }
-            t->next = tmp;
+            trl->next = tmp;
 	      }
 
 	    }

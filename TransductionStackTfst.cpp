@@ -261,13 +261,13 @@ while (s[i]!='\0') {
         		 push_input_string_tfst(stack,entry->lemma,1);
         	 } else if (!u_strcmp(field,"CODE")) {
         		 push_output_string_tfst(stack,entry->semantic_codes[0]);
-        		 for (int i=1;i<entry->n_semantic_codes;i++) {
+        		 for (int il=1;il<entry->n_semantic_codes;il++) {
         			 push_output_char_tfst(stack,'+');
-        			 push_output_string_tfst(stack,entry->semantic_codes[i]);
+        			 push_output_string_tfst(stack,entry->semantic_codes[il]);
         		 }
-        		 for (int i=0;i<entry->n_inflectional_codes;i++) {
+        		 for (int il=0;il<entry->n_inflectional_codes;il++) {
         			 push_output_char_tfst(stack,':');
-        			 push_output_string_tfst(stack,entry->inflectional_codes[i]);
+        			 push_output_string_tfst(stack,entry->inflectional_codes[il]);
         		 }
         	 } else {
         		 switch (p->variable_error_policy) {

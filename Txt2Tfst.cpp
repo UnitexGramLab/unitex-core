@@ -275,7 +275,7 @@ if (f_enter==NULL) {
    n_enter_char=0;
 }
 else {
-   n_enter_char=get_file_size(f_enter)/4;
+   n_enter_char=(int)(get_file_size(f_enter)/4);
    enter_pos=(int*)malloc(sizeof(int)*n_enter_char);
    if (enter_pos==NULL) {
       fatal_alloc_error("main_Txt2Tfst");

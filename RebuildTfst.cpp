@@ -173,8 +173,8 @@ for (int i = 1; i <= tfst->N; i++) {
    save_current_sentence(tfst,f_tfst,f_tind,tags,n_tags);
    if (tags!=NULL) {
       /* If necessary, we free the tags we created */
-      for (int i=0;i<n_tags;i++) {
-         free(tags[i]);
+      for (int count_tags=0;count_tags<n_tags;count_tags++) {
+         free(tags[count_tags]);
       }
       free(tags);
    }

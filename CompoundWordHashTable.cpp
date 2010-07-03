@@ -29,7 +29,7 @@
 
 int get_tct_hash_block_item_size_array(int nb_Item)
 {
-    return nb_Item * sizeof(tct_hash_block);
+    return (int)(nb_Item * sizeof(tct_hash_block));
 }
 
 /**
@@ -129,12 +129,12 @@ return i+1;
  * For convenience reasons, the code is given modulo the size
  * of the hash table.
  */
-int tct_hash(int* token_sequence,int hash_table_size){
+int compute_tct_hash(int* token_sequence,int hash_table_size){
 unsigned long int hash_code=0;
 for (int i=0;token_sequence[i]!=-1;i++) {
    hash_code=hash_code+(token_sequence[i]<<i)+1357;
 }
-return hash_code & (hash_table_size-1);
+return (int)(hash_code & (hash_table_size-1));
 }
 
 
@@ -176,7 +176,7 @@ if (block->token_array==NULL) {
  * Example: (574,1,5,1,575,-1) 2 => the (574,1,5,1,575,-1,2) array will be stored
  */
 void add_tct_token_sequence(int* token_seq,struct tct_hash* hash_table,int priority) {
-int hash_code=tct_hash(token_seq,hash_table->size);
+int hash_code=compute_tct_hash(token_seq,hash_table->size);
 struct tct_hash_block* block=hash_table->hash_blocks+hash_code;
 int old_length=block->length;
 /* We compute the number of integers required to encode the given token
@@ -234,7 +234,7 @@ return -1;
  * compound word is not found; its priority (1, 2 or 3) otherwise.
  */
 int was_already_in_tct_hash(int* token_sequence,struct tct_hash* hash_table,int priority){
-int hash_code=tct_hash(token_sequence,hash_table->size);
+int hash_code=compute_tct_hash(token_sequence,hash_table->size);
 struct tct_hash_block* block=hash_table->hash_blocks+hash_code;
 /* We look for the token sequence in the token array of the correct block */
 int offset=tct_match(block,token_sequence);

@@ -100,7 +100,7 @@ push_input_string(stack,s,0);
  */
 int process_output(unichar* s,struct locate_parameters* p) {
 int old_stack_pointer=p->stack->stack_pointer;
-int i=0;
+int i1=0;
 if (s==NULL) {
    /* We do nothing if there is no output */
    return 1;
@@ -109,15 +109,15 @@ if (s==NULL) {
 for (;;) {
     /* First, we push all chars before '\0' or '$' */
     int char_to_push_count=0;
-    while ((s[i+char_to_push_count]!='\0') && (s[i+char_to_push_count]!='$')) {
+    while ((s[i1+char_to_push_count]!='\0') && (s[i1+char_to_push_count]!='$')) {
         char_to_push_count++;
     }
     if (char_to_push_count!=0) {
-        push_array(p->stack,&s[i],char_to_push_count);
-        i+=char_to_push_count;
+        push_array(p->stack,&s[i1],char_to_push_count);
+        i1+=char_to_push_count;
     }
 
-    if (s[i]=='\0') {
+    if (s[i1]=='\0') {
         break;
     }
     /* Now we are sure to have s[i]=='$' */
@@ -125,34 +125,34 @@ for (;;) {
       /* Case of a variable name */
       unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
       int l=0;
-      i++;
-      while (is_variable_char(s[i]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
-         name[l++]=s[i++];
+      i1++;
+      while (is_variable_char(s[i1]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
+         name[l++]=s[i1++];
       }
       if (l==MAX_TRANSDUCTION_VAR_LENGTH) {
          fatal_error("Too long variable name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
       }
       name[l]='\0';
-      if (s[i]!='$' && s[i]!='.') {
+      if (s[i1]!='$' && s[i1]!='.') {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
       }
-      if (s[i]=='.') {
+      if (s[i1]=='.') {
          /* Here we deal with the case of a field like $a.CODE$ */
          unichar field[MAX_TRANSDUCTION_FIELD_LENGTH];
          l=0;
-         i++;
-         while (s[i]!='\0' && s[i]!='$' && l<MAX_TRANSDUCTION_FIELD_LENGTH) {
-            field[l++]=s[i++];
+         i1++;
+         while (s[i1]!='\0' && s[i1]!='$' && l<MAX_TRANSDUCTION_FIELD_LENGTH) {
+            field[l++]=s[i1++];
          }
          if (l==MAX_TRANSDUCTION_FIELD_LENGTH) {
             fatal_error("Too long field name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_FIELD_LENGTH,s);
          }
          field[l]='\0';
-         if (s[i]=='\0') {
+         if (s[i1]=='\0') {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
                case IGNORE_VARIABLE_ERRORS: continue;
@@ -166,7 +166,7 @@ for (;;) {
                case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
-         i++;
+         i1++;
          if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
             /* If we have $a.SET$, we must go on only if the variable a is set, no
              * matter if it is a normal or a dictionary variable */
@@ -319,7 +319,7 @@ for (;;) {
          }
          continue;
       }
-      i++;
+      i1++;
       if (l==0) {
          /* Case of $$ in order to print a $ */
     	  push_output_char(p->stack,'$');

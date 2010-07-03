@@ -795,14 +795,14 @@ struct normalization_tree_transition* trans=norm_tree_node->trans;
 while (trans!=NULL) {
    if (trans->token==token) {
       /* If we have a transition for the current token */
-      int increment=1;
+      int increment_loc=1;
       if (INFO->buffer[current_pos_in_buffer+1]==INFO->SPACE) {
-         increment++;
+         increment_loc++;
       }
-      explore_normalization_tree(first_pos_in_buffer,current_pos_in_buffer+increment,
-                                 INFO->buffer[current_pos_in_buffer+increment],
+      explore_normalization_tree(first_pos_in_buffer,current_pos_in_buffer+increment_loc,
+                                 INFO->buffer[current_pos_in_buffer+increment_loc],
                                  INFO,graph,tmp_tags,trans->node,
-                                 first_state_index,shift+1,foo,increment,language,
+                                 first_state_index,shift+1,foo,increment_loc,language,
                                  korean);
       /* As there can be only one matching transition, we exit the while */
       trans=NULL;
@@ -868,11 +868,11 @@ Ustring* foo=new_Ustring(1);
 /* We compute the text and tokens of the sentence */
 tfst->tokens=new_vector_int(length);
 tfst->token_sizes=new_vector_int(length);
-for (int i=0;i<length;i++) {
-   vector_int_add(tfst->tokens,buffer[i]);
-   int l=u_strlen(tokens->token[buffer[i]]);
+for (int il=0;il<length;il++) {
+   vector_int_add(tfst->tokens,buffer[il]);
+   int l=u_strlen(tokens->token[buffer[il]]);
    vector_int_add(tfst->token_sizes,l);
-   u_strcat(foo,tokens->token[buffer[i]],l);
+   u_strcat(foo,tokens->token[buffer[il]],l);
 }
 tfst->text=u_strdup(foo->str);
 
@@ -922,13 +922,13 @@ while ((*tag_list)!=NULL && (*tag_list)->m.start_pos_in_token>=current_global_po
    int end_pos_in_token=end_index;
    /* And we adjust them to our state indexes, because spaces
     * must be ignored */
-   for (int i=start_index;i>=0;i--) {
-      if (buffer[i]==tokens->SPACE) {
+   for (int il=start_index;il>=0;il--) {
+      if (buffer[il]==tokens->SPACE) {
          start_index--;
       }
    }
-   for (int i=end_index;i>=0;i--) {
-      if (buffer[i]==tokens->SPACE) {
+   for (int il=end_index;il>=0;il--) {
+      if (buffer[il]==tokens->SPACE) {
          end_index--;
       }
    }

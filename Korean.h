@@ -225,7 +225,7 @@ public:
    /* This is used to optimize Hangul->Jamo conversions */
    struct hash_table* table;
 
-   Korean(Alphabet* alph) {
+   Korean(Alphabet* alph) : alphabet(NULL), table(NULL) {
 	   if (alph==NULL) {
 		   fatal_error("Unexpected NULL alphabet in Korean()\n");
 	   }
@@ -259,6 +259,15 @@ public:
 private:
    void initJamoMap();
    int Hanguls_to_Jamos_internal(unichar* input,unichar* output,int only_syllables);
+
+   /* prevent GCC warning */
+   Korean(const Korean&) : alphabet(NULL), table(NULL) {
+			fatal_error("Unexpected copy constructor for Korean\n");
+		}
+   Korean& operator =(const Korean&) {
+		fatal_error("Unexpected = operator for Korean\n");
+	   return *this;
+	}
 };
 
 int single_HGJ_to_Jamos(unichar c,unichar* dest,Korean* korean);
