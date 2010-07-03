@@ -378,7 +378,7 @@ if(N2 == -1){
 	N2 = 0;
 }
 /* we compute the emit probability thanks to this smoothed formula */
-return (float)(N2/(1+float(N1)));
+return (float)(((float)N2)/(1+float(N1)));
 }
 
 /**
@@ -400,7 +400,7 @@ if(C1 == -1){
 if(C2 == -1){
 	C2 = 1;
 }
-return (float)(C1/float(C2));
+return (float)(((float)C1)/float(C2));
 }
 
 /**

@@ -215,7 +215,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 	}
 
 	if (text_size != 0) {
-		u_printf("(%2.3f%% of the text is covered)\n", (float) (per_halfhundred
+		u_printf("(%2.3f%% of the text is covered)\n", (float) (((float)per_halfhundred)
 				/ (float) 1000.0));
 	}
 	if (info != NULL) {
@@ -229,7 +229,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 		u_fprintf(info, "%d recognized units\n", p->matching_units);
 		if (text_size != 0) {
 			u_fprintf(info, "(%2.3f%% of the text is covered)\n",
-					(float) (per_halfhundred / (float) 1000.0));
+					(float) (((float)per_halfhundred) / (float) 1000.0));
 		}
 	}
 }
