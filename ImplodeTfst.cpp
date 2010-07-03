@@ -33,9 +33,10 @@
 #include "SingleGraph.h"
 #include "Match.h"
 #include "ImplodeTfst.h"
+#include "TfstStats.h"
+#include "HashTable.h"
 
-
-void implode(Tfst*,U_FILE*,U_FILE*);
+void implode(Tfst*,U_FILE*,U_FILE*,struct hash_table* form_frequencies);
 
 
 const char* usage_ImplodeTfst =
@@ -138,10 +139,42 @@ U_FILE* f_tind=u_fopen(BINARY,output_tind,U_WRITE);
 if (f_tind==NULL) {
    fatal_error("Cannot open '%s' for writing\n",output_tind);
 }
-implode(tfst,f_tfst,f_tind);
+/* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+        (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
+
+implode(tfst,f_tfst,f_tind,form_frequencies);
 u_fclose(f_tfst);
 u_fclose(f_tind);
 close_text_automaton(tfst);
+
+/* We save statistics */
+char tfst_tags_by_freq[FILENAME_MAX];
+char tfst_tags_by_alph[FILENAME_MAX];
+get_path(input_tfst,tfst_tags_by_freq);
+if (!no_explicit_output) {
+	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
+} else {
+	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
+}
+get_path(input_tfst,tfst_tags_by_alph);
+if (!no_explicit_output) {
+	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
+} else {
+	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
+}
+U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+if (f_tfst_tags_by_freq==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_freq);
+}
+U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+if (f_tfst_tags_by_alph==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_alph);
+}
+sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+u_fclose(f_tfst_tags_by_freq);
+u_fclose(f_tfst_tags_by_alph);
+free_hash_table(form_frequencies);
 
 /* Finally, we rename files if we must modify the input text automaton */
 if (no_explicit_output) {
@@ -286,7 +319,7 @@ return list;
  * we will merge them into the single one "{rouge,.A:fs:ms}".
  * The resulting tfst is stored into the given .tfst and .tind files.
  */
-void implode(Tfst* tfst,U_FILE* f_tfst,U_FILE* f_tind) {
+void implode(Tfst* tfst,U_FILE* f_tfst,U_FILE* f_tind,struct hash_table* form_frequencies) {
 u_printf("Imploding tags...\n");
 unichar tag_content[4096];
 unichar tmp[4096];
@@ -358,7 +391,7 @@ for (int i=1;i<=tfst->N;i++) {
       state->outgoing_transitions=new_transitions;
    }
    /* Finally, we save the current sentence */
-   save_current_sentence(tfst,f_tfst,f_tind,new_tags->value,new_tags->size);
+   save_current_sentence(tfst,f_tfst,f_tind,new_tags->value,new_tags->size,form_frequencies);
    /* We free the tags */
    free_string_hash(new_tags);
 }

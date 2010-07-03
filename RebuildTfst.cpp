@@ -175,13 +175,7 @@ for (int i = 1; i <= tfst->N; i++) {
          error("Error: %s is not a valid sentence automaton\n",grfname);
       }
    }
-   /* We compute form frequencies */
-   if (tags!=NULL) {
-	   compute_form_frequencies(tfst->automaton,tags,n_tags,form_frequencies);
-   } else {
-	   compute_form_frequencies(tfst->automaton,(TfstTag**)(tfst->tags->tab),form_frequencies);
-   }
-   save_current_sentence(tfst,f_tfst,f_tind,tags,n_tags);
+   save_current_sentence(tfst,f_tfst,f_tind,tags,n_tags,form_frequencies);
    if (tags!=NULL) {
       /* If necessary, we free the tags we created */
       for (int count_tags=0;count_tags<n_tags;count_tags++) {
@@ -213,9 +207,7 @@ if (f_tfst_tags_by_alph==NULL) {
 sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
 u_fclose(f_tfst_tags_by_freq);
 u_fclose(f_tfst_tags_by_alph);
-
 free_hash_table(form_frequencies);
-
 
 /* make a backup and replace old automaton with new */
 char backup_tfst[FILENAME_MAX];

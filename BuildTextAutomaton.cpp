@@ -954,16 +954,13 @@ if (tfst->automaton->number_of_states==0) {
    free_vector_ptr(tfst->tags,(void (*)(void*))free_TfstTag);
    tfst->tags=new_vector_ptr(1);
    vector_ptr_add(tfst->tags,new_TfstTag(T_EPSILON));
-   save_current_sentence(tfst,out_tfst,out_tind,NULL,0);
+   save_current_sentence(tfst,out_tfst,out_tind,NULL,0,NULL);
 } else {
    /* Case 2: the automaton is not empty */
 
    /* We minimize the sentence automaton. It will remove the unused states and may
     * factorize suffixes introduced during the application of the normalization tree. */
    minimize(tfst->automaton,1);
-   /* Before renumbering transition tags, we compute form frequencies */
-   compute_form_frequencies(tfst->automaton,tmp_tags->value,tmp_tags->size,form_frequencies);
-
    /* We explore all the transitions of the automaton in order to renumber transitions */
    for (i=0;i<tfst->automaton->number_of_states;i++) {
       Transition* trans=tfst->automaton->states[i]->outgoing_transitions;
@@ -974,7 +971,7 @@ if (tfst->automaton->number_of_states==0) {
          trans=trans->next;
       }
    }
-   save_current_sentence(tfst,out_tfst,out_tind,tags->value,tags->size);
+   save_current_sentence(tfst,out_tfst,out_tind,tags->value,tags->size,form_frequencies);
 }
 close_text_automaton(tfst);
 free_string_hash(tmp_tags);

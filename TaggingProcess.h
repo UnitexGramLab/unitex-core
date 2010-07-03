@@ -39,6 +39,7 @@
 #include "Unicode.h"
 #include "ElagFunctions.h"
 #include "Match.h"
+#include "HashTable.h"
 
 /**
  * This structure corresponds to a entry in the viterbi
@@ -89,7 +90,8 @@ void compute_best_probability(unsigned char*,const struct INF_codes*,Alphabet*,s
 
 vector_ptr* do_viterbi(unsigned char*,const struct INF_codes*,Alphabet*,Tfst*,int);
 int get_form_type(const unsigned char*,const struct INF_codes*,Alphabet*);
-void do_tagging(Tfst*,Tfst*,const unsigned char*,const struct INF_codes*,Alphabet*,int);
+void do_tagging(Tfst*,Tfst*,const unsigned char*,const struct INF_codes*,Alphabet*,int,
+					struct hash_table*);
 
 #endif
 

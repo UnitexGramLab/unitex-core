@@ -36,6 +36,8 @@
 #include "DELA.h"
 #include "Match.h"
 #include "TagsetNormTfst.h"
+#include "TfstStats.h"
+#include "HashTable.h"
 
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
@@ -159,6 +161,10 @@ Elag_Tfst_file_in* txtin=load_tfst_file(tfst,language);
 if (txtin==NULL) {
    fatal_error("Unable to load text automaton '%s'\n",tfst);
 }
+
+/* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+        (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
 U_FILE* out_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output_tfst,U_WRITE);
 if (out_tfst==NULL) {
@@ -299,9 +305,9 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
       free_vector_ptr(txtin->tfst->tags,(void (*)(void*))free_TfstTag);
       txtin->tfst->tags=new_vector_ptr(1);
       vector_ptr_add(txtin->tfst->tags,new_TfstTag(T_EPSILON));
-      save_current_sentence(txtin->tfst,out_tfst,out_tind,NULL,0);
+      save_current_sentence(txtin->tfst,out_tfst,out_tind,NULL,0,form_frequencies);
    } else {
-      save_current_sentence(txtin->tfst,out_tfst,out_tind,(unichar**)tmp_tags->value,tmp_tags->size);
+      save_current_sentence(txtin->tfst,out_tfst,out_tind,(unichar**)tmp_tags->value,tmp_tags->size,form_frequencies);
    }
    free_string_hash(tmp_tags);
    if (current_sentence%100==0) {
@@ -315,6 +321,34 @@ u_printf("Sentence %d/%d.\nDone: text automaton is normalized.\n",txtin->tfst->N
 tfst_file_close_in(txtin);
 u_fclose(out_tfst);
 u_fclose(out_tind);
+
+/* We save statistics */
+char tfst_tags_by_freq[FILENAME_MAX];
+char tfst_tags_by_alph[FILENAME_MAX];
+get_path(tfst,tfst_tags_by_freq);
+if (!no_explicit_output) {
+	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
+} else {
+	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
+}
+get_path(tfst,tfst_tags_by_alph);
+if (!no_explicit_output) {
+	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
+} else {
+	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
+}
+U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+if (f_tfst_tags_by_freq==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_freq);
+}
+U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+if (f_tfst_tags_by_alph==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_alph);
+}
+sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+u_fclose(f_tfst_tags_by_freq);
+u_fclose(f_tfst_tags_by_alph);
+free_hash_table(form_frequencies);
 
 /* Finally, we rename files if we must modify the input text automaton */
 if (no_explicit_output) {

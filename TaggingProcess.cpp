@@ -612,14 +612,17 @@ return (int)value;
  * This algorithm aims at pruning tokens of the automata in order to
  * obtain a linear path (the most probable path).
  */
-void do_tagging(Tfst* input_tfst,Tfst* result_tfst,const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,int form_type){
+void do_tagging(Tfst* input_tfst,Tfst* result_tfst,const unsigned char* bin,
+				const struct INF_codes* inf,Alphabet* alphabet,int form_type,
+				struct hash_table* form_frequencies){
 /* we write the number of sentences in the result tfst file */
 u_fprintf(result_tfst->tfst,"%010d\n",input_tfst->N);
 /* for each sentence we compute Viterbi Path algorithm */
 for(int i=1;i<=input_tfst->N;i++){
 	load_sentence(input_tfst,i);
 	vector_ptr* new_tags = do_viterbi(bin,inf,alphabet,input_tfst,form_type);
-	save_current_sentence(input_tfst,result_tfst->tfst,result_tfst->tind,(unichar**)new_tags->tab,new_tags->nbelems);
+	save_current_sentence(input_tfst,result_tfst->tfst,result_tfst->tind,
+			(unichar**)new_tags->tab,new_tags->nbelems,form_frequencies);
 	free_vector_ptr(new_tags,free);
 	if(i%100 == 0){
 		u_printf("Sentence %d/%d...\r",i,input_tfst->N);

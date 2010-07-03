@@ -31,6 +31,7 @@
 #include "Vector.h"
 #include "SingleGraph.h"
 #include "Match.h"
+#include "HashTable.h"
 
 #define NO_SENTENCE_LOADED -1
 
@@ -122,7 +123,8 @@ Tfst* new_Tfst(U_FILE* tfst,U_FILE* tind,int N);
 Tfst* open_text_automaton(char* tfst);
 void close_text_automaton(Tfst* tfst);
 void load_sentence(Tfst* tfst,int n);
-void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* tind,unichar** tags,int n_tags);
+void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* tind,unichar** tags,int n_tags,
+							struct hash_table* form_frequencies);
 
 TfstTag* new_TfstTag(TfstTagType);
 void free_TfstTag(TfstTag*);

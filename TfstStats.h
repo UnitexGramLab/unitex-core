@@ -31,6 +31,7 @@
 #include "SingleGraph.h"
 #include "HashTable.h"
 #include "Vector.h"
+#include "Tfst.h"
 
 void compute_form_frequencies(SingleGraph g,unichar** string_tags,int n_string_tags,
 								struct hash_table* hash);

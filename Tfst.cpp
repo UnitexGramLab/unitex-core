@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include "Tfst.h"
 #include "File.h"
+#include "TfstStats.h"
 
 
 void free_current_sentence(Tfst*);
@@ -372,9 +373,12 @@ if (4!=fwrite(t,1,4,tind)) {
  * If 'tags' is not NULL, it is supposed to contain ready-to-dump tag labels that
  * will be used; otherwise, the function saves each TfstTag.
  *
+ * The form_frequencies hash table is to be used when calling compute_form_frequencies.
+ *
  * WARNING: if tags are provided, they are supposed to be \n terminated !
  */
-void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* out_tind,unichar** tags,int n_tags) {
+void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* out_tind,unichar** tags,int n_tags,
+							struct hash_table* form_frequencies) {
 if (tfst==NULL) {
    fatal_error("NULL tfst in save_current_sentence\n");
 }
@@ -396,6 +400,16 @@ if (tags!=NULL && n_tags<=0) {
 if (tags==NULL && tfst->tags->nbelems==0) {
    fatal_error("save_current_sentence: tag description vector must have a size >0\n");
 }
+
+/* We compute form frequencies */
+if (form_frequencies!=NULL) {
+	if (tags!=NULL) {
+	   compute_form_frequencies(tfst->automaton,tags,n_tags,form_frequencies);
+	} else {
+	   compute_form_frequencies(tfst->automaton,(TfstTag**)(tfst->tags->tab),form_frequencies);
+	}
+}
+
 /* First, we update the offset index in the .tind file */
 long offset=ftell(out_tfst);
 dump_offset(offset,out_tind);

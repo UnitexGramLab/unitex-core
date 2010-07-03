@@ -41,6 +41,9 @@
 #include "File.h"
 #include "Symbol.h"
 #include "Ustring.h"
+#include "TfstStats.h"
+#include "HashTable.h"
+
 
 static void add_sentence_delimiters(Tfst* tfst,language_t*);
 static void remove_sentence_delimiters(Tfst* tfst,language_t*);
@@ -80,6 +83,10 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
    double total_before = 0.0, total_after = 0.0;
    double length_before = 0., length_after = 0.; // average text length in words
    Tfst* tfst=input->tfst;
+
+   /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
+   struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+           (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
@@ -139,7 +146,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          }
       }
       vector_ptr* new_tags=convert_elag_symbols_to_tfst_tags(input);
-      save_current_sentence(input->tfst,output_tfst,output_tind,(unichar**)new_tags->tab,new_tags->nbelems);
+      save_current_sentence(input->tfst,output_tfst,output_tind,(unichar**)new_tags->tab,new_tags->nbelems,form_frequencies);
       free_vector_ptr(new_tags,free);
       free_SingleGraph(tfst->automaton,NULL);
       tfst->automaton=NULL;
@@ -185,6 +192,26 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
    u_printf(
          "\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
          N, nb_unloadable, n_rejected_sentences);
+
+   /* Finally, we save statistics */
+   char tfst_tags_by_freq[FILENAME_MAX];
+   char tfst_tags_by_alph[FILENAME_MAX];
+   get_path(input_tfst,tfst_tags_by_freq);
+   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
+   get_path(input_tfst,tfst_tags_by_alph);
+   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
+   U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+   if (f_tfst_tags_by_freq==NULL) {
+   	error("Cannot open %s\n",tfst_tags_by_freq);
+   }
+   U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+   if (f_tfst_tags_by_alph==NULL) {
+   	error("Cannot open %s\n",tfst_tags_by_alph);
+   }
+   sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+   u_fclose(f_tfst_tags_by_freq);
+   u_fclose(f_tfst_tags_by_alph);
+   free_hash_table(form_frequencies);
 }
 
 
@@ -199,8 +226,12 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
  *
  *    {jeunes,jeune.A:mp}
  *    {jeunes,jeune.A:fp}
+ *
+ * The 'elag_fst' parameter is used to know whether the form frequencies files must be named
+ * tfst_tags_by_freq/alph.txt or tfst_tags_by_freq/alph.new.txt
  */
-void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom_output,language_t* language) {
+void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom_output,language_t* language,
+		struct hash_table* form_frequencies) {
    static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
@@ -234,7 +265,8 @@ void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);
       }
       vector_ptr* new_tags=convert_elag_symbols_to_tfst_tags(input);
-      save_current_sentence(input->tfst,output_tfst,output_tind,(unichar**)new_tags->tab,new_tags->nbelems);
+      save_current_sentence(input->tfst,output_tfst,output_tind,(unichar**)new_tags->tab,new_tags->nbelems,
+								 form_frequencies);
       free_vector_ptr(new_tags,free);
    }
    tfst_file_close_in(input);

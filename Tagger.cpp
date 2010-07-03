@@ -34,7 +34,7 @@
 #include "DELA.h"
 #include "AbstractDelaLoad.h"
 #include "Unicode.h"
-
+#include "TfstStats.h"
 
 const char* usage_Tagger =
          "Usage: Tagger [OPTIONS] <tfst>\n"
@@ -91,6 +91,8 @@ char temp[FILENAME_MAX]="";
 char dictionary[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
+Encoding enc = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
@@ -168,14 +170,12 @@ if(form_type == 1){
 	if(tagset[0] == '\0'){
 		fatal_error("-t option is mandatory when compound forms dictionary is used\n");
 	}
-	u_printf("explodes tfst automaton according to tagset...\n");
+	u_printf("Explodes tfst automaton according to tagset...\n");
 	strcpy(tmp_tfst,tfst);
 	remove_extension(tmp_tfst);
 	strcat(tmp_tfst,"_explode.tfst");
-	Encoding enc = DEFAULT_ENCODING_OUTPUT;
-	int bom_output = DEFAULT_BOM_OUTPUT;
 	language_t* lang = load_language_definition(tagset);
-	explode_tfst(tfst,tmp_tfst,enc,bom_output,lang);
+	explode_tfst(tfst,tmp_tfst,enc,bom_output,lang,NULL);
 	current_tfst = tmp_tfst;
 	u_printf("\n");
 }
@@ -200,11 +200,45 @@ if (out_tind==NULL) {
 Tfst* result=new_Tfst(out_tfst,out_tind,input_tfst->N);
 
 u_printf("Tagging...\n");
+
+/* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
+struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+        (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
+
 /* launches tagging process on the input tfst file */
-do_tagging(input_tfst,result,bin,inf,alpha,form_type);
+do_tagging(input_tfst,result,bin,inf,alpha,form_type,form_frequencies);
 
 close_text_automaton(input_tfst);
 close_text_automaton(result);
+
+/* We save statistics */
+char tfst_tags_by_freq[FILENAME_MAX];
+char tfst_tags_by_alph[FILENAME_MAX];
+get_path(tfst,tfst_tags_by_freq);
+if (output[0]!='\0') {
+	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
+} else {
+	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
+}
+get_path(tfst,tfst_tags_by_alph);
+if (output[0]!='\0') {
+	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
+} else {
+	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
+}
+U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(enc,bom_output,tfst_tags_by_freq,U_WRITE);
+if (f_tfst_tags_by_freq==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_freq);
+}
+U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(enc,bom_output,tfst_tags_by_alph,U_WRITE);
+if (f_tfst_tags_by_alph==NULL) {
+	error("Cannot open %s\n",tfst_tags_by_alph);
+}
+sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+u_fclose(f_tfst_tags_by_freq);
+u_fclose(f_tfst_tags_by_alph);
+free_hash_table(form_frequencies);
+
 if(output[0]=='\0'){
 	af_remove(tfst);
 	af_remove(tind);
