@@ -32,7 +32,7 @@
 
 
 static void compute_form_frequencies(SingleGraph g,unichar** tags,struct hash_table* hash);
-static void explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
+static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
 									unichar** tags,struct hash_table* form_frequencies);
 
 /**
@@ -175,21 +175,27 @@ free(number_of_paths);
  * Exploring a subautomaton until we find a factorizing state. For each
  * transition we go through, we add 'freq' to its tag frequency.
  */
-static void explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
+static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
 									unichar** tags,struct hash_table* form_frequencies) {
 Transition* t=g->states[state]->outgoing_transitions;
+int n=0,foo;
 while (t!=NULL) {
 	int ret;
 	struct any* value=get_value(form_frequencies,tags[t->tag_number],HT_INSERT_IF_NEEDED,&ret);
 	if (ret!=HT_KEY_ALREADY_THERE) {
 		value->_float=0;
 	}
-	value->_float=value->_float+freq;
 	if (!factorizing[t->state_number]) {
-		explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,form_frequencies);
+		foo=explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,form_frequencies);
+		n=n+foo;
+		value->_float=value->_float+freq*foo;
+	} else {
+		value->_float=value->_float+freq;
+		n++;
 	}
 	t=t->next;
 }
+return n;
 }
 
 

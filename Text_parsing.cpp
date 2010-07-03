@@ -697,8 +697,7 @@ int captured_chars;
 							/* <DIC> can match two things: a sequence of tokens or a single token
 							 * As we don't want to process lists of [start,end[ ranges, we
 							 * directly handle here the case of a token sequence. */
-							if (p->output_policy == MERGE_OUTPUTS && pos2
-									!= pos && !capture_mode(p->output_variables)) {
+							if (p->output_policy == MERGE_OUTPUTS && pos2!=pos) {
 								push_input_char(p->stack, ' ',
 										p->protect_dic_chars);
 							}
@@ -710,7 +709,7 @@ int captured_chars;
 									break;
 								}
 							}
-							if (!capture_mode(p->output_variables) && p->output_policy == MERGE_OUTPUTS) {
+							if (p->output_policy == MERGE_OUTPUTS) {
 								for (int x = pos2; x <= end_of_compound; x++) {
 									push_input_string(p->stack,
 											p->tokens->value[p->buffer[x
@@ -786,7 +785,7 @@ int captured_chars;
 						 * tag token like "{black-eyed,.A}". As we don't want to process lists
 						 * of [start,end[ ranges, we directly handle here the case of a
 						 * token sequence. */
-						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS && pos2!=pos) {
 							push_input_char(p->stack, ' ', p->protect_dic_chars);
 						}
 						captured_chars=0;
@@ -797,7 +796,7 @@ int captured_chars;
 								break;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS) {
 							for (int x = pos2; x <= end_of_compound; x++) {
 								push_input_string(p->stack,
 										p->tokens->value[p->buffer[x
@@ -952,7 +951,7 @@ int captured_chars;
 					/* The {STOP} tag must NEVER be matched by any pattern */
 					break;
 				}
-				if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+				if (p->output_policy == MERGE_OUTPUTS) {
 					if (pos2 != pos)
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 				}
@@ -1002,8 +1001,7 @@ int captured_chars;
 
 			if (start != -1) {
 				/* If the transition has matched */
-				if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2
-						!= pos && !capture_mode(p->output_variables)) {
+				if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2!=pos) {
 					push_input_char(p->stack, ' ', p->protect_dic_chars);
 				}
 				captured_chars=0;
@@ -1015,7 +1013,7 @@ int captured_chars;
 						goto next;
 					}
 				}
-				if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+				if (p->output_policy == MERGE_OUTPUTS) {
 					/* Then, if we are in merge mode, we push the tokens that have
 					 * been read to the output */
 					for (int y = start; y < end; y++) {
@@ -1234,7 +1232,7 @@ while (output_variable_list != NULL) {
 				}
 #endif
 				if (OK) {
-					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
+					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
 					captured_chars=0;
@@ -1245,7 +1243,7 @@ while (output_variable_list != NULL) {
 							goto next4;
 						}
 					}
-					if (p->output_policy == MERGE_OUTPUTS && ! capture_mode(p->output_variables)) {
+					if (p->output_policy == MERGE_OUTPUTS) {
 						for (int x = pos2; x <= end_of_compound; x++) {
 							push_input_string(p->stack,
 									p->tokens->value[p->buffer[x
@@ -1297,7 +1295,7 @@ while (output_variable_list != NULL) {
 				}
 #endif
 				if (OK) {
-					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
+					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
 					captured_chars=0;
@@ -1308,7 +1306,7 @@ while (output_variable_list != NULL) {
 							goto next6;
 						}
 					}
-					if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+					if (p->output_policy == MERGE_OUTPUTS) {
 						for (int x = pos2; x <= end_of_compound; x++) {
 							push_input_string(p->stack,
 									p->tokens->value[p->buffer[x
@@ -1339,8 +1337,7 @@ while (output_variable_list != NULL) {
 					if (XOR(get_value(p->matching_patterns[token2],
 							pattern_list->pattern_number),
 							pattern_list->negation)) {
-						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos
-								&& !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
 							push_input_char(p->stack, ' ', p->protect_dic_chars);
 						}
 						captured_chars=0;
@@ -1351,7 +1348,7 @@ while (output_variable_list != NULL) {
 								goto next2;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS) {
 							push_input_string(p->stack,
 									p->tokens->value[token2],
 									p->protect_dic_chars);
@@ -1369,7 +1366,7 @@ while (output_variable_list != NULL) {
 					 * like <!V> */
 					if (pattern_list->negation && (p->token_control[token2]
 							& MOT_TOKEN_BIT_MASK)) {
-						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
 							push_input_char(p->stack, ' ', p->protect_dic_chars);
 						}
 						captured_chars=0;
@@ -1380,7 +1377,7 @@ while (output_variable_list != NULL) {
 								goto next2;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS) {
 							push_input_string(p->stack,
 									p->tokens->value[token2],
 									p->protect_dic_chars);
@@ -1417,7 +1414,7 @@ while (output_variable_list != NULL) {
 #endif
 				{
 					output = p->tags[t1->tag_number]->output;
-					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos && !capture_mode(p->output_variables)) {
+					if (p->output_policy == MERGE_OUTPUTS && pos2 != pos) {
 						push_input_char(p->stack, ' ', p->protect_dic_chars);
 					}
 					captured_chars=0;
@@ -1428,7 +1425,7 @@ while (output_variable_list != NULL) {
 							goto next3;
 						}
 					}
-					if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+					if (p->output_policy == MERGE_OUTPUTS) {
 						push_input_string(p->stack, p->tokens->value[token2],
 								p->protect_dic_chars);
 					}

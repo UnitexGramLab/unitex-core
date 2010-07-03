@@ -448,7 +448,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 								break;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS) {
 							push_input_string(p->stack, content1,
 									p->protect_dic_chars);
 						}
@@ -616,7 +616,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 						goto next;
 					}
 				}
-				if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+				if (p->output_policy == MERGE_OUTPUTS) {
 					/* If needed, we push the character that was matched */
 					push_input_char(p->stack, current_token[pos_in_token],
 							p->protect_dic_chars);
@@ -837,7 +837,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 								continue;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS) {
 							push_input_substring(p->stack, current_token
 									+ pos_in_token, prefix_length,
 									p->protect_dic_chars);
@@ -918,7 +918,7 @@ struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
 								continue;
 							}
 						}
-						if (p->output_policy == MERGE_OUTPUTS && !capture_mode(p->output_variables)) {
+						if (p->output_policy == MERGE_OUTPUTS) {
 							push_input_string(p->stack, content2,
 									p->protect_dic_chars);
 						}
