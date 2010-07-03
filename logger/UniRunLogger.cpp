@@ -65,9 +65,9 @@ private:
 };
 
 
-InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log)
+InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log) : 
+   ule(ule_default_init),init_done(0)
 {
-    init_done = 0;
 
     /* we want "mini log" with only list */
 
@@ -287,13 +287,13 @@ int do_extracting_currentfile(
 
     if ((*filename_withoutpath)!='\0')
     {
-        const char* write_filename;
+        const char* write_filename_create;
         int skip=0;
 
         if ((*popt_extract_without_path)==0)
-            write_filename = filename_touse;
+            write_filename_create = filename_touse;
         else
-            write_filename = filename_withoutpath;
+            write_filename_create = filename_withoutpath;
 
         err = unzOpenCurrentFilePassword(uf,password);
         if (err!=UNZ_OK)
@@ -310,15 +310,15 @@ int do_extracting_currentfile(
 
         if ((skip==0) && (err==UNZ_OK))
         {
-            fout=af_fopen_unlogged(write_filename,"wb");
+            fout=af_fopen_unlogged(write_filename_create,"wb");
 
             /* some zipfile don't contain directory alone before file */
             if ((fout==NULL) && ((*popt_extract_without_path)==0) &&
                                 (filename_withoutpath!=(char*)filename_touse))
-              if (is_filename_in_abstract_file_space(write_filename)==0)
+              if (is_filename_in_abstract_file_space(write_filename_create)==0)
                 {
-                    mkdir_recursive(write_filename,0,pdlfc);
-                    fout=af_fopen_unlogged(write_filename,"wb");
+                    mkdir_recursive(write_filename_create,0,pdlfc);
+                    fout=af_fopen_unlogged(write_filename_create,"wb");
                 }
         }
 
@@ -326,7 +326,7 @@ int do_extracting_currentfile(
         {
             do
             {
-                err = unzReadCurrentFile(uf,buf,size_buf);
+                err = unzReadCurrentFile(uf,buf,(unsigned)size_buf);
                 if (err<0)
                 {
                     break;
@@ -343,7 +343,7 @@ int do_extracting_currentfile(
                     af_fclose_unlogged(fout);
 /*
             if (err==0)
-                change_file_date(write_filename,file_info.dosDate,
+                change_file_date(write_filename_create,file_info.dosDate,
                                  file_info.tmu_date);
                                  */
         }
@@ -686,19 +686,17 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
             *p_exec_status = exec_status;
         return -1;
     }
-
-    uLong i;
-    unz_global_info gi;
+    uLong i1;
+    unz_global_info gi1;
     int err;
     
-    
-    err = unzGetGlobalInfo (uf,&gi);
+    err = unzGetGlobalInfo (uf,&gi1);
     if (err==UNZ_OK)
     {
         if (SelectTool != NULL)
             if ((*SelectTool)!='\0')
             {
-              for (i=0;i<gi.number_entry;i++)
+              for (i1=0;i1<gi1.number_entry;i1++)
               {
                   char filename_inzip[256];
                   unz_file_info file_info;
@@ -712,7 +710,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                   }
 
 
-                  if ((i+1)<gi.number_entry)
+                  if ((i1+1)<gi1.number_entry)
                     {
                         err = unzGoToNextFile(uf);
                         if (err!=UNZ_OK)
@@ -755,11 +753,11 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
       }
 
 
-      list_file_in = AllocListFile(gi.number_entry);
+      list_file_in = AllocListFile((unsigned int)gi1.number_entry);
       pdlfc = build_list_dir_for_clean();
       int nb_listfile_in=0;
 
-      for (i=0;i<gi.number_entry;i++)
+      for (int i2=0;i2<gi1.number_entry;i2++)
       {
           char filename_inzip[256];
           unz_file_info file_info;
@@ -805,7 +803,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
               do_extracting_currentfile_memory(uf,(void**)p_command_line_buf,&size_command_line,NULL);
           }
 
-          if ((i+1)<gi.number_entry)
+          if ((i2+1)<gi1.number_entry)
             {
                 err = unzGoToNextFile(uf);
                 if (err!=UNZ_OK)
@@ -953,19 +951,19 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
         if (ufNewLog != NULL)
         {
             uLong i;
-            unz_global_info gi;
-            int err;
+            unz_global_info gi2;
+            int err2;
             
-            err = unzGetGlobalInfo (ufNewLog,&gi);
-            if (err==UNZ_OK)
+            err2 = unzGetGlobalInfo (ufNewLog,&gi2);
+            if (err2==UNZ_OK)
             {
               //list_file_in = AllocListFile(gi.number_entry);
 
-              for (i=0;i<gi.number_entry;i++)
+              for (i=0;i<gi2.number_entry;i++)
               {
                   char filename_inzip[256];
                   unz_file_info file_info;
-                  err = unzGetCurrentFileInfo(ufNewLog,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+                  err2 = unzGetCurrentFileInfo(ufNewLog,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
 
                   if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
                   {
@@ -975,12 +973,12 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                   }
 
 
-                  if ((i+1)<gi.number_entry)
+                  if ((i+1)<gi2.number_entry)
                     {
-                        err = unzGoToNextFile(ufNewLog);
-                        if (err!=UNZ_OK)
+                        err2 = unzGoToNextFile(ufNewLog);
+                        if (err2!=UNZ_OK)
                         {
-                            error("error %d with zipfile in unzGoToNextFile\n",err);
+                            error("error %d with zipfile in unzGoToNextFile\n",err2);
                             break;
                         }
                     }

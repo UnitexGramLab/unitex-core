@@ -88,7 +88,8 @@ void InstallLogger::LoadParamFile(const char* parameter_filename)
     }
 }
 
-InstallLogger::InstallLogger(const char* parameter_filename)
+InstallLogger::InstallLogger(const char* parameter_filename) :
+    ule(ule_default_init),init_done(0)
 {
     LoadParamFile(parameter_filename);
 }
@@ -145,13 +146,12 @@ const struct option_TS lopts_CreateLog[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 
-InstallLogger::InstallLogger(int argc,char* argv[])
+InstallLogger::InstallLogger(int argc,char* argv[]) :
+  ule(ule_default_init),init_done(0)
 {
-init_done=0;
+  ClearUniLoggerSpaceStruct(0);
 
-ClearUniLoggerSpaceStruct(0);
-
-if (argc==1) {
+  if (argc==1) {
     usage();
     return;
 }

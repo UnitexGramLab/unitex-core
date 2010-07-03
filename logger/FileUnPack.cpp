@@ -1285,7 +1285,7 @@ extern int ZEXPORT unzReadCurrentFile  (
 
             if ((pfile_in_zip_read_info->stream.avail_in == 0) &&
                 (pfile_in_zip_read_info->rest_read_compressed == 0))
-                return (iRead==0) ? UNZ_EOF : iRead;
+                return (int)((iRead==0) ? UNZ_EOF : iRead);
 
             if (pfile_in_zip_read_info->stream.avail_out <
                             pfile_in_zip_read_info->stream.avail_in)
@@ -1351,7 +1351,7 @@ extern int ZEXPORT unzReadCurrentFile  (
     }
 
     if (err==Z_OK)
-        return iRead;
+        return (int)iRead;
     return err;
 }
 

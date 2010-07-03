@@ -859,7 +859,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
     if (pEL == NULL)
         return;
 
-    unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
+    const unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
     unsigned int iFile;
     for (iFile=0;iFile<iNbFileWrite;iFile++)
     {
@@ -887,8 +887,6 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
     if (pEL->store_list_file_out_content!=0)
     {
-        unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
-        unsigned int iFile;
         size_t size_buf_list_file_out = 0x100;
         for (iFile=0;iFile<iNbFileWrite;iFile++)
             size_buf_list_file_out += strlen(GetFileToWriteItemFN(pEL,iFile)) + 0x40;

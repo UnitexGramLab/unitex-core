@@ -54,6 +54,8 @@ struct UniLoggerSpace {
     const char* szNameLog;
 } ;
 
+const struct UniLoggerSpace ule_default_init = { sizeof(struct UniLoggerSpace),NULL,0,1,1,1,1,1,0,NULL,NULL };
+
 UNITEX_FUNC int UNITEX_CALL AddActivityLogger(struct UniLoggerSpace *p_ule);
 UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule);
 
