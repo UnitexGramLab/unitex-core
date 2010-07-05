@@ -27,55 +27,55 @@
 unichar to_buckwalter(unichar c) {
 switch (c) {
 /* Plain letters */
-case AR_HAMZA: 						return '\'';
-case AR_ALEF_WITH_MADDA_ABOVE: 		return '|';
-case AR_ALEF_WITH_HAMZA_ABOVE: 		return '>';
-case AR_WAW_WITH_HAMZA_ABOVE: 		return '&';
-case AR_ALEF_WITH_HAMZA_BELOW: 		return '<';
-case AR_YEH_WITH_HAMZA_ABOVE: 		return '}';
-case AR_ALEF: 						return 'A';
-case AR_BEH: 						return 'b';
-case AR_TEH_MARBUTA: 				return 'p';
-case AR_TEH: 						return 't';
-case AR_THEH: 						return 'v';
-case AR_JEEM: 						return 'j';
-case AR_HAH: 						return 'H';
-case AR_KHAH: 						return 'x';
-case AR_DAL: 						return 'd';
-case AR_THAL:						return '*';
-case AR_REH: 						return 'r';
-case AR_ZAIN:						return 'z';
-case AR_SEEN: 						return 's';
-case AR_SHEEN: 						return '$';
-case AR_SAD:	 					return 'S';
-case AR_DAD:	 					return 'D';
-case AR_TAH:	 					return 'T';
-case AR_ZAH:	 					return 'Z';
-case AR_AIN:	 					return 'E';
-case AR_GHAIN:						return 'g';
-case AR_TATWEEL: 					return '_';
-case AR_FEH:	 					return 'f';
-case AR_QAF:	 					return 'q';
-case AR_KAF:	 					return 'k';
-case AR_LAM:	 					return 'l';
-case AR_MEEM:	 					return 'm';
-case AR_NOON:	 					return 'n';
-case AR_HEH:	 					return 'h';
-case AR_WAW:	 					return 'w';
-case AR_ALEF_MAQSURA:				return 'Y';
-case AR_YEH:	 					return 'y';
+case ABS_AR_HAMZA: 						return '\'';
+case ABS_AR_ALEF_WITH_MADDA_ABOVE: 		return '|';
+case ABS_AR_ALEF_WITH_HAMZA_ABOVE: 		return '>';
+case ABS_AR_WAW_WITH_HAMZA_ABOVE: 		return '&';
+case ABS_AR_ALEF_WITH_HAMZA_BELOW: 		return '<';
+case ABS_AR_YEH_WITH_HAMZA_ABOVE: 		return '}';
+case ABS_AR_ALEF: 						return 'A';
+case ABS_AR_BEH: 						return 'b';
+case ABS_AR_TEH_MARBUTA: 				return 'p';
+case ABS_AR_TEH: 						return 't';
+case ABS_AR_THEH: 						return 'v';
+case ABS_AR_JEEM: 						return 'j';
+case ABS_AR_HAH: 						return 'H';
+case ABS_AR_KHAH: 						return 'x';
+case ABS_AR_DAL: 						return 'd';
+case ABS_AR_THAL:						return '*';
+case ABS_AR_REH: 						return 'r';
+case ABS_AR_ZAIN:						return 'z';
+case ABS_AR_SEEN: 						return 's';
+case ABS_AR_SHEEN: 						return '$';
+case ABS_AR_SAD:	 					return 'S';
+case ABS_AR_DAD:	 					return 'D';
+case ABS_AR_TAH:	 					return 'T';
+case ABS_AR_ZAH:	 					return 'Z';
+case ABS_AR_AIN:	 					return 'E';
+case ABS_AR_GHAIN:						return 'g';
+case ABS_AR_TATWEEL: 					return '_';
+case ABS_AR_FEH:	 					return 'f';
+case ABS_AR_QAF:	 					return 'q';
+case ABS_AR_KAF:	 					return 'k';
+case ABS_AR_LAM:	 					return 'l';
+case ABS_AR_MEEM:	 					return 'm';
+case ABS_AR_NOON:	 					return 'n';
+case ABS_AR_HEH:	 					return 'h';
+case ABS_AR_WAW:	 					return 'w';
+case ABS_AR_ALEF_MAQSURA:				return 'Y';
+case ABS_AR_YEH:	 					return 'y';
 /* Diacritics */
-case AR_FATHATAN:					return 'F';
-case AR_DAMMATAN:					return 'N';
-case AR_KASRATAN:					return 'K';
-case AR_FATHA:						return 'a';
-case AR_DAMMA:						return 'u';
-case AR_KASRA:						return 'i';
-case AR_SHADDA:						return '~';
-case AR_SUKUN:						return 'o';
-case AR_SUPERSCRIPT_ALEF:			return '`';
+case ABS_AR_FATHATAN:					return 'F';
+case ABS_AR_DAMMATAN:					return 'N';
+case ABS_AR_KASRATAN:					return 'K';
+case ABS_AR_FATHA:						return 'a';
+case ABS_AR_DAMMA:						return 'u';
+case ABS_AR_KASRA:						return 'i';
+case ABS_AR_SHADDA:						return '~';
+case ABS_AR_SUKUN:						return 'o';
+case ABS_AR_SUPERSCRIPT_ALEF:			return '`';
 /* Hamza variant */
-case AR_ALEF_WASLA:					return '{';
+case ABS_AR_ALEF_WASLA:					return '{';
 default: return c;
 }
 }
@@ -100,6 +100,86 @@ case '`': 	return 'R';
 case '{': 	return 'L';
 default: 	return c;
 }
+}
+
+
+unichar buckwalter_plusplus_to_buckwalter(unichar c) {
+switch(c) {
+case 'c': 	return '\'';
+case 'C': 	return '|';
+case 'O': 	return '>';
+case 'W': 	return '&';
+case 'I': 	return '<';
+case 'e': 	return '}';
+case 'J': 	return '*';
+case 'M': 	return '$';
+case 'G': 	return '~';
+case 'R': 	return '`';
+case 'L': 	return '{';
+default: 	return c;
+}
+}
+
+
+unichar from_buckwalter(unichar c) {
+switch (c) {
+/* Plain letters */
+case '\'':	return ABS_AR_HAMZA;
+case '|':	return ABS_AR_ALEF_WITH_MADDA_ABOVE;
+case '>':	return ABS_AR_ALEF_WITH_HAMZA_ABOVE;
+case '&':	return ABS_AR_WAW_WITH_HAMZA_ABOVE;
+case '<':	return ABS_AR_ALEF_WITH_HAMZA_BELOW;
+case '}':	return ABS_AR_YEH_WITH_HAMZA_ABOVE;
+case 'A':	return ABS_AR_ALEF;
+case 'b':	return ABS_AR_BEH;
+case 'p':	return ABS_AR_TEH_MARBUTA;
+case 't':	return ABS_AR_TEH;
+case 'v':	return ABS_AR_THEH;
+case 'j':	return ABS_AR_JEEM;
+case 'H':	return ABS_AR_HAH;
+case 'x':	return ABS_AR_KHAH;
+case 'd':	return ABS_AR_DAL;
+case '*':	return ABS_AR_THAL;
+case 'r':	return ABS_AR_REH;
+case 'z':	return ABS_AR_ZAIN;
+case 's':	return ABS_AR_SEEN;
+case '$':	return ABS_AR_SHEEN;
+case 'S':	return ABS_AR_SAD;
+case 'D':	return ABS_AR_DAD;
+case 'T':	return ABS_AR_TAH;
+case 'Z':	return ABS_AR_ZAH;
+case 'E':	return ABS_AR_AIN;
+case 'g':	return ABS_AR_GHAIN;
+case '_':	return ABS_AR_TATWEEL;
+case 'f':	return ABS_AR_FEH;
+case 'q':	return ABS_AR_QAF;
+case 'k':	return ABS_AR_KAF;
+case 'l':	return ABS_AR_LAM;
+case 'm':	return ABS_AR_MEEM;
+case 'n':	return ABS_AR_NOON;
+case 'h':	return ABS_AR_HEH;
+case 'w':	return ABS_AR_WAW;
+case 'Y':	return ABS_AR_ALEF_MAQSURA;
+case 'y':	return ABS_AR_YEH;
+/* Diacritics */
+case 'F':	return ABS_AR_FATHATAN;
+case 'N':	return ABS_AR_DAMMATAN;
+case 'K':	return ABS_AR_KASRATAN;
+case 'a':	return ABS_AR_FATHA;
+case 'u':	return ABS_AR_DAMMA;
+case 'i':	return ABS_AR_KASRA;
+case '~':	return ABS_AR_SHADDA;
+case 'o':	return ABS_AR_SUKUN;
+case '`':	return ABS_AR_SUPERSCRIPT_ALEF;
+/* Hamza variant */
+case '{':	return ABS_AR_ALEF_WASLA;
+default: return c;
+}
+}
+
+
+unichar from_buckwalter_plusplus(unichar c) {
+return from_buckwalter(buckwalter_plusplus_to_buckwalter(c));
 }
 
 

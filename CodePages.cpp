@@ -820,8 +820,22 @@ return u_fputc_UTF16LE_raw(to_buckwalter(c),f);
 }
 
 
+int u_fgetc_buckwalter(ABSTRACTFILE* f) {
+int c=u_fgetc_UTF16LE_raw(f);
+if (c==EOF) return EOF;
+return from_buckwalter(c);
+}
+
+
 int u_fputc_buckwalter_plusplus(unichar c,ABSTRACTFILE* f) {
 return u_fputc_UTF16LE_raw(to_buckwalter_plusplus(c),f);
+}
+
+
+int u_fgetc_buckwalter_plusplus(ABSTRACTFILE* f) {
+int c=u_fgetc_UTF16LE_raw(f);
+if (c==EOF) return EOF;
+return from_buckwalter_plusplus(c);
 }
 
 
@@ -1815,8 +1829,8 @@ const char* aliases_NeXTSTEP[2]={"next-step",NULL};
 install_one_byte_encoding(ctx,"nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTSTEP);
 
 /* Not real encodings, transliterations for Arabic */
-install_multi_bytes_encoding(ctx,"buckwalter",E_UTF16_LE,u_fgetc_UTF16LE,u_fputc_buckwalter,usage_buckwalter,NULL);
-install_multi_bytes_encoding(ctx,"buckwalter++",E_UTF16_LE,u_fgetc_UTF16LE,u_fputc_buckwalter_plusplus,usage_buckwalter_plusplus,NULL);
+install_multi_bytes_encoding(ctx,"buckwalter",E_UTF16_LE,u_fgetc_buckwalter,u_fputc_buckwalter,usage_buckwalter,NULL);
+install_multi_bytes_encoding(ctx,"buckwalter++",E_UTF16_LE,u_fgetc_buckwalter_plusplus,u_fputc_buckwalter_plusplus,usage_buckwalter_plusplus,NULL);
 
 return (void*)ectx;
 }

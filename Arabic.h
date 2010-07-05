@@ -24,10 +24,66 @@
 
 #include "Unicode.h"
 
+/* Here are the absolute definition of the arabic letters */
+
+/* Plain letters */
+#define ABS_AR_HAMZA 						0x0621
+#define ABS_AR_ALEF_WITH_MADDA_ABOVE 		0x0622
+#define ABS_AR_ALEF_WITH_HAMZA_ABOVE 		0x0623
+#define ABS_AR_WAW_WITH_HAMZA_ABOVE 		0x0624
+#define ABS_AR_ALEF_WITH_HAMZA_BELOW 		0x0625
+#define ABS_AR_YEH_WITH_HAMZA_ABOVE 		0x0626
+#define ABS_AR_ALEF 						0x0627
+#define ABS_AR_BEH 							0x0628
+#define ABS_AR_TEH_MARBUTA 					0x0629
+#define ABS_AR_TEH 							0x062A
+#define ABS_AR_THEH 						0x062B
+#define ABS_AR_JEEM 						0x062C
+#define ABS_AR_HAH 							0x062D
+#define ABS_AR_KHAH 						0x062E
+#define ABS_AR_DAL 							0x062F
+#define ABS_AR_THAL							0x0630
+#define ABS_AR_REH 							0x0631
+#define ABS_AR_ZAIN 						0x0632
+#define ABS_AR_SEEN 						0x0633
+#define ABS_AR_SHEEN 						0x0634
+#define ABS_AR_SAD	 						0x0635
+#define ABS_AR_DAD	 						0x0636
+#define ABS_AR_TAH	 						0x0637
+#define ABS_AR_ZAH	 						0x0638
+#define ABS_AR_AIN	 						0x0639
+#define ABS_AR_GHAIN						0x063A
+#define ABS_AR_TATWEEL 						0x0640
+#define ABS_AR_FEH	 						0x0641
+#define ABS_AR_QAF	 						0x0642
+#define ABS_AR_KAF	 						0x0643
+#define ABS_AR_LAM	 						0x0644
+#define ABS_AR_MEEM	 						0x0645
+#define ABS_AR_NOON	 						0x0646
+#define ABS_AR_HEH	 						0x0647
+#define ABS_AR_WAW	 						0x0648
+#define ABS_AR_ALEF_MAQSURA					0x0649
+#define ABS_AR_YEH	 						0x064A
+/* Diacritics */
+#define ABS_AR_FATHATAN						0x064B
+#define ABS_AR_DAMMATAN						0x064C
+#define ABS_AR_KASRATAN						0x064D
+#define ABS_AR_FATHA						0x064E
+#define ABS_AR_DAMMA						0x064F
+#define ABS_AR_KASRA						0x0650
+#define ABS_AR_SHADDA						0x0651
+#define ABS_AR_SUKUN						0x0652
+#define ABS_AR_SUPERSCRIPT_ALEF				0x0670
+/* Hamza variant */
+#define ABS_AR_ALEF_WASLA					0x0671
+
+
 /* This macro is for debug only. You should not use it unless you are me. SP */
 #define AR_WORK_ON_TRANSLITERATED_FORMS
 
-
+/* Here are the relative definition of arabic letters, depending of the
+ * AR_WORK_ON_TRANSLITERATED_FORMS macro.
+ */
 #ifndef AR_WORK_ON_TRANSLITERATED_FORMS
 
 /* Plain letters */
@@ -223,6 +279,8 @@ typedef struct {
 
 unichar to_buckwalter(unichar);
 unichar to_buckwalter_plusplus(unichar);
+unichar from_buckwalter(unichar);
+unichar from_buckwalter_plusplus(unichar);
 int is_solar(unichar);
 int is_lunar(unichar);
 int load_arabic_typo_rules(char* f,ArabicTypoRules *rules);
