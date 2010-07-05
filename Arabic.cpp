@@ -95,7 +95,7 @@ case '<': 	return 'I';
 case '}': 	return 'e';
 case '*': 	return 'J';
 case '$': 	return 'M';
-case '~': 	return 'U';
+case '~': 	return 'G';
 case '`': 	return 'R';
 case '{': 	return 'L';
 default: 	return c;
