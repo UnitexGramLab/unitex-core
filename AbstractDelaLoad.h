@@ -30,6 +30,8 @@ struct INF_free_info
 	int must_be_free;
 } ;
 
+const struct INF_free_info INF_free_info_init={NULL,NULL,NULL,1};
+
 struct BIN_free_info
 {
 	void *func_free_bin;
@@ -37,6 +39,8 @@ struct BIN_free_info
 	void *privateSpacePtr;
 	int must_be_free;
 } ;
+
+const struct BIN_free_info BIN_free_info_init={NULL,NULL,NULL,1};
 
 const struct INF_codes* load_abstract_INF_file(const char*,struct INF_free_info*);
 void free_abstract_INF(const struct INF_codes*,struct INF_free_info*);

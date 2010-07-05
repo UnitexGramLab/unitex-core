@@ -258,39 +258,63 @@ public:
 	   else strcat(des,ofExt);
 	}
 
-	CFstApp(){
-		a =0;
-		sepL = u_null_string;
-		sepR = u_null_string;
-		sep1 = u_null_string;
-		saveSep = u_null_string;
-		stopSignal = u_null_string;
-		saveEntre= u_null_string;
-		entreGO = u_null_string;
-		entreGF	= u_null_string;
-		pathEtiQidx = 0;
+	CFstApp():
+		a (0),
+		sepL (u_null_string),
+		sepR (u_null_string),
+		sep1 (u_null_string),
+		saveSep (u_null_string),
+		stopSignal (u_null_string),
+		saveEntre(u_null_string),
+		entreGO(u_null_string),
+		entreGF(u_null_string),
+		pathEtiQidx(0),
 
-		foutput = 0;
-		ignoreTable = 0;
-		numOfIgnore = 0;
-		errPath =0;
-verboseMode  = 0;
-		outLineLimit = 0x10000000;
-		numberOfOutLine = 0;
-		niveau_traite_mot = 1;  // unit of box is word
-		listOut = 0;
+		foutput(0),
+		ignoreTable(0),
+		numOfIgnore(0),
+		errPath(0),
+		verboseMode(0),
+		outLineLimit(0x10000000),
+		numberOfOutLine(0),
+		niveau_traite_mot(1),  // unit of box is word
+		listOut(0),
 
-		headCyc = 0;
-		cyclePathCnt = 0;
-		headCycNodes = 0;
-		cycNodeCnt = 0;
+		headCyc(0),
+		cyclePathCnt(0),
+		headCycNodes(0),
+		cycNodeCnt(0),
 
-		prMode = PR_SEPARATION;
-		traitAuto = SINGLE;
-		display_control = FULL;
-		recursiveMode = STOP;
-		automateMode = AUTOMODE;
-			arretSubListIdx = 0;
+		prMode(PR_SEPARATION),
+		traitAuto(SINGLE),
+		display_control(FULL),
+		recursiveMode(STOP),
+		automateMode(AUTOMODE),
+		arretSubListIdx(0),
+
+        fst2_free(FST2_free_info_init),
+        CautoDepth(0),
+        count_in_line(0),
+        
+        totalPath(0),
+        totalLoop(0),
+        stopPath(0),
+        depthDebug(0),
+
+        encoding_output(DEFAULT_ENCODING_OUTPUT),
+        bom_output(DEFAULT_BOM_OUTPUT),
+        mask_encoding_compatibility_input(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT),
+
+        ePtrCnt(0),
+        tPtrCnt(0),
+        EOutCnt(0),
+        SOutCnt(0),
+
+        autoStackMap(NULL),
+        mapOfCallHead(NULL),
+        mapOfCallTail(NULL),
+        cycInfos(NULL)
+		{
 		initCallIdMap();
 	};
 	~CFstApp(){
@@ -971,12 +995,79 @@ void prAutoStackOnly()
     pathEtiQ[i].etatNo,pathEtiQ[i].eti);
 }
 
+private:
+   /* prevent GCC warning */
+    
+   CFstApp(const CFstApp&) :
+		a (0),
+		sepL (u_null_string),
+		sepR (u_null_string),
+		sep1 (u_null_string),
+		saveSep (u_null_string),
+		stopSignal (u_null_string),
+		saveEntre(u_null_string),
+		entreGO(u_null_string),
+		entreGF(u_null_string),
+		pathEtiQidx(0),
+
+		foutput(0),
+		ignoreTable(0),
+		numOfIgnore(0),
+		errPath(0),
+		verboseMode(0),
+		outLineLimit(0x10000000),
+		numberOfOutLine(0),
+		niveau_traite_mot(1),  // unit of box is word
+		listOut(0),
+
+		headCyc(0),
+		cyclePathCnt(0),
+		headCycNodes(0),
+		cycNodeCnt(0),
+
+		prMode(PR_SEPARATION),
+		traitAuto(SINGLE),
+		display_control(FULL),
+		recursiveMode(STOP),
+		automateMode(AUTOMODE),
+		arretSubListIdx(0),
+
+        fst2_free(FST2_free_info_init),
+        CautoDepth(0),
+        count_in_line(0),
+        
+        totalPath(0),
+        totalLoop(0),
+        stopPath(0),
+        depthDebug(0),
+
+        encoding_output(DEFAULT_ENCODING_OUTPUT),
+        bom_output(DEFAULT_BOM_OUTPUT),
+        mask_encoding_compatibility_input(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT),
+
+        ePtrCnt(0),
+        tPtrCnt(0),
+        EOutCnt(0),
+        SOutCnt(0),
+
+        autoStackMap(NULL),
+        mapOfCallHead(NULL),
+        mapOfCallTail(NULL),
+        cycInfos(NULL)
+   {
+       fatal_error("Unexpected copy constructor for CFstApp\n");
+   }
+
+   CFstApp& operator =(const CFstApp&) {
+                fatal_error("Unexpected = operator for CFstApp\n");
+           return *this;
+   }
 };    // end of fstApp
 
 
 void CFstApp::loadGraph(int& changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],char *fname)
 {
-	int i,j;
+	int i_1,j_1;
 	Transition *strans;
 
 	a=load_abstract_fst2(fname,1,&fst2_free);
@@ -984,13 +1075,13 @@ void CFstApp::loadGraph(int& changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYM
       fatal_error("Cannot load graph file %s\n",fname);
 	}
 
-	for( i = 0; i < a->number_of_states;i++)
+	for( i_1 = 0; i_1 < a->number_of_states;i_1++)
 	{
-		strans = a->states[i]->transitions;
-		if(a->states[i]->control & 0x80){
+		strans = a->states[i_1]->transitions;
+		if(a->states[i_1]->control & 0x80){
               fatal_error("Not null control bit");
        }
-		a->states[i]->control &= 0x7f;	// clean for mark recusive
+		a->states[i_1]->control &= 0x7f;	// clean for mark recusive
 		while(strans){
 			if(strans->tag_number < 0){
 				strans->tag_number =
@@ -1002,41 +1093,41 @@ void CFstApp::loadGraph(int& changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYM
 
 	ignoreTable = new int [a->number_of_graphs+1];
     numOfIgnore = new int [a->number_of_graphs+1];
-    for( i = 1 ; i<= a->number_of_graphs;i++){
-    	ignoreTable[i] = 0;
-    	numOfIgnore[i] = 0;
+    for( i_1 = 1 ; i_1<= a->number_of_graphs;i_1++){
+    	ignoreTable[i_1] = 0;
+    	numOfIgnore[i_1] = 0;
 	}
 
 	if(arretSubListIdx) {
 
-		for(i = 0; i< arretSubListIdx;i++){
-			for( j = 1; j <= a->number_of_graphs;j++){
-				if(!u_strcmp((unichar *)a->graph_names[j],arretSubList[i]))
+		for(i_1 = 0; i_1< arretSubListIdx;i_1++){
+			for( j_1 = 1; j_1 <= a->number_of_graphs;j_1++){
+				if(!u_strcmp((unichar *)a->graph_names[j_1],arretSubList[i_1]))
 					break;
 			}
-			if( j > a->number_of_graphs){
+			if( j_1 > a->number_of_graphs){
 				char charBuffOut[1024];
 				u_printf("Warning : Not exist the sub-graph %s\n",
-					getUtoChar(charBuffOut,arretSubList[i]));
+					getUtoChar(charBuffOut,arretSubList[i_1]));
 				continue;
 			}
 			{
 				char charBuffOut[1024];
 				u_printf("%s %d graphe ignore the exploitation\n",
-						 getUtoChar(charBuffOut,a->graph_names[j]),j);
+						 getUtoChar(charBuffOut,a->graph_names[j_1]),j_1);
 			}
-			ignoreTable[j] = 1;
+			ignoreTable[j_1] = 1;
 		}
 	}
 	if(stopSignal){
 
-		for( i = 0; i < a->number_of_tags ;i++){
-			if(u_strcmp((unichar *)a->tags[i]->input,stopSignal))
+		for( i_1 = 0; i_1 < a->number_of_tags ;i_1++){
+			if(u_strcmp((unichar *)a->tags[i_1]->input,stopSignal))
 				continue;
-			for(j = 0; j < a->number_of_states;j++){
-				strans = a->states[j]->transitions;
+			for(j_1 = 0; j_1 < a->number_of_states;j_1++){
+				strans = a->states[j_1]->transitions;
 				while(strans){
-					if(strans->tag_number == i){
+					if(strans->tag_number == i_1){
 						strans->tag_number |= STOP_PATH_MARK;
 					}
 					strans = strans->next;
@@ -1155,7 +1246,6 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 					if(stopPath){
 					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
-                              char charBuffOut[1024];
                               u_printf(" Sub call [%s] %d\n"
                                 ,getUtoChar(charBuffOut,a->graph_names[inx])
                                 ,numOfIgnore[inx]);

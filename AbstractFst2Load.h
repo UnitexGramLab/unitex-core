@@ -30,6 +30,8 @@ struct FST2_free_info
 	int must_be_free;
 } ;
 
+const struct FST2_free_info FST2_free_info_init={NULL,NULL,NULL,1};
+
 int is_abstract_fst2_filename(const char* filename);
 Fst2* load_abstract_fst2(const char* filename,int read_names,struct FST2_free_info*);
 void free_abstract_Fst2(Fst2*,struct FST2_free_info*);
