@@ -174,8 +174,8 @@ for (;;) {
             if (v==NULL) {
                /* We do nothing, since this normal variable may not exist */
             } else {
-               if (v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
-                     || v->start>v->end) {
+               if (v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
+                     || v->start_in_tokens>v->end_in_tokens) {
                   /* If the variable is not defined properly */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
@@ -338,19 +338,19 @@ for (;;) {
     		  }
     	  }
     	  push_output_string(p->stack,output->str);
-      } else if (v->start==UNDEF_VAR_BOUND) {
+      } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-      } else if (v->end==UNDEF_VAR_BOUND) {
+      } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-      } else if (v->start>v->end) {
+      } else if (v->start_in_tokens>v->end_in_tokens) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
@@ -358,7 +358,7 @@ for (;;) {
          }
       } else {
     	  /* If the normal variable definition is correct */
-    	  for (int k=v->start;k<v->end;k++) {
+    	  for (int k=v->start_in_tokens;k<v->end_in_tokens;k++) {
     		  push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
     	  }
       }

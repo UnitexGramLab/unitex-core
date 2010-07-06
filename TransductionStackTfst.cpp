@@ -183,9 +183,9 @@ while (s[i]!='\0') {
             if (v==NULL) {
             	/* We do nothing, since this normal variable may not exist */
             } else {
-               first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
-               last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
-               if (v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
+               first_tag=(TfstTag*)(p->tfst->tags->tab[v->start_in_tokens]);
+               last_tag=(TfstTag*)(p->tfst->tags->tab[v->end_in_tokens]);
+               if (v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
                   || !valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
             	   /* If the variable is not defined properly */
             	   if (field[0]=='S') {
@@ -307,7 +307,7 @@ while (s[i]!='\0') {
        	  push_output_string_tfst(stack,output->str);
        	  continue;
       }
-      if (v->start==UNDEF_VAR_BOUND) {
+      if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
@@ -318,7 +318,7 @@ while (s[i]!='\0') {
             }
          }
       }
-      if (v->end==UNDEF_VAR_BOUND) {
+      if (v->end_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
@@ -329,8 +329,8 @@ while (s[i]!='\0') {
             }
          }
       }
-      TfstTag* first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
-      TfstTag* last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
+      TfstTag* first_tag=(TfstTag*)(p->tfst->tags->tab[v->start_in_tokens]);
+      TfstTag* last_tag=(TfstTag*)(p->tfst->tags->tab[v->end_in_tokens]);
       if (!valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);

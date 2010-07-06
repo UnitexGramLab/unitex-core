@@ -1943,11 +1943,11 @@ void shift_variable_bounds(Variables* v, int shift) {
 	}
 	int l = v->variable_index->size;
 	for (int i = 0; i < l; i++) {
-		if (v->variables[i].start != UNDEF_VAR_BOUND) {
-			v->variables[i].start += shift;
+		if (v->variables[i].start_in_tokens != UNDEF_VAR_BOUND) {
+			v->variables[i].start_in_tokens += shift;
 		}
-		if (v->variables[i].end != UNDEF_VAR_BOUND) {
-			v->variables[i].end += shift;
+		if (v->variables[i].end_in_tokens != UNDEF_VAR_BOUND) {
+			v->variables[i].end_in_tokens += shift;
 		}
 	}
 }

@@ -51,18 +51,42 @@ typedef struct {
 /**
  * This structure defines the range of a variable in the text tokens.
  *
- * Note: when used from LocateTfst, start and end represent the
+ * Note: when used from LocateTfst, start_in_tokens and end_in_tokens represent the
  *       TfstTag indices of the first and last text dependent tags of
- *       a match. Moreover, 'end' must be taken into account, at the opposite
+ *       a match. Moreover, 'end_in_tokens' must be taken into account, at the opposite
  *       of the Locate use of this structure.
  */
 struct transduction_variable {
    /* Position of the first token of the sequence */
-   int start;
+   int start_in_tokens;
    /* Position after the last token of the sequence, so that the sequence is in the
-    * range [start;end[ */
-   int end;
+    * range [start_in_tokens;end_in_tokens[ */
+   int end_in_tokens;
 };
+
+#if 0
+/**
+ * This structure defines the range of a variable in the text tokens.
+ *
+ * Note: when used from LocateTfst, start_in_tokens and end_in_tokens represent the
+ *       TfstTag indices of the first and last text dependent tags of
+ *       a match. Moreover, 'end_in_tokens' must be taken into account, at the opposite
+ *       of the Locate use of this structure.
+ */
+struct transduction_variable {
+   /* Position of the first token of the sequence */
+   int start_in_tokens;
+   /* Position after the last token of the sequence, so that the sequence is in the
+    * range [start_in_tokens;end_in_tokens[ */
+   int end_in_tokens;
+   /* Starting position in chars in the first token of the sequence */
+   int start_in_chars;
+   /* Ending position in chars in the last token of the sequence. -1 means
+    * that the whole token must be taken into account */
+   int end_in_chars;
+};
+
+#endif
 
 
 

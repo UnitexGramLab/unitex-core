@@ -178,18 +178,18 @@ while (s[i]!='\0') {
                  if (v==NULL) {
                     error("Error: undefined variable $%S\n",name);
                  }
-                 else if (v->start==-1) {
+                 else if (v->start_in_tokens==-1) {
                     error("Error: starting position of variable $%S undefined\n",name);
                  }
-                 else if (v->end==-1) {
+                 else if (v->end_in_tokens==-1) {
                     error("Error: end position of variable $%S undefined\n",name);
                  }
-                 else if (v->start > v->end) {
+                 else if (v->start_in_tokens > v->end_in_tokens) {
                     error("Error: end position before starting position for variable $%S\n",name);
                  }
                  else {
                     // if the variable definition is correct
-                    for (int k=v->start;k<=v->end;k++)
+                    for (int k=v->start_in_tokens;k<=v->end_in_tokens;k++)
                       push(p->stack,p->buffer[k+p->current_origin]);
                  }
              }
@@ -500,7 +500,7 @@ while (t!=NULL) {
             }
             //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
             else pos2=pos;
-            L->start=pos2;
+            L->start_in_tokens=pos2;
             scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
             //L->start=old;
          }
@@ -513,8 +513,8 @@ while (t!=NULL) {
               }
               //old=L->end;
               if (pos>0)
-                L->end=pos-1;
-              else L->end=pos;
+                L->end_in_tokens=pos-1;
+              else L->end_in_tokens=pos;
               // BUG: qd changement de buffer, penser au cas start dans ancien buffer et end dans nouveau
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               //L->end=old;

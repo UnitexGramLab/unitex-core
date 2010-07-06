@@ -564,9 +564,9 @@ while (text_tags!=NULL) {
          /* If we have a variable start tag $a(, we add it to our 
           * variable tag list */
          struct transduction_variable* v=get_transduction_variable(infos->input_variables,fst2_tag->variable);
-         int old_value=v->start;
+         int old_value=v->start_in_tokens;
          /* We add the address of the start field to our list */
-         (*var_starts)=new_list_pointer(&(v->start),(var_starts==NULL)?NULL:(*var_starts));
+         (*var_starts)=new_list_pointer(&(v->start_in_tokens),(var_starts==NULL)?NULL:(*var_starts));
          /* Then, we go on the next item */
          explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
          /* After the exploration, there are 2 cases:
@@ -575,7 +575,7 @@ while (text_tags!=NULL) {
           *                             text dependent match, so we can free the list */
          free_list_pointer(*var_starts);
          (*var_starts)=NULL;
-         v->start=old_value;
+         v->start_in_tokens=old_value;
          /* If we have a $a( tag, we know that we can only have just one text tag 
           * with special value -1 */
          goto restore_dic_variable;
@@ -589,10 +589,10 @@ while (text_tags!=NULL) {
          } else {
             /* We can set the end of the variable, it's 'last_tag' */
             struct transduction_variable* v=get_transduction_variable(infos->input_variables,fst2_tag->variable);
-            int old_value=v->end;
-            v->end=last_tag;
+            int old_value=v->end_in_tokens;
+            v->end_in_tokens=last_tag;
             explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
-            v->end=old_value;
+            v->end_in_tokens=old_value;
             goto restore_dic_variable;
          }
       } else if (fst2_tag->type==LEFT_CONTEXT_TAG) {

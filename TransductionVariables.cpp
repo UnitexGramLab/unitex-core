@@ -44,8 +44,8 @@ if (v->variables==NULL) {
    fatal_alloc_error("new_Variables");
 }
 for (int i=0;i<l;i++) {
-   v->variables[i].start=UNDEF_VAR_BOUND;
-   v->variables[i].end=UNDEF_VAR_BOUND;
+   v->variables[i].start_in_tokens=UNDEF_VAR_BOUND;
+   v->variables[i].end_in_tokens=UNDEF_VAR_BOUND;
 }
 return v;
 }
@@ -79,7 +79,7 @@ return &(v->variables[n]);
  * Sets the start value of the variable #n.
  */
 void set_variable_start(Variables* v,int n,int value) {
-v->variables[n].start=value;
+v->variables[n].start_in_tokens=value;
 }
 
 
@@ -87,7 +87,7 @@ v->variables[n].start=value;
  * Sets the end value of the variable #n.
  */
 void set_variable_end(Variables* v,int n,int value) {
-v->variables[n].end=value;
+v->variables[n].end_in_tokens=value;
 }
 
 
@@ -95,7 +95,7 @@ v->variables[n].end=value;
  * Returns the start value of the variable #n.
  */
 int get_variable_start(Variables* v,int n) {
-return v->variables[n].start;
+return v->variables[n].start_in_tokens;
 }
 
 
@@ -103,7 +103,7 @@ return v->variables[n].start;
  * Returns the end value of the variable #n.
  */
 int get_variable_end(Variables* v,int n) {
-return v->variables[n].end;
+return v->variables[n].end_in_tokens;
 }
 
 
@@ -318,7 +318,7 @@ return (r->pos_used == 0) ? 1 : 0;
  */
 int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,int* data)
 {
-int *save = &(v->variables[0].start);
+int *save = &(v->variables[0].start_in_tokens);
 int* newptr = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
 memcpy((void*)newptr,(void*)data,r->size_copydata);
 v->variables = (struct transduction_variable*)newptr;
@@ -337,6 +337,6 @@ void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* 
     r->pos_used--;
 
     v->variables = (struct transduction_variable*)rest;
-    if (v->variables[0].start == UNDEF_VAR_BOUND)
-        v->variables[0].start+=0;
+    if (v->variables[0].start_in_tokens == UNDEF_VAR_BOUND)
+        v->variables[0].start_in_tokens+=0;
 }
