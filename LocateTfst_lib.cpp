@@ -49,10 +49,10 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
 		          struct tfst_match* match_element_list,
                 struct tfst_match_list** LIST,
                 struct locate_tfst_infos* infos,
-                int pos_kr_in_fst2_tag,
-                int pos_kr_in_tfst_tag,
-                Transition* current_kr_fst2_transition,
-                Transition* current_kr_tfst_transition,
+                int pos_pending_in_fst2_tag,
+                int pos_pending_in_tfst_tag,
+                Transition* current_pending_fst2_transition,
+                Transition* current_pending_tfst_transition,
                 struct list_int* ctx);
 void init_Korean_stuffs(struct locate_tfst_infos* infos,int is_korean);
 void free_Korean_stuffs(struct locate_tfst_infos* infos);
@@ -60,11 +60,11 @@ void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
-                                        int *pos_kr_fst2_tag,int *pos_kr_tfst_tag);
+                                        int *pos_pending_fst2_tag,int *pos_pending_tfst_tag);
 int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
-                                        int *pos_kr_fst2_tag,int *pos_kr_tfst_tag);
+                                        int *pos_pending_fst2_tag,int *pos_pending_tfst_tag);
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation);
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag);
 int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
@@ -367,10 +367,10 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                  * the current position in the current fst2 tag, or -1 if unused. 
                  * 'current_kr_fst2_transition' is the current fst2 transition being explored if
                  * 'pos_kr_in_fst2_tag' is not -1; null otherwise. */
-                int pos_kr_in_fst2_tag,
-                int pos_kr_in_tfst_tag,
-                Transition* current_kr_fst2_transition,
-                Transition* current_kr_tfst_transition,
+                int pos_pending_in_fst2_tag,
+                int pos_pending_in_tfst_tag,
+                Transition* current_pending_fst2_transition,
+                Transition* current_pending_tfst_transition,
                 struct list_int* ctx /* information about the current context, if any */) {
 //error("visits for current state=%d  tfst state=%d  fst2 state=%d\n",visits[current_state_in_tfst],current_state_in_tfst,current_state_in_fst2);
 if (visits[current_state_in_tfst]>MAX_VISITS_PER_TFST_STATE) {
@@ -379,40 +379,40 @@ if (visits[current_state_in_tfst]>MAX_VISITS_PER_TFST_STATE) {
 }
 visits[current_state_in_tfst]++;
 
-if (current_kr_fst2_transition!=NULL && current_kr_tfst_transition!=NULL) {
+if (current_pending_fst2_transition!=NULL && current_pending_tfst_transition!=NULL) {
    fatal_error("Internal error in explore_tfst: cannot have two non NULL pending transitions\n");
 }
 
-/* CASE 1: if we have not finished to explore a fst2 tag in a Korean grammar */
-if (current_kr_fst2_transition!=NULL) {
+/* CASE 1: if we have not finished to explore a fst2 tag in the grammar */
+if (current_pending_fst2_transition!=NULL) {
    struct tfst_match* list=NULL;
    Transition* text_transition=tfst->automaton->states[current_state_in_tfst]->outgoing_transitions;
    /* For a given tag in the grammar, we test all the transitions in the
     * text automaton, and we note all the states we can reach */
    while (text_transition!=NULL) {
-      int pos_kr_fst2=pos_kr_in_fst2_tag;
-      int pos_kr_tfst=pos_kr_in_tfst_tag;
+      int pos_pending_fst2=pos_pending_in_fst2_tag;
+      int pos_pending_tfst=pos_pending_in_tfst_tag;
       int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
-                                              infos->fst2->tags[current_kr_fst2_transition->tag_number],
+                                              infos->fst2->tags[current_pending_fst2_transition->tag_number],
                                               text_transition->tag_number,
-                                              current_kr_fst2_transition->tag_number,
-                                              infos,&pos_kr_fst2,&pos_kr_tfst);
+                                              current_pending_fst2_transition->tag_number,
+                                              infos,&pos_pending_fst2,&pos_pending_tfst);
       if (result==OK_MATCH_STATUS) {
          /* Case of a match with something in the text automaton (i.e. <V>) */
          list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
-               current_kr_fst2_transition,pos_kr_fst2,text_transition->tag_number,0);
+               current_pending_fst2_transition,pos_pending_fst2,text_transition->tag_number,0);
       }
       else if (result==TEXT_INDEPENDENT_MATCH) {
          /* Case of a match independent of the text automaton (i.e. <E>) */
          /* I (S.P.) suspect that we should not arrive here, since the current
           * case #1 is supposed to occur when a fst2 tag was not fully consumed */
          list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
-               current_kr_fst2_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,0);
+               current_pending_fst2_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,0);
       }
       else if (result==PARTIAL_MATCH_STATUS) {
          /* If we have consumed all the fst2 tag but not all the tfst one, we go on */
-         explore_tfst(visits,tfst,current_state_in_tfst,current_kr_fst2_transition->state_number,
-                                                graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition,ctx);
+         explore_tfst(visits,tfst,current_state_in_tfst,current_pending_fst2_transition->state_number,
+                                                graph_depth,list,LIST,infos,-1,pos_pending_tfst,NULL,current_pending_tfst_transition,ctx);
       }
       text_transition=text_transition->next;
    }
@@ -431,7 +431,7 @@ if (current_kr_fst2_transition!=NULL) {
        (match_element_list->pointed_by)++;
       }
       Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
-      int dest_state=(list->pos_kr!=-1)?-1:current_kr_fst2_transition->state_number;
+      int dest_state=(list->pos_kr!=-1)?-1:current_pending_fst2_transition->state_number;
       explore_tfst(visits,tfst,list->dest_state_text,dest_state,
                         graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL,ctx);
       if (list->pointed_by==0) {
@@ -448,7 +448,7 @@ if (current_kr_fst2_transition!=NULL) {
 
 
 /* CASE 2: if we have not finished to explore a tfst tag */
-if (current_kr_tfst_transition!=NULL) {
+if (current_pending_tfst_transition!=NULL) {
    Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
    Transition* grammar_transition=current_state_in_grammar->transitions;
    struct tfst_match* list=NULL;
@@ -458,30 +458,30 @@ if (current_kr_tfst_transition!=NULL) {
          /* We forbid subgraph calls when a partial tfst tag match is running */
          return;
       }
-      int pos_kr_fst2=pos_kr_in_fst2_tag;
-      int pos_kr_tfst=pos_kr_in_tfst_tag;
-      int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[current_kr_tfst_transition->tag_number]),
+      int pos_pending_fst2=pos_pending_in_fst2_tag;
+      int pos_pending_tfst=pos_pending_in_tfst_tag;
+      int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[current_pending_tfst_transition->tag_number]),
                                                        infos->fst2->tags[grammar_transition->tag_number],
-                                                       current_kr_tfst_transition->tag_number,
+                                                       current_pending_tfst_transition->tag_number,
                                                        grammar_transition->tag_number,
-                                                       infos,&pos_kr_fst2,&pos_kr_tfst);
+                                                       infos,&pos_pending_fst2,&pos_pending_tfst);
       if (result==OK_MATCH_STATUS) {
          /* Case of a match with something in the text automaton (i.e. <V>) */
-         list=insert_in_tfst_matches(list,current_state_in_tfst,current_kr_tfst_transition->state_number,
-               grammar_transition,pos_kr_fst2,current_kr_tfst_transition->tag_number,1);
+         list=insert_in_tfst_matches(list,current_state_in_tfst,current_pending_tfst_transition->state_number,
+               grammar_transition,pos_pending_fst2,current_pending_tfst_transition->tag_number,1);
       }
       else if (result==TEXT_INDEPENDENT_MATCH || result==PARTIAL_MATCH_STATUS) {
          /* If we have a match independent of the text automaton (i.e. <E>) 
           * or that does not consume all the tfst tag, we go on */
          struct tfst_match* foo=insert_in_tfst_matches(NULL,current_state_in_tfst,current_state_in_tfst,
-                                      grammar_transition,pos_kr_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
+                                      grammar_transition,pos_pending_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
          foo->next=match_element_list;
          /* match_element_list is pointed by one more element */
          if (match_element_list!=NULL) {
             (match_element_list->pointed_by)++;
          }
          explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                                       graph_depth,foo,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition,ctx);
+                                       graph_depth,foo,LIST,infos,-1,pos_pending_tfst,NULL,current_pending_tfst_transition,ctx);
          if (foo->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
              * graph, we can free it */
@@ -648,18 +648,18 @@ while (grammar_transition!=NULL) {
       /* For a given tag in the grammar, we test all the transitions in the
        * text automaton, and we note all the states we can reach */
       while (text_transition!=NULL) {
-         int pos_kr_fst2=-1;
-         int pos_kr_tfst=-1;
+         int pos_pending_fst2=-1;
+         int pos_pending_tfst=-1;
          
          int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
                                                  infos->fst2->tags[grammar_transition->tag_number],
                                                  text_transition->tag_number,
                                                  grammar_transition->tag_number,
-                                                 infos,&pos_kr_fst2,&pos_kr_tfst);
+                                                 infos,&pos_pending_fst2,&pos_pending_tfst);
          if (result==OK_MATCH_STATUS) {
             /* Case of a match with something in the text automaton (i.e. <V>) */
             list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
-                 grammar_transition,pos_kr_fst2,text_transition->tag_number,1);
+                 grammar_transition,pos_pending_fst2,text_transition->tag_number,1);
          }
          else if (result==TEXT_INDEPENDENT_MATCH) {
             /* Case of a match independent of the text automaton (i.e. <E>) */
@@ -673,14 +673,14 @@ while (grammar_transition!=NULL) {
              * text independent match, just in order to use the output associated to
              * the fst2 tag, if any */
             struct tfst_match* foo=insert_in_tfst_matches(NULL,current_state_in_tfst,current_state_in_tfst,
-                             grammar_transition,pos_kr_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
+                             grammar_transition,pos_pending_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
             foo->next=match_element_list;
             /* match_element_list is pointed by one more element */
             if (match_element_list!=NULL) {
                (match_element_list->pointed_by)++;
             }
             explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                              graph_depth,foo,LIST,infos,-1,pos_kr_tfst,NULL,text_transition,ctx);
+                              graph_depth,foo,LIST,infos,-1,pos_pending_tfst,NULL,text_transition,ctx);
             if (foo->pointed_by==0) {
                /* If list is not blocked by being part of a match for the calling
                 * graph, we can free it */
@@ -731,7 +731,7 @@ while (grammar_transition!=NULL) {
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
-                                        int *pos_kr_fst2_tag,int *pos_kr_tfst_tag) {
+                                        int *pos_pending_fst2_tag,int *pos_pending_tfst_tag) {
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
    || grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
    || grammar_tag->type==END_CONTEXT_TAG) {
@@ -757,14 +757,14 @@ if (grammar_tag->type==BEGIN_VAR_TAG
 /* Here we test the special case of the " " and # tags that are contextual matches, and 
  * for this reason, that cannot be cached */
 if (!u_strcmp(grammar_tag->input," ")) {
-   if ((*pos_kr_tfst_tag)==-1 && is_space_on_the_left_in_tfst(tfst,text_tag)) {
+   if ((*pos_pending_tfst_tag)==-1 && is_space_on_the_left_in_tfst(tfst,text_tag)) {
       //error("space has matched with %S\n",text_tag->content);
       return TEXT_INDEPENDENT_MATCH;
    }
    return NO_MATCH_STATUS;
 }
 if (!u_strcmp(grammar_tag->input,"#")) {
-   if (*pos_kr_tfst_tag>0 || !is_space_on_the_left_in_tfst(tfst,text_tag)) {
+   if (*pos_pending_tfst_tag>0 || !is_space_on_the_left_in_tfst(tfst,text_tag)) {
       return TEXT_INDEPENDENT_MATCH;
    }
    return NO_MATCH_STATUS;
@@ -776,19 +776,19 @@ if (!u_strcmp(text_tag->content,"{STOP}")) {
 /* Now, we will compare the text tag and the grammar one, but only if we
  * don't already know the result */
 int result=get_cached_result(infos->cache,text_tag->content,fst2_tag_index,tfst_tag_index,
-                             *pos_kr_fst2_tag,*pos_kr_tfst_tag,pos_kr_fst2_tag,pos_kr_tfst_tag);
+                             *pos_pending_fst2_tag,*pos_pending_tfst_tag,pos_pending_fst2_tag,pos_pending_tfst_tag);
 if (result!=UNKNOWN_MATCH_STATUS) {
    return result;
 }
 /* Otherwise, we compute the result */
-int old_pos_kr_fst2_tag=*pos_kr_fst2_tag;
-int old_pos_kr_tfst_tag=*pos_kr_tfst_tag;
+int old_pos_pending_fst2_tag=*pos_pending_fst2_tag;
+int old_pos_pending_tfst_tag=*pos_pending_tfst_tag;
 result=real_match_between_text_and_grammar_tags(tfst,text_tag,grammar_tag,
                                                 tfst_tag_index,fst2_tag_index,
-                                                infos,pos_kr_fst2_tag,pos_kr_tfst_tag);
+                                                infos,pos_pending_fst2_tag,pos_pending_tfst_tag);
 /* And we save it in the cache */
 set_cached_result(infos->cache,tfst_tag_index,fst2_tag_index,
-      old_pos_kr_fst2_tag,old_pos_kr_tfst_tag,result,*pos_kr_fst2_tag,*pos_kr_tfst_tag);
+      old_pos_pending_fst2_tag,old_pos_pending_tfst_tag,result,*pos_pending_fst2_tag,*pos_pending_tfst_tag);
 return result;
 }
 
@@ -804,23 +804,40 @@ return result;
 int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
-                                        int *pos_kr_fst2_tag,int *pos_kr_tfst_tag) {
+                                        int *pos_pending_fst2_tag,int *pos_pending_tfst_tag) {
 DISCARD_UNUSED_PARAMETER(tfst)
-if (infos->korean && *pos_kr_fst2_tag!=-1 && *pos_kr_tfst_tag!=-1) {
+if (/*infos->korean &&*/ *pos_pending_fst2_tag!=-1 && *pos_pending_tfst_tag!=-1) {
    fatal_error("Internal error in match_between_text_and_grammar_tags: cannot have partial match on both\n"
                "text tag and grammar tag\n");
 }
 //error("ici tag=%S fst2 #%d\n",text_tag->content,fst2_tag_index);
-if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && grammar_tag->input[0]!='<'))) {
-   /* If we have a Korean token in the fst2 */
-   if (*pos_kr_fst2_tag==-1) {
+if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && grammar_tag->input[0]!='<'))) {
+   /* If we have an untagged token in the fst2 */
+   if (*pos_pending_fst2_tag==-1) {
       /* If we were not in token exploration mode, we turn into this mode now */
-      *pos_kr_fst2_tag=0;
+      *pos_pending_fst2_tag=0;
    }
-   unichar* jamo_tfst=infos->jamo_tfst_tags[tfst_tag_index];
-   unichar* jamo_fst2=infos->jamo_fst2_tags[fst2_tag_index];
-   int k=(*pos_kr_fst2_tag);
-   int j=(*pos_kr_tfst_tag!=-1)?(*pos_kr_tfst_tag):0;
+   unichar* jamo_tfst;
+   unichar* jamo_fst2;
+   struct dela_entry* my_entry=NULL;
+   if (infos->korean) {
+	   jamo_tfst=infos->jamo_tfst_tags[tfst_tag_index];
+	   jamo_fst2=infos->jamo_fst2_tags[fst2_tag_index];
+   } else {
+	   if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
+	         /* text={toto,tutu.XXX} */
+		  my_entry=tokenize_tag_token(text_tag->content);
+	   	  if (my_entry==NULL) {
+	   		  fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
+	   	  }
+	   	  jamo_tfst=my_entry->inflected;
+	   } else {
+		   jamo_tfst=text_tag->content;
+	   }
+	   jamo_fst2=grammar_tag->input;
+   }
+   int k=(*pos_pending_fst2_tag);
+   int j=(*pos_pending_tfst_tag!=-1)?(*pos_pending_tfst_tag):0;
    while (jamo_fst2[k]!='\0' && jamo_tfst[j]!='\0') {
       /* We ignore syllable bounds in both tfst and fst2 tags */
       if (jamo_fst2[k]==KR_SYLLABLE_BOUND) {
@@ -834,6 +851,7 @@ if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && gra
       if (jamo_fst2[k]!=jamo_tfst[j]) {
          /* If a character doesn't match */
          //error("match failed between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
+    	 if (my_entry!=NULL) free_dela_entry(my_entry);
          return NO_MATCH_STATUS;
       }
       k++;
@@ -841,22 +859,25 @@ if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && gra
    }
    if (jamo_fst2[k]=='\0' && jamo_tfst[j]=='\0') {
       /* If we are at both ends of strings, it's a full match */
-      (*pos_kr_fst2_tag)=-1;
+      (*pos_pending_fst2_tag)=-1;
       //error("XX full match between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
+      if (my_entry!=NULL) free_dela_entry(my_entry);
       return OK_MATCH_STATUS;
    }
    if (jamo_fst2[k]=='\0') {
       /* If we are at the end of the fst2 tag but not at the end of the tfst tag, 
        * it's a partial match */
-      (*pos_kr_fst2_tag)=-1;
-      (*pos_kr_tfst_tag)=j;
+      (*pos_pending_fst2_tag)=-1;
+      (*pos_pending_tfst_tag)=j;
       //error("ZZ partial match between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
+      if (my_entry!=NULL) free_dela_entry(my_entry);
       return PARTIAL_MATCH_STATUS;
    }
    /* If we have consumed all the tfst tag, but not all th fst2 one, it's a partial match */
-   (*pos_kr_fst2_tag)=k;
-   (*pos_kr_tfst_tag)=-1;
+   (*pos_pending_fst2_tag)=k;
+   (*pos_pending_tfst_tag)=-1;
    //error("YY partial match #2 between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
+   if (my_entry!=NULL) free_dela_entry(my_entry);
    return OK_MATCH_STATUS;
 }
 
