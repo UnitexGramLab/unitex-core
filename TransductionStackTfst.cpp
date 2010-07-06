@@ -305,6 +305,7 @@ while (s[i]!='\0') {
        		  }
        	  }
        	  push_output_string_tfst(stack,output->str);
+       	  continue;
       }
       if (v->start==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {

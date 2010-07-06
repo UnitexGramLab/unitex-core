@@ -473,7 +473,7 @@ return 1;
 
 
 /**
- * Explores all the partial matches to produce outputs in MERGE mode.
+ * Explores all the partial matches to produce outputs in MERGE or REPLACE mode.
  * 
  * If *var_starts!=NULL, it means that there are pending $var_start( tags
  * that wait for being taken into account when a text dependent tag is found.
@@ -511,11 +511,13 @@ if (capture) {
 
 Match saved_element=element->m;
 struct list_int* text_tags=item->text_tag_numbers;
+int captured_chars;
 /* We explore all the text tags */
 while (text_tags!=NULL) {
    /* First, we restore the output string */
    s->len=len;
    s->str[len]='\0';
+   captured_chars=0;
    /* We deal with the fst2 tag output, if any */
    if (item->first_time) {
 	   /* We only have to process the output only once,
@@ -531,6 +533,8 @@ while (text_tags!=NULL) {
 	   	   if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
 	   		   goto restore_dic_variable;
 	   	   }
+	   } else if (capture_mode(infos->output_variables)) {
+		   captured_chars=add_string_to_output_variables(infos->output_variables,output);
 	   } else if (!process_output_tfst(s,output,infos)) {
          /* We do not take into account matches with variable errors if the
           * process_output_for_tfst_match function has decided that backtracking
@@ -547,10 +551,15 @@ while (text_tags!=NULL) {
       if (fst2_tag->type==BEGIN_OUTPUT_VAR_TAG) {
     	  /* If we an output variable start $|a( */
     	  set_output_variable_pending(infos->output_variables,fst2_tag->variable);
-
-    	  unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
+          explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+          unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
+          goto restore_dic_variable;
       } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
     	  /* If we an output variable end $|a) */
+    	  unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
+    	  explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+          set_output_variable_pending(infos->output_variables,fst2_tag->variable);
+          goto restore_dic_variable;
       } else if (fst2_tag->type==BEGIN_VAR_TAG) {
          /* If we have a variable start tag $a(, we add it to our 
           * variable tag list */
@@ -676,8 +685,15 @@ while (text_tags!=NULL) {
       goto restore_dic_variable;
    }
    text_tags=text_tags->next;
+   remove_chars_from_output_variables(infos->output_variables,captured_chars);
+   /* We reset to 0, because if we exit the while normally, we don't want to
+    * modify output variables twice when reaching the 'restore_dic_variable'
+    * label */
+   captured_chars=0;
 }
 restore_dic_variable:
+/* We redo this about output variables here, since we may have jumped here directly */
+remove_chars_from_output_variables(infos->output_variables,captured_chars);
 if (capture) {
 	/* If we have a capture variable $:X$, we must restore the previous value
 	 * for this dictionary variable */
