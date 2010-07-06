@@ -27,6 +27,10 @@
  * fonction comparer  qu'un code de sortie est conforme ou non aux filtres
  */
 
+static int isVerbose()
+{
+    return VERBOSE;
+}
 
 int compare(unichar *tmp,unichar **filtre) {
 int i,res;
@@ -186,20 +190,20 @@ unsigned int protege;
   last_pos_match = -1; *pos_match = -1;
   l = u_strlen(facteur);
   pos_test = *pos  -l + 1;
-  if (VERBOSE) fprintf(stderr,"l = %d\n",l);
+  if (isVerbose()) fprintf(stderr,"l = %d\n",l);
 
   if ( pos_test < 0 ) {
-    if (VERBOSE) fprintf(stderr,"facteur > pile \n");
+    if (isVerbose()) fprintf(stderr,"facteur > pile \n");
     return 0;
   }
   while ( pos_test >= 0 ) {
     parcours_pile = pos_test;
     parcours_fact = 0;
     while (parcours_fact < l && pile[parcours_pile] == facteur[parcours_fact]){
-      if (VERBOSE) fprintf(stderr,"Equality: %c\n",pile[parcours_pile]);
+      if (isVerbose()) fprintf(stderr,"Equality: %c\n",pile[parcours_pile]);
       parcours_pile++; parcours_fact++;
     }
-    if (VERBOSE) fprintf(stderr,"parcours_fact = %d\n",parcours_fact);
+    if (isVerbose()) fprintf(stderr,"parcours_fact = %d\n",parcours_fact);
     if ( parcours_fact == l ) MATCH = 1; else MATCH = 0;
 
     if ( match_type == IMMEDIAT ) {
@@ -240,7 +244,7 @@ unsigned int mode=0;
 }
 
     init_pos = *pos;
-    if (VERBOSE) error("PATTERN: %s\n",etiq);
+    if (isVerbose()) error("PATTERN: %s\n",etiq);
     while (etiq[*pos_etiq] != '\0' && etiq[(*pos_etiq)++] != '>' ) {} // Valeur de retour
     pos_pattern = *pos_etiq -2;
     var_precede = 0;
@@ -274,7 +278,7 @@ unsigned int mode=0;
          else if (var_name[0] == '$') match_type = SHORTEST;
          else if (var_name[0] == POUND) match_type = LONGEST;
          match_type |= mode;
-         if (VERBOSE) fprintf(stderr,"var_name[0]:%c match_type: %d\n",var_name[0],match_type);
+         if (isVerbose()) fprintf(stderr,"var_name[0]:%c match_type: %d\n",var_name[0],match_type);
          pos_match = 0;
          int tmp_pos = 0;
          if (mode == PROTEGE) tmp_pos = (*pos);

@@ -823,7 +823,7 @@ return u_fputc_UTF16LE_raw(to_buckwalter(c),f);
 int u_fgetc_buckwalter(ABSTRACTFILE* f) {
 int c=u_fgetc_UTF16LE_raw(f);
 if (c==EOF) return EOF;
-return from_buckwalter(c);
+return from_buckwalter((unichar)c);
 }
 
 
@@ -835,7 +835,7 @@ return u_fputc_UTF16LE_raw(to_buckwalter_plusplus(c),f);
 int u_fgetc_buckwalter_plusplus(ABSTRACTFILE* f) {
 int c=u_fgetc_UTF16LE_raw(f);
 if (c==EOF) return EOF;
-return from_buckwalter_plusplus(c);
+return from_buckwalter_plusplus((unichar)c);
 }
 
 
