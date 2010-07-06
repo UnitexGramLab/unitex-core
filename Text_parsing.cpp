@@ -462,7 +462,7 @@ int captured_chars;
 		if (p->output_policy != IGNORE_OUTPUTS) {
 			/* For better performance when ignoring outputs */
 
-			if (is_enough_memory_in_reserve_for_two_set_variables(p->input_variables,
+			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
 					reserve_used) == 0) {
 				reserve_used = create_variable_backup_memory_reserve(
 						p->input_variables);

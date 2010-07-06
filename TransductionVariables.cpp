@@ -27,7 +27,7 @@
  * Allocates and returns a structure representing the variables
  * whose names are in 'list'. The variable ranges are initialized with [-1;-1[
  */
-Variables* new_Variables(struct list_ustring* list) {
+Variables* new_Variables(const struct list_ustring* list) {
 Variables* v=(Variables*)malloc(sizeof(Variables));
 if (v==NULL) {
    fatal_alloc_error("new_Variables");
@@ -84,6 +84,14 @@ v->variables[n].start_in_tokens=value;
 
 
 /**
+ * Sets the start value of the variable #n.
+ */
+void set_variable_start_in_chars(Variables* v,int n,int value) {
+v->variables[n].start_in_chars=value;
+}
+
+
+/**
  * Sets the end value of the variable #n.
  */
 void set_variable_end(Variables* v,int n,int value) {
@@ -92,21 +100,46 @@ v->variables[n].end_in_tokens=value;
 
 
 /**
+ * Sets the end value of the variable #n.
+ */
+void set_variable_end_in_chars(Variables* v,int n,int value) {
+v->variables[n].end_in_chars=value;
+}
+
+
+/**
  * Returns the start value of the variable #n.
  */
-int get_variable_start(Variables* v,int n) {
+int get_variable_start(const Variables* v,int n) {
 return v->variables[n].start_in_tokens;
+}
+
+
+/**
+ * Returns the start value of the variable #n.
+ */
+int get_variable_start_in_chars(const Variables* v,int n) {
+return v->variables[n].start_in_chars;
 }
 
 
 /**
  * Returns the end value of the variable #n.
  */
-int get_variable_end(Variables* v,int n) {
+int get_variable_end(const Variables* v,int n) {
 return v->variables[n].end_in_tokens;
 }
 
 
+/**
+ * Returns the end value of the variable #n.
+ */
+int get_variable_end_in_chars(const Variables* v,int n) {
+return v->variables[n].end_in_chars;
+}
+
+
+#define nb_int_variables (4)
 /**
  * Allocates, initializes and returns an integer array that is a copy of
  * the variable ranges.
@@ -114,14 +147,14 @@ return v->variables[n].end_in_tokens;
 int* create_variable_backup(Variables* v) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
-int* backup=(int*)malloc(sizeof(int)*2*l);
+int* backup=(int*)malloc(sizeof(int)*nb_int_variables*l);
 if (backup==NULL) {
    fatal_alloc_error("create_variable_backup");
 }
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of two int */
-memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*2*l);
+   which is a structure of (two before) nb_int_variables int */
+memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*nb_int_variables*l);
 
 return backup;
 }
@@ -145,8 +178,8 @@ if (backup==NULL) {
 int l=v->variable_index->size;
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of two int */
-memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
+   which is a structure of (two before) nb_int_variables int */
+memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*nb_int_variables*l);
 }
 
 
@@ -163,8 +196,8 @@ if (v!=NULL)
       l=v->variable_index->size;
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of two int */
-memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*2*l);
+   which is a structure of (two before) nb_int_variables int */
+memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*nb_int_variables*l);
 }
 
 /* to limit number of malloc, we define a pool of memory (like a stack)
@@ -192,7 +225,7 @@ memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*2*l);
 /*
  * check if the reserve contain space and is correct to save variable v
  */
-int is_enough_memory_in_reserve_for_two_set_variables(Variables* v,variable_backup_memory_reserve* r)
+int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v,const variable_backup_memory_reserve* r)
 {
     return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
 }
@@ -217,10 +250,10 @@ if (suggested_size < size_one_backup)
 return suggested_size;
 }
 
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables* v)
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables* v)
 {
 int size_variable_index = v->variable_index->size;
-int size_unaligned = (size_variable_index*2);
+int size_unaligned = (size_variable_index*nb_int_variables);
 int size_aligned = (int)(((((size_unaligned+4) * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int));
 
 int nb_item_allocated=suggest_size_backup_reserve(size_aligned);
@@ -262,7 +295,7 @@ free(r);
  * create the backup, taking memory from reserve
  * we assume is_enough_memory_in_reserve_for_Variable was already called to verify
  */
-int* create_variable_backup_using_reserve(Variables* v,variable_backup_memory_reserve* r) {
+int* create_variable_backup_using_reserve(const Variables* v,variable_backup_memory_reserve* r) {
 int l=v->variable_index->size;
 if (l != r->size_variable_index) {
     fatal_error("bad size\n");
@@ -282,9 +315,9 @@ if ((r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0))
 }
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of two int */
+   which is a structure of (two before) nb_int_variables int */
 int* ret = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
-memcpy((void*)ret,(void*)(&(v->variables[0])),r->size_copydata);
+memcpy((void*)ret,(const void*)(&(v->variables[0])),r->size_copydata);
 
 r->pos_used ++;
 r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] = 0;
@@ -316,11 +349,11 @@ return (r->pos_used == 0) ? 1 : 0;
  * This function select a new content for the set of variable, and return a
  * pointer to restore current set using restore_variable_array
  */
-int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,int* data)
+int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,const int* data)
 {
-int *save = &(v->variables[0].start_in_tokens);
+int *save = (int*)&(v->variables[0]);
 int* newptr = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
-memcpy((void*)newptr,(void*)data,r->size_copydata);
+memcpy((void*)newptr,(const void*)data,r->size_copydata);
 v->variables = (struct transduction_variable*)newptr;
 
 r->pos_used ++;
@@ -337,6 +370,4 @@ void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* 
     r->pos_used--;
 
     v->variables = (struct transduction_variable*)rest;
-    if (v->variables[0].start_in_tokens == UNDEF_VAR_BOUND)
-        v->variables[0].start_in_tokens+=0;
 }

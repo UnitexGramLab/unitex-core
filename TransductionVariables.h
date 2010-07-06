@@ -48,23 +48,7 @@ typedef struct {
 } Variables;
 
 
-/**
- * This structure defines the range of a variable in the text tokens.
- *
- * Note: when used from LocateTfst, start_in_tokens and end_in_tokens represent the
- *       TfstTag indices of the first and last text dependent tags of
- *       a match. Moreover, 'end_in_tokens' must be taken into account, at the opposite
- *       of the Locate use of this structure.
- */
-struct transduction_variable {
-   /* Position of the first token of the sequence */
-   int start_in_tokens;
-   /* Position after the last token of the sequence, so that the sequence is in the
-    * range [start_in_tokens;end_in_tokens[ */
-   int end_in_tokens;
-};
 
-#if 0
 /**
  * This structure defines the range of a variable in the text tokens.
  *
@@ -86,17 +70,20 @@ struct transduction_variable {
    int end_in_chars;
 };
 
-#endif
 
 
-
-Variables* new_Variables(struct list_ustring*);
+Variables* new_Variables(const struct list_ustring*);
 void free_Variables(Variables*);
 struct transduction_variable* get_transduction_variable(Variables*,unichar*);
+
 void set_variable_start(Variables*,int,int);
+void set_variable_start_in_chars(Variables*,int,int);
 void set_variable_end(Variables*,int,int);
-int get_variable_start(Variables*,int);
-int get_variable_end(Variables*,int);
+void set_variable_end_in_chars(Variables*,int,int);
+int get_variable_start(const Variables*,int);
+int get_variable_start_in_chars(const Variables*,int);
+int get_variable_end(const Variables*,int);
+int get_variable_end_in_chars(const Variables*,int);
 
 int* create_variable_backup(Variables*);
 void free_variable_backup(int*);
@@ -129,7 +116,7 @@ typedef struct {
  * create_variable_backup_memory_reserve : build a reserve of memory
  * with space for nb_item_allocated int
  */
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables*);
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables*);
 
 /*
  * clear the reserve from memory
@@ -137,12 +124,12 @@ variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables*
 void free_reserve(variable_backup_memory_reserve*r);
 
 /* check if the reserve contain space and is correct to save variable v */
-int is_enough_memory_in_reserve_for_two_set_variables(Variables* v,variable_backup_memory_reserve* r);
+int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v,const variable_backup_memory_reserve* r);
 
 /*
  * create the backup, taking memory from reserve
  */
-int* create_variable_backup_using_reserve(Variables* v,variable_backup_memory_reserve* r) ;
+int* create_variable_backup_using_reserve(const Variables* v,variable_backup_memory_reserve* r) ;
 
 /*
  * free memory from reserve
@@ -193,7 +180,7 @@ void dec_dirty(variable_backup_memory_reserve* r) ;
 }
 
 
-int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,int*);
+int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,const int*);
 void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int*);
 
 #endif
