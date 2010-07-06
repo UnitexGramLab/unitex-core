@@ -260,60 +260,64 @@ public:
 
 	CFstApp():
 		a (0),
+        fst2_free(FST2_free_info_init),
+		foutput(0),
+		prMode(PR_SEPARATION),
+		automateMode(AUTOMODE),
+		listOut(0),
+		verboseMode(0),
+		pathEtiQidx(0),
+
+        CautoDepth(0),
+
+		ignoreTable(0),
+		numOfIgnore(0),
+
+		outLineLimit(0x10000000),
+		numberOfOutLine(0),
+        count_in_line(0),
+
+        totalPath(0),
+        totalLoop(0),
+        stopPath(0),
+		errPath(0),
+
+		recursiveMode(STOP),
+		display_control(FULL),
+		traitAuto(SINGLE),
+		niveau_traite_mot(1),  // unit of box is word
+        depthDebug(0),
+
+		saveSep (u_null_string),
 		sepL (u_null_string),
 		sepR (u_null_string),
 		sep1 (u_null_string),
-		saveSep (u_null_string),
 		stopSignal (u_null_string),
 		saveEntre(u_null_string),
 		entreGO(u_null_string),
 		entreGF(u_null_string),
-		pathEtiQidx(0),
 
-		foutput(0),
-		ignoreTable(0),
-		numOfIgnore(0),
-		errPath(0),
-		verboseMode(0),
-		outLineLimit(0x10000000),
-		numberOfOutLine(0),
-		niveau_traite_mot(1),  // unit of box is word
-		listOut(0),
+        encoding_output(DEFAULT_ENCODING_OUTPUT),
+        bom_output(DEFAULT_BOM_OUTPUT),
+        mask_encoding_compatibility_input(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT),
+
+        autoStackMap(NULL),
+        mapOfCallHead(NULL),
+        mapOfCallTail(NULL),
+
+        cycInfos(NULL),
 
 		headCyc(0),
 		cyclePathCnt(0),
 		headCycNodes(0),
 		cycNodeCnt(0),
 
-		prMode(PR_SEPARATION),
-		traitAuto(SINGLE),
-		display_control(FULL),
-		recursiveMode(STOP),
-		automateMode(AUTOMODE),
-		arretSubListIdx(0),
-
-        fst2_free(FST2_free_info_init),
-        CautoDepth(0),
-        count_in_line(0),
-        
-        totalPath(0),
-        totalLoop(0),
-        stopPath(0),
-        depthDebug(0),
-
-        encoding_output(DEFAULT_ENCODING_OUTPUT),
-        bom_output(DEFAULT_BOM_OUTPUT),
-        mask_encoding_compatibility_input(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT),
-
         ePtrCnt(0),
         tPtrCnt(0),
         EOutCnt(0),
         SOutCnt(0),
 
-        autoStackMap(NULL),
-        mapOfCallHead(NULL),
-        mapOfCallTail(NULL),
-        cycInfos(NULL)
+        arretSubListIdx(0)
 		{
 		initCallIdMap();
 	};
@@ -997,63 +1001,67 @@ void prAutoStackOnly()
 
 private:
    /* prevent GCC warning */
-    
+
    CFstApp(const CFstApp&) :
 		a (0),
+        fst2_free(FST2_free_info_init),
+		foutput(0),
+		prMode(PR_SEPARATION),
+		automateMode(AUTOMODE),
+		listOut(0),
+		verboseMode(0),
+		pathEtiQidx(0),
+
+        CautoDepth(0),
+
+		ignoreTable(0),
+		numOfIgnore(0),
+
+		outLineLimit(0x10000000),
+		numberOfOutLine(0),
+        count_in_line(0),
+
+        totalPath(0),
+        totalLoop(0),
+        stopPath(0),
+		errPath(0),
+
+		recursiveMode(STOP),
+		display_control(FULL),
+		traitAuto(SINGLE),
+		niveau_traite_mot(1),  // unit of box is word
+        depthDebug(0),
+
+		saveSep (u_null_string),
 		sepL (u_null_string),
 		sepR (u_null_string),
 		sep1 (u_null_string),
-		saveSep (u_null_string),
 		stopSignal (u_null_string),
 		saveEntre(u_null_string),
 		entreGO(u_null_string),
 		entreGF(u_null_string),
-		pathEtiQidx(0),
 
-		foutput(0),
-		ignoreTable(0),
-		numOfIgnore(0),
-		errPath(0),
-		verboseMode(0),
-		outLineLimit(0x10000000),
-		numberOfOutLine(0),
-		niveau_traite_mot(1),  // unit of box is word
-		listOut(0),
+        encoding_output(DEFAULT_ENCODING_OUTPUT),
+        bom_output(DEFAULT_BOM_OUTPUT),
+        mask_encoding_compatibility_input(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT),
+
+        autoStackMap(NULL),
+        mapOfCallHead(NULL),
+        mapOfCallTail(NULL),
+
+        cycInfos(NULL),
 
 		headCyc(0),
 		cyclePathCnt(0),
 		headCycNodes(0),
 		cycNodeCnt(0),
 
-		prMode(PR_SEPARATION),
-		traitAuto(SINGLE),
-		display_control(FULL),
-		recursiveMode(STOP),
-		automateMode(AUTOMODE),
-		arretSubListIdx(0),
-
-        fst2_free(FST2_free_info_init),
-        CautoDepth(0),
-        count_in_line(0),
-        
-        totalPath(0),
-        totalLoop(0),
-        stopPath(0),
-        depthDebug(0),
-
-        encoding_output(DEFAULT_ENCODING_OUTPUT),
-        bom_output(DEFAULT_BOM_OUTPUT),
-        mask_encoding_compatibility_input(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT),
-
         ePtrCnt(0),
         tPtrCnt(0),
         EOutCnt(0),
         SOutCnt(0),
 
-        autoStackMap(NULL),
-        mapOfCallHead(NULL),
-        mapOfCallTail(NULL),
-        cycInfos(NULL)
+        arretSubListIdx(0)
    {
        fatal_error("Unexpected copy constructor for CFstApp\n");
    }
