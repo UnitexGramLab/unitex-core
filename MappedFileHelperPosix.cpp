@@ -20,10 +20,10 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) in the framework 
- * of UNITEX optimization and UNITEX industrialization / reliability
+ * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * as part of an UNITEX optimization and reliability effort
  *
- * More information : http://www.ergonotics.com/unitex-contribution/
+ * additional information: http://www.ergonotics.com/unitex-contribution/
  * contact : unitex-contribution@ergonotics.com
  *
  */
