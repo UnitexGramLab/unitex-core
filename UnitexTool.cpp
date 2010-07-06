@@ -19,23 +19,10 @@
  *
  */
 
-/*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
- * as part of an UNITEX optimization and reliability effort
- *
- * additional information: http://www.ergonotics.com/unitex-contribution/
- * contact : unitex-contribution@ergonotics.com
- *
- */
-
-
-
 #include <stdlib.h>
 #include <string.h>
 
 #include "Unicode.h"
-
-#include "BuildKrMwuDic.h"
 #include "CheckDic.h"
 #include "Compress.h"
 #include "Concord.h"
@@ -75,6 +62,7 @@
 #include "Uncompress.h"
 #include "Untokenize.h"
 #include "XMLizer.h"
+#include "Cassys.h"
 
 #include "Copyright.h"
 
@@ -96,9 +84,7 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
-	{ "BuildKrMwuDic", 13, &main_BuildKrMwuDic, usage_BuildKrMwuDic, optstring_BuildKrMwuDic, lopts_BuildKrMwuDic } ,
-#endif
+	{ "Cassys",6,&main_Cassys,usage_Cassys, optstring_Cassys, lopts_Cassys},
 	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
 	{ "Compress", 8, &main_Compress, usage_Compress, optstring_Compress, lopts_Compress } ,
 	{ "Concord", 7, &main_Concord, usage_Concord, optstring_Concord, lopts_Concord } ,

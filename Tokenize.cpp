@@ -384,10 +384,17 @@ while (c!=EOF) {
    else if (c=='{') {
      s[0]='{';
      int z=1;
-     while (z<(MAX_TAG_LENGTH-1) && (c=u_fgetc(f))!='}' && c!='{' && c!='\n') {
-        s[z++]=(unichar)c;
-        COUNT++;
-     }
+     bool protected_char = false; // Cassys add
+     while (z < (MAX_TAG_LENGTH - 1) && (((c = u_fgetc(f)) != '}' && c
+					!= '{' && c != '\n') || protected_char)) {
+			protected_char = false; // Cassys add
+			if (c == '\\') { // Cassys add
+				protected_char = true; // Cassys add
+			} // Cassys add
+			s[z++] = (unichar) c;
+			COUNT++;
+	}
+
      if (z==(MAX_TAG_LENGTH-1) || c!='}') {
         // if the tag has no ending }
         s[z]='\0';
@@ -537,7 +544,7 @@ for (n=0;n<tokens->nbelems;n++) {
 
 
 
-int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
+int partition_pour_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 int pivot;
 int tmp;
 unichar* tmp_char;
@@ -566,7 +573,7 @@ for (;;) {
 void quicksort_by_frequence(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
 if (first<last) {
-  p=partition_for_quicksort_by_frequence(first,last,tokens,n_occur);
+  p=partition_pour_quicksort_by_frequence(first,last,tokens,n_occur);
   quicksort_by_frequence(first,p,tokens,n_occur);
   quicksort_by_frequence(p+1,last,tokens,n_occur);
 }
@@ -574,7 +581,7 @@ if (first<last) {
 
 
 
-int partition_for_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
+int partition_pour_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 unichar* pivot;
 unichar* tmp;
 int tmp_int;
@@ -603,7 +610,7 @@ for (;;) {
 void quicksort_by_alph_order(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
 if (first<last) {
-  p=partition_for_quicksort_by_alph_order(first,last,tokens,n_occur);
+  p=partition_pour_quicksort_by_alph_order(first,last,tokens,n_occur);
   quicksort_by_alph_order(first,p,tokens,n_occur);
   quicksort_by_alph_order(p+1,last,tokens,n_occur);
 }
