@@ -224,6 +224,8 @@
     <ClCompile Include="..\Buffer.cpp" />
     <ClCompile Include="..\BuildKrMwuDic.cpp" />
     <ClCompile Include="..\BuildTextAutomaton.cpp" />
+    <ClCompile Include="..\Cassys.cpp" />
+    <ClCompile Include="..\Cassys_tokens.cpp" />
     <ClCompile Include="..\CheckDic.cpp" />
     <ClCompile Include="..\CodePages.cpp" />
     <ClCompile Include="..\CompoundWordHashTable.cpp" />

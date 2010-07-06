@@ -161,6 +161,8 @@
 		2237A5B111D68EEE00D247CF /* OutputTransductionVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A5AF11D68EEE00D247CF /* OutputTransductionVariables.cpp */; };
 		2237A6BD11D8490800D247CF /* BuildKrMwuDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6BB11D8490800D247CF /* BuildKrMwuDic.cpp */; };
 		2237A6FB11D9522200D247CF /* TfstStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6F911D9522200D247CF /* TfstStats.cpp */; };
+		2237A94811E3F1AB00D247CF /* Cassys_tokens.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A94411E3F1AB00D247CF /* Cassys_tokens.cpp */; };
+		2237A94911E3F1AB00D247CF /* Cassys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A94611E3F1AB00D247CF /* Cassys.cpp */; };
 		225CCDED10DB201D003F0910 /* regcomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1B10DB201D003F0910 /* regcomp.c */; };
 		225CCDEE10DB201D003F0910 /* regerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1C10DB201D003F0910 /* regerror.c */; };
 		225CCDEF10DB201D003F0910 /* regexec.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1E10DB201D003F0910 /* regexec.c */; };
@@ -526,8 +528,12 @@
 		2237A5B011D68EEE00D247CF /* OutputTransductionVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OutputTransductionVariables.h; path = ../OutputTransductionVariables.h; sourceTree = SOURCE_ROOT; };
 		2237A6BB11D8490800D247CF /* BuildKrMwuDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BuildKrMwuDic.cpp; path = ../BuildKrMwuDic.cpp; sourceTree = SOURCE_ROOT; };
 		2237A6BC11D8490800D247CF /* BuildKrMwuDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BuildKrMwuDic.h; path = ../BuildKrMwuDic.h; sourceTree = SOURCE_ROOT; };
-		2237A6F911D9522200D247CF /* TfstStats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TfstStats.cpp; path = "../TfstStats.cpp"; sourceTree = SOURCE_ROOT; };
-		2237A6FA11D9522200D247CF /* TfstStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TfstStats.h; path = "../TfstStats.h"; sourceTree = SOURCE_ROOT; };
+		2237A6F911D9522200D247CF /* TfstStats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TfstStats.cpp; path = ../TfstStats.cpp; sourceTree = SOURCE_ROOT; };
+		2237A6FA11D9522200D247CF /* TfstStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TfstStats.h; path = ../TfstStats.h; sourceTree = SOURCE_ROOT; };
+		2237A94411E3F1AB00D247CF /* Cassys_tokens.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_tokens.cpp; path = ../Cassys_tokens.cpp; sourceTree = SOURCE_ROOT; };
+		2237A94511E3F1AB00D247CF /* Cassys_tokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_tokens.h; path = ../Cassys_tokens.h; sourceTree = SOURCE_ROOT; };
+		2237A94611E3F1AB00D247CF /* Cassys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys.cpp; path = ../Cassys.cpp; sourceTree = SOURCE_ROOT; };
+		2237A94711E3F1AB00D247CF /* Cassys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys.h; path = ../Cassys.h; sourceTree = SOURCE_ROOT; };
 		225CCD1810DB201D003F0910 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		225CCD1910DB201D003F0910 /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
 		225CCD1A10DB201D003F0910 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -602,6 +608,10 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2237A94411E3F1AB00D247CF /* Cassys_tokens.cpp */,
+				2237A94511E3F1AB00D247CF /* Cassys_tokens.h */,
+				2237A94611E3F1AB00D247CF /* Cassys.cpp */,
+				2237A94711E3F1AB00D247CF /* Cassys.h */,
 				2237A6F911D9522200D247CF /* TfstStats.cpp */,
 				2237A6FA11D9522200D247CF /* TfstStats.h */,
 				2237A6BB11D8490800D247CF /* BuildKrMwuDic.cpp */,
@@ -1233,6 +1243,8 @@
 				2237A5B111D68EEE00D247CF /* OutputTransductionVariables.cpp in Sources */,
 				2237A6BD11D8490800D247CF /* BuildKrMwuDic.cpp in Sources */,
 				2237A6FB11D9522200D247CF /* TfstStats.cpp in Sources */,
+				2237A94811E3F1AB00D247CF /* Cassys_tokens.cpp in Sources */,
+				2237A94911E3F1AB00D247CF /* Cassys.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

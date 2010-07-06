@@ -13,9 +13,7 @@
 #include "Tokenization.h"
 #include "Text_tokens.h"
 
-#ifndef _NOT_UNDER_WINDOWS
-#include <dir.h>
-#endif
+#include "logger/DirLogger.h"
 
 
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
@@ -698,15 +696,7 @@ char *cassys_fgets(char *line, int n, U_FILE *u) {
 
 
 int make_directory(char *path){
-#ifdef _NOT_UNDER_WINDOWS
-	char linux_command[FILENAME_MAX*2];
-	sprintf(linux_command, "mkdir \"%s\" --verbose", path);
-
-	return system(linux_command);
-#else
-	mkdir(path);
-#endif
-
+	return mkDirPortable(path);
 }
 
 

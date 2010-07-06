@@ -84,7 +84,9 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Cassys",6,&main_Cassys,usage_Cassys, optstring_Cassys, lopts_Cassys},
+#endif
 	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
 	{ "Compress", 8, &main_Compress, usage_Compress, optstring_Compress, lopts_Compress } ,
 	{ "Concord", 7, &main_Concord, usage_Concord, optstring_Concord, lopts_Concord } ,

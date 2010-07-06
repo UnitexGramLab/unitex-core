@@ -381,7 +381,7 @@ ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o 
    		    ElagStateSet.o SymbolAlphabet.o Symbol_op.o Error.o LanguageDefinition.o\
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
-            BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o getopt.o Tfst.o $(SYSLIBMAPPED)
+            BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o getopt.o Tfst.o TfstStats.o $(SYSLIBMAPPED)
 
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagRulesCompilation.o Fst2Automaton.o\
@@ -391,14 +391,14 @@ ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Af_stdio.o ActivityLogger.
 	            AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o\
 	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
 	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
-	            Transitions.o ElagDebug.o getopt.o Tfst.o $(SYSLIBMAPPED)
+	            Transitions.o ElagDebug.o getopt.o Tfst.o TfstStats.o $(SYSLIBMAPPED)
 
 EVAMB      = Evamb
 EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o String_hash.o\
              Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o\
              BitArray.o HashTable.o FIFO.o Transitions.o\
-             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o Tfst.o File.o $(SYSLIBMAPPED)
+             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o Tfst.o TfstStats.o File.o $(SYSLIBMAPPED)
 
 EXTRACT      = Extract
 EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
@@ -455,7 +455,7 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o Activi
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-                   BitArray.o HashTable.o FIFO.o Match.o $(SYSLIBMAPPED)
+                   BitArray.o HashTable.o FIFO.o Match.o TfstStats.o $(SYSLIBMAPPED)
 
 LOCATE      = Locate
 LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Alphabet.o DELA.o List_ustring.o String_hash.o \
@@ -477,7 +477,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityL
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
                   LocateTfstMatches.o Match.o MorphologicalFilters.o Korean.o OptimizedTfstTagMatching.o List_pointer.o\
                   TransductionVariables.o TransductionStackTfst.o Contexts.o \
-                  OutputTransductionVariables.o DicVariables.o $(SYSLIBMAPPED)
+                  OutputTransductionVariables.o DicVariables.o TfstStats.o $(SYSLIBMAPPED)
 
 
 MULTIFLEX      = MultiFlex
@@ -505,7 +505,7 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o Activi
                    Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                    Transitions.o DELA.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
-                   getopt.o Tfst.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
+                   getopt.o Tfst.o TfstStats.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
                    HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o $(SYSLIBMAPPED)
 
 RECONSTRUCAO      = Reconstrucao
@@ -518,7 +518,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o \
-               Tfst.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
+               Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o $(SYSLIBMAPPED)
 
 REG2GRF      = Reg2Grf
@@ -540,7 +540,7 @@ TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Af_stdio.o ActivityLogg
 
 TAGGER      = Tagger
 TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o\
-			  Tfst.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o getopt.o\
+			  Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o getopt.o\
 			  Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
 			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
 			  File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o\
@@ -553,21 +553,21 @@ TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Af_stdio
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o\
 					BitMasks.o FIFO.o Transitions.o\
-					Symbol_op.o Fst2Automaton.o getopt.o Tfst.o Match.o $(SYSLIBMAPPED)
+					Symbol_op.o Fst2Automaton.o getopt.o Tfst.o TfstStats.o Match.o $(SYSLIBMAPPED)
 
 TEI2TXT      = TEI2Txt
 TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o File.o HTMLCharacters.o\
                AsciiSearchTree.o getopt.o $(SYSLIBMAPPED)
 
 TFST2GRF      = Tfst2Grf
-TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Tfst.o Sentence2Grf.o\
-               File.o List_int.o Error.o StringParsing.o Pattern.o\
+TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o\
+               Tfst.o TfstStats.o Sentence2Grf.o File.o List_int.o Error.o StringParsing.o Pattern.o\
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o\
                Ustring.o Tagset.o getopt.o SingleGraph.o HashTable.o FIFO.o $(SYSLIBMAPPED)
 
 TFST2UNAMBIG      = Tfst2Unambig
-TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o Error.o IOBuffer.o LinearAutomaton2Txt.o\
+TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.o IOBuffer.o LinearAutomaton2Txt.o\
                    Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Pattern.o List_ustring.o StringParsing.o String_hash.o\
                    List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
@@ -580,7 +580,7 @@ TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Af_stdio.o ActivityLogger.
 TRAININGTAGGER      = TrainingTagger
 TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o IOBuffer.o\
 			  Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o\
-			  Tfst.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o getopt.o\
+			  Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o getopt.o\
 			  Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
 			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
 			  File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o\
@@ -593,7 +593,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-                Tfst.o NewLineShifts.o Korean.o $(SYSLIBMAPPED)
+                Tfst.o TfstStats.o NewLineShifts.o Korean.o $(SYSLIBMAPPED)
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o Alphabet.o \
@@ -642,7 +642,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Ustring.o XMLizer.o DuplicateFile.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
-                  OutputTransductionVariables.o $(SYSLIBMAPPED)
+                  OutputTransductionVariables.o TfstStats.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -672,7 +672,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Ustring.o XMLizer.o DuplicateFile.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
-                  OutputTransductionVariables.o $(SYSLIBMAPPED)
+                  OutputTransductionVariables.o TfstStats.o $(SYSLIBMAPPED)
 
 
 ################################
