@@ -19,6 +19,18 @@
  *
  */
 
+/*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS) in the framework 
+ * of UNITEX optimization and UNITEX industrialization / reliability
+ *
+ * More information : http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
+
+
+
+
 /* ioapi.c -- IO base function header for compress/uncompress .zip
    files using zlib + zip or unzip API
 

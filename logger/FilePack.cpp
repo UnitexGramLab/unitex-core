@@ -19,6 +19,18 @@
  *
  */
 
+/*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS) in the framework 
+ * of UNITEX optimization and UNITEX industrialization / reliability
+ *
+ * More information : http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
+
+
+
+
 /* derived from public work zip.c -- IO on .zip files using zlib
    Version 1.01e, February 12th, 2005
 

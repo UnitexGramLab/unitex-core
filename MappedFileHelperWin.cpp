@@ -19,6 +19,17 @@
  *
  */
 
+/*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS) in the framework 
+ * of UNITEX optimization and UNITEX industrialization / reliability
+ *
+ * More information : http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
+
+
+
 /**
  * This library provides an abstraction for mapping and unmapping files
  * in read-only mode in a portable way.

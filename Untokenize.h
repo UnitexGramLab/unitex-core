@@ -18,7 +18,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-  
+
+/*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS) in the framework 
+ * of UNITEX optimization and UNITEX industrialization / reliability
+ *
+ * More information : http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
+
+
+
+
 #ifndef UntokenizeH
 #define UntokenizeH
 
