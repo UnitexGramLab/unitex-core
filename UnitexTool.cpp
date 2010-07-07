@@ -314,7 +314,6 @@ const struct utility_item utility_array[]=
 	{ "SortTxt", 7, &main_SortTxt, usage_SortTxt, optstring_SortTxt, lopts_SortTxt } ,
 #endif
 
-//#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_STATS))) || defined(TOOL_STATS))
 	{ "Stats", 5, &main_Stats, usage_Stats, optstring_Stats, lopts_Stats } ,
 #endif
