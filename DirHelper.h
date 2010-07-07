@@ -31,7 +31,7 @@
 
 
 
-/* DirLogger.h
+/* DirHelper.h
 */
 
 #ifndef _DIR_LOGGER_H

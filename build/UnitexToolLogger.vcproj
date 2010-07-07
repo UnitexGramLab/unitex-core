@@ -699,11 +699,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\DirLogger.h"
+				RelativePath="..\DirHelper.h"
 				>
 			</File>
 			<File
-				RelativePath="..\DirLoggerWin.cpp"
+				RelativePath="..\DirHelperWin.cpp"
 				>
 			</File>
 			<File
@@ -1426,11 +1426,11 @@
 				Name="logger"
 				>
 				<File
-					RelativePath="..\logger\DirLogger.h"
+					RelativePath="..\logger\DirHelper.h"
 					>
 				</File>
 				<File
-					RelativePath="..\logger\DirLoggerPosix.cpp"
+					RelativePath="..\logger\DirHelperPosix.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1482,7 +1482,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\logger\DirLoggerWin.cpp"
+					RelativePath="..\logger\DirHelperWin.cpp"
 					>
 				</File>
 				<File

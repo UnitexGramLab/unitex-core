@@ -50,7 +50,7 @@
 
 #include "UniLogger.h"
 #include "UniRunLogger.h"
-#include "DirLogger.h"
+#include "DirHelper.h"
 #include "SyncLogger.h"
 #include "ReworkArg.h"
 

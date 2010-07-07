@@ -13,7 +13,7 @@
 #include "Tokenization.h"
 #include "Text_tokens.h"
 
-#include "DirLogger.h"
+#include "DirHelper.h"
 
 
 #define CASSYS_DIRECTORY_EXTENSION "_csc"

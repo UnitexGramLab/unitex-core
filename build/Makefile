@@ -92,7 +92,7 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 
 SYSLIBLOGGER = SyncLoggerPosix.o
-SYSLIBMAPPED = MappedFileHelperPosix.o DirLoggerPosix.o
+SYSLIBMAPPED = MappedFileHelperPosix.o DirHelperPosix.o
 
 #APPDIR = where to install binaries
 APPDIR = ../../../App
@@ -197,7 +197,7 @@ CFLAGS += -DUNITEX_LIBRARY
 endif
 
 SYSLIBLOGGER = SyncLoggerWin.o
-SYSLIBMAPPED = MappedFileHelperWin.o DirLoggerWin.o
+SYSLIBMAPPED = MappedFileHelperWin.o DirHelperWin.o
 
 APPDIR = ../../../App
 
@@ -235,7 +235,7 @@ TAR_COMMAND = untgz.exe
 TAR_PARAM =
 
 SYSLIBLOGGER = SyncLoggerWin.o
-SYSLIBMAPPED = MappedFileHelperWin.o DirLoggerWin.o
+SYSLIBMAPPED = MappedFileHelperWin.o DirHelperWin.o
 
 APPDIR = ../../../App
 

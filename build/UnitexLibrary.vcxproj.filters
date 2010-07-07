@@ -110,7 +110,7 @@
     <ClInclude Include="..\OutputTransductionVariables.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\DirLogger.h">
+    <ClInclude Include="..\DirHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -676,7 +676,7 @@
     <ClCompile Include="..\Cassys_tokens.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\DirLoggerWin.cpp">
+    <ClCompile Include="..\DirHelperWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\MappedFileHelperWin.cpp">

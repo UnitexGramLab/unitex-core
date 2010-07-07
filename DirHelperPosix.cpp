@@ -31,19 +31,33 @@
 
 
 
-#include <direct.h>
-#include "DirLogger.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+
+
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "DirHelper.h"
 
 int mkDirPortable(const char* dirname)
 {
-    return mkdir(dirname);
+    int retMkDir = (int)(mkdir(dirname,S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP|S_IXGRP|S_IXOTH));
+    /* retMkDir is 0 for success */
+    return (retMkDir);
+    //return mkdir(dirname);
 }
 
+/* Upon successful completion, 0 shall be returned. */
 int chDirPortable(const char* dirname)
 {
     return chdir(dirname);
 }
 
+/* Upon successful completion, 0 shall be returned. */
 int rmDirPortable(const char* dirname)
 {
     return rmdir(dirname);

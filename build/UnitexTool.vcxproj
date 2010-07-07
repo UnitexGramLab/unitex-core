@@ -285,7 +285,7 @@
     <ClInclude Include="..\ActivityLoggerPlugCallback.h" />
     <ClInclude Include="..\Af_stdio.h" />
     <ClInclude Include="..\Arabic.h" />
-    <ClInclude Include="..\DirLogger.h" />
+    <ClInclude Include="..\DirHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
@@ -337,7 +337,7 @@
     <ClCompile Include="..\DictionaryTree.cpp" />
     <ClCompile Include="..\DicVariables.cpp" />
     <ClCompile Include="..\Diff.cpp" />
-    <ClCompile Include="..\DirLoggerWin.cpp" />
+    <ClCompile Include="..\DirHelperWin.cpp" />
     <ClCompile Include="..\DuplicateFile.cpp" />
     <ClCompile Include="..\DutchCompounds.cpp" />
     <ClCompile Include="..\Elag.cpp" />
