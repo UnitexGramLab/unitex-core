@@ -76,14 +76,31 @@ Variables* new_Variables(const struct list_ustring*);
 void free_Variables(Variables*);
 struct transduction_variable* get_transduction_variable(Variables*,unichar*);
 
+
+/*
+ * the function below are replaced by macro for performance
+ */
+/*
 void set_variable_start(Variables*,int,int);
 void set_variable_start_in_chars(Variables*,int,int);
 void set_variable_end(Variables*,int,int);
 void set_variable_end_in_chars(Variables*,int,int);
+
 int get_variable_start(const Variables*,int);
 int get_variable_start_in_chars(const Variables*,int);
 int get_variable_end(const Variables*,int);
 int get_variable_end_in_chars(const Variables*,int);
+*/
+
+#define set_variable_start(v,n,value) ((v)->variables[(n)].start_in_tokens=(value))
+#define set_variable_start_in_chars(v,n,value) ((v)->variables[(n)].start_in_chars=(value))
+#define set_variable_end(v,n,value) ((v)->variables[(n)].end_in_tokens=(value))
+#define set_variable_end_in_chars(v,n,value) ((v)->variables[(n)].end_in_chars=(value))
+
+#define get_variable_start(v,n) ((v)->variables[(n)].start_in_tokens)
+#define get_variable_start_in_chars(v,n) ((v)->variables[(n)].start_in_chars)
+#define get_variable_end(v,n) ((v)->variables[(n)].end_in_tokens)
+#define get_variable_end_in_chars(v,n) ((v)->variables[(n)].end_in_chars)
 
 int* create_variable_backup(Variables*);
 void free_variable_backup(int*);

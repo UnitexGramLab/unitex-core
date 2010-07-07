@@ -75,68 +75,87 @@ return &(v->variables[n]);
 }
 
 
+/*
+ * the function below are replaced by macro for performance
+ * because only Visual Studio 2005 (and more) with /GL and /LTCG and GCC 4.5 (with -flto)
+ * can auto inline between different source file
+ *
+ * more information :
+ *
+ * http://www.winimage.com/misc/articlegl.htm
+ * http://gcc.gnu.org/wiki/LinkTimeOptimization
+ */
+
 /**
  * Sets the start value of the variable #n.
  */
+/*
 void set_variable_start(Variables* v,int n,int value) {
 v->variables[n].start_in_tokens=value;
-}
+}*/
 
 
 /**
  * Sets the start value of the variable #n.
  */
+/*
 void set_variable_start_in_chars(Variables* v,int n,int value) {
 v->variables[n].start_in_chars=value;
-}
+}*/
 
 
 /**
  * Sets the end value of the variable #n.
  */
+/*
 void set_variable_end(Variables* v,int n,int value) {
 v->variables[n].end_in_tokens=value;
-}
+}*/
 
 
 /**
  * Sets the end value of the variable #n.
  */
+/*
 void set_variable_end_in_chars(Variables* v,int n,int value) {
 v->variables[n].end_in_chars=value;
-}
+}*/
 
 
 /**
  * Returns the start value of the variable #n.
  */
+/*
 int get_variable_start(const Variables* v,int n) {
 return v->variables[n].start_in_tokens;
-}
+}*/
 
 
 /**
  * Returns the start value of the variable #n.
  */
+/*
 int get_variable_start_in_chars(const Variables* v,int n) {
 return v->variables[n].start_in_chars;
-}
+}*/
 
 
 /**
  * Returns the end value of the variable #n.
  */
+/*
 int get_variable_end(const Variables* v,int n) {
 return v->variables[n].end_in_tokens;
-}
+}*/
 
 
 /**
  * Returns the end value of the variable #n.
  */
+/*
 int get_variable_end_in_chars(const Variables* v,int n) {
 return v->variables[n].end_in_chars;
-}
+}*/
 
 
 #define nb_int_variables (4)
