@@ -78,7 +78,7 @@ const struct option_TS lopts_ElagComp[]= {
 };
 
 
-int main_ElagComp(int argc,char* argv[]) {
+int main_ElagComp(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

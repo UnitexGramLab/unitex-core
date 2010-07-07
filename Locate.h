@@ -29,7 +29,7 @@ extern const char* optstring_Locate;
 extern const struct option_TS lopts_Locate[];
 extern const char* usage_Locate;
 
-int main_Locate(int, char* argv[]);
+int main_Locate(int argc,char* const argv[]);
 int launch_locate_as_routine(Encoding,int,int,char*,char*,char*,
                              OutputPolicy,char*,int,int,char*);
 

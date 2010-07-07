@@ -91,7 +91,7 @@ const struct option_TS lopts_Untokenize[]={
 };
 
 
-int main_Untokenize(int argc,char* argv[]) {
+int main_Untokenize(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

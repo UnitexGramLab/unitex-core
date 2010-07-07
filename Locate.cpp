@@ -157,7 +157,7 @@ const struct option_TS lopts_Locate[]= {
  * This function behaves in the same way that a main one, except that it does
  * not invoke the setBufferMode function.
  */
-int main_Locate(int argc,char* argv[]) {
+int main_Locate(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

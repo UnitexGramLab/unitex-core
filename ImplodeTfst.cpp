@@ -69,7 +69,7 @@ const struct option_TS lopts_ImplodeTfst[]= {
 };
 
 
-int main_ImplodeTfst(int argc,char* argv[]) {
+int main_ImplodeTfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

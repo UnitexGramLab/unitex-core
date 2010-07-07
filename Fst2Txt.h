@@ -26,7 +26,7 @@ extern const char* optstring_Fst2Txt;
 extern const struct option_TS lopts_Fst2Txt[];
 extern const char* usage_Fst2Txt;
 
-int main_Fst2Txt(int argc,char* argv[]);
+int main_Fst2Txt(int argc,char* const argv[]);
 
 #endif
 

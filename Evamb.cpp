@@ -65,7 +65,7 @@ const struct option_TS lopts_Evamb[]= {
 };
 
 
-int main_Evamb(int argc,char* argv[]) {
+int main_Evamb(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

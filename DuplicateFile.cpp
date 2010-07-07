@@ -64,7 +64,7 @@ const struct option_TS lopts_DuplicateFile[]= {
 };
 
 
-int main_DuplicateFile(int argc,char* argv[]) {
+int main_DuplicateFile(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

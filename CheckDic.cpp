@@ -76,7 +76,7 @@ const struct option_TS lopts_CheckDic[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 
-int main_CheckDic(int argc,char* argv[]) {
+int main_CheckDic(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

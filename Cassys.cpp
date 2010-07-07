@@ -29,7 +29,7 @@ const struct option_TS lopts_Cassys[] = {
 const char* usage_Cassys ="usage";
 
 
-int main_Cassys(int argc, char **argv){
+int main_Cassys(int argc,char* const argv[]) {
 
 	char transducer_list_file_name[FILENAME_MAX];
 	bool has_transducer_list = false;

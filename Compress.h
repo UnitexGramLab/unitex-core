@@ -28,7 +28,7 @@ extern const char* optstring_Compress;
 extern const struct option_TS lopts_Compress[];
 extern const char* usage_Compress;
 
-int main_Compress(int argc,char* argv[]);
+int main_Compress(int argc,char* const argv[]);
 int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                          int flip,char* dic);
 

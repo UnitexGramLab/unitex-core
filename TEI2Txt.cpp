@@ -60,7 +60,7 @@ const struct option_TS lopts_TEI2Txt[]={
 };
 
 
-int main_TEI2Txt(int argc,char* argv[]) {
+int main_TEI2Txt(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

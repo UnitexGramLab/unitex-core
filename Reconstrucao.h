@@ -26,7 +26,7 @@ extern const char* optstring_Reconstrucao;
 extern const struct option_TS lopts_Reconstrucao[];
 extern const char* usage_Reconstrucao;
 
-int main_Reconstrucao(int argc,char* argv[]);
+int main_Reconstrucao(int argc,char* const argv[]);
 
 #endif
 

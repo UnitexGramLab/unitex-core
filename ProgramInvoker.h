@@ -30,7 +30,7 @@
 #include "Vector.h"
 #include "Ustring.h"
 
-typedef int (*MAIN_FUNCTION)(int argc,char* argv[]);
+typedef int (*MAIN_FUNCTION)(int argc,char* const argv[]);
 
 typedef struct {
    MAIN_FUNCTION main;

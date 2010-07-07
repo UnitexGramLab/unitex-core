@@ -70,7 +70,7 @@ const struct option_TS lopts_Flatten[]= {
 };
 
 
-int main_Flatten(int argc,char* argv[]) {
+int main_Flatten(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

@@ -71,7 +71,7 @@ const struct option_TS lopts_Tfst2Grf[]= {
 };
 
 
-int main_Tfst2Grf(int argc,char* argv[]) {
+int main_Tfst2Grf(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

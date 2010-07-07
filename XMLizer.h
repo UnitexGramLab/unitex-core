@@ -26,7 +26,7 @@ extern const char* optstring_XMLizer ;
 extern const char* usage_XMLizer ;
 extern const struct option_TS lopts_XMLizer[];
 
-int main_XMLizer(int argc,char* argv[]);
+int main_XMLizer(int argc,char* const argv[]);
 
 #endif
 

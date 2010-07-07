@@ -38,6 +38,6 @@ extern const char* optstring_DuplicateFile;
 extern const struct option_TS lopts_DuplicateFile[];
 extern const char* usage_DuplicateFile;
 
-int main_DuplicateFile(int, char*[]);
+int main_DuplicateFile(int argc,char* const argv[]);
 
 #endif

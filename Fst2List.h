@@ -24,7 +24,7 @@
 
 extern const char* usage_Fst2List;
 
-int main_Fst2List(int argc,char* argv[]);
+int main_Fst2List(int argc,char* const argv[]);
 
 #endif
 

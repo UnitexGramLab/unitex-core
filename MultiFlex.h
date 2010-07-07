@@ -26,7 +26,7 @@ extern const char* optstring_MultiFlex;
 extern const struct option_TS lopts_MultiFlex[];
 extern const char* usage_MultiFlex;
 
-int main_MultiFlex(int argc,char* argv[]);
+int main_MultiFlex(int argc,char* const argv[]);
 
 #endif
 

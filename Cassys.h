@@ -82,7 +82,7 @@ extern const struct option_TS lopts_Cassys[];
 extern const char* usage_Cassys;
 
 
-int main_Cassys(int argc, char **argv);
+int main_Cassys(int argc,char* const argv[]);
 
 /**
  * \brief returns a fifo containing the list of transducers to be applied in the cascade

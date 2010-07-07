@@ -122,7 +122,7 @@ const struct option_TS lopts_Compress[]= {
  * First, it builds a tree with all the entries, and then, it builds a minimal
  * transducer from this tree, using the Dominique Revuz's algorithm.
  */
-int main_Compress(int argc, char* argv[]) {
+int main_Compress(int argc, char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

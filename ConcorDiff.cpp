@@ -66,7 +66,7 @@ const struct option_TS lopts_ConcorDiff[]= {
 };
 
 
-int main_ConcorDiff(int argc,char* argv[]) {
+int main_ConcorDiff(int argc,char* const argv[]) {
 if (argc==1) {
 	usage();
 	return 0;

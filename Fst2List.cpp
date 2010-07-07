@@ -1829,7 +1829,7 @@ void CFstApp::outWordsOfGraph(int depth)
 //
 
 
-int main_Fst2List(int argc,char* argv[]) {
+int main_Fst2List(int argc,char* const argv[]) {
 
 	char *ofilename =0;
 	int iargIndex = 1;

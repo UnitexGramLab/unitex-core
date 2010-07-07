@@ -290,7 +290,7 @@ const struct option_TS lopts_SortTxt[]= {
 };
 
 
-int main_SortTxt(int argc,char* argv[]) {
+int main_SortTxt(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

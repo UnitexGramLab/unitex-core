@@ -26,7 +26,7 @@ extern const char* optstring_Flatten;
 extern const struct option_TS lopts_Flatten[];
 extern const char* usage_Flatten;
 
-int main_Flatten(int argc,char* argv[]);
+int main_Flatten(int argc,char* const argv[]);
 
 #endif
 

@@ -93,7 +93,7 @@ const struct option_TS lopts_PolyLex[]= {
 };
 
 
-int main_PolyLex(int argc,char* argv[]) {
+int main_PolyLex(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

@@ -26,7 +26,7 @@ extern const char* optstring_Table2Grf;
 extern const struct option_TS lopts_Table2Grf[];
 extern const char* usage_Table2Grf;
 
-int main_Table2Grf(int argc,char* argv[]);
+int main_Table2Grf(int argc,char* const argv[]);
 
 #endif
 

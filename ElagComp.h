@@ -26,7 +26,7 @@ extern const char* optstring_ElagComp;
 extern const struct option_TS lopts_ElagComp[];
 extern const char* usage_ElagComp;
 
-int main_ElagComp(int argc,char* argv[]);
+int main_ElagComp(int argc,char* const argv[]);
 
 #endif
 

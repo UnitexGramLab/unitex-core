@@ -156,7 +156,7 @@ const char* optstring_Stats=":m:a:l:r:c:o:k:q:";
 	      {0, 0, 0, 0 }
 	 } ;
 
-int main_Stats(int argc,char *argv[]) {
+int main_Stats(int argc,char* const argv[]) {
 
 	if (argc <= 1)
 	{

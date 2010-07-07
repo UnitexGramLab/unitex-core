@@ -129,7 +129,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
 /**
  * The same than main, but no call to setBufferMode.
  */
-int main_Grf2Fst2(int argc,char* argv[]) {
+int main_Grf2Fst2(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

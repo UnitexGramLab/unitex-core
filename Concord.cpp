@@ -194,7 +194,7 @@ const struct option_TS lopts_Concord[]= {
 /**
  * The same than main, but no call to setBufferMode.
  */
-int main_Concord(int argc,char* argv[]) {
+int main_Concord(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

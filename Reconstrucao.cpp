@@ -81,7 +81,7 @@ const struct option_TS lopts_Reconstrucao[]= {
 };
 
 
-int main_Reconstrucao(int argc,char* argv[]) {
+int main_Reconstrucao(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

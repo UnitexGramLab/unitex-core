@@ -518,7 +518,7 @@ static int CallToolLogged(mainFunc* fnc,int argc,char* argv[])
     return ret;
 }
 
-int main_UnitexTool_single(int argc,char* argv[]) {
+int main_UnitexTool_single(int argc,char* const argv[]) {
 const struct utility_item* utility_called = NULL;
 if (argc>1)
   utility_called = found_utility(argv[1]);
@@ -531,7 +531,7 @@ return CallToolLogged(utility_called->fnc,argc-1,((char**)argv)+1);
 }
 
 
-int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
+int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
 {
 	int ret=0;
 	int number_done_dummy=0;
@@ -621,17 +621,17 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 	return ret;
 }
 
-int UnitexTool_several(int argc,char* argv[],int* p_number_done)
+int UnitexTool_several(int argc,char* const argv[],int* p_number_done)
 {
 	return UnitexTool_several_info(argc,argv,p_number_done,NULL);
 }
 
-int main_UnitexTool(int argc,char* argv[])
+int main_UnitexTool(int argc,char* const argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
 
-int main_UnitexTool_C(int argc,char* argv[])
+int main_UnitexTool_C(int argc,char* const argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }

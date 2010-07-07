@@ -73,7 +73,7 @@ const struct option_TS lopts_Fst2Txt[]= {
 };
 
 
-int main_Fst2Txt(int argc,char* argv[]) {
+int main_Fst2Txt(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

@@ -127,7 +127,7 @@ const struct option_TS lopts_Txt2Tfst[]={
 };
 
 
-int main_Txt2Tfst(int argc,char* argv[]) {
+int main_Txt2Tfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;

@@ -73,7 +73,7 @@ const struct option_TS lopts_Tagger[]= {
 };
 
 
-int main_Tagger(int argc, char* argv[]) {
+int main_Tagger(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;
