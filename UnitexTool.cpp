@@ -23,46 +23,168 @@
 #include <string.h>
 
 #include "Unicode.h"
-#include "CheckDic.h"
-#include "Compress.h"
-#include "Concord.h"
-#include "ConcorDiff.h"
-#include "Convert.h"
-#include "Dico.h"
-#include "DuplicateFile.h"
-#include "Elag.h"
-#include "ElagComp.h"
-#include "Evamb.h"
-#include "Extract.h"
-#include "Flatten.h"
-#include "Fst2Check.h"
-#include "Fst2List.h"
-#include "Fst2Txt.h"
-#include "Grf2Fst2.h"
-#include "ImplodeTfst.h"
-#include "Locate.h"
-#include "LocateTfst.h"
-#include "MultiFlex.h"
-#include "Normalize.h"
-#include "PolyLex.h"
-#include "RebuildTfst.h"
-#include "Reconstrucao.h"
-#include "Reg2Grf.h"
-#include "SortTxt.h"
-#include "Stats.h"
-#include "Table2Grf.h"
-#include "Tagger.h"
-#include "TagsetNormTfst.h"
-#include "TEI2Txt.h"
-#include "TrainingTagger.h"
-#include "Tfst2Grf.h"
-#include "Tfst2Unambig.h"
-#include "Tokenize.h"
-#include "Txt2Tfst.h"
-#include "Uncompress.h"
-#include "Untokenize.h"
-#include "XMLizer.h"
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_CASSYS))) || defined(TOOL_CASSYS))
 #include "Cassys.h"
+#endif
+
+#if (((!defined(NO_TOOL_CHECKDIC))) || defined(TOOL_CHECKDIC))
+#include "CheckDic.h"
+#endif
+
+#if (((!defined(NO_TOOL_COMPRESS))) || defined(TOOL_COMPRESS))
+#include "Compress.h"
+#endif
+
+#if (((!defined(NO_TOOL_CONCORD))) || defined(TOOL_CONCORD))
+#include "Concord.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_CONCORDIFF))) || defined(TOOL_CONCORDIFF))
+#include "ConcorDiff.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_CONVERT))) || defined(TOOL_CONVERT))
+#include "Convert.h"
+#endif
+
+#if (((!defined(NO_TOOL_DICO))) || defined(TOOL_DICO))
+#include "Dico.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE))
+#include "DuplicateFile.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_ELAG))) || defined(TOOL_ELAG))
+#include "Elag.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_ELAGCOMP))) || defined(TOOL_ELAGCOMP))
+#include "ElagComp.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_EVAMB))) || defined(TOOL_EVAMB))
+#include "Evamb.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_EXTRACT))) || defined(TOOL_EXTRACT))
+#include "Extract.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_FLATTEN))) || defined(TOOL_FLATTEN))
+#include "Flatten.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_FST2CHECK))) || defined(TOOL_FST2CHECK))
+#include "Fst2Check.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_FST2LIST))) || defined(TOOL_FST2LIST))
+#include "Fst2List.h"
+#endif
+
+#if (((!defined(NO_TOOL_FST2TXT))) || defined(TOOL_FST2TXT))
+#include "Fst2Txt.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_GRF2FST2))) || defined(TOOL_GRF2FST2))
+#include "Grf2Fst2.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
+#include "ImplodeTfst.h"
+#endif
+
+#if (((!defined(NO_TOOL_LOCATE))) || defined(TOOL_LOCATE))
+#include "Locate.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_LOCATETFST))) || defined(TOOL_LOCATETFST))
+#include "LocateTfst.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_MULTIFLEX))) || defined(TOOL_MULTIFLEX))
+#include "MultiFlex.h"
+#endif
+
+#if (((!defined(NO_TOOL_NORMALIZE))) || defined(TOOL_NORMALIZE))
+#include "Normalize.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_POLYLEX))) || defined(TOOL_POLYLEX))
+#include "PolyLex.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_REBUILDTFST))) || defined(TOOL_REBUILDTFST))
+#include "RebuildTfst.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_RECONSTRUCTAO))) || defined(TOOL_RECONSTRUCTAO))
+#include "Reconstrucao.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_REG2GRF))) || defined(TOOL_REG2GRF))
+#include "Reg2Grf.h"
+#endif
+
+#if (((!defined(NO_TOOL_SORTTXT))) || defined(TOOL_SORTTXT))
+#include "SortTxt.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_STATS))) || defined(TOOL_STATS))
+#include "Stats.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TABLE2GRF))) || defined(TOOL_TABLE2GRF))
+#include "Table2Grf.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TAGGER))) || defined(TOOL_TAGGER))
+#include "Tagger.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TAGSETNORMTFST))) || defined(TOOL_TAGSETNORMTFST))
+#include "TagsetNormTfst.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TEI2TXT))) || defined(TOOL_TEI2TXT))
+#include "TEI2Txt.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2GRF))) || defined(TOOL_TFST2GRF))
+#include "Tfst2Grf.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2UNAMBIG))) || defined(TOOL_TFST2UNAMBIG))
+#include "Tfst2Unambig.h"
+#endif
+
+#if (((!defined(NO_TOOL_TOKENIZE))) || defined(TOOL_TOKENIZE))
+#include "Tokenize.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TRAININGTAGGER))) || defined(TOOL_TRAININGTAGGER))
+#include "TrainingTagger.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TXT2TFST))) || defined(TOOL_TXT2TFST))
+#include "Txt2Tfst.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNCOMPRESS))) || defined(TOOL_UNCOMPRESS))
+#include "Uncompress.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNTOKENIZE))) || defined(TOOL_UNTOKENIZE))
+#include "Untokenize.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
+#include "XMLizer.h"
+#endif
+
+
 
 #include "Copyright.h"
 
@@ -84,68 +206,164 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_CASSYS))) || defined(TOOL_CASSYS))
 	{ "Cassys",6,&main_Cassys,usage_Cassys, optstring_Cassys, lopts_Cassys},
 #endif
+
+#if (((!defined(NO_TOOL_CHECKDIC))) || defined(TOOL_CHECKDIC))
 	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
+#endif
+
+#if (((!defined(NO_TOOL_COMPRESS))) || defined(TOOL_COMPRESS))
 	{ "Compress", 8, &main_Compress, usage_Compress, optstring_Compress, lopts_Compress } ,
+#endif
+
+#if (((!defined(NO_TOOL_CONCORD))) || defined(TOOL_CONCORD))
 	{ "Concord", 7, &main_Concord, usage_Concord, optstring_Concord, lopts_Concord } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_CONCORDIFF))) || defined(TOOL_CONCORDIFF))
 	{ "ConcorDiff", 10, &main_ConcorDiff, usage_ConcorDiff, optstring_ConcorDiff, lopts_ConcorDiff } ,
 #endif
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))))
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_CONVERT))) || defined(TOOL_CONVERT))
 	{ "Convert", 7, &main_Convert, usage_Convert, optstring_Convert, lopts_Convert } ,
 #endif
+
+#if (((!defined(NO_TOOL_DICO))) || defined(TOOL_DICO))
 	{ "Dico", 4, &main_Dico, usage_Dico, optstring_Dico, lopts_Dico } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE))
 	{ "DuplicateFile", 13, &main_DuplicateFile, usage_DuplicateFile, optstring_DuplicateFile, lopts_DuplicateFile } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_ELAG))) || defined(TOOL_ELAG))
 	{ "Elag", 4, &main_Elag, usage_Elag, optstring_Elag, lopts_Elag } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_ELAGCOMP))) || defined(TOOL_ELAGCOMP))
 	{ "ElagComp", 8, &main_ElagComp, usage_ElagComp, optstring_ElagComp, lopts_ElagComp } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_EVAMB))) || defined(TOOL_EVAMB))
 	{ "Evamb", 5, &main_Evamb, usage_Evamb, optstring_Evamb, lopts_Evamb } ,
 #endif
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))))
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_EXTRACT))) || defined(TOOL_EXTRACT))
 	{ "Extract", 7, &main_Extract, usage_Extract, optstring_Extract, lopts_Extract } ,
 #endif
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_FLATTEN))) || defined(TOOL_FLATTEN))
 	{ "Flatten", 7, &main_Flatten, usage_Flatten, optstring_Flatten, lopts_Flatten } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_FST2CHECK))) || defined(TOOL_FST2CHECK))
 	{ "Fst2Check", 9, &main_Fst2Check, usage_Fst2Check, optstring_Fst2Check, lopts_Fst2Check } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_FST2LIST))) || defined(TOOL_FST2LIST))
 	{ "Fst2List", 8, &main_Fst2List, usage_Fst2List, NULL, NULL } ,
 #endif
+
+#if (((!defined(NO_TOOL_FST2TXT))) || defined(TOOL_FST2TXT))
 	{ "Fst2Txt", 7, &main_Fst2Txt, usage_Fst2Txt, optstring_Fst2Txt, lopts_Fst2Txt } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_GRF2FST2))) || defined(TOOL_GRF2FST2))
 	{ "Grf2Fst2", 8, &main_Grf2Fst2, usage_Grf2Fst2, optstring_Grf2Fst2, lopts_Grf2Fst2 } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
+
+#if (((!defined(NO_TOOL_LOCATE))) || defined(TOOL_LOCATE))
 	{ "Locate", 6, &main_Locate, usage_Locate, optstring_Locate, lopts_Locate } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))))
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_LOCATETFST))) || defined(TOOL_LOCATETFST))
 	{ "LocateTfst", 10, &main_LocateTfst, usage_LocateTfst, optstring_LocateTfst, lopts_LocateTfst } ,
 #endif
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_MULTIFLEX))) || defined(TOOL_MULTIFLEX))
 	{ "MultiFlex", 9, &main_MultiFlex, usage_MultiFlex, optstring_MultiFlex, lopts_MultiFlex } ,
 #endif
+
+#if (((!defined(NO_TOOL_NORMALIZE))) || defined(TOOL_NORMALIZE))
 	{ "Normalize", 9, &main_Normalize, usage_Normalize, optstring_Normalize, lopts_Normalize } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_POLYLEX))) || defined(TOOL_POLYLEX))
 	{ "PolyLex", 7, &main_PolyLex, usage_PolyLex, optstring_PolyLex, lopts_PolyLex } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_REBUILDTFST))) || defined(TOOL_REBUILDTFST))
 	{ "RebuildTfst", 11, &main_RebuildTfst, usage_RebuildTfst, optstring_RebuildTfst, lopts_RebuildTfst } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_RECONSTRUCTAO))) || defined(TOOL_RECONSTRUCTAO))
 	{ "Reconstrucao", 12, &main_Reconstrucao, usage_Reconstrucao, optstring_Reconstrucao, lopts_Reconstrucao } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_REG2GRF))) || defined(TOOL_REG2GRF))
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
 #endif
+
+#if (((!defined(NO_TOOL_SORTTXT))) || defined(TOOL_SORTTXT))
 	{ "SortTxt", 7, &main_SortTxt, usage_SortTxt, optstring_SortTxt, lopts_SortTxt } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#endif
+
+//#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_STATS))) || defined(TOOL_STATS))
 	{ "Stats", 5, &main_Stats, usage_Stats, optstring_Stats, lopts_Stats } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TABLE2GRF))) || defined(TOOL_TABLE2GRF))
 	{ "Table2Grf", 9, &main_Table2Grf, usage_Table2Grf, optstring_Table2Grf, lopts_Table2Grf } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TAGGER))) || defined(TOOL_TAGGER))
 	{ "Tagger", 6, &main_Tagger, usage_Tagger, optstring_Tagger, lopts_Tagger } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TAGSETNORMTFST))) || defined(TOOL_TAGSETNORMTFST))
 	{ "TagsetNormTfst", 14, &main_TagsetNormTfst, usage_TagsetNormTfst, optstring_TagsetNormTfst, lopts_TagsetNormTfst } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TEI2TXT))) || defined(TOOL_TEI2TXT))
 	{ "TEI2Txt", 7, &main_TEI2Txt, usage_TEI2Txt, optstring_TEI2Txt, lopts_TEI2Txt } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2GRF))) || defined(TOOL_TFST2GRF))
 	{ "Tfst2Grf", 8, &main_Tfst2Grf, usage_Tfst2Grf, optstring_Tfst2Grf, lopts_Tfst2Grf } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2UNAMBIG))) || defined(TOOL_TFST2UNAMBIG))
 	{ "Tfst2Unambig", 12, &main_Tfst2Unambig, usage_Tfst2Unambig, optstring_Tfst2Unambig, lopts_Tfst2Unambig } ,
 #endif
+
+#if (((!defined(NO_TOOL_TOKENIZE))) || defined(TOOL_TOKENIZE))
 	{ "Tokenize", 8, &main_Tokenize, usage_Tokenize, optstring_Tokenize, lopts_Tokenize } ,
-#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TRAININGTAGGER))) || defined(TOOL_TRAININGTAGGER))
 	{ "TrainingTagger", 14, &main_TrainingTagger, usage_TrainingTagger, optstring_TrainingTagger, lopts_TrainingTagger } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TXT2TFST))) || defined(TOOL_TXT2TFST))
 	{ "Txt2Tfst", 8, &main_Txt2Tfst, usage_Txt2Tfst, optstring_Txt2Tfst, lopts_Txt2Tfst } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNCOMPRESS))) || defined(TOOL_UNCOMPRESS))
 	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNTOKENIZE))) || defined(TOOL_UNTOKENIZE))
 	{ "Untokenize", 10, &main_Untokenize, usage_Untokenize, optstring_Untokenize, lopts_Untokenize } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
 	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,
 #endif
 
