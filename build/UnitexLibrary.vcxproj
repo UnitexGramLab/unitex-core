@@ -180,6 +180,7 @@
     <ClInclude Include="..\ActivityLoggerPlugCallback.h" />
     <ClInclude Include="..\Af_stdio.h" />
     <ClInclude Include="..\Arabic.h" />
+    <ClInclude Include="..\DirLogger.h" />
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
@@ -189,7 +190,6 @@
     <ClInclude Include="..\TrainingProcess.h" />
     <ClInclude Include="..\TrainingTagger.h" />
     <ClInclude Include="..\TransductionVariables.h" />
-    <ClInclude Include="..\logger\DirLogger.h" />
     <ClInclude Include="..\logger\FilePack.h" />
     <ClInclude Include="..\logger\FilePackCrc32.h" />
     <ClInclude Include="..\logger\FilePackIo.h" />
@@ -208,7 +208,6 @@
     <ClCompile Include="..\AbstractFst2Load.cpp" />
     <ClCompile Include="..\ActivityLogger.cpp" />
     <ClCompile Include="..\Af_stdio.cpp" />
-    <ClInclude Include="..\MappedFileHelperWin.cpp" />
     <ClCompile Include="..\Alphabet.cpp" />
     <ClCompile Include="..\ApplyDic.cpp" />
     <ClCompile Include="..\Arabic.cpp" />
@@ -242,6 +241,7 @@
     <ClCompile Include="..\DictionaryTree.cpp" />
     <ClCompile Include="..\DicVariables.cpp" />
     <ClCompile Include="..\Diff.cpp" />
+    <ClCompile Include="..\DirLoggerWin.cpp" />
     <ClCompile Include="..\DuplicateFile.cpp" />
     <ClCompile Include="..\DutchCompounds.cpp" />
     <ClCompile Include="..\Elag.cpp" />
@@ -292,6 +292,7 @@
     <ClCompile Include="..\LocateTfst.cpp" />
     <ClCompile Include="..\LocateTfst_lib.cpp" />
     <ClCompile Include="..\LocateTfstMatches.cpp" />
+    <ClCompile Include="..\MappedFileHelperWin.cpp" />
     <ClCompile Include="..\Match.cpp" />
     <ClCompile Include="..\MF_DicoMorpho.cpp" />
     <ClCompile Include="..\MF_DLC_inflect.cpp" />
@@ -374,13 +375,6 @@
     <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\Ustring.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
-    <ClCompile Include="..\logger\DirLoggerPosix.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|X64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\logger\DirLoggerWin.cpp" />
     <ClCompile Include="..\logger\FilePack.cpp" />
     <ClCompile Include="..\logger\FilePackCrc32.cpp" />
     <ClCompile Include="..\logger\FilePackIo.cpp" />

@@ -13,7 +13,7 @@
 #include "Tokenization.h"
 #include "Text_tokens.h"
 
-#include "logger/DirLogger.h"
+#include "DirLogger.h"
 
 
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
@@ -710,7 +710,7 @@ int copy_directory_content(char *dest, const char *src){
 
 	return system(linux_command);
 #else
-
+    return 0;
 #endif
 }
 
@@ -851,7 +851,7 @@ void protect_special_characters(char *text){
 	int a;
 	a = u_fgetc(source);
 	while(a!=EOF){
-		u_fputc(a,destination);
+		u_fputc((unichar)a,destination);
 		if(a=='{'){
 			//fprintf(stdout,"opening bracket found\n");
 
@@ -943,7 +943,7 @@ unichar *get_braced_string(U_FILE *u){
 	}
 
 	for (int i = 0; i < length; ++i) {
-		result[i]=u_fgetc(u);
+		result[i]=(unichar)u_fgetc(u);
 	}
 	result[length]='\0';
 

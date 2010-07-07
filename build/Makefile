@@ -91,8 +91,8 @@ TRE_TGZ = ../tre-0.8.0.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 
-SYSLIBLOGGER = DirLoggerPosix.o SyncLoggerPosix.o
-SYSLIBMAPPED = MappedFileHelperPosix.o
+SYSLIBLOGGER = SyncLoggerPosix.o
+SYSLIBMAPPED = MappedFileHelperPosix.o DirLoggerPosix.o
 
 #APPDIR = where to install binaries
 APPDIR = ../../../App
@@ -196,8 +196,8 @@ ifeq ($(LIBRARY),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
 
-SYSLIBLOGGER = DirLoggerWin.o SyncLoggerWin.o
-SYSLIBMAPPED = MappedFileHelperWin.o
+SYSLIBLOGGER = SyncLoggerWin.o
+SYSLIBMAPPED = MappedFileHelperWin.o DirLoggerWin.o
 
 APPDIR = ../../../App
 
@@ -234,8 +234,8 @@ endif
 TAR_COMMAND = untgz.exe
 TAR_PARAM =
 
-SYSLIBLOGGER = DirLoggerWin.o SyncLoggerWin.o
-SYSLIBMAPPED = MappedFileHelperWin.o
+SYSLIBLOGGER = SyncLoggerWin.o
+SYSLIBMAPPED = MappedFileHelperWin.o DirLoggerWin.o
 
 APPDIR = ../../../App
 
@@ -1183,12 +1183,6 @@ SyncLoggerPosix.o: ../logger/SyncLoggerPosix.cpp
 
 SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 	$(CC) -c ../logger/SyncLoggerDummy.cpp $(OPTIONS)
-
-DirLoggerWin.o: ../logger/DirLoggerWin.cpp
-	$(CC) -c ../logger/DirLoggerWin.cpp $(OPTIONS)
-
-DirLoggerPosix.o: ../logger/DirLoggerPosix.cpp
-	$(CC) -c ../logger/DirLoggerPosix.cpp $(OPTIONS)
 
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)

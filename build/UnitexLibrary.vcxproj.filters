@@ -53,9 +53,6 @@
     <ClInclude Include="..\CompoundWordHashTable.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\logger\DirLogger.h">
-      <Filter>Source Files\logger</Filter>
-    </ClInclude>
     <ClInclude Include="..\logger\FilePack.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
@@ -113,6 +110,9 @@
     <ClInclude Include="..\OutputTransductionVariables.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\DirLogger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -127,9 +127,6 @@
     <ClCompile Include="..\Af_stdio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClInclude Include="..\MappedFileHelperWin.cpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClCompile Include="..\Alphabet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -360,12 +357,6 @@
     </ClCompile>
     <ClCompile Include="..\LocateTfst_lib.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\logger\DirLoggerPosix.cpp">
-      <Filter>Source Files\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="..\logger\DirLoggerWin.cpp">
-      <Filter>Source Files\logger</Filter>
     </ClCompile>
     <ClCompile Include="..\logger\FilePack.cpp">
       <Filter>Source Files\logger</Filter>
@@ -683,6 +674,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Cassys_tokens.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirLoggerWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MappedFileHelperWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

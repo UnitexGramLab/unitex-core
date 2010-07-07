@@ -533,6 +533,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\DirLogger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\DirLoggerWin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\DuplicateFile.cpp"
 				>
 			</File>
@@ -1119,50 +1127,6 @@
 			<Filter
 				Name="logger"
 				>
-				<File
-					RelativePath="..\logger\DirLogger.h"
-					>
-				</File>
-				<File
-					RelativePath="..\logger\DirLoggerPosix.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\logger\DirLoggerWin.cpp"
-					>
-				</File>
 				<File
 					RelativePath="..\logger\FilePack.cpp"
 					>

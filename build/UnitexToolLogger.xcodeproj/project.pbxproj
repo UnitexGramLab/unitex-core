@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		222F7A041107A64C00C91CC7 /* DirLoggerPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F11107A64C00C91CC7 /* DirLoggerPosix.cpp */; };
 		222F7A051107A64C00C91CC7 /* FilePack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F21107A64C00C91CC7 /* FilePack.cpp */; };
 		222F7A061107A64C00C91CC7 /* FilePackCrc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F41107A64C00C91CC7 /* FilePackCrc32.cpp */; };
 		222F7A071107A64C00C91CC7 /* FilePackIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F61107A64C00C91CC7 /* FilePackIo.cpp */; };
@@ -173,6 +172,7 @@
 		2237A6DE11D951CB00D247CF /* TfstStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6DC11D951CB00D247CF /* TfstStats.cpp */; };
 		2237A95111E3F1C000D247CF /* Cassys_tokens.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A94D11E3F1C000D247CF /* Cassys_tokens.cpp */; };
 		2237A95211E3F1C000D247CF /* Cassys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A94F11E3F1C000D247CF /* Cassys.cpp */; };
+		2237A97A11E45C0E00D247CF /* DirLoggerPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A97911E45C0E00D247CF /* DirLoggerPosix.cpp */; };
 		225CCA8210DA9DB1003F0910 /* regcomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92210DA9DB1003F0910 /* regcomp.c */; };
 		225CCA8310DA9DB1003F0910 /* regerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92310DA9DB1003F0910 /* regerror.c */; };
 		225CCA8410DA9DB1003F0910 /* regexec.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92510DA9DB1003F0910 /* regexec.c */; };
@@ -210,8 +210,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		222F79F01107A64C00C91CC7 /* DirLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DirLogger.h; path = ../logger/DirLogger.h; sourceTree = SOURCE_ROOT; };
-		222F79F11107A64C00C91CC7 /* DirLoggerPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirLoggerPosix.cpp; path = ../logger/DirLoggerPosix.cpp; sourceTree = SOURCE_ROOT; };
 		222F79F21107A64C00C91CC7 /* FilePack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilePack.cpp; path = ../logger/FilePack.cpp; sourceTree = SOURCE_ROOT; };
 		222F79F31107A64C00C91CC7 /* FilePack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilePack.h; path = ../logger/FilePack.h; sourceTree = SOURCE_ROOT; };
 		222F79F41107A64C00C91CC7 /* FilePackCrc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilePackCrc32.cpp; path = ../logger/FilePackCrc32.cpp; sourceTree = SOURCE_ROOT; };
@@ -564,6 +562,8 @@
 		2237A94E11E3F1C000D247CF /* Cassys_tokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_tokens.h; path = ../Cassys_tokens.h; sourceTree = SOURCE_ROOT; };
 		2237A94F11E3F1C000D247CF /* Cassys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys.cpp; path = ../Cassys.cpp; sourceTree = SOURCE_ROOT; };
 		2237A95011E3F1C000D247CF /* Cassys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys.h; path = ../Cassys.h; sourceTree = SOURCE_ROOT; };
+		2237A97811E45C0E00D247CF /* DirLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DirLogger.h; path = ../DirLogger.h; sourceTree = SOURCE_ROOT; };
+		2237A97911E45C0E00D247CF /* DirLoggerPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirLoggerPosix.cpp; path = ../DirLoggerPosix.cpp; sourceTree = SOURCE_ROOT; };
 		225CC91F10DA9DB1003F0910 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		225CC92010DA9DB1003F0910 /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
 		225CC92110DA9DB1003F0910 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -638,6 +638,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2237A97811E45C0E00D247CF /* DirLogger.h */,
+				2237A97911E45C0E00D247CF /* DirLoggerPosix.cpp */,
 				2237A94D11E3F1C000D247CF /* Cassys_tokens.cpp */,
 				2237A94E11E3F1C000D247CF /* Cassys_tokens.h */,
 				2237A94F11E3F1C000D247CF /* Cassys.cpp */,
@@ -1010,8 +1012,6 @@
 		222F7C9B1107A83D00C91CC7 /* logger */ = {
 			isa = PBXGroup;
 			children = (
-				222F79F01107A64C00C91CC7 /* DirLogger.h */,
-				222F79F11107A64C00C91CC7 /* DirLoggerPosix.cpp */,
 				222F79F21107A64C00C91CC7 /* FilePack.cpp */,
 				222F79F31107A64C00C91CC7 /* FilePack.h */,
 				222F79F41107A64C00C91CC7 /* FilePackCrc32.cpp */,
@@ -1137,7 +1137,6 @@
 				225CCA8B10DA9DB1003F0910 /* tre-parse.c in Sources */,
 				225CCA8C10DA9DB1003F0910 /* tre-stack.c in Sources */,
 				225CCA8D10DA9DB1003F0910 /* xmalloc.c in Sources */,
-				222F7A041107A64C00C91CC7 /* DirLoggerPosix.cpp in Sources */,
 				222F7A051107A64C00C91CC7 /* FilePack.cpp in Sources */,
 				222F7A061107A64C00C91CC7 /* FilePackCrc32.cpp in Sources */,
 				222F7A071107A64C00C91CC7 /* FilePackIo.cpp in Sources */,
@@ -1313,6 +1312,7 @@
 				2237A6DE11D951CB00D247CF /* TfstStats.cpp in Sources */,
 				2237A95111E3F1C000D247CF /* Cassys_tokens.cpp in Sources */,
 				2237A95211E3F1C000D247CF /* Cassys.cpp in Sources */,
+				2237A97A11E45C0E00D247CF /* DirLoggerPosix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

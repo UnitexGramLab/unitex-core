@@ -44,9 +44,6 @@
     <ClInclude Include="..\Af_stdio.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MappedFileHelper.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\CompoundWordHashTable.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -83,6 +80,9 @@
     <ClInclude Include="..\OutputTransductionVariables.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\DirLogger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -97,9 +97,6 @@
     <ClCompile Include="..\Af_stdio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClInclude Include="..\MappedFileHelperWin.cpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClCompile Include="..\Alphabet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -620,6 +617,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Cassys_tokens.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirLoggerWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MappedFileHelperWin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

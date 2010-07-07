@@ -699,6 +699,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\DirLogger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\DirLoggerWin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\DuplicateFile.cpp"
 				>
 			</File>
