@@ -76,8 +76,8 @@ typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_af_remove)(const char* name
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_af_remove)(const char* name,int,void* privateLoggerPtr);
 
 
-typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_calling_tool)(mainFunc*,int argc,char* argv[],void* privateLoggerPtr);
-typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_calling_tool)(mainFunc*,int argc,char* argv[],int,void* privateLoggerPtr);
+typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_calling_tool)(mainFunc*,int argc,char* const argv[],void* privateLoggerPtr);
+typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_calling_tool)(mainFunc*,int argc,char* const argv[],int,void* privateLoggerPtr);
 
 
 /* two optional (can be just NULL) callbacks to initialize and uninitialize the logger */

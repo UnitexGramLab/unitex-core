@@ -1542,7 +1542,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
 /**
  * The same than main, but no call to setBufferMode.
  */
-int main_RunLog(int argc,char* argv[]) {
+int main_RunLog(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
    return 0;
@@ -1783,7 +1783,7 @@ UNITEX_FUNC int UNITEX_CALL GetRunLogInfo(mainFunc** pfunc,const char** usage,co
     return 0;
 }
 
-UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* argv[])
+UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* const argv[])
 {
     return main_RunLog(argc,argv);
 }

@@ -70,14 +70,14 @@ UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPa
 
 UNITEX_FUNC int UNITEX_CALL GetRunLogInfo(mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
-UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* argv[]);
+UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* const argv[]);
 
 
 extern const char* optstring_RunLog;
 extern const struct option_TS lopts_RunLog[];
 extern const char* usage_RunLog;
 
-int main_RunLog(int argc,char* argv[]);
+int main_RunLog(int argc,char* const argv[]);
 
 
 #ifdef __cplusplus

@@ -72,8 +72,8 @@ int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,co
 int main_UnitexTool_C(int argc,char* const argv[]);
 
 
-UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
-UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_one_tool(const char*toolname,int argc,char* argv[]);
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_one_tool(const char*toolname,int argc,char* const argv[]);
 
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetNumberOfTool();
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_byname(const char* toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);

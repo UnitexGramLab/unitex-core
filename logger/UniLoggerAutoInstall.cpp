@@ -158,7 +158,7 @@ const struct option_TS lopts_CreateLog[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 
-InstallLogger::InstallLogger(int argc,char* argv[]) :
+InstallLogger::InstallLogger(int argc,char* const argv[]) :
   ule(ule_default_init),init_done(0)
 {
   ClearUniLoggerSpaceStruct(0);

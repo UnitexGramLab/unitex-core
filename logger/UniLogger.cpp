@@ -800,7 +800,7 @@ int DumpMemToPack(struct ExecutionLogging* pEL,const char* filename_to_store,con
 }
 
 
-void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,char* argv[],void* privateLoggerPtr)
+void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,char* const argv[],void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
 
@@ -856,7 +856,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,c
 }
 
 
-void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*/,char*[] /* argv[]*/,int ret,void* privateLoggerPtr)
+void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*/,char* const [] /* argv[]*/,int ret,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
     if (pEL == NULL)

@@ -235,7 +235,7 @@ void Call_logger_fnc_after_af_remove(const char* name,int ret)
 }
 
 
-void Call_logger_fnc_before_calling_tool(mainFunc* fnc,int argc,char* argv[])
+void Call_logger_fnc_before_calling_tool(mainFunc* fnc,int argc,char* const argv[])
 {
     struct List_LoggerInfo* tmp = p_logger_info_list;
 	while (tmp != NULL)
@@ -246,7 +246,7 @@ void Call_logger_fnc_before_calling_tool(mainFunc* fnc,int argc,char* argv[])
 	}
 }
 
-void Call_logger_fnc_after_calling_tool(mainFunc* fnc,int argc,char* argv[],int ret)
+void Call_logger_fnc_after_calling_tool(mainFunc* fnc,int argc,char* const argv[],int ret)
 {
     struct List_LoggerInfo* tmp = p_logger_info_list;
 	while (tmp != NULL)

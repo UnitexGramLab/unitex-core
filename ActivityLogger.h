@@ -53,8 +53,8 @@ void Call_logger_fnc_after_af_copy(const char* name1,const char* name2,int);
 void Call_logger_fnc_before_af_remove(const char* name);
 void Call_logger_fnc_after_af_remove(const char* name,int);
 
-void Call_logger_fnc_before_calling_tool(mainFunc*,int argc,char* argv[]);
-void Call_logger_fnc_after_calling_tool(mainFunc*,int argc,char* argv[],int);
+void Call_logger_fnc_before_calling_tool(mainFunc*,int argc,char* const argv[]);
+void Call_logger_fnc_after_calling_tool(mainFunc*,int argc,char* const argv[],int);
 
 
 void Call_logger_fnc_LogOutWrite(const void*Buf, size_t size);

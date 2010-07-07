@@ -41,7 +41,7 @@ class InstallLogger
 {
 public:
     InstallLogger(const char* parameter_filename=NULL);
-    InstallLogger(int argc,char* argv[]);
+    InstallLogger(int argc,char* const argv[]);
     ~InstallLogger();
 private:
     struct UniLoggerSpace ule;
