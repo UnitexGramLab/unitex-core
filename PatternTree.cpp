@@ -216,8 +216,8 @@ if (pattern==NULL) {
    fatal_error("NULL pattern in add_pattern\n");
 }
 if (pattern->type!=CODE_PATTERN && pattern->type!=LEMMA_AND_CODE_PATTERN
-    && pattern->type!=FULL_PATTERN) {
-   fatal_error("Invalid pattern type in add_pattern\n");
+    && pattern->type!=FULL_PATTERN && pattern->type!=INFLECTED_AND_LEMMA_PATTERN) {
+   fatal_error("Invalid pattern type %d in add_pattern\n",pattern->type);
 }
 struct pattern_node* node=get_pattern_node(root,pattern->grammatical_codes,prv_alloc);
 struct constraint_list* constraints=get_constraints(&(node->constraints),pattern,prv_alloc);
