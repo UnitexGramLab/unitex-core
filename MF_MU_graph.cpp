@@ -156,15 +156,20 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_
     q_bis = p_multiFlex_ctx->fst2[p_multiFlex_ctx->T]->states[t->state_number];  //get the arrival state
     Fst2Tag e = p_multiFlex_ctx->fst2[p_multiFlex_ctx->T]->tags[t->tag_number];  //get the transition's label
     err = MU_graph_scan_label(p_multiFlex_ctx,pL_MORPHO,e->input,e->output,lab);  //transform the label into a MU_graph_label
-    if (err)
+    if (err) {
+    	MU_graph_free_label(lab);
+    	free(lab);
       return err;
+    }
     //Initialize the set of inflected forms
     MU_init_forms(&forms_bis);
     err = MU_graph_explore_label(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,
     		mask_encoding_compatibility_input,lab,q_bis,&forms_bis,pkgdir);
     if (err) {
-      MU_delete_inflection(&forms_bis);
-      return err;
+    	MU_graph_free_label(lab);
+    	free(lab);
+    	MU_delete_inflection(&forms_bis);
+    	return err;
     }
 
     //Add each new form to the one generated previously, if it does not exist already
@@ -812,8 +817,8 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct 
     		  mask_encoding_compatibility_input,l_out_morpho,i_morpho,feat,q_bis,&suffix_forms,
     		  pkgdir);
       if (err) {
-	MU_delete_inflection(&suffix_forms);
-	return err;
+    	  MU_delete_inflection(&suffix_forms);
+    	  return err;
       }
       //If any suffix found, add it to the list of those generated previously
       MU_merge_forms(forms, &suffix_forms);
