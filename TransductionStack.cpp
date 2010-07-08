@@ -175,7 +175,8 @@ for (;;) {
                /* We do nothing, since this normal variable may not exist */
             } else {
                if (v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
-                     || v->start_in_tokens>v->end_in_tokens) {
+                     || v->start_in_tokens>v->end_in_tokens
+                     || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars!=-1 && v->end_in_chars<v->start_in_chars)) {
                   /* If the variable is not defined properly */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
@@ -350,7 +351,8 @@ for (;;) {
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-      } else if (v->start_in_tokens>v->end_in_tokens) {
+      } else if (v->start_in_tokens>v->end_in_tokens
+				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars!=-1 && v->end_in_chars<v->start_in_chars)) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
@@ -358,8 +360,27 @@ for (;;) {
          }
       } else {
     	  /* If the normal variable definition is correct */
-    	  for (int k=v->start_in_tokens;k<v->end_in_tokens;k++) {
-    		  push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
+    	  /* Case 1: start and end in the same token*/
+    	  if (v->start_in_tokens==v->end_in_tokens-1) {
+    		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+    		  int last=(v->end_in_chars!=-1)?v->end_in_chars:u_strlen(tok)-1;
+    		  for (int k=v->start_in_chars;k<=last;k++) {
+    			  push_input_char(p->stack,tok[k],p->protect_dic_chars);
+    		  }
+    	  } else {
+    		  /* Case 2: first we deal with first token */
+    		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+    		  push_input_string(p->stack,tok+v->start_in_chars,p->protect_dic_chars);
+    		  /* Then we copy all tokens until the last one */
+        	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
+        		  push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
+        	  }
+        	  /* Finally, we copy the last token */
+        	  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+        	  int last=(v->end_in_chars!=-1)?v->end_in_chars:u_strlen(tok)-1;
+        	  for (int k=0;k<=last;k++) {
+        		  push_input_char(p->stack,tok[k],p->protect_dic_chars);
+        	  }
     	  }
       }
    }

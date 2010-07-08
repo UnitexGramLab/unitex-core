@@ -961,7 +961,7 @@ int captured_chars;
 				inc_dirty(backup_reserve);
 				enter_morphological_mode(graph_depth, t1->state_number, pos2,
 						depth + 1, matches, n_matches, ctx, p,
-						p_token_error_ctx, prv_alloc);
+						p_token_error_ctx, backup_reserve, prv_alloc);
 				p->stack->stack_pointer = stack_top;
 				break;
 
@@ -1073,10 +1073,12 @@ while (output_variable_list != NULL) {
 	while (variable_list != NULL) {
 
 		inc_dirty(backup_reserve);
-		int old = get_variable_start(p->input_variables,
+		int old_in_token = get_variable_start(p->input_variables,
 				variable_list->variable_number);
+		int old_in_char = get_variable_start_in_chars(p->input_variables,
+						variable_list->variable_number);
 		set_variable_start(p->input_variables, variable_list->variable_number, pos2);
-
+		set_variable_start_in_chars(p->input_variables, variable_list->variable_number, 0);
 		locate(graph_depth,
 				p->optimized_states[variable_list->transition->state_number],
 				pos, depth + 1, matches, n_matches, ctx, p, p_token_error_ctx,
@@ -1087,7 +1089,9 @@ while (output_variable_list != NULL) {
 			 * to allow extracting things from contexts (see the
 			 * "the cat is white" example in Unitex manual). */
 			set_variable_start(p->input_variables, variable_list->variable_number,
-					old);
+					old_in_token);
+			set_variable_start_in_chars(p->input_variables, variable_list->variable_number,
+								old_in_char);
 			dec_dirty(backup_reserve);
 			// restore dirty
 		}
@@ -1101,10 +1105,12 @@ while (output_variable_list != NULL) {
 	while (variable_list != NULL) {
 
 		inc_dirty(backup_reserve);
-		int old =
+		int old_in_token =
 				get_variable_end(p->input_variables, variable_list->variable_number);
+		int old_in_char =
+						get_variable_end_in_chars(p->input_variables, variable_list->variable_number);
 		set_variable_end(p->input_variables, variable_list->variable_number, pos);
-
+		set_variable_end_in_chars(p->input_variables, variable_list->variable_number,-1);
 		locate(graph_depth,
 				p->optimized_states[variable_list->transition->state_number],
 				pos, depth + 1, matches, n_matches, ctx, p, p_token_error_ctx,
@@ -1114,7 +1120,8 @@ while (output_variable_list != NULL) {
 			/* We do not restore previous value if we are inside a context, in order
 			 * to allow extracting things from contexts (see the
 			 * "the cat is white" example in Unitex manual). */
-			set_variable_end(p->input_variables, variable_list->variable_number, old);
+			set_variable_end(p->input_variables, variable_list->variable_number, old_in_token);
+			set_variable_end_in_chars(p->input_variables, variable_list->variable_number, old_in_char);
 			dec_dirty(backup_reserve);
 		}
 		variable_list = variable_list->next;
