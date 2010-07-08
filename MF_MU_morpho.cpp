@@ -110,6 +110,9 @@ void MU_init_forms(MU_forms_T* forms) {
 // Add an empty form with empty features 'feat' to the initially empty set of forms 'forms'
 void MU_add_empty_form(MU_forms_T* forms) {
 	//Allocate space for a couple (epsilon,empty_set)
+	if (forms->forms!=NULL) {
+		fatal_error("Unexpected non NULL forms in MU_add_empty_form");
+	}
 	forms->forms = (MU_f_T*) malloc(sizeof(MU_f_T));
 	if (!forms->forms) {
 		fatal_alloc_error("MU_add_empty_form");
