@@ -71,10 +71,10 @@ if ((s==NULL)||(s[0]=='\0')) {
 }
 int i=0;
 unichar tmp[2048];
-if (P_BACKSLASH_AT_END==parse_string(s,&i,tmp,P_PLUS_MINUS_COLON)) {
+if (P_BACKSLASH_AT_END==parse_string(s,&i,tmp,P_PLUS_TILDE_COLON)) {
    fatal_error("Backslash at end of a pattern\n");
 }
-/* If we have found '+' '-' or ':', then we have a code pattern */
+/* If we have found '+' '~' or ':', then we have a code pattern */
 if (s[i]!='\0') {
    return CODE_PATTERN;
 }
@@ -135,10 +135,10 @@ if (codes[0]==':') {
 do {
    switch(codes[pos]) {
       case '+': pos++; minus=0; break;
-      case '-': pos++; minus=1; break;
+      case '~': pos++; minus=1; break;
       default: minus=0;
    }
-   if (P_BACKSLASH_AT_END==parse_string(codes,&pos,tmp,P_PLUS_MINUS_COLON)) {
+   if (P_BACKSLASH_AT_END==parse_string(codes,&pos,tmp,P_PLUS_TILDE_COLON)) {
       fatal_error("Backslash at end of pattern\n");
    }
    if (minus) {
@@ -185,11 +185,16 @@ if (P_BACKSLASH_AT_END==parse_string(s,&pos,tmp,P_COMMA_DOT)) {
  * or a combination of grammatical/semantic/inflectional codes */
 if (s[pos]=='\0') {
    /* We must test on s and NOT on inflected, because of patterns like
-    * <A+faux\-ami>. In fact, s contains "A+faux\-ami" and inflected
-    * contains "A+faux-ami". So, if we consider inflected instead of s,
-    * the minus will be taken as a negation and not as a part of the code
-    * "faux-ami", and then, no difference will be made between
-    * "<A+faux\-ami>" and "<A+faux-ami>". */
+    * <A+faux\~ami>. In fact, s contains "A+faux\~ami" and inflected
+    * contains "A+faux~ami". So, if we consider inflected instead of s,
+    * the tilde will be taken as a negation and not as a part of the code
+    * "faux~ami", and then, no difference will be made between
+    * "<A+faux\~ami>" and "<A+faux~ami>".
+    *
+    * NOTE: I (S.P.) know that "faux~ami" is not a convincing example, but
+    *       previously, the '-' was the negation sign, and now that it's '~',
+    *       I'm too lazy to build a realistic example with the tilde
+    */
    p->type=is_code_pattern(s,semantic_codes);
    if (p->type==CODE_PATTERN) {
       /* If we are in the <V> case */
