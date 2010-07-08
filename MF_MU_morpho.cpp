@@ -233,7 +233,7 @@ void MU_merge_forms(MU_forms_T* forms, MU_forms_T* new_forms) {
 			//If the new form does not exist in 'forms', add it
 			if (!found) {
 				forms->forms[forms->no_forms] = new_forms->forms[nmf];
-				//If a for has been added to a different list, it shouldn't be accessible from the old one (otherwise memory liberation problems).
+				//If a form has been added to a different list, it shouldn't be accessible from the old one (otherwise memory liberation problems).
 				new_forms->forms[nmf].form = NULL;
 				new_forms->forms[nmf].features = NULL;
 				forms->no_forms++;
@@ -242,6 +242,8 @@ void MU_merge_forms(MU_forms_T* forms, MU_forms_T* new_forms) {
 			else {
 				free(new_forms->forms[nmf].form);
 				f_delete_morpho(new_forms->forms[nmf].features);
+				new_forms->forms[nmf].form = NULL;
+				new_forms->forms[nmf].features = NULL;
 			}
 		}
 	}
