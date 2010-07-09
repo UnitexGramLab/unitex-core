@@ -12,21 +12,46 @@
 #include "List_ustring.h"
 #include "Tokenization.h"
 #include "Text_tokens.h"
-
+#include "Copyright.h"
 #include "DirHelper.h"
 
 
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:";
+const char *optstring_Cassys = ":f:a:t:h:";
 const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
-		{"transducers_list", required_argument_TS, NULL,'t'}
+		{"transducers_list", required_argument_TS, NULL,'t'},
+		{"help", no_argument_TS,NULL,'h'}
 };
 
-const char* usage_Cassys ="usage";
+const char* usage_Cassys =
+		"Usage : Cassys [options]\n"
+		"\n"
+		"OPTION :\n"
+		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
+		"-t TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
+		"-f FILE/--file=FILE the snt text file\n"
+		"-h/--help display this help\n"
+		"\n"
+		"Applies a list of grammar to a text and saves the matching sequence index in a\n"
+         "file named \"concord.ind\" stored in the text directory.\n\n"
+         "The target text file has to be a preprocessed snt file with its _snt/ directory.\n"
+         "The transducer list file is a file in which each line contains the path to a transducer.\n"
+         "followed by the output policy to be applied to this transducer. The policy may be MERGE\n"
+         "or REPLACE.\n"
+         "The file option, the alphabet option and the transducer list file option are mandatory.\n"
+         "\n";
+
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Cassys);
+}
+
 
 
 int main_Cassys(int argc,char* const argv[]) {
@@ -47,6 +72,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
 			lopts_Cassys, &index, vars))) {
 		switch (val) {
+		case 'h': usage(); return 0;
 		case 'f': {
 			if (vars -> optarg[0] == '\0') {
 				fatal_error("Command line error : Empty file name argument\n");
@@ -92,13 +118,13 @@ int main_Cassys(int argc,char* const argv[]) {
 	index = -1;
 
 	if(has_alphabet == false){
-		fatal_error("Command line error : no alphabet provided\n");
+		fatal_error("Command line error : no alphabet provided\nRerun with --help\n");
 	}
 	if(has_text_file_name == false){
-		fatal_error("Command line error : no text file provided\n");
+		fatal_error("Command line error : no text file provided\nRerun with --help\n");
 	}
 	if(has_transducer_list == false){
-		fatal_error("Command line error : no transducer list provided\n");
+		fatal_error("Command line error : no transducer list provided\nRerun with --help\n");
 	}
 
 
