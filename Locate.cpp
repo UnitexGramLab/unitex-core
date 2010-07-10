@@ -66,6 +66,7 @@ const char* usage_Locate =
          "                   (back)slash terminated\n"
          "  -K/--korean: tells Locate that it works on Korean\n"
          "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
+         "  -g/--minus_negation_operator: uses minus as negation operator for Unitex 2.0 graphs\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -119,7 +120,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:o:u:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:o:u:g";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -149,6 +150,7 @@ const struct option_TS lopts_Locate[]= {
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {"arabic_rules",required_argument_TS,NULL,'u'},
+      {"minus_negation_operator",no_argument_TS,NULL,'g'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -181,6 +183,7 @@ int protect_dic_chars=0;
 int is_korean=0;
 int max_count_call=0;
 int max_count_call_warning=0;
+int tilde_negation_operator=1;
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -205,6 +208,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
                 }
              }
              break;
+   case 'g': tilde_negation_operator=0; break;
    case 'S': match_policy=SHORTEST_MATCHES; break;
    case 'L': match_policy=LONGEST_MATCHES; break;
    case 'A': match_policy=ALL_MATCHES; break;
@@ -316,7 +320,7 @@ int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,ma
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
-               max_count_call,max_count_call_warning,arabic_rules);
+               max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
