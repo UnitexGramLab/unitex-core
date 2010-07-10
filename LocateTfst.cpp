@@ -44,7 +44,6 @@ const char* usage_LocateTfst =
          "  -t TFST/--text=TFST: the .tfst text automaton\n"
          "  -a ALPH/--alphabet=ALPH: the language alphabet file\n"
          "  -K/--korean: tells LocateTfst that it works on Korean\n"
-         "  -g/--minus_negation_operator: uses minus as negation operator for Unitex 2.0 graphs\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -85,7 +84,7 @@ u_printf(usage_LocateTfst);
 }
 
 
-const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzhgk:q:";
+const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzhk:q:";
 const struct option_TS lopts_LocateTfst[]= {
      {"text",required_argument_TS,NULL,'t'},
      {"alphabet",required_argument_TS,NULL,'a'},
@@ -106,7 +105,6 @@ const struct option_TS lopts_LocateTfst[]= {
      {"input_encoding",required_argument_TS,NULL,'k'},
      {"output_encoding",required_argument_TS,NULL,'q'},
      {"help",no_argument_TS,NULL,'h'},
-     {"minus_negation_operator",no_argument_TS,NULL,'g'},
      {NULL,no_argument_TS,NULL,0}
 };
 
@@ -129,7 +127,6 @@ int val,index=-1;
 char text[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 int is_korean=0;
-int tilde_negation_operator=1;
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
@@ -152,7 +149,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    case 'K': is_korean=1;
              break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
-   case 'g': tilde_negation_operator=0; break;
    case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
                 fatal_error("Invalid search limit argument: %s\n",vars->optarg);
@@ -201,7 +197,7 @@ strcat(output,"concord.ind");
 int OK=locate_tfst(text,grammar,alphabet,output,
                    encoding_output,bom_output,
                    match_policy,output_policy,
-                   ambiguous_output_policy,variable_error_policy,search_limit,is_korean,tilde_negation_operator);
+                   ambiguous_output_policy,variable_error_policy,search_limit,is_korean);
 
 free_OptVars(vars);
 return (!OK);

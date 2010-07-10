@@ -37,7 +37,6 @@ const unichar P_SLASH[] = { '/', 0 };
 const unichar P_EXCLAMATION[] = { '!', 0 };
 const unichar P_DOUBLE_QUOTE[] = { '"', 0 };
 const unichar P_PLUS_COLON[] = { '+', ':', 0 };
-const unichar P_PLUS_MINUS_COLON[] = { '+', '-', ':', 0 };
 const unichar P_PLUS_TILDE_COLON[] = { '+', '~', ':', 0 };
 const unichar P_PLUS_COLON_SLASH[] = { '+', ':', '/', 0 };
 const unichar P_PLUS_COLON_SLASH_OPENING_BRACKET[] = { '+', ':', '/', '[', 0 };

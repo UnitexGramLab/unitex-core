@@ -65,16 +65,16 @@ free_cb(p,prv_alloc);
  * AMBIGUOUS_PATTERN if there no indication that helps to guess if
  * we have a code or a lemma.
  */
-enum pattern_type is_code_pattern(unichar* s,struct string_hash* semantic_codes,int tilde_negation_operator) {
+enum pattern_type is_code_pattern(unichar* s,struct string_hash* semantic_codes) {
 if ((s==NULL)||(s[0]=='\0')) {
    fatal_error("NULL or empty pattern in is_code_pattern\n");
 }
 int i=0;
 unichar tmp[2048];
-if (P_BACKSLASH_AT_END==parse_string(s,&i,tmp,tilde_negation_operator ? P_PLUS_TILDE_COLON : P_PLUS_MINUS_COLON)) {
+if (P_BACKSLASH_AT_END==parse_string(s,&i,tmp,P_PLUS_TILDE_COLON)) {
    fatal_error("Backslash at end of a pattern\n");
 }
-/* If we have found '+' '~' (or '-' is tilde_negation_operator==0) or ':', then we have a code pattern */
+/* If we have found '+' '~' or ':', then we have a code pattern */
 if (s[i]!='\0') {
    return CODE_PATTERN;
 }
@@ -124,7 +124,7 @@ while (s[i]!='\0') {
  * "z3" -> p->forbidden_codes
  * "P3s" and "I3s" -> p->inflectional_codes
  */
-void build_code_pattern(struct pattern* p,unichar* codes,int tilde_negation_operator,Abstract_allocator prv_alloc) {
+void build_code_pattern(struct pattern* p,unichar* codes,Abstract_allocator prv_alloc) {
 unichar tmp[2048];
 int pos=0;
 int minus=0;
@@ -135,21 +135,10 @@ if (codes[0]==':') {
 do {
    switch(codes[pos]) {
       case '+': pos++; minus=0; break;
-      case '-': if (tilde_negation_operator) {
-                  pos++; minus=1; 
-                }
-                else
-                    minus = 0;
-                break;
-      case '~': if (!tilde_negation_operator) {
-                  pos++; minus=1; 
-                }
-                else
-                    minus = 0;
-                break;
+      case '~': pos++; minus=1; break;
       default: minus=0;
    }
-   if (P_BACKSLASH_AT_END==parse_string(codes,&pos,tmp,tilde_negation_operator ? P_PLUS_TILDE_COLON : P_PLUS_MINUS_COLON)) {
+   if (P_BACKSLASH_AT_END==parse_string(codes,&pos,tmp,P_PLUS_TILDE_COLON)) {
       fatal_error("Backslash at end of pattern\n");
    }
    if (minus) {
@@ -181,7 +170,7 @@ do {
  * and builds a pattern from it. Raises a fatal error in case
  * of malformed pattern.
  */
-struct pattern* build_pattern(unichar* s,struct string_hash* semantic_codes,int tilde_negation_operator,Abstract_allocator prv_alloc) {
+struct pattern* build_pattern(unichar* s,struct string_hash* semantic_codes,Abstract_allocator prv_alloc) {
 struct pattern* p=new_pattern(prv_alloc);
 int pos;
 unichar tmp[2048];
@@ -206,10 +195,10 @@ if (s[pos]=='\0') {
     *       previously, the '-' was the negation sign, and now that it's '~',
     *       I'm too lazy to build a realistic example with the tilde
     */
-   p->type=is_code_pattern(s,semantic_codes,tilde_negation_operator);
+   p->type=is_code_pattern(s,semantic_codes);
    if (p->type==CODE_PATTERN) {
       /* If we are in the <V> case */
-      build_code_pattern(p,s,tilde_negation_operator,prv_alloc);
+      build_code_pattern(p,s,prv_alloc);
       return p;
    }
    else {
@@ -233,13 +222,13 @@ if (s[pos]=='.') {
    if (tmp[0]=='\0') {
       /* If we are in the <.V> case */
       p->type=CODE_PATTERN;
-      build_code_pattern(p,&(s[pos+1]),tilde_negation_operator,prv_alloc);
+      build_code_pattern(p,&(s[pos+1]),prv_alloc);
       return p;
    }
    /* If we are in the <be.V> case */
    p->lemma=u_strdup(tmp,prv_alloc);
    p->type=LEMMA_AND_CODE_PATTERN;
-   build_code_pattern(p,&(s[pos+1]),tilde_negation_operator,prv_alloc);
+   build_code_pattern(p,&(s[pos+1]),prv_alloc);
    return p;
 }
 /* If we are in the  <am,be.V> case */
@@ -265,7 +254,7 @@ if (s[pos]=='\0') {
    return p;
 }
 p->lemma=u_strdup(tmp,prv_alloc);
-build_code_pattern(p,&(s[pos+1]),tilde_negation_operator,prv_alloc);
+build_code_pattern(p,&(s[pos+1]),prv_alloc);
 return p;
 }
 

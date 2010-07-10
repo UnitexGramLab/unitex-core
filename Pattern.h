@@ -92,7 +92,7 @@ struct pattern {
 };
 
 
-struct pattern* build_pattern(unichar*,struct string_hash*,int tilde_negation_operator,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct pattern* build_pattern(unichar*,struct string_hash*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct pattern* build_token_pattern(unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_pattern(struct pattern*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int is_entry_compatible_with_pattern(struct dela_entry* entry,struct pattern* pattern);

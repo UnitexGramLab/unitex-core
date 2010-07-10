@@ -149,7 +149,7 @@ int locate_pattern(char* text_cod,char* tokens,char* fst2_name,char* dlf,char* d
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning,
-                   char* arabic_rules,int tilde_negation_operator) {
+                   char* arabic_rules) {
 
 U_FILE* out;
 U_FILE* info;
@@ -158,7 +158,6 @@ p->text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
 p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
 long text_size=(long)af_get_mapfile_size(p->text_cod)/sizeof(int);
 p->buffer_size=(int)text_size;
-p->tilde_negation_operator=tilde_negation_operator;
 if (max_count_call == -1) {
    max_count_call = (int)text_size;
 }

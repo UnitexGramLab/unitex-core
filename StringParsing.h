@@ -64,7 +64,6 @@ extern const unichar P_SLASH[] ;
 extern const unichar P_EXCLAMATION[] ;
 extern const unichar P_DOUBLE_QUOTE[] ;
 extern const unichar P_PLUS_COLON[] ;
-extern const unichar P_PLUS_MINUS_COLON[] ;
 extern const unichar P_PLUS_TILDE_COLON[] ;
 extern const unichar P_PLUS_COLON_SLASH[] ;
 extern const unichar P_PLUS_COLON_SLASH_OPENING_BRACKET[] ;
