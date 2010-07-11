@@ -24,6 +24,8 @@ const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
 		{"transducers_list", required_argument_TS, NULL,'t'},
+		{"input_encoding",required_argument_TS,NULL,'k'},
+		{"output_encoding",required_argument_TS,NULL,'q'},
 		{"help", no_argument_TS,NULL,'h'}
 };
 
@@ -65,6 +67,10 @@ int main_Cassys(int argc,char* const argv[]) {
 	char alphabet_file_name[FILENAME_MAX];
 	bool has_alphabet = false;
 
+	Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+	int bom_output = DEFAULT_BOM_OUTPUT;
+	int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 	// decode the command line
 	int val;
 	int index = 1;
@@ -73,6 +79,16 @@ int main_Cassys(int argc,char* const argv[]) {
 			lopts_Cassys, &index, vars))) {
 		switch (val) {
 		case 'h': usage(); return 0;
+		case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+		case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
 		case 'f': {
 			if (vars -> optarg[0] == '\0') {
 				fatal_error("Command line error : Empty file name argument\n");
@@ -132,7 +148,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	// Load the list of transducers from the file transducer list and stores it in a list
 	struct fifo *transducer_list = load_transducer(transducer_list_file_name);
 
-	cascade(text_file_name, transducer_list, alphabet_file_name);
+	cascade(text_file_name, transducer_list, alphabet_file_name,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 	return 0;
 }
@@ -143,9 +159,9 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(char* text, fifo* transducer_list, char *alphabet){
+int cascade(const char* text, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
-	launch_tokenize_in_Cassys(text,alphabet,NULL);
+	launch_tokenize_in_Cassys(text,alphabet,NULL,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 	initialize_working_directory(text);
 
@@ -163,23 +179,23 @@ int cascade(char* text, fifo* transducer_list, char *alphabet){
 		labeled_text_name = create_labeled_files_and_directory(text,
 				transducer_number);
 
-		launch_tokenize_in_Cassys(labeled_text_name,alphabet,snt_text_files->tokens_txt);
+		launch_tokenize_in_Cassys(labeled_text_name,alphabet,snt_text_files->tokens_txt,encoding_output,bom_output,mask_encoding_compatibility_input);
 		free_snt_files(snt_text_files);
 
 		// apply transducer
 		transducer *current_transducer = (transducer*)take_ptr(transducer_list);
-		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet);
+		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, encoding_output,bom_output,mask_encoding_compatibility_input);
 
 		// generate concordance for this transducer
 		snt_text_files = new_snt_files(labeled_text_name);
 		launch_concord_in_Cassys(labeled_text_name,
-				snt_text_files -> concord_ind, alphabet);
+				snt_text_files -> concord_ind, alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 		//
-		add_replaced_text(labeled_text_name,tokens_list,transducer_number,alphabet);
+		add_replaced_text(labeled_text_name,tokens_list,transducer_number,alphabet,mask_encoding_compatibility_input);
 
 		// add protection character in braces when needed
-		protect_special_characters(labeled_text_name);
+		protect_special_characters(labeled_text_name,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 		transducer_number++;
 
@@ -188,7 +204,7 @@ int cascade(char* text, fifo* transducer_list, char *alphabet){
 	}
 	free_snt_files(snt_text_files);
 
-	construct_cascade_concord(tokens_list,text,transducer_number);
+	construct_cascade_concord(tokens_list,text,transducer_number,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 
 	struct snt_files *snt_files = new_snt_files(text);
@@ -200,7 +216,7 @@ int cascade(char* text, fifo* transducer_list, char *alphabet){
 
 	copy_file(result_file_name,text);
 
-	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet);
+	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 
 	free_snt_files(snt_files);
@@ -245,8 +261,8 @@ cassys_tokens_list *cassys_load_text(const char *tokens_text_name, const char *t
 }
 
 
-cassys_tokens_list *add_replaced_text( char *text, cassys_tokens_list *list,
-		 int transducer_id, const char *alphabet_name) {
+cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *list,
+		 int transducer_id, const char *alphabet_name,int mask_encoding_compatibility_input) {
 
 	fprintf(stdout,"Replacement text begins\n");
 
@@ -254,7 +270,7 @@ cassys_tokens_list *add_replaced_text( char *text, cassys_tokens_list *list,
 
 	struct snt_files *snt_text_files = new_snt_files(text);
 
-	struct fifo *stage_concord = read_concord_file(snt_text_files->concord_ind);
+	struct fifo *stage_concord = read_concord_file(snt_text_files->concord_ind, mask_encoding_compatibility_input);
 	fprintf(stdout,"Read concord file done\n");
 
 
@@ -314,13 +330,13 @@ cassys_tokens_list *add_replaced_text( char *text, cassys_tokens_list *list,
  * \return a fifo list of all the matches found with their replacement sentences. Each element is
  * stored in a locate_pos structure
  */
-struct fifo *read_concord_file(const char *concord_file_name){
+struct fifo *read_concord_file(const char *concord_file_name,int mask_encoding_compatibility_input){
 	unichar line[4096];
 
 	struct fifo *f = new_fifo();
 
 	U_FILE *concord_desc_file;
-	concord_desc_file = u_fopen(UTF16_LE, concord_file_name,U_READ);
+	concord_desc_file = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, concord_file_name,U_READ);
 	if( concord_desc_file == NULL){
 		perror("u_fopen\n");
 		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",concord_file_name);
@@ -486,11 +502,29 @@ struct fifo *load_transducer(const char *transducer_list_name){
  *
  *
  */
-int launch_tokenize_in_Cassys(char *text_name, const char *alphabet_name, char *token_txt_name){
+int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,
+    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
 	fprintf(stdout,"Launch tokenize in Cassys\n");
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
+
+    char tmp[FILENAME_MAX];
+    {
+        tmp[0]=0;
+        get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+        if (tmp[0] != '\0') {
+            add_argument(invoker,"-k");
+            add_argument(invoker,tmp);
+        }
+
+        tmp[0]=0;
+        get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+        if (tmp[0] != '\0') {
+            add_argument(invoker,"-q");
+            add_argument(invoker,tmp);
+        }
+    }
 
 	// add the alphabet
 	char alphabet_argument[FILENAME_MAX + 11];
@@ -534,9 +568,26 @@ int launch_tokenize_in_Cassys(char *text_name, const char *alphabet_name, char *
  * \param [in] transducer structure containing information about the transducer to be applied
  *
  */
-int launch_locate_in_Cassys(char *text_name, const transducer *transducer, const char* alphabet_name){
+int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
+
+    char tmp[FILENAME_MAX];
+    {
+        tmp[0]=0;
+        get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+        if (tmp[0] != '\0') {
+            add_argument(invoker,"-k");
+            add_argument(invoker,tmp);
+        }
+
+        tmp[0]=0;
+        get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+        if (tmp[0] != '\0') {
+            add_argument(invoker,"-q");
+            add_argument(invoker,tmp);
+        }
+    }
 
 	add_argument(invoker, transducer->transducer_file_name);
 
@@ -585,10 +636,28 @@ int launch_locate_in_Cassys(char *text_name, const transducer *transducer, const
  * \param [in] index_file file containing all the matches found by locate
  *
  */
-int launch_concord_in_Cassys(char *text_name, char *index_file, const char *alphabet_name){
+int launch_concord_in_Cassys(const char *text_name, const char *index_file, const char *alphabet_name,
+    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
 
 	add_argument(invoker,index_file);
+
+    char tmp[FILENAME_MAX];
+    {
+        tmp[0]=0;
+        get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+        if (tmp[0] != '\0') {
+            add_argument(invoker,"-k");
+            add_argument(invoker,tmp);
+        }
+
+        tmp[0]=0;
+        get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+        if (tmp[0] != '\0') {
+            add_argument(invoker,"-q");
+            add_argument(invoker,tmp);
+        }
+    }
 
 	char text_argument[FILENAME_MAX+7];
 	sprintf(text_argument,"--merge=%s",text_name);
@@ -742,7 +811,7 @@ int copy_directory_content(char *dest, const char *src){
 
 
 
-int initialize_working_directory(char *text){
+int initialize_working_directory(const char *text){
 	char path[FILENAME_MAX];
 	get_path(text,path);
 
@@ -773,7 +842,7 @@ int initialize_working_directory(char *text){
 }
 
 
-char* create_labeled_files_and_directory(char *text, int next_transducer_label) {
+char* create_labeled_files_and_directory(const char *text, int next_transducer_label) {
 
 	char path[FILENAME_MAX];
 	get_path(text, path);
@@ -847,7 +916,7 @@ char* create_labeled_files_and_directory(char *text, int next_transducer_label) 
 }
 
 
-void protect_special_characters(char *text){
+void protect_special_characters(const char *text,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
 	U_FILE *source;
 	U_FILE *destination;
@@ -860,14 +929,14 @@ void protect_special_characters(char *text){
 	sprintf(temp_name_file,"%stemp",path);
 
 
-	source = u_fopen(UTF16_LE, text,U_READ);
+	source = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, text,U_READ);
 	if( source == NULL){
 		perror("u_fopen\n");
 		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",text);
 		exit(1);
 	}
 
-	destination = u_fopen(UTF16_LE, temp_name_file,U_WRITE);
+	destination = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,temp_name_file,U_WRITE);
 	if( destination == NULL){
 		perror("u_fopen\n");
 		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",temp_name_file);
@@ -977,7 +1046,7 @@ unichar *get_braced_string(U_FILE *u){
 }
 
 
-unichar *protect_braced_string(unichar *s){
+unichar *protect_braced_string(const unichar *s){
 	unichar *result;
 	unichar *stop_sentence;
 
@@ -1018,7 +1087,7 @@ unichar *protect_braced_string(unichar *s){
 	return result;
 }
 
-unichar *protect_lem_in_braced_string(unichar *s){
+unichar *protect_lem_in_braced_string(const unichar *s){
 	int length = u_strlen(s);
 	//u_printf("%S = length = %d\n", s,length);
 	int i;
@@ -1053,7 +1122,7 @@ unichar *protect_lem_in_braced_string(unichar *s){
 }
 
 
-unichar *protect_text_in_braced_string(unichar *s){
+unichar *protect_text_in_braced_string(const unichar *s){
 	int length = u_strlen(s);
 	int i;
 	// find the lemm/label separator
@@ -1106,13 +1175,14 @@ unichar *protect_text_in_braced_string(unichar *s){
 }
 
 
-void construct_cascade_concord(cassys_tokens_list *list, char *text_name, int number_of_transducer){
+void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, int number_of_transducer,
+    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
 	fprintf(stdout, "Construct cascade concord\n");
 
 	struct snt_files *snt_file = new_snt_files(text_name);
 
-	U_FILE *concord_desc_file = u_fopen(UTF16_LE, snt_file->concord_ind,U_WRITE);
+	U_FILE *concord_desc_file = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input, snt_file->concord_ind,U_WRITE);
 	if( concord_desc_file == NULL){
 		perror("u_fopen\n");
 		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",snt_file->concord_ind);
@@ -1208,12 +1278,12 @@ void construct_cascade_concord(cassys_tokens_list *list, char *text_name, int nu
 
 
 
-void display_locate_pos(locate_pos *l){
+void display_locate_pos(const locate_pos *l){
 	u_printf("locate_pos = %d.%d.%d %d.%d.%d %S\n",l->token_start_offset,l->character_start_offset,l->logical_start_offset,
 			l->token_end_offset, l->character_end_offset, l->logical_end_offset,l->label);
 }
 
-void display_list_ustring(struct list_ustring *l){
+void display_list_ustring(const struct list_ustring *l){
 	u_printf("list_ustring = ");
 	while(l!=NULL){
 		u_printf("%S",l->string);
@@ -1223,7 +1293,7 @@ void display_list_ustring(struct list_ustring *l){
 }
 
 
-list_ustring *cassys_tokenize_word_by_word(unichar* text,Alphabet* alphabet){
+list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* alphabet){
 
 	list_ustring *result = NULL;
 	unichar token[4096];
