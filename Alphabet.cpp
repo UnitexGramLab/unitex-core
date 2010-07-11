@@ -197,7 +197,7 @@ return load_alphabet(filename,0);
  * Returns 1 if 'upper' is considered as an uppercase equivalent
  * of 'lower' for the given alphabet; returns 0 otherwise.
  */
-int is_upper_of(unichar lower,unichar upper,Alphabet* alphabet) {
+int is_upper_of(unichar lower,unichar upper,const Alphabet* alphabet) {
 if (alphabet==NULL) {
    return upper==u_toupper(lower);   
 }
@@ -216,7 +216,7 @@ return 0;
  * Returns a non-zero value if 'a' and 'b' are identical no matter the case;
  * 0 otherwise.
  */
-int is_equal_ignore_case(unichar a,unichar b,Alphabet* alphabet) {
+int is_equal_ignore_case(unichar a,unichar b,const Alphabet* alphabet) {
 return a==b || is_upper_of(a,b,alphabet) || is_upper_of(b,a,alphabet);
 }
 
@@ -226,7 +226,7 @@ return a==b || is_upper_of(a,b,alphabet) || is_upper_of(b,a,alphabet);
  * an uppercase equivalent of 'a' according for the given alphabet;
  * returns 0 otherwise.
  */
-int is_equal_or_uppercase(unichar a,unichar b,Alphabet* alphabet) {
+int is_equal_or_uppercase(unichar a,unichar b,const Alphabet* alphabet) {
 return (a==b || is_upper_of(a,b,alphabet));
 }
 
@@ -236,7 +236,7 @@ return (a==b || is_upper_of(a,b,alphabet));
  * an uppercase equivalent of 'a' according for the given alphabet;
  * returns 0 otherwise.
  */
-int is_equal_or_uppercase(unichar* a,unichar* b,Alphabet* alphabet) {
+int is_equal_or_uppercase(const unichar* a,const unichar* b,const Alphabet* alphabet) {
 int i=0;
 while (a[i] && is_equal_or_uppercase(a[i],b[i],alphabet)) {i++;}
 return (a[i]=='\0' && b[i]=='\0');
@@ -247,7 +247,7 @@ return (a[i]=='\0' && b[i]=='\0');
  * Returns 1 if 'c' is considered as an uppercase letter
  * in the given alphabet, 0 otherwise.
  */
-int is_upper(unichar c,Alphabet* alphabet) {
+int is_upper(unichar c,const Alphabet* alphabet) {
 if (alphabet==NULL) {
     if (u_is_letter(c) == 0)
         return 0;
@@ -261,7 +261,7 @@ return IS_UPPER_MACRO(c,alphabet);
  * Returns 2 if 'c' is considered as a lowercase letter
  * in the given alphabet, 0 otherwise.
  */
-int is_lower(unichar c,Alphabet* alphabet) {
+int is_lower(unichar c,const Alphabet* alphabet) {
 if (alphabet==NULL) {
     if (u_is_letter(c) == 0)
         return 0;
@@ -275,7 +275,7 @@ return IS_LOWER_MACRO(c,alphabet);
  * Returns a non-zero value if 'c' is considered
  * as a letter in for the given alphabet, 0 otherwise.
  */
-static int is_letter__(unichar c,Alphabet* alphabet) {
+static int is_letter__(unichar c,const Alphabet* alphabet) {
 return CASE_FLAG_MACRO(c,alphabet) != 0;
 }
 
@@ -285,7 +285,7 @@ return CASE_FLAG_MACRO(c,alphabet) != 0;
  * it is used to determine which characters are letters; otherwise, the
  * 'u_is_letter' function is used.
  */
-int is_letter(unichar c,Alphabet* alphabet) {
+int is_letter(unichar c,const Alphabet* alphabet) {
 if (alphabet==NULL) {
    return u_is_letter(c);
 }
@@ -297,7 +297,7 @@ return is_letter__(c,alphabet);
  * Returns 1 if the string 's' is only made of letters,
  * according to the given alphabet, 0 otherwise.
  */
-int is_sequence_of_letters(unichar* s,Alphabet* alphabet) {
+int is_sequence_of_letters(const unichar* s,const Alphabet* alphabet) {
 for (int i=0;s[i]!='\0';i++) {
    if (!is_letter(s[i],alphabet)) return 0;
 }
@@ -309,7 +309,7 @@ return 1;
  * Returns 1 if the string 's' is only made of lowercase letters,
  * according to the given alphabet, 0 otherwise.
  */
-int is_sequence_of_lowercase_letters(unichar* s,Alphabet* alphabet) {
+int is_sequence_of_lowercase_letters(const unichar* s,const Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
   if (!is_lower(s[i],alphabet)) return 0;
@@ -323,7 +323,7 @@ return 1;
  * Returns 1 if the string 's' is only made of uppercase letters,
  * according to the given alphabet, 0 otherwise.
  */
-int is_sequence_of_uppercase_letters(unichar* s,Alphabet* alphabet) {
+int is_sequence_of_uppercase_letters(const unichar* s,const Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
   if (!is_upper(s[i],alphabet)) return 0;
@@ -415,7 +415,7 @@ while (s[i]!='\0') {
  *
  * This function is used for morphological filter regular expressions.
  */
-void replace_letter_by_letter_set(Alphabet* a,unichar* dest,unichar* src) {
+void replace_letter_by_letter_set(const Alphabet* a,unichar* dest,const unichar* src) {
 int i=0,j=0;
 char inside_a_set=0;
 while (src[i]!='\0') {
@@ -510,7 +510,7 @@ dest[j]='\0';
  * AB OK
  * aB X
  */
-int get_longuest_prefix_ignoring_case(unichar* a,unichar* b,Alphabet* alphabet) {
+int get_longuest_prefix_ignoring_case(const unichar* a,const unichar* b,const Alphabet* alphabet) {
 if (a==NULL || b==NULL) {
    return 0;
 }

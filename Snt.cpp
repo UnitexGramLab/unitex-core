@@ -31,7 +31,7 @@
  * all the files related to a text in a given path. This path is supposed
  * to correspond to a "..._snt" directory.
  */
-struct snt_files* new_snt_files_from_path(char* path) {
+struct snt_files* new_snt_files_from_path(const char* path) {
 struct snt_files* snt_files=(struct snt_files*)malloc(sizeof(struct snt_files));
 if (snt_files==NULL) {
 	fatal_alloc_error("new_snt_files_from_path");
@@ -66,7 +66,7 @@ return snt_files;
  * Allocates, initializes and returns a structure that contains the names
  * all the files related to a given .snt text.
  */
-struct snt_files* new_snt_files(char* text_snt) {
+struct snt_files* new_snt_files(const char* text_snt) {
 char path[FILENAME_MAX];
 get_snt_path((const char*)text_snt,path);
 return new_snt_files_from_path(path);

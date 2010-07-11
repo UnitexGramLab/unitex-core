@@ -56,8 +56,8 @@ struct snt_files {
 };
 
 
-struct snt_files* new_snt_files(char*);
-struct snt_files* new_snt_files_from_path(char*);
+struct snt_files* new_snt_files(const char*);
+struct snt_files* new_snt_files_from_path(const char*);
 void free_snt_files(struct snt_files*);
 
 #endif

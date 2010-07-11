@@ -106,7 +106,7 @@ strcat(result,PATH_SEPARATOR_STRING);
 /**
  * Takes a file name and copies it without its path, if any, into 'result'.
  */
-void remove_path(char* filename,char* result) {
+void remove_path(const char* filename,char* result) {
 int l=(int)strlen(filename)-1;
 while (l>=0 && filename[l]!='/' && filename[l]!='\\') {
    l--;
@@ -127,7 +127,7 @@ result[k]='\0';
  * Takes a file name and copies it without its path and extension, if
  * any, into 'result'.
  */
-void remove_path_and_extension(char* filename,char* result) {
+void remove_path_and_extension(const char* filename,char* result) {
 char temp[FILENAME_MAX];
 remove_path(filename,temp);
 remove_extension(temp,result);
@@ -222,24 +222,17 @@ strcpy(&(result[length_without_separator+1]),name);
 /**
  * This function copies the file 'src' into 'dest'.
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sébastien Paumier then Gilles Vollant
  */
-void copy_file(char* dest,char* src) {
-U_FILE* input=u_fopen(ASCII,src,U_READ);
-if (input==NULL) {
-   fatal_error("Unable to open '%s'\n",src);
+void copy_file(const char* dest,const char* src) {
+int res=af_copy(src,dest);
+if (res!=0) {
+    if (res==1) {
+        fatal_error("error in writing when copy '%s' to '%s'\n",src,dest);
+    }
+    else
+        fatal_error("error in reading when copy '%s' to '%s'\n",src,dest);
 }
-U_FILE* output=u_fopen(ASCII,dest,U_WRITE);
-if (output==NULL) {
-   fatal_error("Unable to open '%s'\n",dest);
-}
-char buffer[4096];
-int n;
-while ((n=((int)fread(buffer,sizeof(char),4096,input)))>0) {
-   fwrite(buffer,sizeof(char),n,output);
-}
-u_fclose(input);
-u_fclose(output);
 }
 
 
@@ -247,7 +240,7 @@ u_fclose(output);
  * Returns 1 if the given file exists and can be read; 0 otherwise.
  */
 int fexists(char* name) {
-ABSTRACTFILE* f=af_fopen_unlogged(name,"rb");
+ABSTRACTFILE* f=af_fopen(name,"rb");
 if (f==NULL) return 0;
 af_fclose(f);
 return 1;
@@ -257,7 +250,7 @@ return 1;
 /**
  * Returns a value corresponding to the file date.
  */
-time_t get_file_date(char* name) {
+time_t get_file_date(const char* name) {
 struct stat info;
 stat(name,&info);
 return info.st_mtime;
@@ -267,7 +260,7 @@ return info.st_mtime;
 /**
  * Returns the size in bytes of the given file, or -1 if not found.
  */
-long get_file_size(char* name) {
+long get_file_size(const char* name) {
 U_FILE* f=u_fopen(ASCII,name,U_READ);
 if (f==NULL) return -1;
 fseek(f,0,SEEK_END);

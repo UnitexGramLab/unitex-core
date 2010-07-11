@@ -767,6 +767,8 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
     if (af_fseek(vfRead, 0, SEEK_SET) != 0)
         iSuccessCopyingRet = 1;
 
+    int ret_in_error = -1;
+
     while (size_to_do>0)
     {
         int iThis = (size_to_do < buffer_size) ? (((int)size_to_do)) : buffer_size;
@@ -775,8 +777,10 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
         if (iReadDone == 0)
             break;
         iWriteDone = (int)af_fwrite(szBuffer,1,iReadDone,vfWrite);
-        if (iWriteDone != iReadDone)
+        if (iWriteDone != iReadDone) { 
+            ret_in_error = 1;
             break;
+        }
         size_to_do -= iWriteDone;
     }
     af_fclose(vfRead);
@@ -786,7 +790,7 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
     if (size_to_do==0)
         return 0; /* success */
 	else
-        return -1;
+        return ret_in_error;
 }
 
 
