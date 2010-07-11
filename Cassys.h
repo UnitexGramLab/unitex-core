@@ -101,7 +101,7 @@ struct fifo *load_transducer(const char *file_list_transducer_name);
  *
  * return 0 if correct
  */
-int cascade(const char* text, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 
 /**
@@ -208,7 +208,7 @@ int make_directory(const char *path);
  */
 
 
-int initialize_working_directory(const char *text);
+int initialize_working_directory(const char *text,int must_create_directory);
 
 /**
  * \brief
@@ -216,17 +216,16 @@ int initialize_working_directory(const char *text);
  * \param[in] text
  * \param[in] next_transducer_label
  */
-char* create_labeled_files_and_directory(const char *text, int next_transducer_label);
+char* create_labeled_files_and_directory(const char *text, int next_transducer_label, int must_create_directory);
 
 /**
- * \brief Copies the content of a directory \b src in the directory \b dest
+ * \brief Copies the content of a snt directory \b src in the directory \b dest
  *
  * @param src the source directory
  * @param dest the destination directory
  *
- * @todo Windows version
  */
-int copy_directory_content(const char *dest, const char *src);
+int copy_directory_snt_content(const char *dest, const char *src);
 
 /**
  * \brief Reads the 'concord.ind' file and returns a FIFO list of locate_pos items

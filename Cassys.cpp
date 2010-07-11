@@ -19,13 +19,14 @@
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:h:";
+const char *optstring_Cassys = ":f:a:t:hk:q:d";
 const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
 		{"transducers_list", required_argument_TS, NULL,'t'},
 		{"input_encoding",required_argument_TS,NULL,'k'},
 		{"output_encoding",required_argument_TS,NULL,'q'},
+		{"no_create_directory",no_argument_TS,NULL,'d'},
 		{"help", no_argument_TS,NULL,'h'}
 };
 
@@ -36,6 +37,7 @@ const char* usage_Cassys =
 		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
 		"-t TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
 		"-f FILE/--file=FILE the snt text file\n"
+		"-d/--no_create_directory mean the snt directories already exist and don't need to be created\n"
 		"-h/--help display this help\n"
 		"\n"
 		"Applies a list of grammar to a text and saves the matching sequence index in a\n"
@@ -70,6 +72,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 	int bom_output = DEFAULT_BOM_OUTPUT;
 	int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+    int must_create_directory = 1;
 
 	// decode the command line
 	int val;
@@ -125,6 +128,10 @@ int main_Cassys(int argc,char* const argv[]) {
 			}
 			break;
 		}
+        case 'd': {
+            must_create_directory = 0;
+			break;
+		}
 		default :{
 			fatal_error("Unknown option : %c\n",val);
 			break;
@@ -148,7 +155,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	// Load the list of transducers from the file transducer list and stores it in a list
 	struct fifo *transducer_list = load_transducer(transducer_list_file_name);
 
-	cascade(text_file_name, transducer_list, alphabet_file_name,encoding_output,bom_output,mask_encoding_compatibility_input);
+	cascade(text_file_name, must_create_directory, transducer_list, alphabet_file_name,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 	return 0;
 }
@@ -159,11 +166,11 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(const char* text, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
+int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
 	launch_tokenize_in_Cassys(text,alphabet,NULL,encoding_output,bom_output,mask_encoding_compatibility_input);
 
-	initialize_working_directory(text);
+	initialize_working_directory(text, must_create_directory);
 
 	struct snt_files *snt_text_files = new_snt_files(text);
 
@@ -177,7 +184,7 @@ int cascade(const char* text, fifo* transducer_list, const char *alphabet,Encodi
 		char *labeled_text_name;
 
 		labeled_text_name = create_labeled_files_and_directory(text,
-				transducer_number);
+				transducer_number, must_create_directory);
 
 		launch_tokenize_in_Cassys(labeled_text_name,alphabet,snt_text_files->tokens_txt,encoding_output,bom_output,mask_encoding_compatibility_input);
 		free_snt_files(snt_text_files);
@@ -798,7 +805,8 @@ int make_directory(char *path){
 /**
  * \brief Copies the content of the directory src in the directory dest
  */
-int copy_directory_content(char *dest, const char *src){
+/*
+int copy_directory_content(const char *dest, const char *src){
 #ifdef _NOT_UNDER_WINDOWS
 	char linux_command[FILENAME_MAX*2];
 	sprintf(linux_command, "cp %s* %s -f", src, dest);
@@ -808,10 +816,46 @@ int copy_directory_content(char *dest, const char *src){
     return 0;
 #endif
 }
+*/
+
+int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory)
+{
+    char fullname_src[1024];
+    char fullname_dest[1024];
+
+    sprintf(fullname_src,"%s%s",src_snd_dir,filename);
+    sprintf(fullname_dest,"%s%s",dest_snt_dir,filename);
+
+    int ret_copy = af_copy(fullname_src,fullname_dest);
+    if (!mandatory)
+        return 1;
+    return (ret_copy == 0);
+}
+
+int copy_directory_snt_content(const char*dest_snt_dir,const char*src_snd_dir)
+{
+    int result=1;
+
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.ind",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.n",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.txt",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlc",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlf",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"enter.pos",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"err",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"stat_dic.n",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"stats.n",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tags.ind",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"text.cod",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tok_by_alph.txt",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tok_by_freq.txt",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tokens.txt",1);
+
+    return result;
+}
 
 
-
-int initialize_working_directory(const char *text){
+int initialize_working_directory(const char *text,int must_create_directory){
 	char path[FILENAME_MAX];
 	get_path(text,path);
 
@@ -824,7 +868,9 @@ int initialize_working_directory(const char *text){
 	char working_directory[FILENAME_MAX];
 	sprintf(working_directory, "%s%s%s%c",path, canonical_name, CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR);
 
-	make_directory(working_directory);
+	if (must_create_directory != 0) {
+        make_directory(working_directory);
+    }
 
 	char text_in_wd[FILENAME_MAX];
 	sprintf(text_in_wd, "%s%s_0%s",working_directory,canonical_name,extension );
@@ -832,18 +878,19 @@ int initialize_working_directory(const char *text){
 
 	char snt_dir_text_in_wd[FILENAME_MAX];
 	get_snt_path(text_in_wd, snt_dir_text_in_wd);
-	make_directory(snt_dir_text_in_wd);
+    if (must_create_directory != 0) {
+        make_directory(snt_dir_text_in_wd);
+    }
 
 	char original_snt_dir[FILENAME_MAX];
 	get_snt_path(text,original_snt_dir);
-	copy_directory_content(snt_dir_text_in_wd, original_snt_dir);
+	copy_directory_snt_content(snt_dir_text_in_wd, original_snt_dir);
 
 	return 0;
 }
 
 
-char* create_labeled_files_and_directory(const char *text, int next_transducer_label) {
-
+char* create_labeled_files_and_directory(const char *text, int next_transducer_label,int must_create_directory) {
 	char path[FILENAME_MAX];
 	get_path(text, path);
 
@@ -874,7 +921,9 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 
 	char new_labeled_snt_directory[FILENAME_MAX];
 	get_snt_path(new_labeled_text_name, new_labeled_snt_directory);
-	make_directory(new_labeled_snt_directory);
+    if (must_create_directory != 0) {
+        make_directory(new_labeled_snt_directory);
+    }
 
 	// copy dictionary files in the new snt directory
 	struct snt_files *old_snt_ = new_snt_files(old_labeled_text_name);
@@ -1369,9 +1418,3 @@ list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* a
 	//display_list_ustring(result);
 	return result;
 }
-
-
-
-
-
-
