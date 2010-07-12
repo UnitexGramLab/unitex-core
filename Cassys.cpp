@@ -836,13 +836,13 @@ int copy_directory_snt_content(const char*dest_snt_dir,const char*src_snd_dir)
 {
     int result=1;
 
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.ind",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.ind",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.n",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.txt",0);
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlc",1);
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlf",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlc",0);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlf",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"enter.pos",1);
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"err",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"err",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"stat_dic.n",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"stats.n",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tags.ind",0);
