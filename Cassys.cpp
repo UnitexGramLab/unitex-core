@@ -59,6 +59,10 @@ u_printf(usage_Cassys);
 
 
 int main_Cassys(int argc,char* const argv[]) {
+	if (argc==1) {
+		usage();
+		return 0;
+	}
 
 	char transducer_list_file_name[FILENAME_MAX];
 	bool has_transducer_list = false;
