@@ -828,6 +828,31 @@ write_fst2_tags(f,fst2);
 u_fclose(f);
 }
 
+int get_graph_compatibity_mode_by_file(int * p_tilde_negation_operator) {
+
+    U_FILE *fin = u_fopen_existing_versatile_encoding(UTF8_NO_BOM_POSSIBLE|ALL_ENCODING_BOM_POSSIBLE,"unitex_graph_compatibilty_mode.txt",U_READ);
+    if (fin == NULL)
+        return 0;
+
+    unichar tmpu[512+16];
+    char tmp[512+16];
+    while(EOF!=u_fgets_limit2(tmpu,512,fin)) {
+        u_to_char(tmp,tmpu);
+        if (memcmp(tmp,"negation_operator=",18)==0)
+        {
+            if ((strcmp(tmp+18,"minus")==0) || (strcmp(tmp+18,"-")==0))
+                if (p_tilde_negation_operator!=NULL)
+                    *p_tilde_negation_operator=0;
+            if ((strcmp(tmp+18,"tilde")==0) || (strcmp(tmp+18,"~")==0))
+                if (p_tilde_negation_operator!=NULL)
+                    *p_tilde_negation_operator=1;
+        }
+    }
+
+    return 1;
+}
+
+
 /*******************************************************************/
 /* cloning 
 */

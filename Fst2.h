@@ -220,6 +220,8 @@ int   load_fst2_from_file(U_FILE*,int,Fst2 **, int,Abstract_allocator prv_alloc=
 Fst2* load_one_sentence_from_fst2(const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Fst2(Fst2*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
+int get_graph_compatibity_mode_by_file(int * p_tilde_negation_operator);
+
 Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 /* Functions for writing grammars */

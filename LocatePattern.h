@@ -239,13 +239,14 @@ struct locate_parameters {
 
    /* Arabic typographic rule configuration */
    ArabicTypoRules arabic;
+   int tilde_negation_operator;
 };
 
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
                    MatchPolicy,OutputPolicy,Encoding,int,int,char*,TokenizationPolicy,
                    SpacePolicy,int,char*,AmbiguousOutputPolicy,
-                   VariableErrorPolicy,int,int,int,int,char*);
+                   VariableErrorPolicy,int,int,int,int,char*,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);

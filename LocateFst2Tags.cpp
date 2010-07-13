@@ -176,7 +176,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                /* If we arrive here, we have not a meta but a pattern like
                 * <be>, <be.V>, <V:K>, ... */
                tag[i]->type=PATTERN_TAG;
-               tag[i]->pattern=build_pattern(content,semantic_codes,prv_alloc);
+               tag[i]->pattern=build_pattern(content,semantic_codes,parameters->tilde_negation_operator,prv_alloc);
                if (tag[i]->pattern->type==CODE_PATTERN ||
                    tag[i]->pattern->type==LEMMA_AND_CODE_PATTERN ||
                    tag[i]->pattern->type==FULL_PATTERN || 
