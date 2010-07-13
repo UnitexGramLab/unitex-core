@@ -211,6 +211,9 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
 
 		transducer_number++;
 
+		free(current_transducer -> transducer_file_name);
+		free(current_transducer);
+
 		free(labeled_text_name);
 
 	}
@@ -475,6 +478,8 @@ struct fifo *load_transducer(const char *transducer_list_name){
 			}
 
 			strcpy(t->transducer_file_name, transducer_file_name);
+			free(transducer_file_name);
+
 			t->output_policy = transducer_policy;
 
 
@@ -721,7 +726,7 @@ char* extract_cassys_transducer_name(const char *line){
 			return NULL;
 		}
 
-	transducer_name = (char*)malloc(sizeof(char)*(i-j)+1);
+	transducer_name = (char*)malloc(sizeof(char)*((i-j)+1));
 	if(transducer_name == NULL){
 		perror("malloc\n");
 		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
