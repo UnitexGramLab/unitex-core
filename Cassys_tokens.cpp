@@ -139,7 +139,7 @@ void free_cassys_tokens_list(cassys_tokens_list *l){
 	if(l!=NULL){
 		free(l->token);
 		free_cassys_tokens_list(l->output);
-		if(l->next_token!=NULL && l->transducer_id == l->next_token -> transducer_id){
+		if(l->next_token!=NULL /* && l->transducer_id == l->next_token -> transducer_id*/){
 			free_cassys_tokens_list(l->next_token);
 		}
 	}

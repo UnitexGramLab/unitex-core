@@ -85,7 +85,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
 			lopts_Cassys, &index, vars))) {
 		switch (val) {
-		case 'h': usage(); return 0;
+		case 'h': usage(); free_OptVars(vars); return 0;
 		case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -160,7 +160,8 @@ int main_Cassys(int argc,char* const argv[]) {
 	struct fifo *transducer_list = load_transducer(transducer_list_file_name);
 
 	cascade(text_file_name, must_create_directory, transducer_list, alphabet_file_name,encoding_output,bom_output,mask_encoding_compatibility_input);
-
+	free_fifo(transducer_list);
+    free_OptVars(vars);
 	return 0;
 }
 
@@ -170,7 +171,7 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
+int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 
 	launch_tokenize_in_Cassys(text,alphabet,NULL,encoding_output,bom_output,mask_encoding_compatibility_input);
 
@@ -229,9 +230,9 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
 
 	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
-
+    free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);
-
+	free_text_tokens(tokens);
 	return 0;
 }
 
@@ -326,6 +327,7 @@ cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *lis
 
 	free_fifo(stage_concord);
 	free_snt_files(snt_text_files);
+    free_alphabet(alphabet);
 
 	return list;
 }
@@ -493,9 +495,9 @@ struct fifo *load_transducer(const char *transducer_list_name){
 		}
 		i++;
 	}
+    u_fclose(file_transducer_list);
 
 	return transducer_fifo;
-
 }
 
 
