@@ -27,6 +27,16 @@
 
 
 
+/**
+  * Structure storing the list of transducer
+  */
+struct transducer_name_and_mode_linked_list
+{
+    char* transducer_filename;
+    OutputPolicy transducer_mode;
+    struct transducer_name_and_mode_linked_list* next;
+};
+
 
 /**
  * Structure storing informations about a transducer
@@ -36,6 +46,22 @@ typedef struct transducer{
 	char *transducer_file_name;
 	OutputPolicy output_policy;
 }transducer;
+
+
+
+
+struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(struct transducer_name_and_mode_linked_list *current_list,const char*filename);
+
+void set_last_transducer_linked_list_mode(struct transducer_name_and_mode_linked_list *current_list,OutputPolicy mode);
+
+void set_last_transducer_linked_list_mode_by_string(struct transducer_name_and_mode_linked_list *current_list,const char*option_name);
+
+void free_transducer_name_and_mode_linked_list(struct transducer_name_and_mode_linked_list *list);
+
+struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name);
+
+struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list);
+
 
 /**
  * \struct locate_pos

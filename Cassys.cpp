@@ -19,7 +19,7 @@
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:hk:q:g:d";
+const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:";
 const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
@@ -28,6 +28,10 @@ const struct option_TS lopts_Cassys[] = {
 		{"output_encoding",required_argument_TS,NULL,'q'},
 		{"no_create_directory",no_argument_TS,NULL,'d'},
 		{"negation_operator",required_argument_TS,NULL,'g'},
+
+		{"transducer_policy",required_argument_TS,NULL,'m'},
+		{"transducer_file",required_argument_TS,NULL,'s'},
+
 		{"help", no_argument_TS,NULL,'h'}
 };
 
@@ -37,6 +41,8 @@ const char* usage_Cassys =
 		"OPTION :\n"
 		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
 		"-t TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
+        "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
+        "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
 		"-f FILE/--file=FILE the snt text file\n"
 		"-d/--no_create_directory mean the snt directories already exist and don't need to be created\n"
 		"-h/--help display this help\n"
@@ -45,8 +51,10 @@ const char* usage_Cassys =
          "file named \"concord.ind\" stored in the text directory.\n\n"
          "The target text file has to be a preprocessed snt file with its _snt/ directory.\n"
          "The transducer list file is a file in which each line contains the path to a transducer.\n"
-         "followed by the output policy to be applied to this transducer. The policy may be MERGE\n"
-         "or REPLACE.\n"
+         "followed by the output policy to be applied to this transducer.\n"
+         "Instead a list file, you can specify each file and each output policy by a set of couple\n"
+         "of -s/--transducer_file and -m/--transducer_policy argument to enumerate the list\n"
+         "The policy may be MERGE or REPLACE.\n"
          "The file option, the alphabet option and the transducer list file option are mandatory.\n"
          "\n";
 
@@ -57,6 +65,122 @@ u_printf("%S",COPYRIGHT);
 u_printf(usage_Cassys);
 }
 
+OutputPolicy GetOutputPolicyFromString(const char*option_name)
+{
+	if (strcmp(option_name, "M") == 0 || strcmp(option_name, "MERGE") == 0 || strcmp(
+			option_name, "Merge") == 0) {
+		return MERGE_OUTPUTS;
+	}
+	if (strcmp(option_name, "R") == 0 || strcmp(option_name, "REPLACE") == 0
+			|| strcmp(option_name, "Replace") == 0) {
+		return REPLACE_OUTPUTS;
+	}
+	return IGNORE_OUTPUTS;
+}
+
+
+struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(struct transducer_name_and_mode_linked_list *current_list,const char*filename)
+{
+    struct transducer_name_and_mode_linked_list* new_item=(struct transducer_name_and_mode_linked_list*)malloc(sizeof(struct transducer_name_and_mode_linked_list));
+    if (new_item==NULL) {
+		perror("malloc\n");
+		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		exit(1);
+	}
+    
+    new_item->transducer_filename = strdup(filename);
+    new_item->transducer_mode=IGNORE_OUTPUTS;
+    new_item->next=NULL;
+    if (new_item->transducer_filename==NULL) {
+		perror("malloc\n");
+		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		exit(1);
+	}
+
+    if (current_list==NULL)
+        return new_item;
+
+    struct transducer_name_and_mode_linked_list *browse_current_list = current_list;
+
+    while (browse_current_list->next != NULL)
+        browse_current_list = browse_current_list->next;
+    browse_current_list->next=new_item;
+    return current_list;
+}
+
+void set_last_transducer_linked_list_mode(struct transducer_name_and_mode_linked_list *current_list,OutputPolicy mode)
+{
+    struct transducer_name_and_mode_linked_list *browse_current_list = current_list;
+    if (current_list == NULL)
+        return;
+    while (browse_current_list->next != NULL)
+        browse_current_list = browse_current_list->next;
+    browse_current_list->transducer_mode = mode;
+}
+
+void set_last_transducer_linked_list_mode_by_string(struct transducer_name_and_mode_linked_list *current_list,const char*option_name)
+{
+    set_last_transducer_linked_list_mode(current_list,GetOutputPolicyFromString(option_name));
+}
+
+void free_transducer_name_and_mode_linked_list(struct transducer_name_and_mode_linked_list *list)
+{
+    while (list!=NULL) {
+        struct transducer_name_and_mode_linked_list *list_next = list->next;
+        free(list->transducer_filename);
+        free(list);
+        list = list_next;
+    }
+}
+
+
+
+
+struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name) {
+
+	U_FILE *file_transducer_list;
+    struct transducer_name_and_mode_linked_list * res=NULL;
+
+	file_transducer_list = u_fopen(ASCII, transducer_list_name,U_READ);
+	if( file_transducer_list == NULL){
+		perror("u_fopen\n");
+		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",transducer_list_name);
+		exit(1);
+	}
+
+    char line[1024];
+    int i=1;
+	while (cassys_fgets(line,1024,file_transducer_list) != NULL){
+		char *transducer_file_name;
+		OutputPolicy transducer_policy;
+		
+
+		remove_cassys_comments(line);
+
+		transducer_file_name = extract_cassys_transducer_name(line);
+		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
+
+		transducer_policy = extract_cassys_transducer_policy(line);
+
+
+		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS) {
+			res=add_transducer_linked_list_new_name(res,transducer_file_name);
+            set_last_transducer_linked_list_mode(res,transducer_policy);
+		}
+		else {
+			if (transducer_file_name == NULL) {
+				fprintf(stdout, "Line %d : Empty line\n",i);
+			} else if (transducer_policy == IGNORE_OUTPUTS) {
+				fprintf(stdout, "Line %d : Transducer policy not recognized\n",i);
+			}
+		}
+        free(transducer_file_name);
+		i++;
+	}
+    u_fclose(file_transducer_list);
+
+	return res;
+}
 
 
 int main_Cassys(int argc,char* const argv[]) {
@@ -80,6 +204,8 @@ int main_Cassys(int argc,char* const argv[]) {
 	int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
     int must_create_directory = 1;
 
+    struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
+
 	// decode the command line
 	int val;
 	int index = 1;
@@ -88,7 +214,10 @@ int main_Cassys(int argc,char* const argv[]) {
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
 			lopts_Cassys, &index, vars))) {
 		switch (val) {
-		case 'h': usage(); free_OptVars(vars); return 0;
+		case 'h': usage(); 
+                  free_OptVars(vars);
+                  free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg); 
+                  return 0;
 		case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -126,6 +255,26 @@ int main_Cassys(int argc,char* const argv[]) {
 			}
 			break;
 		}
+
+
+		case 's': {
+			if(vars -> optarg[0] == '\0'){
+				fatal_error("Command line error : Empty transducer filename argument\n");
+			} else {
+				transducer_name_and_mode_linked_list_arg=add_transducer_linked_list_new_name(transducer_name_and_mode_linked_list_arg,vars -> optarg);
+			}
+			break;
+		}
+
+		case 'm': {
+			if(vars -> optarg[0] == '\0'){
+				fatal_error("Command line error : Empty transducer mode argument\n");
+			} else {
+				set_last_transducer_linked_list_mode_by_string(transducer_name_and_mode_linked_list_arg,vars -> optarg);
+			}
+			break;
+		}
+
 		case 'a':{
 			if (vars -> optarg[0] == '\0') {
 				fatal_error("Command line error : Empty alphabet argument\n");
@@ -163,18 +312,22 @@ int main_Cassys(int argc,char* const argv[]) {
 	if(has_text_file_name == false){
 		fatal_error("Command line error : no text file provided\nRerun with --help\n");
 	}
-	if(has_transducer_list == false){
+	if((has_transducer_list == false) && (transducer_name_and_mode_linked_list_arg == NULL)){
 		fatal_error("Command line error : no transducer list provided\nRerun with --help\n");
 	}
 
 
 
 	// Load the list of transducers from the file transducer list and stores it in a list
-	struct fifo *transducer_list = load_transducer(transducer_list_file_name);
+	//struct fifo *transducer_list = load_transducer(transducer_list_file_name);
+    if ((transducer_name_and_mode_linked_list_arg == NULL) && has_transducer_list)
+        transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name);
+    struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg);
 
 	cascade(text_file_name, must_create_directory, transducer_list, alphabet_file_name,negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
 	free_fifo(transducer_list);
     free_OptVars(vars);
+    free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
 	return 0;
 }
 
@@ -447,34 +600,19 @@ locate_pos *read_concord_line(unichar *line) {
 }
 
 
-struct fifo *load_transducer(const char *transducer_list_name){
-
-	U_FILE *file_transducer_list;
-
-	file_transducer_list = u_fopen(ASCII, transducer_list_name,U_READ);
-	if( file_transducer_list == NULL){
-		perror("u_fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",transducer_list_name);
-		exit(1);
-	}
-
+struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list){
 	struct fifo *transducer_fifo = new_fifo();
 
-	char line[1024];
-
-
 	int i=1;
-	while (cassys_fgets(line,1024,file_transducer_list) != NULL){
+	while (list != NULL){
 		char *transducer_file_name;
 		OutputPolicy transducer_policy;
 		transducer *t;
 
-		remove_cassys_comments(line);
-
-		transducer_file_name = extract_cassys_transducer_name(line);
+        transducer_file_name = list->transducer_filename;
 		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
 
-		transducer_policy = extract_cassys_transducer_policy(line);
+        transducer_policy = list->transducer_mode;
 
 		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS) {
 			//fprintf(stdout,"transducer to be loaded\n");
@@ -493,7 +631,6 @@ struct fifo *load_transducer(const char *transducer_list_name){
 			}
 
 			strcpy(t->transducer_file_name, transducer_file_name);
-			free(transducer_file_name);
 
 			t->output_policy = transducer_policy;
 
@@ -508,18 +645,18 @@ struct fifo *load_transducer(const char *transducer_list_name){
 		}
 		else {
 			if (transducer_file_name == NULL) {
-				fprintf(stdout, "Line %d : Empty line\n",i);
+				fprintf(stdout, "Transducer %d : Empty filename\n",i);
 			} else if (transducer_policy == IGNORE_OUTPUTS) {
-				fprintf(stdout, "Line %d : Transducer mode not recognized\n",i);
+				fprintf(stdout, "Transducer %d : Transducer mode not recognized\n",i);
 			}
 		}
 		i++;
+        list=list->next;
 	}
-    u_fclose(file_transducer_list);
+    
 
 	return transducer_fifo;
 }
-
 
 /**
  * \brief Calls the tokenize program in Cassys
