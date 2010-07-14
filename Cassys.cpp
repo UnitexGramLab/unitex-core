@@ -19,7 +19,7 @@
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:hk:q:d";
+const char *optstring_Cassys = ":f:a:t:hk:q:g:d";
 const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
@@ -27,6 +27,7 @@ const struct option_TS lopts_Cassys[] = {
 		{"input_encoding",required_argument_TS,NULL,'k'},
 		{"output_encoding",required_argument_TS,NULL,'q'},
 		{"no_create_directory",no_argument_TS,NULL,'d'},
+		{"negation_operator",required_argument_TS,NULL,'g'},
 		{"help", no_argument_TS,NULL,'h'}
 };
 
@@ -72,6 +73,7 @@ int main_Cassys(int argc,char* const argv[]) {
 
 	char alphabet_file_name[FILENAME_MAX];
 	bool has_alphabet = false;
+    char negation_operator[0x20];
 
 	Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 	int bom_output = DEFAULT_BOM_OUTPUT;
@@ -81,6 +83,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	// decode the command line
 	int val;
 	int index = 1;
+    negation_operator[0]=0;
 	struct OptVars* vars=new_OptVars();
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
 			lopts_Cassys, &index, vars))) {
@@ -132,6 +135,16 @@ int main_Cassys(int argc,char* const argv[]) {
 			}
 			break;
 		}
+   	    case 'g': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify an argument for negation operator\n");
+             }
+             if ((strcmp(vars->optarg,"minus")!=0) && (strcmp(vars->optarg,"-")!=0) && 
+                 (strcmp(vars->optarg,"tilde")!=0) && (strcmp(vars->optarg,"~")!=0))
+             {
+                 fatal_error("You must specify a valid argument for negation operator\n");
+             }
+             strcpy(negation_operator,vars->optarg);
+             break;
         case 'd': {
             must_create_directory = 0;
 			break;
@@ -159,7 +172,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	// Load the list of transducers from the file transducer list and stores it in a list
 	struct fifo *transducer_list = load_transducer(transducer_list_file_name);
 
-	cascade(text_file_name, must_create_directory, transducer_list, alphabet_file_name,encoding_output,bom_output,mask_encoding_compatibility_input);
+	cascade(text_file_name, must_create_directory, transducer_list, alphabet_file_name,negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
 	free_fifo(transducer_list);
     free_OptVars(vars);
 	return 0;
@@ -171,7 +184,9 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
+int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,
+    const char*negation_operator,
+    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 
 	launch_tokenize_in_Cassys(text,alphabet,NULL,encoding_output,bom_output,mask_encoding_compatibility_input);
 
@@ -196,7 +211,7 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
 
 		// apply transducer
 		transducer *current_transducer = (transducer*)take_ptr(transducer_list);
-		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, encoding_output,bom_output,mask_encoding_compatibility_input);
+		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 		// generate concordance for this transducer
 		snt_text_files = new_snt_files(labeled_text_name);
@@ -586,7 +601,9 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
  * \param [in] transducer structure containing information about the transducer to be applied
  *
  */
-int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
+int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
+    const char*negation_operator,
+    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
 
@@ -631,6 +648,12 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 
 	// look for all the occurrences
 	add_argument(invoker, "--all");
+
+    if ((*negation_operator) != 0) {
+        char negation_operator_argument[0x40];
+        sprintf(negation_operator_argument,"--negation_operator=%s",negation_operator);
+        add_argument(invoker,negation_operator);
+    }
 
 	char line_command[4096];
 	build_command_line(invoker,line_command);

@@ -101,7 +101,7 @@ struct fifo *load_transducer(const char *file_list_transducer_name);
  *
  * return 0 if correct
  */
-int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 
 /**
@@ -114,7 +114,9 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
  * \param transducer transducer to apply
  * \param file name of the alphabet of the target text
  */
-int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
+                            const char*negation_operator,
+                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 
 /**

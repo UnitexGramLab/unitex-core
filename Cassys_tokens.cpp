@@ -136,17 +136,17 @@ cassys_tokens_list *new_element( unichar *u, int transducer_id){
 }
 
 void free_cassys_tokens_list(cassys_tokens_list *l){
-	if(l!=NULL){
+	while(l!=NULL){
+        cassys_tokens_list *l_next_token=NULL;
 		free(l->token);
 		free_cassys_tokens_list(l->output);
 		if(l->next_token!=NULL  && l->transducer_id == l->next_token -> transducer_id){
-			free_cassys_tokens_list(l->next_token);
+			l_next_token = l->next_token;
 		}
 		free(l);
+        l=l_next_token;
 	}
-
 }
-
 
 void display_text(cassys_tokens_list *l, int transducer_id){
 	u_printf("cassys_token_list = ");
