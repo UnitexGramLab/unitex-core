@@ -215,18 +215,7 @@ if (enter==NULL) {
    }
    return 1;
 }
-output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
-if (output==NULL) {
-   error("Cannot create file %s\n",tokens_txt);
-   u_fclose(text);
-   u_fclose(out);
-   u_fclose(enter);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
-   return 1;
-}
-u_fprintf(output,"0000000000\n");
+
 
 vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
@@ -236,6 +225,26 @@ struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_F
 if (token_file[0]!='\0') {
    load_token_file(token_file,mask_encoding_compatibility_input,tokens,hashtable,n_occur);
 }
+
+output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
+if (output==NULL) {
+   error("Cannot create file %s\n",tokens_txt);
+   u_fclose(text);
+   u_fclose(out);
+   u_fclose(enter);
+   if (alph!=NULL) {
+      free_alphabet(alph);
+   }
+
+   free_hash_table(hashtable);
+   free_vector_ptr(tokens,free);
+   free_vector_int(n_occur);
+   free_vector_int(n_enter_pos);
+
+   return 1;
+}
+u_fprintf(output,"0000000000\n");
+
 int SENTENCES=0;
 int TOKENS_TOTAL=0;
 int WORDS_TOTAL=0;
