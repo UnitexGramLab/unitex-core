@@ -19,7 +19,7 @@
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:i";
+const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
@@ -31,6 +31,7 @@ const struct option_TS lopts_Cassys[] = {
 
 		{"transducer_policy",required_argument_TS,NULL,'m'},
 		{"transducer_file",required_argument_TS,NULL,'s'},
+        {"transducer_dir",required_argument_TS,NULL,'r'},
         {"in_place", no_argument_TS,NULL,'i'},
 		{"help", no_argument_TS,NULL,'h'}
 };
@@ -155,8 +156,7 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
     int i=1;
 	while (cassys_fgets(line,1024,file_transducer_list) != NULL){
 		char *transducer_file_name;
-		OutputPolicy transducer_policy;
-		
+		OutputPolicy transducer_policy;	
 
 		remove_cassys_comments(line);
 
@@ -199,6 +199,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	bool has_text_file_name = false;
 
 	char alphabet_file_name[FILENAME_MAX];
+    char transducer_filename_prefix[FILENAME_MAX];
 	bool has_alphabet = false;
     char negation_operator[0x20];
 
@@ -213,7 +214,8 @@ int main_Cassys(int argc,char* const argv[]) {
 	// decode the command line
 	int val;
 	int index = 1;
-    negation_operator[0]=0;
+    negation_operator[0]='\0';
+    transducer_filename_prefix[0]='\0';
 	struct OptVars* vars=new_OptVars();
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
 			lopts_Cassys, &index, vars))) {
@@ -259,8 +261,15 @@ int main_Cassys(int argc,char* const argv[]) {
 			}
 			break;
 		}
-
-
+		case 'r': {
+			if(vars -> optarg[0] == '\0'){
+				fatal_error("Command line error : Empty transducer directory argument\n");
+			} else {
+				strcpy(transducer_filename_prefix, vars -> optarg);
+				has_transducer_list = true;
+			}
+			break;
+		}
 		case 's': {
 			if(vars -> optarg[0] == '\0'){
 				fatal_error("Command line error : Empty transducer filename argument\n");
@@ -269,7 +278,6 @@ int main_Cassys(int argc,char* const argv[]) {
 			}
 			break;
 		}
-
 		case 'm': {
 			if(vars -> optarg[0] == '\0'){
 				fatal_error("Command line error : Empty transducer mode argument\n");
@@ -278,7 +286,6 @@ int main_Cassys(int argc,char* const argv[]) {
 			}
 			break;
 		}
-
 		case 'a':{
 			if (vars -> optarg[0] == '\0') {
 				fatal_error("Command line error : Empty alphabet argument\n");
@@ -330,7 +337,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	//struct fifo *transducer_list = load_transducer(transducer_list_file_name);
     if ((transducer_name_and_mode_linked_list_arg == NULL) && has_transducer_list)
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name);
-    struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg);
+    struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
 
 	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name,negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
 	free_fifo(transducer_list);
@@ -624,7 +631,7 @@ locate_pos *read_concord_line(unichar *line) {
 }
 
 
-struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list){
+struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list,const char* transducer_filename_prefix){
 	struct fifo *transducer_fifo = new_fifo();
 
 	int i=1;
@@ -646,15 +653,20 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 				fprintf(stderr, "Impossible d'allouer de la mémoire\n");
 				exit(1);
 			}
-
-			t->transducer_file_name = (char*)malloc(sizeof(char)*(strlen(transducer_file_name)+1));
+            size_t transducer_filename_prefix_len = 0;
+            if (transducer_filename_prefix != NULL)
+                transducer_filename_prefix_len = strlen(transducer_filename_prefix);
+			t->transducer_file_name = (char*)malloc(sizeof(char)*(transducer_filename_prefix_len+strlen(transducer_file_name)+1));
 			if(t->transducer_file_name == NULL){
 				perror("malloc\n");
 				fprintf(stderr,"Impossible d'allouer de la mémoire\n");
 				exit(1);
 			}
 
-			strcpy(t->transducer_file_name, transducer_file_name);
+            t->transducer_file_name[0] = '\0';
+            if (transducer_filename_prefix != NULL)
+                strcpy(t->transducer_file_name, transducer_filename_prefix);
+			strcat(t->transducer_file_name, transducer_file_name);
 
 			t->output_policy = transducer_policy;
 

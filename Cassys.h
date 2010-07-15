@@ -60,7 +60,7 @@ void free_transducer_name_and_mode_linked_list(struct transducer_name_and_mode_l
 
 struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name);
 
-struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list);
+struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list,const char*transducer_filename_prefix);
 
 
 /**
