@@ -41,10 +41,16 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "Error.h"
+#include "AbstractFilePlugCallback.h"
+#include "Af_stdio.h"
+
 #include "DirHelper.h"
 
 int mkDirPortable(const char* dirname)
 {
+    if (is_filename_in_abstract_file_space(dirname) != 0)
+        return 0;
     int retMkDir = (int)(mkdir(dirname,S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP|S_IXGRP|S_IXOTH));
     /* retMkDir is 0 for success */
     return (retMkDir);
@@ -54,11 +60,17 @@ int mkDirPortable(const char* dirname)
 /* Upon successful completion, 0 shall be returned. */
 int chDirPortable(const char* dirname)
 {
+    if (is_filename_in_abstract_file_space(dirname) != 0)
+        return 0;
+
     return chdir(dirname);
 }
 
 /* Upon successful completion, 0 shall be returned. */
 int rmDirPortable(const char* dirname)
 {
+    if (is_filename_in_abstract_file_space(dirname) != 0)
+        return 0;
+
     return rmdir(dirname);
 }

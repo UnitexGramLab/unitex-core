@@ -127,7 +127,7 @@ struct fifo *load_transducer(const char *file_list_transducer_name);
  *
  * return 0 if correct
  */
-int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 
 /**
@@ -244,7 +244,7 @@ int initialize_working_directory(const char *text,int must_create_directory);
  * \param[in] text
  * \param[in] next_transducer_label
  */
-char* create_labeled_files_and_directory(const char *text, int next_transducer_label, int must_create_directory);
+char* create_labeled_files_and_directory(const char *text, int next_transducer_label, int must_create_directory, int must_copy_file);
 
 /**
  * \brief Copies the content of a snt directory \b src in the directory \b dest

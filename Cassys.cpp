@@ -19,7 +19,7 @@
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:";
+const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:i";
 const struct option_TS lopts_Cassys[] = {
 		{"file", required_argument_TS, NULL, 'f'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
@@ -31,7 +31,7 @@ const struct option_TS lopts_Cassys[] = {
 
 		{"transducer_policy",required_argument_TS,NULL,'m'},
 		{"transducer_file",required_argument_TS,NULL,'s'},
-
+        {"in_place", no_argument_TS,NULL,'i'},
 		{"help", no_argument_TS,NULL,'h'}
 };
 
@@ -44,7 +44,10 @@ const char* usage_Cassys =
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
 		"-f FILE/--file=FILE the snt text file\n"
-		"-d/--no_create_directory mean the snt directories already exist and don't need to be created\n"
+		"-i/--in_place mean uses the same csc/snt directories for each transducer\n"
+		"-d/--no_create_directory mean the all snt/csc directories already exist and don't need to be created\n"
+		"  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
+		"  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
 		"-h/--help display this help\n"
 		"\n"
 		"Applies a list of grammar to a text and saves the matching sequence index in a\n"
@@ -203,6 +206,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	int bom_output = DEFAULT_BOM_OUTPUT;
 	int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
     int must_create_directory = 1;
+    int in_place = 0;
 
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
@@ -294,6 +298,10 @@ int main_Cassys(int argc,char* const argv[]) {
              }
              strcpy(negation_operator,vars->optarg);
              break;
+        case 'i': {
+            in_place = 1;
+			break;
+		}
         case 'd': {
             must_create_directory = 0;
 			break;
@@ -324,7 +332,7 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name);
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg);
 
-	cascade(text_file_name, must_create_directory, transducer_list, alphabet_file_name,negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
+	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name,negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
 	free_fifo(transducer_list);
     free_OptVars(vars);
     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -337,13 +345,14 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(const char* text, int must_create_directory, fifo* transducer_list, const char *alphabet,
+int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
     Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 
 	launch_tokenize_in_Cassys(text,alphabet,NULL,encoding_output,bom_output,mask_encoding_compatibility_input);
 
-	initialize_working_directory(text, must_create_directory);
+    //if (in_place == 0)
+        initialize_working_directory(text, must_create_directory);
 
 	struct snt_files *snt_text_files = new_snt_files(text);
 
@@ -353,11 +362,23 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
 	fprintf(stdout,"Cascade begins\n");
 
 	int transducer_number = 1;
-	while(!is_empty(transducer_list)){
-		char *labeled_text_name;
+    char *labeled_text_name = NULL;
 
-		labeled_text_name = create_labeled_files_and_directory(text,
-				transducer_number, must_create_directory);
+    if ((in_place != 0))
+	   labeled_text_name = create_labeled_files_and_directory(text,
+		    transducer_number*0, must_create_directory,0);
+
+
+	while(!is_empty(transducer_list)){
+
+        if ((in_place == 0))
+		    labeled_text_name = create_labeled_files_and_directory(text,
+				    transducer_number, must_create_directory,1);
+        /*
+        else
+        {
+            labeled_text_name = strdup(text);
+        }*/
 
 		launch_tokenize_in_Cassys(labeled_text_name,alphabet,snt_text_files->tokens_txt,encoding_output,bom_output,mask_encoding_compatibility_input);
 		free_snt_files(snt_text_files);
@@ -382,9 +403,13 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
 		free(current_transducer -> transducer_file_name);
 		free(current_transducer);
 
-		free(labeled_text_name);
+        if ((in_place == 0))
+		       free(labeled_text_name);
 
 	}
+    if ((in_place != 0))
+		    free(labeled_text_name);
+
 	free_snt_files(snt_text_files);
 
 	construct_cascade_concord(tokens_list,text,transducer_number,encoding_output,bom_output,mask_encoding_compatibility_input);
@@ -398,7 +423,6 @@ int cascade(const char* text, int must_create_directory, fifo* transducer_list, 
 	sprintf(result_file_name,"%s.csc",text_name_without_extension);
 
 	copy_file(result_file_name,text);
-
 	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
     free_cassys_tokens_list(tokens_list);
@@ -425,7 +449,7 @@ cassys_tokens_list *cassys_load_text(const char *tokens_text_name, const char *t
 	cassys_tokens_list *temp = list;
 
 	int token_id;
-	int char_read = fread(&token_id,sizeof(int),1,f);
+	int char_read = (int)fread(&token_id,sizeof(int),1,f);
 	while(char_read ==1){
 		if(list==NULL){
 			list = new_element((*tokens)->token[token_id],0);
@@ -436,7 +460,7 @@ cassys_tokens_list *cassys_load_text(const char *tokens_text_name, const char *t
 			temp = temp -> next_token;
 		}
 
-		char_read = fread(&token_id,sizeof(int),1,f);
+		char_read = (int)fread(&token_id,sizeof(int),1,f);
 	}
 	u_fclose(f);
 
@@ -1061,7 +1085,7 @@ int initialize_working_directory(const char *text,int must_create_directory){
 }
 
 
-char* create_labeled_files_and_directory(const char *text, int next_transducer_label,int must_create_directory) {
+char* create_labeled_files_and_directory(const char *text, int next_transducer_label,int must_create_directory,int must_copy_file) {
 	char path[FILENAME_MAX];
 	get_path(text, path);
 
@@ -1084,46 +1108,49 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 	sprintf(new_labeled_text_name, "%s%s_%d%s", working_directory,
 			canonical_text_name, next_transducer_label, extension);
 
-	copy_file(new_labeled_text_name, old_labeled_text_name);
-
-	// create snt directory labeled i
-	char old_labeled_snt_directory[FILENAME_MAX];
-	get_snt_path(old_labeled_text_name, old_labeled_snt_directory);
-
 	char new_labeled_snt_directory[FILENAME_MAX];
 	get_snt_path(new_labeled_text_name, new_labeled_snt_directory);
     if (must_create_directory != 0) {
         make_directory(new_labeled_snt_directory);
     }
 
-	// copy dictionary files in the new snt directory
-	struct snt_files *old_snt_ = new_snt_files(old_labeled_text_name);
-	struct snt_files *new_snt_ = new_snt_files(new_labeled_text_name);
+    if (must_copy_file != 0)
+    {
+	    copy_file(new_labeled_text_name, old_labeled_text_name);
 
-	if (fexists(old_snt_->dlc)) {
-		copy_file(new_snt_->dlc, old_snt_->dlc);
-	}
-	if (fexists(old_snt_-> dlf)) {
-		copy_file(new_snt_->dlf, old_snt_->dlf);
-	}
-	if (fexists(old_snt_-> err)) {
-		copy_file(new_snt_->err, old_snt_->err);
-	}
-	if (fexists(old_snt_->dlc_n)) {
-		copy_file(new_snt_->dlc_n, old_snt_->dlc_n);
-	}
-	if (fexists(old_snt_->dlf_n)) {
-		copy_file(new_snt_->dlf_n, old_snt_->dlf_n);
-	}
-	if (fexists(old_snt_-> err_n)) {
-		copy_file(new_snt_->err_n, old_snt_->err_n);
-	}
-	if (fexists(old_snt_->stat_dic_n)) {
-		copy_file(new_snt_->stat_dic_n, old_snt_->stat_dic_n);
-	}
-	free_snt_files(old_snt_);
-	free_snt_files(new_snt_);
+	    // create snt directory labeled i
+	    char old_labeled_snt_directory[FILENAME_MAX];
+	    get_snt_path(old_labeled_text_name, old_labeled_snt_directory);
 
+
+	    // copy dictionary files in the new snt directory
+	    struct snt_files *old_snt_ = new_snt_files(old_labeled_text_name);
+	    struct snt_files *new_snt_ = new_snt_files(new_labeled_text_name);
+
+	    if (fexists(old_snt_->dlc)) {
+		    copy_file(new_snt_->dlc, old_snt_->dlc);
+	    }
+	    if (fexists(old_snt_-> dlf)) {
+		    copy_file(new_snt_->dlf, old_snt_->dlf);
+	    }
+	    if (fexists(old_snt_-> err)) {
+		    copy_file(new_snt_->err, old_snt_->err);
+	    }
+	    if (fexists(old_snt_->dlc_n)) {
+		    copy_file(new_snt_->dlc_n, old_snt_->dlc_n);
+	    }
+	    if (fexists(old_snt_->dlf_n)) {
+		    copy_file(new_snt_->dlf_n, old_snt_->dlf_n);
+	    }
+	    if (fexists(old_snt_-> err_n)) {
+		    copy_file(new_snt_->err_n, old_snt_->err_n);
+	    }
+	    if (fexists(old_snt_->stat_dic_n)) {
+		    copy_file(new_snt_->stat_dic_n, old_snt_->stat_dic_n);
+	    }
+	    free_snt_files(old_snt_);
+	    free_snt_files(new_snt_);
+    }
 	char *labeled_text_name;
 	labeled_text_name = (char*)malloc(sizeof(char)*(strlen(new_labeled_text_name)+1));
 	if(labeled_text_name == NULL){

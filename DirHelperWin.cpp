@@ -32,19 +32,33 @@
 
 
 #include <direct.h>
+
+#include "Error.h"
+#include "AbstractFilePlugCallback.h"
+#include "Af_stdio.h"
+
 #include "DirHelper.h"
 
 int mkDirPortable(const char* dirname)
 {
+    if (is_filename_in_abstract_file_space(dirname) != 0)
+        return 0;
+
     return mkdir(dirname);
 }
 
 int chDirPortable(const char* dirname)
 {
+    if (is_filename_in_abstract_file_space(dirname) != 0)
+        return 0;
+
     return chdir(dirname);
 }
 
 int rmDirPortable(const char* dirname)
 {
+    if (is_filename_in_abstract_file_space(dirname) != 0)
+        return 0;
+
     return rmdir(dirname);
 }
