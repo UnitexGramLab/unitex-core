@@ -135,13 +135,13 @@ if (codes[0]==':') {
 do {
    switch(codes[pos]) {
       case '+': pos++; minus=0; break;
-      case '-': if (tilde_negation_operator) {
+      case '~': if (tilde_negation_operator) {
                   pos++; minus=1; 
                 }
                 else
                     minus = 0;
                 break;
-      case '~': if (!tilde_negation_operator) {
+      case '-': if (!tilde_negation_operator) {
                   pos++; minus=1; 
                 }
                 else
