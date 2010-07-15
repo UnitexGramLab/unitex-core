@@ -41,6 +41,8 @@ const char* usage_Cassys =
 		"\n"
 		"OPTION :\n"
 		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
+        "-r X/--transducer_dir=X: take tranducer on directory X (so you don't specify \n"
+        "      full path for each transducer; note that X must be (back)slash terminated\n"
 		"-t TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
