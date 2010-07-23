@@ -827,7 +827,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
     if ((*negation_operator) != 0) {
         char negation_operator_argument[0x40];
         sprintf(negation_operator_argument,"--negation_operator=%s",negation_operator);
-        add_argument(invoker,negation_operator);
+        add_argument(invoker,negation_operator_argument);
     }
 
 	char line_command[4096];
