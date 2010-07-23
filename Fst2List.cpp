@@ -329,7 +329,8 @@ public:
       if(sep1 != u_null_string) delete sep1;
 		if(stopSignal != u_null_string) delete stopSignal;
 		if(saveEntre != u_null_string) delete saveEntre;
-		if(ignoreTable) delete ignoreTable;
+		if(ignoreTable) delete [] ignoreTable;
+        if(numOfIgnore) delete [] numOfIgnore;
 		finiCallIdMap();
 	};
 	void CleanPathCounter()
@@ -395,7 +396,7 @@ public:
         {
            mapOfCallTail = mapOfCallHead;
             mapOfCallHead = mapOfCallHead->next;
-            delete mapOfCallTail->list;
+            delete [] mapOfCallTail->list;
             delete mapOfCallTail;
         }
     }
