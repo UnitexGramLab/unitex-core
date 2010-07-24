@@ -62,10 +62,11 @@ u_printf(usage_CheckDic);
 }
 
 
-const char* optstring_CheckDic=":sfa:hrtk:nq:";
+const char* optstring_CheckDic=":sfpa:hrtk:nq:";
 const struct option_TS lopts_CheckDic[]= {
       {"delas",no_argument_TS,NULL,'s'},
       {"delaf",no_argument_TS,NULL,'f'},
+      {"skip_path",no_argument_TS,NULL,'p'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"help",no_argument_TS,NULL,'h'},
       {"tolerate",no_argument_TS,NULL,'t'},
@@ -84,6 +85,7 @@ if (argc==1) {
 
 int is_a_DELAF=-1;
 int strict_unprotected=0;
+int skip_path=0;
 char alph[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -99,6 +101,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
    case 'r': strict_unprotected=1; break;
    case 't': strict_unprotected=0; break;
    case 'n': space_warnings=0; break;
+   case 'p': skip_path=1; break;
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty alphabet argument\n");
              }
@@ -204,7 +207,14 @@ u_fclose(dic);
 u_fprintf(out,"-----------------------------------\n");
 u_fprintf(out,"-------------  Stats  -------------\n");
 u_fprintf(out,"-----------------------------------\n");
-u_fprintf(out,"File: %s\n",argv[vars->optind]);
+if (skip_path != 0) { 
+    char filename_without_path[FILENAME_MAX];
+    remove_path(argv[vars->optind],filename_without_path);
+    u_fprintf(out,"File: %s\n",filename_without_path);
+}
+else {
+    u_fprintf(out,"File: %s\n",argv[vars->optind]);
+}
 u_fprintf(out,"Type: %s\n",is_a_DELAF?"DELAF":"DELAS");
 u_fprintf(out,"%d line%s read\n",line_number-1,(line_number-1>1)?"s":"");
 u_fprintf(out,"%d simple entr%s ",n_simple_entries,(n_simple_entries>1)?"ies":"y");
