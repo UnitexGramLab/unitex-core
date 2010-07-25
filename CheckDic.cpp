@@ -49,6 +49,7 @@ const char* usage_CheckDic =
          "  -r/--strict: strict syntax checking against unprotected dot and comma\n"
          "  -t/--tolerate: tolerates unprotected dot and comma (default)\n"
          "  -n/--no_space_warning: tolerates spaces in grammatical/semantic/inflectional codes\n"
+         "  -p/--skip_path: doesn't display the full pathname of dictionary\n"
          "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
