@@ -28,8 +28,9 @@
 /**
  * This library provides implementations of autoresizable arrays:
  * 
- * - vector_ptr: data type=void*
- * - vector_int: data type=int
+ * - vector_ptr:   data type=void*
+ * - vector_int:   data type=int
+ * - vector_float: data type=float
  */
 
 
