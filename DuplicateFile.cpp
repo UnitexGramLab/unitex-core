@@ -44,7 +44,8 @@ const char* usage_DuplicateFile =
          "  <outfile>: the destination file\n"
          "\n"
          "OPTIONS:\n"
-         "-i/--input <infile>: path to input file to read\n"
+         "-i INFILE/--input=INFILE: path to input file to read and copy\n"
+         "-d/--delete: to just delete the outfile\n"
          "\n";
 
 
