@@ -45,6 +45,7 @@ const char* usage_DuplicateFile =
          "\n"
          "OPTIONS:\n"
          "-i INFILE/--input=INFILE: path to input file to read and copy\n"
+         "-m INFILE/--move=INFILE: path to input file to move (rename)\n"
          "-d/--delete: to just delete the outfile\n"
          "\n";
 
@@ -55,9 +56,10 @@ u_printf(usage_DuplicateFile);
 }
 
 
-const char* optstring_DuplicateFile=":di:k:q:";
+const char* optstring_DuplicateFile=":di:m:k:q:";
 const struct option_TS lopts_DuplicateFile[]= {
       {"delete",no_argument_TS,NULL,'d'},
+      {"move",required_argument_TS,NULL,'m'},
       {"input",required_argument_TS,NULL,'i'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -76,13 +78,24 @@ if (argc==1) {
 const char *input_file = NULL;
 const char *output_file = NULL;
 int do_delete=0;
+int do_move=0;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_DuplicateFile,&index,vars))) {
    switch(val) {
    case 'd': do_delete=1; break;
-   case 'i': input_file = vars->optarg; break;
+   case 'i': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input argument\n");
+             }
+             input_file = vars->optarg; 
+             break;
+   case 'm': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty move argument\n");
+             }
+             input_file = vars->optarg; 
+             do_move=1; 
+             break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_DuplicateFile[index].name);
@@ -112,13 +125,22 @@ if ((input_file!=NULL) && (do_delete==1)) {
 if (output_file==NULL) {
    fatal_error("You must specify the output_file file\n");
 }
-u_printf("copy file %s to %s\n",input_file,output_file);
+
 int result;
 if (input_file != NULL) {
-result=af_copy(input_file,output_file);
+    if (do_move == 0) {
+        u_printf("copy file %s to %s\n",input_file,output_file);
+        result=af_copy(input_file,output_file);
+    }
+    else
+    {
+        u_printf("move file %s to %s\n",input_file,output_file);
+        result=af_rename(input_file,output_file);
+    }
 }
 else {
-result=af_remove(output_file);
+    u_printf("remove file %s\n",output_file);
+    result=af_remove(output_file);
 }
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
 return result;
