@@ -20,6 +20,7 @@ cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id){
 	return temp;
 }
 
+
 unichar *next_token(cassys_tokens_list *list, int transducer_id){
 	cassys_tokens_list *temp = next_element(list,transducer_id);
 
@@ -46,19 +47,33 @@ cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id){
 }
 
 
-
-
 cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, int position){
 	int current_position = 0;
 	cassys_tokens_list *temp = list;
+    if (temp==NULL)
+        return NULL;
 
-	while(current_position < position && temp != NULL ){
-		temp = next_element(temp,transducer_id);
+	while(current_position < position){
+        if(temp->next_token != NULL)
+        {
+            temp=temp->next_token;
+
+	        while (temp -> output != NULL && temp -> output -> transducer_id
+			        <= transducer_id) {
+		        temp = temp -> output;
+	        }
+        }
+        else
+        {
+            return NULL;
+        }
+
 		current_position++;
 	}
 
 	return temp;
 }
+
 
 cassys_tokens_list *add_output(cassys_tokens_list *list,
 		cassys_tokens_list *output, int transducer_id,
