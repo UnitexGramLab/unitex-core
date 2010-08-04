@@ -121,7 +121,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:o:u:g:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -149,9 +149,10 @@ const struct option_TS lopts_Locate[]= {
       {"stop_token_count",required_argument_TS,NULL,'o'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
       {"arabic_rules",required_argument_TS,NULL,'u'},
       {"negation_operator",required_argument_TS,NULL,'g'},
+      {"dont_use_locate_cache",no_argument_TS,NULL,'e'},
+      {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -185,6 +186,7 @@ int is_korean=0;
 int max_count_call=0;
 int max_count_call_warning=0;
 int tilde_negation_operator=1;
+int useLocateCache=1;
 int selected_negation_operator=0;
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -234,6 +236,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'Y': variable_error_policy=IGNORE_VARIABLE_ERRORS; break;
    case 'Z': variable_error_policy=BACKTRACK_ON_VARIABLE_ERRORS; break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
+   case 'e': useLocateCache=0; break;
    case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
                 fatal_error("Invalid search limit argument: %s\n",vars->optarg);
@@ -338,7 +341,7 @@ int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,ma
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
-               max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator);
+               max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator,useLocateCache);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }

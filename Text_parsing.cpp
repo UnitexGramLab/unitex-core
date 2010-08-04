@@ -92,9 +92,12 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				== DONT_START_WITH_SPACE) && !get_value(p->failfast,
 				current_token)) {
 
-			if (consult_cache(p->buffer, p->current_origin,
+			int cache_found = 0;
+            if (p->useLocateCache)
+                cache_found =  consult_cache(p->buffer, p->current_origin,
 					p->buffer_size, p->match_cache,
-					p->cached_match_vector)) {
+					p->cached_match_vector);
+			if (cache_found) {
 				/* If we have found matches in the cache, we use them */
 				for (int i=0;i<p->cached_match_vector->nbelems;i++) {
 					struct match_list* tmp=(struct match_list*)(p->cached_match_vector->tab[i]);
