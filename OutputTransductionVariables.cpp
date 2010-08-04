@@ -107,6 +107,7 @@ return v->variables[n];
 unichar* create_output_variable_backup(OutputVariables* v) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
+if (l==0) return NULL;
 int size=0;
 for (int i=0;i<l;i++) {
 	/* +2 = +1 for the \0 and +1 to indicate if the variable is pending or not */
