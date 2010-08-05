@@ -181,7 +181,9 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				}
 				p->match_cache_last = NULL;
 				free_parsing_info(matches, p->prv_alloc_recycle);
-				clear_dic_variable_list(&(p->dic_variables));
+                if (p->dic_variables != NULL) {
+                    clear_dic_variable_list(&(p->dic_variables));
+                }
 			}
 		}
 		p->match_list = save_matches(p->match_list,p->current_origin, out, p, p->prv_alloc);
@@ -476,7 +478,9 @@ int captured_chars;
 			var_backup = create_variable_backup_using_reserve(p->input_variables,
 					reserve_used);
 			dic_variables_backup = p->dic_variables;
-			output_var_backup=create_output_variable_backup(p->output_variables);
+			if (p->nb_output_variables != 0) {
+			    output_var_backup = create_output_variable_backup(p->output_variables);
+			}
 		}
 
 		do {
@@ -486,9 +490,13 @@ int captured_chars;
 				/* We reset some parameters before exploring the subgraph */
 				struct parsing_info* L = NULL;
 				p->stack_base = p->stack->stack_pointer;
-				p->dic_variables
-						= clone_dic_variable_list(dic_variables_backup);
-				install_output_variable_backup(p->output_variables,output_var_backup);
+				p->dic_variables = NULL;
+				if (dic_variables_backup != NULL) {
+				    p->dic_variables = clone_dic_variable_list(dic_variables_backup);
+				}
+				if (p->nb_output_variables != 0) {
+				    install_output_variable_backup(p->output_variables,output_var_backup);
+				}
 				locate(
 						graph_depth + 1, /* Exploration of the subgraph */
 						p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
@@ -498,7 +506,9 @@ int captured_chars;
 						pcounting_step);
 
 				p->stack_base = old_StackBase;
-				clear_dic_variable_list(&(p->dic_variables));
+				if (p->dic_variables != NULL) {
+				    clear_dic_variable_list(&(p->dic_variables));
+				}
 				if (L != NULL) {
 					struct parsing_info* L_first = L;
 					/* If there is at least one match, we process the match list */
@@ -520,9 +530,14 @@ int captured_chars;
 										L->input_variable_backup);
 							}
 
-							p->dic_variables = clone_dic_variable_list(
-									L->dic_variable_backup);
-							install_output_variable_backup(p->output_variables,L->output_variable_backup);
+							p->dic_variables = NULL;
+							if (L->dic_variable_backup != NULL) {
+							    p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
+							}
+
+							if (p->nb_output_variables != 0) {
+							    install_output_variable_backup(p->output_variables,L->output_variable_backup);
+							}
 						}
 						/* And we continue the exploration */
 						int old_left_ctx_shift = p->left_ctx_shift;
@@ -539,7 +554,9 @@ int captured_chars;
 						p->left_ctx_shift = old_left_ctx_shift;
 						p->left_ctx_base = old_left_ctx_base;
 						p->stack->stack_pointer = stack_top;
-						clear_dic_variable_list(&(p->dic_variables));
+						if (p->dic_variables != NULL) {
+						    clear_dic_variable_list(&(p->dic_variables));
+						}
 						if (graph_depth == 0) {
 							/* If we are at the top graph level, we restore the variables */
 							if (p->output_policy != IGNORE_OUTPUTS) {
@@ -575,8 +592,10 @@ int captured_chars;
 			}
 			if (create_new_reserve_done == 1)
 				free_reserve(reserve_used);
-			install_output_variable_backup(p->output_variables,output_var_backup);
-			free_output_variable_backup(output_var_backup);
+			if (p->nb_output_variables != 0) {
+			    install_output_variable_backup(p->output_variables,output_var_backup);
+			    free_output_variable_backup(output_var_backup);
+			}
 		}
 		p->dic_variables = dic_variables_backup;
 	} /* End of processing subgraphs */

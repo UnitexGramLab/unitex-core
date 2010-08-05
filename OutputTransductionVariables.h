@@ -53,7 +53,7 @@ typedef struct {
 } OutputVariables;
 
 
-OutputVariables* new_OutputVariables(struct list_ustring*);
+OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar);
 void free_OutputVariables(OutputVariables*);
 Ustring* get_output_variable(OutputVariables*,unichar*);
 

@@ -32,7 +32,7 @@ static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustrin
  * whose names are in 'list'. The variable values are initialized
  * with empty strings.
  */
-OutputVariables* new_OutputVariables(struct list_ustring* list) {
+OutputVariables* new_OutputVariables(struct list_ustring* list,int* p_nbvar) {
 OutputVariables* v=(OutputVariables*)malloc(sizeof(OutputVariables));
 if (v==NULL) {
    fatal_alloc_error("new_OutputVariables");
@@ -55,6 +55,9 @@ v->pending=NULL;
 v->is_pending=(char*)calloc(l,sizeof(char));
 if (v->is_pending==NULL) {
    fatal_alloc_error("new_OutputVariables");
+}
+if (p_nbvar!=NULL) {
+    *p_nbvar = l;
 }
 return v;
 }

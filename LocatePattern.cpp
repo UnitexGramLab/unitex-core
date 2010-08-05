@@ -83,6 +83,7 @@ p->end_position_last_printed_match=-1;
 p->search_limit=0;
 p->input_variables=NULL;
 p->output_variables=NULL;
+p->nb_output_variables=0;
 p->stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 p->alphabet=NULL;
 p->morpho_dic_inf=NULL;
@@ -384,7 +385,7 @@ optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
 int nb_input_variable=0;
 p->input_variables=new_Variables(p->fst2->input_variables,&nb_input_variable);
-p->output_variables=new_OutputVariables(p->fst2->output_variables);
+p->output_variables=new_OutputVariables(p->fst2->output_variables,&p->nb_output_variables);
 
 
 Abstract_allocator locate_recycle_abstract_allocator=NULL;

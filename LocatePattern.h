@@ -172,6 +172,7 @@ struct locate_parameters {
    /* The transduction variables of the fst2 */
    Variables* input_variables;
    OutputVariables* output_variables;
+   int nb_output_variables;
 
    /* This is the stack used to process outputs */
    struct stack_unichar* stack;
