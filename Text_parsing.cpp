@@ -749,7 +749,9 @@ int captured_chars;
 									n_matches, ctx, p,
 									backup_reserve, pcounting_step);
 							p->stack->stack_pointer = stack_top;
-							remove_chars_from_output_variables(p->output_variables,captured_chars);
+							if (p->nb_output_variables != 0) {
+							    remove_chars_from_output_variables(p->output_variables,captured_chars);
+							}
 						}
 					}
 					/* Now, we look for a simple word */
@@ -834,7 +836,9 @@ int captured_chars;
 								end_of_compound + 1, depth + 1, matches,
 								n_matches, ctx, p,
 								backup_reserve, pcounting_step);
-						remove_chars_from_output_variables(p->output_variables,captured_chars);
+						if (p->nb_output_variables != 0) {
+						    remove_chars_from_output_variables(p->output_variables,captured_chars);
+						}
 						p->stack->stack_pointer = stack_top;
 					}
 				}
