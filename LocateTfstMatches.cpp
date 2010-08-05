@@ -511,7 +511,7 @@ if (capture) {
 
 Match saved_element=element->m;
 struct list_int* text_tags=item->text_tag_numbers;
-int captured_chars;
+int captured_chars=0;
 /* We explore all the text tags */
 while (text_tags!=NULL) {
    /* First, we restore the output string */
