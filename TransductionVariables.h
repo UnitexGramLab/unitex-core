@@ -35,6 +35,7 @@
 #define MAX_TRANSDUCTION_VAR_LENGTH 127
 #define MAX_TRANSDUCTION_FIELD_LENGTH 127
 
+#define NB_INT_BY_VARIABLES (4)
 
 /**
  * This structure is used to associates ranges to variable names.
@@ -72,7 +73,7 @@ struct transduction_variable {
 
 
 
-Variables* new_Variables(const struct list_ustring*);
+Variables* new_Variables(const struct list_ustring*,int* p_nb_variable=NULL);
 void free_Variables(Variables*);
 struct transduction_variable* get_transduction_variable(Variables*,unichar*);
 
@@ -102,10 +103,16 @@ int get_variable_end_in_chars(const Variables*,int);
 #define get_variable_end(v,n) ((v)->variables[(n)].end_in_tokens)
 #define get_variable_end_in_chars(v,n) ((v)->variables[(n)].end_in_chars)
 
-int* create_variable_backup(Variables*);
-void free_variable_backup(int*);
-void install_variable_backup(Variables*,int*);
-void update_variable_backup(int*,Variables*);
+size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb);
+size_t get_variable_backup_size_in_byte(const Variables* v);
+void init_variable_backup(int* backup,const Variables* v);
+int* create_variable_backup(const Variables*,Abstract_allocator);
+void free_variable_backup(int*,Abstract_allocator);
+
+size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb);
+
+void install_variable_backup(Variables*,const int*);
+void update_variable_backup(int*,const Variables*);
 
 
 /* to limit number of malloc, we define a pool of memory

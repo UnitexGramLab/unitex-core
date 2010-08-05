@@ -63,7 +63,7 @@ typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_is_param_allocator_compatible)(cons
 
 /* try create an abstract allocator with parameter
 if successful, fill the Abstract_allocator struct and return 1, else return 0 */
-typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_create_abstract_allocator)(Abstract_allocator,const char*creator,int flagAllocator,size_t,const void* private_create_ptr,void* privateAllocatorSpacePtr);
+typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_create_abstract_allocator)(abstract_allocator_info_public_with_allocator*,const char*creator,int flagAllocator,size_t,const void* private_create_ptr,void* privateAllocatorSpacePtr);
 
 
 

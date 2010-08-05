@@ -40,26 +40,43 @@
 #include "AbstractCallbackFuncModifier.h"
 
 struct tag_abstract_allocator;
+struct tag_abstract_allocator_info_public_with_allocator;
 
 typedef void* (ABSTRACT_CALLBACK_UNITEX*fnc_alloc_t)(size_t,void*);
 typedef void* (ABSTRACT_CALLBACK_UNITEX*fnc_realloc_t)(void*,size_t,size_t,void*);
 typedef void (ABSTRACT_CALLBACK_UNITEX*fnc_free_t)(void*,void*);
 typedef int (ABSTRACT_CALLBACK_UNITEX*fnc_get_flag_allocator_t)(void*);
 
-typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_delete_abstract_allocator)(struct tag_abstract_allocator*,void* privateAllocatorSpacePtr);
+#define STATISTIC_NB_TOTAL_BYTE_ALLOCATED               0
+#define STATISTIC_NB_TOTAL_CURRENT_LIVING_ALLOCATION    1
+#define STATISTIC_NB_TOTAL_ALLOCATION_MADE              2
 
 
-typedef struct tag_abstract_allocator
+typedef int (ABSTRACT_CALLBACK_UNITEX*fnc_get_statistic_info_t)(int,size_t*,void*);
+
+typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_delete_abstract_allocator)(struct tag_abstract_allocator_info_public_with_allocator*,void* privateAllocatorSpacePtr);
+
+typedef struct tag_abstract_allocator_info_public_with_allocator
 {
     fnc_alloc_t fnc_alloc;
     fnc_realloc_t fnc_realloc;
     fnc_free_t fnc_free;
     fnc_get_flag_allocator_t fnc_get_flag_allocator;
+    fnc_get_statistic_info_t fnc_get_statistic_info;
     void* abstract_allocator_ptr;
+} abstract_allocator_info_public_with_allocator;
+
+typedef struct tag_abstract_allocator
+{
+    abstract_allocator_info_public_with_allocator pub;
 
     /* only for delete */
     t_fnc_delete_abstract_allocator  fnc_delete_abstract_allocator;
     void* privateAllocatorSpacePtr;
+
+    size_t expected_creation_size;
+    char* creator;
+    int creation_flag;
 
 } abstract_allocator;
 
@@ -75,6 +92,8 @@ typedef abstract_allocator* Abstract_allocator;
 
 #define AllocatorGetFlagAutoFreePresent         0x000001
 
+
+#define AllocatorTipOftenRecycledObject         0x000008
 /*
  create_abstract_allocator is used when an function need an allocator
  creator is a string with the name of caller
@@ -90,23 +109,30 @@ void close_abstract_allocator(Abstract_allocator);
 
 int get_allocator_flag(Abstract_allocator);
 
+
+int get_allocator_creation_flag(Abstract_allocator);
+size_t get_allocator_expected_creation_size(Abstract_allocator);
+int get_allocator_statistic_info(Abstract_allocator,int iStatNum,size_t*p_value);
+const char* get_allocator_creator(Abstract_allocator);
+abstract_allocator_info_public_with_allocator* get_abstract_allocator_info_public_with_allocator(Abstract_allocator);
+
 #define STANDARD_ALLOCATOR ((Abstract_allocator)NULL)
 
 #define malloc_cb(sz_alloc,prv_ptr) \
     ((prv_ptr==NULL) ? (malloc(sz_alloc)) : \
-                       ((prv_ptr->fnc_alloc)((sz_alloc),(prv_ptr->abstract_allocator_ptr))))
+                       ((prv_ptr->pub.fnc_alloc)((sz_alloc),(prv_ptr->pub.abstract_allocator_ptr))))
 
 #define free_cb(ptr_alloc,prv_ptr) \
     ((prv_ptr==NULL) ? (free(ptr_alloc)) : \
-                       ((prv_ptr->fnc_free)((ptr_alloc),(prv_ptr->abstract_allocator_ptr))))
+                       ((prv_ptr->pub.fnc_free)((ptr_alloc),(prv_ptr->pub.abstract_allocator_ptr))))
 
 #define realloc_cb(ptr_alloc,sz_alloc_old,sz_alloc_new,prv_ptr) \
     ((prv_ptr==NULL) ? (realloc((ptr_alloc),(sz_alloc_new))) : \
-                       ((prv_ptr->fnc_realloc)((ptr_alloc),(sz_alloc_old),(sz_alloc_new),(prv_ptr->abstract_allocator_ptr))))
+                       ((prv_ptr->pub.fnc_realloc)((ptr_alloc),(sz_alloc_old),(sz_alloc_new),(prv_ptr->pub.abstract_allocator_ptr))))
 
 #define get_allocator_cb_flag(prv_ptr) \
     ((prv_ptr==NULL) ? (0) : \
-                       ((prv_ptr->fnc_get_flag_allocator)((prv_ptr->abstract_allocator_ptr))))
+                       ((prv_ptr->pub.fnc_get_flag_allocator)((prv_ptr->pub.abstract_allocator_ptr))))
 
 
 #endif

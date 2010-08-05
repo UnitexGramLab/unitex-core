@@ -105,6 +105,9 @@ p->failfast=NULL;
 p->match_cache_first=NULL;
 p->match_cache_last=NULL;
 p->match_cache=NULL;
+p->prv_alloc=NULL;
+p->prv_alloc_recycle=NULL;
+p->p_token_error_ctx=NULL;
 p->cached_match_vector=new_vector_ptr(16);
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 return p;
@@ -264,6 +267,8 @@ if (fst2load==NULL) {
 }
 
 Abstract_allocator locate_abstract_allocator=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);
+
+
 p->fst2=new_Fst2_clone(fst2load,locate_abstract_allocator);
 free_abstract_Fst2(fst2load,&fst2load_free);
 
@@ -377,8 +382,15 @@ optimize_pattern_tags(p->alphabet,root,p,locate_abstract_allocator);
 u_printf("Optimizing compound word dictionary...\n");
 optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
-p->input_variables=new_Variables(p->fst2->input_variables);
+int nb_input_variable=0;
+p->input_variables=new_Variables(p->fst2->input_variables,&nb_input_variable);
 p->output_variables=new_OutputVariables(p->fst2->output_variables);
+
+
+Abstract_allocator locate_recycle_abstract_allocator=NULL;
+locate_recycle_abstract_allocator=create_abstract_allocator("locate_pattern_recycle",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipOftenRecycledObject,
+                                 get_prefered_allocator_item_size_for_nb_variable(nb_input_variable));
 
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->input_variables,p->output_variables,p->fst2,locate_abstract_allocator);
@@ -389,7 +401,9 @@ if (is_korean) {
 p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 
 u_printf("Working...\n");
-launch_locate(out,text_size,info,p,locate_work_abstract_allocator);
+p->prv_alloc=locate_work_abstract_allocator;
+p->prv_alloc_recycle=locate_recycle_abstract_allocator;
+launch_locate(out,text_size,info,p);
 free_bit_array(p->failfast);
 free_Variables(p->input_variables);
 free_OutputVariables(p->output_variables);
@@ -419,7 +433,8 @@ if (free_abstract_allocator_item) {
   free_list_int(p->tag_token_list,locate_abstract_allocator);
 }
 close_abstract_allocator(locate_abstract_allocator);
-locate_abstract_allocator=NULL;
+close_abstract_allocator(locate_recycle_abstract_allocator);
+locate_recycle_abstract_allocator=locate_abstract_allocator=NULL;
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);

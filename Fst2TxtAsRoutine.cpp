@@ -148,7 +148,7 @@ free(p);
 ////////////////////////////////////////////////////////////////////////
 
 
-void scan_graph(int,int,int,int,struct parsing_info**,unichar*,struct fst2txt_parameters*);
+void scan_graph(int,int,int,int,struct parsing_info**,unichar*,struct fst2txt_parameters*,Abstract_allocator prv_alloc_recycle=NULL);
 int write_transduction();
 
 
@@ -338,7 +338,7 @@ void scan_graph(int n_graph,         // number of current graph
                      int depth,
                      struct parsing_info** liste_arrivee,
                      unichar* mot_token_buffer,
-                     struct fst2txt_parameters* p) {
+                     struct fst2txt_parameters* p,Abstract_allocator prv_alloc_recycle) {
 Fst2State etat_courant=p->fst2->states[e];
 if (depth > MAX_DEPTH) {
 
@@ -359,7 +359,7 @@ if (depth > MAX_DEPTH) {
       struct parsing_info* la_tmp=*liste_arrivee;
       *liste_arrivee=(*liste_arrivee)->next;
       la_tmp->next=NULL; // to don't free the next item
-      free_parsing_info(la_tmp);
+      free_parsing_info(la_tmp, prv_alloc_recycle);
     }
   }
   return;
@@ -378,7 +378,7 @@ if (is_final_state(etat_courant)) {
     }
   } else { // in a subgraph
     (*liste_arrivee)=insert_if_absent(pos,-1,-1,(*liste_arrivee),p->stack->stack_pointer+1,
-                                      p->stack->stack,p->variables,NULL,NULL,-1,-1,NULL,-1   );
+                                      p->stack->stack,p->variables,NULL,NULL,-1,-1,NULL,-1, prv_alloc_recycle);
   }
 }
 
@@ -469,7 +469,7 @@ while (t!=NULL) {
             struct parsing_info* l_tmp=liste;
             liste=liste->next;
             l_tmp->next=NULL; // to don't free the next item
-            free_parsing_info(l_tmp);
+            free_parsing_info(l_tmp, prv_alloc_recycle);
          }
          u_strcpy(p->stack->stack,pile_old);
          free(pile_old);

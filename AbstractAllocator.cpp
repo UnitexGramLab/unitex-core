@@ -143,14 +143,15 @@ const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllo
 }
 
 
-Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocator_func_array *p_func_array,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
+Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocator_func_array *p_func_array,void* privateAllocatorSpacePtr,const char*creator,int creation_flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
     Abstract_allocator aas;
 
     aas=(abstract_allocator*)malloc(sizeof(abstract_allocator));
     if (aas == NULL)
         return NULL;
-    if (p_func_array->fnc_create_abstract_allocator(aas,creator,flagAllocator,expected_size_item,private_create_ptr,privateAllocatorSpacePtr) == 0)
+    memset(&(aas->pub),0,sizeof(abstract_allocator_info_public_with_allocator));
+    if (p_func_array->fnc_create_abstract_allocator(&(aas->pub),creator,creation_flagAllocator,expected_size_item,private_create_ptr,privateAllocatorSpacePtr) == 0)
     {
         free(aas);
         return NULL;
@@ -158,6 +159,9 @@ Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocato
 
     aas->fnc_delete_abstract_allocator = p_func_array->fnc_delete_abstract_allocator;
     aas->privateAllocatorSpacePtr = privateAllocatorSpacePtr;
+    aas->creation_flag = creation_flagAllocator;
+    aas->expected_creation_size = expected_size_item;
+    aas->creator = strdup(creator);
 
     return aas;
 }
@@ -184,8 +188,10 @@ void close_abstract_allocator(Abstract_allocator aa)
         abstract_allocator* aas = aa;
         if (aas->fnc_delete_abstract_allocator != NULL)
         {
-            aas->fnc_delete_abstract_allocator(aa,aas->privateAllocatorSpacePtr);
+            aas->fnc_delete_abstract_allocator(&(aa->pub),aas->privateAllocatorSpacePtr);
         }
+        if (aas->creator != NULL)
+            free(aas->creator);
         free(aa);
     }
 }
@@ -195,8 +201,61 @@ int get_allocator_flag(Abstract_allocator aa)
     int ret=0;
     if (aa != NULL)
     {
-        if (aa->fnc_get_flag_allocator != NULL)
-            ret = (aa->fnc_get_flag_allocator)(aa->abstract_allocator_ptr);      
+        if (aa->pub.fnc_get_flag_allocator != NULL)
+            ret = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);      
     }
     return ret;
 }
+
+
+int get_allocator_creation_flag(Abstract_allocator aa)
+{
+    int ret=0;
+    if (aa != NULL)
+    {
+        ret = (aa->creation_flag);      
+    }
+    return ret;
+}
+
+size_t get_allocator_expected_creation_size(Abstract_allocator aa)
+{
+    size_t ret=0;
+    if (aa != NULL)
+    {
+        ret = (aa->expected_creation_size);      
+    }
+    return ret;
+}
+
+int get_allocator_statistic_info(Abstract_allocator aa,int iStatNum,size_t*p_value)
+{
+    int ret=0;
+    if (aa != NULL)
+    {
+        if (aa->pub.fnc_get_statistic_info != NULL)
+            ret = (aa->pub.fnc_get_statistic_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);   
+    }
+    return ret;
+}
+
+const char* get_allocator_creator(Abstract_allocator aa)
+{
+    const char* ret=NULL;
+    if (aa != NULL)
+    {
+        ret = (aa->creator);
+    }
+    return ret;
+}
+
+abstract_allocator_info_public_with_allocator* get_abstract_allocator_info_public_with_allocator(Abstract_allocator aa)
+{
+    abstract_allocator_info_public_with_allocator* ret=NULL;
+    if (aa != NULL)
+    {
+        ret = &(aa->pub);
+    }
+    return ret;
+}
+

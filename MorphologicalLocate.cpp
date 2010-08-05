@@ -37,11 +37,10 @@
 #endif
 
 void morphological_locate(int, int, int, int, int, struct parsing_info**, int,
-		struct list_int*, struct locate_parameters*, struct Token_error_ctx*,
+		struct list_int*, struct locate_parameters*,
 		unichar*, int, unichar*);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
-		struct list_int*, struct locate_parameters*, struct Token_error_ctx*,
-		Abstract_allocator prv_alloc);
+		struct list_int*, struct locate_parameters*, struct Token_error_ctx*);
 int input_is_token(Fst2Tag tag);
 void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		int pos_in_token, struct parsing_info* *matches,
@@ -178,7 +177,7 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * explosions due to bad written grammars. */
 struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-struct Token_error_ctx* p_token_error_ctx, unichar* jamo, int pos_in_jamo,
+unichar* jamo, int pos_in_jamo,
 unichar* content_buffer, /* reusable unichar 4096 buffer for content */
 variable_backup_memory_reserve* backup_reserve
 ) {
@@ -192,21 +191,21 @@ variable_backup_memory_reserve* backup_reserve
 	 * one position in text. */
 	if (depth == 0) {
 		/* We reset if this is first call to 'locate' from a given position in the text */
-		p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
+		p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
 	}
 	if (depth > STACK_MAX) {
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
-				pos_in_tokens, p, p_token_error_ctx);
+				pos_in_tokens, p, p->p_token_error_ctx);
 		return;
 	}
-	if ((p_token_error_ctx->n_matches_at_token_pos__morphological_locate)
+	if ((p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate)
 			> MAX_MATCHES_AT_TOKEN_POS) {
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
-				p->current_origin, pos_in_tokens, p, p_token_error_ctx);
+				p->current_origin, pos_in_tokens, p, p->p_token_error_ctx);
 		return;
 	}
 	if (current_state->control & 1) {
@@ -222,7 +221,7 @@ variable_backup_memory_reserve* backup_reserve
 				 * like an infinite recursion */
 				error_at_token_pos(
 						"\nMaximal number of matches per subgraph reached!",
-						p->current_origin, pos_in_tokens, p, p_token_error_ctx);
+						p->current_origin, pos_in_tokens, p, p->p_token_error_ctx);
 				return;
 			} else {
 				/* If everything is fine, we add this match to the match list of the
@@ -234,13 +233,13 @@ variable_backup_memory_reserve* backup_reserve
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo);
+							pos_in_jamo, p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars, -1,
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo);
+							pos_in_jamo, p->prv_alloc_recycle);
 				}
 			}
 		}
@@ -300,9 +299,9 @@ variable_backup_memory_reserve* backup_reserve
 				struct parsing_info* L = NULL;
 				p->stack_base = p->stack->stack_pointer;
 				morphological_locate(graph_depth + 1, /* Exploration of the subgraph */
-				p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
+						p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
 						pos_in_chars, depth + 1, &L, 0, NULL, p,
-						p_token_error_ctx, jamo, pos_in_jamo, content_buffer,reserve_used);
+						jamo, pos_in_jamo, content_buffer,reserve_used);
 				p->stack_base = old_StackBase;
 				if (L != NULL) {
 					struct parsing_info* L_first = L;
@@ -328,13 +327,13 @@ variable_backup_memory_reserve* backup_reserve
 						/* And we continue the exploration */
 						morphological_locate(graph_depth, t->state_number,
 								L->position, L->pos_in_token, depth + 1,
-								matches, n_matches, ctx, p, p_token_error_ctx,
+								matches, n_matches, ctx, p,
 								L->jamo, L->pos_in_jamo, content_buffer,backup_reserve);
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
 					} while (L != NULL);
 					/* We free all subgraph matches */
-					free_parsing_info(L_first);
+					free_parsing_info(L_first, p->prv_alloc_recycle);
 				}
 				p->dic_variables
 						= clone_dic_variable_list(dic_variables_backup);
@@ -392,7 +391,7 @@ variable_backup_memory_reserve* backup_reserve
 				morphological_locate(graph_depth,
 						t->state_number, pos_in_tokens, pos_in_chars,
 						depth + 1, matches, n_matches, ctx, p,
-						p_token_error_ctx, jamo, pos_in_jamo, content_buffer,backup_reserve);
+						jamo, pos_in_jamo, content_buffer,backup_reserve);
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
 				break;
@@ -513,7 +512,7 @@ variable_backup_memory_reserve* backup_reserve
 						morphological_locate(graph_depth,
 								t->state_number, new_pos,
 								new_pos_in_token, depth + 1, matches,
-								n_matches, ctx, p, p_token_error_ctx, L2->jamo,
+								n_matches, ctx, p, L2->jamo,
 								L2->pos_in_jamo, content_buffer,backup_reserve);
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
@@ -523,7 +522,7 @@ variable_backup_memory_reserve* backup_reserve
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 						L2 = L2->next;
 					} while (L2 != NULL);
-					free_parsing_info(L_first);
+					free_parsing_info(L_first, p->prv_alloc_recycle);
 				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 				free(var_name);
@@ -630,14 +629,14 @@ variable_backup_memory_reserve* backup_reserve
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo);
+							pos_in_jamo, p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars,
 							t->state_number, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo);
+							pos_in_jamo, p->prv_alloc_recycle);
 				}
 				break;
 
@@ -710,7 +709,7 @@ variable_backup_memory_reserve* backup_reserve
 				}
 				morphological_locate(graph_depth, t->state_number, new_pos,
 						new_pos_in_token, depth + 1, matches, n_matches, ctx,
-						p, p_token_error_ctx, new_jamo, new_pos_in_jamo,
+						p, new_jamo, new_pos_in_jamo,
 						content_buffer,backup_reserve);
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -728,7 +727,7 @@ variable_backup_memory_reserve* backup_reserve
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, depth + 1, matches, n_matches, ctx,
-				p, p_token_error_ctx, jamo, pos_in_jamo,
+				p, jamo, pos_in_jamo,
 				content_buffer,backup_reserve);
 		p->stack->stack_pointer = stack_top;
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
@@ -743,7 +742,7 @@ variable_backup_memory_reserve* backup_reserve
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, depth + 1, matches, n_matches, ctx,
-				p, p_token_error_ctx, jamo, pos_in_jamo,
+				p, jamo, pos_in_jamo,
 				content_buffer,backup_reserve);
 		p->stack->stack_pointer = stack_top;
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
@@ -764,7 +763,7 @@ variable_backup_memory_reserve* backup_reserve
 		set_variable_start_in_chars(p->input_variables, variable_list->variable_number, pos_in_chars);
 		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, depth + 1, matches, n_matches, ctx,
-						p, p_token_error_ctx, jamo, pos_in_jamo,
+						p, jamo, pos_in_jamo,
 						content_buffer,backup_reserve);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
@@ -806,7 +805,7 @@ variable_backup_memory_reserve* backup_reserve
 		set_variable_end_in_chars(p->input_variables, variable_list->variable_number,new_end_in_chars);
 		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, depth + 1, matches, n_matches, ctx,
-						p, p_token_error_ctx, jamo, pos_in_jamo,
+						p, jamo, pos_in_jamo,
 						content_buffer,backup_reserve);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
@@ -902,7 +901,7 @@ variable_backup_memory_reserve* backup_reserve
 						}
 						morphological_locate(graph_depth, trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
-								n_matches, ctx, p, p_token_error_ctx, new_jamo,
+								n_matches, ctx, p, new_jamo,
 								new_pos_in_jamo, content_buffer,backup_reserve);
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 						p->stack->stack_pointer = stack_top;
@@ -947,7 +946,7 @@ variable_backup_memory_reserve* backup_reserve
 						}
 						morphological_locate(graph_depth, trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
-								n_matches, ctx, p, p_token_error_ctx, jamo,
+								n_matches, ctx, p, jamo,
 								pos_in_jamo, content_buffer,backup_reserve);
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1038,7 +1037,7 @@ variable_backup_memory_reserve* backup_reserve
 						}
 						morphological_locate(graph_depth, trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
-								n_matches, ctx, p, p_token_error_ctx, L->jamo,
+								n_matches, ctx, p, L->jamo,
 								L->pos_in_jamo, content_buffer,backup_reserve);
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
@@ -1048,7 +1047,7 @@ variable_backup_memory_reserve* backup_reserve
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
 					} while (L != NULL);
-					free_parsing_info(L_first);
+					free_parsing_info(L_first, p->prv_alloc_recycle);
 				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 				free(var_name);
@@ -1082,9 +1081,7 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * explosions due to bad written grammars. */
 struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-struct Token_error_ctx* p_token_error_ctx,
-variable_backup_memory_reserve* backup_reserve,
-Abstract_allocator prv_alloc) {
+variable_backup_memory_reserve* backup_reserve_) {
 	unichar* content_buffer = (unichar*) malloc(sizeof(unichar) * 4096);
 	if (content_buffer == NULL) {
 		fatal_alloc_error("enter_morphological_mode");
@@ -1096,7 +1093,7 @@ Abstract_allocator prv_alloc) {
 	old_StackBase = p->stack_base;
 	if (p->output_policy != IGNORE_OUTPUTS) {
 		/* For better performance when ignoring outputs */
-		var_backup = create_variable_backup(p->input_variables);
+		var_backup = create_variable_backup(p->input_variables,p->prv_alloc_recycle);
 		output_variable_backup=create_output_variable_backup(p->output_variables);
 	}
 	struct parsing_info* L = NULL;
@@ -1106,9 +1103,8 @@ Abstract_allocator prv_alloc) {
 	int current_token = p->buffer[pos + p->current_origin];
 	//error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
 	morphological_locate(0, state, pos, 0, depth + 1, &L, 0, NULL, p,
-			p_token_error_ctx,
 			(p->jamo_tags != NULL) ? p->jamo_tags[current_token] : NULL, 0,
-			content_buffer,backup_reserve);
+			content_buffer,backup_reserve_);
 	clear_dic_variable_list(&(p->dic_variables));
 	p->stack_base = old_StackBase;
 	if (L != NULL) {
@@ -1127,20 +1123,21 @@ Abstract_allocator prv_alloc) {
 
 			variable_backup_memory_reserve* backup_reserve =
 					create_variable_backup_memory_reserve(p->input_variables);
-			int count_cancel_trying = 0;
-			int count_call = 0;
+			struct counting_step counting_step_;
+			counting_step_.count_call=0;
+			counting_step_.count_cancel_trying=0;
+
 			locate(graph_depth, p->optimized_states[L->state_number],
 					L->position, depth + 1, matches, n_matches, ctx, p,
-					p_token_error_ctx, backup_reserve, &count_cancel_trying,
-					&count_call, prv_alloc);
-			if ((p->max_count_call > 0) && (count_call >= p->max_count_call)) {
+					backup_reserve, &counting_step_);
+			if ((p->max_count_call > 0) && (counting_step_.count_call >= p->max_count_call)) {
 				u_printf("stop computing token %u after %u step computing\n",
-						p->current_origin, count_call);
-			} else if ((p->max_count_call_warning > 0) && (count_call
+						p->current_origin, counting_step_.count_call);
+			} else if ((p->max_count_call_warning > 0) && (counting_step_.count_call
 					>= p->max_count_call_warning)) {
 				u_printf(
 						"warning : computing token %u take %u step computing\n",
-						p->current_origin, count_call);
+						p->current_origin, counting_step_.count_call);
 			}
 
 			free_reserve(backup_reserve);
@@ -1160,14 +1157,14 @@ Abstract_allocator prv_alloc) {
 			}
 			L = L->next;
 		} while (L != NULL);
-		free_parsing_info(L_first); /* free all morphological matches */
+		free_parsing_info(L_first,p->prv_alloc_recycle); /* free all morphological matches */
 	}
 	/* Finally, we have to restore the stack and other backup stuff */
 	p->stack->stack_pointer = stack_top;
 	p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 	if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
 		install_variable_backup(p->input_variables, var_backup);
-		free_variable_backup(var_backup);
+		free_variable_backup(var_backup,p->prv_alloc_recycle);
 		install_output_variable_backup(p->output_variables,output_variable_backup);
 		free_output_variable_backup(output_variable_backup);
 	}
@@ -1200,7 +1197,7 @@ void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 			/* If any word will do with no entry saving */
 			(*matches) = insert_morphological_match(pos_offset,
 					pos_in_current_token, -1, (*matches), NULL, jamo,
-					pos_in_jamo);
+					pos_in_jamo, p->prv_alloc_recycle);
 		} else {
 			/* If we have to check the pattern */
 			int inf_number = ((unsigned char) bin[offset]) * 256 * 256
@@ -1223,7 +1220,7 @@ void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 					(*matches) = insert_morphological_match(pos_offset,
 							pos_in_current_token, -1, (*matches),
 							save_dic_entry ? dela_entry : NULL, jamo,
-							pos_in_jamo);
+							pos_in_jamo, p->prv_alloc_recycle);
 				}
 				free_dela_entry(dela_entry);
 				tmp = tmp->next;
@@ -1425,7 +1422,7 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		if (pattern == NULL && !save_dic_entry) {
 			/* If any word will do with no entry saving */
 			(*matches) = insert_morphological_match(pos_offset,
-					pos_in_current_token, -1, (*matches), NULL, NULL, 0);
+					pos_in_current_token, -1, (*matches), NULL, NULL, 0, p->prv_alloc_recycle);
 		} else {
 			/* If we have to check the pattern */
 			int inf_number = ((unsigned char) bin[offset]) * 256 * 256
@@ -1447,7 +1444,7 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					//error("et ca matche!\n");
 					(*matches) = insert_morphological_match(pos_offset,
 							pos_in_current_token, -1, (*matches),
-							save_dic_entry ? dela_entry : NULL, NULL, 0);
+							save_dic_entry ? dela_entry : NULL, NULL, 0, p->prv_alloc_recycle);
 				}
 				free_dela_entry(dela_entry);
 				tmp = tmp->next;

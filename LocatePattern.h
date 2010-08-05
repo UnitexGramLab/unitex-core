@@ -241,6 +241,10 @@ struct locate_parameters {
    ArabicTypoRules arabic;
    int tilde_negation_operator;
    int useLocateCache;
+
+   Abstract_allocator prv_alloc;
+   Abstract_allocator prv_alloc_recycle;
+   struct Token_error_ctx* p_token_error_ctx;
 };
 
 

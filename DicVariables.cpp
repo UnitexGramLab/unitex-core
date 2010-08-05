@@ -26,8 +26,8 @@
 /**
  * Allocates, initializes and returns a dic_variable.
  */
-struct dic_variable* new_dic_variable(unichar* name,struct dela_entry* dic_entry,
-									struct dic_variable* next,int must_clone) {
+struct dic_variable* new_dic_variable(const unichar* name,struct dela_entry* dic_entry,
+                                      struct dic_variable* next,int must_clone) {
 struct dic_variable* tmp=(struct dic_variable*)malloc(sizeof(struct dic_variable));
 if (tmp==NULL) {
    fatal_alloc_error("new_dic_variable");
@@ -113,7 +113,7 @@ return NULL;
 /**
  * Returns a copy of the given dic variable list.
  */
-struct dic_variable* clone_dic_variable_list(struct dic_variable* list) {
+struct dic_variable* clone_dic_variable_list(const struct dic_variable* list) {
 if (list==NULL) return NULL;
 return new_dic_variable(list->name,list->dic_entry,clone_dic_variable_list(list->next),1);
 }

@@ -28,6 +28,11 @@
 #include "DicVariables.h"
 #include "DELA.h"
 
+#define SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC (0x100)
+
+#define AroundAllocAlign(x) ((((x)+0x0f)/0x10)*0x10)
+
+size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar);
 
 /**
  * This structure is used to store information during the parsing of a text.
@@ -48,20 +53,26 @@ struct parsing_info {
     * morphological mode. -1 if not used. */
    int state_number;
 
-
-   /* Content of the stack */
-   unichar* stack;
    /* Stack pointer */
    int stack_pointer;
 
-   /* A copy of the variable ranges */
-   int* input_variable_backup;
+   /* Content of the stack */
+   unichar* stack;
+   unichar* stack_internal_reserved_space;
+   int stack_must_be_free;
+   int stack_internal_reserved_space_size;
 
-   /* size of the variable_backup copy (number of variables) */
-   int variable_backup_size;
 
    /* A copy of the output variables */
    unichar* output_variable_backup;
+
+
+   /* A copy of the variable ranges */
+   int* input_variable_backup;
+   int input_variable_backup_must_be_free;
+
+   /* size of the variable_backup copy (number of variables) */
+   int variable_backup_size;
 
    /* A copy of the DELAF entry variables */
    struct dic_variable* dic_variable_backup;
@@ -75,26 +86,27 @@ struct parsing_info {
    int left_ctx_shift;
    int left_ctx_base;
 
+   /* The next element of the list */
+   struct parsing_info* next;
+
    /* Indication for morphological mode in Korean */
    unichar* jamo;
    int pos_in_jamo;
 
-   /* The next element of the list */
-   struct parsing_info* next;
 };
 
 
 
 struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,OutputVariables*,
 										struct dela_entry* dic_entry,struct dic_variable*,
-										int,int,unichar*,int);
-void free_parsing_info(struct parsing_info*);
+										int,int,unichar*,int,Abstract_allocator);
+void free_parsing_info(struct parsing_info*,Abstract_allocator);
 struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,OutputVariables*,
-		                              struct dic_variable*,int,int,unichar*,int);
+		                              struct dic_variable*,int,int,unichar*,int,Abstract_allocator);
 struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,OutputVariables*,
-		                                 struct dic_variable*,int,int,unichar*,int);
+		                                 struct dic_variable*,int,int,unichar*,int,Abstract_allocator);
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,
                                                 struct parsing_info* list,struct dela_entry*,
-                                                unichar* jamo,int pos_in_jamo);
+                                                unichar* jamo,int pos_in_jamo,Abstract_allocator);
 
 #endif

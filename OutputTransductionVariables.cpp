@@ -117,11 +117,10 @@ unichar* backup=(unichar*)malloc(size*sizeof(unichar));
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
 }
-int pos=0;
 for (int i=0;i<l;i++) {
 	backup[i]=v->is_pending[i];
 }
-pos=l;
+int pos=l;
 for (int i=0;i<l;i++) {
 	u_strcpy(backup+pos,v->variables[i]->str);
 	pos=pos+v->variables[i]->len;
@@ -143,7 +142,7 @@ if (backup!=NULL) free(backup);
 /**
  * Sets the variables with the values of the given backup.
  */
-void install_output_variable_backup(OutputVariables* v,unichar* backup) {
+void install_output_variable_backup(OutputVariables* v,const unichar* backup) {
 if (backup==NULL) return;
 /* First, we free the previous pending list */
 OutputVarList* tmp;
@@ -263,7 +262,7 @@ remove_output_variable_from_pending_list(&(var->pending),var->variables[index]);
 /**
  * Sets the given variable as being pending.
  */
-void set_output_variable_pending(OutputVariables* var,unichar* var_name) {
+void set_output_variable_pending(OutputVariables* var,const unichar* var_name) {
 set_output_variable_pending(var,get_value_index(var_name,var->variable_index,DONT_INSERT));
 }
 
@@ -271,7 +270,7 @@ set_output_variable_pending(var,get_value_index(var_name,var->variable_index,DON
 /**
  * Unsets the given variable as being pending.
  */
-void unset_output_variable_pending(OutputVariables* var,unichar* var_name) {
+void unset_output_variable_pending(OutputVariables* var,const unichar* var_name) {
 unset_output_variable_pending(var,get_value_index(var_name,var->variable_index,DONT_INSERT));
 }
 

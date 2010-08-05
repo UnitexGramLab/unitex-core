@@ -27,7 +27,10 @@
  * Allocates and returns a structure representing the variables
  * whose names are in 'list'. The variable ranges are initialized with [-1;-1[
  */
-Variables* new_Variables(const struct list_ustring* list) {
+Variables* new_Variables(const struct list_ustring* list,int *p_nb_variable) {
+if (p_nb_variable!=NULL) {
+    *p_nb_variable=0;
+}
 Variables* v=(Variables*)malloc(sizeof(Variables));
 if (v==NULL) {
    fatal_alloc_error("new_Variables");
@@ -46,6 +49,9 @@ if (v->variables==NULL) {
 for (int i=0;i<l;i++) {
    v->variables[i].start_in_tokens=UNDEF_VAR_BOUND;
    v->variables[i].end_in_tokens=UNDEF_VAR_BOUND;
+}
+if (p_nb_variable!=NULL) {
+    *p_nb_variable=l;
 }
 return v;
 }
@@ -158,54 +164,80 @@ return v->variables[n].end_in_chars;
 }*/
 
 
-#define nb_int_variables (4)
+#define NB_INT_BY_VARIABLES (4)
+
+size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb)
+{
+    return sizeof(int)*NB_INT_BY_VARIABLES*nb;
+}
+
+
+size_t get_variable_backup_size_in_byte(const Variables* v)
+{
+if (v==NULL || v->variable_index==NULL) return NULL;
+int l=v->variable_index->size;
+return (sizeof(int)*NB_INT_BY_VARIABLES*l);
+}
+
 /**
  * Allocates, initializes and returns an integer array that is a copy of
  * the variable ranges.
  */
-int* create_variable_backup(Variables* v) {
+int* create_variable_backup(const Variables* v,Abstract_allocator prv_alloc_recycle) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
-int* backup=(int*)malloc(sizeof(int)*nb_int_variables*l);
+int* backup=(int*)malloc_cb(sizeof(int)*NB_INT_BY_VARIABLES*l,prv_alloc_recycle);
 if (backup==NULL) {
    fatal_alloc_error("create_variable_backup");
 }
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of (two before) nb_int_variables int */
-memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*nb_int_variables*l);
+   which is a structure of (two before) NB_INT_BY_VARIABLES int */
+memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*NB_INT_BY_VARIABLES*l);
 
 return backup;
 }
 
+/**
+ * initializes an integer array that is a copy of
+ * the variable ranges.
+ */
+void init_variable_backup(int* backup,const Variables* v) {
+if (v==NULL || v->variable_index==NULL) return ;
+int l=v->variable_index->size;
+
+/* v->variables is an array of struct transduction_variable
+   which is a structure of (two before) NB_INT_BY_VARIABLES int */
+memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*NB_INT_BY_VARIABLES*l);
+}
 
 /**
  * Frees the given variable backup.
  */
-void free_variable_backup(int* backup) {
-if (backup!=NULL) free(backup);
+void free_variable_backup(int* backup,Abstract_allocator prv_alloc_recycle) {
+if (backup!=NULL) free_cb(backup,prv_alloc_recycle);
 }
 
 
 /**
  * Sets the variable ranges with the values of the given backup.
  */
-void install_variable_backup(Variables* v,int* backup) {
+void install_variable_backup(Variables* v,const int* backup) {
 if (backup==NULL) {
 	fatal_error("NULL error in install_variable_backup\n");
 }
 int l=v->variable_index->size;
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of (two before) nb_int_variables int */
-memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*nb_int_variables*l);
+   which is a structure of (two before) NB_INT_BY_VARIABLES int */
+memcpy((void*)(&(v->variables[0])),(const void*)&backup[0],sizeof(int)*NB_INT_BY_VARIABLES*l);
 }
 
 
 /**
  * Sets the variable ranges with the values of the given backup.
  */
-void update_variable_backup(int* backup,Variables* v) {
+void update_variable_backup(int* backup,const Variables* v) {
 if (backup==NULL) {
 	fatal_error("NULL error in install_variable_backup\n");
 }
@@ -215,8 +247,8 @@ if (v!=NULL)
       l=v->variable_index->size;
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of (two before) nb_int_variables int */
-memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*nb_int_variables*l);
+   which is a structure of (two before) NB_INT_BY_VARIABLES int */
+memcpy((void*)&backup[0],(const void*)(&(v->variables[0])),sizeof(int)*NB_INT_BY_VARIABLES*l);
 }
 
 /* to limit number of malloc, we define a pool of memory (like a stack)
@@ -272,7 +304,7 @@ return suggested_size;
 variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables* v)
 {
 int size_variable_index = v->variable_index->size;
-int size_unaligned = (size_variable_index*nb_int_variables);
+int size_unaligned = (size_variable_index*NB_INT_BY_VARIABLES);
 int size_aligned = (int)(((((size_unaligned+4) * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int));
 
 int nb_item_allocated=suggest_size_backup_reserve(size_aligned);
@@ -334,7 +366,7 @@ if ((r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0))
 }
 
 /* v->variables is an array of struct transduction_variable
-   which is a structure of (two before) nb_int_variables int */
+   which is a structure of (two before) NB_INT_BY_VARIABLES int */
 int* ret = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
 memcpy((void*)ret,(const void*)(&(v->variables[0])),r->size_copydata);
 
