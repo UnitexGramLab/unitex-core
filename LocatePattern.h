@@ -48,6 +48,11 @@
 #include "MappedFileHelper.h"
 #include "Arabic.h"
 
+struct counting_step_st
+{
+    int count_cancel_trying;
+    int count_call;
+} ;
 
 /**
  * This structure is used to store all the information needed
@@ -248,6 +253,7 @@ struct locate_parameters {
 
    int graph_depth;
    struct Token_error_ctx* p_token_error_ctx;
+   struct counting_step_st counting_step;
 };
 
 

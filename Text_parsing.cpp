@@ -119,24 +119,23 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				p->left_ctx_shift = 0;
 				p->left_ctx_base = 0;
 
-                struct counting_step counting_step_;
-                counting_step_.count_call=0;
-                counting_step_.count_cancel_trying=0;
+                p->counting_step.count_call=0;
+                p->counting_step.count_cancel_trying=0;
 				p->last_tested_position = 0;
 				p->last_matched_position = -1;
                 p->graph_depth=0;
 				locate(/*0,*/ initial_state, 0, 0, &matches, 0, NULL, p,
-						backup_reserve, &counting_step_);
+						backup_reserve);
 				if ((p->max_count_call > 0)
-						&& (counting_step_.count_call >= p->max_count_call)) {
+						&& (p->counting_step.count_call >= p->max_count_call)) {
 					u_printf(
 							"stop computing token %u after %u step computing.\n",
-							p->current_origin, counting_step_.count_call);
-				} else if ((p->max_count_call_warning > 0) && (counting_step_.count_call
+							p->current_origin, p->counting_step.count_call);
+				} else if ((p->max_count_call_warning > 0) && (p->counting_step.count_call
 						>= p->max_count_call_warning)) {
 					u_printf(
 							"warning : computing token %u take %u step computing.\n",
-							p->current_origin, counting_step_.count_call);
+							p->current_origin, p->counting_step.count_call);
 				}
 				int can_cache_matches = 0;
 				p->last_tested_position=p->last_tested_position+p->current_origin;
@@ -309,8 +308,7 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * explosions due to bad written grammars. */
 struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-variable_backup_memory_reserve*backup_reserve,
-struct counting_step* pcounting_step) {
+variable_backup_memory_reserve*backup_reserve) {
 #ifdef TRE_WCHAR
 	int filter_number;
 #endif
@@ -319,35 +317,35 @@ struct counting_step* pcounting_step) {
 	Transition* t1;
 	int stack_top = p->stack->stack_pointer;
 	unichar* output;
-int captured_chars;
+	int captured_chars;
 	//(*p_count_call)++;
 
-	if ((pcounting_step->count_cancel_trying) == -1) {
+	if ((p->counting_step.count_cancel_trying) == -1) {
 		return;
 	}
 
-	if ((pcounting_step->count_cancel_trying) == 0) {
+	if ((p->counting_step.count_cancel_trying) == 0) {
 
 		if ((p->max_count_call) > 0) {
-			if ((pcounting_step->count_call) >= (p->max_count_call)) {
-				pcounting_step->count_cancel_trying = -1;
+			if ((p->counting_step.count_call) >= (p->max_count_call)) {
+				p->counting_step.count_cancel_trying = -1;
 				return;
 			}
 		}
 
-		pcounting_step->count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
-		if (((p->max_count_call) > 0) && (((pcounting_step->count_call)
+		p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+		if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
 				+COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-			pcounting_step->count_cancel_trying = (p->max_count_call) - (pcounting_step->count_call);
+			p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
 		}
 
 		if (is_cancelling_requested() != 0) {
-			pcounting_step->count_cancel_trying = -1;
+			p->counting_step.count_cancel_trying = -1;
 			return;
 		}
-		(pcounting_step->count_call) += (pcounting_step->count_cancel_trying);
+		(p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
 	}
-	(pcounting_step->count_cancel_trying)--;
+	(p->counting_step.count_cancel_trying)--;
 
 	/* The following static variable holds the number of matches at
 	 * one position in text. */
@@ -504,8 +502,7 @@ int captured_chars;
 				       p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
 				       pos, depth + 1, &L, 0, NULL, /* ctx is set to NULL because the end of a context must occur in the
 						 * same graph than its beginning */
-				       p, reserve_used,
-				       pcounting_step);
+				       p, reserve_used);
 				p->graph_depth -- ;
 
 				p->stack_base = old_StackBase;
@@ -551,8 +548,7 @@ int captured_chars;
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number],
 								L->position, depth + 1, matches, n_matches,
-								ctx, p, backup_reserve,
-								pcounting_step);
+								ctx, p, backup_reserve);
 
 						p->left_ctx_shift = old_left_ctx_shift;
 						p->left_ctx_base = old_left_ctx_base;
@@ -747,7 +743,7 @@ int captured_chars;
 									p->optimized_states[t1->state_number],
 									end_of_compound + 1, depth + 1, matches,
 									n_matches, ctx, p,
-									backup_reserve, pcounting_step);
+									backup_reserve);
 							p->stack->stack_pointer = stack_top;
 							if (p->nb_output_variables != 0) {
 							    remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -835,7 +831,7 @@ int captured_chars;
 								p->optimized_states[t1->state_number],
 								end_of_compound + 1, depth + 1, matches,
 								n_matches, ctx, p,
-								backup_reserve, pcounting_step);
+								backup_reserve);
 						if (p->nb_output_variables != 0) {
 						    remove_chars_from_output_variables(p->output_variables,captured_chars);
 						}
@@ -1014,8 +1010,7 @@ int captured_chars;
 				 }*/
 				locate(/*graph_depth,*/ p->optimized_states[t1->state_number], pos2,
 						depth + 1, matches, n_matches, ctx, p,
-						backup_reserve,
-						pcounting_step);
+						backup_reserve);
 				/*if (p->output_policy!=IGNORE_OUTPUTS) {
 				 install_variable_backup(p->variables,var_backup);
 				 free_variable_backup(var_backup);
@@ -1054,8 +1049,7 @@ int captured_chars;
 				/* Then, we continue the exploration of the grammar */
 				locate(/*graph_depth,*/ p->optimized_states[t1->state_number], end,
 						depth + 1, matches, n_matches, ctx, p,
-						backup_reserve,
-						pcounting_step);
+						backup_reserve);
 				/* Once we have finished, we restore the stack */
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1074,7 +1068,7 @@ while (output_variable_list != NULL) {
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, depth + 1, matches, n_matches, ctx, p,
-			backup_reserve, pcounting_step);
+			backup_reserve);
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
@@ -1088,7 +1082,7 @@ while (output_variable_list != NULL) {
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, depth + 1, matches, n_matches, ctx, p,
-			backup_reserve, pcounting_step);
+			backup_reserve);
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
@@ -1110,7 +1104,7 @@ while (output_variable_list != NULL) {
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
 				pos, depth + 1, matches, n_matches, ctx, p,
-				backup_reserve, pcounting_step);
+				backup_reserve);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1142,7 +1136,7 @@ while (output_variable_list != NULL) {
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
 				pos, depth + 1, matches, n_matches, ctx, p,
-				backup_reserve, pcounting_step);
+				backup_reserve);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1168,7 +1162,7 @@ while (output_variable_list != NULL) {
 			struct list_int* c = new_list_int(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					depth + 1, NULL, 0, c, p,
-					backup_reserve, pcounting_step);
+					backup_reserve);
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (c->n) {
@@ -1179,8 +1173,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
 							depth + 1, matches, n_matches, ctx, p,
-							backup_reserve,
-							pcounting_step);
+							backup_reserve);
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1194,7 +1187,7 @@ while (output_variable_list != NULL) {
 			struct list_int* c = new_list_int(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					depth + 1, NULL, 0, c, p,
-					backup_reserve, pcounting_step);
+					backup_reserve);
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (!c->n) {
@@ -1205,8 +1198,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
 							depth + 1, matches, n_matches, ctx, p,
-							backup_reserve,
-							pcounting_step);
+							backup_reserve);
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1288,8 +1280,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, depth + 1, matches, n_matches,
-							ctx, p, backup_reserve,
-							pcounting_step);
+							ctx, p, backup_reserve);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1351,8 +1342,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, depth + 1, matches, n_matches,
-							ctx, p, backup_reserve,
-							pcounting_step);
+							ctx, p, backup_reserve);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1391,8 +1381,7 @@ while (output_variable_list != NULL) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
 								depth + 1, matches, n_matches, ctx, p,
-								backup_reserve,
-								pcounting_step);
+								backup_reserve);
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1420,8 +1409,7 @@ while (output_variable_list != NULL) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
 								depth + 1, matches, n_matches, ctx, p,
-								backup_reserve,
-								pcounting_step);
+								backup_reserve);
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1466,8 +1454,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							pos2 + 1, depth + 1, matches, n_matches, ctx, p,
-							backup_reserve,
-							pcounting_step);
+							backup_reserve);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}

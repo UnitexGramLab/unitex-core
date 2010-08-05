@@ -29,6 +29,7 @@
 #include "TransductionStack.h"
 #include "DicVariables.h"
 #include "ParsingInfo.h"
+#include "UserCancelling.h"
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
  see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -181,6 +182,42 @@ unichar* jamo, int pos_in_jamo,
 unichar* content_buffer, /* reusable unichar 4096 buffer for content */
 variable_backup_memory_reserve* backup_reserve
 ) {
+
+
+
+
+	if ((p->counting_step.count_cancel_trying) == -1) {
+		return;
+	}
+
+	if ((p->counting_step.count_cancel_trying) == 0) {
+
+		if ((p->max_count_call) > 0) {
+			if ((p->counting_step.count_call) >= (p->max_count_call)) {
+				p->counting_step.count_cancel_trying = -1;
+				return;
+			}
+		}
+
+		p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+		if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
+				+COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
+			p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
+		}
+
+		if (is_cancelling_requested() != 0) {
+			p->counting_step.count_cancel_trying = -1;
+			return;
+		}
+		(p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
+	}
+	(p->counting_step.count_cancel_trying)--;
+
+
+
+
+
+
 	OptimizedFst2State current_state = p->optimized_states[current_state_index];
 	Fst2State current_state_old = p->fst2->states[current_state_index];
 	int token;
@@ -1086,6 +1123,7 @@ int n_matches, /* number of sequences that have matched. It may be different fro
 struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p, /* miscellaneous parameters needed by the function */
 variable_backup_memory_reserve* backup_reserve_) {
+
 	unichar* content_buffer = (unichar*) malloc(sizeof(unichar) * 4096);
 	if (content_buffer == NULL) {
 		fatal_alloc_error("enter_morphological_mode");
@@ -1132,22 +1170,25 @@ variable_backup_memory_reserve* backup_reserve_) {
 
 			variable_backup_memory_reserve* backup_reserve =
 					create_variable_backup_memory_reserve(p->input_variables);
-			struct counting_step counting_step_;
-			counting_step_.count_call=0;
-			counting_step_.count_cancel_trying=0;
+			/*
+			p->counting_step.count_call=0;
+			p->counting_step.count_cancel_trying=0;
+            */
 
 			locate(/*graph_depth, */p->optimized_states[L->state_number],
 					L->position, depth + 1, matches, n_matches, ctx, p,
-					backup_reserve, &counting_step_);
-			if ((p->max_count_call > 0) && (counting_step_.count_call >= p->max_count_call)) {
+					backup_reserve);
+            /*
+			if ((p->max_count_call > 0) && (p->counting_step.count_call >= p->max_count_call)) {
 				u_printf("stop computing token %u after %u step computing\n",
-						p->current_origin, counting_step_.count_call);
-			} else if ((p->max_count_call_warning > 0) && (counting_step_.count_call
+						p->current_origin, p->counting_step.count_call);
+			} else if ((p->max_count_call_warning > 0) && (p->counting_step.count_call
 					>= p->max_count_call_warning)) {
 				u_printf(
 						"warning : computing token %u take %u step computing\n",
-						p->current_origin, counting_step_.count_call);
+						p->current_origin, p->counting_step.count_call);
 			}
+            */
 
 			free_reserve(backup_reserve);
 
