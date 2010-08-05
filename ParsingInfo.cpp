@@ -42,7 +42,11 @@ void update_parsing_info_stack(struct parsing_info*list,const unichar* new_stack
        free(list->stack);
    }
    list->stack_must_be_free=0;
-   list->stack=list->stack_internal_reserved_space;
+   list->stack = NULL;
+   if (new_stack_value == NULL) {
+       return;
+   }
+   list->stack = list->stack_internal_reserved_space;
 
    int stack_internal_reserved_space_size = list->stack_internal_reserved_space_size;
    unichar* stack_internal_reserved_space=list->stack_internal_reserved_space;

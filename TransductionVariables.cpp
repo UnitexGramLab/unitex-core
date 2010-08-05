@@ -174,7 +174,7 @@ size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb)
 
 size_t get_variable_backup_size_in_byte(const Variables* v)
 {
-if (v==NULL || v->variable_index==NULL) return NULL;
+if (v==NULL || v->variable_index==NULL) return 0;
 int l=v->variable_index->size;
 return (sizeof(int)*NB_INT_BY_VARIABLES*l);
 }

@@ -245,6 +245,8 @@ struct locate_parameters {
 
    Abstract_allocator prv_alloc;
    Abstract_allocator prv_alloc_recycle;
+
+   int graph_depth;
    struct Token_error_ctx* p_token_error_ctx;
 };
 

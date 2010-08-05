@@ -165,7 +165,7 @@ static void update_last_position(struct locate_parameters* p, int pos) {
 /**
  * This is the core function of the morphological mode.
  */
-void morphological_locate(int graph_depth, /* 0 means that we are in the top level graph */
+void morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
 int current_state_index, /* current state in the grammar */
 int pos_in_tokens, /* position in the token buffer, relative to the current origin */
 int pos_in_chars, /* position in the token in characters */
@@ -212,7 +212,7 @@ variable_backup_memory_reserve* backup_reserve
 		/* If we are in a final state... */
 		/* In we are in the top level graph, it's an error, since we are not supposed
 		 * to reach the end of the graph (we should find a $>) */
-		if (graph_depth == 0) {
+		if (p->graph_depth == 0) {
 			fatal_error("Unexpected end of graph in morphological mode!\n");
 		} else {
 			/* If we are in a subgraph */
@@ -298,10 +298,14 @@ variable_backup_memory_reserve* backup_reserve
 			while (t != NULL) {
 				struct parsing_info* L = NULL;
 				p->stack_base = p->stack->stack_pointer;
-				morphological_locate(graph_depth + 1, /* Exploration of the subgraph */
+
+				p->graph_depth ++ ;
+				morphological_locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 						p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
 						pos_in_chars, depth + 1, &L, 0, NULL, p,
 						jamo, pos_in_jamo, content_buffer,reserve_used);
+				p->graph_depth -- ;
+
 				p->stack_base = old_StackBase;
 				if (L != NULL) {
 					struct parsing_info* L_first = L;
@@ -325,7 +329,7 @@ variable_backup_memory_reserve* backup_reserve
 							}
 						}
 						/* And we continue the exploration */
-						morphological_locate(graph_depth, t->state_number,
+						morphological_locate(/*graph_depth,*/ t->state_number,
 								L->position, L->pos_in_token, depth + 1,
 								matches, n_matches, ctx, p,
 								L->jamo, L->pos_in_jamo, content_buffer,backup_reserve);
@@ -346,7 +350,7 @@ variable_backup_memory_reserve* backup_reserve
 		install_output_variable_backup(p->output_variables,output_variable_backup);
 		free_output_variable_backup(output_variable_backup);
 		clear_dic_variable_list(&dic_variables_backup);
-		if (graph_depth == 0) {
+		if ((p->graph_depth) == 0) {
 			/* If we are at the top graph level, we restore the variables */
 			if (p->output_policy != IGNORE_OUTPUTS) {
 				if (save_previous_ptr_var != NULL) {
@@ -388,7 +392,7 @@ variable_backup_memory_reserve* backup_reserve
 						break;
 					}
 				}
-				morphological_locate(graph_depth,
+				morphological_locate(/*graph_depth,*/
 						t->state_number, pos_in_tokens, pos_in_chars,
 						depth + 1, matches, n_matches, ctx, p,
 						jamo, pos_in_jamo, content_buffer,backup_reserve);
@@ -509,7 +513,7 @@ variable_backup_memory_reserve* backup_reserve
 							set_dic_variable(var_name, L2->dic_entry,
 									&(p->dic_variables),1);
 						}
-						morphological_locate(graph_depth,
+						morphological_locate(/*graph_depth,*/
 								t->state_number, new_pos,
 								new_pos_in_token, depth + 1, matches,
 								n_matches, ctx, p, L2->jamo,
@@ -609,7 +613,7 @@ variable_backup_memory_reserve* backup_reserve
 
 			case META_END_MORPHO:
 				/* Should happen, but only at the same level than the $< tag */
-				if (graph_depth != 0) {
+				if ((p->graph_depth) != 0) {
 					fatal_error(
 							"Unexpected end of morphological mode at a different\nlevel than the $< tag\n");
 				}
@@ -707,7 +711,7 @@ variable_backup_memory_reserve* backup_reserve
 						}
 					}
 				}
-				morphological_locate(graph_depth, t->state_number, new_pos,
+				morphological_locate(/*graph_depth,*/ t->state_number, new_pos,
 						new_pos_in_token, depth + 1, matches, n_matches, ctx,
 						p, new_jamo, new_pos_in_jamo,
 						content_buffer,backup_reserve);
@@ -725,7 +729,7 @@ variable_backup_memory_reserve* backup_reserve
 	struct opt_variable* variable_list = current_state->output_variable_starts;
 	while (variable_list != NULL) {
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
-		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
+		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, depth + 1, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
 				content_buffer,backup_reserve);
@@ -740,7 +744,7 @@ variable_backup_memory_reserve* backup_reserve
 	variable_list = current_state->output_variable_ends;
 	while (variable_list != NULL) {
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
-		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
+		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, depth + 1, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
 				content_buffer,backup_reserve);
@@ -761,7 +765,7 @@ variable_backup_memory_reserve* backup_reserve
 						variable_list->variable_number);
 		set_variable_start(p->input_variables, variable_list->variable_number, pos_in_tokens);
 		set_variable_start_in_chars(p->input_variables, variable_list->variable_number, pos_in_chars);
-		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
+		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, depth + 1, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
 						content_buffer,backup_reserve);
@@ -803,7 +807,7 @@ variable_backup_memory_reserve* backup_reserve
 		}
 		set_variable_end(p->input_variables, variable_list->variable_number, new_end_in_token);
 		set_variable_end_in_chars(p->input_variables, variable_list->variable_number,new_end_in_chars);
-		morphological_locate(graph_depth, variable_list->transition->state_number, pos_in_tokens,
+		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, depth + 1, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
 						content_buffer,backup_reserve);
@@ -899,7 +903,7 @@ variable_backup_memory_reserve* backup_reserve
 									"Unsupported MERGE mode in Korean morphological mode\n");
 							//push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
 						}
-						morphological_locate(graph_depth, trans->state_number,
+						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
 								n_matches, ctx, p, new_jamo,
 								new_pos_in_jamo, content_buffer,backup_reserve);
@@ -944,7 +948,7 @@ variable_backup_memory_reserve* backup_reserve
 							new_pos = pos_in_tokens + 1;
 							new_pos_in_token = 0;
 						}
-						morphological_locate(graph_depth, trans->state_number,
+						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
 								n_matches, ctx, p, jamo,
 								pos_in_jamo, content_buffer,backup_reserve);
@@ -1035,7 +1039,7 @@ variable_backup_memory_reserve* backup_reserve
 							set_dic_variable(var_name, L->dic_entry,
 									&(p->dic_variables),1);
 						}
-						morphological_locate(graph_depth, trans->state_number,
+						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, depth + 1, matches,
 								n_matches, ctx, p, L->jamo,
 								L->pos_in_jamo, content_buffer,backup_reserve);
@@ -1070,7 +1074,7 @@ int input_is_token(Fst2Tag tag) {
 /**
  * This is function that starts matching things in morphological mode.
  */
-void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top level graph */
+void enter_morphological_mode(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
 int state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 int depth, /* number of nested calls to 'locate' */
@@ -1102,9 +1106,14 @@ variable_backup_memory_reserve* backup_reserve_) {
 			p->dic_variables);
 	int current_token = p->buffer[pos + p->current_origin];
 	//error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
-	morphological_locate(0, state, pos, 0, depth + 1, &L, 0, NULL, p,
+
+    int backup_graph_depth = p->graph_depth;
+    p->graph_depth = 0;
+	morphological_locate(/*0,*/ state, pos, 0, depth + 1, &L, 0, NULL, p,
 			(p->jamo_tags != NULL) ? p->jamo_tags[current_token] : NULL, 0,
 			content_buffer,backup_reserve_);
+    p->graph_depth = backup_graph_depth;
+
 	clear_dic_variable_list(&(p->dic_variables));
 	p->stack_base = old_StackBase;
 	if (L != NULL) {
@@ -1127,7 +1136,7 @@ variable_backup_memory_reserve* backup_reserve_) {
 			counting_step_.count_call=0;
 			counting_step_.count_cancel_trying=0;
 
-			locate(graph_depth, p->optimized_states[L->state_number],
+			locate(/*graph_depth, */p->optimized_states[L->state_number],
 					L->position, depth + 1, matches, n_matches, ctx, p,
 					backup_reserve, &counting_step_);
 			if ((p->max_count_call > 0) && (counting_step_.count_call >= p->max_count_call)) {
@@ -1143,7 +1152,7 @@ variable_backup_memory_reserve* backup_reserve_) {
 			free_reserve(backup_reserve);
 
 			p->stack->stack_pointer = stack_top;
-			if (graph_depth == 0) {
+			if (p->graph_depth == 0) {
 				/* If we are at the top graph level, we restore the variables */
 				if (p->output_policy != IGNORE_OUTPUTS) {
 					install_variable_backup(p->input_variables, var_backup);

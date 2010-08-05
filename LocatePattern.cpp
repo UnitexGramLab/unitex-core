@@ -95,6 +95,7 @@ p->dic_variables=NULL;
 p->left_ctx_shift=0;
 p->left_ctx_base=0;
 p->protect_dic_chars=0;
+p->graph_depth=0;
 p->korean=NULL;
 p->jamo_tags=NULL;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
