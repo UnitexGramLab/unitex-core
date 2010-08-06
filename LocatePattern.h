@@ -252,6 +252,7 @@ struct locate_parameters {
    Abstract_allocator prv_alloc_recycle;
 
    int graph_depth;
+   int explore_depth;
    struct Token_error_ctx* p_token_error_ctx;
    struct counting_step_st counting_step;
 };

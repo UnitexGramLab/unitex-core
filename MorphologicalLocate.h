@@ -36,7 +36,7 @@
 void enter_morphological_mode(/*int graph_depth, */ /* 0 means that we are in the top level graph */
             int state, /* current state in the grammar */
             int pos, /* position in the token buffer, relative to the current origin */
-            int depth, /* number of nested calls to 'locate' */
+            //int depth, /* number of nested calls to 'locate' */
             struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
             int n_matches, /* number of sequences that have matched. It may be different from
                             * the length of the 'matches' list if a given sequence can be
