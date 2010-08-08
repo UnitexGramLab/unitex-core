@@ -316,7 +316,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		int* save_previous_ptr_var = NULL;
 		int* var_backup = NULL;
 		//int create_new_reserve_done = 0;
-		variable_backup_memory_reserve* reserve_previous = p->backup_memory_reserve;
+		variable_backup_memory_reserve* reserve_previous = NULL;
 
 		/* We save all kind of variables */
 		struct dic_variable* dic_variables_backup = clone_dic_variable_list(
@@ -324,7 +324,8 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		unichar* output_variable_backup=NULL;
 		if (p->output_policy!=IGNORE_OUTPUTS) {
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
-					reserve_previous) == 0) {
+					p->backup_memory_reserve) == 0) {
+				reserve_previous = p->backup_memory_reserve;
 				p->backup_memory_reserve = create_variable_backup_memory_reserve(
 						p->input_variables,0);
 				//create_new_reserve_done = 1;
@@ -408,7 +409,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				int reserve_freeable = free_variable_backup_using_reserve(
 						p->backup_memory_reserve);
 
-				if (reserve_previous != p->backup_memory_reserve) {
+				if (reserve_previous != NULL) {
 					if ((reserve_freeable == 0)) {
 							fatal_error("incoherent reserve free result\n");
 					}
@@ -1192,10 +1193,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             */
 
 
-			variable_backup_memory_reserve* reserve_previous = p->backup_memory_reserve;
+			variable_backup_memory_reserve* reserve_previous = NULL;
 
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
-					reserve_previous) == 0) {
+					p->backup_memory_reserve) == 0) {
+				reserve_previous = p->backup_memory_reserve ;
 				p->backup_memory_reserve = create_variable_backup_memory_reserve(
 						p->input_variables,0);
 			}
@@ -1218,7 +1220,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 
 
-			if (reserve_previous != p->backup_memory_reserve) {
+			if (reserve_previous != NULL) {
 					free_reserve(p->backup_memory_reserve);
 					p->backup_memory_reserve = reserve_previous;
 			}

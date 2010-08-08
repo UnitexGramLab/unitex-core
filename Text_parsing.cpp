@@ -476,7 +476,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		int* save_previous_ptr_var = NULL;
 		int* var_backup = NULL;
 		//int create_new_reserve_done = 0;
-        variable_backup_memory_reserve* reserve_previous = p->backup_memory_reserve;
+        variable_backup_memory_reserve* reserve_previous = NULL;
 
 		struct dic_variable* dic_variables_backup = NULL;
 		int old_StackBase = p->stack_base;
@@ -485,7 +485,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			/* For better performance when ignoring outputs */
 
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
-					reserve_previous) == 0) {
+					p->backup_memory_reserve) == 0) {
+				reserve_previous=p->backup_memory_reserve;
 				p->backup_memory_reserve = create_variable_backup_memory_reserve(
 						p->input_variables,0);
 				//create_new_reserve_done = 1;
@@ -609,13 +610,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			int reserve_freeable = free_variable_backup_using_reserve(
 							p->backup_memory_reserve);
-			if (reserve_previous != p->backup_memory_reserve) {
+			if (reserve_previous != NULL) {
 					if ((reserve_freeable == 0)) {
 						fatal_error("incoherent reserve free result\n");
 					}
-                    //puts(";");
 					free_reserve(p->backup_memory_reserve);
-                    //puts(":");
 					p->backup_memory_reserve = reserve_previous;
 			}
 
