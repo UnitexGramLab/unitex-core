@@ -89,10 +89,18 @@ return (stack->stack_pointer==stack->capacity-1);
  * Pushes the given character on the given stack.
  */
 void push(struct stack_unichar* stack,unichar c) {
-if (is_full(stack)) {
+if (stack != NULL) {
+    if (stack->stack_pointer!=stack->capacity-1) {
+        stack->stack[++(stack->stack_pointer)]=c;
+        return;
+    }
+}
+if (stack==NULL) {
+   fatal_error("NULL error in push\n");
+}
+else {
    fatal_error("Cannot push on a full stack\n");
 }
-stack->stack[++(stack->stack_pointer)]=c;
 }
 
 
