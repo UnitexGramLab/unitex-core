@@ -64,7 +64,7 @@ int n_matches_at_token_pos__morphological_locate;
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,struct Token_error_ctx*);
 void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
-void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int,struct list_int*,struct locate_parameters*,variable_backup_memory_reserve*);
+void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int,struct list_int*,struct locate_parameters* /* variable_backup_memory_reserve* */);
 int XOR(int a,int b);
 
 #endif

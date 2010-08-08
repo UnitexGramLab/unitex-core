@@ -113,6 +113,7 @@ p->p_token_error_ctx=NULL;
 p->counting_step.count_call=0;
 p->counting_step.count_cancel_trying=0;
 p->explore_depth=0;
+p->backup_memory_reserve=NULL;
 p->cached_match_vector=new_vector_ptr(16);
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 return p;

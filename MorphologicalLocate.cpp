@@ -179,8 +179,8 @@ int n_matches, /* number of sequences that have matched. It may be different fro
 struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p, /* miscellaneous parameters needed by the function */
 unichar* jamo, int pos_in_jamo,
-unichar* content_buffer, /* reusable unichar 4096 buffer for content */
-variable_backup_memory_reserve* backup_reserve
+unichar* content_buffer /* reusable unichar 4096 buffer for content */
+//,variable_backup_memory_reserve* backup_reserve
 ) {
 
 
@@ -315,8 +315,8 @@ variable_backup_memory_reserve* backup_reserve
 		int old_StackBase = p->stack_base;
 		int* save_previous_ptr_var = NULL;
 		int* var_backup = NULL;
-		int create_new_reserve_done = 0;
-		variable_backup_memory_reserve* reserve_used = backup_reserve;
+		//int create_new_reserve_done = 0;
+		variable_backup_memory_reserve* reserve_previous = p->backup_memory_reserve;
 
 		/* We save all kind of variables */
 		struct dic_variable* dic_variables_backup = clone_dic_variable_list(
@@ -324,13 +324,13 @@ variable_backup_memory_reserve* backup_reserve
 		unichar* output_variable_backup=NULL;
 		if (p->output_policy!=IGNORE_OUTPUTS) {
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
-					reserve_used) == 0) {
-				reserve_used = create_variable_backup_memory_reserve(
-						p->input_variables);
-				create_new_reserve_done = 1;
+					reserve_previous) == 0) {
+				p->backup_memory_reserve = create_variable_backup_memory_reserve(
+						p->input_variables,0);
+				//create_new_reserve_done = 1;
 			}
 			var_backup = create_variable_backup_using_reserve(p->input_variables,
-					reserve_used);
+					p->backup_memory_reserve);
 			output_variable_backup=create_output_variable_backup(p->output_variables);
 		}
 		do {
@@ -347,7 +347,7 @@ variable_backup_memory_reserve* backup_reserve
 				morphological_locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 						p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
 						pos_in_chars, &L, 0, NULL, p,
-						jamo, pos_in_jamo, content_buffer,reserve_used);
+						jamo, pos_in_jamo, content_buffer);
 				p->graph_depth -- ;
 
 				p->stack_base = old_StackBase;
@@ -365,7 +365,7 @@ variable_backup_memory_reserve* backup_reserve
 							if (save_previous_ptr_var == NULL) {
 								save_previous_ptr_var
 										= install_variable_backup_preserving(
-												p->input_variables, reserve_used,
+												p->input_variables, p->backup_memory_reserve,
 												L->input_variable_backup);
 							} else {
 								install_variable_backup(p->input_variables,
@@ -376,7 +376,7 @@ variable_backup_memory_reserve* backup_reserve
 						morphological_locate(/*graph_depth,*/ t->state_number,
 								L->position, L->pos_in_token,
 								matches, n_matches, ctx, p,
-								L->jamo, L->pos_in_jamo, content_buffer,backup_reserve);
+								L->jamo, L->pos_in_jamo, content_buffer);
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
 					} while (L != NULL);
@@ -398,18 +398,25 @@ variable_backup_memory_reserve* backup_reserve
 			/* If we are at the top graph level, we restore the variables */
 			if (p->output_policy != IGNORE_OUTPUTS) {
 				if (save_previous_ptr_var != NULL) {
-					restore_variable_array(p->input_variables, reserve_used,
+					restore_variable_array(p->input_variables, p->backup_memory_reserve,
 							save_previous_ptr_var);
 					save_previous_ptr_var = NULL;
 				}
 
+
+
 				int reserve_freeable = free_variable_backup_using_reserve(
-						reserve_used);
-				if ((reserve_freeable == 0) && (create_new_reserve_done != 0)) {
-					fatal_error("Incoherent reserve free result\n");
+						p->backup_memory_reserve);
+
+				if (reserve_previous != p->backup_memory_reserve) {
+					if ((reserve_freeable == 0)) {
+							fatal_error("incoherent reserve free result\n");
+					}
+					free_reserve(p->backup_memory_reserve);
+					p->backup_memory_reserve = reserve_previous;
 				}
-				if (create_new_reserve_done == 1)
-					free_reserve(reserve_used);
+
+
 			}
 		}
 	} /* End of processing subgraphs */
@@ -439,7 +446,7 @@ variable_backup_memory_reserve* backup_reserve
 				morphological_locate(/*graph_depth,*/
 						t->state_number, pos_in_tokens, pos_in_chars,
 						matches, n_matches, ctx, p,
-						jamo, pos_in_jamo, content_buffer,backup_reserve);
+						jamo, pos_in_jamo, content_buffer);
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
 				break;
@@ -561,7 +568,7 @@ variable_backup_memory_reserve* backup_reserve
 								t->state_number, new_pos,
 								new_pos_in_token, matches,
 								n_matches, ctx, p, L2->jamo,
-								L2->pos_in_jamo, content_buffer,backup_reserve);
+								L2->pos_in_jamo, content_buffer);
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
 									&(p->dic_variables),0);
@@ -758,7 +765,7 @@ variable_backup_memory_reserve* backup_reserve
 				morphological_locate(/*graph_depth,*/ t->state_number, new_pos,
 						new_pos_in_token, matches, n_matches, ctx,
 						p, new_jamo, new_pos_in_jamo,
-						content_buffer,backup_reserve);
+						content_buffer);
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
 			}
@@ -776,7 +783,7 @@ variable_backup_memory_reserve* backup_reserve
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
-				content_buffer,backup_reserve);
+				content_buffer);
 		p->stack->stack_pointer = stack_top;
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
@@ -791,7 +798,7 @@ variable_backup_memory_reserve* backup_reserve
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
-				content_buffer,backup_reserve);
+				content_buffer);
 		p->stack->stack_pointer = stack_top;
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
@@ -802,7 +809,7 @@ variable_backup_memory_reserve* backup_reserve
 	 */
 	variable_list = current_state->input_variable_starts;
 	while (variable_list != NULL) {
-		inc_dirty(backup_reserve);
+		inc_dirty(p->backup_memory_reserve);
 		int old_in_token = get_variable_start(p->input_variables,
 				variable_list->variable_number);
 		int old_in_char = get_variable_start_in_chars(p->input_variables,
@@ -812,7 +819,7 @@ variable_backup_memory_reserve* backup_reserve
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
-						content_buffer,backup_reserve);
+						content_buffer);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -822,7 +829,7 @@ variable_backup_memory_reserve* backup_reserve
 					old_in_token);
 			set_variable_start_in_chars(p->input_variables, variable_list->variable_number,
 								old_in_char);
-			dec_dirty(backup_reserve);
+			dec_dirty(p->backup_memory_reserve);
 			// restore dirty
 		}
 		variable_list = variable_list->next;
@@ -834,7 +841,7 @@ variable_backup_memory_reserve* backup_reserve
 	variable_list = current_state->input_variable_ends;
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	while (variable_list != NULL) {
-		inc_dirty(backup_reserve);
+		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
 				get_variable_end(p->input_variables, variable_list->variable_number);
 		int old_in_char = get_variable_end_in_chars(p->input_variables, variable_list->variable_number);
@@ -854,7 +861,7 @@ variable_backup_memory_reserve* backup_reserve
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
-						content_buffer,backup_reserve);
+						content_buffer);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -862,7 +869,7 @@ variable_backup_memory_reserve* backup_reserve
 			 * "the cat is white" example in Unitex manual). */
 			set_variable_end(p->input_variables, variable_list->variable_number, old_in_token);
 			set_variable_end_in_chars(p->input_variables, variable_list->variable_number, old_in_char);
-			dec_dirty(backup_reserve);
+			dec_dirty(p->backup_memory_reserve);
 		}
 		variable_list = variable_list->next;
 	}
@@ -951,7 +958,7 @@ variable_backup_memory_reserve* backup_reserve
 						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, new_jamo,
-								new_pos_in_jamo, content_buffer,backup_reserve);
+								new_pos_in_jamo, content_buffer);
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 						p->stack->stack_pointer = stack_top;
 					}
@@ -996,7 +1003,7 @@ variable_backup_memory_reserve* backup_reserve
 						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, jamo,
-								pos_in_jamo, content_buffer,backup_reserve);
+								pos_in_jamo, content_buffer);
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					} else {
@@ -1087,7 +1094,7 @@ variable_backup_memory_reserve* backup_reserve
 						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, L->jamo,
-								L->pos_in_jamo, content_buffer,backup_reserve);
+								L->pos_in_jamo, content_buffer);
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
 									&(p->dic_variables),0);
@@ -1130,8 +1137,9 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * matched in several ways. It is used to detect combinatory
  * explosions due to bad written grammars. */
 struct list_int* ctx, /* information about the current context, if any */
-struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-variable_backup_memory_reserve* backup_reserve_) {
+struct locate_parameters* p /* miscellaneous parameters needed by the function */
+//,variable_backup_memory_reserve* backup_reserve_
+) {
 
     p->explore_depth ++ ;
 	unichar* content_buffer = (unichar*) malloc(sizeof(unichar) * 4096);
@@ -1159,7 +1167,7 @@ variable_backup_memory_reserve* backup_reserve_) {
     p->graph_depth = 0;
 	morphological_locate(/*0,*/ state, pos, 0, &L, 0, NULL, p,
 			(p->jamo_tags != NULL) ? p->jamo_tags[current_token] : NULL, 0,
-			content_buffer,backup_reserve_);
+			content_buffer);
     p->graph_depth = backup_graph_depth;
 
 	clear_dic_variable_list(&(p->dic_variables));
@@ -1178,16 +1186,24 @@ variable_backup_memory_reserve* backup_reserve_) {
 			p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
 			/* And we continue the exploration */
 
-			variable_backup_memory_reserve* backup_reserve =
-					create_variable_backup_memory_reserve(p->input_variables);
 			/*
 			p->counting_step.count_call=0;
 			p->counting_step.count_cancel_trying=0;
             */
 
+
+			variable_backup_memory_reserve* reserve_previous = p->backup_memory_reserve;
+
+			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
+					reserve_previous) == 0) {
+				p->backup_memory_reserve = create_variable_backup_memory_reserve(
+						p->input_variables,0);
+			}
+
+
+
 			locate(/*graph_depth, */p->optimized_states[L->state_number],
-					L->position, matches, n_matches, ctx, p,
-					backup_reserve);
+					L->position, matches, n_matches, ctx, p);
             /*
 			if ((p->max_count_call > 0) && (p->counting_step.count_call >= p->max_count_call)) {
 				u_printf("stop computing token %u after %u step computing\n",
@@ -1200,7 +1216,15 @@ variable_backup_memory_reserve* backup_reserve_) {
 			}
             */
 
-			free_reserve(backup_reserve);
+
+
+			if (reserve_previous != p->backup_memory_reserve) {
+					free_reserve(p->backup_memory_reserve);
+					p->backup_memory_reserve = reserve_previous;
+			}
+
+
+
 
 			p->stack->stack_pointer = stack_top;
 			if (p->graph_depth == 0) {

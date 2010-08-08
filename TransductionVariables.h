@@ -140,7 +140,7 @@ typedef struct {
  * create_variable_backup_memory_reserve : build a reserve of memory
  * with space for nb_item_allocated int
  */
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables*);
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables*,int is_first);
 
 /*
  * clear the reserve from memory

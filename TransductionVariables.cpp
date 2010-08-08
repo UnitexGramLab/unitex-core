@@ -261,6 +261,7 @@ memcpy((void*)&backup[0],(const void*)(&(v->variables[0])),sizeof(int)*NB_INT_BY
  */
 
 
+#define SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE_FIRST (64)
 #define SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE (32)
 #define LIMIT_MIN_SUGGESTED_SIZE (16384)
 #define LIMIT_MAX_SUGGESTED_SIZE (65536)
@@ -281,14 +282,15 @@ int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v
     return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
 }
 
-int suggest_size_backup_reserve(int size_one_backup)
+int suggest_size_backup_reserve(int size_one_backup,int is_first)
 {
 /* we store the number of element after the list.
    we add 2 and not 1 for alignement and faster memcpy */
 
 /* we suggest several SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE because we want prevent malloc/free at each step */
 
-int suggested_size = size_one_backup * SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE;
+int suggested_size = size_one_backup * 
+        (is_first ? SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE_FIRST : SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE);
 if (suggested_size > LIMIT_MAX_SUGGESTED_SIZE)
     suggested_size = LIMIT_MAX_SUGGESTED_SIZE;
 if (suggested_size < LIMIT_MIN_SUGGESTED_SIZE)
@@ -301,13 +303,13 @@ if (suggested_size < size_one_backup)
 return suggested_size;
 }
 
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables* v)
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables* v,int is_first)
 {
 int size_variable_index = v->variable_index->size;
 int size_unaligned = (size_variable_index*NB_INT_BY_VARIABLES);
 int size_aligned = (int)(((((size_unaligned+4) * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int));
 
-int nb_item_allocated=suggest_size_backup_reserve(size_aligned);
+int nb_item_allocated=suggest_size_backup_reserve(size_aligned,is_first);
 variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
    malloc(sizeof(variable_backup_memory_reserve)+(sizeof(int)*nb_item_allocated));
 
@@ -341,6 +343,8 @@ void free_reserve(variable_backup_memory_reserve*r)
 }
 free(r);
 }
+
+
 
 /*
  * create the backup, taking memory from reserve
@@ -418,7 +422,7 @@ return save;
     
 void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* rest)
 {
-    r->pos_used--;
+    r->pos_used --;
 
     v->variables = (struct transduction_variable*)rest;
 }

@@ -254,6 +254,7 @@ struct locate_parameters {
    int graph_depth;
    int explore_depth;
    struct Token_error_ctx* p_token_error_ctx;
+   variable_backup_memory_reserve*backup_memory_reserve;
    struct counting_step_st counting_step;
 };
 

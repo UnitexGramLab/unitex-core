@@ -75,7 +75,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
 	unite = (int)(((text_size / 100) > 1000) ? (text_size / 100) : 1000);
 	variable_backup_memory_reserve* backup_reserve =
-			create_variable_backup_memory_reserve(p->input_variables);
+			create_variable_backup_memory_reserve(p->input_variables,1);
+    p->backup_memory_reserve = backup_reserve;
 	int current_token;
 	while (p->current_origin < p->buffer_size && p->number_of_matches
 			!= p->search_limit) {
@@ -126,8 +127,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->graph_depth=0;
                 p->explore_depth=-1;
 
-				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p,
-						backup_reserve);
+				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
 				if ((p->max_count_call > 0)
 						&& (p->counting_step.count_call >= p->max_count_call)) {
 					u_printf(
@@ -192,6 +192,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 		(p->current_origin)++;
 	}
 	free_reserve(backup_reserve);
+    p->backup_memory_reserve = NULL;
 
 	p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->prv_alloc);
 	u_printf("100%% done      \n\n");
@@ -309,8 +310,9 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * matched in several ways. It is used to detect combinatorial
  * explosions due to bad written grammars. */
 struct list_int* ctx, /* information about the current context, if any */
-struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-variable_backup_memory_reserve*backup_reserve) {
+struct locate_parameters* p /* miscellaneous parameters needed by the function */
+//,variable_backup_memory_reserve*backup_reserve
+) {
 #ifdef TRE_WCHAR
 	int filter_number;
 #endif
@@ -470,10 +472,12 @@ variable_backup_memory_reserve*backup_reserve) {
 	struct opt_graph_call* graph_call_list = current_state->graph_calls;
 	if (graph_call_list != NULL) {
 		/* If there are subgraphs, we process them */
+
 		int* save_previous_ptr_var = NULL;
 		int* var_backup = NULL;
-		int create_new_reserve_done = 0;
-		variable_backup_memory_reserve* reserve_used = backup_reserve;
+		//int create_new_reserve_done = 0;
+        variable_backup_memory_reserve* reserve_previous = p->backup_memory_reserve;
+
 		struct dic_variable* dic_variables_backup = NULL;
 		int old_StackBase = p->stack_base;
 		unichar* output_var_backup=NULL;
@@ -481,14 +485,14 @@ variable_backup_memory_reserve*backup_reserve) {
 			/* For better performance when ignoring outputs */
 
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
-					reserve_used) == 0) {
-				reserve_used = create_variable_backup_memory_reserve(
-						p->input_variables);
-				create_new_reserve_done = 1;
+					reserve_previous) == 0) {
+				p->backup_memory_reserve = create_variable_backup_memory_reserve(
+						p->input_variables,0);
+				//create_new_reserve_done = 1;
 			}
 
 			var_backup = create_variable_backup_using_reserve(p->input_variables,
-					reserve_used);
+					p->backup_memory_reserve);
 			dic_variables_backup = p->dic_variables;
 			if (p->nb_output_variables != 0) {
 			    output_var_backup = create_output_variable_backup(p->output_variables);
@@ -515,7 +519,7 @@ variable_backup_memory_reserve*backup_reserve) {
 				       p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
 				       pos, &L, 0, NULL, /* ctx is set to NULL because the end of a context must occur in the
 						 * same graph than its beginning */
-				       p, reserve_used);
+				       p);
 				p->graph_depth -- ;
 
 				p->stack_base = old_StackBase;
@@ -536,7 +540,7 @@ variable_backup_memory_reserve*backup_reserve) {
 							if (save_previous_ptr_var == NULL) {
 								save_previous_ptr_var
 										= install_variable_backup_preserving(
-												p->input_variables, reserve_used,
+												p->input_variables, p->backup_memory_reserve,
 												L->input_variable_backup);
 							} else {
 								install_variable_backup(p->input_variables,
@@ -558,10 +562,16 @@ variable_backup_memory_reserve*backup_reserve) {
 						p->left_ctx_shift = L->left_ctx_shift;
 						p->left_ctx_base = L->left_ctx_base;
 
+//variable_backup_memory_reserve* reserve_new=p->backup_memory_reserve;
+//p->backup_memory_reserve=reserve_previous;
+
+
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number],
 								L->position, matches, n_matches,
-								ctx, p, backup_reserve);
+								ctx, p);
+
+//p->backup_memory_reserve=reserve_new;
 
 						p->left_ctx_shift = old_left_ctx_shift;
 						p->left_ctx_base = old_left_ctx_base;
@@ -574,7 +584,7 @@ variable_backup_memory_reserve*backup_reserve) {
 							if (p->output_policy != IGNORE_OUTPUTS) {
 								if (save_previous_ptr_var != NULL) {
 									restore_variable_array(p->input_variables,
-											reserve_used, save_previous_ptr_var);
+											p->backup_memory_reserve, save_previous_ptr_var);
 									save_previous_ptr_var = NULL;
 								}
 							}
@@ -592,18 +602,23 @@ variable_backup_memory_reserve*backup_reserve) {
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 		if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
 			if (save_previous_ptr_var != NULL) {
-				restore_variable_array(p->input_variables, reserve_used,
+				restore_variable_array(p->input_variables, p->backup_memory_reserve,
 						save_previous_ptr_var);
 				save_previous_ptr_var = NULL;
 			}
 
 			int reserve_freeable = free_variable_backup_using_reserve(
-					reserve_used);
-			if ((reserve_freeable == 0) && (create_new_reserve_done != 0)) {
-				fatal_error("incoherent reserve free result\n");
+							p->backup_memory_reserve);
+			if (reserve_previous != p->backup_memory_reserve) {
+					if ((reserve_freeable == 0)) {
+						fatal_error("incoherent reserve free result\n");
+					}
+                    //puts(";");
+					free_reserve(p->backup_memory_reserve);
+                    //puts(":");
+					p->backup_memory_reserve = reserve_previous;
 			}
-			if (create_new_reserve_done == 1)
-				free_reserve(reserve_used);
+
 			if (p->nb_output_variables != 0) {
 			    install_output_variable_backup(p->output_variables,output_var_backup);
 			    free_output_variable_backup(output_var_backup);
@@ -755,8 +770,7 @@ variable_backup_memory_reserve*backup_reserve) {
 							locate(/*graph_depth,*/
 									p->optimized_states[t1->state_number],
 									end_of_compound + 1, matches,
-									n_matches, ctx, p,
-									backup_reserve);
+									n_matches, ctx, p);
 							p->stack->stack_pointer = stack_top;
 							if (p->nb_output_variables != 0) {
 							    remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -843,8 +857,7 @@ variable_backup_memory_reserve*backup_reserve) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number],
 								end_of_compound + 1, matches,
-								n_matches, ctx, p,
-								backup_reserve);
+								n_matches, ctx, p);
 						if (p->nb_output_variables != 0) {
 						    remove_chars_from_output_variables(p->output_variables,captured_chars);
 						}
@@ -995,10 +1008,9 @@ variable_backup_memory_reserve*backup_reserve) {
 				/* we don't know if enter_morphological_mode will modify variable
 				 so we increment the dirty flag, without any associated decrement, to be sure
 				 having no problem */
-				inc_dirty(backup_reserve);
+				inc_dirty(p->backup_memory_reserve);
 				enter_morphological_mode(/*graph_depth,*/ t1->state_number, pos2,
-						matches, n_matches, ctx, p,
-						backup_reserve);
+						matches, n_matches, ctx, p);
 				p->stack->stack_pointer = stack_top;
 				break;
 
@@ -1022,8 +1034,7 @@ variable_backup_memory_reserve*backup_reserve) {
 				 shift_variable_bounds(p->variables,real_origin-p->current_origin);
 				 }*/
 				locate(/*graph_depth,*/ p->optimized_states[t1->state_number], pos2,
-						matches, n_matches, ctx, p,
-						backup_reserve);
+						matches, n_matches, ctx, p);
 				/*if (p->output_policy!=IGNORE_OUTPUTS) {
 				 install_variable_backup(p->variables,var_backup);
 				 free_variable_backup(var_backup);
@@ -1061,8 +1072,7 @@ variable_backup_memory_reserve*backup_reserve) {
 				}
 				/* Then, we continue the exploration of the grammar */
 				locate(/*graph_depth,*/ p->optimized_states[t1->state_number], end,
-						matches, n_matches, ctx, p,
-						backup_reserve);
+						matches, n_matches, ctx, p);
 				/* Once we have finished, we restore the stack */
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1080,8 +1090,7 @@ while (output_variable_list != NULL) {
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
-			pos, matches, n_matches, ctx, p,
-			backup_reserve);
+			pos, matches, n_matches, ctx, p);
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
@@ -1094,8 +1103,7 @@ while (output_variable_list != NULL) {
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
-			pos, matches, n_matches, ctx, p,
-			backup_reserve);
+			pos, matches, n_matches, ctx, p);
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
@@ -1107,7 +1115,7 @@ while (output_variable_list != NULL) {
 	struct opt_variable* variable_list = current_state->input_variable_starts;
 	while (variable_list != NULL) {
 
-		inc_dirty(backup_reserve);
+		inc_dirty(p->backup_memory_reserve);
 		int old_in_token = get_variable_start(p->input_variables,
 				variable_list->variable_number);
 		int old_in_char = get_variable_start_in_chars(p->input_variables,
@@ -1116,8 +1124,7 @@ while (output_variable_list != NULL) {
 		set_variable_start_in_chars(p->input_variables, variable_list->variable_number, 0);
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
-				pos, matches, n_matches, ctx, p,
-				backup_reserve);
+				pos, matches, n_matches, ctx, p);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1127,7 +1134,7 @@ while (output_variable_list != NULL) {
 					old_in_token);
 			set_variable_start_in_chars(p->input_variables, variable_list->variable_number,
 								old_in_char);
-			dec_dirty(backup_reserve);
+			dec_dirty(p->backup_memory_reserve);
 			// restore dirty
 		}
 		variable_list = variable_list->next;
@@ -1139,7 +1146,7 @@ while (output_variable_list != NULL) {
 	variable_list = current_state->input_variable_ends;
 	while (variable_list != NULL) {
 
-		inc_dirty(backup_reserve);
+		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
 				get_variable_end(p->input_variables, variable_list->variable_number);
 		int old_in_char =
@@ -1148,8 +1155,7 @@ while (output_variable_list != NULL) {
 		set_variable_end_in_chars(p->input_variables, variable_list->variable_number,-1);
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
-				pos, matches, n_matches, ctx, p,
-				backup_reserve);
+				pos, matches, n_matches, ctx, p);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1157,7 +1163,7 @@ while (output_variable_list != NULL) {
 			 * "the cat is white" example in Unitex manual). */
 			set_variable_end(p->input_variables, variable_list->variable_number, old_in_token);
 			set_variable_end_in_chars(p->input_variables, variable_list->variable_number, old_in_char);
-			dec_dirty(backup_reserve);
+			dec_dirty(p->backup_memory_reserve);
 		}
 		variable_list = variable_list->next;
 	}
@@ -1174,8 +1180,7 @@ while (output_variable_list != NULL) {
 			/* We look for a positive context from the current position */
 			struct list_int* c = new_list_int(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
-					NULL, 0, c, p,
-					backup_reserve);
+					NULL, 0, c, p);
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (c->n) {
@@ -1185,8 +1190,7 @@ while (output_variable_list != NULL) {
 				while (states != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
-							matches, n_matches, ctx, p,
-							backup_reserve);
+							matches, n_matches, ctx, p);
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1199,8 +1203,7 @@ while (output_variable_list != NULL) {
 			/* We look for a negative context from the current position */
 			struct list_int* c = new_list_int(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
-					NULL, 0, c, p,
-					backup_reserve);
+					NULL, 0, c, p);
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (!c->n) {
@@ -1210,8 +1213,7 @@ while (output_variable_list != NULL) {
 				while (states != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
-							matches, n_matches, ctx, p,
-							backup_reserve);
+							matches, n_matches, ctx, p);
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1296,7 +1298,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, matches, n_matches,
-							ctx, p, backup_reserve);
+							ctx, p);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1358,7 +1360,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, matches, n_matches,
-							ctx, p, backup_reserve);
+							ctx, p);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1396,8 +1398,7 @@ while (output_variable_list != NULL) {
 						}
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
-								matches, n_matches, ctx, p,
-								backup_reserve);
+								matches, n_matches, ctx, p);
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1424,8 +1425,7 @@ while (output_variable_list != NULL) {
 						}
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
-								matches, n_matches, ctx, p,
-								backup_reserve);
+								matches, n_matches, ctx, p);
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1469,8 +1469,7 @@ while (output_variable_list != NULL) {
 								p->protect_dic_chars);
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
-							pos2 + 1, matches, n_matches, ctx, p,
-							backup_reserve);
+							pos2 + 1, matches, n_matches, ctx, p);
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}

@@ -43,8 +43,8 @@ void enter_morphological_mode(/*int graph_depth, */ /* 0 means that we are in th
                             * matched in several ways. It is used to detect combinatory
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
-            struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-            variable_backup_memory_reserve* backup_reserve
+            struct locate_parameters* p /* miscellaneous parameters needed by the function */
+            //,variable_backup_memory_reserve* backup_reserve
 );
 
 #endif
