@@ -37,7 +37,7 @@
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-void morphological_locate(int, int, int, int, /*int, */struct parsing_info**, int,
+static void morphological_locate(int, int, int, int, /*int, */struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*,
 		unichar*, int, unichar*);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
@@ -166,7 +166,7 @@ static void update_last_position(struct locate_parameters* p, int pos) {
 /**
  * This is the core function of the morphological mode.
  */
-void morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
+static void morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
 int current_state_index, /* current state in the grammar */
 int pos_in_tokens, /* position in the token buffer, relative to the current origin */
 int pos_in_chars, /* position in the token in characters */

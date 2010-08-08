@@ -311,7 +311,6 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * explosions due to bad written grammars. */
 struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
-//,variable_backup_memory_reserve*backup_reserve
 ) {
 #ifdef TRE_WCHAR
 	int filter_number;

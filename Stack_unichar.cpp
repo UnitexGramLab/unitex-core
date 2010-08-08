@@ -86,8 +86,27 @@ return (stack->stack_pointer==stack->capacity-1);
 
 
 /**
+ * Display NULL in push fatal error
+ */
+void fatal_error_NULL_push()
+{
+   fatal_error("NULL error in push\n");
+}
+
+
+/**
+ * Display full stack fatal error
+ */
+void fatal_error_full_stack_push()
+{
+   fatal_error("Cannot push on a full stack\n");
+}
+
+/**
  * Pushes the given character on the given stack.
  */
+/* be moved in .H as static inline for performance */
+/*
 void push(struct stack_unichar* stack,unichar c) {
 if (stack != NULL) {
     if (stack->stack_pointer!=stack->capacity-1) {
@@ -102,7 +121,7 @@ else {
    fatal_error("Cannot push on a full stack\n");
 }
 }
-
+*/
 
 /**
  * Pushes the given characters from an array on the given stack.
