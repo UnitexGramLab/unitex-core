@@ -126,6 +126,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				p->last_matched_position = -1;
                 p->graph_depth=0;
                 p->explore_depth=-1;
+                p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
 
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
 				if ((p->max_count_call > 0)
