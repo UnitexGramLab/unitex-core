@@ -363,7 +363,7 @@ for (;;) {
     	  /* Case 1: start and end in the same token*/
     	  if (v->start_in_tokens==v->end_in_tokens-1) {
     		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
-    		  int last=(v->end_in_chars!=-1)?v->end_in_chars:u_strlen(tok)-1;
+    		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
     		  for (int k=v->start_in_chars;k<=last;k++) {
     			  push_input_char(p->stack,tok[k],p->protect_dic_chars);
     		  }
@@ -377,7 +377,7 @@ for (;;) {
         	  }
         	  /* Finally, we copy the last token */
         	  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
-        	  int last=(v->end_in_chars!=-1)?v->end_in_chars:u_strlen(tok)-1;
+        	  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
         	  for (int k=0;k<=last;k++) {
         		  push_input_char(p->stack,tok[k],p->protect_dic_chars);
         	  }

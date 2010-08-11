@@ -565,7 +565,7 @@ unichar* s;
 if (start_pos_char!=0) {
    /* If the match doesn't start on the first char of the first token */
    s=tokens->token[buffer->int_buffer_[buffer->skip+start_pos]];
-   int end=(end_pos==start_pos)?end_pos_char+1:u_strlen(s);
+   int end=(end_pos==start_pos) ? (end_pos_char+1) : ((int)u_strlen(s));
    for (k=start_pos_char;k<end;k++) {
       middle[j++]=s[k];
    }
