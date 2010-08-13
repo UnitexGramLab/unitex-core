@@ -147,8 +147,13 @@ variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Vari
  */
 void free_reserve(variable_backup_memory_reserve*r);
 
-/* check if the reserve contain space and is correct to save variable v */
-int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v,const variable_backup_memory_reserve* r);
+/*
+ * check if the reserve contain space and is correct to save variable v
+ */
+static inline int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v,const variable_backup_memory_reserve* r)
+{
+    return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
+}
 
 /*
  * create the backup, taking memory from reserve

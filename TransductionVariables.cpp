@@ -274,14 +274,6 @@ memcpy((void*)&backup[0],(const void*)(&(v->variables[0])),sizeof(int)*NB_INT_BY
  */
 
 
-/*
- * check if the reserve contain space and is correct to save variable v
- */
-int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v,const variable_backup_memory_reserve* r)
-{
-    return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
-}
-
 int suggest_size_backup_reserve(int size_one_backup,int is_first)
 {
 /* we store the number of element after the list.
