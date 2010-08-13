@@ -227,6 +227,19 @@ return a==b || is_upper_of(a,b,alphabet) || is_upper_of(b,a,alphabet);
  * returns 0 otherwise.
  */
 int is_equal_or_uppercase(unichar a,unichar b,const Alphabet* alphabet) {
+if (alphabet!=NULL) {
+    if (a==b)
+        return 1;
+
+    int i_pos_in_array_of_string = alphabet->pos_in_represent_list[a];
+    if (i_pos_in_array_of_string == 0) return 0;
+    int i=0;
+    while (alphabet->t_array_collection[i_pos_in_array_of_string][i]!='\0') {
+          if (alphabet->t_array_collection[i_pos_in_array_of_string][i]==b) return 1;
+          i++;
+    }
+    return 0;
+}
 return (a==b || is_upper_of(a,b,alphabet));
 }
 

@@ -1074,7 +1074,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						matches, n_matches, ctx, p);
 				/* Once we have finished, we restore the stack */
 				p->stack->stack_pointer = stack_top;
-				remove_chars_from_output_variables(p->output_variables,captured_chars);
+				if (p->nb_output_variables != 0) {
+				  remove_chars_from_output_variables(p->output_variables,captured_chars);
+                }
 			}
 			next: t1 = t1->next;
 		}
