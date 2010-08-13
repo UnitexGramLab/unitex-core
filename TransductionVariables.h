@@ -147,6 +147,15 @@ variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Vari
  */
 void free_reserve(variable_backup_memory_reserve*r);
 
+
+
+
+
+#define OFFSET_COUNTER (0)
+#define OFFSET_DIRTY (1)
+#define OFFSET_SWAPPER (2)
+#define OFFSET_BACKUP (4)
+
 /*
  * check if the reserve contain space and is correct to save variable v
  */
@@ -155,17 +164,57 @@ static inline int is_enough_memory_in_reserve_for_transduction_variable_set(cons
     return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
 }
 
+
+
 /*
  * create the backup, taking memory from reserve
+ * we assume is_enough_memory_in_reserve_for_Variable was already called to verify
  */
-int* create_variable_backup_using_reserve(const Variables* v,variable_backup_memory_reserve* r) ;
+static inline int* create_variable_backup_using_reserve(const Variables* v,variable_backup_memory_reserve* r) {
+
+/* DIRTY==0 mean :
+   - there is a least one backup
+   - there is no modification made on the variable array since last backup
+   - the last used array is not a "swapper" 
+    so we can reuse the backup previously made !  
+ */
+if ((r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0))
+{
+    r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]++;
+    int* prev = &(r->array_int[OFFSET_BACKUP+((r->pos_used-1) * r->size_aligned)]);
+    return prev;
+}
+
+/* v->variables is an array of struct transduction_variable
+   which is a structure of (two before) NB_INT_BY_VARIABLES int */
+int* ret = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
+memcpy((void*)ret,(const void*)(&(v->variables[0])),r->size_copydata);
+
+r->pos_used ++;
+r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] = 0;
+r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)] = 0;
+r->array_int[OFFSET_SWAPPER+(r->pos_used * r->size_aligned)] = 0;
+
+return ret;
+}
 
 /*
  * free memory from reserve
  * return 0 if there is still used space in reserve
  * return 1 if the reserve can be free
  */
-int free_variable_backup_using_reserve(variable_backup_memory_reserve* r) ;
+static inline int free_variable_backup_using_reserve(variable_backup_memory_reserve* r)
+{
+if (r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]>0)
+{
+    r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]--;
+    return 0;
+}
+
+r->pos_used --;
+return (r->pos_used == 0) ? 1 : 0;
+}
+
 
 /*
  * the function below are replaced by macro for performance
@@ -179,11 +228,6 @@ void inc_dirty(variable_backup_memory_reserve* r) ;
 void dec_dirty(variable_backup_memory_reserve* r) ;
 */
 
-
-#define OFFSET_COUNTER (0)
-#define OFFSET_DIRTY (1)
-#define OFFSET_SWAPPER (2)
-#define OFFSET_BACKUP (4)
 
 /*
  * get the dirty counter of the current slot

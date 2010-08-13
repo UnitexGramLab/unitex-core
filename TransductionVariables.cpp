@@ -337,61 +337,6 @@ free(r);
 }
 
 
-
-/*
- * create the backup, taking memory from reserve
- * we assume is_enough_memory_in_reserve_for_Variable was already called to verify
- */
-int* create_variable_backup_using_reserve(const Variables* v,variable_backup_memory_reserve* r) {
-int l=v->variable_index->size;
-if (l != r->size_variable_index) {
-    fatal_error("bad size\n");
-}
-
-/* DIRTY==0 mean :
-   - there is a least one backup
-   - there is no modification made on the variable array since last backup
-   - the last used array is not a "swapper" 
-    so we can reuse the backup previously made !  
- */
-if ((r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0))
-{
-    r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]++;
-    int* prev = &(r->array_int[OFFSET_BACKUP+((r->pos_used-1) * r->size_aligned)]);
-    return prev;
-}
-
-/* v->variables is an array of struct transduction_variable
-   which is a structure of (two before) NB_INT_BY_VARIABLES int */
-int* ret = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
-memcpy((void*)ret,(const void*)(&(v->variables[0])),r->size_copydata);
-
-r->pos_used ++;
-r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] = 0;
-r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)] = 0;
-r->array_int[OFFSET_SWAPPER+(r->pos_used * r->size_aligned)] = 0;
-
-return ret;
-}
-
-/*
- * free memory from reserve
- * return 0 if there is still used space in reserve
- * return 1 if the reserve can be free
- */
-int free_variable_backup_using_reserve(variable_backup_memory_reserve* r)
-{
-if (r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]>0)
-{
-    r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]--;
-    return 0;
-}
-
-r->pos_used --;
-return (r->pos_used == 0) ? 1 : 0;
-}
-
-
 /*
  * This function select a new content for the set of variable, and return a
  * pointer to restore current set using restore_variable_array
