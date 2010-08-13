@@ -139,7 +139,7 @@ return new_head;
 /**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
-int is_in_list(int value,struct list_int* l) {
+int is_in_list(int value,const struct list_int* l) {
 while (l!=NULL) {
   if (l->n==value) return 1;
   l=l->next;
@@ -153,18 +153,19 @@ return 0;
  * both NULL or they contain the same elements in the
  * same order.
  */
-int equal_list_int(struct list_int* a,struct list_int* b) {
-if (a==NULL) {
-   if (b==NULL) return 1;
-   else return 0;
+int equal_list_int(const struct list_int* a,const struct list_int* b) {
+while ((a!=NULL) && (b!=NULL)) {
+   if (a->n != b->n) {
+      return 0;
+   }
+   a=a->next;
+   b=b->next;
 }
-if (b==NULL) {
-   return 0;
+
+if ((a==NULL) && (b==NULL)) {
+   return 1;
 }
-if (a->n!=b->n) {
-   return 0;
-}
-return equal_list_int(a->next,b->next);
+return 0;
 }
 
 
@@ -184,7 +185,7 @@ return n;
 /**
  * Returns the length of the list.
  */
-int length(struct list_int* list) {
+int length(const struct list_int* list) {
 int n=0;
 while (list!=NULL) {
    list=list->next;
@@ -259,7 +260,7 @@ previous->next=NULL;
 /**
  * Returns a copy of the given list.
  */
-struct list_int* clone(struct list_int* list,Abstract_allocator prv_alloc) {
+struct list_int* clone(const struct list_int* list,Abstract_allocator prv_alloc) {
 if (list==NULL) return NULL;
 list_int* result=new_list_int(list->n,NULL,prv_alloc);
 list=list->next;

@@ -38,16 +38,16 @@ struct list_int* new_list_int(int,Abstract_allocator prv_alloc=STANDARD_ALLOCATO
 void free_list_int(struct list_int*);
 void free_list_int(struct list_int*,Abstract_allocator prv_alloc);
 struct list_int* sorted_insert(int,struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-int is_in_list(int,struct list_int*);
-int equal_list_int(struct list_int*,struct list_int*);
+int is_in_list(int,const struct list_int*);
+int equal_list_int(const struct list_int*,const struct list_int*);
 struct list_int* head_insert(int,struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 unsigned int hash_list_int(struct list_int*);
-int length(struct list_int*);
+int length(const struct list_int*);
 struct list_int* destructive_sorted_merge(struct list_int*,struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_int* sorted_merge(struct list_int*,struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void delete_head(struct list_int**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void delete_tail(struct list_int**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-struct list_int* clone(struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_int* clone(const struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int* dump(struct list_int*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int remove(int,struct list_int**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 

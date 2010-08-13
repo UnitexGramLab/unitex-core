@@ -148,7 +148,7 @@ return l;
 /**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
-int is_in_list(const unichar* value,struct list_ustring* l) {
+int is_in_list(const unichar* value,const struct list_ustring* l) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
 }
@@ -165,25 +165,26 @@ return 0;
  * both NULL or they contain the same elements in the
  * same order.
  */
-int equal(struct list_ustring* a,struct list_ustring* b) {
-if (a==NULL) {
-   if (b==NULL) return 1;
-   else return 0;
+int equal(const struct list_ustring* a,const struct list_ustring* b) {
+while ((a!=NULL) && (b!=NULL)) {
+   if (u_strcmp(a->string,b->string)) {
+      return 0;
+   }
+   a=a->next;
+   b=b->next;
 }
-if (b==NULL) {
-   return 0;
+
+if ((a==NULL) && (b==NULL)) {
+   return 1;
 }
-if (u_strcmp(a->string,b->string)) {
-   return 0;
-}
-return equal(a->next,b->next);
+return 0;
 }
 
 
 /**
  * Returns a clone of the list.
  */
-struct list_ustring* clone(struct list_ustring* list,Abstract_allocator prv_alloc) {
+struct list_ustring* clone(const struct list_ustring* list,Abstract_allocator prv_alloc) {
 if (list==NULL) return NULL;
 list_ustring* result=new_list_ustring(list->string,NULL,prv_alloc);
 list=list->next;
@@ -201,7 +202,7 @@ return result;
 /**
  * Returns the length of the list.
  */
-int length(struct list_ustring* list) {
+int length(const struct list_ustring* list) {
 int n=0;
 while (list!=NULL) {
    list=list->next;
