@@ -75,13 +75,14 @@ struct locate_parameters {
     */
    struct bit_array** matching_patterns;
 
-   /* This field is used to know the current compound pattern number */
-   int current_compound_pattern;
 
    /* This field designates a tree that contains all the patterns defined
     * in the grammar tags (ex: <machine.N+Conc>, <V-z2:Kms>, etc). It is
     * used to associate a unique number to each pattern */
    struct pattern_node* pattern_tree_root;
+
+   /* This field is used to know the current compound pattern number */
+   int current_compound_pattern;
 
    /* Number of the space token in the text */
    int SPACE;
@@ -129,13 +130,14 @@ struct locate_parameters {
    int max_count_call;
    int max_count_call_warning;
 
+   /* The token buffer used to parse the text. This is a pointer
+    * that must be initialized after mapping the 'text.cod' file */
+   int buffer_size;
+   const int* buffer;
+
    /* A system-dependent object that represents the mapped' text.cod' file */
    ABSTRACTMAPFILE* text_cod;
 
-   /* The token buffer used to parse the text. This is a pointer
-    * that must be initialized after mapping the 'text.cod' file */
-   const int* buffer;
-   int buffer_size;
 
    /* Indicates if we work char by char or not */
    TokenizationPolicy tokenization_policy;
@@ -155,11 +157,12 @@ struct locate_parameters {
    AmbiguousOutputPolicy ambiguous_output_policy;
    VariableErrorPolicy variable_error_policy;
 
+   /* The total number of matches */
+   int number_of_matches;
+
    /* The match list associated to the current Locate operation */
    struct match_list* match_list;
 
-   /* The total number of matches */
-   int number_of_matches;
 
    /* The total number of outputs. It may be different from the number
     * of matches if ambiguous outputs are allowed. */
@@ -179,11 +182,12 @@ struct locate_parameters {
    OutputVariables* output_variables;
    int nb_output_variables;
 
-   /* This is the stack used to process outputs */
-   struct stack_unichar* stack;
    /* This field is used to remember where the current stack base is for
     * the current subgraph. */
    int stack_base;
+
+   /* This is the stack used to process outputs */
+   struct stack_unichar* stack;
 
    /* The alphabet of the current language */
    Alphabet* alphabet;
@@ -198,6 +202,8 @@ struct locate_parameters {
    /* Size of previous arrays */
    int n_morpho_dics;
 
+   int mask_encoding_compatibility_input;
+
    /* The DELAF entry variables filled in morphological mode */
    struct dic_variable* dic_variables;
 
@@ -211,7 +217,8 @@ struct locate_parameters {
    /* This information is used to know if we must protect input dots and commas */
    int protect_dic_chars;
 
-   int mask_encoding_compatibility_input;
+   /* to known if we must use Locate Cache feature */
+   int useLocateCache;
 
    /* This is useful for Korean */
    Korean* korean;
@@ -246,7 +253,6 @@ struct locate_parameters {
    /* Arabic typographic rule configuration */
    ArabicTypoRules arabic;
    int tilde_negation_operator;
-   int useLocateCache;
 
    Abstract_allocator prv_alloc;
    Abstract_allocator prv_alloc_recycle;
