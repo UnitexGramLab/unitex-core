@@ -59,6 +59,28 @@ struct counting_step_st
  * during the locate operations
  */
 struct locate_parameters {
+
+   Abstract_allocator prv_alloc;
+   Abstract_allocator prv_alloc_recycle;
+
+   int graph_depth;
+   int explore_depth;
+
+
+   
+   /* The transduction variables of the fst2 */
+   Variables* input_variables;
+   OutputVariables* output_variables;
+   int nb_output_variables;
+
+   /* This field is used to remember where the current stack base is for
+    * the current subgraph. */
+   int stack_base;
+
+   /* This is the stack used to process outputs */
+   struct stack_unichar* stack;
+
+
    /**
     * This array is used to associate a control byte to each token.
     * These bytes will be used to know if a token can be matched by
@@ -177,18 +199,6 @@ struct locate_parameters {
     * there is no limit. */
    int search_limit;
 
-   /* The transduction variables of the fst2 */
-   Variables* input_variables;
-   OutputVariables* output_variables;
-   int nb_output_variables;
-
-   /* This field is used to remember where the current stack base is for
-    * the current subgraph. */
-   int stack_base;
-
-   /* This is the stack used to process outputs */
-   struct stack_unichar* stack;
-
    /* The alphabet of the current language */
    Alphabet* alphabet;
 
@@ -206,6 +216,11 @@ struct locate_parameters {
 
    /* The DELAF entry variables filled in morphological mode */
    struct dic_variable* dic_variables;
+
+
+   struct Token_error_ctx* p_token_error_ctx;
+   variable_backup_memory_reserve*backup_memory_reserve;
+   struct counting_step_st counting_step;
 
    /* These 2 fields are used to manage left contexts.
     * - left_ctx_shift = shift value to add to the start of the match
@@ -250,18 +265,10 @@ struct locate_parameters {
    /* This vector is used to store results obtained from cache consultation */
    vector_ptr* cached_match_vector;
 
-   /* Arabic typographic rule configuration */
-   ArabicTypoRules arabic;
    int tilde_negation_operator;
 
-   Abstract_allocator prv_alloc;
-   Abstract_allocator prv_alloc_recycle;
-
-   int graph_depth;
-   int explore_depth;
-   struct Token_error_ctx* p_token_error_ctx;
-   variable_backup_memory_reserve*backup_memory_reserve;
-   struct counting_step_st counting_step;
+   /* Arabic typographic rule configuration */
+   ArabicTypoRules arabic;
 };
 
 
