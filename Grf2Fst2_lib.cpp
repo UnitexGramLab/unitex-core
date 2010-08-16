@@ -67,6 +67,7 @@ infos->CONTEXT_COUNTER=0;
 infos->encoding_output = DEFAULT_ENCODING_OUTPUT;
 infos->bom_output = DEFAULT_BOM_OUTPUT;
 infos->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+infos->verbose_name_grf=1;
 
 return infos;
 }
@@ -810,7 +811,9 @@ char name[FILENAME_MAX];
 struct list_int* transitions;
 unichar ligne[MAX_GRF_BOX_CONTENT];
 SingleGraph graph=new_SingleGraph();
-u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
+if (infos->verbose_name_grf!=0) {
+  u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
+}
 /* We get the absolute path of the graph */
 get_absolute_name(name,n,infos);
 U_FILE* f=u_fopen_existing_versatile_encoding(infos->mask_encoding_compatibility_input,name,U_READ);

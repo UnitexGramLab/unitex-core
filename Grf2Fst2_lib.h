@@ -71,6 +71,7 @@ struct compilation_info {
 Encoding encoding_output;
 int bom_output;
 int mask_encoding_compatibility_input;
+int verbose_name_grf;
 };
 
 

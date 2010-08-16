@@ -47,6 +47,7 @@ const char* usage_Grf2Fst2 =
          "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
          "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
          "                   automaton\n"
+         "  -s/--silent_grf_name: do not display the list of grf file\n"
          "  -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
          "  -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
          "                           lexical units.\n"
@@ -111,7 +112,7 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":ynta:d:echo:k:q:";
+const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:";
 const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -119,6 +120,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"alphabet",required_argument_TS,NULL,'a'},
       {"pkgdir",required_argument_TS,NULL,'d'},
       {"no_empty_graph_warning",no_argument_TS,NULL,'e'},
+      {"silent_grf_name",no_argument_TS,NULL,'s'},
       {"char_by_char",no_argument_TS,NULL,'c'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -142,6 +144,7 @@ Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 char fst2_file_name[FILENAME_MAX];
+infos->verbose_name_grf=1;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -156,6 +159,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
               * may be because of a sentence graph previously emptied by ELAG */
              infos->no_empty_graph_warning=1;
              break;
+   case 's': infos->verbose_name_grf=0; break;
    case 'e': infos->no_empty_graph_warning=1; break;
    case 'c': infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'a': infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
