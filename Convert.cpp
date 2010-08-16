@@ -88,7 +88,7 @@ const char* optstring_Convert=":s:d:ri:hmaAo:k:q:";
 const struct option_TS lopts_Convert[]= {
       {"src",required_argument_TS,NULL,'s'},
       {"dest",required_argument_TS,NULL,'d'},
-      {"output",no_argument_TS,NULL,'o'},
+      {"output",required_argument_TS,NULL,'o'},
       {"replace",no_argument_TS,NULL,'r'},
       {"ps",required_argument_TS,NULL,0},
       {"pd",required_argument_TS,NULL,1},

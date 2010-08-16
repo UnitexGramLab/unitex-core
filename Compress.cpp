@@ -40,6 +40,7 @@ const char* usage_Compress =
          "  <dictionary>: any unicode DELAF or DELACF dictionary\n"
          "\n"
          "OPTIONS:\n"
+         "  -o file.bin/--output==file.bin: name of destination file\n"
          "  -f/--flip: specifies that the inflected and lemma forms must be swapped\n"
          "  -h/--help: this help\n"
          "\n"
@@ -107,12 +108,13 @@ return ret;
 }
 
 
-const char* optstring_Compress=":fhk:q:";
+const char* optstring_Compress=":fhk:q:o:";
 const struct option_TS lopts_Compress[]= {
       {"flip",no_argument_TS,NULL,'f'},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
+      {"output",required_argument_TS,NULL,'o'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -129,9 +131,12 @@ if (argc==1) {
 }
 
 int FLIP=0;
+char bin[DIC_WORD_SIZE];
+char inf[DIC_WORD_SIZE];
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+bin[0]='\0';
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&index,vars))) {
@@ -140,6 +145,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
+   case 'o': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output\n");
+             }
+             strcpy(bin,vars->optarg);
+             break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -166,8 +176,6 @@ U_FILE* f;
 U_FILE* INF_file;
 unichar s[DIC_WORD_SIZE];
 struct dela_entry* entry;
-char bin[DIC_WORD_SIZE];
-char inf[DIC_WORD_SIZE];
 struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
 int line=0; /* Current line number */
@@ -177,9 +185,12 @@ if (f==NULL) {
 	fatal_error("Cannot open %s\n",argv[vars->optind]);
 }
 /* We compute the name of the output .bin and .inf files */
-remove_extension(argv[vars->optind],bin);
+if (bin[0]=='\0') {
+	strcpy(bin,argv[vars->optind]);
+}
+remove_extension(bin);
 strcat(bin,".bin");
-remove_extension(argv[vars->optind],inf);
+remove_extension(bin,inf);
 strcat(inf,".inf");
 INF_file=u_fopen_creating_unitex_text_format(encoding_output,bom_output,inf,U_WRITE);
 if (INF_file==NULL) {

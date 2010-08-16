@@ -42,6 +42,7 @@ const char* usage_Grf2Fst2 =
          "  <grf>: main graph of grammar (must be an absolute path)\n"
          "\n"
          "OPTIONS:\n"
+         "  -o file.fst2/--output==file.fst2: name of destination file\n"
          "  -y/--loop_check: enables the loops/left-recursion detection\n"
          "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
          "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
@@ -110,7 +111,7 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":ynta:d:echk:q:";
+const char* optstring_Grf2Fst2=":ynta:d:echo:k:q:";
 const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -121,6 +122,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"char_by_char",no_argument_TS,NULL,'c'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
+      {"output",required_argument_TS,NULL,'o'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -139,9 +141,11 @@ int check_recursion=0,tfst_check=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+char fst2_file_name[FILENAME_MAX];
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
+fst2_file_name[0]='\0';
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index,vars))) {
    switch(val) {
    case 'y': check_recursion=1; break;
@@ -162,6 +166,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
              if (infos->alphabet==NULL) {
                 fatal_error("Cannot load alphabet file %s\n",vars->optarg);
              }
+             break;
+   case 'o': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output\n");
+             }
+             strcpy(fst2_file_name,vars->optarg);
              break;
    case 'd': strcpy(infos->repository,vars->optarg); break;
    case 'h': usage(); return 0;
@@ -189,8 +198,10 @@ if (vars->optind!=argc-1) {
    return 1;
 }
 
-char fst2_file_name[FILENAME_MAX];
-remove_extension(argv[vars->optind],fst2_file_name);
+if (fst2_file_name[0]=='\0') {
+	strcpy(fst2_file_name,argv[vars->optind]);
+}
+remove_extension(fst2_file_name);
 strcat(fst2_file_name,".fst2");
 infos->encoding_output = encoding_output;
 infos->bom_output = bom_output;
