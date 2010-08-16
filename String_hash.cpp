@@ -198,64 +198,69 @@ return NULL;
  */
 int get_value_index_(const unichar* key,int pos,struct string_hash_tree_node* node,
                     struct string_hash* hash,int insert_policy,const unichar* value) {
-if (node==NULL) {
-   fatal_error("NULL error in get_value_index\n");
-}
-if (key[pos]=='\0') {
-   /* If we are at the end of the key */
-   if (insert_policy==DONT_INSERT) {
-      /* If we just consult the string_hash with no insert, we just
-       * have to return the value_index of the node */
-      return node->value_index;
-   }
-   if (node->value_index!=NO_VALUE_INDEX) {
-      /* If the key already exists, we return its value index */
-      return node->value_index;
-   }
-   /* Here, we have to build a new value index */
-   if (hash->capacity==DONT_USE_VALUES) {
-      /* If don't uses the 'value' array, there is no limitation */
-      node->value_index=hash->size;
-      (hash->size)++;
-   } else {
-     /* Otherwise: if there is a maximum capacity */
-     if (hash->size==hash->capacity) {
-       /* We check if we have reached the end of the 'value' array */
-       if (hash->bound_policy==DONT_ENLARGE) {
-         /* If we can't enlarge the 'value' array, we fail */
-         fatal_error("Too much elements in a non extensible array in get_value_index\n");
-       }
-       /* If we can enlarge the 'value' array, we do it, doubling its capacity */
-       hash->capacity=2*hash->capacity;
-       hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
-       if (hash->value==NULL) {
-         fatal_alloc_error("get_value_index");
-       }
-     }
-     node->value_index=hash->size;
-     (hash->size)++;
-     /* u_strdup is supposed to return NULL if 'value' is NULL */
-     hash->value[node->value_index]=u_strdup(value);
-   }
-   return node->value_index;
-}
 
-/* If we are not at the end of the key, we look for the transition to follow */
-struct string_hash_tree_transition* t=get_transition(key[pos],node->trans);
-if (t==NULL) {
-   /* If there is no suitable transition */
-   if (insert_policy==DONT_INSERT) {
-      /* If we just look, then we say that we have not found the key */
-      return NO_VALUE_INDEX;
-   }
-   /* Otherwise, we create a transition */
-   t=new_string_hash_tree_transition(hash);
-   t->letter=key[pos];
-   t->next=node->trans;
-   t->node=new_string_hash_tree_node(hash);
-   node->trans=t;
+for (;;) {
+	if (node==NULL) {
+	   fatal_error("NULL error in get_value_index\n");
+	}
+	if (key[pos]=='\0') {
+	   /* If we are at the end of the key */
+	   if (insert_policy==DONT_INSERT) {
+		  /* If we just consult the string_hash with no insert, we just
+		   * have to return the value_index of the node */
+		  return node->value_index;
+	   }
+	   if (node->value_index!=NO_VALUE_INDEX) {
+		  /* If the key already exists, we return its value index */
+		  return node->value_index;
+	   }
+	   /* Here, we have to build a new value index */
+	   if (hash->capacity==DONT_USE_VALUES) {
+		  /* If don't uses the 'value' array, there is no limitation */
+		  node->value_index=hash->size;
+		  (hash->size)++;
+	   } else {
+		 /* Otherwise: if there is a maximum capacity */
+		 if (hash->size==hash->capacity) {
+		   /* We check if we have reached the end of the 'value' array */
+		   if (hash->bound_policy==DONT_ENLARGE) {
+			 /* If we can't enlarge the 'value' array, we fail */
+			 fatal_error("Too much elements in a non extensible array in get_value_index\n");
+		   }
+		   /* If we can enlarge the 'value' array, we do it, doubling its capacity */
+		   hash->capacity=2*hash->capacity;
+		   hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
+		   if (hash->value==NULL) {
+			 fatal_alloc_error("get_value_index");
+		   }
+		 }
+		 node->value_index=hash->size;
+		 (hash->size)++;
+		 /* u_strdup is supposed to return NULL if 'value' is NULL */
+		 hash->value[node->value_index]=u_strdup(value);
+	   }
+	   return node->value_index;
+	}
+
+	/* If we are not at the end of the key, we look for the transition to follow */
+	struct string_hash_tree_transition* t=get_transition(key[pos],node->trans);
+	if (t==NULL) {
+	   /* If there is no suitable transition */
+	   if (insert_policy==DONT_INSERT) {
+		  /* If we just look, then we say that we have not found the key */
+		  return NO_VALUE_INDEX;
+	   }
+	   /* Otherwise, we create a transition */
+	   t=new_string_hash_tree_transition(hash);
+	   t->letter=key[pos];
+	   t->next=node->trans;
+	   t->node=new_string_hash_tree_node(hash);
+	   node->trans=t;
+	}
+
+	pos++;
+	node=t->node;
 }
-return get_value_index_(key,pos+1,t->node,hash,insert_policy,value);
 }
 
 

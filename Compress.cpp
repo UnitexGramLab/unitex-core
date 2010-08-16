@@ -207,15 +207,17 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 	else {
 		/* If we have a line, we tokenize it */
 		entry=tokenize_DELAF_line(s,1,1,NULL);
-		if (FLIP) {
-			/* If the "-flip" parameter has been used, we flip
-			 * the inflected form and the lemma of the entry */
-			unichar* o=entry->inflected;
-			entry->inflected=entry->lemma;
-			entry->lemma=o;
-		}
 		if (entry!=NULL) {
 			/* If the entry is well-formed */
+
+			if (FLIP) {
+				/* If the "-flip" parameter has been used, we flip
+				 * the inflected form and the lemma of the entry */
+				unichar* o=entry->inflected;
+				entry->inflected=entry->lemma;
+				entry->lemma=o;
+			}
+
 			if (contains_unprotected_equal_sign(entry->inflected)
 				|| contains_unprotected_equal_sign(entry->lemma)) {
 				/* If the inflected form or lemma contains any unprotected = sign,
