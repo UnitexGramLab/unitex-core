@@ -528,7 +528,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 			   /* If the transition was a "..." one, we don't try to interpret its content.
 			    * This is useful when one needs to produce a symbol that is an inflection
 			    * operator */
-			   p_SU_buf->stack[pos++]=p_SU_buf->tag[pos_tag];
+			   p_SU_buf->stack[pos++]=p_SU_buf->tag[pos_tag++];
 		   } else switch (p_SU_buf->tag[pos_tag]) {
 			case '<':
 				retour = flex_op_with_var(p_multiFlex_ctx->Variables_op, p_SU_buf->stack, p_SU_buf->tag, &pos,
