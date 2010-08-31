@@ -54,6 +54,17 @@ struct counting_step_st
     int count_call;
 } ;
 
+
+struct locate_parameters ;
+
+struct locate_trace_info
+{
+	int size_struct_locate_trace_info;
+	int is_on_morphlogical;
+} ;
+
+typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_locate_trace_step)
+  (const struct locate_trace_info*,struct locate_parameters*,void* private_param);
 /**
  * This structure is used to store all the information needed
  * during the locate operations
@@ -152,6 +163,9 @@ struct locate_parameters {
    int max_count_call;
    int max_count_call_warning;
 
+   int is_in_cancel_state;
+   int is_in_trace_state;
+	
    /* The token buffer used to parse the text. This is a pointer
     * that must be initialized after mapping the 'text.cod' file */
    int buffer_size;
@@ -267,8 +281,14 @@ struct locate_parameters {
 
    int tilde_negation_operator;
 
+   int counting_step_count_cancel_trying_real_in_debug;
+   U_FILE* debug_trace_file;
+
    /* Arabic typographic rule configuration */
    ArabicTypoRules arabic;
+
+   t_fnc_locate_trace_step fnc_locate_trace_step;
+   void*private_param_locate_trace;
 };
 
 

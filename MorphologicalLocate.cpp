@@ -37,7 +37,7 @@
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
+static void morphological_locate(int, int, int, int, /*int, */struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*,
 		unichar*, int, unichar*);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
@@ -184,38 +184,76 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 ) {
 
 
-
-
-	if ((p->counting_step.count_cancel_trying) == -1) {
-		return;
-	}
-
 	if ((p->counting_step.count_cancel_trying) == 0) {
 
-		if ((p->max_count_call) > 0) {
-			if ((p->counting_step.count_call) >= (p->max_count_call)) {
-				p->counting_step.count_cancel_trying = -1;
+		if (p->is_in_cancel_state != 0)
+			return;
+
+		if (p->is_in_trace_state == 0) {
+
+			if ((p->max_count_call) > 0) {
+				if ((p->counting_step.count_call) >= (p->max_count_call)) {
+					p->counting_step.count_cancel_trying = 0;
+					p->is_in_cancel_state = 1;
+					return;
+				}
+			}
+
+			p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+			if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
+					+COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
+				p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
+			}
+
+			if (is_cancelling_requested() != 0) {
+				p->counting_step.count_cancel_trying = 0;
+				p->is_in_cancel_state = 1;
 				return;
 			}
+			(p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
 		}
+		else
+		{
+			if ((p->debug_trace_file) != NULL) {
+				u_fprintf(p->debug_trace_file,"");
+			}
 
-		p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
-		if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-				+COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-			p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
-		}
+			if ((p->fnc_locate_trace_step != NULL)) {
+				locate_trace_info lti;
+				lti.size_struct_locate_trace_info = (int)sizeof(lti);
+				lti.is_on_morphlogical = 1;
+				(*(p->fnc_locate_trace_step))(&lti,p,p->private_param_locate_trace);
+			}
 
-		if (is_cancelling_requested() != 0) {
-			p->counting_step.count_cancel_trying = -1;
-			return;
+			if ((p->counting_step_count_cancel_trying_real_in_debug) == 0) {
+				if ((p->max_count_call) > 0) {
+					if ((p->counting_step.count_call) >= (p->max_count_call)) {
+						p->counting_step.count_cancel_trying = 0;
+						p->is_in_cancel_state = 1;
+						return;
+					}
+				}
+
+				p->counting_step_count_cancel_trying_real_in_debug = COUNT_CANCEL_TRYING_INIT_CONST;
+				if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
+						+COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
+					p->counting_step_count_cancel_trying_real_in_debug = (p->max_count_call) - (p->counting_step.count_call);
+				}
+
+				if (is_cancelling_requested() != 0) {
+					p->counting_step.count_cancel_trying = 0;
+					p->is_in_cancel_state = 1;
+					return;
+				}
+				(p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug);
+			}
+
+			p->counting_step_count_cancel_trying_real_in_debug --;
+			//  prepare now to be at 0 after the "--" (we don't want another test for performance */
+			(p->counting_step.count_cancel_trying)++;
 		}
-		(p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
 	}
 	(p->counting_step.count_cancel_trying)--;
-
-
-
-
 
 
 	OptimizedFst2State current_state = p->optimized_states[current_state_index];
@@ -1186,12 +1224,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			}
 			p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
 			/* And we continue the exploration */
-
-			/*
-			p->counting_step.count_call=0;
-			p->counting_step.count_cancel_trying=0;
-            */
-
 
 			variable_backup_memory_reserve* reserve_previous = NULL;
 

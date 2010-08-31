@@ -115,7 +115,13 @@ p->counting_step.count_cancel_trying=0;
 p->explore_depth=0;
 p->backup_memory_reserve=NULL;
 p->cached_match_vector=new_vector_ptr(16);
+p->fnc_locate_trace_step=NULL;
+p->private_param_locate_trace=NULL;
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
+p->is_in_cancel_state = 0;
+p->is_in_trace_state = 0;
+p->counting_step_count_cancel_trying_real_in_debug = 0;
+p->debug_trace_file = NULL;
 return p;
 }
 
