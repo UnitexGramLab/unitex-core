@@ -154,7 +154,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->explore_depth=-1;
                 p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
 
-                p->is_in_cancel_state = 0;
+                if (p->is_in_cancel_state == 1)
+                  p->is_in_cancel_state = 0;
                 p->is_in_trace_state = 0;
                 p->counting_step_count_cancel_trying_real_in_debug = 0;
 
@@ -360,7 +361,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			if (is_cancelling_requested() != 0) {
 				p->counting_step.count_cancel_trying = 0;
-				p->is_in_cancel_state = 1;
+				p->is_in_cancel_state = 2;
 				return;
 			}
 			(p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
@@ -395,7 +396,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 				if (is_cancelling_requested() != 0) {
 					p->counting_step.count_cancel_trying = 0;
-					p->is_in_cancel_state = 1;
+					p->is_in_cancel_state = 2;
 					return;
 				}
 				(p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug);

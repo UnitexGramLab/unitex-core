@@ -207,7 +207,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
 			if (is_cancelling_requested() != 0) {
 				p->counting_step.count_cancel_trying = 0;
-				p->is_in_cancel_state = 1;
+				p->is_in_cancel_state = 2;
 				return;
 			}
 			(p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
@@ -242,7 +242,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
 				if (is_cancelling_requested() != 0) {
 					p->counting_step.count_cancel_trying = 0;
-					p->is_in_cancel_state = 1;
+					p->is_in_cancel_state = 2;
 					return;
 				}
 				(p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug);
