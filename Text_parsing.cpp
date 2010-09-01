@@ -89,10 +89,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 	token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 	p->p_token_error_ctx=&token_error_ctx;
 
-	p->is_in_cancel_state = 0;
-	p->is_in_trace_state = 0;
-	p->counting_step_count_cancel_trying_real_in_debug = 0;
-
 	//fill_buffer(p->token_buffer, f);
 	OptimizedFst2State initial_state =
 			p->optimized_states[p->fst2->initial_states[1]];
@@ -157,6 +153,10 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->graph_depth=0;
                 p->explore_depth=-1;
                 p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
+
+                p->is_in_cancel_state = 0;
+                p->is_in_trace_state = 0;
+                p->counting_step_count_cancel_trying_real_in_debug = 0;
 
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
 				if ((p->max_count_call > 0)
