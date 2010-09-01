@@ -81,13 +81,11 @@ static long CalcPerfHalfHundred(long text_size, long matching_units) {
  */
 void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 		struct locate_parameters* p) {
-	struct Token_error_ctx token_error_ctx;
-	token_error_ctx.n_errors = 0;
-	token_error_ctx.last_start = -1;
-	token_error_ctx.last_length = 0;
-	token_error_ctx.n_matches_at_token_pos__locate = 0;
-	token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
-	p->p_token_error_ctx=&token_error_ctx;
+	p->token_error_ctx.n_errors = 0;
+	p->token_error_ctx.last_start = -1;
+	p->token_error_ctx.last_length = 0;
+	p->token_error_ctx.n_matches_at_token_pos__locate = 0;
+	p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
 	//fill_buffer(p->token_buffer, f);
 	OptimizedFst2State initial_state =
@@ -152,7 +150,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				p->last_matched_position = -1;
                 p->graph_depth=0;
                 p->explore_depth=-1;
-                p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
+                p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
                 if (p->is_in_cancel_state == 1)
                   p->is_in_cancel_state = 0;
@@ -256,7 +254,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 					(float) (((float)per_halfhundred) / (float) 1000.0));
 		}
 	}
-    p->p_token_error_ctx=NULL;
 }
 
 /**
@@ -266,12 +263,12 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
  *  exit the programm by calling "fatal_error".
  */
 void error_at_token_pos(const char* message, int start, int length,
-		struct locate_parameters* p, struct Token_error_ctx* p_token_error_ctx) {
+		struct locate_parameters* p) {
 	//static int n_errors;
 	//static int last_start=-1;
 	//static int last_length;
 	int i;
-	if ((p_token_error_ctx->last_start) == start) {
+	if ((p->token_error_ctx.last_start) == start) {
 		/* The context was already printed */
 		return;
 	}
@@ -292,11 +289,11 @@ void error_at_token_pos(const char* message, int start, int length,
 		error(" ...");
 	}
 	error("\n");
-	if (++(p_token_error_ctx->n_errors) >= MAX_ERRORS) {
+	if (++(p->token_error_ctx.n_errors) >= MAX_ERRORS) {
 		fatal_error("Too many errors, giving up!\n");
 	}
-	p_token_error_ctx->last_start = start;
-	p_token_error_ctx->last_length = length;
+	p->token_error_ctx.last_start = start;
+	p->token_error_ctx.last_length = length;
 }
 
 /**
@@ -428,16 +425,16 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
-				pos, p, p->p_token_error_ctx);
+				pos, p);
 		p->explore_depth -- ;
 		return;
 	}
-	if ((p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate)
+	if ((p->token_error_ctx.n_matches_at_token_pos__morphological_locate)
 			> MAX_MATCHES_AT_TOKEN_POS) {
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
-				p->current_origin, pos, p, p->p_token_error_ctx);
+				p->current_origin, pos, p);
 		p->explore_depth -- ;
 		return;
 	}
@@ -452,7 +449,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		}
 		/* In we are in the top level graph, we have a match */
 		if ((p->graph_depth) == 0) {
-			(p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate)++;
+			(p->token_error_ctx.n_matches_at_token_pos__morphological_locate)++;
 			if (p->output_policy == IGNORE_OUTPUTS) {
 				if (pos > 0) {
 					add_match(pos + p->current_origin-1,NULL, p, p->prv_alloc);
@@ -476,7 +473,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				 * like an infinite recursion */
 				error_at_token_pos(
 						"\nMaximal number of matches per subgraph reached!",
-						p->current_origin, pos, p, p->p_token_error_ctx);
+						p->current_origin, pos, p);
 				p->explore_depth -- ;
 				return;
 			} else {

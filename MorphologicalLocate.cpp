@@ -41,7 +41,7 @@ static void morphological_locate(int, int, int, int, /*int, */struct parsing_inf
 		struct list_int*, struct locate_parameters*,
 		unichar*, int, unichar*);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
-		struct list_int*, struct locate_parameters*, struct Token_error_ctx*);
+		struct list_int*, struct locate_parameters*);
 int input_is_token(Fst2Tag tag);
 void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		int pos_in_token, struct parsing_info* *matches,
@@ -276,16 +276,16 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
-				pos_in_tokens, p, p->p_token_error_ctx);
+				pos_in_tokens, p);
 		p->explore_depth -- ;
 		return;
 	}
-	if ((p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate)
+	if ((p->token_error_ctx.n_matches_at_token_pos__morphological_locate)
 			> MAX_MATCHES_AT_TOKEN_POS) {
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
-				p->current_origin, pos_in_tokens, p, p->p_token_error_ctx);
+				p->current_origin, pos_in_tokens, p);
 		p->explore_depth -- ;
 		return;
 	}
@@ -302,7 +302,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				 * like an infinite recursion */
 				error_at_token_pos(
 						"\nMaximal number of matches per subgraph reached!",
-						p->current_origin, pos_in_tokens, p, p->p_token_error_ctx);
+						p->current_origin, pos_in_tokens, p);
 				p->explore_depth -- ;
 				return;
 			} else {

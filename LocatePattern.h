@@ -65,6 +65,17 @@ struct locate_trace_info
 
 typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_locate_trace_step)
   (const struct locate_trace_info*,struct locate_parameters*,void* private_param);
+
+
+struct Token_error_ctx {
+int n_errors;
+int last_start;
+int last_length;
+int n_matches_at_token_pos__locate;
+int n_matches_at_token_pos__morphological_locate;
+};
+
+
 /**
  * This structure is used to store all the information needed
  * during the locate operations
@@ -232,7 +243,6 @@ struct locate_parameters {
    struct dic_variable* dic_variables;
 
 
-   struct Token_error_ctx* p_token_error_ctx;
    variable_backup_memory_reserve*backup_memory_reserve;
    struct counting_step_st counting_step;
 
@@ -248,6 +258,11 @@ struct locate_parameters {
 
    /* to known if we must use Locate Cache feature */
    int useLocateCache;
+
+
+   struct Token_error_ctx token_error_ctx;
+
+   int tilde_negation_operator;
 
    /* This is useful for Korean */
    Korean* korean;
@@ -278,8 +293,6 @@ struct locate_parameters {
    LocateCache* match_cache;
    /* This vector is used to store results obtained from cache consultation */
    vector_ptr* cached_match_vector;
-
-   int tilde_negation_operator;
 
    int counting_step_count_cancel_trying_real_in_debug;
    U_FILE* debug_trace_file;
