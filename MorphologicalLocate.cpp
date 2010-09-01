@@ -37,7 +37,7 @@
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-static void morphological_locate(int, int, int, int, /*int, */struct parsing_info**, int,
+static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*,
 		unichar*, int, unichar*);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,

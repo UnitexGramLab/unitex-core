@@ -169,7 +169,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				count_call_real -= (p->is_in_trace_state == 0) ? (p->counting_step.count_cancel_trying) : (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
 
 
-u_printf("token number %d : %d step\n",p->current_origin,count_call_real,p->tokens);
+//u_printf("token number %d : %d step\n",p->current_origin,count_call_real,p->tokens);
 
 				total_count_step += (unsigned long)count_call_real;
 
