@@ -911,6 +911,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\LocateTrace.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LocateTrace.h"
+				>
+			</File>
+			<File
+				RelativePath="..\LocateTracePlugCallback.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Main_UnitexTool.cpp"
 				>
 			</File>

@@ -87,6 +87,11 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 	p->token_error_ctx.n_matches_at_token_pos__locate = 0;
 	p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
+
+	p->is_in_trace_state = 0;
+	if ((p->fnc_locate_trace_step != NULL))
+		p->is_in_trace_state = 1;
+
 	//fill_buffer(p->token_buffer, f);
 	OptimizedFst2State initial_state =
 			p->optimized_states[p->fst2->initial_states[1]];
@@ -95,6 +100,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 	int unite;
 	clock_t startTime = clock();
 	clock_t currentTime;
+	unsigned long total_count_step = 0;
 
 
 	unite = (int)(((text_size / 100) > 1000) ? (text_size / 100) : 1000);
@@ -154,10 +160,19 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
                 if (p->is_in_cancel_state == 1)
                   p->is_in_cancel_state = 0;
-                p->is_in_trace_state = 0;
-                p->counting_step_count_cancel_trying_real_in_debug = 0;
+                p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
+
+
+				int count_call_real = p->counting_step.count_call;
+				count_call_real -= (p->is_in_trace_state == 0) ? (p->counting_step.count_cancel_trying) : (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
+
+
+u_printf("token number %d : %d step\n",p->current_origin,count_call_real,p->tokens);
+
+				total_count_step += (unsigned long)count_call_real;
+
 				if ((p->max_count_call > 0)
 						&& (p->counting_step.count_call >= p->max_count_call)) {
 					u_printf(
@@ -240,6 +255,15 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 		u_printf("(%2.3f%% of the text is covered)\n", (float) (((float)per_halfhundred)
 				/ (float) 1000.0));
 	}
+	u_printf("%u exploration step\n",(unsigned int)total_count_step);
+
+    /*
+    {
+        char sz[0x100];
+        sprintf(sz,"\n%lu exploration step",total_count_step);
+        puts(sz);
+    }*/
+
 	if (info != NULL) {
 		u_fprintf(info, "%d match%s\n", p->number_of_matches,
 				(p->number_of_matches <= 1) ? "" : "es");
@@ -334,7 +358,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	unichar* output;
 	int captured_chars;
 
-
 	if ((p->counting_step.count_cancel_trying) == 0) {
 
 		if (p->is_in_cancel_state != 0)
@@ -365,18 +388,32 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		}
 		else
 		{
-			if ((p->debug_trace_file) != NULL) {
-				u_fprintf(p->debug_trace_file,"");
-			}
-
 			if ((p->fnc_locate_trace_step != NULL)) {
 				locate_trace_info lti;
 				lti.size_struct_locate_trace_info = (int)sizeof(lti);
 				lti.is_on_morphlogical = 0;
-				(*(p->fnc_locate_trace_step))(&lti,p,p->private_param_locate_trace);
+
+				lti.pos_in_tokens=pos;
+
+                lti.current_state=current_state;
+
+				lti.current_state_index=0;
+				lti.pos_in_chars=0;
+
+				lti.matches=matches;
+				lti.n_matches=n_matches;
+				lti.ctx=ctx;
+				lti.p=p;
+
+				lti.step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+
+				lti.jamo=NULL;
+				lti.pos_in_jamo=0;
+
+				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(&lti,p->private_param_locate_trace);
 			}
 
-			if ((p->counting_step_count_cancel_trying_real_in_debug) == 0) {
+			if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
 				if ((p->max_count_call) > 0) {
 					if ((p->counting_step.count_call) >= (p->max_count_call)) {
 						p->counting_step.count_cancel_trying = 0;
@@ -385,10 +422,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					}
 				}
 
-				p->counting_step_count_cancel_trying_real_in_debug = COUNT_CANCEL_TRYING_INIT_CONST;
+				p->counting_step_count_cancel_trying_real_in_debug_or_trace = COUNT_CANCEL_TRYING_INIT_CONST;
 				if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
 						+COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-					p->counting_step_count_cancel_trying_real_in_debug = (p->max_count_call) - (p->counting_step.count_call);
+					p->counting_step_count_cancel_trying_real_in_debug_or_trace = (p->max_count_call) - (p->counting_step.count_call);
 				}
 
 				if (is_cancelling_requested() != 0) {
@@ -396,10 +433,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					p->is_in_cancel_state = 2;
 					return;
 				}
-				(p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug);
+				(p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
 			}
 
-			p->counting_step_count_cancel_trying_real_in_debug --;
+			p->counting_step_count_cancel_trying_real_in_debug_or_trace --;
 			//  prepare now to be at 0 after the "--" (we don't want another test for performance */
 			(p->counting_step.count_cancel_trying)++;
 		}

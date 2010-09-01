@@ -19,20 +19,24 @@
  *
  */
 
-#ifndef LocateH
-#define LocateH
+/*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * as part of an UNITEX optimization and reliability effort
+ *
+ * additional information: http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
 
-#include "FileEncoding.h"
-#include "LocateConstants.h"
 
-extern const char* optstring_Locate;
-extern const struct option_TS lopts_Locate[];
-extern const char* usage_Locate;
 
-int main_Locate(int argc,char* const argv[]);
-int launch_locate_as_routine(Encoding,int,int,const char*,const char*,const char*,
-                             OutputPolicy,const char*,int,int,const char*,const char*);
+#ifndef _LOCATE_TRACE_H_INCLUDED
+#define _LOCATE_TRACE_H_INCLUDED
 
+#include "LocatePattern.h"
+
+
+void open_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step * p_fnc_locate_trace_step,void** p_private_param_locate_trace);
+void close_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step fnc_locate_trace_step,void* private_param_locate_trace);
 
 #endif
-

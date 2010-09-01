@@ -239,7 +239,7 @@ if (res!=0) {
 /**
  * Returns 1 if the given file exists and can be read; 0 otherwise.
  */
-int fexists(char* name) {
+int fexists(const char* name) {
 ABSTRACTFILE* f=af_fopen(name,"rb");
 if (f==NULL) return 0;
 af_fclose(f);
@@ -300,7 +300,7 @@ return 1;
 /**
  * Returns 1 if the given path is absolute; 0 otherwise.
  */
-int is_absolute_path(char* path) {
+int is_absolute_path(const char* path) {
 #ifdef _NOT_UNDER_WINDOWS
 return path[0]==PATH_SEPARATOR_CHAR;
 #else

@@ -61,10 +61,25 @@ struct locate_trace_info
 {
 	int size_struct_locate_trace_info;
 	int is_on_morphlogical;
+
+	OptimizedFst2State current_state;
+
+	int current_state_index;
+	int pos_in_tokens;
+	int pos_in_chars;
+
+	int n_matches;
+	struct parsing_info** matches; /* current match list. Irrelevant if graph_depth==0 */
+	struct list_int* ctx; /* information about the current context, if any */
+	struct locate_parameters* p; /* miscellaneous parameters needed by the function */
+	unichar* jamo;
+	int pos_in_jamo;
+
+	int step_number;
 } ;
 
-typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_locate_trace_step)
-  (const struct locate_trace_info*,struct locate_parameters*,void* private_param);
+typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_locate_trace_step)
+  (const struct locate_trace_info*,void* private_param);
 
 
 struct Token_error_ctx {
@@ -294,24 +309,25 @@ struct locate_parameters {
    /* This vector is used to store results obtained from cache consultation */
    vector_ptr* cached_match_vector;
 
-   int counting_step_count_cancel_trying_real_in_debug;
-   U_FILE* debug_trace_file;
+   int counting_step_count_cancel_trying_real_in_debug_or_trace;
 
    /* Arabic typographic rule configuration */
    ArabicTypoRules arabic;
 
    t_fnc_locate_trace_step fnc_locate_trace_step;
    void*private_param_locate_trace;
+
+   const char* token_filename;
 };
 
 
-int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
+int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
                    MatchPolicy,OutputPolicy,Encoding,int,int,char*,TokenizationPolicy,
                    SpacePolicy,int,char*,AmbiguousOutputPolicy,
-                   VariableErrorPolicy,int,int,int,int,char*,int,int);
+                   VariableErrorPolicy,int,int,int,int,char*,int,int,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);
-void compute_token_controls(Alphabet*,char*,struct locate_parameters*);
+void compute_token_controls(Alphabet*,const char*,struct locate_parameters*);
 
 #endif

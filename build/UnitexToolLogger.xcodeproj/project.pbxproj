@@ -190,6 +190,7 @@
 		225FE444112569C500F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE440112569C500F33C2A /* TrainingTagger.cpp */; };
 		225FE86E11256B6A00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */; };
 		2294EE7611A0116E003CE92B /* Untokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294EE7411A0116E003CE92B /* Untokenize.cpp */; };
+		2294F4A8122EEB1C009495A8 /* LocateTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294F4A5122EEB1C009495A8 /* LocateTrace.cpp */; };
 		229851B0111A6F3300503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Check_lib.cpp */; };
 		229D935811CB412D007BC1B4 /* Arabic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229D935611CB412D007BC1B4 /* Arabic.cpp */; };
 		22B2EB68118B169600E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB67118B169600E00A77 /* MappedFileHelperPosix.cpp */; };
@@ -600,6 +601,9 @@
 		225FE86D11256B6A00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
 		2294EE7411A0116E003CE92B /* Untokenize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Untokenize.cpp; path = ../Untokenize.cpp; sourceTree = SOURCE_ROOT; };
 		2294EE7511A0116E003CE92B /* Untokenize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Untokenize.h; path = ../Untokenize.h; sourceTree = SOURCE_ROOT; };
+		2294F4A5122EEB1C009495A8 /* LocateTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocateTrace.cpp; path = ../LocateTrace.cpp; sourceTree = SOURCE_ROOT; };
+		2294F4A6122EEB1C009495A8 /* LocateTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocateTrace.h; path = ../LocateTrace.h; sourceTree = SOURCE_ROOT; };
+		2294F4A7122EEB1C009495A8 /* LocateTracePlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocateTracePlugCallback.h; path = ../LocateTracePlugCallback.h; sourceTree = SOURCE_ROOT; };
 		229851AE111A6F3300503A07 /* Fst2Check_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Check_lib.cpp; path = ../Fst2Check_lib.cpp; sourceTree = SOURCE_ROOT; };
 		229851AF111A6F3300503A07 /* Fst2Check_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Check_lib.h; path = ../Fst2Check_lib.h; sourceTree = SOURCE_ROOT; };
 		229D935611CB412D007BC1B4 /* Arabic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Arabic.cpp; path = ../Arabic.cpp; sourceTree = SOURCE_ROOT; };
@@ -638,6 +642,9 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2294F4A5122EEB1C009495A8 /* LocateTrace.cpp */,
+				2294F4A6122EEB1C009495A8 /* LocateTrace.h */,
+				2294F4A7122EEB1C009495A8 /* LocateTracePlugCallback.h */,
 				2237A97811E45C0E00D247CF /* DirHelper.h */,
 				2237A97911E45C0E00D247CF /* DirHelperPosix.cpp */,
 				2237A94D11E3F1C000D247CF /* Cassys_tokens.cpp */,
@@ -1313,6 +1320,7 @@
 				2237A95111E3F1C000D247CF /* Cassys_tokens.cpp in Sources */,
 				2237A95211E3F1C000D247CF /* Cassys.cpp in Sources */,
 				2237A97A11E45C0E00D247CF /* DirHelperPosix.cpp in Sources */,
+				2294F4A8122EEB1C009495A8 /* LocateTrace.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,12 +29,13 @@
 #include "Tokenization.h"
 #include "File.h"
 #include "UserCancelling.h"
+#include "LocateTrace.h"
 
 
-void load_dic_for_locate(char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
+void load_dic_for_locate(const char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*,Abstract_allocator);
-void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p);
-void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p,char* local_morpho_dic);
+void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p);
+void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
 
 
 /**
@@ -124,8 +125,7 @@ p->private_param_locate_trace=NULL;
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 p->is_in_cancel_state = 0;
 p->is_in_trace_state = 0;
-p->counting_step_count_cancel_trying_real_in_debug = 0;
-p->debug_trace_file = NULL;
+p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 return p;
 }
 
@@ -162,15 +162,15 @@ return res;
 
 
 
-int locate_pattern(char* text_cod,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
-                   char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
+int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name,const char* dlf,const char* dlc,const char* err,
+                   const char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
                    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning,
-                   char* arabic_rules,int tilde_negation_operator,int useLocateCache) {
+                   char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace) {
 
 U_FILE* out;
 U_FILE* info;
@@ -198,7 +198,7 @@ p->protect_dic_chars=protect_dic_chars;
 p->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
 p->max_count_call = max_count_call;
 p->max_count_call_warning = max_count_call_warning;
-
+p->token_filename = tokens;
 char concord[FILENAME_MAX];
 char concord_info[FILENAME_MAX];
 
@@ -363,6 +363,9 @@ if (p->filter_match_index==NULL) {
 }
 #endif
 
+if (allow_trace!=0) {
+   open_locate_trace(p,&p->fnc_locate_trace_step,&p->private_param_locate_trace);
+}
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");
 load_morphological_dictionaries(morpho_dic_list,p,morpho_bin);
@@ -420,6 +423,9 @@ u_printf("Working...\n");
 p->prv_alloc=locate_work_abstract_allocator;
 p->prv_alloc_recycle=locate_recycle_abstract_allocator;
 launch_locate(out,text_size,info,p);
+if (allow_trace!=0) {
+   close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
+}
 free_bit_array(p->failfast);
 free_Variables(p->input_variables);
 free_OutputVariables(p->output_variables);
@@ -493,7 +499,7 @@ return 1;
 }
 
 
-int count_semi_colons(char* s) {
+int count_semi_colons(const char* s) {
 int n=0;
 for (int i=0;s[i]!='\0';i++) {
    if (s[i]==';') n++;
@@ -506,7 +512,7 @@ return n;
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
  */
-void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p) {
+void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p) {
 if (morpho_dic_list==NULL || morpho_dic_list[0]=='\0') {
    return;
 }
@@ -550,8 +556,8 @@ for (int i=0;i<p->n_morpho_dics;i++) {
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
  */
-void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p,
-                                     char* local_morpho_dic) {
+void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p,
+                                     const char* local_morpho_dic) {
 if (fexists(local_morpho_dic)) {
    if (morpho_dic_list!=NULL && morpho_dic_list[0]!='\0') {
       /* If we have both local and non-local dictionaries */
@@ -676,7 +682,7 @@ return c;
  * We use the unknown word file 'err' in order to determine if a token
  * must be matched by <!DIC>
  */
-void compute_token_controls(Alphabet* alph,char* err,struct locate_parameters* p) {
+void compute_token_controls(Alphabet* alph,const char* err,struct locate_parameters* p) {
 struct string_hash* ERR=load_key_list(err,p->mask_encoding_compatibility_input);
 int n=p->tokens->size;
 for (int i=0;i<n;i++) {
@@ -703,7 +709,7 @@ free_string_hash(ERR);
  * the pattern "<CDIC>" is used in the grammar, it means that any token sequence that is a
  * compound word must be marked as be matched by this pattern.
  */
-void load_dic_for_locate(char* dic_name,int mask_encoding_compatibility_input,Alphabet* alphabet,
+void load_dic_for_locate(const char* dic_name,int mask_encoding_compatibility_input,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,
                          struct lemma_node* root,struct locate_parameters* parameters) {

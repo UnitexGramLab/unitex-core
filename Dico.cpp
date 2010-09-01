@@ -138,13 +138,14 @@ u_fclose(f);
 }
 
 
-const char* optstring_Dico=":t:a:m:Khk:q:u:";
+const char* optstring_Dico=":t:a:m:Khk:q:u:g:";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"morpho",required_argument_TS,NULL,'m'},
       {"korean",no_argument_TS,NULL,'K'},
       {"help",no_argument_TS,NULL,'h'},
+      {"negation_operator",required_argument_TS,NULL,'g'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"arabic_rules",required_argument_TS,NULL,'u'},
@@ -163,6 +164,7 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char arabic_rules[FILENAME_MAX]="";
+char negation_operator[0x20]="";
 char* morpho_dic=NULL;
 int is_korean=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -171,6 +173,16 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars))) {
    switch(val) {
+   case 'g': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify an argument for negation operator\n");
+             }
+             if ((strcmp(vars->optarg,"minus")!=0) && (strcmp(vars->optarg,"-")!=0) && 
+                 (strcmp(vars->optarg,"tilde")!=0) && (strcmp(vars->optarg,"~")!=0))
+             {
+                 fatal_error("You must specify a valid argument for negation operator\n");
+             }
+             strcpy(negation_operator,vars->optarg);
+             break;
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
              }
@@ -337,7 +349,7 @@ for (int priority=1;priority<4;priority++) {
              * is running, because this function tries to read in these files.
              */
             launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,
-            		text,argv[i],alph,policy,morpho_dic,1,is_korean,arabic_rules);
+            		text,argv[i],alph,policy,morpho_dic,1,is_korean,arabic_rules,negation_operator);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

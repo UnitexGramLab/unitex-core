@@ -745,6 +745,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\LocateTrace.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LocateTrace.h"
+				>
+			</File>
+			<File
+				RelativePath="..\LocateTracePlugCallback.h"
+				>
+			</File>
+			<File
 				RelativePath="..\MappedFileHelper.h"
 				>
 			</File>

@@ -299,7 +299,7 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
  * the remaining string as key and value. An error message will be printed if
  * an empty line is found.
  */
-struct string_hash* load_key_list(char* name,int mask_encoding_compatibility_input) {
+struct string_hash* load_key_list(const char* name,int mask_encoding_compatibility_input) {
 U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
@@ -330,7 +330,7 @@ return hash;
  * =ONE_TWO_THREE_NEW_LINE
  *
  */
-struct string_hash* load_key_value_list(char* name,int mask_encoding_compatibility_input,unichar separator) {
+struct string_hash* load_key_value_list(const char* name,int mask_encoding_compatibility_input,unichar separator) {
 U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash();

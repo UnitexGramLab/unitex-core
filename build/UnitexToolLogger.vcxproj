@@ -288,6 +288,8 @@
     <ClInclude Include="..\DirHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
+    <ClInclude Include="..\LocateTrace.h" />
+    <ClInclude Include="..\LocateTracePlugCallback.h" />
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
     <ClInclude Include="..\Tagger.h" />
@@ -397,6 +399,7 @@
     <ClCompile Include="..\LocateTfst.cpp" />
     <ClCompile Include="..\LocateTfst_lib.cpp" />
     <ClCompile Include="..\LocateTfstMatches.cpp" />
+    <ClCompile Include="..\LocateTrace.cpp" />
     <ClCompile Include="..\Main_UnitexToolLogger.cpp" />
     <ClCompile Include="..\MappedFileHelperWin.cpp" />
     <ClCompile Include="..\Match.cpp" />

@@ -58,11 +58,11 @@ void replace_path_separator_by_colon(char*);
 void replace_colon_by_path_separator(char*);
 void new_file(const char*,const char*,char*);
 void copy_file(const char*,const char*);
-int fexists(char*);
+int fexists(const char*);
 time_t get_file_date(const char* name);
 long get_file_size(const char*);
 long get_file_size(U_FILE*);
 int add_path_separator(char*);
-int is_absolute_path(char*);
+int is_absolute_path(const char*);
 
 #endif

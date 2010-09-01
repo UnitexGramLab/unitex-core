@@ -113,6 +113,12 @@
     <ClInclude Include="..\DirHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\LocateTracePlugCallback.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateTrace.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -680,6 +686,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\MappedFileHelperWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateTrace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

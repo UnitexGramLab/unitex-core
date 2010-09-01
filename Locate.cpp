@@ -121,7 +121,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:T";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -152,6 +152,7 @@ const struct option_TS lopts_Locate[]= {
       {"arabic_rules",required_argument_TS,NULL,'u'},
       {"negation_operator",required_argument_TS,NULL,'g'},
       {"dont_use_locate_cache",no_argument_TS,NULL,'e'},
+      {"dont_allow_trace",no_argument_TS,NULL,'T'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -188,6 +189,7 @@ int max_count_call_warning=0;
 int tilde_negation_operator=1;
 int useLocateCache=1;
 int selected_negation_operator=0;
+int allow_trace=1;
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -237,6 +239,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'Z': variable_error_policy=BACKTRACK_ON_VARIABLE_ERRORS; break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
    case 'e': useLocateCache=0; break;
+   case 'T': allow_trace=0; break;
    case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
                 fatal_error("Invalid search limit argument: %s\n",vars->optarg);
@@ -341,7 +344,8 @@ int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,ma
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
-               max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator,useLocateCache);
+               max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator,
+               useLocateCache,allow_trace);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
@@ -359,9 +363,9 @@ return (!OK);
  * Modified by Sébastien Paumier
  */
 int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                             char* text_snt,char* fst2,char* alphabet,
-                              OutputPolicy output_policy,char* morpho_dic,
-                              int protect_dic_chars,int is_korean,char* arabic_rules) {
+                             const char* text_snt,const char* fst2,const char* alphabet,
+                             OutputPolicy output_policy,const char* morpho_dic,
+                             int protect_dic_chars,int is_korean,const char* arabic_rules,const char*negation_operator) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
 char lang[FILENAME_MAX];
@@ -391,6 +395,13 @@ char tmp[FILENAME_MAX];
     if (tmp[0] != '\0') {
         add_argument(invoker,"-q");
         add_argument(invoker,tmp);
+    }
+}
+if (negation_operator != NULL) {
+    if ((*negation_operator) != 0) {
+        char negation_operator_argument[0x40];
+        sprintf(negation_operator_argument,"--negation_operator=%s",negation_operator);
+        add_argument(invoker,negation_operator_argument);
     }
 }
 /* If needed: just to know that the call come from here if necessary */
