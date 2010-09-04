@@ -480,50 +480,47 @@ cassys_tokens_list *cassys_load_text(const char *tokens_text_name, const char *t
 cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *list,
 		 int transducer_id, const char *alphabet_name,int mask_encoding_compatibility_input) {
 
-	fprintf(stdout,"Replacement text begins\n");
 
 	Alphabet *alphabet = load_alphabet(alphabet_name);
 
 	struct snt_files *snt_text_files = new_snt_files(text);
 
 	struct fifo *stage_concord = read_concord_file(snt_text_files->concord_ind, mask_encoding_compatibility_input);
-	fprintf(stdout,"Read concord file done\n");
 
-
+	// performance enhancement
+	cassys_tokens_list *current_list_position = list;
+	long current_token_position = 0;
 
 	int nb_sentence = 0;
 	while (!is_empty(stage_concord)) {
 		nb_sentence++;
-		//fprintf(stdout,"add_replaced : take sentence %d\n",nb_sentence);
 
 		locate_pos *l = (locate_pos*) take_ptr(stage_concord);
-		//display_locate_pos(l);
 
 		struct list_ustring *new_sentence_lu = cassys_tokenize_word_by_word(l->label,
 				alphabet);
-		//u_printf("%d --> ",length(new_sentence_lu));
-		//display_list_ustring(new_sentence_lu);
 
 		cassys_tokens_list *new_sentence_ctl =
 				new_list(new_sentence_lu, transducer_id);
-		//display_text(new_sentence_ctl,transducer_id);
 
-		cassys_tokens_list *list_position = get_element_at(list, transducer_id - 1,
-				l->token_start_offset);
-		//display_text(list_position,transducer_id-1);
+		// performance enhancement :
+		// Since matches are sorted, we begin the search from the last known position in the list.
+		// We have to substract from the text position the current token position.
+		cassys_tokens_list *list_position = get_element_at(current_list_position, transducer_id - 1,
+				l->token_start_offset - current_token_position);
 
 		int replaced_sentence_length = l->token_end_offset
 				- l->token_start_offset+1;
 		int new_sentence_length = length(new_sentence_lu);
 
-		//u_printf("lengths = %d %d\n",replaced_sentence_length, new_sentence_length);
-
-
 		add_output(list_position, new_sentence_ctl, transducer_id,
 				replaced_sentence_length, new_sentence_length-1);
-		//follow_text(list,transducer_id);
 
-		//free_list_ustring(new_sentence_lu);
+
+		// performance enhancement
+		current_list_position = list_position;
+		current_token_position = l-> token_start_offset;
+
 		free(l->label);
 		free(l);
 		free_list_ustring(new_sentence_lu);
