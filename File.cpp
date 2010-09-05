@@ -138,7 +138,7 @@ remove_extension(temp,result);
  * Adds a suffix to the file name before the extension:
  * "tutu.txt" + "-old" => "tutu-old.txt"
  **/
-void add_suffix_to_file_name(char* dest,char* src,const char* suffix) {
+void add_suffix_to_file_name(char* dest,const char* src,const char* suffix) {
 char ext[128];
 remove_extension(src,dest);
 strcat(dest,suffix);
@@ -151,7 +151,7 @@ strcat(dest,ext);
  * Adds a prefix to the file name:
  * "tutu.txt" + "old-" => "old-tutu.txt"
  **/
-void add_prefix_to_file_name(char* dest,char* src,const char* prefix) {
+void add_prefix_to_file_name(char* dest,const char* src,const char* prefix) {
 char tmp[1024];
 get_path(src,dest);
 strcat(dest,prefix);

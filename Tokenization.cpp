@@ -30,7 +30,7 @@
  * or word by word. In that last case, a word is defined as a contiguous
  * sequence letters and the letters are defined by the given alphabet.
  */
-struct list_ustring* tokenize(unichar* text,TokenizationPolicy mode,Alphabet* alphabet) {
+struct list_ustring* tokenize(const unichar* text,TokenizationPolicy mode,const Alphabet* alphabet) {
 if (mode==CHAR_BY_CHAR_TOKENIZATION) {
    return tokenize_char_by_char(text);
 }
@@ -42,7 +42,7 @@ return tokenize_word_by_word(text,alphabet);
  * This function takes a text sequence and returns the list of its tokens.
  * The tokenization is done character by character.
  */
-struct list_ustring* tokenize_char_by_char(unichar* text) {
+struct list_ustring* tokenize_char_by_char(const unichar* text) {
 if (text==NULL) {
    fatal_error("NULL text in tokenize_char_by_char\n");
 }
@@ -62,7 +62,7 @@ return tokens;
  * The tokenization is done word by word. If the given alphabet is NULL,
  * then letters are tested with the 'u_is_letter' function.
  */
-struct list_ustring* tokenize_word_by_word(unichar* text,Alphabet* alphabet) {
+struct list_ustring* tokenize_word_by_word(const unichar* text,const Alphabet* alphabet) {
 if (text==NULL) {
    fatal_error("NULL text in tokenize_word_by_word\n");
 }
@@ -106,7 +106,7 @@ return tokens;
 /**
  * Returns 1 if the given string contains only one token; 0 otherwise.
  */
-int is_a_simple_token(unichar* string,TokenizationPolicy tokenization_policy,Alphabet* alph) {
+int is_a_simple_token(const unichar* string,TokenizationPolicy tokenization_policy,const Alphabet* alph) {
 if (is_a_simple_word(string,tokenization_policy,alph) || (u_strlen(string)==1)) {
    return 1;
 }
@@ -120,7 +120,7 @@ return 0;
  * 
  * NOTE: with such a definition, a single char that is not a letter is not a simple word
  */
-int is_a_simple_word(unichar* sequence,TokenizationPolicy tokenization_policy,Alphabet* alphabet) {
+int is_a_simple_word(const unichar* sequence,TokenizationPolicy tokenization_policy,const Alphabet* alphabet) {
 int i;
 i=0;
 if (tokenization_policy==CHAR_BY_CHAR_TOKENIZATION && u_strlen(sequence)>1) {

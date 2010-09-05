@@ -45,8 +45,8 @@
 #include <stdio.h>
 #include "Unicode.h"
 
-void add_suffix_to_file_name(char*,char*,const char*);
-void add_prefix_to_file_name(char*,char*,const char*);
+void add_suffix_to_file_name(char*,const char*,const char*);
+void add_prefix_to_file_name(char*,const char*,const char*);
 void get_extension(const char*,char*);
 void remove_extension(char*);
 void remove_extension(const char*,char*);

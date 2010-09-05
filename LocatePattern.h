@@ -322,12 +322,12 @@ struct locate_parameters {
 
 
 int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
-                   MatchPolicy,OutputPolicy,Encoding,int,int,char*,TokenizationPolicy,
-                   SpacePolicy,int,char*,AmbiguousOutputPolicy,
+                   MatchPolicy,OutputPolicy,Encoding,int,int,const char*,TokenizationPolicy,
+                   SpacePolicy,int,const char*,AmbiguousOutputPolicy,
                    VariableErrorPolicy,int,int,int,int,char*,int,int,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
-unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);
+unsigned char get_control_byte(const unichar*,const Alphabet*,struct string_hash*,TokenizationPolicy);
 void compute_token_controls(Alphabet*,const char*,struct locate_parameters*);
 
 #endif

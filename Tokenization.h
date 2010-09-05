@@ -32,11 +32,11 @@
 #include "List_ustring.h"
 #include "LocateConstants.h"
 
-struct list_ustring* tokenize(unichar*,TokenizationPolicy,Alphabet*);
-struct list_ustring* tokenize_char_by_char(unichar*);
-struct list_ustring* tokenize_word_by_word(unichar*,Alphabet*);
-int is_a_simple_token(unichar*,TokenizationPolicy,Alphabet*);
-int is_a_simple_word(unichar*,TokenizationPolicy,Alphabet*);
+struct list_ustring* tokenize(const unichar*,TokenizationPolicy,const Alphabet*);
+struct list_ustring* tokenize_char_by_char(const unichar*);
+struct list_ustring* tokenize_word_by_word(const unichar*,const Alphabet*);
+int is_a_simple_token(const unichar*,TokenizationPolicy,const Alphabet*);
+int is_a_simple_word(const unichar*,TokenizationPolicy,const Alphabet*);
 
 #endif
 

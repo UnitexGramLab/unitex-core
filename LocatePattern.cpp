@@ -165,8 +165,8 @@ return res;
 int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name,const char* dlf,const char* dlc,const char* err,
                    const char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
                    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                   char* dynamicDir,TokenizationPolicy tokenization_policy,
-                   SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
+                   const char* dynamicDir,TokenizationPolicy tokenization_policy,
+                   SpacePolicy space_policy,int search_limit,const char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning,
@@ -585,7 +585,7 @@ load_morphological_dictionaries(morpho_dic_list,p);
 /**
  * Returns a control byte that represents the characteristics of the given token.
  */
-unsigned char get_control_byte(unichar* token,Alphabet* alph,struct string_hash* err,TokenizationPolicy tokenization_policy) {
+unsigned char get_control_byte(const unichar* token,const Alphabet* alph,struct string_hash* err,TokenizationPolicy tokenization_policy) {
 int i;
 int tmp;
 unsigned char c=0;
