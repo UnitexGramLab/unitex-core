@@ -3844,7 +3844,7 @@ return 1;
  *
  * Author: Olivier Blanc
  */
-int u_parse_int(unichar* str,unichar* *next) {
+int u_parse_int(const unichar* str,const unichar* *next) {
 int res=0;
 while (u_is_digit(*str)) {
    res=res*10+(*str-'0');

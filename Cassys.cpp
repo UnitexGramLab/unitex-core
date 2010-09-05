@@ -585,7 +585,7 @@ struct fifo *read_concord_file(const char *concord_file_name,int mask_encoding_c
  *
  * \return The information read in a locate_pos structure
  */
-locate_pos *read_concord_line(unichar *line) {
+locate_pos *read_concord_line(const unichar *line) {
 
 	locate_pos *l;
 	l = (locate_pos*) malloc(sizeof(locate_pos) * 1);
@@ -602,9 +602,9 @@ locate_pos *read_concord_line(unichar *line) {
 	}
 
 	// format of a line : n.n.n n.n.n t where n are integers and t is string
-	unichar **next;
+	const unichar **next;
 
-	unichar *current = line;
+	const unichar *current = line;
 	next = &line; // make next not NULL
 	l->token_start_offset = (long)u_parse_int(current, next);
 

@@ -42,7 +42,7 @@ typedef struct {
 } Fst2Automaton;
 
 
-Fst2Automaton* new_Fst2Automaton(unichar* name=NULL,int size=8);
+Fst2Automaton* new_Fst2Automaton(const unichar* name=NULL,int size=8);
 void free_Fst2Automaton_including_symbols(Fst2Automaton*);
 void free_Fst2Automaton_excluding_symbols(Fst2Automaton*);
 void free_Fst2Automaton(Fst2Automaton*,void (*free_elag_symbol)(symbol_t*));

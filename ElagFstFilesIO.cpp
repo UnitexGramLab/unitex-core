@@ -155,7 +155,7 @@ if (fstf->pos>=fstf->nb_automata) {
 Ustring* ustr=new_Ustring();
 readline(ustr,fstf->f);
 chomp_new_line(ustr);
-unichar* p=ustr->str;
+const unichar* p=ustr->str;
 if (p[0]!='-') {
    fatal_error("load_automaton: %s: bad file format\n",fstf->name);
 }

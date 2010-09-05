@@ -311,7 +311,7 @@ int u_is_word(const unichar*);
 int u_are_digits(const unichar*);
 
 
-int u_parse_int(unichar * str, unichar ** next = NULL);
+int u_parse_int(const unichar * str, const unichar ** next = NULL);
 
 
 // Sebastian Nagel's functions

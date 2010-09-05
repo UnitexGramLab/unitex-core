@@ -269,7 +269,7 @@ struct fifo *read_concord_file(const char *concord_file_name,int mask_encoding_c
  *
  * \return a struct locate_pos
  */
-locate_pos *read_concord_line(unichar *line);
+locate_pos *read_concord_line(const unichar *line);
 
 
 /**

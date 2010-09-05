@@ -30,7 +30,7 @@
  * Allocates, initializes and return a new .fst2 automaton. If size<0,
  * the automaton field is set to NULL.
  */
-Fst2Automaton* new_Fst2Automaton(unichar* name,int size) {
+Fst2Automaton* new_Fst2Automaton(const unichar* name,int size) {
 Fst2Automaton* aut=(Fst2Automaton*)malloc(sizeof(Fst2Automaton));
 if (aut==NULL) {
    fatal_alloc_error("new_Fst2Automaton");
