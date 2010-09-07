@@ -187,11 +187,11 @@ if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-struct encoding* src_encoding=get_encoding(encoding_ctx,src);
+const struct encoding* src_encoding=get_encoding(encoding_ctx,src);
 if (src_encoding==NULL) {
 	fatal_error("%s is not a valid encoding name\n",src);
 }
-struct encoding* dest_encoding=get_encoding(encoding_ctx,dest);
+const struct encoding* dest_encoding=get_encoding(encoding_ctx,dest);
 if (dest_encoding==NULL) {
    fatal_error("%s is not a valid encoding name\n",dest);
 }

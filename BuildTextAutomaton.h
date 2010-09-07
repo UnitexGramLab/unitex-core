@@ -37,9 +37,9 @@
 #define MAX_TOKENS_IN_SENTENCE 2000
 
 
-void build_sentence_automaton(int*,int,struct text_tokens*,
-                              struct DELA_tree*,
-                              Alphabet*,U_FILE*,U_FILE*,int,int,
+void build_sentence_automaton(const int*,int,const struct text_tokens*,
+                              const struct DELA_tree*,
+                              const Alphabet*,U_FILE*,U_FILE*,int,int,
                               struct normalization_tree*,
                               struct match_list**,int,int,
                               language_t*,Korean* korean,

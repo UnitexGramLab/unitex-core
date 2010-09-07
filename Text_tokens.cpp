@@ -143,7 +143,7 @@ free_cb(tok,prv_alloc);
 
 
 
-void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l,Abstract_allocator prv_alloc) {
+void explorer_token_tree(int pos,unichar* sequence,const Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l,Abstract_allocator prv_alloc) {
 if (sequence[pos]=='\0') {
    // if we are at the end of the sequence
    if (n->value_index!=-1) {
@@ -164,7 +164,7 @@ while (trans!=NULL) {
 
 
 
-struct list_int* get_token_list_for_sequence(unichar* sequence,Alphabet* alph,
+struct list_int* get_token_list_for_sequence(unichar* sequence,const Alphabet* alph,
                                                   struct string_hash* hash,Abstract_allocator prv_alloc) {
 struct list_int* l=NULL;
 explorer_token_tree(0,sequence,alph,hash->root,&l,prv_alloc);

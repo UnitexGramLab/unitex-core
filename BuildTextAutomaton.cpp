@@ -41,9 +41,9 @@
  * This is an internal structure only used to give a set of parameters to some functions.
  */
 struct info {
-   struct text_tokens* tok;
-   int* buffer;
-   Alphabet* alph;
+   const struct text_tokens* tok;
+   const int* buffer;
+   const Alphabet* alph;
    int SPACE;
    int length_max;
 };
@@ -54,7 +54,7 @@ struct info {
  * This function returns the number of space tokens that are in the
  * given buffer.
  */
-int count_non_space_tokens(int* buffer,int length,int SPACE) {
+int count_non_space_tokens(const int* buffer,int length,int SPACE) {
 int n=0;
 for (int i=0;i<length;i++) {
    if (buffer[i]!=SPACE) {
@@ -82,8 +82,8 @@ return n;
  * an unknown token or not. 'current_token_index' is the position of the current token
  * in the token buffer. 'tmp_tags' represents the tags of the current graph.
  */
-void explore_dictionary_tree(int pos,unichar* token,unichar* inflected,int pos_inflected,
-                             struct string_hash_tree_node* n,struct DELA_tree* tree,
+void explore_dictionary_tree(int pos,const unichar* token,unichar* inflected,int pos_inflected,
+                             const struct string_hash_tree_node* n,const struct DELA_tree* tree,
                              struct info* INFO,SingleGraphState state,int shift,
                              int start_state_index,int *is_not_unknown_token,
                              int first_token_index,int current_token_index,
@@ -340,7 +340,7 @@ free(x);
  *
  * The vector contains struct output_info*
  */
-vector_ptr* tokenize_normalization_output(unichar* s,Alphabet* alph) {
+vector_ptr* tokenize_normalization_output(unichar* s,const Alphabet* alph) {
 if (s==NULL) return NULL;
 vector_ptr* result=new_vector_ptr(4);
 unichar tmp[2048];
@@ -606,7 +606,7 @@ for (int i=0;i<vector->nbelems;i++) {
  * This function does its best to compute the start/end values for each tag
  * to be produced.
  */
-void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
+void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,const Alphabet* alph,
                             Korean* korean) {
 if (korean!=NULL) {
    /* The Korean case is so special that it seems risky to merge it with the
@@ -728,7 +728,7 @@ for (int i=0;i<vector->nbelems;i++) {
  *  19 -- {le,.PRO:ms} --> 7
  */
 void add_path_to_sentence_automaton(int start_pos,int end_pos,
-                                    int start_state_index,Alphabet* alph,
+                                    int start_state_index,const Alphabet* alph,
                                     SingleGraph graph,struct string_hash* tmp_tags,
                                     unichar* s,int destination_state_index,Ustring* foo,
                                     struct info* INFO,Korean* korean) {
@@ -818,9 +818,9 @@ while (trans!=NULL) {
  * This function builds the sentence automaton that correspond to the
  * given token buffer. It saves it into the given file.
  */
-void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
-                               struct DELA_tree* DELA_tree,
-                               Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
+void build_sentence_automaton(const int* buffer,int length,const struct text_tokens* tokens,
+                               const struct DELA_tree* DELA_tree,
+                               const Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
                                int sentence_number,
                                int we_must_clean,
                                struct normalization_tree* norm_tree,

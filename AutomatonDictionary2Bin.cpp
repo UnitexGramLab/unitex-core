@@ -149,7 +149,7 @@ while (tmp!=NULL) {
  * and transitions of the dictionary automaton. 'bin_size' represents the size
  * of the resulting .bin file.
  */
-void create_and_save_bin(struct dictionary_node* root,char* output,int *n_states,
+void create_and_save_bin(struct dictionary_node* root,const char* output,int *n_states,
 						int *n_transitions,int *bin_size) {
 U_FILE* f;
 /* The output file must be opened as a binary one */

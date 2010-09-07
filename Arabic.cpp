@@ -248,7 +248,7 @@ return 1;
  * is set to 0.
  * "YES" value means 1, any other value means 0;
  */
-int load_arabic_typo_rules(char* name,ArabicTypoRules *rules) {
+int load_arabic_typo_rules(const char* name,ArabicTypoRules *rules) {
 memset(rules,0,sizeof(ArabicTypoRules));
 if (name==NULL) {
 	fatal_error("NULL arabic rule configuration file name!\n");
@@ -301,7 +301,7 @@ return 1;
  * 		lilraeiysu + pos=3 => OK
  * 		llraeiysu + pos=2 => OK, but only if the i omission rule is active
  */
-int was_Al_before(unichar* token,int pos,ArabicTypoRules rules) {
+int was_Al_before(const unichar* token,int pos,ArabicTypoRules rules) {
 if (pos<=1) return 0;
 pos--;
 if (token[pos--]!=AR_LAM) return 0;

@@ -1164,7 +1164,7 @@ return (int)af_fwrite(&c,1,1,f);
 }
 
 
-int write_one_char(unichar c,void* encoding_ctx,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+int write_one_char(unichar c,const void* encoding_ctx,ABSTRACTFILE* f,const struct encoding* encoding,unsigned char* ascii_dest) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return write_1_byte_character(ascii_dest[c],f);
 } else {
@@ -1185,7 +1185,7 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  * '&' '#' '2' '3' '3' and ';' encoded as 2-bytes characters, for instance
  * with an UTF16 output encoding.
  */
-void write_integer(int n,void* encoding_ctx,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+void write_integer(int n,const void* encoding_ctx,ABSTRACTFILE* f,const struct encoding* encoding,unsigned char* ascii_dest) {
 if (n<10) {
 	write_one_char((unichar)('0'+n),encoding_ctx,f,encoding,ascii_dest);
 	return;
@@ -1203,7 +1203,7 @@ write_one_char('0'+n%10,encoding_ctx,f,encoding,ascii_dest);
  * and 'encode_HTML_control_characters'.
  *
  */
-void html_characters_encoding(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,
+void html_characters_encoding(unichar c,const void* encoding_ctx,const struct encoding* encoding,ABSTRACTFILE* f,
 			int encode_all_characters,int encode_HTML_control_characters,
 			unsigned char* ascii_dest) {
 /* First, we check if we have an HTML control character */
@@ -1261,16 +1261,16 @@ write_one_char(c,encoding_ctx,f,encoding,ascii_dest);
  * These 4 functions are shorcuts for invoking the 'html_characters_encoding'
  * function.
  */
-void f00(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+void f00(unichar c,const void* encoding_ctx,const struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding_ctx,encoding,f,0,0,ascii_dest);
 }
-void f01(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+void f01(unichar c,const void* encoding_ctx,const struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding_ctx,encoding,f,0,1,ascii_dest);
 }
-void f10(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+void f10(unichar c,const void* encoding_ctx,const struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding_ctx,encoding,f,1,0,ascii_dest);
 }
-void f11(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+void f11(unichar c,const void* encoding_ctx,const struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding_ctx,encoding,f,1,1,ascii_dest);
 }
 
@@ -1280,7 +1280,7 @@ html_characters_encoding(c,encoding_ctx,encoding,f,1,1,ascii_dest);
  * 'unicode_src' if the encoding is a 1-byte one.
  *
  */
-int read_one_char(void* encoding_ctx,ABSTRACTFILE* input,struct encoding* encoding,unichar* unicode_src) {
+int read_one_char(const void* encoding_ctx,ABSTRACTFILE* input,const struct encoding* encoding,unichar* unicode_src) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return read_1_byte_character(input,unicode_src);
 
@@ -1314,19 +1314,19 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  *      characters like '<' must be encoded as HTML strings like '&#228;' instead
  *      of being encoded as any other character
  */
-int convert(void* encoding_ctx,U_FILE* input,U_FILE* output,struct encoding* input_encoding,
-			struct encoding* output_encoding,
+int convert(const void* encoding_ctx,U_FILE* input,U_FILE* output,const struct encoding* input_encoding,
+			const struct encoding* output_encoding,
             int decode_HTML_normal_characters,int decode_HTML_control_characters,
             int encode_all_characters,int encode_HTML_control_characters) {
 /*
  * Initialization for the source encoding.
  */
 int tmp;
-void (*z)(unichar,void*,struct encoding*,ABSTRACTFILE*,unsigned char*);
+void (*z)(unichar,const void*,const struct encoding*,ABSTRACTFILE*,unsigned char*);
 unichar unicode_src[256];
 unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 switch(input_encoding->type) {
 	/* For UTF, we need to read the 2 or 3 BYTE ORDER MASK header */
     /* for E_UTF_xx, we accept if there is no BOM */
@@ -1518,7 +1518,7 @@ free(encoding);
 /**
  * This function is used for unrestricted encodings like UTF8 and UTF16.
  */
-int can_always_encode(unichar c,unsigned char* a) {
+int can_always_encode(unichar c,const unsigned char* a) {
 /* Stupid expression, but its real purpose is to avoid the 'unused parameter warning' */
     DISCARD_UNUSED_PARAMETER(c)
     DISCARD_UNUSED_PARAMETER(a)
@@ -1532,7 +1532,7 @@ return 1;
  * that the 'ascii_dest' array has been initialized with
  * 'init_uni2asc_code_page_array'.
  */
-int can_encode(unichar c,unsigned char* ascii_dest) {
+int can_encode(unichar c,const unsigned char* ascii_dest) {
 if (c=='?' || ascii_dest[c]!='?') return 1;
 return 0;
 }
@@ -1641,9 +1641,9 @@ ectx->number_of_encodings++;
  */
 void install_multi_bytes_encoding_ctxfunc(void* ctx,const char* name,int type,
 								int (*input_function)(ABSTRACTFILE*),
-								int (*input_function_ctx)(ABSTRACTFILE*,void*),
+								int (*input_function_ctx)(ABSTRACTFILE*,const void*),
 								int (*output_function)(unichar,ABSTRACTFILE*),
-								int (*output_function_ctx)(unichar,ABSTRACTFILE*,void*),
+								int (*output_function_ctx)(unichar,ABSTRACTFILE*,const void*),
 								void (*usage_function)(void),
 								const char** aliases) {
 struct encodings_context* ectx=(struct encodings_context*)ctx;
@@ -1857,8 +1857,8 @@ free(ectx);
  * This function prints the main names of encodings to the standard output,
  * so that a program can get the list of all supported encodings.
  */
-void print_encoding_main_names(void* encoding_ctx) {
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+void print_encoding_main_names(const void* encoding_ctx) {
+const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 for (int i=0;i<ectx->number_of_encodings;i++) {
 	u_printf("%s\n",ectx->encodings[i]->name);
 }
@@ -1869,8 +1869,8 @@ for (int i=0;i<ectx->number_of_encodings;i++) {
  * This function prints the aliases of encodings to the standard output,
  * so that a program can get the list of all supported encoding aliases.
  */
-void print_encoding_aliases(void* encoding_ctx) {
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+void print_encoding_aliases(const void* encoding_ctx) {
+const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 for (int i=0;i<ectx->number_of_encodings;i++) {
 	for (int j=0;j<ectx->encodings[i]->number_of_aliases;j++) {
 		u_printf("%s\n",ectx->encodings[i]->aliases[j]);
@@ -1882,7 +1882,7 @@ for (int i=0;i<ectx->number_of_encodings;i++) {
 /**
  * Prints all the information about the given encoding.
  */
-void print_encoding_infos(struct encoding* encoding) {
+void print_encoding_infos(const struct encoding* encoding) {
 u_printf("Main name = %s\n",encoding->name);
 if (encoding->number_of_aliases>0) {
 	u_printf("Alias%s =",(encoding->number_of_aliases==1)?"":"es");
@@ -1900,8 +1900,8 @@ encoding->usage_function();
  * Prints an error message if 'name' is not a valid encoding main
  * name or alias.
  */
-void print_encoding_infos(void* encoding_ctx,const char* name) {
-struct encoding* encoding=get_encoding(encoding_ctx,name);
+void print_encoding_infos(const void* encoding_ctx,const char* name) {
+const struct encoding* encoding=get_encoding(encoding_ctx,name);
 if (encoding==NULL) {
 	error("%s is not a valid encoding name\n",name);
 	return;
@@ -1913,8 +1913,8 @@ print_encoding_infos(encoding);
 /**
  * Prints information about all the available encodings.
  */
-void print_information_for_all_encodings(void* encoding_ctx) {
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+void print_information_for_all_encodings(const void* encoding_ctx) {
+const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 for (int i=0;i<ectx->number_of_encodings;i++) {
 	print_encoding_infos(ectx->encodings[i]);
 	u_printf("\n");
@@ -1926,8 +1926,8 @@ for (int i=0;i<ectx->number_of_encodings;i++) {
  * Returns the encoding named 'name' or NULL if 'name' is not a valid
  * encoding main name or alias.
  */
-struct encoding* get_encoding(void* encoding_ctx,const char* name) {
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+const struct encoding* get_encoding(const void* encoding_ctx,const char* name) {
+const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 char name_in_lower[1024];
 strcpy(name_in_lower,name);
 strtolower(name_in_lower);

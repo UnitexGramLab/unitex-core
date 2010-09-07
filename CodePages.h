@@ -72,24 +72,24 @@ struct encoding {
 	int (*input_function)(ABSTRACTFILE*);
 	int (*output_function)(unichar,ABSTRACTFILE*);
 
-	int (*input_function_ctx)(ABSTRACTFILE*,void*);
-	int (*output_function_ctx)(unichar,ABSTRACTFILE*,void*);
+	int (*input_function_ctx)(ABSTRACTFILE*,const void*);
+	int (*output_function_ctx)(unichar,ABSTRACTFILE*,const void*);
 
 	/* The usage function for this encoding */
 	void (*usage_function)(void);
 	/* This function returns 1 if the given char can be encoded with this encoding */
-	int (*can_be_encoded_function)(unichar,unsigned char*);
+	int (*can_be_encoded_function)(unichar,const unsigned char*);
 };
 
 
 void* install_all_encodings();
 void free_encodings_context(void*);
-int convert(void*,U_FILE*,U_FILE*,struct encoding*,struct encoding*,int,int,int,int);
-struct encoding* get_encoding(void*,const char*);
+int convert(const void*,U_FILE*,U_FILE*,const struct encoding*,const struct encoding*,int,int,int,int);
+const struct encoding* get_encoding(const void*,const char*);
 
-void print_encoding_main_names(void*);
-void print_encoding_aliases(void*);
-void print_encoding_infos(void*,const char*);
-void print_information_for_all_encodings(void*);
+void print_encoding_main_names(const void*);
+void print_encoding_aliases(const void*);
+void print_encoding_infos(const void*,const char*);
+void print_information_for_all_encodings(const void*);
 
 #endif

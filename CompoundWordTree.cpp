@@ -169,7 +169,7 @@ free(DLC_tree);
  * 'tokenization_mode' indicates if the word must be tokenized character by character
  * or not.
  */
-void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alphabet,
+void tokenize_compound_word(const unichar* word,int tokens[],const Alphabet* alphabet,
                             struct string_hash* tok,TokenizationPolicy tokenization_mode) {
 
 int i,n_token,j;
@@ -386,7 +386,7 @@ associate_pattern_to_compound_word(token_list,pos,ptr,pattern,DLC_tree);
  * COMPOUND_WORD_PATTERN. This is used when the user looks
  * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
  */
-void add_compound_word_with_no_pattern(unichar* word,Alphabet* alph,struct string_hash* tok,
+void add_compound_word_with_no_pattern(const unichar* word,const Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
 add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
 							tokenization_mode);
@@ -397,7 +397,7 @@ add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
  * Adds a compound word to the tree 'DLC_tree' with the pattern
  * number 'pattern'.
  */
-void add_compound_word_with_pattern(unichar* word,int pattern,Alphabet* alph,struct string_hash* tok,
+void add_compound_word_with_pattern(const unichar* word,int pattern,const Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
@@ -484,7 +484,7 @@ return 0;
  * it inserts 'pattern2' in the pattern list associated to 'word' and returns a
  * non-zero value.
  */
-int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
+int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,const Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* infos,TokenizationPolicy tokenization_mode) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);

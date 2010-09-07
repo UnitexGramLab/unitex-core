@@ -283,7 +283,7 @@ unichar from_buckwalter(unichar);
 unichar from_buckwalter_plusplus(unichar);
 int is_solar(unichar);
 int is_lunar(unichar);
-int load_arabic_typo_rules(char* f,ArabicTypoRules *rules);
-int was_Al_before(unichar* token,int pos,ArabicTypoRules rules);
+int load_arabic_typo_rules(const char* f,ArabicTypoRules *rules);
+int was_Al_before(const unichar* token,int pos,ArabicTypoRules rules);
 
 #endif
