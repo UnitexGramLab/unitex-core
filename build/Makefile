@@ -308,7 +308,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o 
                      Ustring.o MF_InflectTransd.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o\
                      MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o\
-                     MF_Operators_Util.o MF_DicoMorpho.o $(SYSLIBMAPPED)
+                     MF_Operators_Util.o MF_DicoMorpho.o Arabic.o $(SYSLIBMAPPED)
 
 CASSYS		= Cassys
 CASSYS_OBJS	= Main_Cassys.o Cassys.o IOBuffer.o Error.o getopt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
@@ -487,7 +487,7 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check_lib.o\
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
-                 MF_Operators_Util.o getopt.o ProgramInvoker.o Korean.o $(SYSLIBMAPPED)
+                 MF_Operators_Util.o getopt.o ProgramInvoker.o Korean.o Arabic.o $(SYSLIBMAPPED)
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o\

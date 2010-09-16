@@ -35,6 +35,7 @@
 #include "Transitions.h"
 #include "MF_Operators_Util.h"
 #include "MF_Global.h"
+#include "Arabic.h"
 
 
 #define MAX_CHARS_IN_STACK 4096
@@ -524,7 +525,11 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 	   }
 	   /* Otherwise, we deal with the tag in the normal way */
 	   else for (int pos_tag = 0; p_SU_buf->tag[pos_tag] != '\0';) {
-		   if (t->control & RESPECT_CASE_TAG_BIT_MASK) {
+		   if (t->control & RESPECT_CASE_TAG_BIT_MASK
+				   ||
+				   (semitic && (is_solar(p_SU_buf->tag[pos_tag]) || is_lunar(p_SU_buf->tag[pos_tag]))
+				   )
+				) {
 			   /* If the transition was a "..." one, we don't try to interpret its content.
 			    * This is useful when one needs to produce a symbol that is an inflection
 			    * operator */
