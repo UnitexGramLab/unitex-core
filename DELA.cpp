@@ -833,7 +833,27 @@ if (/*lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
    return;
 }
 /* We put the length to remove at the beginning of the result */
-int j=u_sprintf(result,"%d",length_of_sfx_to_remove);
+int j;
+if (prefix==0) {
+	/* If there is no common prefix, we just say that we want to ignore
+	 * the whole inflected form. It is useful for Arabic, because if the
+	 * inflected form is in Arabic and the lemma is in latin, there would
+	 * be too many duplicates like:
+	 *
+	 * xx,btg.V 	=> 2btg
+	 * xxxxx,btg.V 	=> 5btg
+	 *
+	 * instead of sharing a single code:
+	 *
+	 * xx,btg.V 	=> _btg
+	 * xxxxx,btg.V 	=> _btg
+	 *
+	 */
+	u_strcpy(result,"_");
+	j=1;
+} else  {
+	j=u_sprintf(result,"%d",length_of_sfx_to_remove);
+}
 /* We need to protect the digits (used in the compression code),
  * the lemma and the point (used as delimitors in a DELAF line and, of
  * course, the backslash (protection character). */
