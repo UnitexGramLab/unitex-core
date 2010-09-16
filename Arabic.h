@@ -235,6 +235,8 @@
 /* Two normalization rules */
 #define FATHATAN_ALEF_EQUIV_ALEF_FATHATAN "fathatan alef equiv alef fathatan"
 #define FATHATAN_ALEF_MAQSURA_EQUIV_ALEF_MAQSURA_FATHATAN "fathatan alef maqsura equiv alef maqsura fathatan"
+/* At the end of a word, Yc can be written e */
+#define ALEF_MAQSURA_HAMZA_EQUIV_HAMZA_ABOVE_YEH "﻿﻿﻿﻿alef maqsura hamza equiv hamza above yeh"
 /* There is also an extra rule that always applies: tatweel in
  * the text can be ignored if not present in the dictionary */
 
@@ -274,6 +276,7 @@ typedef struct {
 	unsigned int alef_hamza_below_I_to_L: 1;
 	unsigned int fathatan_alef_equiv_alef_fathatan: 1;
 	unsigned int fathatan_alef_maqsura_equiv_alef_maqsura_fathatan: 1;
+	unsigned int alef_maqsura_hamza_equiv_hamza_above_yeh: 1;
 } ArabicTypoRules;
 
 

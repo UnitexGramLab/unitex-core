@@ -1519,7 +1519,7 @@ int shadda_may_be_omitted(ArabicTypoRules r) {
 }
 
 /**
- * Tries to find something in the dictionary that match both text content
+ * Tries to find something in the dictionary that matches both text content
  * and given pattern. This version of the function is dedicated to Arabic.
  */
 #define NOTHING_EXPECTED 0
@@ -1797,6 +1797,29 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+			}
+			/* Or it may be because of the Yc => e rule at the end of a word, when
+			 * we are on the Y */
+			else if (p->arabic.alef_maqsura_hamza_equiv_hamza_above_yeh
+					&& current_token[pos_in_current_token]==AR_YEH_WITH_HAMZA_ABOVE
+					&& c==AR_ALEF_MAQSURA) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token,
+						pos_in_inflected+1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+			}
+			/* Or it may be because of the Yc => e rule at the end of a word, when
+			 * we are on the c */
+			else if (p->arabic.alef_maqsura_hamza_equiv_hamza_above_yeh
+					&& current_token[pos_in_current_token]==AR_YEH_WITH_HAMZA_ABOVE
+					&& c==AR_HAMZA
+					&& last_dic_char==AR_ALEF_MAQSURA) {
+				inflected[pos_in_inflected] = c;
+				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+						current_token, inflected, pos_in_current_token,
+						pos_in_inflected+1, pos_offset, matches, pattern,
+						save_dic_entry, line_buffer,END_OF_WORD_EXPECTED,last_dic_char);
 			}
 		}
 		/* Rule that always applies about tatweel */
