@@ -255,7 +255,7 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 						fatal_alloc_error("SU_explore_state");
 					}
 					forms->forms[forms->no_forms].form = u_strdup(flechi);
-					forms->forms[forms->no_forms].local_semantic_code = NULL;
+					forms->forms[forms->no_forms].local_semantic_code = u_strdup(local_semantic_codes);
 					forms->forms[forms->no_forms].features = feat[f];
 					forms->no_forms++;
 				} else { // If undesired form delete 'feat'
@@ -435,6 +435,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 		f_morpho_T* desired_features, SU_forms_T* forms, int semitic,
 		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
 		unichar *local_semantic_codes,Korean* korean) {
+int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 	if (T->tag_number < 0) {
 		/* If we are in the case of a call to a sub-graph */
 		struct inflect_infos* L = NULL;
@@ -751,16 +752,16 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 	/* We process the output, if any and not NULL */
 	if (t->output != NULL && u_strcmp(t->output, "<E>")) {
 		/* If we are in normal mode, we just append the tag's output to the global one */
-		local_semantic_codes[0] = '\0';
 		if (t->output[0] == '+') {
-			//u_fprintf(UTF8,stderr,"SEMANTIC:%S\n",semantic_codes);
-			//u_fprintf(UTF8,stderr,"SEM:%S\n",t->output);
+			//error("SEMANTIC:%S\n",local_semantic_codes);
+			//error("SEM:%S\n",t->output);
 			int sem = 0;
+			int x=old_local_semantic_code_length;
 			while (t->output[sem] != ':' && t->output[sem] != '\0') {
-				local_semantic_codes[sem] = t->output[sem];
+				local_semantic_codes[x++] = t->output[sem];
 				sem++;
 			}
-			local_semantic_codes[sem] = '\0';
+			local_semantic_codes[x] = '\0';
 			u_strcat(p_SU_buf->out, t->output+sem);
 		} else {
 		    u_strcat(p_SU_buf->out, t->output);
@@ -783,6 +784,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					local_semantic_codes,korean);
 		}
 	}
+	local_semantic_codes[old_local_semantic_code_length]='\0';
 	//return (retour * (1-retour_state));
     free(p_SU_buf);
 	return retour;
