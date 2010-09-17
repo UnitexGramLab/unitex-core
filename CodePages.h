@@ -48,6 +48,11 @@
 #define ERROR_IN_HTML_CHARACTER_NAME 4
 #define INPUT_FILE_NOT_IN_UTF8 5
 
+#define CONV_REGULAR_FILE 0
+#define CONV_DELAS_FILE 1
+#define CONV_DELAF_FILE 2
+
+
 /**
  * This structure represents a one byte encoding.
  */
@@ -84,7 +89,7 @@ struct encoding {
 
 void* install_all_encodings();
 void free_encodings_context(void*);
-int convert(const void*,U_FILE*,U_FILE*,const struct encoding*,const struct encoding*,int,int,int,int);
+int convert(const void*,U_FILE*,U_FILE*,const struct encoding*,const struct encoding*,int,int,int,int,int);
 const struct encoding* get_encoding(const void*,const char*);
 
 void print_encoding_main_names(const void*);

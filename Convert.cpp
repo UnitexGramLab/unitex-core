@@ -47,6 +47,12 @@ const char* usage_Convert =
          "  -s X/--src=X: source encoding of the text file to be converted\n"
          "  -d X/--dest=X: encoding of the destination text file. The default value\n"
          "                 is LITTLE-ENDIAN\n"
+		 "\n"
+		 "Transliteration options (only for Arabic):"
+         "  -F/--delaf: the input is a delaf, and we only want to transliterate the\n"
+		 "              inflected form and the lemma\n"
+         "  -S/--delas: the input is a delas, and we only want to transliterate the\n"
+		 "              the lemma\n"
          "\n"
          "Output options:\n"
          "  -r/--replace: sources files will be replaced by destination files (default)\n"
@@ -84,7 +90,7 @@ u_printf(usage_Convert);
 }
 
 
-const char* optstring_Convert=":s:d:ri:hmaAo:k:q:";
+const char* optstring_Convert=":s:d:ri:hmaAo:k:q:FS";
 const struct option_TS lopts_Convert[]= {
       {"src",required_argument_TS,NULL,'s'},
       {"dest",required_argument_TS,NULL,'d'},
@@ -105,6 +111,8 @@ const struct option_TS lopts_Convert[]= {
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
+      {"delaf",no_argument_TS,NULL,'F'},
+      {"delas",no_argument_TS,NULL,'S'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -130,6 +138,7 @@ int decode_normal_characters=0;
 int decode_control_characters=0;
 int encode_all_characters=0;
 int encode_control_characters=0;
+int format=CONV_REGULAR_FILE;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Convert,lopts_Convert,&index,vars))) {
    switch(val) {
@@ -167,6 +176,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Convert,lopts_Convert,&index
 			 free_encodings_context(encoding_ctx); 
 			 free_OptVars(vars);
              return 0;
+   case 'F': format=CONV_DELAF_FILE; break;
+   case 'S': format=CONV_DELAS_FILE; break;
    case 'h': usage(); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Convert[index].name);
@@ -186,7 +197,6 @@ if (dest[0]=='\0') {
 if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-
 const struct encoding* src_encoding=get_encoding(encoding_ctx,src);
 if (src_encoding==NULL) {
 	fatal_error("%s is not a valid encoding name\n",src);
@@ -256,7 +266,8 @@ for (int i=vars->optind;i<argc;i++) {
 							decode_normal_characters,
 							decode_control_characters,
 							encode_all_characters,
-							encode_control_characters);
+							encode_control_characters,
+							format);
 		u_fclose(input);
 		u_fclose(output);
 		switch(error_code) {

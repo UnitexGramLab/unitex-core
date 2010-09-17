@@ -1296,6 +1296,115 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
 
 
 /**
+ * Transliterates a DELAF file. Inflected form and lemma are encoded
+ * with the output encoder. All other chars are UTF16LE encoded.
+ */
+int transliterate_delaf(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFILE* output,
+		    const struct encoding* input_encoding,
+			const struct encoding* output_encoding,
+			unichar* unicode_src) {
+int c;
+while (1) {
+	while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
+		if (c=='\n') {
+			break;
+		}
+		if (c=='\\') {
+			u_fputc_UTF16LE('\\',output);
+			c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
+			if (c==EOF) break;
+			if (c=='\n') {
+				/* It would be an error */
+				break;
+			}
+		}
+		/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
+		write_one_char(c,encoding_ctx,output,output_encoding,NULL);
+	}
+	if (c==EOF) break;
+	if (c=='\n') {
+		u_fputc_UTF16LE('\n',output);
+		break;
+	}
+	u_fputc_UTF16LE(',',output);
+	/* Now, we look for the lemma */
+	while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!='.') {
+		if (c=='\n') {
+			break;
+		}
+		if (c=='\\') {
+			u_fputc_UTF16LE('\\',output);
+			c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
+			if (c==EOF) break;
+			if (c=='\n') {
+				/* It would be an error */
+				break;
+			}
+		}
+		/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
+		write_one_char(c,encoding_ctx,output,output_encoding,NULL);
+	}
+	if (c==EOF) break;
+	if (c=='\n') {
+		u_fputc_UTF16LE('\n',output);
+		break;
+	}
+	u_fputc_UTF16LE('.',output);
+	/* And we just copy the remaining chars */
+	while ((c=u_fgetc_UTF16LE(input))!=EOF) {
+		u_fputc_UTF16LE(c,output);
+		if (c=='\n') break;
+	}
+	if (c==EOF) break;
+}
+return CONVERSION_OK;
+}
+
+
+/**
+ * Transliterates a DELAS file. Lemma is encoded
+ * with the output encoder. All other chars are UTF16LE encoded.
+ */
+int transliterate_delas(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFILE* output,
+		    const struct encoding* input_encoding,
+			const struct encoding* output_encoding,
+			unichar* unicode_src) {
+	int c;
+	while (1) {
+		while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
+			if (c=='\n') {
+				break;
+			}
+			if (c=='\\') {
+				u_fputc_UTF16LE('\\',output);
+				c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
+				if (c==EOF) break;
+				if (c=='\n') {
+					/* It would be an error */
+					break;
+				}
+			}
+			/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
+			write_one_char(c,encoding_ctx,output,output_encoding,NULL);
+		}
+		if (c==EOF) break;
+		if (c=='\n') {
+			u_fputc_UTF16LE('\n',output);
+			break;
+		}
+		u_fputc_UTF16LE(',',output);
+		/* And we just copy the remaining chars */
+		while ((c=u_fgetc_UTF16LE(input))!=EOF) {
+			u_fputc_UTF16LE(c,output);
+			if (c=='\n') break;
+		}
+		if (c==EOF) break;
+	}
+	return CONVERSION_OK;
+}
+
+
+/**
  * Takes an input file with a given input encoding and copies
  * it to an output file according to a given output encoding.
  * It returns CONVERSION_OK if the conversion succeeded, an error code
@@ -1317,7 +1426,8 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
 int convert(const void* encoding_ctx,U_FILE* input,U_FILE* output,const struct encoding* input_encoding,
 			const struct encoding* output_encoding,
             int decode_HTML_normal_characters,int decode_HTML_control_characters,
-            int encode_all_characters,int encode_HTML_control_characters) {
+            int encode_all_characters,int encode_HTML_control_characters,
+            int format) {
 /*
  * Initialization for the source encoding.
  */
@@ -1389,6 +1499,12 @@ switch(output_encoding->type) {
 	case E_ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
 							init_uni2asc_code_page_array(ascii_dest,unicode_dest);
 							break;
+}
+if (format==CONV_DELAF_FILE) {
+	return transliterate_delaf(encoding_ctx,input->f,output->f,input_encoding,output_encoding,unicode_src);
+}
+if (format==CONV_DELAS_FILE) {
+	return transliterate_delas(encoding_ctx,input->f,output->f,input_encoding,output_encoding,unicode_src);
 }
 /* We choose the function that will be used to encode HTML characters
  * if necessary */
