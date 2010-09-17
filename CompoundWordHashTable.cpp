@@ -267,7 +267,7 @@ int i=0;
 while (list!=NULL) {
    token_sequence[i]=get_token_number(list->string,tokens);
    if (token_sequence[i]==-1) {
-      fatal_error("Unknown token in build_token_sequence\n");
+      fatal_error("Unknown token <%S> in build_token_sequence\n",list->string);
    }
    i++;
    tmp=list;
