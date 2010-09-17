@@ -69,7 +69,8 @@ const char* usage_Dico =
          "                         list to use in Locate's morphological mode. .bin names are\n"
          "                         supposed to be separated with semi-colons.\n"
 		 "  -K/--korean: tells Dico that it works on Korean\n"
-         "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
+		 "  -s/--semitic: tells Dico that it works on a semitic language\n"
+		 "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
@@ -138,7 +139,7 @@ u_fclose(f);
 }
 
 
-const char* optstring_Dico=":t:a:m:Khk:q:u:g:";
+const char* optstring_Dico=":t:a:m:Khk:q:u:g:s";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -149,6 +150,7 @@ const struct option_TS lopts_Dico[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"arabic_rules",required_argument_TS,NULL,'u'},
+      {"semitic",no_argument_TS,NULL,'s'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -167,6 +169,7 @@ char arabic_rules[FILENAME_MAX]="";
 char negation_operator[0x20]="";
 char* morpho_dic=NULL;
 int is_korean=0;
+int semitic=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -207,6 +210,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
                 fatal_error("You must specify a non empty arabic rule configuration file name\n");
              }
              strcpy(arabic_rules,vars->optarg);
+             break;
+   case 's': semitic=1;
              break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Dico[index].name);
@@ -375,7 +380,7 @@ for (int priority=1;priority<4;priority++) {
                pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
                                    snt_files->morpho_dic);
                /* Then we compress it */
-               pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,snt_files->morpho_dic);
+               pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,snt_files->morpho_dic);
                info->morpho=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->morpho_dic,U_APPEND);
                if (info->morpho==NULL) {
                   fatal_error("");
@@ -419,7 +424,7 @@ if (info->morpho!=NULL) {
    pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
                        snt_files->morpho_dic);
    /* Then we compress it */
-   pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,snt_files->morpho_dic);
+   pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,snt_files->morpho_dic);
 }
 
 free_dico_application(info);

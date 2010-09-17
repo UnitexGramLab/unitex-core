@@ -32,13 +32,6 @@
 #include "Alphabet.h"
 
 
-void kprintf(unichar* s) {
-error("s=_%S_\n",s);
-for (int i=0;s[i];i++) {
-	error("%C (%X) ",s[i],s[i]);
-}
-error("\n");
-}
 
 
 /**
@@ -46,45 +39,9 @@ error("\n");
  */
 int main(int /*argc*/,char * /* argv*/ []) {
 setBufferMode();
-
-/* Korean tests */
-Alphabet* alph=load_alphabet("/home/igm/unitex/KoreanJeeSun/Alphabet.txt",1);
-Korean* korean=new Korean(alph);
-unichar out[256];
-
-//Jamo2Syl* jamo2Syl=new Jamo2Syl();
-//jamo2Syl->init("/home/igm/unitex/KoreanJeeSun/Decoding/uneSyl.fst2");
-
-
-unichar z[]={0x3134,'a',0x71B9,0x1104,0};
-
-//jamoCodage* jamo=new jamoCodage();
-//jamo->loadJamoMap("/home/igm/unitex/KoreanJeeSun/jamoTable.txt");
-//jamo->convertSyletCjamoToJamo(z,out,u_strlen(z),1024);
-//delete(jamo);
-korean->Hanguls_to_Jamos(z,out,0);
-error("input=: ");
-kprintf(out);
-error("\n");
-//return 0;
-
-
-//unichar s[]={KR_SYLLABLE_BOUND,HCJ_KIYEOK,0x314F,0};
-unichar s[]={KR_SYLLABLE_BOUND,0x1100,0x1104,0x1161,0x1105,'A',KR_SYLLABLE_BOUND,0x1161,0};
-
-error("input=: ");
-kprintf(s);
-error("\n");
-
-
-//convert_jamo_to_hangul(s,out,jamo2Syl,korean);
-//error("avant: ");
-//kprintf(out);
-
-korean->Jamos_to_Hangul(s,out);
-error("apres: ");
-kprintf(out);
-
+unichar* inflected=u_strdup("abcdegfh");
+unichar* lemma=u_strdup("hbc");
+unichar result[1024];
 return 0;
 }
 

@@ -42,6 +42,7 @@ const char* usage_Compress =
          "OPTIONS:\n"
          "  -o file.bin/--output==file.bin: name of destination file\n"
          "  -f/--flip: specifies that the inflected and lemma forms must be swapped\n"
+         "  -s/--semitic: uses the semitic compression algorithm\n"
          "  -h/--help: this help\n"
          "\n"
          "Compresses a dictionary into an finite state automaton. This automaton\n"
@@ -81,7 +82,7 @@ u_fclose(f);
 
 
 int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                         int flip,char* dic) {
+                         int flip,int semitic,char* dic) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Compress,"main_Compress");
 char tmp[200];
 {
@@ -101,16 +102,21 @@ char tmp[200];
 }
 if (flip) {
    add_argument(invoker,"-f");
-}add_argument(invoker,dic);
+}
+if (semitic) {
+   add_argument(invoker,"-s");
+}
+add_argument(invoker,dic);
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 return ret;
 }
 
 
-const char* optstring_Compress=":fhk:q:o:";
+const char* optstring_Compress=":fshk:q:o:";
 const struct option_TS lopts_Compress[]= {
       {"flip",no_argument_TS,NULL,'f'},
+      {"semitic",no_argument_TS,NULL,'s'},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -131,6 +137,7 @@ if (argc==1) {
 }
 
 int FLIP=0;
+int semitic=0;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -142,6 +149,7 @@ struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&index,vars))) {
    switch(val) {
    case 'f': FLIP=1; break;
+   case 's': semitic=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
@@ -247,7 +255,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
 				/* We insert "pomme de terre,pomme de terre.N" */
-				get_compressed_line(entry,tmp);
+				get_compressed_line(entry,tmp,semitic);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
 				/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
 				u_strcpy(entry->inflected,inf_tmp);
@@ -258,7 +266,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				/* And then we unprotect the other = signs */
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
-				get_compressed_line(entry,tmp);
+				get_compressed_line(entry,tmp,semitic);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
 			}
 			else {
@@ -266,7 +274,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				 * we unprotect the = signs */
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
-				get_compressed_line(entry,tmp);
+				get_compressed_line(entry,tmp,semitic);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
 			}
 			/* and last, but not least: don't forget to free your memory

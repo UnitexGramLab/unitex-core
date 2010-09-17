@@ -294,11 +294,8 @@ endif ## MINGW (ifeq)
 ##################################
 
 TEST      = Test
-TEST_OBJS = Main_Test.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Pattern.o String_hash.o IOBuffer.o Error.o \
-			List_ustring.o StringParsing.o PatternTree.o List_pointer.o DELA.o\
-			Alphabet.o Fst2.o Transitions.o List_int.o Tfst.o File.o SingleGraph.o\
-			BitArray.o HashTable.o FIFO.o BitMasks.o Ustring.o Symbol.o\
-			LanguageDefinition.o Tagset.o AbstractFst2Load.o Korean.o
+TEST_OBJS = Main_Test.o Unicode.o DELA.o Error.o StringParsing.o String_hash.o AbstractAllocator.o\
+			Alphabet.o List_ustring.o Af_stdio.o ActivityLogger.o IOBuffer.o $(SYSLIBMAPPED)
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\

@@ -833,27 +833,7 @@ if (/*lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
    return;
 }
 /* We put the length to remove at the beginning of the result */
-int j;
-if (prefix==0) {
-	/* If there is no common prefix, we just say that we want to ignore
-	 * the whole inflected form. It is useful for Arabic, because if the
-	 * inflected form is in Arabic and the lemma is in latin, there would
-	 * be too many duplicates like:
-	 *
-	 * xx,btg.V 	=> 2btg
-	 * xxxxx,btg.V 	=> 5btg
-	 *
-	 * instead of sharing a single code:
-	 *
-	 * xx,btg.V 	=> _btg
-	 * xxxxx,btg.V 	=> _btg
-	 *
-	 */
-	u_strcpy(result,"_");
-	j=1;
-} else  {
-	j=u_sprintf(result,"%d",length_of_sfx_to_remove);
-}
+int j=u_sprintf(result,"%d",length_of_sfx_to_remove);
 /* We need to protect the digits (used in the compression code),
  * the lemma and the point (used as delimitors in a DELAF line and, of
  * course, the backslash (protection character). */
@@ -885,10 +865,86 @@ token[j]='\0';
 
 
 /**
+ * Compares 'inflected' and 'lemma' and produces a semitic compression of 'inflected',
+ * where lemma's letters are referenced when possible as indices in 'inflected'.
+ * '*min_full_letters' is used to store the minimum number of letters that appeared
+ * in previous results. For example, if the first result is "1j6", then the value of
+ * '*min_full_letters' is 1. It is used to keep the best result, i.e. the result with
+ * as few full letters as possible, because it will produce most redundant compression
+ * codes. 'n_full_letters' is the current number of letters already produced in the current
+ * calculus. It is used to fail fast when we have no chance to produce a better result
+ * than the existing one.
+ *
+ * '*min_full_letters' == -1 means that there is no current result, so the first one will
+ * be temporarily the best one.
+ *
+ * 'result' is the best current result.
+ * 'tmp_result' is the current result being computed.
+ *
+ * 'pos_in_inflected' is the position in 'inflected' where to start. For instance,
+ * if inflected="abcdefgh" and if we already have matched the 'b', we don't want to
+ * consider letters before 'b'.
+ */
+void explore_semitic_tokens(const unichar* inflected,const unichar* lemma,unichar* result,
+		unichar* tmp_result,int *min_full_letters,int n_full_letters,
+		int pos_in_inflected,int pos_in_tmp_result) {
+if (*lemma=='\0') {
+	/* If we have finished to explore the lemma */
+	if ((*min_full_letters)==-1 || n_full_letters<*min_full_letters) {
+		/* If we have a best result than the current one, or if it's the first one */
+		tmp_result[pos_in_tmp_result]='\0';
+		u_strcpy(result,tmp_result);
+		*min_full_letters=n_full_letters;
+	}
+	return;
+}
+/* We will look for the first letter of lemma. We don't go over position 9,
+ * because we only want to use 1 digit to represent position in consonant
+ * skeleton, which is reasonable. */
+for (int i=pos_in_inflected;i<10 && inflected[i]!='\0';i++) {
+	if (*lemma==inflected[i]) {
+		tmp_result[pos_in_tmp_result]=i+'0';
+		explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
+				min_full_letters,n_full_letters,i+1,pos_in_tmp_result+1);
+		if (*min_full_letters==0) {
+			/* If we have a perfect consonant skeleton, we can stop */
+			return;
+		}
+	}
+}
+/* And finally, we will act as the letter is absent, because the letter may be
+ * there but at an irrelevant place like 'h' for lemma="hbc" and inflected="abcdefgh".
+ * In such a case, "7bc" would be a worse solution than "h12".
+ */
+if (n_full_letters==*min_full_letters) {
+	/* No need to produce a worse solution than the current one */
+	return;
+}
+tmp_result[pos_in_tmp_result]=*lemma;
+explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
+		min_full_letters,n_full_letters+1,pos_in_inflected,pos_in_tmp_result+1);
+}
+
+/**
+ * Compares 'inflected' and 'lemma' and produces a semitic compression of 'inflected',
+ * where lemma's letters are referenced when possible as indices in 'inflected'.
+ *
+ * Example: inflected="abcdefgh" + lemma="bjg" => result="1j6"
+ *          'j' appears, because there was no 'j' in 'inflected' between the
+ *          'b' and the 'g'
+ */
+void semitic_token_compression(const unichar* inflected,const unichar* lemma,unichar* result) {
+int n=-1;
+unichar tmp[1024];
+explore_semitic_tokens(inflected,lemma,result,tmp,&n,0,0,0);
+}
+
+
+/**
  * Builds the compressed line from the given DELAF entry, and
  * stores it into the string 'result'.
  */
-void get_compressed_line(struct dela_entry* e,unichar* result) {
+void get_compressed_line(struct dela_entry* e,unichar* result,int semitic) {
 unichar code_gramm[DIC_LINE_SIZE];
 /* Anyway, we will need the grammatical/inflectional codes of the
  * entry. */
@@ -899,6 +955,7 @@ if (!u_strcmp(e->inflected,e->lemma)) {
    u_strcpy(result,code_gramm);
    return;
 }
+/* Special case for semitic languages */
 /* We test if the 2 strings have the same number of tokens */
 int n_inflected=get_number_of_tokens(e->inflected);
 int n_lemma=get_number_of_tokens(e->lemma);
@@ -921,11 +978,19 @@ unichar tmp_inflected[DIC_WORD_SIZE];
 unichar tmp_lemma[DIC_WORD_SIZE];
 unichar tmp_compressed[DIC_WORD_SIZE];
 result[0]='\0';
+if (semitic) {
+	/* We use "__" as a marker to indicate that semitic compression has been used */
+	u_strcpy(result,"__");
+}
 for (int i=0;i<n_inflected;i++) {
    /* Tokens are compressed one by one */
    get_token(e->inflected,tmp_inflected,&pos_inflected);
    get_token(e->lemma,tmp_lemma,&pos_lemma);
-   get_compressed_token(tmp_inflected,tmp_lemma,tmp_compressed);
+   if (semitic) {
+	   semitic_token_compression(tmp_inflected,tmp_lemma,tmp_compressed);
+   } else {
+	   get_compressed_token(tmp_inflected,tmp_lemma,tmp_compressed);
+   }
    u_strcat(result,tmp_compressed);
 }
 u_strcat(result,code_gramm);
@@ -948,6 +1013,34 @@ while (P_EOS!=parse_string(line,&pos,tmp,P_COMMA,P_EMPTY,NULL)) {
    if (line[pos]==',') pos++;
 }
 return result;
+}
+
+
+/**
+ * This function takes a semitic inflected form and its associated compression code, and
+ * it replaces 'inflected' by the lemma that is rebuilt.
+ *
+ * Example: inflected="yabodaOu"  compress_info="24W"
+ *       => inflected="bdW"
+ */
+void rebuild_token_semitic(unichar* inflected,unichar* compress_info) {
+unichar tmp[1024];
+u_strcpy(tmp,inflected);
+int size=u_strlen(tmp);
+int i=0;
+for (;compress_info[i]!='\0';i++) {
+	if (compress_info[i]>='0' && compress_info[i]<='9') {
+		/* If we have a consonant number */
+		int n=compress_info[i]-'0';
+		if (n>=size) {
+			fatal_error("rebuild_token_semitic: consonant number #%d out of form <%S>\n",n,tmp);
+		}
+		inflected[i]=tmp[n];
+	} else {
+		inflected[i]=compress_info[i];
+	}
+}
+inflected[i]='\0';
 }
 
 
@@ -997,8 +1090,9 @@ if (INF_code[0]=='.') {
    u_strcat(result,INF_code);
    return;
 }
-if (INF_code[0]=='_') {
-   /* In this case, we rawly suppress chars, before adding some
+int semitic=(INF_code[0]=='_' && INF_code[1]=='_');
+if (INF_code[0]=='_' && !semitic) {
+   /* If we have a normal "_" compression, we rawly suppress chars, before adding some
     * "Albert Einstein" + "_15Einstein.N+Npr" => "Albert Einstein,Einstein.N+Npr" */
    pos=1;
    n=0;
@@ -1021,7 +1115,7 @@ if (INF_code[0]=='_') {
 }
 /* Last case: we have to process token by token */
 int pos_entry=0;
-pos=0;
+pos=(semitic?2:0);
 i=u_strlen(result);
 while (INF_code[pos]!='.') {
    if (INF_code[pos]==' ' || INF_code[pos]=='-') {
@@ -1049,7 +1143,11 @@ while (INF_code[pos]!='.') {
          tmp_entry[j++]=inflected[pos_entry++];
       }
       tmp_entry[j]='\0';
-      rebuild_token(tmp_entry,tmp);
+      if (semitic) {
+    	  rebuild_token_semitic(tmp_entry,tmp);
+      } else {
+    	  rebuild_token(tmp_entry,tmp);
+      }
       j=0;
       /* Once we have rebuilt the token, we protect in it the following chars: . + \ /
        * We must also update 'i'.

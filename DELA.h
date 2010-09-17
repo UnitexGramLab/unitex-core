@@ -119,7 +119,7 @@ struct dela_entry* tokenize_DELAF_line(const unichar*,int,int,int*,Abstract_allo
 struct dela_entry* tokenize_tag_token(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAS_line(const unichar*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* is_strict_DELAS_line(const unichar*,Alphabet*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-void get_compressed_line(struct dela_entry*,unichar*);
+void get_compressed_line(struct dela_entry*,unichar*,int);
 struct list_ustring* tokenize_compressed_info(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void uncompress_entry(const unichar*,unichar*,unichar*);
 struct INF_codes* load_INF_file(const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);

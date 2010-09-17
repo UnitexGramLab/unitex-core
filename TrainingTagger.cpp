@@ -53,6 +53,7 @@ const char* usage_TrainingTagger =
          " tuples dictionary\n"
 		 "  -c/--compound_forms: indicates whether the program should produce only compound form"
 		 " tuples dictionary\n"
+		 "  -S/--semitic: the output .bin will use the semitic compression algorithm\n"
 		 "  -h/--help: this help\n"
 		 "\n"
          "Extract statistics from a tagged corpus and save its into dictionaries. "
@@ -67,7 +68,7 @@ u_printf(usage_TrainingTagger);
 }
 
 
-const char* optstring_TrainingTagger=":o:hbnsca";
+const char* optstring_TrainingTagger=":o:hbnscaS";
 const struct option_TS lopts_TrainingTagger[]= {
 	  {"output",required_argument_TS,NULL,'o'},
 	  {"binaries",no_argument_TS,NULL,'b'},
@@ -75,6 +76,7 @@ const struct option_TS lopts_TrainingTagger[]= {
 	  {"simple_forms",no_argument_TS,NULL,'s'},
 	  {"compound_forms",no_argument_TS,NULL,'c'},
 	  {"all",no_argument_TS,NULL,'a'},
+	  {"semitic",no_argument_TS,NULL,'S'},
 	  {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -87,6 +89,7 @@ if (argc==1) {
 }
 
 int val,index=-1,binaries=1,s_forms=1,c_forms=1;
+int semitic=0;
 struct OptVars* vars=new_OptVars();
 char text[FILENAME_MAX]="";
 char simple_forms[FILENAME_MAX]="";
@@ -107,6 +110,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_Trainin
    case 's': c_forms = 0;
 			 break;
    case 'c': s_forms = 0;
+   			 break;
+   case 'S': semitic=1;
    			 break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -174,11 +179,11 @@ if(cforms_file != NULL){
 if(binaries == 1){
 /* simple forms dictionary */
 if(s_forms == 1){
-	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,simple_forms);
+	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,semitic,simple_forms);
 }
 /* compound forms dictionary */
 if(c_forms == 1){
-	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,compound_forms);
+	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,semitic,compound_forms);
 }
 }
 free_OptVars(vars);
