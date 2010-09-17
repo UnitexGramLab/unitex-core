@@ -257,7 +257,10 @@ if (rules==NULL) {
 	fatal_error("Unexpected NULL pointer in load_arabic_typo_rules\n");
 }
 struct string_hash* h=load_key_value_list(name,DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,'=');
-if (h==NULL) return 0;
+if (h==NULL) {
+	error("Cannot load %s\n",name);
+	return 0;
+}
 (*rules).rules_enabled=1;
 (*rules).fatha_omission=test(h,FATHA_OMISSION);
 (*rules).damma_omission=test(h,DAMMA_OMISSION);
