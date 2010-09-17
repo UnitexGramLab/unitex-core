@@ -73,6 +73,6 @@ struct tct_hash* new_tct_hash();
 struct tct_hash* new_tct_hash(int,int);  
 void free_tct_hash(struct tct_hash*);
 int was_already_in_tct_hash(int*,struct tct_hash*,int);
-void build_token_sequence(unichar*,struct text_tokens*,int*);
+int build_token_sequence(unichar*,struct text_tokens*,int*);
 
 #endif

@@ -260,14 +260,15 @@ return 0;
  * WARNING: every token of the compound word is supposed to be present
  *          in the given text tokens.
  */
-void build_token_sequence(unichar* compound_word,struct text_tokens* tokens,int* token_sequence) {
+int build_token_sequence(unichar* compound_word,struct text_tokens* tokens,int* token_sequence) {
 struct list_ustring* list=tokenize(compound_word,WORD_BY_WORD_TOKENIZATION,NULL);
 struct list_ustring* tmp;
 int i=0;
 while (list!=NULL) {
    token_sequence[i]=get_token_number(list->string,tokens);
    if (token_sequence[i]==-1) {
-      fatal_error("Unknown token <%S> in build_token_sequence\n",list->string);
+      error("Unknown token <%S> in build_token_sequence\n",list->string);
+      return 0;
    }
    i++;
    tmp=list;
@@ -276,4 +277,5 @@ while (list!=NULL) {
 }
 /* We put the final -1 */
 token_sequence[i]=-1;
+return 1;
 }

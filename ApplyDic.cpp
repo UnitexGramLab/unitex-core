@@ -752,22 +752,23 @@ while (l!=NULL) {
       else {
          /* If it is a compound word, we turn it into a token sequence
           * ended by -1 */
-         build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds);
-         int w=was_already_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
-         if (w==0 || w==priority) {
-            /* We save the compound word only if it hasn't already been processed
-             * with a greater priority */
-            for (int k=0;token_tab_coumpounds[k]!=-1;k++) {
-               /* If we have matched a compound word, then all its part all not
-                * unknown words */
-               set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
-            }
-            /* We save it to the DLC */
-            u_fprintf(info->dlc,"%S\n",l->output);
-            /* If needed, we save it to the morpho.dic file */
-            if (export_to_morpho_dic) {
-               u_fprintf(info->morpho,"%S\n",l->output);
-            }
+         if (build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds)) {
+        	 int w=was_already_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
+        	 if (w==0 || w==priority) {
+        		 /* We save the compound word only if it hasn't already been processed
+        		  * with a greater priority */
+        		 for (int k=0;token_tab_coumpounds[k]!=-1;k++) {
+        			 /* If we have matched a compound word, then all its part all not
+        			  * unknown words */
+        			 set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
+        		 }
+        		 /* We save it to the DLC */
+        		 u_fprintf(info->dlc,"%S\n",l->output);
+        		 /* If needed, we save it to the morpho.dic file */
+        		 if (export_to_morpho_dic) {
+        			 u_fprintf(info->morpho,"%S\n",l->output);
+        		 }
+        	 }
          }
       }
       /* Finally, we free the entry */
