@@ -351,15 +351,15 @@ while (EOF!=(code=u_fgets2(temp,f))) {
       int pos=0;
       code=parse_string(temp,&pos,key,stop);
       if (code==P_BACKSLASH_AT_END) {
-         error("Backslash at end of line:%S\n\n",temp);
+         error("Backslash at end of line:<%S>\n\n",temp);
       }
       else if (temp[pos]=='\0') {
          /* If there is no separator */
-         error("Line with no separator:\n%S\n",temp);
+         error("Line with no separator:\n<%S>\n",temp);
       }
       else if (pos==0) {
          /* If the line starts with the separator */
-         error("Line with empty key:\n%S\n",temp);
+         error("Line with empty key:\n<%S>\n",temp);
       }
       else {
          /* We jump over the separator */
@@ -368,7 +368,7 @@ while (EOF!=(code=u_fgets2(temp,f))) {
           * defined in the file */
          value[0]='\0';
          if(P_BACKSLASH_AT_END==parse_string(temp,&pos,value,P_EMPTY)) {
-            error("Backslash at end of line:\n%S\n",temp);
+            error("Backslash at end of line:\n<%S>\n",temp);
          }
          else {
             /* If we have a valid (key,value) pair, we insert it into the string_hash */
