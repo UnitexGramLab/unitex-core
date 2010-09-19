@@ -197,9 +197,20 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
              strcpy(alph,vars->optarg);
              break;
    case 'm': if (vars->optarg[0]!='\0') {
-                morpho_dic=strdup(vars->optarg);
                 if (morpho_dic==NULL) {
-                   fatal_alloc_error("main_Dico");
+                  morpho_dic=strdup(vars->optarg);
+                  if (morpho_dic==NULL) {
+                     fatal_alloc_error("main_Dico");
+                  }
+                }
+                else
+                {
+                    morpho_dic = (char*)realloc((void*)morpho_dic,strlen(morpho_dic)+strlen(vars->optarg)+2);
+                    if (morpho_dic==NULL) {
+                       fatal_alloc_error("main_Dico");
+                    }
+                    strcat(morpho_dic,";");
+                    strcat(morpho_dic,vars->optarg);
                 }
              }
              break;
@@ -254,9 +265,9 @@ if (!u_fempty(encoding_output,bom_output,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
 /* We remove the text morphological dictionary files, if any */
-remove(snt_files->morpho_dic);
-remove(snt_files->morpho_bin);
-remove(snt_files->morpho_inf);
+af_remove(snt_files->morpho_dic);
+af_remove(snt_files->morpho_bin);
+af_remove(snt_files->morpho_inf);
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
    /* We load the alphabet */
