@@ -24,7 +24,7 @@
 
 #include "Unicode.h"
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_CASSYS))) || defined(TOOL_CASSYS))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))
 #include "BuildKrMwuDic.h"
 #endif
 
@@ -210,7 +210,7 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_CASSYS))) || defined(TOOL_CASSYS))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))
 	{ "BuildKrMwuDic",13,&main_BuildKrMwuDic,usage_BuildKrMwuDic, optstring_BuildKrMwuDic, lopts_BuildKrMwuDic},
 #endif
 
