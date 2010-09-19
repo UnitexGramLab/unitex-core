@@ -405,11 +405,11 @@ return result;
  * This function does its best to compute the start/end values for each tag
  * to be produced. It is an adaptation for Korean of 'solve_alignment_puzzle'.
  *
- * OK, I (S.P.) know that it's bad to duplicate code. But it's even bader to
+ * OK, I (S.P.) know that it's bad to duplicate code. But it's even worse to
  * fight with inner mysteries of Korean Hangul/Jamo tricks. Trust me.
  */
 void solve_alignment_puzzle_for_Korean(vector_ptr* vector,int start,int end,struct info* INFO,
-                            Korean* korean) {
+                            Korean* korean,unichar* output) {
 if (vector==NULL) {
    fatal_error("NULL vector in solve_alignment_puzzle\n");
 }
@@ -450,7 +450,7 @@ unichar jamo_token[256];
 unichar jamo_tag[256];
 Hanguls_to_Jamos(token,jamo_token,korean,0);
 if (!u_strcmp(tab[current_tag]->content,"<E>")) {
-   fatal_error("solve_alignment_puzzle_for_Korean: {<E>,xxx.yyy} tag is not supposed to start a tag sequence\n");
+   fatal_error("solve_alignment_puzzle_for_Korean: {<E>,xxx.yyy} tag is not supposed to start a tag sequence at line:\n%S\n",output);
 }
 Hanguls_to_Jamos(tab[current_tag]->content,jamo_tag,korean,0);
 
@@ -538,7 +538,7 @@ while(everything_still_OK) {
          tab[current_tag]->start_pos_char=0;
          tab[current_tag]->start_pos_letter=0;
          if (INFO->buffer[current_token]==INFO->SPACE) {
-            fatal_error("Contiguous spaces not handled in solve_alignment_puzzle_for_Korean\n");
+            fatal_error("Contiguous spaces not handled in solve_alignment_puzzle_for_Korean at line:\n%S\n",output);
          }
       }
       token=INFO->tok->token[INFO->buffer[current_token]];
@@ -553,10 +553,10 @@ while(everything_still_OK) {
        * character and to update start_pos_letter to 0 */
       current_index_in_jamo_token++;
       if (jamo_token[current_index_in_jamo_token]==KR_SYLLABLE_BOUND) {
-         fatal_error("Contiguous syllable bounds in jamo token in solve_alignment_puzzle_for_Korean\n");
+         fatal_error("Contiguous syllable bounds in jamo token in solve_alignment_puzzle_for_Korean at line:\n%S\n",output);
       }
       if (jamo_token[current_index_in_jamo_token]=='\0') {
-         fatal_error("Unexpected end of jamo token in solve_alignment_puzzle_for_Korean\n");
+         fatal_error("Unexpected end of jamo token in solve_alignment_puzzle_for_Korean at line:\n%S\n",output);
       }
       if (current_index_in_jamo_token!=1) {
          /* We update the char position only if we find a syllable bound that is not the
@@ -575,10 +575,10 @@ while(everything_still_OK) {
    if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLABLE_BOUND) {
       current_index_in_jamo_tag++;
       if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLABLE_BOUND) {
-         fatal_error("Contiguous syllable bounds in jamo tag in solve_alignment_puzzle_for_Korean\n");
+         fatal_error("Contiguous syllable bounds in jamo tag in solve_alignment_puzzle_for_Korean at line:\n%S\n",output);
       }
       if (jamo_tag[current_index_in_jamo_tag]=='\0') {
-         fatal_error("Unexpected end of jamo tag in solve_alignment_puzzle_for_Korean\n");
+         fatal_error("Unexpected end of jamo tag in solve_alignment_puzzle_for_Korean at line:\n%S\n",output);
       }
    }
    /* If we arrive here, we have 2 characters to be compared in the token and the tag */
@@ -607,11 +607,11 @@ for (int i=0;i<vector->nbelems;i++) {
  * to be produced.
  */
 void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,const Alphabet* alph,
-                            Korean* korean) {
+                            Korean* korean,unichar* output) {
 if (korean!=NULL) {
    /* The Korean case is so special that it seems risky to merge it with the
     * normal case that works fine */
-   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,korean);
+   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,korean,output);
    return;
 }
 if (vector==NULL) {
@@ -737,7 +737,7 @@ if (vector==NULL) {
    /* If the output to be generated has no interest, we do nothing */
    return;
 }
-solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph,korean);
+solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph,korean,s);
 int current_state=start_state_index;
 for (int i=0;i<vector->nbelems;i++) {
    struct output_info* info=(struct output_info*)(vector->tab[i]);

@@ -617,7 +617,7 @@ UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o Unicode.o Abstr
 UNITEXTOOL   = UnitexTool
 UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
-                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
+                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
@@ -625,7 +625,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
                   Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o getopt.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o \
-                  LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
+                  KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
                   Locate.o LocateFst2Tags.o LocatePattern.o LocateTrace.o LocateTfst.o LocateTfst_lib.o LocateTfstMatches.o \
                   LocateMatches.o Match.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
                   MF_MU_graph.o MF_MU_morpho.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
@@ -647,7 +647,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   FileUnPack.o ReworkArg.o UniRunLogger.o $(SYSLIBLOGGER) \
                   Main_UnitexToolLogger.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
-                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
+                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
@@ -655,7 +655,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2Check_lib.o Fst2List.o Fst2Txt.o \
                   Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o getopt.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o \
-                  LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
+                  KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
                   Locate.o LocateFst2Tags.o LocatePattern.o LocateTrace.o LocateTfst.o LocateTfst_lib.o LocateTfstMatches.o \
                   LocateMatches.o Match.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
                   MF_MU_graph.o MF_MU_morpho.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \

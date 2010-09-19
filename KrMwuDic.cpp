@@ -272,7 +272,11 @@ for (int i=0;i<n_parts-1;i++) {
 int x=n_parts-1;
 for (int i = 0; i < forms.no_forms; i++,(*line)++) {
    (*current_state)++;
-   Hanguls_to_Jamos(forms.forms[i].form,inflected_jamo,korean,0);
+	unichar tmp[1024];
+	/* We have to convert to Hangul the result of the inflection process that may have
+	 * produced a combination of Hangul and Jamos */
+	convert_jamo_to_hangul(forms.forms[i].form,tmp,korean);
+	Hanguls_to_Jamos(tmp,inflected_jamo,korean,0);
    u_fprintf(grf,"\"%S\" %d %d 1 %d \n",inflected_jamo,200+x*500,20+(*line)*50,(*current_state));
    /* We must backtrack to add the transition to this state */
    fseek(grf,foo_offset,SEEK_SET);
@@ -282,7 +286,7 @@ for (int i = 0; i < forms.no_forms; i++,(*line)++) {
    fseek(grf,0,SEEK_END);
 
    (*current_state)++;
-   u_fprintf(grf,"\"<E>/%S,%S.%S", forms.forms[i].form,
+   u_fprintf(grf,"\"<E>/%S,%S.%S", tmp,
                                   entries[n_parts-1]->lemma, code_gramm);
    /* We add the semantic codes, if any */
    for (int j = 1; j < entries[n_parts-1]->n_semantic_codes; j++) {
