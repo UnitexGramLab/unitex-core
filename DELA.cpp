@@ -903,7 +903,7 @@ if (*lemma=='\0') {
  * skeleton, which is reasonable. */
 for (int i=pos_in_inflected;i<10 && inflected[i]!='\0';i++) {
 	if (*lemma==inflected[i]) {
-		tmp_result[pos_in_tmp_result]=i+'0';
+		tmp_result[pos_in_tmp_result]=(unichar)(i+'0');
 		explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
 				min_full_letters,n_full_letters,i+1,pos_in_tmp_result+1);
 		if (*min_full_letters==0) {
