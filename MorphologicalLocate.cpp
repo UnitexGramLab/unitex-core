@@ -1962,7 +1962,7 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				if (p->arabic.shadda_superscript_alef_omission) can_go_on=1;
 				break;
 			}
-			default: fatal_error("Invalid switch value #2 %C in explore_dic_in_morpho_mode_arabic!\n",c);
+			default: break; /*fatal_error("Invalid switch value #2 %C in explore_dic_in_morpho_mode_arabic!\n",c);*/
 			}
 			if (can_go_on) {
 				inflected[pos_in_inflected] = c;
