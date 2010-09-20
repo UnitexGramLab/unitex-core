@@ -71,7 +71,7 @@ if (buffer[0]==SENTENCE_MARKER) {
    length=1;
 }
 int control=-1;
-while (length<MAX_TOKENS_IN_SENTENCE && 1==(control=fread(buffer+length,sizeof(int),1,f)) && buffer[length]!=SENTENCE_MARKER) {
+while (length<MAX_TOKENS_IN_SENTENCE && 1==(control=(int)fread(buffer+length,sizeof(int),1,f)) && buffer[length]!=SENTENCE_MARKER) {
    length++;
    (*total)++;
 }
