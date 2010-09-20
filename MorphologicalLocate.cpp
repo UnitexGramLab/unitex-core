@@ -393,8 +393,10 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						p->input_variables,0);
 				//create_new_reserve_done = 1;
 			}
-			var_backup = create_variable_backup_using_reserve(p->input_variables,
+			if (p->graph_depth == 0) {
+			  var_backup = create_variable_backup_using_reserve(p->input_variables,
 					p->backup_memory_reserve);
+			}
 			output_variable_backup=create_output_variable_backup(p->output_variables);
 		}
 		do {
@@ -426,7 +428,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							p->stack->stack_pointer = L->stack_pointer;
 							p->dic_variables = L->dic_variable_backup;
 							install_output_variable_backup(p->output_variables,output_variable_backup);
-							if (save_previous_ptr_var == NULL) {
+							if (save_previous_ptr_var == NULL && (var_backup != NULL)) {
 								save_previous_ptr_var
 										= install_variable_backup_preserving(
 												p->input_variables, p->backup_memory_reserve,
