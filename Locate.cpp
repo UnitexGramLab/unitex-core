@@ -435,8 +435,8 @@ if (thai) {
    add_argument(invoker,"--thai");
 }
 if (md) {
-   sprintf(tmp,"--morpho=%s",morpho_dic);
-   add_argument(invoker,tmp);
+	add_argument(invoker,"-m");
+	add_argument(invoker,morpho_dic);
 }
 if (protect_dic_chars) {
 	add_argument(invoker,"-p");
