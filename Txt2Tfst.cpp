@@ -70,11 +70,12 @@ if (buffer[0]==SENTENCE_MARKER) {
 } else {
    length=1;
 }
-while (length<MAX_TOKENS_IN_SENTENCE && 1==fread(buffer+length,sizeof(int),1,f) && buffer[length]!=SENTENCE_MARKER) {
+int control=-1;
+while (length<MAX_TOKENS_IN_SENTENCE && 1==(control=fread(buffer+length,sizeof(int),1,f)) && buffer[length]!=SENTENCE_MARKER) {
    length++;
    (*total)++;
 }
-if (buffer[length]==SENTENCE_MARKER) {
+if (length<MAX_TOKENS_IN_SENTENCE && control==1 && buffer[length]==SENTENCE_MARKER) {
    (*total)++;
 }
 if (length==0) return 0;

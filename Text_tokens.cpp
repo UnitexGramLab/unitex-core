@@ -51,6 +51,8 @@ if (res->token==NULL) {
 }
 unichar tmp[MAX_TAG_LENGTH];
 res->SENTENCE_MARKER=-1;
+res->SPACE=-1;
+res->STOP_MARKER=-1;
 int i=0;
 int size_gets;
 while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
