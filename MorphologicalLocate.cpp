@@ -1404,11 +1404,11 @@ void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 	}
 	int after_syllab_bound = 0;
 	if (jamo != NULL) {
-		/* We test wether we are in the middle of a syllable or just after a syllable bound */
+		/* We test whether we are in the middle of a syllable or just after a syllable bound */
 		if (jamo[pos_in_jamo] == KR_SYLLABLE_BOUND) {
 			/* If we have a syllable bound */
 			after_syllab_bound = 1;
-			pos_in_jamo++;
+			//pos_in_jamo++;
 		} else if (pos_in_jamo > 0 && jamo[pos_in_jamo - 1]
 				== KR_SYLLABLE_BOUND) {
 			/* If we are just after a syllable bound */
@@ -1451,24 +1451,42 @@ void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 						save_dic_entry, jamo, pos_in_jamo, line_buffer);
 			}
 		} else {
-			//debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+			//error("la: jamo du text<%S>=%C (%04X)   char du dico=%C (%04X)\n",jamo,jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 			/* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
 			 * after a syllable bound */
 			unichar c2[2];
 			c2[0] = c;
 			c2[1] = '\0';
+			int syllable_bounds=0;
 			/* We try to match all the jamo sequence found in the dictionary */
+			if (jamo[pos_in_jamo]==KR_SYLLABLE_BOUND) {
+				//error("jamo=<%S> %C bound dic=%C (%X)     pos_inflected=%d\n",jamo,jamo[pos_in_jamo],c,c,pos_in_inflected);
+				if (c!=KR_SYLLABLE_BOUND) {
+					/* no match */
+					continue;
+				}
+				syllable_bounds=1;
+			} else {
+				//error("jamo=%C (%X) dic=%C (%X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+			}
 			int new_pos_in_current_token = pos_in_current_token;
 			int new_pos_in_jamo = pos_in_jamo;
-			int result = get_jamo_longest_prefix(jamo, &new_pos_in_jamo,
+			int result=0;
+			if (!syllable_bounds) {
+				result = get_jamo_longest_prefix(jamo, &new_pos_in_jamo,
 					&new_pos_in_current_token, c2, p, current_token);
-			if (result != 0) {
+			}
+			if (result != 0 || syllable_bounds) {
+				if (syllable_bounds) {
+					new_pos_in_jamo++;
+				}
+				//error("match next pos_in_jamo=%d (%C)\n",new_pos_in_jamo,jamo[new_pos_in_jamo]);
 				//error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 				/* Nothing to do if the match failed */
 				int new_pos_offset = pos_offset;
 				unichar* new_jamo = jamo;
 				unichar* new_current_token = current_token;
-				if (result == 1) {
+				if (result == 1 || (syllable_bounds && jamo[new_pos_in_jamo]=='\0')) {
 					/* The text token has been fully matched, so we go on the next one */
 					new_pos_in_current_token = 0;
 					new_pos_offset = pos_offset + 1;
@@ -1489,6 +1507,8 @@ void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 						new_current_token, inflected, new_pos_in_current_token,
 						pos_in_inflected + 1, new_pos_offset, matches, pattern,
 						save_dic_entry, new_jamo, new_pos_in_jamo, line_buffer);
+			} else {
+				//error("non match\n");
 			}
 			/* Then we try to match a hangul, but only if we are just after a syllable bound */
 			//error("after syllable=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
