@@ -106,26 +106,39 @@ int get_jamo_longest_prefix(unichar* jamo, int *new_pos_in_jamo,
 		u_strcpy(tmp, tag_token);
 	} else {
 		Hanguls_to_Jamos(tag_token, tmp, p->korean, 0);
+		/*error("conversion depuis <%S> vers <%S><",tag_token,tmp);
+		for (int i=0;tmp[i]!='\0';i++) {
+			error("%X ",tmp[i]);
+		}
+		error(">\n");*/
 	}
 	int i = 0;
 	if (token == NULL) {
 		token = tag_token;
 	}
 	//set_debug(0 && token[0]==0xB2A5);
-	//debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
+	//error("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo/*+(*new_pos_in_jamo)*/,tag_token,tmp);
+	/*error("on compare text=<%S><",token);
+	for (int i=(*new_pos_in_jamo);jamo[i]!='\0';i++) {
+		error("(%C) ",jamo[i]);
+	}
+	error("> et tag=<%S><",tag_token);
+	for (int i=0;tmp[i]!='\0';i++) {
+		error("(%C) ",tmp[i]);
+	}
+	error(">\n");*/
 	while (tmp[i] != '\0' && jamo[(*new_pos_in_jamo)] != '\0') {
+#if 2
 		/* We ignore syllable bounds in both tfst and fst2 tags */
-		if (tmp[i] == KR_SYLLABLE_BOUND) {
+		if (tmp[i] == KR_SYLLABLE_BOUND && jamo[(*new_pos_in_jamo)] != KR_SYLLABLE_BOUND) {
 			i++;
 			//debug("ignoring . in tag: %S\n",tmp+i);
 			continue;
 		}
-		/*if (jamo[(*new_pos_in_jamo)]!=KR_SYLLAB_BOUND && !u_is_Hangul_Jamo(jamo[(*new_pos_in_jamo)])) {
-		 // If we have a non jamo character, then we have to go on in the text token
-		 (*new_pos_in_token)++;
-		 debug("new pos in token=%d\n",(*new_pos_in_token));
-		 }*/
+#endif
 		if (jamo[(*new_pos_in_jamo)] == KR_SYLLABLE_BOUND) {
+			if (tmp[i] != KR_SYLLABLE_BOUND) return 0;
+			i++;
 			(*new_pos_in_jamo)++;
 			(*new_pos_in_token)++;
 			//debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));

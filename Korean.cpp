@@ -84,7 +84,17 @@ for (int i=0;src[i]!='\0';i++) {
    c=Chinese_to_Hangul(src[i],map);
    if (!only_syllables && ((test_letter(c,alphabet) && !u_is_Hangul(c))
          || (u_is_Hangul_Compatility_Jamo(c) && c!=KR_SYLLABLE_BOUND)
-         || u_is_Hangul_Jamo(c))){
+         || u_is_Hangul_Jamo(c)
+          /* This test is in comment because we want to distinguish the usages
+          * of the two kinds of Jamos:
+          *
+          * - Hangul Jamos are used as letters to be combined to form Hangul
+          * - Hangul Compatibility Jamos should only be used when someone wants
+          *   to quote a Jamo in a text as a character. So, HCJ should never be used
+          *   in grammars and dictionaries, unless we really want to match a Jamo as
+          *   a whole character, not to be combined with other Jamos.
+          *
+          */)){
       temp[j++]=KR_SYLLABLE_BOUND;
    }
    temp[j++]=c;
@@ -361,6 +371,11 @@ for (int i=0;input[i]!='\0';i++) {
    }
 }
 output[n]='\0';
+/*error("zzz depuis <%S> vers <",input);
+for (int i=0;output[i]!='\0';i++) {
+	error("%X ",output[i]);
+}
+error(">\n");*/
 return n;
 }
 
