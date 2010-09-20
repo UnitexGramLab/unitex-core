@@ -208,9 +208,20 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
              strcpy(alph,vars->optarg);
              break;
    case 'm': if (vars->optarg[0]!='\0') {
-                morpho_dic=strdup(vars->optarg);
                 if (morpho_dic==NULL) {
-                   fatal_alloc_error("main_Locate");
+                  morpho_dic=strdup(vars->optarg);
+                  if (morpho_dic==NULL) {
+                     fatal_alloc_error("main_Locate");
+                  }
+                }
+                else
+                {
+                    morpho_dic = (char*)realloc((void*)morpho_dic,strlen(morpho_dic)+strlen(vars->optarg)+2);
+                    if (morpho_dic==NULL) {
+                       fatal_alloc_error("main_Locate");
+                    }
+                    strcat(morpho_dic,";");
+                    strcat(morpho_dic,vars->optarg);
                 }
              }
              break;
