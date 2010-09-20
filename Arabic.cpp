@@ -361,3 +361,111 @@ if (token[pos]==AR_WAW || token[pos]==AR_FEH) { 					/* w or f */
 	return 0;
 }
 }
+
+
+/**
+ * Returns 1 if c is either an Arabic letter according to AR_XXX definitions
+ * or an absolute arabic letter like ABS_AR_XXX; 0 otherwise.
+ */
+int is_arabic_letter(unichar c) {
+switch(c) {
+case ABS_AR_HAMZA:
+case ABS_AR_ALEF_WITH_MADDA_ABOVE:
+case ABS_AR_ALEF_WITH_HAMZA_ABOVE:
+case ABS_AR_WAW_WITH_HAMZA_ABOVE:
+case ABS_AR_ALEF_WITH_HAMZA_BELOW:
+case ABS_AR_YEH_WITH_HAMZA_ABOVE:
+case ABS_AR_ALEF:
+case ABS_AR_BEH:
+case ABS_AR_TEH_MARBUTA:
+case ABS_AR_TEH:
+case ABS_AR_THEH:
+case ABS_AR_JEEM:
+case ABS_AR_HAH:
+case ABS_AR_KHAH:
+case ABS_AR_DAL:
+case ABS_AR_THAL:
+case ABS_AR_REH:
+case ABS_AR_ZAIN:
+case ABS_AR_SEEN:
+case ABS_AR_SHEEN:
+case ABS_AR_SAD:
+case ABS_AR_DAD:
+case ABS_AR_TAH:
+case ABS_AR_ZAH:
+case ABS_AR_AIN:
+case ABS_AR_GHAIN:
+case ABS_AR_TATWEEL:
+case ABS_AR_FEH:
+case ABS_AR_QAF:
+case ABS_AR_KAF:
+case ABS_AR_LAM:
+case ABS_AR_MEEM:
+case ABS_AR_NOON:
+case ABS_AR_HEH:
+case ABS_AR_WAW:
+case ABS_AR_ALEF_MAQSURA:
+case ABS_AR_YEH:
+case ABS_AR_FATHATAN:
+case ABS_AR_DAMMATAN:
+case ABS_AR_KASRATAN:
+case ABS_AR_FATHA:
+case ABS_AR_DAMMA:
+case ABS_AR_KASRA:
+case ABS_AR_SHADDA:
+case ABS_AR_SUKUN:
+case ABS_AR_SUPERSCRIPT_ALEF:
+case ABS_AR_ALEF_WASLA:
+#ifdef AR_WORK_ON_TRANSLITERATED_FORMS
+case AR_HAMZA:
+case AR_ALEF_WITH_MADDA_ABOVE:
+case AR_ALEF_WITH_HAMZA_ABOVE:
+case AR_WAW_WITH_HAMZA_ABOVE:
+case AR_ALEF_WITH_HAMZA_BELOW:
+case AR_YEH_WITH_HAMZA_ABOVE:
+case AR_ALEF:
+case AR_BEH:
+case AR_TEH_MARBUTA:
+case AR_TEH:
+case AR_THEH:
+case AR_JEEM:
+case AR_HAH:
+case AR_KHAH:
+case AR_DAL:
+case AR_THAL:
+case AR_REH:
+case AR_ZAIN:
+case AR_SEEN:
+case AR_SHEEN:
+case AR_SAD:
+case AR_DAD:
+case AR_TAH:
+case AR_ZAH:
+case AR_AIN:
+case AR_GHAIN:
+case AR_TATWEEL:
+case AR_FEH:
+case AR_QAF:
+case AR_KAF:
+case AR_LAM:
+case AR_MEEM:
+case AR_NOON:
+case AR_HEH:
+case AR_WAW:
+case AR_ALEF_MAQSURA:
+case AR_YEH:
+case AR_FATHATAN:
+case AR_DAMMATAN:
+case AR_KASRATAN:
+case AR_FATHA:
+case AR_DAMMA:
+case AR_KASRA:
+case AR_SHADDA:
+case AR_SUKUN:
+case AR_SUPERSCRIPT_ALEF:
+case AR_ALEF_WASLA:
+#endif
+return 1;
+default: return 0;
+}
+}

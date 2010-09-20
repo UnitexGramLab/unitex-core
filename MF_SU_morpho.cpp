@@ -528,7 +528,7 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 	   else for (int pos_tag = 0; p_SU_buf->tag[pos_tag] != '\0';) {
 		   if (t->control & RESPECT_CASE_TAG_BIT_MASK
 				   ||
-				   (semitic && (is_solar(p_SU_buf->tag[pos_tag]) || is_lunar(p_SU_buf->tag[pos_tag]))
+				   (semitic && is_arabic_letter(p_SU_buf->tag[pos_tag])
 				   )
 				) {
 			   /* If the transition was a "..." one, we don't try to interpret its content.

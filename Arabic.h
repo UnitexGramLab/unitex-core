@@ -79,7 +79,7 @@
 
 
 /* This macro is for debug only. You should not use it unless you are me. SP */
-#define AR_WORK_ON_TRANSLITERATED_FORMS
+//#define AR_WORK_ON_TRANSLITERATED_FORMS
 
 /* Here are the relative definition of arabic letters, depending of the
  * AR_WORK_ON_TRANSLITERATED_FORMS macro.
@@ -288,5 +288,6 @@ int is_solar(unichar);
 int is_lunar(unichar);
 int load_arabic_typo_rules(const char* f,ArabicTypoRules *rules);
 int was_Al_before(const unichar* token,int pos,ArabicTypoRules rules);
+int is_arabic_letter(unichar c);
 
 #endif
