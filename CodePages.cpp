@@ -1304,7 +1304,7 @@ int transliterate_delaf(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFIL
 			const struct encoding* output_encoding,
 			unichar* unicode_src) {
 int c;
-while (1) {
+for (;;) {
 	while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
 		if (c=='\n') {
 			break;
@@ -1319,7 +1319,7 @@ while (1) {
 			}
 		}
 		/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
-		write_one_char(c,encoding_ctx,output,output_encoding,NULL);
+		write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
 	}
 	if (c==EOF) break;
 	if (c=='\n') {
@@ -1342,7 +1342,7 @@ while (1) {
 			}
 		}
 		/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
-		write_one_char(c,encoding_ctx,output,output_encoding,NULL);
+		write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
 	}
 	if (c==EOF) break;
 	if (c=='\n') {
@@ -1352,7 +1352,7 @@ while (1) {
 	u_fputc_UTF16LE('.',output);
 	/* And we just copy the remaining chars */
 	while ((c=u_fgetc_UTF16LE(input))!=EOF) {
-		u_fputc_UTF16LE(c,output);
+		u_fputc_UTF16LE((unichar)c,output);
 		if (c=='\n') break;
 	}
 	if (c==EOF) break;
@@ -1370,7 +1370,7 @@ int transliterate_delas(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFIL
 			const struct encoding* output_encoding,
 			unichar* unicode_src) {
 	int c;
-	while (1) {
+	for (;;) {
 		while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
 			if (c=='\n') {
 				break;
@@ -1385,7 +1385,7 @@ int transliterate_delas(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFIL
 				}
 			}
 			/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
-			write_one_char(c,encoding_ctx,output,output_encoding,NULL);
+			write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
 		}
 		if (c==EOF) break;
 		if (c=='\n') {
@@ -1395,7 +1395,7 @@ int transliterate_delas(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFIL
 		u_fputc_UTF16LE(',',output);
 		/* And we just copy the remaining chars */
 		while ((c=u_fgetc_UTF16LE(input))!=EOF) {
-			u_fputc_UTF16LE(c,output);
+			u_fputc_UTF16LE((unichar)c,output);
 			if (c=='\n') break;
 		}
 		if (c==EOF) break;
