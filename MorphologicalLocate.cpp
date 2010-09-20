@@ -458,17 +458,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		install_output_variable_backup(p->output_variables,output_variable_backup);
 		free_output_variable_backup(output_variable_backup);
 		clear_dic_variable_list(&dic_variables_backup);
-		if ((p->graph_depth) == 0) {
-			/* If we are at the top graph level, we restore the variables */
-			if (p->output_policy != IGNORE_OUTPUTS) {
-				if (save_previous_ptr_var != NULL) {
-					restore_variable_array(p->input_variables, p->backup_memory_reserve,
-							save_previous_ptr_var);
-					save_previous_ptr_var = NULL;
-				}
 
+		if (save_previous_ptr_var != NULL) { 
+			restore_variable_array(p->input_variables, p->backup_memory_reserve,
+			                          save_previous_ptr_var);
+			save_previous_ptr_var = NULL;
+		}
 
-
+        
+		if (var_backup!=NULL) {
 				int reserve_freeable = free_variable_backup_using_reserve(
 						p->backup_memory_reserve);
 
@@ -479,10 +477,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					free_reserve(p->backup_memory_reserve);
 					p->backup_memory_reserve = reserve_previous;
 				}
-
-
 			}
-		}
 	} /* End of processing subgraphs */
 
 	/**
