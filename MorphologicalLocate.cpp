@@ -1685,8 +1685,8 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					}
 					break;
 				}
-				default:
-					fatal_error("Invalid switch value %C in explore_dic_in_morpho_mode_arabic!\n",c);
+				default: break;
+					//fatal_error("Invalid switch value %C in explore_dic_in_morpho_mode_arabic!\n",c);
 				}
 			} else {
 				can_go_on=1;
