@@ -187,7 +187,7 @@
 #define AR_SUKUN						'o'
 #define AR_SUPERSCRIPT_ALEF				'R'
 /* Hamza variant */
-#define AR_ALEF_WASLA					'L'
+#define AR_ALEF_WASLA					'|'
 
 #endif
 
