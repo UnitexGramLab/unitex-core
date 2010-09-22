@@ -397,13 +397,17 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			  var_backup = create_variable_backup_using_reserve(p->input_variables,
 					p->backup_memory_reserve);
 			}
-			output_variable_backup=create_output_variable_backup(p->output_variables);
+			if (p->nb_output_variables != 0) {
+				output_variable_backup=create_output_variable_backup(p->output_variables);
+			}
 		}
 		do {
 			/* For each graph call, we look all the reachable states */
 			t = graph_call_list->transition;
 			if (p->output_policy!=IGNORE_OUTPUTS) {
-				install_output_variable_backup(p->output_variables,output_variable_backup);
+				if (p->nb_output_variables != 0) {
+				    install_output_variable_backup(p->output_variables,output_variable_backup);
+				}
 			}
 			while (t != NULL) {
 				struct parsing_info* L = NULL;
@@ -427,7 +431,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 									L->stack);
 							p->stack->stack_pointer = L->stack_pointer;
 							p->dic_variables = L->dic_variable_backup;
-							install_output_variable_backup(p->output_variables,output_variable_backup);
+							if (p->nb_output_variables != 0) {
+							    install_output_variable_backup(p->output_variables,output_variable_backup);
+							}
 							if (save_previous_ptr_var == NULL && (var_backup != NULL)) {
 								save_previous_ptr_var
 										= install_variable_backup_preserving(
@@ -457,8 +463,10 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		/* Finally, we have to restore the stack and other backup stuff */
 		p->stack->stack_pointer = stack_top;
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
-		install_output_variable_backup(p->output_variables,output_variable_backup);
-		free_output_variable_backup(output_variable_backup);
+		if (p->nb_output_variables != 0) {
+			install_output_variable_backup(p->output_variables,output_variable_backup);
+			free_output_variable_backup(output_variable_backup);
+        }
 		clear_dic_variable_list(&dic_variables_backup);
 
 		if (save_previous_ptr_var != NULL) { 
@@ -1215,7 +1223,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	if (p->output_policy != IGNORE_OUTPUTS) {
 		/* For better performance when ignoring outputs */
 		var_backup = create_variable_backup(p->input_variables,p->prv_alloc_recycle);
-		output_variable_backup=create_output_variable_backup(p->output_variables);
+		if (p->nb_output_variables != 0) {
+			output_variable_backup=create_output_variable_backup(p->output_variables);
+		}
 	}
 	struct parsing_info* L = NULL;
 	p->stack_base = p->stack->stack_pointer;
@@ -1242,7 +1252,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				u_strcpy(&(p->stack->stack[stack_top + 1]), L->stack);
 				p->stack->stack_pointer = L->stack_pointer;
 				install_variable_backup(p->input_variables, L->input_variable_backup);
-				install_output_variable_backup(p->output_variables,L->output_variable_backup);
+				if (p->nb_output_variables != 0) {
+					install_output_variable_backup(p->output_variables,L->output_variable_backup);
+				}
 			}
 			p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
 			/* And we continue the exploration */
@@ -1305,8 +1317,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
 		install_variable_backup(p->input_variables, var_backup);
 		free_variable_backup(var_backup,p->prv_alloc_recycle);
-		install_output_variable_backup(p->output_variables,output_variable_backup);
-		free_output_variable_backup(output_variable_backup);
+		if (p->nb_output_variables != 0) {
+			install_output_variable_backup(p->output_variables,output_variable_backup);
+			free_output_variable_backup(output_variable_backup);
+		}
 	}
 	if (ctx == NULL) {
 		p->dic_variables = dic_variable_backup;
