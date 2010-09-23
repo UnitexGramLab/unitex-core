@@ -81,27 +81,6 @@ return res;
 }
 
 
-
-struct string_hash* load_text_tokens_hash(const char* nom,int mask_encoding_compatibility_input,int *NUMBER_OF_TEXT_TOKENS,Abstract_allocator /* prv_alloc */) {
-U_FILE* f;
-f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
-if (f==NULL) {
-   return NULL;
-}
-u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
-*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS);
-struct string_hash* res;
-res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
-unichar tmp[4096];
-while (EOF!=u_fgets_limit2(tmp,4096,f)) {
-   get_value_index(tmp,res);
-}
-u_fclose(f);
-return res;
-}
-
-
-
 struct string_hash* load_text_tokens_hash(const char* nom,int mask_encoding_compatibility_input,
                                           int *SENTENCE_MARKER,
                                           int* STOP_MARKER,
@@ -117,15 +96,26 @@ u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
 struct string_hash* res;
 res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
 unichar tmp[4096];
-int x;
-while (EOF!=u_fgets_limit2(tmp,4096,f)) {
-   x=get_value_index(tmp,res);
-   if (!u_strcmp(tmp,"{S}")) {
-      (*SENTENCE_MARKER)=x;
-   }
-   else if (!u_strcmp(tmp,"{STOP}")) {
-      (*STOP_MARKER)=x;
-   }
+
+int x,i=0;
+int size_gets;
+while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
+  if (size_gets>0) {
+    if (tmp[size_gets-1]=='\n') {
+        tmp[size_gets-1]=0;
+    }
+  }
+  x=get_value_index(tmp,res);
+  if (!u_strcmp(tmp,"{S}")) {
+     *SENTENCE_MARKER=x;
+  } else if (!u_strcmp(tmp,"{STOP}")) {
+     *STOP_MARKER=i;
+  }
+  i++;
+  if (i>*NUMBER_OF_TEXT_TOKENS) {
+     fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n"
+    		     "Last token loaded=%S\n",nom,*NUMBER_OF_TEXT_TOKENS,tmp);
+  }
 }
 u_fclose(f);
 return res;
