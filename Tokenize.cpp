@@ -298,7 +298,6 @@ else {
    sort_and_save_by_alph_order(output,tokens,n_occur);
    u_fclose(output);
 }
-
 free_hash_table(hashtable);
 free_vector_ptr(tokens,free);
 free_vector_int(n_occur);

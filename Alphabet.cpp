@@ -149,6 +149,10 @@ int c;
 unichar lower,upper;
 while ((c=u_fgetc(f))!=EOF) {
       upper=(unichar)c;
+      if (upper=='\n') {
+    	  /* We skip empty lines */
+    	  continue;
+      }
       if (upper=='#') {
          // we are in the case of an interval #AZ -> [A..Z]
          lower=(unichar)u_fgetc(f);
