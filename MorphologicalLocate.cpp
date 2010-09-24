@@ -384,6 +384,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		/* We save all kind of variables */
 		struct dic_variable* dic_variables_backup = clone_dic_variable_list(
 				p->dic_variables);
+
+		/* We do this to be sure there will be no complicated case leading to
+		 * memory leaks */
+		clear_dic_variable_list(&(p->dic_variables));
+
 		unichar* output_variable_backup=NULL;
 		if (p->output_policy!=IGNORE_OUTPUTS) {
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
@@ -414,11 +419,16 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				p->stack_base = p->stack->stack_pointer;
 
 				p->graph_depth ++ ;
+
+				p->dic_variables=clone_dic_variable_list(dic_variables_backup);
+
 				morphological_locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 						p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
 						pos_in_chars, &L, 0, NULL, p,
 						jamo, pos_in_jamo, content_buffer);
 				p->graph_depth -- ;
+
+				clear_dic_variable_list(&(p->dic_variables));
 
 				p->stack_base = old_StackBase;
 				if (L != NULL) {
@@ -449,14 +459,19 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								L->position, L->pos_in_token,
 								matches, n_matches, ctx, p,
 								L->jamo, L->pos_in_jamo, content_buffer);
+
+						/*
+						 * We must NOT do this, since this would cause a double free,
+						 * because the job will already be done by free_parsing_info below
+						 *
+						 * clear_dic_variable_list(&(p->dic_variables)); */
+
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
 					} while (L != NULL);
 					/* We free all subgraph matches */
 					free_parsing_info(L_first, p->prv_alloc_recycle);
 				}
-				p->dic_variables
-						= clone_dic_variable_list(dic_variables_backup);
 				t = t->next;
 			} /* end of while (t!=NULL) */
 		} while ((graph_call_list = graph_call_list->next) != NULL);
@@ -467,8 +482,8 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			install_output_variable_backup(p->output_variables,output_variable_backup);
 			free_output_variable_backup(output_variable_backup);
 		}
-		clear_dic_variable_list(&dic_variables_backup);
-
+		/* We restore the original dic variables */
+		p->dic_variables=dic_variables_backup;
 		if (save_previous_ptr_var != NULL) { 
 			restore_variable_array(p->input_variables, p->backup_memory_reserve,
 			                          save_previous_ptr_var);
