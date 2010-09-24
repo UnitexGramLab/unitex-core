@@ -560,7 +560,7 @@ for (int i=0;i<info->tokens->N;i++) {
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
                                                     U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* morpho,
-                                                    char* tags,const char* text_cod,Alphabet* alphabet,
+                                                    const char* tags,const char* text_cod,Alphabet* alphabet,
                                                     Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
@@ -746,7 +746,7 @@ while (l!=NULL) {
                if (export_to_morpho_dic) {
                   u_fprintf(info->morpho,"%S\n",l->output);
                }
-            }
+            }	
          } else {
         	 error("Ignoring line because the inflected form does not appear in the text:\n%S\n",l->output);
          }
@@ -810,7 +810,7 @@ switch (compare_matches(&((*A)->m),&((*B)->m))) {
    case A_BEFORE_B_OVERLAP:
    case A_INCLUDES_B: return -1;
    
-   case A_EQUALS_B: return 0;
+   case A_EQUALS_B: return u_strcmp((*A)->output,(*B)->output);
    
    case A_AFTER_B:
    case A_AFTER_B_OVERLAP:
