@@ -747,6 +747,8 @@ while (l!=NULL) {
                   u_fprintf(info->morpho,"%S\n",l->output);
                }
             }
+         } else {
+        	 error("Ignoring line because the inflected form does not appear in the text:\n%S\n",l->output);
          }
       }
       else {

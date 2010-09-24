@@ -400,7 +400,7 @@ for (int priority=1;priority<4;priority++) {
             }
             /* We dump and close output files */
             save_unknown_words(info);
-        	   u_fclose(info->dlf);
+        	u_fclose(info->dlf);
             u_fclose(info->dlc);
             u_fclose(info->err);
             info->dlf=NULL;
