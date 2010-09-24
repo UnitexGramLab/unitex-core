@@ -292,7 +292,7 @@ return IS_LOWER_MACRO(c,alphabet);
  * Returns a non-zero value if 'c' is considered
  * as a letter in for the given alphabet, 0 otherwise.
  */
-static int is_letter__(unichar c,const Alphabet* alphabet) {
+static inline int is_letter__(unichar c,const Alphabet* alphabet) {
 return CASE_FLAG_MACRO(c,alphabet) != 0;
 }
 
