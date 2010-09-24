@@ -432,7 +432,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							p->stack->stack_pointer = L->stack_pointer;
 							p->dic_variables = L->dic_variable_backup;
 							if (p->nb_output_variables != 0) {
-							    install_output_variable_backup(p->output_variables,output_variable_backup);
+								install_output_variable_backup(p->output_variables,output_variable_backup);
 							}
 							if (save_previous_ptr_var == NULL && (var_backup != NULL)) {
 								save_previous_ptr_var
@@ -466,7 +466,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		if (p->nb_output_variables != 0) {
 			install_output_variable_backup(p->output_variables,output_variable_backup);
 			free_output_variable_backup(output_variable_backup);
-        }
+		}
 		clear_dic_variable_list(&dic_variables_backup);
 
 		if (save_previous_ptr_var != NULL) { 
