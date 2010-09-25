@@ -382,9 +382,10 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		variable_backup_memory_reserve* reserve_previous = NULL;
 
 		/* We save all kind of variables */
-		struct dic_variable* dic_variables_backup = clone_dic_variable_list(
-				p->dic_variables);
-
+		struct dic_variable* dic_variables_backup = NULL;
+		if (p->dic_variables != NULL) {
+			dic_variables_backup = clone_dic_variable_list(p->dic_variables);
+		}
 		/* We do this to be sure there will be no complicated case leading to
 		 * memory leaks */
 		clear_dic_variable_list(&(p->dic_variables));
@@ -420,7 +421,10 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
 				p->graph_depth ++ ;
 
-				p->dic_variables=clone_dic_variable_list(dic_variables_backup);
+				p->dic_variables = NULL;
+				if (dic_variables_backup != NULL) {
+					p->dic_variables = clone_dic_variable_list(dic_variables_backup);
+				}
 
 				morphological_locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 						p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
@@ -1244,8 +1248,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	}
 	struct parsing_info* L = NULL;
 	p->stack_base = p->stack->stack_pointer;
-	struct dic_variable* dic_variable_backup = clone_dic_variable_list(
-			p->dic_variables);
+	struct dic_variable* dic_variable_backup = NULL;
+	if (p->dic_variables != NULL) {
+		dic_variable_backup = clone_dic_variable_list(p->dic_variables);
+	}
 	int current_token = p->buffer[pos + p->current_origin];
 	//error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
 
@@ -1271,7 +1277,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					install_output_variable_backup(p->output_variables,L->output_variable_backup);
 				}
 			}
-			p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
+			p->dic_variables = NULL;
+			if (L->dic_variable_backup != NULL) {
+				p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
+			}
 			/* And we continue the exploration */
 
 			variable_backup_memory_reserve* reserve_previous = NULL;
@@ -1316,7 +1325,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					install_variable_backup(p->input_variables, var_backup);
 				}
 			}
-			if (ctx == NULL || L->next != NULL) {
+			if ((ctx == NULL || L->next != NULL) && (p->dic_variables != NULL)) {
 				/* If we are inside a context, we don't want to free all the dic_variables that
 				 * have been set, in order to allow extracting morphological information from contexts.
 				 * To do that, we arbitrarily keep the dic_variables of the last path match. */
@@ -1340,7 +1349,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	if (ctx == NULL) {
 		p->dic_variables = dic_variable_backup;
 	} else {
-		clear_dic_variable_list(&dic_variable_backup);
+		if (dic_variable_backup != NULL) {
+			clear_dic_variable_list(&dic_variable_backup);
+		}
 	}
 	free(content_buffer);
 	p->explore_depth -- ;
