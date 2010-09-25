@@ -135,7 +135,7 @@ free_cb(tok,prv_alloc);
 
 
 
-void explorer_token_tree(int pos,unichar* sequence,const Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l,Abstract_allocator prv_alloc) {
+void explorer_token_tree(int pos,const unichar* sequence,const Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l,Abstract_allocator prv_alloc) {
 if (sequence[pos]=='\0') {
    // if we are at the end of the sequence
    if (n->value_index!=-1) {
@@ -156,7 +156,7 @@ while (trans!=NULL) {
 
 
 
-struct list_int* get_token_list_for_sequence(unichar* sequence,const Alphabet* alph,
+struct list_int* get_token_list_for_sequence(const unichar* sequence,const Alphabet* alph,
                                                   struct string_hash* hash,Abstract_allocator prv_alloc) {
 struct list_int* l=NULL;
 explorer_token_tree(0,sequence,alph,hash->root,&l,prv_alloc);
@@ -165,7 +165,7 @@ return l;
 
 
 
-int get_token_number(unichar* s,struct text_tokens* tok) {
+int get_token_number(const unichar* s,struct text_tokens* tok) {
 for (int i=0;i<tok->N;i++) {
     if (!u_strcmp(tok->token[i],s)) return i;
 }
@@ -180,7 +180,7 @@ unichar  *get_text_token(int token_number ,struct text_tokens* tok) {
 //
 // return 1 if s is a digit sequence, 0 else
 //
-int is_a_digit_token(unichar* s) {
+int is_a_digit_token(const unichar* s) {
 int i=0;
 while (s[i]!='\0') {
    if (s[i]<'0' || s[i]>'9') {
@@ -195,7 +195,7 @@ return 1;
 //
 // Scans text tokens to extract semantic codes contained in tags like {le,.DET:ms}
 //
-void extract_semantic_codes_from_tokens(struct string_hash* tok,
+void extract_semantic_codes_from_tokens(const struct string_hash* tok,
                                         struct string_hash* semantic_codes,Abstract_allocator prv_alloc) {
 for (int i=0;i<tok->size;i++) {
     if (tok->value[i][0]=='{' && u_strcmp(tok->value[i],"{S}")

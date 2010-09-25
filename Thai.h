@@ -29,7 +29,7 @@
 
 #include "Unicode.h"
 
-int u_strlen_Thai(unichar*);
+int u_strlen_Thai(const unichar*);
 int is_Thai_diacritic(unichar);
 int is_Thai_skipable(unichar);
 int is_Thai_initial_vowel(unichar);

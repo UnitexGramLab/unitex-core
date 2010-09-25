@@ -50,7 +50,7 @@ return (c==0x0e31 || (c>=0x0e34 && c<=0x0e3a) || (c>=0x0e47 && c<=0x0e4e));
  * Returns the number of displayable characters of the given string,
  * ignoring diacritic signs.
  */
-int u_strlen_Thai(unichar* s) {
+int u_strlen_Thai(const unichar* s) {
 int n=0;
 int i=0;
 while (s[i]!='\0') {

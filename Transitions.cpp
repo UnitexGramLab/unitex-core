@@ -51,7 +51,7 @@ return new_Transition(tag_number,state_number,NULL,prv_alloc);
 /**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
-Transition* new_Transition(symbol_t* label,int state_number,Transition* next,Abstract_allocator prv_alloc) {
+Transition* new_Transition(const symbol_t* label,int state_number,Transition* next,Abstract_allocator prv_alloc) {
 Transition* transition;
 transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {
@@ -83,7 +83,7 @@ return transition;
 /**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
-Transition* new_Transition(symbol_t* label,int state_number,Abstract_allocator prv_alloc) {
+Transition* new_Transition(const symbol_t* label,int state_number,Abstract_allocator prv_alloc) {
 return new_Transition(label,state_number,NULL,prv_alloc);
 }
 
@@ -165,7 +165,7 @@ if (ptr==NULL) {
  * an integer or a pointer. If 'clone_tag_label' is not NULL,
  * this function is used to duplicate t's pointer label.
  */ // WARNING : Callback "clone"
-Transition* clone_transition(Transition* t,symbol_t*(*clone_elag_symbol)(const symbol_t*),Abstract_allocator prv_alloc) {
+Transition* clone_transition(const Transition* t,symbol_t*(*clone_elag_symbol)(const symbol_t*),Abstract_allocator prv_alloc) {
 Transition* transition;
 transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {
@@ -188,7 +188,7 @@ return transition;
  * 'clone_tag_label' is not NULL, it is used to clone the pointer
  * labels. If NULL, transitions are rawly copied with a memcpy.
  */ // WARNING : Callback "clone"
-Transition* clone_transition_list(Transition* list,int* renumber,symbol_t*(*clone_elag_symbol)(const symbol_t*),Abstract_allocator prv_alloc) {
+Transition* clone_transition_list(const Transition* list,int* renumber,symbol_t*(*clone_elag_symbol)(const symbol_t*),Abstract_allocator prv_alloc) {
 if (list==NULL) return NULL;
 Transition* result=clone_transition(list,clone_elag_symbol,prv_alloc);
 result->next=NULL;

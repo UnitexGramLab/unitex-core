@@ -49,8 +49,8 @@ struct reg2grf_info {
 
 
 
-int reg_2_grf(unichar*,int*,int*,struct reg2grf_info*);
-void save_states(U_FILE*,struct reg2grf_info*);
+int reg_2_grf(const unichar*,int*,int*,struct reg2grf_info*);
+void save_states(U_FILE*,const struct reg2grf_info*);
 
 
 
@@ -108,7 +108,7 @@ info->states[src].transitions=sorted_insert(dest,info->states[src].transitions);
  * This function takes a unicode string representing a regular expression and
  * compiles it into a .grf file. It returns 1 in case of success; 0 otherwise.
  */
-int reg2grf(unichar* regexp,char* name_grf,Encoding encoding_output, int bom_output) {
+int reg2grf(const unichar* regexp,const char* name_grf,Encoding encoding_output, int bom_output) {
 if (regexp[0]=='\0') {
    error("You must specify a non empty regular expression\n");
    return 0;
@@ -190,7 +190,7 @@ dest[j]='\0';
 /**
  * Saves the given states in the given grf file.
  */
-void save_states(U_FILE* f,struct reg2grf_info* info) {
+void save_states(U_FILE* f,const struct reg2grf_info* info) {
 unichar temp[4096];
 struct list_int* transitions;
 /* We print the number of states */
@@ -220,7 +220,7 @@ for (int i=0;i<info->n_states;i++) {
  * The function returns 1 in case of success or 0 if the end of string
  * is found.
  */
-int read_double_quoted_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+int read_double_quoted_sequence(const unichar* input,int *pos,unichar* token,int *pos_in_token) {
 token[(*pos_in_token)++]=input[(*pos)++];
 while (input[*pos]!='\0' && input[*pos]!='"') {
    if (input[*pos]=='\\') {
@@ -250,7 +250,7 @@ return 1;
  * The function returns 1 in case of success or 0 if the end of string
  * is found.
  */
-int read_angle_bracketed_sequence_single(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+int read_angle_bracketed_sequence_single(const unichar* input,int *pos,unichar* token,int *pos_in_token) {
 token[(*pos_in_token)++]=input[(*pos)++];
 int tmp=(*pos_in_token);
 while (input[*pos]!='\0' && input[*pos]!='>') {
@@ -298,7 +298,7 @@ return 1;
  *    <<...>>
  *    <...><<...>>
  */
-int read_angle_bracketed_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+int read_angle_bracketed_sequence(const unichar* input,int *pos,unichar* token,int *pos_in_token) {
 int original_pos_in_token=*pos_in_token;
 if (!read_angle_bracketed_sequence_single(input,pos,token,pos_in_token)) {
    return 0;
@@ -321,7 +321,7 @@ return 1;
 /**
  * We try to read a tag like {eats,eat.V:P3s}
  */
-int read_round_bracketed_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+int read_round_bracketed_sequence(const unichar* input,int *pos,unichar* token,int *pos_in_token) {
 token[(*pos_in_token)++]=input[(*pos)++];
 while (input[*pos]!='\0' && input[*pos]!='}') {
    if (input[*pos]=='\\') {
@@ -342,7 +342,7 @@ return OK;
  * copies it into 'token'. The function returns 1 in case of success; 0
  * otherwise.
  */
-int read_token(unichar* input,int *pos,unichar* token) {
+int read_token(const unichar* input,int *pos,unichar* token) {
 if (input[*pos]=='\0') {
    fatal_error("read_token should not have been called with an empty input\n");
 }
@@ -427,7 +427,7 @@ return 1;
  * The function returns 1 in case of success; 0 in case of a syntax error in the
  * expression and 2 in case of a malformed token.
  */
-int reg_2_grf(unichar* regexp,int *input_state,int *output_state,struct reg2grf_info* info) {
+int reg_2_grf(const unichar* regexp,int *input_state,int *output_state,struct reg2grf_info* info) {
 /* transE represents the transitions tagged with the non terminal E in the LR table.
  * transY does sthe same for Y  */
 int transE[19]={4,-1,5,-1,12,12,-1,15,16,-1,-1,-1,12,18,-1,12,12,-1,12};
