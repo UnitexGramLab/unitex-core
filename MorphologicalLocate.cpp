@@ -43,7 +43,7 @@ static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*);
 int input_is_token(Fst2Tag tag);
-void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		int pos_in_token, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dela_entry, unichar* jamo,
 		int pos_in_jamo);
@@ -53,7 +53,7 @@ int is_entry_compatible_with_pattern(struct dela_entry* entry,
 /**
  * Stores in 'content' the string corresponding to the given range.
  */
-void get_content(unichar* content, struct locate_parameters* p, int pos,
+static void get_content(unichar* content, struct locate_parameters* p, int pos,
 		int pos_in_token, int pos2, int pos_in_token2) {
 	int i = 0;
 	unichar* current_token =
@@ -79,7 +79,7 @@ void get_content(unichar* content, struct locate_parameters* p, int pos,
  * Returns 1 if the given string is of the form $YYY$ where YYY is a valid
  * variable name; 0 otherwise.
  */
-int is_morpho_variable_output(unichar* s, unichar* var_name) {
+static int is_morpho_variable_output(unichar* s, unichar* var_name) {
 	if (s == NULL || s[0] != '$')
 		return 0;
 	int i, j = 0;
@@ -98,7 +98,7 @@ int is_morpho_variable_output(unichar* s, unichar* var_name) {
  * 1=the tag matches the whole jamo sequence (i.e. we will have to go on the next text token
  * 2=the tag matches a part of the jamo sequence
  */
-int get_jamo_longest_prefix(unichar* jamo, int *new_pos_in_jamo,
+static int get_jamo_longest_prefix(unichar* jamo, int *new_pos_in_jamo,
 		int *new_pos_in_token, unichar* tag_token, struct locate_parameters* p,
 		unichar* token) {
 	unichar tmp[128];
@@ -1361,7 +1361,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
  * Tries to find something in the dictionary that match both text content and
  * given pattern. This version of the function handles the all languages but Arabic.
  */
-void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
+static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 		const unsigned char* bin, const struct INF_codes* inf, int offset,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
@@ -1578,7 +1578,7 @@ void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 	}
 }
 
-int shadda_may_be_omitted(ArabicTypoRules r) {
+static int shadda_may_be_omitted(ArabicTypoRules r) {
 	return r.shadda_damma_omission || r.shadda_damma_omission_at_end
 			|| r.shadda_dammatan_omission_at_end || r.shadda_fatha_omission
 			|| r.shadda_fatha_omission_at_end
@@ -1599,7 +1599,7 @@ int shadda_may_be_omitted(ArabicTypoRules r) {
 #define AF_EXPECTED 8
 #define YF_EXPECTED 16
 
-void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
+static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		const unsigned char* bin, const struct INF_codes* inf, int offset,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
@@ -2051,7 +2051,7 @@ void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
  * anything found in the dictionary will do. It is used to represent the <DIC>
  * pattern.
  */
-void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		int pos_in_token, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar* jamo,
 		int pos_in_jamo) {

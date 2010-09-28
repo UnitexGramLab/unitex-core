@@ -35,18 +35,18 @@
 /* Delay between two prints (yyy% done) */
 #define DELAY CLOCKS_PER_SEC
 
-int binary_search(int, int*, int);
-int find_compound_word(int, int, struct DLC_tree_info*,
+static int binary_search(int, int*, int);
+static int find_compound_word(int, int, struct DLC_tree_info*,
 		struct locate_parameters*);
-unichar* get_token_sequence(const int*, struct string_hash*, int, int);
+static unichar* get_token_sequence(const int*, struct string_hash*, int, int);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*, struct Token_error_ctx*);
 void shift_variable_bounds(Variables*, int);
-void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
-void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
-struct match_list* eliminate_longer_matches(struct match_list*, int, int,
+static void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
+static void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
+static struct match_list* eliminate_longer_matches(struct match_list*, int, int,
 		unichar*, int*, struct locate_parameters*, Abstract_allocator);
-struct match_list* save_matches(struct match_list*, int, U_FILE*,
+static struct match_list* save_matches(struct match_list*, int, U_FILE*,
 		struct locate_parameters*, Abstract_allocator);
 
 
@@ -1577,7 +1577,7 @@ while (output_variable_list != NULL) {
 /**
  * Looks for 'a' in the given array. Returns its position or -1 if not found.
  */
-int binary_search(int a, int* t, int n) {
+static int binary_search(int a, int* t, int n) {
 	register int start, middle;
 	if (n == 0 || t == NULL)
 		return -1;
@@ -1605,7 +1605,7 @@ int binary_search(int a, int* t, int n) {
  * the longest compound word thay have in common. It returns the position
  * of the last token of the compound word, or -1 if no compound word is found.
  */
-int find_longest_compound_word(int pos, struct DLC_tree_node* node,
+static int find_longest_compound_word(int pos, struct DLC_tree_node* node,
 		int pattern_number, struct locate_parameters* p) {
 	if (node == NULL) {
 		fatal_error("NULL node in find_longest_compound_word\n");
@@ -1654,7 +1654,7 @@ int find_longest_compound_word(int pos, struct DLC_tree_node* node,
  * or -1 if no compound word is found. In case of a compound word that is a prefix
  * of another, the function considers the longest one.
  */
-int find_compound_word(int pos, int pattern_number,
+static int find_compound_word(int pos, int pattern_number,
 		struct DLC_tree_info* DLC_tree, struct locate_parameters* p) {
 	return find_longest_compound_word(pos, DLC_tree->root, pattern_number, p);
 }
@@ -1664,7 +1664,7 @@ int find_compound_word(int pos, int pattern_number,
  * the longest compound word thay have in common. It returns the position
  * of the last token of the compound word, or -1 if no compound word is found.
  */
-int find_compound_word_old_(int pos, struct DLC_tree_node* node,
+static int find_compound_word_old_(int pos, struct DLC_tree_node* node,
 		int pattern_number, struct locate_parameters* p) {
 	int position_max, m, res;
 	if (node == NULL)
@@ -1693,7 +1693,8 @@ int find_compound_word_old_(int pos, struct DLC_tree_node* node,
  * or -1 if no compound word is found. In case of a compound word that is a prefix
  * of another, the function considers the longest one.
  */
-int find_compound_word_old(int pos, int pattern_number,
+/*
+static int find_compound_word_old(int pos, int pattern_number,
 		struct DLC_tree_info* DLC_tree, struct locate_parameters* p) {
 	int position_max, m, res;
 	struct DLC_tree_node *n;
@@ -1724,11 +1725,12 @@ int find_compound_word_old(int pos, int pattern_number,
 	}
 	return position_max;
 }
+*/
 
 /**
  * Returns a string corresponding to the tokens in the range [start;end].
  */
-unichar* get_token_sequence(const int* token_array, struct string_hash* tokens,
+static unichar* get_token_sequence(const int* token_array, struct string_hash* tokens,
 		int start, int end) {
 	int i;
 	int l = 0;
@@ -1750,7 +1752,7 @@ unichar* get_token_sequence(const int* token_array, struct string_hash* tokens,
 /**
  * Stores the given match in a list. All matches will be processed later.
  */
-void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_allocator prv_alloc) {
+static void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	if (end > p->last_matched_position) {
 		p->last_matched_position = end;
 	}
@@ -1765,7 +1767,7 @@ void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_a
 }
 
 
-void insert_in_all_matches_mode(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
+static void insert_in_all_matches_mode(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 int start = m->m.start_pos_in_token;
 int end = m->m.end_pos_in_token;
 unichar* output = m->output;
@@ -1797,7 +1799,7 @@ while (*L != NULL) {
  *
  * # Changed to allow different outputs in merge/replace
  * mode when the grammar is an ambiguous transducer (S.N.) */
-void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
+static void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	//int start=p->current_origin+p->absolute_offset+p->left_ctx_shift;
 	int start = m->m.start_pos_in_token;
 	int end = m->m.end_pos_in_token;
@@ -1887,7 +1889,7 @@ void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_
  * NOTE: 'dont_add_match' is supposed to be initialized at 0 before this
  *       funtion is called.
  */
-struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
+static struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 		int end, unichar* output, int *dont_add_match,
 		struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	struct match_list *l;
@@ -1951,7 +1953,7 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
  * <E>/[[ <MIN>* <PRE> <MIN>* <E>/]]
  * left-most stehen am Anfang der Liste
  */
-struct match_list* save_matches(struct match_list* l, int current_position,
+static struct match_list* save_matches(struct match_list* l, int current_position,
 		U_FILE* f, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 struct match_list *ptr;
 
