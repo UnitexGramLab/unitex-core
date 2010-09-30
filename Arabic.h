@@ -77,6 +77,57 @@
 /* Hamza variant */
 #define ABS_AR_ALEF_WASLA					0x0671
 
+/* Here are the absolute definition of the Buckwalter transliterations */
+#define BW_AR_HAMZA 					'c'
+#define BW_AR_ALEF_WITH_MADDA_ABOVE 	'C'
+#define BW_AR_ALEF_WITH_HAMZA_ABOVE 	'O'
+#define BW_AR_WAW_WITH_HAMZA_ABOVE 		'W'
+#define BW_AR_ALEF_WITH_HAMZA_BELOW 	'I'
+#define BW_AR_YEH_WITH_HAMZA_ABOVE 		'e'
+#define BW_AR_ALEF 						'A'
+#define BW_AR_BEH 					 	'b'
+#define BW_AR_TEH_MARBUTA 				'p'
+#define BW_AR_TEH 						't'
+#define BW_AR_THEH 						'v'
+#define BW_AR_JEEM 						'j'
+#define BW_AR_HAH 						'H'
+#define BW_AR_KHAH 						'x'
+#define BW_AR_DAL 						'd'
+#define BW_AR_THAL						'J'
+#define BW_AR_REH 						'r'
+#define BW_AR_ZAIN						'z'
+#define BW_AR_SEEN 						's'
+#define BW_AR_SHEEN 					'M'
+#define BW_AR_SAD	 					'S'
+#define BW_AR_DAD	 					'D'
+#define BW_AR_TAH	 					'T'
+#define BW_AR_ZAH	 					'Z'
+#define BW_AR_AIN	 					'E'
+#define BW_AR_GHAIN						'g'
+#define BW_AR_TATWEEL 					'_'
+#define BW_AR_FEH	 					'f'
+#define BW_AR_QAF	 					'q'
+#define BW_AR_KAF	 					'k'
+#define BW_AR_LAM	 					'l'
+#define BW_AR_MEEM	 					'm'
+#define BW_AR_NOON	 					'n'
+#define BW_AR_HEH	 					'h'
+#define BW_AR_WAW	 					'w'
+#define BW_AR_ALEF_MAQSURA				'Y'
+#define BW_AR_YEH	 					'y'
+/* Diacritics */
+#define BW_AR_FATHATAN					'F'
+#define BW_AR_DAMMATAN					'N'
+#define BW_AR_KASRATAN					'K'
+#define BW_AR_FATHA						'a'
+#define BW_AR_DAMMA						'u'
+#define BW_AR_KASRA						'i'
+#define BW_AR_SHADDA					'U'
+#define BW_AR_SUKUN						'o'
+#define BW_AR_SUPERSCRIPT_ALEF			'R'
+/* Hamza variant */
+#define BW_AR_ALEF_WASLA					'|'
+
 
 /* This macro is for debug only. You should not use it unless you are me. SP */
 //#define AR_WORK_ON_TRANSLITERATED_FORMS
