@@ -320,14 +320,8 @@ void error_at_token_pos(const char* message, int start, int length,
 	p->token_error_ctx.last_length = length;
 }
 
-/**
- * The logical XOR.
- */
-int XOR(int a, int b) {
-	return (a && !b) || (!a && b);
-}
 
-static void update_last_position(struct locate_parameters* p, int pos) {
+static inline void update_last_position(struct locate_parameters* p, int pos) {
 	if (pos > p->last_tested_position) {
 		p->last_tested_position = pos;
 	}

@@ -56,7 +56,14 @@
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p);
 void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
 void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int,struct list_int*,struct locate_parameters*);
-int XOR(int a,int b);
+
+
+/**
+ * The logical XOR.
+ */
+static inline int XOR(int a, int b) {
+	return (a && !b) || (!a && b);
+}
 
 #endif
 
