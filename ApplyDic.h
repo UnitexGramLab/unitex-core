@@ -123,7 +123,17 @@ struct dico_application_info {
    struct bit_array* part_of_a_word;
    struct bit_array* simple_word;
    int* n_occurrences;
+
+   /* tct_h is a hash table used to associate a priority to each token
+    * sequence matched when applying a .bin dictionary. Keys are sequences
+    * of token numbers. */
    struct tct_hash* tct_h;
+   /* tct_h_tags_ind is a hash table used to associate a priority to each token
+    * sequence matched when applying a .fst2 dictionary.
+    * IMPORTANT: unlike tct_h, keys are couple of offsets [start;end], because
+    *            .fst2 matching are contextual */
+   struct tct_hash* tct_h_tags_ind;
+
    /* Total number of simple, compound and unknown word occurrences in the text
     * WARNING: these are NOT the number of lines of the dlf, dlc and err files */
    int SIMPLE_WORDS;

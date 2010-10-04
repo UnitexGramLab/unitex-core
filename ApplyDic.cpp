@@ -402,6 +402,9 @@ if (current_token[pos_in_current_token]=='\0') {
             u_fprintf(info->dlc,"%S\n",line_buf);
             tmp=tmp->next;
          }
+         /* We note that this compound word has been matched with
+          * that priority */
+         add_tct_token_sequence(token_sequence,info->tct_h,priority);
       }
    }
    pos_offset++;
@@ -589,6 +592,7 @@ for (int j=0;j<tokens->N;j++) {
    info->n_occurrences[j]=0;
 }
 info->tct_h=new_tct_hash();
+info->tct_h_tags_ind=new_tct_hash();
 info->SIMPLE_WORDS=0;
 info->COMPOUND_WORDS=0;
 info->UNKNOWN_WORDS=0;
@@ -617,6 +621,7 @@ free_bit_array(info->part_of_a_word);
 free_bit_array(info->simple_word);
 free(info->n_occurrences);
 free_tct_hash(info->tct_h);
+free_tct_hash(info->tct_h_tags_ind);
 for (int i=0;i<info->n_tag_sequences;i++) {
 	free_match_list_element(info->tag_sequences[i]);
 }
@@ -677,7 +682,19 @@ return 0;
 /**
  * Adds the given match to the tag sequence array, enlarging it if needed.
  */
-void add_tag_sequence(struct dico_application_info* info,struct match_list* match) {
+void add_tag_sequence(struct dico_application_info* info,struct match_list* match,int priority) {
+/* First, we test if the current match has not already been matched with
+ * a greater priority */
+int foo[3]={match->m.start_pos_in_token,match->m.end_pos_in_token,-1};
+int w=was_already_in_tct_hash(foo,info->tct_h_tags_ind,priority);
+if (w!=0 && w!=priority) {
+	/* If the match has already been processed
+	 * with a greater priority, we skip it */
+	return;
+}
+/* And we note that the match has been taken into account
+ * with that priority */
+add_tct_token_sequence(foo,info->tct_h_tags_ind,priority);
 if (info->n_tag_sequences==info->tag_sequences_capacity) {
    /* If we have to enlarge the array, doubling its capacity */
 	if (info->tag_sequences_capacity==0) {
@@ -717,7 +734,7 @@ while (l!=NULL) {
    if (l->output!=NULL && l->output[0]=='/') {
 	   /* If we have a tag sequence to be used at the time of
 	    * building the text automaton */
-	   add_tag_sequence(info,l);
+	   add_tag_sequence(info,l,priority);
 	   /* If we have found and handled a valid tag sequence, we process
 	    * the next match in the list, AND WE DON'T FREE THE CURRENT
 	    * MATCH, since it's now in a pointer array. */
@@ -731,10 +748,12 @@ while (l!=NULL) {
       if (is_sequence_of_letters(entry->inflected,info->alphabet)) {
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
-         if (token_number!=-1) {
+         if (token_number==-1) {
             /* If we find in the dictionary a token that is not in the text,
-             * we fail, doing nothing */
-            int p=get_value(info->simple_word,token_number);
+             * we fail */
+        	 error("Ignoring line because the inflected form does not appear in the text:\n%S\n",l->output);
+         } else {
+        	int p=get_value(info->simple_word,token_number);
             if (p==0 || p==priority) {
                /* We save the simple word only if it hasn't already been processed with
                 * a greater priority */
@@ -747,8 +766,6 @@ while (l!=NULL) {
                   u_fprintf(info->morpho,"%S\n",l->output);
                }
             }	
-         } else {
-        	 error("Ignoring line because the inflected form does not appear in the text:\n%S\n",l->output);
          }
       }
       else {
@@ -770,6 +787,9 @@ while (l!=NULL) {
         		 if (export_to_morpho_dic) {
         			 u_fprintf(info->morpho,"%S\n",l->output);
         		 }
+                 /* And we note that the match has been taken into account
+                  * with that priority */
+                 add_tct_token_sequence(token_tab_coumpounds,info->tct_h,priority);
         	 }
          }
       }
