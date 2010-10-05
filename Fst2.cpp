@@ -139,6 +139,8 @@ e->matching_tokens=NULL;
 e->compound_pattern=NO_COMPOUND_PATTERN;
 e->morphological_filter=NULL;
 e->filter_number=-1;
+e->meta=(enum meta_symbol)(-1);
+e->pattern_number=-1;
 return e;
 }
 
@@ -674,10 +676,17 @@ fst2->initial_states=(int*)malloc_cb((fst2->number_of_graphs+1)*sizeof(int),prv_
 if (fst2->initial_states==NULL) {
    fatal_alloc_error("load_fst2_from_file");
 }
+for (int i=0;i<fst2->number_of_graphs+1;i++) {
+	fst2->initial_states[i]=0;
+}
 fst2->number_of_states_per_graphs=(int*)malloc_cb((fst2->number_of_graphs+1)*sizeof(int),prv_alloc);
 if (fst2->number_of_states_per_graphs==NULL) {
    fatal_alloc_error("load_fst2_from_file");
 }
+for (int i=0;i<fst2->number_of_graphs+1;i++) {
+	fst2->number_of_states_per_graphs[i]=0;
+}
+
 /*
  * If needed, we allocate the 'graph_names' array. The +1 has the same motivation
  * than above.
