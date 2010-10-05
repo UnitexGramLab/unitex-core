@@ -152,7 +152,7 @@ if (block->size >=new_number_of_elements)
   return;
 int factor=2;
 while (block->size*factor < new_number_of_elements) {
-   factor*=2;
+   factor*=2 ;
 }
 if ((block->size) == token_array_base_memory_nb_item_size) {
   if (factor < 4) factor=4;
