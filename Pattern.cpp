@@ -65,7 +65,7 @@ free_cb(p,prv_alloc);
  * AMBIGUOUS_PATTERN if there no indication that helps to guess if
  * we have a code or a lemma.
  */
-enum pattern_type is_code_pattern(unichar* s,struct string_hash* semantic_codes,int tilde_negation_operator) {
+enum pattern_type is_code_pattern(const unichar* s,struct string_hash* semantic_codes,int tilde_negation_operator) {
 if ((s==NULL)||(s[0]=='\0')) {
    fatal_error("NULL or empty pattern in is_code_pattern\n");
 }
@@ -124,7 +124,7 @@ while (s[i]!='\0') {
  * "z3" -> p->forbidden_codes
  * "P3s" and "I3s" -> p->inflectional_codes
  */
-void build_code_pattern(struct pattern* p,unichar* codes,int tilde_negation_operator,Abstract_allocator prv_alloc) {
+void build_code_pattern(struct pattern* p,const unichar* codes,int tilde_negation_operator,Abstract_allocator prv_alloc) {
 unichar tmp[2048];
 int pos=0;
 int minus=0;
@@ -181,7 +181,7 @@ do {
  * and builds a pattern from it. Raises a fatal error in case
  * of malformed pattern.
  */
-struct pattern* build_pattern(unichar* s,struct string_hash* semantic_codes,int tilde_negation_operator,Abstract_allocator prv_alloc) {
+struct pattern* build_pattern(const unichar* s,struct string_hash* semantic_codes,int tilde_negation_operator,Abstract_allocator prv_alloc) {
 struct pattern* p=new_pattern(prv_alloc);
 int pos;
 unichar tmp[2048];
@@ -273,7 +273,7 @@ return p;
 /**
  * This function builds a token pattern from the given information.
  */
-struct pattern* build_token_pattern(unichar* token,Abstract_allocator prv_alloc) {
+struct pattern* build_token_pattern(const unichar* token,Abstract_allocator prv_alloc) {
 struct pattern* p=new_pattern(prv_alloc);
 p->type=TOKEN_PATTERN;
 p->inflected=u_strdup(token,prv_alloc);
@@ -285,7 +285,7 @@ return p;
  * Returns 1 if the given DELAF entry is compatible with the given code part of this pattern;
  * 0 otherwise.
  */
-int is_compatible_code_pattern(struct dela_entry* entry,struct pattern* pattern) {
+int is_compatible_code_pattern(const struct dela_entry* entry,const struct pattern* pattern) {
 struct list_ustring* tmp=pattern->grammatical_codes;
 while (tmp!=NULL) {
    if (!dic_entry_contain_gram_code(entry,tmp->string)) {
@@ -318,7 +318,7 @@ return 1;
  * Returns 1 if the given DELAF entry is compatible with the given pattern;
  * 0 otherwise.
  */
-int is_entry_compatible_with_pattern(struct dela_entry* entry,struct pattern* pattern) {
+int is_entry_compatible_with_pattern(const struct dela_entry* entry,const struct pattern* pattern) {
 switch(pattern->type) {
    case LEMMA_PATTERN: return (!u_strcmp(entry->lemma,pattern->lemma));
    case CODE_PATTERN: return is_compatible_code_pattern(entry,pattern);
@@ -335,7 +335,7 @@ return 0;
 /**
  * Returns a clone of the pattern.
  */
-struct pattern* clone(struct pattern* src,Abstract_allocator prv_alloc) {
+struct pattern* clone(const struct pattern* src,Abstract_allocator prv_alloc) {
 	struct pattern* dst;
 
 	if (src == NULL)

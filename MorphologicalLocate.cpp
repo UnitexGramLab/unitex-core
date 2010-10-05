@@ -47,8 +47,8 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		int pos_in_token, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dela_entry, unichar* jamo,
 		int pos_in_jamo);
-int is_entry_compatible_with_pattern(struct dela_entry* entry,
-		struct pattern* pattern);
+int is_entry_compatible_with_pattern(const struct dela_entry* entry,
+		const struct pattern* pattern);
 
 /**
  * Stores in 'content' the string corresponding to the given range.
