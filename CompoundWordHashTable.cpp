@@ -156,7 +156,11 @@ while (block->size*factor < new_number_of_elements) {
 }
 if ((block->size) == token_array_base_memory_nb_item_size) {
   if (factor < 4) factor=4;
-  block->token_array=(int*)malloc(block->size*sizeof(int)*factor);
+  int* new_array=(int*)malloc(block->size*sizeof(int)*factor);
+  for (int i=0;i<block->length;i++) {
+	  new_array[i]=block->token_array[i];
+  }
+  block->token_array=new_array;
 }
 else
   block->token_array=(int*)realloc(block->token_array,block->size*sizeof(int)*factor);
@@ -217,13 +221,14 @@ while (i<block_length) {
       j++;
    }
    /* If the current sequence in the token array has not matched,
-    * we look for the next sequence. The -2 is there because we want
+    * we look for the next sequence. The +2 is there because we want
     * to put 'i' on the first cell after the -1 and priority of the previous
-    * token sequence. We increase 'i' of 1 so that i-2 is always >=0 */
-   i=i+1;
-   do {
-      i++;
-   } while (i<block_length && tokens[i-2]!=-1);
+    * token sequence. */
+   while (i<block_length && tokens[i]!=-1) {
+	   i++;
+   }
+   i=i+2;
+   if (i==block_length) return -1;
 } 
 return -1;
 }
