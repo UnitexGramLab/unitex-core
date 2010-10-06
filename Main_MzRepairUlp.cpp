@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2010 UniversitÃ© Paris-Est Marne-la-VallÃ©e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,32 +30,18 @@
 
 
 
-
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
 
-#ifndef _MZ_REPAIR_ULP_LOGGER_H_INCLUDED
-#define _MZ_REPAIR_ULP_LOGGER_H_INCLUDED 1
+#include "IOBuffer.h"
+#include "logger/MzRepairUlp.h"
 
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* */
-
-extern const char* optstring_MzRepairUlp;
-extern const struct option_TS lopts_MzRepairUlp[];
-extern const char* usage_MzRepairUlp;
-
-int main_MzRepairUlp(int argc,char* const argv[]);
-
-
-#ifdef __cplusplus
+return main_MzRepairUlp(argc,argv);
 }
-#endif
 
 #endif
-
-#endif
-

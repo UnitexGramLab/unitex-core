@@ -43,6 +43,8 @@
 #include "logger/UniRunLogger.h"
 #include "logger/UniLoggerAutoInstall.h"
 
+#include "logger/MzRepairUlp.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -95,6 +97,12 @@ if (argc>3) {
 }
 
 if ((argc-skip_arg)>1) {
+    if (strcmp(argv[1+skip_arg],"MzRepairUlp")==0)
+    {
+        done = 1;
+        ret = main_MzRepairUlp(argc-(skip_arg+1),argv+skip_arg+1);
+    }
+
     if (strcmp(argv[1+skip_arg],"RunLog")==0)
     {
         done = 1;
