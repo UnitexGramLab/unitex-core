@@ -479,7 +479,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityL
 
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_LangMorpho.o\
-                 MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
+                 MF_InflectTransd.o MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
                  Fst2.o AbstractFst2Load.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o IOBuffer.o File.o DELA.o StringParsing.o List_ustring.o\
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check_lib.o\
@@ -487,7 +487,7 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  MF_Operators_Util.o getopt.o ProgramInvoker.o Korean.o Arabic.o $(SYSLIBMAPPED)
 
 MZREPAIRULP   = MzRepairUlp
-MZREPAIRULP_OBJS = Main_MzRepairUlp.o MzToolsUlp.o MzRepairUlp.o
+MZREPAIRULP_OBJS = Main_MzRepairUlp.o MzToolsUlp.o MzRepairUlp.o getopt.o Error.o Unicode.o Af_stdio.o ActivityLogger.o IOBuffer.o $(SYSLIBMAPPED)
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o\
