@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		222D09EA125CE6DD00497A10 /* MzRepairUlp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222D09E6125CE6DD00497A10 /* MzRepairUlp.cpp */; };
+		222D09EB125CE6DD00497A10 /* MzToolsUlp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222D09E8125CE6DD00497A10 /* MzToolsUlp.cpp */; };
 		222F7A051107A64C00C91CC7 /* FilePack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F21107A64C00C91CC7 /* FilePack.cpp */; };
 		222F7A061107A64C00C91CC7 /* FilePackCrc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F41107A64C00C91CC7 /* FilePackCrc32.cpp */; };
 		222F7A071107A64C00C91CC7 /* FilePackIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F61107A64C00C91CC7 /* FilePackIo.cpp */; };
@@ -211,6 +213,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		222D09E6125CE6DD00497A10 /* MzRepairUlp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MzRepairUlp.cpp; path = ../logger/MzRepairUlp.cpp; sourceTree = SOURCE_ROOT; };
+		222D09E7125CE6DD00497A10 /* MzRepairUlp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MzRepairUlp.h; path = ../logger/MzRepairUlp.h; sourceTree = SOURCE_ROOT; };
+		222D09E8125CE6DD00497A10 /* MzToolsUlp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MzToolsUlp.cpp; path = ../logger/MzToolsUlp.cpp; sourceTree = SOURCE_ROOT; };
+		222D09E9125CE6DD00497A10 /* MzToolsUlp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MzToolsUlp.h; path = ../logger/MzToolsUlp.h; sourceTree = SOURCE_ROOT; };
 		222F79F21107A64C00C91CC7 /* FilePack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilePack.cpp; path = ../logger/FilePack.cpp; sourceTree = SOURCE_ROOT; };
 		222F79F31107A64C00C91CC7 /* FilePack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilePack.h; path = ../logger/FilePack.h; sourceTree = SOURCE_ROOT; };
 		222F79F41107A64C00C91CC7 /* FilePackCrc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilePackCrc32.cpp; path = ../logger/FilePackCrc32.cpp; sourceTree = SOURCE_ROOT; };
@@ -1028,6 +1034,10 @@
 				222F79F81107A64C00C91CC7 /* FilePackType.h */,
 				222F79F91107A64C00C91CC7 /* FileUnPack.cpp */,
 				222F79FA1107A64C00C91CC7 /* FileUnPack.h */,
+				222D09E6125CE6DD00497A10 /* MzRepairUlp.cpp */,
+				222D09E7125CE6DD00497A10 /* MzRepairUlp.h */,
+				222D09E8125CE6DD00497A10 /* MzToolsUlp.cpp */,
+				222D09E9125CE6DD00497A10 /* MzToolsUlp.h */,
 				222F79FB1107A64C00C91CC7 /* ReworkArg.cpp */,
 				222F79FC1107A64C00C91CC7 /* ReworkArg.h */,
 				222F79FD1107A64C00C91CC7 /* SyncLogger.h */,
@@ -1117,7 +1127,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "UnitexToolLogger" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* UnitexToolLogger */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1321,6 +1338,8 @@
 				2237A95211E3F1C000D247CF /* Cassys.cpp in Sources */,
 				2237A97A11E45C0E00D247CF /* DirHelperPosix.cpp in Sources */,
 				2294F4A8122EEB1C009495A8 /* LocateTrace.cpp in Sources */,
+				222D09EA125CE6DD00497A10 /* MzRepairUlp.cpp in Sources */,
+				222D09EB125CE6DD00497A10 /* MzToolsUlp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

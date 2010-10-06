@@ -1438,66 +1438,6 @@
 				Name="logger"
 				>
 				<File
-					RelativePath="..\logger\DirHelper.h"
-					>
-				</File>
-				<File
-					RelativePath="..\logger\DirHelperPosix.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugOptim|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="DebugOptim|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\logger\DirHelperWin.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\logger\FilePack.cpp"
 					>
 				</File>
@@ -1527,6 +1467,22 @@
 				</File>
 				<File
 					RelativePath="..\logger\FileUnPack.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzRepairUlp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzRepairUlp.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzToolsUlp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzToolsUlp.h"
 					>
 				</File>
 				<File

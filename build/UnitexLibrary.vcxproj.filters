@@ -119,6 +119,12 @@
     <ClInclude Include="..\LocateTrace.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\logger\MzToolsUlp.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\MzRepairUlp.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -690,6 +696,12 @@
     </ClCompile>
     <ClCompile Include="..\LocateTrace.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\MzRepairUlp.cpp">
+      <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\MzToolsUlp.cpp">
+      <Filter>Source Files\logger</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

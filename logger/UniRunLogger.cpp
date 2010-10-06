@@ -628,6 +628,13 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
       return 0;
 }
 
+static int is_space_or_equivalent(char c)
+{
+	if ((c==' ') || (c=='\t') || (c=='\r') || (c=='\n'))
+		return 1;
+	return 0;
+}
+
 
 void do_convert_command_line_synth_to_std(
     const char*file_synth,
@@ -647,7 +654,7 @@ void do_convert_command_line_synth_to_std(
   int iNbArg=0;
 
 
-  while ((*lpSrc) == ' ')
+  while (is_space_or_equivalent(*lpSrc) != 0)
       lpSrc++;
 
   if (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
@@ -661,9 +668,9 @@ void do_convert_command_line_synth_to_std(
           lpSrc++;
         }
 
-      if (((*lpSrc) == ' ') && (!isInQuote))
+      if ((is_space_or_equivalent(*lpSrc) != 0) && (!isInQuote))
       {
-          while (((*lpSrc) == ' ') && (lpSrc<lpSrcLimit))
+          while ((is_space_or_equivalent(*lpSrc) != 0) && (lpSrc<lpSrcLimit))
               lpSrc++;
           if (((*lpSrc) == '\0') || (lpSrc==lpSrcLimit))
 			  break;

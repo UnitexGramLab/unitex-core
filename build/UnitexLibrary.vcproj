@@ -1172,6 +1172,22 @@
 					>
 				</File>
 				<File
+					RelativePath="..\logger\MzRepairUlp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzRepairUlp.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzToolsUlp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\MzToolsUlp.h"
+					>
+				</File>
+				<File
 					RelativePath="..\logger\ReworkArg.cpp"
 					>
 				</File>

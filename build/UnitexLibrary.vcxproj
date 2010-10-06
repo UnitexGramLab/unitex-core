@@ -183,6 +183,8 @@
     <ClInclude Include="..\DirHelper.h" />
     <ClInclude Include="..\LocateTrace.h" />
     <ClInclude Include="..\LocateTracePlugCallback.h" />
+    <ClInclude Include="..\logger\MzRepairUlp.h" />
+    <ClInclude Include="..\logger\MzToolsUlp.h" />
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
     <ClInclude Include="..\LocateCache.h" />
@@ -295,6 +297,8 @@
     <ClCompile Include="..\LocateTfst_lib.cpp" />
     <ClCompile Include="..\LocateTfstMatches.cpp" />
     <ClCompile Include="..\LocateTrace.cpp" />
+    <ClCompile Include="..\logger\MzRepairUlp.cpp" />
+    <ClCompile Include="..\logger\MzToolsUlp.cpp" />
     <ClCompile Include="..\MappedFileHelperWin.cpp" />
     <ClCompile Include="..\Match.cpp" />
     <ClCompile Include="..\MF_DicoMorpho.cpp" />
