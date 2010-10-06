@@ -644,7 +644,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
-                  FileUnPack.o ReworkArg.o UniRunLogger.o $(SYSLIBLOGGER) \
+                  FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o $(SYSLIBLOGGER) \
                   Main_UnitexToolLogger.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
@@ -1168,6 +1168,12 @@ FilePackCrc32.o: ../logger/FilePackCrc32.cpp
 
 FilePackIo.o: ../logger/FilePackIo.cpp
 	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+
+MzToolsUlp.o: ../logger/MzToolsUlp.cpp
+	$(CC) -c ../logger/MzToolsUlp.cpp $(OPTIONS)
+
+MzRepairUlp.o: ../logger/MzRepairUlp.cpp
+	$(CC) -c ../logger/MzRepairUlp.cpp $(OPTIONS)
 
 UniLogger.o: ../logger/UniLogger.cpp
 	$(CC) -c ../logger/UniLogger.cpp $(OPTIONS)

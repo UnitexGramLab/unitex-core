@@ -80,6 +80,8 @@ typedef struct z_stream_s {
 
 
 #define Z_ERRNO (-1)
+#define Z_STREAM_ERROR (-2)
+#define Z_MEM_ERROR    (-4)
 #define Z_OK            0
 #define MAX_WBITS   15
 #define MAX_MEM_LEVEL 9
