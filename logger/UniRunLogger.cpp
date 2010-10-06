@@ -628,6 +628,64 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
       return 0;
 }
 
+
+void do_convert_command_line_synth_to_std(
+    const char*file_synth,
+	size_t size_synth,
+    char** ptr_converted,
+    size_t *size_file_converted)
+{
+  char* dest = (char*)malloc((size_synth*2) + 0x100);
+  char begin[0x40];
+  sprintf(begin,"%010d\n%010d\n",0,0);
+  strcpy(dest,begin);
+  char *cur_dest = dest+strlen(dest);
+
+  const char* lpSrc=file_synth;
+  const char* lpSrcLimit=file_synth+size_synth;
+  int isInQuote=0;
+  int iNbArg=0;
+
+
+  while ((*lpSrc) == ' ')
+      lpSrc++;
+
+  if (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
+	  iNbArg++;
+
+  while (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
+    {
+      while ((*lpSrc) == '"')
+        {
+          isInQuote = !isInQuote;
+          lpSrc++;
+        }
+
+      if (((*lpSrc) == ' ') && (!isInQuote))
+      {
+          while (((*lpSrc) == ' ') && (lpSrc<lpSrcLimit))
+              lpSrc++;
+          if (((*lpSrc) == '\0') || (lpSrc==lpSrcLimit))
+			  break;
+		  *(cur_dest++)='\n';
+		  iNbArg++;
+      }
+
+	  *(cur_dest++)=*(lpSrc++);
+    }
+  *(cur_dest)=0;
+  *size_file_converted = cur_dest - dest;
+
+  sprintf(begin,"%010d\n%010d\n",0,iNbArg);
+  memcpy(dest,begin,strlen(begin));
+  *ptr_converted = dest;
+}
+
+
+
+
+
+
 int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
                                         const char* SelectTool,
                                         int clean_file,
@@ -693,7 +751,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
             *p_exec_status = exec_status;
         return -1;
     }
-    uLong i1;
+    
     unz_global_info gi1;
     int err;
     
@@ -703,6 +761,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
         if (SelectTool != NULL)
             if ((*SelectTool)!='\0')
             {
+              uLong i1;
               for (i1=0;i1<gi1.number_entry;i1++)
               {
                   char filename_inzip[256];
@@ -729,6 +788,48 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
               }
 
               unzGoToFirstFile(uf);
+
+			  if (command_line_buf == NULL)
+			  {
+
+
+				  for (i1=0;i1<gi1.number_entry;i1++)
+				  {
+					  char filename_inzip[256];
+					  unz_file_info file_info;
+					  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+
+					  if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
+					  {
+						  
+						  char* command_line_synth_buf = NULL;
+						  size_t size_command_line_synth = 0;
+						  char** p_command_line_synth_buf = &command_line_synth_buf;
+						  do_extracting_currentfile_memory(uf,(void**)p_command_line_synth_buf,&size_command_line_synth,NULL);
+						  if (command_line_synth_buf != NULL)
+						  {
+							  char** p_command_line_buf = &command_line_buf;
+							  do_convert_command_line_synth_to_std(command_line_synth_buf,size_command_line_synth,(char**)p_command_line_buf,&size_command_line);
+							  free(command_line_synth_buf);
+						  }
+						  break;
+					  }
+
+
+					  if ((i1+1)<gi1.number_entry)
+						{
+							err = unzGoToNextFile(uf);
+							if (err!=UNZ_OK)
+							{
+								error("error %d with zipfile in unzGoToNextFile\n",err);
+								break;
+							}
+						}
+				  }
+
+				  unzGoToFirstFile(uf);
+
+			  }
 
               if (command_line_buf != NULL)
               {
@@ -763,8 +864,8 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
       list_file_in = AllocListFile((unsigned int)gi1.number_entry);
       pdlfc = build_list_dir_for_clean();
       int nb_listfile_in=0;
-
-      for (uLong i2=0;i2<gi1.number_entry;i2++)
+      uLong i2;
+      for (i2=0;i2<gi1.number_entry;i2++)
       {
           char filename_inzip[256];
           unz_file_info file_info;
@@ -820,6 +921,54 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                 }
             }
       }
+
+	  if (command_line_buf == NULL)
+	  {
+		  unzGoToFirstFile(uf);
+
+
+		  for (i2=0;i2<gi1.number_entry;i2++)
+		  {
+			  char filename_inzip[256];
+			  unz_file_info file_info;
+			  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+
+
+			  if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
+				{
+						  
+					char* command_line_synth_buf = NULL;
+					size_t size_command_line_synth = 0;
+					char** p_command_line_synth_buf = &command_line_synth_buf;
+					do_extracting_currentfile_memory(uf,(void**)p_command_line_synth_buf,&size_command_line_synth,NULL);
+					if (command_line_synth_buf != NULL)
+					{
+						char** p_command_line_buf = &command_line_buf;
+						do_convert_command_line_synth_to_std(command_line_synth_buf,size_command_line_synth,(char**)p_command_line_buf,&size_command_line);
+						free(command_line_synth_buf);
+					}
+					break;
+				}
+
+
+			  if ((strcmp(filename_inzip,"test_info/command_line.txt")==0) &&
+				  (command_line_buf == NULL))
+			  {
+				  char** p_command_line_buf = &command_line_buf;
+				  do_extracting_currentfile_memory(uf,(void**)p_command_line_buf,&size_command_line,NULL);
+			  }
+
+			  if ((i2+1)<gi1.number_entry)
+				{
+					err = unzGoToNextFile(uf);
+					if (err!=UNZ_OK)
+					{
+						error("error %d with zipfile in unzGoToNextFile\n",err);
+						break;
+					}
+				}
+		  }
+	  }
 
       //size_t walk_arglist;
       int nb_max_arg_for_allocwide = get_max_nb_line_in_file(command_line_buf,size_command_line);
