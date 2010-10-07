@@ -444,7 +444,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							u_strcpy(&(p->stack->stack[stack_top + 1]),
 									L->stack);
 							p->stack->stack_pointer = L->stack_pointer;
-							p->dic_variables = L->dic_variable_backup;
+							p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
 							if (p->nb_output_variables != 0) {
 								install_output_variable_backup(p->output_variables,output_variable_backup);
 							}
@@ -463,13 +463,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								L->position, L->pos_in_token,
 								matches, n_matches, ctx, p,
 								L->jamo, L->pos_in_jamo, content_buffer);
-
-						/*
-						 * We must NOT do this, since this would cause a double free,
-						 * because the job will already be done by free_parsing_info below
-						 *
-						 * clear_dic_variable_list(&(p->dic_variables)); */
-
+						clear_dic_variable_list(&(p->dic_variables));
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
 					} while (L != NULL);
