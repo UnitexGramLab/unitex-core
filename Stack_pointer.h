@@ -37,9 +37,9 @@ struct stack_pointer {
 
 struct stack_pointer* new_stack_pointer(int);
 void free_stack_pointer(struct stack_pointer*);
-int is_empty(struct stack_pointer*);
+int is_empty(const struct stack_pointer*);
 void empty(struct stack_pointer* stack);
-int is_full(struct stack_pointer*);
+int is_full(const struct stack_pointer*);
 void push(struct stack_pointer*,void*);
 void* pop(struct stack_pointer*);
 

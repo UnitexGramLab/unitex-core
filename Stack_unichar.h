@@ -38,9 +38,9 @@ struct stack_unichar {
 
 struct stack_unichar* new_stack_unichar(int);
 void free_stack_unichar(struct stack_unichar*);
-int is_empty(struct stack_unichar*);
+int is_empty(const struct stack_unichar*);
 void empty(struct stack_unichar* stack);
-int is_full(struct stack_unichar*);
+int is_full(const struct stack_unichar*);
 void fatal_error_NULL_push();
 void fatal_error_full_stack_push();
 void push_array(struct stack_unichar*,const unichar*,unsigned int);

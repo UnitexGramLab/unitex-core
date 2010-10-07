@@ -55,7 +55,7 @@ free(stack);
 /**
  * Returns a non zero value if the stack is empty; 0 otherwise.
  */
-int is_empty(struct stack_pointer* stack) {
+int is_empty(const struct stack_pointer* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_empty\n");
 }
@@ -77,7 +77,7 @@ stack->stack_pointer_m=-1;
 /**
  * Returns a non zero value if the stack is full; 0 otherwise.
  */
-int is_full(struct stack_pointer* stack) {
+int is_full(const struct stack_pointer* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_full\n");
 }
