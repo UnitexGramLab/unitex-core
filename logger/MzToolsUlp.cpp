@@ -19,6 +19,7 @@
 #include <string.h>
 
 
+#include "Af_stdio.h"
 
 #include "FilePackType.h"
 #include "MzToolsUlp.h"
@@ -66,9 +67,9 @@ uLong* bytesRecovered;
 int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*nRecovered, uLong*bytesRecovered)
 {
   int err = Z_OK;
-  FILE* fpZip = fopen(file, "rb");
-  FILE* fpOut = fopen(fileOut, "wb");
-  FILE* fpOutCD = fopen(fileOutTmp, "wb");
+  ABSTRACTFILE* fpZip = af_fopen_unlogged(file, "rb");
+  ABSTRACTFILE* fpOut = af_fopen_unlogged(fileOut, "wb");
+  ABSTRACTFILE* fpOutCD = af_fopen_unlogged(fileOutTmp, "wb");
   if (fpZip != NULL &&  fpOut != NULL) {
     int entries = 0;
     uLong totalBytes = 0;
@@ -77,7 +78,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
     char extra[1024];
     int offset = 0;
     int offsetCD = 0;
-    while ( fread(header, 1, 30, fpZip) == 30 ) {
+    while ( af_fread(header, 1, 30, fpZip) == 30 ) {
       int currentOffset = offset;
 
       /* File entry */
@@ -95,7 +96,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
         filename[0] = extra[0] = '\0';
 
         /* Header */
-        if (fwrite(header, 1, 30, fpOut) == 30) {
+        if (af_fwrite(header, 1, 30, fpOut) == 30) {
           offset += 30;
         } else {
           err = Z_ERRNO;
@@ -104,8 +105,8 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
         /* Filename */
         if (fnsize > 0) {
-          if (fread(filename, 1, fnsize, fpZip) == fnsize) {
-            if (fwrite(filename, 1, fnsize, fpOut) == fnsize) {
+          if (af_fread(filename, 1, fnsize, fpZip) == fnsize) {
+            if (af_fwrite(filename, 1, fnsize, fpOut) == fnsize) {
               offset += fnsize;
             } else {
               err = Z_ERRNO;
@@ -122,8 +123,8 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
         /* Extra field */
         if (extsize > 0) {
-          if (fread(extra, 1, extsize, fpZip) == extsize) {
-            if (fwrite(extra, 1, extsize, fpOut) == extsize) {
+          if (af_fread(extra, 1, extsize, fpZip) == extsize) {
+            if (af_fwrite(extra, 1, extsize, fpOut) == extsize) {
               offset += extsize;
             } else {
               err = Z_ERRNO;
@@ -144,8 +145,8 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
           if (dataSize > 0) {
             char* data = (char*)malloc(dataSize);
             if (data != NULL) {
-              if ((int)fread(data, 1, dataSize, fpZip) == dataSize) {
-                if ((int)fwrite(data, 1, dataSize, fpOut) == dataSize) {
+              if ((int)af_fread(data, 1, dataSize, fpZip) == dataSize) {
+                if ((int)af_fwrite(data, 1, dataSize, fpOut) == dataSize) {
                   offset += dataSize;
                   totalBytes += dataSize;
                 } else {
@@ -188,12 +189,12 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
           WRITE_32(header + 38, 0);     /* ext attrb */
           WRITE_32(header + 42, currentOffset);
           /* Header */
-          if (fwrite(header, 1, 46, fpOutCD) == 46) {
+          if (af_fwrite(header, 1, 46, fpOutCD) == 46) {
             offsetCD += 46;
 
             /* Filename */
             if (fnsize > 0) {
-              if (fwrite(filename, 1, fnsize, fpOutCD) == fnsize) {
+              if (af_fwrite(filename, 1, fnsize, fpOutCD) == fnsize) {
                 offsetCD += fnsize;
               } else {
                 err = Z_ERRNO;
@@ -206,7 +207,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
             /* Extra field */
             if (extsize > 0) {
-              if (fwrite(extra, 1, extsize, fpOutCD) == extsize) {
+              if (af_fwrite(extra, 1, extsize, fpOutCD) == extsize) {
                 offsetCD += extsize;
               } else {
                 err = Z_ERRNO;
@@ -216,7 +217,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
             /* Comment field */
             if (comsize > 0) {
-              if ((int)fwrite(comment, 1, comsize, fpOutCD) == comsize) {
+              if ((int)af_fwrite(comment, 1, comsize, fpOutCD) == comsize) {
                 offsetCD += comsize;
               } else {
                 err = Z_ERRNO;
@@ -258,11 +259,11 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
       WRITE_16(header + 20, comsize);     /* comment */
 
       /* Header */
-      if (fwrite(header, 1, 22, fpOutCD) == 22) {
+      if (af_fwrite(header, 1, 22, fpOutCD) == 22) {
 
         /* Comment field */
         if (comsize > 0) {
-          if ((int)fwrite(comment, 1, comsize, fpOutCD) != comsize) {
+          if ((int)af_fwrite(comment, 1, comsize, fpOutCD) != comsize) {
             err = Z_ERRNO;
           }
         }
@@ -273,28 +274,28 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
     }
 
     /* Final merge (file + central directory) */
-    fclose(fpOutCD);
+    af_fclose_unlogged(fpOutCD);
     if (err == Z_OK) {
-      fpOutCD = fopen(fileOutTmp, "rb");
+      fpOutCD = af_fopen(fileOutTmp, "rb");
       if (fpOutCD != NULL) {
         int nRead;
         char buffer[8192];
-        while ( (nRead = (int)fread(buffer, 1, sizeof(buffer), fpOutCD)) > 0) {
-          if ((int)fwrite(buffer, 1, nRead, fpOut) != nRead) {
+        while ( (nRead = (int)af_fread(buffer, 1, sizeof(buffer), fpOutCD)) > 0) {
+          if ((int)af_fwrite(buffer, 1, nRead, fpOut) != nRead) {
             err = Z_ERRNO;
             break;
           }
         }
-        fclose(fpOutCD);
+        af_fclose_unlogged(fpOutCD);
       }
     }
 
     /* Close */
-    fclose(fpZip);
-    fclose(fpOut);
+    af_fclose_unlogged(fpZip);
+    af_fclose_unlogged(fpOut);
 
     /* Wipe temporary file */
-    (void)remove(fileOutTmp);
+    (void)af_remove_unlogged(fileOutTmp);
 
     /* Number of recovered entries */
     if (err == Z_OK) {
