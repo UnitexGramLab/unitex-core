@@ -21,9 +21,9 @@
 
 const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
-		{"file", required_argument_TS, NULL, 'f'},
+		{"text", required_argument_TS, NULL, 't'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
-		{"transducers_list", required_argument_TS, NULL,'t'},
+		{"transducers_list", required_argument_TS, NULL,'l'},
 		{"input_encoding",required_argument_TS,NULL,'k'},
 		{"output_encoding",required_argument_TS,NULL,'q'},
 		{"no_create_directory",no_argument_TS,NULL,'d'},
@@ -43,10 +43,10 @@ const char* usage_Cassys =
 		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
         "-r X/--transducer_dir=X: take tranducer on directory X (so you don't specify \n"
         "      full path for each transducer; note that X must be (back)slash terminated\n"
-		"-t TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
+		"-l TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
-		"-f FILE/--file=FILE the snt text file\n"
+		"-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
 		"-i/--in_place mean uses the same csc/snt directories for each transducer\n"
 		"-d/--no_create_directory mean the all snt/csc directories already exist and don't need to be created\n"
 		"  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
@@ -236,7 +236,7 @@ int main_Cassys(int argc,char* const argv[]) {
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
-		case 'f': {
+		case 't': {
 			if (vars -> optarg[0] == '\0') {
 				fatal_error("Command line error : Empty file name argument\n");
 			}
@@ -254,7 +254,7 @@ int main_Cassys(int argc,char* const argv[]) {
 
 			break;
 		}
-		case 't': {
+		case 'l': {
 			if(vars -> optarg[0] == '\0'){
 				fatal_error("Command line error : Empty transducer list argument\n");
 			} else {
@@ -450,7 +450,7 @@ cassys_tokens_list *cassys_load_text(const char *tokens_text_name, const char *t
 	U_FILE *f = u_fopen(BINARY, text_cod_name,U_READ);
 	if( f == NULL){
 		perror("fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",text_cod_name);
+		fprintf(stderr,"Cannot open file  %s\n",text_cod_name);
 		exit(1);
 	}
 
@@ -553,7 +553,7 @@ struct fifo *read_concord_file(const char *concord_file_name,int mask_encoding_c
 	concord_desc_file = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, concord_file_name,U_READ);
 	if( concord_desc_file == NULL){
 		perror("u_fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",concord_file_name);
+		fprintf(stderr,"Cannot open file %s\n",concord_file_name);
 		exit(1);
 	}
 
@@ -591,13 +591,13 @@ locate_pos *read_concord_line(const unichar *line) {
 	l = (locate_pos*) malloc(sizeof(locate_pos) * 1);
 	if (l == NULL) {
 		perror("malloc\n");
-		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		fprintf(stderr, "Impossible to allocate memory\n");
 		exit(1);
 	}
 	l->label = (unichar*) malloc(sizeof(unichar) * (u_strlen(line) + 1));
 	if (l->label == NULL) {
 		perror("malloc\n");
-		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		fprintf(stderr, "Impossible to allocate memory\n");
 		exit(1);
 	}
 
@@ -649,7 +649,7 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 			t = (transducer*) malloc(sizeof(transducer) * 1);
 			if (t == NULL) {
 				perror("malloc\n");
-				fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+				fprintf(stderr, "Impossible to allocate memory\n");
 				exit(1);
 			}
             size_t transducer_filename_prefix_len = 0;
@@ -658,7 +658,7 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 			t->transducer_file_name = (char*)malloc(sizeof(char)*(transducer_filename_prefix_len+strlen(transducer_file_name)+1));
 			if(t->transducer_file_name == NULL){
 				perror("malloc\n");
-				fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+				fprintf(stderr,"Impossible to allocate memory\n");
 				exit(1);
 			}
 
@@ -924,7 +924,7 @@ char* extract_cassys_transducer_name(const char *line){
 	transducer_name = (char*)malloc(sizeof(char)*((i-j)+1));
 	if(transducer_name == NULL){
 		perror("malloc\n");
-		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+		fprintf(stderr,"Impossible to allocate memory\n");
 		exit(1);
 	}
 	strncpy(transducer_name,line+j,(i-j));
@@ -1166,7 +1166,7 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 	labeled_text_name = (char*)malloc(sizeof(char)*(strlen(new_labeled_text_name)+1));
 	if(labeled_text_name == NULL){
 		perror("malloc\n");
-		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+		fprintf(stderr,"Impossible to allocate memory\n");
 		exit(1);
 	}
 	strcpy(labeled_text_name, new_labeled_text_name);
@@ -1190,14 +1190,14 @@ void protect_special_characters(const char *text,Encoding encoding_output,int bo
 	source = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, text,U_READ);
 	if( source == NULL){
 		perror("u_fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",text);
+		fprintf(stderr,"Cannot open file %s\n",text);
 		exit(1);
 	}
 
 	destination = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,temp_name_file,U_WRITE);
 	if( destination == NULL){
 		perror("u_fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",temp_name_file);
+		fprintf(stderr,"Cannot open file %s\n",temp_name_file);
 		exit(1);
 	}
 
@@ -1285,7 +1285,7 @@ unichar *get_braced_string(U_FILE *u){
 	result = (unichar*)malloc(sizeof(unichar)*(length+1));
 	if(result == NULL){
 		perror("malloc\n");
-		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+		fprintf(stderr,"Impossible to allocate memory\n");
 		exit(1);
 	}
 
@@ -1311,7 +1311,7 @@ unichar *protect_braced_string(const unichar *s){
 	stop_sentence = (unichar*) malloc(sizeof(unichar) * (1 + 1));
 	if (stop_sentence == NULL) {
 		perror("malloc\n");
-		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		fprintf(stderr, "Impossible to allocate memory\n");
 		exit(1);
 	}
 	u_sprintf(stop_sentence, "S");
@@ -1332,7 +1332,7 @@ unichar *protect_braced_string(const unichar *s){
 				+ 1));
 		if (result == NULL) {
 			perror("malloc\n");
-			fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+			fprintf(stderr, "Impossible to allocate memory\n");
 			exit(1);
 		}
 
@@ -1366,7 +1366,7 @@ unichar *protect_lem_in_braced_string(const unichar *s){
 	unichar *result = (unichar*)malloc(sizeof(unichar)*(length+1));
 	if(result == NULL){
 		perror("malloc\n");
-		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+		fprintf(stderr,"Impossible to allocate memory\n");
 		exit(1);
 	}
 	i++;
@@ -1405,7 +1405,7 @@ unichar *protect_text_in_braced_string(const unichar *s){
 	result = (unichar*)malloc(sizeof(unichar)*(length*2+1));
 	if(result == NULL){
 		perror("malloc\n");
-		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+		fprintf(stderr,"Impossible to allocate memory\n");
 		exit(1);
 	}
 
@@ -1443,7 +1443,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 	U_FILE *concord_desc_file = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input, snt_file->concord_ind,U_WRITE);
 	if( concord_desc_file == NULL){
 		perror("u_fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",snt_file->concord_ind);
+		fprintf(stderr,"Cannot open file %s\n",snt_file->concord_ind);
 		exit(1);
 	}
 
