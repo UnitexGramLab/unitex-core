@@ -19,7 +19,7 @@
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":f:a:t:hk:q:g:dm:s:ir:";
+const char *optstring_Cassys = ":t:a:l:hk:q:g:dm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
 		{"text", required_argument_TS, NULL, 't'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
