@@ -38,8 +38,8 @@
  * could cause problems.
  */
 
-#ifndef getoptH
-#define getoptH
+#ifndef UnitexGetOptH
+#define UnitexGetOptH
 
 /**
  * struct option, no_argument, required_argument and optional_argument may already
