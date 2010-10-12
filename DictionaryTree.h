@@ -26,6 +26,7 @@
 #include "Unicode.h"
 #include "String_hash.h"
 #include "List_int.h"
+#include "BitArray.h"
 
 
 /**
@@ -56,6 +57,8 @@ struct dictionary_node {
 	 * the single INF codes of this node, separated with commas:
 	 * 
 	 * .DET:ms,.A:ms
+	 *
+	 * WARNING: this field has sense only if 'single_INF_code_list' is not NULL
 	 */
 	int INF_code;
 	/*
@@ -87,6 +90,6 @@ void free_dictionary_node_transition(struct dictionary_node_transition*);
 void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
 struct dictionary_node* new_dictionary_node();
 
-void minimize_tree(struct dictionary_node*);
+void minimize_tree(struct dictionary_node*,struct bit_array*);
 
 #endif

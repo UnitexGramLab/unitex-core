@@ -82,7 +82,7 @@ while (tmp!=NULL) {
  * and transitions of the dictionary automaton.
  */
 void fill_bin_array(struct dictionary_node* node,int *n_states,int *n_transitions,
-						unsigned char* bin) {
+						unsigned char* bin,int* inf_indirection) {
 if (node==NULL) return;
 if (node->INF_code==-1) {
 	/* We use this test to know if the node has already been dumped */
@@ -109,7 +109,7 @@ pos=pos+2;
 if (node->single_INF_code_list!=NULL) {
 	/* If the node is a final one, we dump the number of the associated
 	 * INF line on 3 bytes, forcing the order (higher byte first) */
-	int INF_line_number=node->INF_code;
+	int INF_line_number=inf_indirection[node->INF_code];
 	bin[pos++]=(unsigned char)(INF_line_number/(256*256));
 	INF_line_number=INF_line_number%(256*256);
 	bin[pos++]=(unsigned char)(INF_line_number/256);
@@ -136,7 +136,7 @@ while (tmp!=NULL) {
 	dest_offset=dest_offset%256;
 	bin[pos++]=(unsigned char)(dest_offset);
 	/* And we dump the destination node recursively */
-	fill_bin_array(tmp->node,n_states,n_transitions,bin);
+	fill_bin_array(tmp->node,n_states,n_transitions,bin,inf_indirection);
 	tmp=tmp->next;
 }
 }
@@ -150,7 +150,7 @@ while (tmp!=NULL) {
  * of the resulting .bin file.
  */
 void create_and_save_bin(struct dictionary_node* root,const char* output,int *n_states,
-						int *n_transitions,int *bin_size) {
+						int *n_transitions,int *bin_size,int* inf_indirection) {
 U_FILE* f;
 /* The output file must be opened as a binary one */
 f=u_fopen(BINARY,output,U_WRITE);
@@ -181,7 +181,7 @@ bin[2]=(unsigned char)(n/256);
 n=n%256;
 bin[3]=(unsigned char)(n);
 /* Then we fill the 'bin' array */
-fill_bin_array(root,n_states,n_transitions,bin);
+fill_bin_array(root,n_states,n_transitions,bin,inf_indirection);
 /* And we dump it to the output file */
 if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
   fatal_error("Error while writing file %s\n",output);

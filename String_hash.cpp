@@ -384,7 +384,7 @@ return hash;
 
 /**
  * Dumps the values of the given string_hash into the given file (one
- * string per line). Raises a fatal error if the strign_hash has no value.
+ * string per line). Raises a fatal error if the string_hash has no value.
  */
 void dump_values(U_FILE *f,struct string_hash* hash) {
 if (hash==NULL) {

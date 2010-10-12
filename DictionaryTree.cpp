@@ -244,7 +244,7 @@ struct transition_list {
 int compare_nodes(struct dictionary_node_transition*,struct dictionary_node_transition*);
 void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
 void free_minimize_arrays(struct transition_list**,struct dictionary_node_transition**);
-int sort_by_height(struct dictionary_node*,struct transition_list**);
+int sort_by_height(struct dictionary_node*,struct transition_list**,struct bit_array*);
 struct transition_list* new_transition_list(struct dictionary_node_transition*,struct transition_list*);
 int convert_list_to_array(unsigned int,struct transition_list**,
                           struct dictionary_node_transition**);
@@ -256,14 +256,15 @@ void merge(int,struct dictionary_node_transition**);
 
 /**
  * This function takes a dictionary tree and minimizes it using
- * Dominique Revuz's algorithm.
+ * Dominique Revuz's algorithm. 'used_inf_values' is used to mark
+ * INF codes that are actually used in the .bin.
  */
-void minimize_tree(struct dictionary_node* root) {
+void minimize_tree(struct dictionary_node* root,struct bit_array* used_inf_values) {
 u_printf("Minimizing...                      \n");
 struct transition_list** transitions_by_height;
 struct dictionary_node_transition** transitions;
 init_minimize_arrays(&transitions_by_height,&transitions);
-unsigned int H=sort_by_height(root,transitions_by_height);
+unsigned int H=sort_by_height(root,transitions_by_height,used_inf_values);
 float z;
 for (unsigned int k=0;k<=H;k++) {
    int size=convert_list_to_array(k,transitions_by_height,transitions);
@@ -374,9 +375,14 @@ free(transitions);
  * they will be later in the 'minimize_tree' function.
  * The function returns the height of the given node.
  */
-int sort_by_height(struct dictionary_node* n,struct transition_list** transitions_by_height) {
+int sort_by_height(struct dictionary_node* n,struct transition_list** transitions_by_height,
+					struct bit_array* used_inf_values) {
 if (n==NULL) {
    fatal_error("NULL error in sort_by_height\n");
+}
+/* We mark used INF codes */
+if (n->single_INF_code_list!=NULL) {
+	set_value(used_inf_values,n->INF_code,1);
 }
 if (n->trans==NULL) {
    /* If the node is a leaf, we have nothing to do */
@@ -387,7 +393,7 @@ int height=-1;
 int k;
 while (trans!=NULL) {
    /* We process recursively the node pointed out by the current transition */
-   k=sort_by_height(trans->node,transitions_by_height);
+   k=sort_by_height(trans->node,transitions_by_height,used_inf_values);
    if (k==MAXIMUM_HEIGHT) {
       fatal_error("Maximum height reached in sort_by_height\n");
    }

@@ -33,6 +33,7 @@
 #include "getopt.h"
 #include "Compress.h"
 #include "ProgramInvoker.h"
+#include "BitArray.h"
 
 const char* usage_Compress =
          "Usage: Compress [OPTIONS] <dictionary>\n"
@@ -290,23 +291,61 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 	line++;
 }
 u_fclose(f);
+struct bit_array* used_inf_values=new_bit_array(INF_codes->size,ONE_BIT);
+/* We build a minimal transducer from the entry tree */
+minimize_tree(root,used_inf_values);
+/* Now we reorder INF codes in order to group the ones that are actually
+ * used so that we can save space in the .inf file by not saving codes
+ * that are never referenced in the .bin file */
+int* inf_indirection=(int*)malloc(sizeof(int)*INF_codes->size);
+int n_used_inf_codes=0;
+int last=INF_codes->size-1;
+for (int i=0;i<INF_codes->size;i++) {
+	if (get_value(used_inf_values,i)) {
+		/* A used INF value stays at its place */
+		n_used_inf_codes++;
+		inf_indirection[i]=i;
+	} else {
+		/* We have found an unused INF code. We look for a used one at
+		 * the end of the array to swap them */
+		while (last>i && !get_value(used_inf_values,last)) {
+			last--;
+		}
+		if (last==i) {
+			/* We have finished */
+			break;
+		}
+		n_used_inf_codes++;
+		/* We redirect the old used INF code */
+		inf_indirection[last]=i;
+		/* And we swap codes */
+		unichar* tmp=INF_codes->value[i];
+		INF_codes->value[i]=INF_codes->value[last];
+		INF_codes->value[last]=tmp;
+		last--;
+	}
+}
+int old_size=INF_codes->size;
+INF_codes->size=n_used_inf_codes;
 /* Now we can dump the INF codes into the .inf file */
 dump_values(INF_file,INF_codes);
+INF_codes->size=old_size;
 u_fclose(INF_file);
-/* We build a minimal transducer from the entry tree */
-minimize_tree(root);
+
+/* And we dump it into the .bin file */
 int n_states;
 int n_transitions;
 int bin_size;
-/* And we dump it into the .bin file */
-create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size);
+create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size,inf_indirection);
+free(inf_indirection);
+free_bit_array(used_inf_values);
 u_printf("Binary file: %d bytes\n",bin_size);
 u_printf("%d line%s read            \n"
          "%d INF entr%s created\n",
          line,
          (line!=1)?"s":"",
-         INF_codes->size,
-         (INF_codes->size!=1)?"ies":"y");
+         n_used_inf_codes,
+         (n_used_inf_codes!=1)?"ies":"y");
 u_printf("%d states, %d transitions\n",n_states,n_transitions);
 write_INF_file_header(inf,INF_codes->size);
 free_OptVars(vars);

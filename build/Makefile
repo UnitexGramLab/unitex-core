@@ -324,7 +324,8 @@ CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Af_stdio.o ActivityLogger.
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
-				List_ustring.o Error.o StringParsing.o getopt.o ProgramInvoker.o $(SYSLIBMAPPED)
+				List_ustring.o Error.o StringParsing.o getopt.o ProgramInvoker.o \
+				BitArray.o $(SYSLIBMAPPED)
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o\
