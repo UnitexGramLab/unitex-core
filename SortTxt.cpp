@@ -27,7 +27,7 @@
 #include "IOBuffer.h"
 #include "Error.h"
 #include "Thai.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "SortTxt.h"
 #include "ProgramInvoker.h"
 

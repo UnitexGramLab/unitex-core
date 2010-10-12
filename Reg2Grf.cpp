@@ -27,7 +27,7 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "File.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Reg2Grf.h"
 
 

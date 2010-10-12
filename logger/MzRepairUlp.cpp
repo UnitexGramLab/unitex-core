@@ -7,7 +7,7 @@
 
 #include "Unicode.h"
 #include "Copyright.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 
 #include "FilePackType.h"
 #include "MzToolsUlp.h"

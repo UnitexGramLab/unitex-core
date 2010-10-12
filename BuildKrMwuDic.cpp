@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "BuildKrMwuDic.h"
 #include "KrMwuDic.h"
 #include "Alphabet.h"

@@ -30,7 +30,7 @@
 #include "File.h"
 #include "Copyright.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Compress.h"
 #include "ProgramInvoker.h"
 #include "BitArray.h"

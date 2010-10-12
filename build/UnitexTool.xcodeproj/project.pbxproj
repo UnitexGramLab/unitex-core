@@ -66,7 +66,7 @@
 		222F79391107A48400C91CC7 /* Fst2TxtAsRoutine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78051107A48300C91CC7 /* Fst2TxtAsRoutine.cpp */; };
 		222F793A1107A48400C91CC7 /* GeneralDerivation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78071107A48300C91CC7 /* GeneralDerivation.cpp */; };
 		222F793B1107A48400C91CC7 /* GermanCompounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78091107A48300C91CC7 /* GermanCompounds.cpp */; };
-		222F793C1107A48400C91CC7 /* getopt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F780B1107A48300C91CC7 /* getopt.cpp */; };
+		222F793C1107A48400C91CC7 /* UnitexGetOpt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F780B1107A48300C91CC7 /* UnitexGetOpt.cpp */; };
 		222F793D1107A48400C91CC7 /* Grf2Fst2_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F780D1107A48300C91CC7 /* Grf2Fst2_lib.cpp */; };
 		222F793E1107A48400C91CC7 /* Grf2Fst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F780F1107A48300C91CC7 /* Grf2Fst2.cpp */; };
 		222F793F1107A48400C91CC7 /* HashTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78111107A48300C91CC7 /* HashTable.cpp */; };
@@ -329,8 +329,8 @@
 		222F78081107A48300C91CC7 /* GeneralDerivation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GeneralDerivation.h; path = ../GeneralDerivation.h; sourceTree = SOURCE_ROOT; };
 		222F78091107A48300C91CC7 /* GermanCompounds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GermanCompounds.cpp; path = ../GermanCompounds.cpp; sourceTree = SOURCE_ROOT; };
 		222F780A1107A48300C91CC7 /* GermanCompounds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GermanCompounds.h; path = ../GermanCompounds.h; sourceTree = SOURCE_ROOT; };
-		222F780B1107A48300C91CC7 /* getopt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = getopt.cpp; path = ../getopt.cpp; sourceTree = SOURCE_ROOT; };
-		222F780C1107A48300C91CC7 /* getopt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = getopt.h; path = ../getopt.h; sourceTree = SOURCE_ROOT; };
+		222F780B1107A48300C91CC7 /* UnitexGetOpt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexGetOpt.cpp; path = ../UnitexGetOpt.cpp; sourceTree = SOURCE_ROOT; };
+		222F780C1107A48300C91CC7 /* UnitexGetOpt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexGetOpt.h; path = ../UnitexGetOpt.h; sourceTree = SOURCE_ROOT; };
 		222F780D1107A48300C91CC7 /* Grf2Fst2_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grf2Fst2_lib.cpp; path = ../Grf2Fst2_lib.cpp; sourceTree = SOURCE_ROOT; };
 		222F780E1107A48300C91CC7 /* Grf2Fst2_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grf2Fst2_lib.h; path = ../Grf2Fst2_lib.h; sourceTree = SOURCE_ROOT; };
 		222F780F1107A48300C91CC7 /* Grf2Fst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grf2Fst2.cpp; path = ../Grf2Fst2.cpp; sourceTree = SOURCE_ROOT; };
@@ -774,8 +774,8 @@
 				222F78081107A48300C91CC7 /* GeneralDerivation.h */,
 				222F78091107A48300C91CC7 /* GermanCompounds.cpp */,
 				222F780A1107A48300C91CC7 /* GermanCompounds.h */,
-				222F780B1107A48300C91CC7 /* getopt.cpp */,
-				222F780C1107A48300C91CC7 /* getopt.h */,
+				222F780B1107A48300C91CC7 /* UnitexGetOpt.cpp */,
+				222F780C1107A48300C91CC7 /* UnitexGetOpt.h */,
 				222F780D1107A48300C91CC7 /* Grf2Fst2_lib.cpp */,
 				222F780E1107A48300C91CC7 /* Grf2Fst2_lib.h */,
 				222F780F1107A48300C91CC7 /* Grf2Fst2.cpp */,
@@ -1150,7 +1150,7 @@
 				222F79391107A48400C91CC7 /* Fst2TxtAsRoutine.cpp in Sources */,
 				222F793A1107A48400C91CC7 /* GeneralDerivation.cpp in Sources */,
 				222F793B1107A48400C91CC7 /* GermanCompounds.cpp in Sources */,
-				222F793C1107A48400C91CC7 /* getopt.cpp in Sources */,
+				222F793C1107A48400C91CC7 /* UnitexGetOpt.cpp in Sources */,
 				222F793D1107A48400C91CC7 /* Grf2Fst2_lib.cpp in Sources */,
 				222F793E1107A48400C91CC7 /* Grf2Fst2.cpp in Sources */,
 				222F793F1107A48400C91CC7 /* HashTable.cpp in Sources */,

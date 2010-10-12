@@ -61,7 +61,7 @@ static char *rcsid = "$OpenBSD: getopt_long.c,v 1.16 2004/02/04 18:17:25 millert
 #endif /* LIBC_SCCS and not lint */
 
 #include <errno.h>
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include <stdlib.h>
 #include <string.h>
 #include "Unicode.h"

@@ -31,7 +31,7 @@
 #include "ParsingInfo.h"
 #include "Transitions.h"
 #include "Unicode.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "XMLizer.h"
 
 

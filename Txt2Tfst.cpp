@@ -37,7 +37,7 @@
 #include "Error.h"
 #include "Grf2Fst2_lib.h"
 #include "LocateMatches.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "LanguageDefinition.h"
 #include "NewLineShifts.h"
 #include "Txt2Tfst.h"

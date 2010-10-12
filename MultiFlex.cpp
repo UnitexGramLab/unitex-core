@@ -35,7 +35,7 @@
 #include "Korean.h"
 #include "Copyright.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "MultiFlex.h"
 #include "MF_Global.h"
 

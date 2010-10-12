@@ -37,7 +37,7 @@
 #include "Text_tokens.h"
 #include "List_int.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Reconstrucao.h"
 
 

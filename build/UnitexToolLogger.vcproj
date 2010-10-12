@@ -815,7 +815,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\getopt.cpp"
+				RelativePath="..\UnitexGetOpt.cpp"
 				>
 			</File>
 			<File

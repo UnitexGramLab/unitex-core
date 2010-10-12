@@ -29,7 +29,7 @@
 #include "List_int.h"
 #include "Copyright.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Tfst2Grf.h"
 
 

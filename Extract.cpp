@@ -29,7 +29,7 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "Snt.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Extract.h"
 
 

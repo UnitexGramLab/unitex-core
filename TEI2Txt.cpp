@@ -26,7 +26,7 @@
 #include "File.h"
 #include "HTMLCharacters.h"
 #include "Unicode.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "TEI2Txt.h"
 
 

@@ -35,7 +35,7 @@
 #include "GeneralDerivation.h"
 #include "RussianCompounds.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "PolyLex.h"
 
 

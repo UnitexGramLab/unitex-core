@@ -28,7 +28,7 @@
 #include "AbstractFst2Load.h"
 #include "FlattenFst2.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Flatten.h"
 
 

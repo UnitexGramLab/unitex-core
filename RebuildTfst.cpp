@@ -29,7 +29,7 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "Transitions.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Tfst.h"
 #include "Grf2Fst2.h"
 #include "RebuildTfst.h"

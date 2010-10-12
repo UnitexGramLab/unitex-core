@@ -28,7 +28,7 @@
 #include "String_hash.h"
 #include "Error.h"
 #include "NormalizeAsRoutine.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Normalize.h"
 
 

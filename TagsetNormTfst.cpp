@@ -30,7 +30,7 @@
 #include "File.h"
 #include "LanguageDefinition.h"
 #include "SingleGraph.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "String_hash.h"
 #include "List_int.h"
 #include "DELA.h"

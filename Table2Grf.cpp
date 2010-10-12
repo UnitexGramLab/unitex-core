@@ -26,7 +26,7 @@
 #include "File.h"
 #include "Copyright.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Table2Grf.h"
 
 

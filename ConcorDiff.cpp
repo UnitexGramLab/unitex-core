@@ -26,7 +26,7 @@
 #include "Copyright.h"
 #include "Diff.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "ConcorDiff.h"
 
 

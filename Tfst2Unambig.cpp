@@ -27,7 +27,7 @@
 #include "Copyright.h"
 #include "LinearAutomaton2Txt.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Tfst2Unambig.h"
 
 

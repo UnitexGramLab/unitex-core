@@ -367,7 +367,7 @@
     <ClCompile Include="..\Fst2TxtAsRoutine.cpp" />
     <ClCompile Include="..\GeneralDerivation.cpp" />
     <ClCompile Include="..\GermanCompounds.cpp" />
-    <ClCompile Include="..\getopt.cpp" />
+    <ClCompile Include="..\UnitexGetOpt.cpp" />
     <ClCompile Include="..\Grf2Fst2.cpp" />
     <ClCompile Include="..\Grf2Fst2_lib.cpp" />
     <ClCompile Include="..\HashTable.cpp" />

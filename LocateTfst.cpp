@@ -26,7 +26,7 @@
 #include "Copyright.h"
 #include "Unicode.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "LocateTfst_lib.h"
 #include "File.h"
 #include "LocateConstants.h"

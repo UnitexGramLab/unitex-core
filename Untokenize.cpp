@@ -43,7 +43,7 @@
 #include "Error.h"
 #include "Vector.h"
 #include "HashTable.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Token.h"
 #include "Text_tokens.h"
 #include "Untokenize.h"

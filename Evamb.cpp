@@ -27,7 +27,7 @@
 #include "String_hash.h"
 #include "Error.h"
 #include "SingleGraph.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Evamb.h"
 
 

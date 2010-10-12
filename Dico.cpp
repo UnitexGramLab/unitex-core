@@ -37,7 +37,7 @@
 #include "Error.h"
 #include "Snt.h"
 #include "LocateConstants.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Dico.h"
 #include "SortTxt.h"
 #include "Compress.h"

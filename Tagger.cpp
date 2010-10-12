@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include "Copyright.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Tagger.h"
 #include "TaggingProcess.h"
 #include "Error.h"

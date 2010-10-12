@@ -41,7 +41,7 @@
 #include "Copyright.h"
 #include "Locate.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 
 

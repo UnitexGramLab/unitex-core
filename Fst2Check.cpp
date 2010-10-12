@@ -42,7 +42,7 @@
 #include "File.h"
 #include "LocateConstants.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 
 #include "Fst2Check.h"

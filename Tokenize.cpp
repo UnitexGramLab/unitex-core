@@ -31,7 +31,7 @@
 #include "Error.h"
 #include "Vector.h"
 #include "HashTable.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Tokenize.h"
 #include "Token.h"
 

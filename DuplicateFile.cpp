@@ -35,7 +35,7 @@
 #include "Error.h"
 #include "File.h"
 #include "DuplicateFile.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 
 
 const char* usage_DuplicateFile =

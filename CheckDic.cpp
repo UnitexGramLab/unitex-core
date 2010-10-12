@@ -28,7 +28,7 @@
 #include "String_hash.h"
 #include "Copyright.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "CheckDic.h"
 #include "Alphabet.h"
 

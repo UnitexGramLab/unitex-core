@@ -32,7 +32,7 @@
 #include "LocateConstants.h"
 #include "Error.h"
 #include "Grf2Fst2.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 
 

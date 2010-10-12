@@ -38,7 +38,7 @@
 #include "ProgramInvoker.h"
 #include "LocateConstants.h"
 #include "Error.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "FIFO.h"
 #include "Tokenize.h"
 #include "Unicode.h"

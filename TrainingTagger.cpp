@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include "Copyright.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Error.h"
 #include "Tfst.h"
 #include "File.h"

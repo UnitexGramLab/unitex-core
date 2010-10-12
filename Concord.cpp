@@ -34,7 +34,7 @@
 #include "Error.h"
 #include "Snt.h"
 #include "Copyright.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 #include "Concord.h"
 #include "Concord.h"

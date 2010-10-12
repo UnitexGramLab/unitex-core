@@ -24,7 +24,7 @@
 #include "File.h"
 #include "Fst2TxtAsRoutine.h"
 #include "LocateConstants.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "Fst2Txt.h"
 
 

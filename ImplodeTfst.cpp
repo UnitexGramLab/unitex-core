@@ -28,7 +28,7 @@
 #include "List_pointer.h"
 #include "Error.h"
 #include "Transitions.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 #include "File.h"
 #include "SingleGraph.h"
 #include "Match.h"

@@ -27,7 +27,7 @@
 #include "HashTable.h"
 #include "Vector.h"
 #include "Alphabet.h"
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 
 #include "Stats.h"
 

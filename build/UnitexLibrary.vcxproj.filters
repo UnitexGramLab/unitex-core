@@ -307,7 +307,7 @@
     <ClCompile Include="..\GermanCompounds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\getopt.cpp">
+    <ClCompile Include="..\UnitexGetOpt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Grf2Fst2.cpp">

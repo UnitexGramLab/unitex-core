@@ -48,7 +48,7 @@
 #include "Copyright.h"
 #include "Error.h"
 
-#include "getopt.h"
+#include "UnitexGetOpt.h"
 
 
 void InstallLogger::LoadParamFile(const char* parameter_filename)
