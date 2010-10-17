@@ -1052,17 +1052,36 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 									+ p->current_origin]])) {
 						z++;
 					}
+					int next_pos;
 					if (z != pos2) {
 						/* If we have found a contiguous digit sequence */
 						start = pos2;
 						end = z;
 						if (z + p->current_origin == p->buffer_size) {
 							/* If we have stopped because of the end of the buffer */
-							update_last_position(p, pos2);
+							next_pos=z;
 						} else {
 							/* Otherwise, we have stopped because of a non matching token */
-							update_last_position(p, pos2 + 1);
+							next_pos=z+1;
 						}
+#ifdef TRE_WCHAR
+						int OK;
+						if (filter_number == -1)
+							OK = 1;
+						else {
+							unichar* sequence = get_token_sequence(p->buffer,
+									p->tokens, start + p->current_origin,
+									end-1 + p->current_origin);
+							OK = string_match_filter(p->filters, sequence,
+									filter_number, p->recyclable_wchart_buffer);
+							free(sequence);
+						}
+						if (!OK) {
+							start=-1;
+							break;
+						}
+						update_last_position(p,next_pos);
+#endif
 					}
 				}
 				break;
