@@ -1065,17 +1065,19 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							next_pos=z+1;
 						}
 #ifdef TRE_WCHAR
-						int OK;
-						if (filter_number == -1)
-							OK = 1;
-						else {
-							unichar* sequence = get_token_sequence(p->buffer,
-									p->tokens, start + p->current_origin,
-									end-1 + p->current_origin);
-							OK = string_match_filter(p->filters, sequence,
-									filter_number, p->recyclable_wchart_buffer);
-							free(sequence);
-						}
+						if (filter_number == -1) {
+							update_last_position(p,next_pos);
+							break;
+                        }
+
+						int OK = 1;
+						unichar* sequence = get_token_sequence(p->buffer,
+								p->tokens, start + p->current_origin,
+								end-1 + p->current_origin);
+						OK = string_match_filter(p->filters, sequence,
+								filter_number, p->recyclable_wchart_buffer);
+						free(sequence);
+
 						if (!OK) {
 							start=-1;
 							break;
