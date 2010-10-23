@@ -319,9 +319,9 @@ for (int i=0;i<INF_codes->size;i++) {
 		/* We redirect the old used INF code */
 		inf_indirection[last]=i;
 		/* And we swap codes */
-		unichar* tmp=INF_codes->value[i];
+		unichar* tmpInfValue=INF_codes->value[i];
 		INF_codes->value[i]=INF_codes->value[last];
-		INF_codes->value[last]=tmp;
+		INF_codes->value[last]=tmpInfValue;
 		last--;
 	}
 }
