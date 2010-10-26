@@ -1033,7 +1033,8 @@ for (;compress_info[i]!='\0';i++) {
 		/* If we have a consonant number */
 		int n=compress_info[i]-'0';
 		if (n>=size) {
-			fatal_error("rebuild_token_semitic: consonant number #%d out of form <%S>\n",n,tmp);
+			error("compress info=<%S>\n",compress_info);
+			fatal_error("rebuild_token_semitic: consonant number #%d out of form <%S> of size %d\n",n,tmp,size);
 		}
 		inflected[i]=tmp[n];
 	} else {
@@ -1143,6 +1144,7 @@ while (INF_code[pos]!='.') {
          tmp_entry[j++]=inflected[pos_entry++];
       }
       tmp_entry[j]='\0';
+      error("");
       if (semitic) {
     	  rebuild_token_semitic(tmp_entry,tmp);
       } else {

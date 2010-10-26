@@ -110,6 +110,9 @@ if (node->single_INF_code_list!=NULL) {
 	/* If the node is a final one, we dump the number of the associated
 	 * INF line on 3 bytes, forcing the order (higher byte first) */
 	int INF_line_number=inf_indirection[node->INF_code];
+	if (INF_line_number==-1) {
+		fatal_error("fill_bin_array: Invalid INF line number redirection for code #%d\n",node->INF_code);
+	}
 	bin[pos++]=(unsigned char)(INF_line_number/(256*256));
 	INF_line_number=INF_line_number%(256*256);
 	bin[pos++]=(unsigned char)(INF_line_number/256);

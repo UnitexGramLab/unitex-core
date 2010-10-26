@@ -125,6 +125,8 @@ const struct option_TS lopts_Compress[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 
+extern void rebuild_token_semitic(unichar* inflected,unichar* compress_info);
+
 
 /**
  * This program reads a .dic file and compress it into a .bin and a .inf file.
@@ -276,6 +278,10 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
 				get_compressed_line(entry,tmp,semitic);
+				//error("line=<%S> inflected=<%S> compress=<%S>\n",s,entry->inflected,tmp);
+				unichar foo[4096];
+				uncompress_entry(entry->inflected,tmp,foo);
+				if (u_strcmp(foo,s)) fatal_error("diff entre <%S> et <%S>\n",foo,s);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
 			}
 			/* and last, but not least: don't forget to free your memory
@@ -300,7 +306,11 @@ minimize_tree(root,used_inf_values);
 int* inf_indirection=(int*)malloc(sizeof(int)*INF_codes->size);
 int n_used_inf_codes=0;
 int last=INF_codes->size-1;
+/* This -1 initialization is used for safety checking */
 for (int i=0;i<INF_codes->size;i++) {
+	inf_indirection[i]=-1;
+}
+for (int i=0;i<INF_codes->size && i<=last;i++) {
 	if (get_value(used_inf_values,i)) {
 		/* A used INF value stays at its place */
 		n_used_inf_codes++;
