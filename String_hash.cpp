@@ -353,9 +353,9 @@ while (EOF!=(code=u_fgets2(temp,f))) {
       if (code==P_BACKSLASH_AT_END) {
          error("Backslash at end of line:<%S>\n\n",temp);
       }
-      else if (temp[pos]=='\0') {
-         /* If there is no separator */
-         error("Line with no separator:\n<%S>\n",temp);
+      else if (pos==0 &&temp[pos]=='\0') {
+         /* Empty line */
+    	  continue;
       }
       else if (pos==0) {
          /* If the line starts with the separator */

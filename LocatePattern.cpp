@@ -211,11 +211,9 @@ strcat(concord_info,"concord.n");
 char morpho_bin[FILENAME_MAX];
 strcpy(morpho_bin,dynamicDir);
 strcat(morpho_bin,"morpho.bin");
-
 if (arabic_rules!=NULL && arabic_rules[0]!='\0') {
 	load_arabic_typo_rules(arabic_rules,&(p->arabic));
 }
-
 out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
