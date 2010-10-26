@@ -27,8 +27,8 @@ const char* usage_MzRepairUlp =
 		 "  <ulpfile>: an corrupted ulp file (often, a crashing log)\n"
          "\n"
          "OPTIONS:\n"
-         "  -o X/--output=X: uses X as filename for fixed .ulp file\n"
-         "  -t X/--temp=X: uses X as filename for temporary file\n"
+         "  -o X/--output=X: uses X as filename for fixed .ulp file (<ulpfile>.repair by default)\n"
+         "  -t X/--temp=X: uses X as filename for temporary file (<ulpfile>.build by default)\n"
          "  -m/--quiet: do not emit message when running\n"
          "  -v/--verbose: emit message when running\n"
 
