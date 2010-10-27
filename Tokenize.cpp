@@ -440,12 +440,13 @@ while (c!=EOF) {
          c=u_fgetc(f);
       }
       else {
-         while ((n<(MAX_TAG_LENGTH-1)) && is_letter((unichar)(c=u_fgetc(f)),alph)) {
+         while ((n<(MAX_TAG_LENGTH-1)) && EOF!=(c=u_fgetc(f)) && is_letter((unichar)c,alph)) {
            s[n++]=(unichar)c;
            COUNT++;
          }
          if (n==(MAX_TAG_LENGTH-1)) {
-            error("Token too long at position %d\n",COUNT);
+        	 s[n]='\0';
+            error("Token too long at position %d:\n<%S>\n",COUNT,s);
          }
          s[n]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
