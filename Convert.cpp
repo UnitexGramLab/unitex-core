@@ -274,8 +274,12 @@ for (int i=vars->optind;i<argc;i++) {
 			case CONVERSION_OK: u_printf("%s converted\n",argv[i]);
 								if (output_mode==REPLACE_FILE) {
 									/* If we must replace the input file */
-									af_remove(argv[i]);
-									af_rename(output_name,argv[i]);
+									if (!af_remove(argv[i])) {
+										fatal_error("Cannot remove %s\n",argv[i]);
+									}
+									if (!af_rename(output_name,argv[i])) {
+										fatal_error("Cannot rename %s to %s\n",output_name,argv[i]);
+									}
 								}
 								break;
 			case INPUT_FILE_NOT_IN_UTF16_LE:
