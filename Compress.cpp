@@ -281,7 +281,6 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				//error("line=<%S> inflected=<%S> compress=<%S>\n",s,entry->inflected,tmp);
 				unichar foo[4096];
 				uncompress_entry(entry->inflected,tmp,foo);
-				if (u_strcmp(foo,s)) fatal_error("diff entre <%S> et <%S>\n",foo,s);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
 			}
 			/* and last, but not least: don't forget to free your memory
