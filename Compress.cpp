@@ -338,8 +338,9 @@ int old_size=INF_codes->size;
 INF_codes->size=n_used_inf_codes;
 /* Now we can dump the INF codes into the .inf file */
 dump_values(INF_file,INF_codes);
-INF_codes->size=old_size;
 u_fclose(INF_file);
+write_INF_file_header(inf,INF_codes->size);
+INF_codes->size=old_size;
 
 /* And we dump it into the .bin file */
 int n_states;
@@ -356,7 +357,6 @@ u_printf("%d line%s read            \n"
          n_used_inf_codes,
          (n_used_inf_codes!=1)?"ies":"y");
 u_printf("%d states, %d transitions\n",n_states,n_transitions);
-write_INF_file_header(inf,INF_codes->size);
 free_OptVars(vars);
 /*
  * WARNING: we do not free the 'INF_codes' structure because of a slowness
