@@ -735,8 +735,8 @@ void count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int 
 			else
 			{
 				hash_val->_int++;
-				free_int_CS_tag(insertKey);
 			}
+			free_int_CS_tag(insertKey);
 		}
 
 		free_int_CS_tag(currentKey);
