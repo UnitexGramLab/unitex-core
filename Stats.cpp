@@ -719,7 +719,7 @@ void count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int 
 
 		hash_val = get_value(collocates, currentKey, HT_DONT_INSERT, &hash_ret);
 
-		if (hash_ret == HT_KEY_ALREADY_THERE)
+		if (hash_val!=NULL && hash_ret == HT_KEY_ALREADY_THERE)
 		{
 			// this means that we can count this collocate in another hash
 
