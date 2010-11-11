@@ -240,6 +240,7 @@ strcat(text_cod,"text.cod");
 concord_stats(output, mode, concord_ind, tokens_txt, text_cod, alphabet, 
               encoding_output,bom_output,mask_encoding_compatibility_input,
               leftContext, rightContext, caseSensitive);
+free_OptVars(vars);
 return 0;
 }
 
@@ -667,7 +668,7 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 		hash_val = get_value(zret, currentKey, HT_INSERT_IF_NEEDED);
 		hash_val->_ptr = tmpZScore;
 
-		// no need to free currentKey, it is added to the hash table!
+		free_int_CS_tag(currentKey);
 	}
 
 	*countsInCorpora = collocateCountInCorpora;
