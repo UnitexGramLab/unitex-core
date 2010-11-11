@@ -652,7 +652,7 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 
 		Fc = hash_val->_int;
 
-		tmpZScore = (double*)malloc(sizeof(double*));
+		tmpZScore = (double*)malloc(sizeof(double));
 
 		if (tmpZScore == NULL)
 		{
