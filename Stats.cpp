@@ -385,12 +385,12 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 
 
 		// we have to deallocate pointers to doubles allocated for zscore
-		for (i = 0 ; i < allMatches->nbelems; i++)
+		/*for (i = 0 ; i < allMatches->nbelems; i++)
 		{
 			key->tokenID = allMatches->tab[i];
 			hash_val = get_value(z_score, key, HT_DONT_INSERT);
 			free(hash_val->_ptr);
-		}
+		}*/
 
 		free_int_CS_tag(key);
 		free_vector_int(allMatches);
@@ -688,7 +688,7 @@ void count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int 
 		fatal_error("Error in count_collocates, ret_hash cannot be null!");
 	}
 
-	hash_table* ret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, free,
+	hash_table* ret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, NULL,
 						copy_token_as_int);
 	int* buffer = NULL;
 	long bufferStart, bufferEnd;
