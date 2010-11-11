@@ -578,8 +578,8 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 			else
 			{
 				hash_val->_int++;
-				free_int_CS_tag(currentKey);
 			}
+			free_int_CS_tag(currentKey);
 		}
 
 		// if we're calculating z-score as well, we have to account for totalWindow score
