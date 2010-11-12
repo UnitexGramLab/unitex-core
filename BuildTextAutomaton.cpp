@@ -153,9 +153,9 @@ while (trans!=NULL) {
  */
 int is_high_weight_tag(unichar* s) {
 if (u_starts_with(s,"@<E>\n")) {
-   /* If we have an EPSILON tag */
-   fatal_error("Unexpected <E> tag in is_high_weight_tag\n");
-   return 0;
+   /* If we have an EPSILON tag, we consider it as a normal tag, in order
+    * not to penalize the best path heuristic */
+	return 1;
 }
 if (u_starts_with(s,"@STD\n")) {
    if (s[6]=='{' && s[7]!='\n') {
@@ -732,9 +732,14 @@ void add_path_to_sentence_automaton(int start_pos,int end_pos,
                                     SingleGraph graph,struct string_hash* tmp_tags,
                                     unichar* s,int destination_state_index,Ustring* foo,
                                     struct info* INFO,Korean* korean) {
+if (!u_strcmp(s,"<E>")) {
+	/* Special case of the <E> insertion */
+	add_outgoing_transition(graph->states[start_state_index],0,destination_state_index);
+}
 vector_ptr* vector=tokenize_normalization_output(s,alph);
 if (vector==NULL) {
    /* If the output to be generated has no interest, we do nothing */
+	error("Skipping incorrect output <%S>\n",s);
    return;
 }
 solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph,korean,s);
@@ -945,6 +950,7 @@ if (we_must_clean) {
    /* If necessary, we apply the "good paths" heuristic */
    keep_best_paths(tfst->automaton,tmp_tags);
 }
+remove_epsilon_transitions(tfst->automaton,0);
 trim(tfst->automaton,NULL);
 if (tfst->automaton->number_of_states==0) {
    /* Case 1: the automaton has been emptied because of the tagset filtering */
