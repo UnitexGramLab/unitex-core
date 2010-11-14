@@ -593,7 +593,7 @@ return new_tags;
 }
 
 /*
- * Returns 1 if the dictionary contains 'compound' forms;
+ * Returns 1 if the data file contains 'inflected' forms;
  * this information is encoded in the dictionary
  * at the line "CODE\tFEATURES";returns 0 otherwise.
  */

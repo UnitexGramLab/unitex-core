@@ -39,8 +39,8 @@
 #include "Compress.h"
 
 #define MAX_CONTEXT 3
-#define SIMPLE_FORMS 0
-#define COMPOUND_FORMS 1
+#define RAW_FORMS 0
+#define INFLECTED_FORMS 1
 
 struct corpus_entry{
 	unichar* word;

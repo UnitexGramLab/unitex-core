@@ -61,7 +61,7 @@ context[MAX_CONTEXT-1] = entry;
 }
 
 /**
- * searches for a caracter in a string by starting from the end.
+ * searches for a character in a string by starting from the end.
  * Return index of the position if found, -1 otherwise.
  */
 int u_strrchr(unichar* s,unichar t){
@@ -207,22 +207,22 @@ free(str);
 /**
  * Computes string for contextual entries. For example, if we have contextual matrix
  * at [(je,PRO:ms),(mange,V:P3s),(des,DET:ms)], so contextual entries will be :
- * "PRO V DET" for simple forms and "PRO:ms V:P3s DET:ms" for compound forms.
+ * "PRO V DET" for raw forms and "PRO:ms V:P3s DET:ms" for inflected forms.
  */
 unichar* compute_contextual_entries(struct corpus_entry** context,int start_index,int mode){
 unichar* line = NULL;
-if(mode == COMPOUND_FORMS){
+if(mode == INFLECTED_FORMS){
 	line = u_strdup(context[start_index]->overall_codes);
 }
-else if(mode == SIMPLE_FORMS){
+else if(mode == RAW_FORMS){
 	line = u_strdup(context[start_index]->pos_code);
 }
 unichar* tmp = NULL;
 for(int i=start_index+1;i<MAX_CONTEXT;i++){
-	if (mode == SIMPLE_FORMS){
+	if (mode == RAW_FORMS){
 		tmp = create_bigram_sequence(line,context[i]->pos_code,1);
 	}
-	else if(mode == COMPOUND_FORMS){
+	else if(mode == INFLECTED_FORMS){
 		tmp = create_bigram_sequence(line,context[i]->overall_codes,1);
 	}
 	free(line);
@@ -234,41 +234,41 @@ return line;
 /**
  * Computes lexical and contextual entries to put into the file containing statistics.
  */
-void add_statistics(struct corpus_entry** context,struct string_hash_ptr* sforms_table,
-		            struct string_hash_ptr* cforms_table){
+void add_statistics(struct corpus_entry** context,struct string_hash_ptr* rforms_table,
+		            struct string_hash_ptr* iforms_table){
 char prefix[] = "word_";
 /* we first raise the number of time current word occurs in the corpus (unigrams) */
 struct corpus_entry* current = context[MAX_CONTEXT-1];
 unichar* word = create_bigram_sequence(prefix,current->word,0);
-if(sforms_table != NULL){
-	add_key_table(word,sforms_table);
+if(rforms_table != NULL){
+	add_key_table(word,rforms_table);
 }
-if(cforms_table != NULL){
-	add_key_table(word,cforms_table);
+if(iforms_table != NULL){
+	add_key_table(word,iforms_table);
 }
 /* then we compute line for bigrams (tag,word), bigrams (tag(i-1),tag(i))
  * and trigrams (tag(i-2),tag(i-1),tag(i)) */
 unichar* line = NULL;
-if(sforms_table != NULL){
+if(rforms_table != NULL){
 	line = create_bigram_sequence(current->pos_code,word,1);
-	add_key_table(line,sforms_table);
+	add_key_table(line,rforms_table);
 	free(line);
-	line = compute_contextual_entries(context,1,SIMPLE_FORMS);
-	add_key_table(line,sforms_table);
+	line = compute_contextual_entries(context,1,RAW_FORMS);
+	add_key_table(line,rforms_table);
 	free(line);
-	line = compute_contextual_entries(context,0,SIMPLE_FORMS);
-	add_key_table(line,sforms_table);
+	line = compute_contextual_entries(context,0,RAW_FORMS);
+	add_key_table(line,rforms_table);
 	free(line);
 }
-if(cforms_table != NULL){
+if(iforms_table != NULL){
 	line = create_bigram_sequence(current->overall_codes,word,1);
-	add_key_table(line,cforms_table);
+	add_key_table(line,iforms_table);
 	free(line);
-	line = compute_contextual_entries(context,1,COMPOUND_FORMS);
-	add_key_table(line,cforms_table);
+	line = compute_contextual_entries(context,1,INFLECTED_FORMS);
+	add_key_table(line,iforms_table);
 	free(line);
-	line = compute_contextual_entries(context,0,COMPOUND_FORMS);
-	add_key_table(line,cforms_table);
+	line = compute_contextual_entries(context,0,INFLECTED_FORMS);
+	add_key_table(line,iforms_table);
 	free(line);
 }
 free(word);
@@ -292,14 +292,14 @@ for(struct string_hash_tree_transition* trans=node->trans;trans!=NULL;trans=tran
 /**
  * Computes training by extracting statistics from a tagged corpus file.
  */
-void do_training(U_FILE* input_text,U_FILE* sforms_file,U_FILE* cforms_file){
+void do_training(U_FILE* input_text,U_FILE* rforms_file,U_FILE* iforms_file){
 /* these two hash tables are respectively for simple and compound entries */
-struct string_hash_ptr* sforms_table = NULL, *cforms_table = NULL;
-if(sforms_file != NULL){
-	sforms_table = new_string_hash_ptr(200000);
+struct string_hash_ptr* rforms_table = NULL, *iforms_table = NULL;
+if(rforms_file != NULL){
+	rforms_table = new_string_hash_ptr(200000);
 }
-if(cforms_file != NULL){
-	cforms_table = new_string_hash_ptr(200000);
+if(iforms_file != NULL){
+	iforms_table = new_string_hash_ptr(200000);
 }
 /* we initialize a contextual matrix */
 struct corpus_entry** context = new_context_matrix();
@@ -312,23 +312,23 @@ while(u_fgets(line,input_text) !=EOF){
 	else{
 		corpus_entry* entry = new_corpus_entry(line);
 		push_corpus_entry(entry,context);
-		add_statistics(context,sforms_table,cforms_table);
+		add_statistics(context,rforms_table,iforms_table);
 	}
 }
 free_context_matrix(context);
 /* we fill dictionary files with pairs (tuple,value) and then
  * we add a special line "CODE\tFEATURES,.value" in order to
- * specify whether the dictionary contains compound or simple form tuples*/
+ * specify whether the dictionary contains inflected or raw form tuples*/
 unichar* str = u_strdup("");
-if(sforms_table != NULL){
-	write_keys_values(sforms_table,sforms_table->hash->root,str,sforms_file);
-	u_fprintf(sforms_file,"%s,.%d\n","CODE\tFEATURES",0);
-	free_string_hash_ptr(sforms_table,NULL);
+if(rforms_table != NULL){
+	write_keys_values(rforms_table,rforms_table->hash->root,str,rforms_file);
+	u_fprintf(rforms_file,"%s,.%d\n","CODE\tFEATURES",0);
+	free_string_hash_ptr(rforms_table,NULL);
 }
-if(cforms_table != NULL){
-	write_keys_values(cforms_table,cforms_table->hash->root,str,cforms_file);
-	u_fprintf(cforms_file,"%s,.%d\n","CODE\tFEATURES",1);
-	free_string_hash_ptr(cforms_table,NULL);
+if(iforms_table != NULL){
+	write_keys_values(iforms_table,iforms_table->hash->root,str,iforms_file);
+	u_fprintf(iforms_file,"%s,.%d\n","CODE\tFEATURES",1);
+	free_string_hash_ptr(iforms_table,NULL);
 }
 free(str);
 }

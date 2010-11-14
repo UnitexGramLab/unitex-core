@@ -43,7 +43,7 @@ const char* usage_Tagger =
          "\n"
          "OPTIONS:\n"
 		   "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		   "  -d DICT/--dictionary=DICT: use the .bin tagger dictionary containing tuples (unigrams,bigrams and trigrams)"
+		   "  -d DATA/--data=DATA: use the .bin tagger data file containing tuples (unigrams,bigrams and trigrams)"
 		   " with frequencies\n"
 		   "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
 		   "\n"
@@ -65,7 +65,7 @@ u_printf(usage_Tagger);
 const char* optstring_Tagger=":a:d:t:o:h";
 const struct option_TS lopts_Tagger[]= {
 	  {"alphabet", required_argument_TS, NULL, 'a'},
-	  {"dictionary", required_argument_TS, NULL, 'd'},
+	  {"data", required_argument_TS, NULL, 'd'},
 	  {"tagset", required_argument_TS, NULL, 't'},
 	  {"output",required_argument_TS,NULL,'o'},
       {"help",no_argument_TS,NULL,'h'},
@@ -88,7 +88,7 @@ char output_tind[FILENAME_MAX];
 char tmp_tfst[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char temp[FILENAME_MAX]="";
-char dictionary[FILENAME_MAX]="";
+char data[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 Encoding enc = DEFAULT_ENCODING_OUTPUT;
@@ -101,9 +101,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,v
                 strcpy(alphabet,vars->optarg);
                 break;
    case 'd': if (vars->optarg[0]=='\0') {
-				  fatal_error("You must specify a non empty dictionary file name\n");
+				  fatal_error("You must specify a non empty data file name\n");
 			   }
-			   strcpy(dictionary,vars->optarg);
+			   strcpy(data,vars->optarg);
 			   break;
    case 't': if (vars->optarg[0]=='\0') {
                    fatal_error("You must specify a non empty tagset file name\n");
@@ -145,14 +145,14 @@ get_path(tfst,temp);
 strcat(temp,"temp.tfst");
 
 struct BIN_free_info bin_free;
-const unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
+const unsigned char* bin=load_abstract_BIN_file(data,&bin_free);
 if (bin==NULL) {
 	fatal_error("");
 }
-remove_extension(dictionary);
-strcat(dictionary,".inf");
+remove_extension(data);
+strcat(data,".inf");
 struct INF_free_info inf_free;
-const struct INF_codes* inf=load_abstract_INF_file(dictionary,&inf_free);
+const struct INF_codes* inf=load_abstract_INF_file(data,&inf_free);
 if (inf==NULL) {
 	fatal_error("");
 }
@@ -163,12 +163,12 @@ if(form_type == 1){
 	if(tagset[0] == '\0'){
 		fatal_error("No tagset file specified\n");
 	}
-	/* if we use compound forms in the viterbi algorithm
+	/* if we use inflected forms in the viterbi algorithm
 	 * we must separate tags according to their morphological
 	 * features (one tag per feature). Explode operation is
 	 * necessary.*/
 	if(tagset[0] == '\0'){
-		fatal_error("-t option is mandatory when compound forms dictionary is used\n");
+		fatal_error("-t option is mandatory when inflected data file is used\n");
 	}
 	u_printf("Explodes tfst automaton according to tagset...\n");
 	strcpy(tmp_tfst,tfst);
