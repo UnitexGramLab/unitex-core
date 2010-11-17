@@ -140,6 +140,63 @@ u_fclose(f);
 }
 
 
+/**
+ * This function gets a string 's', and checks if its substring of length 'len'
+ * ends with fst2 dictionary graph options of the form -XYZ, where
+ * 		X = [rRmM] : replace or merge mode (optional; default=merge)
+ *      Y = [bBzZ] : option about the production of entries in a morphological dictionary
+ *      Z = [aAlLsS] : all/longest/shortest matches (default=longest)
+ *
+ * If the function fails to analyse the options, it prints an error message and does not
+ * set any value.
+ */
+void analyse_fst2_graph_options(char* s,int len,OutputPolicy *outputPolicy,
+		                        int *export_in_morpho_dic,MatchPolicy *matchPolicy) {
+OutputPolicy output=MERGE_OUTPUTS;
+int morpho=DONT_PRODUCE_MORPHO_DIC;
+MatchPolicy match=LONGEST_MATCHES;
+/* NOTE: for all error case tests, we test len==0 and not len<0, because
+ *       a fst2 name is supposed to be made not only of options but also with
+ *       a real name, thus needing at least one character */
+if (len==0) {
+	error("Invalid fst2 dictionary options in <%S>\n",s);
+	return;
+}
+switch (s[len]) {
+case 'a': case 'A': match=ALL_MATCHES; len--; break;
+case 'l': case 'L': match=LONGEST_MATCHES; len--; break;
+case 's': case 'S': match=SHORTEST_MATCHES; len--; break;
+default: break;
+}
+if (len==0) {
+	error("Invalid fst2 dictionary options in <%S>\n",s);
+	return;
+}
+switch (s[len]) {
+case 'b': case 'B': morpho=PRODUCE_MORPHO_DIC_AT_THE_END; len--; break;
+case 'z': case 'Z': morpho=PRODUCE_MORPHO_DIC_NOW; len--; break;
+default: break;
+}
+if (len==0) {
+	error("Invalid fst2 dictionary options in <%S>\n",s);
+	return;
+}
+switch (s[len]) {
+case 'r': case 'R': output=REPLACE_OUTPUTS; len--; break;
+case 'm': case 'M': output=MERGE_OUTPUTS; len--; break;
+default: break;
+}
+if (len==0 || s[len]!='-') {
+	error("Invalid fst2 dictionary options in <%S>\n",s);
+	return;
+}
+*outputPolicy=output;
+*export_in_morpho_dic=morpho;
+*matchPolicy=match;
+}
+
+
+
 const char* optstring_Dico=":t:a:m:Khk:q:u:g:s";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
@@ -345,9 +402,11 @@ for (int priority=1;priority<4;priority++) {
              * If it is a .fst2 dictionary
              */
             int l=(int)(strlen(tmp)-((priority==2)?1:2));
-            OutputPolicy policy=MERGE_OUTPUTS;
+            OutputPolicy outputPolicy=MERGE_OUTPUTS;
             int export_in_morpho_dic=DONT_PRODUCE_MORPHO_DIC;
-            if (l>0 && (tmp[l]=='b' || tmp[l]=='B' || tmp[l]=='z' || tmp[l]=='Z')
+            MatchPolicy matchPolicy=LONGEST_MATCHES;
+            analyse_fst2_graph_options(tmp,l,&outputPolicy,&export_in_morpho_dic,&matchPolicy);
+            /*if (l>0 && (tmp[l]=='b' || tmp[l]=='B' || tmp[l]=='z' || tmp[l]=='Z')
                   && (tmp[l-1]=='-' ||
                         (l>1 && (tmp[l-1]=='r' || tmp[l-1]=='R') && tmp[l-2]=='-'))) {
                export_in_morpho_dic=PRODUCE_MORPHO_DIC_AT_THE_END;
@@ -357,8 +416,8 @@ for (int priority=1;priority<4;priority++) {
                l--;
             }
             if (l>0 && (tmp[l]=='r' || tmp[l]=='R') && tmp[l-1]=='-') {
-               policy=REPLACE_OUTPUTS;
-            }
+               outputPolicy=REPLACE_OUTPUTS;
+            }*/
             u_printf("Applying grammar %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
@@ -366,7 +425,7 @@ for (int priority=1;priority<4;priority++) {
              * is running, because this function tries to read in these files.
              */
             launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,
-            		text,argv[i],alph,policy,morpho_dic,1,is_korean,arabic_rules,negation_operator);
+            		text,argv[i],alph,outputPolicy,matchPolicy,morpho_dic,1,is_korean,arabic_rules,negation_operator);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

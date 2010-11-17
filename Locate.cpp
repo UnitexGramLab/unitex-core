@@ -377,7 +377,7 @@ return (!OK);
  */
 int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                              const char* text_snt,const char* fst2,const char* alphabet,
-                             OutputPolicy output_policy,const char* morpho_dic,
+                             OutputPolicy output_policy,MatchPolicy match_policy,const char* morpho_dic,
                              int protect_dic_chars,int is_korean,const char* arabic_rules,const char*negation_operator) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
@@ -422,8 +422,12 @@ sprintf(tmp,"--text=%s",text_snt);
 add_argument(invoker,tmp);
 sprintf(tmp,"-a%s",alphabet);
 add_argument(invoker,tmp);
-/* We work in longuest match mode */
-add_argument(invoker,"-L");
+/* We set the match policy */
+switch(match_policy) {
+case ALL_MATCHES: add_argument(invoker,"-A"); break;
+case SHORTEST_MATCHES: add_argument(invoker,"-S"); break;
+case LONGEST_MATCHES: add_argument(invoker,"-L"); break;
+}
 /* We set the output policy */
 switch (output_policy) {
    case MERGE_OUTPUTS: add_argument(invoker,"-M"); break;
