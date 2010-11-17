@@ -451,13 +451,13 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 				retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma, L->output,
 						a, T->state_number, desired_features, forms,
 						semitic, flag_var, var_name, var_in_use, filters,
-						local_semantic_codes,korean);
+						L->local_semantic_code,korean);
 				retour_all_states += (retour_state + 1);
 			} else {//u_fprintf(stderr,"Explore state recursion 1\n");
 				retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
 						forms, semitic, flag_var, var_name, var_in_use, filters,
-						local_semantic_codes,korean);
+						L->local_semantic_code,korean);
 				retour_all_states += (1 - retour_state);
 			}
 			temp = L;
@@ -465,6 +465,7 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 			free_inflect_infos(temp);
 		}
 		//  return retour_all_states;
+		local_semantic_codes[old_local_semantic_code_length]='\0';
 		return 0;
 	}
 	Fst2Tag t = a->tags[T->tag_number];
