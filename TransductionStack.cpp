@@ -25,6 +25,7 @@
 #include "Korean.h"
 #include "TransductionVariables.h"
 #include "OutputTransductionVariables.h"
+#include "VariableUtils.h"
 
 
 /**
@@ -167,6 +168,38 @@ for (;;) {
             }
          }
          i1++;
+         if (u_starts_with(field,"EQUAL=")) {
+        	 int n=compare_variables(name,field+strlen("EQUAL="),p);
+        	 if (n==VAR_CMP_EQUAL) {
+        		 continue;
+        	 }
+        	 if (n==VAR_CMP_DIFF) {
+        		 p->stack->stack_pointer=old_stack_pointer;
+        		 return 0;
+        	 }
+        	 /* n==VAR_CMP_ERROR means an error while accessing variables */
+        	 switch (p->variable_error_policy) {
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+        	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
+        	                                  * so we consider it to be equivalent to backtrack */
+        	    case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+        	 }
+         }
+         if (u_starts_with(field,"UNEQUAL=")) {
+        	 int n=compare_variables(name,field+strlen("UNEQUAL="),p);
+        	 if (n==VAR_CMP_DIFF) continue;
+        	 if (n==VAR_CMP_EQUAL) {
+        		 p->stack->stack_pointer=old_stack_pointer;
+        		 return 0;
+        	 }
+        	 /* n==VAR_CMP_ERROR means an error while accessing variables */
+        	 switch (p->variable_error_policy) {
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+        	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
+        	                                  * so we consider it to be equivalent to backtrack */
+        	    case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+        	 }
+         }
          if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
             /* If we have $a.SET$, we must go on only if the variable a is set, no
              * matter if it is a normal or a dictionary variable */
