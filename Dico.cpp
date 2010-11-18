@@ -147,8 +147,7 @@ u_fclose(f);
  *      Y = [bBzZ] : option about the production of entries in a morphological dictionary
  *      Z = [aAlLsS] : all/longest/shortest matches (default=longest)
  *
- * If the function fails to analyse the options, it prints an error message and does not
- * set any value.
+ * If the function fails to analyse the options, it does not set any value.
  */
 void analyse_fst2_graph_options(const char* s,int len,OutputPolicy *outputPolicy,
 		                        int *export_in_morpho_dic,MatchPolicy *matchPolicy) {
@@ -159,7 +158,6 @@ MatchPolicy match=LONGEST_MATCHES;
  *       a fst2 name is supposed to be made not only of options but also with
  *       a real name, thus needing at least one character */
 if (len==0) {
-	error("Invalid fst2 dictionary options in <%s>\n",s);
 	return;
 }
 switch (s[len]) {
@@ -169,7 +167,6 @@ case 's': case 'S': match=SHORTEST_MATCHES; len--; break;
 default: break;
 }
 if (len==0) {
-	error("Invalid fst2 dictionary options in <%s>\n",s);
 	return;
 }
 switch (s[len]) {
@@ -178,7 +175,6 @@ case 'z': case 'Z': morpho=PRODUCE_MORPHO_DIC_NOW; len--; break;
 default: break;
 }
 if (len==0) {
-	error("Invalid fst2 dictionary options in <%s>\n",s);
 	return;
 }
 switch (s[len]) {
@@ -187,7 +183,6 @@ case 'm': case 'M': output=MERGE_OUTPUTS; len--; break;
 default: break;
 }
 if (len==0 || s[len]!='-') {
-	error("Invalid fst2 dictionary options in <%s>\n",s);
 	return;
 }
 *outputPolicy=output;
