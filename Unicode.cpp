@@ -3200,31 +3200,102 @@ return NULL;
 /**
  * Returns 1 if s starts with the given prefix; 0 otherwise.
  */
-int u_starts_with(const unichar* s,const unichar* prefix) {
-if (s==NULL) return 0;
-if (prefix==NULL) return 1;
-for (int i=0;prefix[i]!='\0';i++) {
-   if (s[i]!=prefix[i]) {
-      return 0;
-   }
-}
-return 1;
+int u_starts_with(const unichar* a,const unichar* b) {
+if ((a!=NULL) && (b!=NULL)) {
+    const unichar *a_p=a;
+    const unichar *b_p=(const unichar*)b;
+    unichar a_c;
+    unichar b_c;
+
+    for(;;) {
+       a_c=(unichar)*(a_p);
+       b_c=(unichar)((unichar)*(b_p));
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+
+       a_c=(unichar)*(a_p+1);
+       b_c=(unichar)((unichar)*(b_p+1));
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+
+       a_c=(unichar)*(a_p+2);
+       b_c=(unichar)((unichar)*(b_p+2));
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+
+       a_c=(unichar)*(a_p+3);
+       b_c=(unichar)((unichar)*(b_p+3));
+       a_p+=4;
+	   b_p+=4;
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+    } ;
+} else {
+  if (b!=NULL) {
+       return 0;
+    }
+  return 1;
+  }
 }
 
 
 /**
  * Returns 1 if s starts with the given prefix; 0 otherwise.
  */
-int u_starts_with(const unichar* s,const char* prefix) {
-if (s==NULL) return 0;
-if (prefix==NULL) return 1;
-for (int i=0;prefix[i]!='\0';i++) {
-   if (s[i]!=prefix[i]) {
-      return 0;
-   }
+int u_starts_with(const unichar* a,const char* b) {
+if ((a!=NULL) && (b!=NULL)) {
+    const unichar *a_p=a;
+    const unsigned char *b_p=(const unsigned char*)b;
+    unichar a_c;
+    unichar b_c;
+
+    for(;;) {
+       a_c=(unichar)*(a_p);
+       b_c=(unichar)((unsigned char)*(b_p));
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+
+       a_c=(unichar)*(a_p+1);
+       b_c=(unichar)((unsigned char)*(b_p+1));
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+
+       a_c=(unichar)*(a_p+2);
+       b_c=(unichar)((unsigned char)*(b_p+2));
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+
+       a_c=(unichar)*(a_p+3);
+       b_c=(unichar)((unsigned char)*(b_p+3));
+       a_p+=4;
+	   b_p+=4;
+	   if (b_c=='\0')
+		   return 1;
+	   if (a_c != b_c)
+		   return 0;
+    } ;
+} else {
+  if (b!=NULL) {
+       return 0;
+    }
+  return 1;
+  }
 }
-return 1;
-}
+
 
 /**
  * Returns 1 if s ends with the given suffix; 0 otherwise.
