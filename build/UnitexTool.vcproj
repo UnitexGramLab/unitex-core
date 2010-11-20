@@ -815,10 +815,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\UnitexGetOpt.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Grf2Fst2.cpp"
 				>
 			</File>
@@ -1315,6 +1311,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\UnitexGetOpt.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\UnitexTool.cpp"
 				>
 			</File>
@@ -1344,6 +1344,14 @@
 			</File>
 			<File
 				RelativePath="..\ustring.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\VariableUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\VariableUtils.h"
 				>
 			</File>
 			<File

@@ -310,6 +310,7 @@
     <ClInclude Include="..\Untokenize.h" />
     <ClInclude Include="..\UserCancelling.h" />
     <ClInclude Include="..\UserCancellingPlugCallback.h" />
+    <ClInclude Include="..\VariableUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractAllocator.cpp" />
@@ -494,6 +495,7 @@
     <ClCompile Include="..\Untokenize.cpp" />
     <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\ustring.cpp" />
+    <ClCompile Include="..\VariableUtils.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
     <ClCompile Include="..\tre-0.8.0\lib\regcomp.c" />
     <ClCompile Include="..\tre-0.8.0\lib\regerror.c" />

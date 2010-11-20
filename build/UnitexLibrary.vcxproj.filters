@@ -125,6 +125,9 @@
     <ClInclude Include="..\logger\MzRepairUlp.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
+    <ClInclude Include="..\VariableUtils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -702,6 +705,9 @@
     </ClCompile>
     <ClCompile Include="..\logger\MzToolsUlp.cpp">
       <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VariableUtils.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

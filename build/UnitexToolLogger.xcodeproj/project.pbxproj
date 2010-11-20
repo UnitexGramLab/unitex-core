@@ -196,6 +196,7 @@
 		229851B0111A6F3300503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Check_lib.cpp */; };
 		229D935811CB412D007BC1B4 /* Arabic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229D935611CB412D007BC1B4 /* Arabic.cpp */; };
 		22B2EB68118B169600E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB67118B169600E00A77 /* MappedFileHelperPosix.cpp */; };
+		22C781531297481D00EDC8D5 /* VariableUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C781511297481D00EDC8D5 /* VariableUtils.cpp */; };
 		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
 		22FE473F117A22860011D758 /* LocateCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22FE473D117A22860011D758 /* LocateCache.cpp */; };
 /* End PBXBuildFile section */
@@ -616,6 +617,8 @@
 		229D935711CB412D007BC1B4 /* Arabic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Arabic.h; path = ../Arabic.h; sourceTree = SOURCE_ROOT; };
 		22B2EB66118B169600E00A77 /* MappedFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MappedFileHelper.h; path = ../MappedFileHelper.h; sourceTree = SOURCE_ROOT; };
 		22B2EB67118B169600E00A77 /* MappedFileHelperPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MappedFileHelperPosix.cpp; path = ../MappedFileHelperPosix.cpp; sourceTree = SOURCE_ROOT; };
+		22C781511297481D00EDC8D5 /* VariableUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VariableUtils.cpp; path = ../VariableUtils.cpp; sourceTree = SOURCE_ROOT; };
+		22C781521297481D00EDC8D5 /* VariableUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VariableUtils.h; path = ../VariableUtils.h; sourceTree = SOURCE_ROOT; };
 		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocator.h; path = ../AbstractAllocator.h; sourceTree = SOURCE_ROOT; };
 		22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocatorPlugCallback.h; path = ../AbstractAllocatorPlugCallback.h; sourceTree = SOURCE_ROOT; };
@@ -648,6 +651,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				22C781511297481D00EDC8D5 /* VariableUtils.cpp */,
+				22C781521297481D00EDC8D5 /* VariableUtils.h */,
 				2294F4A5122EEB1C009495A8 /* LocateTrace.cpp */,
 				2294F4A6122EEB1C009495A8 /* LocateTrace.h */,
 				2294F4A7122EEB1C009495A8 /* LocateTracePlugCallback.h */,
@@ -1340,6 +1345,7 @@
 				2294F4A8122EEB1C009495A8 /* LocateTrace.cpp in Sources */,
 				222D09EA125CE6DD00497A10 /* MzRepairUlp.cpp in Sources */,
 				222D09EB125CE6DD00497A10 /* MzToolsUlp.cpp in Sources */,
+				22C781531297481D00EDC8D5 /* VariableUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1393,7 +1399,7 @@
 					"HAVE_CONFIG_H=1",
 					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
 				);
-				GCC_VERSION = 4.0;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1407,7 +1413,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.1;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.4;
+				SDKROOT = macosx10.5;
 			};
 			name = Debug;
 		};
@@ -1428,7 +1434,7 @@
 					"HAVE_CONFIG_H=1",
 					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
 				);
-				GCC_VERSION = 4.0;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1441,7 +1447,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.1;
 				PREBINDING = NO;
-				SDKROOT = macosx10.4;
+				SDKROOT = macosx10.5;
 			};
 			name = Release;
 		};
