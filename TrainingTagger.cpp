@@ -46,10 +46,10 @@ const char* usage_TrainingTagger =
 		 "  -n/--no_binaries: indicates whether the program should not compress data files into"
 		 " .bin files, in this case only .dic data files are generated\n"
 		 "  -a/--all_models: indicates whether the program should produce all data files (default)\n"
-		 "  -r/--raw: indicates whether the program should produce only data file with raw tags\n"
-		 "  -i/--inflected: indicates whether the program should produce only data file with inflected tags\n"
-		 "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_raw.bin"
-		 " and XXX_data_inflected.bin (default=filename of text corpus without extension)\n"
+		 "  -c/--cat: indicates whether the program should produce only data file with 'cat' tags\n"
+		 "  -m/--morph: indicates whether the program should produce only data file with 'morph' tags\n"
+		 "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_cat.bin"
+		 " and XXX_data_morph.bin (default=filename of text corpus without extension)\n"
 		 "  -S/--semitic: the output .bin will use the semitic compression algorithm\n"
 		 "  -h/--help: this help\n"
 		 "\n"
@@ -70,8 +70,8 @@ const struct option_TS lopts_TrainingTagger[]= {
 	  {"output",required_argument_TS,NULL,'o'},
 	  {"binaries",no_argument_TS,NULL,'b'},
 	  {"no_binaries",no_argument_TS,NULL,'n'},
-	  {"raw",no_argument_TS,NULL,'r'},
-	  {"inflected",no_argument_TS,NULL,'i'},
+	  {"cat",no_argument_TS,NULL,'r'},
+	  {"morph",no_argument_TS,NULL,'i'},
 	  {"all",no_argument_TS,NULL,'a'},
 	  {"semitic",no_argument_TS,NULL,'S'},
 	  {"help",no_argument_TS,NULL,'h'},
@@ -104,9 +104,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_Trainin
    case 'n': binaries = 0;
 			 break;
    case 'a': break;
-   case 'r': i_forms = 0;
+   case 'c': i_forms = 0;
 			 break;
-   case 'i': r_forms = 0;
+   case 'm': r_forms = 0;
    			 break;
    case 'S': semitic=1;
    			 break;
@@ -139,12 +139,12 @@ if(strlen(path) == 0){
 /* we create files which will contain statistics extracted from the tagged corpus */
 U_FILE* rforms_file = NULL, *iforms_file = NULL;
 if(r_forms == 1){
-	sprintf(filename,"%s_data_raw.dic",output);
+	sprintf(filename,"%s_data_cat.dic",output);
 	new_file(path,filename,raw_forms);
 	rforms_file=u_fopen(UTF16_LE,raw_forms,U_WRITE);
 }
 if(i_forms == 1){
-	sprintf(filename,"%s_data_inflected.dic",output);
+	sprintf(filename,"%s_data_morph.dic",output);
 	new_file(path,filename,inflected_forms);
 	iforms_file=u_fopen(UTF16_LE,inflected_forms,U_WRITE);
 }
