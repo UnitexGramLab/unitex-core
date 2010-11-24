@@ -379,7 +379,6 @@ if (visits[current_state_in_tfst]>MAX_VISITS_PER_TFST_STATE) {
    return;
 }
 visits[current_state_in_tfst]++;
-
 if (current_pending_fst2_transition!=NULL && current_pending_tfst_transition!=NULL) {
    fatal_error("Internal error in explore_tfst: cannot have two non NULL pending transitions\n");
 }
@@ -561,15 +560,17 @@ while (grammar_transition!=NULL) {
          /* Before exploring an element that points on a subgraph match,
           * we decrease its 'pointed_by' variable that was previously increased
           * in the 'add_match_in_list' function */
-         (list_for_subgraph->match->pointed_by)--;
-         explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
+         if (list_for_subgraph->match!=NULL) {
+        	 (list_for_subgraph->match->pointed_by)--;
+        	 explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
                            graph_depth,list_for_subgraph->match,LIST,infos,-1,-1,NULL,NULL,ctx,tilde_negation_operator);
-         /* Finally, we remove, if necessary, the list of match element
-          * that was used for storing the subgraph match. This cleaning
-          * will only free elements that are not involved in others
-          * matches, that is to say element with pointed_by=0 */
-         clean_tfst_match_list(list_for_subgraph->match,match_element_list);
+        	 /* Finally, we remove, if necessary, the list of match element
+        	  * that was used for storing the subgraph match. This cleaning
+        	  * will only free elements that are not involved in others
+        	  * matches, that is to say element with pointed_by=0 */
+        	 clean_tfst_match_list(list_for_subgraph->match,match_element_list);
+         }
          free(list_for_subgraph);
          list_for_subgraph=tmp;
       }
@@ -962,8 +963,12 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
 	}
    if (!u_strcmp(grammar_tag->input,"<MOT>")) {
       /* <MOT> matches a sequence of letters or a tag like {tutu,toto.XXX}, even
-       * if 'tutu' is not made of characters */
-      if (is_letter(text_tag->content[0],infos->alphabet) || text_entry!=NULL) {
+       * if 'tutu' is not made of characters,
+       * BUT, it matches only if we are not already inside a tfst tag in order
+       * to avoid that a grammar like "pr <MOT>" could match tags like
+       * {préciser,.V:W} */
+      if ((is_letter(text_tag->content[0],infos->alphabet) || text_entry!=NULL)
+    		  && !((*pos_pending_tfst_tag)>0)) {
          goto ok_match;
       }
       goto no_match;

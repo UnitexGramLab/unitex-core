@@ -105,7 +105,7 @@ free(match);
  * Allocates, initializes and returns a tfst_match_list.
  */
 struct tfst_match_list* new_tfst_match_list() {
-struct tfst_match_list* l=(struct tfst_match_list*)malloc(sizeof(struct tfst_match_list*));
+struct tfst_match_list* l=(struct tfst_match_list*)malloc(sizeof(struct tfst_match_list));
 if (l==NULL) {
    fatal_alloc_error("new_tfst_match_list");
 }
@@ -123,7 +123,7 @@ struct tfst_match_list* add_match_in_list(struct tfst_match_list* list,
 struct tfst_match_list* l=new_tfst_match_list();
 l->match=match;
 l->next=list;
-(match->pointed_by)++;
+if (match!=NULL) (match->pointed_by)++;
 return l;
 }
 
