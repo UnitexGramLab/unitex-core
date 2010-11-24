@@ -535,10 +535,14 @@ if (is_final_state(current_state_in_grammar)) {
    }   
    if (graph_depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
-      add_tfst_match(infos,match_element_list);
+      if (match_element_list!=NULL) {
+    	  add_tfst_match(infos,match_element_list);
+      }
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
-      (*LIST)=add_match_in_list((*LIST),match_element_list);
+	   if (match_element_list==NULL) {
+		  (*LIST)=add_match_in_list((*LIST),match_element_list);
+	   }
    }
 }
 
@@ -738,7 +742,8 @@ int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag gra
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
    || grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
    || grammar_tag->type==END_CONTEXT_TAG) {
-   fatal_error("Context tag '%S' should not be found in match_between_text_and_grammar_tags\n",grammar_tag->input);
+   /* A context should not start or end within a text tag, so we fail here */
+	return NO_MATCH_STATUS;
 }
 
 /* We start by looking at special fst2 tags */
