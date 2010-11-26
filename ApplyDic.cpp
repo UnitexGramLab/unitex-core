@@ -541,6 +541,11 @@ for (int i=0;i<info->tokens->N;i++) {
          /* To be an unknown word, a token must not be a part of a word */
           info->UNKNOWN_WORDS=info->UNKNOWN_WORDS+info->n_occurrences[i];
           u_fprintf(info->err,"%S\n",info->tokens->token[i]);
+          if (!get_value(info->part_of_a_word2,i)) {
+        	  if (info->tags_err!=NULL) {
+        		  u_fprintf(info->tags_err,"%S\n",info->tokens->token[i]);
+        	  }
+          }
       }
       else {
          /* If the token is part of a word and if it is a simple word,
@@ -559,7 +564,7 @@ for (int i=0;i<info->tokens->N;i++) {
  * the information needed for the application of dictionaries.
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
-                                                    U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* morpho,
+                                                    U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* tags_err,U_FILE* morpho,
                                                     const char* tags,const char* text_cod,Alphabet* alphabet,
                                                     Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
@@ -573,6 +578,7 @@ info->tokens=tokens;
 info->dlf=dlf;
 info->dlc=dlc;
 info->err=err;
+info->tags_err=tags_err;
 info->morpho=morpho;
 strcpy(info->tags_ind,tags);
 info->alphabet=alphabet;
@@ -580,9 +586,11 @@ info->bin=NULL;
 info->inf=NULL;
 info->word_array=NULL;
 info->part_of_a_word=new_bit_array(tokens->N,ONE_BIT);
+info->part_of_a_word2=new_bit_array(tokens->N,ONE_BIT);
 info->simple_word=new_bit_array(tokens->N,TWO_BITS);
 info->n_occurrences=(int*)malloc(tokens->N*sizeof(int));
-if (info->part_of_a_word==NULL || info->simple_word==NULL || info->n_occurrences==NULL) {
+if (info->part_of_a_word==NULL || info->part_of_a_word2==NULL
+		|| info->simple_word==NULL || info->n_occurrences==NULL) {
    fatal_alloc_error("init_dico_application");
 }
 for (int j=0;j<tokens->N;j++) {
@@ -615,6 +623,7 @@ if (info==NULL) return;
 af_release_mapfile_pointer(info->map_text_cod,info->text_cod_buf);
 af_close_mapfile(info->map_text_cod);
 free_bit_array(info->part_of_a_word);
+free_bit_array(info->part_of_a_word2);
 free_bit_array(info->simple_word);
 free(info->n_occurrences);
 free_tct_hash(info->tct_h);
@@ -737,6 +746,9 @@ while (l!=NULL) {
 		   /* If we have found and handled a valid tag sequence, we process
 		    * the next match in the list, AND WE DON'T FREE THE CURRENT
 		    * MATCH, since it's now in a pointer array. */
+		   for (int i=l->m.start_pos_in_token;i<=l->m.end_pos_in_token;i++) {
+			   set_value(info->part_of_a_word2,info->text_cod_buf[i],1);
+		   }
 		   l=l->next;
 	   } else {
 		   /* The match was already there, we have to free it */

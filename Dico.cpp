@@ -75,11 +75,12 @@ const char* usage_Dico =
          "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
-         "5 files, saved in the text directory. These files are:\n"
+         "6 files, saved in the text directory. These files are:\n"
          "\n"
          "  dlf: simple entry dictionary\n"
          "  dlc: compound entry dictionary\n"
          "  err: unrecognized simple words\n"
+         "  tags_err: unrecognized simple words that are neither included in tags.ind's matches\n"
          "  tags.ind: sequences to be inserted in the text automaton\n"
          "  stat_dic.n: file containing the number of simple words, the number\n"
          "              of compound words, and the number of unknown words in the text\n"
@@ -98,7 +99,7 @@ const char* usage_Dico =
          "all its DELAF outputs will also be copied in a file named morpho.dic located\n"
          "in the text directory. At the end of Dico, this dictionary will be compressed\n"
          "to produce the morpho.bin file that will be used by Locate as a local morphological\n"
-         "dictionary for the current text.\n"
+         "dictionary for the current text. For additional options, see user manual.\n"
          "\n"
          "The grammar output shall respect the file format of both DLF and DLC.\n"
          "If an output starts with a / character, it will be considered as a tag\n"
@@ -317,6 +318,9 @@ if (!u_fempty(encoding_output,bom_output,snt_files->dlc)) {
 if (!u_fempty(encoding_output,bom_output,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
+if (!u_fempty(encoding_output,bom_output,snt_files->tags_err)) {
+   fatal_error("Cannot create %s\n",snt_files->tags_err);
+}
 /* We remove the text morphological dictionary files, if any */
 af_remove(snt_files->morpho_dic);
 af_remove(snt_files->morpho_bin);
@@ -347,7 +351,7 @@ if (text_cod==NULL) {
 }
 u_fclose(text_cod);
 u_printf("Initializing...\n");
-struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,snt_files->tags_ind,snt_files->text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,NULL,snt_files->tags_ind,snt_files->text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
@@ -473,7 +477,9 @@ u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
 	info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
 }
+info->tags_err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->tags_err,U_WRITE);
 save_unknown_words(info);
+
 /* We compute some statistics */
 save_statistics(encoding_output,bom_output,snt_files->stat_dic_n,info);
 u_printf("Done.\n");
@@ -483,6 +489,7 @@ free_text_tokens(tokens);
 if (info->dlf!=NULL) u_fclose(info->dlf);
 if (info->dlc!=NULL) u_fclose(info->dlc);
 if (info->err!=NULL) u_fclose(info->err);
+if (info->tags_err!=NULL) u_fclose(info->tags_err);
 if (info->morpho!=NULL) {
    /* If we have produced a morpho.dic file, it's time to work with it */
    u_fclose(info->morpho);

@@ -97,6 +97,7 @@ struct dico_application_info {
    U_FILE* dlf;
    U_FILE* dlc;
    U_FILE* err;
+   U_FILE* tags_err;
    U_FILE* morpho;
    char tags_ind[FILENAME_MAX];
    /* The buffer to use to read the text.cod file */
@@ -120,7 +121,10 @@ struct dico_application_info {
     * - tct_h is a hash table that contains the recognized compound words
     */
    struct word_struct_array* word_array;
+   /* part_of_a_word is used to mark tokens that have been matched by dlf/dlc */
    struct bit_array* part_of_a_word;
+   /* part_of_a_word2 is used to mark tokens that have been matched by tags.ind entries */
+   struct bit_array* part_of_a_word2;
    struct bit_array* simple_word;
    int* n_occurrences;
 
@@ -151,7 +155,7 @@ struct dico_application_info {
 };
 
 
-struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,
+struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,
                                                     U_FILE*,const char*,const char*,Alphabet*,Encoding,int,int);
 int dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
