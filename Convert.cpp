@@ -48,7 +48,7 @@ const char* usage_Convert =
          "  -d X/--dest=X: encoding of the destination text file. The default value\n"
          "                 is LITTLE-ENDIAN\n"
 		 "\n"
-		 "Transliteration options (only for Arabic):"
+		 "Transliteration options (only for Arabic):\n"
          "  -F/--delaf: the input is a delaf, and we only want to transliterate the\n"
 		 "              inflected form and the lemma\n"
          "  -S/--delas: the input is a delas, and we only want to transliterate the\n"
