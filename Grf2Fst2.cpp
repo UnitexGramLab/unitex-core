@@ -42,7 +42,7 @@ const char* usage_Grf2Fst2 =
          "  <grf>: main graph of grammar (must be an absolute path)\n"
          "\n"
          "OPTIONS:\n"
-         "  -o file.fst2/--output==file.fst2: name of destination file\n"
+         "  -o FST2/--output=FST2: name of destination file\n"
          "  -y/--loop_check: enables the loops/left-recursion detection\n"
          "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
          "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
