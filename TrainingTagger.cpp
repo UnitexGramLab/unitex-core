@@ -45,7 +45,7 @@ const char* usage_TrainingTagger =
 		 " .bin files (default)\n"
 		 "  -n/--no_binaries: indicates whether the program should not compress data files into"
 		 " .bin files, in this case only .dic data files are generated\n"
-		 "  -a/--all_models: indicates whether the program should produce all data files (default)\n"
+		 "  -a/--all: indicates whether the program should produce all data files (default)\n"
 		 "  -c/--cat: indicates whether the program should produce only data file with 'cat' tags\n"
 		 "  -m/--morph: indicates whether the program should produce only data file with 'morph' tags\n"
 		 "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_cat.bin"
