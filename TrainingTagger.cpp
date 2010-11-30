@@ -50,7 +50,7 @@ const char* usage_TrainingTagger =
 		 "  -m/--morph: indicates whether the program should produce only data file with 'morph' tags\n"
 		 "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_cat.bin"
 		 " and XXX_data_morph.bin (default=filename of text corpus without extension)\n"
-		 "  -S/--semitic: the output .bin will use the semitic compression algorithm\n"
+		 "  -s/--semitic: the output .bin will use the semitic compression algorithm\n"
 		 "  -h/--help: this help\n"
 		 "\n"
          "Extract statistics from a tagged corpus and save its into a tagger data file. "
@@ -65,7 +65,7 @@ u_printf(usage_TrainingTagger);
 }
 
 
-const char* optstring_TrainingTagger=":o:hbnriaS";
+const char* optstring_TrainingTagger=":o:hbnrias";
 const struct option_TS lopts_TrainingTagger[]= {
 	  {"output",required_argument_TS,NULL,'o'},
 	  {"binaries",no_argument_TS,NULL,'b'},
@@ -73,7 +73,7 @@ const struct option_TS lopts_TrainingTagger[]= {
 	  {"cat",no_argument_TS,NULL,'r'},
 	  {"morph",no_argument_TS,NULL,'i'},
 	  {"all",no_argument_TS,NULL,'a'},
-	  {"semitic",no_argument_TS,NULL,'S'},
+	  {"semitic",no_argument_TS,NULL,'s'},
 	  {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
