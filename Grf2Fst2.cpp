@@ -47,7 +47,7 @@ const char* usage_Grf2Fst2 =
          "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
          "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
          "                   automaton\n"
-         "  -s/--silent_grf_name: do not display the list of grf file\n"
+         "  -s/--silent_grf_name: do not display the list of .grf files\n"
          "  -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
          "  -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
          "                           lexical units.\n"
