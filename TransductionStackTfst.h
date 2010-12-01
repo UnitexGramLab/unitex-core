@@ -42,7 +42,7 @@ void push_input_substring_tfst(Ustring*,unichar* s,int length,int);
 void push_output_char_tfst(Ustring*,unichar);
 void push_output_string_tfst(Ustring*,unichar*);
 void insert_text_interval_tfst(struct locate_tfst_infos*,Ustring*,int,int,int,int);
-int process_output_tfst(Ustring*,unichar*,struct locate_tfst_infos*);
+int deal_with_output_tfst(Ustring*,unichar*,struct locate_tfst_infos*,int*);
 
 #endif
 

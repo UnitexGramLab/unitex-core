@@ -533,9 +533,7 @@ while (text_tags!=NULL) {
 	   	   if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
 	   		   goto restore_dic_variable;
 	   	   }
-	   } else if (capture_mode(infos->output_variables)) {
-		   captured_chars=add_string_to_output_variables(infos->output_variables,output);
-	   } else if (!process_output_tfst(s,output,infos)) {
+	   } else if (!deal_with_output_tfst(s,output,infos,&captured_chars)) {
          /* We do not take into account matches with variable errors if the
           * process_output_for_tfst_match function has decided that backtracking
           * was necessary, either because of a variable error of because of a

@@ -327,6 +327,8 @@ static inline void update_last_position(struct locate_parameters* p, int pos) {
 	}
 }
 
+
+
 /**
  * This is the core function of the Locate program.
  */
@@ -838,9 +840,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							}
 							captured_chars=0;
 							if (p->output_policy != IGNORE_OUTPUTS) {
-								if (capture_mode(p->output_variables)) {
-									captured_chars=add_string_to_output_variables(p->output_variables,output);
-								} else if (!process_output(output, p)) {
+								if (!deal_with_output(output,p,&captured_chars)) {
 									break;
 								}
 							}
@@ -925,9 +925,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						}
 						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,output);
-							} else if (!process_output(output, p)) {
+							if (!deal_with_output(output,p,&captured_chars)) {
 								break;
 							}
 						}
@@ -1160,9 +1158,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				captured_chars=0;
 				if (p->output_policy != IGNORE_OUTPUTS) {
 					/* We process its output */
-					if (capture_mode(p->output_variables)) {
-						captured_chars=add_string_to_output_variables(p->output_variables,output);
-					} else if (!process_output(output, p)) {
+					if (!deal_with_output(output,p,&captured_chars)) {
 						goto next;
 					}
 				}
@@ -1390,9 +1386,7 @@ while (output_variable_list != NULL) {
 					}
 					captured_chars=0;
 					if (p->output_policy != IGNORE_OUTPUTS) {
-						if (capture_mode(p->output_variables)) {
-							captured_chars=add_string_to_output_variables(p->output_variables,output);
-						} else if (!process_output(output, p)) {
+						if (!deal_with_output(output,p,&captured_chars)) {
 							goto next4;
 						}
 					}
@@ -1452,9 +1446,7 @@ while (output_variable_list != NULL) {
 					}
 					captured_chars=0;
 					if (p->output_policy != IGNORE_OUTPUTS) {
-						if (capture_mode(p->output_variables)) {
-							captured_chars=add_string_to_output_variables(p->output_variables,output);
-						} else if (!process_output(output, p)) {
+						if (!deal_with_output(output,p,&captured_chars)) {
 							goto next6;
 						}
 					}
@@ -1493,9 +1485,7 @@ while (output_variable_list != NULL) {
 						}
 						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,output);
-							} else if (!process_output(output, p)) {
+							if (!deal_with_output(output,p,&captured_chars)) {
 								goto next2;
 							}
 						}
@@ -1520,9 +1510,7 @@ while (output_variable_list != NULL) {
 						}
 						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,output);
-							} else if (!process_output(output, p)) {
+							if (!deal_with_output(output,p,&captured_chars)) {
 								goto next2;
 							}
 						}
@@ -1566,9 +1554,7 @@ while (output_variable_list != NULL) {
 					}
 					captured_chars=0;
 					if (p->output_policy != IGNORE_OUTPUTS) {
-						if (capture_mode(p->output_variables)) {
-							captured_chars=add_string_to_output_variables(p->output_variables,output);
-						} else if (!process_output(output, p)) {
+						if (!deal_with_output(output,p,&captured_chars)) {
 							goto next3;
 						}
 					}

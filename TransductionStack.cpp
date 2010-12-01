@@ -99,16 +99,6 @@ push_input_string(stack,s,0);
  * Returns 1 if OK; 0 otherwise (for instance, if a variable is
  * not correctly defined).
  */
-int process_output(unichar* s,struct locate_parameters* p) {
-return process_output(s,p,p->stack);
-}
-
-
-/**
- * This function processes the given output string.
- * Returns 1 if OK; 0 otherwise (for instance, if a variable is
- * not correctly defined).
- */
 int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack) {
 int old_stack_pointer=stack->stack_pointer;
 int i1=0;
@@ -431,3 +421,23 @@ for (;;) {
 return 1;
 }
 
+
+/**
+ * This function deals with an output sequence, regardless there are pending
+ * output variableds or not.
+ */
+int deal_with_output(unichar* output,struct locate_parameters* p,int *captured_chars) {
+struct stack_unichar* stack=p->stack;
+if (capture_mode(p->output_variables)) {
+	stack=new_stack_unichar(64);
+}
+if (!process_output(output,p,stack)) {
+	return 0;
+}
+if (capture_mode(p->output_variables)) {
+	stack->stack[stack->stack_pointer+1]='\0';
+	*captured_chars=add_raw_string_to_output_variables(p->output_variables,stack->stack);
+	free_stack_unichar(stack);
+}
+return 1;
+}

@@ -519,9 +519,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				/* We could have an output associated to an epsilon, so we handle this case */
 				captured_chars=0;
 				if (p->output_policy != IGNORE_OUTPUTS) {
-					if (capture_mode(p->output_variables)) {
-						captured_chars=add_string_to_output_variables(p->output_variables,p->tags[t->tag_number]->output);
-					} else if (!process_output(p->tags[t->tag_number]->output, p)) {
+					if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
 						break;
 					}
 				}
@@ -614,10 +612,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						 *          name was declared before entering the morphological mode */
 						captured_chars=0;
 						if (!save_dic_entry && p->output_policy	!= IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,p->tags[t->tag_number]->output);
-							} else if (!process_output(p->tags[t->tag_number]->output,
-									p)) {
+							if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
 								break;
 							}
 						}
@@ -783,9 +778,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				 * to matching one letter */
 				captured_chars=0;
 				if (p->output_policy != IGNORE_OUTPUTS) {
-					if (capture_mode(p->output_variables)) {
-						captured_chars=add_string_to_output_variables(p->output_variables,p->tags[t->tag_number]->output);
-					} else if (!process_output(p->tags[t->tag_number]->output, p)) {
+					if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
 						goto next;
 					}
 				}
@@ -1026,9 +1019,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						/* If we can match the tag's token, we process the output, if we have to */
 						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,tag->output);
-							} if (!process_output(tag->output, p)) {
+							if (!deal_with_output(tag->output,p,&captured_chars)) {
 								continue;
 							}
 						}
@@ -1061,9 +1052,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						/* If we can match the tag's token, we process the output, if we have to */
 						captured_chars=0;
 						if (p->output_policy != IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,tag->output);
-							} else if (!process_output(tag->output, p)) {
+							if (!deal_with_output(tag->output,p,&captured_chars)) {
 								continue;
 							}
 						}
@@ -1111,7 +1100,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				unichar var_name[len_var_name + 1];
 #endif
 				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
-						&& !capture_mode(p->output_variables)
 						&& is_morpho_variable_output(tag->output, var_name));
 
 				explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L,
@@ -1142,9 +1130,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						 *          name was declared before entering the morphological mode */
 						captured_chars=0;
 						if (!save_dic_entry && p->output_policy != IGNORE_OUTPUTS) {
-							if (capture_mode(p->output_variables)) {
-								captured_chars=add_string_to_output_variables(p->output_variables,tag->output);
-							} else if (!process_output(tag->output, p)) {
+							if (!deal_with_output(tag->output,p,&captured_chars)) {
 								continue;
 							}
 						}

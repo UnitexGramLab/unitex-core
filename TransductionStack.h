@@ -45,8 +45,7 @@ void push_input_substring(struct stack_unichar* stack,unichar* s,int length,int)
 
 void push_output_char(struct stack_unichar*,unichar);
 void push_output_string(struct stack_unichar*,unichar*);
-int process_output(unichar*,struct locate_parameters*);
-int process_output(unichar*,struct locate_parameters*,struct stack_unichar*);
+int deal_with_output(unichar*,struct locate_parameters*,int*);
 
 #endif
 

@@ -355,3 +355,22 @@ while (s[i]!='\0') {
 return 1;
 }
 
+
+/**
+ * This function deals with an output sequence, regardless there are pending
+ * output variableds or not.
+ */
+int deal_with_output_tfst(Ustring* stack,unichar* output,struct locate_tfst_infos* p,int *captured_chars) {
+Ustring* stack_foo=stack;
+if (capture_mode(p->output_variables)) {
+	stack_foo=new_Ustring(64);
+}
+if (!process_output_tfst(stack_foo,output,p)) {
+	return 0;
+}
+if (capture_mode(p->output_variables)) {
+	*captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str);
+	free_Ustring(stack_foo);
+}
+return 1;
+}
