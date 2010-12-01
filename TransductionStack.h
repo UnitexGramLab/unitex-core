@@ -24,6 +24,7 @@
 
 #include "Unicode.h"
 #include "LocatePattern.h"
+#include "Stack_unichar.h"
 
 #define TRANSDUCTION_STACK_SIZE 10000
 
@@ -45,6 +46,7 @@ void push_input_substring(struct stack_unichar* stack,unichar* s,int length,int)
 void push_output_char(struct stack_unichar*,unichar);
 void push_output_string(struct stack_unichar*,unichar*);
 int process_output(unichar*,struct locate_parameters*);
+int process_output(unichar*,struct locate_parameters*,struct stack_unichar*);
 
 #endif
 
