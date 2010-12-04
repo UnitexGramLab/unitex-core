@@ -176,7 +176,7 @@ if(form_type == 1){
 	strcat(tmp_tfst,"_explode.tfst");
 	language_t* lang = load_language_definition(tagset);
 	explode_tfst(tfst,tmp_tfst,enc,bom_output,lang,NULL);
-	free_language_t(lang)
+	free_language_t(lang);
 	current_tfst = tmp_tfst;
 	u_printf("\n");
 }
