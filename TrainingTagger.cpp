@@ -121,11 +121,17 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_Trainin
 }
 
 if (vars->optind!=argc-1) {
+   free_OptVars(vars);
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
 strcpy(text,argv[vars->optind]);
 U_FILE* input_text=u_fopen(UTF16_LE,text,U_READ);
+if (input_text==NULL) {
+   free_OptVars(vars);
+   fatal_error("cannot open file %s\n",text);
+   return 1;
+}
 
 if(output[0]=='\0'){
 	remove_path_and_extension(text,output);

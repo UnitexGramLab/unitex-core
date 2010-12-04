@@ -30,9 +30,9 @@
  * Indicates that those cannot be used like other dictionaries.
  */
 void create_disclaimer(char* file){
-	U_FILE* disclaimer = u_fopen(UTF16_LE,file,U_WRITE);
+	U_FILE* disclaimer = u_fopen_creating_versatile_encoding(UTF8,0,file,U_WRITE);
 	unichar* text = u_strdup("This file contains statistics gathered from a tagged corpus.\nIt cannot be used like other .bin dictionaries but only in input of Tagger program.\n\nContact : unitex@univ-mlv.fr");
-	fwrite(text,sizeof(unichar),u_strlen(text),disclaimer);
+	u_fprintf(disclaimer,"%s",text);
 	free(text);
 	u_fclose(disclaimer);
 }
@@ -77,7 +77,7 @@ return -1;
  * same as u_strrchr(unichar*,unichar) but here a char is searched.
  */
 int u_strrchr(unichar* s,char t){
-unichar dest[1];
+unichar dest[2];
 u_sprintf(dest,"%c",t);
 return u_strrchr(s,dest[0]);
 }
