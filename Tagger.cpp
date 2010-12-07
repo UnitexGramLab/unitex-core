@@ -180,12 +180,10 @@ if(form_type == 1){
 	current_tfst = tmp_tfst;
 	u_printf("\n");
 }
-
 Tfst* input_tfst = open_text_automaton(current_tfst);
 if(input_tfst == NULL) {
 	fatal_error("Cannot load input .tfst\n");
 }
-
 
 remove_extension(temp,tmp_tind);
 strcat(tmp_tind,".tind");

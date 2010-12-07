@@ -259,7 +259,7 @@ void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
-      elag_determinize(language,tfst->automaton,NULL);
+      elag_determinize(language,tfst->automaton,free_symbol);
       elag_minimize(tfst->automaton);
       if (current_sentence % 100 == 0) {
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);

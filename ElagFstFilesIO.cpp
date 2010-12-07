@@ -521,6 +521,7 @@ return t;
  */
 void load_tfst_sentence_automaton(Elag_Tfst_file_in* input,int n) {
 load_sentence(input->tfst,n);
+input->tfst->automaton->tag_type=PTR_TAGS;
 /* We must replace integer transitions by symbol transitions */
 for (int i=0;i<input->tfst->automaton->number_of_states;i++) {
    SingleGraphState state=input->tfst->automaton->states[i];
