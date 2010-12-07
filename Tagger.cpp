@@ -62,12 +62,14 @@ u_printf(usage_Tagger);
 }
 
 
-const char* optstring_Tagger=":a:d:t:o:h";
+const char* optstring_Tagger=":a:d:t:o:k:q:h";
 const struct option_TS lopts_Tagger[]= {
 	  {"alphabet", required_argument_TS, NULL, 'a'},
 	  {"data", required_argument_TS, NULL, 'd'},
 	  {"tagset", required_argument_TS, NULL, 't'},
 	  {"output",required_argument_TS,NULL,'o'},
+	  {"input_encoding",required_argument_TS,NULL,'k'},
+	  {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -93,6 +95,7 @@ char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 Encoding enc = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
@@ -114,6 +117,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,v
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&enc,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -188,7 +201,7 @@ if(input_tfst == NULL) {
 remove_extension(temp,tmp_tind);
 strcat(tmp_tind,".tind");
 
-U_FILE* out_tfst=u_fopen(UTF16_LE,temp,U_WRITE);
+U_FILE* out_tfst=u_fopen_creating_versatile_encoding(enc,bom_output,temp,U_WRITE);
 if (out_tfst==NULL) {
 	fatal_error("Cannot create output .tfst\n");
 }
