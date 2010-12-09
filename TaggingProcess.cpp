@@ -85,7 +85,7 @@ if(mx == NULL){
 	fatal_alloc_error("create_matrix_entry");
 }
 (*mx)->predecessor = -1;
-(*mx)->partial_prob = (float)0.0;
+(*mx)->partial_prob = (double)0.0;
 (*mx)->tag_number = tag_number;
 (*mx)->state_number = state_number;
 int verbose = 0;
@@ -340,9 +340,9 @@ return suffix;
 /**
  * Compute emit probability according to an inflected token associated
  * with a code (semantic and sometimes inflectional codes).
- * This probability is a float value between 0 and 1.
+ * This probability is a double value between 0 and 1.
  */
-float compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,unichar* tag,unichar* inflected){
+double compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,unichar* tag,unichar* inflected){
 const char prefix1[] = "word_";
 unichar* new_inflected = create_bigram_sequence(prefix1,inflected,0);
 unichar* sequence1 = create_bigram_sequence(tag,new_inflected,1);
@@ -378,15 +378,15 @@ if(N2 == -1){
 	N2 = 0;
 }
 /* we compute the emit probability thanks to this smoothed formula */
-return (float)(((float)N2)/(1+((float)(N1))));
+return (double)(((double)N2)/(1+((double)(N1))));
 }
 
 /**
  * Compute transition probability according to three following codes
  * (semantic and sometimes inflectional codes). This probability is
- * a float value between 0 and 1.
+ * a double value between 0 and 1.
  */
-float compute_transition_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
+double compute_transition_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
 									 unichar* ancestor,unichar* predecessor,unichar* current){
 unichar* tri_sequence = create_trigram_sequence(ancestor,predecessor,current);
 unichar* bi_sequence = create_bigram_sequence(ancestor,predecessor,1);
@@ -400,18 +400,18 @@ if(C1 == -1){
 if(C2 == -1){
 	C2 = 1;
 }
-return (float)(((float)C1)/((float)(C2)));
+return (double)(((double)C1)/((double)(C2)));
 }
 
 /**
  * Computes partial probability of a outgoing transition of a state.
  * This probability is the product of emit and transition probabilities.
  */
-float compute_partial_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
+double compute_partial_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
 								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
 								  struct matrix_entry* current){
-float emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,current->tag->inflected);
-float trans_prob = compute_transition_probability(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
+double emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,current->tag->inflected);
+double trans_prob = compute_transition_probability(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
 return emit_prob+trans_prob;
 }
 
@@ -421,7 +421,7 @@ return emit_prob+trans_prob;
  */
 void compute_best_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
 							  struct matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
-float score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
+double score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
 /* best predecessor is saved for the current output transition*/
 if(score >= matrix[index_matrix]->partial_prob){
@@ -491,13 +491,16 @@ SingleGraphState state = graph->states[get_initial_state(graph)];
 for(int i=state_sequence[1];i<=index;i=state_sequence[i]){
 	int next_state = -1;
 	Transition *first = new_Transition(-1,-1),*list = first;
+	bool find = false;
 	for(Transition* transO=state->outgoing_transitions;transO!=NULL;transO=transO->next){
 		TfstTag* tag = (TfstTag*)tags->tab[transO->tag_number];
 		struct dela_entry* entry = tokenize_tag_token(tag->content);
-		if(((same_codes(entry,matrix[i]->tag) == 1 && form_type == 1) ||
+		if(((u_strcmp(entry->semantic_codes[0],matrix[i]->tag->semantic_codes[0]) == 0
+				&& same_inflectional_codes(entry,matrix[i]->tag) && form_type == 1) ||
 				(form_type == 0 && (u_strcmp(entry->semantic_codes[0],matrix[i]->tag->semantic_codes[0]) == 0))) &&
 				(u_strcmp(entry->inflected,matrix[i]->tag->inflected) == 0) &&
-				transO->tag_number == matrix[i]->tag_number){
+				find == false){
+			find = true;
 			/* this outgoing transition is the good one (best partial probability at this state) */
 			next_state = transO->state_number;
 			list->next = transO;
