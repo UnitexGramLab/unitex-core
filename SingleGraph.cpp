@@ -1046,8 +1046,8 @@ Transition* transition;
  */
 typedef void (*free_list_int_func_t)(struct list_int*);
 free_list_int_func_t free_list_inst_func=free_list_int;
-struct hash_table* hash=new_hash_table((unsigned int (*)(void*))hash_list_int,
-				(int (*)(void*, void*))equal_list_int,
+struct hash_table* hash=new_hash_table((unsigned int (*)(const void*))hash_list_int,
+				(int (*)(const void*, const void*))equal_list_int,
 				(void (*)(void*))free_list_inst_func,NULL,NULL);
 struct fifo* fifo=new_fifo();
 struct hash_table* transition_hash=new_hash_table();

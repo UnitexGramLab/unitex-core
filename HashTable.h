@@ -55,10 +55,10 @@ struct hash_list {
    struct any value;
 };
 
-typedef unsigned int (*HASH_FUNCTION)(void*);
-typedef int (*EQUAL_FUNCTION)(void*,void*);
+typedef unsigned int (*HASH_FUNCTION)(const void*);
+typedef int (*EQUAL_FUNCTION)(const void*,const void*);
 typedef void (*FREE_FUNCTION)(void*);
-typedef void* (*KEYCOPY_FUNCTION)(void*);
+typedef void* (*KEYCOPY_FUNCTION)(const void*);
 
 
 /**

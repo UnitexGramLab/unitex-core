@@ -89,23 +89,23 @@ int is_appropriate_token(int tokenID, text_tokens* tokens);
  //...sort helper functions
 
  // hash helper functions
- unsigned int hash_vector_int(void *);
- unsigned int jenkins_one_at_a_time_hash(unsigned char *, size_t);
- unsigned int jenkins_one_at_a_time_hash_string_uppercase(unichar *, size_t, Alphabet* );
- int vectors_equal(void*, void*);
+ unsigned int hash_vector_int(const void *);
+ unsigned int jenkins_one_at_a_time_hash(const unsigned char *, size_t);
+ unsigned int jenkins_one_at_a_time_hash_string_uppercase(const unichar *, size_t, Alphabet* );
+ int vectors_equal(const void*, const void*);
  void free_vec(void*);
- void* copy_vec(void*);
+ void* copy_vec(const void*);
 
- unsigned int hash_token_as_int(void*);
- int tokens_as_int_equal(void*, void*);
- void* copy_token_as_int(void*);
+ unsigned int hash_token_as_int(const void*);
+ int tokens_as_int_equal(const void*, const void*);
+ void* copy_token_as_int(const void*);
  void free_token_as_int(void*);
 
  vec_CS_tag* new_vec_CS_tag(vector_int*, int, text_tokens*, Alphabet*);
  int_CS_tag* new_int_CS_tag(int, int, text_tokens*, Alphabet*);
  void free_vec_CS_tag(vec_CS_tag*);
  void free_int_CS_tag(int_CS_tag*);
- int tokens_equal_ignore_case(unichar*, unichar*, Alphabet*);
+ int tokens_equal_ignore_case(const unichar*, const unichar*, const Alphabet*);
 
  // TODO this should probably be moved to Alphabet.cpp
  unichar alphabet_to_upper(unichar c, Alphabet*alph);
@@ -861,13 +861,13 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 	return res;
 }
 
-unsigned int hash_vector_int(void* vec)
+unsigned int hash_vector_int(const void* vec)
 {
-	vec_CS_tag* v = (vec_CS_tag*)vec;
-	vector_int* vector = v->vec;
+	const vec_CS_tag* v = (const vec_CS_tag*)vec;
+	const vector_int* vector = v->vec;
 	if (v->CStag)
 	{
-		return jenkins_one_at_a_time_hash((unsigned char*)&vector->tab[0], sizeof(int) * vector->nbelems);
+		return jenkins_one_at_a_time_hash((const unsigned char*)&vector->tab[0], sizeof(int) * vector->nbelems);
 	}
 	else
 	{
@@ -885,7 +885,7 @@ unsigned int hash_vector_int(void* vec)
 	}
 }
 
-unsigned int jenkins_one_at_a_time_hash(unsigned char *key, size_t key_len)
+unsigned int jenkins_one_at_a_time_hash(const unsigned char *key, size_t key_len)
 {
     unsigned int hash = 0;
     size_t i;
@@ -901,7 +901,7 @@ unsigned int jenkins_one_at_a_time_hash(unsigned char *key, size_t key_len)
     return hash;
 }
 
-unsigned int jenkins_one_at_a_time_hash_string_uppercase(unichar *key, size_t key_len, Alphabet* alphabet)
+unsigned int jenkins_one_at_a_time_hash_string_uppercase(const unichar *key, size_t key_len, Alphabet* alphabet)
 {
     unsigned int hash = 0;
     size_t i;
@@ -977,14 +977,14 @@ void get_buffer_around_token(U_FILE* inputFile, int** buffer, long tokenPosition
 	*buffer_ends_at = endReadingAt;
 }
 
-int vectors_equal(void* v1, void* v2)
+int vectors_equal(const void* v1, const void* v2)
 {
-	int cs = ((vec_CS_tag*)v1)->CStag;
+	int cs = ((const vec_CS_tag*)v1)->CStag;
 	text_tokens* tokens = ((vec_CS_tag*)v1)->tokens;
-	Alphabet* a = ((vec_CS_tag*)v1)->alphabet;
+	const Alphabet* a = ((vec_CS_tag*)v1)->alphabet;
 
-	vector_int* vec1 = ((vec_CS_tag*)v1)->vec;
-	vector_int* vec2 = ((vec_CS_tag*)v2)->vec;
+	const vector_int* vec1 = ((const vec_CS_tag*)v1)->vec;
+	const vector_int* vec2 = ((const vec_CS_tag*)v2)->vec;
 
 	if (vec1->nbelems != vec2->nbelems)
 	{
@@ -1019,11 +1019,11 @@ void free_vec(void* vec)
 	free_vec_CS_tag((vec_CS_tag*)vec);
 }
 
-void* copy_vec(void* vec)
+void* copy_vec(const void* vec)
 {
-	vector_int* input = ((vec_CS_tag*)vec)->vec;
+	const vector_int* const input = ((const vec_CS_tag*)vec)->vec;
 	vector_int* output = new_vector_int();
-	vec_CS_tag* ret = new_vec_CS_tag(output, ((vec_CS_tag*)vec)->CStag, ((vec_CS_tag*)vec)->tokens, ((vec_CS_tag*)vec)->alphabet);
+	vec_CS_tag* ret = new_vec_CS_tag(output, ((const vec_CS_tag*)vec)->CStag, ((const vec_CS_tag*)vec)->tokens, ((const vec_CS_tag*)vec)->alphabet);
 
 	int i;
 
@@ -1217,7 +1217,7 @@ void free_int_CS_tag(int_CS_tag* inttag)
 	free(inttag);
 }
 
-int tokens_equal_ignore_case(unichar* s1, unichar* s2, Alphabet* a)
+int tokens_equal_ignore_case(const unichar* s1, const unichar* s2, const Alphabet* a)
 {
 	int i = 0;
 
@@ -1237,9 +1237,9 @@ unichar alphabet_to_upper(unichar c, Alphabet* alphabet)
 	return (t == NULL) ? c : (((*t)=='\0') ? c : (*t));
 }
 
-unsigned int hash_token_as_int(void* t)
+unsigned int hash_token_as_int(const void* t)
 {
-	int_CS_tag* token = (int_CS_tag*)t;
+	const int_CS_tag* token = (const int_CS_tag*)t;
 
 	if (!(token->CStag))
 	{
@@ -1251,10 +1251,10 @@ unsigned int hash_token_as_int(void* t)
 	}
 }
 
-int tokens_as_int_equal(void* t1, void* t2)
+int tokens_as_int_equal(const void* t1, const void* t2)
 {
-	int_CS_tag* T1 = (int_CS_tag*)t1;
-	int_CS_tag* T2 = (int_CS_tag*)t2;
+	const int_CS_tag* T1 = (int_CS_tag*)t1;
+	const int_CS_tag* T2 = (int_CS_tag*)t2;
 
 	if (!(T1->CStag))
 	{
@@ -1273,9 +1273,9 @@ int tokens_as_int_equal(void* t1, void* t2)
 	}
 }
 
-void* copy_token_as_int(void* t)
+void* copy_token_as_int(const void* t)
 {
-	int_CS_tag* source = (int_CS_tag*)t;
+	const int_CS_tag* source = (const int_CS_tag*)t;
 	int_CS_tag* ret = new_int_CS_tag(source->tokenID, source->CStag, source->tokens, source->alphabet);
 	return ret;
 }

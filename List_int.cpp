@@ -172,7 +172,7 @@ return 0;
 /**
  * This function sums the elements of the list and returns it as an hash code.
  */
-unsigned int hash_list_int(struct list_int* list) {
+unsigned int hash_list_int(const struct list_int* list) {
 int n=0;
 while (list!=NULL) {
    n=n+list->n;
