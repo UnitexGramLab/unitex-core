@@ -33,7 +33,7 @@
 
 
 static void compute_form_frequencies(SingleGraph g,void** tags,int tfst_tags,struct hash_table* hash);
-static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
+static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,double freq,
 									void** tags,int tfst_tags,struct hash_table* form_frequencies);
 
 /**
@@ -42,7 +42,7 @@ static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizin
  * if there are n concurrent paths, then the frequency of each tag of each path
  * is increased by 1/n.
  *
- * 'hash' is supposed to be a hash table associating float values to strings.
+ * 'hash' is supposed to be a hash table associating double values to strings.
  */
 void compute_form_frequencies(SingleGraph g,TfstTag** tags,
 								struct hash_table* form_frequencies) {
@@ -56,7 +56,7 @@ compute_form_frequencies(g,(void**)tags,1,form_frequencies);
  * if there are n concurrent paths, then the frequency of each tag of each path
  * is increased by 1/n.
  *
- * 'hash' is supposed to be a hash table associating float values to strings.
+ * 'hash' is supposed to be a hash table associating double values to strings.
  * 'string_tags' is supposed to contain complete tfst tags as strings
  * like "@STD.....". As a consequence, we first have to a construct a new array
  * that only contains the tag contents.
@@ -175,7 +175,7 @@ while (q2<g->number_of_states-1) {
  * form frequencies */
 for (int i=0;i<g->number_of_states;i++) {
 	if (factorizing[i]) {
-		explore_for_form_frequencies(g,i,factorizing,(float)(1./number_of_paths[i]),tags,tfst_tags,form_frequencies);
+		explore_for_form_frequencies(g,i,factorizing,(double)(1./number_of_paths[i]),tags,tfst_tags,form_frequencies);
 	}
 }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
@@ -190,7 +190,7 @@ free(number_of_paths);
  * Exploring a subautomaton until we find a factorizing state. For each
  * transition we go through, we add 'freq' to its tag frequency.
  */
-static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,float freq,
+static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,double freq,
 									void** tags,int tfst_tags,struct hash_table* form_frequencies) {
 Transition* t=g->states[state]->outgoing_transitions;
 int n=0,foo;
@@ -205,14 +205,14 @@ while (t!=NULL) {
 	}
 	struct any* value=get_value(form_frequencies,content,HT_INSERT_IF_NEEDED,&ret);
 	if (ret!=HT_KEY_ALREADY_THERE) {
-		value->_float=0;
+		value->_double=0;
 	}
 	if (!factorizing[t->state_number]) {
 		foo=explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,tfst_tags,form_frequencies);
 		n=n+foo;
-		value->_float=value->_float+freq*foo;
+		value->_double=value->_double+freq*foo;
 	} else {
-		value->_float=value->_float+freq;
+		value->_double=value->_double+freq;
 		n++;
 	}
 	t=t->next;
@@ -221,9 +221,9 @@ return n;
 }
 
 
-static int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tags,vector_float* freq) {
-float pivot;
-float tmp;
+static int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tags,vector_double* freq) {
+double pivot;
+double tmp;
 unichar* tmp_char;
 int i = m-1;
 int j = n+1; // final pivot index
@@ -245,7 +245,7 @@ for (;;) {
 }
 }
 
-static void quicksort_by_frequence(int first,int last,vector_ptr* tags,vector_float* freq) {
+static void quicksort_by_frequence(int first,int last,vector_ptr* tags,vector_double* freq) {
 int p;
 if (first<last) {
   p=partition_for_quicksort_by_frequence(first,last,tags,freq);
@@ -254,10 +254,10 @@ if (first<last) {
 }
 }
 
-static int partition_for_quicksort_by_alph_order(int m, int n,vector_ptr* tags,vector_float* freq) {
+static int partition_for_quicksort_by_alph_order(int m, int n,vector_ptr* tags,vector_double* freq) {
 unichar* pivot;
 unichar* tmp;
-float tmp_float;
+double tmp_double;
 int i = m-1;
 int j = n+1; // final pivot index
 pivot=(unichar*)tags->tab[(m+n)/2];
@@ -267,9 +267,9 @@ for (;;) {
   do i++;
   while ((i<n+1)&&(u_strcmp((unichar*)tags->tab[i],pivot)<0));
   if (i<j) {
-    tmp_float=freq->tab[i];
+    tmp_double=freq->tab[i];
     freq->tab[i]=freq->tab[j];
-    freq->tab[j]=tmp_float;
+    freq->tab[j]=tmp_double;
 
     tmp=(unichar*)tags->tab[i];
     tags->tab[i]=tags->tab[j];
@@ -278,7 +278,7 @@ for (;;) {
 }
 }
 
-static void quicksort_by_alph_order(int first,int last,vector_ptr* tags,vector_float* freq) {
+static void quicksort_by_alph_order(int first,int last,vector_ptr* tags,vector_double* freq) {
 int p;
 if (first<last) {
   p=partition_for_quicksort_by_alph_order(first,last,tags,freq);
@@ -287,14 +287,14 @@ if (first<last) {
 }
 }
 
-static void sort_and_save_by_freq(U_FILE *f,vector_ptr* tags,vector_float* freq) {
+static void sort_and_save_by_freq(U_FILE *f,vector_ptr* tags,vector_double* freq) {
 quicksort_by_frequence(0,tags->nbelems - 1,tags,freq);
 for (int i=0;i<tags->nbelems;i++) {
    u_fprintf(f,"%f\t%S\n",freq->tab[i],tags->tab[i]);
 }
 }
 
-static void sort_and_save_by_alph(U_FILE *f,vector_ptr* tags,vector_float* freq) {
+static void sort_and_save_by_alph(U_FILE *f,vector_ptr* tags,vector_double* freq) {
 quicksort_by_alph_order(0,tags->nbelems - 1,tags,freq);
 for (int i=0;i<tags->nbelems;i++) {
    u_fprintf(f,"%S\t%f\n",tags->tab[i],freq->tab[i]);
@@ -307,13 +307,13 @@ for (int i=0;i<tags->nbelems;i++) {
  */
 void sort_and_save_tfst_stats(struct hash_table* form_frequencies,U_FILE* by_freq,U_FILE* by_alph) {
 vector_ptr* tags=new_vector_ptr(4096);
-vector_float* freq=new_vector_float(4096);
+vector_double* freq=new_vector_double(4096);
 /* First, we build vectors from the hash table content */
 for (unsigned int i=0;i<form_frequencies->capacity;i++) {
 	struct hash_list* l=form_frequencies->table[i];
 	while (l!=NULL) {
 		vector_ptr_add(tags,l->ptr_key);
-		vector_float_add(freq,l->value._float);
+		vector_double_add(freq,l->value._double);
 		l=l->next;
 	}
 }
@@ -324,6 +324,6 @@ if (by_alph!=NULL) {
 	sort_and_save_by_alph(by_alph,tags,freq);
 }
 free_vector_ptr(tags,NULL);
-free_vector_float(freq);
+free_vector_double(freq);
 }
 

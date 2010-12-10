@@ -51,8 +51,8 @@ struct hash_list {
       int int_key;
       void* ptr_key;
    };
-   struct any value;
    struct hash_list* next;
+   struct any value;
 };
 
 typedef unsigned int (*HASH_FUNCTION)(void*);

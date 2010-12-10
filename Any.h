@@ -35,6 +35,7 @@ struct any {
       unichar _unichar;
       void* _ptr;
       float _float;
+      double _double;
    };
 };
 
