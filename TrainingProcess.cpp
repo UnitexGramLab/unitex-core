@@ -29,10 +29,10 @@
  * Creates a Disclaimer text file for each one of the training dictionaries.
  * Indicates that those cannot be used like other dictionaries.
  */
-void create_disclaimer(char* file){
+void create_disclaimer(const char* file){
 	U_FILE* disclaimer = u_fopen_creating_versatile_encoding(UTF8,0,file,U_WRITE);
 	unichar* text = u_strdup("This file contains statistics gathered from a tagged corpus.\nIt cannot be used like other .bin dictionaries but only in input of Tagger program.\n\nContact : unitex@univ-mlv.fr");
-	u_fprintf(disclaimer,"%s",text);
+	u_fprintf(disclaimer,"%S",text);
 	free(text);
 	u_fclose(disclaimer);
 }
@@ -64,7 +64,7 @@ context[MAX_CONTEXT-1] = entry;
  * searches for a character in a string by starting from the end.
  * Return index of the position if found, -1 otherwise.
  */
-int u_strrchr(unichar* s,unichar t){
+int u_strrchr(const unichar* s,unichar t){
 for(int i=u_strlen(s)-1;i>0;i--){
 	if(s[i]==t){
 		return i;
@@ -76,7 +76,7 @@ return -1;
 /**
  * same as u_strrchr(unichar*,unichar) but here a char is searched.
  */
-int u_strrchr(unichar* s,char t){
+int u_strrchr(const unichar* s,char t){
 unichar dest[2];
 u_sprintf(dest,"%c",t);
 return u_strrchr(s,dest[0]);
@@ -85,7 +85,7 @@ return u_strrchr(s,dest[0]);
 /**
  * Allocates, initializes and returns a new corpus_entry structure.
  */
-struct corpus_entry* new_corpus_entry(unichar* line){
+struct corpus_entry* new_corpus_entry(const unichar* line){
 struct corpus_entry* entry = (corpus_entry*)malloc(sizeof(corpus_entry));
 if(entry == NULL){
 	fatal_alloc_error("compute_corpus_entry");
@@ -184,7 +184,7 @@ return matrix;
 /**
  * Adds a new pair (key,value) in the hash table.
  */
-void add_key_table(unichar* key,struct string_hash_ptr* table){
+void add_key_table(const unichar* key,struct string_hash_ptr* table){
 void* value = get_value(key,table);
 if(value != NULL){
 	table->value[get_value_index(key,table)] = (void*)(((char*)value)+1);
@@ -198,7 +198,7 @@ else{
  * Adds a new pair (key,value) in the hash table.
  * Here the key is a string (char*).
  */
-void add_key_table(char* key,struct string_hash_ptr* table){
+void add_key_table(const char* key,struct string_hash_ptr* table){
 unichar* str = u_strdup(key);
 add_key_table(str,table);
 free(str);
