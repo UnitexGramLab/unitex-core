@@ -28,9 +28,10 @@
 /**
  * This library provides implementations of autoresizable arrays:
  * 
- * - vector_ptr:   data type=void*
- * - vector_int:   data type=int
- * - vector_float: data type=float
+ * - vector_ptr:    data type=void*
+ * - vector_int:    data type=int
+ * - vector_float:  data type=float
+ * - vector_double: data type=double
  */
 
 
@@ -53,6 +54,13 @@ typedef struct vector_float {
   float* tab;
   int size;
 } vector_float;
+
+
+typedef struct vector_double {
+  int nbelems;
+  double* tab;
+  int size;
+} vector_double;
 
 
 inline vector_ptr* new_vector_ptr(int size=16) {
@@ -203,6 +211,55 @@ vec->size=size;
 inline int vector_float_add(vector_float* vec,float data) {
 while (vec->nbelems>=vec->size) {
    vector_float_resize(vec,vec->size*2);
+}
+vec->tab[vec->nbelems++]=data;
+return vec->nbelems-1;
+}
+
+
+inline vector_double* new_vector_double(int size=16) {
+vector_double* vec=(vector_double*)malloc(sizeof(vector_double));
+if (vec==NULL) {
+   fatal_alloc_error("new_vector_double");
+}
+if (size<=0) {
+   size=1;
+}
+vec->tab=(double*)malloc(size*sizeof(double));
+if (vec==NULL) {
+   fatal_alloc_error("new_vector_double");
+}
+vec->size=size;
+vec->nbelems=0;
+return vec;
+}
+
+
+inline void free_vector_double(vector_double* vec) {
+if (vec==NULL) return;
+free(vec->tab);
+free(vec);
+}
+
+
+inline void vector_double_resize(vector_double* vec,int size) {
+if (size<=0) {
+   size=1;
+}
+if (size<vec->nbelems) {
+   fatal_error("vector_double_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
+}
+vec->tab=(double*)realloc(vec->tab,size*sizeof(double));
+if (vec->tab==NULL) {
+   fatal_alloc_error("vector_double_resize");
+}
+vec->size=size;
+}
+
+
+inline int vector_double_add(vector_double* vec,double data) {
+while (vec->nbelems>=vec->size) {
+   vector_double_resize(vec,vec->size*2);
 }
 vec->tab[vec->nbelems++]=data;
 return vec->nbelems-1;
