@@ -232,8 +232,8 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
  */
 void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom_output,language_t* language,
 		struct hash_table* form_frequencies) {
-   static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
-   static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
+   static const unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
+   static const unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
    symbol_t* rejected = new_symbol_UNKNOWN(language, language_add_form(language,_rejected),-1);
 
@@ -329,7 +329,7 @@ return grammars;
  * Adds {S} at the beginning and end of the sentence automaton.
  */
 static void add_sentence_delimiters(Tfst* tfst,language_t* language) {
-static unichar S[] = { '{', 'S', '}', 0 };
+static const unichar S[] = { '{', 'S', '}', 0 };
 int idx=language_add_form(language,S);
 symbol_t* delimiter=new_symbol_PUNC(language,idx,-1);
 int pseudo_initial_state_index=tfst->automaton->number_of_states;
