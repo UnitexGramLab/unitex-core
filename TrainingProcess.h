@@ -62,7 +62,7 @@ void add_key_table(const unichar*,struct string_hash_ptr*);
 void add_key_table(const char*,struct string_hash_ptr*);
 unichar* compute_contextual_entries(struct corpus_entry**,int,int);
 void add_statistics(struct corpus_entry**,struct string_hash_ptr*,struct string_hash_ptr*);
-void write_keys_values(struct string_hash_ptr*,struct string_hash_tree_node*,unichar*,U_FILE*);
+void write_keys_values(struct string_hash_ptr*,struct string_hash_tree_node*,const unichar*,U_FILE*);
 void do_training(U_FILE*,U_FILE*,U_FILE*);
 
 #endif

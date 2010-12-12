@@ -277,7 +277,7 @@ free(word);
 /**
  * Writes pairs (key,value) into the file containing statistics.
  */
-void write_keys_values(struct string_hash_ptr* table,struct string_hash_tree_node* node,unichar* str,U_FILE* file){
+void write_keys_values(struct string_hash_ptr* table,struct string_hash_tree_node* node,const unichar* str,U_FILE* file){
 if(node->value_index != NO_VALUE_INDEX){
 	u_fprintf(file,"%S,.%d\n",str,table->value[node->value_index]);
 }

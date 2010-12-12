@@ -59,7 +59,7 @@ void push_output_char_tfst(Ustring* s,unichar c) {
 /**
  * Pushes the given string to the output, if not NULL.
  */
-void push_input_string_tfst(Ustring* stack,unichar* s,int protect_dic_chars) {
+void push_input_string_tfst(Ustring* stack,const unichar* s,int protect_dic_chars) {
 int i;
 if (s==NULL) {
    return;
@@ -73,7 +73,7 @@ for (i=0;s[i]!='\0';i++) {
 /**
  * Pushes the given string to the output, if not NULL, in the limit of 'length' chars.
  */
-void push_input_substring_tfst(Ustring* stack,unichar* s,int length) {
+void push_input_substring_tfst(Ustring* stack,const unichar* s,int length) {
 int i;
 if (s==NULL) {
    return;
@@ -87,7 +87,7 @@ for (i=0;i<length && s[i]!='\0';i++) {
 /**
  * Pushes the given string to the output, if not NULL.
  */
-void push_output_string_tfst(Ustring* stack,unichar* s) {
+void push_output_string_tfst(Ustring* stack,const unichar* s) {
 u_strcat(stack,s);
 }
 
@@ -132,7 +132,7 @@ for (;;) {
  * Returns 1 if OK; 0 otherwise (for instance, if a variable is
  * not correctly defined).
  */
-int process_output_tfst(Ustring* stack,unichar* s,struct locate_tfst_infos* p) {
+int process_output_tfst(Ustring* stack,const unichar* s,struct locate_tfst_infos* p) {
 int old_length=stack->len;
 int i=0;
 if (s==NULL) {
@@ -360,7 +360,7 @@ return 1;
  * This function deals with an output sequence, regardless there are pending
  * output variableds or not.
  */
-int deal_with_output_tfst(Ustring* stack,unichar* output,struct locate_tfst_infos* p,int *captured_chars) {
+int deal_with_output_tfst(Ustring* stack,const unichar* output,struct locate_tfst_infos* p,int *captured_chars) {
 Ustring* stack_foo=stack;
 if (capture_mode(p->output_variables)) {
 	stack_foo=new_Ustring(64);

@@ -75,7 +75,7 @@ struct transduction_variable {
 
 Variables* new_Variables(const struct list_ustring*,int* p_nb_variable=NULL);
 void free_Variables(Variables*);
-struct transduction_variable* get_transduction_variable(Variables*,unichar*);
+struct transduction_variable* get_transduction_variable(Variables*,const unichar*);
 
 
 /*

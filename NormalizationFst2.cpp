@@ -183,7 +183,7 @@ return 1;
 void explore_normalization_fst2(Fst2* fst2,int current_state,
                                 struct normalization_tree* node,
                                 struct string_hash* tokens,const unichar* output,
-                                Alphabet* alph,struct norm_info** list) {
+                                const Alphabet* alph,struct norm_info** list) {
 Fst2State state=fst2->states[current_state];
 if (is_final_state(state)) {
    /* If we are in a final state, we behave differently if we are in a subgraph
@@ -256,7 +256,7 @@ while (trans!=NULL) {
  * This function constructs and returns a token tree from a normalization grammar.
  * Tokens are represented by integers.
  */
-struct normalization_tree* load_normalization_fst2(char* grammar,Alphabet* alph,struct text_tokens* tok) {
+struct normalization_tree* load_normalization_fst2(const char* grammar,const Alphabet* alph,struct text_tokens* tok) {
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(grammar,0,&fst2_free);
 if (fst2==NULL) {
@@ -282,7 +282,7 @@ return root;
 //---------------- _string -----------------------------
 
 
-struct normalization_tree_transition* new_trans_arbre_normalization_string(unichar* s) {
+struct normalization_tree_transition* new_trans_arbre_normalization_string(const unichar* s) {
 struct normalization_tree_transition* tmp;
 tmp=(struct normalization_tree_transition*)malloc(sizeof(struct normalization_tree_transition));
 if (tmp==NULL) {
@@ -421,7 +421,7 @@ while (trans!=NULL) {
 // this function constructs a token tree from a normalization grammar
 // tokens are represented by strings
 //
-struct normalization_tree* load_normalization_transducer_string(char* nom) {
+struct normalization_tree* load_normalization_transducer_string(const char* nom) {
 struct FST2_free_info fst2_free;
 Fst2* automate=load_abstract_fst2(nom,0,&fst2_free);
 if (automate==NULL) {

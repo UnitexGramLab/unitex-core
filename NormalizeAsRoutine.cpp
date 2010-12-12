@@ -78,9 +78,9 @@ void WriteOufBuf(struct OUTBUF* pOutBuf,unichar c,U_FILE *f, int flush) {
  *
  * Note that 'replacements' is supposed to contain replacement rules for { and }
  */
-int normalize(char *fin, char *fout, 
+int normalize(const char *fin, const char *fout, 
               Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
-              int carriage_return_policy, char *rules) {
+              int carriage_return_policy, const char *rules) {
 	U_FILE* input;
 	input = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fin,U_READ);
 	if (input == NULL) {

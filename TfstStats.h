@@ -33,7 +33,7 @@
 #include "Vector.h"
 #include "Tfst.h"
 
-void compute_form_frequencies(SingleGraph g,unichar** string_tags,int n_string_tags,
+void compute_form_frequencies(SingleGraph g,const unichar* const* string_tags,int n_string_tags,
 								struct hash_table* hash);
 void compute_form_frequencies(SingleGraph g,TfstTag** tags,
 								struct hash_table* hash);

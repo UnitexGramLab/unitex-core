@@ -61,7 +61,7 @@ compute_form_frequencies(g,(void**)tags,1,form_frequencies);
  * like "@STD.....". As a consequence, we first have to a construct a new array
  * that only contains the tag contents.
  */
-void compute_form_frequencies(SingleGraph g,unichar** string_tags,int n_string_tags,
+void compute_form_frequencies(SingleGraph g,const unichar* const* string_tags,int n_string_tags,
 								struct hash_table* form_frequencies) {
 unichar** tags=(unichar**)calloc(n_string_tags,sizeof(unichar*));
 if (tags==NULL) {
@@ -70,7 +70,7 @@ if (tags==NULL) {
 Ustring* foo=new_Ustring(64);
 tags[0]=u_strdup("<E>");
 for (int i=1;i<n_string_tags;i++) {
-	unichar* s=string_tags[i];
+	const unichar* s=string_tags[i];
 	int n_at=0;
 	/* We look for the second '@' */
 	while ((*s)!='\0' && n_at!=2) {
@@ -290,14 +290,14 @@ if (first<last) {
 static void sort_and_save_by_freq(U_FILE *f,vector_ptr* tags,vector_double* freq) {
 quicksort_by_frequence(0,tags->nbelems - 1,tags,freq);
 for (int i=0;i<tags->nbelems;i++) {
-   u_fprintf(f,"%f\t%S\n",freq->tab[i],tags->tab[i]);
+   u_fprintf(f,"%lf\t%S\n",freq->tab[i],tags->tab[i]);
 }
 }
 
 static void sort_and_save_by_alph(U_FILE *f,vector_ptr* tags,vector_double* freq) {
 quicksort_by_alph_order(0,tags->nbelems - 1,tags,freq);
 for (int i=0;i<tags->nbelems;i++) {
-   u_fprintf(f,"%S\t%f\n",tags->tab[i],freq->tab[i]);
+   u_fprintf(f,"%S\t%lf\n",tags->tab[i],freq->tab[i]);
 }
 }
 

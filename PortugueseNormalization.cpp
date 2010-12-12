@@ -72,9 +72,9 @@ do {
 // this function builds the normalization grammar adapted to the match list
 // passed in parameter
 //
-void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,const unsigned char* root_bin,
+void build_portuguese_normalization_grammar(const Alphabet* alph,struct match_list* list,const unsigned char* root_bin,
                                             const struct INF_codes* root_inf,const unsigned char* inflected_bin,
-                                            const struct INF_codes* inflected_inf,char* res_grf_name,
+                                            const struct INF_codes* inflected_inf,const char* res_grf_name,
                                             Encoding encoding_output, int bom_output,
                                             struct normalization_tree* norm_tree,
                                             struct normalization_tree* nasal_norm_tree) {
@@ -153,7 +153,7 @@ while (s[i]==':') {
 // "dir-se-ia/{...,...V:C1s}-{se,.PRO}"
 // it returns i if i correct lines are produced, 0 else
 //
-int replace_match_output_by_normalization_line(struct match_list* L,Alphabet* alph,const unsigned char* root_bin,
+int replace_match_output_by_normalization_line(struct match_list* L,const Alphabet* alph,const unsigned char* root_bin,
                                                 const struct INF_codes* root_inf,const unsigned char* inflected_bin,
                                                 const struct INF_codes* inflected_inf,
                                                 struct normalization_tree* norm_tree) {
@@ -302,7 +302,7 @@ return 0;
 // into "dir", "se" and ":C1s"
 // it returns 1 on success, 0 else
 //
-int tokenize_portuguese_match(unichar* s,unichar* radical,unichar* pronoun,unichar* suffix,unichar* inflectional_code) {
+int tokenize_portuguese_match(const unichar* s,unichar* radical,unichar* pronoun,unichar* suffix,unichar* inflectional_code) {
 int i=0;
 // we get the radical
 int j=0;
@@ -367,7 +367,7 @@ return 1;
 //
 // this function look for the lemma corresponding to the radical
 //
-int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,Alphabet* alph,const unsigned char* root_bin,
+int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,const Alphabet* alph,const unsigned char* root_bin,
                       const struct INF_codes* root_inf) {
 unichar entry[1000];
 // we must use the entry variable because of the upper/lower case:
@@ -399,7 +399,7 @@ return 1;
 // this function looks for the inf number associated to an inflected form
 // it returns this number on success, -1 else
 //
-int get_inf_number_for_token(int pos,unichar* contenu,int string_pos,unichar* entry,Alphabet* ALPH,const unsigned char* BIN) {
+int get_inf_number_for_token(int pos,const unichar* contenu,int string_pos,unichar* entry,const Alphabet* ALPH,const unsigned char* BIN) {
 int n_transitions;
 int ref;
 n_transitions=((unsigned char)BIN[pos])*256+(unsigned char)BIN[pos+1];
@@ -445,7 +445,7 @@ return -1;
 //
 // this function saves the normalization rules into a file
 //
-void save_portuguese_normalization_grammar(int N,struct match_list* list,char* res_grf_name,
+void save_portuguese_normalization_grammar(int N,struct match_list* list,const char* res_grf_name,
                                            Encoding encoding_output, int bom_output) {
 U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,res_grf_name,U_WRITE);
 if (f==NULL) {
@@ -501,8 +501,8 @@ u_fclose(f);
 // produced, and then appended to the result string.
 // It returns the number of lines produced.
 //
-int explore_portuguese_normalization_tree(unichar* result,unichar* partial_line,struct list_ustring* pronouns,
-                                          struct normalization_tree* node,Alphabet* alph) {
+int explore_portuguese_normalization_tree(unichar* result,const unichar* partial_line,struct list_ustring* pronouns,
+                                          struct normalization_tree* node,const Alphabet* alph) {
 int RES=0;
 if (node==NULL) {
    error("Internal error: NULL node in explore_portuguese_normalization_tree\n");
@@ -539,7 +539,7 @@ return RES;
 //
 // this function takes a pronoun sequence and tokenize looking at the minus signs
 //
-struct list_ustring* tokenize_portuguese_pronoun(unichar* pronoun) {
+struct list_ustring* tokenize_portuguese_pronoun(const unichar* pronoun) {
 if (pronoun==NULL) {
    error("Internal error: NULL pronoun in tokenize_portuguese_pronoun");
    return NULL;

@@ -36,13 +36,13 @@
  *    3,14,PI.NUM   ==>  should be:  3\,14,PI.NUM
  */
 void push_input_char_tfst(Ustring*,unichar,int);
-void push_input_string_tfst(Ustring*,unichar*,int);
-void push_input_substring_tfst(Ustring*,unichar* s,int length,int);
+void push_input_string_tfst(Ustring*,const unichar*,int);
+void push_input_substring_tfst(Ustring*,const unichar* s,int length,int);
 
 void push_output_char_tfst(Ustring*,unichar);
-void push_output_string_tfst(Ustring*,unichar*);
+void push_output_string_tfst(Ustring*,const unichar*);
 void insert_text_interval_tfst(struct locate_tfst_infos*,Ustring*,int,int,int,int);
-int deal_with_output_tfst(Ustring*,unichar*,struct locate_tfst_infos*,int*);
+int deal_with_output_tfst(Ustring*,const unichar*,struct locate_tfst_infos*,int*);
 
 #endif
 
