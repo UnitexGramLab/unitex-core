@@ -346,7 +346,7 @@ return root;
  * This function takes a sequence representing an HTML normal character
  * name like "eacute" and returns its unicode number, or -1 if not found.
  */
-int get_normal_character_number(struct HTML_character_context* html_context,const char* sequence) {
+int get_normal_character_number(const struct HTML_character_context* html_context,const char* sequence) {
 int value;
 if (get_string_number(html_context->normal_characters,sequence,&value)) return value;
 return -1;
@@ -357,7 +357,7 @@ return -1;
  * This function takes a sequence representing an HTML control character
  * name like "gt" and returns its unicode number, or -1 if not found.
  */
-int get_control_character_number(struct HTML_character_context* html_context,const char* sequence) {
+int get_control_character_number(const struct HTML_character_context* html_context,const char* sequence) {
 int value;
 if (get_string_number(html_context->control_characters,sequence,&value)) return value;
 return -1;
@@ -417,8 +417,8 @@ return value;
  * returns MALFORMED_HTML_CODE if the sequence is a malformed integer code
  * like "#x42W4"
  */
-int get_HTML_character(void* html_ctx,const char* sequence,int decode_control_character) {
-struct HTML_character_context* html_context=(HTML_character_context*)html_ctx;
+int get_HTML_character(const void* html_ctx,const char* sequence,int decode_control_character) {
+const struct HTML_character_context* html_context=(const HTML_character_context*)html_ctx;
 if (sequence==NULL || sequence[0]=='\0') {
 	fatal_error("Internal error in get_HTML_character\n");
 }

@@ -67,7 +67,7 @@ int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Ta
                                         int *pos_pending_fst2_tag,int *pos_pending_tfst_tag, int tilde_negation_operator);
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation,int tilde_negation_operator);
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag);
-int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
+int morphological_filter_is_ok(const unichar* content,Fst2Tag grammar_tag,const struct locate_tfst_infos* infos);
 
 
 /**
@@ -1194,7 +1194,7 @@ if (tag->m.start_pos_in_char==0) {
  * Tests if the text tag is compatible with the grammar tag morphological filter, if any.
  * Returns 1 in case of success (no filter is a case of success); 0 otherwise.
  */
-int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locate_tfst_infos* infos) {
+int morphological_filter_is_ok(const unichar* content,Fst2Tag grammar_tag,const struct locate_tfst_infos* infos) {
 if (grammar_tag->filter_number==-1) {
 	return 1;
 }

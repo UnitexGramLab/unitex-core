@@ -110,7 +110,7 @@ return insert_string(root,string,0,value);
  * otherwise, the function returns 1 and the value associated to the
  * string is saved in the 'result' parameter.
  */
-int get_string_number(struct search_tree_node* node,const char* string,int position,int *result) {
+int get_string_number(const struct search_tree_node* node,const char* string,int position,int *result) {
 if (node==NULL) {
 	/* If we find a NULL node, it means that the tree does not
 	 * contain the string, so we return 0. */
@@ -148,7 +148,7 @@ return get_string_number(node->right,string,position,result);
  * not in the tree or has no value. A fatal error will be raised if the string
  * is NULL or empty.
  */
-int get_string_number(struct search_tree_node* root,const char* string,int *result) {
+int get_string_number(const struct search_tree_node* root,const char* string,int *result) {
 if (string==NULL || string[0]=='\0') {
 	fatal_error("NULL or empty string in get_string_number\n");
 }

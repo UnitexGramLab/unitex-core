@@ -98,7 +98,7 @@ array->array[n/divider]=(unsigned char)(array->array[n/divider] | value_mask);
  * Returns the value associated to the 'n'th element of the bit array, or raises
  * a fatal error if 'n' is not in the bounds of the array.
  */
-int get_value(struct bit_array* array,int n) {
+int get_value(const struct bit_array* array,int n) {
 if (array==NULL) {
    fatal_error("NULL error in get_value\n");
 }

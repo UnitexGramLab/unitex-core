@@ -56,5 +56,5 @@ struct bit_array {
 struct bit_array* new_bit_array(int,InfoLength,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_bit_array(struct bit_array*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void set_value(struct bit_array*,int,int);
-int get_value(struct bit_array*,int);
+int get_value(const struct bit_array*,int);
 #endif

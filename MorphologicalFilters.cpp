@@ -29,9 +29,9 @@
 
 
 void free_FilterSet(FilterSet*,int);
-void w_extract_inflected(unichar*,wchar_t*);
-void split_filter(unichar*,unichar*,char*);
-void w_strcpy(wchar_t*,unichar*);
+void w_extract_inflected(const unichar*,wchar_t*);
+void split_filter(const unichar*,unichar*,char*);
+void w_strcpy(wchar_t*,const unichar*);
 
 
 /**
@@ -240,7 +240,7 @@ free(index);
  * Returns 1 if the given string matches the given filter.
  * with a user provided buffer
  */
-int string_match_filter(FilterSet* filters,unichar* s,int filter_number,wchar_t* tmp) {
+int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number,wchar_t* tmp) {
 w_strcpy(tmp,s);
 return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
@@ -249,7 +249,7 @@ return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 /**
  * Returns 1 if the given string matches the given filter.
  */
-int string_match_filter(FilterSet* filters,unichar* s,int filter_number) {
+int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number) {
 wchar_t tmp[2048];
 w_strcpy(tmp,s);
 return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
@@ -276,7 +276,7 @@ return get_value(index->matching_tokens[filter_number],token);
  * This function extracts the inflected form of the given tag token and
  * stores it in the given wchar_t* string.
  */
-void w_extract_inflected(unichar* tag_token,wchar_t* inflected) {
+void w_extract_inflected(const unichar* tag_token,wchar_t* inflected) {
 struct dela_entry* entry=tokenize_tag_token(tag_token);
 if (entry==NULL) {
    fatal_error("Invalid tag token in w_extract_inflected\n");
@@ -289,7 +289,7 @@ free_dela_entry(entry);
 /**
  * Splits a filter like "<<able$>>_f_" into its content "able$" and its options "f".
  */
-void split_filter(unichar* filter_all,unichar* filter_content,char* filter_options) {
+void split_filter(const unichar* filter_all,unichar* filter_content,char* filter_options) {
 int i=2;
 int j=0;
 while (filter_all[i]!='\0' && (filter_all[i]!='>' || filter_all[i+1]!='>')) {
@@ -313,7 +313,7 @@ filter_options[j]='\0';
 /**
  * Copies a unichar* string into a wchar_t* one.
  */
-void w_strcpy(wchar_t* target,unichar* source) {
+void w_strcpy(wchar_t* target,const unichar* source) {
 int i=0;
 while ((target[i]=(wchar_t)source[i])!= L'\0') i++;
 }
