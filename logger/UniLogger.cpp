@@ -722,8 +722,12 @@ int ComputeFileCrc(const char* filename,unsigned int*size_done,unsigned long*crc
     size_t size_buf=0x10000;
     char*buf;
     int ret=1;
-    *size_done =0;
-    *crc=0;
+
+    if (size_done != NULL)
+        *size_done =0;
+
+    if (crc != NULL)
+        *crc=0;
 
     if (filename==NULL)
         return 0;
@@ -744,24 +748,29 @@ int ComputeFileCrc(const char* filename,unsigned int*size_done,unsigned long*crc
         return 0;
     }
 
-    do
+    if ((crc != NULL) || (size_done != NULL))
     {
-        size_read = af_fread(buf,1,size_buf,fin);
-        if (size_read < size_buf)
-            if (af_feof(fin)==0)
+        do
         {
-            /*
-            printf("error in reading %s\n",filenameinzip);
-            */
-            ret = 0;
-        }
+            size_read = af_fread(buf,1,size_buf,fin);
+            if (size_read < size_buf)
+                if (af_feof(fin)==0)
+            {
+                /*
+                printf("error in reading %s\n",filenameinzip);
+                */
+                ret = 0;
+            }
 
-        if (size_read>0)
-        {
-            *size_done += (unsigned int)size_read;
-            *crc = crc32(*crc,buf,size_read);
-        }
-    } while ((size_read>0));
+            if (size_read>0)
+            {
+                if (size_done != NULL)
+                    *size_done += (unsigned int)size_read;
+                if (crc != NULL)
+                    *crc = crc32(*crc,buf,size_read);
+            }
+        } while ((size_read>0));
+    }
 
     af_fclose_unlogged(fin);
     free(buf);
@@ -1006,9 +1015,12 @@ void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
 
             if (pEL->store_file_in_content != 0)
               file_found = DumpFileToPack(pEL,name,"src/",&size,&crc);
-
-            if ((pEL->store_file_in_content == 0) /* && (pEL->store_list_file_in_content != 0)*/)
+            
+            if ((pEL->store_file_in_content == 0) && (pEL->store_list_file_in_content != 0))
               file_found = ComputeFileCrc(name,&size,&crc);
+
+            if ((pEL->store_file_in_content == 0) && (pEL->store_list_file_in_content == 0))
+              file_found = ComputeFileCrc(name,NULL,NULL);
 
             if (file_found != 0)
               AddFileInFileToReadArray(pEL,name);
