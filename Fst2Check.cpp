@@ -209,7 +209,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&i
              no_empty_graph_warning=1;
              break;
    case 'e': no_empty_graph_warning=1; break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free_OptVars(vars); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Fst2Check[index].name);
    case 'k': if (vars->optarg[0]=='\0') {
@@ -235,6 +235,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&i
 }
 
 if (vars->optind!=argc-1) {
+   free_OptVars(vars);
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
@@ -243,6 +244,7 @@ char fst2_file_name[FILENAME_MAX];
 remove_extension(argv[vars->optind],fst2_file_name);
 strcpy(fst2_file_name,argv[vars->optind]);
 U_FILE* ferr=NULL;
+free_OptVars(vars);
 
 if (output[0]!=0)
 {
