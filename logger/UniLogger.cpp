@@ -1002,12 +1002,16 @@ void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
         {
             unsigned int size=0;
             unsigned long crc=0;
-                AddFileInFileToReadArray(pEL,name);
-            if (pEL->store_file_in_content != 0)
-              DumpFileToPack(pEL,name,"src/",&size,&crc);
+            int file_found=0;                
 
-            if ((pEL->store_file_in_content == 0) && (pEL->store_list_file_in_content != 0))
-              ComputeFileCrc(name,&size,&crc);
+            if (pEL->store_file_in_content != 0)
+              file_found = DumpFileToPack(pEL,name,"src/",&size,&crc);
+
+            if ((pEL->store_file_in_content == 0) /* && (pEL->store_list_file_in_content != 0)*/)
+              file_found = ComputeFileCrc(name,&size,&crc);
+
+            if (file_found != 0)
+              AddFileInFileToReadArray(pEL,name);
 
             if ((pEL->store_list_file_in_content != 0))
             {
@@ -1062,7 +1066,7 @@ void AnalyseMode(const char*MODE,int* p_file_read,int* p_file_write)
         *p_file_write=file_write;
 }
 
-void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_fopen(const char* /*name*/,const char* MODE,void* privateLoggerPtr)
+void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_fopen(const char* name,const char* MODE,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
     /* pEL can be NULL if we are not executing a tool */
@@ -1076,7 +1080,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_fopen(const char* /*name*/,con
 
     if (file_read==1)
     {
-        //DoFileReadWork(pEL,name);
+        DoFileReadWork(pEL,name);
     }
 }
 
@@ -1090,12 +1094,12 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_fopen(const char* name,const ch
     int file_read=0;
     int file_write=0;
     AnalyseMode(MODE,&file_read,&file_write);
-
+    /*
     if ((file_read==1) && (af != NULL))
     {
         DoFileReadWork(pEL,name);
     }
-
+    */
     if ((file_write==1) && (af != NULL))
     {
         DoFileWriteWork(pEL,name);
