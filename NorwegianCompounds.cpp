@@ -51,7 +51,7 @@
  */
 struct norwegian_infos {
 	/* The norwegian alphabet */
-	Alphabet* alphabet;
+	const Alphabet* alphabet;
 	/* The .bin and .inf parts of the dictionary that will be used
 	 * for the analysis */
 	const unsigned char* bin;
@@ -91,22 +91,22 @@ struct word_decomposition_list {
 
 
 void analyse_norwegian_unknown_words(struct norwegian_infos*);
-int analyse_norwegian_word(unichar* word,struct norwegian_infos*);
-void explore_state(int,unichar*,int,unichar*,int,unichar*,unichar*,
+int analyse_norwegian_word(const unichar* word,struct norwegian_infos*);
+void explore_state(int,unichar*,int,const unichar*,int,const unichar*,const unichar*,
 					struct word_decomposition_list**,int,struct norwegian_infos*);
 void check_valid_right_component(char*,const struct INF_codes*);
 void check_valid_left_component(char*,const struct INF_codes*);
-char check_valid_left_component_for_an_INF_line(struct list_ustring*);
-char check_valid_left_component_for_one_INF_code(unichar*);
-char check_valid_right_component_for_an_INF_line(struct list_ustring*);
-char check_valid_right_component_for_one_INF_code(unichar*);
-char check_Nsia(struct dela_entry*);
-char check_Nsie(struct dela_entry*);
-char check_Nsig(struct dela_entry*);
-char check_Asio(struct dela_entry*);
-char check_Asie(struct dela_entry*);
-char check_VW(struct dela_entry*);
-char check_ADV(struct dela_entry*);
+char check_valid_left_component_for_an_INF_line(const struct list_ustring*);
+char check_valid_left_component_for_one_INF_code(const unichar*);
+char check_valid_right_component_for_an_INF_line(const struct list_ustring*);
+char check_valid_right_component_for_one_INF_code(const unichar*);
+char check_Nsia(const struct dela_entry*);
+char check_Nsie(const struct dela_entry*);
+char check_Nsig(const struct dela_entry*);
+char check_Asio(const struct dela_entry*);
+char check_Asie(const struct dela_entry*);
+char check_VW(const struct dela_entry*);
+char check_ADV(const struct dela_entry*);
 struct word_decomposition* new_word_decomposition();
 void free_word_decomposition(struct word_decomposition*);
 struct word_decomposition_list* new_word_decomposition_list();
@@ -116,7 +116,7 @@ void free_word_decomposition_list(struct word_decomposition_list*);
 /**
  * This function analyzes a list of unknown Norwegian words.
  */
-void analyse_norwegian_unknown_words(Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
+void analyse_norwegian_unknown_words(const Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
 								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
 								U_FILE* new_unknown_word_list,
 								struct string_hash* forbidden_words) {
@@ -166,7 +166,7 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * right component, 0 otherwise.
  */
-char check_valid_right_component_for_an_INF_line(struct list_ustring* INF_codes) {
+char check_valid_right_component_for_an_INF_line(const struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
 	if (check_valid_right_component_for_one_INF_code(INF_codes->string)) {
 		return 1;
@@ -194,7 +194,7 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * left component, 0 otherwise.
  */
-char check_valid_left_component_for_an_INF_line(struct list_ustring* INF_codes) {
+char check_valid_left_component_for_an_INF_line(const struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
 	if (check_valid_left_component_for_one_INF_code(INF_codes->string)) {
 		return 1;
@@ -209,7 +209,7 @@ return 0;
  * This function analyzes an INF code and returns a value that indicates
  * if it is a valid left component or not.
  */
-int get_valid_left_component_type_for_one_INF_code(unichar* INF_code) {
+int get_valid_left_component_type_for_one_INF_code(const unichar* INF_code) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
@@ -263,7 +263,7 @@ while (INF_codes!=NULL) {
 /**
  * Returns 1 if the given dictionary entry is a "N:sia" one.
  */
-char check_Nsia(struct dela_entry* d) {
+char check_Nsia(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
 unichar t2[4];
@@ -275,7 +275,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 /**
  * Returns 1 if the given dictionary entry is a "N:sie" one.
  */
-char check_Nsie(struct dela_entry* d) {
+char check_Nsie(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
 unichar t2[4];
@@ -287,7 +287,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 /**
  * Returns 1 if the given dictionary entry is a "N:sig" one.
  */
-char check_Nsig(struct dela_entry* d) {
+char check_Nsig(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
 unichar t2[4];
@@ -299,7 +299,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 /**
  * Returns 1 if the given dictionary entry is a "A:sio" one.
  */
-char check_Asio(struct dela_entry* d) {
+char check_Asio(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"A");
 unichar t2[4];
@@ -311,7 +311,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 /**
  * Returns 1 if the given dictionary entry is a "A:sie" one.
  */
-char check_Asie(struct dela_entry* d) {
+char check_Asie(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"A");
 unichar t2[4];
@@ -323,7 +323,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 /**
  * Returns 1 if the given dictionary entry is a "V:W" one.
  */
-char check_VW(struct dela_entry* d) {
+char check_VW(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"V");
 unichar t2[2];
@@ -335,7 +335,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 /**
  * Returns 1 if the given dictionary entry is a "ADV" one.
  */
-char check_ADV(struct dela_entry* d) {
+char check_ADV(const struct dela_entry* d) {
 unichar t1[4];
 u_strcpy(t1,"ADV");
 return (char)dic_entry_contain_gram_code(d,t1);
@@ -358,7 +358,7 @@ return dic_entry_contain_gram_code(d,t1) && (!dic_entry_contain_inflectional_cod
 /**
  * Returns 1 if the INF code refers to a valid left component, 0 otherwise.
  */
-char check_valid_left_component_for_one_INF_code(unichar* INF_code) {
+char check_valid_left_component_for_one_INF_code(const unichar* INF_code) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
@@ -489,7 +489,7 @@ return (char)dic_entry_contain_gram_code(d,t1);
 /**
  * Returns 1 if the INF code refers to a valid left component, 0 otherwise.
  */
-char check_valid_right_component_for_one_INF_code(unichar* INF_code) {
+char check_valid_right_component_for_one_INF_code(const unichar* INF_code) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
@@ -551,7 +551,7 @@ u_printf("%d words decomposed as compound words\n",n);
  * information if an information file has been specified in 'infos');
  * returns 0 otherwise.
  */
-int analyse_norwegian_word(unichar* word,struct norwegian_infos* infos) {
+int analyse_norwegian_word(const unichar* word,struct norwegian_infos* infos) {
 unichar decomposition[4096];
 unichar dela_line[4096];
 unichar correct_word[4096];
@@ -724,8 +724,8 @@ while (l!=NULL) {
  * 'infos': global settings.
  */
 void explore_state(int offset,unichar* current_component,int pos_in_current_component,
-                   unichar* word_to_analyze,int pos_in_word_to_analyze,unichar* analysis,
-                   unichar* output_dela_line,struct word_decomposition_list** L,
+                   const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
+                   const unichar* output_dela_line,struct word_decomposition_list** L,
                    int number_of_components,struct norwegian_infos* infos) {
 int c;
 int index,t;

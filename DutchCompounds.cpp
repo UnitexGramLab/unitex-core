@@ -37,7 +37,7 @@
  */
 struct dutch_infos {
 	/* The Dutch alphabet */
-	Alphabet* alphabet;
+	const Alphabet* alphabet;
 	/* The .bin and .inf parts of the dictionary that will be used
 	 * for the analysis */
 	const unsigned char* bin;
@@ -75,17 +75,17 @@ struct word_decomposition_list {
 
 
 void analyse_dutch_unknown_words(struct dutch_infos*);
-int analyse_dutch_word(unichar* word,struct dutch_infos*);
+int analyse_dutch_word(const unichar* word,struct dutch_infos*);
 void explore_state_dutch(int offset,unichar* current_component,int pos_in_current_component,
-                   unichar* word_to_analyze,int pos_in_word_to_analyze,unichar* analysis,
-                   unichar* output_dela_line,struct word_decomposition_list** L,
+                   const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
+                   const unichar* output_dela_line,struct word_decomposition_list** L,
                    int number_of_components,struct dutch_infos* infos);
 void check_valid_right_component_dutch(char*,const struct INF_codes*);
-char check_valid_right_component_for_an_INF_line_dutch(struct list_ustring*);
-char check_valid_right_component_for_one_INF_code_dutch(unichar*);
+char check_valid_right_component_for_an_INF_line_dutch(const struct list_ustring*);
+char check_valid_right_component_for_one_INF_code_dutch(const unichar*);
 void check_valid_left_component_dutch(char*,const struct INF_codes*);
-char check_valid_left_component_for_an_INF_line_dutch(struct list_ustring*);
-char check_valid_left_component_for_one_INF_code_dutch(unichar*);
+char check_valid_left_component_for_an_INF_line_dutch(const struct list_ustring*);
+char check_valid_left_component_for_one_INF_code_dutch(const unichar*);
 
 struct word_decomposition* new_word_decomposition_dutch();
 void free_word_decomposition_dutch(struct word_decomposition*);
@@ -96,7 +96,7 @@ void free_word_decomposition_list_dutch(struct word_decomposition_list*);
 /**
  * This function analyzes a list of unknown Dutch words.
  */
-void analyse_dutch_unknown_words(Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
+void analyse_dutch_unknown_words(const Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
 								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
 								U_FILE* new_unknown_word_list,struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
@@ -145,7 +145,7 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * right component, 0 otherwise.
  */
-char check_valid_right_component_for_an_INF_line_dutch(struct list_ustring* INF_codes) {
+char check_valid_right_component_for_an_INF_line_dutch(const struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
 	if (check_valid_right_component_for_one_INF_code_dutch(INF_codes->string)) {
 		return 1;
@@ -217,7 +217,7 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * left component, 0 otherwise.
  */
-char check_valid_left_component_for_an_INF_line_dutch(struct list_ustring* INF_codes) {
+char check_valid_left_component_for_an_INF_line_dutch(const struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
 	if (check_valid_left_component_for_one_INF_code_dutch(INF_codes->string)) {
 		return 1;
@@ -277,7 +277,7 @@ while (INF_codes!=NULL) {
 /**
  * Returns 1 if the INF code refers to a valid left component, 0 otherwise.
  */
-char check_valid_left_component_for_one_INF_code_dutch(unichar* INF_code) {
+char check_valid_left_component_for_one_INF_code_dutch(const unichar* INF_code) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
@@ -318,7 +318,7 @@ return res;
 /**
  * Returns 1 if the INF code refers to a valid left component, 0 otherwise.
  */
-char check_valid_right_component_for_one_INF_code_dutch(unichar* INF_code) {
+char check_valid_right_component_for_one_INF_code_dutch(const unichar* INF_code) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
@@ -366,7 +366,7 @@ u_printf("%d words decomposed as compound word%s\n",n,(n>1)?"s":"");
  * information if an information file has been specified in 'infos');
  * returns 0 otherwise.
  */
-int analyse_dutch_word(unichar* word,struct dutch_infos* infos) {
+int analyse_dutch_word(const unichar* word,struct dutch_infos* infos) {
 unichar decomposition[4096];
 unichar dela_line[4096];
 unichar correct_word[4096];
@@ -500,8 +500,8 @@ while (l!=NULL) {
  * 'infos': global settings.
  */
 void explore_state_dutch(int offset,unichar* current_component,int pos_in_current_component,
-                   unichar* word_to_analyze,int pos_in_word_to_analyze,unichar* analysis,
-                   unichar* output_dela_line,struct word_decomposition_list** L,
+                   const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
+                   const unichar* output_dela_line,struct word_decomposition_list** L,
                    int number_of_components,struct dutch_infos* infos) {
 int c;
 int index,t;
