@@ -99,15 +99,19 @@ cassys_tokens_list *add_output(cassys_tokens_list *list,
 	if (list == NULL) {
 		return NULL;
 	}
-
+	//u_printf("coucou ocncord tokenslist add\n");
 	list ->output = output;
 
 	cassys_tokens_list *replacement_end = get_element_at(list, transducer_id,
 			number_of_tokens_replaced);
-	cassys_tokens_list *output_end = get_element_at(list->output,
+	//u_printf("coucou ocncord tokenslist add2\n");
+
+	cassys_tokens_list *output_end =NULL;
+	if(list->output!=NULL)
+		output_end = get_element_at(list->output,
 			list->output->transducer_id, number_of_output_tokens);
 
-
+	//u_printf("coucou ocncord tokenslist add3\n");
 	if (output_end == NULL) {
 		return NULL;
 	}
