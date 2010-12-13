@@ -65,19 +65,21 @@ if (ferr != NULL) {
 }
 
 
-int display_fst2_file_stat(char* name,U_FILE*ferr)
+int display_fst2_file_stat(const char* name,U_FILE*ferr)
 {
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(name,1,&fst2_free);
+char name_without_path[FILENAME_MAX];
+remove_path(name,name_without_path);
 if (fst2==NULL) {
 	error("Cannot load graph %s\n",name);
     if (ferr != NULL)
         u_fprintf(ferr,"Cannot load graph %s\n",name);
     return 0;
 }
-u_printf("Statistics of graph %s: ",name);
+u_printf("Statistics of graph %s: ",name_without_path);
 if (ferr != NULL)
-  u_fprintf(ferr,"Statistics of graph %s: ",name);
+  u_fprintf(ferr,"Statistics of graph %s: ",name_without_path);
 display_fst2_stat(fst2,ferr);
 
 free_abstract_Fst2(fst2,&fst2_free);
