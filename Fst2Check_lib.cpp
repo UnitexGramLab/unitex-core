@@ -168,7 +168,7 @@ else e->control=0;
 /**
  * Prints the graph call sequence that leads to the graph #n.
  */
-void print_reversed_list(struct list_int* l,int n,unichar** graph_names,U_FILE* ferr) {
+void print_reversed_list(const struct list_int* l,int n,unichar**  graph_names,U_FILE* ferr) {
 if (l->n==n) {
    error("ERROR: %S",graph_names[l->n]);
    if (ferr != NULL)
@@ -186,7 +186,7 @@ if (ferr != NULL)
  * Returns 1 if we can match <E> from the current state, with or without
  * conditions; 0 otherwise.
  */
-int graph_matches_E(int initial_state,int current_state,Fst2State* states,Fst2Tag* tags,
+int graph_matches_E(int initial_state,int current_state,const Fst2State* states,Fst2Tag* tags,
                       int current_graph,unichar** graph_names,
                       ConditionList conditions_for_states[],
                       ConditionList *graph_conditions) {
@@ -572,7 +572,7 @@ return ret;
  * 2) no loop that can recognize the empty word (<E> with an output or subgraph
  *    that can match the empty word).
  */
-int OK_for_Locate_write_error(char* name,char no_empty_graph_warning,U_FILE* ferr) {
+int OK_for_Locate_write_error(const char* name,char no_empty_graph_warning,U_FILE* ferr) {
 ConditionList* conditions;
 ConditionList* conditions_for_state;
 int i,j;
@@ -674,7 +674,7 @@ return NO_LEFT_RECURSION;
 }
 
 
-int OK_for_Locate(char* name,char no_empty_graph_warning)
+int OK_for_Locate(const char* name,char no_empty_graph_warning)
 {
     return OK_for_Locate_write_error(name,no_empty_graph_warning,NULL);
 }
@@ -777,7 +777,7 @@ return 1;
  * 5) all other tags must have an ouput of the form w x y z f g, with
  *    w and y being integers >=0, and x, z, f and g being integers >=-1 
  */
-int valid_sentence_automaton_write_error(char* name,U_FILE*) {
+int valid_sentence_automaton_write_error(const char* name,U_FILE*) {
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(name,0,&fst2_free);
 if (fst2==NULL) return 0;
@@ -800,9 +800,7 @@ if (!valid_outputs(fst2)) {
 return 1;
 }
 
-int valid_sentence_automaton(char* name)
+int valid_sentence_automaton(const char* name)
 {
     return valid_sentence_automaton_write_error(name,NULL);
 }
-
-
