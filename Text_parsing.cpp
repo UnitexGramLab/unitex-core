@@ -1778,6 +1778,10 @@ while (*L != NULL) {
 		&& (*L)->m.end_pos_in_token == end
 		&& (p->ambiguous_output_policy != ALLOW_AMBIGUOUS_OUTPUTS || !u_strcmp((*L)->output, output))) {
 		/* The match is already there, nothing to do */
+		if (p->ambiguous_output_policy!=ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp((*L)->output, output)) {
+			/* If ambiguous outputs are forbidden, we emit an error message */
+			error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",(*L)->output,output);
+		}
 		return;
 	}
 	if (start<(*L)->m.start_pos_in_token ||
@@ -1839,19 +1843,23 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 		}
 		/* If we have the same start and the same end, we consider the
 		 * new match only if ambiguous outputs are allowed */
-		if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS
-				&& p->match_list->m.end_pos_in_token == end
+		if (p->match_list->m.end_pos_in_token == end
 				&& p->match_list->m.start_pos_in_token == start && u_strcmp(
 				p->match_list->output, output)) {
-			/* Because matches with same range and same output may not come
-			 * one after another, we have to look if a match with same output
-			 * already exists */
-			l = p->match_list;
-			while (l != NULL && u_strcmp(l->output, output)) {
-				l = l->next;
-			}
-			if (l == NULL) {
-				p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
+			if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
+				/* Because matches with same range and same output may not come
+				 * one after another, we have to look if a match with same output
+				 * already exists */
+				l = p->match_list;
+				while (l != NULL && u_strcmp(l->output, output)) {
+					l = l->next;
+				}
+				if (l == NULL) {
+					p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
+				}
+			} else {
+				/* If we don't allow ambiguous outputs, we have to print an error message */
+				error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",p->match_list->output,output);
 			}
 		}
 		break;
@@ -1896,14 +1904,19 @@ static struct match_list* eliminate_longer_matches(struct match_list *ptr, int s
 	struct match_list *l;
 	if (ptr == NULL)
 		return NULL;
-	if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS
-			&& ptr->m.start_pos_in_token == start && ptr->m.end_pos_in_token
-			== end && u_strcmp(ptr->output, output)) {
-		/* In the case of ambiguous transductions producing different outputs,
-		 * we accept matches with same range */
-		ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
-				dont_add_match, p, prv_alloc);
-		return ptr;
+	if (ptr->m.start_pos_in_token==start
+		&& ptr->m.end_pos_in_token==end
+		&& u_strcmp(ptr->output, output)) {
+		if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
+			/* In the case of ambiguous transductions producing different outputs,
+			 * we accept matches with same range */
+			ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
+					dont_add_match, p, prv_alloc);
+			return ptr;
+		} else {
+			/* If we don't allow ambiguous outputs, we have to print an error message */
+			error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",ptr->output,output);
+		}
 	}
 	if (start >= ptr->m.start_pos_in_token && end <= ptr->m.end_pos_in_token) {
 		/* If the new match is shorter (or of equal length) than the current one
