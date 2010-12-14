@@ -365,14 +365,17 @@ switch (compare_matches(&(list->m),&(e->m))) {
    case A_EQUALS_B: {
 	   /* In any mode we replace the existing match by the new one, except if we allow
 	    * ambiguous outputs */
-	   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp(list->output,e->output)) {
-		   list=new_tfst_simple_match_list(e,list);
-		   return list;
-	   } else {
-		   replace_match(list,e);
-		   return list;
-
+	   if (u_strcmp(list->output,e->output)) {
+		   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
+			   list=new_tfst_simple_match_list(e,list);
+			   return list;
+		   } else {
+				/* If we don't allow ambiguous outputs, we have to print an error message */
+				error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",list->output,e->output);
+		   }
 	   }
+	   replace_match(list,e);
+	   return list;
    }
 
    case B_INCLUDES_A: {
