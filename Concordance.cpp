@@ -799,6 +799,9 @@ int n_units_already_read=0;
 /* First, we allocate a buffer to read the "text.cod" file */
 
 struct buffer_mapped* buffer=(struct buffer_mapped*)malloc(sizeof(struct buffer_mapped));
+if (buffer==NULL) {
+	fatal_alloc_error("create_raw_text_concordance");
+}
 buffer->amf=(text);
 buffer->int_buffer_=(const int*)af_get_mapfile_pointer(buffer->amf);
 buffer->nb_item=af_get_mapfile_size(buffer->amf)/sizeof(int);
