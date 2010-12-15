@@ -1676,7 +1676,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			 * we copy in 'inflected' the exact character that is in the dictionary. */
 			int can_go_on=0;
 			int next = NOTHING_EXPECTED;
-			if (last_dic_char == AR_SHADDA && (pos_in_current_token == 0
+			if (last_dic_char == AR_SHADDA && !(pos_in_current_token == 0
 					|| current_token[pos_in_current_token - 1] != AR_SHADDA)) {
 				/* Additional test: if we have matched X, we must check whether there was a shadda X
 				 * rule pending with a omitted shadda. In that case, we must check whether we are
