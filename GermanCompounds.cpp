@@ -27,7 +27,7 @@
 //
 // this function analyses the german compound words
 //
-void analyse_german_compounds(Alphabet* alph,const unsigned char* bin,const struct INF_codes* inf,
+void analyse_german_compounds(const Alphabet* alph,const unsigned char* bin,const struct INF_codes* inf,
                                  U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words) {
 char* tableau_correct_left_component=(char*)malloc(sizeof(char)*(inf->N));
 if (tableau_correct_left_component==NULL) {
@@ -93,7 +93,7 @@ for (int i=0;i<inf->N;i++) {
 // return 1 if at least one of the INF codes of l is a valid
 // left component, 0 else
 //
-char check_valid_left_component_for_an_INF_line_german(struct list_ustring* l) {
+char check_valid_left_component_for_an_INF_line_german(const struct list_ustring* l) {
 while (l!=NULL) {
    if (check_valid_left_component_for_one_INF_code_german(l->string)) {
       return 1;
@@ -126,7 +126,7 @@ while (l!=NULL) {
 //
 // returns 1 if the line is a N+FF one
 //
-char check_N_FF(struct dela_entry* d) {
+char check_N_FF(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
 unichar t2[3];
@@ -139,7 +139,7 @@ return (char)(dic_entry_contain_gram_code(d,t1) && dic_entry_contain_gram_code(d
 //
 // returns 1 if the INF code refers to a valid left component, 0 else
 //
-char check_valid_left_component_for_one_INF_code_german(unichar* s) {
+char check_valid_left_component_for_one_INF_code_german(const unichar* s) {
 unichar temp[2000];
 u_strcpy(temp,"x,");
 u_strcat(temp,s);
@@ -154,7 +154,7 @@ return res;
 //
 // returns 1 if the line is a N  but not FF one
 //
-char check_N_not_FF(struct dela_entry* d) {
+char check_N_not_FF(const struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
 unichar t2[3];
@@ -168,7 +168,7 @@ return (char)(dic_entry_contain_gram_code(d,t1) && !(dic_entry_contain_gram_code
 //
 // returns 1 if the INF code refers to a valid right component, 0 else
 //
-char check_valid_right_component_for_one_INF_code_german(unichar* s) {
+char check_valid_right_component_for_one_INF_code_german(const unichar* s) {
 unichar temp[2000];
 u_strcpy(temp,"x,");
 u_strcat(temp,s);
@@ -185,7 +185,7 @@ return res;
 //
 void analyse_german_word_list(const unsigned char* bin,const struct INF_codes* inf,
                               U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words,
-                              char* left,char* right,Alphabet* alphabet) {
+                              const char* left,const char* right,const Alphabet* alphabet) {
 unichar s[1000];
 u_printf("Analysing german unknown words...\n");
 int n=0;
@@ -203,8 +203,8 @@ u_printf("%d words decomposed as compound words\n",n);
 //
 // this function try to analyse an unknown german word
 //
-int analyse_german_word(unichar* mot,U_FILE* debug_file,U_FILE* result_file,char* left,char* right,
-                        const struct INF_codes* inf_codes,Alphabet* alphabet,const unsigned char* bin) {
+int analyse_german_word(const unichar* mot,U_FILE* debug_file,U_FILE* result_file,const char* left,const char* right,
+                        const struct INF_codes* inf_codes,const Alphabet* alphabet,const unsigned char* bin) {
 unichar decomposition[2000];
 unichar dela_line[2000];
 unichar correct_word[2000];
@@ -282,10 +282,10 @@ while (l!=NULL) {
 // this function explores the dictionary to decompose the word mot
 //
 void explore_state_german(int adresse,unichar* current_component,int pos_in_current_component,
-                   unichar* original_word,int pos_in_original_word,unichar* decomposition,
+                   const unichar* original_word,int pos_in_original_word,const unichar* decomposition,
                    unichar* dela_line,struct german_word_decomposition_list** L,int n_decomp,
-                   char* left,char* right,
-                   const struct INF_codes* inf_codes,Alphabet* alphabet,
+                   const char* left,const char* right,
+                   const struct INF_codes* inf_codes,const Alphabet* alphabet,
                    const unsigned char* tableau_bin) {
 int c;
 int index,t;

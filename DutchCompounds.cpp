@@ -79,7 +79,7 @@ int analyse_dutch_word(const unichar* word,struct dutch_infos*);
 void explore_state_dutch(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
-                   int number_of_components,struct dutch_infos* infos);
+                   int number_of_components,const struct dutch_infos* infos);
 void check_valid_right_component_dutch(char*,const struct INF_codes*);
 char check_valid_right_component_for_an_INF_line_dutch(const struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_dutch(const unichar*);
@@ -502,7 +502,7 @@ while (l!=NULL) {
 void explore_state_dutch(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
-                   int number_of_components,struct dutch_infos* infos) {
+                   int number_of_components,const struct dutch_infos* infos) {
 int c;
 int index,t;
 c=infos->bin[offset]*256+infos->bin[offset+1];
