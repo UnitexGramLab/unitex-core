@@ -25,13 +25,13 @@
 
 
 // main internal functions:
-void analyse_word_list(const unsigned char*, const struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,Alphabet*,
-                       bool*,bool*,struct utags,vector_ptr*,vector_ptr*);
-int analyse_word(unichar*,const unsigned char*,U_FILE*,U_FILE*,const struct INF_codes*,bool*,bool*,Alphabet*,struct utags
+void analyse_word_list(const unsigned char*, const struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,const Alphabet*,
+                       const bool*,const bool*,struct utags,vector_ptr*,vector_ptr*);
+int analyse_word(const unichar*,const unsigned char*,U_FILE*,U_FILE*,const struct INF_codes*,const bool*,const bool*,const Alphabet*,struct utags
       ,vector_ptr*,vector_ptr*);
-void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*,
-                   struct decomposed_word_list**, int, struct rule_list*, struct dela_entry*,
-                   const unsigned char*,const struct INF_codes*,bool*,bool*,Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
+void explore_state(int, unichar*, int, const unichar*, const unichar*, int, const unichar*, const unichar*,
+                   struct decomposed_word_list**, int, struct rule_list*, const struct dela_entry*,
+                   const unsigned char*,const struct INF_codes*,const bool*,const bool*,const Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
 
 
 // results of decomposition are written to
@@ -77,7 +77,7 @@ struct pattern {
   unichar string[MAX_COMPOSITION_RULE_LENGTH];
 };
 // associated functions:
-void save_pattern (pattern*, bool, unichar, unichar*);
+void save_pattern (pattern*, bool, unichar, const unichar*);
 
 // struct change_code holds information for manipulating (parts of) words and information
 // when decompositing words
@@ -112,21 +112,21 @@ void free_rule_list (struct rule_list*);
 void free_all_rule_lists (vector_ptr*);
 
 // parse_condition parses condition parts of rules
-void parse_condition (unichar*, pattern*);
+void parse_condition (const unichar*, pattern*);
 // parse_then_code parses replacement part of a rule
-void parse_then_code (unichar*_code, struct change_code*);
+void parse_then_code (const unichar*_code, struct change_code*);
 // parse_rules parses a rule
 struct rule_list* parse_rules (unichar*,struct utags,vector_ptr*);
 // composition_rule_matches_entry decides whether rule and entry match
-int composition_rule_matches_entry (struct pattern*, struct dela_entry*,U_FILE*);
+int composition_rule_matches_entry (const struct pattern*, const struct dela_entry*,U_FILE*);
 // substring_operation changes prefix or suffix of word given a substring-rule
-void substring_operation (unichar*, unichar*);
+void substring_operation (unichar*, const unichar*);
 
 
-void check_valid_INF_lines(unichar*, bool*, const struct INF_codes*);
-bool check_is_valid_for_an_INF_line(unichar*, struct list_ustring*);
-int check_is_valid_for_one_INF_code(unichar* t, unichar* s);
-int check_is_valid(unichar*, struct dela_entry*);
+void check_valid_INF_lines(const unichar*, bool*, const struct INF_codes*);
+bool check_is_valid_for_an_INF_line(const unichar*, const struct list_ustring*);
+int check_is_valid_for_one_INF_code(const unichar* t, const unichar* s);
+int check_is_valid(const unichar*, const struct dela_entry*);
 
 
 
@@ -161,7 +161,7 @@ void free_all_dic_entries(vector_ptr*);
 //
 // this function analyses russian compound words
 //
-void analyse_compounds(Alphabet* alph,
+void analyse_compounds(const Alphabet* alph,
 		       const unsigned char* bin,
 		       const struct INF_codes* inf,
 		       U_FILE* words,
@@ -189,8 +189,8 @@ void analyse_word_list(const unsigned char* tableau_bin,
 			       U_FILE* result,
 			       U_FILE* debug,
 			       U_FILE* new_unknown_words,
-			       Alphabet* alph,
-			       bool* prefix,bool* suffix,
+			       const Alphabet* alph,
+			       const bool* prefix,const bool* suffix,
 			       struct utags UTAG,
 			       vector_ptr* rules,
 			       vector_ptr* entries)
@@ -217,8 +217,8 @@ void analyse_word_list(const unsigned char* tableau_bin,
 //
 // this function try to analyse an unknown russian word
 //
-int analyse_word(unichar* mot,const unsigned char* tableau_bin,U_FILE* debug,U_FILE* result_file,
-                 const struct INF_codes* inf_codes,bool* prefix,bool* suffix,Alphabet* alphabet,
+int analyse_word(const unichar* mot,const unsigned char* tableau_bin,U_FILE* debug,U_FILE* result_file,
+                 const struct INF_codes* inf_codes,const bool* prefix,const bool* suffix,const Alphabet* alphabet,
                  struct utags UTAG,vector_ptr* rules,vector_ptr* entries)
 {
 #if DDEBUG > 0
@@ -254,12 +254,12 @@ int analyse_word(unichar* mot,const unsigned char* tableau_bin,U_FILE* debug,U_F
 }
 
 
-int check_is_valid(unichar* t, struct dela_entry* d)
+int check_is_valid(const unichar* t, const struct dela_entry* d)
 {
   return dic_entry_contain_gram_code(d, t);
 }
 
-int check_is_valid_for_one_INF_code(unichar* t, unichar* s)
+int check_is_valid_for_one_INF_code(const unichar* t, const unichar* s)
 {
   unichar temp[MAX_DICT_LINE_LENGTH];
   u_strcpy(temp,"x,");
@@ -270,7 +270,7 @@ int check_is_valid_for_one_INF_code(unichar* t, unichar* s)
   return res;
 }
 
-bool check_is_valid_for_an_INF_line(unichar* t, struct list_ustring* l)
+bool check_is_valid_for_an_INF_line(const unichar* t, const struct list_ustring* l)
 {
   while ( l != 0 ) {
     if (check_is_valid_for_one_INF_code(t, l->string)) {
@@ -281,7 +281,7 @@ bool check_is_valid_for_an_INF_line(unichar* t, struct list_ustring* l)
   return 0;
 }
 
-void check_valid_INF_lines(unichar* t, bool* tableau, const struct INF_codes* inf)
+void check_valid_INF_lines(const unichar* t, bool* tableau, const struct INF_codes* inf)
 {
   u_printf("Check valid %S components...\n",t);
   for (int i=0;i<inf->N;i++) {
@@ -335,24 +335,24 @@ void free_decomposed_word_list(struct decomposed_word_list* l)
 
 
 
-bool affix_is_valid (int index,bool* prefix,bool* suffix)
+bool affix_is_valid (int index,const bool* prefix,const bool* suffix)
 {
   return prefix[index] || suffix[index];
 }
 
-bool prefix_is_valid (int index,bool* prefix)
+bool prefix_is_valid (int index,const bool* prefix)
 {
   return prefix[index];
 }
 
-bool suffix_is_valid (int index,bool* suffix)
+bool suffix_is_valid (int index,const bool* suffix)
 {
   return suffix[index];
 }
 
 
 
-void save_pattern (pattern* patterns, bool YesNo, unichar type, unichar* patt)
+void save_pattern (pattern* patterns, bool YesNo, unichar type, const unichar* patt)
 {
   patterns->YesNo   = YesNo;
   patterns->type    = type;
@@ -361,7 +361,7 @@ void save_pattern (pattern* patterns, bool YesNo, unichar type, unichar* patt)
 }
 
 
-void parse_condition (unichar* condition, pattern* patterns)
+void parse_condition (const unichar* condition, pattern* patterns)
 {
   // parses condition for derivation and composition
   int j = 0;
@@ -532,7 +532,7 @@ void free_all_dic_entries (vector_ptr* entry_collection) {
 }
 
 
-void parse_then_code (unichar* then_code, struct change_code* then)
+void parse_then_code (const unichar* then_code, struct change_code* then)
 {
   enum { BEGIN, SUBSTR_ACT, UNDO_ACT, SUBSTR_NEXT, UNDO_NEXT, CODE };
   int state = SUBSTR_ACT;
@@ -709,8 +709,8 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
 }
 
 
-int composition_rule_matches_entry (struct pattern* rule,
-				     struct dela_entry* d,U_FILE* 
+int composition_rule_matches_entry (const struct pattern* rule,
+				     const struct dela_entry* d,U_FILE* 
 #if DDEBUG > 1                         
 				     debug_file
 #endif
@@ -791,7 +791,7 @@ int composition_rule_matches_entry (struct pattern* rule,
   return (ok && flex_code_already_matched);
 }
 
-void substring_operation (unichar* affix, unichar* rule)
+void substring_operation (unichar* affix, const unichar* rule)
 {
   if (rule[0] == '\0') { // no substring operation
     return;
@@ -906,18 +906,18 @@ codes[j]='\0';
 void explore_state (int adresse,
 		    unichar* current_component,
 		    int pos_in_current_component,
-		    unichar* original_word,
-		    unichar* remaining_word,
+		    const unichar* original_word,
+		    const unichar* remaining_word,
 		    int pos_in_remaining_word,
-		    unichar* decomposition,
-		    unichar* lemma_prefix,
+		    const unichar* decomposition,
+		    const unichar* lemma_prefix,
 		    struct decomposed_word_list** L,
 		    int n_decomp,
 		    struct rule_list* rule_list_called,
-		    struct dela_entry* dic_entr_called,
+		    const struct dela_entry* dic_entr_called,
 		    const unsigned char* tableau_bin,
 		    const struct INF_codes* inf_codes,
-		    bool* prefix,bool* suffix,Alphabet* alphabet,
+		    const bool* prefix,const bool* suffix,const Alphabet* alphabet,
 		    U_FILE* debug_file,struct utags UTAG,
 		    vector_ptr* rules,vector_ptr* entries)
 {
