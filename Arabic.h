@@ -279,7 +279,7 @@
 /* Al special rule: it can be written Ll (alef -> alef wasla) */
 #define AL_WITH_WASLA "Al with wasla"
 /* An initial alef hamza above O may be written A */
-#define ALEF_HAMZA_ABOVE_O "alef hamza above O"
+#define ALEF_HAMZA_ABOVE_O_TO_A "alef hamza above O to A"
 /* An initial alef hamza below I may be written A or L */
 #define ALEF_HAMZA_BELOW_I_TO_A "alef hamza below I to A"
 #define ALEF_HAMZA_BELOW_I_TO_L "alef hamza below I to L"
@@ -322,7 +322,7 @@ typedef struct {
 	unsigned int solar_assimilation: 1;
 	unsigned int lunar_assimilation: 1;
 	unsigned int al_with_wasla: 1;
-	unsigned int alef_hamza_above_O: 1;
+	unsigned int alef_hamza_above_O_to_A: 1;
 	unsigned int alef_hamza_below_I_to_A: 1;
 	unsigned int alef_hamza_below_I_to_L: 1;
 	unsigned int fathatan_alef_equiv_alef_fathatan: 1;

@@ -1764,7 +1764,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			}
 			/* or it may be because of an initial O written A */
 			else if (c==AR_ALEF_WITH_HAMZA_ABOVE && current_token[pos_in_current_token]==AR_ALEF
-					&& pos_in_inflected==0 && p->arabic.alef_hamza_above_O) {
+					&& pos_in_inflected==0 && p->arabic.alef_hamza_above_O_to_A) {
 				inflected[pos_in_inflected] = c;
 				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
 						current_token, inflected, pos_in_current_token + 1,
