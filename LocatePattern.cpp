@@ -100,10 +100,15 @@ p->graph_depth=0;
 p->korean=NULL;
 p->jamo_tags=NULL;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-p->recyclable_wchart_buffer=(wchar_t*)malloc(sizeof(wchar_t)*2048);
+p->recyclable_wchart_buffer=(wchar_t*)malloc(sizeof(wchar_t)*SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 if (p->recyclable_wchart_buffer==NULL) {
    fatal_alloc_error("new_locate_parameters");
 }
+p->recyclable_unichar_buffer=(unichar*)malloc(sizeof(unichar)*SIZE_RECYCLABLE_UNICHAR_BUFFER);
+if (p->recyclable_unichar_buffer==NULL) {
+   fatal_alloc_error("new_locate_parameters");
+}
+p->size_recyclable_unichar_buffer = SIZE_RECYCLABLE_UNICHAR_BUFFER;
 p->failfast=NULL;
 p->match_cache_first=NULL;
 p->match_cache_last=NULL;
@@ -137,6 +142,9 @@ void free_locate_parameters(struct locate_parameters* p) {
 if (p==NULL) return;
 if (p->recyclable_wchart_buffer!=NULL) {
     free(p->recyclable_wchart_buffer);
+}
+if (p->recyclable_unichar_buffer!=NULL) {
+    free(p->recyclable_unichar_buffer);
 }
 free_vector_ptr(p->cached_match_vector,NULL);
 free(p);

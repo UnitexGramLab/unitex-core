@@ -90,7 +90,8 @@ int n_matches_at_token_pos__locate;
 int n_matches_at_token_pos__morphological_locate;
 };
 
-
+#define SIZE_RECYCLABLE_UNICHAR_BUFFER 2048
+#define SIZE_RECYCLABLE_WCHAR_T_BUFFER 2048
 /**
  * This structure is used to store all the information needed
  * during the locate operations
@@ -318,6 +319,8 @@ struct locate_parameters {
    void*private_param_locate_trace;
 
    const char* token_filename;
+   unichar* recyclable_unichar_buffer;
+   unsigned int size_recyclable_unichar_buffer;
 };
 
 
