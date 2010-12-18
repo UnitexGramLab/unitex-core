@@ -38,7 +38,7 @@
 static int binary_search(int, int*, int);
 static int find_compound_word(int, int, struct DLC_tree_info*,
 		struct locate_parameters*);
-static unichar* get_token_sequence(const int*, struct string_hash*, int, int);
+static unichar* get_token_sequence(struct locate_parameters*, int, int);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*, struct Token_error_ctx*);
 void shift_variable_bounds(Variables*, int);
@@ -321,12 +321,26 @@ void error_at_token_pos(const char* message, int start, int length,
 }
 
 
-static inline void update_last_position(struct locate_parameters* p, int pos) {
+static inline void update_last_tested_position(struct locate_parameters* p, int pos) {
 	if (pos > p->last_tested_position) {
 		p->last_tested_position = pos;
 	}
-}
+}    
 
+
+//
+// return 1 if s is a digit sequence, 0 else
+//
+static inline int local_is_a_digit_token(const unichar* s) {
+int i=0;
+while (s[i]!='\0') {
+   if (s[i]<'0' || s[i]>'9') {
+      return 0;
+   }
+   i++;
+}
+return 1;
+}
 
 
 /**
@@ -765,7 +779,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				if (token != -1) {
 					/* We don't update the position if # has matched because of the
 					 * end of the buffer */
-					update_last_position(p, pos);
+					update_last_tested_position(p, pos);
 				}
 				break;
 
@@ -776,7 +790,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					 * the text contains no space. */
 					start = pos;
 					end = pos + 1;
-					update_last_position(p, pos);
+					update_last_tested_position(p, pos);
 				}
 				break;
 
@@ -787,7 +801,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				break;
 
 			case META_MOT:
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (!morpho_filter_OK || token2 == p->SENTENCE || token2
 						== p->STOP) {
 					/* <MOT> and <!MOT> must NEVER match {S} and {STOP}! */
@@ -807,7 +821,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_DIC:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -822,12 +836,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						if (filter_number == -1)
 							OK = 1;
 						else {
-							unichar* sequence = get_token_sequence(p->buffer,
-									p->tokens, pos2 + p->current_origin,
+							unichar* sequence = get_token_sequence(p,
+									pos2 + p->current_origin,
 									end_of_compound + p->current_origin);
 							OK = string_match_filter(p->filters, sequence,
 									filter_number, p->recyclable_wchart_buffer);
-							free(sequence);
 						}
 #endif
 						if (OK) {
@@ -879,7 +892,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_SDIC:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -894,7 +907,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_CDIC:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -907,12 +920,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					if (filter_number == -1)
 						OK = 1;
 					else {
-						unichar* sequence = get_token_sequence(p->buffer,
-								p->tokens, pos2 + p->current_origin,
+						unichar* sequence = get_token_sequence(p,
+								pos2 + p->current_origin,
 								end_of_compound + p->current_origin);
 						OK = string_match_filter(p->filters, sequence,
 								filter_number, p->recyclable_wchart_buffer);
-						free(sequence);
 					}
 #endif
 					if (OK) {
@@ -957,7 +969,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_TDIC:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -970,7 +982,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_MAJ:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -993,7 +1005,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_MIN:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -1016,7 +1028,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_PRE:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
@@ -1039,14 +1051,14 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_NB:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP) {
 					break;
 				}
 				{ /* This block avoids visibility problem about 'z' */
 					int z = pos2;
 					while (z + p->current_origin < p->buffer_size
-							&& is_a_digit_token(p->tokens->value[p->buffer[z
+							&& local_is_a_digit_token(p->tokens->value[p->buffer[z
 									+ p->current_origin]])) {
 						z++;
 					}
@@ -1064,23 +1076,22 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						}
 #ifdef TRE_WCHAR
 						if (filter_number == -1) {
-							update_last_position(p,next_pos);
+							update_last_tested_position(p,next_pos);
 							break;
                         }
 
 						int OK = 1;
-						unichar* sequence = get_token_sequence(p->buffer,
-								p->tokens, start + p->current_origin,
+						unichar* sequence = get_token_sequence(p,
+								start + p->current_origin,
 								end-1 + p->current_origin);
 						OK = string_match_filter(p->filters, sequence,
 								filter_number, p->recyclable_wchart_buffer);
-						free(sequence);
 
 						if (!OK) {
 							start=-1;
 							break;
 						}
-						update_last_position(p,next_pos);
+						update_last_tested_position(p,next_pos);
 #endif
 					}
 				}
@@ -1089,7 +1100,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			case META_TOKEN:
 				if (token2 == -1)
 					break;
-				update_last_position(p, pos2);
+				update_last_tested_position(p, pos2);
 				if (token2 == p->STOP || !morpho_filter_OK) {
 					/* The {STOP} tag must NEVER be matched by any pattern */
 					break;
@@ -1372,12 +1383,11 @@ while (output_variable_list != NULL) {
 				if (filter_number == -1)
 					OK = 1;
 				else {
-					unichar* sequence = get_token_sequence(p->buffer,
-							p->tokens, pos2 + p->current_origin,
+					unichar* sequence = get_token_sequence(p,
+							pos2 + p->current_origin,
 							end_of_compound + p->current_origin);
 					OK = string_match_filter(p->filters, sequence,
 							filter_number, p->recyclable_wchart_buffer);
-					free(sequence);
 				}
 #endif
 				if (OK) {
@@ -1432,12 +1442,11 @@ while (output_variable_list != NULL) {
 				if (filter_number == -1)
 					OK = 1;
 				else {
-					unichar* sequence = get_token_sequence(p->buffer,
-							p->tokens, pos2 + p->current_origin,
+					unichar* sequence = get_token_sequence(p,
+							pos2 + p->current_origin,
 							end_of_compound + p->current_origin);
 					OK = string_match_filter(p->filters, sequence,
 							filter_number, p->recyclable_wchart_buffer);
-					free(sequence);
 				}
 #endif
 				if (OK) {
@@ -1470,7 +1479,7 @@ while (output_variable_list != NULL) {
 			}
 			/* And now, we look for simple words */
 			int OK = 1;
-			update_last_position(p, pos2);
+			update_last_tested_position(p, pos2);
 #ifdef TRE_WCHAR
 			OK = (filter_number == -1 || token_match_filter(
 					p->filter_match_index, token2, filter_number));
@@ -1536,7 +1545,7 @@ while (output_variable_list != NULL) {
 	 * TOKENS
 	 */
 	if (current_state->number_of_tokens != 0) {
-		update_last_position(p, pos2);
+		update_last_tested_position(p, pos2);
 		int n = binary_search(token2, current_state->tokens,
 				current_state->number_of_tokens);
 		if (n != -1) {
@@ -1611,7 +1620,7 @@ static int find_longest_compound_word(int pos, struct DLC_tree_node* node,
 	if (node == NULL) {
 		fatal_error("NULL node in find_longest_compound_word\n");
 	}
-	update_last_position(p, pos);
+	update_last_tested_position(p, pos);
 	int current_token = p->buffer[pos + p->current_origin];
 	int position_max;
 	if (-1 != binary_search(pattern_number, node->array_of_patterns,
@@ -1731,24 +1740,39 @@ static int find_compound_word_old(int pos, int pattern_number,
 /**
  * Returns a string corresponding to the tokens in the range [start;end].
  */
-static unichar* get_token_sequence(const int* token_array, struct string_hash* tokens,
+static unichar* get_token_sequence(struct locate_parameters*p,
 		int start, int end) {
+	unichar* recyclable_buffer = p->recyclable_unichar_buffer;
+	unichar* recyclable_buffer_limit = recyclable_buffer + p->size_recyclable_unichar_buffer ;
+	unichar* fill_recyclable_buffer = recyclable_buffer;
+	const int* token_array = p->buffer;
+	const struct string_hash* tokens = p->tokens;
 	int i;
-	int l = 0;
+
 	for (i = start; i <= end; i++) {
-		l = l + u_strlen(tokens->value[token_array[i]]);
+		const unichar* current_string = tokens->value[token_array[i]];
+		for (;;)
+		{
+			unichar c=*(current_string++);
+			if (fill_recyclable_buffer == recyclable_buffer_limit)
+            {
+				p->size_recyclable_unichar_buffer *= 2;
+				free(p->recyclable_unichar_buffer);
+				p->recyclable_unichar_buffer=(unichar*)malloc(sizeof(unichar) * (p->size_recyclable_unichar_buffer));
+				if (p->recyclable_unichar_buffer==NULL) {
+					fatal_alloc_error("get_token_sequence");
+				}
+				return get_token_sequence(p,start,end);
+            }
+
+			*(fill_recyclable_buffer++) = c;
+			if (c=='\0')
+				break;
+		}
 	}
-	unichar* res = (unichar*) malloc((l + 1) * sizeof(unichar));
-	if (res == NULL) {
-		fatal_alloc_error("get_token_sequence");
-	}
-	l = 0;
-	for (i = start; i <= end; i++) {
-		u_strcpy(&(res[l]), tokens->value[token_array[i]]);
-		l = l + u_strlen(tokens->value[token_array[i]]);
-	}
-	return res;
+	return recyclable_buffer;
 }
+
 
 /**
  * Stores the given match in a list. All matches will be processed later.
