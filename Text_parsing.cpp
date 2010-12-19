@@ -1751,11 +1751,15 @@ static unichar* get_token_sequence(struct locate_parameters*p,
 
 	for (i = start; i <= end; i++) {
 		const unichar* current_string = tokens->value[token_array[i]];
-		for (;;)
+		unichar c;
+		do
 		{
-			unichar c=*(current_string++);
+			c=*(current_string++);
+
 			if (fill_recyclable_buffer == recyclable_buffer_limit)
             {
+				// we have reached the end of the recyclable buffer
+				// we enlarge (*2) the size of recyclable buffer and try again with the new buffer
 				p->size_recyclable_unichar_buffer *= 2;
 				free(p->recyclable_unichar_buffer);
 				p->recyclable_unichar_buffer=(unichar*)malloc(sizeof(unichar) * (p->size_recyclable_unichar_buffer));
@@ -1766,9 +1770,9 @@ static unichar* get_token_sequence(struct locate_parameters*p,
             }
 
 			*(fill_recyclable_buffer++) = c;
-			if (c=='\0')
-				break;
-		}
+		} while (c != '\0');
+		// next writting in buffer must overwrite the end of string
+		fill_recyclable_buffer--;
 	}
 	return recyclable_buffer;
 }
