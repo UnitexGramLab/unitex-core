@@ -102,7 +102,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 	clock_t currentTime;
 	unsigned long total_count_step = 0;
 
-
 	unite = (int)(((text_size / 100) > 1000) ? (text_size / 100) : 1000);
 	variable_backup_memory_reserve* backup_reserve =
 			create_variable_backup_memory_reserve(p->input_variables,1);
@@ -187,10 +186,16 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				int can_cache_matches = 0;
 				p->last_tested_position=p->last_tested_position+p->current_origin;
 				if (p->last_matched_position == -1) {
-					if (p->last_tested_position == p->current_origin) {
+					if (p->last_tested_position == p->current_origin
+							&& !u_is_digit(p->tokens->value[current_token][0])) {
 						/* We are in the fail fast case, nothing has been matched while
 						 * looking only at the first current token. That means that no match
-						 * could ever happen when this token is found in the text */
+						 * could ever happen when this token is found in the text.
+						 *
+						 * NOTE: we add the digit test because if the fail came from
+						 * something like <NB><<....>>, then it may have failed on a token
+						 * because of the morphological filter, not because of the first
+						 * token itself */
 						set_value(p->failfast, current_token, 1);
 					}
 				} else {
@@ -1094,7 +1099,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							end-1 + p->current_origin);
 					OK = string_match_filter(p->filters, sequence,
 							filter_number, p->recyclable_wchart_buffer);
-
 					if (!OK) {
 						start=-1;
 						break;
