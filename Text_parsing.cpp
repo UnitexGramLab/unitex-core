@@ -325,21 +325,21 @@ static inline void update_last_tested_position(struct locate_parameters* p, int 
 	if (pos > p->last_tested_position) {
 		p->last_tested_position = pos;
 	}
-}    
+}
 
 
 //
 // return 1 if s is a digit sequence, 0 else
 //
-static inline int local_is_a_digit_token(const unichar* s) {
+static inline int local_is_not_a_digit_token(const unichar* s) {
 int i=0;
 while (s[i]!='\0') {
    if (s[i]<'0' || s[i]>'9') {
-      return 0;
+      return 1;
    }
    i++;
 }
-return 1;
+return 0;
 }
 
 
@@ -1056,44 +1056,51 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					break;
 				}
 				{ /* This block avoids visibility problem about 'z' */
-					int z = pos2;
-					while (z + p->current_origin < p->buffer_size
-							&& local_is_a_digit_token(p->tokens->value[p->buffer[z
-									+ p->current_origin]])) {
+                    
+
+					// local_is_not_a_digit_token return 1 if s is a digit sequence, 0 else
+					if (!(pos2 + p->current_origin < p->buffer_size
+							&& (local_is_not_a_digit_token(p->tokens->value[p->buffer[pos2
+									+ p->current_origin]]) == 0) )) {
+						break;
+					}
+
+					/* If we have found a contiguous digit sequence */
+
+					int z = pos2+1;
+					int pos_limit = p->buffer_size - p->current_origin; 
+
+					int next_pos_add = 0;
+					while (z  < pos_limit
+							&& ((next_pos_add = local_is_not_a_digit_token(p->tokens->value[p->buffer[z
+									+ p->current_origin]])) == 0)) {
 						z++;
 					}
-					int next_pos;
-					if (z != pos2) {
-						/* If we have found a contiguous digit sequence */
-						start = pos2;
-						end = z;
-						if (z + p->current_origin == p->buffer_size) {
-							/* If we have stopped because of the end of the buffer */
-							next_pos=z;
-						} else {
-							/* Otherwise, we have stopped because of a non matching token */
-							next_pos=z+1;
-						}
+
+					// If we have stopped because of the end of the buffer, next_pos_add = 0
+					// If we have stopped because of a non matching token, next_pos_add = 1
+					start = pos2;
+					end = z;
+
 #ifdef TRE_WCHAR
-						if (filter_number == -1) {
-							update_last_tested_position(p,next_pos);
-							break;
-                        }
+					if (filter_number == -1) {
+						update_last_tested_position(p,z+next_pos_add);
+						break;
+                    }
 
-						int OK = 1;
-						unichar* sequence = get_token_sequence(p,
-								start + p->current_origin,
-								end-1 + p->current_origin);
-						OK = string_match_filter(p->filters, sequence,
-								filter_number, p->recyclable_wchart_buffer);
+					int OK = 1;
+					unichar* sequence = get_token_sequence(p,
+							start + p->current_origin,
+							end-1 + p->current_origin);
+					OK = string_match_filter(p->filters, sequence,
+							filter_number, p->recyclable_wchart_buffer);
 
-						if (!OK) {
-							start=-1;
-							break;
-						}
-						update_last_tested_position(p,next_pos);
-#endif
+					if (!OK) {
+						start=-1;
+						break;
 					}
+					update_last_tested_position(p,z+next_pos_add);
+#endif
 				}
 				break;
 
