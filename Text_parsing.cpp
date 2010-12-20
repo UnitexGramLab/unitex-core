@@ -410,7 +410,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 				lti.pos_in_tokens=pos;
 
-                lti.current_state=current_state;
+				lti.current_state=current_state;
 
 				lti.current_state_index=0;
 				lti.pos_in_chars=0;
@@ -1103,8 +1103,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						start=-1;
 						break;
 					}
-					update_last_tested_position(p,z+next_pos_add);
 #endif
+					update_last_tested_position(p,z+next_pos_add);
 				}
 				break;
 
