@@ -74,7 +74,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
     int entries = 0;
     uLong totalBytes = 0;
     char header[30];
-    char filename[256];
+    char filename[1024];
     char extra[1024];
     int offset = 0;
     int offsetCD = 0;
@@ -105,7 +105,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
         /* Filename */
         if (fnsize > 0) {
-          if (af_fread(filename, 1, fnsize, fpZip) == fnsize) {
+          if ((fnsize < sizeof(filename)) && (af_fread(filename, 1, fnsize, fpZip) == fnsize)) {
             if (af_fwrite(filename, 1, fnsize, fpOut) == fnsize) {
               offset += fnsize;
             } else {
@@ -123,7 +123,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
         /* Extra field */
         if (extsize > 0) {
-          if (af_fread(extra, 1, extsize, fpZip) == extsize) {
+          if ((extsize < sizeof(extra)) && (af_fread(extra, 1, extsize, fpZip) == extsize)) {
             if (af_fwrite(extra, 1, extsize, fpOut) == extsize) {
               offset += extsize;
             } else {

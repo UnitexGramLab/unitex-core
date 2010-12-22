@@ -228,7 +228,7 @@ add_entry_to_dictionary_tree(inflected,0,root,&infos);
 
 /* We define here the maximum number of transitions for a given height.
  * We use a hack to get bigger size on 64bit-architectures */
-#define MAXIMUM_TRANSITIONS ((sizeof(void*) > 4) ? 134217728 : 4194304 )
+//#define MAXIMUM_TRANSITIONS ((sizeof(void*) > 4) ? 134217728 : 4194304 )
 
 
 /**
@@ -243,13 +243,16 @@ struct transition_list {
 
 int compare_nodes(struct dictionary_node_transition*,struct dictionary_node_transition*);
 void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
+void init_minimize_arrays_transition_list(struct transition_list***);
+void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition***,unsigned int nb);
 void free_minimize_arrays(struct transition_list**,struct dictionary_node_transition**);
 int sort_by_height(struct dictionary_node*,struct transition_list**,struct bit_array*);
 struct transition_list* new_transition_list(struct dictionary_node_transition*,struct transition_list*);
 int convert_list_to_array(unsigned int,struct transition_list**,
-                          struct dictionary_node_transition**);
-void quicksort(int,int,struct dictionary_node_transition**);
-void merge(int,struct dictionary_node_transition**);
+                          struct dictionary_node_transition**,unsigned int);
+int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height);
+static void quicksort(int,int,struct dictionary_node_transition**);
+static void merge(int,struct dictionary_node_transition**);
 
 
 
@@ -263,11 +266,24 @@ void minimize_tree(struct dictionary_node* root,struct bit_array* used_inf_value
 u_printf("Minimizing...                      \n");
 struct transition_list** transitions_by_height;
 struct dictionary_node_transition** transitions;
-init_minimize_arrays(&transitions_by_height,&transitions);
+//init_minimize_arrays(&transitions_by_height,&transitions);
+
+init_minimize_arrays_transition_list(&transitions_by_height);
+
+
 unsigned int H=sort_by_height(root,transitions_by_height,used_inf_values);
+
+unsigned int nb=0;
+for (unsigned int k1=0;k1<=H;k1++) {
+	unsigned int nbcur = convert_list_to_array_size(k1,transitions_by_height);
+	if (nbcur>nb) {
+		nb = nbcur;
+	}
+}
+init_minimize_arrays_dictionary_node_transition(&transitions,nb);
 float z;
 for (unsigned int k=0;k<=H;k++) {
-   int size=convert_list_to_array(k,transitions_by_height,transitions);
+   int size=convert_list_to_array(k,transitions_by_height,transitions,nb);
    quicksort(0,size-1,transitions);
    merge(size,transitions);
    z=(float)(100.0*(float)(k)/(float)H);
@@ -325,17 +341,17 @@ return 1;
 /**
  * We allocate and initialize 2 arrays used by the minimization.
  */
-void init_minimize_arrays(struct transition_list** *transitions_by_height,
-                          struct dictionary_node_transition** *transitions) {
+void init_minimize_arrays_transition_list(struct transition_list** *transitions_by_height) {
 (*transitions_by_height)=(struct transition_list**)malloc(MAXIMUM_HEIGHT*sizeof(struct transition_list*));
 if (*transitions_by_height==NULL) {
    fatal_alloc_error("init_minimize_arrays");
 }
-unsigned int i;
-for (i=0;i<MAXIMUM_HEIGHT;i++) {
-   (*transitions_by_height)[i]=NULL;
+memset(*transitions_by_height,0,MAXIMUM_HEIGHT*sizeof(struct transition_list*));
 }
-(*transitions)=(dictionary_node_transition**)malloc(MAXIMUM_TRANSITIONS*sizeof(struct dictionary_node_transition*));
+
+void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition** *transitions,unsigned int nb)
+{
+(*transitions)=(dictionary_node_transition**)malloc(nb*sizeof(struct dictionary_node_transition*));
 if (*transitions==NULL) {
    fatal_alloc_error("init_minimize_arrays");
 }
@@ -429,14 +445,14 @@ return t;
  * into an array, in order to apply the quicksort.
  */
 int convert_list_to_array(unsigned int height,struct transition_list** transitions_by_height,
-                          struct dictionary_node_transition** transitions) {
+                          struct dictionary_node_transition** transitions,unsigned int maximum_transition) {
 unsigned int size=0;
 struct transition_list* l=transitions_by_height[height];
 struct transition_list* ptr;
 transitions_by_height[height]=NULL;
 while (l!=NULL) {
-   if (size>MAXIMUM_TRANSITIONS) {
-      fatal_error("MAX_TRANS=%u reached: exiting!\n",MAXIMUM_TRANSITIONS);
+   if (size>=maximum_transition) {
+      fatal_error("MAX_TRANS=%u reached: exiting!\n",maximum_transition);
    }
    transitions[size++]=l->transition;
    ptr=l;
@@ -446,11 +462,24 @@ while (l!=NULL) {
 return size;
 }
 
+int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height)
+{
+unsigned int size=0;
+struct transition_list* l=transitions_by_height[height];
+struct transition_list* ptr;
+
+while (l!=NULL) {   
+   size++;
+   ptr=l;
+   l=l->next;
+}
+return size;
+}
 
 /**
  * Builds a quicksort partition of the given array.
  */
-int partition(int start,int end,struct dictionary_node_transition** transitions) {
+static int partition(int start,int end,struct dictionary_node_transition** transitions) {
 struct dictionary_node_transition* pivot;
 struct dictionary_node_transition* tmp;
 int i=start-1;
@@ -474,7 +503,7 @@ for (;;) {
 /**
  * Sorts the given transition array, according to Dominique Revuz's criteria.
  */
-void quicksort(int start,int end,struct dictionary_node_transition** transitions) {
+static void quicksort(int start,int end,struct dictionary_node_transition** transitions) {
 int p;
 if (start<end) {
    p=partition(start,end,transitions);
@@ -490,7 +519,7 @@ if (start<end) {
  * redirect the second transition on the first's node and we free the
  * node that is not pointed anymore.
  */
-void merge(int size,struct dictionary_node_transition** transitions) {
+static void merge(int size,struct dictionary_node_transition** transitions) {
 int i=1;
 struct dictionary_node_transition* base=transitions[0];
 while (i<size) {
