@@ -46,6 +46,7 @@ typedef void* (ABSTRACT_CALLBACK_UNITEX*fnc_alloc_t)(size_t,void*);
 typedef void* (ABSTRACT_CALLBACK_UNITEX*fnc_realloc_t)(void*,size_t,size_t,void*);
 typedef void (ABSTRACT_CALLBACK_UNITEX*fnc_free_t)(void*,void*);
 typedef int (ABSTRACT_CALLBACK_UNITEX*fnc_get_flag_allocator_t)(void*);
+typedef void (ABSTRACT_CALLBACK_UNITEX*fnc_clean_allocator_t)(void*);
 
 #define STATISTIC_NB_TOTAL_BYTE_ALLOCATED               0
 #define STATISTIC_NB_TOTAL_CURRENT_LIVING_ALLOCATION    1
@@ -62,8 +63,9 @@ typedef struct tag_abstract_allocator_info_public_with_allocator
     fnc_realloc_t fnc_realloc;
     fnc_free_t fnc_free;
     fnc_get_flag_allocator_t fnc_get_flag_allocator;
-    fnc_get_statistic_info_t fnc_get_statistic_info;
+    fnc_get_statistic_info_t fnc_get_statistic_allocator_info;
     void* abstract_allocator_ptr;
+    fnc_clean_allocator_t fnc_clean_allocator;
 } abstract_allocator_info_public_with_allocator;
 
 typedef struct tag_abstract_allocator
@@ -90,10 +92,15 @@ typedef abstract_allocator* Abstract_allocator;
 
 #define AllocatorFreeOnlyAtAllocatorDelete      0x000004
 
+#define AllocatorCreationFlagCleanPrefered      0x000010
+
 #define AllocatorGetFlagAutoFreePresent         0x000001
 
 
 #define AllocatorTipOftenRecycledObject         0x000008
+
+
+#define AllocatorCleanPresent                   0x000010
 /*
  create_abstract_allocator is used when an function need an allocator
  creator is a string with the name of caller
@@ -115,6 +122,8 @@ size_t get_allocator_expected_creation_size(Abstract_allocator);
 int get_allocator_statistic_info(Abstract_allocator,int iStatNum,size_t*p_value);
 const char* get_allocator_creator(Abstract_allocator);
 abstract_allocator_info_public_with_allocator* get_abstract_allocator_info_public_with_allocator(Abstract_allocator);
+
+int clean_allocator(Abstract_allocator aa);
 
 #define STANDARD_ALLOCATOR ((Abstract_allocator)NULL)
 

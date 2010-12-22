@@ -26,8 +26,8 @@
 /**
  * Allocates, initializes and returns a dictionary node.
  */
-struct dictionary_node* new_dictionary_node() {
-struct dictionary_node* a=(struct dictionary_node*)malloc(sizeof(struct dictionary_node));
+struct dictionary_node* new_dictionary_node(Abstract_allocator prv_alloc) {
+struct dictionary_node* a=(struct dictionary_node*)malloc_cb(sizeof(struct dictionary_node),prv_alloc);
 if (a==NULL) {
 	fatal_alloc_error("new_dictionary_node");
 }
@@ -44,8 +44,8 @@ return a;
 /**
  * Allocates, initializes and returns a dictionary node transition.
  */
-struct dictionary_node_transition* new_dictionary_node_transition() {
-struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc(sizeof(struct dictionary_node_transition));
+struct dictionary_node_transition* new_dictionary_node_transition(Abstract_allocator prv_alloc) {
+struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc_cb(sizeof(struct dictionary_node_transition),prv_alloc);
 if (t==NULL) {
 	fatal_alloc_error("new_dictionary_node_transition");
 }
@@ -59,7 +59,7 @@ return t;
 /**
  * Frees all the dictionary graph whose root is 'a'.
  */
-void free_dictionary_node(struct dictionary_node* a) {
+void free_dictionary_node(struct dictionary_node* a,Abstract_allocator prv_alloc) {
 if (a==NULL) return;
 if (a->incoming>1) {
 	/* We don't free a state that is still pointed by someone else
@@ -67,9 +67,9 @@ if (a->incoming>1) {
    (a->incoming)--;
 	return;
 }
-free_list_int(a->single_INF_code_list);
-free_dictionary_node_transition(a->trans);
-free(a);
+free_list_int(a->single_INF_code_list,prv_alloc);
+free_dictionary_node_transition(a->trans,prv_alloc);
+free_cb(a,prv_alloc);
 }
 
 
@@ -77,13 +77,13 @@ free(a);
  * Frees the dictionary node transition 't', and all the dictionary graph whose root is
  * the dictionary node pointed out by 't'.
  */
-void free_dictionary_node_transition(struct dictionary_node_transition* t) {
+void free_dictionary_node_transition(struct dictionary_node_transition* t,Abstract_allocator prv_alloc) {
 struct dictionary_node_transition* tmp;
 while (t!=NULL) {
-   free_dictionary_node(t->node);
+   free_dictionary_node(t->node,prv_alloc);
    tmp=t;
    t=t->next;
-   free(tmp);
+   free_cb(tmp,prv_alloc);
 }
 }
 
@@ -94,11 +94,11 @@ while (t!=NULL) {
  * transition is created, inserted according to the Unicode order and returned.
  * In that case, the destination dictionary node is NULL.
  */
-struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n) {
+struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n,Abstract_allocator prv_alloc) {
 struct dictionary_node_transition* tmp;
 if ((*n)->trans==NULL || c<((*n)->trans->letter)) {
    /* If we must insert at first position */
-   tmp=new_dictionary_node_transition();
+   tmp=new_dictionary_node_transition(prv_alloc);
    tmp->letter=c;
    tmp->next=(*n)->trans;
    tmp->node=NULL;
@@ -118,7 +118,7 @@ while (tmp->next!=NULL && c>tmp->next->letter) {
 if (tmp->next==NULL || (tmp->next->letter)>c) {
    /* If we must insert between tmp and tmp->next */
    struct dictionary_node_transition* ptr;
-   ptr=new_dictionary_node_transition();
+   ptr=new_dictionary_node_transition(prv_alloc);
    ptr->letter=c;
    ptr->next=tmp->next;
    ptr->node=NULL;
@@ -158,7 +158,7 @@ int get_value_index_for_string_colon_string(const unichar* str1,const unichar* s
  * 'infos' is used to access to constant parameters.
  */
 void add_entry_to_dictionary_tree(unichar* inflected,int pos,struct dictionary_node* node,
-                                  struct info* infos) {
+                                  struct info* infos, Abstract_allocator prv_alloc) {
 if (inflected[pos]=='\0') {
    /* If we have reached the end of 'inflected', then we are in the
     * node where the INF code must be inserted */
@@ -166,7 +166,7 @@ if (inflected[pos]=='\0') {
    if (node->single_INF_code_list==NULL) {
       /* If there is no INF code in the node, then
        * we add one and we return */
-      node->single_INF_code_list=new_list_int(N);
+      node->single_INF_code_list=new_list_int(N,prv_alloc);
       node->INF_code=N;
       return;
    }
@@ -177,20 +177,20 @@ if (inflected[pos]=='\0') {
       return;
    }
    /* Otherwise, we add it to the INF code list */
-   node->single_INF_code_list=head_insert(N,node->single_INF_code_list);
+   node->single_INF_code_list=head_insert(N,node->single_INF_code_list,prv_alloc);
    /* And we update the global INF line for this node */
    node->INF_code=get_value_index_for_string_colon_string(infos->INF_code_list->value[node->INF_code],infos->INF_code,infos->INF_code_list);
    return;
 }
 /* If we are not at the end of 'inflected', then we look for
  * the correct outgoing transition and we follow it */
-struct dictionary_node_transition* t=get_transition(inflected[pos],&node);
+struct dictionary_node_transition* t=get_transition(inflected[pos],&node,prv_alloc);
 if (t->node==NULL) {
    /* We create the node if necessary */
-   t->node=new_dictionary_node();
+   t->node=new_dictionary_node(prv_alloc);
    (t->node->incoming)++;
 }
-add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos);
+add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos,prv_alloc);
 }
 
 
@@ -202,11 +202,11 @@ add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos);
  * all the INF codes that are used in the given dictionary tree.
  */
 void add_entry_to_dictionary_tree(unichar* inflected,unichar* INF_code,
-                                  struct dictionary_node* root,struct string_hash* INF_code_list) {
+                                  struct dictionary_node* root,struct string_hash* INF_code_list,Abstract_allocator prv_alloc) {
 struct info infos;
 infos.INF_code=INF_code;
 infos.INF_code_list=INF_code_list;
-add_entry_to_dictionary_tree(inflected,0,root,&infos);
+add_entry_to_dictionary_tree(inflected,0,root,&infos,prv_alloc);
 }
 
 
@@ -242,17 +242,17 @@ struct transition_list {
 };
 
 static int compare_nodes(const struct dictionary_node_transition*,const struct dictionary_node_transition*);
-void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
+//void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
 void init_minimize_arrays_transition_list(struct transition_list***);
 void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition***,unsigned int nb);
 void free_minimize_arrays(struct transition_list**,struct dictionary_node_transition**);
-int sort_by_height(struct dictionary_node*,struct transition_list**,struct bit_array*);
-struct transition_list* new_transition_list(struct dictionary_node_transition*,struct transition_list*);
+int sort_by_height(struct dictionary_node*,struct transition_list**,struct bit_array*,Abstract_allocator);
+struct transition_list* new_transition_list(struct dictionary_node_transition*,struct transition_list*,Abstract_allocator);
 int convert_list_to_array(unsigned int,struct transition_list**,
-                          struct dictionary_node_transition**,unsigned int);
+                          struct dictionary_node_transition**,unsigned int,Abstract_allocator);
 int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height);
 static void quicksort(int,int,struct dictionary_node_transition**);
-static void merge(int,struct dictionary_node_transition**);
+static void merge(int,struct dictionary_node_transition**,Abstract_allocator);
 
 
 
@@ -262,7 +262,7 @@ static void merge(int,struct dictionary_node_transition**);
  * Dominique Revuz's algorithm. 'used_inf_values' is used to mark
  * INF codes that are actually used in the .bin.
  */
-void minimize_tree(struct dictionary_node* root,struct bit_array* used_inf_values) {
+void minimize_tree(struct dictionary_node* root,struct bit_array* used_inf_values,Abstract_allocator prv_alloc) {
 u_printf("Minimizing...                      \n");
 struct transition_list** transitions_by_height;
 struct dictionary_node_transition** transitions;
@@ -271,7 +271,7 @@ struct dictionary_node_transition** transitions;
 init_minimize_arrays_transition_list(&transitions_by_height);
 
 
-unsigned int H=sort_by_height(root,transitions_by_height,used_inf_values);
+unsigned int H=sort_by_height(root,transitions_by_height,used_inf_values,prv_alloc);
 
 unsigned int nb=0;
 for (unsigned int k1=0;k1<=H;k1++) {
@@ -283,9 +283,9 @@ for (unsigned int k1=0;k1<=H;k1++) {
 init_minimize_arrays_dictionary_node_transition(&transitions,nb);
 float z;
 for (unsigned int k=0;k<=H;k++) {
-   int size=convert_list_to_array(k,transitions_by_height,transitions,nb);
+   int size=convert_list_to_array(k,transitions_by_height,transitions,nb,prv_alloc);
    quicksort(0,size-1,transitions);
-   merge(size,transitions);
+   merge(size,transitions,prv_alloc);
    z=(float)(100.0*(float)(k)/(float)H);
    if (z>100.0) z=(float)100.0;
    u_printf("%2.0f%% completed...    \r",z);
@@ -392,7 +392,7 @@ free(transitions);
  * The function returns the height of the given node.
  */
 int sort_by_height(struct dictionary_node* n,struct transition_list** transitions_by_height,
-					struct bit_array* used_inf_values) {
+					struct bit_array* used_inf_values,Abstract_allocator prv_alloc) {
 if (n==NULL) {
    fatal_error("NULL error in sort_by_height\n");
 }
@@ -409,12 +409,12 @@ int height=-1;
 int k;
 while (trans!=NULL) {
    /* We process recursively the node pointed out by the current transition */
-   k=sort_by_height(trans->node,transitions_by_height,used_inf_values);
+   k=sort_by_height(trans->node,transitions_by_height,used_inf_values,prv_alloc);
    if (k==MAXIMUM_HEIGHT) {
       fatal_error("Maximum height reached in sort_by_height\n");
    }
    /* We insert the transition in the appropriate list */
-   transitions_by_height[k]=new_transition_list(trans,transitions_by_height[k]);
+   transitions_by_height[k]=new_transition_list(trans,transitions_by_height[k],prv_alloc);
    /* The height of the current node is the maximum of his sons' heights... */
    if (height<k) height=k;
    trans=trans->next;
@@ -428,9 +428,9 @@ return 1+height;
  * Allocates, initializes and returns a new transition list element.
  */
 struct transition_list* new_transition_list(struct dictionary_node_transition* transition,
-                                      struct transition_list* next) {
+                                      struct transition_list* next,Abstract_allocator prv_alloc) {
 struct transition_list* t;
-t=(struct transition_list*)malloc(sizeof(struct transition_list));
+t=(struct transition_list*)malloc_cb(sizeof(struct transition_list),prv_alloc);
 if (t==NULL) {
    fatal_alloc_error("new_transition_list");
 }
@@ -445,7 +445,7 @@ return t;
  * into an array, in order to apply the quicksort.
  */
 int convert_list_to_array(unsigned int height,struct transition_list** transitions_by_height,
-                          struct dictionary_node_transition** transitions,unsigned int maximum_transition) {
+                          struct dictionary_node_transition** transitions,unsigned int maximum_transition,Abstract_allocator prv_alloc) {
 unsigned int size=0;
 struct transition_list* l=transitions_by_height[height];
 struct transition_list* ptr;
@@ -457,7 +457,7 @@ while (l!=NULL) {
    transitions[size++]=l->transition;
    ptr=l;
    l=l->next;
-   free(ptr);
+   free_cb(ptr,prv_alloc);
 }
 return size;
 }
@@ -519,14 +519,14 @@ if (start<end) {
  * redirect the second transition on the first's node and we free the
  * node that is not pointed anymore.
  */
-static void merge(int size,struct dictionary_node_transition** transitions) {
+static void merge(int size,struct dictionary_node_transition** transitions,Abstract_allocator prv_alloc) {
 int i=1;
 struct dictionary_node_transition* base=transitions[0];
 while (i<size) {
    if (compare_nodes(base,transitions[i])==0) {
       /* If the base transition is equivalent to the current one
        * then we must destroy the current one's destination node */
-      free_dictionary_node(transitions[i]->node);
+      free_dictionary_node(transitions[i]->node,prv_alloc);
       /* We modify the current one's destination node */
       transitions[i]->node=base->node;
       /* And we increase the number of references of the node, in order

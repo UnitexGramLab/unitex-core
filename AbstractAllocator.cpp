@@ -233,10 +233,26 @@ int get_allocator_statistic_info(Abstract_allocator aa,int iStatNum,size_t*p_val
     int ret=0;
     if (aa != NULL)
     {
-        if (aa->pub.fnc_get_statistic_info != NULL)
-            ret = (aa->pub.fnc_get_statistic_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);   
+        if (aa->pub.fnc_get_statistic_allocator_info != NULL)
+            ret = (aa->pub.fnc_get_statistic_allocator_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);   
     }
     return ret;
+}
+
+int clean_allocator(Abstract_allocator aa)
+{
+	int flag=0;
+    if (aa != NULL)
+    {
+        if (aa->pub.fnc_get_flag_allocator != NULL)
+            flag = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);
+		if ((flag & AllocatorCleanPresent) != 0)
+			if (aa->pub.fnc_clean_allocator != NULL) {
+				(aa->pub.fnc_clean_allocator)(aa->pub.abstract_allocator_ptr);
+				return 1;
+			}
+    }
+    return 0;
 }
 
 const char* get_allocator_creator(Abstract_allocator aa)

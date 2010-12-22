@@ -3141,9 +3141,16 @@ return NULL;
  * Author: Olivier Blanc
  */
 unichar* u_strchr(const unichar* s,unichar c) {
-return u_strchr(s,c,0);
+if (s==NULL) return NULL;
+while ((*s)) {	
+   if (*s==c) {
+     return (unichar*)s;
+   }
+   s++;
 }
 
+return NULL;
+}
 
 /**
  * A version of strchr that looks for a unicode character in a normal string.

@@ -85,11 +85,11 @@ struct dictionary_node_transition {
 };
 
 
-void free_dictionary_node(struct dictionary_node*);
-void free_dictionary_node_transition(struct dictionary_node_transition*);
-void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
-struct dictionary_node* new_dictionary_node();
+void free_dictionary_node(struct dictionary_node*,Abstract_allocator);
+void free_dictionary_node_transition(struct dictionary_node_transition*,Abstract_allocator);
+void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,struct string_hash*,Abstract_allocator);
+struct dictionary_node* new_dictionary_node(Abstract_allocator);
 
-void minimize_tree(struct dictionary_node*,struct bit_array*);
+void minimize_tree(struct dictionary_node*,struct bit_array*,Abstract_allocator);
 
 #endif

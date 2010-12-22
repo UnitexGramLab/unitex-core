@@ -184,6 +184,15 @@ if (vars->optind!=argc-1) {
    return 1;
 }
 
+
+Abstract_allocator compress_abstract_allocator=NULL;
+Abstract_allocator compress_tokenize_abstract_allocator=NULL;
+int tokenize_allocator_has_clean = 0;
+
+compress_abstract_allocator=create_abstract_allocator("main_Compress",AllocatorCreationFlagAutoFreePrefered);
+compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize_first",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
+tokenize_allocator_has_clean = ((get_allocator_flag(compress_tokenize_abstract_allocator) & AllocatorCleanPresent) != 0);
+
 U_FILE* f;
 U_FILE* INF_file;
 unichar s[DIC_WORD_SIZE];
@@ -213,7 +222,7 @@ if (INF_file==NULL) {
  * in order to book some place, so that we can later come and write there
  * the number of lines of this file. */
 u_fprintf(INF_file,"0000000000\n");
-root=new_dictionary_node();
+root=new_dictionary_node(compress_abstract_allocator);
 INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
 u_printf("Compressing...\n");
@@ -229,7 +238,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 	}
 	else {
 		/* If we have a line, we tokenize it */
-		entry=tokenize_DELAF_line(s,1,1,NULL);
+		entry=tokenize_DELAF_line(s,1,1,NULL,compress_tokenize_abstract_allocator);
 		if (entry!=NULL) {
 			/* If the entry is well-formed */
 
@@ -260,7 +269,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->lemma);
 				/* We insert "pomme de terre,pomme de terre.N" */
 				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,compress_abstract_allocator);
 				/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
 				u_strcpy(entry->inflected,inf_tmp);
 				u_strcpy(entry->lemma,lem_tmp);
@@ -271,7 +280,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
 				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,compress_abstract_allocator);
 			}
 			else {
 				/* If the entry does not contain any unprotected = sign,
@@ -282,24 +291,35 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				//error("line=<%S> inflected=<%S> compress=<%S>\n",s,entry->inflected,tmp);
 				unichar foo[4096];
 				uncompress_entry(entry->inflected,tmp,foo);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,compress_abstract_allocator);
 			}
 			/* and last, but not least: don't forget to free your memory
 			 * or it would be impossible to compress large dictionaries */
-			 free_dela_entry(entry);
+			if (tokenize_allocator_has_clean == 0) {
+				free_dela_entry(entry,compress_tokenize_abstract_allocator);
+			}
+			else {
+				clean_allocator(compress_tokenize_abstract_allocator);
+			}
 		}
 	}
 	/* We print something at regular intervals in order to show
 	 * that the program actually works */
 	if (line%10000==0) {
 		u_printf("%d line%s read...       \r",line,(line>1)?"s":"");
+		if (compress_tokenize_abstract_allocator != NULL)
+			if (tokenize_allocator_has_clean == 0)
+			{
+				close_abstract_allocator(compress_tokenize_abstract_allocator);
+				compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
+			}
 	}
 	line++;
 }
 u_fclose(f);
 struct bit_array* used_inf_values=new_bit_array(INF_codes->size,ONE_BIT);
 /* We build a minimal transducer from the entry tree */
-minimize_tree(root,used_inf_values);
+minimize_tree(root,used_inf_values,compress_abstract_allocator);
 /* Now we reorder INF codes in order to group the ones that are actually
  * used so that we can save space in the .inf file by not saving codes
  * that are never referenced in the .bin file */
@@ -367,7 +387,10 @@ free_OptVars(vars);
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 /* cleanup for no leak on library */
 free_string_hash(INF_codes);
-free_dictionary_node(root);
+free_dictionary_node(root,compress_abstract_allocator);
+close_abstract_allocator(compress_abstract_allocator);
+close_abstract_allocator(compress_tokenize_abstract_allocator);
+compress_abstract_allocator=NULL;
 #endif
 return 0;
 }
