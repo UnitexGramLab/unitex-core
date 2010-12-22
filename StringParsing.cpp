@@ -73,6 +73,20 @@ const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
  * Example: parse("E\=\mc\2 is a formula",result," ","m","2") will produce the
  *          result = "E=mc\2"
  */
+
+static unichar* local_u_strchr(const unichar* s,unichar c) {
+if (s==NULL) return NULL;
+while ((*s)) {
+	
+   if (*s==c) {
+     return (unichar*)s;
+   }
+   s++;
+}
+
+return NULL;
+}
+
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
 int j=0;
@@ -86,7 +100,7 @@ while (s[*ptr]!='\0') {
          result[j]='\0';
          return P_BACKSLASH_AT_END;
       }
-      if (chars_to_keep_protected==NULL || u_strchr(chars_to_keep_protected,s[(*ptr)+1])) {
+      if (chars_to_keep_protected==NULL || local_u_strchr(chars_to_keep_protected,s[(*ptr)+1])) {
          /* If the character must keep its backslash */
          result[j++]=PROTECTION_CHAR;
       }
@@ -94,12 +108,12 @@ while (s[*ptr]!='\0') {
       (*ptr)=(*ptr)+2;
    } else {
       /* If we have an unprotected character */
-      if (u_strchr(stop_chars,s[*ptr])) {
+      if (local_u_strchr(stop_chars,s[*ptr])) {
          /* If it is a stop char, we have finished */
          result[j]='\0';
          return P_OK;
       }
-      if (u_strchr(forbidden_chars,s[*ptr])) {
+      if (local_u_strchr(forbidden_chars,s[*ptr])) {
          /* If it is a forbidden char, it's an error */
          result[j]='\0';
          return P_FORBIDDEN_CHAR;
@@ -179,7 +193,7 @@ return value;
 int escape(const unichar* s,unichar* result,const unichar* chars_to_escape) {
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
-   if (u_strchr(chars_to_escape,s[i])) {
+   if (local_u_strchr(chars_to_escape,s[i])) {
       result[j++]=PROTECTION_CHAR;
    } else if (s[i]==PROTECTION_CHAR) {
       i++;

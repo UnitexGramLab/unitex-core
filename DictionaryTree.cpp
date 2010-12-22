@@ -241,7 +241,7 @@ struct transition_list {
    struct transition_list* next;
 };
 
-int compare_nodes(struct dictionary_node_transition*,struct dictionary_node_transition*);
+static int compare_nodes(const struct dictionary_node_transition*,const struct dictionary_node_transition*);
 void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
 void init_minimize_arrays_transition_list(struct transition_list***);
 void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition***,unsigned int nb);
@@ -302,7 +302,7 @@ free_minimize_arrays(transitions_by_height,transitions);
  * 2) by their hash_number (n� of line in INF file)
  * 3) by the transition that get out of them
  */
-int compare_nodes(struct dictionary_node_transition* a,struct dictionary_node_transition* b) {
+static int compare_nodes(const struct dictionary_node_transition* a,const struct dictionary_node_transition* b) {
 if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
    fatal_error("Internal error in compare_nodes\n");
 }
@@ -319,9 +319,9 @@ b=b->node->trans;
 while(a!=NULL && b!=NULL) {
    /* If the 2 current transitions are not tagged by the same
     * character, then the nodes are different */
-   if (a->letter != b->letter) return (a->letter - b->letter);
+   if (a->letter - b->letter != 0) return (a->letter - b->letter);
    /* If the characters are equal and destination nodes are different... */
-   if (a->node != b->node) return (int)(a->node - b->node);
+   if (((size_t)(a->node - b->node)) != 0) return (int)(a->node - b->node);
    a=a->next;
    b=b->next;
 }
