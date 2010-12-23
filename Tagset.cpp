@@ -57,7 +57,7 @@ static const keyword_t keywords[] = {
  * This function allocates and returns a token_t structure corresponding to the given
  * string.
  */
-token_t* new_token_t(const unichar* str) {
+token_t* new_token_t(unichar* str) {
 token_t* tok=(token_t*)malloc(sizeof(token_t));
 if (tok==NULL) {
    fatal_alloc_error("new_token_t");
@@ -545,7 +545,3 @@ free_token_t(toks);
 u_printf("%d POS definitions loaded.\n",nb);
 return tagset;
 }
-
-
-
-

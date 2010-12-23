@@ -3115,7 +3115,7 @@ return u_strcpy(res,str);
  * Author: Olivier Blanc
  * Modified by Sébastien Paumier
  */
-unichar* u_strchr(const unichar* s,unichar c,int unprotected) {
+const unichar* u_strchr(const unichar* s,unichar c,int unprotected) {
 if (s==NULL) return NULL;
 while (*s) {
    if (*s=='\\' && unprotected) {
@@ -3125,7 +3125,7 @@ while (*s) {
       if (*s=='\0') return NULL;
    }
    if (*s==c) {
-      return (unichar*)s;
+      return s;
    }
    s++;
 }
@@ -3140,11 +3140,23 @@ return NULL;
  *
  * Author: Olivier Blanc
  */
-unichar* u_strchr(const unichar* s,unichar c) {
+const unichar* u_strchr(const unichar* s,unichar c) {
 if (s==NULL) return NULL;
 while ((*s)) {	
    if (*s==c) {
-     return (unichar*)s;
+     return s;
+   }
+   s++;
+}
+
+return NULL;
+}
+
+unichar* u_strchr(unichar* s,unichar c) {
+if (s==NULL) return NULL;
+while ((*s)) {	
+   if (*s==c) {
+     return s;
    }
    s++;
 }
