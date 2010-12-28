@@ -31,7 +31,7 @@
 
 ///////////////////////////////////////
 //All functions defined in this file
-int read_language_morpho(struct l_morpho_t*,char *lan_file, char *dir);
+int read_language_morpho(struct l_morpho_t*,char *lan_file, const char *dir);
 int read_cats(struct l_morpho_t*);
 int read_cat_line(struct l_morpho_t*,int cat_no);
 int read_classes(struct l_morpho_t*);
@@ -39,9 +39,9 @@ int read_class_line(struct l_morpho_t*,int class_no);
 int print_language_morpho(struct l_morpho_t*);
 struct l_morpho_t* init_language_morpho();
 int free_language_morpho(struct l_morpho_t*);
-l_category_T* is_valid_cat(struct l_morpho_t*,unichar* cat);
-int is_valid_val(l_category_T* cat, unichar* val);
-l_category_T* get_cat(struct l_morpho_t*,unichar* val);
+l_category_T* is_valid_cat(struct l_morpho_t*,const unichar* cat);
+int is_valid_val(const l_category_T* cat, const unichar* val);
+l_category_T* get_cat(struct l_morpho_t*,const unichar* val);
 
 //////////////////////////////////////
 
@@ -65,7 +65,7 @@ l_category_T* get_cat(struct l_morpho_t*,unichar* val);
 /*                      adv: (Gr,<var>)                                               */
 /* Fills out pL_MORPHO->L_CLASSES and pL_MORPHO->L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(struct l_morpho_t* pL_MORPHO,char *file) {
+int read_language_morpho(struct l_morpho_t* pL_MORPHO, const char *file) {
   //Initialise the symbol representing an empty morphological value
   u_strcpy(pL_MORPHO->EMPTY_VAL,"<E>");
 
@@ -392,7 +392,7 @@ int free_language_morpho(struct l_morpho_t* pL_MORPHO) {
 /**************************************************************************************/
 /* If cat is a valid category name, returns a pointer to this category.               */
 /* Otherwise returns NULL.                                                            */
-l_category_T* is_valid_cat(struct l_morpho_t* pL_MORPHO,unichar* cat) {
+l_category_T* is_valid_cat(struct l_morpho_t* pL_MORPHO,const unichar* cat) {
   int c;
   for (c=0; c<pL_MORPHO->L_CATS.no_cats; c++)
     if (!u_strcmp(cat,pL_MORPHO->L_CATS.cats[c].name))
@@ -403,7 +403,7 @@ l_category_T* is_valid_cat(struct l_morpho_t* pL_MORPHO,unichar* cat) {
 /**************************************************************************************/
 /* If val is a valid value in the domain of category cat, returns the index of val    */
 /* in cat. Otherwise returns -1.                                                      */
-int is_valid_val(l_category_T* cat, unichar* val) {
+int is_valid_val(const l_category_T* cat, const unichar* val) {
   int v;
   for (v=0; v<cat->no_values; v++)
     if (!u_strcmp(val,cat->values[v]))
@@ -446,7 +446,7 @@ int get_empty_val(struct l_morpho_t* pL_MORPHO,l_category_T* cat) {
 /**************************************************************************************/
 /* If val is a valid value, returns the pointer to its (first) category.             */
 /* Otherwise returns NULL.                                                            */
-l_category_T* get_cat(struct l_morpho_t* pL_MORPHO,unichar* val) {
+l_category_T* get_cat(struct l_morpho_t* pL_MORPHO,const unichar* val) {
   int c;
   int v;
   for (c=0; c<pL_MORPHO->L_CATS.no_cats; c++)
@@ -459,7 +459,7 @@ l_category_T* get_cat(struct l_morpho_t* pL_MORPHO,unichar* val) {
 /**************************************************************************************/
 /* If 'cat' is a valid category, copies its name to 'cat_str' which should have its   */
 /* space allocated, and returns 0. Otherwise returns 1.                               */
-int copy_cat_str(unichar* cat_str,l_category_T* cat) {
+int copy_cat_str(unichar* cat_str,const l_category_T* cat) {
   if (!cat)
     return 1;
   u_strcpy(cat_str,cat->name);

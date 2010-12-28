@@ -140,7 +140,7 @@ struct l_morpho_t* init_langage_morph();
 /*                      adv: (Gr,<var>)                                               */
 /* Fills out L_CLASSES and L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(struct l_morpho_t*,char *file);
+int read_language_morpho(struct l_morpho_t*, const char *file);
 
 /**************************************************************************************/
 /* Prints to the standard output the morphological system of the language             */
@@ -155,12 +155,12 @@ int free_language_morpho(struct l_morpho_t*);
 /**************************************************************************************/
 /* If cat is a valid category name, returns a pointer to this category.               */
 /* Otherwise returns NULL.                                                            */
-l_category_T* is_valid_cat(struct l_morpho_t*,unichar* cat);
+l_category_T* is_valid_cat(struct l_morpho_t*, const unichar* cat);
 
 /**************************************************************************************/
 /* If val is a valid value in the domain of category cat, returns the index of val    */
 /* in cat. Otherwise returns -1.                                                      */
-int is_valid_val(l_category_T* cat, unichar* val);
+int is_valid_val(const l_category_T* cat, const unichar* val);
 
 /**************************************************************************************/
 /* If val is an empty value in the domain of category cat, returns 1,                 */
@@ -186,7 +186,7 @@ l_category_T* get_cat(struct l_morpho_t*,unichar* val);
 /**************************************************************************************/
 /* If 'cat' is a valid category, copies its name to 'cat_str' which should have its   */
 /* space allocated, and returns 0. Otherwise returns 1.                               */
-int copy_cat_str(unichar* cat_str,l_category_T* cat);
+int copy_cat_str(unichar* cat_str, const l_category_T* cat);
 
 /**************************************************************************************/
 /* If 'cat' is a valid category, copies its name of its value number 'val' to 'val_str'*/
