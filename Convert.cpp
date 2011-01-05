@@ -274,10 +274,10 @@ for (int i=vars->optind;i<argc;i++) {
 			case CONVERSION_OK: u_printf("%s converted\n",argv[i]);
 								if (output_mode==REPLACE_FILE) {
 									/* If we must replace the input file */
-									if (!af_remove(argv[i])) {
+									if (af_remove(argv[i])!=0) {
 										fatal_error("Cannot remove %s\n",argv[i]);
 									}
-									if (!af_rename(output_name,argv[i])) {
+									if (af_rename(output_name,argv[i])!=0) {
 										fatal_error("Cannot rename %s to %s\n",output_name,argv[i]);
 									}
 								}
