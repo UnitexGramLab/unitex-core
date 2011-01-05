@@ -33,6 +33,8 @@
 #ifndef ABSTRACT_FST2_LOAD_H
 #define ABSTRACT_FST2_LOAD_H
 
+#include "Fst2.h"
+
 struct FST2_free_info
 {
 	void *func_free_fst2;
