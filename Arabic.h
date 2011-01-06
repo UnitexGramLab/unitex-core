@@ -122,7 +122,7 @@
 #define BW_AR_FATHA						'a'
 #define BW_AR_DAMMA						'u'
 #define BW_AR_KASRA						'i'
-#define BW_AR_SHADDA					'U'
+#define BW_AR_SHADDA					'G'
 #define BW_AR_SUKUN						'o'
 #define BW_AR_SUPERSCRIPT_ALEF			'R'
 /* Hamza variant */
@@ -234,7 +234,7 @@
 #define AR_FATHA						'a'
 #define AR_DAMMA						'u'
 #define AR_KASRA						'i'
-#define AR_SHADDA						'U'
+#define AR_SHADDA						'G'
 #define AR_SUKUN						'o'
 #define AR_SUPERSCRIPT_ALEF				'R'
 /* Hamza variant */

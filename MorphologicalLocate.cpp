@@ -1676,8 +1676,8 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			 * we copy in 'inflected' the exact character that is in the dictionary. */
 			int can_go_on=0;
 			int next = NOTHING_EXPECTED;
-			if (last_dic_char == AR_SHADDA && !(pos_in_current_token == 0
-					|| current_token[pos_in_current_token - 1] != AR_SHADDA)) {
+			if (last_dic_char == AR_SHADDA
+					&& (pos_in_current_token==0	|| current_token[pos_in_current_token-1]!=AR_SHADDA)) {
 				/* Additional test: if we have matched X, we must check whether there was a shadda X
 				 * rule pending with a omitted shadda. In that case, we must check whether we are
 				 * allowed to go on or not. Moreover, we must determine the end of word is
@@ -1705,27 +1705,45 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					break;
 				}
 				case AR_FATHA: {
+					if (p->arabic.shadda_fatha_omission_at_end) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+#if 0
 					if (p->arabic.shadda_fatha_omission) {
 						can_go_on=1;
 						next=next | END_OF_WORD_EXPECTED;
 					}
 					if (p->arabic.shadda_fatha_omission_at_end) can_go_on=1;
+#endif
 					break;
 				}
 				case AR_DAMMA: {
+					if (p->arabic.shadda_damma_omission_at_end) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+#if 0
 					if (p->arabic.shadda_damma_omission) {
 						can_go_on=1;
 						next=next | END_OF_WORD_EXPECTED;
 					}
 					if (p->arabic.shadda_damma_omission_at_end) can_go_on=1;
+#endif
 					break;
 				}
 				case AR_KASRA: {
+					if (p->arabic.shadda_kasra_omission_at_end) {
+						can_go_on=1;
+						next=next | END_OF_WORD_EXPECTED;
+					}
+#if 0
 					if (p->arabic.shadda_kasra_omission) {
 						can_go_on=1;
 						next=next | END_OF_WORD_EXPECTED;
 					}
 					if (p->arabic.shadda_kasra_omission_at_end) can_go_on=1;
+#endif
 					break;
 				}
 				case AR_SUPERSCRIPT_ALEF: {
@@ -1742,7 +1760,12 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				can_go_on=1;
 			}
 
-			//error("on compare %C et %C pour le token %S\n",c,current_token[pos_in_current_token],current_token);
+			/*error("on compare %C et %C pour le token %S\n",to_buckwalter_plusplus(c),to_buckwalter_plusplus(current_token[pos_in_current_token]),current_token);
+			error("pos+1=%d => %X\n",pos_in_current_token+1,current_token[pos_in_current_token+1]);
+			for (int i=0;current_token[i];i++) {
+				error("%C",to_buckwalter_plusplus(current_token[i]));
+			}
+			error("\n");*/
 			if (can_go_on) {
 				inflected[pos_in_inflected] = c;
 				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
