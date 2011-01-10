@@ -85,8 +85,15 @@ default: return c;
  * Buckwalter transliteration modified for Unitex
  */
 unichar to_buckwalter_plusplus(unichar c) {
-c=to_buckwalter(c);
-switch(c) {
+unichar c2=to_buckwalter(c);
+if (c==c2) {
+	/* If the character wasn't converted by to_buckwalter, it was not
+	 * an Arabic char, so we return it. Doing so avoid problems when using
+	 * to_buckwalter_plus_plus to convert an Arabic text containing {, } or any
+	 * character using in this transliteration */
+	return c;
+}
+switch(c2) {
 case '\'': 	return 'c';
 case '|': 	return 'C';
 case '>': 	return 'O';
@@ -98,7 +105,7 @@ case '$': 	return 'M';
 case '~': 	return 'G';
 case '`': 	return 'R';
 case '{': 	return 'L';
-default: 	return c;
+default: 	return c2;
 }
 }
 
