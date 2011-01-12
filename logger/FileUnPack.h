@@ -165,7 +165,7 @@ typedef struct unz_file_info_s
     tm_unz tmu_date;
 } unz_file_info;
 
-extern int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
+static int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
                                                  const char* fileName2,
                                                  int iCaseSensitivity));
 /*
