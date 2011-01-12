@@ -299,7 +299,7 @@ local int strcmpcasenosensitive_internal(
         (like 1 on Unix, 2 on Windows)
 
 */
-extern int ZEXPORT unzStringFileNameCompare (
+static int ZEXPORT unzStringFileNameCompare (
     const char* fileName1,
     const char* fileName2,
     int iCaseSensitivity)
