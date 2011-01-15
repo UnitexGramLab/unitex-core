@@ -391,6 +391,27 @@ for (;;) {
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }
+
+
+		 /* begin of GV fix */
+		 /* this fix is against a crash I found when (v->start_in_tokens+p->current_origin == p->buffer_size)
+		    and v->start_in_tokens==v->end_in_tokens
+			here we known that v->start_in_tokens <= v->end_in_tokens
+			*/
+
+      } else if (v->end_in_tokens+p->current_origin >= p->buffer_size) {
+         if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {			 
+           error("Output warning: end variable position after end of text for variable $%S$\n",name);
+		 } 
+         switch (p->variable_error_policy) {
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name);
+            case IGNORE_VARIABLE_ERRORS: continue;
+            case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+         }
+
+		 /* end of GV fix */
+
+
       } else {
     	  /* If the normal variable definition is correct */
     	  /* Case 1: start and end in the same token*/
