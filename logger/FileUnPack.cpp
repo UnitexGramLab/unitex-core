@@ -290,6 +290,7 @@ local int strcmpcasenosensitive_internal(
 #define STRCMPCASENOSENTIVEFUNCTION strcmpcasenosensitive_internal
 #endif
 
+
 /*
    Compare two filename (fileName1,fileName2).
    If iCaseSenisivity = 1, comparision is case sensitivity (like strcmp)
@@ -299,7 +300,7 @@ local int strcmpcasenosensitive_internal(
         (like 1 on Unix, 2 on Windows)
 
 */
-static int ZEXPORT unzStringFileNameCompare (
+extern int ZEXPORT unzStringFileNameCompare (
     const char* fileName1,
     const char* fileName2,
     int iCaseSensitivity)

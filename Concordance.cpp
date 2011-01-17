@@ -233,11 +233,15 @@ if ((option->result_mode==XML_WITH_HEADER_)) {
 if ((option->result_mode==XML_)) {
   u_fprintf(out,"<concord>\n");
 }
-unichar A[3000];
-unichar B[3000];
-unichar C[3000];
-unichar href[3000];
-unichar indices[100];
+unichar* unichar_buffer=(unichar*)malloc(sizeof(unichar)*((3000*4) + 100));
+if (unichar_buffer==NULL) {
+	fatal_alloc_error("create_concordance");
+}
+unichar* A = unichar_buffer + (3000 * 0);
+unichar* B = unichar_buffer + (3000 * 1);
+unichar* C = unichar_buffer + (3000 * 2);
+unichar* href = unichar_buffer + (3000 * 3);
+unichar* indices = unichar_buffer + (3000 * 4);
 unichar* left=NULL;
 unichar* middle=NULL;
 unichar* right=NULL;
@@ -788,10 +792,14 @@ int create_raw_text_concordance(U_FILE* output,U_FILE* concordance,ABSTRACTMAPFI
                                 struct conc_opt* option) {
 struct match_list* matches;
 struct match_list* matches_tmp;
-unichar left[MAX_CONTEXT_IN_UNITS+1];
-unichar middle[MAX_CONTEXT_IN_UNITS+1];
-unichar right[MAX_CONTEXT_IN_UNITS+1];
-unichar href[MAX_CONTEXT_IN_UNITS+1];
+unichar* unichar_buffer=(unichar*)malloc(sizeof(unichar)*(MAX_CONTEXT_IN_UNITS+1)*4);
+if (unichar_buffer==NULL) {
+	fatal_alloc_error("create_raw_text_concordance");
+}
+unichar* left = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 0);
+unichar* middle = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 1);
+unichar* right = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 2);
+unichar* href = unichar_buffer + ((MAX_CONTEXT_IN_UNITS+1) * 3);
 int number_of_matches=0;
 int is_a_good_match=1;
 int start_pos,end_pos;
@@ -983,6 +991,7 @@ while (matches!=NULL) {
 	free_match_list_element(matches_tmp);
 }
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
+free(unichar_buffer);
 free(buffer);
 return number_of_matches;
 }

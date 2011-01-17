@@ -321,10 +321,15 @@ for (int i=0;i<n_transitions;i++) {
  * by a dictionary with a greater priority.
  */
 void look_for_simple_words(struct dico_application_info* info,int priority) {
-unichar entry[DIC_WORD_SIZE];
+/* this function is called only once by dico application, so we will use heap instead stack */
+unichar* entry=(unichar*)malloc(sizeof(unichar)*DIC_WORD_SIZE);
+if (entry==NULL) {
+   fatal_alloc_error("look_for_simple_words");
+}
 for (int i=0;i<info->tokens->N;i++) {
    explore_bin_simple_words(info,4,info->tokens->token[i],entry,0,i,priority);
 }
+free(entry);
 }
 
 
@@ -455,8 +460,15 @@ for (int i=0;i<n_transitions;i++) {
  * a greater priority.
  */
 void look_for_compound_words(struct dico_application_info* info,int priority) {
-unichar inflected[DIC_WORD_SIZE];
-int token_sequence[TOKENS_IN_A_COMPOUND];
+/* this function is called only once by dico application, so we will use heap instead stack */
+unichar* inflected=(unichar*)malloc(sizeof(unichar)*DIC_WORD_SIZE);
+if (inflected==NULL) {
+   fatal_alloc_error("look_for_simple_words");
+}
+int* token_sequence=(int*)malloc(sizeof(int)*TOKENS_IN_A_COMPOUND);
+if (token_sequence==NULL) {
+   fatal_alloc_error("look_for_simple_words");
+}
 struct word_struct* w;
 /* We go at the beginning of the file and we fill the buffer */
 /*
@@ -524,6 +536,8 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
    current_start_pos++;
 }
 u_printf("\n");
+free(inflected);
+free(token_sequence);
 }
 
 
