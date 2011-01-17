@@ -1239,8 +1239,8 @@ while (output_variable_list != NULL) {
 	 * VARIABLE STARTS
 	 */
 	struct opt_variable* variable_list = current_state->input_variable_starts;
-	while (variable_list != NULL) {
-
+	/* We don't start variables after the end of the buffer */
+	if (token2!=-1) while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token = get_variable_start(p->input_variables,
 				variable_list->variable_number);
@@ -1270,14 +1270,14 @@ while (output_variable_list != NULL) {
 	 * VARIABLE ENDS
 	 */
 	variable_list = current_state->input_variable_ends;
+	int end=(token!=-1)?pos:p->buffer_size;
 	while (variable_list != NULL) {
-
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
 				get_variable_end(p->input_variables, variable_list->variable_number);
 		int old_in_char =
 						get_variable_end_in_chars(p->input_variables, variable_list->variable_number);
-		set_variable_end(p->input_variables, variable_list->variable_number, pos);
+		set_variable_end(p->input_variables, variable_list->variable_number, /*pos*/end);
 		set_variable_end_in_chars(p->input_variables, variable_list->variable_number,-1);
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
