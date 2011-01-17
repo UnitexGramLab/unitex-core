@@ -101,12 +101,7 @@ if(entry->word == NULL){
 }
 unichar* tmp = u_strcpy_sized(entry->word,pos+1,line);
 u_strcat(tmp,"\0");
-/* if we treat with compound tags, we don't catch this information
- * (maybe later) */
-int cpos = u_strrchr(line,'+');
-if(cpos != -1){
-	pos = cpos;
-}
+
 int code_pos = u_strrchr(line,':');
 /* there are no morphological codes associated to this entry */
 if(code_pos == -1){

@@ -34,12 +34,20 @@ void compute_tag_code(struct dela_entry* tag,unichar* tag_code,int form_type){
 if(form_type == 0){
 	/* we use simple forms, we extract only the first semantic code */
 	unichar* tmp = u_strcpy(tag_code,tag->semantic_codes[0]);
+	for(int i=1;i<tag->n_semantic_codes;i++){
+		tmp = u_strcat(tmp,"+");
+		tmp = u_strcat(tmp,tag->semantic_codes[i]);
+	}
 	u_strcat(tmp,"\0");
 }
 else{
 	/* we use compound forms, we extract the first semantic code
 	 * and possible inflectional codes */
 	unichar* tmp = u_strcpy(tag_code,tag->semantic_codes[0]);
+	for(int i=1;i<tag->n_semantic_codes;i++){
+		tmp = u_strcat(tmp,"+");
+		tmp = u_strcat(tmp,tag->semantic_codes[i]);
+	}
 	if(tag->n_inflectional_codes > 0){
 		tmp = u_strcat(tmp,":");
 		for(int i=0;i<tag->n_inflectional_codes;i++){
@@ -53,7 +61,7 @@ else{
 /**
  * identify the semantic code of an unknown inflected token
  */
-unichar* get_pos_unknown(const unichar* inflected){
+unichar* get_pos_unknown(unichar* inflected){
 unichar* pos = (unichar*)malloc(DIC_LINE_SIZE*sizeof(unichar));
 if(pos == NULL){
 	fatal_alloc_error("get_pos_unknown");
@@ -79,7 +87,7 @@ return pos;
  * Creates a matrix entry for a token tag. This tag is associated
  * to a transition in the automata.
  */
-int create_matrix_entry(const unichar* tag,struct matrix_entry** mx,int form_type,int tag_number,int state_number){
+int create_matrix_entry(unichar* tag,struct matrix_entry** mx,int form_type,int tag_number,int state_number){
 *mx = (struct matrix_entry*)malloc(sizeof(struct matrix_entry));
 if(mx == NULL){
 	fatal_alloc_error("create_matrix_entry");
@@ -201,7 +209,7 @@ return -1;
 /**
  * Extracts INF_code of a given token in the dictionnary.
  */
-void get_INF_code(const unsigned char* bin,const unichar* token,
+void get_INF_code(const unsigned char* bin,unichar* token,
 				  int case_sensitive,int index,int offset,
 				  const Alphabet* alphabet,int* inf_index){
 int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
@@ -266,7 +274,7 @@ return value;
  * according to the extracted INF_codes index.
  * Returns -1 if the string is not in the dictionnary.
  */
-long int get_sequence_integer(const unichar* sequence,const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet){
+long int get_sequence_integer(unichar* sequence,const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet){
 int inf_index = -1;
 get_INF_code(bin,sequence,1,0,4,alphabet,&inf_index);
 if(inf_index == -1){
@@ -310,7 +318,7 @@ return sequence;
  * In our case, the tokens could be "N", "A" and "blue". The result is a
  * new unichar "N\tA\tblue".
  */
-unichar* create_trigram_sequence(const unichar* first_token,const unichar* second_token,const unichar* third_token){
+unichar* create_trigram_sequence(unichar* first_token,unichar* second_token,unichar* third_token){
 unichar* bigram = create_bigram_sequence(first_token,second_token,1);
 unichar* sequence = (unichar*)malloc(sizeof(unichar)*(2+u_strlen(bigram)+u_strlen(third_token)));
 if(sequence == NULL){
@@ -326,7 +334,7 @@ return sequence;
 /**
  * Computes the suffix of size n of a token.
  */
-unichar* u_strnsuffix(const unichar* s,int n){
+unichar* u_strnsuffix(unichar* s,int n){
 unichar* suffix = (unichar*)malloc(sizeof(unichar)*(n+1));
 if(suffix == NULL){
 	fatal_alloc_error("u_strnsuffix");
@@ -342,7 +350,8 @@ return suffix;
  * with a code (semantic and sometimes inflectional codes).
  * This probability is a double value between 0 and 1.
  */
-double compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,const unichar* tag,const unichar* inflected){
+double compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+		unichar* tag,unichar* inflected){
 const char prefix1[] = "word_";
 unichar* new_inflected = create_bigram_sequence(prefix1,inflected,0);
 unichar* sequence1 = create_bigram_sequence(tag,new_inflected,1);
@@ -387,7 +396,7 @@ return (double)(((double)N2)/(1+((double)(N1))));
  * a double value between 0 and 1.
  */
 double compute_transition_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
-									 const unichar* ancestor,const unichar* predecessor,const unichar* current){
+									 unichar* ancestor,unichar* predecessor,unichar* current){
 unichar* tri_sequence = create_trigram_sequence(ancestor,predecessor,current);
 unichar* bi_sequence = create_bigram_sequence(ancestor,predecessor,1);
 long int C1 = get_sequence_integer(tri_sequence,bin,inf,alphabet);
@@ -410,9 +419,20 @@ return (double)(((double)C1)/((double)(C2)));
 double compute_partial_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
 								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
 								  struct matrix_entry* current){
-double emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,current->tag->inflected);
+unichar* inflected = compound_to_simple(current->tag->inflected);
+double emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,inflected);
 double trans_prob = compute_transition_probability(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
+free(inflected);
 return emit_prob+trans_prob;
+}
+
+int u_find_char(unichar* s,unichar t){
+for(int i=u_strlen(s)-1;i>0;i--){
+	if(s[i]==t){
+		return i;
+	}
+}
+return -1;
 }
 
 /**
@@ -423,10 +443,14 @@ void compute_best_probability(const unsigned char* bin,const struct INF_codes* i
 							  struct matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
 double score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
+//#TODO
+if(score > 0 && u_find_char(matrix[index_matrix]->tag->inflected,'_') != -1){
+	score +=1;
+}
 /* best predecessor is saved for the current output transition*/
 if(score >= matrix[index_matrix]->partial_prob){
 	matrix[index_matrix]->predecessor = indexI;
-	matrix[index_matrix]->partial_prob = (float)score;
+	matrix[index_matrix]->partial_prob = score;
 }
 }
 
@@ -455,7 +479,7 @@ return state_sequence;
  * Returns 1 if the token is a compound, i.e. contains whitespace(s);
  * returns 0 otherwise.
  */
-int is_compound_word(const unichar* token){
+int is_compound_word(unichar* token){
 unsigned int l=u_strlen(token);
 for(unsigned int i=0;i<l;i++){
 	if(token[i] == ' '){
@@ -463,6 +487,23 @@ for(unsigned int i=0;i<l;i++){
 	}
 }
 return 0;
+}
+
+/**
+ * Converts a compound word to a simple word.
+ * Returns the new token.
+ */
+unichar* compound_to_simple(unichar* token){
+unichar* word = (unichar*)malloc(sizeof(unichar)*u_strlen(token)+1);
+for(unsigned int i=0;i<=u_strlen(token);i++){
+	if(token[i] == ' '){
+		word[i] = '_';
+	}
+	else{
+		word[i] = token[i];
+	}
+}
+return word;
 }
 
 /**
@@ -491,16 +532,15 @@ SingleGraphState state = graph->states[get_initial_state(graph)];
 for(int i=state_sequence[1];i<=index;i=state_sequence[i]){
 	int next_state = -1;
 	Transition *first = new_Transition(-1,-1),*list = first;
-	bool find = false;
 	for(Transition* transO=state->outgoing_transitions;transO!=NULL;transO=transO->next){
 		TfstTag* tag = (TfstTag*)tags->tab[transO->tag_number];
-		struct dela_entry* entry = tokenize_tag_token(tag->content);
-		if(((u_strcmp(entry->semantic_codes[0],matrix[i]->tag->semantic_codes[0]) == 0
-				&& same_inflectional_codes(entry,matrix[i]->tag) && form_type == 1) ||
+		unichar* content = compound_to_simple(tag->content);
+		struct dela_entry* entry = tokenize_tag_token(content);
+		free(content);
+		if(((same_codes(entry,matrix[i]->tag) == 1 && form_type == 1) ||
 				(form_type == 0 && (u_strcmp(entry->semantic_codes[0],matrix[i]->tag->semantic_codes[0]) == 0))) &&
 				(u_strcmp(entry->inflected,matrix[i]->tag->inflected) == 0) &&
-				find == false){
-			find = true;
+				transO->tag_number == matrix[i]->tag_number){
 			/* this outgoing transition is the good one (best partial probability at this state) */
 			next_state = transO->state_number;
 			list->next = transO;
@@ -558,7 +598,9 @@ for(int i=0;i<automaton->number_of_states;i++){
 	SingleGraphState state = automaton->states[i];
 	for(Transition* transO=state->outgoing_transitions;transO!=NULL;transO=transO->next){
 		TfstTag* tag = (TfstTag*)input_tfst->tags->tab[transO->tag_number];
-		int value = create_matrix_entry(tag->content,&matrix[index_matrix],form_type,transO->tag_number,i);
+		unichar* content = compound_to_simple(tag->content);
+		int value = create_matrix_entry(content,&matrix[index_matrix],form_type,transO->tag_number,i);
+		free(content);
 		if(value == -1){
 			free(tag->content);
 			tag->content = (unichar*)malloc(sizeof(unichar)*DIC_LINE_SIZE);
@@ -575,12 +617,10 @@ for(int i=0;i<automaton->number_of_states;i++){
 		int initial = 1;
 		for(Transition* transI=state->reverted_incoming_transitions;transI!=NULL;transI=transI->next){
 			TfstTag* tagI = (TfstTag*)input_tfst->tags->tab[transI->tag_number];
-			if(is_compound_word(tagI->content) && (initial == 0 || (initial==1 && transI->next != NULL))){
-				/* we skip this iteration if the content is a compound word */
-				continue;
-			}
-			int indexI = search_matrix_predecessor(matrix,tagI->content,index_matrix-1,
+			unichar* content = compound_to_simple(tagI->content);
+			int indexI = search_matrix_predecessor(matrix,content,index_matrix-1,
 						 transI->tag_number,transI->state_number);
+			free(content);
 			int cover_span = same_positions(&tagI->m,&tag->m);
 			compute_best_probability(bin,inf,alphabet,matrix,index_matrix,indexI,cover_span);
 			initial = 0;

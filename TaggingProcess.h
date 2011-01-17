@@ -85,6 +85,7 @@ double compute_transition_probability(const unsigned char*,const struct INF_code
 double compute_partial_probability(const unsigned char*,const struct INF_codes*,const Alphabet*,struct matrix_entry*,struct matrix_entry*,struct matrix_entry*);
 int* get_state_sequence(struct matrix_entry**,int);
 int is_compound_word(const unichar*);
+unichar* compound_to_simple(unichar*);
 vector_ptr* do_backtracking(struct matrix_entry**,int,SingleGraph,vector_ptr*,int);
 void compute_best_probability(const unsigned char*,const struct INF_codes*,const Alphabet*,struct matrix_entry**,int,int,int);
 
