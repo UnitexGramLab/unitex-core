@@ -415,6 +415,7 @@ if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_)){
 u_fclose(f);
 af_remove(temp_file_name);
 u_fclose(out);
+free(unichar_buffer);
 if (option->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
 }
