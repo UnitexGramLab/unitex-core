@@ -61,7 +61,7 @@ else{
 /**
  * identify the semantic code of an unknown inflected token
  */
-unichar* get_pos_unknown(unichar* inflected){
+unichar* get_pos_unknown(const unichar* inflected){
 unichar* pos = (unichar*)malloc(DIC_LINE_SIZE*sizeof(unichar));
 if(pos == NULL){
 	fatal_alloc_error("get_pos_unknown");
@@ -87,7 +87,7 @@ return pos;
  * Creates a matrix entry for a token tag. This tag is associated
  * to a transition in the automata.
  */
-int create_matrix_entry(unichar* tag,struct matrix_entry** mx,int form_type,int tag_number,int state_number){
+int create_matrix_entry(const unichar* tag,struct matrix_entry** mx,int form_type,int tag_number,int state_number){
 *mx = (struct matrix_entry*)malloc(sizeof(struct matrix_entry));
 if(mx == NULL){
 	fatal_alloc_error("create_matrix_entry");
@@ -209,7 +209,7 @@ return -1;
 /**
  * Extracts INF_code of a given token in the dictionnary.
  */
-void get_INF_code(const unsigned char* bin,unichar* token,
+void get_INF_code(const unsigned char* bin,const unichar* token,
 				  int case_sensitive,int index,int offset,
 				  const Alphabet* alphabet,int* inf_index){
 int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
@@ -274,7 +274,7 @@ return value;
  * according to the extracted INF_codes index.
  * Returns -1 if the string is not in the dictionnary.
  */
-long int get_sequence_integer(unichar* sequence,const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet){
+long int get_sequence_integer(const unichar* sequence,const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet){
 int inf_index = -1;
 get_INF_code(bin,sequence,1,0,4,alphabet,&inf_index);
 if(inf_index == -1){
@@ -318,7 +318,7 @@ return sequence;
  * In our case, the tokens could be "N", "A" and "blue". The result is a
  * new unichar "N\tA\tblue".
  */
-unichar* create_trigram_sequence(unichar* first_token,unichar* second_token,unichar* third_token){
+unichar* create_trigram_sequence(const unichar* first_token,const unichar* second_token,const unichar* third_token){
 unichar* bigram = create_bigram_sequence(first_token,second_token,1);
 unichar* sequence = (unichar*)malloc(sizeof(unichar)*(2+u_strlen(bigram)+u_strlen(third_token)));
 if(sequence == NULL){
@@ -334,7 +334,7 @@ return sequence;
 /**
  * Computes the suffix of size n of a token.
  */
-unichar* u_strnsuffix(unichar* s,int n){
+unichar* u_strnsuffix(const unichar* s,int n){
 unichar* suffix = (unichar*)malloc(sizeof(unichar)*(n+1));
 if(suffix == NULL){
 	fatal_alloc_error("u_strnsuffix");
@@ -351,7 +351,7 @@ return suffix;
  * This probability is a double value between 0 and 1.
  */
 double compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
-		unichar* tag,unichar* inflected){
+		const unichar* tag,const unichar* inflected){
 const char prefix1[] = "word_";
 unichar* new_inflected = create_bigram_sequence(prefix1,inflected,0);
 unichar* sequence1 = create_bigram_sequence(tag,new_inflected,1);
@@ -396,7 +396,7 @@ return (double)(((double)N2)/(1+((double)(N1))));
  * a double value between 0 and 1.
  */
 double compute_transition_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
-									 unichar* ancestor,unichar* predecessor,unichar* current){
+									 const unichar* ancestor,const unichar* predecessor,const unichar* current){
 unichar* tri_sequence = create_trigram_sequence(ancestor,predecessor,current);
 unichar* bi_sequence = create_bigram_sequence(ancestor,predecessor,1);
 long int C1 = get_sequence_integer(tri_sequence,bin,inf,alphabet);
@@ -426,7 +426,7 @@ free(inflected);
 return emit_prob+trans_prob;
 }
 
-int u_find_char(unichar* s,unichar t){
+int u_find_char(const unichar* s,unichar t){
 for(int i=u_strlen(s)-1;i>0;i--){
 	if(s[i]==t){
 		return i;
@@ -450,7 +450,7 @@ if(score > 0 && u_find_char(matrix[index_matrix]->tag->inflected,'_') != -1){
 /* best predecessor is saved for the current output transition*/
 if(score >= matrix[index_matrix]->partial_prob){
 	matrix[index_matrix]->predecessor = indexI;
-	matrix[index_matrix]->partial_prob = score;
+	matrix[index_matrix]->partial_prob = (float)score;
 }
 }
 
@@ -479,7 +479,7 @@ return state_sequence;
  * Returns 1 if the token is a compound, i.e. contains whitespace(s);
  * returns 0 otherwise.
  */
-int is_compound_word(unichar* token){
+int is_compound_word(const unichar* token){
 unsigned int l=u_strlen(token);
 for(unsigned int i=0;i<l;i++){
 	if(token[i] == ' '){
@@ -493,8 +493,8 @@ return 0;
  * Converts a compound word to a simple word.
  * Returns the new token.
  */
-unichar* compound_to_simple(unichar* token){
-unichar* word = (unichar*)malloc(sizeof(unichar)*u_strlen(token)+1);
+unichar* compound_to_simple(const unichar* token){
+unichar* word = (unichar*)malloc(sizeof(unichar)*(u_strlen(token)+1));
 for(unsigned int i=0;i<=u_strlen(token);i++){
 	if(token[i] == ' '){
 		word[i] = '_';
