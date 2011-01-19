@@ -93,7 +93,7 @@ if(entry == NULL){
 /* we fill corpus entry with information extracted from the corpus line*/
 int pos = u_strrchr(line,'/');
 if(pos == -1){
-	fatal_error("Bad return value of strrchr in compute_corpus_entry\n");
+	fatal_error("Wrong format for line %S\n",line);
 }
 entry->word = (unichar*)malloc(sizeof(unichar)*(pos+1));
 if(entry->word == NULL){

@@ -160,14 +160,14 @@ strcat(temp,"temp.tfst");
 struct BIN_free_info bin_free;
 const unsigned char* bin=load_abstract_BIN_file(data,&bin_free);
 if (bin==NULL) {
-	fatal_error("");
+	fatal_error("Cannot open .bin data file.");
 }
 remove_extension(data);
 strcat(data,".inf");
 struct INF_free_info inf_free;
 const struct INF_codes* inf=load_abstract_INF_file(data,&inf_free);
 if (inf==NULL) {
-	fatal_error("");
+	fatal_error("Cannot open .inf data file");
 }
 
 char* current_tfst = tfst;
