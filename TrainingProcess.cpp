@@ -284,6 +284,53 @@ for(struct string_hash_tree_transition* trans=node->trans;trans!=NULL;trans=tran
 }
 }
 
+corpus_entry* new_simple_word_entry(const unichar* word,corpus_entry* entry,int start){
+	corpus_entry* wentry = (corpus_entry*)malloc(sizeof(corpus_entry));
+	wentry->word = u_strdup(word);
+	wentry->pos_code = (unichar*)malloc(sizeof(unichar)*(u_strlen(entry->pos_code)+3));
+	wentry->overall_codes = (unichar*)malloc(sizeof(unichar)*(u_strlen(entry->overall_codes)+3));
+	unichar* tmp = u_strcpy_sized(wentry->pos_code,u_strlen(entry->pos_code)+1,entry->pos_code);
+	unichar* tmp2 = u_strcpy_sized(wentry->overall_codes,u_strlen(entry->overall_codes)+1,entry->overall_codes);
+	if(start == 0){
+		u_strcat(tmp,"+I\0");
+		u_strcat(tmp2,"+I\0");
+	}
+	else {
+		u_strcat(tmp,"+B\0");
+		u_strcat(tmp2,"+B\0");
+	}
+	return wentry;
+}
+
+corpus_entry** extract_simple_words(corpus_entry* entry){
+	corpus_entry** words = (corpus_entry**)malloc(sizeof(corpus_entry)*100);
+	words[0] = NULL;
+	unichar* word = u_strchr(entry->word,'_');
+	int old_value=0,nb_words=0;
+	while(word != NULL) {
+		unichar* simple_word = u_strdup(entry->word+old_value,u_strlen(entry->word)-old_value-u_strlen(word));
+		if(nb_words > 0){
+			words[nb_words] = new_simple_word_entry(simple_word,entry,0);
+		}
+		else{
+			words[nb_words] = new_simple_word_entry(simple_word,entry,1);
+		}
+		nb_words+=1;
+		old_value += u_strlen(simple_word)+1;
+		word = u_strchr(entry->word+old_value,'_');
+		free(simple_word);
+		if(word == NULL){
+			if(u_strlen(entry->word)-old_value != 0){
+				word = entry->word+old_value;
+				words[nb_words] = new_simple_word_entry(word,entry,0);
+				words[nb_words+1] = NULL;
+			}
+			break;
+		}
+	}
+	return words;
+}
+
 /**
  * Computes training by extracting statistics from a tagged corpus file.
  */
@@ -306,8 +353,19 @@ while(u_fgets(line,input_text) !=EOF){
 	}
 	else{
 		corpus_entry* entry = new_corpus_entry(line);
-		push_corpus_entry(entry,context);
-		add_statistics(context,rforms_table,iforms_table);
+		if(u_strchr(line,'_')!=NULL && line[0]!='_'){
+			corpus_entry** entries = extract_simple_words(entry);
+			free_corpus_entry(entry);
+			for(int i=0;entries[i]!=NULL;i++){
+				push_corpus_entry(entries[i],context);
+				add_statistics(context,rforms_table,iforms_table);
+			}
+			free(entries);
+		}
+		else {
+			push_corpus_entry(entry,context);
+			add_statistics(context,rforms_table,iforms_table);
+		}
 	}
 }
 free_context_matrix(context);

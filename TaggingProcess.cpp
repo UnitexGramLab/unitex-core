@@ -412,6 +412,55 @@ if(C2 == -1){
 return (double)(((double)C1)/((double)(C2)));
 }
 
+double compute_partial_probability_compounds(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+		  unichar* ancestor,unichar* predecessor,unichar* tag_code,unichar* inflected){
+	unichar* word = u_strchr(inflected,'_');
+	int old_value=0,nb_words=0;
+	double score = 0.0;
+	while(word != NULL) {
+		unichar* simple_word = u_strdup(inflected+old_value,u_strlen(inflected)-old_value-u_strlen(word));
+		unichar* new_tag_code = (unichar*)malloc(sizeof(unichar)*(u_strlen(tag_code)+3));
+		unichar* tmp = u_strcpy_sized(new_tag_code,u_strlen(tag_code)+1,tag_code);
+		if(nb_words == 0){
+			u_strcat(tmp,"+B\0");
+		}
+		else{
+			u_strcat(tmp,"+I\0");
+		}
+		score += compute_emit_probability(bin,inf,alphabet,new_tag_code,simple_word);
+		score += compute_transition_probability(bin,inf,alphabet,ancestor,predecessor,new_tag_code);
+		nb_words+=1;
+		old_value += u_strlen(simple_word)+1;
+		word = u_strchr(inflected+old_value,'_');
+		if(nb_words>2){
+			free(ancestor);
+		}
+		ancestor = predecessor;
+		predecessor = new_tag_code;
+		free(simple_word);
+		if(word == NULL){
+			if(u_strlen(inflected)-old_value != 0){
+				word = inflected+old_value;
+				unichar* new_tag_code = (unichar*)malloc(sizeof(unichar)*(u_strlen(tag_code)+3));
+				unichar* tmp = u_strcpy_sized(new_tag_code,u_strlen(tag_code)+1,tag_code);
+				u_strcat(tmp,"+I\0");
+				score += compute_emit_probability(bin,inf,alphabet,new_tag_code,word);
+				score += compute_transition_probability(bin,inf,alphabet,ancestor,predecessor,new_tag_code);
+				free(new_tag_code);
+			}
+			if(nb_words>=2){
+				free(ancestor);
+			}
+			if(nb_words>=1){
+				free(predecessor);
+			}
+			break;
+		}
+	}
+	free(inflected);
+	return score;
+}
+
 /**
  * Computes partial probability of a outgoing transition of a state.
  * This probability is the product of emit and transition probabilities.
@@ -420,6 +469,9 @@ double compute_partial_probability(const unsigned char* bin,const struct INF_cod
 								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
 								  struct matrix_entry* current){
 unichar* inflected = compound_to_simple(current->tag->inflected);
+if(u_strchr(inflected,'_') != NULL && u_strlen(inflected)>2){
+	return compute_partial_probability_compounds(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code,inflected);
+}
 double emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,inflected);
 double trans_prob = compute_transition_probability(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
 free(inflected);
@@ -443,9 +495,8 @@ void compute_best_probability(const unsigned char* bin,const struct INF_codes* i
 							  struct matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
 double score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
-//#TODO
 if(score > 0 && u_find_char(matrix[index_matrix]->tag->inflected,'_') != -1){
-	score +=1;
+	score +=3;
 }
 /* best predecessor is saved for the current output transition*/
 if(score >= matrix[index_matrix]->partial_prob){
