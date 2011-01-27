@@ -412,8 +412,25 @@ if(C2 == -1){
 return (double)(((double)C1)/((double)(C2)));
 }
 
+/**
+ * check whether the compound word contains the '-' character.
+ * If true, replace '-' by '_'.
+ */
+void check_compound(unichar* inflected){
+	for(unsigned int i=0;i<u_strlen(inflected);i++){
+		if(inflected[i] == '-'){
+			inflected[i] = '_';
+		}
+	}
+}
+
+/**
+ * Computes partial probability of a outgoing transition of a state (for compounds words only).
+ * The system used here is BIO.
+ */
 double compute_partial_probability_compounds(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
 		  unichar* ancestor,unichar* predecessor,unichar* tag_code,unichar* inflected){
+	check_compound(inflected);
 	unichar* word = u_strchr(inflected,'_');
 	int old_value=0,nb_words=0;
 	double score = 0.0;
@@ -469,7 +486,8 @@ double compute_partial_probability(const unsigned char* bin,const struct INF_cod
 								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
 								  struct matrix_entry* current){
 unichar* inflected = compound_to_simple(current->tag->inflected);
-if(u_strchr(inflected,'_') != NULL && u_strlen(inflected)>2){
+/* case : a transition tagged by a compound */
+if((u_strchr(inflected,'_') != NULL || (u_strchr(inflected,'-') != NULL && inflected[0]!='-'))&& u_strlen(inflected)>2){
 	return compute_partial_probability_compounds(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code,inflected);
 }
 double emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,inflected);
@@ -496,7 +514,7 @@ void compute_best_probability(const unsigned char* bin,const struct INF_codes* i
 double score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
 if(score > 0 && u_find_char(matrix[index_matrix]->tag->inflected,'_') != -1){
-	score +=3;
+	score +=2;
 }
 /* best predecessor is saved for the current output transition*/
 if(score >= matrix[index_matrix]->partial_prob){
@@ -533,7 +551,7 @@ return state_sequence;
 int is_compound_word(const unichar* token){
 unsigned int l=u_strlen(token);
 for(unsigned int i=0;i<l;i++){
-	if(token[i] == ' '){
+	if(token[i] == ' ' or token[i] == '-'){
 		return 1;
 	}
 }
@@ -554,6 +572,7 @@ for(unsigned int i=0;i<=u_strlen(token);i++){
 		word[i] = token[i];
 	}
 }
+
 return word;
 }
 

@@ -302,6 +302,9 @@ corpus_entry* new_simple_word_entry(const unichar* word,corpus_entry* entry,int 
 	return wentry;
 }
 
+/**
+ * Extract simple words contained into compound words.
+ */
 corpus_entry** extract_simple_words(corpus_entry* entry){
 	corpus_entry** words = (corpus_entry**)malloc(sizeof(corpus_entry)*100);
 	words[0] = NULL;
@@ -309,11 +312,16 @@ corpus_entry** extract_simple_words(corpus_entry* entry){
 	int old_value=0,nb_words=0;
 	while(word != NULL) {
 		unichar* simple_word = u_strdup(entry->word+old_value,u_strlen(entry->word)-old_value-u_strlen(word));
-		if(nb_words > 0){
-			words[nb_words] = new_simple_word_entry(simple_word,entry,0);
+		if(simple_word[0] != '-'){
+			if(nb_words > 0){
+				words[nb_words] = new_simple_word_entry(simple_word,entry,0);
+			}
+			else{
+				words[nb_words] = new_simple_word_entry(simple_word,entry,1);
+			}
 		}
 		else{
-			words[nb_words] = new_simple_word_entry(simple_word,entry,1);
+			nb_words -= 1;
 		}
 		nb_words+=1;
 		old_value += u_strlen(simple_word)+1;
