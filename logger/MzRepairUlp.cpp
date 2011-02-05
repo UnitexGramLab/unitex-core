@@ -24,7 +24,7 @@ extern const char* usage_MzRepairUlp;
 const char* usage_MzRepairUlp =
          "Usage : MzRepairUlp [OPTIONS] <ulpfile>\n"
          "\n"
-		 "  <ulpfile>: an corrupted ulp file (often, a crashing log)\n"
+		 "  <ulpfile>: a corrupted ulp file (often, a crashing log)\n"
          "\n"
          "OPTIONS:\n"
          "  -o X/--output=X: uses X as filename for fixed .ulp file (<ulpfile>.repair by default)\n"
