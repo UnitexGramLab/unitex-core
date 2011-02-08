@@ -226,28 +226,33 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		else
 		{
 			if ((p->fnc_locate_trace_step != NULL)) {
-				locate_trace_info lti;
-				lti.size_struct_locate_trace_info = (int)sizeof(lti);
-				lti.is_on_morphlogical = 1;
+				locate_trace_info* lti;
+				lti = (locate_trace_info*)malloc(sizeof(locate_trace_info));				
+				if (lti==NULL) {
+					fatal_alloc_error("morphological_locate");
+				}
+				lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
+				lti->is_on_morphlogical = 1;
 
-				lti.pos_in_tokens=pos_in_tokens;
+				lti->pos_in_tokens=pos_in_tokens;
 
-                lti.current_state=NULL;
+				lti->current_state=NULL;
 
-				lti.current_state_index=current_state_index;
-				lti.pos_in_chars=pos_in_chars;
+				lti->current_state_index=current_state_index;
+				lti->pos_in_chars=pos_in_chars;
 
-				lti.matches=matches;
-				lti.n_matches=n_matches;
-				lti.ctx=ctx;
-				lti.p=p;
+				lti->matches=matches;
+				lti->n_matches=n_matches;
+				lti->ctx=ctx;
+				lti->p=p;
 
-				lti.step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+				lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
 
-				lti.jamo=jamo;
-				lti.pos_in_jamo=pos_in_jamo;
+				lti->jamo=jamo;
+				lti->pos_in_jamo=pos_in_jamo;
 
-				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(&lti,p->private_param_locate_trace);
+				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
+				free(lti);
 			}
 
 			if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {

@@ -404,28 +404,33 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		else
 		{
 			if ((p->fnc_locate_trace_step != NULL)) {
-				locate_trace_info lti;
-				lti.size_struct_locate_trace_info = (int)sizeof(lti);
-				lti.is_on_morphlogical = 0;
+				locate_trace_info* lti;
+				lti = (locate_trace_info*)malloc(sizeof(locate_trace_info));				
+				if (lti==NULL) {
+					fatal_alloc_error("locate");
+				}
+				lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
+				lti->is_on_morphlogical = 0;
 
-				lti.pos_in_tokens=pos;
+				lti->pos_in_tokens=pos;
 
-				lti.current_state=current_state;
+				lti->current_state=current_state;
 
-				lti.current_state_index=0;
-				lti.pos_in_chars=0;
+				lti->current_state_index=0;
+				lti->pos_in_chars=0;
 
-				lti.matches=matches;
-				lti.n_matches=n_matches;
-				lti.ctx=ctx;
-				lti.p=p;
+				lti->matches=matches;
+				lti->n_matches=n_matches;
+				lti->ctx=ctx;
+				lti->p=p;
 
-				lti.step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+				lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
 
-				lti.jamo=NULL;
-				lti.pos_in_jamo=0;
+				lti->jamo=NULL;
+				lti->pos_in_jamo=0;
 
-				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(&lti,p->private_param_locate_trace);
+				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
+				free(lti);
 			}
 
 			if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
@@ -551,7 +556,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	}
 	/* If we have reached the end of the token buffer, we indicate it by setting
 	 * the current tokens to -1 */
-	if (pos + p->current_origin >= p->buffer_size) {
+	if ((((pos + p->current_origin) >= p->buffer_size)) || ((pos + p->current_origin) < 0)) {
 		token = -1;
 		token2 = -1;
 	} else {
@@ -566,7 +571,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		else {
 			pos2 = pos;
 		}
-		if (pos2 + p->current_origin >= p->buffer_size) {
+		if ((pos2 + p->current_origin) >= p->buffer_size) {
 			token2 = -1;
 		} else {
 			token2 = p->buffer[pos2 + p->current_origin];
