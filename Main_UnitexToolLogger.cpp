@@ -52,7 +52,7 @@
 const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\n"
                                 "or \n"
                                 "Usage: UnitexToolLogger MzRepairUlp [OPTIONS] <ulpfile>\n"
-                                "or \n";
+                                "or \n"
                                 "Usage: UnitexToolLogger { CreateLog [OPTIONS] } <Utility> [OPTIONS]\n"
                                 "or \n";
 static void disp_usage_RunLog_mini() {
