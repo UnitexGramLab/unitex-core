@@ -556,7 +556,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	}
 	/* If we have reached the end of the token buffer, we indicate it by setting
 	 * the current tokens to -1 */
-	if ((((pos + p->current_origin) >= p->buffer_size)) || ((pos + p->current_origin) < 0)) {
+	if ((((pos + p->current_origin) >= p->buffer_size)) || (pos==-1)) {
 		token = -1;
 		token2 = -1;
 	} else {
