@@ -399,14 +399,14 @@ for (;;) {
 			here we known that v->start_in_tokens <= v->end_in_tokens
 			*/
 
-      } else if (v->end_in_tokens+p->current_origin >= p->buffer_size) {
+      } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
          if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {			 
            error("Output warning: end variable position after end of text for variable $%S$\n",name);
-           error("start=%d  end=%d   origin=%d   buffer size=%d\n",v->start_in_tokens,v->end_in_tokens,p->current_origin,p->buffer_size);
+           /*error("start=%d  end=%d   origin=%d   buffer size=%d\n",v->start_in_tokens,v->end_in_tokens,p->current_origin,p->buffer_size);
            for (int i=p->current_origin;i<p->buffer_size;i++) {
         	   error("%S",p->tokens->value[p->buffer[i]]);
            }
-           error("\n");
+           error("\n");*/
 		 } 
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name);

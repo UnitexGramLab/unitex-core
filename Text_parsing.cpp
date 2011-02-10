@@ -1275,7 +1275,7 @@ while (output_variable_list != NULL) {
 	 * VARIABLE ENDS
 	 */
 	variable_list = current_state->input_variable_ends;
-	int end=(token!=-1)?pos:p->buffer_size;
+	int end=(token!=-1)?pos:(p->buffer_size-p->current_origin);
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
