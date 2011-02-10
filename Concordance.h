@@ -54,6 +54,7 @@
  * to functions.
  */
 struct conc_opt {
+  int only_ambiguous;
   int sort_mode;
   int left_context;
   int right_context;

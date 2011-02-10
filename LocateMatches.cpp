@@ -131,3 +131,86 @@ return l;
 }
 
 
+/**
+ * Returns 1 if the given matches correspond to ambiguous outputs
+ * for the same sequence; 0 otherwise.
+ */
+int are_ambiguous(struct match_list* a,struct match_list* b) {
+if (compare_matches(&(a->m),&(b->m))!=A_EQUALS_B) return 0;
+return 1;
+}
+
+
+/**
+ * This function removes all non ambiguous outputs from the given match list.
+ */
+void filter_unambiguous_outputs(struct match_list* *list) {
+struct match_list* tmp;
+if (*list==NULL) return;
+struct match_list* previous=NULL;
+struct match_list* l=*list;
+int previous_was_identical=0;
+while (l!=NULL) {
+	if (previous==NULL) {
+		/* Case 1: we are at the beginning of the list */
+		/* Case 1a: there is only one cell */
+		if (l->next==NULL) {
+			free_match_list(l);
+			*list=NULL;
+			return;
+		}
+		/* Case 1b: there is a next cell, but it's not ambiguous with the current one */
+		if (!are_ambiguous(l,l->next)) {
+			/* We have to delete the current cell */
+			tmp=l->next;
+			free_match_list_element(l);
+			l=tmp;
+			continue;
+		}
+		/* Case 1c: the next cell is an ambiguous one, we can move on */
+		/* Now we know the list head element */
+		*list=l;
+		previous=l;
+		previous_was_identical=1;
+		l=l->next;
+		continue;
+	} else {
+		/* Case 2: there is a previous cell */
+		if (previous_was_identical) {
+			/* Case 2a: we know that we have to keep this current cell, but
+			 * we must check if the next is also an ambiguous one */
+			if (l->next==NULL) {
+				/* No next cell ? We're done then */
+				return;
+			}
+			previous_was_identical=are_ambiguous(l,l->next);
+			previous=l;
+			l=l->next;
+			continue;
+		}
+		/* Case 2b: previous cell is different, so we have to test the next one
+		 * to know whether we must keep the current one or not */
+		if (l->next==NULL) {
+			/* No next cell ? We have to delete the current one and then
+			 * we are done */
+			free_match_list_element(l);
+			previous->next=NULL;
+			return;
+		}
+		previous_was_identical=are_ambiguous(l,l->next);
+		if (previous_was_identical) {
+			/* We have to keep the current cell */
+			previous=l;
+			l=l->next;
+			continue;
+		}
+		/* Final case, the next cell is not ambiguous, so we have to delete
+		 * the current one */
+		tmp=l;
+		l=l->next;
+		free_match_list_element(tmp);
+		previous->next=l;
+		continue;
+	}
+}
+}

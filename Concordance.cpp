@@ -822,6 +822,9 @@ u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
+if (option->only_ambiguous) {
+	filter_unambiguous_outputs(&matches);
+}
 /* Then we fill the buffer with the beginning of the text */
 //buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 buffer->size=(int)buf_map_int_pseudo_read(buffer,buffer->nb_item);
@@ -1219,6 +1222,7 @@ struct conc_opt* opt=(struct conc_opt*)malloc(sizeof(struct conc_opt));
 if (opt==NULL) {
    fatal_alloc_error("new_conc_opt");
 }
+opt->only_ambiguous=0;
 opt->sort_mode=TEXT_ORDER;
 opt->left_context=0;
 opt->right_context=0;

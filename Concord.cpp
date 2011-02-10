@@ -52,6 +52,7 @@ const char* usage_Concord =
         "  -l X/--left=X: left context length in chars; if followed by s (i.e. \"80s\") indicates\n"
         "                 that the match can end before the limit if there is a {S}. Default=0\n"
         "  -r X/--right=X: the same for right context. Default=0\n"
+		"  --only_ambiguous: Only displays identical occurrences with ambiguous outputs, in text order\n"
         "\n"
         "Sort order options:\n"
         "  --TO: text order (default)\n"
@@ -102,7 +103,8 @@ u_printf(usage_Concord);
 int pseudo_main_Concord(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                         const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,
-                        const char* output,const char* directory,const char* alphabet,int thai) {
+                        const char* output,const char* directory,const char* alphabet,
+                        int thai,int only_ambiguous) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Concord,"main_Concord");
 char tmp[256];
 {
@@ -150,6 +152,9 @@ if (alphabet!=NULL) {
 if (thai) {
    add_argument(invoker,"-T");
 }
+if (only_ambiguous) {
+   add_argument(invoker,"--only_ambiguous");
+}
 add_argument(invoker,index_file);
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
@@ -163,6 +168,7 @@ const struct option_TS lopts_Concord[]= {
       {"fontsize",required_argument_TS,NULL,'s'},
       {"left",required_argument_TS,NULL,'l'},
       {"right",required_argument_TS,NULL,'r'},
+      {"only_ambiguous",no_argument_TS,NULL,8},
       {"TO",no_argument_TS,NULL,0},
       {"LC",no_argument_TS,NULL,1},
       {"LR",no_argument_TS,NULL,2},
@@ -240,6 +246,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
                 options->right_context_until_eos=1;
              }
              break;
+   case 8: options->only_ambiguous=1; break;
    case 0: options->sort_mode=TEXT_ORDER; break;
    case 1: options->sort_mode=LEFT_CENTER; break;
    case 2: options->sort_mode=LEFT_RIGHT; break;
@@ -316,7 +323,6 @@ if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-
 if (options->fontname==NULL || options->fontsize<=0) {
    if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_) {
       fatal_error("The specified output mode is an HTML file: you must specify font parameters\n");
@@ -375,6 +381,10 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ ||
    options->left_context=0;
    options->right_context=0;
    options->sort_mode=TEXT_ORDER;
+}
+if (options->only_ambiguous) {
+	/* We force text order when displaying only ambiguous outputs */
+	options->sort_mode=TEXT_ORDER;
 }
 
 /* Once we have setted all the parameters, we call the function that

@@ -31,14 +31,16 @@
  * the associated concordacnces 'out1' and 'out2'.
  */
 void create_text_concordances(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out1,const char* out2) {
-pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
+pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,
+		in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
 af_remove(out1);
 af_rename(f,out1);
 
-pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
+pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,
+		in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0,0);
 af_remove(out2);
 af_rename(f,out2);
 }
