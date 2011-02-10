@@ -543,13 +543,13 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, p->prv_alloc_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos, -1, -1, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, p->prv_alloc_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->prv_alloc_recycle);
 				}
 			}
 		}

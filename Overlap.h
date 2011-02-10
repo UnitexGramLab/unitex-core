@@ -19,17 +19,25 @@
  *
  */
 
-#ifndef NormalizeAsRoutineH
-#define NormalizeAsRoutineH
+#ifndef OverlapH
+#define OverlapH
+
+/**
+ * This enum is used to compare intervals.
+ */
+typedef enum {
+   A_BEFORE_B,
+   A_BEFORE_B_OVERLAP,
+   A_INCLUDES_B,
+   A_EQUALS_B,
+   B_INCLUDES_A,
+   A_AFTER_B_OVERLAP,
+   A_AFTER_B
+} Overlap;
 
 
-#define MAX_TAG_LENGTH 4000
-#define KEEP_CARRIAGE_RETURN 0
-#define REMOVE_CARRIAGE_RETURN 1
-/* When we are at less than 'MARGIN_BEFORE_BUFFER_END' from the end of the buffer,
- * we will refill it, unless we are at the end of the input file. */
-#define MARGIN_BEFORE_BUFFER_END (MAX_TAG_LENGTH+1000)
+Overlap overlap(int a_start,int a_end,int b_start,int b_end);
 
-int normalize(const char*, const char*, Encoding, int, int, int, const char*, const char*);
 
 #endif
+

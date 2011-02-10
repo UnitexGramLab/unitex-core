@@ -26,6 +26,7 @@
 #include "LocateConstants.h"
 #include "UnitexGetOpt.h"
 #include "Fst2Txt.h"
+#include "Offsets.h"
 
 
 const char* usage_Fst2Txt =
@@ -45,6 +46,10 @@ const char* usage_Fst2Txt =
          "  -M/--merge (default)\n"
          "  -R/--replace\n"
          "\n"
+         "Offset options:\n"
+         "  --input_offsets=XXX: base offset file to be used\n"
+         "  --output_offsets=XXX: offset file to be produced\n"
+         "\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text. The text file is modified.\n";
@@ -56,7 +61,7 @@ u_printf(usage_Fst2Txt);
 }
 
 
-const char* optstring_Fst2Txt=":t:a:MRcwsxhk:q:";
+const char* optstring_Fst2Txt=":t:a:MRcwsxhk:q:$:@:";
 const struct option_TS lopts_Fst2Txt[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -68,6 +73,8 @@ const struct option_TS lopts_Fst2Txt[]= {
       {"dont_start_on_space",no_argument_TS,NULL,'x'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
+      {"input_offsets",required_argument_TS,NULL,'$'},
+      {"output_offsets",required_argument_TS,NULL,'@'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -80,6 +87,8 @@ if (argc==1) {
 }
 
 struct fst2txt_parameters* p=new_fst2txt_parameters();
+char in_offsets[FILENAME_MAX]="";
+char out_offsets[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index,vars))) {
@@ -119,6 +128,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index
              }
              decode_writing_encoding_parameter(&p->encoding_output,&p->bom_output,vars->optarg);
              break;
+   case '$': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_offsets argument\n");
+             }
+             strcpy(in_offsets,vars->optarg);
+             break;
+   case '@': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_offsets argument\n");
+             }
+             strcpy(out_offsets,vars->optarg);
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -132,6 +151,23 @@ if (vars->optind!=argc-1) {
 
 if (p->text_file==NULL) {
    fatal_error("You must specify the text file\n");
+}
+if (out_offsets[0]!='\0') {
+	p->f_out_offsets=u_fopen_creating_versatile_encoding(p->encoding_output,p->bom_output,out_offsets,U_WRITE);
+	if (p->f_out_offsets==NULL) {
+		fatal_error("Cannot create file %s\n",out_offsets);
+	}
+	/* We deal with offsets only if the program is expected to produce some */
+	if (in_offsets[0]!='\0') {
+		p->v_in_offsets=load_offsets(in_offsets,p->mask_encoding_compatibility_input);
+		if (p->v_in_offsets==NULL) {
+			fatal_error("Cannot load offset file %s\n",in_offsets);
+		}
+	} else {
+		/* If there is no input offset file, we create an empty offset vector
+		 * in order to avoid testing whether the vector is NULL or not */
+		p->v_in_offsets=new_vector_offset(1);
+	}
 }
 
 char tmp[FILENAME_MAX];

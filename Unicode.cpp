@@ -181,9 +181,9 @@ int u_fgets(unichar* s,int size,U_FILE* f) {
 return u_fgets(f->enc,s,size,f->f);
 }
 
-int u_fgets_treat_cr_as_lf(Encoding,unichar* s,int size,ABSTRACTFILE* f,int supress_null,int* found_null);
-int u_fgets_treat_cr_as_lf(unichar* s,int size,U_FILE* f,int supress_null,int* found_null) {
-return u_fgets_treat_cr_as_lf(f->enc,s,size,f->f,supress_null,found_null);
+int u_fgets_treat_cr_as_lf(Encoding,unichar* s,int size,ABSTRACTFILE* f);
+int u_fgets_treat_cr_as_lf(unichar* s,int size,U_FILE* f) {
+return u_fgets_treat_cr_as_lf(f->enc,s,size,f->f);
 }
 
 int u_fgets2(Encoding,unichar*,ABSTRACTFILE*);
@@ -1309,7 +1309,7 @@ return i;
 #define BUFFER_IN_CACHE_SIZE (0x100)
 
 
-int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABSTRACTFILE* f,int treat_CR_as_LF,int suppress_null,int* found_null)
+int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABSTRACTFILE* f,int treat_CR_as_LF)
 {
    unsigned char tab_in[BUFFER_IN_CACHE_SIZE];
 
@@ -1351,11 +1351,10 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                  {
                     unichar c;
                     c = (((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)]) ;
-                    if (c==0)
-                        if (found_null!=NULL)
-                            *found_null=1;
-
-                    if (!(((c==0x0d) && (treat_CR_as_LF == 0)) || ((c==0) && (suppress_null!=0))))
+                    if (c==0) {
+                    	fatal_error("Corrupted text file containing null characters\n");
+                    }
+                    if (!(((c==0x0d) && (treat_CR_as_LF == 0))))
                     {
                        if ((c=='\n') || (c==0x0d))
                        {
@@ -1418,11 +1417,11 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                     unichar c;
                     c = (((unichar)tab_in[(i)])) ;
                     
-                    if (c==0)
-                        if (found_null!=NULL)
-                            *found_null=1;
+                    if (c==0) {
+                    	fatal_error("Corrupted text file containing null characters\n");
+                    }
 
-                    if (!(((c==0x0d) && (treat_CR_as_LF == 0)) || ((c==0) && (suppress_null!=0))))
+                    if (!(((c==0x0d) && (treat_CR_as_LF == 0))))
                     {
                        if ((c=='\n') || (c==0x0d))
                        {
@@ -1513,12 +1512,11 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                               }
                           }
 
+                          if (c==0) {
+                          	fatal_error("Corrupted text file containing null characters\n");
+                          }
 
-                    if (c==0)
-                        if (found_null!=NULL)
-                            *found_null=1;
-
-                    if (!(((c==0x0d) && (treat_CR_as_LF == 0)) || ((c==0) && (suppress_null!=0))))
+                    if (!((c==0x0d) && (treat_CR_as_LF == 0)))
                     {
                        if ((c=='\n') || (c==0x0d))
                        {
@@ -1567,7 +1565,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
  * NOTE: there is no overflow control!
  */
 int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
-	return u_fgets_buffered(encoding,line,0,0,f,0,0,NULL);
+	return u_fgets_buffered(encoding,line,0,0,f,0);
 }
 
 
@@ -1585,14 +1583,14 @@ int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
  * Modified by Sébastien Paumier
  */
 int u_fgets(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
-return u_fgets_buffered(encoding,line,1,size,f,0,0,NULL);
+return u_fgets_buffered(encoding,line,1,size,f,0);
 }
 
 /*
  * same thing, but all CR are converted as LF
  */
-int u_fgets_treat_cr_as_lf(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f,int supress_null,int* found_null) {
-return u_fgets_buffered(encoding,line,1,size,f,1,supress_null,found_null);
+int u_fgets_treat_cr_as_lf(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
+return u_fgets_buffered(encoding,line,1,size,f,1);
 }
 
 
@@ -1613,7 +1611,7 @@ return u_fgets_buffered(encoding,line,1,size,f,1,supress_null,found_null);
  * option limit2 by Gilles Vollant
  */
 int u_fgets_limit2(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
-	return u_fgets_buffered(encoding,line,2,size,f,0,0,NULL);
+	return u_fgets_buffered(encoding,line,2,size,f,0);
 }
 
 

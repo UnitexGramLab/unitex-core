@@ -57,6 +57,9 @@
 #define PRODUCE_MORPHO_DIC_NOW 2
 
 
+int raw_dic_application(U_FILE* text,U_FILE* raw_output,Alphabet* alphabet,int ind,char* const argv[]);
+
+
 const char* usage_Dico =
          "Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
          "\n"
@@ -72,7 +75,10 @@ const char* usage_Dico =
 		 "  -K/--korean: tells Dico that it works on Korean\n"
 		 "  -s/--semitic: tells Dico that it works on a semitic language\n"
 		 "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
-         "  -h/--help: this help\n"
+		 "  -r X/--raw=X: indicates that Dico should just produce one output file X containing\n"
+		 "                both simple and compound words, without requiring a text directory.\n"
+		 "                If X is omitted, results are displayed on the standard output."
+		 "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
          "6 files, saved in the text directory. These files are:\n"
@@ -193,7 +199,7 @@ if (len==0 || s[len]!='-') {
 
 
 
-const char* optstring_Dico=":t:a:m:Khk:q:u:g:s";
+const char* optstring_Dico=":t:a:m:Khk:q:u:g:sr::";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -204,6 +210,7 @@ const struct option_TS lopts_Dico[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"arabic_rules",required_argument_TS,NULL,'u'},
+      {"raw",optional_argument_TS,NULL,'r'},
       {"semitic",no_argument_TS,NULL,'s'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -220,10 +227,12 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char arabic_rules[FILENAME_MAX]="";
+char raw_output[FILENAME_MAX]="";
 char negation_operator[0x20]="";
 char* morpho_dic=NULL;
 int is_korean=0;
 int semitic=0;
+U_FILE* f_raw_output=NULL;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -278,6 +287,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
              break;
    case 's': semitic=1;
              break;
+   case 'r': if (vars->optarg==NULL) {
+	            /* No argument ? We display on stdout */
+	            f_raw_output=U_STDOUT;
+	            break;
+             }
+			 if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(raw_output,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Dico[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -303,6 +322,34 @@ if (text[0]=='\0') {
 if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
+Alphabet* alphabet=NULL;
+if (alph[0]!='\0') {
+   /* We load the alphabet */
+   alphabet=load_alphabet(alph,is_korean);
+   if (alphabet==NULL) {
+      error("Cannot open alphabet file %s\n",alph);
+      return 1;
+   }
+}
+
+if (raw_output[0]!='\0') {
+	f_raw_output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,raw_output,U_WRITE);
+	if (f_raw_output==NULL) {
+		fatal_error("Cannot create output file %s\n",raw_output);
+	}
+}
+if (f_raw_output!=NULL) {
+	U_FILE* f_text=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,text,U_READ);
+	if (text==NULL) {
+		fatal_error("Cannot open text file %s\n",text);
+	}
+	int ret=raw_dic_application(f_text,f_raw_output,alphabet,vars->optind,argv);
+	u_fclose(f_text);
+	if (f_raw_output!=U_STDOUT) u_fclose(f_raw_output);
+	free_alphabet(alphabet);
+	free_OptVars(vars);
+	return ret;
+}
 
 struct snt_files* snt_files=new_snt_files(text);
 U_FILE* text_cod;
@@ -325,15 +372,6 @@ if (!u_fempty(encoding_output,bom_output,snt_files->tags_err)) {
 af_remove(snt_files->morpho_dic);
 af_remove(snt_files->morpho_bin);
 af_remove(snt_files->morpho_inf);
-Alphabet* alphabet=NULL;
-if (alph[0]!='\0') {
-   /* We load the alphabet */
-   alphabet=load_alphabet(alph,is_korean);
-   if (alphabet==NULL) {
-      error("Cannot open alphabet file %s\n",alph);
-      return 1;
-   }
-}
 /* We load the text tokens */
 tokens=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
 if (tokens==NULL) {
@@ -505,4 +543,39 @@ free_snt_files(snt_files);
 if (morpho_dic!=NULL) free(morpho_dic);
 free_OptVars(vars);
 return ret;
+}
+
+
+/**
+ * Looks for the given sequence in the .bin dictionaries. All entries are stored in the output,
+ * regardless if they are simple or compound words. fst2 are skipped.
+ * Returns 0 in case of success; 1 otherwise.
+ */
+int raw_dic_application(U_FILE* text,U_FILE* output,Alphabet* alphabet,int ind,char* const argv[]) {
+unichar sequence[1024];
+if (0==u_fgets(sequence,1023,text)) return 1;
+u_chomp_new_line(sequence);
+struct dico_application_info info;
+memset(&info,0,sizeof(struct dico_application_info));
+info.alphabet=alphabet;
+info.dlf=output;
+/* We all dictionaries according their priority */
+for (int priority=1;priority<4;priority++) {
+   /* For a given priority, we apply all concerned dictionaries
+    * in their order on the command line */
+   for (int i=ind;argv[i]!=NULL;i++) {
+      char tmp[FILENAME_MAX];
+      remove_extension(argv[i],tmp);
+      char priority_mark=tmp[strlen(tmp)-1];
+      if ((priority==1 && priority_mark=='-') ||  (priority==2 && priority_mark!='-' && priority_mark!='+') ||  (priority==3 && priority_mark=='+')) {
+         /* If we must must process a dictionary, we check its type */
+         char tmp2[FILENAME_MAX];
+         get_extension(argv[i],tmp2);
+         if (!strcmp(tmp2,".bin"))    {
+        	 dico_application_simplified(sequence,argv[i],&info);
+         }
+      }
+   }
+}
+return 0;
 }

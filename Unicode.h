@@ -157,7 +157,7 @@ int u_fgets(unichar*,U_FILE*);
 int u_fgets(unichar*,int,U_FILE*);
 int u_fgets_limit2(unichar*,int,U_FILE*);
 int u_fgets2(unichar*,U_FILE*);
-int u_fgets_treat_cr_as_lf(unichar* s,int size,U_FILE* f,int supress_null,int* found_null);
+int u_fgets_treat_cr_as_lf(unichar* s,int size,U_FILE* f);
 
 int u_printf(const char*,...);
 int u_fprintf(U_FILE*,const char*,...);

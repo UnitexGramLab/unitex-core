@@ -345,13 +345,13 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars, -1,
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->prv_alloc_recycle);
 				}
 			}
 		}
@@ -766,14 +766,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars,
 							t->state_number, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->prv_alloc_recycle);
 				}
 				break;
 

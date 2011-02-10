@@ -174,7 +174,7 @@ switch (buffer->type) {
       if (!tmp) {
          OK=0;
       }
-      /* We add an extra \0 in order for string parsing reasons */
+      /* We add an extra \0 for string parsing reasons */
       u_array[new_position+n_element_read]='\0';
       break;
    }

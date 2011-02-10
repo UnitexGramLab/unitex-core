@@ -23,6 +23,7 @@
 #define MatchH
 
 #include "Unicode.h"
+#include "Overlap.h"
 
 /**
  * This structure is used to define the core information about a match,
@@ -42,19 +43,6 @@ typedef struct {
 } Match;
 
 
-/**
- * This enum is used to compare matches.
- */
-enum {
-   A_BEFORE_B,
-   A_BEFORE_B_OVERLAP,
-   A_INCLUDES_B,
-   A_EQUALS_B,
-   B_INCLUDES_A,
-   A_AFTER_B_OVERLAP,
-   A_AFTER_B
-};
-
 
 int is_longer_match(Match* a,Match* b);
 int match_end_after(Match* a,Match* b);
@@ -62,7 +50,7 @@ int same_start_positions(Match* a,Match* b);
 int same_end_positions(Match* a,Match* b);
 int same_positions(Match* a,Match* b);
 int match_start_before(Match* a,Match* b);
-int compare_matches(Match* a,Match* b);
+Overlap compare_matches(Match* a,Match* b);
 int valid_text_interval_tfst(Match* a,Match* b);
 
 #endif

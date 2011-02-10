@@ -264,16 +264,17 @@ offset=offset+2;
 if (token[pos]=='\0') {
    /* If we are at the end of the token */
    inflected[pos]='\0';
-   add_offset_for_token(info->word_array,token_number,offset-2,inflected);
+   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset-2,inflected);
    if (!(n_transitions & 32768)) {
       /* If the node is final */
-      int p=get_value(info->simple_word,token_number);
+      int p=0;
+      if (info->simple_word!=NULL) p=get_value(info->simple_word,token_number);
       if (p==0 || p==priority) {
          /* We save the token only if it has not already been matched by
           * dictionary with a greater priority. Moreover, we indicate that
           * this token is part of a word and that it has been processed. */
-         set_value(info->part_of_a_word,token_number,1);
-         set_value(info->simple_word,token_number,priority);
+    	  if (info->part_of_a_word!=NULL) set_value(info->part_of_a_word,token_number,1);
+         if (info->simple_word!=NULL) set_value(info->simple_word,token_number,priority);
          /* We compute the INF line number and we get the associated compressed lines */
          int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
          struct list_ustring* tmp=info->inf->codes[inf_number];
@@ -693,6 +694,37 @@ double  elapsedTime = (double) (endTime - startTime);
 u_printf("%2.8f seconds\n",elapsedTime);
 #endif
 free_word_struct_array(info->word_array);
+free_abstract_INF(info->inf,&info->inf_free);
+free_abstract_BIN(info->bin,&info->bin_free);
+return 0;
+}
+
+
+/**
+ * This function launches the application of the given .bin dictionary.
+ *
+ * @author Alexis Neme
+ * Modified by Sébastien Paumier
+ */
+int dico_application_simplified(unichar* text,char* name_bin,struct dico_application_info* info) {
+char name_inf[FILENAME_MAX];
+remove_extension(name_bin,name_inf);
+strcat(name_inf,".inf");
+/* We load the .bin file */
+info->bin=load_abstract_BIN_file(name_bin,&(info->bin_free));
+if (info->bin==NULL) {
+   error("Cannot open %s\n",name_bin);
+   return 1;
+}
+/* We load the .inf file */
+info->inf=load_abstract_INF_file(name_inf,&(info->inf_free));
+if (info->inf==NULL) {
+   free_abstract_BIN(info->bin,&info->bin_free);
+   error("Cannot open %s\n",name_inf);
+   return 1;
+}
+unichar entry[DIC_WORD_SIZE];
+explore_bin_simple_words(info,4,text,entry,0,-1,0);
 free_abstract_INF(info->inf,&info->inf_free);
 free_abstract_BIN(info->bin,&info->bin_free);
 return 0;

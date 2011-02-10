@@ -163,7 +163,7 @@ strcat(snt,"_tmp.snt");
 char tmp[FILENAME_MAX];
 remove_extension(input,tmp);
 strcat(tmp,".tmp");
-normalize(input,snt,encoding_output,bom_output,mask_encoding_compatibility_input,KEEP_CARRIAGE_RETURN,normalization);
+normalize(input,snt,encoding_output,bom_output,mask_encoding_compatibility_input,KEEP_CARRIAGE_RETURN,normalization,NULL);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 p->encoding_output = encoding_output;
 p->bom_output = bom_output;

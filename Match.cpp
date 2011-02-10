@@ -111,7 +111,7 @@ return b->start_pos_in_letter>a->end_pos_in_letter;
 /**
  * Compares a's positions and b's positions.
  */
-int compare_matches(Match* a,Match* b) {
+Overlap compare_matches(Match* a,Match* b) {
 if (match_start_before(a,b)) {
    /* a starts before b starts */
    if (b_starts_after_end_of_a(a,b)) return A_BEFORE_B;

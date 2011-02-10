@@ -19,17 +19,22 @@
  *
  */
 
-#ifndef NormalizeAsRoutineH
-#define NormalizeAsRoutineH
+#include "Overlap.h"
+#include "Error.h"
 
 
-#define MAX_TAG_LENGTH 4000
-#define KEEP_CARRIAGE_RETURN 0
-#define REMOVE_CARRIAGE_RETURN 1
-/* When we are at less than 'MARGIN_BEFORE_BUFFER_END' from the end of the buffer,
- * we will refill it, unless we are at the end of the input file. */
-#define MARGIN_BEFORE_BUFFER_END (MAX_TAG_LENGTH+1000)
+/**
+ * Tests if a overlaps b.
+ */
+Overlap overlap(int a_start,int a_end,int b_start,int b_end) {
+if (a_end<=b_start) return A_BEFORE_B;
+if (b_end<=a_start) return A_AFTER_B;
+if (a_start<b_start && a_end>b_start && a_end<b_end) return A_BEFORE_B_OVERLAP;
+if (a_start==b_start && a_end==b_end) return A_EQUALS_B;
+if (a_start<=b_start && a_end>=b_end) return A_INCLUDES_B;
+if (a_start>=b_start && a_end<=b_end) return B_INCLUDES_A;
+if (a_start>b_start && a_start<b_end && a_end>b_end) return A_AFTER_B_OVERLAP;
+fatal_error("Unexpected case in overlap");
+return (Overlap)-1;
+}
 
-int normalize(const char*, const char*, Encoding, int, int, int, const char*, const char*);
-
-#endif

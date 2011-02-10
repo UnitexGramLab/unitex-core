@@ -34,6 +34,8 @@
 #include "UnitexGetOpt.h"
 #include "Tokenize.h"
 #include "Token.h"
+#include "Offsets.h"
+#include "Overlap.h"
 
 
 #define NORMAL 0
@@ -45,10 +47,8 @@
 void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
 void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
 void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
-void normal_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
-		   int*,int*,int*,int*);
-void char_by_char_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
-		   int*,int*,int*,int*);
+void tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
+		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 void save_new_line_positions(U_FILE*,vector_int*);
 void load_token_file(char* filename,int mask_encoding_compatibility_input,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
@@ -87,6 +87,10 @@ const char* usage_Tokenize =
          "  -w/--word_by_word: word by word tokenization (default);\n"
          "  -t TOKENS/--tokens=TOKENS: specifies a tokens.txt file to load and modify, instead of\n"
          "                             creating a new one from scratch;\n"
+         "Offset options:\n"
+         "  --input_offsets=XXX: base offset file to be used\n"
+         "  --output_offsets=XXX: offset file to be produced\n"
+         "\n"
          "  -h/--help: this help\n"
          "\n"
          "Tokenizes the text. The token list is stored into \"tokens.txt\" and\n"
@@ -104,7 +108,7 @@ u_printf(usage_Tokenize);
 }
 
 
-const char* optstring_Tokenize=":a:cwt:hk:q:";
+const char* optstring_Tokenize=":a:cwt:hk:q:$:@:";
 const struct option_TS lopts_Tokenize[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"char_by_char", no_argument_TS, NULL, 'c'},
@@ -112,6 +116,8 @@ const struct option_TS lopts_Tokenize[]={
    {"tokens", required_argument_TS, NULL, 't'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
+   {"input_offsets",required_argument_TS,NULL,'$'},
+   {"output_offsets",required_argument_TS,NULL,'@'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -125,6 +131,8 @@ if (argc==1) {
 
 char alphabet[FILENAME_MAX]="";
 char token_file[FILENAME_MAX]="";
+char in_offsets[FILENAME_MAX]="";
+char out_offsets[FILENAME_MAX]="";
 
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -156,6 +164,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&ind
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
+   case '$': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_offsets argument\n");
+             }
+             strcpy(in_offsets,vars->optarg);
+             break;
+   case '@': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_offsets argument\n");
+             }
+             strcpy(out_offsets,vars->optarg);
+             break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Tokenize[index].name);
@@ -173,6 +191,8 @@ U_FILE* text;
 U_FILE* out;
 U_FILE* output;
 U_FILE* enter;
+U_FILE* f_out_offsets=NULL;
+vector_offset* v_in_offsets=NULL;
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
@@ -216,6 +236,24 @@ if (enter==NULL) {
    return 1;
 }
 
+if (out_offsets[0]!='\0') {
+	f_out_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,out_offsets,U_WRITE);
+	if (f_out_offsets==NULL) {
+		fatal_error("Cannot create file %s\n",out_offsets);
+	}
+	/* We deal with offsets only if the program is expected to produce some */
+	if (in_offsets[0]!='\0') {
+		v_in_offsets=load_offsets(in_offsets,mask_encoding_compatibility_input);
+		if (v_in_offsets==NULL) {
+			fatal_error("Cannot load offset file %s\n",in_offsets);
+		}
+	} else {
+		/* If there is no input offset file, we create an empty offset vector
+		 * in order to avoid testing whether the vector is NULL or not */
+		v_in_offsets=new_vector_offset(1);
+	}
+}
+
 
 vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
@@ -250,14 +288,8 @@ int TOKENS_TOTAL=0;
 int WORDS_TOTAL=0;
 int DIGITS_TOTAL=0;
 u_printf("Tokenizing text...\n");
-if (mode==NORMAL) {
-   normal_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
-		   &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL);
-}
-else {
-   char_by_char_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
-		   &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL);
-}
+tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
+		   &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL,f_out_offsets,v_in_offsets,(mode!=NORMAL));
 u_printf("\nDone.\n");
 save_new_line_positions(enter,n_enter_pos);
 u_fclose(enter);
@@ -302,9 +334,9 @@ free_hash_table(hashtable);
 free_vector_ptr(tokens,free);
 free_vector_int(n_occur);
 free_vector_int(n_enter_pos);
-if (alph!=NULL) {
-   free_alphabet(alph);
-}
+free_alphabet(alph);
+u_fclose(f_out_offsets);
+free_vector_offset(v_in_offsets);
 free_OptVars(vars);
 return 0;
 }
@@ -352,19 +384,100 @@ u_fclose(f);
 }
 
 
-void normal_tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
+static void save(U_FILE* f,unichar* s,int n,int start,int end) {
+(void)s;
+u_fprintf(f,"%d %d %d\n",n,start,end);
+//error("<%S> %d %d %d\n",s,n,start,end);
+}
+
+
+void save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,int *shift) {
+if (f==NULL) return;
+if (*index==v->nbelems) {
+	/* If there is no more offsets to take into account, we just save the token */
+	save(f,s,n,start+*shift,end+*shift);
+	return;
+}
+Offsets x=v->tab[*index];
+Overlap o=overlap(x.new_start,x.new_end,start,end);
+switch (o) {
+case A_BEFORE_B: {
+	error("A_BEFORE_B: ");
+	error("start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
+	fatal_error("Unexpected A_BEFORE_B in save_token_offset\n");
+}
+case A_AFTER_B: {
+	save(f,s,n,start+*shift,end+*shift);
+	return;
+}
+case A_EQUALS_B: {
+	save(f,s,n,x.old_start,x.old_end);
+	(*index)++;
+	(*shift)=x.old_end-end;
+	return;
+}
+case A_BEFORE_B_OVERLAP: {
+	int j;
+	for (j=(*index)+1;j<v->nbelems && B_INCLUDES_A==overlap(v->tab[j].new_start,v->tab[j].new_end,start,end);j++) {}
+	j--;
+	int delta_end=end-v->tab[j].new_end;
+	int old_end=v->tab[j].old_end+delta_end;
+	save(f,s,n,x.old_start,old_end);
+	(*index)=j+1;
+	(*shift)=v->tab[j].old_end-end+delta_end;
+	return;
+}
+case A_AFTER_B_OVERLAP: {
+	int delta=start-x.new_start;
+	save(f,s,n,x.old_start+delta,x.old_end);
+	return;
+}
+case A_INCLUDES_B: {
+	save(f,s,n,x.old_start,x.old_end);
+	if (x.new_end==end) {
+		(*index)++;
+	}
+	(*shift)=x.old_end-end;
+	return;
+}
+case B_INCLUDES_A: {
+	int delta_start=start-x.new_start;
+	int old_start=x.old_start+delta_start;
+	int j;
+	Overlap tmp;
+	for (j=(*index)+1;j<v->nbelems &&
+		(B_INCLUDES_A==(tmp=overlap(v->tab[j].new_start,v->tab[j].new_end,start,end))
+		|| A_AFTER_B_OVERLAP==tmp);j++) {}
+	j--;
+	int delta_end=end-v->tab[j].new_end;
+	int old_end=v->tab[j].old_end+delta_end;
+	save(f,s,n,old_start,old_end);
+	(*index)=j+1;
+	(*shift)=v->tab[j].old_end-end+delta_end;
+	return;
+}
+}
+}
+
+
+void tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
                          int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
-                         int *DIGITS_TOTAL) {
+                         int *DIGITS_TOTAL,U_FILE* f_out_offsets,vector_offset* v_in_offsets,
+                         int char_by_char) {
 int c;
 unichar s[MAX_TAG_LENGTH];
 int n;
 char ENTER;
 int COUNT=0;
 int current_megabyte=0;
-c=u_fgetc(f);
+int shift=0;
+c=u_fgetc_raw(f);
+int current_pos;
+int offset_index=0;
 while (c!=EOF) {
+	current_pos=COUNT;
    COUNT++;
    if ((COUNT/(1024*512))!=current_megabyte) {
       current_megabyte++;
@@ -373,15 +486,16 @@ while (c!=EOF) {
    }
    if (c==' ' || c==0x0d || c==0x0a) {
       ENTER=0;
-      if (c=='\n') ENTER=1;
+      if (c!=' ') ENTER=1;
       // if the char is a separator, we jump all the separators
-      while ((c=u_fgetc(f))==' ' || c==0x0d || c==0x0a) {
-        if (c=='\n') ENTER=1;
+      while ((c=u_fgetc_raw(f))==' ' || c==0x0d || c==0x0a) {
+        if (c!=' ') ENTER=1;
         COUNT++;
       }
       s[0]=' ';
       s[1]='\0';
       n=get_token_number(s,tokens,hashtable,n_occur);
+      save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
       /* If there is a \n, we note it */
       if (ENTER==1) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
@@ -393,7 +507,7 @@ while (c!=EOF) {
      s[0]='{';
      int z=1;
      bool protected_char = false; // Cassys add
-     while (z < (MAX_TAG_LENGTH - 1) && (((c = u_fgetc(f)) != '}' && c
+     while (z < (MAX_TAG_LENGTH - 1) && (((c = u_fgetc_raw(f)) != '}' && c
 					!= '{' && c != '\n') || protected_char)) {
 			protected_char = false; // Cassys add
 			if (c == '\\') { // Cassys add
@@ -424,23 +538,27 @@ while (c!=EOF) {
         }
      }
      n=get_token_number(s,tokens,hashtable,n_occur);
+     COUNT++;
+     save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
      (*TOKENS_TOTAL)++;
      fwrite(&n,4,1,coded_text);
-     c=u_fgetc(f);
+     c=u_fgetc_raw(f);
    }
    else {
       s[0]=(unichar)c;
       n=1;
-      if (!is_letter(s[0],alph)) {
+      if (!is_letter(s[0],alph) || char_by_char) {
          s[1]='\0';
+         if (is_letter(s[0],alph)) (*WORDS_TOTAL)++;
          n=get_token_number(s,tokens,hashtable,n_occur);
+         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
          fwrite(&n,4,1,coded_text);
-         c=u_fgetc(f);
+         c=u_fgetc_raw(f);
       }
       else {
-         while ((n<(MAX_TAG_LENGTH-1)) && EOF!=(c=u_fgetc(f)) && is_letter((unichar)c,alph)) {
+         while ((n<(MAX_TAG_LENGTH-1)) && EOF!=(c=u_fgetc_raw(f)) && is_letter((unichar)c,alph)) {
            s[n++]=(unichar)c;
            COUNT++;
          }
@@ -450,6 +568,7 @@ while (c!=EOF) {
          }
          s[n]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
+         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
          fwrite(&n,4,1,coded_text);

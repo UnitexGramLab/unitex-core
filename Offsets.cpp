@@ -19,56 +19,24 @@
  *
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "IOBuffer.h"
+#include "Offsets.h"
 #include "Unicode.h"
-#include "Copyright.h"
 #include "Error.h"
-#include "AbstractFst2Load.h"
-
-
-
 
 /**
- * This program is designed for test purpose only.
+ * Loads the given offset file. Returns NULL in case of error.
  */
-int main(int argc,char* argv[]) {
-setBufferMode();
-if (argc!=4) {
-	fatal_error("Usage: cmd <txt> start end\n");
+vector_offset* load_offsets(char* name,int MASK_ENCODING_COMPATIBILITY) {
+U_FILE* f=u_fopen_existing_versatile_encoding(MASK_ENCODING_COMPATIBILITY,name,U_READ);
+if (f==NULL) return NULL;
+int a,b,c,d,n;
+vector_offset* res=new_vector_offset();
+while ((n=u_fscanf(f,"%d%d%d%d",&a,&b,&c,&d))!=EOF) {
+	if (n!=4) {
+		fatal_error("Corrupted offset file %s\n",name);
+	}
+	vector_offset_add(res,a,b,c,d);
 }
-U_FILE* f=u_fopen(UTF16_LE,argv[1],U_READ);
-if (f==NULL) return 1;
-int a,b;
-if (1!=sscanf(argv[2],"%d",&a) || a <0) {
-	fatal_error("Invalid start position %d\n",a);
-}
-if (1!=sscanf(argv[3],"%d",&b) || b <a) {
-	fatal_error("Invalid end position %d\n",b);
-}
-int i;
-for (i=0;i<a-40;i++) u_fgetc_raw(f);
-int c;
-for (;i<a;i++) {
-	c=u_fgetc_raw(f);
-	u_printf("%C",c);
-}
-u_printf("<<");
-for (;i<b;i++) u_printf(" %C",u_fgetc_raw(f));
-u_printf(">>");
-for (i=0;i<40;i++) {
-	c=u_fgetc_raw(f);
-	if (c==EOF) break;
-	u_printf("%C",c);
-}
-u_printf("\n");
-
 u_fclose(f);
-return 0;
+return res;
 }
-
-
-
-

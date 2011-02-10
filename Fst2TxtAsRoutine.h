@@ -32,6 +32,8 @@
 #include "TransductionVariables.h"
 #include "Unicode.h"
 #include "Stack_unichar.h"
+#include "Offsets.h"
+#include "Vector.h"
 
 #define MAX_OUTPUT_LENGTH 10000
 
@@ -77,6 +79,23 @@ struct fst2txt_parameters {
    Encoding encoding_output;
    int bom_output;
    int mask_encoding_compatibility_input;
+
+   /* Offset management:
+    * v_in_offsets=input offsets
+    * f_out_offsets=file where to store outputs offsets
+    * insertions=vector used to store insertion positions in MERGE mode. Note that we
+    *            don't need it in REPLACE mode, since in REPLACE mode, we just have
+    *            to consider a single replacement over the whole input sequence
+    * current_insertions=the temp vector used when exploring graphs
+    */
+   vector_offset* v_in_offsets;
+   vector_offset* v_out_offsets;
+   U_FILE* f_out_offsets;
+   vector_int* insertions;
+   vector_int* current_insertions;
+   int CR_shift;
+   int new_absolute_origin;
+   int last_offset_index;
 };
 
 struct fst2txt_parameters* new_fst2txt_parameters();

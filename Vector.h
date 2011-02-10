@@ -168,6 +168,26 @@ return vec->nbelems-1;
 }
 
 
+inline void vector_int_copy(vector_int* dst,vector_int* src) {
+if (dst==NULL) return;
+dst->nbelems=0;
+if (src==NULL) return;
+for (int i=0;i<src->nbelems;i++) {
+	vector_int_add(dst,src->tab[i]);
+}
+}
+
+
+inline vector_int* vector_int_dup(vector_int* src) {
+if (src==NULL) return NULL;
+vector_int* dst=new_vector_int(src->nbelems);
+for (int i=0;i<src->nbelems;i++) {
+	vector_int_add(dst,src->tab[i]);
+}
+return dst;
+}
+
+
 inline vector_float* new_vector_float(int size=16) {
 vector_float* vec=(vector_float*)malloc(sizeof(vector_float));
 if (vec==NULL) {

@@ -22,6 +22,7 @@
 #include "Error.h"
 #include "Fst2TxtAsRoutine.h"
 #include "TransductionStack.h"
+#include "Overlap.h"
 
 #define MAX_DEPTH 300
 #define MOT_BUFFER_TOKEN_SIZE (1000)
@@ -31,7 +32,7 @@
 
 void build_state_token_trees(struct fst2txt_parameters*);
 void parse_text(struct fst2txt_parameters*);
-
+void process_offsets(vector_offset* old_offsets,vector_offset* new_offsets,U_FILE* f);
 
 int main_fst2txt(struct fst2txt_parameters* p) {
     p->f_input=u_fopen_existing_versatile_encoding(p->mask_encoding_compatibility_input,p->text_file,U_READ);
@@ -76,6 +77,8 @@ int main_fst2txt(struct fst2txt_parameters* p) {
     u_fclose(p->f_output);
     af_remove(p->text_file);
     af_rename(p->temp_file,p->text_file);
+    /* And finally, we compute offsets */
+    process_offsets(p->v_in_offsets,p->v_out_offsets,p->f_out_offsets);
     u_printf("Done.\n");
     return 0;
 }
@@ -115,6 +118,13 @@ p->input_length=0;
 p->encoding_output = DEFAULT_ENCODING_OUTPUT;
 p->bom_output = DEFAULT_BOM_OUTPUT;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+p->v_in_offsets=NULL;
+p->v_out_offsets=NULL;
+p->f_out_offsets=NULL;
+p->insertions=NULL;
+p->current_insertions=NULL;
+p->CR_shift=0;
+p->new_absolute_origin=0;
 return p;
 }
 
@@ -139,6 +149,11 @@ free_buffer(p->text_buffer);
 free_abstract_Fst2(p->fst2,NULL);
 free_alphabet(p->alphabet);
 free_stack_unichar(p->stack);
+free_vector_offset(p->v_in_offsets);
+free_vector_offset(p->v_out_offsets);
+free_vector_int(p->insertions);
+free_vector_int(p->current_insertions);
+u_fclose(p->f_out_offsets);
 free(p);
 }
 
@@ -203,9 +218,159 @@ while (s[i]!='\0') {
 }
 
 
-void traiter_transduction(struct fst2txt_parameters* p,unichar* s) {
-if (s!=NULL) push_output_string(p,s);
+void emit_output(struct fst2txt_parameters* p,unichar* s,int pos) {
+if (s!=NULL) {
+	if (p->current_insertions!=NULL && p->output_policy==MERGE_OUTPUTS) {
+		/* In REPLACE mode, there will be only one big output, so there is
+		 * no need for all those subtle calculus */
+		int CR_shift=0;
+		for (int i=p->current_origin;i<pos+p->current_origin;i++) {
+			if (p->buffer[i]=='\n') {
+				CR_shift++;
+			}
+		}
+		/* If there is a need to compute offsets, we store the position of the insertion */
+		vector_int_add(p->current_insertions,p->CR_shift+CR_shift+pos+p->current_origin+p->absolute_offset);
+		vector_int_add(p->current_insertions,p->CR_shift+CR_shift+pos+p->current_origin+p->absolute_offset);
+		vector_int_add(p->current_insertions,CR_shift+pos+p->new_absolute_origin);
+		vector_int_add(p->current_insertions,CR_shift+pos+p->new_absolute_origin+u_strlen(s));
+	}
+	push_output_string(p,s);
 }
+}
+
+
+void save_offsets(U_FILE* f,int a,int b,int c,int d) {
+u_fprintf(f,"%d %d %d %d\n",a,b,c,d);
+}
+
+
+/**
+ * This function takes two offset arrays:
+ *
+ * old_offsets=original text => input text
+ * new_offsets=input text => output text
+ *
+ * and it computes and prints in the given file the new offset file:
+ *
+ * original text => output text
+ */
+void process_offsets(vector_offset* old_offsets,vector_offset* new_offsets,U_FILE* f) {
+if (f==NULL) return;
+int i=0,j=0;
+/* shift_A is the current shift between original text and input text. It is
+ * to be used when B is before A, in order to adjust B's old coordinates */
+int shift_A=0;
+/* shift_B is the current shift between input text and output text. It is
+ * to be used when A is before B, in order to adjust A's new coordinates */
+int shift_B=0;
+int A_includes_B_shift=0;
+int B_includes_A_shift=0;
+Offsets x,y;
+Overlap o;
+while (j<new_offsets->nbelems) {
+	y=x=new_offsets->tab[j++];
+	o=(Overlap)-1;
+	for (;i<old_offsets->nbelems;i++) {
+	  x=old_offsets->tab[i];
+	  /* Note: below, A stands for x's new interval and B stands for y's old interval */
+	  //error("TEST OVERLAP entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+	  o=overlap(x.new_start,x.new_end,y.old_start,y.old_end);
+	  //error("o==%d\n",o);
+	  if (o==A_BEFORE_B) {
+		  save_offsets(f,x.old_start,x.old_end,x.new_start+shift_B,x.new_end+shift_B+A_includes_B_shift);
+		  A_includes_B_shift=0;
+		  shift_A=x.old_end-x.new_end;
+	  } else {
+		  break;
+	  }
+	}
+	if (i<old_offsets->nbelems) {
+		/* There may be an overlap */
+		if (o==A_INCLUDES_B) {
+			/* If A includes B, then we just have to stay on A, note
+			 * the shift induced by B and then ignore B */
+			//error("A includes B entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+			int b_old_length=y.old_end-y.old_start;
+			int b_new_length=y.new_end-y.new_start;
+			A_includes_B_shift+=b_new_length-b_old_length;
+			continue;
+		}
+		if (o==B_INCLUDES_A) {
+			/* If B includes A, then we just have to stay on B, note
+			 * the shift induced by A and then ignore A */
+			//error("B includes A entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+			int a_old_length=x.old_end-x.old_start;
+			int a_new_length=x.new_end-x.new_start;
+			/* Note: it is normal this shift is not computed in the same way than A_includes_B_shift */
+			B_includes_A_shift+=a_old_length-a_new_length;
+			/* j--: we want to stay on B
+			 * i++: we want to skip A */
+			j--;
+			i++;
+			continue;
+		}
+		if (o==A_BEFORE_B_OVERLAP) {
+			/* If A overlaps B starting before B, then we have to produce an output */
+			//error("A before B overlap entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+			int new_shift_A=x.old_end-x.new_end;
+			save_offsets(f,x.old_start+shift_A,
+				y.old_end+shift_A+B_includes_A_shift+new_shift_A,
+				x.new_start+shift_B,
+				y.new_end+shift_B+A_includes_B_shift);
+			A_includes_B_shift=0;
+			B_includes_A_shift=0;
+			shift_A+=new_shift_A;
+			shift_B=y.new_end-y.old_end;
+			/* We skip A */
+			i++;
+			continue;
+		}
+		if (o==A_AFTER_B_OVERLAP) {
+			/* If A overlaps B starting after B, then we have to produce an output */
+			//error("A after B overlap entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+			int new_shift_B=y.new_end-y.old_end;
+			//error("new shift B = %d\n",new_shift_B);
+			save_offsets(f,y.old_start+shift_A,
+				x.old_end+shift_A+B_includes_A_shift,
+				y.new_start+shift_B,
+				x.new_end+shift_B+A_includes_B_shift+new_shift_B);
+			A_includes_B_shift=0;
+			B_includes_A_shift=0;
+			shift_B+=new_shift_B;
+			shift_A=x.old_end-x.new_end;
+			/* We skip A */
+			i++;
+			continue;
+		}
+		if (o==A_EQUALS_B) {
+			/* If A equals B starting after B, then we have to produce an output */
+			//error("A equals B entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+			save_offsets(f,x.old_start+shift_A,
+				x.old_end+shift_A+B_includes_A_shift,
+				y.new_start+shift_B,
+				y.new_end+shift_B+A_includes_B_shift);
+			A_includes_B_shift=0;
+			B_includes_A_shift=0;
+			shift_A=x.old_end-x.new_end;
+			shift_B=y.new_end-y.old_end;
+			/* We skip A */
+			i++;
+			continue;
+		}
+	}
+	if (o!=(Overlap)-1 && o!=A_AFTER_B && i!=old_offsets->nbelems) fatal_error("oooops o==%d\n",o);
+	save_offsets(f,y.old_start+shift_A,y.old_end+shift_A+B_includes_A_shift,y.new_start,y.new_end);
+	B_includes_A_shift=0;
+	shift_B=y.new_end-y.old_end;
+}
+while (i<old_offsets->nbelems) {
+	x=old_offsets->tab[i++];
+	save_offsets(f,x.old_start,x.old_end,x.new_start+shift_B,x.new_end+shift_B+A_includes_B_shift);
+	A_includes_B_shift=0;
+}
+}
+
 
 
 void parse_text(struct fst2txt_parameters* p) {
@@ -215,11 +380,15 @@ p->variables=new_Variables(p->fst2->input_variables);
 int n_blocks=0;
 u_printf("Block %d",n_blocks);
 int within_tag=0;
-
+if (p->output_policy==MERGE_OUTPUTS /* && p->f_out_offsets!=NULL*/) {
+	p->insertions=new_vector_int();
+	p->current_insertions=new_vector_int();
+}
+p->v_out_offsets=new_vector_offset();
 while (p->current_origin<p->text_buffer->size) {
       if (!p->text_buffer->end_of_file
           && p->current_origin>(p->text_buffer->size-MINIMAL_SIZE_PRELOADED_TEXT)) {
-         /* If must change of block, we update the absolute offset, and we fill the
+         /* If we must change of block, we update the absolute offset, and we fill the
           * buffer. */
          p->absolute_offset=p->absolute_offset+p->current_origin;
          fill_buffer(p->text_buffer,p->current_origin,p->f_input);
@@ -230,9 +399,10 @@ while (p->current_origin<p->text_buffer->size) {
       p->output[0]='\0';
       empty(p->stack);
       p->input_length=0;
-
-
-      //memset(p->buffer,0,p->current_origin);
+      if (p->output_policy==MERGE_OUTPUTS) {
+		  p->insertions->nbelems=0;
+    	  p->current_insertions->nbelems=0;
+      }
       if (p->buffer[p->current_origin]=='{') {
          within_tag=1;
       } else if (p->buffer[p->current_origin]=='}') {
@@ -242,15 +412,61 @@ while (p->current_origin<p->text_buffer->size) {
         unichar mot_token_buffer[MOT_BUFFER_TOKEN_SIZE];
         scan_graph(0,debut,0,0,NULL,mot_token_buffer,p);
       }
+      if (p->output_policy==MERGE_OUTPUTS) {
+    	  /* If there was an insertion, we have to note it */
+    	  if (p->insertions!=NULL && p->insertions->nbelems!=0) {
+    		  for (int i=0;i<p->insertions->nbelems;i=i+4) {
+    			  vector_offset_add(p->v_out_offsets,p->insertions->tab[i],p->insertions->tab[i+1]
+    			                               ,p->insertions->tab[i+2],p->insertions->tab[i+3]);
+    		  }
+    	  }
+      } else if (p->output_policy==REPLACE_OUTPUTS && p->input_length!=0) {
+    	  int a=p->current_origin+p->CR_shift+p->absolute_offset;
+    	  int b=a+p->input_length;
+    	  int diff=0;
+    	  int i;
+    	  for (i=0;i<p->input_length;i++) {
+    		  if (p->buffer[i+p->current_origin]=='\n') b++;
+    		  if (!diff && p->buffer[i+p->current_origin]!=p->output[i]) {
+    			  diff=1;
+    		  }
+    	  }
+    	  if (p->output[i]!='\0') diff=1;
+    	  if (diff) {
+    		  /* There is no need to consider fake replace that happen when
+    		   * normalizing quotes or dashes */
+    		  int c=p->new_absolute_origin;
+    		  int d=c+u_strlen(p->output);
+    		  vector_offset_add(p->v_out_offsets,a,b,c,d);
+    	  }
+      }
       u_fprintf(p->f_output,"%S",p->output);
+      p->new_absolute_origin=p->new_absolute_origin+u_strlen(p->output);
       if (p->input_length==0) {
          // if no input was read, we go on
          u_fputc(p->buffer[p->current_origin],p->f_output);
+         (p->new_absolute_origin)++;
+         if (p->buffer[p->current_origin]=='\n') {
+        	 /* If we just have skipped a \n, we note there is an offset shift of 1 */
+        	 (p->CR_shift)++;
+        	 (p->new_absolute_origin)++;
+         }
          (p->current_origin)++;
       }
       else {
            // we increase current_origin
-           p->current_origin=p->current_origin+p->input_length;
+    	  int new_origin=p->current_origin+p->input_length;
+    	  for (int i=p->current_origin;i<new_origin;i++) {
+    		  if (p->buffer[i]=='\n') {
+    		       /* If we just have skipped a \n, we note there is an offset shift of 1 */
+    		       (p->CR_shift)++;
+    		       if (p->output_policy==MERGE_OUTPUTS) {
+    		    	   /* We consider the \n in the output only in MERGE mode */
+    		    	   (p->new_absolute_origin)++;
+    		       }
+    		  }
+    	  }
+          p->current_origin=new_origin;
       }
 }
 u_printf("\r                           \n");
@@ -332,6 +548,21 @@ static inline int u_trymatch_superfast5(const unichar* a,const unichar*b)
 }
 
 
+static int backup(vector_int* v) {
+if (v==NULL) return 0;
+return v->nbelems;
+}
+
+
+static void restore(vector_int* v,int n) {
+if (v==NULL) {
+	if (n!=0) fatal_error("Unexpected error in restore");
+	return;
+}
+v->nbelems=n;
+}
+
+
 void scan_graph(int n_graph,         // number of current graph
                      int e,          // number of current state
                      int pos,        //
@@ -340,6 +571,7 @@ void scan_graph(int n_graph,         // number of current graph
                      unichar* mot_token_buffer,
                      struct fst2txt_parameters* p,Abstract_allocator prv_alloc_recycle) {
 Fst2State etat_courant=p->fst2->states[e];
+int old_nb_insert;
 if (depth > MAX_DEPTH) {
 
   error(  "\n"
@@ -375,10 +607,11 @@ if (is_final_state(etat_courant)) {
       // and if the recognized input is longer than the current one, it replaces it
       u_strcpy(p->output,p->stack->stack);
       p->input_length=(pos);
+      vector_int_copy(p->insertions,p->current_insertions);
     }
   } else { // in a subgraph
     (*liste_arrivee)=insert_if_absent(pos,-1,-1,(*liste_arrivee),p->stack->stack_pointer+1,
-                                      p->stack->stack,p->variables,NULL,NULL,-1,-1,NULL,-1, prv_alloc_recycle);
+                                      p->stack->stack,p->variables,NULL,NULL,-1,-1,NULL,-1, p->current_insertions,prv_alloc_recycle);
   }
 }
 
@@ -399,6 +632,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
     */
    else pos2=pos;
    int position=0;
+   int start_pos=pos2;
    unichar *token=mot_token_buffer;
    if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION
        || (is_letter(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
@@ -412,14 +646,14 @@ if (p->token_tree[e]->transition_array!=NULL) {
       token[position]='\0';
       if (position!=0 &&
           (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION || !(is_letter(token[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)))) {
-       // we proceed only if we have exactly read the contenu sequence
-       // in both modes MERGE and REPLACE, we process the transduction if any
+       // we proceed only if we have exactly read the 'token' sequence
+       // in both modes MERGE and REPLACE, we process the output if any
        int SOMMET2=p->stack->stack_pointer;
        Transition* RES=get_matching_tags(token,p->token_tree[e],p->alphabet);
        Transition* TMP;
        unichar* mot_token_new_recurse_buffer=NULL;
        if (RES!=NULL) {
-          // we allocate a new mot_token_buffer for the scan_graph recursin because we need preserve current
+          // we allocate a new mot_token_buffer for the scan_graph recursion because we need preserve current
           // token=mot_token_buffer
           mot_token_new_recurse_buffer=(unichar*)malloc(MOT_BUFFER_TOKEN_SIZE*sizeof(unichar));
           if (mot_token_new_recurse_buffer==NULL) {
@@ -429,16 +663,18 @@ if (p->token_tree[e]->transition_array!=NULL) {
        while (RES!=NULL) {
            p->stack->stack_pointer=SOMMET2;
           Fst2Tag etiq=p->fst2->tags[RES->tag_number];
-          traiter_transduction(p,etiq->output);
+          old_nb_insert=backup(p->current_insertions);
+          emit_output(p,etiq->output,start_pos);
           int longueur=u_strlen(etiq->input);
           unichar C=token[longueur];
           token[longueur]='\0';
           if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-             // if we are in MERGE mode, we add to ouput the char we have read
+             // if we are in MERGE mode, we add to output the char we have read
              push_input_string(p->stack,token,0);
           }
           token[longueur]=C;
           scan_graph(n_graph,RES->state_number,pos2-(position-longueur),depth,liste_arrivee,mot_token_new_recurse_buffer,p);
+          restore(p->current_insertions,old_nb_insert);
           TMP=RES;
           RES=RES->next;
           free(TMP);
@@ -461,17 +697,24 @@ while (t!=NULL) {
          unichar* pile_old;
          p->stack->stack[p->stack->stack_pointer+1]='\0';
          pile_old = u_strdup(p->stack->stack);
+         vector_int* old_insertions=vector_int_dup(p->current_insertions);
          scan_graph((((unsigned)n_etiq)-1),p->fst2->initial_states[-n_etiq],pos,depth,&liste,mot_token_buffer,p);
+         free_vector_int(p->current_insertions);
+         p->current_insertions=NULL;
          while (liste!=NULL) {
             p->stack->stack_pointer=liste->stack_pointer-1;
             u_strcpy(p->stack->stack,liste->stack);
+            p->current_insertions=liste->insertions;
+            liste->insertions=NULL;
             scan_graph(n_graph,t->state_number,liste->position,depth,liste_arrivee,mot_token_buffer,p);
+            free_vector_int(p->current_insertions);
             struct parsing_info* l_tmp=liste;
             liste=liste->next;
-            l_tmp->next=NULL; // to don't free the next item
+            l_tmp->next=NULL; // in order not to free the next item
             free_parsing_info(l_tmp, prv_alloc_recycle);
          }
          u_strcpy(p->stack->stack,pile_old);
+         p->current_insertions=old_insertions;
          free(pile_old);
          p->stack->stack_pointer=SOMMET-1;
       }
@@ -529,6 +772,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar* mot=mot_token_buffer;
               int position=0;
+              int start_pos=pos2;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   ((pos2+p->current_origin)==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
                      while (pos2+p->current_origin<p->text_buffer->size && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
@@ -538,12 +782,14 @@ while (t!=NULL) {
                      if (position!=0) {
                        // we proceed only if we have read a letter sequence
                        // in both modes MERGE and REPLACE, we process the transduction if any
-                       traiter_transduction(p,etiq->output);
+                    	 old_nb_insert=backup(p->current_insertions);
+                       emit_output(p,etiq->output,start_pos);
                        if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                          // if we are in MERGE mode, we add to ouput the char we have read
                          push_output_string(p->stack,mot);
                        }
                        scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                       restore(p->current_insertions,old_nb_insert);
                      }
               }
          }
@@ -557,6 +803,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar* mot=mot_token_buffer;
               int position=0;
+              int start_pos=pos2;
               while (pos2+p->current_origin<p->text_buffer->size && (p->buffer[pos2+p->current_origin]>='0')
                      && (p->buffer[pos2+p->current_origin]<='9')) {
                  mot[position++]=p->buffer[(pos2++)+p->current_origin];
@@ -565,12 +812,14 @@ while (t!=NULL) {
               if (position!=0) {
                  // we proceed only if we have read a letter sequence
                  // in both modes MERGE and REPLACE, we process the transduction if any
-                 traiter_transduction(p,etiq->output);
+            	  old_nb_insert=backup(p->current_insertions);
+            	  emit_output(p,etiq->output,start_pos);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                      push_output_string(p->stack,mot);
                  }
                  scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                 restore(p->current_insertions,old_nb_insert);
               }
          }
          else if ((contenu_len_possible_match==5) && (!u_trymatch_superfast5(contenu,ETIQ_MAJ_LN5))) {
@@ -580,6 +829,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar* mot=mot_token_buffer;
               int position=0;
+              int start_pos=pos2;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   ((pos2+p->current_origin)==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
                  while (pos2+p->current_origin<p->text_buffer->size && is_upper(p->buffer[pos2+p->current_origin],p->alphabet)) {
@@ -590,12 +840,14 @@ while (t!=NULL) {
                    // we proceed only if we have read an upper case letter sequence
                    // which is not followed by a lower case letter
                    // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(p,etiq->output);
+                	 old_nb_insert=backup(p->current_insertions);
+                	 emit_output(p,etiq->output,start_pos);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   restore(p->current_insertions,old_nb_insert);
                  }
               }
          }
@@ -606,6 +858,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar* mot=mot_token_buffer;
               int position=0;
+              int start_pos=pos2;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
                  while (pos2+p->current_origin<p->text_buffer->size && is_lower(p->buffer[pos2+p->current_origin],p->alphabet)) {
@@ -616,12 +869,14 @@ while (t!=NULL) {
                    // we proceed only if we have read a lower case letter sequence
                    // which is not followed by an upper case letter
                    // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(p,etiq->output);
+                	 old_nb_insert=backup(p->current_insertions);
+                	 emit_output(p,etiq->output,start_pos);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   restore(p->current_insertions,old_nb_insert);
                  }
               }
          }
@@ -632,6 +887,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar* mot=mot_token_buffer;
               int position=0;
+              int start_pos=pos2;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   (is_upper(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
                  while (pos2+p->current_origin<p->text_buffer->size && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
@@ -642,12 +898,14 @@ while (t!=NULL) {
                    // we proceed only if we have read a letter sequence
                    // which is not followed by a letter
                    // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(p,etiq->output);
+                	 old_nb_insert=backup(p->current_insertions);
+                	 emit_output(p,etiq->output,start_pos);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   restore(p->current_insertions,old_nb_insert);
                  }
               }
          }
@@ -656,6 +914,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
+              int start_pos=pos2;
               unichar C=p->buffer[pos2+p->current_origin];
               if (C==';' || C=='!' || C=='?' ||
                   C==':' ||  C==0xbf ||
@@ -663,32 +922,38 @@ while (t!=NULL) {
                   C==0x0e5b || C==0x3001 || C==0x3002 ||
                   C==0x30fb) {
                  // in both modes MERGE and REPLACE, we process the transduction if any
-                 traiter_transduction(p,etiq->output);
+            	  old_nb_insert=backup(p->current_insertions);
+            	  emit_output(p,etiq->output,start_pos);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,C);
                  }
                  scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_token_buffer,p);
+                 restore(p->current_insertions,old_nb_insert);
               }
               else {
                    // we consider the case of ...
                    // BUG: if ... appears at the end of the buffer
                    if (C=='.') {
                       if ((pos2+p->current_origin+2)<p->text_buffer->size && p->buffer[pos2+p->current_origin+1]=='.' && p->buffer[pos2+p->current_origin+2]=='.') {
-                         traiter_transduction(p,etiq->output);
+                    	  old_nb_insert=backup(p->current_insertions);
+                    	  emit_output(p,etiq->output,start_pos);
                          if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                             // if we are in MERGE mode, we add to ouput the ... we have read
                             push(p->stack,C);push(p->stack,C);push(p->stack,C);
                          }
                          scan_graph(n_graph,t->state_number,pos2+3,depth,liste_arrivee,mot_token_buffer,p);
+                         restore(p->current_insertions,old_nb_insert);
                       } else {
                         // we consider the . as a normal punctuation sign
-                        traiter_transduction(p,etiq->output);
+                    	  old_nb_insert=backup(p->current_insertions);
+                    	  emit_output(p,etiq->output,start_pos);
                         if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                           // if we are in MERGE mode, we add to ouput the char we have read
                           push(p->stack,C);
                         }
                         scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_token_buffer,p);
+                        restore(p->current_insertions,old_nb_insert);
                       }
                    }
               }
@@ -696,39 +961,47 @@ while (t!=NULL) {
          else if ((contenu_len_possible_match==3) && (!u_trymatch_superfast3(contenu,ETIQ_E_LN3))) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
-              traiter_transduction(p,etiq->output);
+        	 old_nb_insert=backup(p->current_insertions);
+        	 emit_output(p,etiq->output,pos);
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
+              restore(p->current_insertions,old_nb_insert);
          }
          else if ((contenu_len_possible_match==3) && (!u_trymatch_superfast3(contenu,ETIQ_CIRC_LN3))) {
               // case of a new line sequence
               if (p->buffer[pos+p->current_origin]=='\n') {
                  // in both modes MERGE and REPLACE, we process the transduction if any
-                 traiter_transduction(p,etiq->output);
+            	  old_nb_insert=backup(p->current_insertions);
+            	  emit_output(p,etiq->output,pos);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,'\n');
                  }
                  scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
+                 restore(p->current_insertions,old_nb_insert);
               }
          }
          else if ((contenu_len_possible_match==1) && (!u_trymatch_superfast1(contenu,'#')) && (!(etiq->control&RESPECT_CASE_TAG_BIT_MASK))) {
               // case of a no space condition
               if (p->buffer[pos+p->current_origin]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
-                traiter_transduction(p,etiq->output);
+            	  old_nb_insert=backup(p->current_insertions);
+            	  emit_output(p,etiq->output,pos);
                 scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
+                restore(p->current_insertions,old_nb_insert);
               }
          }
          else if ((contenu_len_possible_match==1) && (!u_trymatch_superfast1(contenu,' '))) {
          // case of an obligatory space
               if (p->buffer[pos+p->current_origin]==' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
-                traiter_transduction(p,etiq->output);
+            	  old_nb_insert=backup(p->current_insertions);
+            	  emit_output(p,etiq->output,pos);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,' ');
                  }
                 scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
+                restore(p->current_insertions,old_nb_insert);
               }
          }
          else if ((contenu_len_possible_match==3) && (!u_trymatch_superfast5(contenu,ETIQ_L_LN3))) {
@@ -736,14 +1009,17 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
+              int start_pos=pos2;
               if (is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
                 // in both modes MERGE and REPLACE, we process the transduction if any
-                traiter_transduction(p,etiq->output);
+            	  old_nb_insert=backup(p->current_insertions);
+            	  emit_output(p,etiq->output,start_pos);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,p->buffer[pos2+p->current_origin]);
                  }
                 scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_token_buffer,p);
+                restore(p->current_insertions,old_nb_insert);
               }
          }
          else {
@@ -751,6 +1027,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
+              int start_pos=pos2;
               if (etiq->control&RESPECT_CASE_TAG_BIT_MASK) {
                  // case of exact case match
                  int position=0;
@@ -761,12 +1038,14 @@ while (t!=NULL) {
                      !(is_letter(contenu[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet))) {
                    // we proceed only if we have exactly read the contenu sequence
                    // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(p,etiq->output);
+                	 old_nb_insert=backup(p->current_insertions);
+                	 emit_output(p,etiq->output,start_pos);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,contenu,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   restore(p->current_insertions,old_nb_insert);
                  }
               }
               else {
@@ -774,6 +1053,7 @@ while (t!=NULL) {
                  // the letter sequences may have been caught by the arbre_etiquette structure
                  int position=0;
                  unichar* mot=mot_token_buffer;
+                 int start_pos=pos2;
                  while (pos2+p->current_origin<p->text_buffer->size && is_equal_or_uppercase(contenu[position],p->buffer[pos2+p->current_origin],p->alphabet)) {
                    mot[position++]=p->buffer[(pos2++)+p->current_origin];
                  }
@@ -782,12 +1062,14 @@ while (t!=NULL) {
                      !(is_letter(contenu[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet))) {
                    // we proceed only if we have exactly read the contenu sequence
                    // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(p,etiq->output);
+                	 old_nb_insert=backup(p->current_insertions);
+                	 emit_output(p,etiq->output,start_pos);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   restore(p->current_insertions,old_nb_insert);
                  }
               }
          }
