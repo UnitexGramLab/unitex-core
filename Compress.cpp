@@ -241,7 +241,6 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 		entry=tokenize_DELAF_line(s,1,1,NULL,compress_tokenize_abstract_allocator);
 		if (entry!=NULL) {
 			/* If the entry is well-formed */
-
 			if (FLIP) {
 				/* If the "-flip" parameter has been used, we flip
 				 * the inflected form and the lemma of the entry */
@@ -269,7 +268,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->lemma);
 				/* We insert "pomme de terre,pomme de terre.N" */
 				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,compress_abstract_allocator);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
 				/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
 				u_strcpy(entry->inflected,inf_tmp);
 				u_strcpy(entry->lemma,lem_tmp);
@@ -280,7 +279,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
 				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,compress_abstract_allocator);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
 			}
 			else {
 				/* If the entry does not contain any unprotected = sign,
@@ -288,10 +287,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 				unprotect_equal_signs(entry->inflected);
 				unprotect_equal_signs(entry->lemma);
 				get_compressed_line(entry,tmp,semitic);
-				//error("line=<%S> inflected=<%S> compress=<%S>\n",s,entry->inflected,tmp);
-				unichar foo[4096];
-				uncompress_entry(entry->inflected,tmp,foo);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,compress_abstract_allocator);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
 			}
 			/* and last, but not least: don't forget to free your memory
 			 * or it would be impossible to compress large dictionaries */

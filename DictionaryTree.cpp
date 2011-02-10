@@ -146,7 +146,7 @@ struct info {
  * allocated 3000 unichar (and produce stack overflow)
  */
 int get_value_index_for_string_colon_string(const unichar* str1,const unichar* str2,struct string_hash* hash) {
-   unichar tmp[3000];
+   unichar tmp[u_strlen(str1)+u_strlen(str2)+2];
    u_sprintf(tmp,"%S,%S",str1,str2);
    return get_value_index(tmp,hash);
 }
@@ -158,7 +158,7 @@ int get_value_index_for_string_colon_string(const unichar* str1,const unichar* s
  * 'infos' is used to access to constant parameters.
  */
 void add_entry_to_dictionary_tree(unichar* inflected,int pos,struct dictionary_node* node,
-                                  struct info* infos, Abstract_allocator prv_alloc) {
+                                  struct info* infos,int line, Abstract_allocator prv_alloc) {
 if (inflected[pos]=='\0') {
    /* If we have reached the end of 'inflected', then we are in the
     * node where the INF code must be inserted */
@@ -178,7 +178,7 @@ if (inflected[pos]=='\0') {
    }
    /* Otherwise, we add it to the INF code list */
    node->single_INF_code_list=head_insert(N,node->single_INF_code_list,prv_alloc);
-   /* And we update the global INF line for this node */
+	/* And we update the global INF line for this node */
    node->INF_code=get_value_index_for_string_colon_string(infos->INF_code_list->value[node->INF_code],infos->INF_code,infos->INF_code_list);
    return;
 }
@@ -190,7 +190,7 @@ if (t->node==NULL) {
    t->node=new_dictionary_node(prv_alloc);
    (t->node->incoming)++;
 }
-add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos,prv_alloc);
+add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos,line,prv_alloc);
 }
 
 
@@ -202,11 +202,12 @@ add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos,prv_alloc);
  * all the INF codes that are used in the given dictionary tree.
  */
 void add_entry_to_dictionary_tree(unichar* inflected,unichar* INF_code,
-                                  struct dictionary_node* root,struct string_hash* INF_code_list,Abstract_allocator prv_alloc) {
+                                  struct dictionary_node* root,struct string_hash* INF_code_list,
+                                  int line,Abstract_allocator prv_alloc) {
 struct info infos;
 infos.INF_code=INF_code;
 infos.INF_code_list=INF_code_list;
-add_entry_to_dictionary_tree(inflected,0,root,&infos,prv_alloc);
+add_entry_to_dictionary_tree(inflected,0,root,&infos,line,prv_alloc);
 }
 
 
