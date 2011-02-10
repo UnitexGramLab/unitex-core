@@ -31,8 +31,8 @@
 static unichar COPYRIGHT[256];
 
 static int init_copyright() {
-//u_sprintf(COPYRIGHT,"This program is part of Unitex 2.1%C version\nCopyright %C 2001-2010 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",0x3B2,0xA9,0xE9,0xE9);
-u_sprintf(COPYRIGHT,"This program is part of Unitex 2.1\nCopyright %C 2001-2011 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",0xA9,0xE9,0xE9);
+u_sprintf(COPYRIGHT,"This program is part of Unitex 3.0%C version\nCopyright %C 2001-2011 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",0x3B2,0xA9,0xE9,0xE9);
+//u_sprintf(COPYRIGHT,"This program is part of Unitex 3.0\nCopyright %C 2001-2011 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",0xA9,0xE9,0xE9);
 return 0;
 }
 
