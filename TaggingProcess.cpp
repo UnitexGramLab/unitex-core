@@ -551,7 +551,7 @@ return state_sequence;
 int is_compound_word(const unichar* token){
 unsigned int l=u_strlen(token);
 for(unsigned int i=0;i<l;i++){
-	if(token[i] == ' ' or token[i] == '-'){
+	if((token[i] == ' ') || (token[i] == '-')) {
 		return 1;
 	}
 }
