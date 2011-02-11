@@ -143,12 +143,27 @@ struct info {
 /**
  * This function create a string from two string, and build the hash value
  * This function was extracted from add_entry_to_dictionary_tree, because each recursive call
- * allocated 3000 unichar (and produce stack overflow)
+ * allocated a lot of unichar (and produce stack overflow)
  */
+#define DEFAULT_TMP_GET_VALUE_INDEX_BUFFER_SIZE (0x200)
 int get_value_index_for_string_colon_string(const unichar* str1,const unichar* str2,struct string_hash* hash) {
-   unichar tmp[u_strlen(str1)+u_strlen(str2)+2];
+   int value;
+   unichar*allocated_buffer = NULL;
+   unichar tmp_default[DEFAULT_TMP_GET_VALUE_INDEX_BUFFER_SIZE];
+   unichar*tmp=tmp_default;
+   int nb_unichar_buffer=u_strlen(str1)+u_strlen(str2)+2;
+   if (nb_unichar_buffer>DEFAULT_TMP_GET_VALUE_INDEX_BUFFER_SIZE) {
+	   tmp=allocated_buffer=(unichar*)malloc(sizeof(unichar*)*nb_unichar_buffer);
+	   if (allocated_buffer==NULL) {
+          fatal_alloc_error("get_value_index_for_string_colon_string");
+	   }
+   }   
    u_sprintf(tmp,"%S,%S",str1,str2);
-   return get_value_index(tmp,hash);
+   value=get_value_index(tmp,hash);
+   if (allocated_buffer != NULL) {
+     free(allocated_buffer);
+   }
+   return value;
 }
 
 /**
