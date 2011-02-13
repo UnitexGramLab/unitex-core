@@ -632,7 +632,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
     */
    else pos2=pos;
    int position=0;
-   int start_pos=pos2;
+   int start_pos_=pos2;
    unichar *token=mot_token_buffer;
    if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION
        || (is_letter(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
@@ -664,7 +664,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
            p->stack->stack_pointer=SOMMET2;
           Fst2Tag etiq=p->fst2->tags[RES->tag_number];
           old_nb_insert=backup(p->current_insertions);
-          emit_output(p,etiq->output,start_pos);
+          emit_output(p,etiq->output,start_pos_);
           int longueur=u_strlen(etiq->input);
           unichar C=token[longueur];
           token[longueur]='\0';
@@ -1027,7 +1027,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
-              int start_pos=pos2;
+              int start_pos__=pos2;
               if (etiq->control&RESPECT_CASE_TAG_BIT_MASK) {
                  // case of exact case match
                  int position=0;
@@ -1039,7 +1039,7 @@ while (t!=NULL) {
                    // we proceed only if we have exactly read the contenu sequence
                    // in both modes MERGE and REPLACE, we process the transduction if any
                 	 old_nb_insert=backup(p->current_insertions);
-                	 emit_output(p,etiq->output,start_pos);
+                	 emit_output(p,etiq->output,start_pos__);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,contenu,0);

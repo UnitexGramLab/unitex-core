@@ -343,12 +343,12 @@ if (f_raw_output!=NULL) {
 	if (text==NULL) {
 		fatal_error("Cannot open text file %s\n",text);
 	}
-	int ret=raw_dic_application(f_text,f_raw_output,alphabet,vars->optind,argv);
+	int ret_applic=raw_dic_application(f_text,f_raw_output,alphabet,vars->optind,argv);
 	u_fclose(f_text);
 	if (f_raw_output!=U_STDOUT) u_fclose(f_raw_output);
 	free_alphabet(alphabet);
 	free_OptVars(vars);
-	return ret;
+	return ret_applic;
 }
 
 struct snt_files* snt_files=new_snt_files(text);
