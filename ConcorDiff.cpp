@@ -40,6 +40,7 @@ const char* usage_ConcorDiff =
          "  -o X/--out=X: the result HTML file\n"
          "  -f FONT/--font=FONT: name of the font to use\n"
          "  -s N/--fontsize=N: size of the font to use\n"
+         "  -d/--diff_only: don't show identical sequences\n"
          "  -h/--help: this help\n"
          "\n"
          "\nProduces an HTML file that shows differences between input\n"
@@ -52,11 +53,12 @@ u_printf(usage_ConcorDiff);
 }
 
 
-const char* optstring_ConcorDiff=":o:f:s:hk:q:";
+const char* optstring_ConcorDiff=":o:f:s:hk:q:d";
 const struct option_TS lopts_ConcorDiff[]= {
       {"out",required_argument_TS,NULL,'o'},
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
+      {"diff_only",no_argument_TS,NULL,'d'},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -76,6 +78,7 @@ char* out=NULL;
 char* font=NULL;
 int size=0;
 char foo;
+int diff_only=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -104,6 +107,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,
                 fatal_error("Invalid font size argument: %s\n",vars->optarg);
              }
              break;
+   case 'd': diff_only=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_ConcorDiff[index].name);
@@ -137,7 +141,8 @@ if (vars->optind!=argc-2) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-diff(encoding_output,bom_output,mask_encoding_compatibility_input,argv[vars->optind],argv[vars->optind+1],out,font,size);
+diff(encoding_output,bom_output,mask_encoding_compatibility_input,
+		argv[vars->optind],argv[vars->optind+1],out,font,size,diff_only);
 free(out);
 free(font);
 free_OptVars(vars);

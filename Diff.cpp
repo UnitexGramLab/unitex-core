@@ -49,19 +49,19 @@ af_rename(f,out2);
 /**
  * Printing the header of the HTML file.
  */
-void print_diff_HTML_header(U_FILE* f,const char* font,int size) {
+void print_diff_HTML_header(U_FILE* f,const char* font,int size,int diff_only) {
 u_fprintf(f,"<html>\n");
 u_fprintf(f,"<head>\n");
 u_fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
 u_fprintf(f,"   <style type=\"text/css\">\n");
-u_fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
+if (!diff_only) u_fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
 u_fprintf(f,"   a.red {color:red; text-decoration:underline;}\n");
 u_fprintf(f,"   a.green {color:green; text-decoration:underline;}\n");
 u_fprintf(f,"   </style>\n");
 u_fprintf(f,"</head>\n");
 u_fprintf(f,"<body>\n");
 u_fprintf(f,"<h4>\n");
-u_fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
+if (!diff_only) u_fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
 u_fprintf(f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
 u_fprintf(f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
 u_fprintf(f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %d\">\n",font,size);
@@ -81,7 +81,9 @@ u_fprintf(f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out,const char* font,int size) {
+int diff(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+		const char* in1,const char* in2,const char* out,const char* font,int size,
+		int diff_only) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);
@@ -112,8 +114,8 @@ f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor1
 f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor2,U_READ);
 /* And then we fill the output file with the differences
  * between the two concordances */
-print_diff_HTML_header(output,font,size);
-compute_concordance_differences(l1,l2,f1,f2,output);
+print_diff_HTML_header(output,font,size,diff_only);
+compute_concordance_differences(l1,l2,f1,f2,output,diff_only);
 print_diff_HTML_end(output);
 free_match_list(l1);
 free_match_list(l2);
@@ -140,7 +142,8 @@ void compute_concordance_differences(struct match_list* list1,
                                      struct match_list* list2,
                                      U_FILE* f1,
                                      U_FILE* f2,
-                                     U_FILE* output) {
+                                     U_FILE* output,
+                                     int diff_only) {
 /* We look both match index entirely */
 while (!(list1==NULL && list2==NULL)) {
    if (list1==NULL) {
@@ -210,7 +213,9 @@ while (!(list1==NULL && list2==NULL)) {
       case A_EQUALS_B: {
          /* list1 == list2:
           * abcd,abcd */
-         print_diff_matches(output,f1,f2,"blue");
+    	 if (!diff_only) {
+            print_diff_matches(output,f1,f2,"blue");
+    	 }
          list1=list1->next;
          list2=list2->next;
          break;
