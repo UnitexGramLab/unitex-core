@@ -49,22 +49,24 @@ af_rename(f,out2);
 /**
  * Printing the header of the HTML file.
  */
-void print_diff_HTML_header(U_FILE* f,const char* font,int size,int diff_only) {
+void print_diff_HTML_header(U_FILE* f,const char* font,int size) {
 u_fprintf(f,"<html>\n");
 u_fprintf(f,"<head>\n");
 u_fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
 u_fprintf(f,"   <style type=\"text/css\">\n");
-if (!diff_only) u_fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
+u_fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
+u_fprintf(f,"   a.orange {color:orange; text-decoration:underline;}\n");
 u_fprintf(f,"   a.red {color:red; text-decoration:underline;}\n");
 u_fprintf(f,"   a.green {color:green; text-decoration:underline;}\n");
 u_fprintf(f,"   </style>\n");
 u_fprintf(f,"</head>\n");
 u_fprintf(f,"<body>\n");
 u_fprintf(f,"<h4>\n");
-if (!diff_only) u_fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
+u_fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
+u_fprintf(f,"<font color=\"orange\">Orange:</font> identical sequences with different outputs<br>\n");
 u_fprintf(f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
 u_fprintf(f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
-u_fprintf(f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %d\">\n",font,size);
+u_fprintf(f,"<table border=\"1\" cellpadding=\"5\" style=\"font-family: %s; font-size: %d\">\n",font,size);
 }
 
 
@@ -114,7 +116,7 @@ f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor1
 f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor2,U_READ);
 /* And then we fill the output file with the differences
  * between the two concordances */
-print_diff_HTML_header(output,font,size,diff_only);
+print_diff_HTML_header(output,font,size);
 compute_concordance_differences(l1,l2,f1,f2,output,diff_only);
 print_diff_HTML_end(output);
 free_match_list(l1);
@@ -213,8 +215,13 @@ while (!(list1==NULL && list2==NULL)) {
       case A_EQUALS_B: {
          /* list1 == list2:
           * abcd,abcd */
-    	 if (!diff_only) {
-            print_diff_matches(output,f1,f2,"blue");
+    	 int different_outputs=u_strcmp(list1->output,list2->output);
+    	 if (!diff_only || different_outputs) {
+            print_diff_matches(output,f1,f2,different_outputs?"orange":"blue");
+    	 } else {
+    		 /* We have to skip the unused lines */
+    		 u_fskip_line(f1);
+    		 u_fskip_line(f2);
     	 }
          list1=list1->next;
          list2=list2->next;
@@ -247,6 +254,8 @@ while ((c=u_fgetc(f))!='\n') {
 }
 right[i]='\0';
 }
+
+
 
 
 /**

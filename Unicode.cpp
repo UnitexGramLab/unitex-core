@@ -196,6 +196,17 @@ int u_fgets_limit2(unichar* s,int size,U_FILE* f) {
 return u_fgets_limit2(f->enc,s,size,f->f);
 }
 
+
+/**
+ * Skips a line. Returns 0 if end of file has been reached; 1 otherwise.
+ */
+int u_fskip_line(U_FILE* f) {
+int c;
+while ((c=u_fgetc(f))!=EOF && c!='\n');
+return c!=EOF;
+}
+
+
 /**
  * By default, messages printed to the standard output are UTF8-encoded.
  */

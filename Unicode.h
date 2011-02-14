@@ -193,6 +193,7 @@ int u_fgetc_UTF8_raw(ABSTRACTFILE*);
 int u_fgetc_raw(U_FILE*);
 int u_fgetc(U_FILE*);
 int u_fgetc_CR(U_FILE*);
+int u_fskip_line(U_FILE*);
 
 int u_fread_raw(unichar*,int,U_FILE*);
 int u_fread(unichar*,int,U_FILE*,int*);
