@@ -100,6 +100,8 @@ struct dico_application_info {
    U_FILE* tags_err;
    U_FILE* morpho;
    char tags_ind[FILENAME_MAX];
+   /* Used to know the current dic being applied when we are in simplified mode */
+   char dic_name[FILENAME_MAX];
    /* The buffer to use to read the text.cod file */
    //struct buffer* buffer;
    /* The alphabet to use */

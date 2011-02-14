@@ -280,8 +280,12 @@ if (token[pos]=='\0') {
          struct list_ustring* tmp=info->inf->codes[inf_number];
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
-            display_uncompressed_entry(info->dlf,inflected,tmp->string);
-            tmp=tmp->next;
+        	 if (info->dic_name[0]!='\0') {
+        		u_fprintf(info->dlf,"%s\n",info->dic_name);
+        		info->dic_name[0]='\0';
+        	 }
+             display_uncompressed_entry(info->dlf,inflected,tmp->string);
+             tmp=tmp->next;
          }
       }
    }
@@ -595,6 +599,7 @@ info->dlc=dlc;
 info->err=err;
 info->tags_err=tags_err;
 info->morpho=morpho;
+info->dic_name[0]='\0';
 strcpy(info->tags_ind,tags);
 info->alphabet=alphabet;
 info->bin=NULL;
@@ -716,6 +721,9 @@ if (info->bin==NULL) {
    error("Cannot open %s\n",name_bin);
    return 1;
 }
+remove_path(name_bin,info->dic_name);
+strcat(info->dic_name,":");
+
 /* We load the .inf file */
 info->inf=load_abstract_INF_file(name_inf,&(info->inf_free));
 if (info->inf==NULL) {
