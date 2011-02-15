@@ -20,6 +20,7 @@
  */
 
 #include "LoadInf.h"
+#include "StringParsing.h"
 
 #define INF_LINE_SIZE 4096
 

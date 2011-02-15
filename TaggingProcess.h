@@ -40,6 +40,7 @@
 #include "ElagFunctions.h"
 #include "Match.h"
 #include "HashTable.h"
+#include "LoadInf.h"
 #include "CompressedDic.h"
 
 /**

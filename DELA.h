@@ -27,6 +27,7 @@
 #include "List_ustring.h"
 #include "Alphabet.h"
 #include "AbstractAllocator.h"
+#include "LoadInf.h"
 #include "CompressedDic.h"
 
 /* Maximum size of a DELA line */

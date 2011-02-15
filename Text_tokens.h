@@ -29,6 +29,7 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "AbstractAllocator.h"
+#include "LoadInf.h"
 #include "CompressedDic.h"
 
 /*

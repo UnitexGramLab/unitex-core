@@ -26,6 +26,7 @@
 #include "Ustring.h"
 #include "StringParsing.h"
 #include "List_ustring.h"
+#include "LoadInf.h"
 
 static int read_bin_header(Dictionary*);
 

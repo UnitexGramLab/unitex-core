@@ -28,6 +28,7 @@
 #include "MF_Global.h"
 #include "MF_LangMorpho.h"
 #include "DELA.h"
+#include "LoadInf.h"
 #include "CompressedDic.h"
 
 void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,

@@ -25,6 +25,7 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"
+#include "LoadInf.h"
 #include "CompressedDic.h"
 
 void analyse_dutch_unknown_words(const Alphabet*,Dictionary*,U_FILE*,
