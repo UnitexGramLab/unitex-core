@@ -894,14 +894,14 @@ if (final) {
 	 * we go on because we may match a longer word */
 }
 /* We examine each transition that goes out from the node */
-unichar c;
+unichar uc;
 int adr;
-for (int i=0;i<c;i++) {
-	offset=read_dictionary_transition(infos->d,offset,&c,&adr);
-	if (is_equal_or_uppercase(c,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
+for (int i=0;i<n_transitions;i++) {
+	offset=read_dictionary_transition(infos->d,offset,&uc,&adr);
+	if (is_equal_or_uppercase(uc,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
 		/* If the transition's letter is case compatible with the current letter of the
 		 * word to analyze, we follow it */
-		current_component[pos_in_current_component]=c;
+		current_component[pos_in_current_component]=uc;
 		explore_state(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
 			analysis,output_dela_line,L,number_of_components,infos);
 	}
