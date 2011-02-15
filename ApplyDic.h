@@ -30,7 +30,7 @@
 #include "CompoundWordHashTable.h"
 #include "BitArray.h"
 #include "LocateMatches.h"
-
+#include "CompressedDic.h"
 
 /**
  * This structure is used to represent a list of offsets in the current
@@ -107,8 +107,12 @@ struct dico_application_info {
    /* The alphabet to use */
    Alphabet* alphabet;
    /* The dictionary to use */
+   Dictionary* d;
+#if 0
    const unsigned char* bin;
    const struct INF_codes* inf;
+#endif
+
    struct BIN_free_info bin_free;
    struct INF_free_info inf_free;
    /* Information about the recognized words:

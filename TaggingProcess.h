@@ -40,6 +40,7 @@
 #include "ElagFunctions.h"
 #include "Match.h"
 #include "HashTable.h"
+#include "CompressedDic.h"
 
 /**
  * This structure corresponds to a entry in the viterbi
@@ -73,26 +74,25 @@ unichar* get_pos_unknown(const unichar*);
 int search_matrix_predecessor(struct matrix_entry**,unichar*,int,int,int);
 void get_INF_code(unsigned char*,const unichar*,int,int,int,const Alphabet*,int*);
 long int get_inf_value(const struct INF_codes*,int);
-long int get_sequence_integer(const unichar*,const unsigned char*,const struct INF_codes*,const Alphabet*);
+long int get_sequence_integer(const unichar*,Dictionary*,const Alphabet*);
 
 unichar* create_bigram_sequence(const unichar*,const unichar*,int);
 unichar* create_bigram_sequence(const char*,const unichar*,int);
 unichar* create_trigram_sequence(const unichar*,const unichar*,const unichar*);
 unichar* u_strnsuffix(const unichar*,int);
 
-double compute_emit_probability(const unsigned char*,const struct INF_codes*,const Alphabet*,const unichar*,const unichar*);
-double compute_transition_probability(const unsigned char*,const struct INF_codes*,const Alphabet*,const unichar*,const unichar*,const unichar*);
-double compute_partial_probability(const unsigned char*,const struct INF_codes*,const Alphabet*,struct matrix_entry*,struct matrix_entry*,struct matrix_entry*);
+double compute_emit_probability(Dictionary*,const Alphabet*,const unichar*,const unichar*);
+double compute_transition_probability(Dictionary*,const Alphabet*,const unichar*,const unichar*,const unichar*);
+double compute_partial_probability(Dictionary*,const Alphabet*,struct matrix_entry*,struct matrix_entry*,struct matrix_entry*);
 int* get_state_sequence(struct matrix_entry**,int);
 int is_compound_word(const unichar*);
 unichar* compound_to_simple(const unichar*);
 vector_ptr* do_backtracking(struct matrix_entry**,int,SingleGraph,vector_ptr*,int);
-void compute_best_probability(const unsigned char*,const struct INF_codes*,const Alphabet*,struct matrix_entry**,int,int,int);
+void compute_best_probability(Dictionary*,const Alphabet*,struct matrix_entry**,int,int,int);
 
-vector_ptr* do_viterbi(unsigned char*,const struct INF_codes*,const Alphabet*,Tfst*,int);
-int get_form_type(const unsigned char*,const struct INF_codes*,const Alphabet*);
-void do_tagging(Tfst*,Tfst*,const unsigned char*,const struct INF_codes*,const Alphabet*,int,
-					struct hash_table*);
+vector_ptr* do_viterbi(Dictionary*,const Alphabet*,Tfst*,int);
+int get_form_type(Dictionary*,const Alphabet*);
+void do_tagging(Tfst*,Tfst*,Dictionary*,const Alphabet*,int,struct hash_table*);
 
 #endif
 

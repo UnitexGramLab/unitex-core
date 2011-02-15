@@ -27,8 +27,10 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"
+#include "CompressedDic.h"
 
-// 0 no debugfing information
+
+// 0 no debugging information
 // 1 for additional debugging information
 // 2 plus information about rule matching
 #define DDEBUG 0
@@ -55,7 +57,7 @@ struct utags {
 };
 struct utags init_utags (tags);
 
-void analyse_compounds(const Alphabet*, const unsigned char*, const struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,
+void analyse_compounds(const Alphabet*, Dictionary*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,
                        struct utags);
 
 #endif

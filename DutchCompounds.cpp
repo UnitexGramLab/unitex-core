@@ -38,10 +38,7 @@
 struct dutch_infos {
 	/* The Dutch alphabet */
 	const Alphabet* alphabet;
-	/* The .bin and .inf parts of the dictionary that will be used
-	 * for the analysis */
-	const unsigned char* bin;
-	const struct INF_codes* inf;
+	Dictionary* d;
 	/* The file where to read the words to analyze from */
 	U_FILE* unknown_word_list;
 	/* The file where new dictionary lines will be written */
@@ -96,31 +93,30 @@ void free_word_decomposition_list_dutch(struct word_decomposition_list*);
 /**
  * This function analyzes a list of unknown Dutch words.
  */
-void analyse_dutch_unknown_words(const Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
+void analyse_dutch_unknown_words(const Alphabet* alphabet,Dictionary* d,
 								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
 								U_FILE* new_unknown_word_list,struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
 struct dutch_infos infos;
 infos.alphabet=alphabet;
-infos.bin=bin;
-infos.inf=inf;
+infos.d=d;
 infos.unknown_word_list=unknown_word_list;
 infos.forbidden_words=forbidden_words;
 infos.output=output;
 infos.info_output=info_output;
 infos.new_unknown_word_list=new_unknown_word_list;
-infos.valid_left_component=(char*)malloc(sizeof(char)*(inf->N));
+infos.valid_left_component=(char*)malloc(sizeof(char)*(d->inf->N));
 if (infos.valid_left_component==NULL) {
 	fatal_alloc_error("analyse_dutch_unknown_words");
 }
-infos.valid_right_component=(char*)malloc(sizeof(char)*(inf->N));
+infos.valid_right_component=(char*)malloc(sizeof(char)*(d->inf->N));
 if (infos.valid_right_component==NULL) {
    fatal_alloc_error("analyse_dutch_unknown_words");
 }
 /* We look for all INF codes if they correspond to valid left/right
  * components of compounds words. */
-check_valid_left_component_dutch(infos.valid_left_component,inf);
-check_valid_right_component_dutch(infos.valid_right_component,inf);
+check_valid_left_component_dutch(infos.valid_left_component,d->inf);
+check_valid_right_component_dutch(infos.valid_right_component,d->inf);
 /* Now we are ready to analyse the given word list */
 analyse_dutch_unknown_words(&infos);
 free(infos.valid_left_component);
@@ -375,7 +371,7 @@ dela_line[0]='\0';
 correct_word[0]='\0';
 struct word_decomposition_list* l=NULL;
 /* We look if there are decompositions for this word */
-explore_state_dutch(4,correct_word,0,word,0,decomposition,dela_line,&l,1,infos);
+explore_state_dutch(infos->d->header_size,correct_word,0,word,0,decomposition,dela_line,&l,1,infos);
 if (l==NULL) {
 	/* If there is no decomposition, we return */
 	return 0;
@@ -503,14 +499,10 @@ void explore_state_dutch(int offset,unichar* current_component,int pos_in_curren
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
                    int number_of_components,const struct dutch_infos* infos) {
-int c;
-int index,t;
-c=infos->bin[offset]*256+infos->bin[offset+1];
-if (!(c&32768)) {
-	/* If we are in a final state, we compute the index of the
-	 * corresponding INF line */
-	index=infos->bin[offset+2]*256*256+infos->bin[offset+3]*256+infos->bin[offset+4];
-	/* We can set the end of our current component */
+int final,n_transitions,inf_number;
+offset=read_dictionary_state(infos->d,offset,&final,&n_transitions,&inf_number);
+if (final) {
+	/* If we are in a final state, we can set the end of our current component */
 	current_component[pos_in_current_component]='\0';
 	/* We do not consider forbidden words */
    if (infos->forbidden_words==NULL || NO_VALUE_INDEX==get_value_index(current_component,infos->forbidden_words,DONT_INSERT)) {
@@ -518,7 +510,7 @@ if (!(c&32768)) {
 		if (word_to_analyze[pos_in_word_to_analyze]=='\0') {
 			/* If we have explored the entire original word */
    		/* And if we do not have forbidden word in last position */
-			struct list_ustring* l=infos->inf->codes[index];
+			struct list_ustring* l=infos->d->inf->codes[inf_number];
 			/* We will look at all the INF codes of the last component in order
 			 * to produce analysis */
 			while (l!=NULL) {
@@ -598,7 +590,7 @@ if (!(c&32768)) {
 			 * 1) look if the current component is a valid left one
 			 * 2) explore the rest of the original word
 			 */
-			if (infos->valid_left_component[index]) {
+			if (infos->valid_left_component[inf_number]) {
 				/* If we have a valid component, we look first if we are
 				 * in the case of a word followed by a "s" */
 				if (word_to_analyze[pos_in_word_to_analyze]=='s') {
@@ -615,7 +607,7 @@ if (!(c&32768)) {
 					unichar sia_code[2000];
 					unichar entry[2000];
 					unichar line[2000];
-					get_first_valid_left_component_dutch(infos->inf->codes[index],sia_code);
+					get_first_valid_left_component_dutch(infos->d->inf->codes[inf_number],sia_code);
 					uncompress_entry(current_component,sia_code,entry);
 					u_strcat(dec,entry);
 					u_strcpy(line,output_dela_line);
@@ -626,12 +618,12 @@ if (!(c&32768)) {
 					unichar temp[2000];
 					unichar dec_temp[2000];
 					u_strcpy(dec_temp,dec);
-               u_strcat(dec_temp," +++ s");
+                    u_strcat(dec_temp," +++ s");
 					/* Then, we explore the dictionary in order to analyze the
 					 * next component. We start at the root of the dictionary
 					 * (offset=4) and we go back one position in the word to analyze.
 					 */
-					explore_state_dutch(4,temp,0,word_to_analyze,pos_in_word_to_analyze+1,
+					explore_state_dutch(infos->d->header_size,temp,0,word_to_analyze,pos_in_word_to_analyze+1,
 						dec_temp,line,L,number_of_components+1,infos);
 				}
 				/* Now, we try to analyze the component normally */
@@ -647,7 +639,7 @@ if (!(c&32768)) {
 				/* In order to print the component in the analysis, we arbitrary
 				 * take a valid left component among all those that are available
 				 * for the current component */
-				get_first_valid_left_component_dutch(infos->inf->codes[index],sia_code);
+				get_first_valid_left_component_dutch(infos->d->inf->codes[inf_number],sia_code);
 				uncompress_entry(current_component,sia_code,entry);
 				u_strcat(dec,entry);
 				u_strcpy(line,output_dela_line);
@@ -658,32 +650,25 @@ if (!(c&32768)) {
 				/* Then, we explore the dictionary in order to analyze the
 				 * next component. We start at the root of the dictionary
 				 * (offset=4). */
-				explore_state_dutch(4,temp,0,word_to_analyze,pos_in_word_to_analyze,
+				explore_state_dutch(infos->d->header_size,temp,0,word_to_analyze,pos_in_word_to_analyze,
 					dec_temp,line,L,number_of_components+1,infos);
 			}
 		}
 	}
 	/* Once we have finished to deal with the current final dictionary node,
 	 * we go on because we may match a longer word */
-	t=offset+5;
-}
-else {
-	/* If the node is not a final one, we get compute the number of transitions by
-	 * removing the highest bit */
-	c=c-32768;
-	t=offset+2;
 }
 /* We examine each transition that goes out from the node */
-for (int i=0;i<c;i++) {
-	if (is_equal_or_uppercase((unichar)(infos->bin[t]*256+infos->bin[t+1]),word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
+unichar c;
+int adr;
+for (int i=0;i<n_transitions;i++) {
+	offset=read_dictionary_transition(infos->d,offset,&c,&adr);
+	if (is_equal_or_uppercase(c,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
 		/* If the transition's letter is case compatible with the current letter of the
 		 * word to analyze, we follow it */
-		index=infos->bin[t+2]*256*256+infos->bin[t+3]*256+infos->bin[t+4];
-		current_component[pos_in_current_component]=(unichar)(infos->bin[t]*256+infos->bin[t+1]);
-		explore_state_dutch(index,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
+		current_component[pos_in_current_component]=c;
+		explore_state_dutch(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
 			analysis,output_dela_line,L,number_of_components,infos);
 	}
-	/* We move the offset to the next transition */
-	t=t+5;
 }
 }

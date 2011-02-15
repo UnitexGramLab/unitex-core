@@ -35,6 +35,8 @@
 #include "AbstractDelaLoad.h"
 #include "Unicode.h"
 #include "TfstStats.h"
+#include "CompressedDic.h"
+
 
 const char* usage_Tagger =
          "Usage: Tagger [OPTIONS] <tfst>\n"
@@ -157,21 +159,28 @@ Alphabet* alpha = load_alphabet(alphabet);
 get_path(tfst,temp);
 strcat(temp,"temp.tfst");
 
+char data_inf[FILENAME_MAX];
+remove_extension(data,data_inf);
+strcat(data_inf,".inf");
+Dictionary* d=new_Dictionary(data,data_inf);
+if (d==NULL) {
+	return 1;
+}
+#if 0
 struct BIN_free_info bin_free;
 const unsigned char* bin=load_abstract_BIN_file(data,&bin_free);
 if (bin==NULL) {
 	fatal_error("Cannot open .bin data file.");
 }
-remove_extension(data);
-strcat(data,".inf");
 struct INF_free_info inf_free;
-const struct INF_codes* inf=load_abstract_INF_file(data,&inf_free);
+const struct INF_codes* inf=load_abstract_INF_file(data_inf,&inf_free);
 if (inf==NULL) {
 	fatal_error("Cannot open .inf data file");
 }
+#endif
 
 char* current_tfst = tfst;
-int form_type = get_form_type(bin,inf,alpha);
+int form_type = get_form_type(d,alpha);
 if(form_type == 1){
 	if(tagset[0] == '\0'){
 		fatal_error("No tagset file specified\n");
@@ -218,7 +227,7 @@ struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
 /* launches tagging process on the input tfst file */
-do_tagging(input_tfst,result,bin,inf,alpha,form_type,form_frequencies);
+do_tagging(input_tfst,result,d,alpha,form_type,form_frequencies);
 
 close_text_automaton(input_tfst);
 close_text_automaton(result);
@@ -265,8 +274,9 @@ else {
 	af_rename(tmp_tind,output_tind);
 }
 free_alphabet(alpha);
-free_abstract_BIN(bin,&bin_free);
-free_abstract_INF(inf,&inf_free);
+free_Dictionary(d);
+/*free_abstract_BIN(bin,&bin_free);
+free_abstract_INF(inf,&inf_free);*/
 free_OptVars(vars);
 u_printf("Done.\n");
 return 0;

@@ -27,6 +27,7 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"
+#include "CompressedDic.h"
 
 
 struct german_word_decomposition {
@@ -41,15 +42,15 @@ struct german_word_decomposition_list {
 };
 
 
-void analyse_german_compounds(const Alphabet*,const unsigned char*,const struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*);
+void analyse_german_compounds(const Alphabet*,Dictionary*,U_FILE*,U_FILE*,U_FILE*,U_FILE*);
 void check_valid_right_component_german(char*,const struct INF_codes*);
 void check_valid_left_component_german(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line_german(const struct list_ustring*);
 char check_valid_left_component_for_one_INF_code_german(const unichar*);
 char check_valid_right_component_for_an_INF_line_german(const struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_german(const unichar*);
-void analyse_german_word_list(const unsigned char*,const struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,const char*,const char*,const Alphabet*);
-int analyse_german_word(const unichar*,U_FILE*,U_FILE*,const char*,const char*,const struct INF_codes*,const Alphabet*,const unsigned char*);
+void analyse_german_word_list(Dictionary*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,const char*,const char*,const Alphabet*);
+int analyse_german_word(const unichar*,U_FILE*,U_FILE*,const char*,const char*,const Alphabet*,Dictionary*);
 void get_first_sia_code_german(int,unichar*,const struct INF_codes*);
 
 struct german_word_decomposition* new_german_word_decomposition();
@@ -57,6 +58,6 @@ void free_german_word_decomposition(struct german_word_decomposition*);
 struct german_word_decomposition_list* new_german_word_decomposition_list();
 void free_german_word_decomposition_list(struct german_word_decomposition_list*);
 void explore_state_german(int,unichar*,int,const unichar*,int,const unichar*,unichar*,
-      struct german_word_decomposition_list**,int,const char*,const char*,const struct INF_codes*,const Alphabet*,const unsigned char*);
+      struct german_word_decomposition_list**,int,const char*,const char*,const Alphabet*,Dictionary*);
 
 #endif

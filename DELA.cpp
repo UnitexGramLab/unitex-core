@@ -999,24 +999,6 @@ return;
 
 
 /**
- * This function takes a line of a .INF file and tokenize it into
- * several single codes.
- * Example: .N,.V  =>  code 0=".N" ; code 1=".V"
- */
-struct list_ustring* tokenize_compressed_info(const unichar* line,Abstract_allocator prv_alloc) {
-struct list_ustring* result=NULL;
-unichar tmp[DIC_LINE_SIZE];
-int pos=0;
-/* Note: all protected characters must stay protected */
-while (P_EOS!=parse_string(line,&pos,tmp,P_COMMA,P_EMPTY,NULL)) {
-   result=new_list_ustring(tmp,result,prv_alloc);
-   if (line[pos]==',') pos++;
-}
-return result;
-}
-
-
-/**
  * This function takes a semitic inflected form and its associated compression code, and
  * it replaces 'inflected' by the lemma that is rebuilt.
  *
@@ -1167,111 +1149,10 @@ result[i]='\0';
 
 
 /**
- * This function loads the content of an .inf file and returns
- * a structure containing the lines of the file tokenized into INF
- * codes.
- */
-struct INF_codes* load_INF_file(const char* name,Abstract_allocator prv_alloc) {
-struct INF_codes* res;
-U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
-if (f==NULL) {
-   error("Cannot open %s\n",name);
-   return NULL;
-}
-res=(struct INF_codes*)malloc_cb(sizeof(struct INF_codes),prv_alloc);
-if (res==NULL) {
-   fatal_alloc_error("in load_INF_file");
-}
-if (1!=u_fscanf(f,"%d\n",&(res->N))) {
-   fatal_error("Invalid INF file: %s\n",name);
-}
-res->codes=(struct list_ustring**)malloc_cb(sizeof(struct list_ustring*)*(res->N),prv_alloc);
-if (res->codes==NULL) {
-   fatal_alloc_error("in load_INF_file");
-}
-unichar *s=(unichar*)malloc(sizeof(unichar)*DIC_LINE_SIZE*10);
-if (s==NULL) {
-   fatal_alloc_error("in load_INF_file");
-}
-int i=0;
-/* For each line of the .inf file, we tokenize it to get the single INF codes
- * it contains. */
-while (EOF!=u_fgets_limit2(s,DIC_LINE_SIZE*10,f)) {
-   res->codes[i++]=tokenize_compressed_info(s,prv_alloc);
-}
-free(s);
-u_fclose(f);
-return res;
-}
-
-
-/**
- * Frees all the memory allocated for the given structure.
- */
-void free_INF_codes(struct INF_codes* INF,Abstract_allocator prv_alloc) {
-if (INF==NULL) {return;}
-for (int i=0;i<INF->N;i++) {
-   free_list_ustring(INF->codes[i],prv_alloc);
-}
-free_cb(INF->codes,prv_alloc);
-free_cb(INF,prv_alloc);
-}
-
-
-/**
- * Loads a .bin file into an unsigned char array that is returned.
- * Returns NULL if an error occurs.
- */
-unsigned char* load_BIN_file(const char* name,Abstract_allocator prv_alloc) {
-U_FILE* f;
-/* We open the file as a binary one */
-f=u_fopen(BINARY,name,U_READ);
-unsigned char* tab;
-if (f==NULL) {
-   error("Cannot open %s\n",name);
-   return NULL;
-}
-/* We compute the size of the file that is encoded in the 4 first bytes.
- * This value could be used to check the integrity of the file. */
-unsigned char tab_size[4];
-if ((int)fread(tab_size,sizeof(char),4,f)!=4) {
-   error("Error while reading size of %s\n",name);
-   u_fclose(f);
-   return NULL;
-}
-int file_size=tab_size[3]+(256*tab_size[2])+(256*256*tab_size[1])+(256*256*256*tab_size[0]);
-/* We come back to the beginning and we load rawly the ABSTRACTFILE */
-fseek(f,0,SEEK_SET);
-tab=(unsigned char*)malloc_cb(sizeof(unsigned char)*file_size,prv_alloc);
-if (tab==NULL) {
-   fatal_alloc_error("load_BIN_file");
-   return NULL;
-}
-if (file_size!=(int)fread(tab,sizeof(char),file_size,f)) {
-   error("Error while reading %s\n",name);
-   free_cb(tab,prv_alloc);
-   u_fclose(f);
-   return NULL;
-}
-u_fclose(f);
-return tab;
-}
-
-
-/**
- * Frees all the memory allocated for the given structure.
- */
-void free_BIN_file(unsigned char* BIN,Abstract_allocator prv_alloc) {
-	free_cb(BIN,prv_alloc);
-}
-
-
-/**
  * function extracted from explore_all_paths to minimize stack uage of recursive
  *    function. Produce entries from the INF codes associated to this final state
  */
-void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE* output)
-{
+void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE* output) {
    while (tmp!=NULL) {
       unichar res[DIC_WORD_SIZE];
       uncompress_entry(content,tmp->string,res);
@@ -1289,33 +1170,21 @@ void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE*
  * that contains the characters corresponding to the current position in the
  * automaton. 'string_pos' is the current position in 'content'.
  */
-void explore_all_paths(int pos,unichar* content,int string_pos,const unsigned char* bin,
-                      const struct INF_codes* inf,U_FILE* output) {
-int n_transitions;
+void explore_all_paths(int pos,unichar* content,int string_pos,Dictionary* d,U_FILE* output) {
+int final,n_transitions;
 int ref;
-n_transitions=((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1];
-pos=pos+2;
-if (!(n_transitions & 32768)) {
+pos=read_dictionary_state(d,pos,&final,&n_transitions,&ref);
+if (final) {
    /* If we are in a final state */
-   ref=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
-   pos=pos+3;
    content[string_pos]='\0';
-
    /* We produce entries from the INF codes associated to this final state */
-   uncompress_entry_and_print(content,inf->codes[ref],output);
-}
-else {
-   /* If we are in a normal node, we remove the control bit to
-    * have the good number of transitions */
-   n_transitions=n_transitions-32768;
+   uncompress_entry_and_print(content,d->inf->codes[ref],output);
 }
 /* Nevermind the state finality, we explore all the reachable states */
+int adr;
 for (int i=0;i<n_transitions;i++) {
-   content[string_pos]=(unichar)(((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1]);
-   pos=pos+2;
-   int adr=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
-   pos=pos+3;
-   explore_all_paths(adr,content,string_pos+1,bin,inf,output);
+	pos=read_dictionary_transition(d,pos,&(content[string_pos]),&adr);
+	explore_all_paths(adr,content,string_pos+1,d,output);
 }
 }
 
@@ -1324,10 +1193,10 @@ for (int i=0;i<n_transitions;i++) {
  * This function explores the automaton stored in the .bin and rebuilds
  * the original DELAF in the 'output' file.
  */
-void rebuild_dictionary(const unsigned char* bin,const struct INF_codes* inf,U_FILE* output) {
+void rebuild_dictionary(Dictionary* d,U_FILE* output) {
 unichar content[DIC_LINE_SIZE];
 /* The offset of the initial state is 4 */
-explore_all_paths(4,content,0,bin,inf,output);
+explore_all_paths(d->header_size,content,0,d,output);
 }
 
 
@@ -1852,8 +1721,11 @@ return -1;
  *
  * NOTE: this is an EXACT matching. No alphabet equivalency is used here.
  */
-int get_inf_code_exact_match(unsigned char* bin,unichar* str) {
-return explore_for_exact_match(bin,4,str,0);
+int get_inf_code_exact_match(Dictionary* d,unichar* str) {
+if (d->type!=BIN_CLASSIC) {
+	fatal_error("get_inf_code_exact_match: unsupported dictionary type\n");
+}
+return explore_for_exact_match(d->bin,d->header_size,str,0);
 }
 
 

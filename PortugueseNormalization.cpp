@@ -72,9 +72,10 @@ do {
 // this function builds the normalization grammar adapted to the match list
 // passed in parameter
 //
-void build_portuguese_normalization_grammar(const Alphabet* alph,struct match_list* list,const unsigned char* root_bin,
-                                            const struct INF_codes* root_inf,const unsigned char* inflected_bin,
-                                            const struct INF_codes* inflected_inf,const char* res_grf_name,
+void build_portuguese_normalization_grammar(const Alphabet* alph,struct match_list* list,
+											Dictionary* root_dic,
+											Dictionary* inflected_dic,
+                                            const char* res_grf_name,
                                             Encoding encoding_output, int bom_output,
                                             struct normalization_tree* norm_tree,
                                             struct normalization_tree* nasal_norm_tree) {
@@ -98,8 +99,7 @@ while (L!=NULL) {
          get_value_index(L->output,hash);
          get_bracket_prefix(L->output,prefix);
          if (!u_strcmp(prefix,"FuturConditional")) {
-            N=N+replace_match_output_by_normalization_line(L,alph,root_bin,root_inf,inflected_bin,
-                                                           inflected_inf,norm_tree);
+            N=N+replace_match_output_by_normalization_line(L,alph,root_dic,inflected_dic,norm_tree);
          }
          else if (!u_strcmp(prefix,"NasalSuffix")) {
                  //N=N+replace_match_output_by_normalization_line_nasal(L,alph,nasal_norm_tree);
@@ -153,9 +153,9 @@ while (s[i]==':') {
 // "dir-se-ia/{...,...V:C1s}-{se,.PRO}"
 // it returns i if i correct lines are produced, 0 else
 //
-int replace_match_output_by_normalization_line(struct match_list* L,const Alphabet* alph,const unsigned char* root_bin,
-                                                const struct INF_codes* root_inf,const unsigned char* inflected_bin,
-                                                const struct INF_codes* inflected_inf,
+int replace_match_output_by_normalization_line(struct match_list* L,const Alphabet* alph,
+												Dictionary* root_dic,
+												Dictionary* inflected_dic,
                                                 struct normalization_tree* norm_tree) {
 if (L->output==NULL) {
    return 0;
@@ -180,7 +180,7 @@ struct list_ustring* pronouns=tokenize_portuguese_pronoun(pronoun);
 
 struct list_ustring* lemmas=NULL;
 // we look for the lemma in the radical form dictionary
-if (!get_radical_lemma(radical,&lemmas,alph,root_bin,root_inf)) {
+if (!get_radical_lemma(radical,&lemmas,alph,root_dic)) {
    free(L->output);
    L->output=NULL;
    return 0;
@@ -194,14 +194,14 @@ int RESULT=0;
 while (lemmas!=NULL) {
    unichar entry[1000];
    // we get the inf number associated to this lemma in the inflected form dictionary
-   int res=get_inf_number_for_token(4,lemmas->string,0,entry,alph,inflected_bin);
+   int res=get_inf_number_for_token(inflected_dic->header_size,lemmas->string,0,entry,alph,inflected_dic);
    if (res==-1) {
       return 0;
    }
    int n_inflectional_codes;
    unichar* inflectional_codes[100];
    tokenize_inflectional_codes(inflectional_code,&n_inflectional_codes,inflectional_codes);
-   struct list_ustring* tok=inflected_inf->codes[res];
+   struct list_ustring* tok=inflected_dic->inf->codes[res];
    // then for each uncompressed form, we look if it matches with the inflectional code
    while (tok!=NULL) {
       unichar line[2000];
@@ -367,18 +367,19 @@ return 1;
 //
 // this function look for the lemma corresponding to the radical
 //
-int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,const Alphabet* alph,const unsigned char* root_bin,
-                      const struct INF_codes* root_inf) {
+int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,const Alphabet* alph,
+						Dictionary* root_dic) {
 unichar entry[1000];
 // we must use the entry variable because of the upper/lower case:
 // if the radical is Dir, we want it to be dir in order to get the correct form
 // after the call to uncompress_entry
-int res=get_inf_number_for_token(4,radical,0,entry,alph,root_bin);
+
+int res=get_inf_number_for_token(root_dic->header_size,radical,0,entry,alph,root_dic);
 if (res==-1) {
    return 0;
 }
 (*lemmas)=NULL;
-struct list_ustring* tok=root_inf->codes[res];
+struct list_ustring* tok=root_dic->inf->codes[res];
 while (tok!=NULL) {
    unichar line[2000];
    uncompress_entry(entry,tok->string,line);
@@ -399,40 +400,29 @@ return 1;
 // this function looks for the inf number associated to an inflected form
 // it returns this number on success, -1 else
 //
-int get_inf_number_for_token(int pos,const unichar* contenu,int string_pos,unichar* entry,const Alphabet* ALPH,const unsigned char* BIN) {
-int n_transitions;
-int ref;
-n_transitions=((unsigned char)BIN[pos])*256+(unsigned char)BIN[pos+1];
-pos=pos+2;
-if (contenu[string_pos]=='\0') {
+int get_inf_number_for_token(int pos,const unichar* content,int string_pos,
+		unichar* entry,const Alphabet* ALPH,Dictionary* d) {
+int final,n_transitions,inf_number;
+pos=read_dictionary_state(d,pos,&final,&n_transitions,&inf_number);
+if (content[string_pos]=='\0') {
    entry[string_pos]='\0';
    // if we are at the end of the string
-   if (!(n_transitions & 32768)) {
-      ref=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
-      return ref;
+   if (final) {
+      return inf_number;
    }
    return -1;
 }
-if ((n_transitions & 32768)) {
-   // if we are in a normal node, we remove the control bit to
-   // have the good number of transitions
-   n_transitions=n_transitions-32768;
-} else {
-  // if we are in a final node, we must jump after the reference to the INF line number
-  pos=pos+3;
-}
+unichar c;
+int adr;
 for (int i=0;i<n_transitions;i++) {
-  unichar c=(unichar)(((unsigned char)BIN[pos])*256+(unsigned char)BIN[pos+1]);
-  pos=pos+2;
-  int adr=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
-  pos=pos+3;
-  if (is_equal_or_uppercase(c,contenu[string_pos],ALPH)) {
+	pos=read_dictionary_transition(d,pos,&c,&adr);
+  if (is_equal_or_uppercase(c,content[string_pos],ALPH)) {
      // we explore the rest of the dictionary only
      // if the dico char is compatible with the token char
      entry[string_pos]=c;
-     ref=get_inf_number_for_token(adr,contenu,string_pos+1,entry,ALPH,BIN);
-     if (ref!=-1) {
-        return ref;
+     inf_number=get_inf_number_for_token(adr,content,string_pos+1,entry,ALPH,d);
+     if (inf_number!=-1) {
+        return inf_number;
      }
   }
 }

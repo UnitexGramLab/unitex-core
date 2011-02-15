@@ -49,8 +49,8 @@ void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,Mul
                          struct string_hash* subgraphs,int *subgraph_Y);
 int tokens_to_dela_entries(vector_ptr* line_tokens,struct dela_entry** entries,int *n_entries,Ustring* foo,int line_number);
 struct string_hash* get_codes_from_inf(struct INF_codes* inf);
-int upgrade_entries(struct dela_entry** entries,int n_entries,unsigned char* bin,
-					struct INF_codes* inf,struct string_hash* dic_codes,Ustring* foo,int line_number);
+int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
+					struct string_hash* dic_codes,Ustring* foo,int line_number);
 
 /**
  * Builds the .grf dictionary corresponding to the given Korean compound DELAS.
@@ -58,7 +58,7 @@ int upgrade_entries(struct dela_entry** entries,int n_entries,unsigned char* bin
 void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
                            Korean* korean,struct l_morpho_t* morpho,
                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                           unsigned char* bin,struct INF_codes* inf) {
+                           Dictionary* d) {
 unichar line[MAX_LINE_SIZE];
 int size_line;
 int line_number=0;
@@ -73,7 +73,7 @@ vector_int* state_index=new_vector_int(16);
 struct string_hash* subgraphs=new_string_hash(DONT_USE_VALUES);
 int line_grf=1;
 int subgraph_Y=20;
-struct string_hash* dic_codes=get_codes_from_inf(inf);
+struct string_hash* dic_codes=get_codes_from_inf(d->inf);
 /* foo is a debug presentation of the input line */
 Ustring* foo=new_Ustring(256);
 int n_errors=0;
@@ -109,7 +109,7 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
       entries[i]=NULL;
    }
    int OK=tokens_to_dela_entries(line_tokens,entries,&n_parts,foo,line_number)
-		   && upgrade_entries(entries,n_parts,bin,inf,dic_codes,foo,line_number);
+		   && upgrade_entries(entries,n_parts,d,dic_codes,foo,line_number);
    if (OK) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
@@ -614,21 +614,21 @@ for (int i=1;i<e->n_semantic_codes;i++) {
  * an error message and returns 0;
  * otherwise it returns 1.
  */
-int upgrade_entries(struct dela_entry** entries,int n_entries,unsigned char* bin,
-					struct INF_codes* inf,struct string_hash* dic_codes,
+int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
+		            struct string_hash* dic_codes,
 					Ustring* debug,int line_number) {
 unichar line[4096];
 int OK=1;
 for (int i=0;i<n_entries;i++) {
 	struct dela_entry* e=entries[i];
-	int inf_code=get_inf_code_exact_match(bin,e->inflected);
+	int inf_code=get_inf_code_exact_match(d,e->inflected);
 	if (inf_code==-1) {
 		/* No expansion to perform if the entry is not in the bin dictionary */
 		continue;
 	}
 	/* Now, we uncompress all the entries found in the bin */
 	vector_ptr* bin_entries=new_vector_ptr(8);
-	struct list_ustring* l=inf->codes[inf_code];
+	struct list_ustring* l=d->inf->codes[inf_code];
 	while (l!=NULL) {
 		uncompress_entry(e->inflected,l->string,line);
 		struct dela_entry* foo=tokenize_DELAF_line(line);

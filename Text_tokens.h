@@ -29,6 +29,7 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "AbstractAllocator.h"
+#include "CompressedDic.h"
 
 /*
  * This is the structure that holds 
@@ -55,7 +56,7 @@ struct list_int* get_token_list_for_sequence(const unichar*,const Alphabet*,stru
 int get_token_number(const unichar*,struct text_tokens*);
 int is_a_digit_token(const unichar* s);
 void extract_semantic_codes_from_tokens(const struct string_hash*,struct string_hash*,Abstract_allocator prv_alloc);
-void extract_semantic_codes_from_morpho_dics(const struct INF_codes**,int,struct string_hash*,Abstract_allocator prv_alloc);
+void extract_semantic_codes_from_morpho_dics(Dictionary**,int,struct string_hash*,Abstract_allocator prv_alloc);
 
 //---------------------------------------------------------------------------
 #endif

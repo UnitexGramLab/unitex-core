@@ -258,14 +258,14 @@ void display_uncompressed_entry(U_FILE* f,unichar* inflected,unichar* INF_code) 
 void explore_bin_simple_words(struct dico_application_info* info,
                               int offset,unichar* token,unichar* inflected,
                               int pos,int token_number,int priority) {
+int final,n_transitions,inf_number;
 /* We compute the number of transitions that outgo from the current node */
-int n_transitions=((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1];
-offset=offset+2;
+int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
 if (token[pos]=='\0') {
    /* If we are at the end of the token */
    inflected[pos]='\0';
-   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset-2,inflected);
-   if (!(n_transitions & 32768)) {
+   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected);
+   if (final) {
       /* If the node is final */
       int p=0;
       if (info->simple_word!=NULL) p=get_value(info->simple_word,token_number);
@@ -276,8 +276,7 @@ if (token[pos]=='\0') {
     	  if (info->part_of_a_word!=NULL) set_value(info->part_of_a_word,token_number,1);
          if (info->simple_word!=NULL) set_value(info->simple_word,token_number,priority);
          /* We compute the INF line number and we get the associated compressed lines */
-         int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
-         struct list_ustring* tmp=info->inf->codes[inf_number];
+         struct list_ustring* tmp=info->d->inf->codes[inf_number];
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
         	 if (info->dic_name[0]!='\0') {
@@ -290,26 +289,17 @@ if (token[pos]=='\0') {
       }
    }
    /* If we are at the end of the token, there is no need to look at the
-    * outgoing transitions. */
+    * outgoing transitions */
    return;
 }
-if ((n_transitions & 32768)) {
-   /* If we are in a normal node, we remove the control bit to
-    * have the good number of transitions */
-   n_transitions=n_transitions-32768;
-} else {
-   /* If we are in a final node, we must jump after the reference to the INF
-    * line number */
-   offset=offset+3;
-}
+offset=new_offset;
+unichar c;
+int offset_dest;
 for (int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
     * compatible with the token's one */
-   unichar c=(unichar)(((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1]);
-   offset=offset+2;
-   int offset_dest=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
-   offset=offset+3;
-   if (is_equal_or_uppercase(c,token[pos],info->alphabet)) {
+	offset=read_dictionary_transition(info->d,offset,&c,&offset_dest);
+    if (is_equal_or_uppercase(c,token[pos],info->alphabet)) {
       /* We copy the transition character so that 'inflected' will contain
        * the exact inflected form */
       inflected[pos]=c;
@@ -332,7 +322,7 @@ if (entry==NULL) {
    fatal_alloc_error("look_for_simple_words");
 }
 for (int i=0;i<info->tokens->N;i++) {
-   explore_bin_simple_words(info,4,info->tokens->token[i],entry,0,i,priority);
+   explore_bin_simple_words(info,info->d->header_size,info->tokens->token[i],entry,0,i,priority);
 }
 free(entry);
 }
@@ -369,8 +359,8 @@ void explore_bin_compound_words(struct dico_application_info* info,
                                 int pos_in_inflected,struct word_struct* ws,int pos_offset,
                                 int* token_sequence,int pos_token_sequence,int priority,
                                 int current_start_pos, unichar* line_buf) {
-int n_transitions=((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1];
-offset=offset+2;
+int final,n_transitions,inf_number;
+int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
 if (current_token[pos_in_current_token]=='\0') {
    /* If we are at the end of the current token, we look for the
     * corresponding node in the token tree */
@@ -384,8 +374,8 @@ if (current_token[pos_in_current_token]=='\0') {
    /* We add the current token to the token sequence */
    token_sequence[pos_token_sequence++]=trans->token_number;
    /* And we add the current offset to the node list */
-   trans->node->list=get_offset(offset-2,trans->node->list,inflected);
-   if (!(n_transitions & 32768)) {
+   trans->node->list=get_offset(offset,trans->node->list,inflected);
+   if (final) {
       /* If this node is final */
       token_sequence[pos_token_sequence]=-1;
       /* We look if the compound word has already been matched */
@@ -398,8 +388,7 @@ if (current_token[pos_in_current_token]=='\0') {
             set_value(info->part_of_a_word,info->text_cod_buf[k],1);
          }
          /* We get the INF line number */
-         int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
-         struct list_ustring* tmp=info->inf->codes[inf_number];
+         struct list_ustring* tmp=info->d->inf->codes[inf_number];
          /* We increase the number of compound word occurrences.
           * Note that we count occurrences and not number of entries, so that
           * if we find "copy and paste" in the text we will count one more
@@ -428,24 +417,16 @@ if (current_token[pos_in_current_token]=='\0') {
     * than now. */
 }
 /* If we are not at the end of the current token */
-if ((n_transitions & 32768)) {
-   /* If we are in a normal node, we remove the control bit to
-    * have the good number of transitions */
-   n_transitions=n_transitions-32768;
-} else {
-   /* If we are in a final node, we must jump after the reference to the INF line number */
-   offset=offset+3;
-}
 /* Do not recursively explore deeper paths if we already have
  * reached the end of the current token. */
 if (current_token[pos_in_current_token]=='\0') {
 	return;
 }
+unichar c;
+int adr;
+offset=new_offset;
 for (int i=0;i<n_transitions;i++) {
-   unichar c=(unichar)(((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1]);
-   offset=offset+2;
-   int adr=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
-   offset=offset+3;
+   offset=read_dictionary_transition(info->d,offset,&c,&adr);
    if (is_equal_or_uppercase(c,current_token[pos_in_current_token],info->alphabet)) {
       /* We explore the rest of the dictionary only if the
        * dictionary char is compatible with the token char. In that case,
@@ -602,8 +583,7 @@ info->morpho=morpho;
 info->dic_name[0]='\0';
 strcpy(info->tags_ind,tags);
 info->alphabet=alphabet;
-info->bin=NULL;
-info->inf=NULL;
+info->d=NULL;
 info->word_array=NULL;
 info->part_of_a_word=new_bit_array(tokens->N,ONE_BIT);
 info->part_of_a_word2=new_bit_array(tokens->N,ONE_BIT);
@@ -651,6 +631,7 @@ free_tct_hash(info->tct_h_tags_ind);
 for (int i=0;i<info->n_tag_sequences;i++) {
 	free_match_list_element(info->tag_sequences[i]);
 }
+free_Dictionary(info->d);
 free(info->tag_sequences);
 free(info);
 }
@@ -666,6 +647,9 @@ int dico_application(char* name_bin,struct dico_application_info* info,int prior
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
+info->d=new_Dictionary(name_bin,name_inf);
+if (info->d==NULL) return 1;
+#if 0
 /* We load the .bin file */
 info->bin=load_abstract_BIN_file(name_bin,&(info->bin_free));
 if (info->bin==NULL) {
@@ -679,6 +663,8 @@ if (info->inf==NULL) {
    error("Cannot open %s\n",name_inf);
    return 1;
 }
+#endif
+
 info->word_array=new_word_struct_array(info->tokens->N);
 /* And then we look simple and then compound words.
  * IMPORTANT: it is crucial to look for simple words first, since
@@ -699,8 +685,12 @@ double  elapsedTime = (double) (endTime - startTime);
 u_printf("%2.8f seconds\n",elapsedTime);
 #endif
 free_word_struct_array(info->word_array);
+free_Dictionary(info->d);
+info->d=NULL;
+#if 0
 free_abstract_INF(info->inf,&info->inf_free);
 free_abstract_BIN(info->bin,&info->bin_free);
+#endif
 return 0;
 }
 
@@ -715,6 +705,9 @@ int dico_application_simplified(unichar* text,char* name_bin,struct dico_applica
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
+info->d=new_Dictionary(name_bin,name_inf);
+if (info->d==NULL) return 1;
+#if 0
 /* We load the .bin file */
 info->bin=load_abstract_BIN_file(name_bin,&(info->bin_free));
 if (info->bin==NULL) {
@@ -731,10 +724,13 @@ if (info->inf==NULL) {
    error("Cannot open %s\n",name_inf);
    return 1;
 }
+#endif
 unichar entry[DIC_WORD_SIZE];
-explore_bin_simple_words(info,4,text,entry,0,-1,0);
-free_abstract_INF(info->inf,&info->inf_free);
-free_abstract_BIN(info->bin,&info->bin_free);
+explore_bin_simple_words(info,info->d->header_size,text,entry,0,-1,0);
+free_Dictionary(info->d);
+info->d=NULL;
+/*free_abstract_INF(info->inf,&info->inf_free);
+free_abstract_BIN(info->bin,&info->bin_free);*/
 return 0;
 }
 

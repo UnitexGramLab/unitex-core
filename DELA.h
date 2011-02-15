@@ -27,6 +27,7 @@
 #include "List_ustring.h"
 #include "Alphabet.h"
 #include "AbstractAllocator.h"
+#include "CompressedDic.h"
 
 /* Maximum size of a DELA line */
 #define DIC_LINE_SIZE 4096
@@ -89,26 +90,6 @@ struct dela_entry {
 };
 
 
-/**
- * This structure is used to store all the INF codes of an .inf file.
- */
-struct INF_codes {
-	/* Array containing for each line of the .inf file the reversed list of its
-	 * components. For instance, if the first line contains:
-	 *
-	 * .N+NA+z1:fs,.N+Loc:fs
-	 *
-	 * codes[0] will contain the following list:
-	 *
-	 *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
-	 *
-	 */
-	struct list_ustring** codes;
-	/* Number of lines in the .inf file */
-	int N;
-};
-
-
 struct dela_entry* new_dela_entry(const unichar*,const unichar*,const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* clone_dela_entry(const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int equal(const struct dela_entry*,const struct dela_entry*);
@@ -120,13 +101,8 @@ struct dela_entry* tokenize_tag_token(const unichar*,Abstract_allocator prv_allo
 struct dela_entry* tokenize_DELAS_line(const unichar*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* is_strict_DELAS_line(const unichar*,Alphabet*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void get_compressed_line(struct dela_entry*,unichar*,int);
-struct list_ustring* tokenize_compressed_info(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void uncompress_entry(const unichar*,unichar*,unichar*);
-struct INF_codes* load_INF_file(const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-void free_INF_codes(struct INF_codes*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-unsigned char* load_BIN_file(const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-void free_BIN_file(unsigned char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-void rebuild_dictionary(const unsigned char*,const struct INF_codes*,U_FILE*);
+void rebuild_dictionary(Dictionary*,U_FILE*);
 void extract_semantic_codes(const char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(const unichar*,unichar*,unichar*,unichar*);
 void check_DELA_line(const unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
@@ -146,7 +122,7 @@ int same_inflectional_codes(const struct dela_entry*,const struct dela_entry*);
 int same_codes(const struct dela_entry*,const struct dela_entry*);
 void merge_inflectional_codes(struct dela_entry*,const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int one_inflectional_codes_contains_the_other(const unichar*,const unichar*);
-int get_inf_code_exact_match(unsigned char* bin,unichar* str);
+int get_inf_code_exact_match(Dictionary*,unichar* str);
 
 void debug_print_entry(struct dela_entry*);
 void debug_println_entry(struct dela_entry*);

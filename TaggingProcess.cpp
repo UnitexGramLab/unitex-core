@@ -209,41 +209,30 @@ return -1;
 /**
  * Extracts INF_code of a given token in the dictionnary.
  */
-void get_INF_code(const unsigned char* bin,const unichar* token,
+void get_INF_code(Dictionary* d,const unichar* token,
 				  int case_sensitive,int index,int offset,
 				  const Alphabet* alphabet,int* inf_index){
-int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
-offset=offset+2;
+int final,n_transitions,inf_number;
+offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 if (token[index]=='\0') {
    /* If we are at end of the token */
-   if (!(n_transitions & 32768)) {
+   if (final) {
 	  /* If the node is final */
-	   *inf_index=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
+	   *inf_index=inf_number;
    }
    return;
 }
-if((n_transitions & 32768)){
-   /* If we are in a normal node, we remove the control bit to
-	* have the good number of transitions */
-   n_transitions=n_transitions-32768;
-}
-else {
-   /* If we are in a final node, we must jump after the reference to the INF
-	* line number */
-   offset=offset+3;
-}
+unichar c;
+int adr;
 for(int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
 	* compatible with the token's one */
-   unichar c=(unichar)(((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1]);
-   offset=offset+2;
-   int offset_dest=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
-   offset=offset+3;
+	offset=read_dictionary_transition(d,offset,&c,&adr);
    if(case_sensitive == 1 && c == token[index]){
-	   get_INF_code(bin,token,case_sensitive,index+1,offset_dest,alphabet,inf_index);
+	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index);
    }
    else if(case_sensitive == 0 && is_equal_ignore_case(token[index],c,alphabet)){
-	   get_INF_code(bin,token,case_sensitive,index+1,offset_dest,alphabet,inf_index);
+	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index);
    }
 }
 }
@@ -274,14 +263,14 @@ return value;
  * according to the extracted INF_codes index.
  * Returns -1 if the string is not in the dictionnary.
  */
-long int get_sequence_integer(const unichar* sequence,const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet){
+long int get_sequence_integer(const unichar* sequence,Dictionary* d,const Alphabet* alphabet){
 int inf_index = -1;
-get_INF_code(bin,sequence,1,0,4,alphabet,&inf_index);
+get_INF_code(d,sequence,1,0,d->header_size,alphabet,&inf_index);
 if(inf_index == -1){
 	/* sequence is not in the dictionary */
 	return -1;
 }
-return get_inf_value(inf,inf_index);
+return get_inf_value(d->inf,inf_index);
 }
 
 /**
@@ -350,13 +339,13 @@ return suffix;
  * with a code (semantic and sometimes inflectional codes).
  * This probability is a double value between 0 and 1.
  */
-double compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+double compute_emit_probability(Dictionary* d,const Alphabet* alphabet,
 		const unichar* tag,const unichar* inflected){
 const char prefix1[] = "word_";
 unichar* new_inflected = create_bigram_sequence(prefix1,inflected,0);
 unichar* sequence1 = create_bigram_sequence(tag,new_inflected,1);
-long int N1 = get_sequence_integer(new_inflected,bin,inf,alphabet);
-long int N2 = get_sequence_integer(sequence1,bin,inf,alphabet);
+long int N1 = get_sequence_integer(new_inflected,d,alphabet);
+long int N2 = get_sequence_integer(sequence1,d,alphabet);
 free(sequence1);
 free(new_inflected);
 if(N1 == -1){
@@ -373,9 +362,9 @@ if(N1 == -1){
 	unichar* suffix = u_strnsuffix(inflected,suffix_length);
 	const char prefix2[] = "suff_";
 	unichar* seq_suff = create_bigram_sequence(prefix2,suffix,0);
-	N1 = get_sequence_integer(seq_suff,bin,inf,alphabet);
+	N1 = get_sequence_integer(seq_suff,d,alphabet);
 	unichar* sequence2 = create_bigram_sequence(tag,seq_suff,1);
-	N2 = get_sequence_integer(sequence2,bin,inf,alphabet);
+	N2 = get_sequence_integer(sequence2,d,alphabet);
 	free(sequence2);
 	free(suffix);
 	free(seq_suff);
@@ -395,12 +384,12 @@ return (double)(((double)N2)/(1+((double)(N1))));
  * (semantic and sometimes inflectional codes). This probability is
  * a double value between 0 and 1.
  */
-double compute_transition_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+double compute_transition_probability(Dictionary* d,const Alphabet* alphabet,
 									 const unichar* ancestor,const unichar* predecessor,const unichar* current){
 unichar* tri_sequence = create_trigram_sequence(ancestor,predecessor,current);
 unichar* bi_sequence = create_bigram_sequence(ancestor,predecessor,1);
-long int C1 = get_sequence_integer(tri_sequence,bin,inf,alphabet);
-long int C2 = get_sequence_integer(bi_sequence,bin,inf,alphabet);
+long int C1 = get_sequence_integer(tri_sequence,d,alphabet);
+long int C2 = get_sequence_integer(bi_sequence,d,alphabet);
 free(bi_sequence);
 free(tri_sequence);
 if(C1 == -1){
@@ -428,7 +417,7 @@ void check_compound(unichar* inflected){
  * Computes partial probability of a outgoing transition of a state (for compounds words only).
  * The system used here is BIO.
  */
-double compute_partial_probability_compounds(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+double compute_partial_probability_compounds(Dictionary* d,const Alphabet* alphabet,
 		  unichar* ancestor,unichar* predecessor,unichar* tag_code,unichar* inflected){
 	check_compound(inflected);
 	unichar* word = u_strchr(inflected,'_');
@@ -444,8 +433,8 @@ double compute_partial_probability_compounds(const unsigned char* bin,const stru
 		else{
 			u_strcat(tmp,"+I\0");
 		}
-		score += compute_emit_probability(bin,inf,alphabet,new_tag_code,simple_word);
-		score += compute_transition_probability(bin,inf,alphabet,ancestor,predecessor,new_tag_code);
+		score += compute_emit_probability(d,alphabet,new_tag_code,simple_word);
+		score += compute_transition_probability(d,alphabet,ancestor,predecessor,new_tag_code);
 		nb_words+=1;
 		old_value += u_strlen(simple_word)+1;
 		word = u_strchr(inflected+old_value,'_');
@@ -461,8 +450,8 @@ double compute_partial_probability_compounds(const unsigned char* bin,const stru
 				unichar* new_tag_code = (unichar*)malloc(sizeof(unichar)*(u_strlen(tag_code)+3));
 				unichar* tmp = u_strcpy_sized(new_tag_code,u_strlen(tag_code)+1,tag_code);
 				u_strcat(tmp,"+I\0");
-				score += compute_emit_probability(bin,inf,alphabet,new_tag_code,word);
-				score += compute_transition_probability(bin,inf,alphabet,ancestor,predecessor,new_tag_code);
+				score += compute_emit_probability(d,alphabet,new_tag_code,word);
+				score += compute_transition_probability(d,alphabet,ancestor,predecessor,new_tag_code);
 				free(new_tag_code);
 			}
 			if(nb_words>=2){
@@ -482,16 +471,16 @@ double compute_partial_probability_compounds(const unsigned char* bin,const stru
  * Computes partial probability of a outgoing transition of a state.
  * This probability is the product of emit and transition probabilities.
  */
-double compute_partial_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+double compute_partial_probability(Dictionary* d,const Alphabet* alphabet,
 								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
 								  struct matrix_entry* current){
 unichar* inflected = compound_to_simple(current->tag->inflected);
 /* case : a transition tagged by a compound */
 if((u_strchr(inflected,'_') != NULL || (u_strchr(inflected,'-') != NULL && inflected[0]!='-'))&& u_strlen(inflected)>2){
-	return compute_partial_probability_compounds(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code,inflected);
+	return compute_partial_probability_compounds(d,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code,inflected);
 }
-double emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,inflected);
-double trans_prob = compute_transition_probability(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
+double emit_prob = compute_emit_probability(d,alphabet,current->tag_code,inflected);
+double trans_prob = compute_transition_probability(d,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
 free(inflected);
 return emit_prob+trans_prob;
 }
@@ -509,9 +498,9 @@ return -1;
  * Calculates partial probability for a transition and if this probability
  * is better than the previous best transition, we replace this one by the new.
  */
-void compute_best_probability(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,
+void compute_best_probability(Dictionary* d,const Alphabet* alphabet,
 							  struct matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
-double score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
+double score = cover_span==1?0:compute_partial_probability(d,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
 if(score > 0 && u_find_char(matrix[index_matrix]->tag->inflected,'_') != -1){
 	score +=2;
@@ -658,7 +647,7 @@ return new_tags;
  * Computes the Viterbi Path algorithm to find the best path in
  * the automata and then this path is used to prune transitions.
  */
-vector_ptr* do_viterbi(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet,Tfst* input_tfst,int form_type){
+vector_ptr* do_viterbi(Dictionary* d,const Alphabet* alphabet,Tfst* input_tfst,int form_type){
 SingleGraph automaton = input_tfst->automaton;
 int index_matrix = 2;
 topological_sort(automaton,NULL);
@@ -682,7 +671,7 @@ for(int i=0;i<automaton->number_of_states;i++){
 		if(is_initial_state(state) != 0){
 			/* initial state has no incoming transitions so we
 			 * calculate probabilities in a separate process */
-			compute_best_probability(bin,inf,alphabet,matrix,index_matrix,1,0);
+			compute_best_probability(d,alphabet,matrix,index_matrix,1,0);
 		}
 		int initial = 1;
 		for(Transition* transI=state->reverted_incoming_transitions;transI!=NULL;transI=transI->next){
@@ -692,7 +681,7 @@ for(int i=0;i<automaton->number_of_states;i++){
 						 transI->tag_number,transI->state_number);
 			free(content);
 			int cover_span = same_positions(&tagI->m,&tag->m);
-			compute_best_probability(bin,inf,alphabet,matrix,index_matrix,indexI,cover_span);
+			compute_best_probability(d,alphabet,matrix,index_matrix,indexI,cover_span);
 			initial = 0;
 		}
 		index_matrix++;
@@ -710,10 +699,10 @@ return new_tags;
  * this information is encoded in the dictionary
  * at the line "CODE\tFEATURES";returns 0 otherwise.
  */
-int get_form_type(const unsigned char* bin,const struct INF_codes* inf,const Alphabet* alphabet){
+int get_form_type(Dictionary* d,const Alphabet* alphabet){
 unichar code_type[DIC_LINE_SIZE];
 u_sprintf(code_type,"CODE\tFEATURES");
-long int value = get_sequence_integer(code_type,bin,inf,alphabet);
+long int value = get_sequence_integer(code_type,d,alphabet);
 if(value == -1){
 	fatal_error("Bad value in get_form_type\n");
 }
@@ -725,15 +714,15 @@ return (int)value;
  * This algorithm aims at pruning tokens of the automata in order to
  * obtain a linear path (the most probable path).
  */
-void do_tagging(Tfst* input_tfst,Tfst* result_tfst,const unsigned char* bin,
-				const struct INF_codes* inf,const Alphabet* alphabet,int form_type,
+void do_tagging(Tfst* input_tfst,Tfst* result_tfst,Dictionary* d,
+				const Alphabet* alphabet,int form_type,
 				struct hash_table* form_frequencies){
 /* we write the number of sentences in the result tfst file */
 u_fprintf(result_tfst->tfst,"%010d\n",input_tfst->N);
 /* for each sentence we compute Viterbi Path algorithm */
 for(int i=1;i<=input_tfst->N;i++){
 	load_sentence(input_tfst,i);
-	vector_ptr* new_tags = do_viterbi(bin,inf,alphabet,input_tfst,form_type);
+	vector_ptr* new_tags = do_viterbi(d,alphabet,input_tfst,form_type);
 	save_current_sentence(input_tfst,result_tfst->tfst,result_tfst->tind,
 			(unichar**)new_tags->tab,new_tags->nbelems,form_frequencies);
 	free_vector_ptr(new_tags,free);

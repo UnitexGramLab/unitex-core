@@ -30,6 +30,8 @@
 #include "DicVariables.h"
 #include "ParsingInfo.h"
 #include "UserCancelling.h"
+#include "CompressedDic.h"
+
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
  see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -1347,15 +1349,14 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
  * given pattern. This version of the function handles the all languages but Arabic.
  */
 static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
-		const unsigned char* bin, const struct INF_codes* inf, int offset,
+		Dictionary* d, int offset,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar* jamo,
 		int pos_in_jamo, unichar *line_buffer) {
-	int n_transitions = ((unsigned char) bin[offset]) * 256
-			+ (unsigned char) bin[offset + 1];
-	offset = offset + 2;
-	if (!(n_transitions & 32768)) {
+int final,n_transitions,inf_number;
+offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
+	if (final) {
 		//error("\narriba!\n\n\n");
 		/* If this node is final, we get the INF line number */
 		inflected[pos_in_inflected] = '\0';
@@ -1366,12 +1367,9 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 					pos_in_jamo, p->prv_alloc_recycle);
 		} else {
 			/* If we have to check the pattern */
-			int inf_number = ((unsigned char) bin[offset]) * 256 * 256
-					+ ((unsigned char) bin[offset + 1]) * 256
-					+ (unsigned char) bin[offset + 2];
 			//unichar line[DIC_LINE_SIZE];
 			unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
-			struct list_ustring* tmp = inf->codes[inf_number];
+			struct list_ustring* tmp = d->inf->codes[inf_number];
 			while (tmp != NULL) {
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
@@ -1441,24 +1439,11 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 	}
 
 	/* We look for outgoing transitions */
-	if (n_transitions & 32768) {
-		/* If we are in a normal node, we remove the control bit to
-		 * have the good number of transitions */
-		n_transitions = n_transitions - 32768;
-	} else {
-		/* If we are in a final node, we must jump after the reference to the INF line number */
-		offset = offset + 3;
-	}
+	unichar c;
+	int adr;
 	for (int i = 0; i < n_transitions; i++) {
 		update_last_position(p, pos_offset);
-		unichar c = (unichar) (((unsigned char) bin[offset]) * 256
-				+ (unsigned char) bin[offset + 1]);
-		offset = offset + 2;
-		int adr = ((unsigned char) bin[offset]) * 256 * 256
-				+ ((unsigned char) bin[offset + 1]) * 256
-				+ (unsigned char) bin[offset + 2];
-		offset = offset + 3;
-
+		offset=read_dictionary_transition(d,offset,&c,&adr);
 		if (jamo == NULL) {
 			/* Non Korean mode */
 			if (is_equal_or_uppercase(c, current_token[pos_in_current_token],
@@ -1467,7 +1452,7 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 				 * dictionary char is compatible with the token char. In that case,
 				 * we copy in 'inflected' the exact character that is in the dictionary. */
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_standard(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_standard(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, jamo, pos_in_jamo, line_buffer);
@@ -1525,7 +1510,7 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 				}
 				/* If we have a jamo letter match */
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_standard(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_standard(p, d, adr,
 						new_current_token, inflected, new_pos_in_current_token,
 						pos_in_inflected + 1, new_pos_offset, matches, pattern,
 						save_dic_entry, new_jamo, new_pos_in_jamo, line_buffer);
@@ -1585,16 +1570,15 @@ static int shadda_may_be_omitted(ArabicTypoRules r) {
 #define YF_EXPECTED 16
 
 static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
-		const unsigned char* bin, const struct INF_codes* inf, int offset,
+		Dictionary* d, int offset,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar *line_buffer,
 		int expected, unichar last_dic_char) {
-	int old_offset=offset;
-	int n_transitions = ((unsigned char) bin[offset]) * 256
-			+ (unsigned char) bin[offset + 1];
-	offset = offset + 2;
-	if (!(n_transitions & 32768)) {
+int old_offset=offset;
+int final,n_transitions,inf_number;
+offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
+	if (final) {
 		if (expected & NO_END_OF_WORD_EXPECTED) {
 			/* If we were not supposed to find the end of the word */
 			return;
@@ -1611,12 +1595,9 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					pos_in_current_token, -1, (*matches), NULL, NULL, 0, p->prv_alloc_recycle);
 		} else {
 			/* If we have to check the pattern */
-			int inf_number = ((unsigned char) bin[offset]) * 256 * 256
-					+ ((unsigned char) bin[offset + 1]) * 256
-					+ (unsigned char) bin[offset + 2];
 			//unichar line[DIC_LINE_SIZE];
 			unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
-			struct list_ustring* tmp = inf->codes[inf_number];
+			struct list_ustring* tmp = d->inf->codes[inf_number];
 			while (tmp != NULL) {
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
@@ -1655,25 +1636,11 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		pos_in_current_token = 0;
 	}
 
-	/* We look for outgoing transitions */
-	if (n_transitions & 32768) {
-		/* If we are in a normal node, we remove the control bit to
-		 * have the good number of transitions */
-		n_transitions = n_transitions - 32768;
-	} else {
-		/* If we are in a final node, we must jump after the reference to the INF line number */
-		offset = offset + 3;
-	}
+	unichar c;
+	int adr;
 	for (int i = 0; i < n_transitions; i++) {
 		update_last_position(p, pos_offset);
-		unichar c = (unichar) (((unsigned char) bin[offset]) * 256
-				+ (unsigned char) bin[offset + 1]);
-		offset = offset + 2;
-		int adr = ((unsigned char) bin[offset]) * 256 * 256
-				+ ((unsigned char) bin[offset + 1]) * 256
-				+ (unsigned char) bin[offset + 2];
-		offset = offset + 3;
-
+		offset=read_dictionary_transition(d,offset,&c,&adr);
 		/* Standard case: matching the char in the dictionary */
 		if (c==current_token[pos_in_current_token]) {
 			/* We explore the rest of the dictionary only if the
@@ -1773,7 +1740,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			error("\n");*/
 			if (can_go_on) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, next, c);
@@ -1785,7 +1752,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			if (c==AR_ALEF && current_token[pos_in_current_token]==AR_ALEF_WASLA
 					&& pos_in_inflected==0 && p->arabic.al_with_wasla) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, AL_EXPECTED, c);
@@ -1794,7 +1761,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			else if (c==AR_ALEF_WITH_HAMZA_ABOVE && current_token[pos_in_current_token]==AR_ALEF
 					&& pos_in_inflected==0 && p->arabic.alef_hamza_above_O_to_A) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
@@ -1803,7 +1770,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			else if (c==AR_ALEF_WITH_HAMZA_BELOW && current_token[pos_in_current_token]==AR_ALEF
 					&& pos_in_inflected==0 && p->arabic.alef_hamza_below_I_to_A) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
@@ -1812,7 +1779,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			else if (c==AR_ALEF_WITH_HAMZA_BELOW && current_token[pos_in_current_token]==AR_ALEF_WASLA
 					&& pos_in_inflected==0 && p->arabic.alef_hamza_below_I_to_L) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
@@ -1821,7 +1788,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			else if (c==AR_FATHATAN && current_token[pos_in_current_token]==AR_ALEF
 					&& p->arabic.fathatan_alef_equiv_alef_fathatan) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, AF_EXPECTED, c);
@@ -1831,7 +1798,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					&& expected==AF_EXPECTED
 					&& p->arabic.fathatan_alef_equiv_alef_fathatan) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c);
@@ -1840,7 +1807,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			else if (c==AR_FATHATAN && current_token[pos_in_current_token]==AR_ALEF_MAQSURA
 					&& p->arabic.fathatan_alef_maqsura_equiv_alef_maqsura_fathatan) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, YF_EXPECTED, c);
@@ -1850,7 +1817,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					&& expected==YF_EXPECTED
 					&& p->arabic.fathatan_alef_maqsura_equiv_alef_maqsura_fathatan) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c);
@@ -1860,7 +1827,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					&& current_token[pos_in_current_token]==AR_SHADDA && pos_in_inflected==1
 					&& is_solar(inflected[0])
 					&& was_Al_before(current_token,pos_in_current_token-1,p->arabic)) {
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, old_offset,
+				explore_dic_in_morpho_mode_arabic(p, d, old_offset,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
@@ -1871,7 +1838,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					&& is_lunar(c)
 					&& current_token[pos_in_current_token]==AR_SUKUN
 					&& was_Al_before(current_token,pos_in_current_token,p->arabic)) {
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, old_offset,
+				explore_dic_in_morpho_mode_arabic(p, d, old_offset,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
@@ -1882,7 +1849,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					&& current_token[pos_in_current_token]==AR_YEH_WITH_HAMZA_ABOVE
 					&& c==AR_ALEF_MAQSURA) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token,
 						pos_in_inflected+1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
@@ -1894,7 +1861,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 					&& c==AR_HAMZA
 					&& last_dic_char==AR_ALEF_MAQSURA) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr,
+				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token,
 						pos_in_inflected+1, pos_offset, matches, pattern,
 						save_dic_entry, line_buffer,END_OF_WORD_EXPECTED,last_dic_char);
@@ -1903,7 +1870,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		/* Rule that always applies about tatweel */
 		if (c != AR_TATWEEL && current_token[pos_in_current_token]
 				== AR_TATWEEL) {
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, old_offset, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, old_offset, current_token,
 					inflected, pos_in_current_token + 1, pos_in_inflected,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -1912,7 +1879,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_FATHA
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -1921,7 +1888,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_DAMMA
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -1930,7 +1897,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_KASRA
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -1938,7 +1905,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		if (p->arabic.sukun_omission && c == AR_SUKUN
 				&& current_token[pos_in_current_token] != AR_SUKUN) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -1947,7 +1914,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_SUPERSCRIPT_ALEF
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -1956,7 +1923,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_FATHATAN
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					END_OF_WORD_EXPECTED, c);
@@ -1965,7 +1932,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_DAMMATAN
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					END_OF_WORD_EXPECTED, c);
@@ -1974,7 +1941,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 				&& current_token[pos_in_current_token] != AR_KASRATAN
 				&& last_dic_char != AR_SHADDA) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					END_OF_WORD_EXPECTED, c);
@@ -1983,7 +1950,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		if (c == AR_SHADDA && current_token[pos_in_current_token] != AR_SHADDA
 				&& shadda_may_be_omitted(p->arabic)) {
 			inflected[pos_in_inflected] = c;
-			explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
 					NOTHING_EXPECTED, c);
@@ -2044,7 +2011,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 			}
 			if (can_go_on) {
 				inflected[pos_in_inflected] = c;
-				explore_dic_in_morpho_mode_arabic(p, bin, inf, adr, current_token,
+				explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 						inflected, pos_in_current_token, pos_in_inflected + 1,
 						pos_offset, matches, pattern, save_dic_entry, line_buffer,
 						next, c);
@@ -2072,17 +2039,17 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 	unichar* inflected = buffer_line_buffer_inflected;
 	unichar* line_buffer = buffer_line_buffer_inflected + 4096;
 	for (int i = 0; i < p->n_morpho_dics; i++) {
-		if (p->morpho_dic_bin[i] != NULL) {
+		if (p->morpho_dic[i] != NULL) {
 			/* Can't match anything in an empty dictionary */
 			if (p->arabic.rules_enabled) {
-				explore_dic_in_morpho_mode_arabic(p, p->morpho_dic_bin[i],
-						p->morpho_dic_inf[i], 4,
+				explore_dic_in_morpho_mode_arabic(p, p->morpho_dic[i],
+						p->morpho_dic[i]->header_size,
 						p->tokens->value[p->buffer[p->current_origin + pos]],
 						inflected, pos_in_token, 0, pos, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0');
 			} else {
-				explore_dic_in_morpho_mode_standard(p, p->morpho_dic_bin[i],
-						p->morpho_dic_inf[i], 4,
+				explore_dic_in_morpho_mode_standard(p, p->morpho_dic[i],
+						p->morpho_dic[i]->header_size,
 						p->tokens->value[p->buffer[p->current_origin + pos]],
 						inflected, pos_in_token, 0, pos, matches, pattern,
 						save_dic_entry, jamo, pos_in_jamo, line_buffer);

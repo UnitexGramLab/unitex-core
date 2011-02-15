@@ -25,9 +25,9 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"
+#include "CompressedDic.h"
 
-
-void analyse_norwegian_unknown_words(const Alphabet*,const unsigned char*,const struct INF_codes*,U_FILE*,
+void analyse_norwegian_unknown_words(const Alphabet*,Dictionary*,U_FILE*,
 									U_FILE*,U_FILE*,U_FILE*,struct string_hash*);
 
 

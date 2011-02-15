@@ -25,13 +25,13 @@
 
 
 // main internal functions:
-void analyse_word_list(const unsigned char*, const struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,const Alphabet*,
+void analyse_word_list(Dictionary*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,const Alphabet*,
                        const bool*,const bool*,struct utags,vector_ptr*,vector_ptr*);
-int analyse_word(const unichar*,const unsigned char*,U_FILE*,U_FILE*,const struct INF_codes*,const bool*,const bool*,const Alphabet*,struct utags
+int analyse_word(const unichar*,Dictionary*,U_FILE*,U_FILE*,const bool*,const bool*,const Alphabet*,struct utags
       ,vector_ptr*,vector_ptr*);
 void explore_state(int, unichar*, int, const unichar*, const unichar*, int, const unichar*, const unichar*,
                    struct decomposed_word_list**, int, struct rule_list*, const struct dela_entry*,
-                   const unsigned char*,const struct INF_codes*,const bool*,const bool*,const Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
+                   Dictionary*,const bool*,const bool*,const Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
 
 
 // results of decomposition are written to
@@ -162,9 +162,8 @@ void free_all_dic_entries(vector_ptr*);
 // this function analyses russian compound words
 //
 void analyse_compounds(const Alphabet* alph,
-		       const unsigned char* bin,
-		       const struct INF_codes* inf,
-		       U_FILE* words,
+		       Dictionary* d,
+			   U_FILE* words,
 		       U_FILE* result,
 		       U_FILE* debug,
 		       U_FILE* new_unknown_words,struct utags UTAG)
@@ -173,8 +172,8 @@ void analyse_compounds(const Alphabet* alph,
    bool* suffix;
    vector_ptr* rules=new_vector_ptr(16);
    vector_ptr* entries=new_vector_ptr(16);
-  init_tableaux(inf,&prefix,&suffix,UTAG);
-  analyse_word_list(bin,inf,words,result,debug,new_unknown_words,alph,prefix,suffix,UTAG,rules,entries);
+  init_tableaux(d->inf,&prefix,&suffix,UTAG);
+  analyse_word_list(d,words,result,debug,new_unknown_words,alph,prefix,suffix,UTAG,rules,entries);
   free_tableaux(prefix,suffix);
   free_vector_ptr(rules);
   free_vector_ptr(entries);
@@ -183,8 +182,7 @@ void analyse_compounds(const Alphabet* alph,
 //
 // this function reads words in the word file and try analyse them
 //
-void analyse_word_list(const unsigned char* tableau_bin,
-			       const struct INF_codes* inf,
+void analyse_word_list(Dictionary* d,
 			       U_FILE* words,
 			       U_FILE* result,
 			       U_FILE* debug,
@@ -200,7 +198,7 @@ void analyse_word_list(const unsigned char* tableau_bin,
   int n=0;
   int words_done = 0;
   while (EOF!=u_fgets_limit2(s,MAX_WORD_LENGTH,words)) {
-    if (!analyse_word(s,tableau_bin,debug,result,inf,prefix,suffix,alph,UTAG,rules,entries)) {
+    if (!analyse_word(s,d,debug,result,prefix,suffix,alph,UTAG,rules,entries)) {
       // if the analysis has failed, we store the word in the new unknown word file
       u_fprintf(new_unknown_words,"%S\n",s);
     } else {
@@ -217,8 +215,8 @@ void analyse_word_list(const unsigned char* tableau_bin,
 //
 // this function try to analyse an unknown russian word
 //
-int analyse_word(const unichar* mot,const unsigned char* tableau_bin,U_FILE* debug,U_FILE* result_file,
-                 const struct INF_codes* inf_codes,const bool* prefix,const bool* suffix,const Alphabet* alphabet,
+int analyse_word(const unichar* mot,Dictionary* d,U_FILE* debug,U_FILE* result_file,
+                 const bool* prefix,const bool* suffix,const Alphabet* alphabet,
                  struct utags UTAG,vector_ptr* rules,vector_ptr* entries)
 {
 #if DDEBUG > 0
@@ -234,8 +232,8 @@ int analyse_word(const unichar* mot,const unsigned char* tableau_bin,U_FILE* deb
   dela_line[0]='\0';
   correct_word[0]='\0';
   struct decomposed_word_list* l = 0;
-  explore_state(4,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,tableau_bin,
-        inf_codes,prefix,suffix,alphabet,debug,UTAG,rules,entries);
+  explore_state(d->header_size,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,d,
+        prefix,suffix,alphabet,debug,UTAG,rules,entries);
   free_all_dic_entries(entries);
   free_all_rule_lists(rules);
   if ( l == 0 ) {
@@ -903,7 +901,7 @@ codes[j]='\0';
 //
 // this function explores the dictionary to decompose the word mot
 //
-void explore_state (int adresse,
+void explore_state (int offset,
 		    unichar* current_component,
 		    int pos_in_current_component,
 		    const unichar* original_word,
@@ -915,22 +913,14 @@ void explore_state (int adresse,
 		    int n_decomp,
 		    struct rule_list* rule_list_called,
 		    const struct dela_entry* dic_entr_called,
-		    const unsigned char* tableau_bin,
-		    const struct INF_codes* inf_codes,
+		    Dictionary* d,
 		    const bool* prefix,const bool* suffix,const Alphabet* alphabet,
 		    U_FILE* debug_file,struct utags UTAG,
-		    vector_ptr* rules,vector_ptr* entries)
-{
-
-  int c = tableau_bin[adresse]*256+tableau_bin[adresse+1];
-  int index;
-  int t = 0;
-
-  if ( !(c&32768) ) { // if we are in a terminal state
-
-    index = tableau_bin[adresse+2]*256*256+tableau_bin[adresse+3]*256+tableau_bin[adresse+4];
+		    vector_ptr* rules,vector_ptr* entries) {
+int final,n_transitions,inf_number;
+offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
+if (final) { // if we are in a terminal state
     current_component[pos_in_current_component] = '\0';
-
     if (pos_in_current_component >= 1) {
       // go on if word length equals zero
 
@@ -940,7 +930,7 @@ void explore_state (int adresse,
       }
 #endif
 
-      struct list_ustring* l = inf_codes->codes[index];
+      struct list_ustring* l = d->inf->codes[inf_number];
       while ( l != 0 ) {
 
 //	int one_rule_already_matched = 0; // one rule matched each entry is enough
@@ -961,7 +951,7 @@ void explore_state (int adresse,
 	unichar next_remaining_word[MAX_WORD_LENGTH];
 
 	struct rule_list* rule_list = 0;
-	if (prefix_is_valid(index,prefix) || suffix_is_valid(index,suffix))
+	if (prefix_is_valid(inf_number,prefix) || suffix_is_valid(inf_number,suffix))
 	  rule_list = parse_rules(entry,UTAG,rules);
 	else {
 	  rule_list = new_rule_list(rules);
@@ -1004,7 +994,7 @@ void explore_state (int adresse,
 		   composition_rule_matches_entry(rule_called->after, dic_entr,debug_file))) ||
 		 // and we have a valid right component, i.e. rules match
 		 ((dic_entr_called == 0) &&  // or a simple entry (i.e. no prefix),
-		  (! affix_is_valid(index,prefix,suffix))) // but no affix
+		  (! affix_is_valid(inf_number,prefix,suffix))) // but no affix
 		 )
 		)  {
 
@@ -1102,7 +1092,7 @@ void explore_state (int adresse,
 	    } // end if end of word and valid right component
 	    else if
 	      // beginning or middle of word: explore the rest of the original word
-	      (prefix_is_valid(index,prefix) &&
+	      (prefix_is_valid(inf_number,prefix) &&
 	       check_is_valid(UTAG.PREFIX, dic_entr) &&
 	       // but only if the current component was a valid left one
 	       // we go on with the next component
@@ -1182,7 +1172,7 @@ void explore_state (int adresse,
 	    u_fprintf(debug_file,"> %S\n",next_remaining_word);
 	  }
 #endif
-	  explore_state(4,
+	  explore_state(d->header_size,
 			next_component,
 			0,
 			original_word,
@@ -1194,7 +1184,7 @@ void explore_state (int adresse,
 			n_decomp+1,
 			rule_list_new,
 			dic_entr,
-			tableau_bin,inf_codes,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
+			d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
 	}
 	else {
 // 	  free_dic_entry(dic_entr);
@@ -1205,13 +1195,7 @@ void explore_state (int adresse,
 
       } // end of while (token_list* l != 0)
 
-      t = adresse+5;
-
     } // end of word length >= 1
-  }
-  else { // not a final state
-    c = c-32768;
-    t = adresse+2;
   }
   if (remaining_word[pos_in_remaining_word]=='\0') {
     // if we have finished, we return
@@ -1220,18 +1204,14 @@ void explore_state (int adresse,
     return;
   }
   // if not, we go on with the next letter
-  for (int i=0;i<c;i++) {
-    if (is_equal_or_uppercase((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),
-			       remaining_word[pos_in_remaining_word],
-			       alphabet)
-	||
-	is_equal_or_uppercase(remaining_word[pos_in_remaining_word],
-			       (unichar)(tableau_bin[t]*256+tableau_bin[t+1]),
-			       alphabet)) {
-      index = tableau_bin[t+2]*256*256+tableau_bin[t+3]*256+tableau_bin[t+4];
-      current_component[pos_in_current_component] =
-	(unichar)(tableau_bin[t]*256+tableau_bin[t+1]);
-      explore_state(index,
+  unichar c;
+  int adr;
+  for (int i=0;i<n_transitions;i++) {
+	  offset=read_dictionary_transition(d,offset,&c,&adr);
+    if (is_equal_or_uppercase(c,remaining_word[pos_in_remaining_word],alphabet)
+	|| is_equal_or_uppercase(remaining_word[pos_in_remaining_word],c,alphabet)) {
+      current_component[pos_in_current_component] = c;
+      explore_state(adr,
 		    current_component,
 		    pos_in_current_component+1,
 		    original_word,
@@ -1243,9 +1223,7 @@ void explore_state (int adresse,
 		    n_decomp,
 		    rule_list_called,
 		    dic_entr_called,
-		    tableau_bin,
-		    inf_codes,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
+		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
     }
-    t += 5;
   }
 }

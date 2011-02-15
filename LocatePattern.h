@@ -245,8 +245,10 @@ struct locate_parameters {
 
    /* These 2 fields represent the dictionary array to use in
     * morphological mode, if any. */
-   const struct INF_codes** morpho_dic_inf;
-   const unsigned char** morpho_dic_bin;
+
+   Dictionary** morpho_dic;
+   /*const struct INF_codes** morpho_dic_inf;
+   const unsigned char** morpho_dic_bin;*/
    struct INF_free_info* morpho_dic_inf_free;
    struct BIN_free_info* morpho_dic_bin_free;
 

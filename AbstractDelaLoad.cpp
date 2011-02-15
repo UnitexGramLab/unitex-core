@@ -32,6 +32,7 @@
 
 #include "Unicode.h"
 #include "DELA.h"
+#include "CompressedDic.h"
 #include "AbstractDelaLoad.h"
 #include "AbstractDelaPlugCallback.h"
 
@@ -141,7 +142,7 @@ const struct INF_codes* load_abstract_INF_file(const char* name,struct INF_free_
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
 	if (pads == NULL)
 	{
-		res = load_INF_file(name);
+	//	res = load_INF_file(name);
 		if (res != NULL)
 		{
 			p_inf_free_info->must_be_free = 1;
@@ -166,9 +167,9 @@ void free_abstract_INF(const struct INF_codes* INF,struct INF_free_info* p_inf_f
 	if (INF != NULL)
 		if (p_inf_free_info->must_be_free != 0)
 	{
-		if (p_inf_free_info->func_free_inf == NULL)
-			free_INF_codes((struct INF_codes*)INF);
-		else
+		if (p_inf_free_info->func_free_inf == NULL) {
+		//	free_INF_codes((struct INF_codes*)INF);
+		} else
 		{
 			t_fnc_free_abstract_INF fnc_free_abstract_INF = (t_fnc_free_abstract_INF)(p_inf_free_info->func_free_inf);
 			if (fnc_free_abstract_INF != NULL)
@@ -194,15 +195,14 @@ const unsigned char* load_abstract_BIN_file(const char* name,struct BIN_free_inf
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
 	if (pads == NULL)
 	{
-        /*
-		res = load_BIN_file(name);
+		long bin_size;
+        res = load_BIN_file(name,&bin_size);
 		if (res != NULL)
 		{
 			p_bin_free_info->must_be_free = 1;
 			p_bin_free_info->func_free_bin = NULL;
 			p_bin_free_info->private_ptr = NULL;
 		}
-        */
         ABSTRACTMAPFILE *amf;
         amf=af_open_mapfile(name,MAPFILE_OPTION_READ,0);
         if (amf != NULL) {
@@ -235,9 +235,9 @@ void free_abstract_BIN(const unsigned char* BIN,struct BIN_free_info* p_bin_free
 	if (BIN != NULL)
 		if (p_bin_free_info->must_be_free != 0)
 	{
-		if (p_bin_free_info->func_free_bin == NULL)
-			free_BIN_file((unsigned char*)BIN);
-		else
+		if (p_bin_free_info->func_free_bin == NULL) {
+			//free_BIN_file((unsigned char*)BIN);
+		} else
 		{
 			t_fnc_free_abstract_BIN fnc_free_abstract_BIN = (t_fnc_free_abstract_BIN)(p_bin_free_info->func_free_bin);
 			if (fnc_free_abstract_BIN != NULL)

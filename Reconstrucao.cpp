@@ -39,7 +39,7 @@
 #include "Error.h"
 #include "UnitexGetOpt.h"
 #include "Reconstrucao.h"
-
+#include "CompressedDic.h"
 
 
 const char* usage_Reconstrucao =
@@ -194,7 +194,11 @@ if (output_policy==IGNORE_OUTPUTS) {
    free_alphabet(alph);
    return 1;
 }
+char root_inf_file[FILENAME_MAX];
+remove_extension(root,root_inf_file);
+strcat(root_inf_file,".inf");
 u_printf("Loading radical form dictionary...\n");
+#if 0
 struct BIN_free_info root_bin_free;
 const unsigned char* root_bin=load_abstract_BIN_file(root,&root_bin_free);
 if (root_bin==NULL) {
@@ -202,9 +206,6 @@ if (root_bin==NULL) {
    free_alphabet(alph);
    return 1;
 }
-char root_inf_file[FILENAME_MAX];
-remove_extension(root,root_inf_file);
-strcat(root_inf_file,".inf");
 struct INF_free_info root_inf_free;
 const struct INF_codes* root_inf=load_abstract_INF_file(root_inf_file,&root_inf_free);
 if (root_bin==NULL) {
@@ -213,7 +214,23 @@ if (root_bin==NULL) {
    free_abstract_BIN(root_bin,&root_bin_free);
    return 1;
 }
+#endif
+Dictionary* root_dic=new_Dictionary(root,root_inf_file);
+if (root==NULL) {
+	free_alphabet(alph);
+	return 1;
+}
 u_printf("Loading inflected form dictionary...\n");
+char inflected_inf_file[FILENAME_MAX];
+remove_extension(dictionary,inflected_inf_file);
+strcat(inflected_inf_file,".inf");
+Dictionary* inflected_dic=new_Dictionary(dictionary,inflected_inf_file);
+if (inflected_dic==NULL) {
+	free_Dictionary(root_dic);
+	free_alphabet(alph);
+	return 1;
+}
+#if 0
 struct BIN_free_info inflected_bin_free;
 const unsigned char* inflected_bin=load_abstract_BIN_file(dictionary,&inflected_bin_free);
 if (inflected_bin==NULL) {
@@ -223,9 +240,6 @@ if (inflected_bin==NULL) {
    free_abstract_INF(root_inf,&root_inf_free);
    return 1;
 }
-char inflected_inf_file[FILENAME_MAX];
-remove_extension(dictionary,inflected_inf_file);
-strcat(inflected_inf_file,".inf");
 struct INF_free_info inflected_inf_free;
 const struct INF_codes* inflected_inf=load_abstract_INF_file(inflected_inf_file,&inflected_inf_free);
 if (inflected_inf==NULL) {
@@ -236,15 +250,18 @@ if (inflected_inf==NULL) {
    free_abstract_INF(root_inf,&root_inf_free);
    return 1;
 }
+#endif
 u_printf("Loading pronoun rewriting rule grammar...\n");
 struct normalization_tree* rewriting_rules=load_normalization_transducer_string(pronoun_rules);
 if (rewriting_rules==NULL) {
    error("Cannot load pronoun rewriting grammar %s\n",pronoun_rules);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,&root_bin_free);
+   free_Dictionary(root_dic);
+   free_Dictionary(inflected_dic);
+   /*free_abstract_BIN(root_bin,&root_bin_free);
    free_abstract_BIN(inflected_bin,&inflected_bin_free);
    free_abstract_INF(root_inf,&root_inf_free);
-   free_abstract_INF(inflected_inf,&inflected_inf_free);
+   free_abstract_INF(inflected_inf,&inflected_inf_free);*/
    return 1;
 }
 u_printf("Loading nasal pronoun rewriting rule grammar...\n");
@@ -252,22 +269,26 @@ struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_s
 if (rewriting_rules==NULL) {
    error("Cannot load nasal pronoun rewriting grammar %s\n",nasal_pronoun_rules);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,&root_bin_free);
+   free_Dictionary(root_dic);
+   free_Dictionary(inflected_dic);
+   /*free_abstract_BIN(root_bin,&root_bin_free);
    free_abstract_BIN(inflected_bin,&inflected_bin_free);
    free_abstract_INF(root_inf,&root_inf_free);
-   free_abstract_INF(inflected_inf,&inflected_inf_free);
+   free_abstract_INF(inflected_inf,&inflected_inf_free);*/
    free_normalization_tree(rewriting_rules);
    return 1;
 }
 u_printf("Constructing normalization grammar...\n");
-build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,output,
+build_portuguese_normalization_grammar(alph,list,root_dic,inflected_dic,output,
                                        encoding_output,bom_output,
                                        rewriting_rules,nasal_rewriting_rules);
 free_alphabet(alph);
-free_abstract_BIN(root_bin,&root_bin_free);
+free_Dictionary(root_dic);
+free_Dictionary(inflected_dic);
+/*free_abstract_BIN(root_bin,&root_bin_free);
 free_abstract_INF(root_inf,&root_inf_free);
 free_abstract_BIN(inflected_bin,&inflected_bin_free);
-free_abstract_INF(inflected_inf,&inflected_inf_free);
+free_abstract_INF(inflected_inf,&inflected_inf_free);*/
 free_normalization_tree(rewriting_rules);
 free_normalization_tree(nasal_rewriting_rules);
 free_OptVars(vars);

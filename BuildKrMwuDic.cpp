@@ -34,6 +34,7 @@
 #include "MF_InflectTransd.h"
 #include "MF_LangMorpho.h"
 #include "File.h"
+#include "CompressedDic.h"
 
 const char* usage_BuildKrMwuDic =
         "Usage: BuildKrMwuDic [OPTIONS] <dic>\n"
@@ -175,15 +176,12 @@ struct l_morpho_t* pL_MORPHO=init_langage_morph();
 if (pL_MORPHO == NULL) {
    fatal_error("init_langage_morph error\n");
 }
-
-unsigned char* bin=load_BIN_file(dic_bin);
-struct INF_codes* inf=load_INF_file(dic_inf);
+Dictionary* d=new_Dictionary(dic_bin,dic_inf);
 
 create_mwu_dictionary(delas,grf,multiFlex_ctx,korean,pL_MORPHO,encoding_output,
-       bom_output,mask_encoding_compatibility_input,bin,inf);
+       bom_output,mask_encoding_compatibility_input,d);
 
-free(bin);
-free_INF_codes(inf);
+free_Dictionary(d);
 u_fclose(delas);
 u_fclose(grf);
 free_alphabet(alph);

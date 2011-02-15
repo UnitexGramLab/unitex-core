@@ -37,6 +37,7 @@
 #include "Error.h"
 #include "UnitexGetOpt.h"
 #include "PolyLex.h"
+#include "CompressedDic.h"
 
 
 enum {DUTCH,GERMAN,NORWEGIAN,RUSSIAN};
@@ -102,7 +103,7 @@ if (argc==1) {
 
 int language=-1;
 char alphabet[FILENAME_MAX]="";
-char dictionary[FILENAME_MAX]="";
+char name_bin[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char info[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -124,7 +125,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PolyLex,lopts_PolyLex,&index
    case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty dictionary file name\n");
              }
-             strcpy(dictionary,vars->optarg);
+             strcpy(name_bin,vars->optarg);
              break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
@@ -160,7 +161,7 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-if (dictionary[0]=='\0') {
+if (name_bin[0]=='\0') {
    fatal_error("You must specify the .bin dictionary to use\n");
 }
 if (output[0]=='\0') {
@@ -178,34 +179,42 @@ if (alphabet[0]!='\0') {
       fatal_error("Cannot load alphabet file %s\n",alphabet);
    }
 }
-char temp[FILENAME_MAX];
+char name_inf[FILENAME_MAX];
 struct string_hash* forbiddenWords=NULL;
 if (language==DUTCH || language==NORWEGIAN) {
-   get_path(dictionary,temp);
-   strcat(temp,"ForbiddenWords.txt");
-   forbiddenWords=load_key_list(temp,mask_encoding_compatibility_input);
+   get_path(name_bin,name_inf);
+   strcat(name_inf,"ForbiddenWords.txt");
+   forbiddenWords=load_key_list(name_inf,mask_encoding_compatibility_input);
 }
+strcpy(name_inf,name_bin);
+name_inf[strlen(name_bin)-3]='\0';
+strcat(name_inf,"inf");
+#if 0
 u_printf("Loading BIN file...\n");
 struct BIN_free_info bin_free;
-const unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
+const unsigned char* bin=load_abstract_BIN_file(name_bin,&bin_free);
 if (bin==NULL) {
-   error("Cannot load bin file %s\n",dictionary);
+   error("Cannot load bin file %s\n",name_bin);
    free_alphabet(alph);
    free_string_hash(forbiddenWords);
    return 1;
 }
-strcpy(temp,dictionary);
-temp[strlen(dictionary)-3]='\0';
-strcat(temp,"inf");
 u_printf("Loading INF file...\n");
 struct INF_free_info inf_free;
-const struct INF_codes* inf=load_abstract_INF_file(temp,&inf_free);
+const struct INF_codes* inf=load_abstract_INF_file(name_inf,&inf_free);
 if (inf==NULL) {
-   error("Cannot load inf file %s\n",temp);
+   error("Cannot load inf file %s\n",name_inf);
    free_alphabet(alph);
    free_abstract_BIN(bin,&bin_free);
    free_string_hash(forbiddenWords);
    return 1;
+}
+#endif
+Dictionary* d=new_Dictionary(name_bin,name_inf);
+if (d==NULL) {
+	   free_alphabet(alph);
+	   free_string_hash(forbiddenWords);
+	   return 1;
 }
 char tmp[FILENAME_MAX];
 strcpy(tmp,argv[vars->optind]);
@@ -214,8 +223,9 @@ U_FILE* words=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_in
 if (words==NULL) {
    error("Cannot open word list file %s\n",argv[vars->optind]);
    free_alphabet(alph);
-   free_abstract_BIN(bin,&bin_free);
-   free_abstract_INF(inf,&inf_free);
+   /*free_abstract_BIN(bin,&bin_free);
+   free_abstract_INF(inf,&inf_free);*/
+   free_Dictionary(d);
    free_string_hash(forbiddenWords);
    // here we return 0 in order to do not block the preprocessing
    // in the Unitex Java interface, if no dictionary was applied
@@ -226,8 +236,9 @@ U_FILE* new_unknown_words=u_fopen_existing_versatile_encoding(mask_encoding_comp
 if (new_unknown_words==NULL) {
    error("Cannot open temporary word list file %s\n",tmp);
    free_alphabet(alph);
-   free_abstract_BIN(bin,&bin_free);
-   free_abstract_INF(inf,&inf_free);
+   free_Dictionary(d);
+   /*free_abstract_BIN(bin,&bin_free);
+   free_abstract_INF(inf,&inf_free);*/
    u_fclose(words);
    free_string_hash(forbiddenWords);
    return 1;
@@ -237,8 +248,9 @@ U_FILE* res=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_
 if (res==NULL) {
    error("Cannot open result file %s\n",output);
    free_alphabet(alph);
-   free_abstract_BIN(bin,&bin_free);
-   free_abstract_INF(inf,&inf_free);
+   free_Dictionary(d);
+   /*free_abstract_BIN(bin,&bin_free);
+   free_abstract_INF(inf,&inf_free);*/
    u_fclose(words);
    u_fclose(new_unknown_words);
    free_string_hash(forbiddenWords);
@@ -254,18 +266,19 @@ if (info!=NULL) {
 struct utags UTAG;
 
 switch(language) {
-case DUTCH: analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords); break;
-case GERMAN: analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words); break;
-case NORWEGIAN: analyse_norwegian_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords); break;
+case DUTCH: analyse_dutch_unknown_words(alph,d,words,res,debug,new_unknown_words,forbiddenWords); break;
+case GERMAN: analyse_german_compounds(alph,d,words,res,debug,new_unknown_words); break;
+case NORWEGIAN: analyse_norwegian_unknown_words(alph,d,words,res,debug,new_unknown_words,forbiddenWords); break;
 case RUSSIAN:
    init_russian(&UTAG);
-   analyse_compounds(alph,bin,inf,words,res,debug,new_unknown_words,UTAG);
+   analyse_compounds(alph,d,words,res,debug,new_unknown_words,UTAG);
    break;
 }
 
 free_alphabet(alph);
-free_abstract_BIN(bin,&bin_free);
-free_abstract_INF(inf,&inf_free);
+free_Dictionary(d);
+/*free_abstract_BIN(bin,&bin_free);
+free_abstract_INF(inf,&inf_free);*/
 u_fclose(words);
 u_fclose(new_unknown_words);
 free_string_hash(forbiddenWords);

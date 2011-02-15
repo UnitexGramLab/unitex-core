@@ -52,10 +52,7 @@
 struct norwegian_infos {
 	/* The norwegian alphabet */
 	const Alphabet* alphabet;
-	/* The .bin and .inf parts of the dictionary that will be used
-	 * for the analysis */
-	const unsigned char* bin;
-	const struct INF_codes* inf;
+	Dictionary* d;
 	/* The file where to read the words to analyze from */
 	U_FILE* unknown_word_list;
 	/* The file where new dictionary lines will be written */
@@ -116,32 +113,31 @@ void free_word_decomposition_list(struct word_decomposition_list*);
 /**
  * This function analyzes a list of unknown Norwegian words.
  */
-void analyse_norwegian_unknown_words(const Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
+void analyse_norwegian_unknown_words(const Alphabet* alphabet,Dictionary* d,
 								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
 								U_FILE* new_unknown_word_list,
 								struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
 struct norwegian_infos infos;
 infos.alphabet=alphabet;
-infos.bin=bin;
-infos.inf=inf;
+infos.d=d;
 infos.unknown_word_list=unknown_word_list;
 infos.output=output;
 infos.info_output=info_output;
 infos.new_unknown_word_list=new_unknown_word_list;
 infos.forbidden_words=forbidden_words;
-infos.valid_left_component=(char*)malloc(sizeof(char)*(inf->N));
+infos.valid_left_component=(char*)malloc(sizeof(char)*(d->inf->N));
 if (infos.valid_left_component==NULL) {
 	fatal_alloc_error("analyse_norwegian_unknown_words");
 }
-infos.valid_right_component=(char*)malloc(sizeof(char)*(inf->N));
+infos.valid_right_component=(char*)malloc(sizeof(char)*(d->inf->N));
 if (infos.valid_right_component==NULL) {
    fatal_alloc_error("analyse_norwegian_unknown_words");
 }
 /* We look for all INF codes if they correspond to valid left/right
  * components of compounds words. */
-check_valid_left_component(infos.valid_left_component,inf);
-check_valid_right_component(infos.valid_right_component,inf);
+check_valid_left_component(infos.valid_left_component,d->inf);
+check_valid_right_component(infos.valid_right_component,d->inf);
 /* Now we are ready to analyse the given word list */
 analyse_norwegian_unknown_words(&infos);
 free(infos.valid_left_component);
@@ -727,14 +723,10 @@ void explore_state(int offset,unichar* current_component,int pos_in_current_comp
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
                    int number_of_components,struct norwegian_infos* infos) {
-int c;
-int index,t;
-c=infos->bin[offset]*256+infos->bin[offset+1];
-if (!(c&32768)) {
-	/* If we are in a final state, we compute the index of the
-	 * corresponding INF line */
-	index=infos->bin[offset+2]*256*256+infos->bin[offset+3]*256+infos->bin[offset+4];
-	/* We can set the end of our current component */
+int final,n_transitions,inf_number;
+offset=read_dictionary_state(infos->d,offset,&final,&n_transitions,&inf_number);
+if (final) {
+	/* If we are in a final state, we can set the end of our current component */
 	current_component[pos_in_current_component]='\0';
 	/* We do not consider words of length 1 */
 	if (pos_in_current_component>1) {
@@ -743,7 +735,7 @@ if (!(c&32768)) {
 			/* If we have explored the entire original word */
 			if (get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX) {
 				/* And if we do not have forbidden word in last position */
-				struct list_ustring* l=infos->inf->codes[index];
+				struct list_ustring* l=infos->d->inf->codes[inf_number];
 				/* We will look at all the INF codes of the last component in order
 				 * to produce analysis */
 				while (l!=NULL) {
@@ -829,7 +821,7 @@ if (!(c&32768)) {
 			 * 2) look if it is not a forbidden component and
 			 * 3) explore the rest of the original word
 			 */
-			if (infos->valid_left_component[index] &&
+			if (infos->valid_left_component[inf_number] &&
 				(get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX)) {
 				/* If we have a valid component, we look first if we are
 				 * in the case of a word ending by a double letter like "kupp" */
@@ -848,7 +840,7 @@ if (!(c&32768)) {
 					unichar sia_code[2000];
 					unichar entry[2000];
 					unichar line[2000];
-					get_first_valid_left_component(infos->inf->codes[index],sia_code);
+					get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
 					uncompress_entry(current_component,sia_code,entry);
 					u_strcat(dec,entry);
 					u_strcpy(line,output_dela_line);
@@ -882,7 +874,7 @@ if (!(c&32768)) {
 				/* In order to print the component in the analysis, we arbitrary
 				 * take a valid left component among all those that are available
 				 * for the current component */
-				get_first_valid_left_component(infos->inf->codes[index],sia_code);
+				get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
 				uncompress_entry(current_component,sia_code,entry);
 				u_strcat(dec,entry);
 				u_strcpy(line,output_dela_line);
@@ -900,25 +892,18 @@ if (!(c&32768)) {
 	}
 	/* Once we have finished to deal with the current final dictionary node,
 	 * we go on because we may match a longer word */
-	t=offset+5;
-}
-else {
-	/* If the node is not a final one, we get compute the number of transitions by
-	 * removing the highest bit */
-	c=c-32768;
-	t=offset+2;
 }
 /* We examine each transition that goes out from the node */
+unichar c;
+int adr;
 for (int i=0;i<c;i++) {
-	if (is_equal_or_uppercase((unichar)(infos->bin[t]*256+infos->bin[t+1]),word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
+	offset=read_dictionary_transition(infos->d,offset,&c,&adr);
+	if (is_equal_or_uppercase(c,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
 		/* If the transition's letter is case compatible with the current letter of the
 		 * word to analyze, we follow it */
-		index=infos->bin[t+2]*256*256+infos->bin[t+3]*256+infos->bin[t+4];
-		current_component[pos_in_current_component]=(unichar)(infos->bin[t]*256+infos->bin[t+1]);
-		explore_state(index,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
+		current_component[pos_in_current_component]=c;
+		explore_state(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
 			analysis,output_dela_line,L,number_of_components,infos);
 	}
-	/* We move the offset to the next transition */
-	t=t+5;
 }
 }
