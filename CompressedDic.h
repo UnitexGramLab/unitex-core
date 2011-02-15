@@ -71,6 +71,7 @@ typedef struct {
 	long bin_size;
 
 	/* Encodings used to store data in the transducer */
+	BinEncoding inf_number_encoding;
 	BinEncoding char_encoding;
 	BinEncoding offset_encoding;
 
@@ -85,6 +86,8 @@ Dictionary* new_Dictionary(const char* bin,const char* inf,Abstract_allocator pr
 void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int read_dictionary_state(Dictionary*,int,int*,int*,int*);
 int read_dictionary_transition(Dictionary*,int,unichar*,int*);
+void test(BinEncoding e);
+
 
 /* Those exports should disappear once AbstractDelaLoad is rewritten to be adapted to the
  * new Dictionary structure */

@@ -202,33 +202,141 @@ free_cb(BIN,prv_alloc);
 static int read_bin_header(Dictionary* d) {
 if (d->bin[0]==0) {
 	/* Type 1: old style .bin/.inf dictionary */
-	if (d->bin_size<6) {
+	d->header_size=4;
+	if (d->bin_size<d->header_size+2) {
 		/* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
 		error("Invalid .bin size\n");
 		return 0;
 	}
 	/* If we have an old style .bin */
 	d->type=BIN_CLASSIC;
-	d->header_size=4;
+	d->inf_number_encoding=BIN_3BYTES;
 	d->char_encoding=BIN_2BYTES;
 	d->offset_encoding=BIN_3BYTES;
 	return 1;
 }
 if (d->bin[0]==1) {
 	/* Type 2: modern style .bin/.inf dictionary with no limit on .bin size */
-	if (d->bin_size<5) {
+	d->header_size=4;
+	if (d->bin_size<d->header_size+2) {
 		/* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
 		error("Invalid .bin size\n");
 		return 0;
 	}
 	d->type=BIN_CLASSIC;
-	d->header_size=3;
-	d->char_encoding=(BinEncoding)d->bin[1];
-	d->offset_encoding=(BinEncoding)d->bin[2];
+	d->inf_number_encoding=(BinEncoding)d->bin[1];
+	d->char_encoding=(BinEncoding)d->bin[2];
+	d->offset_encoding=(BinEncoding)d->bin[3];
 	return 1;
 }
 error("Unknown dictionary type: %d\n",d->bin[0]);
 return 0;
+}
+
+
+/**
+ * Reads a 2 byte-value. Updates the offset.
+ */
+int bin_read_2bytes(unsigned char* bin,int *offset) {
+int v=(bin[*offset]<<8)+bin[(*offset)+1];
+(*offset)+=2;
+return v;
+}
+
+
+/**
+ * Reads a 3 byte-value. Updates the offset.
+ */
+int bin_read_3bytes(unsigned char* bin,int *offset) {
+int v=(bin[*offset]<<16)+(bin[(*offset)+1]<<8)+bin[(*offset)+2];
+(*offset)+=3;
+return v;
+}
+
+
+/**
+ * Reads a variable length value. Updates the offset.
+ */
+int bin_read_variable_length(unsigned char* bin,int *offset) {
+int v=0;
+do {
+	v=(v<<7) | (bin[(*offset)++] & 127);
+} while (bin[(*offset)-1] & 128);
+return v;
+}
+
+
+int bin_read(unsigned char* bin,BinEncoding e,int *offset) {
+switch (e) {
+case BIN_2BYTES: return bin_read_2bytes(bin,offset);
+case BIN_3BYTES: return bin_read_3bytes(bin,offset);
+case BIN_VARIABLE: return bin_read_variable_length(bin,offset);
+default: fatal_error("Illegal encoding value in bin_read\n");
+}
+return -1;
+}
+
+
+/**
+ * Writes a 2 byte-value. Updates the offset.
+ */
+void bin_write_2bytes(unsigned char* bin,int value,int *offset) {
+bin[(*offset)++]=(value>>8) & 255;
+bin[(*offset)++]=value & 255;
+}
+
+
+/**
+ * Writes a 3 byte-value. Updates the offset.
+ */
+void bin_write_3bytes(unsigned char* bin,int value,int *offset) {
+bin[(*offset)++]=(value>>16) & 255;
+bin[(*offset)++]=(value>>8) & 255;
+bin[(*offset)++]=value & 255;
+}
+
+
+/**
+ * Writes a variable length value. Updates the offset.
+ */
+void bin_write_variable_length(unsigned char* bin,int value,int *offset) {
+if (value<(1<<7)) {
+	bin[(*offset)++]=value;
+	return;
+}
+if (value<(1<<14)) {
+	bin[(*offset)++]=(value>>7)+128;
+	bin[(*offset)++]=(value & 127);
+	return;
+}
+if (value<(1<<21)) {
+	bin[(*offset)++]=(value>>14)+128;
+	bin[(*offset)++]=((value>>7) & 127)+128;
+	bin[(*offset)++]=(value & 127);
+	return;
+}
+if (value<(1<<28)) {
+	bin[(*offset)++]=(value>>21)+128;
+	bin[(*offset)++]=((value>>14) & 127)+128;
+	bin[(*offset)++]=((value>>7) & 127)+128;
+	bin[(*offset)++]=(value & 127);
+	return;
+}
+bin[(*offset)++]=(value>>28)+128;
+bin[(*offset)++]=((value>>21) & 127)+128;
+bin[(*offset)++]=((value>>14) & 127)+128;
+bin[(*offset)++]=((value>>7) & 127)+128;
+bin[(*offset)++]=(value & 127);
+}
+
+
+void bin_write(unsigned char* bin,BinEncoding e,int value,int *offset) {
+switch (e) {
+case BIN_2BYTES: return bin_write_2bytes(bin,value,offset);
+case BIN_3BYTES: return bin_write_3bytes(bin,value,offset);
+case BIN_VARIABLE: return bin_write_variable_length(bin,value,offset);
+default: fatal_error("Illegal encoding value in bin_write\n");
+}
 }
 
 
@@ -246,8 +354,7 @@ if (d->type!=BIN_CLASSIC) {
 *n_transitions=((d->bin[pos] & 127)<<8)+d->bin[pos+1];
 pos=pos+2;
 if (*final) {
-	*code=(d->bin[pos]<<16)+(d->bin[pos+1]<<8)+d->bin[pos+2];
-	pos=pos+3;
+	*code=bin_read(d->bin,d->inf_number_encoding,&pos);
 } else {
 	*code=-1;
 }
@@ -263,15 +370,8 @@ int read_dictionary_transition(Dictionary* d,int pos,unichar *c,int *dest) {
 if (d->type!=BIN_CLASSIC) {
 	fatal_error("read_dictionary_state: unsupported dictionary type\n");
 }
-if (d->char_encoding!=BIN_2BYTES) {
-	fatal_error("read_dictionary_state: unsupported char encoding\n");
-}
-*c=(d->bin[pos]<<8)+d->bin[pos+1];
-pos=pos+2;
-if (d->offset_encoding!=BIN_3BYTES) {
-	fatal_error("read_dictionary_state: unsupported offset encoding\n");
-}
-*dest=(d->bin[pos]<<16)+(d->bin[pos+1]<<8)+d->bin[pos+2];
-pos=pos+3;
+*c=bin_read(d->bin,d->char_encoding,&pos);
+*dest=bin_read(d->bin,d->offset_encoding,&pos);
 return pos;
 }
+

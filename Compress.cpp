@@ -34,6 +34,8 @@
 #include "Compress.h"
 #include "ProgramInvoker.h"
 #include "BitArray.h"
+#include "CompressedDic.h"
+
 
 const char* usage_Compress =
          "Usage: Compress [OPTIONS] <dictionary>\n"
