@@ -1678,7 +1678,7 @@ for (int i=0;i<src->n_inflectional_codes;i++) {
  *
  * NOTE: this is an EXACT matching. No alphabet equivalency is used here.
  */
-int explore_for_exact_match(unsigned char* bin,int offset,unichar* str,int pos) {
+int explore_for_exact_match(const unsigned char* bin,int offset,unichar* str,int pos) {
 /* We compute the number of transitions that outgo from the current node */
 int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
 offset=offset+2;

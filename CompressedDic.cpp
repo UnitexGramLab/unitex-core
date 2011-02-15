@@ -27,6 +27,7 @@
 #include "StringParsing.h"
 #include "List_ustring.h"
 #include "LoadInf.h"
+#include "AbstractDelaLoad.h"
 
 static int read_bin_header(Dictionary*);
 
@@ -38,26 +39,26 @@ Dictionary* d=(Dictionary*)malloc_cb(sizeof(Dictionary),prv_alloc);
 if (d==NULL) {
 	fatal_alloc_error("new_Dictionary");
 }
-d->bin=load_BIN_file(bin,&d->bin_size,prv_alloc);
+d->bin=load_abstract_BIN_file(bin,&d->bin_size,&d->bin_free);
 if (d->bin==NULL) {
 	free(d);
 	return NULL;
 }
 if (!read_bin_header(d)) {
-	free_BIN_file(d->bin,prv_alloc);
+	free_abstract_BIN(d->bin,&d->bin_free);
 	free(d);
 	return NULL;
 }
 if (d->type==BIN_CLASSIC) {
 	if (inf==NULL) {
 		error("NULL .inf file in new_Dictionary\n");
-		free_BIN_file(d->bin,prv_alloc);
+		free_abstract_BIN(d->bin,&d->bin_free);
 		free(d);
 		return NULL;
 	}
-	d->inf=load_INF_file(inf,prv_alloc);
+	d->inf=load_abstract_INF_file(inf,&d->inf_free);
 	if (d->inf==NULL) {
-		free_BIN_file(d->bin,prv_alloc);
+		free_abstract_BIN(d->bin,&d->bin_free);
 		free(d);
 		return NULL;
 	}
@@ -71,11 +72,11 @@ return d;
 /**
  * Frees all resources associated to the given dictionary
  */
-void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc) {
+void free_Dictionary(Dictionary* d,Abstract_allocator /* prv_alloc*/) {
 if (d==NULL) return;
-if (d->bin!=NULL) free_BIN_file(d->bin,prv_alloc);
+if (d->bin!=NULL) free_abstract_BIN(d->bin,&d->bin_free);
 if (d->inf!=NULL) {
-	free_INF_codes(d->inf,prv_alloc);
+	free_abstract_INF(d->inf,&d->inf_free);
 }
 free(d);
 }
@@ -168,7 +169,7 @@ return 0;
 /**
  * Reads a 2 byte-value. Updates the offset.
  */
-int bin_read_2bytes(unsigned char* bin,int *offset) {
+int bin_read_2bytes(const unsigned char* bin,int *offset) {
 int v=(bin[*offset]<<8)+bin[(*offset)+1];
 (*offset)+=2;
 return v;
@@ -178,7 +179,7 @@ return v;
 /**
  * Reads a 3 byte-value. Updates the offset.
  */
-int bin_read_3bytes(unsigned char* bin,int *offset) {
+int bin_read_3bytes(const unsigned char* bin,int *offset) {
 int v=(bin[*offset]<<16)+(bin[(*offset)+1]<<8)+bin[(*offset)+2];
 (*offset)+=3;
 return v;
@@ -188,7 +189,7 @@ return v;
 /**
  * Reads a variable length value. Updates the offset.
  */
-int bin_read_variable_length(unsigned char* bin,int *offset) {
+int bin_read_variable_length(const unsigned char* bin,int *offset) {
 int v=0;
 do {
 	v=(v<<7) | (bin[(*offset)++] & 127);
@@ -197,7 +198,7 @@ return v;
 }
 
 
-int bin_read(unsigned char* bin,BinEncoding e,int *offset) {
+int bin_read(const unsigned char* bin,BinEncoding e,int *offset) {
 switch (e) {
 case BIN_2BYTES: return bin_read_2bytes(bin,offset);
 case BIN_3BYTES: return bin_read_3bytes(bin,offset);
@@ -232,32 +233,32 @@ bin[(*offset)++]=value & 255;
  */
 void bin_write_variable_length(unsigned char* bin,int value,int *offset) {
 if (value<(1<<7)) {
-	bin[(*offset)++]=value;
+	bin[(*offset)++]=(unsigned char)value;
 	return;
 }
 if (value<(1<<14)) {
-	bin[(*offset)++]=(value>>7)+128;
-	bin[(*offset)++]=(value & 127);
+	bin[(*offset)++]=(unsigned char)((value>>7)+128);
+	bin[(*offset)++]=(unsigned char)((value & 127));
 	return;
 }
 if (value<(1<<21)) {
-	bin[(*offset)++]=(value>>14)+128;
-	bin[(*offset)++]=((value>>7) & 127)+128;
-	bin[(*offset)++]=(value & 127);
+	bin[(*offset)++]=(unsigned char)(((value>>14)+128));
+	bin[(*offset)++]=(unsigned char)(((value>>7) & 127)+128);
+	bin[(*offset)++]=(unsigned char)((value & 127));
 	return;
 }
 if (value<(1<<28)) {
-	bin[(*offset)++]=(value>>21)+128;
-	bin[(*offset)++]=((value>>14) & 127)+128;
-	bin[(*offset)++]=((value>>7) & 127)+128;
-	bin[(*offset)++]=(value & 127);
+	bin[(*offset)++]=(unsigned char)((value>>21)+128);
+	bin[(*offset)++]=(unsigned char)(((value>>14) & 127)+128);
+	bin[(*offset)++]=(unsigned char)(((value>>7) & 127)+128);
+	bin[(*offset)++]=(unsigned char)((value & 127));
 	return;
 }
-bin[(*offset)++]=(value>>28)+128;
-bin[(*offset)++]=((value>>21) & 127)+128;
-bin[(*offset)++]=((value>>14) & 127)+128;
-bin[(*offset)++]=((value>>7) & 127)+128;
-bin[(*offset)++]=(value & 127);
+bin[(*offset)++]=(unsigned char)((value>>28)+128);
+bin[(*offset)++]=(unsigned char)(((value>>21) & 127)+128);
+bin[(*offset)++]=(unsigned char)(((value>>14) & 127)+128);
+bin[(*offset)++]=(unsigned char)(((value>>7) & 127)+128);
+bin[(*offset)++]=(unsigned char)((value & 127));
 }
 
 
@@ -301,7 +302,7 @@ int read_dictionary_transition(Dictionary* d,int pos,unichar *c,int *dest) {
 if (d->type!=BIN_CLASSIC) {
 	fatal_error("read_dictionary_state: unsupported dictionary type\n");
 }
-*c=bin_read(d->bin,d->char_encoding,&pos);
+*c=(unichar)bin_read(d->bin,d->char_encoding,&pos);
 *dest=bin_read(d->bin,d->offset_encoding,&pos);
 return pos;
 }

@@ -100,7 +100,10 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_INF)(struct INF_code
   Tips : you can use it with file mapped io (CreateFileMapping on Win32, mmap on Posix)
    the p_bin_free_info pointer is never NULL */
 
-typedef unsigned char* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_BIN_file)(const char* name,
+#define LOAD_ABSTRACT_BIN_FILE_GIVE_SIZE 1
+
+typedef unsigned char* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_BIN_file_ex)(const char* name,
+                   long*file_size,
                    struct BIN_free_info* p_bin_free_info,void* privateSpacePtr);
 
 typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_BIN)(unsigned char* BIN,
@@ -117,7 +120,7 @@ typedef struct
 
     t_fnc_load_abstract_INF_file fnc_load_abstract_INF_file;
     t_fnc_free_abstract_INF fnc_free_abstract_INF;
-    t_fnc_load_abstract_BIN_file fnc_load_abstract_BIN_file;
+    t_fnc_load_abstract_BIN_file_ex fnc_load_abstract_BIN_file_ex;
     t_fnc_free_abstract_BIN fnc_free_abstract_BIN;
 
 } t_persistent_dic_func_array;

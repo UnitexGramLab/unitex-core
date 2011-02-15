@@ -48,7 +48,7 @@ void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,Mul
                          vector_int* state_index,int *current_state,int end_state,int *line,
                          struct string_hash* subgraphs,int *subgraph_Y);
 int tokens_to_dela_entries(vector_ptr* line_tokens,struct dela_entry** entries,int *n_entries,Ustring* foo,int line_number);
-struct string_hash* get_codes_from_inf(struct INF_codes* inf);
+struct string_hash* get_codes_from_inf(const struct INF_codes* inf);
 int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
 					struct string_hash* dic_codes,Ustring* foo,int line_number);
 
@@ -488,7 +488,7 @@ return 0;
  * Builds and returns a string hash containing all grammatical/semantic codes
  * used in the .inf file
  */
-struct string_hash* get_codes_from_inf(struct INF_codes* inf) {
+struct string_hash* get_codes_from_inf(const struct INF_codes* inf) {
 struct string_hash* h=new_string_hash(DONT_USE_VALUES);
 struct list_ustring* l;
 Ustring* tmp=new_Ustring(32);

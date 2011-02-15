@@ -23,6 +23,7 @@
 #define CompressedDicH
 
 #include "Unicode.h"
+#include "AbstractDelaLoad.h"
 
 /**
  * These are the encodings that may be used to represent offsets and chars
@@ -57,9 +58,11 @@ typedef struct {
 	BinEncoding offset_encoding;
 
 	/* The binary transducer */
-	unsigned char* bin;
+	const unsigned char* bin;
+	struct BIN_free_info bin_free;
 	/* The codes contained in the .inf file */
-	struct INF_codes* inf;
+	const struct INF_codes* inf;
+	struct INF_free_info inf_free;
 } Dictionary;
 
 
@@ -68,12 +71,6 @@ void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCAT
 int read_dictionary_state(Dictionary*,int,int*,int*,int*);
 int read_dictionary_transition(Dictionary*,int,unichar*,int*);
 void test(BinEncoding e);
-
-
-/* Those exports should disappear once AbstractDelaLoad is rewritten to be adapted to the
- * new Dictionary structure */
-unsigned char* load_BIN_file(const char*,long*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-void free_BIN_file(unsigned char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 #endif
 
