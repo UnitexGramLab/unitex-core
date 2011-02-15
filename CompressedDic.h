@@ -41,25 +41,6 @@ typedef enum {
 } BinType;
 
 
-/**
- * This structure is used to store all the INF codes of an .inf file.
- */
-struct INF_codes {
-	/* Array containing for each line of the .inf file the reversed list of its
-	 * components. For instance, if the first line contains:
-	 *
-	 * .N+NA+z1:fs,.N+Loc:fs
-	 *
-	 * codes[0] will contain the following list:
-	 *
-	 *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
-	 *
-	 */
-	struct list_ustring** codes;
-	/* Number of lines in the .inf file */
-	int N;
-};
-
 
 
 /**
@@ -91,8 +72,6 @@ void test(BinEncoding e);
 
 /* Those exports should disappear once AbstractDelaLoad is rewritten to be adapted to the
  * new Dictionary structure */
-struct INF_codes* load_INF_file(const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-void free_INF_codes(struct INF_codes*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 unsigned char* load_BIN_file(const char*,long*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_BIN_file(unsigned char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
