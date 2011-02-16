@@ -202,7 +202,8 @@ return u_fgets_limit2(f->enc,s,size,f->f);
  */
 int u_fskip_line(U_FILE* f) {
 int c;
-while ((c=u_fgetc(f))!=EOF && c!='\n');
+while ((c=u_fgetc(f))!=EOF && c!='\n') {
+}
 return c!=EOF;
 }
 
