@@ -30,7 +30,7 @@ extern const char* usage_Compress;
 
 int main_Compress(int argc,char* const argv[]);
 int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                         int flip,int semitic,char* dic);
+                         int flip,int semitic,char* dic,int new_style_bin);
 
 
 #endif

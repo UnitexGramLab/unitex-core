@@ -232,7 +232,7 @@ int analyse_word(const unichar* mot,Dictionary* d,U_FILE* debug,U_FILE* result_f
   dela_line[0]='\0';
   correct_word[0]='\0';
   struct decomposed_word_list* l = 0;
-  explore_state(d->header_size,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,d,
+  explore_state(d->initial_state_offset,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,d,
         prefix,suffix,alphabet,debug,UTAG,rules,entries);
   free_all_dic_entries(entries);
   free_all_rule_lists(rules);
@@ -1172,7 +1172,7 @@ if (final) { // if we are in a terminal state
 	    u_fprintf(debug_file,"> %S\n",next_remaining_word);
 	  }
 #endif
-	  explore_state(d->header_size,
+	  explore_state(d->initial_state_offset,
 			next_component,
 			0,
 			original_word,

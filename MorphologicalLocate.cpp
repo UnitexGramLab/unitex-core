@@ -2043,13 +2043,13 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 			/* Can't match anything in an empty dictionary */
 			if (p->arabic.rules_enabled) {
 				explore_dic_in_morpho_mode_arabic(p, p->morpho_dic[i],
-						p->morpho_dic[i]->header_size,
+						p->morpho_dic[i]->initial_state_offset,
 						p->tokens->value[p->buffer[p->current_origin + pos]],
 						inflected, pos_in_token, 0, pos, matches, pattern,
 						save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0');
 			} else {
 				explore_dic_in_morpho_mode_standard(p, p->morpho_dic[i],
-						p->morpho_dic[i]->header_size,
+						p->morpho_dic[i]->initial_state_offset,
 						p->tokens->value[p->buffer[p->current_origin + pos]],
 						inflected, pos_in_token, 0, pos, matches, pattern,
 						save_dic_entry, jamo, pos_in_jamo, line_buffer);

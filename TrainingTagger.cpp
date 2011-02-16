@@ -197,11 +197,13 @@ if(iforms_file != NULL){
 if(binaries == 1){
 /* simple forms dictionary */
 if(r_forms == 1){
-	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,semitic,raw_forms);
+	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,
+			semitic,raw_forms,1);
 }
 /* compound forms dictionary */
 if(i_forms == 1){
-	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,semitic,inflected_forms);
+	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,
+			semitic,inflected_forms,1);
 }
 }
 free_OptVars(vars);

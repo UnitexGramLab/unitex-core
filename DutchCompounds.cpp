@@ -371,7 +371,7 @@ dela_line[0]='\0';
 correct_word[0]='\0';
 struct word_decomposition_list* l=NULL;
 /* We look if there are decompositions for this word */
-explore_state_dutch(infos->d->header_size,correct_word,0,word,0,decomposition,dela_line,&l,1,infos);
+explore_state_dutch(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos);
 if (l==NULL) {
 	/* If there is no decomposition, we return */
 	return 0;
@@ -623,7 +623,7 @@ if (final) {
 					 * next component. We start at the root of the dictionary
 					 * (offset=4) and we go back one position in the word to analyze.
 					 */
-					explore_state_dutch(infos->d->header_size,temp,0,word_to_analyze,pos_in_word_to_analyze+1,
+					explore_state_dutch(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze+1,
 						dec_temp,line,L,number_of_components+1,infos);
 				}
 				/* Now, we try to analyze the component normally */
@@ -650,7 +650,7 @@ if (final) {
 				/* Then, we explore the dictionary in order to analyze the
 				 * next component. We start at the root of the dictionary
 				 * (offset=4). */
-				explore_state_dutch(infos->d->header_size,temp,0,word_to_analyze,pos_in_word_to_analyze,
+				explore_state_dutch(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
 					dec_temp,line,L,number_of_components+1,infos);
 			}
 		}

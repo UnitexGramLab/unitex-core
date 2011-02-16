@@ -211,7 +211,7 @@ decomposition[0]='\0';
 dela_line[0]='\0';
 correct_word[0]='\0';
 struct german_word_decomposition_list* l=NULL;
-explore_state_german(d->header_size,correct_word,0,mot,0,decomposition,dela_line,&l,1,left,right,alphabet,d);
+explore_state_german(d->initial_state_offset,correct_word,0,mot,0,decomposition,dela_line,&l,1,left,right,alphabet,d);
 if (l==NULL) {
    return 0;
 }
@@ -373,7 +373,7 @@ if (final) {
          u_strcpy(line,dela_line);
          u_strcat(line,current_component);
          unichar temp[500];
-         explore_state_german(d->header_size,temp,0,original_word,pos_in_original_word,
+         explore_state_german(d->initial_state_offset,temp,0,original_word,pos_in_original_word,
                   dec,line,L,n_decomp+1,left,right,alphabet,d);
       }
     }

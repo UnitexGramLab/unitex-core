@@ -194,7 +194,7 @@ int RESULT=0;
 while (lemmas!=NULL) {
    unichar entry[1000];
    // we get the inf number associated to this lemma in the inflected form dictionary
-   int res=get_inf_number_for_token(inflected_dic->header_size,lemmas->string,0,entry,alph,inflected_dic);
+   int res=get_inf_number_for_token(inflected_dic->initial_state_offset,lemmas->string,0,entry,alph,inflected_dic);
    if (res==-1) {
       return 0;
    }
@@ -374,7 +374,7 @@ unichar entry[1000];
 // if the radical is Dir, we want it to be dir in order to get the correct form
 // after the call to uncompress_entry
 
-int res=get_inf_number_for_token(root_dic->header_size,radical,0,entry,alph,root_dic);
+int res=get_inf_number_for_token(root_dic->initial_state_offset,radical,0,entry,alph,root_dic);
 if (res==-1) {
    return 0;
 }

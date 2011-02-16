@@ -26,6 +26,6 @@
 #include <stdlib.h>
 
 
-void create_and_save_bin(struct dictionary_node*,const char*,int*,int*,int*,int*);
+void create_and_save_bin(struct dictionary_node*,const char*,int*,int*,int*,int*,int);
 
 #endif

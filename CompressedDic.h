@@ -25,6 +25,9 @@
 #include "Unicode.h"
 #include "AbstractDelaLoad.h"
 
+#define BIN_V1_HEADER_SIZE 4
+#define BIN_V2_HEADER_SIZE 9
+
 /**
  * These are the encodings that may be used to represent offsets and chars
  * in the transducer:
@@ -32,6 +35,7 @@
 typedef enum {
 	BIN_2BYTES,   /* 2 bytes in big-endian */
 	BIN_3BYTES,   /* 3 bytes in big-endian */
+	BIN_4BYTES,   /* 4 bytes in big-endian */
 	BIN_VARIABLE  /* variable length encoding */
 } BinEncoding;
 
@@ -42,6 +46,11 @@ typedef enum {
 } BinType;
 
 
+typedef enum {
+	BIN_CLASSIC_STATE,   /* old style .bin state encoding on 2 bytes */
+	BIN_NEW_STATE        /* variable length state encoding */
+} BinStateEncoding;
+
 
 
 /**
@@ -49,10 +58,11 @@ typedef enum {
  */
 typedef struct {
 	BinType type;
-	int header_size;
+	int initial_state_offset;
 	long bin_size;
 
 	/* Encodings used to store data in the transducer */
+	BinStateEncoding state_encoding;
 	BinEncoding inf_number_encoding;
 	BinEncoding char_encoding;
 	BinEncoding offset_encoding;
@@ -69,8 +79,16 @@ typedef struct {
 Dictionary* new_Dictionary(const char* bin,const char* inf,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int read_dictionary_state(Dictionary*,int,int*,int*,int*);
+void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
+							BinEncoding inf_number_encoding,int *pos,int final,int n_transitions,int code);
 int read_dictionary_transition(Dictionary*,int,unichar*,int*);
-void test(BinEncoding e);
+void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
+								BinEncoding offset_encoding,unichar c,int dest);
+int bin_get_value_length(int,BinEncoding);
+void bin_write_4bytes(unsigned char* bin,int value,int *offset);
+void write_new_bin_header(unsigned char* bin,int *pos,BinStateEncoding state_encoding,
+		BinEncoding char_encoding,BinEncoding inf_number_encoding,
+		BinEncoding offset_encoding,int initial_state_offset);
 
 #endif
 

@@ -322,7 +322,7 @@ if (entry==NULL) {
    fatal_alloc_error("look_for_simple_words");
 }
 for (int i=0;i<info->tokens->N;i++) {
-   explore_bin_simple_words(info,info->d->header_size,info->tokens->token[i],entry,0,i,priority);
+   explore_bin_simple_words(info,info->d->initial_state_offset,info->tokens->token[i],entry,0,i,priority);
 }
 free(entry);
 }
@@ -726,7 +726,7 @@ if (info->inf==NULL) {
 }
 #endif
 unichar entry[DIC_WORD_SIZE];
-explore_bin_simple_words(info,info->d->header_size,text,entry,0,-1,0);
+explore_bin_simple_words(info,info->d->initial_state_offset,text,entry,0,-1,0);
 free_Dictionary(info->d);
 info->d=NULL;
 /*free_abstract_INF(info->inf,&info->inf_free);

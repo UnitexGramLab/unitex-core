@@ -265,7 +265,7 @@ return value;
  */
 long int get_sequence_integer(const unichar* sequence,Dictionary* d,const Alphabet* alphabet){
 int inf_index = -1;
-get_INF_code(d,sequence,1,0,d->header_size,alphabet,&inf_index);
+get_INF_code(d,sequence,1,0,d->initial_state_offset,alphabet,&inf_index);
 if(inf_index == -1){
 	/* sequence is not in the dictionary */
 	return -1;

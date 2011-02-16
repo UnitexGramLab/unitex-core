@@ -488,7 +488,7 @@ for (int priority=1;priority<4;priority++) {
                pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
                                    snt_files->morpho_dic);
                /* Then we compress it */
-               pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,snt_files->morpho_dic);
+               pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,snt_files->morpho_dic,1);
                info->morpho=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->morpho_dic,U_APPEND);
                if (info->morpho==NULL) {
                   fatal_error("");
@@ -535,7 +535,8 @@ if (info->morpho!=NULL) {
    pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
                        snt_files->morpho_dic);
    /* Then we compress it */
-   pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,snt_files->morpho_dic);
+   pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,
+		   snt_files->morpho_dic,1);
 }
 
 free_dico_application(info);

@@ -127,46 +127,6 @@ free_cb(BIN,prv_alloc);
 
 
 /**
- * This function assumes that the .bin file has already been loaded.
- * It analyzes its header to determine the kind of .bin it is.
- * Returns 0 in case of error; 1 otherwise.
- */
-static int read_bin_header(Dictionary* d) {
-if (d->bin[0]==0) {
-	/* Type 1: old style .bin/.inf dictionary */
-	d->header_size=4;
-	if (d->bin_size<d->header_size+2) {
-		/* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
-		error("Invalid .bin size\n");
-		return 0;
-	}
-	/* If we have an old style .bin */
-	d->type=BIN_CLASSIC;
-	d->inf_number_encoding=BIN_3BYTES;
-	d->char_encoding=BIN_2BYTES;
-	d->offset_encoding=BIN_3BYTES;
-	return 1;
-}
-if (d->bin[0]==1) {
-	/* Type 2: modern style .bin/.inf dictionary with no limit on .bin size */
-	d->header_size=4;
-	if (d->bin_size<d->header_size+2) {
-		/* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
-		error("Invalid .bin size\n");
-		return 0;
-	}
-	d->type=BIN_CLASSIC;
-	d->inf_number_encoding=(BinEncoding)d->bin[1];
-	d->char_encoding=(BinEncoding)d->bin[2];
-	d->offset_encoding=(BinEncoding)d->bin[3];
-	return 1;
-}
-error("Unknown dictionary type: %d\n",d->bin[0]);
-return 0;
-}
-
-
-/**
  * Reads a 2 byte-value. Updates the offset.
  */
 int bin_read_2bytes(const unsigned char* bin,int *offset) {
@@ -187,6 +147,16 @@ return v;
 
 
 /**
+ * Reads a 4 byte-value. Updates the offset.
+ */
+int bin_read_4bytes(const unsigned char* bin,int *offset) {
+int v=(bin[*offset]<<24)+(bin[(*offset)+1]<<16)+(bin[(*offset)+2]<<8)+bin[(*offset)+3];
+(*offset)+=4;
+return v;
+}
+
+
+/**
  * Reads a variable length value. Updates the offset.
  */
 int bin_read_variable_length(const unsigned char* bin,int *offset) {
@@ -202,6 +172,7 @@ int bin_read(const unsigned char* bin,BinEncoding e,int *offset) {
 switch (e) {
 case BIN_2BYTES: return bin_read_2bytes(bin,offset);
 case BIN_3BYTES: return bin_read_3bytes(bin,offset);
+case BIN_4BYTES: return bin_read_4bytes(bin,offset);
 case BIN_VARIABLE: return bin_read_variable_length(bin,offset);
 default: fatal_error("Illegal encoding value in bin_read\n");
 }
@@ -222,6 +193,17 @@ bin[(*offset)++]=value & 255;
  * Writes a 3 byte-value. Updates the offset.
  */
 void bin_write_3bytes(unsigned char* bin,int value,int *offset) {
+bin[(*offset)++]=(value>>16) & 255;
+bin[(*offset)++]=(value>>8) & 255;
+bin[(*offset)++]=value & 255;
+}
+
+
+/**
+ * Writes a 4 byte-value. Updates the offset.
+ */
+void bin_write_4bytes(unsigned char* bin,int value,int *offset) {
+bin[(*offset)++]=(value>>24) & 255;
 bin[(*offset)++]=(value>>16) & 255;
 bin[(*offset)++]=(value>>8) & 255;
 bin[(*offset)++]=value & 255;
@@ -266,6 +248,7 @@ void bin_write(unsigned char* bin,BinEncoding e,int value,int *offset) {
 switch (e) {
 case BIN_2BYTES: return bin_write_2bytes(bin,value,offset);
 case BIN_3BYTES: return bin_write_3bytes(bin,value,offset);
+case BIN_4BYTES: return bin_write_4bytes(bin,value,offset);
 case BIN_VARIABLE: return bin_write_variable_length(bin,value,offset);
 default: fatal_error("Illegal encoding value in bin_write\n");
 }
@@ -279,18 +262,56 @@ default: fatal_error("Illegal encoding value in bin_write\n");
  * in *code.
  */
 int read_dictionary_state(Dictionary* d,int pos,int *final,int *n_transitions,int *code) {
-if (d->type!=BIN_CLASSIC) {
-	fatal_error("read_dictionary_state: unsupported dictionary type\n");
+if (d->state_encoding==BIN_CLASSIC_STATE) {
+	*final=!(d->bin[pos] & 128);
+	*n_transitions=((d->bin[pos] & 127)<<8)+d->bin[pos+1];
+	pos=pos+2;
+	if (*final) {
+		*code=bin_read(d->bin,d->inf_number_encoding,&pos);
+	} else {
+		*code=-1;
+	}
+	return pos;
 }
-*final=!(d->bin[pos] & 128);
-*n_transitions=((d->bin[pos] & 127)<<8)+d->bin[pos+1];
-pos=pos+2;
+if (d->state_encoding!=BIN_NEW_STATE) {
+	fatal_error("read_dictionary_state: unsupported state encoding\n");
+}
+int value=bin_read_variable_length(d->bin,&pos);
+*final=value & 1;
+*n_transitions=value>>1;
 if (*final) {
 	*code=bin_read(d->bin,d->inf_number_encoding,&pos);
 } else {
 	*code=-1;
 }
 return pos;
+}
+
+
+/**
+ * Writes the information associated to the current state in the dictionary, i.e.
+ * finality and number of outgoing transitions. Updates the position.
+ */
+void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
+							BinEncoding inf_number_encoding,int *pos,int final,int n_transitions,int code) {
+if (state_encoding==BIN_CLASSIC_STATE) {
+	int value=n_transitions & ((1<<15)-1);
+	if (!final) value=value | (1<<15);
+	bin_write_2bytes(bin,value,pos);
+	if (final) {
+		bin_write(bin,inf_number_encoding,code,pos);
+	}
+	return;
+}
+if (state_encoding!=BIN_NEW_STATE) {
+	fatal_error("read_dictionary_state: unsupported state encoding\n");
+}
+int value=(n_transitions<<1);
+if (final) value=value | 1;
+bin_write_variable_length(bin,value,pos);
+if (final) {
+	bin_write(bin,inf_number_encoding,code,pos);
+}
 }
 
 
@@ -307,3 +328,89 @@ if (d->type!=BIN_CLASSIC) {
 return pos;
 }
 
+
+/**
+ * Writes the information associated to the current transition in the dictionary.
+ * Updates the position.
+ */
+void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
+								BinEncoding offset_encoding,unichar c,int dest) {
+bin_write(bin,char_encoding,c,pos);
+bin_write(bin,offset_encoding,dest,pos);
+}
+
+
+int bin_get_value_variable_length(int v) {
+if (v<(1<<7)) return 1;
+if (v<(1<<14)) return 2;
+if (v<(1<<21)) return 3;
+if (v<(1<<28)) return 4;
+return 5;
+}
+
+
+/**
+ * Returns the number of bytes required to save the given value.
+ */
+int bin_get_value_length(int v,BinEncoding e) {
+switch (e) {
+case BIN_2BYTES: return 2;
+case BIN_3BYTES: return 3;
+case BIN_VARIABLE: return bin_get_value_variable_length(v);
+default: fatal_error("bin_get_value_length: unsupported encoding\n");
+}
+return -1;
+}
+
+
+/**
+ * This function assumes that the .bin file has already been loaded.
+ * It analyzes its header to determine the kind of .bin it is.
+ * Returns 0 in case of error; 1 otherwise.
+ */
+static int read_bin_header(Dictionary* d) {
+if (d->bin[0]==0) {
+	/* Type 1: old style .bin/.inf dictionary */
+	d->initial_state_offset=4;
+	if (d->bin_size<d->initial_state_offset+2) {
+		/* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
+		error("Invalid .bin size\n");
+		return 0;
+	}
+	/* If we have an old style .bin */
+	d->type=BIN_CLASSIC;
+	d->state_encoding=BIN_CLASSIC_STATE;
+	d->inf_number_encoding=BIN_3BYTES;
+	d->char_encoding=BIN_2BYTES;
+	d->offset_encoding=BIN_3BYTES;
+	return 1;
+}
+if (d->bin[0]==1) {
+	/* Type 2: modern style .bin/.inf dictionary with no limit on .bin size */
+	d->type=BIN_CLASSIC;
+	d->state_encoding=(BinStateEncoding)d->bin[1];
+	d->inf_number_encoding=(BinEncoding)d->bin[2];
+	d->char_encoding=(BinEncoding)d->bin[3];
+	d->offset_encoding=(BinEncoding)d->bin[4];
+	int offset=5;
+	d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
+	return 1;
+}
+error("Unknown dictionary type: %d\n",d->bin[0]);
+return 0;
+}
+
+
+/**
+ * Writes the .bin header for a v2 .bin
+ */
+void write_new_bin_header(unsigned char* bin,int *pos,BinStateEncoding state_encoding,
+		BinEncoding char_encoding,BinEncoding inf_number_encoding,
+		BinEncoding offset_encoding,int initial_state_offset) {
+bin[(*pos)++]=1;
+bin[(*pos)++]=state_encoding;
+bin[(*pos)++]=inf_number_encoding;
+bin[(*pos)++]=char_encoding;
+bin[(*pos)++]=offset_encoding;
+bin_write_4bytes(bin,initial_state_offset,pos);
+}

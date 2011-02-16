@@ -47,6 +47,9 @@ const char* usage_Compress =
 		 "                       xxx.bin)"
          "  -f/--flip: specifies that the inflected and lemma forms must be swapped\n"
          "  -s/--semitic: uses the semitic compression algorithm\n"
+		 "  --v1: produces an old style .bin file\n"
+		 "  --v2: produces a new style .bin file, with no file size limitation to 16Mb\n"
+		 "        and a smaller size (default)\n"
          "  -h/--help: this help\n"
          "\n"
          "Compresses a dictionary into an finite state automaton. This automaton\n"
@@ -86,23 +89,20 @@ u_fclose(f);
 
 
 int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                         int flip,int semitic,char* dic) {
+                         int flip,int semitic,char* dic,int new_style_bin) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Compress,"main_Compress");
 char tmp[200];
-{
-    tmp[0]=0;
-    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
-    if (tmp[0] != '\0') {
-        add_argument(invoker,"-k");
-        add_argument(invoker,tmp);
-    }
-
-    tmp[0]=0;
-    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
-    if (tmp[0] != '\0') {
-        add_argument(invoker,"-q");
-        add_argument(invoker,tmp);
-    }
+tmp[0]=0;
+get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+if (tmp[0] != '\0') {
+    add_argument(invoker,"-k");
+    add_argument(invoker,tmp);
+}
+tmp[0]=0;
+get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+if (tmp[0] != '\0') {
+    add_argument(invoker,"-q");
+    add_argument(invoker,tmp);
 }
 if (flip) {
    add_argument(invoker,"-f");
@@ -110,6 +110,12 @@ if (flip) {
 if (semitic) {
    add_argument(invoker,"-s");
 }
+if (new_style_bin) {
+	add_argument(invoker,"--v2");
+} else {
+	add_argument(invoker,"--v1");
+}
+
 add_argument(invoker,dic);
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
@@ -125,6 +131,8 @@ const struct option_TS lopts_Compress[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"output",required_argument_TS,NULL,'o'},
+      {"v1",no_argument_TS,NULL,1},
+      {"v2",no_argument_TS,NULL,2},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -143,6 +151,7 @@ if (argc==1) {
 }
 
 int FLIP=0;
+int new_style_bin=1;
 int semitic=0;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
@@ -156,6 +165,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    switch(val) {
    case 'f': FLIP=1; break;
    case 's': semitic=1; break;
+   case 1: new_style_bin=0; break;
+   case 2: new_style_bin=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
@@ -365,7 +376,7 @@ INF_codes->size=old_size;
 int n_states;
 int n_transitions;
 int bin_size;
-create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size,inf_indirection);
+create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size,inf_indirection,new_style_bin);
 free(inf_indirection);
 free_bit_array(used_inf_values);
 u_printf("Binary file: %d bytes\n",bin_size);

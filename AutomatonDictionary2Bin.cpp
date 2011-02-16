@@ -22,6 +22,7 @@
 #include "AutomatonDictionary2Bin.h"
 #include "DictionaryTree.h"
 #include "Error.h"
+#include "CompressedDic.h"
 
 
 /**
@@ -32,7 +33,7 @@
  * If the node has already been numbered (we are in an automaton,
  * not a tree), the function does nothing.
  */
-void number_node(struct dictionary_node* node,int *bin_size) {
+void number_node_old_style(struct dictionary_node* node,int *bin_size) {
 if (node==NULL) return;
 if (node->offset!=-1) {
 	/* Nothing to do if there is already an offset */
@@ -47,7 +48,7 @@ node->offset=(*bin_size);
 
 if (node->single_INF_code_list!=NULL) {
 	/* If the node is a final one, we add 3 bytes for coding the INF line number */
-	(*bin_size)=(*bin_size)+3;
+	(*bin_size)+=3;
 }
 /* Then we count the transitions */
 node->n_trans=0;
@@ -56,17 +57,90 @@ tmp=node->trans;
 while (tmp!=NULL) {
 	/* For each transition, we count 2 bytes for the letter and 3 bytes for the
 	 * destination offset */
-  	(*bin_size)=(*bin_size)+5;
-  	tmp=tmp->next;
+	(*bin_size)+=5;
+	tmp=tmp->next;
   	/* We update the number of transitions */
 	(node->n_trans)++;
 }
 /* Finally, we number all the children of the node */
 tmp=node->trans;
 while (tmp!=NULL) {
-  number_node(tmp->node,bin_size);
+  number_node_old_style(tmp->node,bin_size);
   tmp=tmp->next;
 }
+}
+
+
+/**
+ * This function computes node offsets in a new way, taking into account
+ * the fact that information may be encoded in variable ways.
+ */
+void number_node_new_style(struct dictionary_node* node,int *bin_size,
+		BinStateEncoding state_encoding,BinEncoding char_encoding,BinEncoding inf_number_encoding,
+		BinEncoding offset_encoding,int* inf_indirection) {
+if (node->offset!=-1) {
+	/* Nothing to do if there is already an offset */
+	return;
+}
+if (node->trans==NULL) {
+	/* No transition? We can give an offset to this state */
+	node->offset=(*bin_size);
+    if (state_encoding==BIN_CLASSIC_STATE) {
+    	/* A classic final state with no transition takes 5 bytes */
+    	(*bin_size)+=5;
+    } else {
+    	/* A new style final state starts with a variable length value
+    	 * representing the finality and the number of transitions.
+    	 * Since there is no transition, this means 1 byte.
+    	 * We then add the space needed by the inf number, if any */
+    	(*bin_size)+=1+bin_get_value_length(inf_indirection[node->INF_code],inf_number_encoding);
+    }
+	return;
+}
+/* If there are transitions, we have to attribute offsets to all pointed states first */
+struct dictionary_node_transition* tmp;
+tmp=node->trans;
+while (tmp!=NULL) {
+	number_node_new_style(tmp->node,bin_size,state_encoding,char_encoding,inf_number_encoding,offset_encoding,inf_indirection);
+	(node->n_trans)++;
+	tmp=tmp->next;
+}
+/* Now, we can securely assign an offset to the current node */
+node->offset=(*bin_size);
+if (state_encoding==BIN_CLASSIC_STATE) {
+	/* A classic state takes 2 bytes */
+	(*bin_size)+=2;
+	/* Plus 3 bytes if it's final */
+	if (node->single_INF_code_list!=NULL) (*bin_size)+=3;
+} else {
+	/* A new style state starts with a variable length value
+	 * representing the finality and the number of transitions.
+	 * Since there is no transition, this means 1 byte.
+	 * We then add the space needed by the inf number, if any */
+	int value=node->n_trans<<1;
+	(*bin_size)+=bin_get_value_length(value,BIN_VARIABLE);
+	if (node->single_INF_code_list!=NULL) (*bin_size)+=bin_get_value_length(inf_indirection[node->INF_code],inf_number_encoding);
+}
+/* Finally, we update the bin size by taking into account the space
+ * needed by the outgoing transitions */
+tmp=node->trans;
+while (tmp!=NULL) {
+	(*bin_size)+=bin_get_value_length(tmp->letter,char_encoding);
+	(*bin_size)+=bin_get_value_length(tmp->node->offset,offset_encoding);
+	tmp=tmp->next;
+}
+}
+
+
+void number_node(struct dictionary_node* root,int *bin_size,int new_style_bin,
+		BinStateEncoding state_encoding,BinEncoding char_encoding,BinEncoding inf_number_encoding,
+		BinEncoding offset_encoding,int* inf_indirection) {
+if (!new_style_bin) {
+	number_node_old_style(root,bin_size);
+	return;
+}
+number_node_new_style(root,bin_size,state_encoding,char_encoding,inf_number_encoding,
+		offset_encoding,inf_indirection);
 }
 
 
@@ -82,7 +156,11 @@ while (tmp!=NULL) {
  * and transitions of the dictionary automaton.
  */
 void fill_bin_array(struct dictionary_node* node,int *n_states,int *n_transitions,
-						unsigned char* bin,int* inf_indirection) {
+						unsigned char* bin,int* inf_indirection,
+						BinStateEncoding state_encoding,
+						BinEncoding inf_number_encoding,
+						BinEncoding char_encoding,
+						BinEncoding offset_encoding) {
 if (node==NULL) return;
 if (node->INF_code==-1) {
 	/* We use this test to know if the node has already been dumped */
@@ -91,34 +169,17 @@ if (node->INF_code==-1) {
 /* We increase the number of states */
 (*n_states)++;
 
-/* We cast the number of transitions into an unsigned number on 2 bytes */
-unichar n=(unichar)node->n_trans;
-if (node->single_INF_code_list==NULL) {
-   /* If the node is not a final one, we put to 1 the the heaviest bit */
-   n=(unichar)(n|32768);
-}
-
 /* We take the offset of the node as a base */
 int pos=node->offset;
-
-/* We write the 2 bytes information about the node. We force the byte order
- * (higher byte first) to avoid little/big endian surprises */
-bin[pos]=(unsigned char)(n/256);
-bin[pos+1]=(unsigned char)(n%256);
-pos=pos+2;
-if (node->single_INF_code_list!=NULL) {
-	/* If the node is a final one, we dump the number of the associated
-	 * INF line on 3 bytes, forcing the order (higher byte first) */
-	int INF_line_number=inf_indirection[node->INF_code];
-	if (INF_line_number==-1) {
+int final=(node->single_INF_code_list!=NULL);
+int inf_code=-1;
+if (final) {
+	inf_code=inf_indirection[node->INF_code];
+	if (inf_code==-1) {
 		fatal_error("fill_bin_array: Invalid INF line number redirection for code #%d\n",node->INF_code);
 	}
-	bin[pos++]=(unsigned char)(INF_line_number/(256*256));
-	INF_line_number=INF_line_number%(256*256);
-	bin[pos++]=(unsigned char)(INF_line_number/256);
-	INF_line_number=INF_line_number%256;
-	bin[pos++]=(unsigned char)(INF_line_number);
 }
+write_dictionary_state(bin,state_encoding,inf_number_encoding,&pos,final,node->n_trans,inf_code);
 /* Then, we assign -1 to 'node->INF_code' in order to mark that the node
  * has been dumped */
 node->INF_code=-1;
@@ -128,18 +189,10 @@ tmp=node->trans;
 while (tmp!=NULL) {
 	/* We increase the number of transitions */
 	(*n_transitions)++;
-	/* We dump the letter of the transition on 2 bytes, forcing the order (higher byte first) */
-	bin[pos++]=(unsigned char)((tmp->letter)/256);
-	bin[pos++]=(unsigned char)((tmp->letter)%256);
-	/* We dump the offset of the destination node on 3 bytes, forcing the order (higher byte first) */
-	int dest_offset=tmp->node->offset;
-	bin[pos++]=(unsigned char)(dest_offset/(256*256));
-	dest_offset=dest_offset%(256*256);
-	bin[pos++]=(unsigned char)(dest_offset/256);
-	dest_offset=dest_offset%256;
-	bin[pos++]=(unsigned char)(dest_offset);
+	write_dictionary_transition(bin,&pos,char_encoding,offset_encoding,tmp->letter,tmp->node->offset);
 	/* And we dump the destination node recursively */
-	fill_bin_array(tmp->node,n_states,n_transitions,bin,inf_indirection);
+	fill_bin_array(tmp->node,n_states,n_transitions,bin,inf_indirection,
+			state_encoding,inf_number_encoding,char_encoding,offset_encoding);
 	tmp=tmp->next;
 }
 }
@@ -153,7 +206,7 @@ while (tmp!=NULL) {
  * of the resulting .bin file.
  */
 void create_and_save_bin(struct dictionary_node* root,const char* output,int *n_states,
-						int *n_transitions,int *bin_size,int* inf_indirection) {
+						int *n_transitions,int *bin_size,int* inf_indirection,int new_style_bin) {
 U_FILE* f;
 /* The output file must be opened as a binary one */
 f=u_fopen(BINARY,output,U_WRITE);
@@ -162,29 +215,45 @@ if (f==NULL) {
 }
 /* The .bin size is initialized to 4, because of the 4 first bytes that will be
  * used to store the size of the .bin */
-(*bin_size)=4;
 (*n_states)=0;
 (*n_transitions)=0;
+BinStateEncoding state_encoding=BIN_CLASSIC_STATE;
+BinEncoding char_encoding=BIN_2BYTES;
+BinEncoding inf_number_encoding=BIN_3BYTES;
+BinEncoding offset_encoding=BIN_3BYTES;
+(*bin_size)=BIN_V1_HEADER_SIZE;
+if (new_style_bin) {
+	state_encoding=BIN_NEW_STATE;
+	char_encoding=BIN_VARIABLE;
+	inf_number_encoding=BIN_VARIABLE;
+	offset_encoding=BIN_VARIABLE;
+	(*bin_size)=BIN_V2_HEADER_SIZE;
+}
 
 /* We give offsets to the dictionary node and we get the .bin size */
-number_node(root,bin_size);
+number_node(root,bin_size,new_style_bin,state_encoding,char_encoding,inf_number_encoding,offset_encoding,
+		inf_indirection);
+if (!new_style_bin && (*bin_size >= (1<<24))) {
+	fatal_error("The output .bin would be larger than 16Mb. Recompress this dictionary with --v2.\n");
+}
 /* An then we allocate a byte array of the correct size */
 unsigned char* bin=(unsigned char*)malloc((*bin_size)*sizeof(unsigned char));
 if (bin==NULL) {
    fatal_alloc_error("create_and_save_bin");
 }
-int n=(*bin_size);
-/* We save the .bin size on the 4 first bytes, forcing the byte order
- * (higher byte first) */
-bin[0]=(unsigned char)(n/(256*256*256));
-n=n%(256*256*256);
-bin[1]=(unsigned char)(n/(256*256));
-n=n%(256*256);
-bin[2]=(unsigned char)(n/256);
-n=n%256;
-bin[3]=(unsigned char)(n);
+int pos=0;
+if (!new_style_bin) {
+	bin_write_4bytes(bin,*bin_size,&pos);
+} else {
+	state_encoding=BIN_NEW_STATE;
+	char_encoding=BIN_VARIABLE;
+	inf_number_encoding=BIN_VARIABLE;
+	offset_encoding=BIN_VARIABLE;
+	write_new_bin_header(bin,&pos,state_encoding,char_encoding,inf_number_encoding,offset_encoding,root->offset);
+}
 /* Then we fill the 'bin' array */
-fill_bin_array(root,n_states,n_transitions,bin,inf_indirection);
+fill_bin_array(root,n_states,n_transitions,bin,inf_indirection,
+		state_encoding,inf_number_encoding,char_encoding,offset_encoding);
 /* And we dump it to the output file */
 if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
   fatal_error("Error while writing file %s\n",output);

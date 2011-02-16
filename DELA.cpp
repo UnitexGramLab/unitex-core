@@ -1196,7 +1196,7 @@ for (int i=0;i<n_transitions;i++) {
 void rebuild_dictionary(Dictionary* d,U_FILE* output) {
 unichar content[DIC_LINE_SIZE];
 /* The offset of the initial state is 4 */
-explore_all_paths(d->header_size,content,0,d,output);
+explore_all_paths(d->initial_state_offset,content,0,d,output);
 }
 
 
@@ -1725,7 +1725,7 @@ int get_inf_code_exact_match(Dictionary* d,unichar* str) {
 if (d->type!=BIN_CLASSIC) {
 	fatal_error("get_inf_code_exact_match: unsupported dictionary type\n");
 }
-return explore_for_exact_match(d->bin,d->header_size,str,0);
+return explore_for_exact_match(d->bin,d->initial_state_offset,str,0);
 }
 
 
