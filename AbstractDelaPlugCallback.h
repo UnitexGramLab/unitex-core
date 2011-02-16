@@ -63,7 +63,7 @@ extern "C" {
 /* this callback must return 1 is the filename is a member of the space
    if the callback return 0, this mean the dictionary is not member of the space
    Unitex will try other space (if any) or just load and free the dictionary
-   using load_INF_file/load_BIN_file - free_INF_codes/free
+   using load_INF_file/loading BIN file by mapping - free_INF_codes/free mapped file
 
    It is very highly suggested this function return the same value for the
    both .inf and .bin files belonging to the the same dictionary.

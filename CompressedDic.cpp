@@ -82,50 +82,6 @@ free(d);
 }
 
 
-
-/**
- * Loads a .bin file into an unsigned char array that is returned.
- * Returns NULL if an error occurs.
- */
-unsigned char* load_BIN_file(const char* name,long *file_size,Abstract_allocator prv_alloc) {
-U_FILE* f;
-/* We open the file as a binary one */
-f=u_fopen(BINARY,name,U_READ);
-unsigned char* tab;
-if (f==NULL) {
-   error("Cannot open %s\n",name);
-   return NULL;
-}
-*file_size=get_file_size(name);
-if (*file_size==0) {
-   error("Error: empty file %s\n",name);
-   u_fclose(f);
-   return NULL;
-}
-tab=(unsigned char*)malloc_cb(sizeof(unsigned char)*(*file_size),prv_alloc);
-if (tab==NULL) {
-   fatal_alloc_error("load_BIN_file");
-   return NULL;
-}
-if (*file_size!=(int)fread(tab,sizeof(char),*file_size,f)) {
-   error("Error while reading %s\n",name);
-   free_cb(tab,prv_alloc);
-   u_fclose(f);
-   return NULL;
-}
-u_fclose(f);
-return tab;
-}
-
-
-/**
- * Frees all the memory allocated for the given structure.
- */
-void free_BIN_file(unsigned char* BIN,Abstract_allocator prv_alloc) {
-free_cb(BIN,prv_alloc);
-}
-
-
 /**
  * Reads a 2 byte-value. Updates the offset.
  */

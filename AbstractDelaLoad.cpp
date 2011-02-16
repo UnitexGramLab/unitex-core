@@ -195,15 +195,6 @@ const unsigned char* load_abstract_BIN_file(const char* name,long*file_size,stru
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
 	if (pads == NULL)
 	{
-        /*
-		res = load_BIN_file(name);
-		if (res != NULL)
-		{
-			p_bin_free_info->must_be_free = 1;
-			p_bin_free_info->func_free_bin = NULL;
-			p_bin_free_info->private_ptr = NULL;
-		}
-        */
         ABSTRACTMAPFILE *amf;
         amf=af_open_mapfile(name,MAPFILE_OPTION_READ,0);
         if (amf != NULL) {
