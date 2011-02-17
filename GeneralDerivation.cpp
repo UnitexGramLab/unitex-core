@@ -22,6 +22,7 @@
 #include "GeneralDerivation.h"
 #include "Error.h"
 #include "Vector.h"
+#include "Ustring.h"
 
 
 // main internal functions:
@@ -31,7 +32,8 @@ int analyse_word(const unichar*,Dictionary*,U_FILE*,U_FILE*,const bool*,const bo
       ,vector_ptr*,vector_ptr*);
 void explore_state(int, unichar*, int, const unichar*, const unichar*, int, const unichar*, const unichar*,
                    struct decomposed_word_list**, int, struct rule_list*, const struct dela_entry*,
-                   Dictionary*,const bool*,const bool*,const Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
+                   Dictionary*,const bool*,const bool*,const Alphabet*,U_FILE*,struct utags,
+                   vector_ptr*,vector_ptr*,Ustring*);
 
 
 // results of decomposition are written to
@@ -232,8 +234,10 @@ int analyse_word(const unichar* mot,Dictionary* d,U_FILE* debug,U_FILE* result_f
   dela_line[0]='\0';
   correct_word[0]='\0';
   struct decomposed_word_list* l = 0;
+  Ustring* ustr=new_Ustring();
   explore_state(d->initial_state_offset,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,d,
-        prefix,suffix,alphabet,debug,UTAG,rules,entries);
+        prefix,suffix,alphabet,debug,UTAG,rules,entries,ustr);
+  free_Ustring(ustr);
   free_all_dic_entries(entries);
   free_all_rule_lists(rules);
   if ( l == 0 ) {
@@ -916,7 +920,7 @@ void explore_state (int offset,
 		    Dictionary* d,
 		    const bool* prefix,const bool* suffix,const Alphabet* alphabet,
 		    U_FILE* debug_file,struct utags UTAG,
-		    vector_ptr* rules,vector_ptr* entries) {
+		    vector_ptr* rules,vector_ptr* entries,Ustring* ustr) {
 int final,n_transitions,inf_number;
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 if (final) { // if we are in a terminal state
@@ -1172,6 +1176,7 @@ if (final) { // if we are in a terminal state
 	    u_fprintf(debug_file,"> %S\n",next_remaining_word);
 	  }
 #endif
+	  Ustring* foo=new_Ustring();
 	  explore_state(d->initial_state_offset,
 			next_component,
 			0,
@@ -1184,7 +1189,8 @@ if (final) { // if we are in a terminal state
 			n_decomp+1,
 			rule_list_new,
 			dic_entr,
-			d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
+			d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,foo);
+	  free_Ustring(foo);
 	}
 	else {
 // 	  free_dic_entry(dic_entr);
@@ -1207,7 +1213,7 @@ if (final) { // if we are in a terminal state
   unichar c;
   int adr;
   for (int i=0;i<n_transitions;i++) {
-	  offset=read_dictionary_transition(d,offset,&c,&adr);
+	  offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
     if (is_equal_or_uppercase(c,remaining_word[pos_in_remaining_word],alphabet)
 	|| is_equal_or_uppercase(remaining_word[pos_in_remaining_word],c,alphabet)) {
       current_component[pos_in_current_component] = c;
@@ -1223,7 +1229,7 @@ if (final) { // if we are in a terminal state
 		    n_decomp,
 		    rule_list_called,
 		    dic_entr_called,
-		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
+		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,ustr);
     }
   }
 }

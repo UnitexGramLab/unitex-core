@@ -50,7 +50,7 @@ const char* usage_Compress =
 		 "  --v1: produces an old style .bin file\n"
 		 "  --v2: produces a new style .bin file, with no file size limitation to 16Mb\n"
 		 "        and a smaller size (default)\n"
-         "  -h/--help: this help\n"
+		 "  -h/--help: this help\n"
          "\n"
          "Compresses a dictionary into an finite state automaton. This automaton\n"
          "is stored is a .bin file, and the associated flexional codes are\n"
@@ -133,6 +133,7 @@ const struct option_TS lopts_Compress[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"v1",no_argument_TS,NULL,1},
       {"v2",no_argument_TS,NULL,2},
+      {"bin2",no_argument_TS,NULL,3},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -151,6 +152,7 @@ if (argc==1) {
 }
 
 int FLIP=0;
+BinType bin_type=BIN_CLASSIC;
 int new_style_bin=1;
 int semitic=0;
 char bin[DIC_WORD_SIZE];
@@ -165,8 +167,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    switch(val) {
    case 'f': FLIP=1; break;
    case 's': semitic=1; break;
-   case 1: new_style_bin=0; break;
-   case 2: new_style_bin=1; break;
+   case 1: new_style_bin=0; bin_type=BIN_CLASSIC; break;
+   case 2: new_style_bin=1; bin_type=BIN_CLASSIC; break;
+   case 3: new_style_bin=1; bin_type=BIN_BIN2; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
@@ -207,7 +210,7 @@ compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_to
 tokenize_allocator_has_clean = ((get_allocator_flag(compress_tokenize_abstract_allocator) & AllocatorCleanPresent) != 0);
 
 U_FILE* f;
-U_FILE* INF_file;
+U_FILE* INF_file=NULL;
 unichar s[DIC_WORD_SIZE];
 struct dela_entry* entry;
 struct dictionary_node* root; /* Root of the dictionary tree */
@@ -224,17 +227,22 @@ if (bin[0]=='\0') {
 }
 remove_extension(bin);
 strcat(bin,".bin");
+if (bin_type==BIN_BIN2) {
+	strcat(bin,"2");
+}
 remove_extension(bin,inf);
 strcat(inf,".inf");
-INF_file=u_fopen_creating_unitex_text_format(encoding_output,bom_output,inf,U_WRITE);
-if (INF_file==NULL) {
-	u_fclose(f);
-	fatal_error("Cannot create %s\n",inf);
+if (bin_type==BIN_CLASSIC) {
+	INF_file=u_fopen_creating_unitex_text_format(encoding_output,bom_output,inf,U_WRITE);
+	if (INF_file==NULL) {
+		u_fclose(f);
+		fatal_error("Cannot create %s\n",inf);
+	}
+	/* First, we print a sequence of zeros at the beginning of the .inf file
+	 * in order to book some place, so that we can later come and write there
+	 * the number of lines of this file. */
+	u_fprintf(INF_file,"0000000000\n");
 }
-/* First, we print a sequence of zeros at the beginning of the .inf file
- * in order to book some place, so that we can later come and write there
- * the number of lines of this file. */
-u_fprintf(INF_file,"0000000000\n");
 root=new_dictionary_node(compress_abstract_allocator);
 INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
@@ -327,65 +335,78 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 }
 u_fclose(f);
 struct bit_array* used_inf_values=new_bit_array(INF_codes->size,ONE_BIT);
+if (bin_type==BIN_BIN2) {
+	/* For a .bin2 dictionary, we have to place the inf codes on transitions outputs */
+	move_outputs_on_transitions(root,INF_codes);
+}
 /* We build a minimal transducer from the entry tree */
 minimize_tree(root,used_inf_values,compress_abstract_allocator);
-/* Now we reorder INF codes in order to group the ones that are actually
- * used so that we can save space in the .inf file by not saving codes
- * that are never referenced in the .bin file */
-int* inf_indirection=(int*)malloc(sizeof(int)*INF_codes->size);
+int* inf_indirection=NULL;
 int n_used_inf_codes=0;
-int last=INF_codes->size-1;
-/* This -1 initialization is used for safety checking */
-for (int i=0;i<INF_codes->size;i++) {
-	inf_indirection[i]=-1;
-}
-for (int i=0;i<INF_codes->size && i<=last;i++) {
-	if (get_value(used_inf_values,i)) {
-		/* A used INF value stays at its place */
-		n_used_inf_codes++;
-		inf_indirection[i]=i;
-	} else {
-		/* We have found an unused INF code. We look for a used one at
-		 * the end of the array to swap them */
-		while (last>i && !get_value(used_inf_values,last)) {
+if (INF_file!=NULL) {
+	/* Now we reorder INF codes in order to group the ones that are actually
+	 * used so that we can save space in the .inf file by not saving codes
+	 * that are never referenced in the .bin file */
+	inf_indirection=(int*)malloc(sizeof(int)*INF_codes->size);
+	int last=INF_codes->size-1;
+	/* This -1 initialization is used for safety checking */
+	for (int i=0;i<INF_codes->size;i++) {
+		inf_indirection[i]=-1;
+	}
+	for (int i=0;i<INF_codes->size && i<=last;i++) {
+		if (get_value(used_inf_values,i)) {
+			/* A used INF value stays at its place */
+			n_used_inf_codes++;
+			inf_indirection[i]=i;
+		} else {
+			/* We have found an unused INF code. We look for a used one at
+			 * the end of the array to swap them */
+			while (last>i && !get_value(used_inf_values,last)) {
+				last--;
+			}
+			if (last==i) {
+				/* We have finished */
+				break;
+			}
+			n_used_inf_codes++;
+			/* We redirect the old used INF code */
+			inf_indirection[last]=i;
+			/* And we swap codes */
+			unichar* tmpInfValue=INF_codes->value[i];
+			INF_codes->value[i]=INF_codes->value[last];
+			INF_codes->value[last]=tmpInfValue;
 			last--;
 		}
-		if (last==i) {
-			/* We have finished */
-			break;
-		}
-		n_used_inf_codes++;
-		/* We redirect the old used INF code */
-		inf_indirection[last]=i;
-		/* And we swap codes */
-		unichar* tmpInfValue=INF_codes->value[i];
-		INF_codes->value[i]=INF_codes->value[last];
-		INF_codes->value[last]=tmpInfValue;
-		last--;
 	}
-}
-int old_size=INF_codes->size;
-INF_codes->size=n_used_inf_codes;
-/* Now we can dump the INF codes into the .inf file */
-dump_values(INF_file,INF_codes);
-u_fclose(INF_file);
-write_INF_file_header(inf,INF_codes->size);
-INF_codes->size=old_size;
+	int old_size=INF_codes->size;
+	INF_codes->size=n_used_inf_codes;
+	/* Now we can dump the INF codes into the .inf file */
+	dump_values(INF_file,INF_codes);
+	u_fclose(INF_file);
+	write_INF_file_header(inf,INF_codes->size);
+	INF_codes->size=old_size;
+} /* End of dealing with the .inf file, if needed */
 
 /* And we dump it into the .bin file */
 int n_states;
 int n_transitions;
 int bin_size;
-create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size,inf_indirection,new_style_bin);
+create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size,inf_indirection,new_style_bin,bin_type);
 free(inf_indirection);
 free_bit_array(used_inf_values);
 u_printf("Binary file: %d bytes\n",bin_size);
-u_printf("%d line%s read            \n"
+if (bin_type==BIN_CLASSIC) {
+	u_printf("%d line%s read            \n"
          "%d INF entr%s created\n",
          line,
          (line!=1)?"s":"",
          n_used_inf_codes,
          (n_used_inf_codes!=1)?"ies":"y");
+} else {
+	u_printf("%d line%s read            \n",
+         line,
+         (line!=1)?"s":"");
+}
 u_printf("%d states, %d transitions\n",n_states,n_transitions);
 free_OptVars(vars);
 /*

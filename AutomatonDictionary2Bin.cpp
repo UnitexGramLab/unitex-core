@@ -85,15 +85,18 @@ if (node->offset!=-1) {
 if (node->trans==NULL) {
 	/* No transition? We can give an offset to this state */
 	node->offset=(*bin_size);
-    if (state_encoding==BIN_CLASSIC_STATE) {
+	if (state_encoding==BIN_CLASSIC_STATE) {
     	/* A classic final state with no transition takes 5 bytes */
     	(*bin_size)+=5;
-    } else {
+    } else if (state_encoding==BIN_NEW_STATE) {
     	/* A new style final state starts with a variable length value
     	 * representing the finality and the number of transitions.
     	 * Since there is no transition, this means 1 byte.
     	 * We then add the space needed by the inf number, if any */
     	(*bin_size)+=1+bin_get_value_length(inf_indirection[node->INF_code],inf_number_encoding);
+    } else {
+    	/* A .bin2 state has no inf number */
+    	(*bin_size)+=1;
     }
 	return;
 }
@@ -112,7 +115,7 @@ if (state_encoding==BIN_CLASSIC_STATE) {
 	(*bin_size)+=2;
 	/* Plus 3 bytes if it's final */
 	if (node->single_INF_code_list!=NULL) (*bin_size)+=3;
-} else {
+} else if (state_encoding==BIN_NEW_STATE) {
 	/* A new style state starts with a variable length value
 	 * representing the finality and the number of transitions.
 	 * Since there is no transition, this means 1 byte.
@@ -120,6 +123,10 @@ if (state_encoding==BIN_CLASSIC_STATE) {
 	int value=node->n_trans<<1;
 	(*bin_size)+=bin_get_value_length(value,BIN_VARIABLE);
 	if (node->single_INF_code_list!=NULL) (*bin_size)+=bin_get_value_length(inf_indirection[node->INF_code],inf_number_encoding);
+} else {
+	/* A .bin2 state has no inf number */
+	int value=node->n_trans<<1;
+	(*bin_size)+=bin_get_value_length(value,BIN_VARIABLE);
 }
 /* Finally, we update the bin size by taking into account the space
  * needed by the outgoing transitions */
@@ -127,6 +134,15 @@ tmp=node->trans;
 while (tmp!=NULL) {
 	(*bin_size)+=bin_get_value_length(tmp->letter,char_encoding);
 	(*bin_size)+=bin_get_value_length(tmp->node->offset,offset_encoding);
+	if (state_encoding!=BIN_BIN2_STATE) {
+		(*bin_size)+=bin_get_value_length(tmp->node->offset,offset_encoding);
+	} else {
+		/* For a .bin2 transition, we use an extra bit to note if there is an output */
+		(*bin_size)+=bin_get_value_length(tmp->node->offset<<1,offset_encoding);
+		if (tmp->output && tmp->output[0]!='\0') {
+			(*bin_size)+=bin_get_string_length(tmp->output,char_encoding);
+		}
+	}
 	tmp=tmp->next;
 }
 }
@@ -160,7 +176,8 @@ void fill_bin_array(struct dictionary_node* node,int *n_states,int *n_transition
 						BinStateEncoding state_encoding,
 						BinEncoding inf_number_encoding,
 						BinEncoding char_encoding,
-						BinEncoding offset_encoding) {
+						BinEncoding offset_encoding,
+						BinType bin_type) {
 if (node==NULL) return;
 if (node->INF_code==-1) {
 	/* We use this test to know if the node has already been dumped */
@@ -173,7 +190,7 @@ if (node->INF_code==-1) {
 int pos=node->offset;
 int final=(node->single_INF_code_list!=NULL);
 int inf_code=-1;
-if (final) {
+if (final && bin_type==BIN_CLASSIC) {
 	inf_code=inf_indirection[node->INF_code];
 	if (inf_code==-1) {
 		fatal_error("fill_bin_array: Invalid INF line number redirection for code #%d\n",node->INF_code);
@@ -189,10 +206,11 @@ tmp=node->trans;
 while (tmp!=NULL) {
 	/* We increase the number of transitions */
 	(*n_transitions)++;
-	write_dictionary_transition(bin,&pos,char_encoding,offset_encoding,tmp->letter,tmp->node->offset);
+	write_dictionary_transition(bin,&pos,char_encoding,offset_encoding,tmp->letter,tmp->node->offset,
+			bin_type,tmp->output);
 	/* And we dump the destination node recursively */
 	fill_bin_array(tmp->node,n_states,n_transitions,bin,inf_indirection,
-			state_encoding,inf_number_encoding,char_encoding,offset_encoding);
+			state_encoding,inf_number_encoding,char_encoding,offset_encoding,bin_type);
 	tmp=tmp->next;
 }
 }
@@ -206,7 +224,8 @@ while (tmp!=NULL) {
  * of the resulting .bin file.
  */
 void create_and_save_bin(struct dictionary_node* root,const char* output,int *n_states,
-						int *n_transitions,int *bin_size,int* inf_indirection,int new_style_bin) {
+						int *n_transitions,int *bin_size,int* inf_indirection,int new_style_bin,
+						BinType bin_type) {
 U_FILE* f;
 /* The output file must be opened as a binary one */
 f=u_fopen(BINARY,output,U_WRITE);
@@ -228,6 +247,9 @@ if (new_style_bin) {
 	inf_number_encoding=BIN_VARIABLE;
 	offset_encoding=BIN_VARIABLE;
 	(*bin_size)=BIN_V2_HEADER_SIZE;
+}
+if (bin_type==BIN_BIN2) {
+	state_encoding=BIN_BIN2_STATE;
 }
 
 /* We give offsets to the dictionary node and we get the .bin size */
@@ -253,7 +275,7 @@ if (!new_style_bin) {
 }
 /* Then we fill the 'bin' array */
 fill_bin_array(root,n_states,n_transitions,bin,inf_indirection,
-		state_encoding,inf_number_encoding,char_encoding,offset_encoding);
+		state_encoding,inf_number_encoding,char_encoding,offset_encoding,bin_type);
 /* And we dump it to the output file */
 if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
   fatal_error("Error while writing file %s\n",output);

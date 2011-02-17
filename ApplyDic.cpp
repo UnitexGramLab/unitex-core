@@ -257,7 +257,7 @@ void display_uncompressed_entry(U_FILE* f,unichar* inflected,unichar* INF_code) 
  */
 void explore_bin_simple_words(struct dico_application_info* info,
                               int offset,unichar* token,unichar* inflected,
-                              int pos,int token_number,int priority) {
+                              int pos,int token_number,int priority,Ustring* ustr) {
 int final,n_transitions,inf_number;
 /* We compute the number of transitions that outgo from the current node */
 int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
@@ -298,12 +298,12 @@ int offset_dest;
 for (int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
     * compatible with the token's one */
-	offset=read_dictionary_transition(info->d,offset,&c,&offset_dest);
+	offset=read_dictionary_transition(info->d,offset,&c,&offset_dest,ustr);
     if (is_equal_or_uppercase(c,token[pos],info->alphabet)) {
       /* We copy the transition character so that 'inflected' will contain
        * the exact inflected form */
       inflected[pos]=c;
-      explore_bin_simple_words(info,offset_dest,token,inflected,pos+1,token_number,priority);
+      explore_bin_simple_words(info,offset_dest,token,inflected,pos+1,token_number,priority,ustr);
    }
 }
 }
@@ -321,9 +321,11 @@ unichar* entry=(unichar*)malloc(sizeof(unichar)*DIC_WORD_SIZE);
 if (entry==NULL) {
    fatal_alloc_error("look_for_simple_words");
 }
+Ustring* ustr=new_Ustring();
 for (int i=0;i<info->tokens->N;i++) {
-   explore_bin_simple_words(info,info->d->initial_state_offset,info->tokens->token[i],entry,0,i,priority);
+   explore_bin_simple_words(info,info->d->initial_state_offset,info->tokens->token[i],entry,0,i,priority,ustr);
 }
+free_Ustring(ustr);
 free(entry);
 }
 
@@ -358,7 +360,7 @@ void explore_bin_compound_words(struct dico_application_info* info,
                                 int pos_in_current_token,
                                 int pos_in_inflected,struct word_struct* ws,int pos_offset,
                                 int* token_sequence,int pos_token_sequence,int priority,
-                                int current_start_pos, unichar* line_buf) {
+                                int current_start_pos, unichar* line_buf,Ustring* ustr) {
 int final,n_transitions,inf_number;
 int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
 if (current_token[pos_in_current_token]=='\0') {
@@ -426,14 +428,14 @@ unichar c;
 int adr;
 offset=new_offset;
 for (int i=0;i<n_transitions;i++) {
-   offset=read_dictionary_transition(info->d,offset,&c,&adr);
+   offset=read_dictionary_transition(info->d,offset,&c,&adr,ustr);
    if (is_equal_or_uppercase(c,current_token[pos_in_current_token],info->alphabet)) {
       /* We explore the rest of the dictionary only if the
        * dictionary char is compatible with the token char. In that case,
        * we copy in 'inflected' the exact chararacter that is in the dictionary. */
       inflected[pos_in_inflected]=c;
       explore_bin_compound_words(info,adr,current_token,inflected,pos_in_current_token+1,pos_in_inflected+1,ws,
-        pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos,line_buf);
+        pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos,line_buf,ustr);
    }
 }
 }
@@ -461,6 +463,7 @@ struct word_struct* w;
 fseek(info->text_cod,0,SEEK_SET);
 fill_buffer(info->buffer,info->text_cod);
 */
+Ustring* ustr=new_Ustring();
 int current_start_pos=0;
 u_printf("First block...              \r");
 while (current_start_pos<info->text_cod_size_nb_int) {/*
@@ -514,7 +517,7 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
            unichar line_buf[DIC_LINE_SIZE];
            u_strcpy_sized(inflected,DIC_WORD_SIZE,l->content);
            explore_bin_compound_words(info,l->offset,info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,
-             pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos,line_buf);
+             pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos,line_buf,ustr);
            l=l->next;
         }
 	  }
@@ -522,6 +525,7 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
    current_start_pos++;
 }
 u_printf("\n");
+free_Ustring(ustr);
 free(inflected);
 free(token_sequence);
 }
@@ -707,26 +711,10 @@ remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
 info->d=new_Dictionary(name_bin,name_inf);
 if (info->d==NULL) return 1;
-#if 0
-/* We load the .bin file */
-info->bin=load_abstract_BIN_file(name_bin,&(info->bin_free));
-if (info->bin==NULL) {
-   error("Cannot open %s\n",name_bin);
-   return 1;
-}
-remove_path(name_bin,info->dic_name);
-strcat(info->dic_name,":");
-
-/* We load the .inf file */
-info->inf=load_abstract_INF_file(name_inf,&(info->inf_free));
-if (info->inf==NULL) {
-   free_abstract_BIN(info->bin,&info->bin_free);
-   error("Cannot open %s\n",name_inf);
-   return 1;
-}
-#endif
 unichar entry[DIC_WORD_SIZE];
-explore_bin_simple_words(info,info->d->initial_state_offset,text,entry,0,-1,0);
+Ustring* ustr=new_Ustring();
+explore_bin_simple_words(info,info->d->initial_state_offset,text,entry,0,-1,0,ustr);
+free_Ustring(ustr);
 free_Dictionary(info->d);
 info->d=NULL;
 /*free_abstract_INF(info->inf,&info->inf_free);

@@ -296,7 +296,7 @@ endif ## MINGW (ifeq)
 TEST      = Test
 TEST_OBJS = Main_Test.o Unicode.o DELA.o Error.o StringParsing.o String_hash.o AbstractAllocator.o\
 			Alphabet.o List_ustring.o Af_stdio.o ActivityLogger.o IOBuffer.o \
-			File.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+			File.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
@@ -321,13 +321,14 @@ CASSYS_OBJS	= Main_Cassys.o Cassys.o IOBuffer.o Error.o UnitexGetOpt.o Unicode.o
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o\
-				List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o \
+				LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
 				List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
-				BitArray.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				BitArray.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o\
@@ -503,13 +504,13 @@ NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
 				AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o\
 				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
-				UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Alphabet.o DELA.o AbstractDelaLoad.o List_ustring.o String_hash.o\
 				NorwegianCompounds.o GermanCompounds.o File.o\
 				RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o\
-				DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 REBUILDTFST      = RebuildTfst
 REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o String_hash.o AbstractFst2Load.o Fst2.o\
@@ -545,7 +546,8 @@ STATS      = Stats
 STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o\
                ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
                LocateMatches.o Match.o DELA.o \
-               Alphabet.o StringParsing.o List_int.o List_ustring.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+               Alphabet.o StringParsing.o List_int.o List_ustring.o AbstractDelaLoad.o CompressedDic.o \
+               LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o Error.o UnitexGetOpt.o $(SYSLIBMAPPED)
@@ -591,7 +593,7 @@ TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Alphabet.o String_hash.o\
 				File.o DELA.o AbstractDelaLoad.o List_ustring.o HashTable.o Error.o StringParsing.o UnitexGetOpt.o \
-				Offsets.o Overlap.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 TRAININGTAGGER      = TrainingTagger
 TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o IOBuffer.o\
@@ -625,13 +627,13 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 UNCOMPRESS       = Uncompress
 UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o Unicode.o AbstractAllocator.o DELA.o AbstractDelaLoad.o \
                    String_hash.o StringParsing.o List_ustring.o Alphabet.o Af_stdio.o ActivityLogger.o\
-                   UnitexGetOpt.o IOBuffer.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+                   UnitexGetOpt.o IOBuffer.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 
 UNTOKENIZE       = Untokenize
 UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o Unicode.o AbstractAllocator.o DELA.o AbstractDelaLoad.o \
                    String_hash.o StringParsing.o List_int.o List_ustring.o Text_tokens.o Alphabet.o Af_stdio.o ActivityLogger.o\
-                   UnitexGetOpt.o IOBuffer.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+                   UnitexGetOpt.o IOBuffer.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL   = UnitexTool

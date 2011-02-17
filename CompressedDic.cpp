@@ -229,13 +229,13 @@ if (d->state_encoding==BIN_CLASSIC_STATE) {
 	}
 	return pos;
 }
-if (d->state_encoding!=BIN_NEW_STATE) {
+if (d->state_encoding!=BIN_NEW_STATE && d->state_encoding!=BIN_BIN2_STATE) {
 	fatal_error("read_dictionary_state: unsupported state encoding\n");
 }
 int value=bin_read_variable_length(d->bin,&pos);
 *final=value & 1;
 *n_transitions=value>>1;
-if (*final) {
+if (*final && d->state_encoding==BIN_NEW_STATE) {
 	*code=bin_read(d->bin,d->inf_number_encoding,&pos);
 } else {
 	*code=-1;
@@ -259,13 +259,13 @@ if (state_encoding==BIN_CLASSIC_STATE) {
 	}
 	return;
 }
-if (state_encoding!=BIN_NEW_STATE) {
+if (state_encoding!=BIN_NEW_STATE && state_encoding!=BIN_BIN2_STATE) {
 	fatal_error("read_dictionary_state: unsupported state encoding\n");
 }
 int value=(n_transitions<<1);
 if (final) value=value | 1;
 bin_write_variable_length(bin,value,pos);
-if (final) {
+if (final && state_encoding==BIN_NEW_STATE) {
 	bin_write(bin,inf_number_encoding,code,pos);
 }
 }
@@ -275,12 +275,21 @@ if (final) {
  * Reads the information associated to the current transition in the dictionary.
  * Returns the new position.
  */
-int read_dictionary_transition(Dictionary* d,int pos,unichar *c,int *dest) {
-if (d->type!=BIN_CLASSIC) {
-	fatal_error("read_dictionary_state: unsupported dictionary type\n");
-}
+int read_dictionary_transition(Dictionary* d,int pos,unichar *c,int *dest,Ustring* output) {
 *c=(unichar)bin_read(d->bin,d->char_encoding,&pos);
 *dest=bin_read(d->bin,d->offset_encoding,&pos);
+if (d->type==BIN_CLASSIC) return pos;
+if (d->type!=BIN_BIN2) {
+	fatal_error("read_dictionary_state: unsupported dictionary type\n");
+}
+int is_output=(*dest) & 1;
+(*dest)=(*dest)>>1;
+if (is_output) {
+	int tmp;
+	while ((tmp=bin_read(d->bin,d->char_encoding,&pos))!='\0') {
+		u_strcat(output,tmp);
+	}
+}
 return pos;
 }
 
@@ -290,9 +299,26 @@ return pos;
  * Updates the position.
  */
 void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
-								BinEncoding offset_encoding,unichar c,int dest) {
+								BinEncoding offset_encoding,unichar c,int dest,
+								BinType bin_type,unichar* output) {
 bin_write(bin,char_encoding,c,pos);
+if (bin_type==BIN_CLASSIC) {
+	bin_write(bin,offset_encoding,dest,pos);
+	return;
+}
+/* For .bin2, we have a bit to indicate whether there is an output or not */
+dest=dest<<1;
+if (output!=NULL && output[0]!='\0') {
+	dest=dest|1;
+}
 bin_write(bin,offset_encoding,dest,pos);
+if (dest & 1) {
+	int i=-1;
+	do {
+		i++;
+		bin_write(bin,char_encoding,output[i],pos);
+	} while (output[i]!='\0');
+}
 }
 
 
@@ -316,6 +342,19 @@ case BIN_VARIABLE: return bin_get_value_variable_length(v);
 default: fatal_error("bin_get_value_length: unsupported encoding\n");
 }
 return -1;
+}
+
+
+/**
+ * Returns the length in bytes of the given string, including the \0.
+ */
+int bin_get_string_length(unichar* s,BinEncoding char_encoding) {
+int n=0,i=-1;
+do {
+	i++;
+	n+=bin_get_value_length(s[i],char_encoding);
+} while (s[i]!='\0');
+return n;
 }
 
 
@@ -344,6 +383,17 @@ if (d->bin[0]==0) {
 if (d->bin[0]==1) {
 	/* Type 2: modern style .bin/.inf dictionary with no limit on .bin size */
 	d->type=BIN_CLASSIC;
+	d->state_encoding=(BinStateEncoding)d->bin[1];
+	d->inf_number_encoding=(BinEncoding)d->bin[2];
+	d->char_encoding=(BinEncoding)d->bin[3];
+	d->offset_encoding=(BinEncoding)d->bin[4];
+	int offset=5;
+	d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
+	return 1;
+}
+if (d->bin[0]==2) {
+	/* Type 3: .bin2 dictionary */
+	d->type=BIN_BIN2;
 	d->state_encoding=(BinStateEncoding)d->bin[1];
 	d->inf_number_encoding=(BinEncoding)d->bin[2];
 	d->char_encoding=(BinEncoding)d->bin[3];

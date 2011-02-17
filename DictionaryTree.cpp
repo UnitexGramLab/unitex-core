@@ -50,6 +50,7 @@ if (t==NULL) {
 	fatal_alloc_error("new_dictionary_node_transition");
 }
 t->letter='\0';
+t->output=NULL;
 t->node=NULL;
 t->next=NULL;
 return t;
@@ -80,6 +81,7 @@ free_cb(a,prv_alloc);
 void free_dictionary_node_transition(struct dictionary_node_transition* t,Abstract_allocator prv_alloc) {
 struct dictionary_node_transition* tmp;
 while (t!=NULL) {
+   free(t->output);
    free_dictionary_node(t->node,prv_alloc);
    tmp=t;
    t=t->next;
@@ -336,6 +338,8 @@ while(a!=NULL && b!=NULL) {
    /* If the 2 current transitions are not tagged by the same
     * character, then the nodes are different */
    if (a->letter - b->letter != 0) return (a->letter - b->letter);
+   int output_diff=u_strcmp(a->output,b->output);
+   if (output_diff!=0) return output_diff;
    /* If the characters are equal and destination nodes are different... */
    if (((size_t)(a->node - b->node)) != 0) return (int)(a->node - b->node);
    a=a->next;
@@ -555,3 +559,31 @@ while (i<size) {
    i++;
 }
 }
+
+
+/**
+ * This function moves outputs from final nodes to transitions leading to final nodes.
+ */
+void subsequential_to_normal_transducer(struct dictionary_node* root,struct string_hash* inf_codes) {
+struct dictionary_node_transition* tmp=root->trans;
+while (tmp!=NULL) {
+	subsequential_to_normal_transducer(tmp->node,inf_codes);
+	if (tmp->node->INF_code!=-1) {
+		/* If there is an output on the destination node, we move
+		 * it on the current transition */
+		tmp->output=u_strdup(inf_codes->value[tmp->node->INF_code]);
+	}
+	tmp=tmp->next;
+}
+}
+
+
+/**
+ * This function takes a lexicographic tree with inf codes stored as
+ * integer on nodes, and turns it into a real transducer where outputs
+ * are stored on transitions.
+ */
+void move_outputs_on_transitions(struct dictionary_node* root,struct string_hash* inf_codes) {
+subsequential_to_normal_transducer(root,inf_codes);
+}
+

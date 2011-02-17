@@ -1170,7 +1170,7 @@ void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE*
  * that contains the characters corresponding to the current position in the
  * automaton. 'string_pos' is the current position in 'content'.
  */
-void explore_all_paths(int pos,unichar* content,int string_pos,Dictionary* d,U_FILE* output) {
+void explore_all_paths(int pos,unichar* content,int string_pos,Dictionary* d,U_FILE* output,Ustring* ustr) {
 int final,n_transitions;
 int ref;
 pos=read_dictionary_state(d,pos,&final,&n_transitions,&ref);
@@ -1183,8 +1183,8 @@ if (final) {
 /* Nevermind the state finality, we explore all the reachable states */
 int adr;
 for (int i=0;i<n_transitions;i++) {
-	pos=read_dictionary_transition(d,pos,&(content[string_pos]),&adr);
-	explore_all_paths(adr,content,string_pos+1,d,output);
+	pos=read_dictionary_transition(d,pos,&(content[string_pos]),&adr,ustr);
+	explore_all_paths(adr,content,string_pos+1,d,output,ustr);
 }
 }
 
@@ -1195,8 +1195,9 @@ for (int i=0;i<n_transitions;i++) {
  */
 void rebuild_dictionary(Dictionary* d,U_FILE* output) {
 unichar content[DIC_LINE_SIZE];
-/* The offset of the initial state is 4 */
-explore_all_paths(d->initial_state_offset,content,0,d,output);
+Ustring* ustr=new_Ustring();
+explore_all_paths(d->initial_state_offset,content,0,d,output,ustr);
+free_Ustring(ustr);
 }
 
 

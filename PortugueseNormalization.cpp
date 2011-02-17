@@ -194,7 +194,10 @@ int RESULT=0;
 while (lemmas!=NULL) {
    unichar entry[1000];
    // we get the inf number associated to this lemma in the inflected form dictionary
-   int res=get_inf_number_for_token(inflected_dic->initial_state_offset,lemmas->string,0,entry,alph,inflected_dic);
+   Ustring* ustr=new_Ustring();
+   int res=get_inf_number_for_token(inflected_dic->initial_state_offset,lemmas->string,0,entry,alph,
+		   inflected_dic,ustr);
+   free_Ustring(ustr);
    if (res==-1) {
       return 0;
    }
@@ -373,8 +376,9 @@ unichar entry[1000];
 // we must use the entry variable because of the upper/lower case:
 // if the radical is Dir, we want it to be dir in order to get the correct form
 // after the call to uncompress_entry
-
-int res=get_inf_number_for_token(root_dic->initial_state_offset,radical,0,entry,alph,root_dic);
+Ustring* ustr=new_Ustring();
+int res=get_inf_number_for_token(root_dic->initial_state_offset,radical,0,entry,alph,root_dic,ustr);
+free_Ustring(ustr);
 if (res==-1) {
    return 0;
 }
@@ -401,7 +405,7 @@ return 1;
 // it returns this number on success, -1 else
 //
 int get_inf_number_for_token(int pos,const unichar* content,int string_pos,
-		unichar* entry,const Alphabet* ALPH,Dictionary* d) {
+		unichar* entry,const Alphabet* ALPH,Dictionary* d,Ustring* ustr) {
 int final,n_transitions,inf_number;
 pos=read_dictionary_state(d,pos,&final,&n_transitions,&inf_number);
 if (content[string_pos]=='\0') {
@@ -415,12 +419,12 @@ if (content[string_pos]=='\0') {
 unichar c;
 int adr;
 for (int i=0;i<n_transitions;i++) {
-	pos=read_dictionary_transition(d,pos,&c,&adr);
+	pos=read_dictionary_transition(d,pos,&c,&adr,ustr);
   if (is_equal_or_uppercase(c,content[string_pos],ALPH)) {
      // we explore the rest of the dictionary only
      // if the dico char is compatible with the token char
      entry[string_pos]=c;
-     inf_number=get_inf_number_for_token(adr,content,string_pos+1,entry,ALPH,d);
+     inf_number=get_inf_number_for_token(adr,content,string_pos+1,entry,ALPH,d,ustr);
      if (inf_number!=-1) {
         return inf_number;
      }

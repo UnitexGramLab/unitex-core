@@ -22,10 +22,9 @@
 #ifndef AutomatonDictionary2BinH
 #define AutomatonDictionary2BinH
 
-#include "Unicode.h"
-#include <stdlib.h>
+#include "DictionaryTree.h"
+#include "CompressedDic.h"
 
-
-void create_and_save_bin(struct dictionary_node*,const char*,int*,int*,int*,int*,int);
+void create_and_save_bin(struct dictionary_node*,const char*,int*,int*,int*,int*,int,BinType);
 
 #endif

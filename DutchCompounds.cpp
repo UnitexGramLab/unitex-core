@@ -22,6 +22,7 @@
 #include "DutchCompounds.h"
 #include "Error.h"
 #include "List_ustring.h"
+#include "Ustring.h"
 
 
 #define is_N 0
@@ -76,7 +77,7 @@ int analyse_dutch_word(const unichar* word,struct dutch_infos*);
 void explore_state_dutch(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
-                   int number_of_components,const struct dutch_infos* infos);
+                   int number_of_components,const struct dutch_infos* infos,Ustring*);
 void check_valid_right_component_dutch(char*,const struct INF_codes*);
 char check_valid_right_component_for_an_INF_line_dutch(const struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_dutch(const unichar*);
@@ -371,7 +372,9 @@ dela_line[0]='\0';
 correct_word[0]='\0';
 struct word_decomposition_list* l=NULL;
 /* We look if there are decompositions for this word */
-explore_state_dutch(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos);
+Ustring* ustr=new_Ustring();
+explore_state_dutch(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos,ustr);
+free_Ustring(ustr);
 if (l==NULL) {
 	/* If there is no decomposition, we return */
 	return 0;
@@ -498,7 +501,7 @@ while (l!=NULL) {
 void explore_state_dutch(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
-                   int number_of_components,const struct dutch_infos* infos) {
+                   int number_of_components,const struct dutch_infos* infos,Ustring* ustr) {
 int final,n_transitions,inf_number;
 offset=read_dictionary_state(infos->d,offset,&final,&n_transitions,&inf_number);
 if (final) {
@@ -621,10 +624,11 @@ if (final) {
                     u_strcat(dec_temp," +++ s");
 					/* Then, we explore the dictionary in order to analyze the
 					 * next component. We start at the root of the dictionary
-					 * (offset=4) and we go back one position in the word to analyze.
-					 */
+					 * and we go back one position in the word to analyze */
+					Ustring* foo=new_Ustring();
 					explore_state_dutch(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze+1,
-						dec_temp,line,L,number_of_components+1,infos);
+						dec_temp,line,L,number_of_components+1,infos,foo);
+					free_Ustring(foo);
 				}
 				/* Now, we try to analyze the component normally */
 				unichar dec[2000];
@@ -648,10 +652,11 @@ if (final) {
 				unichar dec_temp[2000];
 				u_strcpy(dec_temp,dec);
 				/* Then, we explore the dictionary in order to analyze the
-				 * next component. We start at the root of the dictionary
-				 * (offset=4). */
+				 * next component. We start at the root of the dictionary */
+				Ustring* foo=new_Ustring();
 				explore_state_dutch(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
-					dec_temp,line,L,number_of_components+1,infos);
+					dec_temp,line,L,number_of_components+1,infos,foo);
+				free_Ustring(foo);
 			}
 		}
 	}
@@ -662,13 +667,13 @@ if (final) {
 unichar c;
 int adr;
 for (int i=0;i<n_transitions;i++) {
-	offset=read_dictionary_transition(infos->d,offset,&c,&adr);
+	offset=read_dictionary_transition(infos->d,offset,&c,&adr,ustr);
 	if (is_equal_or_uppercase(c,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
 		/* If the transition's letter is case compatible with the current letter of the
 		 * word to analyze, we follow it */
 		current_component[pos_in_current_component]=c;
 		explore_state_dutch(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
-			analysis,output_dela_line,L,number_of_components,infos);
+			analysis,output_dela_line,L,number_of_components,infos,ustr);
 	}
 }
 }

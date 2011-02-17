@@ -24,6 +24,7 @@
 
 #include "Unicode.h"
 #include "AbstractDelaLoad.h"
+#include "Ustring.h"
 
 #define BIN_V1_HEADER_SIZE 4
 #define BIN_V2_HEADER_SIZE 9
@@ -48,7 +49,8 @@ typedef enum {
 
 typedef enum {
 	BIN_CLASSIC_STATE,   /* old style .bin state encoding on 2 bytes */
-	BIN_NEW_STATE        /* variable length state encoding */
+	BIN_NEW_STATE,       /* variable length state encoding */
+	BIN_BIN2_STATE,      /* .bin2 state encoding */
 } BinStateEncoding;
 
 
@@ -81,10 +83,12 @@ void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCAT
 int read_dictionary_state(Dictionary*,int,int*,int*,int*);
 void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
 							BinEncoding inf_number_encoding,int *pos,int final,int n_transitions,int code);
-int read_dictionary_transition(Dictionary*,int,unichar*,int*);
+int read_dictionary_transition(Dictionary*,int,unichar*,int*,Ustring*);
 void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
-								BinEncoding offset_encoding,unichar c,int dest);
+								BinEncoding offset_encoding,unichar c,int dest,
+								BinType bin_type,unichar* output);
 int bin_get_value_length(int,BinEncoding);
+int bin_get_string_length(unichar* s,BinEncoding char_encoding);
 void bin_write_4bytes(unsigned char* bin,int value,int *offset);
 void write_new_bin_header(unsigned char* bin,int *pos,BinStateEncoding state_encoding,
 		BinEncoding char_encoding,BinEncoding inf_number_encoding,

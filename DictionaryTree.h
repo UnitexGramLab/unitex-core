@@ -62,7 +62,7 @@ struct dictionary_node {
 	 */
 	int INF_code;
 	/*
-	 * 'offset' is used to give to this node an adress in the .BIN file
+	 * 'offset' is used to give to this node an address in the .BIN file
 	 */
 	int offset;
 	/*
@@ -77,9 +77,12 @@ struct dictionary_node {
  * This structure represent a list of transitions outgoing from a
  * dictionary node. 'letter' and 'node' are the tag and the destination
  * of the transition. 'next' is the following transition in the list.
+ *
+ * The output field has been added for .bin2 files.
  */
 struct dictionary_node_transition {
        unichar letter;
+       unichar* output;
        struct dictionary_node* node;
        struct dictionary_node_transition* next;
 };
@@ -92,5 +95,6 @@ void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,stru
 struct dictionary_node* new_dictionary_node(Abstract_allocator);
 
 void minimize_tree(struct dictionary_node*,struct bit_array*,Abstract_allocator);
+void move_outputs_on_transitions(struct dictionary_node* root,struct string_hash* inf_codes);
 
 #endif

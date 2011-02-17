@@ -1353,7 +1353,7 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar* jamo,
-		int pos_in_jamo, unichar *line_buffer) {
+		int pos_in_jamo, unichar *line_buffer,Ustring* ustr) {
 int final,n_transitions,inf_number;
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 	if (final) {
@@ -1443,7 +1443,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 	int adr;
 	for (int i = 0; i < n_transitions; i++) {
 		update_last_position(p, pos_offset);
-		offset=read_dictionary_transition(d,offset,&c,&adr);
+		offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
 		if (jamo == NULL) {
 			/* Non Korean mode */
 			if (is_equal_or_uppercase(c, current_token[pos_in_current_token],
@@ -1455,7 +1455,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_standard(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, jamo, pos_in_jamo, line_buffer);
+						save_dic_entry, jamo, pos_in_jamo, line_buffer, ustr);
 			}
 		} else {
 			//error("la: jamo du text<%S>=%C (%04X)   char du dico=%C (%04X)\n",jamo,jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
@@ -1513,7 +1513,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_standard(p, d, adr,
 						new_current_token, inflected, new_pos_in_current_token,
 						pos_in_inflected + 1, new_pos_offset, matches, pattern,
-						save_dic_entry, new_jamo, new_pos_in_jamo, line_buffer);
+						save_dic_entry, new_jamo, new_pos_in_jamo, line_buffer, ustr);
 			} else {
 				//error("non match\n");
 			}
@@ -1574,7 +1574,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar *line_buffer,
-		int expected, unichar last_dic_char) {
+		int expected, unichar last_dic_char, Ustring* ustr) {
 int old_offset=offset;
 int final,n_transitions,inf_number;
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
@@ -1640,7 +1640,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 	int adr;
 	for (int i = 0; i < n_transitions; i++) {
 		update_last_position(p, pos_offset);
-		offset=read_dictionary_transition(d,offset,&c,&adr);
+		offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
 		/* Standard case: matching the char in the dictionary */
 		if (c==current_token[pos_in_current_token]) {
 			/* We explore the rest of the dictionary only if the
@@ -1743,7 +1743,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, next, c);
+						save_dic_entry, line_buffer, next, c, ustr);
 			}
 		} else {
 			/* If the dictionary char and the text char have not matched:
@@ -1755,7 +1755,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, AL_EXPECTED, c);
+						save_dic_entry, line_buffer, AL_EXPECTED, c, ustr);
 			}
 			/* or it may be because of an initial O written A */
 			else if (c==AR_ALEF_WITH_HAMZA_ABOVE && current_token[pos_in_current_token]==AR_ALEF
@@ -1764,7 +1764,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, c, ustr);
 			}
 			/* or it may be because of an initial I written A */
 			else if (c==AR_ALEF_WITH_HAMZA_BELOW && current_token[pos_in_current_token]==AR_ALEF
@@ -1773,7 +1773,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, c, ustr);
 			}
 			/* or it may be because of an initial I written L */
 			else if (c==AR_ALEF_WITH_HAMZA_BELOW && current_token[pos_in_current_token]==AR_ALEF_WASLA
@@ -1782,7 +1782,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, NOTHING_EXPECTED, c);
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, c, ustr);
 			}
 			/* or it may be because of the FA -> AF rule, matching the first char */
 			else if (c==AR_FATHATAN && current_token[pos_in_current_token]==AR_ALEF
@@ -1791,7 +1791,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, AF_EXPECTED, c);
+						save_dic_entry, line_buffer, AF_EXPECTED, c, ustr);
 			}
 			/* or it may be because of the FA -> AF rule, matching the second char */
 			else if (c==AR_ALEF && current_token[pos_in_current_token]==AR_FATHATAN
@@ -1801,7 +1801,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c);
+						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c, ustr);
 			}
 			/* or it may be because of the FY -> YF rule, matching the first char */
 			else if (c==AR_FATHATAN && current_token[pos_in_current_token]==AR_ALEF_MAQSURA
@@ -1810,7 +1810,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, YF_EXPECTED, c);
+						save_dic_entry, line_buffer, YF_EXPECTED, c, ustr);
 			}
 			/* or it may be because of the FY -> YF rule, matching the second char */
 			else if (c==AR_ALEF_MAQSURA && current_token[pos_in_current_token]==AR_FATHATAN
@@ -1820,7 +1820,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected + 1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c);
+						save_dic_entry, line_buffer, END_OF_WORD_EXPECTED, c, ustr);
 			}
 			/* or it may be because of the solar assimilation rule */
 			else if (p->arabic.solar_assimilation
@@ -1830,7 +1830,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, old_offset,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char, ustr);
 			}
 			/* Or it may be because of the lunar assimilation rule */
 			else if (p->arabic.lunar_assimilation
@@ -1841,7 +1841,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, old_offset,
 						current_token, inflected, pos_in_current_token + 1,
 						pos_in_inflected, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char,ustr);
 			}
 			/* Or it may be because of the Yc => e rule at the end of a word, when
 			 * we are on the Y */
@@ -1852,7 +1852,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token,
 						pos_in_inflected+1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char);
+						save_dic_entry, line_buffer,NOTHING_EXPECTED,last_dic_char,ustr);
 			}
 			/* Or it may be because of the Yc => e rule at the end of a word, when
 			 * we are on the c */
@@ -1864,7 +1864,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr,
 						current_token, inflected, pos_in_current_token,
 						pos_in_inflected+1, pos_offset, matches, pattern,
-						save_dic_entry, line_buffer,END_OF_WORD_EXPECTED,last_dic_char);
+						save_dic_entry, line_buffer,END_OF_WORD_EXPECTED,last_dic_char,ustr);
 			}
 		}
 		/* Rule that always applies about tatweel */
@@ -1873,7 +1873,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, old_offset, current_token,
 					inflected, pos_in_current_token + 1, pos_in_inflected,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		if (p->arabic.fatha_omission && c == AR_FATHA
 				&& current_token[pos_in_current_token] != AR_FATHA
@@ -1882,7 +1882,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		if (p->arabic.damma_omission && c == AR_DAMMA
 				&& current_token[pos_in_current_token] != AR_DAMMA
@@ -1891,7 +1891,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		if (p->arabic.kasra_omission && c == AR_KASRA
 				&& current_token[pos_in_current_token] != AR_KASRA
@@ -1900,7 +1900,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		if (p->arabic.sukun_omission && c == AR_SUKUN
 				&& current_token[pos_in_current_token] != AR_SUKUN) {
@@ -1908,7 +1908,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		if (p->arabic.superscript_alef_omission && c == AR_SUPERSCRIPT_ALEF
 				&& current_token[pos_in_current_token] != AR_SUPERSCRIPT_ALEF
@@ -1917,7 +1917,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		if (p->arabic.fathatan_omission_at_end && c == AR_FATHATAN
 				&& current_token[pos_in_current_token] != AR_FATHATAN
@@ -1926,7 +1926,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					END_OF_WORD_EXPECTED, c);
+					END_OF_WORD_EXPECTED, c, ustr);
 		}
 		if (p->arabic.dammatan_omission_at_end && c == AR_DAMMATAN
 				&& current_token[pos_in_current_token] != AR_DAMMATAN
@@ -1935,7 +1935,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					END_OF_WORD_EXPECTED, c);
+					END_OF_WORD_EXPECTED, c, ustr);
 		}
 		if (p->arabic.kasratan_omission_at_end && c == AR_KASRATAN
 				&& current_token[pos_in_current_token] != AR_KASRATAN
@@ -1944,7 +1944,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					END_OF_WORD_EXPECTED, c);
+					END_OF_WORD_EXPECTED, c, ustr);
 		}
 		/* If the dictionary contains a shadda that we may be allowed to skip */
 		if (c == AR_SHADDA && current_token[pos_in_current_token] != AR_SHADDA
@@ -1953,7 +1953,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 					inflected, pos_in_current_token, pos_in_inflected + 1,
 					pos_offset, matches, pattern, save_dic_entry, line_buffer,
-					NOTHING_EXPECTED, c);
+					NOTHING_EXPECTED, c, ustr);
 		}
 		/* If the dictionary contains a shadda X, and the text contains either only shadda or nothing.
 		 * The test (c!=current_token[pos_in_current_token]) is used to avoid
@@ -2014,7 +2014,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				explore_dic_in_morpho_mode_arabic(p, d, adr, current_token,
 						inflected, pos_in_current_token, pos_in_inflected + 1,
 						pos_offset, matches, pattern, save_dic_entry, line_buffer,
-						next, c);
+						next, c, ustr);
 			}
 		}
 	}
@@ -2038,6 +2038,7 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 	}
 	unichar* inflected = buffer_line_buffer_inflected;
 	unichar* line_buffer = buffer_line_buffer_inflected + 4096;
+	Ustring* ustr=new_Ustring();
 	for (int i = 0; i < p->n_morpho_dics; i++) {
 		if (p->morpho_dic[i] != NULL) {
 			/* Can't match anything in an empty dictionary */
@@ -2046,15 +2047,16 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 						p->morpho_dic[i]->initial_state_offset,
 						p->tokens->value[p->buffer[p->current_origin + pos]],
 						inflected, pos_in_token, 0, pos, matches, pattern,
-						save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0');
+						save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0', ustr);
 			} else {
 				explore_dic_in_morpho_mode_standard(p, p->morpho_dic[i],
 						p->morpho_dic[i]->initial_state_offset,
 						p->tokens->value[p->buffer[p->current_origin + pos]],
 						inflected, pos_in_token, 0, pos, matches, pattern,
-						save_dic_entry, jamo, pos_in_jamo, line_buffer);
+						save_dic_entry, jamo, pos_in_jamo, line_buffer, ustr);
 			}
 		}
 	}
+	free_Ustring(ustr);
 	free(buffer_line_buffer_inflected);
 }

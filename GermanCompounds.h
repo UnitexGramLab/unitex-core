@@ -58,7 +58,5 @@ struct german_word_decomposition* new_german_word_decomposition();
 void free_german_word_decomposition(struct german_word_decomposition*);
 struct german_word_decomposition_list* new_german_word_decomposition_list();
 void free_german_word_decomposition_list(struct german_word_decomposition_list*);
-void explore_state_german(int,unichar*,int,const unichar*,int,const unichar*,unichar*,
-      struct german_word_decomposition_list**,int,const char*,const char*,const Alphabet*,Dictionary*);
 
 #endif

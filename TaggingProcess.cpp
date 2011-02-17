@@ -207,11 +207,11 @@ return -1;
 }
 
 /**
- * Extracts INF_code of a given token in the dictionnary.
+ * Extracts INF_code of a given token in the dictionary.
  */
 void get_INF_code(Dictionary* d,const unichar* token,
 				  int case_sensitive,int index,int offset,
-				  const Alphabet* alphabet,int* inf_index){
+				  const Alphabet* alphabet,int* inf_index,Ustring* ustr) {
 int final,n_transitions,inf_number;
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 if (token[index]=='\0') {
@@ -227,12 +227,12 @@ int adr;
 for(int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
 	* compatible with the token's one */
-	offset=read_dictionary_transition(d,offset,&c,&adr);
+	offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
    if(case_sensitive == 1 && c == token[index]){
-	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index);
+	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index,ustr);
    }
    else if(case_sensitive == 0 && is_equal_ignore_case(token[index],c,alphabet)){
-	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index);
+	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index,ustr);
    }
 }
 }
@@ -265,7 +265,9 @@ return value;
  */
 long int get_sequence_integer(const unichar* sequence,Dictionary* d,const Alphabet* alphabet){
 int inf_index = -1;
-get_INF_code(d,sequence,1,0,d->initial_state_offset,alphabet,&inf_index);
+Ustring* ustr=new_Ustring();
+get_INF_code(d,sequence,1,0,d->initial_state_offset,alphabet,&inf_index,ustr);
+free_Ustring(ustr);
 if(inf_index == -1){
 	/* sequence is not in the dictionary */
 	return -1;
