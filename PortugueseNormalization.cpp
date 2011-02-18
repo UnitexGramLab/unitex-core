@@ -418,6 +418,7 @@ if (content[string_pos]=='\0') {
 }
 unichar c;
 int adr;
+int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
 	pos=read_dictionary_transition(d,pos,&c,&adr,ustr);
   if (is_equal_or_uppercase(c,content[string_pos],ALPH)) {
@@ -426,9 +427,11 @@ for (int i=0;i<n_transitions;i++) {
      entry[string_pos]=c;
      inf_number=get_inf_number_for_token(adr,content,string_pos+1,entry,ALPH,d,ustr);
      if (inf_number!=-1) {
+    	 restore_output(z,ustr);
         return inf_number;
      }
   }
+	restore_output(z,ustr);
 }
 return -1;
 }

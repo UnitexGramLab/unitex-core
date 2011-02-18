@@ -1152,7 +1152,7 @@ result[i]='\0';
  * function extracted from explore_all_paths to minimize stack uage of recursive
  *    function. Produce entries from the INF codes associated to this final state
  */
-void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE* output) {
+void uncompress_entry_and_print(unichar* content,struct list_ustring* tmp,U_FILE* output) {
    while (tmp!=NULL) {
       unichar res[DIC_WORD_SIZE];
       uncompress_entry(content,tmp->string,res);
@@ -1170,21 +1170,27 @@ void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE*
  * that contains the characters corresponding to the current position in the
  * automaton. 'string_pos' is the current position in 'content'.
  */
-void explore_all_paths(int pos,unichar* content,int string_pos,Dictionary* d,U_FILE* output,Ustring* ustr) {
+void explore_all_paths(int pos,unichar* content,int string_pos,Dictionary* d,U_FILE* output,Ustring* ustr,int base) {
 int final,n_transitions;
 int ref;
 pos=read_dictionary_state(d,pos,&final,&n_transitions,&ref);
+int z=save_output(ustr);
 if (final) {
    /* If we are in a final state */
    content[string_pos]='\0';
    /* We produce entries from the INF codes associated to this final state */
-   uncompress_entry_and_print(content,d->inf->codes[ref],output);
+   struct list_ustring* head;
+   int to_be_freed=get_inf_codes(d,ref,ustr,&head,base);
+   uncompress_entry_and_print(content,head,output);
+   if (to_be_freed) free_list_ustring(head);
+   base=ustr->len;
 }
 /* Nevermind the state finality, we explore all the reachable states */
 int adr;
 for (int i=0;i<n_transitions;i++) {
 	pos=read_dictionary_transition(d,pos,&(content[string_pos]),&adr,ustr);
-	explore_all_paths(adr,content,string_pos+1,d,output,ustr);
+	explore_all_paths(adr,content,string_pos+1,d,output,ustr,base);
+	restore_output(z,ustr);
 }
 }
 
@@ -1196,7 +1202,7 @@ for (int i=0;i<n_transitions;i++) {
 void rebuild_dictionary(Dictionary* d,U_FILE* output) {
 unichar content[DIC_LINE_SIZE];
 Ustring* ustr=new_Ustring();
-explore_all_paths(d->initial_state_offset,content,0,d,output,ustr);
+explore_all_paths(d->initial_state_offset,content,0,d,output,ustr,0);
 free_Ustring(ustr);
 }
 

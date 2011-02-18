@@ -395,6 +395,7 @@ if (original_word[pos_in_original_word]=='\0') {
 // if not, we go on with the next letter
 unichar c;
 int adr;
+int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
 	offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
   if (is_equal_or_uppercase(c,original_word[pos_in_original_word],alphabet)
@@ -403,5 +404,6 @@ for (int i=0;i<n_transitions;i++) {
     explore_state_german(adr,current_component,pos_in_current_component+1,original_word,pos_in_original_word+1,
                   decomposition,dela_line,L,n_decomp,left,right,alphabet,d,ustr);
   }
+  restore_output(z,ustr);
 }
 }

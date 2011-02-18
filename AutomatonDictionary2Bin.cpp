@@ -34,7 +34,6 @@
  * not a tree), the function does nothing.
  */
 void number_node_old_style(struct dictionary_node* node,int *bin_size) {
-if (node==NULL) return;
 if (node->offset!=-1) {
 	/* Nothing to do if there is already an offset */
 	return;
@@ -133,7 +132,6 @@ if (state_encoding==BIN_CLASSIC_STATE) {
 tmp=node->trans;
 while (tmp!=NULL) {
 	(*bin_size)+=bin_get_value_length(tmp->letter,char_encoding);
-	(*bin_size)+=bin_get_value_length(tmp->node->offset,offset_encoding);
 	if (state_encoding!=BIN_BIN2_STATE) {
 		(*bin_size)+=bin_get_value_length(tmp->node->offset,offset_encoding);
 	} else {
@@ -151,6 +149,7 @@ while (tmp!=NULL) {
 void number_node(struct dictionary_node* root,int *bin_size,int new_style_bin,
 		BinStateEncoding state_encoding,BinEncoding char_encoding,BinEncoding inf_number_encoding,
 		BinEncoding offset_encoding,int* inf_indirection) {
+if (root==NULL) return;
 if (!new_style_bin) {
 	number_node_old_style(root,bin_size);
 	return;
@@ -263,15 +262,12 @@ unsigned char* bin=(unsigned char*)malloc((*bin_size)*sizeof(unsigned char));
 if (bin==NULL) {
    fatal_alloc_error("create_and_save_bin");
 }
+for (int i=0;i<*bin_size;i++) bin[i]=0xF1;
 int pos=0;
 if (!new_style_bin) {
 	bin_write_4bytes(bin,*bin_size,&pos);
 } else {
-	state_encoding=BIN_NEW_STATE;
-	char_encoding=BIN_VARIABLE;
-	inf_number_encoding=BIN_VARIABLE;
-	offset_encoding=BIN_VARIABLE;
-	write_new_bin_header(bin,&pos,state_encoding,char_encoding,inf_number_encoding,offset_encoding,root->offset);
+	write_new_bin_header(bin_type,bin,&pos,state_encoding,char_encoding,inf_number_encoding,offset_encoding,root->offset);
 }
 /* Then we fill the 'bin' array */
 fill_bin_array(root,n_states,n_transitions,bin,inf_indirection,

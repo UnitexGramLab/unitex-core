@@ -1441,6 +1441,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 	/* We look for outgoing transitions */
 	unichar c;
 	int adr;
+	int z=save_output(ustr);
 	for (int i = 0; i < n_transitions; i++) {
 		update_last_position(p, pos_offset);
 		offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
@@ -1470,6 +1471,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				//error("jamo=<%S> %C bound dic=%C (%X)     pos_inflected=%d\n",jamo,jamo[pos_in_jamo],c,c,pos_in_inflected);
 				if (c!=KR_SYLLABLE_BOUND) {
 					/* no match */
+					restore_output(z,ustr);
 					continue;
 				}
 				syllable_bounds=1;
@@ -1502,6 +1504,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					if (token_number == -1 || token_number == p->STOP) {
 						/* Remember 1) that we must not be out of the array's bounds and
 						 *          2) that the token {STOP} must never be matched */
+						restore_output(z,ustr);
 						return;
 					}
 					new_current_token = p->tokens->value[token_number];
@@ -1545,6 +1548,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			}
 #endif
 		}
+		restore_output(z,ustr);
 	}
 }
 
@@ -1638,6 +1642,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 
 	unichar c;
 	int adr;
+	int z=save_output(ustr);
 	for (int i = 0; i < n_transitions; i++) {
 		update_last_position(p, pos_offset);
 		offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
@@ -2017,6 +2022,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 						next, c, ustr);
 			}
 		}
+		restore_output(z,ustr);
 	}
 }
 

@@ -224,6 +224,7 @@ if (token[index]=='\0') {
 }
 unichar c;
 int adr;
+int z=save_output(ustr);
 for(int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
 	* compatible with the token's one */
@@ -234,6 +235,7 @@ for(int i=0;i<n_transitions;i++) {
    else if(case_sensitive == 0 && is_equal_ignore_case(token[index],c,alphabet)){
 	   get_INF_code(d,token,case_sensitive,index+1,adr,alphabet,inf_index,ustr);
    }
+   restore_output(z,ustr);
 }
 }
 

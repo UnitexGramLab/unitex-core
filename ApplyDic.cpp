@@ -275,8 +275,10 @@ if (token[pos]=='\0') {
           * this token is part of a word and that it has been processed. */
     	  if (info->part_of_a_word!=NULL) set_value(info->part_of_a_word,token_number,1);
          if (info->simple_word!=NULL) set_value(info->simple_word,token_number,priority);
-         /* We compute the INF line number and we get the associated compressed lines */
-         struct list_ustring* tmp=info->d->inf->codes[inf_number];
+         /* We get the INF codes */
+         struct list_ustring* head;
+         int to_be_freed=get_inf_codes(info->d,inf_number,ustr,&head);
+         struct list_ustring* tmp=head;
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
         	 if (info->dic_name[0]!='\0') {
@@ -286,6 +288,7 @@ if (token[pos]=='\0') {
              display_uncompressed_entry(info->dlf,inflected,tmp->string);
              tmp=tmp->next;
          }
+         if (to_be_freed) free_list_ustring(head);
       }
    }
    /* If we are at the end of the token, there is no need to look at the
@@ -295,6 +298,7 @@ if (token[pos]=='\0') {
 offset=new_offset;
 unichar c;
 int offset_dest;
+int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
     * compatible with the token's one */
@@ -305,6 +309,7 @@ for (int i=0;i<n_transitions;i++) {
       inflected[pos]=c;
       explore_bin_simple_words(info,offset_dest,token,inflected,pos+1,token_number,priority,ustr);
    }
+    restore_output(z,ustr);
 }
 }
 
@@ -389,8 +394,10 @@ if (current_token[pos_in_current_token]=='\0') {
             /* We say that its tokens are not unknown words */
             set_value(info->part_of_a_word,info->text_cod_buf[k],1);
          }
-         /* We get the INF line number */
-         struct list_ustring* tmp=info->d->inf->codes[inf_number];
+         /* We get the INF codes */
+         struct list_ustring* head;
+         int to_be_freed=get_inf_codes(info->d,inf_number,ustr,&head);
+         struct list_ustring* tmp=head;
          /* We increase the number of compound word occurrences.
           * Note that we count occurrences and not number of entries, so that
           * if we find "copy and paste" in the text we will count one more
@@ -403,6 +410,7 @@ if (current_token[pos_in_current_token]=='\0') {
             u_fprintf(info->dlc,"%S\n",line_buf);
             tmp=tmp->next;
          }
+         if (to_be_freed) free_list_ustring(head);
       }
    }
    pos_offset++;
@@ -427,6 +435,7 @@ if (current_token[pos_in_current_token]=='\0') {
 unichar c;
 int adr;
 offset=new_offset;
+int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
    offset=read_dictionary_transition(info->d,offset,&c,&adr,ustr);
    if (is_equal_or_uppercase(c,current_token[pos_in_current_token],info->alphabet)) {
@@ -437,6 +446,7 @@ for (int i=0;i<n_transitions;i++) {
       explore_bin_compound_words(info,adr,current_token,inflected,pos_in_current_token+1,pos_in_inflected+1,ws,
         pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos,line_buf,ustr);
    }
+   restore_output(z,ustr);
 }
 }
 

@@ -666,6 +666,7 @@ if (final) {
 /* We examine each transition that goes out from the node */
 unichar c;
 int adr;
+int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
 	offset=read_dictionary_transition(infos->d,offset,&c,&adr,ustr);
 	if (is_equal_or_uppercase(c,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
@@ -675,5 +676,6 @@ for (int i=0;i<n_transitions;i++) {
 		explore_state_dutch(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
 			analysis,output_dela_line,L,number_of_components,infos,ustr);
 	}
+	restore_output(z,ustr);
 }
 }

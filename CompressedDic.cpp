@@ -62,8 +62,6 @@ if (d->type==BIN_CLASSIC) {
 		free(d);
 		return NULL;
 	}
-} else {
-	fatal_error("new_Dictionary: unsupported dictionary format\n");
 }
 return d;
 }
@@ -408,15 +406,60 @@ return 0;
 
 
 /**
- * Writes the .bin header for a v2 .bin
+ * Writes the .bin header for a v2 .bin or a .bin2
  */
-void write_new_bin_header(unsigned char* bin,int *pos,BinStateEncoding state_encoding,
+void write_new_bin_header(BinType bin_type,unsigned char* bin,int *pos,BinStateEncoding state_encoding,
 		BinEncoding char_encoding,BinEncoding inf_number_encoding,
 		BinEncoding offset_encoding,int initial_state_offset) {
-bin[(*pos)++]=1;
+bin[(*pos)++]=(bin_type==BIN_CLASSIC)?1:2;
 bin[(*pos)++]=state_encoding;
 bin[(*pos)++]=inf_number_encoding;
 bin[(*pos)++]=char_encoding;
 bin[(*pos)++]=offset_encoding;
 bin_write_4bytes(bin,initial_state_offset,pos);
 }
+
+
+/**
+ * Returns the current length of s or -1 if NULL.
+ */
+int save_output(Ustring* s) {
+if (s==NULL) return -1;
+return s->len;
+}
+
+
+/**
+ * If s is not NULL, sets its size to n.
+ */
+void restore_output(int n,Ustring* s) {
+if (s!=NULL && n!=-1) {
+	s->len=n;
+	s->str[n]='\0';
+}
+}
+
+
+/**
+ * This function stores in *inf_codes the inf code list associated either to the inf number
+ * or to the given output, if the dictionary is a .bin2 one. The function returns 1
+ * if *inf_codes should be freed (.bin2), 0 if not (.bin).
+ */
+int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustring* *inf_codes,
+				int base) {
+*inf_codes=NULL;
+if (d->type==BIN_CLASSIC) {
+	if (inf_number!=-1) {
+		*inf_codes=d->inf->codes[inf_number];
+	}
+	return 0;
+}
+if (d->type!=BIN_BIN2) {
+	fatal_error("get_inf_codes: unsupported dictionary type\n");
+}
+if (output!=NULL && output->str[base]!='\0') {
+	*inf_codes=tokenize_compressed_info(output->str+base);
+}
+return 1;
+}
+

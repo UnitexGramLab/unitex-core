@@ -90,9 +90,14 @@ void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_en
 int bin_get_value_length(int,BinEncoding);
 int bin_get_string_length(unichar* s,BinEncoding char_encoding);
 void bin_write_4bytes(unsigned char* bin,int value,int *offset);
-void write_new_bin_header(unsigned char* bin,int *pos,BinStateEncoding state_encoding,
+void write_new_bin_header(BinType bin_type,unsigned char* bin,int *pos,BinStateEncoding state_encoding,
 		BinEncoding char_encoding,BinEncoding inf_number_encoding,
 		BinEncoding offset_encoding,int initial_state_offset);
+
+int save_output(Ustring*);
+void restore_output(int,Ustring*);
+
+int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustring* *inf_codes,int base=0);
 
 #endif
 

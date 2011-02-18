@@ -1212,6 +1212,7 @@ if (final) { // if we are in a terminal state
   // if not, we go on with the next letter
   unichar c;
   int adr;
+  int z=save_output(ustr);
   for (int i=0;i<n_transitions;i++) {
 	  offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
     if (is_equal_or_uppercase(c,remaining_word[pos_in_remaining_word],alphabet)
@@ -1231,5 +1232,6 @@ if (final) { // if we are in a terminal state
 		    dic_entr_called,
 		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,ustr);
     }
+    restore_output(z,ustr);
   }
 }
