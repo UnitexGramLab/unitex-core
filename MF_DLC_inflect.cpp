@@ -449,7 +449,7 @@ int DLC_scan_codes(unichar* codes[MAX_CODES], unichar* line) {
 		}
 	}
 	codes[c] = NULL;
-	return pos;
+	return pos-1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
