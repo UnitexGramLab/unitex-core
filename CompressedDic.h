@@ -97,7 +97,7 @@ void write_new_bin_header(BinType bin_type,unsigned char* bin,int *pos,BinStateE
 int save_output(Ustring*);
 void restore_output(int,Ustring*);
 
-int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustring* *inf_codes,int base=0);
+int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustring* *inf_codes,int base);
 
 #endif
 

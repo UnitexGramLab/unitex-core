@@ -224,11 +224,11 @@ if (f==NULL) {
 /* We compute the name of the output .bin and .inf files */
 if (bin[0]=='\0') {
 	strcpy(bin,argv[vars->optind]);
-}
-remove_extension(bin);
-strcat(bin,".bin");
-if (bin_type==BIN_BIN2) {
-	strcat(bin,"2");
+	remove_extension(bin);
+	strcat(bin,".bin");
+	if (bin_type==BIN_BIN2) {
+		strcat(bin,"2");
+	}
 }
 remove_extension(bin,inf);
 strcat(inf,".inf");

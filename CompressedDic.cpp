@@ -49,6 +49,7 @@ if (!read_bin_header(d)) {
 	free(d);
 	return NULL;
 }
+d->inf=NULL;
 if (d->type==BIN_CLASSIC) {
 	if (inf==NULL) {
 		error("NULL .inf file in new_Dictionary\n");

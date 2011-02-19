@@ -46,6 +46,9 @@
 struct offset_list {
   int offset;
   unichar* content;
+  /* The base and output fields are required when we deal with .bin2 dictionaries */
+  int base;
+  unichar* output;
   struct offset_list* next;
 };
 

@@ -179,7 +179,7 @@ while (t!=NULL) {
  * This function returns a struct offset_list* that contains the given offset.
  * If the offset is not in the list, the function adds it.
  */
-struct offset_list* get_offset(int offset,struct offset_list* l,unichar* content) {
+struct offset_list* get_offset(int offset,struct offset_list* l,unichar* content,int base,unichar* output) {
 if (l==NULL) {
    /* If the offset is not in the list, we add it */
    l=(struct offset_list*)malloc(sizeof(struct offset_list));
@@ -188,13 +188,15 @@ if (l==NULL) {
    }
    l->offset=offset;
    l->content=u_strdup(content);
+   l->base=base;
+   l->output=u_strdup(output);
    l->next=NULL;
    return l;
 }
 /* If we have it, we return it */
 if (l->offset==offset) return l;
 /* Otherwise, we look further */
-l->next=get_offset(offset,l->next,content);
+l->next=get_offset(offset,l->next,content,base,output);
 return l;
 }
 
@@ -211,11 +213,16 @@ return l;
  * (noun: electrical connection stuff, card figure, etc).
  */
 void add_offset_for_token(struct word_struct_array* word_array,
-                          int token_number,int offset,unichar* content) {
+                          int token_number,int offset,unichar* content,
+                          int base,Ustring* output) {
 if (word_array->element[token_number]==NULL) {
    word_array->element[token_number]=new_word_struct();
 }
-word_array->element[token_number]->list=get_offset(offset,word_array->element[token_number]->list,content);
+unichar* s=NULL;
+if (output!=NULL && output->len!=0) {
+	s=output->str;
+}
+word_array->element[token_number]->list=get_offset(offset,word_array->element[token_number]->list,content,base,s);
 }
 
 
@@ -225,7 +232,8 @@ word_array->element[token_number]->list=get_offset(offset,word_array->element[to
 void free_offset_list(struct offset_list* l) {
 struct offset_list* tmp;
 while (l!=NULL) {
-   if (l->content!=NULL) free(l->content);
+   free(l->content);
+   free(l->output);
    tmp=l;
    l=l->next;
    free(tmp);
@@ -257,16 +265,17 @@ void display_uncompressed_entry(U_FILE* f,unichar* inflected,unichar* INF_code) 
  */
 void explore_bin_simple_words(struct dico_application_info* info,
                               int offset,unichar* token,unichar* inflected,
-                              int pos,int token_number,int priority,Ustring* ustr) {
+                              int pos,int token_number,int priority,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
 /* We compute the number of transitions that outgo from the current node */
+int z=save_output(ustr);
 int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
 if (token[pos]=='\0') {
    /* If we are at the end of the token */
    inflected[pos]='\0';
-   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected);
    if (final) {
       /* If the node is final */
+	   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected,0,NULL);
       int p=0;
       if (info->simple_word!=NULL) p=get_value(info->simple_word,token_number);
       if (p==0 || p==priority) {
@@ -277,7 +286,7 @@ if (token[pos]=='\0') {
          if (info->simple_word!=NULL) set_value(info->simple_word,token_number,priority);
          /* We get the INF codes */
          struct list_ustring* head;
-         int to_be_freed=get_inf_codes(info->d,inf_number,ustr,&head);
+         int to_be_freed=get_inf_codes(info->d,inf_number,ustr,&head,base);
          struct list_ustring* tmp=head;
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
@@ -289,16 +298,24 @@ if (token[pos]=='\0') {
              tmp=tmp->next;
          }
          if (to_be_freed) free_list_ustring(head);
+         base=ustr->len;
       }
+   } else {
+	   /* The node is not final */
+	   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected,base,ustr);
    }
    /* If we are at the end of the token, there is no need to look at the
     * outgoing transitions */
+   restore_output(z,ustr);
    return;
+}
+/* If we are in a final node */
+if (final) {
+	base=ustr->len;
 }
 offset=new_offset;
 unichar c;
 int offset_dest;
-int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
     * compatible with the token's one */
@@ -307,7 +324,7 @@ for (int i=0;i<n_transitions;i++) {
       /* We copy the transition character so that 'inflected' will contain
        * the exact inflected form */
       inflected[pos]=c;
-      explore_bin_simple_words(info,offset_dest,token,inflected,pos+1,token_number,priority,ustr);
+      explore_bin_simple_words(info,offset_dest,token,inflected,pos+1,token_number,priority,ustr,base);
    }
     restore_output(z,ustr);
 }
@@ -328,7 +345,7 @@ if (entry==NULL) {
 }
 Ustring* ustr=new_Ustring();
 for (int i=0;i<info->tokens->N;i++) {
-   explore_bin_simple_words(info,info->d->initial_state_offset,info->tokens->token[i],entry,0,i,priority,ustr);
+   explore_bin_simple_words(info,info->d->initial_state_offset,info->tokens->token[i],entry,0,i,priority,ustr,0);
 }
 free_Ustring(ustr);
 free(entry);
@@ -365,8 +382,9 @@ void explore_bin_compound_words(struct dico_application_info* info,
                                 int pos_in_current_token,
                                 int pos_in_inflected,struct word_struct* ws,int pos_offset,
                                 int* token_sequence,int pos_token_sequence,int priority,
-                                int current_start_pos, unichar* line_buf,Ustring* ustr) {
+                                int current_start_pos, unichar* line_buf,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
+int z=save_output(ustr);
 int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
 if (current_token[pos_in_current_token]=='\0') {
    /* If we are at the end of the current token, we look for the
@@ -381,9 +399,9 @@ if (current_token[pos_in_current_token]=='\0') {
    /* We add the current token to the token sequence */
    token_sequence[pos_token_sequence++]=trans->token_number;
    /* And we add the current offset to the node list */
-   trans->node->list=get_offset(offset,trans->node->list,inflected);
    if (final) {
       /* If this node is final */
+	   trans->node->list=get_offset(offset,trans->node->list,inflected,0,NULL);
       token_sequence[pos_token_sequence]=-1;
       /* We look if the compound word has already been matched */
       int w=was_already_in_tct_hash(token_sequence,info->tct_h,priority);
@@ -396,7 +414,7 @@ if (current_token[pos_in_current_token]=='\0') {
          }
          /* We get the INF codes */
          struct list_ustring* head;
-         int to_be_freed=get_inf_codes(info->d,inf_number,ustr,&head);
+         int to_be_freed=get_inf_codes(info->d,inf_number,ustr,&head,base);
          struct list_ustring* tmp=head;
          /* We increase the number of compound word occurrences.
           * Note that we count occurrences and not number of entries, so that
@@ -406,17 +424,22 @@ if (current_token[pos_in_current_token]=='\0') {
          while (tmp!=NULL) {
             /* For each compressed code of the INF line, we save the corresponding
              * DELAF line in 'info->dlc' */
-            uncompress_entry(inflected,tmp->string,line_buf);
+        	uncompress_entry(inflected,tmp->string,line_buf);
             u_fprintf(info->dlc,"%S\n",line_buf);
             tmp=tmp->next;
          }
          if (to_be_freed) free_list_ustring(head);
       }
+      base=ustr->len;
+   } else {
+	   /* The node is not final */
+	   trans->node->list=get_offset(offset,trans->node->list,inflected,base,ustr->str);
    }
    pos_offset++;
    /* Then, we go on with the next token in the text, so we update 'current_token',
     * but only if we haven't reached the end of the text buffer */
    if (current_start_pos+pos_offset >= info->text_cod_size_nb_int) {
+	   restore_output(z,ustr);
       return;
    }
    current_token=info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]];
@@ -430,12 +453,16 @@ if (current_token[pos_in_current_token]=='\0') {
 /* Do not recursively explore deeper paths if we already have
  * reached the end of the current token. */
 if (current_token[pos_in_current_token]=='\0') {
+   restore_output(z,ustr);
 	return;
+}
+/* If we are in a final node */
+if (final) {
+	base=ustr->len;
 }
 unichar c;
 int adr;
 offset=new_offset;
-int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
    offset=read_dictionary_transition(info->d,offset,&c,&adr,ustr);
    if (is_equal_or_uppercase(c,current_token[pos_in_current_token],info->alphabet)) {
@@ -444,7 +471,7 @@ for (int i=0;i<n_transitions;i++) {
        * we copy in 'inflected' the exact chararacter that is in the dictionary. */
       inflected[pos_in_inflected]=c;
       explore_bin_compound_words(info,adr,current_token,inflected,pos_in_current_token+1,pos_in_inflected+1,ws,
-        pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos,line_buf,ustr);
+        pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos,line_buf,ustr,base);
    }
    restore_output(z,ustr);
 }
@@ -526,8 +553,9 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
             * the .bin */
            unichar line_buf[DIC_LINE_SIZE];
            u_strcpy_sized(inflected,DIC_WORD_SIZE,l->content);
+           u_strcpy(ustr,l->output);
            explore_bin_compound_words(info,l->offset,info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,
-             pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos,line_buf,ustr);
+             pos_offset,token_sequence,current_token_in_compound,priority,current_start_pos,line_buf,ustr,l->base);
            l=l->next;
         }
 	  }
@@ -723,7 +751,7 @@ info->d=new_Dictionary(name_bin,name_inf);
 if (info->d==NULL) return 1;
 unichar entry[DIC_WORD_SIZE];
 Ustring* ustr=new_Ustring();
-explore_bin_simple_words(info,info->d->initial_state_offset,text,entry,0,-1,0,ustr);
+explore_bin_simple_words(info,info->d->initial_state_offset,text,entry,0,-1,0,ustr,0);
 free_Ustring(ustr);
 free_Dictionary(info->d);
 info->d=NULL;
