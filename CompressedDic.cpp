@@ -84,8 +84,8 @@ free(d);
 /**
  * Reads a 2 byte-value. Updates the offset.
  */
-int bin_read_2bytes(const unsigned char* bin,int *offset) {
-int v=(bin[*offset]<<8)+bin[(*offset)+1];
+static int bin_read_2bytes(const unsigned char* bin,int *offset) {
+int v=(((int)bin[*offset])<<8) | bin[(*offset)+1];
 (*offset)+=2;
 return v;
 }
@@ -94,8 +94,8 @@ return v;
 /**
  * Reads a 3 byte-value. Updates the offset.
  */
-int bin_read_3bytes(const unsigned char* bin,int *offset) {
-int v=(bin[*offset]<<16)+(bin[(*offset)+1]<<8)+bin[(*offset)+2];
+static int bin_read_3bytes(const unsigned char* bin,int *offset) {
+int v=(((int)bin[*offset])<<16) | (((int)bin[(*offset)+1])<<8) | bin[(*offset)+2];
 (*offset)+=3;
 return v;
 }
@@ -104,8 +104,8 @@ return v;
 /**
  * Reads a 4 byte-value. Updates the offset.
  */
-int bin_read_4bytes(const unsigned char* bin,int *offset) {
-int v=(bin[*offset]<<24)+(bin[(*offset)+1]<<16)+(bin[(*offset)+2]<<8)+bin[(*offset)+3];
+static int bin_read_4bytes(const unsigned char* bin,int *offset) {
+int v=(((int)bin[*offset])<<24) | (((int)bin[(*offset)+1])<<16) | (((int)bin[(*offset)+2])<<8) | bin[(*offset)+3];
 (*offset)+=4;
 return v;
 }
@@ -114,7 +114,7 @@ return v;
 /**
  * Reads a variable length value. Updates the offset.
  */
-int bin_read_variable_length(const unsigned char* bin,int *offset) {
+static int bin_read_variable_length(const unsigned char* bin,int *offset) {
 int v=0;
 do {
 	v=(v<<7) | (bin[(*offset)++] & 127);
@@ -138,7 +138,7 @@ return -1;
 /**
  * Writes a 2 byte-value. Updates the offset.
  */
-void bin_write_2bytes(unsigned char* bin,int value,int *offset) {
+static void bin_write_2bytes(unsigned char* bin,int value,int *offset) {
 bin[(*offset)++]=(value>>8) & 255;
 bin[(*offset)++]=value & 255;
 }
@@ -147,7 +147,7 @@ bin[(*offset)++]=value & 255;
 /**
  * Writes a 3 byte-value. Updates the offset.
  */
-void bin_write_3bytes(unsigned char* bin,int value,int *offset) {
+static void bin_write_3bytes(unsigned char* bin,int value,int *offset) {
 bin[(*offset)++]=(value>>16) & 255;
 bin[(*offset)++]=(value>>8) & 255;
 bin[(*offset)++]=value & 255;
@@ -286,7 +286,7 @@ int is_output=(*dest) & 1;
 if (is_output) {
 	int tmp;
 	while ((tmp=bin_read(d->bin,d->char_encoding,&pos))!='\0') {
-		u_strcat(output,tmp);
+		u_strcat(output,(unichar)tmp);
 	}
 }
 return pos;
@@ -413,10 +413,10 @@ void write_new_bin_header(BinType bin_type,unsigned char* bin,int *pos,BinStateE
 		BinEncoding char_encoding,BinEncoding inf_number_encoding,
 		BinEncoding offset_encoding,int initial_state_offset) {
 bin[(*pos)++]=(bin_type==BIN_CLASSIC)?1:2;
-bin[(*pos)++]=state_encoding;
-bin[(*pos)++]=inf_number_encoding;
-bin[(*pos)++]=char_encoding;
-bin[(*pos)++]=offset_encoding;
+bin[(*pos)++]=(unsigned char)state_encoding;
+bin[(*pos)++]=(unsigned char)inf_number_encoding;
+bin[(*pos)++]=(unsigned char)char_encoding;
+bin[(*pos)++]=(unsigned char)offset_encoding;
 bin_write_4bytes(bin,initial_state_offset,pos);
 }
 
