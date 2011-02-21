@@ -221,7 +221,7 @@ unichar line[2048];
 /* Foo line for generating a dela_entry */
 u_strcpy(line,"a,a");
 for (int i=0;i<N;i++) {
-   if (array[i]==NULL) {
+   if (array[i]==NULL || array[i]->type!=BIN_CLASSIC) {
       continue;
    }
    for (int j=0;j<array[i]->inf->N;j++) {

@@ -24,7 +24,8 @@
 #include "Ustring.h"
 
 void explore_state_german(int,unichar*,int,const unichar*,int,const unichar*,unichar*,
-      struct german_word_decomposition_list**,int,const char*,const char*,const Alphabet*,Dictionary*,Ustring*);
+      struct german_word_decomposition_list**,int,const char*,const char*,const Alphabet*,
+      Dictionary*,Ustring*,int);
 
 
 //
@@ -217,7 +218,7 @@ correct_word[0]='\0';
 struct german_word_decomposition_list* l=NULL;
 Ustring* ustr=new_Ustring();
 explore_state_german(d->initial_state_offset,correct_word,0,mot,0,decomposition,dela_line,&l,1,
-		left,right,alphabet,d,ustr);
+		left,right,alphabet,d,ustr,0);
 free_Ustring(ustr);
 if (l==NULL) {
    return 0;
@@ -292,8 +293,9 @@ void explore_state_german(int offset,unichar* current_component,int pos_in_curre
                    unichar* dela_line,struct german_word_decomposition_list** L,int n_decomp,
                    const char* left,const char* right,
                    const Alphabet* alphabet,
-                   Dictionary* d,Ustring* ustr) {
+                   Dictionary* d,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
+int z=save_output(ustr);
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 if (final) {
   // if we are in a terminal state
@@ -382,11 +384,12 @@ if (final) {
          unichar temp[500];
          Ustring* foo=new_Ustring();
          explore_state_german(d->initial_state_offset,temp,0,original_word,pos_in_original_word,
-                  dec,line,L,n_decomp+1,left,right,alphabet,d,foo);
+                  dec,line,L,n_decomp+1,left,right,alphabet,d,foo,0);
          free_Ustring(foo);
       }
     }
   }
+  base=ustr->len;
 }
 if (original_word[pos_in_original_word]=='\0') {
    // if we have finished, we return
@@ -395,14 +398,13 @@ if (original_word[pos_in_original_word]=='\0') {
 // if not, we go on with the next letter
 unichar c;
 int adr;
-int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
 	offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
   if (is_equal_or_uppercase(c,original_word[pos_in_original_word],alphabet)
       || is_equal_or_uppercase(original_word[pos_in_original_word],c,alphabet)) {
     current_component[pos_in_current_component]=c;
     explore_state_german(adr,current_component,pos_in_current_component+1,original_word,pos_in_original_word+1,
-                  decomposition,dela_line,L,n_decomp,left,right,alphabet,d,ustr);
+                  decomposition,dela_line,L,n_decomp,left,right,alphabet,d,ustr,base);
   }
   restore_output(z,ustr);
 }

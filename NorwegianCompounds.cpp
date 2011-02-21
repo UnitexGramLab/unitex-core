@@ -91,7 +91,7 @@ struct word_decomposition_list {
 void analyse_norwegian_unknown_words(struct norwegian_infos*);
 int analyse_norwegian_word(const unichar* word,struct norwegian_infos*);
 void explore_state(int,unichar*,int,const unichar*,int,const unichar*,const unichar*,
-					struct word_decomposition_list**,int,struct norwegian_infos*,Ustring*);
+					struct word_decomposition_list**,int,struct norwegian_infos*,Ustring*,int);
 void check_valid_right_component(char*,const struct INF_codes*);
 void check_valid_left_component(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line(const struct list_ustring*);
@@ -558,7 +558,7 @@ correct_word[0]='\0';
 struct word_decomposition_list* l=NULL;
 /* We look if there are decompositions for this word */
 Ustring* ustr=new_Ustring();
-explore_state(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos,ustr);
+explore_state(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos,ustr,0);
 free_Ustring(ustr);
 if (l==NULL) {
 	/* If there is no decomposition, we return */
@@ -725,8 +725,9 @@ while (l!=NULL) {
 void explore_state(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
-                   int number_of_components,struct norwegian_infos* infos,Ustring* ustr) {
+                   int number_of_components,struct norwegian_infos* infos,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
+int z=save_output(ustr);
 offset=read_dictionary_state(infos->d,offset,&final,&n_transitions,&inf_number);
 if (final) {
 	/* If we are in a final state, we can set the end of our current component */
@@ -861,7 +862,7 @@ if (final) {
 					 * we try to analyze "planner". */
 					Ustring* foo=new_Ustring();
 					explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze-1,
-						dec_temp,line,L,number_of_components+1,infos,ustr);
+						dec_temp,line,L,number_of_components+1,infos,ustr,0);
 					free_Ustring(foo);
 				}
 				/* Now, we try to analyze the component normally, even if
@@ -892,18 +893,18 @@ if (final) {
 				 * (offset=4). */
 				Ustring* foo=new_Ustring();
 				explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
-					dec_temp,line,L,number_of_components+1,infos,foo);
+					dec_temp,line,L,number_of_components+1,infos,foo,0);
 				free_Ustring(foo);
 			}
 		}
 	}
 	/* Once we have finished to deal with the current final dictionary node,
 	 * we go on because we may match a longer word */
+	base=ustr->len;
 }
 /* We examine each transition that goes out from the node */
 unichar uc;
 int adr;
-int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
 	offset=read_dictionary_transition(infos->d,offset,&uc,&adr,ustr);
 	if (is_equal_or_uppercase(uc,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
@@ -911,7 +912,7 @@ for (int i=0;i<n_transitions;i++) {
 		 * word to analyze, we follow it */
 		current_component[pos_in_current_component]=uc;
 		explore_state(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
-			analysis,output_dela_line,L,number_of_components,infos,ustr);
+			analysis,output_dela_line,L,number_of_components,infos,ustr,base);
 	}
 	restore_output(z,ustr);
 }

@@ -33,7 +33,7 @@ int analyse_word(const unichar*,Dictionary*,U_FILE*,U_FILE*,const bool*,const bo
 void explore_state(int, unichar*, int, const unichar*, const unichar*, int, const unichar*, const unichar*,
                    struct decomposed_word_list**, int, struct rule_list*, const struct dela_entry*,
                    Dictionary*,const bool*,const bool*,const Alphabet*,U_FILE*,struct utags,
-                   vector_ptr*,vector_ptr*,Ustring*);
+                   vector_ptr*,vector_ptr*,Ustring*,int);
 
 
 // results of decomposition are written to
@@ -236,7 +236,7 @@ int analyse_word(const unichar* mot,Dictionary* d,U_FILE* debug,U_FILE* result_f
   struct decomposed_word_list* l = 0;
   Ustring* ustr=new_Ustring();
   explore_state(d->initial_state_offset,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,d,
-        prefix,suffix,alphabet,debug,UTAG,rules,entries,ustr);
+        prefix,suffix,alphabet,debug,UTAG,rules,entries,ustr,0);
   free_Ustring(ustr);
   free_all_dic_entries(entries);
   free_all_rule_lists(rules);
@@ -920,8 +920,9 @@ void explore_state (int offset,
 		    Dictionary* d,
 		    const bool* prefix,const bool* suffix,const Alphabet* alphabet,
 		    U_FILE* debug_file,struct utags UTAG,
-		    vector_ptr* rules,vector_ptr* entries,Ustring* ustr) {
+		    vector_ptr* rules,vector_ptr* entries,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
+int z=save_output(ustr);
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 if (final) { // if we are in a terminal state
     current_component[pos_in_current_component] = '\0';
@@ -1189,7 +1190,7 @@ if (final) { // if we are in a terminal state
 			n_decomp+1,
 			rule_list_new,
 			dic_entr,
-			d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,foo);
+			d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,foo,0);
 	  free_Ustring(foo);
 	}
 	else {
@@ -1203,6 +1204,7 @@ if (final) { // if we are in a terminal state
 
     } // end of word length >= 1
   }
+	base=ustr->len;
   if (remaining_word[pos_in_remaining_word]=='\0') {
     // if we have finished, we return
 //     free_dic_entry(dic_entr_called);
@@ -1212,7 +1214,6 @@ if (final) { // if we are in a terminal state
   // if not, we go on with the next letter
   unichar c;
   int adr;
-  int z=save_output(ustr);
   for (int i=0;i<n_transitions;i++) {
 	  offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
     if (is_equal_or_uppercase(c,remaining_word[pos_in_remaining_word],alphabet)
@@ -1230,7 +1231,7 @@ if (final) { // if we are in a terminal state
 		    n_decomp,
 		    rule_list_called,
 		    dic_entr_called,
-		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,ustr);
+		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,ustr,base);
     }
     restore_output(z,ustr);
   }

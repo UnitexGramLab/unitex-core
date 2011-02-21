@@ -406,6 +406,10 @@ return 1;
 //
 int get_inf_number_for_token(int pos,const unichar* content,int string_pos,
 		unichar* entry,const Alphabet* ALPH,Dictionary* d,Ustring* ustr) {
+/* Ok, it's dirty to put this redundant test here, but this code is already awfully dirty anyway */
+if (d->type!=BIN_CLASSIC) {
+	fatal_error("get_inf_number_for_token: unsupported dictionary type\n");
+}
 int final,n_transitions,inf_number;
 pos=read_dictionary_state(d,pos,&final,&n_transitions,&inf_number);
 if (content[string_pos]=='\0') {

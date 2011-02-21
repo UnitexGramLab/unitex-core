@@ -213,6 +213,9 @@ void get_INF_code(Dictionary* d,const unichar* token,
 				  int case_sensitive,int index,int offset,
 				  const Alphabet* alphabet,int* inf_index,Ustring* ustr) {
 int final,n_transitions,inf_number;
+if (d->type!=BIN_CLASSIC) {
+	fatal_error("get_INF_code: unsupported dictionary type\n");
+}
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 if (token[index]=='\0') {
    /* If we are at end of the token */
