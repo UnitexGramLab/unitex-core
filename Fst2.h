@@ -72,7 +72,9 @@ enum tag_type {
    END_CONTEXT_TAG,            // $]
    LEFT_CONTEXT_TAG,           // $*
    BEGIN_MORPHO_TAG, // $<
-   END_MORPHO_TAG    // $>
+   END_MORPHO_TAG,    // $>
+   TEXT_START_TAG, // {^}
+   TEXT_END_TAG    // {$}
 };
 
 
