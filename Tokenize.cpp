@@ -386,8 +386,8 @@ u_fclose(f);
 
 static void save(U_FILE* f,unichar* s,int n,int start,int end) {
 (void)s;
-u_fprintf(f,"%d %d %d\n",n,start,end);
-//error("<%S> %d %d %d\n",s,n,start,end);
+u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
+//error("%d %d %d <%S>\n",n,start,end,s);
 }
 
 

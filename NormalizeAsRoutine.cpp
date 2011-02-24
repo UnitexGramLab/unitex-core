@@ -103,7 +103,8 @@ return 1;
  */
 int normalize(const char *fin, const char *fout, Encoding encoding_output,
 		int bom_output, int mask_encoding_compatibility_input,
-		int carriage_return_policy, const char *rules,const char* foffsets) {
+		int carriage_return_policy, const char *rules,const char* foffsets,
+		int separator_normalization) {
 	U_FILE* input;
 	input = u_fopen_existing_versatile_encoding(
 			mask_encoding_compatibility_input, fin, U_READ);
@@ -337,10 +338,10 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					new_start_pos=new_start_pos+u_strlen(foo);
 				} else {
 					int old_position=current_start_pos;
-					if (buff[current_start_pos] == ' '
+					if (separator_normalization && (buff[current_start_pos] == ' '
 							|| buff[current_start_pos] == '\t'
 							|| buff[current_start_pos] == '\n'
-							|| buff[current_start_pos] == 0x0d) {
+							|| buff[current_start_pos] == 0x0d)) {
 						/* If we have a separator, we try to read the longest separator sequence
 						 * that we can read. By the way, we note if it contains a new line */
 						int new_line = 0;

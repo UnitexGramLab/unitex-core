@@ -40,6 +40,7 @@ const char* usage_Normalize =
          "OPTIONS:\n"
          "  -n/--no_carriage_return: every separator sequence will be turned into a single space\n"
 		 "  --output_offsets=XXX: specifies the offset file to be produced\n"
+		 "  --no_separator_normalization: only applies replacement rules specified with -r\n"
          "  -r XXX/--replacement_rules=XXX: specifies a configuration file XXX that contains\n"
          "                                  replacement instructions in the form of lines like:\n"
          "\n"
@@ -71,6 +72,7 @@ const struct option_TS lopts_Normalize[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"output_offsets",required_argument_TS,NULL,'@'},
+      {"no_separator_normalization",no_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -82,6 +84,7 @@ if (argc==1) {
 	return 0;
 }
 int mode=KEEP_CARRIAGE_RETURN;
+int separator_normalization=1;
 char rules[FILENAME_MAX]="";
 char offsets[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -97,6 +100,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&i
              }
              strcpy(rules,vars->optarg);
              break;
+   case 1: separator_normalization=0; break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -141,7 +145,8 @@ char dest_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[vars->optind]);
-int result=normalize(tmp_file, dest_file, encoding_output,bom_output,mask_encoding_compatibility_input,mode, rules,offsets);
+int result=normalize(tmp_file, dest_file, encoding_output,bom_output,
+		mask_encoding_compatibility_input,mode, rules,offsets,separator_normalization);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {
