@@ -62,6 +62,28 @@ void WriteOufBuf(struct OUTBUF* pOutBuf, unichar c, U_FILE *f, int flush) {
 	WriteOufBuf(pOutBuf, u_array, f, flush);
 }
 
+
+/**
+ * This function computes the length of the longest prefix and suffix
+ * that are common to the key and its associated value. Returns 0
+ * if key and value are equals, 0 otherwise.
+ */
+int get_real_replacement(const unichar* key,int key_size,unichar* value,int *pfx,int *sfx) {
+*pfx=0;
+*sfx=0;
+while (*pfx!=key_size && key[*pfx]==value[*pfx]) (*pfx)++;
+if (*pfx==key_size) return 0;
+int i=key_size-1;
+int j=u_strlen(value)-1;
+while (i!=*pfx && j>=0 && key[i]==value[j]) {
+	(*sfx)++;
+	i--;
+	j--;
+}
+return 1;
+}
+
+
 /**
  * This function produces a normalized version of 'input' and stores it into 'ouput'.
  * The following rules are applied in the given order:
@@ -305,7 +327,10 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 				if (index != NO_VALUE_INDEX) {
 					/* If there is something to replace */
 					unichar* foo=replacements->value[index];
-					if (offsets!=NULL) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos,old_start_pos+key_length,new_start_pos,new_start_pos+u_strlen(foo));
+					int common_prefix,common_suffix;
+					int ret=get_real_replacement(buff+current_start_pos,key_length,foo,
+							&common_prefix,&common_suffix);
+					if (offsets!=NULL && ret) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
 					WriteOufBuf(&OutBuf, replacements->value[index], output, 0);
 					current_start_pos = current_start_pos + key_length;
 					old_start_pos = old_start_pos + key_length;
