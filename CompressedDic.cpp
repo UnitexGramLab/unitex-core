@@ -84,7 +84,7 @@ free(d);
 /**
  * Reads a 2 byte-value. Updates the offset.
  */
-static int bin_read_2bytes(const unsigned char* bin,int *offset) {
+static inline int bin_read_2bytes(const unsigned char* bin,int *offset) {
 int v=(((int)bin[*offset])<<8) | bin[(*offset)+1];
 (*offset)+=2;
 return v;
@@ -94,7 +94,7 @@ return v;
 /**
  * Reads a 3 byte-value. Updates the offset.
  */
-static int bin_read_3bytes(const unsigned char* bin,int *offset) {
+static inline int bin_read_3bytes(const unsigned char* bin,int *offset) {
 int v=(((int)bin[*offset])<<16) | (((int)bin[(*offset)+1])<<8) | bin[(*offset)+2];
 (*offset)+=3;
 return v;
@@ -104,7 +104,7 @@ return v;
 /**
  * Reads a 4 byte-value. Updates the offset.
  */
-static int bin_read_4bytes(const unsigned char* bin,int *offset) {
+static inline int bin_read_4bytes(const unsigned char* bin,int *offset) {
 int v=(((int)bin[*offset])<<24) | (((int)bin[(*offset)+1])<<16) | (((int)bin[(*offset)+2])<<8) | bin[(*offset)+3];
 (*offset)+=4;
 return v;
@@ -114,16 +114,40 @@ return v;
 /**
  * Reads a variable length value. Updates the offset.
  */
-static int bin_read_variable_length(const unsigned char* bin,int *offset) {
-int v=0;
-do {
-	v=(v<<7) | (bin[(*offset)++] & 127);
-} while (bin[(*offset)-1] & 128);
-return v;
+static inline int bin_read_variable_length(const unsigned char* bin,int *offset) {
+int v;
+unsigned char c ;
+
+c= (bin[(*offset)++]);
+v = (((int)c) & 0x7f);
+if ((c & 128) == 0)
+	return v;
+
+c= (bin[(*offset)++]);
+v = (v<<7) | (int)(c & 0x7f);
+if ((c & 128) == 0)
+	return v;
+
+c= (bin[(*offset)++]);
+v = (v<<7) | (int)(c & 0x7f);
+if ((c & 128) == 0)
+	return v;
+
+c= (bin[(*offset)++]);
+v = (v<<7) | (int)(c & 0x7f);
+if ((c & 128) == 0)
+	return v;
+
+c= (bin[(*offset)++]);
+v = (v<<7) | (int)(c & 0x7f);
+if ((c & 128) == 0)
+	return v;
+
+fatal_error("invalid data in bin_read_variable_length");
 }
 
 
-int bin_read(const unsigned char* bin,BinEncoding e,int *offset) {
+static inline int bin_read(const unsigned char* bin,BinEncoding e,int *offset) {
 switch (e) {
 case BIN_2BYTES: return bin_read_2bytes(bin,offset);
 case BIN_3BYTES: return bin_read_3bytes(bin,offset);
@@ -216,10 +240,10 @@ default: fatal_error("Illegal encoding value in bin_write\n");
  * If the state is final and if it is a classic .bin, we store the inf code
  * in *code.
  */
-int read_dictionary_state(Dictionary* d,int pos,int *final,int *n_transitions,int *code) {
+int read_dictionary_state(const Dictionary* d,int pos,int *final,int *n_transitions,int *code) {
 if (d->state_encoding==BIN_CLASSIC_STATE) {
 	*final=!(d->bin[pos] & 128);
-	*n_transitions=((d->bin[pos] & 127)<<8)+d->bin[pos+1];
+	*n_transitions=((d->bin[pos] & 127)<<8) | (d->bin[pos+1]);
 	pos=pos+2;
 	if (*final) {
 		*code=bin_read(d->bin,d->inf_number_encoding,&pos);
@@ -228,9 +252,8 @@ if (d->state_encoding==BIN_CLASSIC_STATE) {
 	}
 	return pos;
 }
-if (d->state_encoding!=BIN_NEW_STATE && d->state_encoding!=BIN_BIN2_STATE) {
-	fatal_error("read_dictionary_state: unsupported state encoding\n");
-}
+
+if ((d->state_encoding==BIN_NEW_STATE) || (d->state_encoding==BIN_BIN2_STATE)) {
 int value=bin_read_variable_length(d->bin,&pos);
 *final=value & 1;
 *n_transitions=value>>1;
@@ -242,6 +265,9 @@ if (*final && d->state_encoding==BIN_NEW_STATE) {
 return pos;
 }
 
+fatal_error("read_dictionary_state: unsupported state encoding");
+return 0;
+}
 
 /**
  * Writes the information associated to the current state in the dictionary, i.e.
@@ -274,24 +300,24 @@ if (final && state_encoding==BIN_NEW_STATE) {
  * Reads the information associated to the current transition in the dictionary.
  * Returns the new position.
  */
-int read_dictionary_transition(Dictionary* d,int pos,unichar *c,int *dest,Ustring* output) {
+int read_dictionary_transition(const Dictionary* d,int pos,unichar *c,int *dest,Ustring* output) {
 *c=(unichar)bin_read(d->bin,d->char_encoding,&pos);
 *dest=bin_read(d->bin,d->offset_encoding,&pos);
 if (d->type==BIN_CLASSIC) return pos;
-if (d->type!=BIN_BIN2) {
-	fatal_error("read_dictionary_state: unsupported dictionary type\n");
-}
-int is_output=(*dest) & 1;
-(*dest)=(*dest)>>1;
-if (is_output) {
-	int tmp;
-	while ((tmp=bin_read(d->bin,d->char_encoding,&pos))!='\0') {
-		u_strcat(output,(unichar)tmp);
+if (d->type==BIN_BIN2) {
+	int is_output=(*dest) & 1;
+	(*dest)=(*dest)>>1;
+	if (is_output) {
+		int tmp;
+		while ((tmp=bin_read(d->bin,d->char_encoding,&pos))!='\0') {
+			u_strcat(output,(unichar)tmp);
+		}
 	}
+	return pos;
 }
-return pos;
+fatal_error("read_dictionary_state: unsupported dictionary type\n");
+return 0;
 }
-
 
 /**
  * Writes the information associated to the current transition in the dictionary.

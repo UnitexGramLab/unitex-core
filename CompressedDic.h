@@ -80,10 +80,10 @@ typedef struct {
 
 Dictionary* new_Dictionary(const char* bin,const char* inf,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-int read_dictionary_state(Dictionary*,int,int*,int*,int*);
+int read_dictionary_state(const Dictionary*,int,int*,int*,int*);
 void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
 							BinEncoding inf_number_encoding,int *pos,int final,int n_transitions,int code);
-int read_dictionary_transition(Dictionary*,int,unichar*,int*,Ustring*);
+int read_dictionary_transition(const Dictionary*,int,unichar*,int*,Ustring*);
 void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
 								BinEncoding offset_encoding,unichar c,int dest,
 								BinType bin_type,unichar* output);
