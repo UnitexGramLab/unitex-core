@@ -43,7 +43,9 @@ enum meta_symbol {
    META_TOKEN, // <TOKEN>: used to match any token that is not the space
    META_BEGIN_MORPHO, // $<: used to enter the morphological mode
    META_END_MORPHO,   // $>: used to leave the morphological mode
-   META_LEFT_CONTEXT  // $*: used to specify the end of a left context
+   META_LEFT_CONTEXT, // $*: used to specify the end of a left context
+   META_TEXT_START,   // {^}: matches the text start
+   META_TEXT_END      // {$}: matches the end of the text
 };
 
 #endif

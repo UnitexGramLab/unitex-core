@@ -419,6 +419,8 @@ switch (tag->type) {
    case LEFT_CONTEXT_TAG: add_meta(META_LEFT_CONTEXT,transition,&(state->metas),0,prv_alloc); return;
    case BEGIN_MORPHO_TAG: add_meta(META_BEGIN_MORPHO,transition,&(state->metas),0,prv_alloc); return;
    case END_MORPHO_TAG: add_meta(META_END_MORPHO,transition,&(state->metas),0,prv_alloc); return;
+   case TEXT_START_TAG: add_meta(META_TEXT_START,transition,&(state->metas),0,prv_alloc); return;
+   case TEXT_END_TAG: add_meta(META_TEXT_END,transition,&(state->metas),0,prv_alloc); return;
    default: fatal_error("Unexpected transition tag type in optimize_transition\n");
 }
 }

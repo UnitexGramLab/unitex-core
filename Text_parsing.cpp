@@ -48,7 +48,7 @@ static struct match_list* eliminate_longer_matches(struct match_list*, int, int,
 		unichar*, int*, struct locate_parameters*, Abstract_allocator);
 static struct match_list* save_matches(struct match_list*, int, U_FILE*,
 		struct locate_parameters*, Abstract_allocator);
-
+int at_text_start(struct locate_parameters*,int);
 
 
 static long CalcPerfHalfHundred(long text_size, long matching_units) {
@@ -199,9 +199,12 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 						set_value(p->failfast, current_token, 1);
 					}
 				} else {
-					if (p->last_tested_position <= p->last_matched_position) {
+					if (p->last_tested_position <= p->last_matched_position
+							&& !at_text_start(p,0)) {
 						/* If there are matches that could never be longer, we
-						 * can cache them */
+						 * can cache them, BUT, we never cache a match that occurred
+						 * at the beginning of the text, since it may be a contextual
+						 * match depending on the {^} meta */
 						can_cache_matches = 1;
 					}
 				}
@@ -345,6 +348,13 @@ while (s[i]!='\0') {
    i++;
 }
 return 0;
+}
+
+
+int at_text_start(struct locate_parameters* p,int pos) {
+int ret=pos == 0 && (p->current_origin == 0
+				|| (p->current_origin == 1 && p->buffer[0] == p->SPACE));
+return ret;
 }
 
 
@@ -808,6 +818,20 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				/* We can always match the empty word */
 				start = pos;
 				end = pos;
+				break;
+
+			case META_TEXT_START:
+				/* We can match if and only if we are at the beginning of the text */
+				if (at_text_start(p,pos)) {
+					start = pos;
+					end = pos;
+				}
+				break;
+
+			case META_TEXT_END:
+				start = pos;
+				end = pos;
+				fatal_error("{$} unsupported yet\n");
 				break;
 
 			case META_MOT:
