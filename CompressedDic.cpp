@@ -84,8 +84,9 @@ free(d);
 /**
  * Reads a 2 byte-value. Updates the offset.
  */
-static inline int bin_read_2bytes(const unsigned char* bin,int *offset) {
-int v=(((int)bin[*offset])<<8) | bin[(*offset)+1];
+static int bin_read_2bytes(const unsigned char* bin,int *offset) {
+const unsigned char* bindata=bin+(*offset);
+int v=(((int)bindata[0])<<8) | bindata[1];
 (*offset)+=2;
 return v;
 }
@@ -94,8 +95,9 @@ return v;
 /**
  * Reads a 3 byte-value. Updates the offset.
  */
-static inline int bin_read_3bytes(const unsigned char* bin,int *offset) {
-int v=(((int)bin[*offset])<<16) | (((int)bin[(*offset)+1])<<8) | bin[(*offset)+2];
+static int bin_read_3bytes(const unsigned char* bin,int *offset) {
+const unsigned char* bindata=bin+(*offset);
+int v=(((int)bindata[0])<<16) | (((int)bindata[1])<<8) | bindata[2];
 (*offset)+=3;
 return v;
 }
@@ -104,8 +106,9 @@ return v;
 /**
  * Reads a 4 byte-value. Updates the offset.
  */
-static inline int bin_read_4bytes(const unsigned char* bin,int *offset) {
-int v=(((int)bin[*offset])<<24) | (((int)bin[(*offset)+1])<<16) | (((int)bin[(*offset)+2])<<8) | bin[(*offset)+3];
+static int bin_read_4bytes(const unsigned char* bin,int *offset) {
+const unsigned char* bindata=bin+(*offset);
+int v=(((int)bindata[0])<<24) | (((int)bindata[1])<<16) | (((int)bindata[2])<<8) | bindata[3];
 (*offset)+=4;
 return v;
 }
@@ -114,7 +117,7 @@ return v;
 /**
  * Reads a variable length value. Updates the offset.
  */
-static inline int bin_read_variable_length(const unsigned char* bin,int *offset) {
+static int bin_read_variable_length(const unsigned char* bin,int *offset) {
 int v;
 unsigned char c ;
 
@@ -144,28 +147,31 @@ if ((c & 128) == 0)
 	return v;
 
 fatal_error("invalid data in bin_read_variable_length");
+return 0;
 }
 
 
-static inline int bin_read(const unsigned char* bin,BinEncoding e,int *offset) {
+/**
+  * Select the bin_read_* function for a BinEncoding
+  */
+static t_fnc_bin_read_bytes get_bin_read_function_for_encoding(BinEncoding e) {
 switch (e) {
-case BIN_2BYTES: return bin_read_2bytes(bin,offset);
-case BIN_3BYTES: return bin_read_3bytes(bin,offset);
-case BIN_4BYTES: return bin_read_4bytes(bin,offset);
-case BIN_VARIABLE: return bin_read_variable_length(bin,offset);
-default: fatal_error("Illegal encoding value in bin_read\n");
+case BIN_2BYTES: return &bin_read_2bytes;
+case BIN_3BYTES: return &bin_read_3bytes;
+case BIN_4BYTES: return &bin_read_4bytes;
+case BIN_VARIABLE: return &bin_read_variable_length;
+default: fatal_error("Illegal encoding value in get_bin_read_function_for_encoding\n");
 }
-return -1;
+return NULL;
 }
-
 
 /**
  * Writes a 2 byte-value. Updates the offset.
  */
 static void bin_write_2bytes(unsigned char* bin,int value,int *offset) {
-int offset_value=*offset;
-bin[offset_value]=(value>>8) & 255;
-bin[offset_value+1]=value & 255;
+unsigned char* bindata=bin+(*offset);
+bindata[0]=(value>>8) & 255;
+bindata[1]=value & 255;
 (*offset)+=2;
 }
 
@@ -174,10 +180,10 @@ bin[offset_value+1]=value & 255;
  * Writes a 3 byte-value. Updates the offset.
  */
 static void bin_write_3bytes(unsigned char* bin,int value,int *offset) {
-int offset_value=*offset;
-bin[offset_value]=(value>>16) & 255;
-bin[offset_value+1]=(value>>8) & 255;
-bin[offset_value+2]=value & 255;
+unsigned char* bindata=bin+(*offset);
+bindata[0]=(value>>16) & 255;
+bindata[1]=(value>>8) & 255;
+bindata[2]=value & 255;
 (*offset)+=3;
 }
 
@@ -186,11 +192,11 @@ bin[offset_value+2]=value & 255;
  * Writes a 4 byte-value. Updates the offset.
  */
 void bin_write_4bytes(unsigned char* bin,int value,int *offset) {
-int offset_value=*offset;
-bin[offset_value]=(value>>24) & 255;
-bin[offset_value+1]=(value>>16) & 255;
-bin[offset_value+2]=(value>>8) & 255;
-bin[offset_value+3]=value & 255;
+unsigned char* bindata=bin+(*offset);
+bindata[0]=(value>>24) & 255;
+bindata[1]=(value>>16) & 255;
+bindata[2]=(value>>8) & 255;
+bindata[3]=value & 255;
 (*offset)+=4;
 }
 
@@ -199,52 +205,55 @@ bin[offset_value+3]=value & 255;
  * Writes a variable length value. Updates the offset.
  */
 void bin_write_variable_length(unsigned char* bin,int value,int *offset) {
-int offset_value=*offset;
+unsigned char* bindata=bin+(*offset);
 if (value<(1<<7)) {
-	bin[offset_value]=(unsigned char)value;
+	bindata[0]=(unsigned char)value;
 	(*offset)+=1;
 	return;
 }
 if (value<(1<<14)) {
-	bin[offset_value]=(unsigned char)((value>>7) | ((unsigned char)128));
-	bin[offset_value+1]=(unsigned char)((value & 127));
+	bindata[0]=(unsigned char)((value>>7) | ((unsigned char)128));
+	bindata[1]=(unsigned char)((value & 127));
 	(*offset)+=2;
 	return;
 }
 if (value<(1<<21)) {
-	bin[offset_value]=(unsigned char)(((value>>14) | ((unsigned char)128)));
-	bin[offset_value+1]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
-	bin[offset_value+2]=(unsigned char)((value & 127));
+	bindata[0]=(unsigned char)(((value>>14) | ((unsigned char)128)));
+	bindata[1]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
+	bindata[2]=(unsigned char)((value & 127));
 	(*offset)+=3;
 	return;
 }
 if (value<(1<<28)) {
-	bin[offset_value]=(unsigned char)((value>>21) | ((unsigned char)128));
-	bin[offset_value+1]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
-	bin[offset_value+2]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
-	bin[offset_value+3]=(unsigned char)((value & 127));
+	bindata[0]=(unsigned char)((value>>21) | ((unsigned char)128));
+	bindata[1]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
+	bindata[2]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
+	bindata[3]=(unsigned char)((value & 127));
 	(*offset)+=4;
 	return;
 }
-bin[offset_value]=(unsigned char)((value>>28) | ((unsigned char)128));
-bin[offset_value+1]=(unsigned char)(((value>>21) & 127) | ((unsigned char)128));
-bin[offset_value+2]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
-bin[offset_value+3]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
-bin[offset_value+4]=(unsigned char)((value & 127));
+bindata[0]=(unsigned char)((value>>28) | ((unsigned char)128));
+bindata[1]=(unsigned char)(((value>>21) & 127) | ((unsigned char)128));
+bindata[2]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
+bindata[3]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
+bindata[4]=(unsigned char)((value & 127));
 (*offset)+=5;
 }
 
 
-void bin_write(unsigned char* bin,BinEncoding e,int value,int *offset) {
+/**
+  * Select the bin_write_* function for a BinEncoding
+  */
+t_fnc_bin_write_bytes get_bin_write_function_for_encoding(BinEncoding e) {
 switch (e) {
-case BIN_2BYTES: return bin_write_2bytes(bin,value,offset);
-case BIN_3BYTES: return bin_write_3bytes(bin,value,offset);
-case BIN_4BYTES: return bin_write_4bytes(bin,value,offset);
-case BIN_VARIABLE: return bin_write_variable_length(bin,value,offset);
-default: fatal_error("Illegal encoding value in bin_write\n");
+case BIN_2BYTES: return &bin_write_2bytes;
+case BIN_3BYTES: return &bin_write_3bytes;
+case BIN_4BYTES: return &bin_write_4bytes;
+case BIN_VARIABLE: return &bin_write_variable_length;
+default: fatal_error("Illegal encoding value in get_bin_write_function_for_encoding\n");
 }
+return NULL;
 }
-
 
 /**
  * Reads the information associated to the current state in the dictionary, i.e.
@@ -258,7 +267,7 @@ if (d->state_encoding==BIN_CLASSIC_STATE) {
 	*n_transitions=((d->bin[pos] & 127)<<8) | (d->bin[pos+1]);
 	pos=pos+2;
 	if (*final) {
-		*code=bin_read(d->bin,d->inf_number_encoding,&pos);
+		*code=(d->inf_number_read_bin_func)(d->bin,&pos);
 	} else {
 		*code=-1;
 	}
@@ -270,7 +279,7 @@ int value=bin_read_variable_length(d->bin,&pos);
 *final=value & 1;
 *n_transitions=value>>1;
 if (*final && d->state_encoding==BIN_NEW_STATE) {
-	*code=bin_read(d->bin,d->inf_number_encoding,&pos);
+	*code=(d->inf_number_read_bin_func)(d->bin,&pos);
 } else {
 	*code=-1;
 }
@@ -286,13 +295,13 @@ return 0;
  * finality and number of outgoing transitions. Updates the position.
  */
 void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
-							BinEncoding inf_number_encoding,int *pos,int final,int n_transitions,int code) {
+							t_fnc_bin_write_bytes inf_number_write_function,int *pos,int final,int n_transitions,int code) {
 if (state_encoding==BIN_CLASSIC_STATE) {
 	int value=n_transitions & ((1<<15)-1);
 	if (!final) value=value | (1<<15);
 	bin_write_2bytes(bin,value,pos);
 	if (final) {
-		bin_write(bin,inf_number_encoding,code,pos);
+		(*inf_number_write_function)(bin,code,pos);
 	}
 	return;
 }
@@ -303,7 +312,7 @@ int value=(n_transitions<<1);
 if (final) value=value | 1;
 bin_write_variable_length(bin,value,pos);
 if (final && state_encoding==BIN_NEW_STATE) {
-	bin_write(bin,inf_number_encoding,code,pos);
+	(*inf_number_write_function)(bin,code,pos);
 }
 }
 
@@ -313,15 +322,15 @@ if (final && state_encoding==BIN_NEW_STATE) {
  * Returns the new position.
  */
 int read_dictionary_transition(const Dictionary* d,int pos,unichar *c,int *dest,Ustring* output) {
-*c=(unichar)bin_read(d->bin,d->char_encoding,&pos);
-*dest=bin_read(d->bin,d->offset_encoding,&pos);
+*c=(unichar)(d->char_read_bin_func)(d->bin,&pos);
+*dest=(d->offset_read_bin_func)(d->bin,&pos);
 if (d->type==BIN_CLASSIC) return pos;
 if (d->type==BIN_BIN2) {
 	int is_output=(*dest) & 1;
 	(*dest)=(*dest)>>1;
 	if (is_output) {
 		int tmp;
-		while ((tmp=bin_read(d->bin,d->char_encoding,&pos))!='\0') {
+		while ((tmp=((d->char_read_bin_func)(d->bin,&pos)))!='\0') {
 			u_strcat(output,(unichar)tmp);
 		}
 	}
@@ -335,12 +344,12 @@ return 0;
  * Writes the information associated to the current transition in the dictionary.
  * Updates the position.
  */
-void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
-								BinEncoding offset_encoding,unichar c,int dest,
+void write_dictionary_transition(unsigned char* bin,int *pos,t_fnc_bin_write_bytes char_write_function,
+								t_fnc_bin_write_bytes offset_write_function,unichar c,int dest,
 								BinType bin_type,unichar* output) {
-bin_write(bin,char_encoding,c,pos);
+(*char_write_function)(bin,c,pos);
 if (bin_type==BIN_CLASSIC) {
-	bin_write(bin,offset_encoding,dest,pos);
+	(*offset_write_function)(bin,dest,pos);
 	return;
 }
 /* For .bin2, we have a bit to indicate whether there is an output or not */
@@ -348,12 +357,12 @@ dest=dest<<1;
 if (output!=NULL && output[0]!='\0') {
 	dest=dest|1;
 }
-bin_write(bin,offset_encoding,dest,pos);
+(*offset_write_function)(bin,dest,pos);
 if (dest & 1) {
 	int i=-1;
 	do {
 		i++;
-		bin_write(bin,char_encoding,output[i],pos);
+		(*char_write_function)(bin,output[i],pos);
 	} while (output[i]!='\0');
 }
 }
@@ -375,12 +384,24 @@ int bin_get_value_length(int v,BinEncoding e) {
 switch (e) {
 case BIN_2BYTES: return 2;
 case BIN_3BYTES: return 3;
+case BIN_4BYTES: return 4;
 case BIN_VARIABLE: return bin_get_value_variable_length(v);
 default: fatal_error("bin_get_value_length: unsupported encoding\n");
 }
 return -1;
 }
 
+/**
+ * Returns the number of bytes required to save the given value.
+ */
+int bin_get_value_length(int v,t_fnc_bin_write_bytes func) {
+if (func==(&bin_write_2bytes)) return 2;
+if (func==(&bin_write_3bytes)) return 3;
+if (func==(&bin_write_variable_length)) return bin_get_value_variable_length(v);
+
+fatal_error("bin_get_value_length: unsupported function\n");
+return -1;
+}
 
 /**
  * Returns the length in bytes of the given string, including the \0.
@@ -394,6 +415,20 @@ do {
 return n;
 }
 
+int bin_get_string_length(unichar* s,t_fnc_bin_write_bytes char_encoding_func) {
+int n=0,i=-1;
+do {
+	i++;
+	n+=bin_get_value_length(s[i],char_encoding_func);
+} while (s[i]!='\0');
+return n;
+}
+
+static void select_bin_read_function(Dictionary* d) {
+	d->inf_number_read_bin_func=get_bin_read_function_for_encoding(d->inf_number_encoding);
+	d->char_read_bin_func=get_bin_read_function_for_encoding(d->char_encoding);
+	d->offset_read_bin_func=get_bin_read_function_for_encoding(d->offset_encoding);
+}
 
 /**
  * This function assumes that the .bin file has already been loaded.
@@ -415,6 +450,7 @@ if (d->bin[0]==0) {
 	d->inf_number_encoding=BIN_3BYTES;
 	d->char_encoding=BIN_2BYTES;
 	d->offset_encoding=BIN_3BYTES;
+	select_bin_read_function(d);
 	return 1;
 }
 if (d->bin[0]==1) {
@@ -424,6 +460,7 @@ if (d->bin[0]==1) {
 	d->inf_number_encoding=(BinEncoding)d->bin[2];
 	d->char_encoding=(BinEncoding)d->bin[3];
 	d->offset_encoding=(BinEncoding)d->bin[4];
+	select_bin_read_function(d);
 	int offset=5;
 	d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
 	return 1;
@@ -435,6 +472,7 @@ if (d->bin[0]==2) {
 	d->inf_number_encoding=(BinEncoding)d->bin[2];
 	d->char_encoding=(BinEncoding)d->bin[3];
 	d->offset_encoding=(BinEncoding)d->bin[4];
+	select_bin_read_function(d);
 	int offset=5;
 	d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
 	return 1;

@@ -56,6 +56,13 @@ typedef enum {
 
 
 /**
+ * This function type define a function that reads a byte-value. Updates the offset.
+ */
+typedef int (*t_fnc_bin_read_bytes)(const unsigned char* bin,int*offset) ;
+typedef void (*t_fnc_bin_write_bytes)(unsigned char* bin,int value,int *offset) ;
+
+
+/**
  * This structure represents a compressed dictionary.
  */
 typedef struct {
@@ -69,6 +76,11 @@ typedef struct {
 	BinEncoding char_encoding;
 	BinEncoding offset_encoding;
 
+	//t_fnc_bin_read_bytes state_read_bin_func;
+	t_fnc_bin_read_bytes inf_number_read_bin_func;
+	t_fnc_bin_read_bytes char_read_bin_func;
+	t_fnc_bin_read_bytes offset_read_bin_func;
+
 	/* The binary transducer */
 	const unsigned char* bin;
 	struct BIN_free_info bin_free;
@@ -78,17 +90,22 @@ typedef struct {
 } Dictionary;
 
 
+
+
 Dictionary* new_Dictionary(const char* bin,const char* inf,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int read_dictionary_state(const Dictionary*,int,int*,int*,int*);
+t_fnc_bin_write_bytes get_bin_write_function_for_encoding(BinEncoding e) ;
 void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
-							BinEncoding inf_number_encoding,int *pos,int final,int n_transitions,int code);
+							t_fnc_bin_write_bytes inf_number_write_function,int *pos,int final,int n_transitions,int code);
 int read_dictionary_transition(const Dictionary*,int,unichar*,int*,Ustring*);
-void write_dictionary_transition(unsigned char* bin,int *pos,BinEncoding char_encoding,
-								BinEncoding offset_encoding,unichar c,int dest,
+void write_dictionary_transition(unsigned char* bin,int *pos,t_fnc_bin_write_bytes char_write_function,
+								t_fnc_bin_write_bytes offset_write_function,unichar c,int dest,
 								BinType bin_type,unichar* output);
 int bin_get_value_length(int,BinEncoding);
+int bin_get_value_length(int v,t_fnc_bin_write_bytes func);
 int bin_get_string_length(unichar* s,BinEncoding char_encoding);
+int bin_get_string_length(unichar* s,t_fnc_bin_write_bytes char_encoding_func);
 void bin_write_4bytes(unsigned char* bin,int value,int *offset);
 void write_new_bin_header(BinType bin_type,unsigned char* bin,int *pos,BinStateEncoding state_encoding,
 		BinEncoding char_encoding,BinEncoding inf_number_encoding,
