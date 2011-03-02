@@ -276,6 +276,13 @@ fill_bin_array(root,n_states,n_transitions,bin,inf_indirection,
 if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
   fatal_error("Error while writing file %s\n",output);
 }
+if (new_style_bin) {
+	/* Adding 4 null bytes to allow an optimization in bin_read_variable_length */
+	uint32_t i=0;
+	if (fwrite(&i,4,1,f)!=4) {
+	    fatal_error("Error while writing file %s\n",output);
+	}
+}
 u_fclose(f);
 free(bin);
 }
