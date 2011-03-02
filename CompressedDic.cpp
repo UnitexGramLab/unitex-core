@@ -163,8 +163,10 @@ return -1;
  * Writes a 2 byte-value. Updates the offset.
  */
 static void bin_write_2bytes(unsigned char* bin,int value,int *offset) {
-bin[(*offset)++]=(value>>8) & 255;
-bin[(*offset)++]=value & 255;
+int offset_value=*offset;
+bin[offset_value]=(value>>8) & 255;
+bin[offset_value+1]=value & 255;
+(*offset)+=2;
 }
 
 
@@ -172,9 +174,11 @@ bin[(*offset)++]=value & 255;
  * Writes a 3 byte-value. Updates the offset.
  */
 static void bin_write_3bytes(unsigned char* bin,int value,int *offset) {
-bin[(*offset)++]=(value>>16) & 255;
-bin[(*offset)++]=(value>>8) & 255;
-bin[(*offset)++]=value & 255;
+int offset_value=*offset;
+bin[offset_value]=(value>>16) & 255;
+bin[offset_value+1]=(value>>8) & 255;
+bin[offset_value+2]=value & 255;
+(*offset)+=3;
 }
 
 
@@ -182,10 +186,12 @@ bin[(*offset)++]=value & 255;
  * Writes a 4 byte-value. Updates the offset.
  */
 void bin_write_4bytes(unsigned char* bin,int value,int *offset) {
-bin[(*offset)++]=(value>>24) & 255;
-bin[(*offset)++]=(value>>16) & 255;
-bin[(*offset)++]=(value>>8) & 255;
-bin[(*offset)++]=value & 255;
+int offset_value=*offset;
+bin[offset_value]=(value>>24) & 255;
+bin[offset_value+1]=(value>>16) & 255;
+bin[offset_value+2]=(value>>8) & 255;
+bin[offset_value+3]=value & 255;
+(*offset)+=4;
 }
 
 
@@ -193,33 +199,39 @@ bin[(*offset)++]=value & 255;
  * Writes a variable length value. Updates the offset.
  */
 void bin_write_variable_length(unsigned char* bin,int value,int *offset) {
+int offset_value=*offset;
 if (value<(1<<7)) {
-	bin[(*offset)++]=(unsigned char)value;
+	bin[offset_value]=(unsigned char)value;
+	(*offset)+=1;
 	return;
 }
 if (value<(1<<14)) {
-	bin[(*offset)++]=(unsigned char)((value>>7)+128);
-	bin[(*offset)++]=(unsigned char)((value & 127));
+	bin[offset_value]=(unsigned char)((value>>7) | ((unsigned char)128));
+	bin[offset_value+1]=(unsigned char)((value & 127));
+	(*offset)+=2;
 	return;
 }
 if (value<(1<<21)) {
-	bin[(*offset)++]=(unsigned char)(((value>>14)+128));
-	bin[(*offset)++]=(unsigned char)(((value>>7) & 127)+128);
-	bin[(*offset)++]=(unsigned char)((value & 127));
+	bin[offset_value]=(unsigned char)(((value>>14) | ((unsigned char)128)));
+	bin[offset_value+1]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
+	bin[offset_value+2]=(unsigned char)((value & 127));
+	(*offset)+=3;
 	return;
 }
 if (value<(1<<28)) {
-	bin[(*offset)++]=(unsigned char)((value>>21)+128);
-	bin[(*offset)++]=(unsigned char)(((value>>14) & 127)+128);
-	bin[(*offset)++]=(unsigned char)(((value>>7) & 127)+128);
-	bin[(*offset)++]=(unsigned char)((value & 127));
+	bin[offset_value]=(unsigned char)((value>>21) | ((unsigned char)128));
+	bin[offset_value+1]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
+	bin[offset_value+2]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
+	bin[offset_value+3]=(unsigned char)((value & 127));
+	(*offset)+=4;
 	return;
 }
-bin[(*offset)++]=(unsigned char)((value>>28)+128);
-bin[(*offset)++]=(unsigned char)(((value>>21) & 127)+128);
-bin[(*offset)++]=(unsigned char)(((value>>14) & 127)+128);
-bin[(*offset)++]=(unsigned char)(((value>>7) & 127)+128);
-bin[(*offset)++]=(unsigned char)((value & 127));
+bin[offset_value]=(unsigned char)((value>>28) | ((unsigned char)128));
+bin[offset_value+1]=(unsigned char)(((value>>21) & 127) | ((unsigned char)128));
+bin[offset_value+2]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
+bin[offset_value+3]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
+bin[offset_value+4]=(unsigned char)((value & 127));
+(*offset)+=5;
 }
 
 
