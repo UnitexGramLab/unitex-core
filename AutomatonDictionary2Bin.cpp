@@ -279,7 +279,7 @@ if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
 if (new_style_bin) {
 	/* Adding 4 null bytes to allow an optimization in bin_read_variable_length */
 	uint32_t i=0;
-	if (fwrite(&i,4,1,f)!=4) {
+	if (fwrite(&i,4,1,f)!=1) {
 	    fatal_error("Error while writing file %s\n",output);
 	}
 }
