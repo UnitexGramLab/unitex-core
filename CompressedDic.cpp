@@ -117,37 +117,82 @@ return v;
 /**
  * Reads a variable length value. Updates the offset.
  */
-static int bin_read_variable_length(const unsigned char* bin,int *offset) {
-int v;
-unsigned char c ;
+static const unsigned int mask_from_sizebits[]={ 0x7f,0x7f,0x7f,0x7f, 0x1fff,0x1fffff,0x1fffffff,0xffffffff };
+static int bin_read_variable_length (const unsigned char* bin,int *offset) {
+const unsigned char* bindata=bin+(*offset);
 
-c= (bin[(*offset)++]);
-v = (((int)c) & 0x7f);
-if ((c & 128) == 0)
-	return v;
+unsigned char c0=bindata[0];
+if ((c0 & 0x80)==0)
+{
+	(*offset)++;
+	return (c0);
+}
 
-c= (bin[(*offset)++]);
-v = (v<<7) | (int)(c & 0x7f);
-if ((c & 128) == 0)
-	return v;
+(*offset)+=(c0>>5)-2;
+return ((c0 & 0x80) == 0) ? ((int)c0) :
+		(int)(((c0 & 0x1f) | (((unsigned int)bindata[1])<<5) | (((unsigned int)bindata[2])<<13) |
+		                     (((unsigned int)bindata[3])<<21) | (((unsigned int)bindata[4])<<29))
+		  & mask_from_sizebits[c0>>5]);
+}
 
-c= (bin[(*offset)++]);
-v = (v<<7) | (int)(c & 0x7f);
-if ((c & 128) == 0)
-	return v;
 
-c= (bin[(*offset)++]);
-v = (v<<7) | (int)(c & 0x7f);
-if ((c & 128) == 0)
-	return v;
+/**
+ * Writes a variable length value. Updates the offset.
+ */
 
-c= (bin[(*offset)++]);
-v = (v<<7) | (int)(c & 0x7f);
-if ((c & 128) == 0)
-	return v;
+int bin_get_value_variable_length(int value) {
+unsigned int uivalue=(unsigned int)value;
+if (uivalue == ((uivalue) & 0x7f)) {
+	return 1;
+}
+if (uivalue == ((uivalue) & 0x1fff)) {
+	return 2;
+}
+if (uivalue == ((uivalue) & 0x1fffff)) {
+	return 3;
+}
+if (uivalue == ((uivalue) & 0x1fffffff)) {
+	return 4;
+}
+return 5;
+}
 
-fatal_error("invalid data in bin_read_variable_length");
-return 0;
+
+static void bin_write_variable_length(unsigned char* bin,int value,int *offset) {
+unsigned char* bindata=bin+(*offset);
+unsigned int uivalue=(unsigned int)value;
+if (uivalue == ((uivalue) & 0x7f)) {
+	bindata[0]=(unsigned char)((uivalue));
+	(*offset)+=1;
+	return;
+}
+if (uivalue == ((uivalue) & 0x1fff)) {
+	bindata[1]=(unsigned char)((uivalue>>5));
+	bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0x80));
+	(*offset)+=2;
+	return;
+}
+if (uivalue == ((uivalue) & 0x1fffff)) {
+	bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xa0));
+	bindata[1]=(unsigned char)((uivalue>>5));
+	bindata[2]=(unsigned char)((uivalue>>13));
+	(*offset)+=3;
+	return;
+}
+if (uivalue == ((uivalue) & 0x1fffffff)) {
+	bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xc0));
+	bindata[1]=(unsigned char)((uivalue>>5));
+	bindata[2]=(unsigned char)((uivalue>>13));
+	bindata[3]=(unsigned char)((uivalue>>21));
+	(*offset)+=4;
+	return;
+}
+bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xe0));
+bindata[1]=(unsigned char)((uivalue>>5));
+bindata[2]=(unsigned char)((uivalue>>13));
+bindata[3]=(unsigned char)((uivalue>>21));
+bindata[4]=(unsigned char)((uivalue>>29));
+(*offset)+=5;
 }
 
 
@@ -201,44 +246,6 @@ bindata[3]=value & 255;
 }
 
 
-/**
- * Writes a variable length value. Updates the offset.
- */
-void bin_write_variable_length(unsigned char* bin,int value,int *offset) {
-unsigned char* bindata=bin+(*offset);
-if (value<(1<<7)) {
-	bindata[0]=(unsigned char)value;
-	(*offset)+=1;
-	return;
-}
-if (value<(1<<14)) {
-	bindata[0]=(unsigned char)((value>>7) | ((unsigned char)128));
-	bindata[1]=(unsigned char)((value & 127));
-	(*offset)+=2;
-	return;
-}
-if (value<(1<<21)) {
-	bindata[0]=(unsigned char)(((value>>14) | ((unsigned char)128)));
-	bindata[1]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
-	bindata[2]=(unsigned char)((value & 127));
-	(*offset)+=3;
-	return;
-}
-if (value<(1<<28)) {
-	bindata[0]=(unsigned char)((value>>21) | ((unsigned char)128));
-	bindata[1]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
-	bindata[2]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
-	bindata[3]=(unsigned char)((value & 127));
-	(*offset)+=4;
-	return;
-}
-bindata[0]=(unsigned char)((value>>28) | ((unsigned char)128));
-bindata[1]=(unsigned char)(((value>>21) & 127) | ((unsigned char)128));
-bindata[2]=(unsigned char)(((value>>14) & 127) | ((unsigned char)128));
-bindata[3]=(unsigned char)(((value>>7) & 127) | ((unsigned char)128));
-bindata[4]=(unsigned char)((value & 127));
-(*offset)+=5;
-}
 
 
 /**
@@ -368,15 +375,6 @@ if (dest & 1) {
 }
 
 
-int bin_get_value_variable_length(int v) {
-if (v<(1<<7)) return 1;
-if (v<(1<<14)) return 2;
-if (v<(1<<21)) return 3;
-if (v<(1<<28)) return 4;
-return 5;
-}
-
-
 /**
  * Returns the number of bytes required to save the given value.
  */
@@ -391,6 +389,7 @@ default: fatal_error("bin_get_value_length: unsupported encoding\n");
 return -1;
 }
 
+
 /**
  * Returns the number of bytes required to save the given value.
  */
@@ -402,6 +401,7 @@ if (func==(&bin_write_variable_length)) return bin_get_value_variable_length(v);
 fatal_error("bin_get_value_length: unsupported function\n");
 return -1;
 }
+
 
 /**
  * Returns the length in bytes of the given string, including the \0.
