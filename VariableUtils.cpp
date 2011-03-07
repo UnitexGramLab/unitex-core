@@ -99,7 +99,9 @@ return get_dic_variable_content(name,p);
  */
 int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p) {
 Ustring* v1=get_var_content(var1,p);
-if (!v1) return VAR_CMP_ERROR;
+if (!v1) {
+	return VAR_CMP_ERROR;
+}
 Ustring* v2=get_var_content(var2,p);
 if (!v2) {
 	free_Ustring(v1);
