@@ -189,29 +189,9 @@ if (language==DUTCH || language==NORWEGIAN) {
 strcpy(name_inf,name_bin);
 name_inf[strlen(name_bin)-3]='\0';
 strcat(name_inf,"inf");
-#if 0
-u_printf("Loading BIN file...\n");
-struct BIN_free_info bin_free;
-const unsigned char* bin=load_abstract_BIN_file(name_bin,&bin_free);
-if (bin==NULL) {
-   error("Cannot load bin file %s\n",name_bin);
-   free_alphabet(alph);
-   free_string_hash(forbiddenWords);
-   return 1;
-}
-u_printf("Loading INF file...\n");
-struct INF_free_info inf_free;
-const struct INF_codes* inf=load_abstract_INF_file(name_inf,&inf_free);
-if (inf==NULL) {
-   error("Cannot load inf file %s\n",name_inf);
-   free_alphabet(alph);
-   free_abstract_BIN(bin,&bin_free);
-   free_string_hash(forbiddenWords);
-   return 1;
-}
-#endif
 Dictionary* d=new_Dictionary(name_bin,name_inf);
 if (d==NULL) {
+	fatal_error("Cannot load dictionary %s\n",name_bin);
 	   free_alphabet(alph);
 	   free_string_hash(forbiddenWords);
 	   return 1;
