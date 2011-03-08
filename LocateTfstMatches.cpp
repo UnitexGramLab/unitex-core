@@ -551,9 +551,14 @@ while (text_tags!=NULL) {
       Fst2Tag fst2_tag=infos->fst2->tags[item->fst2_transition->tag_number];
       if (fst2_tag->type==BEGIN_OUTPUT_VAR_TAG) {
     	  /* If we an output variable start $|a( */
+    	  int var_index=get_value_index(fst2_tag->variable,infos->output_variables->variable_index);
+    	  Ustring* old_value=infos->output_variables->variables[var_index];
+    	  infos->output_variables->variables[var_index]=new_Ustring();
     	  set_output_variable_pending(infos->output_variables,fst2_tag->variable);
           explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
           unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
+          free_Ustring(infos->output_variables->variables[var_index]);
+          infos->output_variables->variables[var_index]=old_value;
           goto restore_dic_variable;
       } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
     	  /* If we an output variable end $|a) */

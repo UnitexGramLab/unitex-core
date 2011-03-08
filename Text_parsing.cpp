@@ -564,6 +564,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			}
 		}
 	}
+	int end_of_text = pos + p->current_origin == p->buffer_size;
+	/* The same, but tolerant if there is a remaining space */
+	int end_of_text2 = pos + p->current_origin + 1 == p->buffer_size
+			&& p->buffer[pos + p->current_origin] == p->SPACE;
+
 	/* If we have reached the end of the token buffer, we indicate it by setting
 	 * the current tokens to -1 */
 	if ((((pos + p->current_origin) >= p->buffer_size)) || (pos==-1)) {
@@ -754,7 +759,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	struct opt_meta* meta_list = current_state->metas;
 	if (meta_list != NULL) {
 		/* We cache the control bytes of the pos2 token. The pos token has not interest,
-		 * because it is 1) a space  or 2) equal to the pos2 one. */
+		 * because it is 1) a space or 2) equal to the pos2 one. */
 		if (token2 != -1)
 			ctrl = p->token_control[token2];
 		else
@@ -829,9 +834,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				break;
 
 			case META_TEXT_END:
-				start = pos;
-				end = pos;
-				fatal_error("{$} unsupported yet\n");
+				error("pos=%d  origin=%d  size=%d\n",pos,p->current_origin,p->buffer_size);
+				if (end_of_text || end_of_text2) {
+					start = pos;
+					end = pos;
+				}
 				break;
 
 			case META_MOT:
@@ -1242,11 +1249,15 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
  */
 struct opt_variable* output_variable_list = current_state->output_variable_starts;
 while (output_variable_list != NULL) {
+	Ustring* old_value=p->output_variables->variables[output_variable_list->variable_number];
+	p->output_variables->variables[output_variable_list->variable_number]=new_Ustring();
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, matches, n_matches, ctx, p);
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+	free_Ustring(p->output_variables->variables[output_variable_list->variable_number]);
+	p->output_variables->variables[output_variable_list->variable_number]=old_value;
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
 }
