@@ -160,7 +160,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 if (p->is_in_cancel_state == 1)
                   p->is_in_cancel_state = 0;
                 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
-
+                p->no_fail_fast=0;
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
 
 
@@ -187,7 +187,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				p->last_tested_position=p->last_tested_position+p->current_origin;
 				if (p->last_matched_position == -1) {
 					if (p->last_tested_position == p->current_origin
-							&& !u_is_digit(p->tokens->value[current_token][0])) {
+							&& !u_is_digit(p->tokens->value[current_token][0])
+							&& !p->no_fail_fast) {
 						/* We are in the fail fast case, nothing has been matched while
 						 * looking only at the first current token. That means that no match
 						 * could ever happen when this token is found in the text.
@@ -815,8 +816,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					 * the text contains no space. */
 					start = pos;
 					end = pos + 1;
-					update_last_tested_position(p, pos);
 				}
+				update_last_tested_position(p, pos);
 				break;
 
 			case META_EPSILON:
@@ -827,6 +828,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			case META_TEXT_START:
 				/* We can match if and only if we are at the beginning of the text */
+				p->no_fail_fast=1;
 				if (at_text_start(p,pos)) {
 					start = pos;
 					end = pos;
@@ -834,7 +836,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				break;
 
 			case META_TEXT_END:
-				error("pos=%d  origin=%d  size=%d\n",pos,p->current_origin,p->buffer_size);
+				p->no_fail_fast=1;
 				if (end_of_text || end_of_text2) {
 					start = pos;
 					end = pos;

@@ -238,7 +238,7 @@ for (;;) {
             if (output==NULL) {
             	/* We do nothing, since this output variable may not exist */
             } else {
-               if (output->len==0) {
+            	if (output->len==0) {
                   /* If the variable is empty */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */

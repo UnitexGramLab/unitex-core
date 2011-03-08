@@ -301,6 +301,9 @@ struct locate_parameters {
    int last_matched_position;
    /* This structure is used to mark tokens that cannot start any match */
    struct bit_array* failfast;
+   /* no_fail_fast is used when {^} or {$} have been tested, because those
+    * metas lead to contextual failure */
+   int no_fail_fast;
    /* Those two fields are used to store matches while exploring from a given
     * position. Once the exploration is complete, we deal with the matches,
     * caching them if possible. We need two pointers because we have to insert
