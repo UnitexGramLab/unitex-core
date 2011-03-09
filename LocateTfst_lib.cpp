@@ -651,6 +651,31 @@ while (grammar_transition!=NULL) {
       /* Normal case (not a subgraph call) */
       struct tfst_match* list=NULL;
       Transition* text_transition=tfst->automaton->states[current_state_in_tfst]->outgoing_transitions;
+	  if (text_transition==NULL) {
+    	  /* If there is no transition, it should mean that we are on the final state, but
+    	   * even here, some special transitions may match */
+    	  if (!u_strcmp(infos->fst2->tags[e]->input,"<E>")) {
+    		  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
+    		              grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
+    	  }
+    	  else if (!u_strcmp(infos->fst2->tags[e]->input,"{$}")) {
+    		  /* {$} may match only if we are in the final state of the last sentence */
+    		  if (is_final_state(tfst->automaton->states[current_state_in_tfst])
+    				  && tfst->current_sentence==tfst->N) {
+    			  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
+    			      		              grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
+    		  }
+    	  }
+      }
+      /* {^} can be tested without considering text transitions */
+	  if (!u_strcmp(infos->fst2->tags[e]->input,"{^}")) {
+		  /* {^} may match only if we are in the initial state of the first sentence */
+		  if (is_initial_state(tfst->automaton->states[current_state_in_tfst])
+				  && tfst->current_sentence==1) {
+			  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
+			      		              grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
+		  }
+	  }
       /* For a given tag in the grammar, we test all the transitions in the
        * text automaton, and we note all the states we can reach */
       while (text_transition!=NULL) {
@@ -741,7 +766,9 @@ int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag gra
                                         int tilde_negation_operator) {
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
    || grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
-   || grammar_tag->type==END_CONTEXT_TAG) {
+   || grammar_tag->type==END_CONTEXT_TAG
+   || grammar_tag->type==TEXT_START_TAG
+   || grammar_tag->type==TEXT_END_TAG) {
    /* A context should not start or end within a text tag, so we fail here */
 	return NO_MATCH_STATUS;
 }
@@ -857,7 +884,8 @@ if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='
          j++;
          continue;
       }
-      if (jamo_fst2[k]!=jamo_tfst[j]) {
+      if ((grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK && jamo_fst2[k]!=jamo_tfst[j])
+    		  || !is_equal_or_uppercase(jamo_fst2[k],jamo_tfst[j],infos->alphabet)) {
          /* If a character doesn't match */
          //error("match failed between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
     	 if (my_entry!=NULL) free_dela_entry(my_entry);
