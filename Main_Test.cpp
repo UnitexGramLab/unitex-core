@@ -55,9 +55,9 @@ for (;i<a;i++) {
 	c=u_fgetc_raw(f);
 	u_printf("%C",c);
 }
-u_printf("<<");
-for (;i<b;i++) u_printf(" %C",u_fgetc_raw(f));
-u_printf(">>");
+u_printf("<$");
+for (;i<b;i++) u_printf("%C",u_fgetc_raw(f));
+u_printf("$>");
 for (i=0;i<40;i++) {
 	c=u_fgetc_raw(f);
 	if (c==EOF) break;

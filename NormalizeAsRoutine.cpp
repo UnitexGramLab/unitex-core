@@ -24,6 +24,7 @@
 #include "StringParsing.h"
 #include "NormalizeAsRoutine.h"
 
+
 #define MAX_LINE_BUFFER_SIZE (32768)
 #define MINIMAL_CHAR_IN_BUFFER_BEFORE_CONTINUE_LINE (256)
 
@@ -103,7 +104,8 @@ return 1;
  */
 int normalize(const char *fin, const char *fout, Encoding encoding_output,
 		int bom_output, int mask_encoding_compatibility_input,
-		int carriage_return_policy, const char *rules,const char* foffsets,
+		int carriage_return_policy, const char *rules,
+		vector_offset* offsets,
 		int separator_normalization) {
 	U_FILE* input;
 	input = u_fopen_existing_versatile_encoding(
@@ -120,15 +122,6 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 		error("Cannot create file %s\n", fout);
 		u_fclose(input);
 		return 1;
-	}
-	U_FILE* offsets=NULL;
-	if (foffsets!=NULL && foffsets[0]!='\0') {
-		offsets = u_fopen_creating_versatile_encoding(encoding_output, bom_output,
-				foffsets, U_WRITE);
-		if (offsets == NULL) {
-			error("Cannot create offset file %s\n", foffsets);
-			return 1;
-		}
 	}
 	struct string_hash* replacements = NULL;
 	if (rules != NULL && rules[0] != '\0') {
@@ -289,7 +282,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					 * of the buffer, we assume that the initial
 					 * { was not a tag beginning, so we print the substitute of { */
 					unichar* foo=replacements->value[get_value_index(open_bracket, replacements)];
-					if (offsets!=NULL) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+u_strlen(foo));
+					if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+u_strlen(foo));
 					WriteOufBuf(&OutBuf, foo, output, 0);
 					/* And we rewind the current position after the { */
 					current_start_pos = old_position + 1;
@@ -312,7 +305,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 						/* If we have a non valid tag token, we print the equivalent of {
 						 * and we rewind the current position after the { */
 						unichar* foo=replacements->value[get_value_index(open_bracket, replacements)];
-						if (offsets!=NULL) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+u_strlen(foo));
+						if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+u_strlen(foo));
 						WriteOufBuf(&OutBuf, foo, output, 0);
 						current_start_pos = old_position + 1;
 						old_start_pos++;
@@ -331,7 +324,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					int common_prefix,common_suffix;
 					int ret=get_real_replacement(buff+current_start_pos,key_length,foo,
 							&common_prefix,&common_suffix);
-					if (offsets!=NULL && ret) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
+					if (offsets!=NULL && ret) vector_offset_add(offsets,old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
 					WriteOufBuf(&OutBuf, replacements->value[index], output, 0);
 					current_start_pos = current_start_pos + key_length;
 					old_start_pos = old_start_pos + key_length;
@@ -373,7 +366,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 								 * as any sequence of 2 characters normalized into a
 								 * \r\n will not modify offsets, we should do nothing
 								 * in that case */
-								if (offsets!=NULL) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos,old_start_pos+delta,new_start_pos,new_start_pos+2);
+								if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+delta,new_start_pos,new_start_pos+2);
 							}
 							old_start_pos=old_start_pos+delta;
 							new_start_pos+=2;
@@ -384,7 +377,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 								 * as any sequence of 1 character normalized into a
 								 * single space will not modify offsets, we should do nothing
 								 * in that case */
-								if (offsets!=NULL) u_fprintf(offsets,"%d %d %d %d\n",old_start_pos,old_start_pos+delta,new_start_pos,new_start_pos+1);
+								if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+delta,new_start_pos,new_start_pos+1);
 							}
 							old_start_pos=old_start_pos+delta;
 							new_start_pos++;
@@ -408,7 +401,6 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 
 	u_fclose(input);
 	u_fclose(output);
-	u_fclose(offsets);
 	return 0;
 }
 

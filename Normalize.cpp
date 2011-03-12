@@ -30,6 +30,7 @@
 #include "NormalizeAsRoutine.h"
 #include "UnitexGetOpt.h"
 #include "Normalize.h"
+#include "Offsets.h"
 
 
 const char* usage_Normalize =
@@ -39,7 +40,8 @@ const char* usage_Normalize =
          "\n"
          "OPTIONS:\n"
          "  -n/--no_carriage_return: every separator sequence will be turned into a single space\n"
-		 "  --output_offsets=XXX: specifies the offset file to be produced\n"
+         "  --input_offsets=XXX: base offset file to be used\n"
+         "  --output_offsets=XXX: offset file to be produced\n"
 		 "  --no_separator_normalization: only applies replacement rules specified with -r\n"
          "  -r XXX/--replacement_rules=XXX: specifies a configuration file XXX that contains\n"
          "                                  replacement instructions in the form of lines like:\n"
@@ -71,6 +73,7 @@ const struct option_TS lopts_Normalize[]= {
       {"replacement_rules",required_argument_TS,NULL,'r'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
+      {"input_offsets",required_argument_TS,NULL,'$'},
       {"output_offsets",required_argument_TS,NULL,'@'},
       {"no_separator_normalization",no_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
@@ -86,7 +89,8 @@ if (argc==1) {
 int mode=KEEP_CARRIAGE_RETURN;
 int separator_normalization=1;
 char rules[FILENAME_MAX]="";
-char offsets[FILENAME_MAX]="";
+char input_offsets[FILENAME_MAX]="";
+char output_offsets[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -111,10 +115,15 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&i
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
-   case '@': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty offset file name\n");
+   case '$': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty input offset file name\n");
              }
-             strcpy(offsets,vars->optarg);
+             strcpy(input_offsets,vars->optarg);
+             break;
+   case '@': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output offset file name\n");
+             }
+             strcpy(output_offsets,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -128,6 +137,23 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&i
 
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
+}
+
+vector_offset* v_input_offsets=NULL;
+vector_offset* v_output_offsets=NULL;
+U_FILE* f_output_offsets=NULL;
+
+if (output_offsets[0]!='\0') {
+	/* We deal with offsets only if we have to produce output offsets */
+	f_output_offsets=u_fopen_creating_versatile_encoding(encoding_output, bom_output, output_offsets, U_WRITE);
+	if (f_output_offsets==NULL) {
+		error("Cannot create offset file %s\n",output_offsets);
+		return 1;
+	}
+	v_output_offsets=new_vector_offset();
+	if (input_offsets[0]!='\0') {
+		v_input_offsets=load_offsets(input_offsets,mask_encoding_compatibility_input);
+	}
 }
 char tmp_file[FILENAME_MAX];
 get_extension(argv[vars->optind],tmp_file);
@@ -146,12 +172,16 @@ remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[vars->optind]);
 int result=normalize(tmp_file, dest_file, encoding_output,bom_output,
-		mask_encoding_compatibility_input,mode, rules,offsets,separator_normalization);
+		mask_encoding_compatibility_input,mode, rules,v_output_offsets,separator_normalization);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {
    af_remove(tmp_file);
 }
+process_offsets(v_input_offsets,v_output_offsets,f_output_offsets);
+u_fclose(f_output_offsets);
+free_vector_offset(v_input_offsets);
+free_vector_offset(v_output_offsets);
 free_OptVars(vars);
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
 return result;

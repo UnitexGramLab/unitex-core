@@ -504,7 +504,8 @@ NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
 				AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o\
 				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
-				UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
+				UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
+				Offsets.o Overlap.o $(SYSLIBMAPPED)
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Alphabet.o DELA.o AbstractDelaLoad.o List_ustring.o String_hash.o\
@@ -621,7 +622,7 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 	           UnitexGetOpt.o DicVariables.o TransductionStack.o \
 	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o\
 	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
-	           Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+	           Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o $(SYSLIBMAPPED)
 
 
 UNCOMPRESS       = Uncompress
@@ -635,6 +636,10 @@ UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o Unicode.o Abstr
                    String_hash.o StringParsing.o List_int.o List_ustring.o Text_tokens.o Alphabet.o Af_stdio.o ActivityLogger.o\
                    UnitexGetOpt.o IOBuffer.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
 
+UNXMLIZE       = Unxmlize
+UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o File.o Error.o Unicode.o Xml.o Af_stdio.o ActivityLogger.o AbstractAllocator.o\
+                 UnitexGetOpt.o IOBuffer.o Offsets.o Overlap.o HTMLCharacters.o\
+                 AsciiSearchTree.o Alphabet.o $(SYSLIBMAPPED)
 
 UNITEXTOOL   = UnitexTool
 UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
@@ -662,7 +667,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
-                  $(SYSLIBMAPPED)
+                  Unxmlize.o Xml.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -693,7 +698,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
-                  CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+                  CompressedDic.o LoadInf.o Unxmlize.o Xml.o $(SYSLIBMAPPED)
 
 
 ################################
@@ -724,7 +729,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(MZREPAIRULP) $(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
-		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(TEST)
+		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)
 
 #PROGS = $(TEST)
 
@@ -740,7 +745,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
-		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS)
+		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1165,6 +1170,9 @@ $(BIN_DIR)$(UNCOMPRESS)$(EXTENSION): $(UNCOMPRESS_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNTOKENIZE)$(EXTENSION): $(UNTOKENIZE_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(UNXMLIZE)$(EXTENSION): $(UNXMLIZE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)

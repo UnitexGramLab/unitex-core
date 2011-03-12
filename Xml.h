@@ -19,23 +19,13 @@
  *
  */
 
-#include "Overlap.h"
-#include "Error.h"
+#ifndef XmlH
+#define XmlH
 
+#include "Unicode.h"
+#include "Offsets.h"
 
-/**
- * Tests if a overlaps b.
- */
-Overlap overlap(int a_start,int a_end,int b_start,int b_end) {
-if (a_start==a_end && a_end==b_start) return B_INCLUDES_A;
-if (a_end<=b_start) return A_BEFORE_B;
-if (b_end<=a_start) return A_AFTER_B;
-if (a_start<b_start && a_end>b_start && a_end<b_end) return A_BEFORE_B_OVERLAP;
-if (a_start==b_start && a_end==b_end) return A_EQUALS_B;
-if (a_start<=b_start && a_end>=b_end) return A_INCLUDES_B;
-if (a_start>=b_start && a_end<=b_end) return B_INCLUDES_A;
-if (a_start>b_start && a_start<b_end && a_end>b_end) return A_AFTER_B_OVERLAP;
-fatal_error("Unexpected case in overlap");
-return (Overlap)-1;
-}
+int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html);
+
+#endif
 

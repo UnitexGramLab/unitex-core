@@ -22,6 +22,7 @@
 #ifndef NormalizeAsRoutineH
 #define NormalizeAsRoutineH
 
+#include "Offsets.h"
 
 #define MAX_TAG_LENGTH 4000
 #define KEEP_CARRIAGE_RETURN 0
@@ -30,6 +31,7 @@
  * we will refill it, unless we are at the end of the input file. */
 #define MARGIN_BEFORE_BUFFER_END (MAX_TAG_LENGTH+1000)
 
-int normalize(const char*, const char*, Encoding, int, int, int, const char*, const char*,int);
+int normalize(const char*, const char*, Encoding, int, int, int, const char*,
+		vector_offset*,int);
 
 #endif

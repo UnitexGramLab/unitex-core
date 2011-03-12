@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Error.h"
+#include "Unicode.h"
 
 
 /**
@@ -115,5 +116,7 @@ return vec->nbelems-1;
 
 
 vector_offset* load_offsets(char*,int);
+void process_offsets(vector_offset* old_offsets, vector_offset* new_offsets,
+		U_FILE* f);
 
 #endif

@@ -19,23 +19,14 @@
  *
  */
 
-#include "Overlap.h"
-#include "Error.h"
+#ifndef UnxmlizeH
+#define UnxmlizeH
 
+extern const char* optstring_Unxmlize;
+extern const struct option_TS lopts_Unxmlize[];
+extern const char* usage_Unxmlize;
 
-/**
- * Tests if a overlaps b.
- */
-Overlap overlap(int a_start,int a_end,int b_start,int b_end) {
-if (a_start==a_end && a_end==b_start) return B_INCLUDES_A;
-if (a_end<=b_start) return A_BEFORE_B;
-if (b_end<=a_start) return A_AFTER_B;
-if (a_start<b_start && a_end>b_start && a_end<b_end) return A_BEFORE_B_OVERLAP;
-if (a_start==b_start && a_end==b_end) return A_EQUALS_B;
-if (a_start<=b_start && a_end>=b_end) return A_INCLUDES_B;
-if (a_start>=b_start && a_end<=b_end) return B_INCLUDES_A;
-if (a_start>b_start && a_start<b_end && a_end>b_end) return A_AFTER_B_OVERLAP;
-fatal_error("Unexpected case in overlap");
-return (Overlap)-1;
-}
+int main_Unxmlize(int argc,char* const argv[]);
+
+#endif
 
