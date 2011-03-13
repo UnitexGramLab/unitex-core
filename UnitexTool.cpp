@@ -196,6 +196,10 @@
 #include "Untokenize.h"
 #endif
 
+#if (((!defined(NO_TOOL_UNXMLIZE))) || defined(TOOL_UNXMLIZE))
+#include "Unxmlize.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
 #include "XMLizer.h"
 #endif
@@ -380,6 +384,10 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNTOKENIZE))) || defined(TOOL_UNTOKENIZE))
 	{ "Untokenize", 10, &main_Untokenize, usage_Untokenize, optstring_Untokenize, lopts_Untokenize } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNXMLIZE))) || defined(TOOL_UNXMLIZE))
+	{ "Unxmlize", 10, &main_Unxmlize, usage_Unxmlize, optstring_Unxmlize, lopts_Unxmlize } ,
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
