@@ -194,31 +194,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 		const unichar* buff = line_read;
 		int result_read = 0;
 		result_read=u_fread_raw(line_read,line_buffer_size,input);
-#if 0
-		result_read=u_fgets_treat_cr_as_lf(line_read, line_buffer_size, input);
-		if (result_read > 0)
-			if (line_read[result_read - 1] == 0x0d)
-				line_read[result_read - 1] = '\n';
-		if (result_read == EOF)
-			break;
-#endif
 		if (result_read==0) break;
-#if 0
-		if (lastline_was_terminated != 0)
-			while (current_start_pos < result_read) {
-				if (buff[current_start_pos] != ' ' && buff[current_start_pos]
-						!= '\t' && buff[current_start_pos] != 0x0d
-						&& buff[current_start_pos] != '\n')
-					break;
-				current_start_pos++;
-			}
-
-		lastline_was_terminated = 0;
-		if (result_read > 0)
-			if ((buff[result_read - 1] == '\n') || (buff[result_read - 1]
-					== 0x0d))
-				lastline_was_terminated = 1;
-#endif
 		while (current_start_pos < result_read) {
 			if (/*(lastline_was_terminated == 0) &&*/ (eof_found == 0)
 					&& (current_start_pos
@@ -232,31 +208,12 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 				line_read[i]='\0';
 				int result_read_continue = u_fread_raw(line_read+ nb_to_keep,
 						line_buffer_size - nb_to_keep, input);
-#if 0
-				int result_read_continue = u_fgets_treat_cr_as_lf(line_read
-						+ nb_to_keep, line_buffer_size - nb_to_keep, input);
-				if (result_read_continue > 0)
-					if (line_read[(result_read_continue + nb_to_keep) - 1]
-							== 0x0d)
-						line_read[(result_read_continue + nb_to_keep) - 1]
-								= '\n';
-				lastline_was_terminated = 0;
-				if (result_read_continue == EOF)
-					eof_found = lastline_was_terminated = 1;
-#endif
 				if (result_read_continue == 0) {
 					eof_found = lastline_was_terminated = 1;
 				} else {
 					/* This is required to avoid bound checking */
 					line_read[nb_to_keep+result_read_continue]='\0';
 				}
-#if 0
-				if (result_read_continue > 0)
-					if ((buff[(result_read_continue + nb_to_keep) - 1] == '\n')
-							|| (buff[(result_read_continue + nb_to_keep) - 1]
-									== 0x0d))
-						lastline_was_terminated = 1;
-#endif
 				result_read = nb_to_keep;
 				current_start_pos = 0;
 
@@ -326,8 +283,8 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 							&common_prefix,&common_suffix);
 					if (offsets!=NULL && ret) vector_offset_add(offsets,old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
 					/* If we have a replacement rule, we must use it rawly, in case it
-					 * deals with separators */
-					//WriteOufBuf(&OutBuf, replacements->value[index], output, 0);
+					 * deals with separators. To do that, we flush the buffer first */
+					WriteOufBuf(&OutBuf, U_EMPTY, output, 1);
 					int len;
 					for (len=0;foo[len]!='\0';len++) {
 						u_fputc_raw(foo[len],output);
@@ -392,7 +349,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					} else {
 						/* If, finally, we have a normal character to normalize, we just print it,
 						 * but rawly, in case we had a separator with --no_separator_normalization */
-						//WriteOufBuf(&OutBuf, buff[current_start_pos++], output,	0);
+						WriteOufBuf(&OutBuf, U_EMPTY, output, 1);
 						u_fputc_raw(buff[current_start_pos++],output);
 						old_start_pos++;
 						new_start_pos++;
