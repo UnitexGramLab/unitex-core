@@ -494,7 +494,7 @@ if (c<0) {
 	return 0;
 }
 u_fputc_raw(c,f_out);
-write_offsets(offsets,(*pos)-(1+i),*pos,*new_pos,(*new_pos)+1);
+write_offsets(offsets,(*pos)-(2+i),*pos,*new_pos,(*new_pos)+1);
 (*new_pos)++;
 return 1;
 }
