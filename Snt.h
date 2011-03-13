@@ -49,6 +49,7 @@ struct snt_files {
    char tok_by_alph_txt[FILENAME_MAX];
    char tok_by_freq_txt[FILENAME_MAX];
    char enter_pos[FILENAME_MAX];
+   char snt_offsets_pos[FILENAME_MAX];
    char concord_ind[FILENAME_MAX];
    char concord_txt[FILENAME_MAX];
    char concord_html[FILENAME_MAX];

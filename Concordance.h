@@ -23,7 +23,7 @@
 #define ConcordanceH
 
 #include "Text_tokens.h"
-
+#include "Offsets.h"
 
 #define TEXT_ORDER 0
 #define LEFT_CENTER 1
@@ -68,6 +68,7 @@ struct conc_opt {
   char* script;
   char* sort_alphabet;
   char working_directory[FILENAME_MAX];
+  vector_int* snt_offsets;
 };
 
 struct conc_opt* new_conc_opt();

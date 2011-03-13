@@ -48,7 +48,7 @@ void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
 void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
 void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
 void tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
-		vector_int*,vector_offset*,
+		vector_int*,vector_int*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 void save_new_line_positions(U_FILE*,vector_int*);
 void load_token_file(char* filename,int mask_encoding_compatibility_input,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
@@ -193,7 +193,6 @@ U_FILE* text;
 U_FILE* out;
 U_FILE* output;
 U_FILE* enter;
-U_FILE* f_snt_offsets;
 U_FILE* f_out_offsets=NULL;
 vector_offset* v_in_offsets=NULL;
 char tokens_txt[FILENAME_MAX];
@@ -241,18 +240,6 @@ if (enter==NULL) {
    }
    return 1;
 }
-f_snt_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_offsets_pos,U_WRITE);
-if (f_snt_offsets==NULL) {
-   error("Cannot create file %s\n",snt_offsets_pos);
-   u_fclose(text);
-   u_fclose(out);
-   u_fclose(enter);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
-   return 1;
-}
-
 if (out_offsets[0]!='\0') {
 	f_out_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,out_offsets,U_WRITE);
 	if (f_out_offsets==NULL) {
@@ -275,7 +262,7 @@ if (out_offsets[0]!='\0') {
 vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
-vector_offset* snt_offsets=new_vector_offset(4096);
+vector_int* snt_offsets=new_vector_int(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
                                             (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 if (token_file[0]!='\0') {
@@ -288,7 +275,6 @@ if (output==NULL) {
    u_fclose(text);
    u_fclose(out);
    u_fclose(enter);
-   u_fclose(f_snt_offsets);
    if (alph!=NULL) {
       free_alphabet(alph);
    }
@@ -296,7 +282,7 @@ if (output==NULL) {
    free_vector_ptr(tokens,free);
    free_vector_int(n_occur);
    free_vector_int(n_enter_pos);
-   free_vector_offset(snt_offsets);
+   free_vector_int(snt_offsets);
    return 1;
 }
 u_fprintf(output,"0000000000\n");
@@ -312,9 +298,10 @@ tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
 		   v_in_offsets,(mode!=NORMAL));
 u_printf("\nDone.\n");
 save_new_line_positions(enter,n_enter_pos);
-process_offsets(NULL,snt_offsets,f_snt_offsets);
-u_fclose(f_snt_offsets);
-free_vector_offset(snt_offsets);
+if (!save_snt_offsets(snt_offsets,snt_offsets_pos)) {
+	fatal_error("Cannot save snt offsets in file %s\n",snt_offsets_pos);
+}
+free_vector_int(snt_offsets);
 u_fclose(enter);
 u_fclose(text);
 u_fclose(out);
@@ -415,9 +402,8 @@ u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 
 
 void save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
-		int *shift,int *current_pos_in_normalized_snt) {
+		int *shift) {
 if (f==NULL) return;
-(*current_pos_in_normalized_snt)+=u_strlen(s);
 if (*index==v->nbelems) {
 	/* If there is no more offsets to take into account, we just save the token */
 	save(f,s,n,start+*shift,end+*shift);
@@ -489,7 +475,7 @@ void tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
                          /* snt_offsets is used to note shifts induced by separator normalization */
-                         vector_offset* snt_offsets,
+                         vector_int* snt_offsets,
                          int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
                          int *DIGITS_TOTAL,U_FILE* f_out_offsets,vector_offset* v_in_offsets,
                          int char_by_char) {
@@ -502,9 +488,7 @@ int current_megabyte=0;
 int shift=0;
 c=u_fgetc_raw(f);
 int current_pos;
-/* current_pos_in_normalized_snt is used to know the current position in the
- * text that we would obtain after separator normalization */
-int current_pos_in_normalized_snt=0;
+int snt_offsets_shift=0;
 int offset_index=0;
 while (c!=EOF) {
 	current_pos=COUNT;
@@ -527,9 +511,10 @@ while (c!=EOF) {
       n=get_token_number(s,tokens,hashtable,n_occur);
       if (COUNT-current_pos!=1) {
     	  /* If there is a shift with the .snt file */
-    	  vector_offset_add(snt_offsets,current_pos,COUNT,current_pos_in_normalized_snt,current_pos_in_normalized_snt+1);
+    	  add_snt_offsets(snt_offsets,*TOKENS_TOTAL,snt_offsets_shift,snt_offsets_shift+(COUNT-current_pos-1));
+    	  snt_offsets_shift+=(COUNT-current_pos-1);
       }
-      save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift,&current_pos_in_normalized_snt);
+      save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
       /* If there is a \n, we note it */
       if (ENTER==1) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
@@ -573,8 +558,7 @@ while (c!=EOF) {
      }
      n=get_token_number(s,tokens,hashtable,n_occur);
      COUNT++;
-     save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift,
-    		 &current_pos_in_normalized_snt);
+     save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
      (*TOKENS_TOTAL)++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc_raw(f);
@@ -587,7 +571,7 @@ while (c!=EOF) {
          if (is_letter(s[0],alph)) (*WORDS_TOTAL)++;
          n=get_token_number(s,tokens,hashtable,n_occur);
          save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
-        		 &shift,&current_pos_in_normalized_snt);
+        		 &shift);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
          fwrite(&n,4,1,coded_text);
@@ -605,7 +589,7 @@ while (c!=EOF) {
          s[n]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
          save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
-        		 &shift,&current_pos_in_normalized_snt);
+        		 &shift);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
          fwrite(&n,4,1,coded_text);

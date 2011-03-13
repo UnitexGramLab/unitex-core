@@ -37,7 +37,7 @@
 #include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 #include "Concord.h"
-#include "Concord.h"
+#include "Offsets.h"
 
 
 
@@ -386,8 +386,16 @@ if (options->only_ambiguous) {
 	/* We force text order when displaying only ambiguous outputs */
 	options->sort_mode=TEXT_ORDER;
 }
+if (options->result_mode==HTML_) {
+	/* We need the offset file if and only if we have to produce
+	 * an html concordance with positions in .snt file */
+	options->snt_offsets=load_snt_offsets(snt_files->snt_offsets_pos);
+	if (options->snt_offsets==NULL) {
+		fatal_error("Cannot read snt offset file %s\n",snt_files->snt_offsets_pos);
+	}
+}
 
-/* Once we have setted all the parameters, we call the function that
+/* Once we have set all parameters, we call the function that
  * will actually create the concordance. */
 create_concordance(encoding_output,bom_output,concor,text,tok,n_enter_char,enter_pos,options);
 free(enter_pos);

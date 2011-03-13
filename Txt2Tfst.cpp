@@ -44,6 +44,7 @@
 #include "Korean.h"
 #include "HashTable.h"
 #include "TfstStats.h"
+#include "Offsets.h"
 
 
 /**
@@ -286,6 +287,13 @@ else {
    }
    u_fclose(f_enter);
 }
+char snt_offsets_pos[FILENAME_MAX];
+get_snt_path(argv[vars->optind],snt_offsets_pos);
+strcat(snt_offsets_pos,"snt_offsets.pos");
+vector_int* snt_offsets=load_snt_offsets(snt_offsets_pos);
+if (snt_offsets==NULL) {
+	fatal_error("Cannot load offset file %s\n",snt_offsets_pos);
+}
 
 language_t* language=NULL;
 if (tagset[0]!='\0') {
@@ -309,7 +317,7 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
             current_global_position_in_tokens,
-            current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
+            current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens,snt_offsets),
             language,korean,form_frequencies);
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
@@ -321,6 +329,7 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
 u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");
 u_fclose(f);
 free(enter_pos);
+free_vector_int(snt_offsets);
 /* Finally, we save statistics */
 char tfst_tags_by_freq[FILENAME_MAX];
 char tfst_tags_by_alph[FILENAME_MAX];

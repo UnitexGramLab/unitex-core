@@ -19,8 +19,9 @@
  *
  */
 
-#include "Error.h"
 #include <stdlib.h>
+#include "Error.h"
+#include "NewLineShifts.h"
 
 /**
  * This function takes an integer 'a' and an array 't' of size 'n'.
@@ -52,12 +53,57 @@ return n+1;
 }
 
 
+
 /**
- * This function takes the number of new lines in the text ('n_enter_char'),
+ * This function takes an integer 'a' and an array 't' of size 'n'.
+ * It looks for the greatest value x=3n so that t[x]<=a. Then,
+ * it returns t[x+2], which is the snt shift before position 'a'.
+ */
+int find_snt_shift_by_dichotomy(int a,int* t,int n) {
+int start_position,middle_position;
+if (t==NULL) {
+   fatal_error("NULL array in find_snt_shift_by_dichotomy\n");
+   return 0;
+}
+if (n%3!=0) {
+	fatal_error("Invalid array in find_snt_shift_by_dichotomy\n");
+}
+if (n==0) {
+   return 0;
+}
+n=(n/3);
+if (a<t[0]) return 0;
+if (a>t[(n-1)*3]) return t[(n-1)*3+2];
+n=n-1;
+start_position=0;
+while (start_position<=n) {
+   middle_position=(start_position+n)/2;
+   if (t[3*middle_position]==a) {
+	   /* If we have an exact hit for the token at pos #a, then it's not
+	    * the shift after this token that we have to take into account,
+	    * but the shift before it */
+	   return t[3*middle_position+1];
+   }
+   if (t[3*middle_position]<a) {
+      start_position=middle_position+1;
+   } else {
+	   n=middle_position-1;
+   }
+}
+return t[3*n+2];
+}
+
+
+/**
+ * Old version: This function takes the number of new lines in the text ('n_enter_char'),
  * the array 'enter_pos' that contains their positions in tokens and a position
  * 'pos'. It returns the number of new lines that occur before 'pos'.
+ *
+ * New version: uses snt_offsets to know the size in characters of the shift
+ * to be added to the given position.
  */
-int get_shift(int n_enter_char,int* enter_pos,int pos) {
-int res=find_by_dichotomy(pos,enter_pos,n_enter_char);
-return res;
+int get_shift(int n_enter_char,int* enter_pos,int pos,vector_int* snt_offsets) {
+//int res=find_by_dichotomy(pos,enter_pos,n_enter_char);
+int res2=find_snt_shift_by_dichotomy(pos,snt_offsets->tab,snt_offsets->nbelems);
+return res2;
 }

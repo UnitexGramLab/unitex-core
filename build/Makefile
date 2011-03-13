@@ -342,7 +342,8 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 				Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
-				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+				LoadInf.o Offsets.o Overlap.o $(SYSLIBMAPPED)
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o\
@@ -355,7 +356,8 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
-				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+				LoadInf.o Offsets.o Overlap.o $(SYSLIBMAPPED)
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o\
@@ -612,7 +614,8 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
-                Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+                Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o \
+                CompressedDic.o LoadInf.o Offsets.o Overlap.o $(SYSLIBMAPPED)
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o Alphabet.o \

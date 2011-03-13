@@ -54,6 +54,7 @@ new_file(path,"tokens.txt",snt_files->tokens_txt);
 new_file(path,"tok_by_alph.txt",snt_files->tok_by_alph_txt);
 new_file(path,"tok_by_freq.txt",snt_files->tok_by_freq_txt);
 new_file(path,"enter.pos",snt_files->enter_pos);
+new_file(path,"snt_offsets.pos",snt_files->snt_offsets_pos);
 new_file(path,"concord.ind",snt_files->concord_ind);
 new_file(path,"concord.txt",snt_files->concord_txt);
 new_file(path,"concord.html",snt_files->concord_html);

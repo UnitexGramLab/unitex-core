@@ -19,10 +19,12 @@
  *
  */
 
+#include <stdlib.h>
 #include "Offsets.h"
 #include "Unicode.h"
 #include "Error.h"
 #include "Overlap.h"
+#include "File.h"
 
 /**
  * Loads the given offset file. Returns NULL in case of error.
@@ -184,4 +186,56 @@ while (i < old_offsets->nbelems) {
 			x.new_end + shift_B + A_includes_B_shift);
 	A_includes_B_shift = 0;
 }
+}
+
+
+/**
+ * Saves snt offsets to the given file, as a binary file containing integers.
+ * Returns 1 in case of success; 0 otherwise.
+ */
+int save_snt_offsets(vector_int* snt_offsets,char* name) {
+if (snt_offsets==NULL) {
+	fatal_error("Unexpected NULL offsets in save_snt_offsets\n");
+}
+if (snt_offsets->nbelems%3 != 0) {
+	fatal_error("Invalid offsets in save_snt_offsets\n");
+}
+U_FILE* f=u_fopen(BINARY,name,U_WRITE);
+if (f==NULL) return 0;
+int ret=fwrite(snt_offsets->tab,sizeof(int),snt_offsets->nbelems,f);
+u_fclose(f);
+return (ret==snt_offsets->nbelems);
+}
+
+
+/**
+ * Loads snt offsets from the given binary file.
+ */
+vector_int* load_snt_offsets(char* name) {
+U_FILE* f=u_fopen(BINARY,name,U_READ);
+if (f==NULL) return NULL;
+long size=get_file_size(f);
+if (size%(3*sizeof(int))!=0) {
+	u_fclose(f);
+	return NULL;
+}
+vector_int* v=new_vector_int(size/sizeof(int));
+int n=(int)fread(v->tab,sizeof(int),size/sizeof(int),f);
+u_fclose(f);
+if (n!=(int)(size/sizeof(int))) {
+	free_vector_int(v);
+	return NULL;
+}
+v->nbelems=v->size;
+return v;
+}
+
+
+/**
+ * This function adds a new token shift to the given snt offsets.
+ */
+void add_snt_offsets(vector_int* snt_offsets,int token_pos,int shift_before,int shift_after) {
+vector_int_add(snt_offsets,token_pos);
+vector_int_add(snt_offsets,shift_before);
+vector_int_add(snt_offsets,shift_after);
 }

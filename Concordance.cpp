@@ -32,7 +32,8 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(Encoding,int,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,char*,int,int*);
+void create_modified_text_file(Encoding,int,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
+		char*,int,int*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
@@ -113,7 +114,7 @@ static size_t buf_map_int_pseudo_read(struct buffer_mapped* buffer,size_t size_r
  * 2.5  9
  */
 void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
-                        int n_enter_char,int* enter_pos,struct conc_opt* option) {
+                        int n_enter_char,int* enter_pos,struct conc_opt* options) {
 U_FILE* out;
 U_FILE* f;
 char temp_file_name[FILENAME_MAX];
@@ -126,15 +127,16 @@ if (token_length==NULL) {
    fatal_alloc_error("create_concordance");
 }
 compute_token_length(token_length,tokens);
-if (option->result_mode==MERGE_) {
+if (options->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
-	create_modified_text_file(encoding_output,bom_output,concordance,text,tokens,option->output,n_enter_char,enter_pos);
+	create_modified_text_file(encoding_output,bom_output,concordance,text,tokens,
+			options->output,n_enter_char,enter_pos);
 	free(token_length);
 	return;
 }
 /* If the expected result is a concordance */
-if (option->result_mode==GLOSSANET_) {
+if (options->result_mode==GLOSSANET_) {
 	/* The structure glossa_hash will be used to ignore duplicate lines
 	 * without sorting */
 	glossa_hash=new_string_hash();
@@ -148,22 +150,22 @@ if (option->result_mode==GLOSSANET_) {
 	close_bracket=get_token_number(r,tokens);
 }
 /* We set temporary and final file names */
-strcpy(temp_file_name,option->working_directory);
+strcpy(temp_file_name,options->working_directory);
 strcat(temp_file_name,"concord_.txt");
-strcpy(option->output,option->working_directory);
-if (option->result_mode==TEXT_ || option->result_mode==INDEX_
-      || option->result_mode==UIMA_ || option->result_mode==AXIS_
-      || option->result_mode==XALIGN_)
-	strcat(option->output,"concord.txt");
-else if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_))
-	strcat(option->output,"concord.xml");
+strcpy(options->output,options->working_directory);
+if (options->result_mode==TEXT_ || options->result_mode==INDEX_
+      || options->result_mode==UIMA_ || options->result_mode==AXIS_
+      || options->result_mode==XALIGN_)
+	strcat(options->output,"concord.txt");
+else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_))
+	strcat(options->output,"concord.xml");
 else
-	strcat(option->output,"concord.html");
+	strcat(options->output,"concord.html");
 int N_MATCHES;
 
 /* If we are in the 'xalign' mode, we don't need to sort the results.
  * So, we don't need to store the results in a temporary file */
-if (option->result_mode==XALIGN_) f=u_fopen(UTF8,option->output,U_WRITE);
+if (options->result_mode==XALIGN_) f=u_fopen(UTF8,options->output,U_WRITE);
 else f=u_fopen(UTF16_LE,temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
@@ -174,19 +176,19 @@ if (f==NULL) {
  * NOTE: columns may have been reordered according to the sort mode. See the
  * comments of the 'create_raw_text_concordance' function for more details. */
 N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,
-                                      option->result_mode,n_enter_char,enter_pos,
+                                      options->result_mode,n_enter_char,enter_pos,
                                       token_length,open_bracket,close_bracket,
-                                      option);
+                                      options);
 u_fclose(f);
 free(token_length);
 
-if(option->result_mode==XALIGN_) return;
+if(options->result_mode==XALIGN_) return;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
-if (option->sort_mode!=TEXT_ORDER) {
+if (options->sort_mode!=TEXT_ORDER) {
    // we dont use pseudo_main_SortTxt(encoding_output,bom_output,mask_encoding_compatibility_input,0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
    // because we work only on temp_file_name which is only internal temp file, so UTF16_LE
-   pseudo_main_SortTxt(UTF16_LE,1,ALL_ENCODING_BOM_POSSIBLE,0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
+   pseudo_main_SortTxt(UTF16_LE,1,ALL_ENCODING_BOM_POSSIBLE,0,0,options->sort_alphabet,NULL,options->thai_mode,temp_file_name);
 }
 /* Now, we will take the sorted raw text concordance and we will:
  * 1) reorder the columns
@@ -198,28 +200,28 @@ if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
 	return;
 }
-if (option->result_mode==TEXT_ || option->result_mode==INDEX_
-      || option->result_mode==XML_ || option->result_mode==XML_WITH_HEADER_
-      || option->result_mode==UIMA_ || option->result_mode==AXIS_) {
+if (options->result_mode==TEXT_ || options->result_mode==INDEX_
+      || options->result_mode==XML_ || options->result_mode==XML_WITH_HEADER_
+      || options->result_mode==UIMA_ || options->result_mode==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a UTF16LE one */
-   out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,option->output,U_WRITE);
+   out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,options->output,U_WRITE);
 }
 else {
    /* Otherwise, we open it as a UTF8 HTML file */
-   out=u_fopen(UTF8,option->output,U_WRITE);
+   out=u_fopen(UTF8,options->output,U_WRITE);
 }
 if (out==NULL) {
-	error("Cannot write %s\n",option->output);
+	error("Cannot write %s\n",options->output);
 	u_fclose(f);
 	return;
 }
 /* If we have an HTML or a GlossaNet/script concordance, we must write an HTML
  * file header. */
-if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
-	write_HTML_header(out,N_MATCHES,option);
+if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
+	write_HTML_header(out,N_MATCHES,options);
 }
-if ((option->result_mode==XML_WITH_HEADER_)) {
+if ((options->result_mode==XML_WITH_HEADER_)) {
   if ((encoding_output == UTF16_LE) || (encoding_output == BIG_ENDIAN_UTF16)) {
     u_fprintf(out,"<?xml version='1.0' encoding='UTF-16'?>\n<concord>\n");
   }
@@ -230,7 +232,7 @@ if ((option->result_mode==XML_WITH_HEADER_)) {
   else
     u_fprintf(out,"<?xml version='1.0'>\n<concord>\n");
 }
-if ((option->result_mode==XML_)) {
+if ((options->result_mode==XML_)) {
   u_fprintf(out,"<concord>\n");
 }
 unichar* unichar_buffer=(unichar*)malloc(sizeof(unichar)*((3000*4) + 100));
@@ -284,7 +286,7 @@ while ((c=u_fgetc(f))!=EOF) {
 		indices[j]='\0';
 		/*------------begin GlossaNet-------------------*/
 		/* If we are in GlossaNet mode, we extract the url at the end of the line */
-		if (option->result_mode==GLOSSANET_) {
+		if (options->result_mode==GLOSSANET_) {
 			if (c!='\t') {
 				error("ERROR in GlossaNet concordance: no URL found\n");
 				href[0]='\0';
@@ -299,7 +301,7 @@ while ((c=u_fgetc(f))!=EOF) {
 		/*------------end GlossaNet-------------------*/
 	}
 	/* Now we will reorder the columns according to the sort mode */
-	switch(option->sort_mode) {
+	switch(options->sort_mode) {
 		case TEXT_ORDER: left=A; middle=B; right=C; break;
 		case LEFT_CENTER: left=A; middle=B; right=C; break;
 		case LEFT_RIGHT: left=A; right=B; middle=C; break;
@@ -311,7 +313,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	/* We use 'can_print_line' to decide if the concordance line must be
 	 * printed, because in GlossaNet mode, duplicates must be removed. */
 	int can_print_line=1;
-	if (option->result_mode==GLOSSANET_) {
+	if (options->result_mode==GLOSSANET_) {
 		unichar line[4000];
       u_sprintf(line,"%S\t%S\t%S",left,middle,right);
 		/* We test if the line was already seen */
@@ -324,20 +326,20 @@ while ((c=u_fgetc(f))!=EOF) {
 	}
 	/* If we can print the line */
 	if (can_print_line) {
-		if (option->sort_mode!=TEXT_ORDER) {
+		if (options->sort_mode!=TEXT_ORDER) {
 			/* If the concordance was sorted, the left sequence was reversed, and
 			 * then, we have to reverse it again. However, the Thai sort algorithm
 			 * requires to modify some vowels. That's why we must apply a special
 			 * procedure if we have a Thai sorted concordance. */
-			if (option->thai_mode) reverse_initial_vowels_thai(left);
+			if (options->thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
-			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
+			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
             u_fprintf(out,"<tr><td nowrap>%HR",left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
-			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
+			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
             u_fprintf(out,"<tr><td nowrap>%HS",left);
 			} else {u_fprintf(out,"%S",left);}
 		}
@@ -347,38 +349,38 @@ while ((c=u_fgetc(f))!=EOF) {
 		 * X and Y are the starting and ending position of the sequence (in
 		 * tokens) and Z is the number of the sentence that contains the
 		 * sequence. */
-		if (option->result_mode==HTML_) {
+		if (options->result_mode==HTML_) {
 			u_fprintf(out,"<a href=\"%S\">%HS</a>%HS&nbsp;</td></tr>\n",indices,middle,right);
 		}
 		/* If we must produce a GlossaNet concordance, we turn the sequence
 		 * into an URL, using the given GlossaNet script. */
-		else if (option->result_mode==GLOSSANET_) {
-			u_fprintf(out,"<A HREF=\"%s?rec=%HS&adr=%HS",option->script,middle,href);
+		else if (options->result_mode==GLOSSANET_) {
+			u_fprintf(out,"<A HREF=\"%s?rec=%HS&adr=%HS",options->script,middle,href);
          u_fprintf(out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
 		}
 		/* If we must produce a script concordance */
-		else if (option->result_mode==SCRIPT_) {
-			u_fprintf(out,"<a href=\"%s%US",option->script,middle);
+		else if (options->result_mode==SCRIPT_) {
+			u_fprintf(out,"<a href=\"%s%US",options->script,middle);
             u_fprintf(out,"\">%HS</a>%HS</td></tr>\n",middle,right);
 		}
 		/* If we must produce a text concordance */
-		else if (option->result_mode==TEXT_) {
+		else if (options->result_mode==TEXT_) {
 			u_fprintf(out,"\t%S\t%S\n",middle,right);
 		}
       /* If must must produce an index file */
-      else if (option->result_mode==INDEX_) {
+      else if (options->result_mode==INDEX_) {
          unichar idx[128];
          parse_string(indices,idx,P_SPACE);
          u_fprintf(out,"%S\t%S\n",idx,middle);
       }
-      else if (option->result_mode==UIMA_) {
+      else if (options->result_mode==UIMA_) {
          char tmp1[100];
          u_to_char(tmp1,indices);
          int start,end;
          sscanf(tmp1,"%d %d",&start,&end);
          u_fprintf(out,"%d %d\t%S\n",start,end,middle);
       }
-      else if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_)) {
+      else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_)) {
          char tmp1[100];
          u_to_char(tmp1,indices);
          int start,end;
@@ -395,7 +397,7 @@ while ((c=u_fgetc(f))!=EOF) {
          - med : position of the median character of a token
             -> med = ((len+1)/2) + f1
       */
-      else if (option->result_mode==AXIS_) {
+      else if (options->result_mode==AXIS_) {
          char tmp1[100];
          u_to_char(tmp1,indices);
          float f1,f2,len,med;
@@ -408,15 +410,15 @@ while ((c=u_fgetc(f))!=EOF) {
 }
 /* If we have an HTML or a GlossaNet concordance, we must write some
  * HTML closing tags. */
-if ((option->result_mode==HTML_) || (option->result_mode==GLOSSANET_)) write_HTML_end(out);
-if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_)){
+if ((options->result_mode==HTML_) || (options->result_mode==GLOSSANET_)) write_HTML_end(out);
+if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_)){
   u_fprintf(out,"</concord>\n");
 }
 u_fclose(f);
 af_remove(temp_file_name);
 u_fclose(out);
 free(unichar_buffer);
-if (option->result_mode==GLOSSANET_) {
+if (options->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
 }
 }
@@ -790,7 +792,7 @@ int create_raw_text_concordance(U_FILE* output,U_FILE* concordance,ABSTRACTMAPFI
                                 int expected_result,
                                 int n_enter_char,int* enter_pos,
                                 int* token_length,int open_bracket,int close_bracket,
-                                struct conc_opt* option) {
+                                struct conc_opt* options) {
 struct match_list* matches;
 struct match_list* matches_tmp;
 unichar* unichar_buffer=(unichar*)malloc(sizeof(unichar)*(MAX_CONTEXT_IN_UNITS+1)*4);
@@ -806,7 +808,6 @@ int is_a_good_match=1;
 int start_pos,end_pos;
 int n_units_already_read=0;
 /* First, we allocate a buffer to read the "text.cod" file */
-
 struct buffer_mapped* buffer=(struct buffer_mapped*)malloc(sizeof(struct buffer_mapped));
 if (buffer==NULL) {
 	fatal_alloc_error("create_raw_text_concordance");
@@ -822,11 +823,10 @@ u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
-if (option->only_ambiguous) {
+if (options->only_ambiguous) {
 	filter_unambiguous_outputs(&matches);
 }
 /* Then we fill the buffer with the beginning of the text */
-//buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 buffer->size=(int)buf_map_int_pseudo_read(buffer,buffer->nb_item);
 int start_pos_char;
 int end_pos_char;
@@ -923,16 +923,16 @@ while (matches!=NULL) {
 	}
 	
 	/* Now we extract the 3 parts of the concordance */
-	extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,option,token_length,buffer);
+	extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,options,token_length,buffer);
 	extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->output,middle,tokens,buffer);
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
-	if (option->thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
+	if (options->thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
 	else {match_length_in_displayable_chars=u_strlen(middle);}
 	/* Then we can compute the right context */
 	extract_right_context(end_pos,matches->m.end_pos_in_char,right,tokens,match_length_in_displayable_chars,
-                              option,buffer);
+                              options,buffer);
 	/* If we must produce a GlossaNet concordance, we look for a URL. After the
 	 * function call, 'is_a_good_match' can be set to 0 if the match
 	 * was a part of a URL instead of a valid match. */
@@ -944,11 +944,13 @@ while (matches!=NULL) {
 	unichar positions_from_eos[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
-	int shift=get_shift(n_enter_char,enter_pos,matches->m.start_pos_in_token);
+	int shift=get_shift(n_enter_char,enter_pos,matches->m.start_pos_in_token,options->snt_offsets);
 	start_pos_char=start_pos_char+shift;
 	/* The shift value can be different at the end of the match since new lines
-	 * can occur inside a match. */
-	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token);
+	 * can occur inside a match. We add +1 because the last token of the match may
+	 * contain itself a shift, and get_shift returns the shift before the given
+	 * position */
+	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token+1,options->snt_offsets);
 	end_pos_char=end_pos_char+shift;
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
@@ -957,15 +959,15 @@ while (matches!=NULL) {
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
 	if (is_a_good_match) {
-		if (option->sort_mode!=TEXT_ORDER) {
+		if (options->sort_mode!=TEXT_ORDER) {
 			/* If we must reverse the left context in thai mode,
 			 * we must reverse initial vowels with their following consonants. */
-			if (option->thai_mode) {
+			if (options->thai_mode) {
 				reverse_initial_vowels_thai(left);
 			}
 		}
 		/* We save the 3 parts of the concordance line according to the sort mode */
-		switch(option->sort_mode) {
+		switch(options->sort_mode) {
 			case TEXT_ORDER:
 			if(expected_result==XALIGN_) u_fprintf(output,"%S\t%S",positions_from_eos,middle);
 				else u_fprintf(output,"%S\t%S\t%S",left,middle,right);
@@ -1049,28 +1051,9 @@ int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*t
 								int current_global_position,U_FILE* output,
 								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 								struct buffer_mapped* buffer,int *pos_int_char) {
-//long int address=current_global_position*sizeof(int);
-//fseek(text,address,SEEK_SET);
 buf_map_int_pseudo_seek(buffer,current_global_position);
 int last_pos_to_be_loaded=match_end+1;
-#ifdef IMPOSSIBLE
-while ((last_pos_to_be_loaded-current_global_position) > (int)buffer->nb_item) {
-	/* If the distance between current position and final position is larger than
-	 * the buffer size, then we read a full buffer. */
-	//fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
-    buf_map_int_pseudo_read(buffer,buffer->nb_item);
-	/* We indicate that we are at the beginning of a token */
-	(*pos_int_char)=0;
-	for (long i=0;i<(long)buffer->nb_item;i++) {
-		pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
-										n_enter_char,enter_pos,pos_in_enter_pos,
-										buffer);
-	}
-	current_global_position=current_global_position+(int)buffer->nb_item;
-}
-#endif
 /* We read what we want to write in the output file + all the tokens of the match */
-//buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(last_pos_to_be_loaded-current_global_position),text);
 buffer->size=(int)buf_map_int_pseudo_read(buffer,(last_pos_to_be_loaded-current_global_position));
 if (buffer->size>0) {
    /* We indicate that we are at the beginning of a token */
@@ -1236,6 +1219,7 @@ opt->output[0]='\0';
 opt->script=NULL;
 opt->sort_alphabet=NULL;
 opt->working_directory[0]='\0';
+opt->snt_offsets=NULL;
 return opt;
 }
 
@@ -1248,6 +1232,7 @@ if (opt==NULL) return;
 if (opt->fontname!=NULL) free(opt->fontname);
 if (opt->script!=NULL) free(opt->script);
 if (opt->sort_alphabet!=NULL) free(opt->sort_alphabet);
+free_vector_int(opt->snt_offsets);
 free(opt);
 }
 

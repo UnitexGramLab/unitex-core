@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include "Error.h"
 #include "Unicode.h"
+#include "Vector.h"
 
 
 /**
@@ -118,5 +119,9 @@ return vec->nbelems-1;
 vector_offset* load_offsets(char*,int);
 void process_offsets(vector_offset* old_offsets, vector_offset* new_offsets,
 		U_FILE* f);
+
+int save_snt_offsets(vector_int*,char*);
+vector_int* load_snt_offsets(char*);
+void add_snt_offsets(vector_int*,int,int,int);
 
 #endif
