@@ -325,10 +325,16 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					int ret=get_real_replacement(buff+current_start_pos,key_length,foo,
 							&common_prefix,&common_suffix);
 					if (offsets!=NULL && ret) vector_offset_add(offsets,old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
-					WriteOufBuf(&OutBuf, replacements->value[index], output, 0);
+					/* If we have a replacement rule, we must use it rawly, in case it
+					 * deals with separators */
+					//WriteOufBuf(&OutBuf, replacements->value[index], output, 0);
+					int len;
+					for (len=0;foo[len]!='\0';len++) {
+						u_fputc_raw(foo[len],output);
+					}
 					current_start_pos = current_start_pos + key_length;
 					old_start_pos = old_start_pos + key_length;
-					new_start_pos=new_start_pos+u_strlen(foo);
+					new_start_pos=new_start_pos+len;
 				} else {
 					int old_position=current_start_pos;
 					if (separator_normalization && (buff[current_start_pos] == ' '
