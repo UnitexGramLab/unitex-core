@@ -47,7 +47,8 @@
 void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
 void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
 void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
-void tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
+void tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
+		vector_int*,vector_offset*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 void save_new_line_positions(U_FILE*,vector_int*);
 void load_token_file(char* filename,int mask_encoding_compatibility_input,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
@@ -98,8 +99,9 @@ const char* usage_Tokenize =
          "The program also produces 4 files named \"tok_by_freq.txt\", \"tok_by_alph.txt\",\n"
          "\"stats.n\" and \"enter.pos\". They contain the token list sorted by frequence and by\n"
          "alphabetical order and \"stats.n\" contains some statistics. The file \"enter.pos\"\n"
-         "contains the position in tokens of all the carriage return sequences. All\n"
-         "files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n";
+         "contains the position in tokens of all the carriage return sequences. The file\n"
+         "\"snt_offsets.pos\" contains the offset shifts between .snt and coded representation.\n"
+		 "All files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n";
 
 
 static void usage() {
@@ -191,11 +193,13 @@ U_FILE* text;
 U_FILE* out;
 U_FILE* output;
 U_FILE* enter;
+U_FILE* f_snt_offsets;
 U_FILE* f_out_offsets=NULL;
 vector_offset* v_in_offsets=NULL;
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
+char snt_offsets_pos[FILENAME_MAX];
 Alphabet* alph=NULL;
 
 get_snt_path(argv[vars->optind],text_cod);
@@ -204,6 +208,8 @@ get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
 get_snt_path(argv[vars->optind],enter_pos);
 strcat(enter_pos,"enter.pos");
+get_snt_path(argv[vars->optind],snt_offsets_pos);
+strcat(snt_offsets_pos,"snt_offsets.pos");
 text=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (text==NULL) {
    fatal_error("Cannot open text file %s\n",argv[vars->optind]);
@@ -235,6 +241,17 @@ if (enter==NULL) {
    }
    return 1;
 }
+f_snt_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_offsets_pos,U_WRITE);
+if (f_snt_offsets==NULL) {
+   error("Cannot create file %s\n",snt_offsets_pos);
+   u_fclose(text);
+   u_fclose(out);
+   u_fclose(enter);
+   if (alph!=NULL) {
+      free_alphabet(alph);
+   }
+   return 1;
+}
 
 if (out_offsets[0]!='\0') {
 	f_out_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,out_offsets,U_WRITE);
@@ -258,6 +275,7 @@ if (out_offsets[0]!='\0') {
 vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
+vector_offset* snt_offsets=new_vector_offset(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
                                             (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 if (token_file[0]!='\0') {
@@ -270,15 +288,15 @@ if (output==NULL) {
    u_fclose(text);
    u_fclose(out);
    u_fclose(enter);
+   u_fclose(f_snt_offsets);
    if (alph!=NULL) {
       free_alphabet(alph);
    }
-
    free_hash_table(hashtable);
    free_vector_ptr(tokens,free);
    free_vector_int(n_occur);
    free_vector_int(n_enter_pos);
-
+   free_vector_offset(snt_offsets);
    return 1;
 }
 u_fprintf(output,"0000000000\n");
@@ -289,9 +307,14 @@ int WORDS_TOTAL=0;
 int DIGITS_TOTAL=0;
 u_printf("Tokenizing text...\n");
 tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
-		   &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL,f_out_offsets,v_in_offsets,(mode!=NORMAL));
+		   snt_offsets,
+			&SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL,f_out_offsets,
+		   v_in_offsets,(mode!=NORMAL));
 u_printf("\nDone.\n");
 save_new_line_positions(enter,n_enter_pos);
+process_offsets(NULL,snt_offsets,f_snt_offsets);
+u_fclose(f_snt_offsets);
+free_vector_offset(snt_offsets);
 u_fclose(enter);
 u_fclose(text);
 u_fclose(out);
@@ -391,8 +414,10 @@ u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 }
 
 
-void save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,int *shift) {
+void save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
+		int *shift,int *current_pos_in_normalized_snt) {
 if (f==NULL) return;
+(*current_pos_in_normalized_snt)+=u_strlen(s);
 if (*index==v->nbelems) {
 	/* If there is no more offsets to take into account, we just save the token */
 	save(f,s,n,start+*shift,end+*shift);
@@ -463,6 +488,8 @@ case B_INCLUDES_A: {
 void tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
+                         /* snt_offsets is used to note shifts induced by separator normalization */
+                         vector_offset* snt_offsets,
                          int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
                          int *DIGITS_TOTAL,U_FILE* f_out_offsets,vector_offset* v_in_offsets,
                          int char_by_char) {
@@ -475,6 +502,9 @@ int current_megabyte=0;
 int shift=0;
 c=u_fgetc_raw(f);
 int current_pos;
+/* current_pos_in_normalized_snt is used to know the current position in the
+ * text that we would obtain after separator normalization */
+int current_pos_in_normalized_snt=0;
 int offset_index=0;
 while (c!=EOF) {
 	current_pos=COUNT;
@@ -495,7 +525,11 @@ while (c!=EOF) {
       s[0]=' ';
       s[1]='\0';
       n=get_token_number(s,tokens,hashtable,n_occur);
-      save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+      if (COUNT-current_pos!=1) {
+    	  /* If there is a shift with the .snt file */
+    	  vector_offset_add(snt_offsets,current_pos,COUNT,current_pos_in_normalized_snt,current_pos_in_normalized_snt+1);
+      }
+      save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift,&current_pos_in_normalized_snt);
       /* If there is a \n, we note it */
       if (ENTER==1) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
@@ -539,7 +573,8 @@ while (c!=EOF) {
      }
      n=get_token_number(s,tokens,hashtable,n_occur);
      COUNT++;
-     save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+     save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift,
+    		 &current_pos_in_normalized_snt);
      (*TOKENS_TOTAL)++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc_raw(f);
@@ -551,7 +586,8 @@ while (c!=EOF) {
          s[1]='\0';
          if (is_letter(s[0],alph)) (*WORDS_TOTAL)++;
          n=get_token_number(s,tokens,hashtable,n_occur);
-         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
+        		 &shift,&current_pos_in_normalized_snt);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
          fwrite(&n,4,1,coded_text);
@@ -568,7 +604,8 @@ while (c!=EOF) {
          }
          s[n]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
-         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
+        		 &shift,&current_pos_in_normalized_snt);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
          fwrite(&n,4,1,coded_text);
@@ -579,96 +616,6 @@ for (n=0;n<tokens->nbelems;n++) {
    u_fprintf(output,"%S\n",tokens->tab[n]);
 }
 }
-
-
-
-void char_by_char_tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
-                               vector_ptr* tokens,struct hash_table* hashtable,
-                               vector_int* n_occur,vector_int* n_enter_pos,
-                               int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
-                               int *DIGITS_TOTAL) {
-int c;
-unichar s[MAX_TAG_LENGTH];
-int n;
-char ENTER;
-int COUNT=0;
-int current_megabyte=0;
-c=u_fgetc(f);
-while (c!=EOF) {
-   COUNT++;
-   if ((COUNT/(1024*512))!=current_megabyte) {
-      current_megabyte++;
-      u_printf("%d megabytes read...         \r",(COUNT/(1024*512)));
-   }
-   if (c==' ' || c==0x0d || c==0x0a) {
-      ENTER=0;
-      if (c=='\n') {
-         ENTER=1;
-      }
-      // if the char is a separator, we jump all the separators
-      while ((c=u_fgetc(f))==' ' || c==0x0d || c==0x0a) {
-         if (c=='\n') ENTER=1;
-         COUNT++;
-      }
-      s[0]=' ';
-      s[1]='\0';
-      n=get_token_number(s,tokens,hashtable,n_occur);
-      /* If there is a \n, we note it */
-      if (ENTER==1) {
-         vector_int_add(n_enter_pos,*TOKENS_TOTAL);
-      }
-      (*TOKENS_TOTAL)++;
-      fwrite(&n,4,1,coded_text);
-   }
-   else if (c=='{') {
-     s[0]='{';
-     int z=1;
-     while (z<(MAX_TAG_LENGTH-1) && (c=u_fgetc(f))!='}' && c!='{' && c!='\n') {
-        s[z++]=(unichar)c;
-        COUNT++;
-     }
-     if (c=='\n') {
-        // if the tag contains a return
-        fatal_error("Error: a tag containing a new-line sequence has been found\n");
-     }
-     if (z==(MAX_TAG_LENGTH-1) || c!='}') {
-        // if the tag has no ending }
-        if (z==(MAX_TAG_LENGTH-1)) {z--;}
-        s[z]='\0';
-        fatal_error("Error: a tag without ending } has been found:\n==>%S<==\n",s);
-     }
-     s[z]='}';
-     s[z+1]='\0';
-     if (!u_strcmp(s,"{S}")) {
-        // if we have found a sentence delimiter
-        (*SENTENCES)++;
-     } else {
-        if (u_strcmp(s,"{STOP}") && !check_tag_token(s)) {
-           // if a tag is incorrect, we exit
-           fatal_error("The text contains an invalid tag. Unitex cannot process it.");
-        }
-     }
-     n=get_token_number(s,tokens,hashtable,n_occur);
-     (*TOKENS_TOTAL)++;
-     fwrite(&n,4,1,coded_text);
-     c=u_fgetc(f);
-   }
-   else {
-      s[0]=(unichar)c;
-      s[1]='\0';
-      n=get_token_number(s,tokens,hashtable,n_occur);
-      (*TOKENS_TOTAL)++;
-      if (is_letter((unichar)c,alph)) (*WORDS_TOTAL)++;
-      else if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
-      fwrite(&n,4,1,coded_text);
-      c=u_fgetc(f);
-   }
-}
-for (n=0;n<tokens->nbelems;n++) {
-   u_fprintf(output,"%S\n",tokens->tab[n],output);
-}
-}
-
 
 
 
