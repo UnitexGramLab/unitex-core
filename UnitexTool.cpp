@@ -387,7 +387,7 @@ const struct utility_item utility_array[]=
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNXMLIZE))) || defined(TOOL_UNXMLIZE))
-	{ "Unxmlize", 10, &main_Unxmlize, usage_Unxmlize, optstring_Unxmlize, lopts_Unxmlize } ,
+	{ "Unxmlize", 8, &main_Unxmlize, usage_Unxmlize, optstring_Unxmlize, lopts_Unxmlize } ,
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
