@@ -484,12 +484,12 @@ while (c!=EOF) {
       int z=(COUNT/(1024*512));
       u_printf("%d megabyte%s read...       \r",z,(z>1)?"s":"");
    }
-   if (c==' ' || c==0x0d || c==0x0a) {
+   if (c==' ' || c==0x0d || c==0x0a || c=='\t') {
       ENTER=0;
-      if (c!=' ') ENTER=1;
+      if (c==0x0d || c==0x0a) ENTER=1;
       // if the char is a separator, we jump all the separators
-      while ((c=u_fgetc_raw(f))==' ' || c==0x0d || c==0x0a) {
-        if (c!=' ') ENTER=1;
+      while ((c=u_fgetc_raw(f))==' ' || c==0x0d || c==0x0a || c=='\t') {
+        if (c==0x0d || c==0x0a) ENTER=1;
         COUNT++;
       }
       s[0]=' ';

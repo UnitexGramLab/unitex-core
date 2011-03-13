@@ -384,8 +384,10 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 							WriteOufBuf(&OutBuf, ' ', output, 0);
 						}
 					} else {
-						/* If, finally, we have a normal character to normalize, we just print it */
-						WriteOufBuf(&OutBuf, buff[current_start_pos++], output,	0);
+						/* If, finally, we have a normal character to normalize, we just print it,
+						 * but rawly, in case we had a separator with --no_separator_normalization */
+						//WriteOufBuf(&OutBuf, buff[current_start_pos++], output,	0);
+						u_fputc_raw(buff[current_start_pos++],output);
 						old_start_pos++;
 						new_start_pos++;
 					}
