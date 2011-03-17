@@ -285,4 +285,36 @@ vec->tab[vec->nbelems++]=data;
 return vec->nbelems-1;
 }
 
+
+inline int vector_int_contains(vector_int* v,int n) {
+for (int i=0;i<v->nbelems;i++) {
+	if (v->tab[i]==n) return 1;
+}
+return 0;
+}
+
+
+inline int vector_float_contains(vector_float* v,float n) {
+for (int i=0;i<v->nbelems;i++) {
+	if (v->tab[i]==n) return 1;
+}
+return 0;
+}
+
+
+inline int vector_double_contains(vector_double* v,double n) {
+for (int i=0;i<v->nbelems;i++) {
+	if (v->tab[i]==n) return 1;
+}
+return 0;
+}
+
+
+inline int vector_ptr_contains(vector_ptr* v,void* n) {
+for (int i=0;i<v->nbelems;i++) {
+	if (v->tab[i]==n) return 1;
+}
+return 0;
+}
+
 #endif

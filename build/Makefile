@@ -458,6 +458,13 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o Acti
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
                 ProgramInvoker.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
 
+GRFDIFF      = GrfDiff
+GRFDIFF_OBJS = Main_GrfDiff.o GrfDiff.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
+			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o $(SYSLIBMAPPED)
+
+GRFDIFF3      = GrfDiff3
+GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
+			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o $(SYSLIBMAPPED)
 
 IMPLODETFST      = ImplodeTfst
 IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Tfst.o File.o SingleGraph.o\
@@ -732,7 +739,8 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(MZREPAIRULP) $(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
-		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)
+		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
+		$(GRFDIFF) $(GRFDIFF3)
 
 #PROGS = $(TEST)
 
@@ -748,7 +756,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
-		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS)
+		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1184,6 +1192,11 @@ $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
+$(BIN_DIR)$(GRFDIFF)$(EXTENSION): $(GRFDIFF_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(GRFDIFF3)$(EXTENSION): $(GRFDIFF3_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 #
 # Compilation instructions for Logger
