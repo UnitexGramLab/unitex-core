@@ -46,7 +46,7 @@ const char* usage_GrfDiff =
 		 "Here are the diff indications that can be emitted:\n"
 		 "P name: a presentation property has changed. name=property name (SIZE, FONT, ...)\n"
 		 "M a b:  box moved. a=box number in <grf1>, b=box number in <grf2>\n"
-		 "C a b:  box content changed\n"
+		 "C a b:  box content changed. a=box number in <grf1>, b=box number in <grf2>\n"
 		 "A x:    box added. x=box number in <grf2>\n"
 		 "R x:    box removed. x=box number in <grf1>\n"
 		 "T a b x y: transition added. a,b=src and dst box numbers in <grf1>. x,y=src and dst box numbers in <grf2>\n"
