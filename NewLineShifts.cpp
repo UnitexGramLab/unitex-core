@@ -104,6 +104,7 @@ return t[3*n+2];
  */
 int get_shift(int n_enter_char,int* enter_pos,int pos,vector_int* snt_offsets) {
 //int res=find_by_dichotomy(pos,enter_pos,n_enter_char);
+if (snt_offsets==NULL) return 0;
 int res2=find_snt_shift_by_dichotomy(pos,snt_offsets->tab,snt_offsets->nbelems);
 return res2;
 }
