@@ -64,9 +64,11 @@ typedef struct {
 Grf* new_Grf();
 void free_Grf(Grf*);
 void free_GrfState(GrfState*);
-Grf* load_grf(char*);
-void save_grf(U_FILE*,Grf*);
+Grf* load_Grf(char*);
+void save_Grf(U_FILE*,Grf*);
+Grf* dup_Grf(Grf*);
 GrfState* cpy_grf_state(GrfState*);
+void cpy_grf_states(Grf* dst,Grf* src);
 
 #endif
 

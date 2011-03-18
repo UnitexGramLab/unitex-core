@@ -95,12 +95,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index
 if (vars->optind!=argc-2) {
 	   fatal_error("Invalid arguments: rerun with --help\n");
 }
-Grf* a=load_grf(argv[vars->optind]);
+Grf* a=load_Grf(argv[vars->optind]);
 if (a==NULL) {
 	free_OptVars(vars);
 	return 2;
 }
-Grf* b=load_grf(argv[vars->optind+1]);
+Grf* b=load_Grf(argv[vars->optind+1]);
 if (b==NULL) {
 	free_Grf(a);
 	free_OptVars(vars);

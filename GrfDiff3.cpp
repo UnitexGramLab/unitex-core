@@ -102,18 +102,18 @@ if (output[0]!='\0') {
 		return 2;
 	}
 }
-Grf* mine=load_grf(argv[vars->optind]);
+Grf* mine=load_Grf(argv[vars->optind]);
 if (mine==NULL) {
 	free_OptVars(vars);
 	return 2;
 }
-Grf* base=load_grf(argv[vars->optind+1]);
+Grf* base=load_Grf(argv[vars->optind+1]);
 if (base==NULL) {
 	free_Grf(mine);
 	free_OptVars(vars);
 	return 2;
 }
-Grf* other=load_grf(argv[vars->optind+2]);
+Grf* other=load_Grf(argv[vars->optind+2]);
 if (other==NULL) {
 	free_Grf(mine);
 	free_Grf(base);

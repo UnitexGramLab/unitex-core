@@ -26,7 +26,6 @@
 
 
 static int cmp_grf_states(Grf*,Grf*);
-static void cpy_grf_states(Grf*,Grf*);
 
 
 static DiffOp* new_DiffOp(DiffOpType type) {
@@ -199,9 +198,38 @@ return 1;
 
 
 /**
- * Returns the merged grf or NULL in case of conflicts.
+ * Returns the merged grf or NULL in case of unresolved conflicts. In such a case,
+ * conflicts are described in f.
  */
-static Grf* diff3_internal(Grf* mine,Grf* base,Grf* other) {
+static Grf* diff3_internal(U_FILE* f,Grf* mine,Grf* base,Grf* other) {
+GrfDiff* base_mine=grf_diff(base,mine);
+if (base_mine->diff_ops->nbelems==0) {
+	/* base==mine ? => return other */
+	free_GrfDiff(base_mine);
+	return dup_Grf(other);
+}
+GrfDiff* base_other=grf_diff(base,other);
+if (base_other->diff_ops->nbelems==0) {
+	/* base==other ? => return mine */
+	free_GrfDiff(base_mine);
+	free_GrfDiff(base_other);
+	return dup_Grf(mine);
+}
+GrfDiff* mine_other=grf_diff(mine,other);
+if (mine_other->diff_ops->nbelems==0) {
+	/* mine==other ? => return mine */
+	free_GrfDiff(base_mine);
+	free_GrfDiff(base_other);
+	free_GrfDiff(mine_other);
+	return dup_Grf(mine);
+}
+
+
+free_GrfDiff(base_mine);
+free_GrfDiff(base_other);
+free_GrfDiff(mine_other);
+return NULL;
+#if 0
 Grf* result=new_Grf();
 if (1==diff3_grf_headers(mine,base,other,result)) {
 	free_Grf(result);
@@ -225,6 +253,7 @@ GrfDiff* diff1=grf_diff(base,mine);
 free_GrfDiff(diff1);
 free_Grf(result);
 return NULL;
+#endif
 }
 
 
@@ -235,9 +264,9 @@ return NULL;
  * it returns 1 and prints nothing.
  */
 int diff3(U_FILE* f,Grf* mine,Grf* base,Grf* other) {
-Grf* result=diff3_internal(mine,base,other);
+Grf* result=diff3_internal(f,mine,base,other);
 if (result==NULL) return 1;
-save_grf(f,result);
+save_Grf(f,result);
 free_Grf(result);
 return 0;
 }
@@ -391,25 +420,6 @@ for (int i=0;i<a->n_states;i++) {
 	if (0!=cmp_states(a->states[i],b->states[i])) return 1;
 }
 return 0;
-}
-
-
-/**
- * Copies src graph states into dst, freeing previous state array, if any.
- */
-static void cpy_grf_states(Grf* dst,Grf* src) {
-if (dst->states!=NULL)  {
-	for (int i=0;i<dst->n_states;i++) {
-		free_GrfState(dst->states[i]);
-	}
-	free(dst->states);
-}
-dst->n_states=src->n_states;
-dst->states=(GrfState**)malloc(dst->n_states*sizeof(GrfState*));
-if (dst->states==NULL) fatal_alloc_error("cmp_grf_states");
-for (int i=0;i<dst->n_states;i++) {
-	dst->states[i]=cpy_grf_state(src->states[i]);
-}
 }
 
 
@@ -616,7 +626,7 @@ for (int i=2;i<diff->size_base_to_dest;i++) {
 		int base_is_comment_box=base_state->n_transitions==0
 				&& diff->reverse_transitions_base[i]->nbelems==0;
 		int dest_is_comment_box=dest_state->n_transitions==0
-				&& diff->reverse_transitions_dest[i]->nbelems==0;
+				&& diff->reverse_transitions_dest[j]->nbelems==0;
 		if (ignore_comment_boxes && (base_is_comment_box || dest_is_comment_box)) continue;
 		if (coord && (base_state->x!=dest_state->x || base_state->y!=dest_state->y)) {
 			continue;

@@ -164,7 +164,7 @@ return 1;
 /**
  * Loads and returns a grf file, or NULL in case of error.
  */
-Grf* load_grf(char* name) {
+Grf* load_Grf(char* name) {
 U_FILE* f=u_fopen_existing_versatile_encoding(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,name,U_READ);
 if (f==NULL) return NULL;
 Ustring* line=new_Ustring();
@@ -202,6 +202,7 @@ free_Grf(grf);
 grf=NULL;
 end:
 free_Ustring(line);
+u_fclose(f);
 return grf;
 }
 
@@ -213,7 +214,7 @@ return grf;
  * BOM character so that redirecting the output to a file produces a valid
  * UTF16LE grf. We also force the encoding to UTF16LE.
  */
-void save_grf(U_FILE* f,Grf* grf) {
+void save_Grf(U_FILE* f,Grf* grf) {
 if (f==U_STDOUT) {
 	f->enc=UTF16_LE;
 	u_fputc(U_BYTE_ORDER_MARK,f);
@@ -263,4 +264,58 @@ res->transitions=(int*)malloc(res->n_transitions*sizeof(int));
 if (res->transitions==NULL) fatal_alloc_error("cpy_grf_state");
 memcpy(res->transitions,s->transitions,res->n_transitions*sizeof(int));
 return res;
+}
+
+
+/**
+ * Copies src header into dst.
+ */
+void cpy_grf_header(Grf* dst,Grf* src) {
+u_strcpy(dst->size,src->size);
+u_strcpy(dst->font,src->font);
+u_strcpy(dst->ofont,src->ofont);
+u_strcpy(dst->bcolor,src->bcolor);
+u_strcpy(dst->fcolor,src->fcolor);
+u_strcpy(dst->acolor,src->acolor);
+u_strcpy(dst->scolor,src->scolor);
+u_strcpy(dst->ccolor,src->ccolor);
+u_strcpy(dst->dboxes,src->dboxes);
+u_strcpy(dst->dframe,src->dframe);
+u_strcpy(dst->ddate,src->ddate);
+u_strcpy(dst->dfile,src->dfile);
+u_strcpy(dst->ddir,src->ddir);
+u_strcpy(dst->drig,src->drig);
+u_strcpy(dst->drst,src->drst);
+u_strcpy(dst->fits,src->fits);
+u_strcpy(dst->porient,src->porient);
+}
+
+
+/**
+ * Copies src graph states into dst, freeing previous state array, if any.
+ */
+void cpy_grf_states(Grf* dst,Grf* src) {
+if (dst->states!=NULL)  {
+	for (int i=0;i<dst->n_states;i++) {
+		free_GrfState(dst->states[i]);
+	}
+	free(dst->states);
+}
+dst->n_states=src->n_states;
+dst->states=(GrfState**)malloc(dst->n_states*sizeof(GrfState*));
+if (dst->states==NULL) fatal_alloc_error("cmp_grf_states");
+for (int i=0;i<dst->n_states;i++) {
+	dst->states[i]=cpy_grf_state(src->states[i]);
+}
+}
+
+
+/**
+ * Returns a copy of the given grf.
+ */
+Grf* dup_Grf(Grf* src) {
+Grf* dst=new_Grf();
+cpy_grf_header(dst,src);
+cpy_grf_states(dst,src);
+return dst;
 }
