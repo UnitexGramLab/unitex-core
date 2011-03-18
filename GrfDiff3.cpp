@@ -122,6 +122,13 @@ if (other==NULL) {
 }
 free_OptVars(vars);
 int res=diff3(f,mine,base,other);
+if (f!=U_STDOUT) {
+	u_fclose(f);
+	if (res!=0) {
+		/* If the diff3 failed, we must remove the file */
+		af_remove(output);
+	}
+}
 free_Grf(mine);
 free_Grf(base);
 free_Grf(other);
