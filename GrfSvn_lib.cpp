@@ -317,7 +317,7 @@ if (n==1) {
 	/* Nothing to do for the final state */
 	return;
 }
-int old_mark;
+int old_mark=0;
 if (n==0) {
 	/* If we have already explored the initial state, we do nothing */
 	if (mark[0]==0) return;
