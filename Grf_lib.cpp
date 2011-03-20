@@ -164,7 +164,7 @@ return 1;
 /**
  * Loads and returns a grf file, or NULL in case of error.
  */
-Grf* load_Grf(char* name) {
+Grf* load_Grf(const char* name) {
 U_FILE* f=u_fopen_existing_versatile_encoding(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,name,U_READ);
 if (f==NULL) return NULL;
 Ustring* line=new_Ustring();
