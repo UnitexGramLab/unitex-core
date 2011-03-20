@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Error.h"
@@ -134,7 +133,3 @@ free_Grf(base);
 free_Grf(other);
 return res;
 }
-
-
-
-
