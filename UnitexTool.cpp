@@ -108,11 +108,11 @@
 #include "Grf2Fst2.h"
 #endif
 
-#if (((!defined(NO_TOOL_GRFDIFF))) || defined(TOOL_GRFDIFF))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_GRFDIFF))) || defined(TOOL_GRFDIFF))
 #include "GrfDiff.h"
 #endif
 
-#if (((!defined(NO_TOOL_GRFDIFF3))) || defined(TOOL_GRFDIFF3))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_GRFDIFF3))) || defined(TOOL_GRFDIFF3))
 #include "GrfDiff3.h"
 #endif
 
@@ -204,7 +204,7 @@
 #include "Untokenize.h"
 #endif
 
-#if (((!defined(NO_TOOL_UNXMLIZE))) || defined(TOOL_UNXMLIZE))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNXMLIZE))) || defined(TOOL_UNXMLIZE))
 #include "Unxmlize.h"
 #endif
 
