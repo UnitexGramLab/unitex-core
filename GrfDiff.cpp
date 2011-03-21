@@ -104,7 +104,7 @@ if (vars->optind!=argc-2) {
 }
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
-	f=u_fopen_creating_versatile_encoding(UTF16_LE,DEFAULT_BOM_OUTPUT,output,U_WRITE);
+	f=u_fopen_creating_versatile_encoding(UTF8,0,output,U_WRITE);
 	if (f==NULL) {
 		error("Cannot create file %s\n",output);
 		free_OptVars(vars);
