@@ -677,7 +677,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
-                  Unxmlize.o Xml.o $(SYSLIBMAPPED)
+                  Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -708,7 +708,8 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
-                  CompressedDic.o LoadInf.o Unxmlize.o Xml.o $(SYSLIBMAPPED)
+                  CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
+                  GrfSvn_lib.o $(SYSLIBMAPPED)
 
 
 ################################
@@ -1111,6 +1112,12 @@ $(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS)
 $(BIN_DIR)$(GRF2FST2)$(EXTENSION): $(GRF2FST2_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
+$(BIN_DIR)$(GRFDIFF)$(EXTENSION): $(GRFDIFF_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(GRFDIFF3)$(EXTENSION): $(GRFDIFF3_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
 $(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
@@ -1190,12 +1197,6 @@ $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(GRFDIFF)$(EXTENSION): $(GRFDIFF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(GRFDIFF3)$(EXTENSION): $(GRFDIFF3_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 #

@@ -65,7 +65,7 @@ u_printf(usage_GrfDiff);
 /* Undocumented short options are those given by the svn client. They
  * are listed here just to be safely ignored by getopt */
 const char* optstring_GrfDiff=":huL:";
-const struct option_TS lopts_GrfDiff[]= {
+const struct option_TS lopts_GrfDiff[] = {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };

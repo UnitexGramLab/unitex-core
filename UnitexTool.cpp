@@ -108,6 +108,14 @@
 #include "Grf2Fst2.h"
 #endif
 
+#if (((!defined(NO_TOOL_GRFDIFF))) || defined(TOOL_GRFDIFF))
+#include "GrfDiff.h"
+#endif
+
+#if (((!defined(NO_TOOL_GRFDIFF3))) || defined(TOOL_GRFDIFF3))
+#include "GrfDiff3.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
 #include "ImplodeTfst.h"
 #endif
@@ -298,6 +306,14 @@ const struct utility_item utility_array[]=
 	{ "Grf2Fst2", 8, &main_Grf2Fst2, usage_Grf2Fst2, optstring_Grf2Fst2, lopts_Grf2Fst2 } ,
 #endif
 
+#if (((!defined(NO_TOOL_GRFDIFF))) || defined(TOOL_GRFDIFF))
+//	{ "GrfDiff", 7, &main_GrfDiff, usage_GrfDiff, optstring_GrfDiff, lopts_GrfDiff } ,
+#endif
+
+#if (((!defined(NO_TOOL_GRFDIFF3))) || defined(TOOL_GRFDIFF3))
+//	{ "GrfDiff3", 8, &main_GrfDiff3, usage_GrfDiff3, optstring_GrfDiff3, lopts_GrfDiff3 } ,
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
@@ -486,7 +502,7 @@ void list_unused_option_letter()
 		i++;
 	}
 
-    u_printf("unused letter for optsting : ");
+    u_printf("unused letter for optstring : ");
     for (i=0;i<26;i++)
         if (optstring_lt[i]==0)
             u_printf("%c",i+'a');

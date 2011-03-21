@@ -22,6 +22,8 @@
 #ifndef GrfDiff3H
 #define GrfDiff3H
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_GrfDiff3;
 extern const struct option_TS lopts_GrfDiff3[];
 extern const char* usage_GrfDiff3;

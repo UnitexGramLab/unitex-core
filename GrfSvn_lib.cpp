@@ -147,53 +147,19 @@ return 1;
 /**
  * Performs a diff3 on the given graph headers. In case of success,
  * it returns 0 and save the resulting header in 'result'. In case of
- * conflicts, it returns 1.
+ * conflicts, it returns 1 and conflict descriptions are written to f.
  */
-static int diff3_grf_headers(Grf* mine,Grf* base,Grf* other,Grf* result) {
-if (diff3_grf_strings(mine->size,base->size,other->size,result->size)) return 1;
-if (diff3_grf_strings(mine->font,base->font,other->font,result->font)) return 1;
-if (diff3_grf_strings(mine->ofont,base->ofont,other->ofont,result->ofont)) return 1;
-if (diff3_grf_strings(mine->bcolor,base->bcolor,other->bcolor,result->bcolor)) return 1;
-if (diff3_grf_strings(mine->fcolor,base->fcolor,other->fcolor,result->fcolor)) return 1;
-if (diff3_grf_strings(mine->acolor,base->acolor,other->acolor,result->acolor)) return 1;
-if (diff3_grf_strings(mine->scolor,base->scolor,other->scolor,result->scolor)) return 1;
-if (diff3_grf_strings(mine->ccolor,base->ccolor,other->ccolor,result->ccolor)) return 1;
-if (diff3_grf_strings(mine->dboxes,base->dboxes,other->dboxes,result->dboxes)) return 1;
-if (diff3_grf_strings(mine->dframe,base->dframe,other->dframe,result->dframe)) return 1;
-if (diff3_grf_strings(mine->ddate,base->ddate,other->ddate,result->ddate)) return 1;
-if (diff3_grf_strings(mine->dfile,base->dfile,other->dfile,result->dfile)) return 1;
-if (diff3_grf_strings(mine->ddir,base->ddir,other->ddir,result->ddir)) return 1;
-if (diff3_grf_strings(mine->drig,base->drig,other->drig,result->drig)) return 1;
-if (diff3_grf_strings(mine->drst,base->drst,other->drst,result->drst)) return 1;
-if (diff3_grf_strings(mine->fits,base->fits,other->fits,result->fits)) return 1;
-if (diff3_grf_strings(mine->porient,base->porient,other->porient,result->porient)) return 1;
-return 0;
+static void merge_grf_headers(U_FILE* f,Grf* mine,Grf* base,Grf* other,Grf* result,int *conflict) {
 }
 
 
 /**
- * Performs a diff3 on the given normalized graph states. In case of success,
- * it returns 0 and save the resulting states in 'result'. In case of
- * conflicts, it returns 1.
+ * Performs a diff3 on the given graph states. In case of success,
+ * it returns 0 and save the resulting header in 'result'. In case of
+ * conflicts, it returns 1 and conflict descriptions are written to f.
  */
-static int diff3_grf_states(Grf* mine,Grf* base,Grf* other,Grf* result) {
-if (!cmp_grf_states(mine,base)) {
-	/* If I didn't modify the string, then the other one version can be taken into account */
-	cpy_grf_states(result,other);
-	return 0;
-}
-if (!cmp_grf_states(other,base)) {
-	/* If my version differs but not the other's one, we take my version */
-	cpy_grf_states(result,mine);
-	return 0;
-}
-if (!cmp_grf_states(mine,other)) {
-	/* If both versions differ from the base one but are the same, there is no conflict */
-	cpy_grf_states(result,mine);
-	return 0;
-}
-/* Conflict */
-return 1;
+static void merge_grf_states(U_FILE* f,GrfDiff* base_mine,GrfDiff* base_other,Grf* mine,Grf* base,Grf* other,
+		Grf* result,int *conflict) {
 }
 
 
@@ -223,37 +189,20 @@ if (mine_other->diff_ops->nbelems==0) {
 	free_GrfDiff(mine_other);
 	return dup_Grf(mine);
 }
-
-
+/* If we have to compare and merge different grf, we only need
+ * the diff obtained from base */
+free_GrfDiff(mine_other);
+Grf* result=new_Grf();
+int conflict=0;
+merge_grf_headers(f,base,mine,other,result,&conflict);
+merge_grf_states(f,base_mine,base_other,base,mine,other,result,&conflict);
 free_GrfDiff(base_mine);
 free_GrfDiff(base_other);
-free_GrfDiff(mine_other);
-return NULL;
-#if 0
-Grf* result=new_Grf();
-if (1==diff3_grf_headers(mine,base,other,result)) {
+if (conflict) {
 	free_Grf(result);
-	return NULL;
+	result=NULL;
 }
-/*normalize_grf(mine);
-normalize_grf(base);
-normalize_grf(other);*/
-if (0==diff3_grf_states(mine,base,other,result)) {
-	/* First, we try a raw comparison. If either mine
-	 * or other's version is the same as the base one, we
-	 * simply consider the differing version as being
-	 * the new one. This simple operation prevents from
-	 * fake conflicts that only occur because identical graph state sets
-	 * may not be numbered the same in different .grf files */
-	return result;
-}
-/* If there is no simple answer to the diff3, we look for a more complicated one */
-GrfDiff* diff1=grf_diff(base,mine);
-
-free_GrfDiff(diff1);
-free_Grf(result);
 return NULL;
-#endif
 }
 
 
@@ -601,9 +550,9 @@ return 1;
 /**
  * This function tries to match boxes on the basis of the criteria described by
  * the parameters. This function only consider boxes that have not already been
- * matched.
+ * matched. Returns the number of matching box pairs.
  */
-static void find_correspondance(GrfDiff* diff,Grf* base,Grf* dest,
+static int find_correspondance(GrfDiff* diff,Grf* base,Grf* dest,
 		int coord,     /* compare coordinates */
 		int content,   /* compare box content */
 		int incoming,  /* compare incoming transitions */
@@ -611,6 +560,7 @@ static void find_correspondance(GrfDiff* diff,Grf* base,Grf* dest,
 		int index,     /* compare box indices in .grf files */
 		int ignore_comment_boxes
 		) {
+int n=0;
 for (int i=2;i<diff->size_base_to_dest;i++) {
 	if (diff->base_to_dest[i]!=-1) {
 		/* If the base state has already been matched, we ignore it */
@@ -647,9 +597,11 @@ for (int i=2;i<diff->size_base_to_dest;i++) {
 		 * so we have matching boxes */
 		diff->base_to_dest[i]=j;
 		diff->dest_to_base[j]=i;
+		n++;
 		break;
 	}
 }
+return n;
 }
 
 
@@ -728,22 +680,30 @@ static void grf_diff_states(GrfDiff* diff,Grf* base,Grf* dest) {
 find_correspondance(diff,base,dest,1,1,0,0,0,0);
 /* coord */
 find_correspondance(diff,base,dest,1,0,0,0,0,0);
-/* content+transitions+index */
-find_correspondance(diff,base,dest,0,1,1,1,1,1);
-/* content+transitions */
-find_correspondance(diff,base,dest,0,1,1,1,0,1);
-/* transitions */
-find_correspondance(diff,base,dest,0,0,1,1,0,1);
-/* content+incoming transitions */
-find_correspondance(diff,base,dest,0,1,1,0,0,1);
-/* content+outgoing transitions */
-find_correspondance(diff,base,dest,0,1,0,1,0,1);
-/* incoming transitions+index */
-find_correspondance(diff,base,dest,0,0,1,0,1,1);
-/* outgoing transitions+index */
-find_correspondance(diff,base,dest,0,0,0,1,1,1);
-/* Last chance, content+index, but only on non comment boxes */
-find_correspondance(diff,base,dest,0,1,0,0,1,1);
+int n;
+/* We do a loop, because all match tests that depends on transitions may
+ * fail at one time and succeed later, since transitions to unmatched boxes
+ * are ignored */
+do {
+	n=0;
+	/* content+transitions+index */
+	n+=find_correspondance(diff,base,dest,0,1,1,1,1,1);
+	/* content+transitions */
+	n+=find_correspondance(diff,base,dest,0,1,1,1,0,1);
+	/* transitions */
+	n+=find_correspondance(diff,base,dest,0,0,1,1,0,1);
+	/* content+incoming transitions */
+	n+=find_correspondance(diff,base,dest,0,1,1,0,0,1);
+	/* content+outgoing transitions */
+	n+=find_correspondance(diff,base,dest,0,1,0,1,0,1);
+	/* incoming transitions+index */
+	n+=find_correspondance(diff,base,dest,0,0,1,0,1,1);
+	/* outgoing transitions+index */
+	n+=find_correspondance(diff,base,dest,0,0,0,1,1,1);
+	/* Last chance, content+index, but only on non comment boxes */
+	n+=find_correspondance(diff,base,dest,0,1,0,0,1,1);
+} while (n!=0);
+
 for (int i=0;i<diff->size_base_to_dest;i++) {
 	if (diff->base_to_dest[i]==-1) {
 		add_diff_box_removed(diff,i);
