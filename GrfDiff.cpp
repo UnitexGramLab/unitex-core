@@ -37,6 +37,7 @@ const char* usage_GrfDiff =
          "  <grf1> <grf2>: .grf files to be compared\n"
          "\n"
          "OPTIONS:\n"
+		 "--output X: saves the result, if any, in X instead of printing it on the output\n"
          "  -h/--help: this help\n"
          "\n"
          "Compares the given grf files and prints their difference on the standard output.\n"
