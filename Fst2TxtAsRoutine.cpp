@@ -649,7 +649,7 @@ void scan_graph(
 			}
 			if (etiq->type == BEGIN_VAR_TAG) {
 				// case of a $a( variable tag
-				if (1 || !end_of_text) {
+				if (/*1 || */ !end_of_text) {
 					/* There is no point in trying to start a variable capture at the end of the text */
 					struct transduction_variable* L =
 							get_transduction_variable(p->variables,

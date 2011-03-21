@@ -29,7 +29,7 @@
 #include "GrfSvn_lib.h"
 #include "Grf_lib.h"
 #include "UnitexGetOpt.h"
-
+#include "GrfDiff3.h"
 
 const char* usage_GrfDiff3 =
          "Usage: GrfDiff3 <mine> <base> <other>\n"

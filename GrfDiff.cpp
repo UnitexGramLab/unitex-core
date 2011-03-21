@@ -29,6 +29,7 @@
 #include "Grf_lib.h"
 #include "GrfSvn_lib.h"
 #include "UnitexGetOpt.h"
+#include "GrfDiff.h"
 
 
 const char* usage_GrfDiff =

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "Error.h"
 #include "NewLineShifts.h"
+#include "UnusedParameter.h"
 
 /**
  * This function takes an integer 'a' and an array 't' of size 'n'.
@@ -103,6 +104,8 @@ return t[3*n+2];
  * to be added to the given position.
  */
 int get_shift(int n_enter_char,int* enter_pos,int pos,vector_int* snt_offsets) {
+DISCARD_UNUSED_PARAMETER(enter_pos)
+DISCARD_UNUSED_PARAMETER(n_enter_char)
 //int res=find_by_dichotomy(pos,enter_pos,n_enter_char);
 if (snt_offsets==NULL) return 0;
 int res2=find_snt_shift_by_dichotomy(pos,snt_offsets->tab,snt_offsets->nbelems);
