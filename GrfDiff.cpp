@@ -66,6 +66,7 @@ u_printf(usage_GrfDiff);
  * are listed here just to be safely ignored by getopt */
 const char* optstring_GrfDiff=":huL:";
 const struct option_TS lopts_GrfDiff[] = {
+      {"output",required_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -81,9 +82,14 @@ if (argc==1) {
 }
 struct OptVars* vars=new_OptVars();
 int val,index=-1;
+char output[FILENAME_MAX]="";
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;
+   case 1: {
+	   strcpy(output,vars->optarg);
+	   break;
+   }
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_GrfDiff[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -94,6 +100,15 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index
 }
 if (vars->optind!=argc-2) {
 	   fatal_error("Invalid arguments: rerun with --help\n");
+}
+U_FILE* f=U_STDOUT;
+if (output[0]!='\0') {
+	f=u_fopen_creating_versatile_encoding(UTF16_LE,DEFAULT_BOM_OUTPUT,output,U_WRITE);
+	if (f==NULL) {
+		error("Cannot create file %s\n",output);
+		free_OptVars(vars);
+		return 2;
+	}
 }
 Grf* a=load_Grf(argv[vars->optind]);
 if (a==NULL) {
@@ -110,7 +125,10 @@ free_OptVars(vars);
 GrfDiff* diff=grf_diff(a,b);
 free_Grf(a);
 free_Grf(b);
-print_diff(U_STDOUT,diff);
+print_diff(f,diff);
+if (f!=U_STDOUT) {
+	u_fclose(f);
+}
 int different=diff->diff_ops->nbelems!=0;
 free_GrfDiff(diff);
 return different;
