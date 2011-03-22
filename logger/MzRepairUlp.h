@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2011 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2011 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@
 #ifndef _MZ_REPAIR_ULP_LOGGER_H_INCLUDED
 #define _MZ_REPAIR_ULP_LOGGER_H_INCLUDED 1
 
+#include "UnitexGetOpt.h"
 
 
 #ifdef __cplusplus

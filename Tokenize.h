@@ -22,6 +22,8 @@
 #ifndef TokenizeH
 #define TokenizeH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Tokenize;
 extern const struct option_TS lopts_Tokenize[];
 extern const char* usage_Tokenize;

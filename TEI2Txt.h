@@ -22,6 +22,8 @@
 #ifndef TEI2TxtH
 #define TEI2TxtH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_TEI2Txt;
 extern const struct option_TS lopts_TEI2Txt[];
 extern const char* usage_TEI2Txt;

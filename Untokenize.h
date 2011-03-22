@@ -34,6 +34,8 @@
 #ifndef UntokenizeH
 #define UntokenizeH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Untokenize;
 extern const struct option_TS lopts_Untokenize[];
 extern const char* usage_Untokenize;

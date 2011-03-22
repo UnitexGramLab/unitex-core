@@ -22,6 +22,8 @@
 #ifndef NormalizeH
 #define NormalizeH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Normalize;
 extern const struct option_TS lopts_Normalize[];
 extern const char* usage_Normalize;

@@ -22,6 +22,8 @@
 #ifndef UnxmlizeH
 #define UnxmlizeH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Unxmlize;
 extern const struct option_TS lopts_Unxmlize[];
 extern const char* usage_Unxmlize;

@@ -22,6 +22,8 @@
 #ifndef UncompressH
 #define UncompressH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Uncompress;
 extern const struct option_TS lopts_Uncompress[];
 extern const char* usage_Uncompress;

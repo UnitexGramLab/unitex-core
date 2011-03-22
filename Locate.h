@@ -22,6 +22,7 @@
 #ifndef LocateH
 #define LocateH
 
+#include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 #include "LocateConstants.h"
 

@@ -22,6 +22,7 @@
 #ifndef Grf2Fst2H
 #define Grf2Fst2H
 
+#include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
 extern const char* optstring_Grf2Fst2;

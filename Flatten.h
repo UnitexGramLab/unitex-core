@@ -22,6 +22,8 @@
 #ifndef FlattenH
 #define FlattenH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Flatten;
 extern const struct option_TS lopts_Flatten[];
 extern const char* usage_Flatten;

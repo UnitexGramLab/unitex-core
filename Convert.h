@@ -22,6 +22,8 @@
 #ifndef ConvertH
 #define ConvertH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Convert;
 extern const struct option_TS lopts_Convert[];
 extern const char* usage_Convert;

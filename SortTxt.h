@@ -22,6 +22,7 @@
 #ifndef SortTxtH
 #define SortTxtH
 
+#include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
 extern const char* optstring_SortTxt;

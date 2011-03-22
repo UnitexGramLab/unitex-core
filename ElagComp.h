@@ -22,6 +22,8 @@
 #ifndef ElagCompH
 #define ElagCompH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_ElagComp;
 extern const struct option_TS lopts_ElagComp[];
 extern const char* usage_ElagComp;

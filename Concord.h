@@ -22,8 +22,8 @@
 #ifndef ConcordH
 #define ConcordH
 
+#include "UnitexGetOpt.h"
 #include "FileEncoding.h"
-
 
 extern const char* optstring_Concord;
 extern const struct option_TS lopts_Concord[];

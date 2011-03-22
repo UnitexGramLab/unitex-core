@@ -26,6 +26,8 @@
 #ifndef TaggerH
 #define TaggerH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Tagger;
 extern const struct option_TS lopts_Tagger[];
 extern const char* usage_Tagger;

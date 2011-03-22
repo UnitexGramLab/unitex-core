@@ -22,6 +22,8 @@
 #ifndef BuildKrMwuDicH
 #define BuildKrMwuDicH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_BuildKrMwuDic;
 extern const struct option_TS lopts_BuildKrMwuDic[];
 extern const char* usage_BuildKrMwuDic;

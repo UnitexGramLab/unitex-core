@@ -22,6 +22,8 @@
 #ifndef ExtractH
 #define ExtractH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Extract;
 extern const struct option_TS lopts_Extract[];
 extern const char* usage_Extract;

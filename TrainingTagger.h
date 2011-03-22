@@ -26,6 +26,8 @@
 #ifndef TrainingTaggerH
 #define TrainingTaggerH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_TrainingTagger;
 extern const struct option_TS lopts_TrainingTagger[];
 extern const char* usage_TrainingTagger;

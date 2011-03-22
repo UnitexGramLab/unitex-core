@@ -34,6 +34,7 @@
 #ifndef Fst2ChkH
 #define Fst2ChkH
 
+#include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
 extern const char* optstring_Fst2Check;

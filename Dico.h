@@ -22,6 +22,8 @@
 #ifndef DicoH
 #define DicoH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Dico;
 extern const struct option_TS lopts_Dico[];
 extern const char* usage_Dico;

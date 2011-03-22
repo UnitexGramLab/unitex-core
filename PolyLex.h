@@ -22,6 +22,8 @@
 #ifndef PolyLexH
 #define PolyLexH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_PolyLex;
 extern const struct option_TS lopts_PolyLex[];
 extern const char* usage_PolyLex;

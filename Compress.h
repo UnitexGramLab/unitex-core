@@ -22,6 +22,7 @@
 #ifndef CompressH
 #define CompressH
 
+#include "UnitexGetOpt.h"
 #include "Unicode.h"
 
 extern const char* optstring_Compress;

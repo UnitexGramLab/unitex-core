@@ -22,6 +22,8 @@
 #ifndef Txt2TfstH
 #define Txt2TfstH
 
+#include "UnitexGetOpt.h"
+
 int main_Txt2Tfst(int argc,char* const argv[]);
 
 extern const char* optstring_Txt2Tfst;

@@ -22,6 +22,8 @@
 #ifndef EvambH
 #define EvambH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Evamb;
 extern const struct option_TS lopts_Evamb[];
 extern const char* usage_Evamb;

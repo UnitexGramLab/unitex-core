@@ -22,6 +22,8 @@
 #ifndef Fst2TxtH
 #define Fst2TxtH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Fst2Txt;
 extern const struct option_TS lopts_Fst2Txt[];
 extern const char* usage_Fst2Txt;

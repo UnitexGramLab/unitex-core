@@ -22,6 +22,8 @@
 #ifndef MultiFlexH
 #define MultiFlexH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_MultiFlex;
 extern const struct option_TS lopts_MultiFlex[];
 extern const char* usage_MultiFlex;

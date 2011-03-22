@@ -22,6 +22,7 @@
 #ifndef GrfDiffH
 #define GrfDiffH
 
+#include "UnitexGetOpt.h"
 
 extern const char* optstring_GrfDiff;
 extern const struct option_TS lopts_GrfDiff[];

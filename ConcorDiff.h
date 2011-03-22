@@ -22,6 +22,8 @@
 #ifndef ConcorDiffH
 #define ConcorDiffH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_ConcorDiff;
 extern const struct option_TS lopts_ConcorDiff[];
 extern const char* usage_ConcorDiff;

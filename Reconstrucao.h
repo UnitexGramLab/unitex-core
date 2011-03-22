@@ -22,6 +22,8 @@
 #ifndef ReconstrucaoH
 #define ReconstrucaoH
 
+#include "UnitexGetOpt.h"
+
 extern const char* optstring_Reconstrucao;
 extern const struct option_TS lopts_Reconstrucao[];
 extern const char* usage_Reconstrucao;
