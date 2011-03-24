@@ -60,6 +60,13 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		u_fclose(p->f_output);
 		return 1;
 	}
+	if (p->fst2->debug) {
+		error("Cannot use debug fst2 %s\n", p->fst_file);
+		u_fclose(p->f_input);
+		u_fclose(p->f_output);
+		return 1;
+	}
+
 
 	if (p->alphabet_file != NULL && p->alphabet_file[0] != '\0') {
 		p->alphabet = load_alphabet(p->alphabet_file);
