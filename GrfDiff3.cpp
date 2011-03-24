@@ -40,7 +40,8 @@ const char* usage_GrfDiff3 =
          "\n"
          "OPTIONS:\n"
 		 "--output X: saves the result, if any, in X instead of printing it on the output\n"
-         "  -h/--help: this help\n"
+		 "--conflicts X: saves the description of the conflicts, if any, in X\n"
+		 "  -h/--help: this help\n"
          "\n"
          "Tries to merge <mine> and <other>. In case of success, the result is printed on the\n"
 		 "standard output and 0 is returned. In case of unresolved conflicts, 1 is returned and\n"
@@ -58,6 +59,7 @@ u_printf(usage_GrfDiff3);
 const char* optstring_GrfDiff3=":hEmL:";
 const struct option_TS lopts_GrfDiff3[]= {
       {"output",required_argument_TS,NULL,1},
+      {"conflicts",required_argument_TS,NULL,2},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -74,11 +76,16 @@ if (argc==1) {
 struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";
+char conflicts[FILENAME_MAX]="";
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;
    case 1: {
 	   strcpy(output,vars->optarg);
+	   break;
+   }
+   case 2: {
+	   strcpy(conflicts,vars->optarg);
 	   break;
    }
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -97,6 +104,15 @@ if (output[0]!='\0') {
 	f=u_fopen_creating_versatile_encoding(UTF16_LE,DEFAULT_BOM_OUTPUT,output,U_WRITE);
 	if (f==NULL) {
 		error("Cannot create file %s\n",output);
+		free_OptVars(vars);
+		return 2;
+	}
+}
+U_FILE* f_conflicts=NULL;
+if (conflicts[0]!='\0') {
+	f_conflicts=u_fopen_creating_versatile_encoding(UTF8,0,conflicts,U_WRITE);
+	if (f_conflicts==NULL) {
+		error("Cannot create file %s\n",conflicts);
 		free_OptVars(vars);
 		return 2;
 	}
@@ -120,12 +136,19 @@ if (other==NULL) {
 	return 2;
 }
 free_OptVars(vars);
-int res=diff3(f,mine,base,other);
+int res=diff3(f,f_conflicts,mine,base,other);
 if (f!=U_STDOUT) {
 	u_fclose(f);
 	if (res!=0) {
 		/* If the diff3 failed, we must remove the file */
 		af_remove(output);
+	}
+}
+if (f_conflicts!=NULL) {
+	u_fclose(f_conflicts);
+	if (res==0) {
+		/* If the diff3 succeeded, we must remove the file */
+		af_remove(conflicts);
 	}
 }
 free_Grf(mine);

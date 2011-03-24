@@ -319,3 +319,141 @@ cpy_grf_header(dst,src);
 cpy_grf_states(dst,src);
 return dst;
 }
+
+
+/**
+ * Reads everything from content until the stop char is found and copies it
+ * into tmp. Returns 1 in case of success, 0 if the end of string is found.
+ */
+static int read_sequence(unichar stop,unichar* content,int *pos,Ustring* tmp) {
+while (content[*pos]!='\0' && content[*pos]!=stop) {
+	if (content[*pos]=='\\') {
+		u_strcat(tmp,'\\');
+		(*pos)++;
+		if (content[*pos]=='\0') return 0;
+	}
+	u_strcat(tmp,content[*pos]);
+	(*pos)++;
+}
+if (content[*pos]==stop) {
+	(*pos)++;
+	u_strcat(tmp,stop);
+	return 1;
+}
+return 0;
+}
+
+
+/**
+ * Reads everything from content until \" is found and copies it
+ * into tmp. Returns 1 in case of success, 0 if the end of string is found.
+ */
+static int read_quoted_sequence(unichar* content,int *pos,Ustring* tmp) {
+int state=0;
+while (content[*pos]!='\0') {
+	unichar c=content[*pos];
+	u_strcat(tmp,c);
+	switch(state) {
+	case 0: {
+		if (c=='\\') state=1;
+		break;
+	}
+	case 1: {
+		if (c=='"') {
+			(*pos)++;
+			return 1;
+		}
+		if (c=='\\') state=2;
+		else state=0;
+		break;
+	}
+	case 2: {
+		if (c=='\\') state=3;
+		else state=0;
+		break;
+	}
+	case 3: {
+		state=0;
+		break;
+	}
+	}
+	(*pos)++;
+}
+return 0;
+}
+
+
+/**
+ * Reads everything until a / or a box line separator (+) has been found.
+ * The read string is added to the given vector and *pos is updated.
+ * Returns 1 in case of success, or 0 if any syntax error in found in
+ * the content string.
+ */
+static int read_box_line(vector_ptr* v,unichar* content,int *pos,Ustring* tmp) {
+empty(tmp);
+while (content[*pos]!='\0' && content[*pos]!='/' && content[*pos]!='+') {
+	switch (content[*pos]) {
+	case '<': if (!read_sequence('>',content,pos,tmp)) return 0; break;
+	case '{': if (!read_sequence('}',content,pos,tmp)) return 0; break;
+	case '\\': {
+		u_strcat(tmp,'\\');
+		(*pos)++;
+		if (content[*pos]=='\0') {
+			return 0;
+		}
+		u_strcat(tmp,content[*pos]);
+		(*pos)++;
+		if (content[(*pos)-1]=='"') {
+			/* If we have just read \" then the box line contains
+			 * a double quoted sequence that we have to read */
+			if (!read_quoted_sequence(content,pos,tmp)) return 0;
+		}
+		break;
+	}
+	default: u_strcat(tmp,content[*pos]); (*pos)++; break;
+	}
+}
+vector_ptr_add(v,u_strdup(tmp->str));
+if (content[*pos]=='+') {
+	(*pos)++;
+}
+return 1;
+}
+
+
+/**
+ * Returns a unichar* vector corresponding to raw box line contents.
+ * No protected character has been unprotected, so that the
+ * concatenation of lines with + separation produces exactly
+ * the same string as content, once the surrounding double quotes removed. If there is a box output
+ * introduced by /, it is stored like a normal box line, but with
+ * its starting / that will indicate that it is an output.
+ *
+ * Returns NULL in case of error.
+ */
+vector_ptr* tokenize_box_content(unichar* content) {
+if (content==NULL || content[0]!='"') return NULL;
+vector_ptr* v=new_vector_ptr();
+Ustring* s=new_Ustring();
+int l=u_strlen(content);
+/* We remove the ending double quote */
+content[l-1]='\0';
+int pos=1;
+while (content[pos]!='\0') {
+	if (content[pos]=='/') {
+		/* If we have found the output, we can copy it rawly and finish */
+		vector_ptr_add(v,u_strdup(content+pos));
+		break;
+	}
+	if (!read_box_line(v,content,&pos,s)) {
+		free_Ustring(s);
+		free_vector_ptr(v,free);
+		content[l-1]='"';
+		return NULL;
+	}
+}
+content[l-1]='"';
+free_Ustring(s);
+return v;
+}
+

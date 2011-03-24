@@ -23,6 +23,7 @@
 #define Grf_libH
 
 #include "Unicode.h"
+#include "Vector.h"
 
 #define GRF_HEADER_LINE_SIZE 128
 
@@ -69,6 +70,7 @@ void save_Grf(U_FILE*,Grf*);
 Grf* dup_Grf(Grf*);
 GrfState* cpy_grf_state(GrfState*);
 void cpy_grf_states(Grf* dst,Grf* src);
+vector_ptr* tokenize_box_content(unichar* content);
 
 #endif
 

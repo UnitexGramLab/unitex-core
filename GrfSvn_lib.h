@@ -69,7 +69,7 @@ typedef struct {
 } GrfDiff;
 
 
-int diff3(U_FILE* f,Grf* mine,Grf* base,Grf* other);
+int diff3(U_FILE* f,U_FILE* conflicts,Grf* mine,Grf* base,Grf* other);
 void normalize_grf(Grf* grf);
 GrfDiff* grf_diff(Grf* base,Grf* dest);
 void free_GrfDiff(GrfDiff*);
