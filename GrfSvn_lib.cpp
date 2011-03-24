@@ -395,8 +395,7 @@ return ret;
 /**
  * This function applies to result all box content changes described either in
  * base_mine or base_other. If two content changes apply on the same box, they are
- * merged, unless there is a conflict on the box output, or if either mine or
- * other has completely changed the box content from base.
+ * merged, unless there is a conflict on the box output.
  */
 static void process_box_content_changes(Grf* mine,Grf* other,
 		Grf* result,GrfDiff* base_mine,GrfDiff* base_other,
