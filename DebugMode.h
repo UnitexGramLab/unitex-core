@@ -24,6 +24,21 @@
 
 #include "Unicode.h"
 
+/**
+ * This library is used to generate debug fst2 tags. In normal mode,
+ * a fst2 tag may or may not have an output. In debug mode, all tags (except
+ * special tag #0 that must always be "<E>") have an output of the following form:
+ *
+ *  1 output 2 graph:box:line 3 input 4
+ *
+ *  where:
+ *   - 1, 2, 3 and 4 stands for the unicode characters whose value are 1, 2, 3 and 4
+ *   - output=output of the tag
+ *   - graph=number of the origin graph in the fst2
+ *   - box=number of the origin box in the graph
+ *   - line=number of the origin line in the box
+ *   - input=input of tag, duplicated here for convenience
+ */
 
 #define DEBUG_INFO_OUTPUT_MARK 1
 #define DEBUG_INFO_COORD_MARK 2
