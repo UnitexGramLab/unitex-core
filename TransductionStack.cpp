@@ -169,9 +169,6 @@ for (;;) {
          }
          i1++;
          if (u_starts_with(field,"EQUAL=")) {
-        	 error("pile=<");
-        	 for (int u=0;u<=stack->stack_pointer;u++) error("%C",stack->stack[u]);
-        	 error(">\n");
         	 int n=compare_variables(name,field+strlen("EQUAL="),p);
         	 if (n==VAR_CMP_EQUAL) {
         		 continue;
