@@ -712,8 +712,14 @@ if (!infos->debug) {
 	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n);
 } else {
 	unichar output2[MAX_GRF_BOX_CONTENT];
-	u_strcpy(output2,output);
-	add_debug_infos(output2,n,state,line);
+	if (state==0 && !u_strcmp(input,"<E>") && u_strlen(output)==1) {
+		/* We don't need to generate a debug tag for the initial state <E>
+		 * if there is no output */
+		output2[0]='\0';
+	} else {
+		u_strcpy(output2,output);
+		add_debug_infos(output2,n,state,line);
+	}
 	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n);
 }
 free_fifo(sequence);
