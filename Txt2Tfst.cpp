@@ -356,7 +356,7 @@ u_fclose(tind);
 if (korean!=NULL) {
    delete korean;
 }
-write_number_of_graphs(text_tfst,sentence_number-1);
+write_number_of_graphs(text_tfst,sentence_number-1,0);
 free_DELA_tree(tree);
 free_text_tokens(tokens);
 free_alphabet(alph);

@@ -156,7 +156,7 @@ u_printf("%d+%d=%d transitions\n",n3,number_keep_transitions,n3+number_keep_tran
 
 /* Now, we can start saving the grammar, so we print the header of the .fst2,
  * which is the number of graphs it contains. */
-u_fprintf(res,"%010d\n",(RTN?n_graphs_to_keep:1));
+u_fprintf(res,"%C%09d\n",(origin->debug?'d':'0'),(RTN?n_graphs_to_keep:1));
 /* We save the new main graph */
 u_printf("Writing grammar...\n");
 save_fst2_subgraph(res,new_fst2,-1,origin->graph_names[1]);

@@ -25,6 +25,7 @@
 #include "File.h"
 #include "Transitions.h"
 #include "SingleGraph.h"
+#include "DebugMode.h"
 
 
 /* Maximum length for the content of a grf box */
@@ -39,7 +40,6 @@
 #define NON_PROCESSED_GRAPH 0
 #define EMPTY_GRAPH 1
 #define NON_EMPTY_GRAPH 2
-
 
 
 /**
@@ -68,7 +68,7 @@ infos->encoding_output = DEFAULT_ENCODING_OUTPUT;
 infos->bom_output = DEFAULT_BOM_OUTPUT;
 infos->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 infos->verbose_name_grf=1;
-
+infos->debug=0;
 return infos;
 }
 
@@ -625,6 +625,13 @@ if (token[0]==':' && token[1]!='\0') {
 if (is_an_output) {
    /* If there is an output, we associate it to the first token */
    u_sprintf(tmp,"%S/%S",token,output);
+   /* In debug mode, we have to add the input */
+   if (infos->debug) {
+	   u_strcat(tmp,token);
+	   int size=u_strlen(tmp);
+	   tmp[size]=DEBUG_INFO_END_MARK;
+	   tmp[size+1]='\0';
+   }
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
 } else {
    i_tokens[(*n_tokens)++]=get_value_index(token,infos->tags);
@@ -639,6 +646,20 @@ while (!is_empty(u_tokens)) {
             infos->graph_names->value[current_graph]);
    }
    u_sprintf(tmp,"%S",token);
+   if (infos->debug) {
+	   /* In debug mode, we have to add an output, but only the part with the
+	    * debug info */
+	   u_strcat(tmp,"/");
+	   unichar foo[2]={DEBUG_INFO_OUTPUT_MARK,0};
+	   u_strcat(tmp,foo);
+	   int i;
+	   for (i=u_strlen(output)-1;output[i]!=DEBUG_INFO_COORD_MARK;i--);
+	   u_strcat(tmp,output+i);
+	   u_strcat(tmp,token);
+	   int size=u_strlen(tmp);
+	   tmp[size]=DEBUG_INFO_END_MARK;
+	   tmp[size+1]='\0';
+   }
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
    free(token);
 }
@@ -679,7 +700,7 @@ while (transitions!=NULL) {
  * be 0 for the first call and 4 for the second call).
  */
 void process_box_line(SingleGraph graph,unichar* input,unichar* output,struct list_int* transitions,
-                     int *pos,int state,int n,struct compilation_info* infos) {
+                     int *pos,int state,int n,struct compilation_info* infos,int line) {
 int result=0;
 struct fifo* sequence=new_fifo();
 while (result==0 && input[*pos]!='\0') {
@@ -687,7 +708,14 @@ while (result==0 && input[*pos]!='\0') {
 }
 int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;
-token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n);
+if (!infos->debug) {
+	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n);
+} else {
+	unichar output2[MAX_GRF_BOX_CONTENT];
+	u_strcpy(output2,output);
+	add_debug_infos(output2,n,state,line);
+	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n);
+}
 free_fifo(sequence);
 write_transitions(graph,sequence_ent,transitions,state,n_tokens);
 }
@@ -741,16 +769,37 @@ if ((length>2 && box_content[0]=='$' &&
        * (see declaration of CONTEXT_COUNTER) */
       u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",(infos->CONTEXT_COUNTER)++);
    }
-   u_strcpy(output,"");
+   if (infos->debug) {
+	   /* As a normal variable/context tag has no output, we have to add a / */
+	   int input_size=u_strlen(input);
+	   u_strcat(input,"/");
+	   unichar foo[2]={DEBUG_INFO_OUTPUT_MARK,0};
+	   u_strcat(input,foo);
+	   add_debug_infos(input,n,current_state,0);
+	   int i;
+	   int size=u_strlen(input);
+	   for (i=0;i<input_size;i++) {
+		   input[i+size]=input[i];
+	   }
+	   input[i+size]=DEBUG_INFO_END_MARK;
+	   input[i+size+1]='\0';
+   }
    process_variable_or_context(graph,input,transitions,current_state,infos,n);
    return;
 }
 /* Otherwise, we deal with the output of the box, if any */
-split_input_output(box_content,input,output);
+int shift=0;
+if (infos->debug) {
+	shift=1;
+	output[0]=DEBUG_INFO_OUTPUT_MARK;
+}
+split_input_output(box_content,input,output+shift);
 /* And we process the box input */
 int pos=0;
+int line=0;
 while (input[pos]!='\0') {
-   process_box_line(graph,input,output,transitions,&pos,current_state,n,infos);
+   process_box_line(graph,input,output,transitions,&pos,current_state,n,infos,line);
+   line++;
 }
 }
 
@@ -946,11 +995,14 @@ return 1;
  * must be at +2 if and only if we are in UTF16. If the encoding changes, the
  * fseek may also change (for instance, we would have +0 for UTF8). So, it is
  * safer to let the U_MODIFY mode do the job.
+ *
+ * In debug mode, the first char is a 'd' followed by the number of
+ * graphs written on 9 digits.
  */
-void write_number_of_graphs(char* name,int n) {
+void write_number_of_graphs(char* name,int n,int debug) {
 U_FILE* f=u_fopen_existing_unitex_text_format(name,U_MODIFY);
 /* And we print the number of graphs on 10 digits */
-u_fprintf(f,"%010d",n);
+u_fprintf(f,"%c%09d",debug?'d':'0',n);
 u_fclose(f);
 }
 

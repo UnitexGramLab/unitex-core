@@ -54,6 +54,7 @@ const char* usage_Grf2Fst2 =
          "  -c/--char_by_char: lexical units are single letters. If both -a and -c options are\n"
          "                     unused, lexical units will be sequences of any unicode letters.\n"
          "  -d DIR/--pkgdir=DIR: path of the root dir of all grammar packages\n"
+         "  --debug: compile graphs in debug mode\n"
          "  -h/--help: this help\n"
          "\n"
          "Compiles the grammar <grf> and saves the result in a FST2 file\n"
@@ -125,6 +126,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"output",required_argument_TS,NULL,'o'},
+      {"debug",no_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -177,6 +179,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
              strcpy(fst2_file_name,vars->optarg);
              break;
    case 'd': strcpy(infos->repository,vars->optarg); break;
+   case 1: infos->debug=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Grf2Fst2[index].name);
@@ -226,7 +229,7 @@ free_alphabet(infos->alphabet);
 write_tags(infos->fst2,infos->tags);
 u_fclose(infos->fst2);
 free_OptVars(vars);
-write_number_of_graphs(fst2_file_name,infos->graph_names->size-1);
+write_number_of_graphs(fst2_file_name,infos->graph_names->size-1,infos->debug);
 if (check_recursion) {
    if (!OK_for_Locate(fst2_file_name,infos->no_empty_graph_warning)) {
       free_compilation_info(infos);

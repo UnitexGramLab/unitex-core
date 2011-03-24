@@ -209,6 +209,10 @@ struct fst2 {
      * the $a( and $a) declarations found in the tags. */
     struct list_ustring* input_variables;
     struct list_ustring* output_variables;
+
+    /* If debug is not 0, then the transition tags are expected to have
+     * a special debug format */
+    int debug;
 };
 typedef struct fst2 Fst2;
 

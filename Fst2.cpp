@@ -82,6 +82,7 @@ a->graph_names=NULL;
 a->number_of_states_per_graphs=NULL;
 a->input_variables=NULL;
 a->output_variables=NULL;
+a->debug=0;
 return a;
 }
 
@@ -670,11 +671,13 @@ if (f==NULL) {
    return 2;
 }
 Fst2* fst2=new_Fst2(prv_alloc);
+unichar debug;
 /* We read the number of graphs contained in the fst2 */
-u_fscanf(f,"%d\n",&(fst2->number_of_graphs));
+u_fscanf(f,"%C%d\n",&debug,&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
 	return GRAPH_IS_EMPTY;
 }
+fst2->debug=(debug=='d');
 /*
  * The 'initial_states' and 'number_of_states_per_graphs' arrays are
  * allocated with the correct size. We add +1 because graph numeration
@@ -837,7 +840,7 @@ if (f==NULL) {
    fatal_error("Cannot open %s in save_Fst2\n",name);
 }
 /* The header of a .fst2 is the number of subgraphs on 10 digits */
-u_fprintf(f,"%010d\n",fst2->number_of_graphs);
+u_fprintf(f,"%c%09d\n",fst2->debug?'d':'0',fst2->number_of_graphs);
 for (int i=1;i<=fst2->number_of_graphs;i++) {
    save_fst2_subgraph(f,i,fst2);
 }
@@ -936,6 +939,7 @@ Fst2* fst2ret;
         fst2ret->number_of_states_per_graphs = NULL;
         fst2ret->input_variables = NULL;
         fst2ret->output_variables = NULL;
+        fst2ret->debug = fst2org->debug;
 
         fst2ret->states = (Fst2State*)malloc_cb(sizeof(Fst2State)*fst2ret->number_of_states,prv_alloc);
         for (i=0;i<fst2org->number_of_states;i++)

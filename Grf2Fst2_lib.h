@@ -68,10 +68,11 @@ struct compilation_info {
     */
    int CONTEXT_COUNTER;
 
-Encoding encoding_output;
-int bom_output;
-int mask_encoding_compatibility_input;
-int verbose_name_grf;
+   Encoding encoding_output;
+   int bom_output;
+   int mask_encoding_compatibility_input;
+   int verbose_name_grf;
+   int debug;
 };
 
 
@@ -81,7 +82,7 @@ void free_compilation_info(struct compilation_info*);
 
 int compile_grf(char*,struct compilation_info*);
 void write_tags(U_FILE*,struct string_hash*);
-void write_number_of_graphs(char*,int);
+void write_number_of_graphs(char*,int,int);
 void write_graph(U_FILE*,SingleGraph,int,unichar*);
 
 
