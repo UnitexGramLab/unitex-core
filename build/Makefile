@@ -317,7 +317,8 @@ CASSYS_OBJS	= Main_Cassys.o Cassys.o IOBuffer.o Error.o UnitexGetOpt.o Unicode.o
 			Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
 			DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
 			Tagset.o Tokenize.o HashTable.o Cassys_tokens.o OutputTransductionVariables.o LocateCache.o \
-			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o \
+			DebugMode.o $(SYSLIBMAPPED)
 
 
 CHECKDIC      = CheckDic
@@ -344,7 +345,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
 				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o $(SYSLIBMAPPED)
+				LoadInf.o Offsets.o Overlap.o DebugMode.o $(SYSLIBMAPPED)
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o\
@@ -358,7 +359,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
 				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o $(SYSLIBMAPPED)
+				LoadInf.o Offsets.o Overlap.o DebugMode.o $(SYSLIBMAPPED)
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o\
@@ -376,7 +377,8 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o ProgramInvoker.o\
             Korean.o SortTxt.o Thai.o Compress.o DictionaryTree.o\
             AutomatonDictionary2Bin.o HashTable.o LocateCache.o Arabic.o \
-            OutputTransductionVariables.o VariableUtils.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+            OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+            DebugMode.o LoadInf.o $(SYSLIBMAPPED)
 
 ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
@@ -416,7 +418,8 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o LocateTrace.o
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 	           ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
-	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+	           DebugMode.o LoadInf.o $(SYSLIBMAPPED)
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o Grf2Fst2_lib.o\
@@ -485,7 +488,8 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unic
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
               ProgramInvoker.o Korean.o HashTable.o LocateCache.o Arabic.o \
-              OutputTransductionVariables.o VariableUtils.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+              OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+              LoadInf.o DebugMode.o $(SYSLIBMAPPED)
 
 LOCATETFST      = LocateTfst
 LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o LocateTfst_lib.o \
@@ -544,7 +548,8 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
-               Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+               Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+               DebugMode.o LoadInf.o $(SYSLIBMAPPED)
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o RegularExpressions.o Error.o File.o\

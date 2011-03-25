@@ -22,6 +22,7 @@
 #ifndef DebugModeH
 #define DebugModeH
 
+#include "LocatePattern.h"
 #include "Unicode.h"
 
 /**
@@ -44,8 +45,12 @@
 #define DEBUG_INFO_COORD_MARK 2
 #define DEBUG_INFO_INPUT_MARK 3
 #define DEBUG_INFO_END_MARK 4
+#define DEBUG_INFO_GRAPHCALL_MARK 5
+
 
 void add_debug_infos(unichar* output,int graph,int box,int line);
+void save_real_output_from_debug(U_FILE* f,OutputPolicy policy,unichar* s);
+void create_graph_call_debug_tag(unichar* dst,unichar* src,int graph_number,int before_call);
 
 #endif
 

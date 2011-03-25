@@ -73,6 +73,7 @@ p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
 p->matching_units=0;
 p->match_policy=LONGEST_MATCHES;
+p->real_output_policy=IGNORE_OUTPUTS;
 p->output_policy=IGNORE_OUTPUTS;
 p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 p->variable_error_policy=IGNORE_VARIABLE_ERRORS;
@@ -130,6 +131,7 @@ memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 p->is_in_cancel_state = 0;
 p->is_in_trace_state = 0;
 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
+p->debug=0;
 return p;
 }
 
@@ -197,7 +199,7 @@ if (max_count_call_warning == -1) {
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
 p->space_policy=space_policy;
-p->output_policy=output_policy;
+p->real_output_policy=p->output_policy=output_policy;
 p->search_limit=search_limit;
 p->ambiguous_output_policy=ambiguous_output_policy;
 p->variable_error_policy=variable_error_policy;
@@ -234,11 +236,6 @@ if (out==NULL) {
 info=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord_info,U_WRITE);
 if (info==NULL) {
    error("Cannot write %s\n",concord_info);
-}
-switch(output_policy) {
-   case IGNORE_OUTPUTS: u_fprintf(out,"#I\n"); break;
-   case MERGE_OUTPUTS: u_fprintf(out,"#M\n"); break;
-   case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
 }
 if (alphabet!=NULL && alphabet[0]!='\0') {
    u_printf("Loading alphabet...\n");
@@ -285,6 +282,24 @@ if (fst2load==NULL) {
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
+}
+if (fst2load->debug) {
+	/* If Locate uses a debug fst2, we force the output mode to MERGE,
+	 * we allow ambiguous outputs and we write graph names into the
+	 * concordance file */
+	p->output_policy=MERGE_OUTPUTS;
+	p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+	p->debug=1;
+	u_fprintf(out,"#D\n");
+	u_fprintf(out,"%d\n",fst2load->number_of_graphs);
+	for (int i=0;i<fst2load->number_of_graphs;i++) {
+		u_fprintf(out,"%S\n",fst2load->graph_names[i+1]);
+	}
+}
+switch(p->real_output_policy) {
+   case IGNORE_OUTPUTS: u_fprintf(out,"#I\n"); break;
+   case MERGE_OUTPUTS: u_fprintf(out,"#M\n"); break;
+   case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
 }
 
 Abstract_allocator locate_abstract_allocator=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);

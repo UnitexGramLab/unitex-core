@@ -30,6 +30,7 @@
 #include "UserCancelling.h"
 #include "File.h"
 #include "MappedFileHelper.h"
+#include "DebugMode.h"
 
 
 /* Delay between two prints (yyy% done) */
@@ -2036,12 +2037,13 @@ static struct match_list* eliminate_longer_matches(struct match_list *ptr, int s
 	return ptr;
 }
 
+
 /**
  * Writes the matches to the file concord.ind. The matches are in
  * left-most longest order. 'current_position' represents the current
  * position in the text. It is used to determine when we can save matches:
  * when we are at position 246, matches that end before 246 cannot be
- * modifyied anymore by the shortest or longest match heuristic, so we can
+ * modified anymore by the shortest or longest match heuristic, so we can
  * save them.
  *
  * wrong results for all matches when modifying text ??
@@ -2050,7 +2052,7 @@ static struct match_list* eliminate_longer_matches(struct match_list *ptr, int s
  */
 static struct match_list* save_matches(struct match_list* l, int current_position,
 		U_FILE* f, struct locate_parameters* p, Abstract_allocator prv_alloc) {
-struct match_list *ptr;
+struct match_list* ptr;
 
 if (l == NULL)
 	return NULL;
@@ -2068,7 +2070,16 @@ if (l == NULL)
 						p->tokens->value[p->buffer[l->m.end_pos_in_token]]) - 1);
 		if (l->output != NULL) {
 			/* If there is an output */
-			u_fprintf(f, " %S", l->output);
+			if (!p->debug) {
+				/* Normal mode */
+				u_fprintf(f, " %S", l->output);
+			} else {
+				/* In debug mode, we save the normal (non debug) mode output,
+				 * before the debug one */
+				u_fprintf(f, " ");
+				save_real_output_from_debug(f,p->real_output_policy,l->output);
+				u_fprintf(f,"%S",l->output);
+			}
 		}
 		u_fprintf(f, "\n");
 		if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {

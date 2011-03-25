@@ -215,7 +215,11 @@ struct locate_parameters {
    /* Policy for match selection */
    MatchPolicy match_policy;
 
-   /* Policies for handling outputs */
+   /* Policies for handling outputs
+    * real_output_policy is the policy asked by the user
+    * output_policy may be different, since when the fst2 is a
+    * debug one, we force Locate to work in MERGE mode */
+   OutputPolicy real_output_policy;
    OutputPolicy output_policy;
    AmbiguousOutputPolicy ambiguous_output_policy;
    VariableErrorPolicy variable_error_policy;
@@ -326,6 +330,8 @@ struct locate_parameters {
    const char* token_filename;
    unichar* recyclable_unichar_buffer;
    unsigned int size_recyclable_unichar_buffer;
+
+   int debug;
 };
 
 

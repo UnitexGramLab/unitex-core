@@ -597,7 +597,7 @@ return 0;
  */
 void token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
                                 int* i_tokens,struct compilation_info* infos,
-                                int *n_tokens,int current_graph) {
+                                int *n_tokens,int current_graph,int must_add_token_to_debug) {
 if (u_tokens==NULL) {
    fatal_error("NULL error in token_sequence_2_integer_sequence\n");
 }
@@ -610,7 +610,14 @@ unichar tmp[MAX_GRF_BOX_CONTENT];
 int is_an_output=(output!=NULL && output[0]!='\0');
 if (token[0]==':' && token[1]!='\0') {
    /* If we have a subgraph call */
-   if (is_an_output) {
+	int graph_number=get_value_index(&(token[1]),infos->graph_names);
+	if (infos->debug) {
+		/* In debug mode, we generate two <E> tags: one before and
+		 * one after the graph call */
+		create_graph_call_debug_tag(tmp,output,graph_number,1);
+		i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
+	}
+	else if (is_an_output) {
       error("WARNING in %S: ignoring output associated to subgraph call %S\n",
             infos->graph_names->value[current_graph],token);
    }
@@ -618,15 +625,21 @@ if (token[0]==':' && token[1]!='\0') {
       fatal_error("%S: unexpected token after subgraph call in token_sequence_2_integer_sequence\n",
             infos->graph_names->value[current_graph]);
    }
-   i_tokens[(*n_tokens)++]=-get_value_index(&(token[1]),infos->graph_names);
+   i_tokens[(*n_tokens)++]=-graph_number;
    free(token);
+	if (infos->debug) {
+		/* In debug mode, we generate two <E> tags: one before and
+		 * one after the graph call */
+		create_graph_call_debug_tag(tmp,output,graph_number,0);
+		i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
+	}
    return;
 }
 if (is_an_output) {
    /* If there is an output, we associate it to the first token */
    u_sprintf(tmp,"%S/%S",token,output);
    /* In debug mode, we have to add the input */
-   if (infos->debug) {
+   if (infos->debug && must_add_token_to_debug) {
 	   u_strcat(tmp,token);
 	   int size=u_strlen(tmp);
 	   tmp[size]=DEBUG_INFO_END_MARK;
@@ -709,7 +722,7 @@ while (result==0 && input[*pos]!='\0') {
 int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;
 if (!infos->debug) {
-	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n);
+	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n,1);
 } else {
 	unichar output2[MAX_GRF_BOX_CONTENT];
 	if (state==0 && !u_strcmp(input,"<E>") && u_strlen(output)==1) {
@@ -720,7 +733,7 @@ if (!infos->debug) {
 		u_strcpy(output2,output);
 		add_debug_infos(output2,n,state,line);
 	}
-	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n);
+	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n,1);
 }
 free_fifo(sequence);
 write_transitions(graph,sequence_ent,transitions,state,n_tokens);
@@ -734,14 +747,31 @@ write_transitions(graph,sequence_ent,transitions,state,n_tokens);
 void process_variable_or_context(SingleGraph graph,unichar* input,
                                 struct list_int* transitions,
                                 int state,struct compilation_info* infos,
-                                int current_graph) {
+                                int current_graph,unichar* debug_output) {
 struct fifo* tmp=new_fifo();
-put_ptr(tmp,u_strdup(input));
-int token[1];
+int token[2];
 int i;
-token_sequence_2_integer_sequence(tmp,NULL,token,infos,&i,current_graph);
+int n=0;
+if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
+	/* The closing context mark must be dealt in a special way in debug mode.
+	 * Because of its very nature, reaching this tag in a forbidden context
+	 * may cause backtracking, so that if we put the debug tag after this one, it
+	 * will be never considered. So, for this tag, the debug tag will be inserted
+	 * before it */
+	put_ptr(tmp,u_strdup("<E>"));
+	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0);
+	n++;
+}
+put_ptr(tmp,u_strdup(input));
+token_sequence_2_integer_sequence(tmp,NULL,token+n,infos,&i,current_graph,0);
+n++;
+if (debug_output[0]!='\0' && u_strcmp(input,"$]")) {
+	put_ptr(tmp,u_strdup("<E>"));
+	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0);
+	n++;
+}
 free_fifo(tmp);
-write_transitions(graph,token,transitions,state,1);
+write_transitions(graph,token,transitions,state,n);
 }
 
 
@@ -775,22 +805,20 @@ if ((length>2 && box_content[0]=='$' &&
        * (see declaration of CONTEXT_COUNTER) */
       u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",(infos->CONTEXT_COUNTER)++);
    }
+   unichar debug_output[MAX_GRF_BOX_CONTENT];
+   debug_output[0]='\0';
    if (infos->debug) {
-	   /* As a normal variable/context tag has no output, we have to add a / */
-	   int input_size=u_strlen(input);
-	   u_strcat(input,"/");
+	   /* As a normal variable/context tag has no output, we have
+	    * to create a <E> tag associated to this output */
 	   unichar foo[2]={DEBUG_INFO_OUTPUT_MARK,0};
-	   u_strcat(input,foo);
-	   add_debug_infos(input,n,current_state,0);
-	   int i;
-	   int size=u_strlen(input);
-	   for (i=0;i<input_size;i++) {
-		   input[i+size]=input[i];
-	   }
-	   input[i+size]=DEBUG_INFO_END_MARK;
-	   input[i+size+1]='\0';
+	   u_strcat(debug_output,foo);
+	   add_debug_infos(debug_output,n,current_state,0);
+	   u_strcat(debug_output,box_content);
+	   int size=u_strlen(debug_output);
+	   debug_output[size]=DEBUG_INFO_END_MARK;
+	   debug_output[size+1]='\0';
    }
-   process_variable_or_context(graph,input,transitions,current_state,infos,n);
+   process_variable_or_context(graph,input,transitions,current_state,infos,n,debug_output);
    return;
 }
 /* Otherwise, we deal with the output of the box, if any */
