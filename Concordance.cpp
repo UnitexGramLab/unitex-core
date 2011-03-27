@@ -841,7 +841,7 @@ int position_in_tokens=0;
 int position_from_eos=0;
 int start_from_eos=0;
 int end_from_eos=0;
-int match_number=1;
+int match_number=-1;
 
 /* Now we can proceed all the matches, assuming that they are sorted by starting
  * position */
