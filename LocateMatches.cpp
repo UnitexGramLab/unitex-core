@@ -21,7 +21,7 @@
 
 #include "LocateMatches.h"
 #include "Error.h"
-
+#include "Ustring.h"
 
 
 /**
@@ -91,13 +91,24 @@ struct match_list* load_match_list(U_FILE* f,OutputPolicy *output_policy,Abstrac
 struct match_list* l=NULL;
 struct match_list* end_of_list=NULL;
 int start,end,start_char,end_char,start_letter,end_letter;
-unichar output[3000];
+Ustring* line=new_Ustring();
 char is_an_output;
 /* We read the header */
 unichar uc_policy=0;
 u_fscanf(f,"#%C\n",&uc_policy);
 OutputPolicy policy;
 switch(uc_policy) {
+   case 'D': {
+	   policy=DEBUG_OUTPUTS;
+	   /* In debug mode, we have to skip the debug header */
+	   int n_graphs;
+	   u_fscanf(f,"%d\n",&n_graphs);
+	   while ((n_graphs--)>-1) {
+		   /* -1, because we also have to skip the #[IMR] line */
+		   readline(line,f);
+	   }
+	   break;
+   }
    case 'M': policy=MERGE_OUTPUTS; break;
    case 'R':
    case 'T': policy=REPLACE_OUTPUTS; break;
@@ -112,18 +123,18 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
    int c=u_fgetc(f);
    if (c==' ') {
       /* If we have an output to read */
-      int i=0;
-      while ((c=u_fgetc(f))!='\n') {
-         output[i++]=(unichar)c;
-      }
-      output[i]='\0';
+	  readline(line,f);
+	  /* In debug mode, we have to stop at the char #1 */
+      int i=-1;
+      while (line->str[++i]!=1);
+      line->str[i]='\0';
    }
    is_an_output=(policy!=IGNORE_OUTPUTS);
    if (l==NULL) {
-      l=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?output:NULL,NULL,prv_alloc);
+      l=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?line->str:NULL,NULL,prv_alloc);
       end_of_list=l;
    } else {
-      end_of_list->next=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?output:NULL,NULL,prv_alloc);
+      end_of_list->next=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?line->str:NULL,NULL,prv_alloc);
       end_of_list=end_of_list->next;
    }
 }

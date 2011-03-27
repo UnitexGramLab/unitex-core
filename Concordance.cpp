@@ -841,11 +841,13 @@ int position_in_tokens=0;
 int position_from_eos=0;
 int start_from_eos=0;
 int end_from_eos=0;
+int match_number=1;
 
 /* Now we can proceed all the matches, assuming that they are sorted by starting
  * position */
 u_printf("Constructing concordance...\n");
 while (matches!=NULL) {
+	match_number++;
 	/* Here, we are sure that the buffer contains all the tokens we need.
 	 * We adjust 'start_pos' and 'end_pos' so that the tokens that compose
 	 * the current match are between buffer[start_pos] and buffer[end_pos]. */
@@ -953,9 +955,8 @@ while (matches!=NULL) {
 	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token+1,options->snt_offsets);
 	end_pos_char=end_pos_char+shift;
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
-	u_sprintf(positions,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
+	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,match_number);
 	u_sprintf(positions_from_eos,"%d\t%d\t%d",current_sentence,start_from_eos,end_from_eos);
-	//u_printf("MATCH:%S\t%S\n",positions_from_eos,middle);
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
 	if (is_a_good_match) {

@@ -48,7 +48,8 @@ typedef enum {
 typedef enum {
    IGNORE_OUTPUTS,
    MERGE_OUTPUTS,
-   REPLACE_OUTPUTS
+   REPLACE_OUTPUTS,
+   DEBUG_OUTPUTS
 } OutputPolicy;
 
 typedef enum {
