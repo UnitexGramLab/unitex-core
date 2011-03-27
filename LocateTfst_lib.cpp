@@ -85,7 +85,7 @@ if (tfst==NULL) {
 }
 struct FST2_free_info fst2_free;
 struct locate_tfst_infos infos;
-infos.fst2=load_abstract_fst2(grammar,0,&fst2_free);
+infos.fst2=load_abstract_fst2(grammar,1,&fst2_free);
 if (infos.fst2==NULL) {
 	close_text_automaton(tfst);
 	return 0;
@@ -112,8 +112,23 @@ if (infos.output==NULL) {
 	error("Cannot open %s\n",output);
 	return 0;
 }
+infos.real_output_policy=output_policy;
 infos.output_policy=output_policy;
-switch (infos.output_policy) {
+infos.debug=0;
+if (infos.fst2->debug) {
+	/* If LocateTfst uses a debug fst2, we force the output mode to MERGE,
+	 * we allow ambiguous outputs and we write graph names into the
+	 * concordance file */
+	infos.output_policy=MERGE_OUTPUTS;
+	infos.ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+	infos.debug=1;
+	u_fprintf(infos.output,"#D\n");
+	u_fprintf(infos.output,"%d\n",infos.fst2->number_of_graphs);
+	for (int i=0;i<infos.fst2->number_of_graphs;i++) {
+		u_fprintf(infos.output,"%S\n",infos.fst2->graph_names[i+1]);
+	}
+}
+switch (infos.real_output_policy) {
 case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
 case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
 case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
@@ -131,7 +146,6 @@ if (infos.filters==NULL) {
 }
 #endif
 infos.match_policy=match_policy;
-infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
 infos.variable_error_policy=variable_error_policy;
 infos.input_variables=new_Variables(infos.fst2->input_variables);

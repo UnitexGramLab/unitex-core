@@ -1723,73 +1723,6 @@ static int find_compound_word(int pos, int pattern_number,
 	return find_longest_compound_word(pos, DLC_tree->root, pattern_number, p);
 }
 
-/**
- * This function compares the text to the compound word tree in order to find
- * the longest compound word thay have in common. It returns the position
- * of the last token of the compound word, or -1 if no compound word is found.
- */
-static int find_compound_word_old_(int pos, struct DLC_tree_node* node,
-		int pattern_number, struct locate_parameters* p) {
-	int position_max, m, res;
-	if (node == NULL)
-		return -1;
-	if (-1 != binary_search(pattern_number, node->array_of_patterns,
-			node->number_of_patterns))
-		position_max = pos - 1;
-	else
-		position_max = -1;
-	if (pos + p->current_origin == p->buffer_size)
-		return position_max;
-	res = binary_search(p->buffer[pos + p->current_origin],
-			node->destination_tokens, node->number_of_transitions);
-	if (res == -1)
-		return position_max;
-	m = find_compound_word_old_(pos + 1, node->destination_nodes[res],
-			pattern_number, p);
-	if (m > position_max)
-		return m;
-	return position_max;
-}
-
-/**
- * Looks for a compound word from the position 'pos' in the text, that matches the
- * given pattern_number. Returns the position of the last token of the compound word
- * or -1 if no compound word is found. In case of a compound word that is a prefix
- * of another, the function considers the longest one.
- */
-/*
-static int find_compound_word_old(int pos, int pattern_number,
-		struct DLC_tree_info* DLC_tree, struct locate_parameters* p) {
-	int position_max, m, res;
-	struct DLC_tree_node *n;
-	if (pos + p->current_origin == p->buffer_size) {
-		return -1;
-	}
-	if ((n = DLC_tree->index[p->buffer[pos + p->current_origin]]) == NULL) {
-		return -1;
-	}
-	if (-1 != binary_search(pattern_number, n->array_of_patterns,
-			n->number_of_patterns)) {
-		position_max = pos;
-	} else
-		position_max = -1;
-	pos++;
-	if (pos + p->current_origin == p->buffer_size) {
-		return -1;
-	}
-	res = binary_search(p->buffer[pos + p->current_origin],
-			n->destination_tokens, n->number_of_transitions);
-	if (res == -1) {
-		return position_max;
-	}
-	m = find_compound_word_old_(pos + 1, n->destination_nodes[res],
-			pattern_number, p);
-	if (m > position_max) {
-		return m;
-	}
-	return position_max;
-}
-*/
 
 /**
  * Returns a string corresponding to the tokens in the range [start;end].
@@ -1840,7 +1773,14 @@ static void add_match(int end, unichar* output, struct locate_parameters* p, Abs
 		p->last_matched_position = end;
 	}
 	int start = p->current_origin + p->left_ctx_shift;
-	struct match_list* m = new_match(start, end, output, NULL, prv_alloc);
+	unichar* z=output;
+	if (p->debug && p->left_ctx_base!=0) {
+		/* In debug mode, we always use the whole output. It will be
+		 * the match writing operation into the concordance index that
+		 * will rebuild the actual output parsing the full debug one */
+		z=p->stack->stack;
+	}
+	struct match_list* m = new_match(start, end, z, NULL, prv_alloc);
 	if (p->match_cache_first == NULL) {
 		p->match_cache_first = p->match_cache_last = m;
 		return;

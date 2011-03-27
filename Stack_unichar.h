@@ -46,19 +46,29 @@ void fatal_error_full_stack_push();
 void push_array(struct stack_unichar*,const unichar*,unsigned int);
 unichar pop(struct stack_unichar*);
 
-static inline void push(struct stack_unichar* stack,unichar c) {
-if (stack != NULL) {
-    if (stack->stack_pointer!=stack->capacity-1) {
-        stack->stack[++(stack->stack_pointer)]=c;
-        return;
-    }
+
+static inline void resize(struct stack_unichar* stack,int minimum_new_size) {
+int new_size=stack->capacity;
+if (new_size==0) new_size=1;
+while (new_size<minimum_new_size) {
+	new_size=new_size*2;
 }
+if (new_size==stack->capacity) return;
+stack->stack=(unichar*)realloc(stack->stack,new_size*sizeof(unichar));
+if (stack->stack==NULL) {
+	fatal_alloc_error("resize");
+}
+stack->capacity=new_size;
+}
+
+static inline void push(struct stack_unichar* stack,unichar c) {
 if (stack==NULL) {
    fatal_error_NULL_push();
 }
-else {
-   fatal_error_full_stack_push();
+if (stack->stack_pointer==stack->capacity-1) {
+	resize(stack,stack->capacity+1);
 }
+stack->stack[++(stack->stack_pointer)]=c;
 }
 
 #endif

@@ -117,8 +117,13 @@ u_fprintf(f," \n");
 /**
  * Writes the states and transitions of of the given graph #n into the given file.
  */
-void write_graph(U_FILE* f,SingleGraph graph,int n,unichar* name) {
-u_fprintf(f,"%d %S\n",n,name);
+void write_graph(U_FILE* f,SingleGraph graph,int n,unichar* name,char* full_name) {
+u_fprintf(f,"%d %S",n,name);
+if (full_name!=NULL) {
+	/* In debug mode, we add the full file name, separated by char #1 */
+	u_fprintf(f,"%C%s",1,full_name);
+}
+u_fprintf(f,"\n");
 /* By convention, the empty automaton is represented by an initial state with no
  * transition */
 if (graph->number_of_states==0) u_fprintf(f, ": \n");
@@ -899,10 +904,14 @@ if (infos->verbose_name_grf!=0) {
 }
 /* We get the absolute path of the graph */
 get_absolute_name(name,n,infos);
+char* full_name=NULL;
+if (infos->debug) {
+	full_name=name;
+}
 U_FILE* f=u_fopen_existing_versatile_encoding(infos->mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
-   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
    if (n==0) return 0;
    return 1;
@@ -914,7 +923,7 @@ int c;
 while ((c=u_fgetc(f))!=EOF && c!='#') {}
 if (c==EOF) {
    error("Invalid graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
-   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
    if (n==0) return 0;
    return 1;
@@ -935,7 +944,7 @@ for (i=0;i<n_states;i++) {
    int result=read_grf_line(f,ligne,&transitions,n,infos);
    if (result==0) {
       /* In case of error, we dump the graph and return */
-      write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+      write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
       free_SingleGraph(graph,NULL);
       u_fclose(f);
       if (n==1) return 0;
@@ -956,7 +965,7 @@ check_accessibility(graph->states,0);
 remove_useless_states(graph,NULL);
 if (graph->states[0]==NULL) {
    /* If the graph has been emptied */
-   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
    if (infos->no_empty_graph_warning) return 1;
    if (n==0) {
@@ -969,7 +978,7 @@ if (graph->states[0]==NULL) {
 /* Now, we minimize the automaton assuming that reversed transitions are still there */
 minimize(graph,0);
 /* And we save it */
-write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
 free_SingleGraph(graph,NULL);
 return 1;
 }

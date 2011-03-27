@@ -72,6 +72,7 @@ struct locate_tfst_infos {
 	#endif
 
 	MatchPolicy match_policy;
+	OutputPolicy real_output_policy;
 	OutputPolicy output_policy;
 	AmbiguousOutputPolicy ambiguous_output_policy;
 	VariableErrorPolicy variable_error_policy;
@@ -104,6 +105,8 @@ struct locate_tfst_infos {
 	
 	LocateTfstTagMatchingCache* cache;
 	struct opt_contexts** contexts;
+
+	int debug;
 };
 
 

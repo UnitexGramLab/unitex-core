@@ -102,36 +102,16 @@ void fatal_error_full_stack_push()
    fatal_error("Cannot push on a full stack\n");
 }
 
-/**
- * Pushes the given character on the given stack.
- */
-/* be moved in .H as static inline for performance */
-/*
-void push(struct stack_unichar* stack,unichar c) {
-if (stack != NULL) {
-    if (stack->stack_pointer!=stack->capacity-1) {
-        stack->stack[++(stack->stack_pointer)]=c;
-        return;
-    }
-}
-if (stack==NULL) {
-   fatal_error("NULL error in push\n");
-}
-else {
-   fatal_error("Cannot push on a full stack\n");
-}
-}
-*/
 
 /**
  * Pushes the given characters from an array on the given stack.
  */
 void push_array(struct stack_unichar* stack,const unichar *array,unsigned int size) {
 if (stack==NULL) {
-   fatal_error("NULL error in push_multiple\n");
+   fatal_error("NULL error in push_array\n");
 }
 if ((stack->stack_pointer + (int)size) >= stack->capacity) {
-   fatal_error("Cannot push_array on a full stack\n");
+   resize(stack,stack->stack_pointer + (int)size);
 }
 
 unsigned int i;

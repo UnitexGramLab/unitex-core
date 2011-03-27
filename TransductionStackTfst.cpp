@@ -24,6 +24,7 @@
 #include "Match.h"
 #include "Tfst.h"
 #include "DELA.h"
+#include "DebugMode.h"
 
 
 /**
@@ -132,14 +133,28 @@ for (;;) {
  * Returns 1 if OK; 0 otherwise (for instance, if a variable is
  * not correctly defined).
  */
-int process_output_tfst(Ustring* stack,const unichar* s,struct locate_tfst_infos* p) {
+int process_output_tfst(Ustring* stack,const unichar* s,struct locate_tfst_infos* p,
+		int capture_in_debug_mode) {
 int old_length=stack->len;
 int i=0;
 if (s==NULL) {
    /* We do nothing if there is no output */
    return 1;
 }
+if (capture_in_debug_mode) {
+	/* If we have a capture in debug mode, we must skip the initial char #1 */
+	i++;
+}
 while (s[i]!='\0') {
+    if (s[i]==DEBUG_INFO_COORD_MARK) {
+    	/* If we have found the debug mark indicating the end of the real output,
+    	 * we rawly copy the end of the output without interpreting it,
+    	 * or return if we were in capture mode */
+    	if (capture_in_debug_mode) return 1;
+    	push_output_string_tfst(stack,s+i);
+    	return 1;
+    }
+
    if (s[i]=='$') {
       /* Case of a variable name */
       unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
@@ -377,17 +392,29 @@ return 1;
 
 /**
  * This function deals with an output sequence, regardless there are pending
- * output variableds or not.
+ * output variables or not.
  */
 int deal_with_output_tfst(Ustring* stack,const unichar* output,struct locate_tfst_infos* p,int *captured_chars) {
+if (output==NULL) return 1;
 Ustring* stack_foo=stack;
-if (capture_mode(p->output_variables)) {
+int capture=capture_mode(p->output_variables);
+if (capture) {
 	stack_foo=new_Ustring(64);
+	if (p->debug) {
+		/* In debug mode, an output to be captured must still be
+		 * added to the normal stack, to trace the explored grammar
+		 * path. But, in this case, we remove the actual output part,
+		 * since no output is really produced there */
+		push_output_char_tfst(stack,DEBUG_INFO_OUTPUT_MARK);
+		int i;
+		for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++);
+		push_output_string_tfst(stack,output+i);
+	}
 }
-if (!process_output_tfst(stack_foo,output,p)) {
+if (!process_output_tfst(stack_foo,output,p,capture && p->debug)) {
 	return 0;
 }
-if (capture_mode(p->output_variables)) {
+if (capture) {
 	*captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str);
 	free_Ustring(stack_foo);
 }

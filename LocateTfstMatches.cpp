@@ -26,6 +26,7 @@
 #include "List_pointer.h"
 #include "TransductionStackTfst.h"
 #include "DicVariables.h"
+#include "DebugMode.h"
 
 
 /* This special negative value is used to indicate that a $* tag was found, and that
@@ -778,7 +779,11 @@ u_fprintf(f,"%d.%d.%d %d.%d.%d",l->m.start_pos_in_token,l->m.start_pos_in_char,
       l->m.end_pos_in_char,l->m.end_pos_in_letter);
 if (l->output!=NULL) {
 	/* If there is an output */
-	u_fprintf(f," %S",l->output);
+	u_fprintf(f," ");
+	if (p->debug) {
+		save_real_output_from_debug(f,p->output_policy,l->output);
+	}
+	u_fprintf(f,"%S",l->output);
 }
 u_fprintf(f,"\n");
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {

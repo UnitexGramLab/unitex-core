@@ -26,6 +26,7 @@
 #include "TransductionVariables.h"
 #include "OutputTransductionVariables.h"
 #include "VariableUtils.h"
+#include "DebugMode.h"
 
 
 /**
@@ -99,9 +100,14 @@ push_input_string(stack,s,0);
  * Returns 1 if OK; 0 otherwise (for instance, if a variable is
  * not correctly defined).
  */
-int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack) {
+int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack,
+		int capture_in_debug_mode) {
 int old_stack_pointer=stack->stack_pointer;
 int i1=0;
+if (capture_in_debug_mode) {
+	/* If we have a capture in debug mode, we must skip the initial char #1 */
+	i1++;
+}
 if (s==NULL) {
    /* We do nothing if there is no output */
    return 1;
@@ -110,7 +116,8 @@ if (s==NULL) {
 for (;;) {
     /* First, we push all chars before '\0' or '$' */
     int char_to_push_count=0;
-    while ((s[i1+char_to_push_count]!='\0') && (s[i1+char_to_push_count]!='$')) {
+    while ((s[i1+char_to_push_count]!='\0') && (s[i1+char_to_push_count]!='$')
+    		&& (s[i1+char_to_push_count]!=DEBUG_INFO_COORD_MARK)) {
         char_to_push_count++;
     }
     if (char_to_push_count!=0) {
@@ -119,7 +126,16 @@ for (;;) {
     }
 
     if (s[i1]=='\0') {
-        break;
+        return 1;
+    }
+    if (s[i1]==DEBUG_INFO_COORD_MARK) {
+    	/* If we have found the debug mark indicating the end of the real output,
+    	 * we rawly copy the end of the output without interpreting it,
+    	 * or return if we were in capture mode */
+    	if (capture_in_debug_mode) return 1;
+    	char_to_push_count=u_strlen(s+i1);
+    	push_array(stack,&s[i1],char_to_push_count);
+    	return 1;
     }
     /* Now we are sure to have s[i]=='$' */
     {
@@ -450,14 +466,25 @@ return 1;
 
 /**
  * This function deals with an output sequence, regardless there are pending
- * output variableds or not.
+ * output variables or not.
  */
 int deal_with_output(unichar* output,struct locate_parameters* p,int *captured_chars) {
 struct stack_unichar* stack=p->stack;
-if (capture_mode(p->output_variables)) {
+int capture=capture_mode(p->output_variables);
+if (capture) {
 	stack=new_stack_unichar(64);
+	if (p->debug) {
+		/* In debug mode, an output to be captured must still be
+		 * added to the normal stack, to trace the explored grammar
+		 * path. But, in this case, we remove the actual output part,
+		 * since no output is really produced there */
+		push_output_char(p->stack,DEBUG_INFO_OUTPUT_MARK);
+		int i;
+		for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++);
+		push_output_string(p->stack,output+i);
+	}
 }
-if (!process_output(output,p,stack)) {
+if (!process_output(output,p,stack,capture && p->debug)) {
 	return 0;
 }
 if (capture_mode(p->output_variables)) {
