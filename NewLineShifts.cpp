@@ -67,7 +67,7 @@ if (t==NULL) {
    return 0;
 }
 if (n%3!=0) {
-	fatal_error("Invalid array in find_snt_shift_by_dichotomy\n");
+	fatal_error("Invalid array size %d in find_snt_shift_by_dichotomy\n",n);
 }
 if (n==0) {
    return 0;

@@ -220,13 +220,15 @@ if (size%(3*sizeof(int))!=0) {
 	return NULL;
 }
 vector_int* v=new_vector_int(size/sizeof(int));
-int n=(int)fread(v->tab,sizeof(int),size/sizeof(int),f);
-u_fclose(f);
-if (n!=(int)(size/sizeof(int))) {
-	free_vector_int(v);
-	return NULL;
+if (size!=0) {
+	int n=(int)fread(v->tab,sizeof(int),size/sizeof(int),f);
+	u_fclose(f);
+	if (n!=(int)(size/sizeof(int))) {
+		free_vector_int(v);
+		return NULL;
+	}
+	v->nbelems=v->size;
 }
-v->nbelems=v->size;
 return v;
 }
 
