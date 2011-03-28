@@ -124,6 +124,7 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
    if (c==' ') {
       /* If we have an output to read */
 	  readline(line,f);
+	  chomp_new_line(line);
 	  /* In debug mode, we have to stop at the char #1 */
       int i=-1;
       while (line->str[++i]!=1 && line->str[i]!='\0');
