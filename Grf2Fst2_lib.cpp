@@ -889,6 +889,130 @@ return 1;
 
 
 /**
+ *Exploring state #n
+ */
+void look_for_artificial_debug_E_loops(SingleGraph graph,unichar** tags,
+		int n,int* mark) {
+if (mark[n]!=0) {
+	/* Already visiting this state ? */
+	return;
+}
+/* 1 = visiting */
+mark[n]=1;
+Transition** t=&(graph->states[n]->outgoing_transitions);
+unichar prefix[]={'<','E','>','/',1,'\0'};
+while (*t!=NULL) {
+	if ((*t)->tag_number<0) {
+		/* Skipping graph calls */
+		t=&((*t)->next);
+		continue;
+	}
+	unichar* tag=tags[(*t)->tag_number];
+	if (u_starts_with(tag,prefix)) {
+		/* We have found a debug <E> transition. Does it point to a visited state ? */
+		if (mark[(*t)->state_number]==1) {
+			/* Yes ? We must remove this transition */
+			Transition* tmp=*t;
+			*t=(*t)->next;
+			free_Transition(tmp,NULL);
+		} else {
+			/* Exploring this state */
+			look_for_artificial_debug_E_loops(graph,tags,(*t)->state_number,mark);
+			/* And going to next transition */
+			t=&((*t)->next);
+		}
+	} else {
+		/* Not a debug <E> transition */
+		t=&((*t)->next);
+	}
+}
+/* 2 = done */
+mark[n]=2;
+}
+
+
+/**
+ * This function looks for <E> loops only caused by tags
+ * of the form <E>/YYY where YYY is only a debug output, i.e.
+ * an <E> tag with no output in the original graph. This
+ * function removes every such transition pointing to a state
+ * that has already been reached through debug only <E>/YYY tags.
+ */
+void remove_artificial_debug_E_loops(SingleGraph graph,unichar** tags) {
+int* mark=(int*)malloc(graph->number_of_states*sizeof(int));
+if (mark==NULL) {
+	fatal_alloc_error("remove_artificial_debug_E_loops");
+}
+for (int i=0;i<graph->number_of_states;i++) {
+	/* Brute-force: we clean from every state */
+	for (int j=0;j<graph->number_of_states;j++) {
+		/* Cleaning marks */
+		mark[j]=0;
+	}
+	look_for_artificial_debug_E_loops(graph,tags,i,mark);
+}
+free(mark);
+}
+
+
+/**
+ * After the minimization, we have cases with remaining <E>/YYY that should
+ * actually be considered as normal <E>. This happens when there is a loop
+ * including an <E>, like a loop on a box containing "<E>+<A>". In normal
+ * mode, it is compiled as <A>* , but in debug mode it is compiled as
+ * <E>/YYY + (<A>*  <E>/YYY)
+ * In such a case, the <E>/YYY occurring after <A>* must be replaced by an epsilon,
+ * before re-removing epsilon transitions and re-minimizing. This function
+ * replaces such transitions by normal <E> transitions.
+ */
+void replace_E_loops_post_minimization(SingleGraph graph,unichar** tags) {
+unichar prefix[]={'<','E','>','/',1,'\0'};
+for (int i=0;i<graph->number_of_states;i++) {
+	Transition* t=graph->states[i]->outgoing_transitions;
+	while (t!=NULL) {
+		if (t->tag_number>0) {
+			/* We only work on real tags, not graph calls, nor normal
+			 * epsilon transitions */
+			Transition* t2=graph->states[t->state_number]->outgoing_transitions;
+			while (t2!=NULL) {
+				/* No need to consider identical transitions */
+				if (t2->tag_number>0 && t2->tag_number!=t->tag_number) {
+					unichar* tag1=tags[t->tag_number];
+					/* There is at least one char before the /, so we skip it */
+					tag1++;
+					/* And now we can safely look for the output / char */
+					while ((*tag1)!='/' && (*tag1)!='\0') {
+						tag1++;
+					}
+					unichar* tag2=tags[t2->tag_number];
+					int pos1=0;
+					while (tag1[pos1]!=':') pos1++;
+					pos1++;
+					while (tag1[pos1]!=':') pos1++;
+					tag1[pos1]='\0';
+					int pos2=0;
+					while (tag2[pos2]!=':') pos2++;
+					pos2++;
+					while (tag2[pos2]!=':') pos2++;
+					tag2[pos2]='\0';
+					if (u_starts_with(tag2,prefix) && !u_strcmp(tag1,tag2+3)) {
+						/* We have found a transition that must be replaced:
+						 * same pure debug output */
+						t2->tag_number=0;
+					}
+					tag1[pos1]=':';
+					tag2[pos2]=':';
+				}
+				t2=t2->next;
+			}
+		}
+		t=t->next;
+	}
+}
+}
+
+
+/**
  * This function compiles the graph number #n and saves its states into the
  * output .fst2.
  */
@@ -958,6 +1082,9 @@ u_fclose(f);
 /* Once we have loaded the graph, we process it. */
 set_initial_state(graph->states[0]);
 set_final_state(graph->states[1]);
+if (infos->debug) {
+	remove_artificial_debug_E_loops(graph,infos->tags->value);
+}
 compute_reverse_transitions(graph);
 check_co_accessibility(graph->states,1);
 remove_epsilon_transitions(graph,1);
@@ -977,7 +1104,32 @@ if (graph->states[0]==NULL) {
 }
 /* Now, we minimize the automaton assuming that reversed transitions are still there */
 minimize(graph,0);
-/* And we save it */
+/* But, in debug mode, we may still have some <E>/YYY debug transitions to remove */
+if (infos->debug) {
+	replace_E_loops_post_minimization(graph,infos->tags->value);
+	/* We clean reverse transitions */
+	for (int i=0;i<graph->number_of_states;i++) {
+		free_Transition_list(graph->states[i]->reverted_incoming_transitions,NULL,NULL);
+		graph->states[i]->reverted_incoming_transitions=NULL;
+	}
+	/* And we start again the whole cleaning */
+	compute_reverse_transitions(graph);
+	remove_epsilon_transitions(graph,1);
+	if (graph->states[0]==NULL) {
+	   /* If the graph has been emptied */
+	   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
+	   free_SingleGraph(graph,NULL);
+	   if (infos->no_empty_graph_warning) return 1;
+	   if (n==0) {
+	      error("ERROR: Main graph %S.grf has been emptied\n",infos->graph_names->value[n]);
+	      return 0;
+	   }
+	   error("WARNING: graph %S.grf has been emptied\n",infos->graph_names->value[n]);
+	   return 1;
+	}
+	minimize(graph,0);
+}
+/* Finally we save the graph */
 write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
 free_SingleGraph(graph,NULL);
 return 1;
