@@ -126,7 +126,7 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
 	  readline(line,f);
 	  /* In debug mode, we have to stop at the char #1 */
       int i=-1;
-      while (line->str[++i]!=1);
+      while (line->str[++i]!=1 && line->str[i]!='\0');
       line->str[i]='\0';
    }
    is_an_output=(policy!=IGNORE_OUTPUTS);
@@ -138,6 +138,7 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
       end_of_list=end_of_list->next;
    }
 }
+free_Ustring(line);
 return l;
 }
 
