@@ -602,7 +602,8 @@ return 0;
  */
 void token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
                                 int* i_tokens,struct compilation_info* infos,
-                                int *n_tokens,int current_graph,int must_add_token_to_debug) {
+                                int *n_tokens,int current_graph,int must_add_token_to_debug,
+                                int must_keep_output) {
 if (u_tokens==NULL) {
    fatal_error("NULL error in token_sequence_2_integer_sequence\n");
 }
@@ -613,9 +614,10 @@ if (is_empty(u_tokens)) {
 unichar* token=(unichar*)take_ptr(u_tokens);
 unichar tmp[MAX_GRF_BOX_CONTENT];
 int is_an_output=(output!=NULL && output[0]!='\0');
-if (is_an_output && !u_strcmp(token,"<E>") && output[1]==DEBUG_INFO_COORD_MARK) {
+if (!must_keep_output && is_an_output && !u_strcmp(token,"<E>") && output[1]==DEBUG_INFO_COORD_MARK) {
 	/* We don't want to produce debug outputs for <E> that had no actual
-	 * outputs, in order not to introduce <E> loop mess */
+	 * outputs, in order not to introduce <E> loop mess, but we want to keep
+	 * <E> associated to metas symbols $a( $< ... */
 	is_an_output=0;
 }
 if (token[0]==':' && token[1]!='\0') {
@@ -732,12 +734,12 @@ while (result==0 && input[*pos]!='\0') {
 int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;
 if (!infos->debug) {
-	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n,1);
+	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n,1,0);
 } else {
 	unichar output2[MAX_GRF_BOX_CONTENT];
 	u_strcpy(output2,output);
 	add_debug_infos(output2,n,state,line);
-	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n,1);
+	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n,1,0);
 }
 free_fifo(sequence);
 write_transitions(graph,sequence_ent,transitions,state,n_tokens);
@@ -763,15 +765,15 @@ if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
 	 * will be never considered. So, for this tag, the debug tag will be inserted
 	 * before it */
 	put_ptr(tmp,u_strdup("<E>"));
-	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0);
+	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0,1);
 	n++;
 }
 put_ptr(tmp,u_strdup(input));
-token_sequence_2_integer_sequence(tmp,NULL,token+n,infos,&i,current_graph,0);
+token_sequence_2_integer_sequence(tmp,NULL,token+n,infos,&i,current_graph,0,0);
 n++;
 if (debug_output[0]!='\0' && u_strcmp(input,"$]")) {
 	put_ptr(tmp,u_strdup("<E>"));
-	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0);
+	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0,1);
 	n++;
 }
 free_fifo(tmp);
