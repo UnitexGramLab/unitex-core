@@ -823,8 +823,15 @@ u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
+/* In an html concordance, we have to know the match number in the
+ * concord.ind file, but we need a renumber system, since in
+ * ambiguous output only mode, we have to keep trace of the original
+ * match number
+ */
+vector_int* renumber=NULL;
 if (options->only_ambiguous) {
-	filter_unambiguous_outputs(&matches);
+	renumber=new_vector_int();
+	filter_unambiguous_outputs(&matches,renumber);
 }
 /* Then we fill the buffer with the beginning of the text */
 buffer->size=(int)buf_map_int_pseudo_read(buffer,buffer->nb_item);
@@ -842,12 +849,17 @@ int position_from_eos=0;
 int start_from_eos=0;
 int end_from_eos=0;
 int match_number=-1;
-
+int concord_ind_match_number;
 /* Now we can proceed all the matches, assuming that they are sorted by starting
  * position */
 u_printf("Constructing concordance...\n");
 while (matches!=NULL) {
 	match_number++;
+	if (renumber==NULL) {
+		concord_ind_match_number=match_number;
+	} else {
+		concord_ind_match_number=renumber->tab[match_number];
+	}
 	/* Here, we are sure that the buffer contains all the tokens we need.
 	 * We adjust 'start_pos' and 'end_pos' so that the tokens that compose
 	 * the current match are between buffer[start_pos] and buffer[end_pos]. */
@@ -955,7 +967,7 @@ while (matches!=NULL) {
 	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token+1,options->snt_offsets);
 	end_pos_char=end_pos_char+shift;
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
-	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,match_number);
+	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,concord_ind_match_number);
 	u_sprintf(positions_from_eos,"%d\t%d\t%d",current_sentence,start_from_eos,end_from_eos);
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
@@ -998,6 +1010,7 @@ while (matches!=NULL) {
 	free_match_list_element(matches_tmp);
 }
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
+free_vector_int(renumber);
 free(unichar_buffer);
 free(buffer);
 return number_of_matches;

@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "LocateConstants.h"
 #include "Match.h"
+#include "Vector.h"
 
 /**
  * This structure represents a match list. [start;end] is the interval
@@ -44,6 +45,6 @@ struct match_list* new_match(int,int,int,int,int,int,unichar*,struct match_list*
 void free_match_list_element(struct match_list*,Abstract_allocator prv_alloc=NULL);
 void free_match_list(struct match_list*,Abstract_allocator prv_alloc=NULL);
 struct match_list* load_match_list(U_FILE*,OutputPolicy*,Abstract_allocator prv_alloc=NULL);
-void filter_unambiguous_outputs(struct match_list* *list);
+void filter_unambiguous_outputs(struct match_list* *list,vector_int*);
 
 #endif

@@ -156,14 +156,19 @@ return 1;
 
 /**
  * This function removes all non ambiguous outputs from the given match list.
+ * If renumber is non NULL, we have renumber[x]=y, where x is the position
+ * of a match in the filtered list, and y its corresponding number in the
+ * unfiltered original one.
  */
-void filter_unambiguous_outputs(struct match_list* *list) {
+void filter_unambiguous_outputs(struct match_list* *list,vector_int* renumber) {
 struct match_list* tmp;
 if (*list==NULL) return;
 struct match_list* previous=NULL;
 struct match_list* l=*list;
 int previous_was_identical=0;
+int original_match_number=-1;
 while (l!=NULL) {
+	original_match_number++;
 	if (previous==NULL) {
 		/* Case 1: we are at the beginning of the list */
 		/* Case 1a: there is only one cell */
@@ -186,10 +191,12 @@ while (l!=NULL) {
 		previous=l;
 		previous_was_identical=1;
 		l=l->next;
+		vector_int_add(renumber,original_match_number);
 		continue;
 	} else {
 		/* Case 2: there is a previous cell */
 		if (previous_was_identical) {
+			vector_int_add(renumber,original_match_number);
 			/* Case 2a: we know that we have to keep this current cell, but
 			 * we must check if the next is also an ambiguous one */
 			if (l->next==NULL) {
@@ -215,6 +222,7 @@ while (l!=NULL) {
 			/* We have to keep the current cell */
 			previous=l;
 			l=l->next;
+			vector_int_add(renumber,original_match_number);
 			continue;
 		}
 		/* Final case, the next cell is not ambiguous, so we have to delete
