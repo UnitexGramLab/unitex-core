@@ -613,6 +613,11 @@ if (is_empty(u_tokens)) {
 unichar* token=(unichar*)take_ptr(u_tokens);
 unichar tmp[MAX_GRF_BOX_CONTENT];
 int is_an_output=(output!=NULL && output[0]!='\0');
+if (is_an_output && !u_strcmp(token,"<E>") && output[1]==DEBUG_INFO_COORD_MARK) {
+	/* We don't want to produce debug outputs for <E> that had no actual
+	 * outputs, in order not to introduce <E> loop mess */
+	is_an_output=0;
+}
 if (token[0]==':' && token[1]!='\0') {
    /* If we have a subgraph call */
 	int graph_number=get_value_index(&(token[1]),infos->graph_names);
@@ -730,14 +735,8 @@ if (!infos->debug) {
 	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n,1);
 } else {
 	unichar output2[MAX_GRF_BOX_CONTENT];
-	if (state==0 && !u_strcmp(input,"<E>") && u_strlen(output)==1) {
-		/* We don't need to generate a debug tag for the initial state <E>
-		 * if there is no output */
-		output2[0]='\0';
-	} else {
-		u_strcpy(output2,output);
-		add_debug_infos(output2,n,state,line);
-	}
+	u_strcpy(output2,output);
+	add_debug_infos(output2,n,state,line);
 	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n,1);
 }
 free_fifo(sequence);
