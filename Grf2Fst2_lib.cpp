@@ -758,12 +758,7 @@ struct fifo* tmp=new_fifo();
 int token[2];
 int i;
 int n=0;
-if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
-	/* The closing context mark must be dealt in a special way in debug mode.
-	 * Because of its very nature, reaching this tag in a forbidden context
-	 * may cause backtracking, so that if we put the debug tag after this one, it
-	 * will be never considered. So, for this tag, the debug tag will be inserted
-	 * before it */
+if (debug_output[0]!='\0' && u_strcmp(input,"$]")) {
 	put_ptr(tmp,u_strdup("<E>"));
 	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0,1);
 	n++;
@@ -771,7 +766,7 @@ if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
 put_ptr(tmp,u_strdup(input));
 token_sequence_2_integer_sequence(tmp,NULL,token+n,infos,&i,current_graph,0,0);
 n++;
-if (debug_output[0]!='\0' && u_strcmp(input,"$]")) {
+if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
 	put_ptr(tmp,u_strdup("<E>"));
 	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0,1);
 	n++;
