@@ -323,7 +323,9 @@ void error_at_token_pos(const char* message, int start, int length,
 		error(" ...");
 	}
 	error("\n");
-	if (++(p->token_error_ctx.n_errors) >= MAX_ERRORS) {
+	(p->token_error_ctx.n_errors)++;
+	if (!p->debug && p->token_error_ctx.n_errors >= MAX_ERRORS) {
+		/* In debug mode, we don't stop on such a problem */
 		fatal_error("Too many errors, giving up!\n");
 	}
 	p->token_error_ctx.last_start = start;
@@ -372,7 +374,7 @@ int n_matches, /* number of sequences that have matched. It may be different fro
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatorial
  * explosions due to bad written grammars. */
-struct list_int* ctx, /* information about the current context, if any */
+struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 ) {
 #ifdef TRE_WCHAR
@@ -1347,15 +1349,28 @@ while (output_variable_list != NULL) {
 				+ 2) {
 			t2 = contexts->positive_mark[n_ctxt];
 			/* We look for a positive context from the current position */
-			struct list_int* c = new_list_int(0, ctx);
+			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
-			/* Note that there is no matches to free since matches cannot be built within a context */
+			/* Note that there is no match to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
+			p->stack->stack[stack_top+1]='\0';
 			if (c->n) {
 				/* If the context has matched, then we can explore all the paths
 				 * that starts from the context end */
 				Transition* states = contexts->positive_mark[n_ctxt + 1];
+				unichar* backup=NULL;
+				if (p->debug) {
+					/* In debug mode, we copy the debug output
+					 * obtained while exploring the context,
+					 * but we remove the input part in order
+					 * not to produce an invalid concordance
+					 */
+					backup=u_strdup(p->stack->stack);
+					u_strcat(p->stack->stack,c->output+stack_top+1);
+					int pos=u_strlen(p->stack->stack);
+					p->stack->stack_pointer=pos-1;
+				}
 				while (states != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
@@ -1363,14 +1378,18 @@ while (output_variable_list != NULL) {
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
+				if (p->debug) {
+					u_strcpy(p->stack->stack,backup);
+					free(backup);
+				}
 			}
-			free(c);
+			free_list_context(c);
 		}
 		for (int n_ctxt = 0; n_ctxt < contexts->size_negative; n_ctxt = n_ctxt
 				+ 2) {
 			t2 = contexts->negative_mark[n_ctxt];
 			/* We look for a negative context from the current position */
-			struct list_int* c = new_list_int(0, ctx);
+			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
 			/* Note that there is no matches to free since matches cannot be built within a context */
@@ -1388,7 +1407,7 @@ while (output_variable_list != NULL) {
 				}
 			}
 			/* We just want to free the cell we created */
-			free(c);
+			free_list_context(c);
 		}
 		if ((t2 = contexts->end_mark) != NULL) {
 			/* If we have a closing context mark */
@@ -1403,6 +1422,10 @@ while (output_variable_list != NULL) {
 			/* Otherwise, we just indicate that we have found a context closing mark,
 			 * and we return */
 			ctx->n = 1;
+			if (ctx->output==NULL) {
+				p->stack->stack[p->stack->stack_pointer+1]='\0';
+				ctx->output=u_strdup(p->stack->stack);
+			}
 			p->explore_depth -- ;
 			return;
 		}

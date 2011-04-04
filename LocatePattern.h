@@ -70,7 +70,7 @@ struct locate_trace_info
 
 	int n_matches;
 	struct parsing_info** matches; /* current match list. Irrelevant if graph_depth==0 */
-	struct list_int* ctx; /* information about the current context, if any */
+	struct list_context* ctx; /* information about the current context, if any */
 	struct locate_parameters* p; /* miscellaneous parameters needed by the function */
 	unichar* jamo;
 	int pos_in_jamo;

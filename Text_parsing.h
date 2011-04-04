@@ -31,6 +31,7 @@
 #include "CompoundWordTree.h"
 #include "LocatePattern.h"
 #include "MorphologicalFilters.h"
+#include "Contexts.h"
 
 
 #define STACK_MAX 1000 /* The maximal size of recursive calls of the
@@ -55,7 +56,7 @@
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p);
 void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
-void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int,struct list_int*,struct locate_parameters*);
+void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int,struct list_context*,struct locate_parameters*);
 
 
 /**

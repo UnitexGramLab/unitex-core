@@ -36,7 +36,7 @@ u_sprintf(output+l,"%C%d:%d:%d%C",DEBUG_INFO_COORD_MARK,graph,box,line,DEBUG_INF
  * prints the expected normal (non debug) output that corresponds to it
  * into the given file. As a debug output is supposed to contain
  * all tags used to build a match, this function also deals with left
- * contexts. Right contexts are not supported yet in debug mode.
+ * contexts and right contexts.
  */
 void save_real_output_from_debug(U_FILE* f,OutputPolicy policy,unichar* s) {
 int print_input,print_output;
@@ -47,11 +47,12 @@ case REPLACE_OUTPUTS: print_input=0; print_output=1; break;
 }
 Ustring* output=new_Ustring();
 Ustring* tmp=new_Ustring();
+int n_contexts=0;
 while (*s!='\0') {
 	/* Skipping char #1 */
 	s++;
 	while (*s!=DEBUG_INFO_COORD_MARK) {
-		if (print_output) u_strcat(output,*s);
+		if (print_output && n_contexts==0) u_strcat(output,*s);
 		s++;
 	}
 	/* Skipping everything until char #3 */
@@ -64,10 +65,14 @@ while (*s!='\0') {
 	}
 	if (!u_strcmp(tmp->str,"$*")) {
 		empty(output);
+	} else if (!u_strcmp(tmp->str,"$[") || !u_strcmp(tmp->str,"$![")) {
+		n_contexts++;
+	} else if (!u_strcmp(tmp->str,"$]")) {
+		n_contexts--;
 	}
 	s++;
 	while (*s!='\0' && *s!=DEBUG_INFO_OUTPUT_MARK) {
-		if (print_input) u_strcat(output,*s);
+		if (print_input && n_contexts==0) u_strcat(output,*s);
 		s++;
 	}
 }

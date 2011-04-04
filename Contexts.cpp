@@ -231,3 +231,28 @@ for (int i=0;i<fst2->number_of_states;i++) {
 }
 return contexts;
 }
+
+
+/**
+ * Creates a new context list element.
+ */
+struct list_context* new_list_context(int n,struct list_context* next) {
+struct list_context* l=(struct list_context*)malloc(sizeof(struct list_context));
+if (l==NULL) {
+	fatal_alloc_error("new_list_context");
+}
+l->n=n;
+l->output=NULL;
+l->next=next;
+return l;
+}
+
+
+/**
+ * Frees the memory associated only to the given cell, not the whole list.
+ */
+void free_list_context(struct list_context* l) {
+if (l==NULL) return;
+if (l->output!=NULL) free(l->output);
+free(l);
+}
