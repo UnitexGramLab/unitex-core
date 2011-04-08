@@ -253,6 +253,6 @@ return l;
  */
 void free_list_context(struct list_context* l) {
 if (l==NULL) return;
-if (l->output!=NULL) free(l->output);
+free(l->output);
 free(l);
 }

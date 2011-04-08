@@ -53,7 +53,7 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                 int pos_pending_in_tfst_tag,
                 Transition* current_pending_fst2_transition,
                 Transition* current_pending_tfst_transition,
-                struct list_int* ctx, int tilde_negation_operator);
+                struct list_context* ctx, int tilde_negation_operator);
 void init_Korean_stuffs(struct locate_tfst_infos* infos,int is_korean);
 void free_Korean_stuffs(struct locate_tfst_infos* infos);
 void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
@@ -68,6 +68,36 @@ int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Ta
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation,int tilde_negation_operator);
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag);
 int morphological_filter_is_ok(const unichar* content,Fst2Tag grammar_tag,const struct locate_tfst_infos* infos);
+
+
+/**
+ * This function computes the debug output associated to the given partial
+ * match, obtained within a context. As in a context, we don't care of
+ * all possible paths (knowing that the context has matched is enough),
+ * we compute only one output, even if there are several paths.
+ */
+Ustring* get_debug_output_in_context(struct tfst_match* match_element_list,struct locate_tfst_infos* infos) {
+if (match_element_list==NULL) {
+	return new_Ustring();
+}
+Ustring* s=get_debug_output_in_context(match_element_list->next,infos);
+Transition* t=match_element_list->fst2_transition;
+u_strcat(s,infos->fst2->tags[t->tag_number]->output);
+struct list_int* l=match_element_list->text_tag_numbers;
+if (l!=NULL) {
+	TfstTag* tag=(TfstTag*)(infos->tfst->tags->tab[l->n]);
+	if (tag->content[0]!='{' || tag->content[1]=='\0') {
+		/* Untagged token ? */
+		u_strcat(s,tag->content);
+	} else {
+		/* Real tag ? We only take the inflected form */
+		struct dela_entry* d=tokenize_tag_token(tag->content);
+		u_strcat(s,d->inflected);
+		free_dela_entry(d);
+	}
+}
+return s;
+}
 
 
 /**
@@ -132,6 +162,7 @@ switch (infos.real_output_policy) {
 case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
 case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
 case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
+default: break;
 }
 #ifdef TRE_WCHAR
 infos.filters=new_FilterSet(infos.fst2,infos.alphabet);
@@ -385,7 +416,7 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                 int pos_pending_in_tfst_tag,
                 Transition* current_pending_fst2_transition,
                 Transition* current_pending_tfst_transition,
-                struct list_int* ctx /* information about the current context, if any */,
+                struct list_context* ctx /* information about the current context, if any */,
                 int tilde_negation_operator) {
 //error("visits for current state=%d  tfst state=%d  fst2 state=%d\n",visits[current_state_in_tfst],current_state_in_tfst,current_state_in_fst2);
 if (visits[current_state_in_tfst]>MAX_VISITS_PER_TFST_STATE) {
@@ -603,7 +634,7 @@ while (grammar_transition!=NULL) {
       for (int n_ctxt=0;n_ctxt<context->size_positive;n_ctxt=n_ctxt+2) {
          t=context->positive_mark[n_ctxt];
          /* We look for a positive context from the current position */
-         struct list_int* c=new_list_int(0,ctx);
+         struct list_context* c=new_list_context(0,ctx);
          explore_tfst(visits,tfst,current_state_in_tfst,t->state_number,
                                     graph_depth,NULL,LIST,infos,-1,-1,NULL,NULL,c,tilde_negation_operator);
          /* Note that there is no matches to free since matches cannot be built within a context */
@@ -611,13 +642,20 @@ while (grammar_transition!=NULL) {
             /* If the context has matched, then we can explore all the paths
              * that starts from the context end */
             Transition* states=context->positive_mark[n_ctxt+1];
+            struct tfst_match* debug_match_element=match_element_list;
+            if (infos->debug && c->output!=NULL) {
+            	debug_match_element=new_debug_tfst_match(c->output,match_element_list);
+            }
             while (states!=NULL) {
                explore_tfst(visits,tfst,current_state_in_tfst,states->state_number,
-                                          graph_depth,match_element_list,LIST,infos,-1,-1,NULL,NULL,ctx,tilde_negation_operator);
+                                          graph_depth,debug_match_element,LIST,infos,-1,-1,NULL,NULL,ctx,tilde_negation_operator);
                states=states->next;
             }
+            if (debug_match_element!=match_element_list) {
+            	free_tfst_match(debug_match_element);
+            }
          }
-         free(c);
+         free_list_context(c);
       }
       /* End of $[ case */
    }
@@ -631,7 +669,7 @@ while (grammar_transition!=NULL) {
       for (int n_ctxt=0;n_ctxt<context->size_negative;n_ctxt=n_ctxt+2) {
          t=context->negative_mark[n_ctxt];
          /* We look for a negative context from the current position */
-         struct list_int* c=new_list_int(0,ctx);
+         struct list_context* c=new_list_context(0,ctx);
          explore_tfst(visits,tfst,current_state_in_tfst,t->state_number,
                                     graph_depth,NULL,LIST,infos,-1,-1,NULL,NULL,c,tilde_negation_operator);
          /* Note that there is no matches to free since matches cannot be built within a context */
@@ -645,7 +683,7 @@ while (grammar_transition!=NULL) {
                states=states->next;
             }
          }
-         free(c);
+         free_list_context(c);
       }
       /* End of $![ case */
    }
@@ -659,6 +697,11 @@ while (grammar_transition!=NULL) {
       /* Otherwise, we just indicate that we have found a context closing mark,
        * and we return */
       ctx->n=1;
+      if (infos->debug && ctx->output==NULL) {
+    	  Ustring* output=get_debug_output_in_context(match_element_list,infos);
+    	  ctx->output=u_strdup(output->str);
+    	  free_Ustring(output);
+      }
       return;
       /* End of $] case */
    } else {
@@ -732,7 +775,7 @@ while (grammar_transition!=NULL) {
                foo->next=NULL;
                if (match_element_list!=NULL) {(match_element_list->pointed_by)--;}
                free_tfst_match(foo);
-            }    
+            }
          }
          text_transition=text_transition->next;
       }

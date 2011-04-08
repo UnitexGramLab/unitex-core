@@ -36,6 +36,22 @@
 
 
 /**
+ * Allocates, initializes and returns a new debug tfst_match.
+ */
+struct tfst_match* new_debug_tfst_match(unichar* output,struct tfst_match* next) {
+struct tfst_match* match=(struct tfst_match*)malloc(sizeof(struct tfst_match));
+if (match==NULL) {
+   fatal_alloc_error("new_debug_tfst_match");
+}
+match->debug_output=u_strdup(output);
+match->fst2_transition=NULL;
+match->text_tag_numbers=NULL;
+match->next=next;
+return match;
+}
+
+
+/**
  * Allocates, initializes and returns a new tfst_match.
  */
 struct tfst_match* new_tfst_match(int source_state_text,
@@ -48,6 +64,7 @@ struct tfst_match* match=(struct tfst_match*)malloc(sizeof(struct tfst_match));
 if (match==NULL) {
    fatal_alloc_error("new_tfst_match");
 }
+match->debug_output=NULL;
 match->source_state_text=source_state_text;
 match->dest_state_text=dest_state_text;
 match->fst2_transition=fst2_transition;
@@ -98,6 +115,7 @@ if (match==NULL) {
 /* We MUST NOT free 'fst2_transition' since it is just a copy of an actual transition
  * in the grammar */
 free_list_int(match->text_tag_numbers);
+free(match->debug_output);
 free(match);
 }
 
@@ -500,6 +518,15 @@ struct tfst_match* item=(struct tfst_match*)(items->tab[current_item]);
 if (item==NULL) {
    fatal_error("Unexpected NULL item in explore_match_for_MERGE_mode\n");
 }
+if (item->debug_output!=NULL) {
+	/* If we have a debug output, we deal it */
+	u_strcat(s,item->debug_output);
+	explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_text_dependent_tfst_tag,var_starts);
+	s->len=len;
+	s->str[len]='\0';
+	return;
+}
+
 
 unichar* output=infos->fst2->tags[item->fst2_transition->tag_number]->output;
 
@@ -625,6 +652,8 @@ while (text_tags!=NULL) {
          /* If we have a $* tag, we know that we can only have just one text tag 
           * with special value -1 */
          goto restore_dic_variable;
+      } else if (fst2_tag->type==BEGIN_POSITIVE_CONTEXT_TAG) {
+    	  error("coucou $[\n");
       }
    } else {
       current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);

@@ -39,6 +39,10 @@
  * how many times a tfst_match is referenced.
  */
 struct tfst_match {
+	/* If this field is non NULL, then all other fields other than 'next'
+	 * are not to be taken into account */
+	unichar* debug_output;
+
    int source_state_text;
    int dest_state_text;
    Transition* fst2_transition;
@@ -92,6 +96,7 @@ void clean_tfst_match_list(struct tfst_match*,struct tfst_match*);
 
 void add_tfst_match(struct locate_tfst_infos*,struct tfst_match*);
 void save_tfst_matches(struct locate_tfst_infos*);
+struct tfst_match* new_debug_tfst_match(unichar* output,struct tfst_match* next);
 
 #endif
 
