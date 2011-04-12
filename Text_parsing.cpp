@@ -47,6 +47,8 @@ static void add_match(int, unichar*, struct locate_parameters*, Abstract_allocat
 static void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
 static struct match_list* eliminate_longer_matches(struct match_list*, int, int,
 		unichar*, int*, struct locate_parameters*, Abstract_allocator);
+static struct match_list* eliminate_shorter_matches(struct match_list*, int, int,
+		unichar*, int*, struct locate_parameters*, Abstract_allocator);
 static struct match_list* save_matches(struct match_list*, int, U_FILE*,
 		struct locate_parameters*, Abstract_allocator);
 int at_text_start(struct locate_parameters*,int);
@@ -1850,11 +1852,10 @@ while (*L != NULL) {
  * # Changed to allow different outputs in merge/replace
  * mode when the grammar is an ambiguous transducer (S.N.) */
 static void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
-	//int start=p->current_origin+p->absolute_offset+p->left_ctx_shift;
 	int start = m->m.start_pos_in_token;
 	int end = m->m.end_pos_in_token;
 	unichar* output = m->output;
-	struct match_list *l;
+	int dont_add_match;
 	if (p->match_list == NULL) {
 		/* If the match list was empty, we always can put the match in the list */
 		p->match_list = new_match(start, end, output, NULL, prv_alloc);
@@ -1862,50 +1863,15 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 	}
 	switch (p->match_policy) {
 	case LONGEST_MATCHES:
-		/* We put new matches at the beginning of the list */
-		if (end > p->match_list->m.end_pos_in_token) {
-			/* In longest match mode, we only consider matches ending
-			 * later. Moreover, we allow just one match from a given
-			 * start position, except if ambiguous outputs are allowed. */
-			if (p->match_list->m.start_pos_in_token == start) {
-				/* We overwrite matches starting at same position but ending earlier.
-				 * We do this by deleting the actual head element of the list
-				 * and calling the function recursively.
-				 * This works also for different outputs from ambiguous transducers,
-				 * i.e. we may delete more than one match in the list. */
-				l = p->match_list;
-				p->match_list = p->match_list->next;
-				free_match_list_element(l, prv_alloc);
-				real_add_match(m, p, prv_alloc);
-				return;
-			}
-			/* We allow add shorter matches but with other start position.
-			 * Note that, by construction, we have start>p->match_list->start,
-			 * that is to say that we have two matches that overlap: ( [ ) ]
-			 */
+		/* We put the new match at the beginning of the list, but before, we
+		 * test if the match we want to add may not be discarded because of
+		 * a longest match that would already be in the list. By the way,
+		 * we eliminate matches that are shorter than this one, if any. */
+		dont_add_match = 0;
+		p->match_list = eliminate_shorter_matches(p->match_list, start, end,
+				output, &dont_add_match, p, prv_alloc);
+		if (!dont_add_match) {
 			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
-			return;
-		}
-		/* If we have the same start and the same end, we consider the
-		 * new match only if ambiguous outputs are allowed */
-		if (p->match_list->m.end_pos_in_token == end
-				&& p->match_list->m.start_pos_in_token == start && u_strcmp(
-				p->match_list->output, output)) {
-			if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
-				/* Because matches with same range and same output may not come
-				 * one after another, we have to look if a match with same output
-				 * already exists */
-				l = p->match_list;
-				while (l != NULL && u_strcmp(l->output, output)) {
-					l = l->next;
-				}
-				if (l == NULL) {
-					p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
-				}
-			} else {
-				/* If we don't allow ambiguous outputs, we have to print an error message */
-				error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",p->match_list->output,output);
-			}
 		}
 		break;
 
@@ -1920,7 +1886,7 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 		 * test if the match we want to add may not be discarded because of
 		 * a shortest match that would already be in the list. By the way,
 		 * we eliminate matches that are longer than this one, if any. */
-		int dont_add_match = 0;
+		dont_add_match = 0;
 		p->match_list = eliminate_longer_matches(p->match_list, start, end,
 				output, &dont_add_match, p, prv_alloc);
 		if (!dont_add_match) {
@@ -1996,6 +1962,67 @@ static struct match_list* eliminate_longer_matches(struct match_list *ptr, int s
 	/* If we have disjunct ranges or overlapping ranges without inclusion,
 	 * we examine recursively the rest of the list */
 	ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
+			dont_add_match, p, prv_alloc);
+	return ptr;
+}
+
+
+/**
+ * Does the as eliminate_longer_matches, but with shorter matches.
+ */
+static struct match_list* eliminate_shorter_matches(struct match_list *ptr, int start,
+		int end, unichar* output, int *dont_add_match,
+		struct locate_parameters* p, Abstract_allocator prv_alloc) {
+	struct match_list *l;
+	if (ptr == NULL)
+		return NULL;
+	if (ptr->m.start_pos_in_token==start
+		&& ptr->m.end_pos_in_token==end
+		&& u_strcmp(ptr->output, output)) {
+		if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
+			/* In the case of ambiguous transductions producing different outputs,
+			 * we accept matches with same range */
+			ptr->next = eliminate_shorter_matches(ptr->next, start, end, output,
+					dont_add_match, p, prv_alloc);
+			return ptr;
+		} else {
+			/* If we don't allow ambiguous outputs, we have to print an error message */
+			error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",ptr->output,output);
+		}
+	}
+	if (start <= ptr->m.start_pos_in_token && end >= ptr->m.end_pos_in_token) {
+		/* If the new match is longer (or of equal length) than the current one
+		 * in the list, we replace the match in the list by the new one */
+		if (*dont_add_match) {
+			/* If we have already noticed that the match mustn't be added
+			 * to the list, we delete the current list element */
+			l = ptr->next;
+			free_match_list_element(ptr, prv_alloc);
+			return eliminate_shorter_matches(l, start, end, output,
+					dont_add_match, p, prv_alloc);
+		}
+		/* If the new match is longer than the current one in the list, then we
+		 * update the current one with the value of the new match. */
+		ptr->m.start_pos_in_token = start;
+		ptr->m.end_pos_in_token = end;
+		if (ptr->output != NULL)
+			free(ptr->output);
+		ptr->output = u_strdup(output);
+		/* We note that the match does not need anymore to be added */
+		(*dont_add_match) = 1;
+		ptr->next = eliminate_shorter_matches(ptr->next, start, end, output,
+				dont_add_match, p, prv_alloc);
+		return ptr;
+	}
+	if (start >= ptr->m.start_pos_in_token && end <= ptr->m.end_pos_in_token) {
+		/* The new match is shorter than the one in list => we
+		 * skip the new match */
+		(*dont_add_match) = 1;
+		return ptr;
+	}
+	/* If we have disjunct ranges or overlapping ranges without inclusion,
+	 * we examine recursively the rest of the list */
+	ptr->next = eliminate_shorter_matches(ptr->next, start, end, output,
 			dont_add_match, p, prv_alloc);
 	return ptr;
 }
