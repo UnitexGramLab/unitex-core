@@ -31,8 +31,10 @@
 typedef struct {
 	unichar* box_content;
 	int x,y;
-	int n_transitions;
-	int* transitions;
+	vector_int* transitions;
+
+	/* This information is useful when manipulating sentence grfs */
+	int rank;
 } GrfState;
 
 
@@ -64,7 +66,12 @@ typedef struct {
 
 Grf* new_Grf();
 void free_Grf(Grf*);
+GrfState* new_GrfState(const unichar* content,int x,int y);
+GrfState* new_GrfState(const char* content,int x,int y);
+GrfState* new_GrfState(const unichar* content,int x,int y,int rank);
+GrfState* new_GrfState(const char* content,int x,int y,int rank);
 void free_GrfState(GrfState*);
+int add_GrfState(Grf*,GrfState*);
 Grf* load_Grf(const char*);
 void save_Grf(U_FILE*,Grf*);
 Grf* dup_Grf(Grf*);

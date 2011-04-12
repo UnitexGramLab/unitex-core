@@ -22,28 +22,11 @@
 #ifndef Sentence_to_grfH
 #define Sentence_to_grfH
 
-
-#include "Unicode.h"
 #include "Tfst.h"
-#include "List_int.h"
+#include "Grf_lib.h"
 
 
-/**
- * This structure represents a box of a grf file. For the moment, the Y position
- * is not there because it is not used.
- */
-struct grf_state {
-   unichar* content;
-   int pos_X;
-   int rank;
-   /* The transition list is supposed to be sorted by increasing order */
-   struct list_int* l;
-};
-
-
-
-void sentence_to_grf(Tfst*,char*,int,U_FILE*);
+Grf* sentence_to_grf(Tfst*,char*,int);
 int width_of_tag(TfstTag*);
-void write_grf_header(int,int,int,char*,U_FILE*,int);
 
 #endif

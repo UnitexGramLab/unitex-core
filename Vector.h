@@ -288,33 +288,149 @@ return vec->nbelems-1;
 
 inline int vector_int_contains(vector_int* v,int n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return 1;
+	if (v->tab[i]==n) return i;
 }
-return 0;
+return -1;
 }
 
 
 inline int vector_float_contains(vector_float* v,float n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return 1;
+	if (v->tab[i]==n) return i;
 }
-return 0;
+return -1;
 }
 
 
 inline int vector_double_contains(vector_double* v,double n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return 1;
+	if (v->tab[i]==n) return i;
 }
-return 0;
+return -1;
 }
 
 
 inline int vector_ptr_contains(vector_ptr* v,void* n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return 1;
+	if (v->tab[i]==n) return i;
 }
-return 0;
+return -1;
 }
+
+
+inline void vector_int_add_if_absent(vector_int* vec,int data) {
+if (-1==vector_int_contains(vec,data)) {
+	vector_int_add(vec,data);
+}
+}
+
+
+inline void vector_float_add_if_absent(vector_float* vec,float data) {
+if (-1==vector_float_contains(vec,data)) {
+	vector_float_add(vec,data);
+}
+}
+
+
+inline void vector_double_add_if_absent(vector_double* vec,double data) {
+if (-1==vector_double_contains(vec,data)) {
+	vector_double_add(vec,data);
+}
+}
+
+
+inline void vector_ptr_add_if_absent(vector_ptr* vec,void* data) {
+if (-1==vector_ptr_contains(vec,data)) {
+	vector_ptr_add(vec,data);
+}
+}
+
+
+/**
+ * Returns 1 if the element was actually removed; 0 if it was absent.
+ */
+inline int vector_int_remove(vector_int* vec,int data) {
+int n=vector_int_contains(vec,data);
+if (n==-1) return 0;
+vec->tab[n]=vec->tab[vec->nbelems-1];
+(vec->nbelems)--;
+return 1;
+}
+
+
+inline int vector_float_remove(vector_float* vec,float data) {
+int n=vector_float_contains(vec,data);
+if (n==-1) return 0;
+vec->tab[n]=vec->tab[vec->nbelems-1];
+(vec->nbelems)--;
+return 1;
+}
+
+
+inline int vector_double_remove(vector_double* vec,double data) {
+int n=vector_double_contains(vec,data);
+if (n==-1) return 0;
+vec->tab[n]=vec->tab[vec->nbelems-1];
+(vec->nbelems)--;
+return 1;
+}
+
+
+inline int vector_ptr_remove(vector_ptr* vec,void* data) {
+int n=vector_ptr_contains(vec,data);
+if (n==-1) return 0;
+vec->tab[n]=vec->tab[vec->nbelems-1];
+(vec->nbelems)--;
+return 1;
+}
+
+
+/**
+ * Returns 1 if a and b contain the same elements in the same order; 0 otherwise.
+ */
+inline int vector_int_equals(vector_int* a,vector_int* b) {
+if (a->nbelems!=b->nbelems) return 0;
+for (int i=0;i<a->nbelems;i++) {
+	if (a->tab[i]!=b->tab[i]) return 0;
+}
+return 1;
+}
+
+
+/**
+ * Returns 1 if a and b contain the same elements in the same order; 0 otherwise.
+ */
+inline int vector_float_equals(vector_float* a,vector_float* b) {
+if (a->nbelems!=b->nbelems) return 0;
+for (int i=0;i<a->nbelems;i++) {
+	if (a->tab[i]!=b->tab[i]) return 0;
+}
+return 1;
+}
+
+
+/**
+ * Returns 1 if a and b contain the same elements in the same order; 0 otherwise.
+ */
+inline int vector_double_equals(vector_double* a,vector_double* b) {
+if (a->nbelems!=b->nbelems) return 0;
+for (int i=0;i<a->nbelems;i++) {
+	if (a->tab[i]!=b->tab[i]) return 0;
+}
+return 1;
+}
+
+
+/**
+ * Returns 1 if a and b contain the same elements in the same order; 0 otherwise.
+ */
+inline int vector_ptr_equals(vector_ptr* a,vector_ptr* b) {
+if (a->nbelems!=b->nbelems) return 0;
+for (int i=0;i<a->nbelems;i++) {
+	if (a->tab[i]!=b->tab[i]) return 0;
+}
+return 1;
+}
+
 
 #endif

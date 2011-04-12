@@ -26,9 +26,6 @@
 #include "Ustring.h"
 
 
-static int cmp_grf_states(Grf*,Grf*);
-
-
 static DiffOp* new_DiffOp(DiffOpType type) {
 DiffOp* d=(DiffOp*)malloc(sizeof(DiffOp));
 if (d==NULL) fatal_alloc_error("new_DiffOp");
@@ -432,34 +429,6 @@ for (int i=0;i<base_mine->diff_ops->nbelems;i++) {
 }
 
 
-static int contains(int t[],int size,int n) {
-for (int i=0;i<size;i++) {
-	if (t[i]==n) return i;
-}
-return -1;
-}
-
-
-static void add_transition(int* *t,int *size,int n) {
-(*size)++;
-*t=(int*)realloc(*t,(*size)*sizeof(int));
-if (*t==NULL) {
-	fatal_alloc_error("add_transition");
-}
-(*t)[(*size)-1]=n;
-}
-
-
-static void remove_transition(int* *t,int *size,int index) {
-(*t)[index]=(*t)[(*size)-1];
-(*size)--;
-*t=(int*)realloc(*t,(*size)*sizeof(int));
-if (*t==NULL) {
-	fatal_alloc_error("remove_transition");
-}
-}
-
-
 static void add_grf_state(GrfState** *t,int *size,GrfState* s) {
 (*size)++;
 *t=(GrfState**)realloc(*t,(*size)*sizeof(GrfState*));
@@ -480,18 +449,14 @@ for (int i=0;i<base_mine->diff_ops->nbelems;i++) {
 	DiffOp* op=(DiffOp*)base_mine->diff_ops->tab[i];
 	if (op->op_type!=DIFF_TRANSITION_ADDED) continue;
 	GrfState* dest=result->states[op->box_base];
-	if (-1==contains(dest->transitions,dest->n_transitions,op->box_dest)) {
-		add_transition(&(dest->transitions),&(dest->n_transitions),op->box_dest);
-	}
+	vector_int_add_if_absent(dest->transitions,op->box_dest);
 }
 /* Transitions added in other */
 for (int i=0;i<base_other->diff_ops->nbelems;i++) {
 	DiffOp* op=(DiffOp*)base_other->diff_ops->tab[i];
 	if (op->op_type!=DIFF_TRANSITION_ADDED) continue;
 	GrfState* dest=result->states[op->box_base];
-	if (-1==contains(dest->transitions,dest->n_transitions,op->box_dest)) {
-		add_transition(&(dest->transitions),&(dest->n_transitions),op->box_dest);
-	}
+	vector_int_add_if_absent(dest->transitions,op->box_dest);
 }
 }
 
@@ -506,20 +471,14 @@ for (int i=0;i<base_mine->diff_ops->nbelems;i++) {
 	DiffOp* op=(DiffOp*)base_mine->diff_ops->tab[i];
 	if (op->op_type!=DIFF_TRANSITION_REMOVED) continue;
 	GrfState* dest=result->states[op->box_base];
-	int n;
-	if (-1!=(n=contains(dest->transitions,dest->n_transitions,op->box_dest))) {
-		remove_transition(&(dest->transitions),&(dest->n_transitions),n);
-	}
+	vector_int_remove(dest->transitions,op->box_dest);
 }
 /* Transitions removed in other */
 for (int i=0;i<base_other->diff_ops->nbelems;i++) {
 	DiffOp* op=(DiffOp*)base_other->diff_ops->tab[i];
 	if (op->op_type!=DIFF_TRANSITION_REMOVED) continue;
 	GrfState* dest=result->states[op->box_base];
-	int n;
-	if (-1!=(n=contains(dest->transitions,dest->n_transitions,op->box_dest))) {
-		remove_transition(&(dest->transitions),&(dest->n_transitions),n);
-	}
+	vector_int_remove(dest->transitions,op->box_dest);
 }
 }
 
@@ -556,18 +515,18 @@ for (int i=0;i<diff->diff_ops->nbelems;i++) {
 /* Now, we renumber transitions outgoing from added states */
 for (int i=n_states_before;i<result->n_states;i++) {
 	GrfState* s=result->states[i];
-	for (int j=0;j<s->n_transitions;j++) {
-		int n=s->transitions[j];
+	for (int j=0;j<s->transitions->nbelems;j++) {
+		int n=s->transitions->tab[j];
 		if (added_states_new_indices[n]!=-1) {
 			/* If the transition points to an added state, we replace
 			 * the state number by the new one, relative to result */
-			s->transitions[j]=added_states_new_indices[n];
+			s->transitions->tab[j]=added_states_new_indices[n];
 		} else {
 			/* If the transition did point to a state that was copied
 			 * into result, we just have to use the state index as
 			 * numbered in the base graph, that is supposed to have been
 			 * copied into result */
-			s->transitions[j]=diff->dest_to_base[n];
+			s->transitions->tab[j]=diff->dest_to_base[n];
 		}
 	}
 }
@@ -580,19 +539,18 @@ for (int i=0;i<src->n_states;i++) {
 		continue;
 	}
 	GrfState* s=src->states[i];
-	for (int j=0;j<s->n_transitions;j++) {
-		if (added_states_new_indices[s->transitions[j]]!=-1) {
+	for (int j=0;j<s->transitions->nbelems;j++) {
+		if (added_states_new_indices[s->transitions->tab[j]]!=-1) {
 			/* If the transition points from a state #i to an
 			 * added state #j, we have to find the result
 			 * equivalent of i and j */
 			int result_src_index=diff->dest_to_base[i];
-			int result_dst_index=added_states_new_indices[s->transitions[j]];
+			int result_dst_index=added_states_new_indices[s->transitions->tab[j]];
 			GrfState* result_state=result->states[result_src_index];
-			add_transition(&(result_state->transitions),&(result_state->n_transitions),result_dst_index);
+			vector_int_add_if_absent(result_state->transitions,result_dst_index);
 		}
 	}
 }
-
 free(added_states_new_indices);
 }
 
@@ -653,15 +611,15 @@ for (int i=0;i<result->n_states;i++) {
 		result->n_states=i;
 		break;
 	}
-	for (int j=0;j<s->n_transitions;/* no j++ here, it's not an error */) {
-		if (renumber[s->transitions[j]]!=-1) {
+	for (int j=0;j<s->transitions->nbelems;/* no j++ here, it's not an error */) {
+		if (renumber[s->transitions->tab[j]]!=-1) {
 			/* Just have to renumber */
-			s->transitions[j]=renumber[s->transitions[j]];
+			s->transitions->tab[j]=renumber[s->transitions->tab[j]];
 			/* Don't forget to move on */
 			j++;
 		} else {
 			/* We have to removal transition #j */
-			remove_transition(&(s->transitions),&(s->n_transitions),j);
+			vector_int_remove(s->transitions,j);
 			/* No move on, since the new transition #j must have to be considered
 			 * as well */
 		}
@@ -792,157 +750,6 @@ return 0;
 
 
 /**
- * Comparison function for grf states:
- * - compare box contents
- * - if equality, compare number of outgoing transitions
- * - if equality, compare x
- * - if equality, compare y
- */
-static int cmp_states(GrfState* x,GrfState* y) {
-int ret=u_strcmp(x->box_content,y->box_content);
-if (ret) return ret;
-ret=x->n_transitions-y->n_transitions;
-if (ret) return ret;
-ret=x->x-y->x;
-if (ret) return ret;
-return x->y-y->y;
-}
-
-
-/**
- * Sorts the outgoing state array of state #n.
- */
-static void sort_states(Grf* grf,int* t,int size) {
-for (int i=0;i<size;i++) {
-	int index_min=i;
-	for (int j=i;j<size;j++) {
-		if (cmp_states(grf->states[t[j]],grf->states[t[index_min]])<0) index_min=j;
-	}
-	int tmp=t[i];
-	t[i]=t[index_min];
-	t[index_min]=tmp;
-}
-}
-
-
-/**
- * This function is called on state #n that is supposed to have already
- * been renumbered. Then, it renumbers all outgoing states that have not
- * already be renumbered themselves. *current_pos_in_mark is next free cell
- * in the virtual renumbering array.
- */
-static void renumber_outgoing_states(Grf* grf,int* mark,int n,int *current_pos_in_mark) {
-if (n==1) {
-	/* Nothing to do for the final state */
-	return;
-}
-int old_mark=0;
-if (n==0) {
-	/* If we have already explored the initial state, we do nothing */
-	if (mark[0]==0) return;
-	/* If we are already exploring the initial state, we do nothing */
-	if (mark[0]!=-2) return;
-	/* We mark the initial so that we know we already are exploring it */
-	mark[0]=1;
-} else {
-	/* If we have already normalized a normal state, we do nothing */
-	if (mark[n]>2) return;
-	/* If we are already normalizing a normal state, we do nothing */
-	if (mark[n]==0) return;
-	old_mark=-mark[n];
-	mark[n]=0;
-}
-if (n>1 && mark[n]>1) {
-	/* If we have already normalized a regular state */
-	return;
-}
-sort_states(grf,grf->states[n]->transitions,grf->states[n]->n_transitions);
-int* t=grf->states[n]->transitions;
-for (int i=0;i<grf->states[n]->n_transitions;i++) {
-	if (mark[t[i]]==-1) {
-		/* If the state has not already been renumbered, we do it now */
-		mark[t[i]]=-(*current_pos_in_mark);
-		(*current_pos_in_mark)++;
-	}
-}
-/* Then, we normalize outgoing states */
-for (int i=0;i<grf->states[n]->n_transitions;i++) {
-	renumber_outgoing_states(grf,mark,t[i],current_pos_in_mark);
-}
-/* Finally, we mark the current state has normalized */
-if (n==0) mark[0]=0;
-else {
-	mark[n]=old_mark;
-}
-}
-
-
-/**
- * This function normalizes the given grf, with a kind of state sort.
- * This is useful to match graph identity for graphs that only differ
- * with state numbering as it may occur if a graph has been saved after
- * doing and then undoing something in the graph editor.
- */
-void normalize_grf(Grf* grf) {
-int* mark=(int*)malloc(grf->n_states*sizeof(int));
-if (mark==NULL) fatal_alloc_error("normalize_grf");
-/* States 0 and 1 must never be renumbered */
-mark[0]=-2;
-mark[1]=1;
-int n=2;
-for (int i=2;i<grf->n_states;i++) mark[i]=-1;
-renumber_outgoing_states(grf,mark,0,&n);
-/* Then, we deal with unreachable states that have not been renumbered */
-int* unreachable=(int*)malloc(grf->n_states*sizeof(int));
-if (unreachable==NULL) fatal_alloc_error("normalize_grf");
-int n_unreachable=0;
-for (int i=0;i<grf->n_states;i++) {
-	if (mark[i]<0) {
-		/* We mark the unreachable states */
-		unreachable[n_unreachable++]=i;
-	}
-}
-/* We sort those unreachable states */
-sort_states(grf,unreachable,n_unreachable);
-/* And we renumber them */
-for (int i=0;i<n_unreachable;i++) {
-	mark[unreachable[i]]=n++;
-}
-free(unreachable);
-/* Now, we swap states to sort them according to the renumbering */
-GrfState** tmp=(GrfState**)malloc(grf->n_states*sizeof(GrfState*));
-for (int i=0;i<grf->n_states;i++) {
-	tmp[mark[i]]=grf->states[i];
-}
-for (int i=0;i<grf->n_states;i++) {
-	grf->states[i]=tmp[i];
-}
-free(tmp);
-/* And finally, we have to renumber transitions */
-for (int i=0;i<grf->n_states;i++) {
-	int* t=grf->states[i]->transitions;
-	for (int j=0;j<grf->states[i]->n_transitions;j++) {
-		t[j]=mark[t[j]];
-	}
-}
-
-free(mark);
-}
-
-
-/**
- * Comparing two graph state sets. Returns 0 if equality; 1 otherwise.
- */
-static int cmp_grf_states(Grf* a,Grf* b) {
-if (a->n_states!=b->n_states) return 1;
-for (int i=0;i<a->n_states;i++) {
-	if (0!=cmp_states(a->states[i],b->states[i])) return 1;
-}
-return 0;
-}
-
-
-/**
  * Fills the given array with g's reverse transitions.
  */
 static void compute_reverse_transitions(Grf* g,vector_int** t) {
@@ -951,8 +758,8 @@ for (int i=0;i<g->n_states;i++) {
 }
 for (int i=0;i<g->n_states;i++) {
 	GrfState* s=g->states[i];
-	for (int j=0;j<s->n_transitions;j++) {
-		vector_int_add(t[s->transitions[j]],i);
+	for (int j=0;j<s->transitions->nbelems;j++) {
+		vector_int_add(t[s->transitions->tab[j]],i);
 	}
 }
 }
@@ -1037,7 +844,7 @@ for (int i=0;i<v_base->nbelems;i++) {
 		 * we have no hope to succeed */
 		return 0;
 	}
-	if (!vector_int_contains(v_dest,renumbered_incoming_state)) {
+	if (-1==vector_int_contains(v_dest,renumbered_incoming_state)) {
 		return 0;
 	}
 }
@@ -1054,11 +861,10 @@ for (int i=0;i<v_dest->nbelems;i++) {
 		 * we have no hope to succeed */
 		return 0;
 	}
-	if (!vector_int_contains(v_base,renumbered_incoming_state)) {
+	if (-1==vector_int_contains(v_base,renumbered_incoming_state)) {
 		return 0;
 	}
 }
-if (base==15 && dest==6) fatal_error("ooops\n");
 return 1;
 }
 
@@ -1071,44 +877,44 @@ static int same_outgoing_transitions(GrfDiff* diff,GrfState* base,GrfState* dest
 		int base_index,int dest_index) {
 /* First, we test if all base transitions are included in dest ones,
  * ignoring the loop transition, if any */
-for (int i=0;i<base->n_transitions;i++) {
-	if (base->transitions[i]==base_index) {
+for (int i=0;i<base->transitions->nbelems;i++) {
+	if (base->transitions->tab[i]==base_index) {
 		/* We skip loop transitions */
 		continue;
 	}
-	int renumbered_outgoing_state=diff->base_to_dest[base->transitions[i]];
+	int renumbered_outgoing_state=diff->base_to_dest[base->transitions->tab[i]];
 	if (renumbered_outgoing_state==-1) {
 		/* If we have an outgoing transition to an unknown box,
 		 * we have no hope to succeed */
 		return 0;
 	}
 	int j;
-	for (j=0;j<dest->n_transitions;j++) {
-		if (renumbered_outgoing_state==dest->transitions[j]) break;
+	for (j=0;j<dest->transitions->nbelems;j++) {
+		if (renumbered_outgoing_state==dest->transitions->tab[j]) break;
 	}
-	if (j==dest->n_transitions) {
+	if (j==dest->transitions->nbelems) {
 		/* Fail to find ? */
 		return 0;
 	}
 }
 /* Then, we test if all dest transitions are included in base ones,
  * ignoring the loop transition, if any */
-for (int i=0;i<dest->n_transitions;i++) {
-	if (dest->transitions[i]==dest_index) {
+for (int i=0;i<dest->transitions->nbelems;i++) {
+	if (dest->transitions->tab[i]==dest_index) {
 		/* We skip loop transitions */
 		continue;
 	}
-	int renumbered_outgoing_state=diff->dest_to_base[dest->transitions[i]];
+	int renumbered_outgoing_state=diff->dest_to_base[dest->transitions->tab[i]];
 	if (renumbered_outgoing_state==-1) {
 		/* If we have an outgoing transition to an unknown box,
 		 * we have no hope to succeed */
 		return 0;
 	}
 	int j;
-	for (j=0;j<base->n_transitions;j++) {
-		if (renumbered_outgoing_state==base->transitions[j]) break;
+	for (j=0;j<base->transitions->nbelems;j++) {
+		if (renumbered_outgoing_state==base->transitions->tab[j]) break;
 	}
-	if (j==base->n_transitions) {
+	if (j==base->transitions->nbelems) {
 		/* Fail to find ? */
 		return 0;
 	}
@@ -1143,9 +949,9 @@ for (int i=2;i<diff->size_base_to_dest;i++) {
 			continue;
 		}
 		GrfState* dest_state=dest->states[j];
-		int base_is_comment_box=base_state->n_transitions==0
+		int base_is_comment_box=base_state->transitions->nbelems==0
 				&& diff->reverse_transitions_base[i]->nbelems==0;
-		int dest_is_comment_box=dest_state->n_transitions==0
+		int dest_is_comment_box=dest_state->transitions->nbelems==0
 				&& diff->reverse_transitions_dest[j]->nbelems==0;
 		if (ignore_comment_boxes && (base_is_comment_box || dest_is_comment_box)) continue;
 		if (coord && (base_state->x!=dest_state->x || base_state->y!=dest_state->y)) {
@@ -1193,42 +999,42 @@ if (u_strcmp(base_state->box_content,dest_state->box_content)) {
 	add_diff_box_content_changed(diff,base_index,dest_index);
 }
 /* We look for all transitions that are in base and not in dest */
-for (int i=0;i<base_state->n_transitions;i++) {
-	int renumbered_dest_state=diff->base_to_dest[base_state->transitions[i]];
+for (int i=0;i<base_state->transitions->nbelems;i++) {
+	int renumbered_dest_state=diff->base_to_dest[base_state->transitions->tab[i]];
 	if (renumbered_dest_state==-1) {
 		/* Transitions to unmatched states are ignored here */
 		continue;
 	}
 	int j;
-	for (j=0;j<dest_state->n_transitions;j++) {
-		if (renumbered_dest_state==dest_state->transitions[j]) break;
+	for (j=0;j<dest_state->transitions->nbelems;j++) {
+		if (renumbered_dest_state==dest_state->transitions->tab[j]) break;
 	}
-	if (j==dest_state->n_transitions) {
+	if (j==dest_state->transitions->nbelems) {
 		/* Transition not found ? */
-		add_diff_transition_removed(diff,base_index,base_state->transitions[i],
+		add_diff_transition_removed(diff,base_index,base_state->transitions->tab[i],
 				dest_index,renumbered_dest_state);
 	}
 }
 /* And we look for all transitions that are in dest and not in base */
-for (int i=0;i<dest_state->n_transitions;i++) {
-	int renumbered_base_state=diff->dest_to_base[dest_state->transitions[i]];
+for (int i=0;i<dest_state->transitions->nbelems;i++) {
+	int renumbered_base_state=diff->dest_to_base[dest_state->transitions->tab[i]];
 	if (renumbered_base_state==-1) {
 		/* Transitions to unmatched states are ignored here */
 		continue;
 	}
 	int j;
-	for (j=0;j<base_state->n_transitions;j++) {
-		if (renumbered_base_state==base_state->transitions[j]) break;
+	for (j=0;j<base_state->transitions->nbelems;j++) {
+		if (renumbered_base_state==base_state->transitions->tab[j]) break;
 	}
-	if (j==base_state->n_transitions) {
+	if (j==base_state->transitions->nbelems) {
 		/* Transition not found ? */
 		add_diff_transition_added(diff,base_index,renumbered_base_state,
-				dest_index,dest_state->transitions[i]);
+				dest_index,dest_state->transitions->tab[i]);
 	}
 }
 }
 
-
+/*
 static void show_matching_boxes(GrfDiff* diff,Grf* base,Grf* dest) {
 error("-------------------------------------\n");
 for (int i=0;i<diff->size_base_to_dest;i++) {
@@ -1238,6 +1044,7 @@ for (int i=0;i<diff->size_base_to_dest;i++) {
 	}
 }
 }
+*/
 
 
 /**

@@ -77,7 +77,6 @@ const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
 static unichar* local_u_strchr(const unichar* s,unichar c) {
 if (s==NULL) return NULL;
 while ((*s)) {
-	
    if (*s==c) {
      return (unichar*)s;
    }
@@ -205,3 +204,20 @@ result[j]='\0';
 return j;
 }
 
+
+/**
+ * The same, with a Ustring. Returns the length of the added string.
+ */
+int escape(const unichar* s,Ustring* result,const unichar* chars_to_escape) {
+int n=result->len;
+for (int i=0;s[i]!='\0';i++) {
+   if (local_u_strchr(chars_to_escape,s[i])) {
+      u_strcat(result,PROTECTION_CHAR);
+   } else if (s[i]==PROTECTION_CHAR) {
+      i++;
+      u_strcat(result,PROTECTION_CHAR);
+   }
+   u_strcat(result,s[i]);
+}
+return result->len-n;
+}

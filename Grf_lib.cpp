@@ -61,6 +61,52 @@ GrfState* new_GrfState() {
 GrfState* s=(GrfState*)malloc(sizeof(GrfState));
 if (s==NULL) fatal_alloc_error("new_GrfState");
 s->box_content=NULL;
+s->transitions=new_vector_int();
+s->rank=-1;
+return s;
+}
+
+
+/**
+ * Creates a grf state.
+ */
+GrfState* new_GrfState(const unichar* content,int x,int y) {
+GrfState* s=new_GrfState();
+s->box_content=u_strdup(content);
+s->x=x;
+s->y=y;
+return s;
+}
+
+
+/**
+ * Creates a grf state.
+ */
+GrfState* new_GrfState(const char* content,int x,int y) {
+GrfState* s=new_GrfState();
+s->box_content=u_strdup(content);
+s->x=x;
+s->y=y;
+return s;
+}
+
+
+/**
+ * Creates a grf state.
+ */
+GrfState* new_GrfState(const unichar* content,int x,int y,int rank) {
+GrfState* s=new_GrfState(content,x,y);
+s->rank=rank;
+return s;
+}
+
+
+/**
+ * Creates a grf state.
+ */
+GrfState* new_GrfState(const char* content,int x,int y,int rank) {
+GrfState* s=new_GrfState(content,x,y);
+s->rank=rank;
 return s;
 }
 
@@ -71,7 +117,7 @@ return s;
 void free_GrfState(GrfState* s) {
 if (s==NULL) return;
 free(s->box_content);
-free(s->transitions);
+free_vector_int(s->transitions);
 free(s);
 }
 
@@ -86,6 +132,24 @@ for (int i=0;i<grf->n_states;i++) {
 }
 free(grf->states);
 free(grf);
+}
+
+
+/**
+ * Adds the given state to the given grf, returning the state index.
+ */
+int add_GrfState(Grf* grf,GrfState* s) {
+if (grf==NULL || s==NULL) {
+	fatal_error("Unexpected NULL error in add_GrfState\n");
+}
+int n=grf->n_states;
+(grf->n_states)++;
+grf->states=(GrfState**)realloc(grf->states,grf->n_states*sizeof(GrfState*));
+if (grf->states==NULL) {
+	fatal_alloc_error("add_GrfState");
+}
+grf->states[n]=s;
+return n;
 }
 
 
@@ -143,18 +207,20 @@ grf->states[n]=new_GrfState();
 grf->states[n]->box_content=u_strdup(line->str+start_pos);
 pos++;
 int shift;
+int n_transitions;
 if (3!=u_sscanf(line->str+pos,"%d%d%d%n",
 		&(grf->states[n]->x),
 		&(grf->states[n]->y),
-		&(grf->states[n]->n_transitions),
+		&n_transitions,
 		&shift)) return 0;
 pos=pos+shift;
-grf->states[n]->transitions=(int*)malloc(grf->states[n]->n_transitions*sizeof(int));
-if (grf->states[n]->transitions==NULL) return 0;
-for (int i=0;i<grf->states[n]->n_transitions;i++) {
+grf->states[n]->transitions=new_vector_int(n_transitions);
+int dest;
+for (int i=0;i<n_transitions;i++) {
 	if (1!=u_sscanf(line->str+pos,"%d%n",
-			&(grf->states[n]->transitions[i]),
+			&dest,
 			&shift)) return 0;
+	vector_int_add(grf->states[n]->transitions,dest);
 	pos=pos+shift;
 }
 return 1;
@@ -241,9 +307,9 @@ u_fprintf(f,"#\n");
 u_fprintf(f,"%d\n",grf->n_states);
 for (int i=0;i<grf->n_states;i++) {
 	u_fprintf(f,"%S %d %d %d ",grf->states[i]->box_content,grf->states[i]->x,grf->states[i]->y,
-			grf->states[i]->n_transitions);
-	for (int j=0;j<grf->states[i]->n_transitions;j++) {
-		u_fprintf(f,"%d ",grf->states[i]->transitions[j]);
+			grf->states[i]->transitions->nbelems);
+	for (int j=0;j<grf->states[i]->transitions->nbelems;j++) {
+		u_fprintf(f,"%d ",grf->states[i]->transitions->tab[j]);
 	}
 	u_fprintf(f,"\n");
 }
@@ -259,10 +325,7 @@ GrfState* res=new_GrfState();
 res->box_content=u_strdup(s->box_content);
 res->x=s->x;
 res->y=s->y;
-res->n_transitions=s->n_transitions;
-res->transitions=(int*)malloc(res->n_transitions*sizeof(int));
-if (res->transitions==NULL) fatal_alloc_error("cpy_grf_state");
-memcpy(res->transitions,s->transitions,res->n_transitions*sizeof(int));
+res->transitions=vector_int_dup(s->transitions);
 return res;
 }
 

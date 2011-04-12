@@ -31,6 +31,7 @@
 #include "Error.h"
 #include "UnitexGetOpt.h"
 #include "Tfst2Grf.h"
+#include "Grf_lib.h"
 
 
 const char* usage_Tfst2Grf =
@@ -200,7 +201,9 @@ for (int i=0;i<tfst->tokens->nbelems;i++) {
 u_fclose(tok);
 
 u_printf("Creating GRF...\n");
-sentence_to_grf(tfst,fontname,size,f);
+Grf* grf=sentence_to_grf(tfst,fontname,size);
+save_Grf(f,grf);
+free_Grf(grf);
 u_fclose(f);
 free(fontname);
 if (output!=NULL) {

@@ -23,6 +23,7 @@
 #define StringParsingH
 
 #include "Unicode.h"
+#include "Ustring.h"
 
 /** 
  * Here are the error codes used for string parsing. Some of them like
@@ -90,5 +91,6 @@ int parse_string(const unichar* s,unichar* result,const unichar* stop_chars);
 int parse_string(const unichar* s,unichar* result,const char* stop_chars);
 
 int escape(const unichar* s,unichar* result,const unichar* chars_to_escape);
+int escape(const unichar* s,Ustring* result,const unichar* chars_to_escape);
 
 #endif

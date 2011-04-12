@@ -364,7 +364,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o UnitexGetOpt.o Arabic.o String_hash.o StringParsing.o\
-				$(SYSLIBMAPPED)
+				Ustring.o $(SYSLIBMAPPED)
 
 DICO      = Dico
 DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
@@ -550,7 +550,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-               DebugMode.o LoadInf.o $(SYSLIBMAPPED)
+               DebugMode.o LoadInf.o Grf_lib.o $(SYSLIBMAPPED)
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o RegularExpressions.o Error.o File.o\
@@ -598,7 +598,7 @@ TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o\
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o\
-               AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
+               AbstractDelaLoad.o CompressedDic.o LoadInf.o Grf_lib.o $(SYSLIBMAPPED)
 
 TFST2UNAMBIG      = Tfst2Unambig
 TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.o IOBuffer.o LinearAutomaton2Txt.o\

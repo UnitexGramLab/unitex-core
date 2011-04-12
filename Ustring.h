@@ -71,6 +71,7 @@ static inline void u_strcpy(Ustring*,const char*);
 static inline void chomp_new_line(Ustring*);
 
 void u_sprintf(Ustring*,const char*,...);
+void u_sprintf(Ustring*,const char*,...);
 void u_strcatf(Ustring*,const char*,...);
 
 int readline(Ustring*,U_FILE*);

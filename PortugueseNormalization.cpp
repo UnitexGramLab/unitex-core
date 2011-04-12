@@ -441,6 +441,32 @@ return -1;
 }
 
 
+/**
+ * Prints the header of the grf to the given file.
+ */
+static void write_grf_header(int width,int height,int n_states,char* font,U_FILE* f,int fontsize) {
+u_fprintf(f,"#Unigraph\n");
+u_fprintf(f,"SIZE %d %d\n",width,height);
+u_fprintf(f,"FONT %s:  %d\n",font,fontsize);
+u_fprintf(f,"OFONT %s:B %d\n",font,fontsize);
+u_fprintf(f,"BCOLOR 16777215\n");
+u_fprintf(f,"FCOLOR 0\n");
+u_fprintf(f,"ACOLOR 12632256\n");
+u_fprintf(f,"SCOLOR 16711680\n");
+u_fprintf(f,"CCOLOR 255\n");
+u_fprintf(f,"DBOXES y\n");
+u_fprintf(f,"DFRAME y\n");
+u_fprintf(f,"DDATE y\n");
+u_fprintf(f,"DFILE y\n");
+u_fprintf(f,"DDIR y\n");
+u_fprintf(f,"DRIG n\n");
+u_fprintf(f,"DRST n\n");
+u_fprintf(f,"FITS 100\n");
+u_fprintf(f,"PORIENT L\n");
+u_fprintf(f,"#\n");
+u_fprintf(f,"%d\n",n_states);
+}
+
 
 
 //
