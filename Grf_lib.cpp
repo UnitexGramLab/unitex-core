@@ -214,7 +214,6 @@ if (3!=u_sscanf(line->str+pos,"%d%d%d%n",
 		&n_transitions,
 		&shift)) return 0;
 pos=pos+shift;
-grf->states[n]->transitions=new_vector_int(n_transitions);
 int dest;
 for (int i=0;i<n_transitions;i++) {
 	if (1!=u_sscanf(line->str+pos,"%d%n",
