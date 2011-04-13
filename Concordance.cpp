@@ -966,6 +966,15 @@ while (matches!=NULL) {
 	 * position */
 	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token+1,options->snt_offsets);
 	end_pos_char=end_pos_char+shift;
+	if (options->result_mode==UIMA_) {
+		/* In UIMA mode, we use the offset file to produce start and end positions
+		 * relative to the original input file, before any Unitex operation */
+		int first_token=matches->m.start_pos_in_token;
+		int last_token=matches->m.end_pos_in_token;
+		start_pos_char=options->uima_offsets->tab[first_token*2];
+		end_pos_char=options->uima_offsets->tab[last_token*2+1];
+	}
+
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,concord_ind_match_number);
 	u_sprintf(positions_from_eos,"%d\t%d\t%d",current_sentence,start_from_eos,end_from_eos);
@@ -1234,6 +1243,7 @@ opt->script=NULL;
 opt->sort_alphabet=NULL;
 opt->working_directory[0]='\0';
 opt->snt_offsets=NULL;
+opt->uima_offsets=NULL;
 return opt;
 }
 
@@ -1247,6 +1257,7 @@ if (opt->fontname!=NULL) free(opt->fontname);
 if (opt->script!=NULL) free(opt->script);
 if (opt->sort_alphabet!=NULL) free(opt->sort_alphabet);
 free_vector_int(opt->snt_offsets);
+free_vector_int(opt->uima_offsets);
 free(opt);
 }
 

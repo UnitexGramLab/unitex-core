@@ -68,7 +68,11 @@ struct conc_opt {
   char* script;
   char* sort_alphabet;
   char working_directory[FILENAME_MAX];
+  /* snt_offsets is used to compute correct positions in .snt file
+   * for coherence with hightlighting in GUI */
   vector_int* snt_offsets;
+  /* uima_offsets is used with --uima option */
+  vector_int* uima_offsets;
 };
 
 struct conc_opt* new_conc_opt();

@@ -25,6 +25,7 @@
 #include "Error.h"
 #include "Overlap.h"
 #include "File.h"
+#include "Ustring.h"
 
 /**
  * Loads the given offset file. Returns NULL in case of error.
@@ -241,3 +242,28 @@ vector_int_add(snt_offsets,token_pos);
 vector_int_add(snt_offsets,shift_before);
 vector_int_add(snt_offsets,shift_after);
 }
+
+
+/**
+ * Reads the start and end positions of each token stored in the file
+ * produced by Tokenize's --output_offsets option.
+ */
+vector_int* load_uima_offsets(char* name,int mask_encoding_compatibility_input) {
+U_FILE* f;
+f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
+if (f==NULL) {
+   return NULL;
+}
+vector_int* v=new_vector_int();
+Ustring* line=new_Ustring();
+int a,b,c;
+while (EOF!=readline(line,f)) {
+	u_sscanf(line->str,"%d%d%d",&a,&b,&c);
+	vector_int_add(v,b);
+	vector_int_add(v,c);
+}
+free_Ustring(line);
+u_fclose(f);
+return v;
+}
+

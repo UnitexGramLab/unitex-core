@@ -70,7 +70,10 @@ const char* usage_Concord =
 		"  -p SCRIPT/--script=SCRIPT: produces a HTML concordance file where occurrences\n"
 		"                             are links described by SCRIPT\n"
         "  -i/--index: produces an index of the concordance\n"
-        "  -u/--uima: produces another index of the concordance\n"
+        "  -u offsets/--uima=offsets: produces an index of the concordance relative to the\n"
+		"                             original text file, before any Unitex operation. offsets\n"
+		"                             is supposed to be the file produced by Tokenize's\n"
+		"                             --output_offsets option.\n"
         "  -e/--xml: produces xml index of the concordance\n"
         "  -w/--xml-with-header: produces xml index of the concordance with header\n"
         "  -A/--axis: produces an axis file for the concordance (cf. [Melamed 06])\n"
@@ -162,7 +165,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Htewg:p:iuAxm:a:Td:hk:q:";
+const char* optstring_Concord=":f:s:l:r:Htewg:p:iu:Axm:a:Td:hk:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -183,7 +186,7 @@ const struct option_TS lopts_Concord[]= {
       {"glossanet",required_argument_TS,NULL,'g'},
       {"script",required_argument_TS,NULL,'p'},
       {"index",no_argument_TS,NULL,'i'},
-      {"uima",no_argument_TS,NULL,'u'},
+      {"uima",required_argument_TS,NULL,'u'},
       {"axis",no_argument_TS,NULL,'A'},
       {"xalign",no_argument_TS,NULL,'x'},
       {"merge",required_argument_TS,NULL,'m'},
@@ -214,6 +217,7 @@ Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int ret;
+char* uima_offset_file=NULL;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index,vars))) {
    switch(val) {
@@ -275,7 +279,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
              }
              break;
    case 'i': options->result_mode=INDEX_; break;
-   case 'u': options->result_mode=UIMA_; break;
+   case 'u': options->result_mode=UIMA_; uima_offset_file=strdup(vars->optarg); break;
    case 'e': options->result_mode=XML_; break;
    case 'w': options->result_mode=XML_WITH_HEADER_; break;
    case 'A': options->result_mode=AXIS_; break;
@@ -393,6 +397,13 @@ if (options->result_mode==HTML_) {
 	if (options->snt_offsets==NULL) {
 		fatal_error("Cannot read snt offset file %s\n",snt_files->snt_offsets_pos);
 	}
+}
+if (options->result_mode==UIMA_) {
+	options->uima_offsets=load_uima_offsets(uima_offset_file,mask_encoding_compatibility_input);
+	if (options->uima_offsets==NULL) {
+		fatal_error("Cannot read offset file %s\n",uima_offset_file);
+	}
+	free(uima_offset_file);
 }
 
 /* Once we have set all parameters, we call the function that

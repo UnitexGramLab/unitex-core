@@ -124,4 +124,7 @@ int save_snt_offsets(vector_int*,char*);
 vector_int* load_snt_offsets(char*);
 void add_snt_offsets(vector_int*,int,int,int);
 
+vector_int* load_uima_offsets(char* name,int mask_encoding_compatibility_input);
+
+
 #endif
