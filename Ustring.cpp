@@ -119,7 +119,7 @@ ustr->size=size;
  * 'length' is the number of chars of 'str' to be copied.
  */
 void u_strcat(Ustring* ustr,const unichar* str,unsigned int length) {
-if (str==NULL || str[0]=='\0' || length==0) {
+if (str==NULL || length==0 || str[0]=='\0') {
    /* If there is nothing to concatenate */
    return;
 }
@@ -192,7 +192,7 @@ ustr->len=newlen;
  */
 int readline(Ustring* ustr,U_FILE* f) {
 unichar buf[MAXBUF];
-unsigned int len=0;
+int len=0;
 empty(ustr);
 
 /* - EOF : means that it was the end of file
@@ -202,6 +202,7 @@ empty(ustr);
 */
 do {
    len=u_fgets(buf,MAXBUF,f);
+   if (len==EOF) return EOF;
    u_strcat(ustr,buf,len);
 } while ((len==MAXBUF-1) && buf[len-1]!='\n'); /* If we are not at the end of the line... */
 return ustr->len;
