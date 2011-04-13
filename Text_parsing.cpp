@@ -1945,8 +1945,8 @@ static struct match_list* eliminate_longer_matches(struct match_list *ptr, int s
 		ptr->m.start_pos_in_token = start;
 		ptr->m.end_pos_in_token = end;
 		if (ptr->output != NULL)
-			free(ptr->output);
-		ptr->output = u_strdup(output);
+			free_cb(ptr->output,prv_alloc);
+		ptr->output = u_strdup(output,prv_alloc);
 		/* We note that the match does not need anymore to be added */
 		(*dont_add_match) = 1;
 		ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
@@ -2006,8 +2006,8 @@ static struct match_list* eliminate_shorter_matches(struct match_list *ptr, int 
 		ptr->m.start_pos_in_token = start;
 		ptr->m.end_pos_in_token = end;
 		if (ptr->output != NULL)
-			free(ptr->output);
-		ptr->output = u_strdup(output);
+			free_cb(ptr->output,prv_alloc);
+		ptr->output = u_strdup(output,prv_alloc);
 		/* We note that the match does not need anymore to be added */
 		(*dont_add_match) = 1;
 		ptr->next = eliminate_shorter_matches(ptr->next, start, end, output,

@@ -39,7 +39,8 @@ u_sprintf(output+l,"%C%d:%d:%d%C",DEBUG_INFO_COORD_MARK,graph,box,line,DEBUG_INF
  * contexts and right contexts.
  */
 void save_real_output_from_debug(U_FILE* f,OutputPolicy policy,unichar* s) {
-int print_input,print_output;
+int print_input=0;
+int print_output=0;
 switch (policy) {
 case IGNORE_OUTPUTS: print_input=1; print_output=0; break;
 case MERGE_OUTPUTS: print_input=1; print_output=1; break;
