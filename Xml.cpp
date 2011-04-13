@@ -55,7 +55,7 @@ while ((c=u_fgetc_raw(input))!=EOF) {
 			return 0;
 		}
 	} else {
-		u_fputc_raw(c,output);
+		u_fputc_raw((unichar)c,output);
 		new_pos++;
 	}
 }
@@ -123,7 +123,7 @@ int read2(U_FILE* f,const char* seq) {
 int c;
 while (*seq) {
 	c=u_fgetc_raw(f);
-	if (u_toupper(c)!=u_toupper(*seq)) return 0;
+	if (u_toupper((unichar)c)!=u_toupper(*seq)) return 0;
 	seq++;
 }
 return 1;
@@ -146,7 +146,7 @@ while (state!=3) {
 		if (c==']') state=1;
 		else if (c=='&') state=4;
 		else {
-			u_fputc_raw(c,f_out);
+			u_fputc_raw((unichar)c,f_out);
 			(*new_pos)++;
 			state=0;
 		}
@@ -164,7 +164,7 @@ while (state!=3) {
 		else {
 			/* We have to save ]c */
 			u_fputc_raw(']',f_out);
-			u_fputc_raw(c,f_out);
+			u_fputc_raw((unichar)c,f_out);
 			(*new_pos)+=2;
 			state=0;
 		}
@@ -189,7 +189,7 @@ while (state!=3) {
 			/* We have ]]c to save */
 			u_fputc_raw(']',f_out);
 			u_fputc_raw(']',f_out);
-			u_fputc_raw(c,f_out);
+			u_fputc_raw((unichar)c,f_out);
 			(*new_pos)+=3;
 			state=0;
 		}
@@ -212,7 +212,7 @@ while (state!=3) {
 		else {
 			/* We have &c to save */
 			u_fputc_raw('&',f_out);
-			u_fputc_raw(c,f_out);
+			u_fputc_raw((unichar)c,f_out);
 			(*new_pos)+=2;
 			state=0;
 		}
@@ -493,7 +493,7 @@ if (c<0) {
 	error("Invalid html character: &%s;\n",tmp);
 	return 0;
 }
-u_fputc_raw(c,f_out);
+u_fputc_raw((unichar)c,f_out);
 write_offsets(offsets,(*pos)-(2+i),*pos,*new_pos,(*new_pos)+1);
 (*new_pos)++;
 return 1;
