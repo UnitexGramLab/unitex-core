@@ -353,14 +353,35 @@ for (;;) {
                }
             }
          } else if (!u_strcmp(field,"CODE.FLEX")) {
-            if (entry->n_inflectional_codes>0) {
-               push_output_string(stack,entry->inflectional_codes[0]);
-               for (int i=1;i<entry->n_inflectional_codes;i++) {
-                  push_output_char(stack,':');
-                  push_output_string(stack,entry->inflectional_codes[i]);
-               }
-            }
-         } else {
+             if (entry->n_inflectional_codes>0) {
+                push_output_string(stack,entry->inflectional_codes[0]);
+                for (int i=1;i<entry->n_inflectional_codes;i++) {
+                   push_output_char(stack,':');
+                   push_output_string(stack,entry->inflectional_codes[i]);
+                }
+             }
+          } else if (u_starts_with(field,"CODE.ATTR=")) {
+        	  unichar* attr_name=field+10;
+        	  int attr_len=u_strlen(attr_name);
+        	  int i;
+        	  for (i=0;i<entry->n_semantic_codes;i++) {
+        		  if (u_starts_with(entry->semantic_codes[i],attr_name)) {
+        			  if (entry->semantic_codes[i][attr_len]!='='
+        					  || entry->semantic_codes[i][attr_len+1]=='\0') {
+        				  continue;
+        			  }
+        			  push_output_string(stack,entry->semantic_codes[i]+attr_len+1);
+        		  }
+        	  }
+        	  if (i==entry->n_semantic_codes) {
+        		  /* If the attribute was not found, it's an error case */
+        		  switch (p->variable_error_policy) {
+        		     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name);
+        		     case IGNORE_VARIABLE_ERRORS: continue;
+        		     case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+        		  }
+        	  }
+           } else {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
                case IGNORE_VARIABLE_ERRORS: continue;
