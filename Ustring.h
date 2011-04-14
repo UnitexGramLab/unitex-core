@@ -74,6 +74,7 @@ void u_sprintf(Ustring*,const char*,...);
 void u_sprintf(Ustring*,const char*,...);
 void u_strcatf(Ustring*,const char*,...);
 
+int readline_keep_CR(Ustring*,U_FILE*);
 int readline(Ustring*,U_FILE*);
 unichar* readline_safe(U_FILE* f);
 

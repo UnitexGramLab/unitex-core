@@ -158,8 +158,7 @@ return n;
  * in case of success; 0 otherwise.
  */
 static int read_grf_header_line(U_FILE* f,Ustring* line,unichar* dest) {
-if (!readline(line,f)) return 0;
-chomp_new_line(line);
+if (EOF==readline(line,f)) return 0;
 if (line->len > GRF_HEADER_LINE_SIZE) return 0;
 u_strcpy(dest,line->str);
 return 1;
@@ -171,7 +170,7 @@ return 1;
  * in case of success; 0 otherwise.
  */
 static int read_grf_n_states(U_FILE* f,Ustring* line,int *n) {
-if (!readline(line,f)) return 0;
+if (EOF==readline(line,f)) return 0;
 return 1==u_sscanf(line->str,"%d",n);
 }
 
@@ -181,7 +180,7 @@ return 1==u_sscanf(line->str,"%d",n);
  * 0 otherwise.
  */
 static int read_grf_state(U_FILE* f,Ustring* line,int n,Grf* grf) {
-if (!readline(line,f) || line->len < 2) return 0;
+if (EOF==readline(line,f) || line->len < 2) return 0;
 unsigned int pos=0;
 if (line->str[pos]=='s') {
 	/* Old stuff: s at line start used to mean that the box was selected.
@@ -234,7 +233,7 @@ U_FILE* f=u_fopen_existing_versatile_encoding(DEFAULT_MASK_ENCODING_COMPATIBILIT
 if (f==NULL) return NULL;
 Ustring* line=new_Ustring();
 Grf* grf=new_Grf();
-if (!readline(line,f) || u_strcmp(line->str,"#Unigraph\n")) goto error;
+if (EOF==readline(line,f) || u_strcmp(line->str,"#Unigraph")) goto error;
 if (!read_grf_header_line(f,line,grf->size)) goto error;
 if (!read_grf_header_line(f,line,grf->font)) goto error;
 if (!read_grf_header_line(f,line,grf->ofont)) goto error;
@@ -252,7 +251,7 @@ if (!read_grf_header_line(f,line,grf->drig)) goto error;
 if (!read_grf_header_line(f,line,grf->drst)) goto error;
 if (!read_grf_header_line(f,line,grf->fits)) goto error;
 if (!read_grf_header_line(f,line,grf->porient)) goto error;
-if (!readline(line,f) || u_strcmp(line->str,"#\n")) goto error;
+if (EOF==readline(line,f) || u_strcmp(line->str,"#")) goto error;
 if (!read_grf_n_states(f,line,&(grf->n_states))) goto error;
 grf->states=(GrfState**)calloc(grf->n_states,sizeof(GrfState*));
 if (grf->states==NULL) {

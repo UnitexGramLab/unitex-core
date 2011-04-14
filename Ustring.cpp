@@ -190,7 +190,7 @@ ustr->len=newlen;
  * The line content is copied into the given Ustring, whose previous
  * content is lost. The length the line read is returned.
  */
-int readline(Ustring* ustr,U_FILE* f) {
+int readline_keep_CR(Ustring* ustr,U_FILE* f) {
 unichar buf[MAXBUF];
 int len=0;
 empty(ustr);
@@ -205,6 +205,15 @@ do {
    if (len==EOF) return EOF;
    u_strcat(ustr,buf,len);
 } while ((len==MAXBUF-1) && buf[len-1]!='\n'); /* If we are not at the end of the line... */
+return ustr->len;
+}
+
+/**
+ * The same as readline_keep_CR but \n is removed.
+ */
+int readline(Ustring* ustr,U_FILE* f) {
+if (EOF==readline_keep_CR(ustr,f)) return EOF;
+chomp_new_line(ustr);
 return ustr->len;
 }
 
@@ -255,7 +264,6 @@ Ustring* s=new_Ustring();
 int ret=readline(s,f);
 unichar* result=NULL;
 if (ret!=EOF) {
-	chomp_new_line(s);
 	result=s->str;
 	s->str=NULL;
 }

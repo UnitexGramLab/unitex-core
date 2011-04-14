@@ -62,7 +62,6 @@ while (readline(ustr,fst->f) && ustr->str[0]!='f') {
       error("load_fst_tags: %s: bad symbol line: '%S'\n",fst->name,ustr->str);
       return -1;
    }
-   chomp_new_line(ustr);
    /* +1 because we ignore the % or @ at the beginning of the line */
    symbol_t* symbol=load_grammar_symbol(fst->language,ustr->str+1);
    /* If 'symbol' is NULL, then an error message has already
@@ -154,7 +153,6 @@ if (fstf->pos>=fstf->nb_automata) {
 }
 Ustring* ustr=new_Ustring();
 readline(ustr,fstf->f);
-chomp_new_line(ustr);
 const unichar* p=ustr->str;
 if (p[0]!='-') {
    fatal_error("load_automaton: %s: bad file format\n",fstf->name);
@@ -170,7 +168,6 @@ p++;
 Fst2Automaton* A=new_Fst2Automaton(p);
 while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
    /* If there is a state to read */
-   chomp_new_line(ustr);
    p=ustr->str;
    SingleGraphState state=add_state(A->automaton);
    if (*p=='t') {

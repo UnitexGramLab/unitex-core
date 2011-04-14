@@ -153,7 +153,7 @@ return offset;
  * Tries to read a valid epsilon tag.
  */
 TfstTag* read_epsilon_tag(Tfst* t,Ustring* foo) {
-readline(foo,t->tfst);
+readline_keep_CR(foo,t->tfst);
 if (u_strcmp(foo->str,".\n")) {
    fatal_error("read_epsilon_tag: malformed epsilon tag\n");
 }
@@ -166,7 +166,7 @@ return new_TfstTag(T_EPSILON);
  */
 TfstTag* read_normal_tag(Tfst* t,Ustring* foo) {
 /* We read the content */
-readline(foo,t->tfst);
+readline_keep_CR(foo,t->tfst);
 chomp_new_line(foo);
 if (foo->str[0]!='@' || foo->str[1]=='\0') {
    fatal_error("read_normal_tag: invalid content line %S\n",foo->str);
@@ -187,7 +187,7 @@ unichar* content=u_strdup(foo->str+1);
  *    Z='#' if there is no syllable bound at the end of the input sequence
  *    If there is a syllable bound, then Z is not set.
  */
-readline(foo,t->tfst);
+readline_keep_CR(foo,t->tfst);
 chomp_new_line(foo);
 if (foo->str[0]!='@' || foo->str[1]=='\0') {
    fatal_error("read_normal_tag #1: invalid bounds line %S\n",foo->str);
@@ -206,7 +206,7 @@ if (a<0 || b<0 || c<0 || d<0 || e<0 /* || f<0*/) {
    fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
 }
 /* Finally, we must check that we have the final line with a dot */
-readline(foo,t->tfst);
+readline_keep_CR(foo,t->tfst);
 if (u_strcmp(foo->str,".\n")) {
    fatal_error("read_normal_tag: invalid final line %S\n",foo->str);
 }
@@ -245,10 +245,10 @@ if (2!=u_fscanf(tfst->tfst,"%C%d\n",&z,&N) || z!='$' || N!=n) {
    fatal_error("load_sentence: Invalid sentence header line: should be $%d\n",n);
 }
 Ustring* foo=new_Ustring(16);
-readline(foo,tfst->tfst);
+readline_keep_CR(foo,tfst->tfst);
 chomp_new_line(foo);
 tfst->text=u_strdup(foo->str);
-readline(foo,tfst->tfst);
+readline_keep_CR(foo,tfst->tfst);
 tfst->tokens=new_vector_int(16);
 tfst->token_sizes=new_vector_int(16);
 int tmp,tmp2,pos=0,shift,ret;
@@ -262,14 +262,14 @@ if (ret==1 || (ret==0 && foo->str[pos]!='\n')) {
    fatal_error("load_sentence: malformed token line:\n%S\n",foo->str);
 }
 /* We read the offsets of the sentence */
-readline(foo,tfst->tfst);
+readline_keep_CR(foo,tfst->tfst);
 chomp_new_line(foo);
 if (2!=u_sscanf(foo->str,"%d_%d%C",&(tfst->offset_in_tokens),&(tfst->offset_in_chars),&z)) {
    fatal_error("load_sentence: malformed offset line:\n%S\n",foo->str);
 }
 /* Now, we have to read the states */
 tfst->automaton=new_SingleGraph(INT_TAGS);
-readline(foo,tfst->tfst);
+readline_keep_CR(foo,tfst->tfst);
 while (u_strcmp(foo->str,"f\n")) {
    SingleGraphState s=add_state(tfst->automaton);
    if (tfst->automaton->number_of_states==1) {
@@ -289,16 +289,16 @@ while (u_strcmp(foo->str,"f\n")) {
       add_outgoing_transition(s,tag,dest);
    }
    /* And we read the next line */
-   readline(foo,tfst->tfst);
+   readline_keep_CR(foo,tfst->tfst);
 }
 /* Now, we have to read the tags */
 tfst->tags=new_vector_ptr(16);
-readline(foo,tfst->tfst);
+readline_keep_CR(foo,tfst->tfst);
 if (u_strcmp(foo->str,"@<E>\n")) {
    fatal_error("load_sentence: first tag should be the epsilon one\n");
 }
 vector_ptr_add(tfst->tags,read_epsilon_tag(tfst,foo));
-readline(foo,tfst->tfst);
+readline_keep_CR(foo,tfst->tfst);
 while (u_strcmp(foo->str,"f\n")) {
    if (!u_strcmp(foo->str,"@STD\n")) {
       vector_ptr_add(tfst->tags,read_normal_tag(tfst,foo));
@@ -306,7 +306,7 @@ while (u_strcmp(foo->str,"f\n")) {
       fatal_error("load_sentence: Invalid tag type %S\n",foo->str);
    }
    /* And we read the next line */
-   readline(foo,tfst->tfst);
+   readline_keep_CR(foo,tfst->tfst);
 }
 
 /* We don't forget to free our useful Ustring */
