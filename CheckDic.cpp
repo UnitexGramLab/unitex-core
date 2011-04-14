@@ -31,6 +31,7 @@
 #include "UnitexGetOpt.h"
 #include "CheckDic.h"
 #include "Alphabet.h"
+#include "Ustring.h"
 
 
 /* Maximum size of a DIC line */
@@ -149,7 +150,6 @@ if (out==NULL) {
 	fatal_error("Cannot create %s\n",output_filename);
 }
 u_printf("Checking %s...\n",argv[vars->optind]);
-unichar line[CHECKDIC_LINE_SIZE];
 int line_number=1;
 /*
  * We declare and initialize an array in order to know which
@@ -175,20 +175,21 @@ int n_compound_entries=0;
 /*
  * We read all the lines and check them.
  */
-while (EOF!=u_fgets_limit2(line,DIC_LINE_SIZE,dic)) {
-   if (line[0]=='\0') {
+Ustring* line=new_Ustring(DIC_LINE_SIZE);
+while (EOF!=readline(line,dic)) {
+   if (line->str[0]=='\0') {
 		/* If we have an empty line, we print a unicode error message
 		 * into the output file */
 		u_fprintf(out,"Line %d: empty line\n",line_number);
 	}
-	else if (line[0]=='/') {
+	else if (line->str[0]=='/') {
 		/* If a line starts with '/', it is a commment line, so
 		 * we ignore it */
 	}
 	else {
 		/* If we have a line to check, we check it according to the
 		 * dictionary type */
-		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,
+		check_DELA_line(line->str,out,is_a_DELAF,line_number,alphabet,semantic_codes,
 		                inflectional_codes,simple_lemmas,compound_lemmas,
 		                &n_simple_entries,&n_compound_entries,alphabet0,strict_unprotected);
 	}
@@ -199,6 +200,7 @@ while (EOF!=u_fgets_limit2(line,DIC_LINE_SIZE,dic)) {
 	}
 	line_number++;
 }
+free_Ustring(line);
 u_printf("%d lines read\n",line_number-1);
 u_fclose(dic);
 /*
