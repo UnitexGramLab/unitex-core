@@ -27,7 +27,9 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "AbstractFst2Load.h"
-
+#include "Alphabet.h"
+#include "Grf_lib.h"
+#include "GrfBeauty.h"
 
 
 
@@ -36,6 +38,7 @@
  */
 int main(int argc,char* argv[]) {
 setBufferMode();
+#if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <txt> start end\n");
 }
@@ -66,6 +69,28 @@ for (i=0;i<40;i++) {
 u_printf("\n");
 
 u_fclose(f);
+return 0;
+#endif
+if (argc!=4) {
+	fatal_error("Usage: cmd <alph> <grf_in> <grf_out\n");
+}
+Alphabet* alph=load_alphabet(argv[1]);
+if (alph==NULL) {
+	fatal_error("Cannot load alphabet file %s\n",argv[1]);
+}
+Grf* grf=load_Grf(argv[2]);
+if (grf==NULL) {
+	fatal_error("Cannot load %s\n",argv[2]);
+}
+U_FILE* f=u_fopen(UTF16_LE,argv[3],U_WRITE);
+if (f==NULL) {
+	fatal_error("Cannot write %s\n",argv[3]);
+}
+beautify(grf,alph);
+save_Grf(f,grf);
+u_fclose(f);
+free_Grf(grf);
+free_alphabet(alph);
 return 0;
 }
 

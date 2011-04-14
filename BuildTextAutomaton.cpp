@@ -36,6 +36,8 @@
 #include "AbstractFst2Load.h"
 #include "UnusedParameter.h"
 #include "TfstStats.h"
+#include "Ustring.h"
+
 
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
@@ -988,21 +990,16 @@ free_Ustring(foo);
 
 /**
  * Loads a whole file as a string. This is used to load the content
- * of the current sentence.
+ * of the current sentence, or NULL if the file is empty.
  */
 unichar* load_as_a_string(int mask_encoding_compatibility_input,char* name) {
 U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) {
    fatal_error("Cannot open %s in load_as_a_string\n",name);
 }
-long size=get_file_size(f);
-unichar* res=(unichar*)malloc(sizeof(unichar)*size/2);
-if (res==NULL) {
-   fatal_alloc_error("load_as_a_string");
-}
-u_fgets(res,f);
+unichar* result=readline_safe(f);
 u_fclose(f);
-return res;
+return result;
 }
 
 

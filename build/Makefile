@@ -296,7 +296,8 @@ endif ## MINGW (ifeq)
 TEST      = Test
 TEST_OBJS = Main_Test.o Unicode.o DELA.o Error.o StringParsing.o String_hash.o AbstractAllocator.o\
 			Alphabet.o List_ustring.o Af_stdio.o ActivityLogger.o IOBuffer.o \
-			File.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o $(SYSLIBMAPPED)
+			File.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
+			Grf_lib.o GrfBeauty.o $(SYSLIBMAPPED)
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\

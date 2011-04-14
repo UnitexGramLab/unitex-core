@@ -245,3 +245,20 @@ if (size!=ustr->len) {
 }
 }
 
+
+/**
+ * Uses a Ustring to perform a safe read line operation. Returns NULL if
+ * the end of file was found. \n is removed.
+ */
+unichar* readline_safe(U_FILE* f) {
+Ustring* s=new_Ustring();
+int ret=readline(s,f);
+unichar* result=NULL;
+if (ret!=EOF) {
+	chomp_new_line(s);
+	result=s->str;
+	s->str=NULL;
+}
+free_Ustring(s);
+return result;
+}
