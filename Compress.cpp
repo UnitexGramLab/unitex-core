@@ -35,7 +35,7 @@
 #include "ProgramInvoker.h"
 #include "BitArray.h"
 #include "CompressedDic.h"
-
+#include "Ustring.h"
 
 const char* usage_Compress =
          "Usage: Compress [OPTIONS] <dictionary>\n"
@@ -211,7 +211,6 @@ tokenize_allocator_has_clean = ((get_allocator_flag(compress_tokenize_abstract_a
 
 U_FILE* f;
 U_FILE* INF_file=NULL;
-unichar s[DIC_WORD_SIZE];
 struct dela_entry* entry;
 struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
@@ -248,18 +247,19 @@ INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
 u_printf("Compressing...\n");
 /* We read until there is no more lines in the .dic file */
-while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
-	if (s[0]=='\0') {
+Ustring* s=new_Ustring(DIC_WORD_SIZE);
+while(EOF!=readline(s,f)) {
+	if (s->str[0]=='\0') {
 		/* Empty lines should not appear in a .dic file */
 		error("Line %d: empty line\n",line);
 	}
-	else if (s[0]=='/') {
+	else if (s->str[0]=='/') {
 		/* We do nothing if the line begins by a '/', because
 		 * it is considered as a comment line. */
 	}
 	else {
 		/* If we have a line, we tokenize it */
-		entry=tokenize_DELAF_line(s,1,1,NULL,compress_tokenize_abstract_allocator);
+		entry=tokenize_DELAF_line(s->str,1,1,NULL,compress_tokenize_abstract_allocator);
 		if (entry!=NULL) {
 			/* If the entry is well-formed */
 			if (FLIP) {
@@ -333,6 +333,7 @@ while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 	}
 	line++;
 }
+free_Ustring(s);
 u_fclose(f);
 struct bit_array* used_inf_values=new_bit_array(INF_codes->size,ONE_BIT);
 if (bin_type==BIN_BIN2) {

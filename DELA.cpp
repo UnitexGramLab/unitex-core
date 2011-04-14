@@ -123,12 +123,15 @@ return 0;
 struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,int keep_equal_signs,
                                        int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
-unichar temp[DIC_LINE_SIZE];
 int i,val;
 if (line==NULL) {
 	if (!verbose) error("Internal NULL error in tokenize_DELAF_line\n");
    else (*verbose)=P_NULL_STRING;
 	return NULL;
+}
+unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(line)),prv_alloc);
+if (temp==NULL) {
+	fatal_alloc_error("tokenize_DELAF_line");
 }
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
@@ -150,32 +153,28 @@ val=parse_string(line,&i,temp,P_COMMA,strict_unprotected ? P_DOT : P_EMPTY,keep_
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res);
-   return NULL;
+   goto error;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: unexpected end of line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* The inflected form cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: empty inflected form in line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_INFLECTED_FORM;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 if (val==P_FORBIDDEN_CHAR) {
    /* If the inflected form contains an unprotected dot, it's an error */
    if (!verbose) {
       error("***Dictionary error: unprotected dot in inflected form in line\n_%S_\n",line);
    } else (*verbose)=P_UNPROTECTED_DOT;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 res->inflected=u_strdup(temp,prv_alloc);
 /*
@@ -186,24 +185,21 @@ val=parse_string(line,&i,temp,P_DOT,strict_unprotected ? P_COMMA : P_EMPTY,keep_
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 if (val==P_FORBIDDEN_CHAR) {
    /* If the lemma contains an unprotected comma, it's an error */
    if (!verbose) {
       error("***Dictionary error: unprotected comma in lemma in line\n_%S_\n",line);
    } else (*verbose)=P_UNPROTECTED_COMMA;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: unexpected end of line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 if (temp[0]=='\0') {
 	/* If the lemma is empty like in "eat,.V:W", it is supposed to be
@@ -222,16 +218,14 @@ val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* The grammatical code cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: empty grammatical code in line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 res->semantic_codes[0]=u_strdup(temp,prv_alloc);
 /*
@@ -243,16 +237,14 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    /* A grammatical or semantic code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: empty semantic code in line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
 	(res->n_semantic_codes)++;
@@ -266,16 +258,14 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    /* An inflectional code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: empty inflectional code in line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
 	(res->n_inflectional_codes)++;
@@ -284,16 +274,14 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 if (line[i]=='/' && !comments_allowed) {
    if (!verbose) error("***Dictionary error: unexpected comment at end of entry\n_%S_\n",line);
    else (*verbose)=P_UNEXPECTED_COMMENT;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* We check if a character appears several times in an inflectional code like :KKms */
 for (int il=0;il<res->n_inflectional_codes;il++) {
    if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[il])) {
       if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
 }
 /* We check if an inflectional code is a subset of another like :Kms:ms */
@@ -304,8 +292,7 @@ for (int il=0;il<res->n_inflectional_codes;il++) {
                                                     res->inflectional_codes[j])) {
          if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
-         free_dela_entry(res,prv_alloc);
-         return NULL;
+         goto error;
       }
    }
 }
@@ -316,12 +303,16 @@ for (int il=0;il<res->n_semantic_codes;il++) {
       if (!u_strcmp(res->semantic_codes[il],res->semantic_codes[j])) {
          if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
-         free_dela_entry(res,prv_alloc);
-         return NULL;
+         goto error;
       }
    }
 }
+free(temp);
 return res;
+error:
+free_dela_entry(res,prv_alloc);
+free(temp);
+return NULL;
 }
 
 
@@ -365,91 +356,134 @@ return tokenize_DELAF_line(line,1,0,NULL,0,prv_alloc);
  * NULL if there is an error in the line. Comments are not allowed at the end of the
  * line.
  * WARNING: this function does not perform all error checks. It should only be used
- *          when the input is know, to be safe, like a string generated by the
+ *          when the input is known to be safe, like a string generated by the
  *          uncompress_entry function.
  */
 struct dela_entry* tokenize_DELAF_line_opt(const unichar* line,Abstract_allocator prv_alloc) {
-	struct dela_entry* res;
-	unichar temp[DIC_LINE_SIZE];
-	int i,j;
-	if (line==NULL) {
-		fatal_error("Internal NULL error in tokenize_DELAF_line\n");
-	}
-	/* Initialization of the result structure */
-	res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
-	if (res==NULL) {
-		fatal_error("Not enough memory in tokenize_DELA_line\n");
-	}
-	res->inflected=NULL;
-	res->lemma=NULL;
-	res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
-	res->semantic_codes[0]=NULL;
-	res->n_inflectional_codes=0;
-	res->inflectional_codes[0]=NULL;
-	res->n_filters=0;
-	/*
-	 * We read the inflected part
-	 */
-	i=0;
-	j=0;
-	while (line[i]!='\0' && line[i]!=',') {
-		/* If there is a backslash, we must unprotect a character */
-		if (line[i]=='\\') {
-			i++;
-			/* If the backslash is at the end of line, it's an error */
-			if (line[i]=='\0') {
-				fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-			}
-			else if (line[i]=='=') {
-				temp[j++]='\\';
-			}
+struct dela_entry* res;
+unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(line)),prv_alloc);
+if (temp==NULL) {
+	fatal_alloc_error("tokenize_DELAF_line");
+}
+int i,j;
+if (line==NULL) {
+	fatal_error("Internal NULL error in tokenize_DELAF_line\n");
+}
+/* Initialization of the result structure */
+res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
+if (res==NULL) {
+	fatal_error("Not enough memory in tokenize_DELA_line\n");
+}
+res->inflected=NULL;
+res->lemma=NULL;
+res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
+res->semantic_codes[0]=NULL;
+res->n_inflectional_codes=0;
+res->inflectional_codes[0]=NULL;
+res->n_filters=0;
+/*
+ * We read the inflected part
+ */
+i=0;
+j=0;
+while (line[i]!='\0' && line[i]!=',') {
+	/* If there is a backslash, we must unprotect a character */
+	if (line[i]=='\\') {
+		i++;
+		/* If the backslash is at the end of line, it's an error */
+		if (line[i]=='\0') {
+			fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
 		}
-		temp[j++]=line[i++];
+		else if (line[i]=='=') {
+			temp[j++]='\\';
+		}
 	}
-	temp[j]='\0';
-	/* If we are at the end of line, it's an error */
-	if (line[i]=='\0') {
-		fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+	temp[j++]=line[i++];
+}
+temp[j]='\0';
+/* If we are at the end of line, it's an error */
+if (line[i]=='\0') {
+	fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+}
+res->inflected=u_strdup(temp,prv_alloc);
+/*
+ * We read the lemma part
+ */
+i++;
+j=0;
+while (line[i]!='\0' && line[i]!='.') {
+	/* If there is a backslash, we must unprotect a character */
+	if (line[i]=='\\') {
+		i++;
+		/* If the backslash is at the end of line, it's an error */
+		if (line[i]=='\0') {
+			fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+		} else if (line[i]=='=') {
+			temp[j++]='\\';
+		}
 	}
-	res->inflected=u_strdup(temp,prv_alloc);
-	/*
-	 * We read the lemma part
-	 */
+	temp[j++]=line[i++];
+}
+temp[j]='\0';
+/* If we are at the end of line, it's an error */
+if (line[i]=='\0') {
+	fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+}
+if (j==0) {
+	/* If the lemma is empty like in "eat,.V:W", it is supposed to be
+	 * the same as the inflected form. */
+	res->lemma=u_strdup(res->inflected,prv_alloc);
+}
+else {
+	/* Otherwise, we copy it */
+	res->lemma=u_strdup(temp,prv_alloc);
+}
+/*
+ * We read the grammatical code
+ */
+i++;
+j=0;
+while (line[i]!='\0' && line[i]!='+' && line[i]!='/' && line[i]!=':') {
+	/* If there is a backslash, we must unprotect a character */
+	if (line[i]=='\\') {
+		i++;
+		/* If the backslash is at the end of line, it's an error */
+		if (line[i]=='\0') {
+			fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+		}
+	}
+	temp[j++]=line[i++];
+}
+temp[j]='\0';
+res->semantic_codes[0]=u_strdup(temp,prv_alloc);
+/*
+ * Now we read the other grammatical and semantic codes if any
+ */
+while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
 	i++;
 	j=0;
-	while (line[i]!='\0' && line[i]!='.') {
+	while (line[i]!='\0' && line[i]!='+' && line[i]!=':' && line[i]!='/') {
 		/* If there is a backslash, we must unprotect a character */
 		if (line[i]=='\\') {
 			i++;
 			/* If the backslash is at the end of line, it's an error */
 			if (line[i]=='\0') {
 				fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-			} else if (line[i]=='=') {
-				temp[j++]='\\';
 			}
 		}
 		temp[j++]=line[i++];
 	}
 	temp[j]='\0';
-	/* If we are at the end of line, it's an error */
-	if (line[i]=='\0') {
-		fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-	}
-	if (j==0) {
-		/* If the lemma is empty like in "eat,.V:W", it is supposed to be
-		 * the same as the inflected form. */
-		res->lemma=u_strdup(res->inflected,prv_alloc);
-	}
-	else {
-		/* Otherwise, we copy it */
-		res->lemma=u_strdup(temp,prv_alloc);
-	}
-	/*
-	 * We read the grammatical code
-	 */
+	res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
+	(res->n_semantic_codes)++;
+}
+/*
+ * Then we read the inflectional codes if any
+ */
+while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 	i++;
 	j=0;
-	while (line[i]!='\0' && line[i]!='+' && line[i]!='/' && line[i]!=':') {
+	while (line[i]!='\0' && line[i]!=':' && line[i]!='/') {
 		/* If there is a backslash, we must unprotect a character */
 		if (line[i]=='\\') {
 			i++;
@@ -461,50 +495,11 @@ struct dela_entry* tokenize_DELAF_line_opt(const unichar* line,Abstract_allocato
 		temp[j++]=line[i++];
 	}
 	temp[j]='\0';
-	res->semantic_codes[0]=u_strdup(temp,prv_alloc);
-	/*
-	 * Now we read the other gramatical and semantic codes if any
-	 */
-	while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
-		i++;
-		j=0;
-		while (line[i]!='\0' && line[i]!='+' && line[i]!=':' && line[i]!='/') {
-			/* If there is a backslash, we must unprotect a character */
-			if (line[i]=='\\') {
-				i++;
-				/* If the backslash is at the end of line, it's an error */
-				if (line[i]=='\0') {
-					fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-				}
-			}
-			temp[j++]=line[i++];
-		}
-		temp[j]='\0';
-		res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
-		(res->n_semantic_codes)++;
-	}
-	/*
-	 * Then we read the inflectional codes if any
-	 */
-	while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
-		i++;
-		j=0;
-		while (line[i]!='\0' && line[i]!=':' && line[i]!='/') {
-			/* If there is a backslash, we must unprotect a character */
-			if (line[i]=='\\') {
-				i++;
-				/* If the backslash is at the end of line, it's an error */
-				if (line[i]=='\0') {
-					fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-				}
-			}
-			temp[j++]=line[i++];
-		}
-		temp[j]='\0';
-		res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
-		(res->n_inflectional_codes)++;
-	}
-	return res;
+	res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
+	(res->n_inflectional_codes)++;
+}
+free(temp);
+return res;
 }
 
 
@@ -527,14 +522,20 @@ if (tag==NULL || tag[0]!='{') {
  *    3,14,PI.CONST
  */
 int i=1;
-unichar temp[DIC_LINE_SIZE];
+unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(tag)),prv_alloc);
+if (temp==NULL) {
+	fatal_alloc_error("tokenize_DELAF_line");
+}
 int val=parse_string(tag,&i,temp,P_CLOSING_ROUND_BRACKET,P_EMPTY,NULL);
 if (tag[i]!='}' || val!=P_OK) {
    error("Invalid tag in tokenize_tag_token\n");
+   free(temp);
    return NULL;
 }
 /* And we tokenize it as a normal DELAF line */
-return tokenize_DELAF_line(temp,0,prv_alloc);
+struct dela_entry* result=tokenize_DELAF_line(temp,0,prv_alloc);
+free(temp);
+return result;
 }
 
 
@@ -546,12 +547,15 @@ return tokenize_DELAF_line(temp,0,prv_alloc);
  */
 struct dela_entry* tokenize_DELAS_line(const unichar* line,int *verbose,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
-unichar temp[DIC_LINE_SIZE];
 int i,val;
 if (line==NULL) {
    if (!verbose) error("Internal NULL error in tokenize_DELAS_line\n");
    else (*verbose)=P_NULL_STRING;
    return NULL;
+}
+unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(line)),prv_alloc);
+if (temp==NULL) {
+	fatal_alloc_error("tokenize_DELAF_line");
 }
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
@@ -575,24 +579,21 @@ val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* The lemma form cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_LEMMA;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 res->lemma=u_strdup(temp,prv_alloc);
 /*
@@ -603,16 +604,14 @@ val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET,P_E
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 /* The grammatical code cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-   free_dela_entry(res,prv_alloc);
-   return NULL;
+   goto error;
 }
 res->semantic_codes[0]=u_strdup(temp,prv_alloc);
 /*
@@ -635,16 +634,14 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    /*  */
    if (temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_FILTER;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    res->filters[res->n_filters]=u_strdup(temp,prv_alloc);
    (res->n_filters)++;
@@ -658,16 +655,14 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    /* A grammatical or semantic code cannot be empty */
    if (val==P_EOS || temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
    (res->n_semantic_codes)++;
@@ -681,16 +676,14 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    /* An inflectional code cannot be empty */
    if (val==P_EOS || temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
    (res->n_inflectional_codes)++;
@@ -700,8 +693,7 @@ for (int il=0;il<res->n_inflectional_codes;il++) {
    if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[il])) {
       if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
-      free_dela_entry(res,prv_alloc);
-      return NULL;
+      goto error;
    }
 }
 /* We check if an inflectional code is a subset of another like :Kms:ms */
@@ -712,8 +704,7 @@ for (int il=0;il<res->n_inflectional_codes;il++) {
                                                     res->inflectional_codes[j])) {
          if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
-         free_dela_entry(res,prv_alloc);
-         return NULL;
+         goto error;
       }
    }
 }
@@ -724,12 +715,16 @@ for (int il=0;il<res->n_semantic_codes;il++) {
       if (!u_strcmp(res->semantic_codes[il],res->semantic_codes[j])) {
          if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
-         free_dela_entry(res,prv_alloc);
-         return NULL;
+         goto error;
       }
    }
 }
+free(temp);
 return res;
+error:
+free_dela_entry(res,prv_alloc);
+free(temp);
+return NULL;
 }
 
 
