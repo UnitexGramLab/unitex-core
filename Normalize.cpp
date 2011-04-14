@@ -67,9 +67,10 @@ u_printf(usage_Normalize);
 }
 
 
-const char* optstring_Normalize=":nr:hk:q:@:";
+const char* optstring_Normalize=":nlr:hk:q:@:";
 const struct option_TS lopts_Normalize[]= {
       {"no_carriage_return",no_argument_TS,NULL,'n'},
+      {"no_convert_lf_to_crlf",no_argument_TS,NULL,'l'},
       {"replacement_rules",required_argument_TS,NULL,'r'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -94,10 +95,12 @@ char output_offsets[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+int convLFtoCRLF=1;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&index,vars))) {
    switch(val) {
+   case 'l': convLFtoCRLF=0; break;
    case 'n': mode=REMOVE_CARRIAGE_RETURN; break;
    case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty replacement rule file name\n");
@@ -172,7 +175,7 @@ remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[vars->optind]);
 int result=normalize(tmp_file, dest_file, encoding_output,bom_output,
-		mask_encoding_compatibility_input,mode, rules,v_output_offsets,separator_normalization);
+		mask_encoding_compatibility_input,mode, convLFtoCRLF,rules,v_output_offsets,separator_normalization);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {

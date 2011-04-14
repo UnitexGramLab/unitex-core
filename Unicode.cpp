@@ -1871,7 +1871,8 @@ int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pB
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
-int u_vfprintf(U_FILE* ufile,const char* format,va_list list) {
+
+int u_vfprintf_conv_lf_to_crlf_option(U_FILE* ufile,int convLFtoCRLF,const char* format,va_list list) {
 Encoding encoding=ufile->enc;
 ABSTRACTFILE* f=ufile->f;
 int n_printed=0;
@@ -1898,7 +1899,7 @@ while (*format) {
                       must be encoded as \r\n */
          case 'C': {
             uc=(unichar)va_arg(list,int);
-            BuildEncodedOutForUnicharItem(encoding,uc,&BufOut,1,f);
+            BuildEncodedOutForUnicharItem(encoding,uc,&BufOut,convLFtoCRLF,f);
             n_printed++;
             break;
          }
@@ -1920,32 +1921,32 @@ while (*format) {
                tmp[1]='\0';
                unichar html[32];
                int l=XXXize(tmp,html);
-               BuildEncodedOutForUnicharString(encoding,html,&BufOut,1,f);
+               BuildEncodedOutForUnicharString(encoding,html,&BufOut,convLFtoCRLF,f);
                n_printed=n_printed+l;
             } else if (*format=='S') {
                /* If we have to print a HTML string */
                us=va_arg(list,unichar*);
                if (us==NULL) {
-                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
+                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,convLFtoCRLF,f);
                   n_printed=n_printed+6;
                } else {
                   unichar html[4096];
                   int l=XXXize(us,html);
-                  BuildEncodedOutForUnicharString(encoding,html,&BufOut,1,f);
+                  BuildEncodedOutForUnicharString(encoding,html,&BufOut,convLFtoCRLF,f);
                   n_printed=n_printed+l;
                }
             } else if (*format=='R') {
                /* If we have to print a HTML reversed string */
                us=va_arg(list,unichar*);
                if (us==NULL) {
-                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
+                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,convLFtoCRLF,f);
                   n_printed=n_printed+6;
                } else {
                   unichar reversed[4096];
                   mirror(us,reversed);
                   unichar html[4096];
                   int l=XXXize(reversed,html);
-                  BuildEncodedOutForUnicharString(encoding,html,&BufOut,1,f);
+                  BuildEncodedOutForUnicharString(encoding,html,&BufOut,convLFtoCRLF,f);
                   n_printed=n_printed+l;
                }
             } else fatal_error("Invalid format option %c%c\n",*(format-1),*format);
@@ -1956,10 +1957,10 @@ while (*format) {
          case 'S': {
             us=va_arg(list,unichar*);
             if (us==NULL) {
-               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
+               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,convLFtoCRLF,f);
                n_printed=n_printed+6;
             } else {
-               BuildEncodedOutForUnicharString(encoding,us,&BufOut,1,f);
+               BuildEncodedOutForUnicharString(encoding,us,&BufOut,convLFtoCRLF,f);
                n_printed=n_printed+u_strlen(us);
             }
             break;
@@ -1970,13 +1971,13 @@ while (*format) {
             us=va_arg(list,unichar*);
             if (us==NULL) {
                /* We don't want to print ")llun(" when the string to reverse is NULL */
-               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
+               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,convLFtoCRLF,f);
                n_printed=n_printed+6;
                break;
             }
             unichar reversed[4096];
             n_printed=n_printed+mirror(us,reversed);
-            BuildEncodedOutForUnicharString(encoding,reversed,&BufOut,1,f);
+            BuildEncodedOutForUnicharString(encoding,reversed,&BufOut,convLFtoCRLF,f);
             break;
          }
 
@@ -2032,13 +2033,13 @@ while (*format) {
                   break;
                }
             }
-            BuildEncodedOutForCharString(encoding,result,&BufOut,1,f);
+            BuildEncodedOutForCharString(encoding,result,&BufOut,convLFtoCRLF,f);
             break;
          }
       }
    } else {
       /* If we have a normal character, we print it */
-      BuildEncodedOutForUnicharItem(encoding,(unsigned char)*format,&BufOut,1,f);
+      BuildEncodedOutForUnicharItem(encoding,(unsigned char)*format,&BufOut,convLFtoCRLF,f);
       n_printed++;
    }
    format++;
@@ -2047,6 +2048,10 @@ FlushBufferOut(&BufOut,f);
 return n_printed;
 }
 
+int u_vfprintf(U_FILE* ufile,const char* format,va_list list) {
+int n=u_vfprintf_conv_lf_to_crlf_option(ufile,1,format,list);
+return n;
+}
 
 /**
  * Unicode version of fprintf. See u_vfprintf for supported format options.
@@ -2058,6 +2063,14 @@ int u_fprintf(U_FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfprintf(f,format,list);
+va_end(list);
+return n;
+}
+
+int u_fprintf_conv_lf_to_crlf_option(U_FILE* f,int convLFtoCRLF,const char* format,...) {
+va_list list;
+va_start(list,format);
+int n=u_vfprintf_conv_lf_to_crlf_option(f,convLFtoCRLF,format,list);
 va_end(list);
 return n;
 }

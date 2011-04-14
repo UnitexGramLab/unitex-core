@@ -35,7 +35,7 @@ struct OUTBUF {
 	int pos;
 };
 
-void WriteOufBuf(struct OUTBUF* pOutBuf, const unichar* str, U_FILE *f,
+void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, const unichar* str, U_FILE *f,
 		int flush) {
 	for (;;) {
 
@@ -47,7 +47,7 @@ void WriteOufBuf(struct OUTBUF* pOutBuf, const unichar* str, U_FILE *f,
 
 		if ((pOutBuf->pos == SIZE_OUTPUT_BUFFER) || (flush != 0)) {
 			pOutBuf->outbuf[pOutBuf->pos] = 0; // add null terminating marker
-			u_fprintf(f, "%S", pOutBuf->outbuf);
+			u_fprintf_conv_lf_to_crlf_option(f,convLFtoCRLF, "%S", pOutBuf->outbuf);
 			pOutBuf->pos = 0;
 		}
 
@@ -56,11 +56,11 @@ void WriteOufBuf(struct OUTBUF* pOutBuf, const unichar* str, U_FILE *f,
 	}
 }
 
-void WriteOufBuf(struct OUTBUF* pOutBuf, unichar c, U_FILE *f, int flush) {
+void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, unichar c, U_FILE *f, int flush) {
 	unichar u_array[2];
 	u_array[0] = c;
 	u_array[1] = 0;
-	WriteOufBuf(pOutBuf, u_array, f, flush);
+	WriteOufBuf(pOutBuf,convLFtoCRLF, u_array, f, flush);
 }
 
 
@@ -104,7 +104,7 @@ return 1;
  */
 int normalize(const char *fin, const char *fout, Encoding encoding_output,
 		int bom_output, int mask_encoding_compatibility_input,
-		int carriage_return_policy, const char *rules,
+		int carriage_return_policy, int convLFtoCRLF,const char *rules,
 		vector_offset* offsets,
 		int separator_normalization) {
 	U_FILE* input;
@@ -240,7 +240,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					 * { was not a tag beginning, so we print the substitute of { */
 					unichar* foo=replacements->value[get_value_index(open_bracket, replacements)];
 					if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+u_strlen(foo));
-					WriteOufBuf(&OutBuf, foo, output, 0);
+						WriteOufBuf(&OutBuf, convLFtoCRLF, foo, output, 0);
 					/* And we rewind the current position after the { */
 					current_start_pos = old_position + 1;
 					old_start_pos++;
@@ -253,7 +253,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 							|| check_tag_token(tmp)) {
 						/* If this is a special tag or a valid tag token, we just print
 						 * it to the output */
-						WriteOufBuf(&OutBuf, tmp, output, 0);
+						WriteOufBuf(&OutBuf, convLFtoCRLF, tmp, output, 0);
 						current_start_pos++;
 						int l=u_strlen(tmp);
 						old_start_pos=old_start_pos+l;
@@ -263,7 +263,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 						 * and we rewind the current position after the { */
 						unichar* foo=replacements->value[get_value_index(open_bracket, replacements)];
 						if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+u_strlen(foo));
-						WriteOufBuf(&OutBuf, foo, output, 0);
+						WriteOufBuf(&OutBuf, convLFtoCRLF, foo, output, 0);
 						current_start_pos = old_position + 1;
 						old_start_pos++;
 						new_start_pos=new_start_pos+u_strlen(foo);
@@ -284,7 +284,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					if (offsets!=NULL && ret) vector_offset_add(offsets,old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
 					/* If we have a replacement rule, we must use it rawly, in case it
 					 * deals with separators. To do that, we flush the buffer first */
-					WriteOufBuf(&OutBuf, U_EMPTY, output, 1);
+					WriteOufBuf(&OutBuf, convLFtoCRLF, U_EMPTY, output, 1);
 					int len;
 					for (len=0;foo[len]!='\0';len++) {
 						u_fputc_raw(foo[len],output);
@@ -333,7 +333,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 							}
 							old_start_pos=old_start_pos+delta;
 							new_start_pos+=2;
-							WriteOufBuf(&OutBuf, '\n', output, 0);
+							WriteOufBuf(&OutBuf, convLFtoCRLF, '\n', output, 0);
 						} else {
 							if (delta!=1) {
 								/* We will deal with offsets only if they change, and
@@ -344,12 +344,12 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 							}
 							old_start_pos=old_start_pos+delta;
 							new_start_pos++;
-							WriteOufBuf(&OutBuf, ' ', output, 0);
+							WriteOufBuf(&OutBuf, convLFtoCRLF, ' ', output, 0);
 						}
 					} else {
 						/* If, finally, we have a normal character to normalize, we just print it,
 						 * but rawly, in case we had a separator with --no_separator_normalization */
-						WriteOufBuf(&OutBuf, U_EMPTY, output, 1);
+						WriteOufBuf(&OutBuf, convLFtoCRLF, U_EMPTY, output, 1);
 						u_fputc_raw(buff[current_start_pos++],output);
 						old_start_pos++;
 						new_start_pos++;
@@ -359,7 +359,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 		}
 	}
 
-	WriteOufBuf(&OutBuf, empty_string, output, 1);
+	WriteOufBuf(&OutBuf, convLFtoCRLF, empty_string, output, 1);
 
 	free(line_read);
 	free_string_hash(replacements);

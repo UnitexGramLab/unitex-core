@@ -161,6 +161,7 @@ int u_fgets_treat_cr_as_lf(unichar* s,int size,U_FILE* f);
 
 int u_printf(const char*,...);
 int u_fprintf(U_FILE*,const char*,...);
+int u_fprintf_conv_lf_to_crlf_option(U_FILE* f,int convLFtoCRLF,const char* format,...);
 
 int u_scanf(const char*,...);
 int u_fscanf(U_FILE*,const char*,...);
@@ -220,6 +221,7 @@ int u_fgets2(unichar*,U_FILE*);
 
 int u_fprintf(U_FILE*,const char*,...);
 int u_vfprintf(U_FILE*,const char*,va_list);
+int u_vfprintf_conv_lf_to_crlf_option(U_FILE*,int,const char*,va_list);
 int u_sprintf(unichar*,const char*,...);
 int u_vsprintf(unichar*,const char*,va_list);
 

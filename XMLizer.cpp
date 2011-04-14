@@ -103,6 +103,7 @@ char segmentation[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+int convLFtoCRLF=1;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index,vars))) {
@@ -163,7 +164,7 @@ strcat(snt,"_tmp.snt");
 char tmp[FILENAME_MAX];
 remove_extension(input,tmp);
 strcat(tmp,".tmp");
-normalize(input,snt,encoding_output,bom_output,mask_encoding_compatibility_input,KEEP_CARRIAGE_RETURN,
+normalize(input,snt,encoding_output,bom_output,mask_encoding_compatibility_input,KEEP_CARRIAGE_RETURN,convLFtoCRLF,
 		normalization,NULL,1);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 p->encoding_output = encoding_output;
