@@ -1211,14 +1211,14 @@ free_Ustring(ustr);
 void extract_semantic_codes(const char* delaf,struct string_hash* hash) {
 U_FILE* f=u_fopen_existing_unitex_text_format(delaf,U_READ);
 if (f==NULL) return;
-unichar line[DIC_LINE_SIZE];
 int i;
 struct dela_entry* entry;
-while (EOF!=u_fgets_limit2(line,DIC_LINE_SIZE,f)) {
+Ustring* line=new_Ustring(DIC_LINE_SIZE);
+while (EOF!=readline(line,f)) {
    /* NOTE: DLF and DLC files are not supposed to contain comment
     *       lines, but we test them, just in the case */
-   if (line[0]!='/') {
-      entry=tokenize_DELAF_line(line,1);
+   if (line->str[0]!='/') {
+      entry=tokenize_DELAF_line(line->str,1);
       if (entry!=NULL) {
          for (i=0;i<entry->n_semantic_codes;i++) {
             get_value_index(entry->semantic_codes[i],hash);
@@ -1227,6 +1227,7 @@ while (EOF!=u_fgets_limit2(line,DIC_LINE_SIZE,f)) {
       }
    }
 }
+free_Ustring(line);
 u_fclose(f);
 return;
 }

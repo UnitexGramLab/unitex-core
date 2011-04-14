@@ -303,14 +303,15 @@ struct string_hash* load_key_list(const char* name,int mask_encoding_compatibili
 U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
-unichar temp[4096];
-while (EOF!=u_fgets_limit2(temp,4096,f)) {
-   if (temp[0]=='\0') {
+Ustring* temp=new_Ustring(1024);
+while (EOF!=readline(temp,f)) {
+   if (temp->str[0]=='\0') {
       error("Empty line in %s\n",name);
    } else {
-      get_value_index(temp,hash);
+      get_value_index(temp->str,hash);
    }
 }
+free_Ustring(temp);
 u_fclose(f);
 return hash;
 }

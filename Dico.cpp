@@ -553,9 +553,12 @@ return ret;
  * Returns 0 in case of success; 1 otherwise.
  */
 int raw_dic_application(U_FILE* text,U_FILE* output,Alphabet* alphabet,int ind,char* const argv[]) {
-unichar sequence[1024];
-if (0==u_fgets(sequence,1023,text)) return 1;
-u_chomp_new_line(sequence);
+unichar* sequence=readline_safe(text);
+if (sequence==NULL) return 1;
+if (sequence[0]=='\0') {
+	free(sequence);
+	return 1;
+}
 struct dico_application_info info;
 memset(&info,0,sizeof(struct dico_application_info));
 info.alphabet=alphabet;
@@ -578,5 +581,6 @@ for (int priority=1;priority<4;priority++) {
       }
    }
 }
+free(sequence);
 return 0;
 }

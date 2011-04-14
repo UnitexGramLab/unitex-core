@@ -49,19 +49,13 @@ res->token=(unichar**)malloc_cb((res->N)*sizeof(unichar*),prv_alloc);
 if (res->token==NULL) {
    fatal_alloc_error("load_text_tokens");
 }
-unichar tmp[MAX_TAG_LENGTH];
+unichar* tmp;
 res->SENTENCE_MARKER=-1;
 res->SPACE=-1;
 res->STOP_MARKER=-1;
 int i=0;
-int size_gets;
-while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
-  if (size_gets>0) {
-    if (tmp[size_gets-1]=='\n') {
-        tmp[size_gets-1]=0;
-    }
-  }
-  res->token[i]=u_strdup(tmp,prv_alloc);
+while (NULL!=(tmp=readline_safe(f))) {
+  res->token[i]=tmp;
   if (!u_strcmp(tmp,"{S}")) {
      res->SENTENCE_MARKER=i;
   } else if (!u_strcmp(tmp," ")) {
@@ -95,20 +89,13 @@ u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
 *NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS);
 struct string_hash* res;
 res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
-unichar tmp[4096];
-
+Ustring* tmp=new_Ustring(1024);
 int x,i=0;
-int size_gets;
-while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
-  if (size_gets>0) {
-    if (tmp[size_gets-1]=='\n') {
-        tmp[size_gets-1]=0;
-    }
-  }
-  x=get_value_index(tmp,res);
-  if (!u_strcmp(tmp,"{S}")) {
+while (EOF!=readline(tmp,f)) {
+  x=get_value_index(tmp->str,res);
+  if (!u_strcmp(tmp->str,"{S}")) {
      *SENTENCE_MARKER=x;
-  } else if (!u_strcmp(tmp,"{STOP}")) {
+  } else if (!u_strcmp(tmp->str,"{STOP}")) {
      *STOP_MARKER=i;
   }
   i++;
@@ -117,6 +104,7 @@ while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
     		     "Last token loaded=%S\n",nom,*NUMBER_OF_TEXT_TOKENS,tmp);
   }
 }
+free_Ustring(tmp);
 u_fclose(f);
 return res;
 }

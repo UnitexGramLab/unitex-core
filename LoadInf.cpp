@@ -65,17 +65,14 @@ res->codes=(struct list_ustring**)malloc_cb(sizeof(struct list_ustring*)*(res->N
 if (res->codes==NULL) {
    fatal_alloc_error("in load_INF_file");
 }
-unichar *s=(unichar*)malloc_cb(sizeof(unichar)*INF_LINE_SIZE*10,prv_alloc);
-if (s==NULL) {
-   fatal_alloc_error("in load_INF_file");
-}
+Ustring *s=new_Ustring(1024);
 int i=0;
 /* For each line of the .inf file, we tokenize it to get the single INF codes
  * it contains. */
-while (EOF!=u_fgets_limit2(s,INF_LINE_SIZE*10,f)) {
-   res->codes[i++]=tokenize_compressed_info(s,prv_alloc);
+while (EOF!=readline(s,f)) {
+   res->codes[i++]=tokenize_compressed_info(s->str,prv_alloc);
 }
-free(s);
+free_Ustring(s);
 u_fclose(f);
 return res;
 }

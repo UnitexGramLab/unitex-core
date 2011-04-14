@@ -726,7 +726,6 @@ void load_dic_for_locate(const char* dic_name,int mask_encoding_compatibility_in
                          struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 U_FILE* f;
-unichar line[DIC_LINE_SIZE];
 f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,dic_name,U_READ);
 if (f==NULL) {
    error("Cannot open dictionary %s\n",dic_name);
@@ -736,17 +735,18 @@ if (f==NULL) {
 int lines=0;
 char name[FILENAME_MAX];
 remove_path(dic_name,name);
-while (EOF!=u_fgets(line,f)) {
+Ustring* line=new_Ustring(DIC_LINE_SIZE);
+while (EOF!=readline(line,f)) {
    lines++;
    if (lines%10000==0) {
       u_printf("%s: %d lines loaded...                          \r",name,lines);
    }
-   if (line[0]=='/') {
+   if (line->str[0]=='/') {
       /* NOTE: DLF and DLC files are not supposed to contain comment
        *       lines, but we test them, just in the case */
       continue;
    }
-   struct dela_entry* entry=tokenize_DELAF_line(line,1);
+   struct dela_entry* entry=tokenize_DELAF_line(line->str,1);
    if (entry==NULL) {
       /* This case should never happen */
       error("Invalid dictionary line in load_dic_for_locate\n");
@@ -812,6 +812,7 @@ while (EOF!=u_fgets(line,f)) {
    }
    free_dela_entry(entry);
 }
+free_Ustring(line);
 if (lines>10000) {
    u_printf("\n");
 }

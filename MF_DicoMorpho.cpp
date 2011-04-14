@@ -77,7 +77,6 @@ int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file) {
 
   U_FILE* ef; //equivalence file
   int line_no;  //number of the current line
-  unichar line[MAX_EQUIV_LINE];  //current line of the Equivalence file
 
   //Opening the equivalence file
   ef = u_fopen_existing_unitex_text_format(equiv_file,U_READ);
@@ -92,22 +91,22 @@ int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file) {
   line_no = 0;
 
   //Omit the first line (language name)
-  if (u_fgets(line,MAX_EQUIV_LINE-1,ef)!=EOF) {
+  if (u_fskip_line(ef)!=0) {
     line_no++;
   } else {
    u_fclose(ef);
    return 1;
   }
-
-  while (u_fgets(line,MAX_EQUIV_LINE-1,ef)!=EOF) {
+  Ustring* line=new_Ustring(MAX_EQUIV_LINE);
+  while (EOF!=readline(line,ef)) {
     line_no++;
-    int l=u_strlen(line);
-    if (l>0 && line[l-1]=='\n') {
-       /* If necessary, we remove the final \n */
-       line[l-1]='\0';
+    if (line->str[0]!='\0' && d_read_line(pL_MORPHO,line->str,line_no)) {
+    	u_fclose(ef);
+    	free_Ustring(line);
+    	return 1;
     }
-    if (line[0]!='\0' && d_read_line(pL_MORPHO,line,line_no)) return 1;
   }
+  free_Ustring(line);
   u_fclose(ef);
   return 0;
 }

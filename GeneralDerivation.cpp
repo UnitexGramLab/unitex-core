@@ -195,20 +195,21 @@ void analyse_word_list(Dictionary* d,
 			       vector_ptr* rules,
 			       vector_ptr* entries)
 {
-  unichar s[MAX_WORD_LENGTH];
   u_printf("Analysing russian unknown words...\n");
   int n=0;
   int words_done = 0;
-  while (EOF!=u_fgets_limit2(s,MAX_WORD_LENGTH,words)) {
-    if (!analyse_word(s,d,debug,result,prefix,suffix,alph,UTAG,rules,entries)) {
+  Ustring* s=new_Ustring(MAX_WORD_LENGTH);
+  while (EOF!=readline(s,words)) {
+    if (!analyse_word(s->str,d,debug,result,prefix,suffix,alph,UTAG,rules,entries)) {
       // if the analysis has failed, we store the word in the new unknown word file
-      u_fprintf(new_unknown_words,"%S\n",s);
+      u_fprintf(new_unknown_words,"%S\n",s->str);
     } else {
       n++;
     }
     if ( (++words_done % 10000) == 0)
       u_printf("%d words done", words_done);
   }
+  free_Ustring(s);
   u_printf("%d words decomposed as compound words\n",n);
 }
 

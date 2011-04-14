@@ -530,8 +530,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 	/*
 	 * We read the graph name
 	 */
-	unichar graph_name[10000];
-	u_fgets_limit2(graph_name,10000,f);
+	unichar* graph_name=readline_safe(f);
 	if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
 		/* If we must read the graph either because it is the one we look for
 		 * or because we must read them all, then we initialize 'max_tag_number' */
@@ -540,7 +539,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		 * We save the graph name if needed
 		 */
 		if (read_names) {
-			fst2->graph_names[current_graph]=u_strdup(graph_name);
+			fst2->graph_names[current_graph]=graph_name;
 		}
 		/*
 		 * We read the next char that must be 't' or ':' but not 'f', because

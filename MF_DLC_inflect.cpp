@@ -58,7 +58,6 @@ int inflect(char* DLC, char* DLCF,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
 		    Korean* korean,const char* pkgdir) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
-	unichar input_line[DIC_LINE_SIZE]; //current DELAS/DELAC line
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line
 	int l; //length of the line scanned
 	DLC_entry_T* dlc_entry;
@@ -77,9 +76,9 @@ int inflect(char* DLC, char* DLCF,
 		return 1;
 	}
 	//Inflect one entry at a time
-	l = u_fgets(input_line, DIC_LINE_SIZE - 1, dlc);
+	Ustring* input_line=new_Ustring(DIC_LINE_SIZE);
+	l = readline(input_line,dlc);
 	//Omit the final newline
-	u_chomp_new_line(input_line);
 	int flag = 0;
 	//If a line is empty the file is not necessarily finished.
 	//If the last entry has no newline, we should not skip this entry
@@ -88,7 +87,7 @@ int inflect(char* DLC, char* DLCF,
 	int current_line=0;
 	while (l != EOF) {
 	   current_line++;
-		DELAS_entry = is_strict_DELAS_line(input_line, alph);
+		DELAS_entry = is_strict_DELAS_line(input_line->str, alph);
 		if (DELAS_entry != NULL) {
 			/* If we have a strict DELAS line, that is to say, one with
 			 * a simple word */
@@ -157,7 +156,7 @@ int inflect(char* DLC, char* DLCF,
 					fatal_alloc_error("inflect");
 				}
 				/* Convert a DELAC entry into the internal multi-word format */
-				err = DLC_line2entry(alph,pL_MORPHO,input_line, dlc_entry, D_CLASS_EQUIV);
+				err = DLC_line2entry(alph,pL_MORPHO,input_line->str, dlc_entry, D_CLASS_EQUIV);
 				if (!err) {
 					//Inflect the entry
 					MU_init_forms(&MU_forms);
@@ -199,16 +198,15 @@ int inflect(char* DLC, char* DLCF,
 		}
 		next_line:
 		//Get next entry
-		l = u_fgets(input_line, DIC_LINE_SIZE - 1, dlc);
+		l = readline(input_line,dlc);
 		if (l!=EOF) {
-			//Omit the final newline
-			u_chomp_new_line(input_line);
-			if (input_line[0]=='\0') {
+			if (input_line->str[0]=='\0') {
 				/* If we find an empty line, then we go on */
 				goto next_line;
 			}
 		}
 	}
+	free_Ustring(input_line);
 	u_fclose(dlc);
 	u_fclose(dlcf);
 	return 0;

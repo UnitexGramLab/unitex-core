@@ -339,20 +339,21 @@ return res;
  * unknown word list file.
  */
 void analyse_dutch_unknown_words(struct dutch_infos* infos) {
-unichar line[10000];
 u_printf("Analysing Dutch unknown words...\n");
 int n=0;
 /* We read each line of the unknown word list and we try to analyze it */
-while (EOF!=u_fgets_limit2(line,10000,infos->unknown_word_list)) {
-  if (!analyse_dutch_word(line,infos)) {
+Ustring* line=new_Ustring(1024);
+while (EOF!=readline(line,infos->unknown_word_list)) {
+  if (!analyse_dutch_word(line->str,infos)) {
      /* If the analysis has failed, we store the word in the
       * new unknown word file */
-     u_fprintf(infos->new_unknown_word_list,"%S\n",line);
+     u_fprintf(infos->new_unknown_word_list,"%S\n",line->str);
   } else {
   		/* Otherwise, we increase the number of analyzed words */
   		n++;
   	}
 }
+free_Ustring(line);
 u_printf("%d words decomposed as compound word%s\n",n,(n>1)?"s":"");
 }
 

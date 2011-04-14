@@ -190,15 +190,16 @@ return res;
 void analyse_german_word_list(Dictionary* d,
                               U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words,
                               const char* left,const char* right,const Alphabet* alphabet) {
-unichar s[1000];
 u_printf("Analysing german unknown words...\n");
 int n=0;
-while (EOF!=u_fgets_limit2(s,1000,words)) {
-  if (!analyse_german_word(s,debug,result,left,right,alphabet,d)) {
+Ustring* s=new_Ustring(1024);
+while (EOF!=readline(s,words)) {
+  if (!analyse_german_word(s->str,debug,result,left,right,alphabet,d)) {
      // if the analysis has failed, we store the word in the new unknown word file
-     u_fprintf(new_unknown_words,"%S\n",s);
+     u_fprintf(new_unknown_words,"%S\n",s->str);
   } else {n++;}
 }
+free_Ustring(s);
 u_printf("%d words decomposed as compound words\n",n);
 }
 

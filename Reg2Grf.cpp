@@ -29,7 +29,7 @@
 #include "File.h"
 #include "UnitexGetOpt.h"
 #include "Reg2Grf.h"
-
+#include "Ustring.h"
 
 
 
@@ -113,17 +113,19 @@ if (f==NULL) {
    fatal_error("Cannot open file %s\n",argv[vars->optind]);
 }
 /* We read the regular expression in the file */
-unichar exp[REG_EXP_MAX_LENGTH];
-if ((REG_EXP_MAX_LENGTH-1)==u_fgets(exp,REG_EXP_MAX_LENGTH,f)) {
-   fatal_error("Too long regular expression\n");
+unichar* exp=readline_safe(f);
+if (exp==NULL) {
+   fatal_error("Empty file %s\n",argv[vars->optind]);
 }
 u_fclose(f);
 char grf_name[FILENAME_MAX];
 get_path(argv[vars->optind],grf_name);
 strcat(grf_name,"regexp.grf");
 if (!reg2grf(exp,grf_name,encoding_output,bom_output)) {
+	free(exp);
    return 1;
 }
+free(exp);
 free_OptVars(vars);
 u_printf("Expression converted.\n");
 return 0;

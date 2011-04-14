@@ -142,14 +142,15 @@ if (f==NULL) {
    return;
 }
 u_printf("Loading %s...\n",name);
-unichar line[4096];
-while (EOF!=u_fgets_limit2(line,4096,f)) {
-   struct dela_entry* entry=tokenize_DELAF_line(line,1);
+Ustring* line=new_Ustring(4096);
+while (EOF!=readline(line,f)) {
+   struct dela_entry* entry=tokenize_DELAF_line(line->str,1);
    if (entry!=NULL) {
       add_entry(tree,entry);
    }
    /* We don't need to free the entry, since it's done (if needed)
     * in the insertion function */
 }
+free_Ustring(line);
 u_fclose(f);
 }

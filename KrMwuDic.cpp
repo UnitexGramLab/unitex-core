@@ -59,7 +59,6 @@ void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
                            Korean* korean,struct l_morpho_t* morpho,
                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                            Dictionary* d) {
-unichar line[MAX_LINE_SIZE];
 int size_line;
 int line_number=0;
 struct dela_entry* entries[MAX_PARTS];
@@ -76,32 +75,17 @@ int subgraph_Y=20;
 struct string_hash* dic_codes=get_codes_from_inf(d->inf);
 /* foo is a debug presentation of the input line */
 Ustring* foo=new_Ustring(256);
+Ustring* line=new_Ustring(MAX_LINE_SIZE);
 int n_errors=0;
-while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
+while (EOF!=readline(line,delas)) {
    /* We place the line counter here, so we can use 'continue' */
    line_number++;
-   if (size_line==MAX_LINE_SIZE-1) {
-      error("Line %d ignored because it is too long (>%d chars)\n",line_number,MAX_LINE_SIZE-1);
-      int character;
-      /* We skip the remaining characters of the line */
-      while ((character=u_fgetc(delas))!=EOF && character!='\n') {}
-      if (character==EOF) {
-         /* If the failing line was the last one, we exit the main loop */
-         break;
-      }
-      continue;
-   }
-   if (size_line>0) {
-      if (line[size_line-1]=='\n') {
-        line[size_line-1]='\0';
-      }
-   }
-   if (line[0]=='\0') {
+   if (line->str[0]=='\0') {
       continue;
    }
    /* We split the line */
    vector_ptr* line_tokens=new_vector_ptr(32);
-   tokenize_kr_mwu_dic_line(line_tokens,line,foo);
+   tokenize_kr_mwu_dic_line(line_tokens,line->str,foo);
    /* Then we check that the n_parts-1 first ones are valid DELAF entries
     * and that the last one is a valid DELAS entry. But first, we initialize
     * the array */
@@ -125,6 +109,7 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
       free_dela_entry(entries[i]);
    }
 }
+free_Ustring(line);
 if (n_errors>0) {
 	error("%d error%s found\n",n_errors,(n_errors>1)?"s":"");
 }
