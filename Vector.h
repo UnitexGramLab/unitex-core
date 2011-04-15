@@ -433,4 +433,26 @@ return 1;
 }
 
 
+static int cmp_int(const void* a,const void* b) {
+int* x=(int*)a;
+int* y=(int*)b;
+return *y-*x;
+}
+
+inline void vector_int_sort(vector_int* v) {
+qsort(v->tab,v->nbelems,sizeof(int),cmp_int);
+}
+
+
+inline int vector_int_equals_disorder(vector_int* a,vector_int* b) {
+vector_int* x=vector_int_dup(a);
+vector_int* y=vector_int_dup(b);
+vector_int_sort(x);
+vector_int_sort(y);
+int ret=vector_int_equals(x,y);
+free_vector_int(x);
+free_vector_int(y);
+return ret;
+}
+
 #endif

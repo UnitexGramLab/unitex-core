@@ -64,6 +64,12 @@ typedef struct {
 } Grf;
 
 
+typedef struct {
+	int n;
+	vector_int** t;
+} ReverseTransitions;
+
+
 Grf* new_Grf();
 void free_Grf(Grf*);
 GrfState* new_GrfState(const unichar* content,int x,int y);
@@ -78,6 +84,15 @@ Grf* dup_Grf(Grf*);
 GrfState* cpy_grf_state(GrfState*);
 void cpy_grf_states(Grf* dst,Grf* src);
 vector_ptr* tokenize_box_content(unichar* content);
+
+ReverseTransitions* compute_reverse_transitions(Grf* g);
+void free_ReverseTransitions(ReverseTransitions*);
+
+int have_same_outgoing_transitions(GrfState*,GrfState*);
+int have_same_outgoing_transitions(Grf*,int,int);
+int have_same_incoming_transitions(int,int,ReverseTransitions*);
+int have_same_transitions(Grf*,int,int,ReverseTransitions*);
+
 
 #endif
 

@@ -749,21 +749,6 @@ return 0;
 }
 
 
-/**
- * Fills the given array with g's reverse transitions.
- */
-static void compute_reverse_transitions(Grf* g,vector_int** t) {
-for (int i=0;i<g->n_states;i++) {
-	t[i]=new_vector_int(1);
-}
-for (int i=0;i<g->n_states;i++) {
-	GrfState* s=g->states[i];
-	for (int j=0;j<s->transitions->nbelems;j++) {
-		vector_int_add(t[s->transitions->tab[j]],i);
-	}
-}
-}
-
 
 /**
  * Creates a GrfDiff object. Renumbering arrays
@@ -794,12 +779,8 @@ for (int i=2;i<n_dest;i++) {
 	d->dest_to_base[i]=-1;
 }
 /* Initializing reverse transition arrays */
-d->reverse_transitions_base=(vector_int**)malloc(n_base*sizeof(vector_int*));
-if (d->reverse_transitions_base==NULL) fatal_alloc_error("new_GrfDiff");
-compute_reverse_transitions(base,d->reverse_transitions_base);
-d->reverse_transitions_dest=(vector_int**)malloc(n_dest*sizeof(vector_int*));
-if (d->reverse_transitions_dest==NULL) fatal_alloc_error("new_GrfDiff");
-compute_reverse_transitions(dest,d->reverse_transitions_dest);
+d->reverse_transitions_base=compute_reverse_transitions(base);
+d->reverse_transitions_dest=compute_reverse_transitions(dest);
 return d;
 }
 
@@ -812,14 +793,8 @@ if (g==NULL) return;
 free_vector_ptr(g->diff_ops,(void(*)(void*))free_DiffOp);
 free(g->base_to_dest);
 free(g->dest_to_base);
-for (int i=0;i<g->size_base_to_dest;i++) {
-	free_vector_int(g->reverse_transitions_base[i]);
-}
-free(g->reverse_transitions_base);
-for (int i=0;i<g->size_dest_to_base;i++) {
-	free_vector_int(g->reverse_transitions_dest[i]);
-}
-free(g->reverse_transitions_dest);
+free_ReverseTransitions(g->reverse_transitions_base);
+free_ReverseTransitions(g->reverse_transitions_dest);
 free(g);
 }
 
@@ -829,8 +804,8 @@ free(g);
  * The comparison ignore loop transitions, and takes renumbering into account.
  */
 static int same_incoming_transitions(GrfDiff* diff,int base,int dest) {
-vector_int* v_base=diff->reverse_transitions_base[base];
-vector_int* v_dest=diff->reverse_transitions_dest[dest];
+vector_int* v_base=diff->reverse_transitions_base->t[base];
+vector_int* v_dest=diff->reverse_transitions_dest->t[dest];
 /* First, we test if all base transitions are included in dest ones,
  * ignoring the loop transition, if any */
 for (int i=0;i<v_base->nbelems;i++) {
@@ -950,9 +925,9 @@ for (int i=2;i<diff->size_base_to_dest;i++) {
 		}
 		GrfState* dest_state=dest->states[j];
 		int base_is_comment_box=base_state->transitions->nbelems==0
-				&& diff->reverse_transitions_base[i]->nbelems==0;
+				&& diff->reverse_transitions_base->t[i]->nbelems==0;
 		int dest_is_comment_box=dest_state->transitions->nbelems==0
-				&& diff->reverse_transitions_dest[j]->nbelems==0;
+				&& diff->reverse_transitions_dest->t[j]->nbelems==0;
 		if (ignore_comment_boxes && (base_is_comment_box || dest_is_comment_box)) continue;
 		if (coord && (base_state->x!=dest_state->x || base_state->y!=dest_state->y)) {
 			continue;

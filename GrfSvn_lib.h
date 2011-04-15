@@ -64,8 +64,8 @@ typedef struct {
 	int* dest_to_base;
 	int size_dest_to_base;
 	/* We also need reverse transitions */
-	vector_int** reverse_transitions_base;
-	vector_int** reverse_transitions_dest;
+	ReverseTransitions* reverse_transitions_base;
+	ReverseTransitions* reverse_transitions_dest;
 } GrfDiff;
 
 

@@ -520,3 +520,73 @@ return v;
 
 
 
+/**
+ * Computes and returns g's reverse transitions.
+ */
+ReverseTransitions* compute_reverse_transitions(Grf* g) {
+ReverseTransitions* reverse=(ReverseTransitions*)malloc(sizeof(ReverseTransitions));
+if (reverse==NULL) {
+	fatal_alloc_error("compute_reverse_transitions");
+}
+reverse->n=g->n_states;
+reverse->t=(vector_int**)malloc(g->n_states*sizeof(vector_int*));
+if (reverse->t==NULL) {
+	fatal_alloc_error("compute_reverse_transitions");
+}
+for (int i=0;i<g->n_states;i++) {
+	reverse->t[i]=new_vector_int(1);
+}
+for (int i=0;i<g->n_states;i++) {
+	GrfState* s=g->states[i];
+	for (int j=0;j<s->transitions->nbelems;j++) {
+		vector_int_add(reverse->t[s->transitions->tab[j]],i);
+	}
+}
+return reverse;
+}
+
+
+void free_ReverseTransitions(ReverseTransitions* r) {
+if (r==NULL) return;
+for (int i=0;i<r->n;i++) {
+	free_vector_int(r->t[i]);
+}
+free(r->t);
+free(r);
+}
+
+
+/**
+ * Returns 1 if a and b have same outgoing transitions; 0 otherwise.
+ */
+int have_same_outgoing_transitions(GrfState* a,GrfState* b) {
+return vector_int_equals_disorder(a->transitions,b->transitions);
+}
+
+
+/**
+ * Returns 1 if states #a and #b have same outgoing transitions; 0 otherwise.
+ */
+int have_same_outgoing_transitions(Grf* grf,int a,int b) {
+return have_same_outgoing_transitions(grf->states[a],grf->states[b]);
+}
+
+
+/**
+ * Returns 1 if states #a and #b have same incoming transitions; 0 otherwise.
+ */
+int have_same_incoming_transitions(int a,int b,ReverseTransitions* r) {
+return vector_int_equals_disorder(r->t[a],r->t[b]);
+}
+
+
+/**
+ * Returns 1 if states #a and #b have same incoming and outgoing transitions;
+ * 0 otherwise.
+ */
+int have_same_transitions(Grf* grf,int a,int b,ReverseTransitions* r) {
+return have_same_outgoing_transitions(grf,a,b)
+	&& have_same_incoming_transitions(a,b,r);
+}
+
+

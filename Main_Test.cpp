@@ -80,7 +80,7 @@ if (alph==NULL) {
 }
 Grf* grf=load_Grf(argv[2]);
 if (grf==NULL) {
-	fatal_error("Cannot load %s\n",argv[2]);
+	fatal_error("Cannot load graph %s\n",argv[2]);
 }
 U_FILE* f=u_fopen(UTF16_LE,argv[3],U_WRITE);
 if (f==NULL) {

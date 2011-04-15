@@ -97,7 +97,6 @@ int is_letter(unichar,const Alphabet*);
 int is_sequence_of_lowercase_letters(const unichar*,const Alphabet*);
 int is_sequence_of_uppercase_letters(const unichar*,const Alphabet*);
 int is_sequence_of_letters(const unichar*,const Alphabet*);
-int is_equal_ignore_case_and_quotes(const unichar*,const unichar*,const Alphabet*);
 void turn_portuguese_sequence_to_lowercase(unichar*);
 void replace_letter_by_letter_set(const Alphabet*,unichar*,const unichar*);
 int get_longuest_prefix_ignoring_case(const unichar*,const unichar*,const Alphabet*);
