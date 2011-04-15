@@ -557,6 +557,10 @@ REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o RegularExpressions.o Error.o File.o\
                List_int.o Stack_int.o UnitexGetOpt.o Ustring.o $(SYSLIBMAPPED)
 
+SEQ2GRF      = Seq2Grf
+SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o\
+               UnitexGetOpt.o Ustring.o Grf_lib.o GrfBeauty.o Alphabet.o $(SYSLIBMAPPED)
+
 SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o\
                ProgramInvoker.o $(SYSLIBMAPPED)
@@ -686,7 +690,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
-                  Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o $(SYSLIBMAPPED)
+                  Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
+                  Seq2Grf.o GrfBeauty.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -718,7 +723,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
-                  GrfSvn_lib.o DebugMode.o $(SYSLIBMAPPED)
+                  GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o $(SYSLIBMAPPED)
 
 
 ################################
@@ -750,7 +755,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
-		$(GRFDIFF) $(GRFDIFF3)
+		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF)
 
 #PROGS = $(TEST)
 
@@ -1155,6 +1160,9 @@ $(BIN_DIR)$(RECONSTRUCAO)$(EXTENSION): $(RECONSTRUCAO_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(REG2GRF)$(EXTENSION): $(REG2GRF_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(SEQ2GRF)$(EXTENSION): $(SEQ2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS)

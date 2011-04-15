@@ -539,7 +539,7 @@ if (input[*pos]==' ') {
    (*pos)++;
    return 0;
 }
-/* If we have a backslask */
+/* If we have a backslash */
 if (input[*pos]=='\\') {
    (*pos)++;
    if (input[*pos]!='\\') {

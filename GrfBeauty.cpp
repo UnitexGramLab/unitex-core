@@ -357,13 +357,13 @@ free_ReverseTransitions(reverse_transitions);
  * to make it more beautiful for a human reader.
  */
 void beautify(Grf* grf,Alphabet* alph) {
+if (grf==NULL) return;
 merge_case_equivalent_boxes(grf,alph);
 merge_pseudo_case_equivalent_boxes(grf,alph);
 merge_box_pair(grf,alph);
 merge_boxes_with_same_transition(grf);
 replace_transition_by_E(grf);
-/* 5: si A et C sont reliées soit directement, soit par B, modifier B pour ajouter une ligne <E>
- * 6: si A, B et C sont toutes reliées à X, Y et Z, utiliser une boîte <E> intermédiaire pour
+/* 6: si A, B et C sont toutes reliées à X, Y et Z, utiliser une boîte <E> intermédiaire pour
  *    réduire le nombre de transitions
  *
  * en dernier: positionner joliment les boîtes
