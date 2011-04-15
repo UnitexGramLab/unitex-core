@@ -540,6 +540,8 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		 */
 		if (read_names) {
 			fst2->graph_names[current_graph]=graph_name;
+		} else {
+			free(graph_name);
 		}
 		/*
 		 * We read the next char that must be 't' or ':' but not 'f', because
