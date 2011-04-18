@@ -47,7 +47,7 @@
 void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
 void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
 void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
-void tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
+int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
 		vector_int*,vector_int*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 void save_new_line_positions(U_FILE*,vector_int*);
@@ -402,13 +402,13 @@ u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 }
 
 
-void save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
+int save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
 		int *shift) {
-if (f==NULL) return;
+if (f==NULL) return 0;
 if (*index==v->nbelems) {
 	/* If there is no more offsets to take into account, we just save the token */
 	save(f,s,n,start+*shift,end+*shift);
-	return;
+	return 0;
 }
 Offsets x=v->tab[*index];
 Overlap o=overlap(x.new_start,x.new_end,start,end);
@@ -416,17 +416,18 @@ switch (o) {
 case A_BEFORE_B: {
 	error("A_BEFORE_B: ");
 	error("start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
-	fatal_error("Unexpected A_BEFORE_B in save_token_offset\n");
+	/*fatal_*/error("Unexpected A_BEFORE_B in save_token_offset\n");
+	return 1;
 }
 case A_AFTER_B: {
 	save(f,s,n,start+*shift,end+*shift);
-	return;
+	return 0;
 }
 case A_EQUALS_B: {
 	save(f,s,n,x.old_start,x.old_end);
 	(*index)++;
 	(*shift)=x.old_end-end;
-	return;
+	return 0;
 }
 case A_BEFORE_B_OVERLAP: {
 	int j;
@@ -437,12 +438,12 @@ case A_BEFORE_B_OVERLAP: {
 	save(f,s,n,x.old_start,old_end);
 	(*index)=j+1;
 	(*shift)=v->tab[j].old_end-end+delta_end;
-	return;
+	return 0;
 }
 case A_AFTER_B_OVERLAP: {
 	int delta=start-x.new_start;
 	save(f,s,n,x.old_start+delta,x.old_end);
-	return;
+	return 0;
 }
 case A_INCLUDES_B: {
 	save(f,s,n,x.old_start,x.old_end);
@@ -450,7 +451,7 @@ case A_INCLUDES_B: {
 		(*index)++;
 	}
 	(*shift)=x.old_end-end;
-	return;
+	return 0;
 }
 case B_INCLUDES_A: {
 	int delta_start=start-x.new_start;
@@ -466,13 +467,14 @@ case B_INCLUDES_A: {
 	save(f,s,n,old_start,old_end);
 	(*index)=j+1;
 	(*shift)=v->tab[j].old_end-end+delta_end;
-	return;
+	return 0;
 }
 }
+return 0;
 }
 
 
-void tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
+int tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
                          /* snt_offsets is used to note shifts induced by separator normalization */
@@ -491,6 +493,7 @@ c=u_fgetc_raw(f);
 int current_pos;
 int snt_offsets_shift=0;
 int offset_index=0;
+int result=0; // 0 = no error
 while (c!=EOF) {
 	current_pos=COUNT;
    COUNT++;
@@ -515,7 +518,7 @@ while (c!=EOF) {
     	  add_snt_offsets(snt_offsets,*TOKENS_TOTAL,snt_offsets_shift,snt_offsets_shift+(COUNT-current_pos-1));
     	  snt_offsets_shift+=(COUNT-current_pos-1);
       }
-      save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+      result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
       /* If there is a \n, we note it */
       if (ENTER==1) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
@@ -559,7 +562,7 @@ while (c!=EOF) {
      }
      n=get_token_number(s,tokens,hashtable,n_occur);
      COUNT++;
-     save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+     result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
      (*TOKENS_TOTAL)++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc_raw(f);
@@ -571,7 +574,7 @@ while (c!=EOF) {
          s[1]='\0';
          if (is_letter(s[0],alph)) (*WORDS_TOTAL)++;
          n=get_token_number(s,tokens,hashtable,n_occur);
-         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
+         result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
         		 &shift);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
@@ -589,7 +592,7 @@ while (c!=EOF) {
          }
          s[n]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
-         save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
+         result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
         		 &shift);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
@@ -600,6 +603,10 @@ while (c!=EOF) {
 for (n=0;n<tokens->nbelems;n++) {
    u_fprintf(output,"%S\n",tokens->tab[n]);
 }
+if (result!=0) {
+   u_printf("Unsucessfull.\n");
+}
+return result;
 }
 
 
