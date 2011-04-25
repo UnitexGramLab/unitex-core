@@ -1057,7 +1057,7 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
  * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
  */
 void uncompress_entry(const unichar* inflected,unichar* INF_code,Ustring* result) {
-int n;
+unsigned int n;
 int pos;
 empty(result);
 /* The rebuilt line must start by the inflected form, followed by a comma */
@@ -1083,6 +1083,9 @@ if (INF_code[0]=='_' && !semitic) {
    /* We add the inflected form */
    u_strcat(result,inflected);
    /* But we start copying the code at position length-n */
+   if (n>result->len) {
+	   fatal_error("Unexpected problem in uncompress_entry: inflected=<%S> inf=<%S>\n",inflected,INF_code);
+   }
    truncate(result,result->len-n);
    while (INF_code[pos]!='\0') {
       /* If a char is protected in the code, it must stay protected,

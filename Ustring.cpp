@@ -120,7 +120,7 @@ ustr->size=size;
  */
 void truncate(Ustring* ustr,unsigned int length) {
 if (length>ustr->len) {
-	fatal_error("Cannot truncate Ustring of length %u to greater size %d\n",ustr->len,length);
+	fatal_error("Cannot truncate Ustring of length %u to greater size %u\n",ustr->len,length);
 }
 ustr->len=length;
 ustr->str[length]='\0';
