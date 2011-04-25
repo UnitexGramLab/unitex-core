@@ -1056,9 +1056,10 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
  *
  * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
  */
-void uncompress_entry(const unichar* inflected,unichar* INF_code,unichar* result) {
+void uncompress_entry(const unichar* inflected,unichar* INF_code,Ustring* result) {
 int n;
-int pos,i;
+int pos;
+empty(result);
 /* The rebuilt line must start by the inflected form, followed by a comma */
 escape(inflected,result,P_COMMA_DOT);
 u_strcat(result,",");
@@ -1082,23 +1083,21 @@ if (INF_code[0]=='_' && !semitic) {
    /* We add the inflected form */
    u_strcat(result,inflected);
    /* But we start copying the code at position length-n */
-   i=u_strlen(result)-n;
+   truncate(result,result->len-n);
    while (INF_code[pos]!='\0') {
       /* If a char is protected in the code, it must stay protected,
        * so there is nothing to do but a raw copy. */
-      result[i++]=INF_code[pos++];
+      u_strcat(result,INF_code[pos++]);
    }
-   result[i]='\0';
    return;
 }
 /* Last case: we have to process token by token */
 int pos_entry=0;
 pos=(semitic?2:0);
-i=u_strlen(result);
 while (INF_code[pos]!='.') {
    if (INF_code[pos]==' ' || INF_code[pos]=='-') {
       /* In the case of a separator, we copy the one of the INF code */
-      result[i++]=INF_code[pos++];
+      u_strcat(result,INF_code[pos++]);
       pos_entry++;
    }
    else {
@@ -1121,7 +1120,6 @@ while (INF_code[pos]!='.') {
          tmp_entry[j++]=inflected[pos_entry++];
       }
       tmp_entry[j]='\0';
-      error("");
       if (semitic) {
     	  rebuild_token_semitic(tmp_entry,tmp);
       } else {
@@ -1129,17 +1127,15 @@ while (INF_code[pos]!='.') {
       }
       j=0;
       /* Once we have rebuilt the token, we protect in it the following chars: . + \ /
-       * We must also update 'i'.
        */
-      i+=escape(tmp_entry,&(result[i]),P_DOT_PLUS_SLASH_BACKSLASH);
+      escape(tmp_entry,result,P_DOT_PLUS_SLASH_BACKSLASH);
    }
 }
 /* Finally, we append the grammatical/inflectional information at the end
  * of the result line. */
 while (INF_code[pos]!='\0') {
-   result[i++]=INF_code[pos++];
+   u_strcat(result,INF_code[pos++]);
 }
-result[i]='\0';
 }
 
 
@@ -1148,12 +1144,13 @@ result[i]='\0';
  *    function. Produce entries from the INF codes associated to this final state
  */
 void uncompress_entry_and_print(unichar* content,struct list_ustring* tmp,U_FILE* output) {
-   while (tmp!=NULL) {
-      unichar res[DIC_WORD_SIZE];
-      uncompress_entry(content,tmp->string,res);
-      u_fprintf(output,"%S\n",res);
-      tmp=tmp->next;
-   }
+Ustring* s=new_Ustring(DIC_WORD_SIZE);
+while (tmp!=NULL) {
+	uncompress_entry(content,tmp->string,s);
+	u_fprintf(output,"%S\n",s->str);
+	tmp=tmp->next;
+}
+free_Ustring(s);
 }
 
 

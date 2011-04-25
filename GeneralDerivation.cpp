@@ -941,7 +941,7 @@ if (final) { // if we are in a terminal state
 
 //	int one_rule_already_matched = 0; // one rule matched each entry is enough
 
-	unichar entry[MAX_DICT_LINE_LENGTH];
+	Ustring* entry=new_Ustring(MAX_DICT_LINE_LENGTH);
 	uncompress_entry(current_component, l->string, entry);
 
 #if DDEBUG > 0
@@ -950,15 +950,14 @@ if (final) { // if we are in a terminal state
 	}
 #endif
 
-	struct dela_entry* dic_entr = new_dic_entry(entry,entries);
-
+	struct dela_entry* dic_entr = new_dic_entry(entry->str,entries);
 	unichar lemma_prefix_new[MAX_DICT_LINE_LENGTH];
 	struct rule_list* rule_list_new = 0;
 	unichar next_remaining_word[MAX_WORD_LENGTH];
 
 	struct rule_list* rule_list = 0;
 	if (prefix_is_valid(inf_number,prefix) || suffix_is_valid(inf_number,suffix))
-	  rule_list = parse_rules(entry,UTAG,rules);
+	  rule_list = parse_rules(entry->str,UTAG,rules);
 	else {
 	  rule_list = new_rule_list(rules);
 	  rule_list->rule = new_composition_rule();
@@ -970,7 +969,7 @@ if (final) { // if we are in a terminal state
 	unichar decomposition_new[MAX_DICT_LINE_LENGTH];
 	u_strcpy(decomposition_new, decomposition);
 	if (decomposition_new[0] != '\0') u_strcat(decomposition_new, " +++ ");
-	u_strcat(decomposition_new, entry);
+	u_strcat(decomposition_new, entry->str);
 
 
 	// loop on all composition_rules called
@@ -1009,7 +1008,8 @@ if (final) { // if we are in a terminal state
 	      unichar inflected[MAX_WORD_LENGTH];
 	      unichar lemma[MAX_WORD_LENGTH];
 	      unichar codes[MAX_DICT_LINE_LENGTH];
-	      tokenize_DELA_line_into_3_parts(entry, inflected, lemma, codes);
+	      tokenize_DELA_line_into_3_parts(entry->str, inflected, lemma, codes);
+	      free_Ustring(entry);
 
 	      /* generating new lexicon entry */
 	      unichar new_dela_line[MAX_DICT_LINE_LENGTH];

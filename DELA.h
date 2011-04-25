@@ -29,6 +29,7 @@
 #include "AbstractAllocator.h"
 #include "LoadInf.h"
 #include "CompressedDic.h"
+#include "Ustring.h"
 
 /* Maximum size of a DELA line */
 #define DIC_LINE_SIZE 4096
@@ -102,7 +103,7 @@ struct dela_entry* tokenize_tag_token(const unichar*,Abstract_allocator prv_allo
 struct dela_entry* tokenize_DELAS_line(const unichar*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* is_strict_DELAS_line(const unichar*,Alphabet*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void get_compressed_line(struct dela_entry*,unichar*,int);
-void uncompress_entry(const unichar*,unichar*,unichar*);
+void uncompress_entry(const unichar*,unichar*,Ustring*);
 void rebuild_dictionary(Dictionary*,U_FILE*);
 void extract_semantic_codes(const char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(const unichar*,unichar*,unichar*,unichar*);

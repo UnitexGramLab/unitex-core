@@ -115,6 +115,19 @@ ustr->size=size;
 
 
 /**
+ * Truncates the given string to the given length that must be lesser than the current
+ * one.
+ */
+void truncate(Ustring* ustr,unsigned int length) {
+if (length>ustr->len) {
+	fatal_error("Cannot truncate Ustring of length %u to greater size %d\n",ustr->len,length);
+}
+ustr->len=length;
+ustr->str[length]='\0';
+}
+
+
+/**
  * Concatenates the given unicode string to the given Ustring.
  * 'length' is the number of chars of 'str' to be copied.
  */

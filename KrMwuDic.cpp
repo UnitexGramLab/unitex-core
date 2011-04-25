@@ -602,7 +602,7 @@ for (int i=1;i<e->n_semantic_codes;i++) {
 int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
 		            struct string_hash* dic_codes,
 					Ustring* debug,int line_number) {
-unichar line[4096];
+Ustring* line=new_Ustring(4096);
 int OK=1;
 for (int i=0;i<n_entries;i++) {
 	struct dela_entry* e=entries[i];
@@ -616,7 +616,7 @@ for (int i=0;i<n_entries;i++) {
 	struct list_ustring* l=d->inf->codes[inf_code];
 	while (l!=NULL) {
 		uncompress_entry(e->inflected,l->string,line);
-		struct dela_entry* foo=tokenize_DELAF_line(line);
+		struct dela_entry* foo=tokenize_DELAF_line(line->str);
 		if (foo==NULL) {
 			error("Error at line %d: %S\n",line_number,debug->str);
 			fatal_error("Internal error in upgrade_entries\n");
@@ -658,5 +658,6 @@ for (int i=0;i<n_entries;i++) {
 	}
 	free_vector_ptr(bin_entries,NULL);
 }
+free_Ustring(line);
 return OK;
 }

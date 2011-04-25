@@ -1354,7 +1354,7 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
 		struct pattern* pattern, int save_dic_entry, unichar* jamo,
-		int pos_in_jamo, unichar *line_buffer,Ustring* ustr,int base) {
+		int pos_in_jamo, Ustring *line_buffer,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
 int z=save_output(ustr);
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
@@ -1369,15 +1369,13 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					pos_in_jamo, p->prv_alloc_recycle);
 		} else {
 			/* If we have to check the pattern */
-			//unichar line[DIC_LINE_SIZE];
-			unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
 			struct list_ustring* tmp = d->inf->codes[inf_number];
 			while (tmp != NULL) {
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
-				uncompress_entry(inflected, tmp->string, line);
+				uncompress_entry(inflected, tmp->string, line_buffer);
 				//error("\non decompresse la ligne _%S_\n",line);
-				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line);
+				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str);
 				if (dela_entry != NULL
 						&& (pattern == NULL
 								|| is_entry_compatible_with_pattern(dela_entry,
@@ -1554,7 +1552,7 @@ static void explore_dic_in_morpho_mode_arabic(struct locate_parameters* p,
 		Dictionary* d, int offset,
 		unichar* current_token, unichar* inflected, int pos_in_current_token,
 		int pos_in_inflected, int pos_offset, struct parsing_info* *matches,
-		struct pattern* pattern, int save_dic_entry, unichar *line_buffer,
+		struct pattern* pattern, int save_dic_entry, Ustring* line_buffer,
 		int expected, unichar last_dic_char, Ustring* ustr, int base) {
 int old_offset=offset;
 int final,n_transitions,inf_number;
@@ -1577,15 +1575,13 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					pos_in_current_token, -1, (*matches), NULL, NULL, 0, p->prv_alloc_recycle);
 		} else {
 			/* If we have to check the pattern */
-			//unichar line[DIC_LINE_SIZE];
-			unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
 			struct list_ustring* tmp = d->inf->codes[inf_number];
 			while (tmp != NULL) {
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
-				uncompress_entry(inflected, tmp->string, line);
+				uncompress_entry(inflected, tmp->string, line_buffer);
 				//error("on a decompresse la ligne %S\n",line);
-				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line);
+				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str);
 				if (dela_entry != NULL
 						&& (pattern == NULL
 								|| is_entry_compatible_with_pattern(dela_entry,
@@ -2021,7 +2017,7 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		fatal_alloc_error("explore_dic_in_morpho_mode");
 	}
 	unichar* inflected = buffer_line_buffer_inflected;
-	unichar* line_buffer = buffer_line_buffer_inflected + 4096;
+	Ustring* line_buffer=new_Ustring(4096);
 	Ustring* ustr=new_Ustring();
 	for (int i = 0; i < p->n_morpho_dics; i++) {
 		if (p->morpho_dic[i] != NULL) {
@@ -2042,5 +2038,6 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		}
 	}
 	free_Ustring(ustr);
+	free_Ustring(line_buffer);
 	free(buffer_line_buffer_inflected);
 }

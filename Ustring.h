@@ -56,6 +56,7 @@ Ustring* new_Ustring(unsigned int);
 void free_Ustring(Ustring * ustr);
 
 static inline void empty(Ustring * ustr);
+void truncate(Ustring* ustr,unsigned int length);
 
 void u_strcat(Ustring*,const unichar*,unsigned int);
 void u_strcat(Ustring*,const char*,unsigned int);

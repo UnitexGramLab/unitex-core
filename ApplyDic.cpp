@@ -246,9 +246,10 @@ while (l!=NULL) {
  * allocated 4096 unichar (and produce stack overflow) 
  */
 void display_uncompressed_entry(U_FILE* f,unichar* inflected,unichar* INF_code) {
-	unichar line[DIC_LINE_SIZE];
-	uncompress_entry(inflected,INF_code,line);
-	u_fprintf(f,"%S\n",line);
+Ustring* s=new_Ustring(DIC_LINE_SIZE);
+uncompress_entry(inflected,INF_code,s);
+u_fprintf(f,"%S\n",s->str);
+free_Ustring(s);
 }
 
 
@@ -382,7 +383,7 @@ void explore_bin_compound_words(struct dico_application_info* info,
                                 int pos_in_current_token,
                                 int pos_in_inflected,struct word_struct* ws,int pos_offset,
                                 int* token_sequence,int pos_token_sequence,int priority,
-                                int current_start_pos, unichar* line_buf,Ustring* ustr,int base) {
+                                int current_start_pos,Ustring* line_buf,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
 int z=save_output(ustr);
 int new_offset=read_dictionary_state(info->d,offset,&final,&n_transitions,&inf_number);
@@ -425,7 +426,7 @@ if (current_token[pos_in_current_token]=='\0') {
             /* For each compressed code of the INF line, we save the corresponding
              * DELAF line in 'info->dlc' */
         	uncompress_entry(inflected,tmp->string,line_buf);
-            u_fprintf(info->dlc,"%S\n",line_buf);
+            u_fprintf(info->dlc,"%S\n",line_buf->str);
             tmp=tmp->next;
          }
          if (to_be_freed) free_list_ustring(head);
@@ -500,6 +501,7 @@ struct word_struct* w;
 fseek(info->text_cod,0,SEEK_SET);
 fill_buffer(info->buffer,info->text_cod);
 */
+Ustring* line_buf=new_Ustring(4096);
 Ustring* ustr=new_Ustring();
 int current_start_pos=0;
 u_printf("First block...              \r");
@@ -551,7 +553,6 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
            /* If there are dictionary nodes to explore, we do so. For each node
             * we copy into 'entry' the sequence of character that leads to it in
             * the .bin */
-           unichar line_buf[DIC_LINE_SIZE];
            u_strcpy_sized(inflected,DIC_WORD_SIZE,l->content);
            u_strcpy(ustr,l->output);
            explore_bin_compound_words(info,l->offset,info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,
@@ -563,6 +564,7 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
    current_start_pos++;
 }
 u_printf("\n");
+free_Ustring(line_buf);
 free_Ustring(ustr);
 free(inflected);
 free(token_sequence);

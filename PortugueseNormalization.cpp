@@ -207,9 +207,10 @@ while (lemmas!=NULL) {
    struct list_ustring* tok=inflected_dic->inf->codes[res];
    // then for each uncompressed form, we look if it matches with the inflectional code
    while (tok!=NULL) {
-      unichar line[2000];
+      Ustring* line=new_Ustring(4096);
       uncompress_entry(entry,tok->string,line);
-      struct dela_entry* tmp=tokenize_DELAF_line(line,0);
+      struct dela_entry* tmp=tokenize_DELAF_line(line->str,0);
+      free_Ustring(line);
       if (compatible_portuguese_inflectional_codes(tmp,n_inflectional_codes,inflectional_codes)) {
          // if the code matches, we can produce a new line of the normalization grammar
          unichar temp_result2[4000];
@@ -384,10 +385,10 @@ if (res==-1) {
 }
 (*lemmas)=NULL;
 struct list_ustring* tok=root_dic->inf->codes[res];
+Ustring* line=new_Ustring(4096);
 while (tok!=NULL) {
-   unichar line[2000];
    uncompress_entry(entry,tok->string,line);
-   struct dela_entry* tmp=tokenize_DELAF_line(line,0);
+   struct dela_entry* tmp=tokenize_DELAF_line(line->str,0);
    if (!u_strcmp(tmp->semantic_codes[0],"V")) {
       // if we have a verb lemma, then we add it to the lemma list
       (*lemmas)=new_list_ustring(tmp->lemma,*lemmas);
@@ -395,6 +396,7 @@ while (tok!=NULL) {
    free_dela_entry(tmp);
    tok=tok->next;
 }
+free_Ustring(line);
 return 1;
 }
 

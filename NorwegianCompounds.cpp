@@ -744,7 +744,7 @@ if (final) {
 				/* We will look at all the INF codes of the last component in order
 				 * to produce analysis */
 				while (l!=NULL) {
-					unichar dec[2000];
+					unichar dec[4096];
 					u_strcpy(dec,analysis);
 					if (dec[0]!='\0') {
 						/* If we have already something in the analysis (i.e. if
@@ -752,19 +752,19 @@ if (final) {
 						 * mark before the entry to come */
 						u_strcat(dec," +++ ");
 					}
-					unichar entry[2000];
+					Ustring* entry=new_Ustring(4096);
 					/* We get the dictionary line that corresponds to the current INF code */
 					uncompress_entry(current_component,l->string,entry);
 					/* And we add it to the analysis */
-					u_strcat(dec,entry);
-					unichar new_dela_line[2000];
+					u_strcat(dec,entry->str);
+					unichar new_dela_line[4096];
 					/* We copy the current output DELA line that contains
 					 * the concatenation of the previous components */
 					u_strcpy(new_dela_line,output_dela_line);
 					/* Then we tokenize the DELA line that corresponds the current INF
 					 * code in order to obtain its lemma and grammatical/inflectional
 					 * information */
-					struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
+					struct dela_entry* tmp_entry=tokenize_DELAF_line(entry->str,1);
 					/* We concatenate the inflected form of the last component to
 					 * the output DELA line */
 					u_strcat(new_dela_line,tmp_entry->inflected);
@@ -778,15 +778,15 @@ if (final) {
 					u_strcat(new_dela_line,".");
 					/* And finally we put the grammatical/inflectional information */
 					u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
-               int k;
-               for (k=1;k<tmp_entry->n_semantic_codes;k++) {
-                  u_strcat(new_dela_line,"+");
-                  u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
-               }
-               for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
-                  u_strcat(new_dela_line,":");
-                  u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
-               }
+					int k;
+					for (k=1;k<tmp_entry->n_semantic_codes;k++) {
+						u_strcat(new_dela_line,"+");
+						u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
+					}
+					for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
+						u_strcat(new_dela_line,":");
+						u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
+					}
 					free_dela_entry(tmp_entry);
 					/*
 					 * Now we can build an analysis in the form of a word decomposition
@@ -794,7 +794,7 @@ if (final) {
 					 * right one or if it is a verb long enough, or if we find out
 					 * that the word to analyze was in fact a simple word
 					 * in the dictionary */
-					if (verb_of_more_than_4_letters(entry)
+					if (verb_of_more_than_4_letters(entry->str)
 						|| check_valid_right_component_for_one_INF_code(l->string)
 						|| number_of_components==1) {
 						/*
@@ -814,6 +814,7 @@ if (final) {
 						wdl->next=(*L);
 						(*L)=wdl;
 					}
+					free_Ustring(entry);
 					/* We go on with the next INF code of the last component */
 					l=l->next;
 				}
@@ -834,7 +835,7 @@ if (final) {
 					(current_component[pos_in_current_component-1]==current_component[pos_in_current_component-2])) {
 					/* If we have such a word, we add it to the current analysis,
 					 * putting "+++" if the current component is not the first one */
-					unichar dec[2000];
+					unichar dec[4096];
 					u_strcpy(dec,analysis);
 					if (dec[0]!='\0') {
 						u_strcat(dec," +++ ");
@@ -842,19 +843,20 @@ if (final) {
 					/* In order to print the component in the analysis, we arbitrary
 					 * take a valid left component among all those that are available
 					 * for the current component */
-					unichar sia_code[2000];
-					unichar entry[2000];
-					unichar line[2000];
+					unichar sia_code[4096];
+					unichar line[4096];
+					Ustring* entry=new_Ustring(4096);
 					get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
 					uncompress_entry(current_component,sia_code,entry);
-					u_strcat(dec,entry);
+					u_strcat(dec,entry->str);
+					free_Ustring(entry);
 					u_strcpy(line,output_dela_line);
 					u_strcat(line,current_component);
 					/* As we have a double letter at the end of the word,
 					 * we must remove a character */
 					line[u_strlen(line)-1]='\0';
-					unichar temp[2000];
-					unichar dec_temp[2000];
+					unichar temp[4096];
+					unichar dec_temp[4096];
 					u_strcpy(dec_temp,dec);
 					/* Then, we explore the dictionary in order to analyze the
 					 * next component. We start at the root of the dictionary
@@ -869,25 +871,26 @@ if (final) {
 				/* Now, we try to analyze the component normally, even if
 				 * it was ended by double letter, because we can have things
 				 * like "oppbrent = opp,.ADV +++ brent,brenne.V:K" */
-				unichar dec[2000];
-				unichar line[2000];
+				unichar dec[4096];
+				unichar line[4096];
 				u_strcpy(dec,analysis);
 				if (dec[0]!='\0') {
 					/* We add the "+++" mark if the current component is not the first one */
 					u_strcat(dec," +++ ");
 				}
-				unichar sia_code[2000];
-				unichar entry[2000];
+				unichar sia_code[4096];
+				Ustring* entry=new_Ustring(4096);
 				/* In order to print the component in the analysis, we arbitrary
 				 * take a valid left component among all those that are available
 				 * for the current component */
 				get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
 				uncompress_entry(current_component,sia_code,entry);
-				u_strcat(dec,entry);
+				u_strcat(dec,entry->str);
+				free_Ustring(entry);
 				u_strcpy(line,output_dela_line);
 				u_strcat(line,current_component);
-				unichar temp[2000];
-				unichar dec_temp[2000];
+				unichar temp[4096];
+				unichar dec_temp[4096];
 				u_strcpy(dec_temp,dec);
 				/* Then, we explore the dictionary in order to analyze the
 				 * next component. We start at the root of the dictionary

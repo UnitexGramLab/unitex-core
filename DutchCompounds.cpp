@@ -527,19 +527,20 @@ if (final) {
 					 * mark before the entry to come */
 					u_strcat(dec," +++ ");
 				}
-				unichar entry[2000];
+				Ustring* entry=new_Ustring(4096);
 				/* We get the dictionary line that corresponds to the current INF code */
 				uncompress_entry(current_component,l->string,entry);
 				/* And we add it to the analysis */
-				u_strcat(dec,entry);
-				unichar new_dela_line[2000];
+				u_strcat(dec,entry->str);
+				unichar new_dela_line[4096];
 				/* We copy the current output DELA line that contains
 				 * the concatenation of the previous components */
 				u_strcpy(new_dela_line,output_dela_line);
 				/* Then we tokenize the DELA line that corresponds the current INF
 				 * code in order to obtain its lemma and grammatical/inflectional
 				 * information */
-				struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
+				struct dela_entry* tmp_entry=tokenize_DELAF_line(entry->str,1);
+				free_Ustring(entry);
 				/* We concatenate the inflected form of the last component to
 				 * the output DELA line */
 				u_strcat(new_dela_line,tmp_entry->inflected);
@@ -609,12 +610,13 @@ if (final) {
 					/* In order to print the component in the analysis, we arbitrary
 					 * take a valid left component among all those that are available
 					 * for the current component */
-					unichar sia_code[2000];
-					unichar entry[2000];
-					unichar line[2000];
+					unichar sia_code[4096];
+					unichar line[4096];
+					Ustring* entry=new_Ustring(4096);
 					get_first_valid_left_component_dutch(infos->d->inf->codes[inf_number],sia_code);
 					uncompress_entry(current_component,sia_code,entry);
-					u_strcat(dec,entry);
+					u_strcat(dec,entry->str);
+					free_Ustring(entry);
 					u_strcpy(line,output_dela_line);
 					u_strcat(line,current_component);
 					/* As we have a double letter at the end of the word,
@@ -633,25 +635,26 @@ if (final) {
 					free_Ustring(foo);
 				}
 				/* Now, we try to analyze the component normally */
-				unichar dec[2000];
-				unichar line[2000];
+				unichar dec[4096];
+				unichar line[4096];
 				u_strcpy(dec,analysis);
 				if (dec[0]!='\0') {
 					/* We add the "+++" mark if the current component is not the first one */
 					u_strcat(dec," +++ ");
 				}
-				unichar sia_code[2000];
-				unichar entry[2000];
+				unichar sia_code[4096];
+				Ustring* entry=new_Ustring(4096);
 				/* In order to print the component in the analysis, we arbitrary
 				 * take a valid left component among all those that are available
 				 * for the current component */
 				get_first_valid_left_component_dutch(infos->d->inf->codes[inf_number],sia_code);
 				uncompress_entry(current_component,sia_code,entry);
-				u_strcat(dec,entry);
+				u_strcat(dec,entry->str);
+				free_Ustring(entry);
 				u_strcpy(line,output_dela_line);
 				u_strcat(line,current_component);
-				unichar temp[2000];
-				unichar dec_temp[2000];
+				unichar temp[4096];
+				unichar dec_temp[4096];
 				u_strcpy(dec_temp,dec);
 				/* Then, we explore the dictionary in order to analyze the
 				 * next component. We start at the root of the dictionary */

@@ -312,11 +312,12 @@ if (final) {
             unichar dec[500];
             u_strcpy(dec,decomposition);
             if (dec[0]!='\0') {u_strcat(dec," +++ ");}
-            unichar entry[500];
+            Ustring* entry=new_Ustring(4096);
             uncompress_entry(current_component,l->string,entry);
-            u_strcat(dec,entry);
+            u_strcat(dec,entry->str);
             unichar new_dela_line[500];
-            struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
+            struct dela_entry* tmp_entry=tokenize_DELAF_line(entry->str,1);
+            free_Ustring(entry);
             if (tmp_entry==NULL) {
                /* If there was an error in the dictionary, we skip the entry */
                l=l->next;
@@ -376,10 +377,11 @@ if (final) {
          u_strcpy(dec,decomposition);
          if (dec[0]!='\0') {u_strcat(dec," +++ ");}
          unichar sia_code[500];
-         unichar entry[500];
+         Ustring* entry=new_Ustring(4096);
          get_first_sia_code_german(inf_number,sia_code,d->inf);
          uncompress_entry(current_component,sia_code,entry);
-         u_strcat(dec,entry);
+         u_strcat(dec,entry->str);
+         free_Ustring(entry);
          u_strcpy(line,dela_line);
          u_strcat(line,current_component);
          unichar temp[500];
