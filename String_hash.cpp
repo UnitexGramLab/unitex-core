@@ -318,6 +318,28 @@ return hash;
 
 
 /**
+ * Takes a sequence turns every every \x into x, except \r and
+ * \n that are turned into 0x0D and 0x0A.
+ */
+static void normalize_CR_LF(unichar* s) {
+int i=0,j=0;
+while (s[i]!='\0') {
+	if (s[i]=='\\') {
+		switch (s[i+1]) {
+		case '\0': fatal_error("Unexpected backslash at end of line in normalize_CR_LF\n");
+		case 'r': s[j++]=0x0D; i+=2; break;
+		case 'n': s[j++]=0x0A; i+=2; break;
+		default: s[j++]=s[i+1]; i+=2; break;
+		}
+	} else {
+		s[j++]=s[i++];
+	}
+}
+s[j]='\0';
+}
+
+
+/**
  * Loads the lines of a text file into a string_hash and returns it, or NULL
  * if the file can not be opened. We arbitrary fix the limit of a line to 4096
  * characters. Each line is splitted into a key and a value, according to a
@@ -330,6 +352,8 @@ return hash;
  * 123\
  * =ONE_TWO_THREE_NEW_LINE
  *
+ * However, the preferred way to manipulate new lines is to use \r and \n in
+ * keys and values.
  */
 struct string_hash* load_key_value_list(const char* name,int mask_encoding_compatibility_input,unichar separator) {
 U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
@@ -342,6 +366,12 @@ unichar value[4096];
 unichar stop[2];
 stop[0]=separator;
 stop[1]='\0';
+unichar to_keep_protected[4];
+to_keep_protected[0]='r';
+to_keep_protected[1]='n';
+to_keep_protected[2]='\\';
+to_keep_protected[3]='\0';
+
 int code;
 while (EOF!=(code=u_fgets2(temp,f))) {
    if (code==0) {
@@ -350,11 +380,11 @@ while (EOF!=(code=u_fgets2(temp,f))) {
    else {
       /* First, we try to read a non empty key */
       int pos=0;
-      code=parse_string(temp,&pos,key,stop);
+      code=parse_string(temp,&pos,key,stop,P_EMPTY,to_keep_protected);
       if (code==P_BACKSLASH_AT_END) {
          error("Backslash at end of line:<%S>\n\n",temp);
       }
-      else if (pos==0 &&temp[pos]=='\0') {
+      else if (pos==0 && temp[pos]=='\0') {
          /* Empty line */
     	  continue;
       }
@@ -373,6 +403,8 @@ while (EOF!=(code=u_fgets2(temp,f))) {
          }
          else {
             /* If we have a valid (key,value) pair, we insert it into the string_hash */
+        	normalize_CR_LF(value);
+        	normalize_CR_LF(key);
             get_value_index(key,hash,INSERT_IF_NEEDED,value);
          }
       }
