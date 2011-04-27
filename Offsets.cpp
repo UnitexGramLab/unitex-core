@@ -47,8 +47,10 @@ return res;
 
 
 void save_offsets(U_FILE* f, int a, int b, int c, int d) {
-	u_fprintf(f, "%d %d %d %d\n", a, b, c, d);
+u_fprintf(f, "%d %d %d %d\n", a, b, c, d);
+//error("%d %d %d %d\n", a, b, c, d);
 }
+
 
 /**
  * This function takes two offset arrays:
@@ -91,7 +93,8 @@ while (j < new_offsets->nbelems) {
 	for (; i < old_offsets->nbelems; i++) {
 		x = old_offsets->tab[i];
 		/* Note: below, A stands for x's new interval and B stands for y's old interval */
-		//error("TEST OVERLAP entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+		//error("\n\nTEST OVERLAP entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
+		//error("TEST OVERLAP entre %d;%d et %d;%d\n",x.old_start,x.old_end,y.new_start,y.new_end);
 		o = overlap(x.new_start, x.new_end, y.old_start, y.old_end);
 		//error("o==%d\n",o);
 		if (o == A_BEFORE_B) {
@@ -175,7 +178,7 @@ while (j < new_offsets->nbelems) {
 		}
 	}
 	if (o != (Overlap) -1 && o != A_AFTER_B && i != old_offsets->nbelems)
-		fatal_error("oooops o==%d\n", o);
+		fatal_error("o==%d\n", o);
 	save_offsets(f, y.old_start + shift_A, y.old_end + shift_A
 			+ B_includes_A_shift, y.new_start, y.new_end);
 	B_includes_A_shift = 0;

@@ -38,7 +38,6 @@
  */
 int main(int argc,char* argv[]) {
 setBufferMode();
-#if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <txt> start end\n");
 }
@@ -70,7 +69,7 @@ u_printf("\n");
 
 u_fclose(f);
 return 0;
-#endif
+#if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <alph> <grf_in> <grf_out\n");
 }
@@ -92,6 +91,7 @@ u_fclose(f);
 free_Grf(grf);
 free_alphabet(alph);
 return 0;
+#endif
 }
 
 

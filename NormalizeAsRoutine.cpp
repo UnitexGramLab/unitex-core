@@ -347,12 +347,33 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 							WriteOufBuf(&OutBuf, convLFtoCRLF, ' ', output, 0);
 						}
 					} else {
-						/* If, finally, we have a normal character to normalize, we just print it,
-						 * but rawly, in case we had a separator with --no_separator_normalization */
-						WriteOufBuf(&OutBuf, convLFtoCRLF, U_EMPTY, output, 1);
-						u_fputc_raw(buff[current_start_pos++],output);
-						old_start_pos++;
-						new_start_pos++;
+						/* If, finally, we have a normal character to normalize, we just print it */
+						unichar c=buff[current_start_pos];
+						if (c=='\r') {
+							c='\n';
+							if (buff[current_start_pos+1]=='\n') {
+								/* If we have a real \r\n, we do nothing special */
+								current_start_pos++;
+								old_start_pos+=2;
+								new_start_pos+=2;
+							} else {
+								/* The text contains only \r and we will have to turn
+								 * it into \r\n, so there we be a shift of 1 */
+								if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+2);
+								old_start_pos++;
+								new_start_pos+=2;
+							}
+						} else if (c=='\n') {
+							/* \n => \r\n means a shift of 1 */
+							if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+2);
+							old_start_pos++;
+							new_start_pos+=2;
+						} else {
+							old_start_pos++;
+							new_start_pos++;
+						}
+						current_start_pos++;
+						WriteOufBuf(&OutBuf, convLFtoCRLF, c, output, 0);
 					}
 				}
 			}

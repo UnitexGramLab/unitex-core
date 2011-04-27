@@ -245,15 +245,21 @@ void emit_output(struct fst2txt_parameters* p, unichar* s, int pos) {
 					}
 				}
 			}
+			/* In case the match contains several insertions, we have to take their lengths
+			 * into account for the next one */
+			int output_shift=0;
+			for (int i=0;i<p->current_insertions->nbelems;i+=4) {
+				output_shift=output_shift+p->current_insertions->tab[i+3]-p->current_insertions->tab[i+2];
+			}
 			/* If there is a need to compute offsets, we store the position of the insertion */
 			vector_int_add(p->current_insertions, p->CR_shift + CR_shift + pos
 					+ p->current_origin + p->absolute_offset);
 			vector_int_add(p->current_insertions, p->CR_shift + CR_shift + pos
 					+ p->current_origin + p->absolute_offset);
 			vector_int_add(p->current_insertions, CR_shift + pos
-					+ p->new_absolute_origin);
+					+ p->new_absolute_origin+output_shift);
 			vector_int_add(p->current_insertions, CR_shift + pos
-					+ p->new_absolute_origin + u_strlen(s));
+					+ p->new_absolute_origin + u_strlen(s)+output_shift);
 		}
 		push_output_string(p, s);
 	}

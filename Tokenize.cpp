@@ -416,7 +416,7 @@ switch (o) {
 case A_BEFORE_B: {
 	error("A_BEFORE_B: ");
 	error("start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
-	/*fatal_*/error("Unexpected A_BEFORE_B in save_token_offset\n");
+	fatal_error("Unexpected A_BEFORE_B in save_token_offset\n");
 	return 1;
 }
 case A_AFTER_B: {
