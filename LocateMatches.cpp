@@ -27,8 +27,8 @@
 /**
  * Allocates, initializes and returns a new match list element.
  */
-struct match_list* new_match(int start,int end,unichar* output,struct match_list* next,Abstract_allocator prv_alloc) {
-return new_match(start,end,-1,-1,-1,-1,output,next,prv_alloc);
+struct match_list* new_match(int start,int end,unichar* output,int weight,struct match_list* next,Abstract_allocator prv_alloc) {
+return new_match(start,end,-1,-1,-1,-1,output,weight,next,prv_alloc);
 }
 
 
@@ -36,7 +36,8 @@ return new_match(start,end,-1,-1,-1,-1,output,next,prv_alloc);
  * Allocates, initializes and returns a new match list element.
  */
 struct match_list* new_match(int start,int end,int start_char,int end_char,
-                             int start_letter,int end_letter,unichar* output,struct match_list* next,Abstract_allocator prv_alloc) {
+                             int start_letter,int end_letter,unichar* output,
+                             int weight,struct match_list* next,Abstract_allocator prv_alloc) {
 struct match_list *l;
 l=(struct match_list*)malloc_cb(sizeof(struct match_list),prv_alloc);
 if (l==NULL) {
@@ -44,6 +45,7 @@ if (l==NULL) {
 }
 l->m.start_pos_in_token=start;
 l->m.end_pos_in_token=end;
+l->weight=weight;
 if (output==NULL) {
    l->output=NULL;
 } else {
@@ -131,10 +133,10 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
    }
    is_an_output=(policy!=IGNORE_OUTPUTS);
    if (l==NULL) {
-      l=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?line->str:NULL,NULL,prv_alloc);
+      l=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?line->str:NULL,-1,NULL,prv_alloc);
       end_of_list=l;
    } else {
-      end_of_list->next=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?line->str:NULL,NULL,prv_alloc);
+      end_of_list->next=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?line->str:NULL,-1,NULL,prv_alloc);
       end_of_list=end_of_list->next;
    }
 }

@@ -132,6 +132,7 @@ p->is_in_cancel_state = 0;
 p->is_in_trace_state = 0;
 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 p->debug=0;
+p->weight=-1;
 return p;
 }
 

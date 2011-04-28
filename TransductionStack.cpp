@@ -137,11 +137,24 @@ for (;;) {
     	push_array(stack,&s[i1],char_to_push_count);
     	return 1;
     }
-    /* Now we are sure to have s[i]=='$' */
+    /* Now we are sure to have s[i1]=='$' */
     {
       /* Case of a variable name */
       unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
       int l=0;
+      if (s[i1+1]=='{') {
+    	  /* If we have a weight of the form ${n}$ */
+    	  int weight;
+    	  unichar foo1,foo2;
+    	  int ret=u_sscanf(s+i1+2,"%d%C%C%n",&weight,&foo1,&foo2,&l);
+    	  int ok=ret==3 && weight>=0 && foo1=='}' && foo2=='$';
+    	  if (!ok) {
+  	          fatal_error("Output error: invalid weight definition %S\n",s+i1);
+   	      }
+    	  i1+=l+2;
+    	  p->weight=weight;
+    	  continue;
+      }
       i1++;
       while (is_variable_char(s[i1]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
          name[l++]=s[i1++];

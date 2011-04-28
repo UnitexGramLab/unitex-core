@@ -332,6 +332,10 @@ struct locate_parameters {
    unsigned int size_recyclable_unichar_buffer;
 
    int debug;
+
+   /* -1   means no weight applied
+    * >=0  value to be used to compare matches within a same graph */
+   int weight;
 };
 
 

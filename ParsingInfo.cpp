@@ -75,7 +75,8 @@ struct parsing_info* new_parsing_info(int pos,int pos_in_token,int state,int sta
                                       Variables* v,OutputVariables* output_var,struct dela_entry* dic_entry,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_int_jamo,
-                                      vector_int* insertions,Abstract_allocator prv_alloc_recycle) {
+                                      vector_int* insertions,int weight,
+                                      Abstract_allocator prv_alloc_recycle) {
 struct parsing_info* info;
 unsigned char*buf;
 buf=(unsigned char*)malloc_cb(get_prefered_allocator_item_size_for_variable(v),prv_alloc_recycle);
@@ -83,6 +84,7 @@ if (buf==NULL) {
    fatal_alloc_error("new_parsing_info");
 }
 info=(struct parsing_info*)buf;
+info->weight=weight;
 info->input_variable_backup = (int*)(buf + AroundAllocAlign(sizeof(struct parsing_info)));
 info->stack_internal_reserved_space = (unichar*)(buf +
                                           AroundAllocAlign(sizeof(struct parsing_info)) +
@@ -154,6 +156,21 @@ while (list!=NULL) {
 
 
 /**
+ * Removes the given pointer from the given list.
+ */
+static struct parsing_info* remove_parsing_info(struct parsing_info* list,struct parsing_info* tmp,
+									Abstract_allocator prv_alloc_recycle) {
+if (list==tmp) {
+	list=list->next;
+	free_parsing_info(tmp,prv_alloc_recycle);
+	return list;
+}
+list->next=remove_parsing_info(list->next,tmp,prv_alloc_recycle);
+return list;
+}
+
+
+/**
  * Inserts an element in the given information list only if there is no element
  * with same end position of match.
  */
@@ -161,9 +178,36 @@ struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct 
                                       unichar* stack,Variables* v,OutputVariables* output_var,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
-                                      vector_int* insertions,Abstract_allocator prv_alloc_recycle) {
+                                      vector_int* insertions,
+                                      int weight,Abstract_allocator prv_alloc_recycle) {
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
-                                        left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,prv_alloc_recycle);
+                                        left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
+                                        weight,prv_alloc_recycle);
+if (weight!=-1) {
+	/* If we have to deal with a match with a weight, we first have to check
+	 * if there already is another match with a weight */
+	struct parsing_info* tmp=list;
+	while (tmp!=NULL && tmp->weight==-1) {
+		tmp=tmp->next;
+	}
+	if (tmp==NULL) {
+		/* No match with a weight ? We add one then */
+		tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
+		tmp->next=list;
+		return tmp;
+	}
+	if (tmp->weight>=weight) {
+		/* If we already have a better weight, we don't do anything */
+		return list;
+	}
+	/* If the new weight is better, we have to remove tmp */
+	list=remove_parsing_info(list,tmp,prv_alloc_recycle);
+	tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+	                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
+	tmp->next=list;
+	return tmp;
+}
 if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state
 	&& list->jamo==jamo /* We can because we only work on pointers on unique elements */
 	&& list->pos_in_jamo==pos_in_jamo) {
@@ -205,7 +249,7 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
    return list;
 }
 list->next=insert_if_absent(pos,pos_in_token,state,list->next,stack_pointer,stack,v,output_var,v2,
-                            left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,prv_alloc_recycle);
+                            left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
 return list;
 }
 
@@ -218,9 +262,36 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          struct dic_variable* v2,
                                          int left_ctx_shift,int left_ctx_base,
                                          unichar* jamo,int pos_in_jamo,
-                                         vector_int* insertions,Abstract_allocator prv_alloc_recycle) {
+                                         vector_int* insertions,
+                                         int weight,Abstract_allocator prv_alloc_recycle) {
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
-                                        left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,prv_alloc_recycle);
+                                        left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
+                                        weight,prv_alloc_recycle);
+if (weight!=-1) {
+	/* If we have to deal with a match with a weight, we first have to check
+	 * if there already is another match with a weight */
+	struct parsing_info* tmp=list;
+	while (tmp!=NULL && tmp->weight==-1) {
+		tmp=tmp->next;
+	}
+	if (tmp==NULL) {
+		/* No match with a weight ? We add one then */
+		tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
+		tmp->next=list;
+		return tmp;
+	}
+	if (tmp->weight>=weight) {
+		/* If we already have a better weight, we don't do anything */
+		return list;
+	}
+	/* If the new weight is better, we have to remove tmp */
+	list=remove_parsing_info(list,tmp,prv_alloc_recycle);
+	tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+	                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
+	tmp->next=list;
+	return tmp;
+}
 if ((list->position==pos) /* If the length is the same... */
     && (list->pos_in_token==pos_in_token)
     && (list->state_number==state)
@@ -262,7 +333,7 @@ if ((list->position==pos) /* If the length is the same... */
 }
 /* Otherwise, we look in the rest of the list */
 list->next=insert_if_different(pos,pos_in_token,state,list->next,stack_pointer,stack,v,output_var,v2,
-                               left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,prv_alloc_recycle);
+                               left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
 return list;
 }
 
@@ -276,7 +347,7 @@ struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int sta
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
                                                 Abstract_allocator prv_alloc_recycle) {
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
-		jamo,pos_in_jamo,NULL,prv_alloc_recycle);
+		jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle);
 if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state
     && list->dic_entry==dic_entry
     && list->jamo==jamo /* See comment in insert_if_absent*/

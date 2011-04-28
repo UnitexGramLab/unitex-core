@@ -164,6 +164,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                   p->is_in_cancel_state = 0;
                 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
                 p->no_fail_fast=0;
+                p->weight=-1;
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
 
 
@@ -386,6 +387,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	int token, token2;
 	Transition* t1;
 	int stack_top = p->stack->stack_pointer;
+	int old_weight=p->weight;
 	unichar* output;
 	int captured_chars;
 
@@ -559,13 +561,13 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, NULL, p->prv_alloc_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->weight,p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos, -1, -1, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, NULL, p->prv_alloc_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->weight,p->prv_alloc_recycle);
 				}
 			}
 		}
@@ -614,6 +616,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		struct dic_variable* dic_variables_backup = NULL;
 		int old_StackBase = p->stack_base;
 		unichar* output_var_backup=NULL;
+		int old_weight=p->weight;
 		if (p->output_policy != IGNORE_OUTPUTS) {
 			/* For better performance when ignoring outputs */
 
@@ -649,6 +652,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				}
 
 				p->graph_depth ++ ;
+				p->weight=-1;
 				locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 				       p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
 				       pos, &L, 0, NULL, /* ctx is set to NULL because the end of a context must occur in the
@@ -699,7 +703,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 //variable_backup_memory_reserve* reserve_new=p->backup_memory_reserve;
 //p->backup_memory_reserve=reserve_previous;
 
-
+						p->weight=old_weight;
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number],
 								L->position, matches, n_matches,
@@ -732,6 +736,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			} /* end of while (t!=NULL) */
 		} while ((graph_call_list = graph_call_list->next) != NULL);
 		/* Finally, we have to restore the stack and other backup stuff */
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 		if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
@@ -918,6 +923,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 									end_of_compound + 1, matches,
 									n_matches, ctx, p);
 							p->stack->stack_pointer = stack_top;
+							p->weight=old_weight;
 							if (p->nb_output_variables != 0) {
 							    remove_chars_from_output_variables(p->output_variables,captured_chars);
 							}
@@ -1001,6 +1007,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 								p->optimized_states[t1->state_number],
 								end_of_compound + 1, matches,
 								n_matches, ctx, p);
+						p->weight=old_weight;
 						if (p->nb_output_variables != 0) {
 						    remove_chars_from_output_variables(p->output_variables,captured_chars);
 						}
@@ -1208,6 +1215,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				 install_variable_backup(p->variables,var_backup);
 				 free_variable_backup(var_backup);
 				 }*/
+				p->weight=old_weight;
 				p->left_ctx_shift = current_shift;
 				p->left_ctx_base = old_left_ctx_stack_base;
 				p->stack->stack_pointer = stack_top;
@@ -1241,6 +1249,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				locate(/*graph_depth,*/ p->optimized_states[t1->state_number], end,
 						matches, n_matches, ctx, p);
 				/* Once we have finished, we restore the stack */
+				p->weight=old_weight;
 				p->stack->stack_pointer = stack_top;
 				if (p->nb_output_variables != 0) {
 				  remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1262,6 +1271,7 @@ while (output_variable_list != NULL) {
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, matches, n_matches, ctx, p);
+	p->weight=old_weight;
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	free_Ustring(p->output_variables->variables[output_variable_list->variable_number]);
 	p->output_variables->variables[output_variable_list->variable_number]=old_value;
@@ -1277,6 +1287,7 @@ while (output_variable_list != NULL) {
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, matches, n_matches, ctx, p);
+	p->weight=old_weight;
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
@@ -1298,6 +1309,7 @@ while (output_variable_list != NULL) {
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
 				pos, matches, n_matches, ctx, p);
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1329,6 +1341,7 @@ while (output_variable_list != NULL) {
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
 				pos, matches, n_matches, ctx, p);
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1354,6 +1367,7 @@ while (output_variable_list != NULL) {
 			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
+			p->weight=old_weight;
 			/* Note that there is no match to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			p->stack->stack[stack_top+1]='\0';
@@ -1377,6 +1391,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
 							matches, n_matches, ctx, p);
+					p->weight=old_weight;
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1394,6 +1409,7 @@ while (output_variable_list != NULL) {
 			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
+			p->weight=old_weight;
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (!c->n) {
@@ -1404,6 +1420,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
 							matches, n_matches, ctx, p);
+					p->weight=old_weight;
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1490,6 +1507,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, matches, n_matches,
 							ctx, p);
+					p->weight=old_weight;
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1549,6 +1567,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, matches, n_matches,
 							ctx, p);
+					p->weight=old_weight;
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1585,6 +1604,7 @@ while (output_variable_list != NULL) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
 								matches, n_matches, ctx, p);
+						p->weight=old_weight;
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1610,6 +1630,7 @@ while (output_variable_list != NULL) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
 								matches, n_matches, ctx, p);
+						p->weight=old_weight;
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1652,6 +1673,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							pos2 + 1, matches, n_matches, ctx, p);
+					p->weight=old_weight;
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1805,7 +1827,33 @@ static void add_match(int end, unichar* output, struct locate_parameters* p, Abs
 		 * will rebuild the actual output parsing the full debug one */
 		z=p->stack->stack;
 	}
-	struct match_list* m = new_match(start, end, z, NULL, prv_alloc);
+	if (p->weight!=-1) {
+		/* If there is a weight, we must look for an existing match with a weight */
+		struct match_list* tmp=p->match_cache_first;
+		while (tmp!=NULL && tmp->weight==-1) {
+			tmp=tmp->next;
+		}
+		if (tmp!=NULL) {
+			/* If we have found a match with a weight */
+			if (tmp->weight>=p->weight) {
+				/* The existing weight is better, we do nothing */
+				return;
+			}
+			/* The new match is better, we use it */
+			free(tmp->output);
+			tmp->output=u_strdup(output);
+			tmp->weight=p->weight;
+			tmp->m.start_pos_in_token=start;
+			tmp->m.end_pos_in_token=end;
+			tmp->m.start_pos_in_char=-1;
+			tmp->m.end_pos_in_char=-1;
+			tmp->m.start_pos_in_letter=-1;
+			tmp->m.end_pos_in_letter=-1;
+			return;
+		}
+	}
+
+	struct match_list* m = new_match(start, end, z, p->weight, NULL, prv_alloc);
 	if (p->match_cache_first == NULL) {
 		p->match_cache_first = p->match_cache_last = m;
 		return;
@@ -1834,13 +1882,13 @@ while (*L != NULL) {
 	if (start<(*L)->m.start_pos_in_token ||
 			(start==(*L)->m.start_pos_in_token && end<(*L)->m.end_pos_in_token)) {
 		/* We have to insert at the current position */
-		(*L)=new_match(start, end, output, *L, prv_alloc);
+		(*L)=new_match(start, end, output, -1, *L, prv_alloc);
 		return;
 	}
 	L = &((*L)->next);
 }
 /* End of list? We add the match */
-(*L) = new_match(start, end, output, NULL, prv_alloc);
+(*L) = new_match(start, end, output, -1, NULL, prv_alloc);
 }
 
 
@@ -1858,7 +1906,7 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 	int dont_add_match;
 	if (p->match_list == NULL) {
 		/* If the match list was empty, we always can put the match in the list */
-		p->match_list = new_match(start, end, output, NULL, prv_alloc);
+		p->match_list = new_match(start, end, output, -1, NULL, prv_alloc);
 		return;
 	}
 	switch (p->match_policy) {
@@ -1871,7 +1919,7 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 		p->match_list = eliminate_shorter_matches(p->match_list, start, end,
 				output, &dont_add_match, p, prv_alloc);
 		if (!dont_add_match) {
-			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
+			p->match_list = new_match(start, end, output, -1, p->match_list, prv_alloc);
 		}
 		break;
 
@@ -1890,7 +1938,7 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 		p->match_list = eliminate_longer_matches(p->match_list, start, end,
 				output, &dont_add_match, p, prv_alloc);
 		if (!dont_add_match) {
-			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
+			p->match_list = new_match(start, end, output, -1, p->match_list, prv_alloc);
 		}
 		break;
 	}

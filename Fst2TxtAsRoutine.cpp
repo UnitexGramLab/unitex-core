@@ -525,7 +525,7 @@ void scan_graph(
 		} else { // in a subgraph
 			(*match_list) = insert_if_absent(pos, -1, -1, (*match_list),
 					p->stack->stack_pointer + 1, p->stack->stack, p->variables,
-					NULL, NULL, -1, -1, NULL, -1, p->current_insertions,
+					NULL, NULL, -1, -1, NULL, -1, p->current_insertions,-1,
 					prv_alloc_recycle);
 		}
 	}

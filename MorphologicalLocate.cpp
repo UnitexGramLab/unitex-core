@@ -198,6 +198,8 @@ unichar* jamo, int pos_in_jamo,
 unichar* content_buffer /* reusable unichar 4096 buffer for content */
 //,variable_backup_memory_reserve* backup_reserve
 ) {
+
+	int old_weight=p->weight;
 	if ((p->counting_step.count_cancel_trying) == 0) {
 
 		if (p->is_in_cancel_state != 0)
@@ -348,13 +350,13 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars, -1,
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle);
 				}
 			}
 		}
@@ -434,6 +436,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					p->dic_variables = clone_dic_variable_list(dic_variables_backup);
 				}
 
+				p->weight=old_weight;
 				morphological_locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 						p->fst2->initial_states[graph_call_list->graph_number], pos_in_tokens,
 						pos_in_chars, &L, 0, NULL, p,
@@ -467,6 +470,8 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							}
 						}
 						/* And we continue the exploration */
+						/* We reset the weight since its a value that is graph specific */
+						p->weight=old_weight;
 						morphological_locate(/*graph_depth,*/ t->state_number,
 								L->position, L->pos_in_token,
 								matches, n_matches, ctx, p,
@@ -482,6 +487,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			} /* end of while (t!=NULL) */
 		} while ((graph_call_list = graph_call_list->next) != NULL);
 		/* Finally, we have to restore the stack and other backup stuff */
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 		if (p->nb_output_variables != 0) {
@@ -535,6 +541,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						t->state_number, pos_in_tokens, pos_in_chars,
 						matches, n_matches, ctx, p,
 						jamo, pos_in_jamo, content_buffer);
+				p->weight=old_weight;
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
 				break;
@@ -654,6 +661,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								new_pos_in_token, matches,
 								n_matches, ctx, p, L2->jamo,
 								L2->pos_in_jamo, content_buffer);
+						p->weight=old_weight;
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
 									&(p->dic_variables),0);
@@ -769,14 +777,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars,
 							t->state_number, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->prv_alloc_recycle);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle);
 				}
 				break;
 
@@ -849,6 +857,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						new_pos_in_token, matches, n_matches, ctx,
 						p, new_jamo, new_pos_in_jamo,
 						content_buffer);
+				p->weight=old_weight;
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
 			}
@@ -867,6 +876,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				pos_in_chars, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
 				content_buffer);
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
@@ -882,6 +892,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				pos_in_chars, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
 				content_buffer);
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
@@ -903,6 +914,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						pos_in_chars, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
 						content_buffer);
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -945,6 +957,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						pos_in_chars, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
 						content_buffer);
+		p->weight=old_weight;
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1040,6 +1053,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, new_jamo,
 								new_pos_in_jamo, content_buffer);
+						p->weight=old_weight;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 						p->stack->stack_pointer = stack_top;
 					}
@@ -1083,6 +1097,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, jamo,
 								pos_in_jamo, content_buffer);
+						p->weight=old_weight;
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					} else {
@@ -1171,6 +1186,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, L->jamo,
 								L->pos_in_jamo, content_buffer);
+						p->weight=old_weight;
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
 									&(p->dic_variables),0);
@@ -1216,7 +1232,7 @@ struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 //,variable_backup_memory_reserve* backup_reserve_
 ) {
-
+	int old_weight=p->weight;
     p->explore_depth ++ ;
 	unichar* content_buffer = (unichar*) malloc(sizeof(unichar) * 4096);
 	if (content_buffer == NULL) {
@@ -1281,7 +1297,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			}
 
 
-
+			p->weight=L->weight;
 			locate(/*graph_depth, */p->optimized_states[L->state_number],
 					L->position, matches, n_matches, ctx, p);
             /*
@@ -1324,6 +1340,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		free_parsing_info(L_first,p->prv_alloc_recycle); /* free all morphological matches */
 	}
 	/* Finally, we have to restore the stack and other backup stuff */
+	p->weight=old_weight;
 	p->stack->stack_pointer = stack_top;
 	p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 	if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
