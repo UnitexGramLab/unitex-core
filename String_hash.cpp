@@ -398,8 +398,8 @@ while (EOF!=(code=u_fgets2(temp,f))) {
          /* We initialize 'value' with the empty string in case it is not
           * defined in the file */
          value[0]='\0';
-         if(P_BACKSLASH_AT_END==parse_string(temp,&pos,value,P_EMPTY)) {
-            error("Backslash at end of line:\n<%S>\n",temp);
+         if(P_BACKSLASH_AT_END==parse_string(temp,&pos,value,P_EMPTY,P_EMPTY,to_keep_protected)) {
+        	 error("Backslash at end of line:\n<%S>\n",temp);
          }
          else {
             /* If we have a valid (key,value) pair, we insert it into the string_hash */
