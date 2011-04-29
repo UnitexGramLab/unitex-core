@@ -63,6 +63,7 @@ if (s==NULL) fatal_alloc_error("new_GrfState");
 s->box_content=NULL;
 s->transitions=new_vector_int();
 s->rank=-1;
+s->box_number=-1;
 return s;
 }
 
@@ -70,11 +71,12 @@ return s;
 /**
  * Creates a grf state.
  */
-GrfState* new_GrfState(const unichar* content,int x,int y) {
+GrfState* new_GrfState(const unichar* content,int x,int y,int box_number) {
 GrfState* s=new_GrfState();
 s->box_content=u_strdup(content);
 s->x=x;
 s->y=y;
+s->box_number=box_number;
 return s;
 }
 
@@ -82,11 +84,12 @@ return s;
 /**
  * Creates a grf state.
  */
-GrfState* new_GrfState(const char* content,int x,int y) {
+GrfState* new_GrfState(const char* content,int x,int y,int box_number) {
 GrfState* s=new_GrfState();
 s->box_content=u_strdup(content);
 s->x=x;
 s->y=y;
+s->box_number=box_number;
 return s;
 }
 
@@ -94,8 +97,8 @@ return s;
 /**
  * Creates a grf state.
  */
-GrfState* new_GrfState(const unichar* content,int x,int y,int rank) {
-GrfState* s=new_GrfState(content,x,y);
+GrfState* new_GrfState(const unichar* content,int x,int y,int rank,int box_number) {
+GrfState* s=new_GrfState(content,x,y,box_number);
 s->rank=rank;
 return s;
 }
@@ -104,8 +107,8 @@ return s;
 /**
  * Creates a grf state.
  */
-GrfState* new_GrfState(const char* content,int x,int y,int rank) {
-GrfState* s=new_GrfState(content,x,y);
+GrfState* new_GrfState(const char* content,int x,int y,int rank,int box_number) {
+GrfState* s=new_GrfState(content,x,y,box_number);
 s->rank=rank;
 return s;
 }
@@ -203,6 +206,7 @@ unichar c=line->str[pos];
 if (c!=' ') return 0;
 line->str[pos]='\0';
 grf->states[n]=new_GrfState();
+grf->states[n]->box_number=n;
 grf->states[n]->box_content=u_strdup(line->str+start_pos);
 pos++;
 int shift;

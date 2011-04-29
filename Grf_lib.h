@@ -35,6 +35,17 @@ typedef struct {
 
 	/* This information is useful when manipulating sentence grfs */
 	int rank;
+
+	/* box_number is used for artificial box duplication when
+	 * specifying something like [2;4] to indicate that the given
+	 * box can match 2, 3 or 4 times. In such a case, we will expend this
+	 * request by creating all the boxes as a human would have created them
+	 * by hand, but for consistency in debug mode, we want all those
+	 * boxes to be considered as the original unique one in the grf. So,
+	 * artificial boxes will have a number that is not their index in the
+	 * state array of the grf object.
+	 */
+	int box_number;
 } GrfState;
 
 
@@ -72,10 +83,10 @@ typedef struct {
 
 Grf* new_Grf();
 void free_Grf(Grf*);
-GrfState* new_GrfState(const unichar* content,int x,int y);
-GrfState* new_GrfState(const char* content,int x,int y);
-GrfState* new_GrfState(const unichar* content,int x,int y,int rank);
-GrfState* new_GrfState(const char* content,int x,int y,int rank);
+GrfState* new_GrfState(const unichar* content,int x,int y,int box_number);
+GrfState* new_GrfState(const char* content,int x,int y,int box_number);
+GrfState* new_GrfState(const unichar* content,int x,int y,int rank,int box_number);
+GrfState* new_GrfState(const char* content,int x,int y,int rank,int box_number);
 void free_GrfState(GrfState*);
 int add_GrfState(Grf*,GrfState*);
 Grf* load_Grf(const char*);

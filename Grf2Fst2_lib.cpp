@@ -724,7 +724,8 @@ for (int i=0;i<transitions->nbelems;i++) {
  * be 0 for the first call and 4 for the second call).
  */
 void process_box_line(SingleGraph graph,unichar* input,unichar* output,vector_int* transitions,
-                     int *pos,int state,int n,struct compilation_info* infos,int line) {
+                     int *pos,int current_state,int n,struct compilation_info* infos,int line,
+                     GrfState* state) {
 int result=0;
 struct fifo* sequence=new_fifo();
 while (result==0 && input[*pos]!='\0') {
@@ -737,11 +738,11 @@ if (!infos->debug) {
 } else {
 	unichar output2[MAX_GRF_BOX_CONTENT];
 	u_strcpy(output2,output);
-	add_debug_infos(output2,n,state,line);
+	add_debug_infos(output2,n,state->box_number,line);
 	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n,1,0);
 }
 free_fifo(sequence);
-write_transitions(graph,sequence_ent,transitions,state,n_tokens);
+write_transitions(graph,sequence_ent,transitions,current_state,n_tokens);
 }
 
 
@@ -751,7 +752,7 @@ write_transitions(graph,sequence_ent,transitions,state,n_tokens);
  */
 void process_variable_or_context(SingleGraph graph,unichar* input,
                                 vector_int* transitions,
-                                int state,struct compilation_info* infos,
+                                int current_state,struct compilation_info* infos,
                                 int current_graph,unichar* debug_output) {
 struct fifo* tmp=new_fifo();
 int token[2];
@@ -771,7 +772,7 @@ if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
 	n++;
 }
 free_fifo(tmp);
-write_transitions(graph,token,transitions,state,n);
+write_transitions(graph,token,transitions,current_state,n);
 }
 
 
@@ -780,7 +781,8 @@ write_transitions(graph,token,transitions,state,n);
  */
 void process_grf_state(unichar* box_content,vector_int* transitions,
                       SingleGraph graph,int current_state,
-                      int n,struct compilation_info* infos) {
+                      int n,struct compilation_info* infos,
+                      GrfState* state) {
 unichar input[MAX_GRF_BOX_CONTENT];
 unichar output[MAX_GRF_BOX_CONTENT];
 if (transitions->nbelems==0) {
@@ -812,7 +814,7 @@ if ((length>2 && box_content[0]=='$' &&
 	    * to create a <E> tag associated to this output */
 	   unichar foo[2]={DEBUG_INFO_OUTPUT_MARK,0};
 	   u_strcat(debug_output,foo);
-	   add_debug_infos(debug_output,n,current_state,0);
+	   add_debug_infos(debug_output,n,state->box_number,0);
 	   u_strcat(debug_output,box_content);
 	   int size=u_strlen(debug_output);
 	   debug_output[size]=DEBUG_INFO_END_MARK;
@@ -832,7 +834,7 @@ split_input_output(box_content,input,output+shift);
 int pos=0;
 int line=0;
 while (input[pos]!='\0') {
-   process_box_line(graph,input,output,transitions,&pos,current_state,n,infos,line);
+   process_box_line(graph,input,output,transitions,&pos,current_state,n,infos,line,state);
    line++;
 }
 }
@@ -882,7 +884,7 @@ for (i=0;i<grf->n_states;i++) {
 	   grf->states[i]->transitions->tab[x]=grf->states[i]->transitions->tab[y];
 	   grf->states[i]->transitions->tab[y]=tmp;
    }
-   process_grf_state(grf->states[i]->box_content+1,grf->states[i]->transitions,graph,i,n,infos);
+   process_grf_state(grf->states[i]->box_content+1,grf->states[i]->transitions,graph,i,n,infos,grf->states[i]);
 }
 free_Grf(grf);
 /* Once we have loaded the graph, we process it. */
