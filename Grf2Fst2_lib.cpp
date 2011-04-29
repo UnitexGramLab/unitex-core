@@ -26,6 +26,7 @@
 #include "Transitions.h"
 #include "SingleGraph.h"
 #include "DebugMode.h"
+#include "Grf_lib.h"
 
 
 /* Maximum length for the content of a grf box */
@@ -696,10 +697,10 @@ while (!is_empty(u_tokens)) {
  * and it creates pathes from the current state to each of the reachable states,
  * introducing at new intermediate states as needed.
  */
-void write_transitions(SingleGraph graph,int* tag_numbers,struct list_int* transitions,
+void write_transitions(SingleGraph graph,int* tag_numbers,vector_int* transitions,
                       int current_state,int n_tag_numbers) {
 int tmp_state;
-while (transitions!=NULL) {
+for (int i=0;i<transitions->nbelems;i++) {
    tmp_state=current_state;
    for (int j=0;j<n_tag_numbers-1;j++) {
       /* If we are not on the last tag number, then we must introduce a new
@@ -708,9 +709,7 @@ while (transitions!=NULL) {
       tmp_state=graph->number_of_states-1;
    }
    /* Finally, we rely the state we are to the reachable state */
-   add_outgoing_transition(graph->states[tmp_state],tag_numbers[n_tag_numbers-1],transitions->n);
-   /* And we go again with the next reachable state */
-   transitions=transitions->next;
+   add_outgoing_transition(graph->states[tmp_state],tag_numbers[n_tag_numbers-1],transitions->tab[i]);
 }
 }
 
@@ -724,7 +723,7 @@ while (transitions!=NULL) {
  * "abc+d e f/foo" and one with "d e f/foo" (more exactly, it's '*pos' that will
  * be 0 for the first call and 4 for the second call).
  */
-void process_box_line(SingleGraph graph,unichar* input,unichar* output,struct list_int* transitions,
+void process_box_line(SingleGraph graph,unichar* input,unichar* output,vector_int* transitions,
                      int *pos,int state,int n,struct compilation_info* infos,int line) {
 int result=0;
 struct fifo* sequence=new_fifo();
@@ -751,7 +750,7 @@ write_transitions(graph,sequence_ent,transitions,state,n_tokens);
  * present, and we write the corresponding transitions.
  */
 void process_variable_or_context(SingleGraph graph,unichar* input,
-                                struct list_int* transitions,
+                                vector_int* transitions,
                                 int state,struct compilation_info* infos,
                                 int current_graph,unichar* debug_output) {
 struct fifo* tmp=new_fifo();
@@ -779,12 +778,12 @@ write_transitions(graph,token,transitions,state,n);
 /**
  * Processes the given grf state of the graph #n.
  */
-void process_grf_state(unichar* box_content,struct list_int* transitions,
+void process_grf_state(unichar* box_content,vector_int* transitions,
                       SingleGraph graph,int current_state,
                       int n,struct compilation_info* infos) {
 unichar input[MAX_GRF_BOX_CONTENT];
 unichar output[MAX_GRF_BOX_CONTENT];
-if (transitions==NULL) {
+if (transitions->nbelems==0) {
    /* If the state has no outgoing transition, it will be discarded when the
     * graph is cleaned, so it's not necessary to process it. */
    return;
@@ -890,10 +889,7 @@ return 1;
  */
 int compile_grf(int n,struct compilation_info* infos) {
 int i;
-int n_states;
 char name[FILENAME_MAX];
-struct list_int* transitions;
-unichar ligne[MAX_GRF_BOX_CONTENT];
 SingleGraph graph=new_SingleGraph();
 if (infos->verbose_name_grf!=0) {
   u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
@@ -904,53 +900,36 @@ char* full_name=NULL;
 if (infos->debug) {
 	full_name=name;
 }
-U_FILE* f=u_fopen_existing_versatile_encoding(infos->mask_encoding_compatibility_input,name,U_READ);
-if (f==NULL) {
+Grf* grf=load_Grf(name);
+if (grf==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
    if (n==0) return 0;
    return 1;
 }
-/* If we can open the .grf file, we start with skipping the header. We skip
- * the first '#' and then we look for the second. */
-u_fgetc(f);
-int c;
-while ((c=u_fgetc(f))!=EOF && c!='#') {}
-if (c==EOF) {
-   error("Invalid graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
-   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
-   free_SingleGraph(graph,NULL);
-   if (n==0) return 0;
-   return 1;
-}
-/* Skip the newline and the number of states */
-u_fscanf(f,"%d\n",&n_states);
 /* If necessary, we resize the graph that it can hold all the states */
-if (graph->capacity<n_states) {
-   set_state_array_capacity(graph,n_states);
+if (graph->capacity<grf->n_states) {
+   set_state_array_capacity(graph,grf->n_states);
 }
 /* Now, every line represents a state of the automaton */
-for (i=0;i<n_states;i++) {
+for (i=0;i<grf->n_states;i++) {
    graph->states[i]=new_SingleGraphState();
 }
-graph->number_of_states=n_states;
-for (i=0;i<n_states;i++) {
-   /* We read one line and we process it */
-   int result=read_grf_line(f,ligne,&transitions,n,infos);
-   if (result==0) {
-      /* In case of error, we dump the graph and return */
-      write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
-      free_SingleGraph(graph,NULL);
-      u_fclose(f);
-      if (n==1) return 0;
-      return 1;
+graph->number_of_states=grf->n_states;
+for (i=0;i<grf->n_states;i++) {
+   /* process_grf_state expect a box content without the surround double quotes */
+   grf->states[i]->box_content[u_strlen(grf->states[i]->box_content)-1]='\0';
+   /* To preserve previous behavior (for log consistency), we mirror the
+    * transition list */
+   for (int x=0,y=grf->states[i]->transitions->nbelems-1;x<y;x++,y--) {
+	   int tmp=grf->states[i]->transitions->tab[x];
+	   grf->states[i]->transitions->tab[x]=grf->states[i]->transitions->tab[y];
+	   grf->states[i]->transitions->tab[y]=tmp;
    }
-   /* We process the box */
-   process_grf_state(ligne,transitions,graph,i,n,infos);
-   free_list_int(transitions);
+   process_grf_state(grf->states[i]->box_content+1,grf->states[i]->transitions,graph,i,n,infos);
 }
-u_fclose(f);
+free_Grf(grf);
 /* Once we have loaded the graph, we process it. */
 set_initial_state(graph->states[0]);
 set_final_state(graph->states[1]);

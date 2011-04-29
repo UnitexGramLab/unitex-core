@@ -233,7 +233,11 @@ U_FILE* f=u_fopen_existing_versatile_encoding(DEFAULT_MASK_ENCODING_COMPATIBILIT
 if (f==NULL) return NULL;
 Ustring* line=new_Ustring();
 Grf* grf=new_Grf();
-if (EOF==readline(line,f) || u_strcmp(line->str,"#Unigraph")) goto error;
+if (EOF==readline(line,f)/* || u_strcmp(line->str,"#Unigraph")*/) {
+	/* The test has been removed because of backward compatibility problems
+	 * with old graphs starting with old header lines */
+	goto error;
+}
 if (!read_grf_header_line(f,line,grf->size)) goto error;
 if (!read_grf_header_line(f,line,grf->font)) goto error;
 if (!read_grf_header_line(f,line,grf->ofont)) goto error;
@@ -258,7 +262,9 @@ if (grf->states==NULL) {
 	fatal_alloc_error("load_Grf");
 }
 for (int i=0;i<grf->n_states;i++) {
-	if (!read_grf_state(f,line,i,grf)) goto error;
+	if (!read_grf_state(f,line,i,grf)) {
+		goto error;
+	}
 }
 goto end;
 error:

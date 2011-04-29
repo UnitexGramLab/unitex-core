@@ -308,7 +308,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o 
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o\
                      MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o\
                      MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o \
-                     CompressedDic.o LoadInf.o DebugMode.o $(SYSLIBMAPPED)
+                     CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
 
 CASSYS		= Cassys
 CASSYS_OBJS	= Main_Cassys.o Cassys.o IOBuffer.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
@@ -428,7 +428,8 @@ FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Af_stdio.o Activit
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o\
                String_hash.o StringParsing.o Transitions.o DELA.o\
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
-               UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o DebugMode.o $(SYSLIBMAPPED)
+               UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
+               DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
 
 FST2CHECK      = Fst2Check
 FST2CHECK_OBJS = Main_Fst2Check.o Fst2Check.o Fst2Check_lib.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o Alphabet.o\
@@ -461,7 +462,8 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o Acti
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
-                ProgramInvoker.o AbstractDelaLoad.o CompressedDic.o LoadInf.o DebugMode.o $(SYSLIBMAPPED)
+                ProgramInvoker.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
+                DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
 
 GRFDIFF      = GrfDiff
 GRFDIFF_OBJS = Main_GrfDiff.o GrfDiff.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
@@ -511,7 +513,8 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check_lib.o\
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                  MF_Operators_Util.o UnitexGetOpt.o ProgramInvoker.o Korean.o \
-                 Arabic.o AbstractDelaLoad.o CompressedDic.o LoadInf.o DebugMode.o $(SYSLIBMAPPED)
+                 Arabic.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
+                 DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
 
 MZREPAIRULP   = MzRepairUlp
 MZREPAIRULP_OBJS = Main_MzRepairUlp.o MzToolsUlp.o MzRepairUlp.o UnitexGetOpt.o Error.o Unicode.o Af_stdio.o ActivityLogger.o IOBuffer.o $(SYSLIBMAPPED)
@@ -537,7 +540,7 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o Activi
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                    UnitexGetOpt.o Tfst.o TfstStats.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
                    HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o AbstractDelaLoad.o \
-                   CompressedDic.o LoadInf.o DebugMode.o $(SYSLIBMAPPED)
+                   CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\
@@ -635,7 +638,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
                 Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o \
-                CompressedDic.o LoadInf.o Offsets.o Overlap.o DebugMode.o $(SYSLIBMAPPED)
+                CompressedDic.o LoadInf.o Offsets.o Overlap.o DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o Alphabet.o \
