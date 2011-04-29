@@ -839,51 +839,6 @@ while (input[pos]!='\0') {
 
 
 /**
- * Reads one line of the graph #n. The box content is stored into 'box_content' and
- * the outgoing transitions are stored into 'transitions'.
- * It returns 0 if the box is too large; 1 otherwise.
- */
-int read_grf_line(U_FILE* f,unichar* box_content,struct list_int* *transitions,int n,struct compilation_info* infos) {
-*transitions=NULL;
-unichar c;
-int n_sortantes;
-int i=0;
-/* We skip chars until we have read the '"' that starts the line */
-while (u_fgetc(f)!='"') {}
-/* Then we copy the box content, escaping the '"'found in it */
-while (((c=(unichar)u_fgetc(f))!='"') && (i<MAX_GRF_BOX_CONTENT)) {
-   box_content[i]=c;
-   if ((box_content[i]=='\\') && (i<MAX_GRF_BOX_CONTENT)) {
-	   i++;
-	   box_content[i]=(unichar)u_fgetc(f);
-	}
-   i++;
-}
-/* If the box content is too long */
-if (i>=MAX_GRF_BOX_CONTENT) {
-   error("ERROR in graph %S.grf:\n"
-         "Too many characters in box. The number of characters\n"
-         "per box should be lower than %d\n",
-         infos->graph_names->value[n],MAX_GRF_BOX_CONTENT);
-   return 0;
-}
-box_content[i]='\0';
-/* 3 %d because we skip the X and Y coordinates and then we read the number
- * of outgoing transitions */
-u_fscanf(f,"%d%d%d",&n_sortantes,&n_sortantes,&n_sortantes);
-/* Now, we read the transitions */
-int j;
-for (i=0;i<n_sortantes;i++) {
-   u_fscanf(f,"%d",&j);
-   *transitions=head_insert(j,*transitions);
-}
-/* Finally, we read the end of line character */
-u_fgetc(f);
-return 1;
-}
-
-
-/**
  * This function compiles the graph number #n and saves its states into the
  * output .fst2.
  */
