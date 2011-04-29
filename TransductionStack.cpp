@@ -506,7 +506,7 @@ int deal_with_output(unichar* output,struct locate_parameters* p,int *captured_c
 struct stack_unichar* stack=p->stack;
 int capture=capture_mode(p->output_variables);
 if (capture) {
-	stack=new_stack_unichar(64);
+	stack=new_stack_unichar(4096);
 	if (p->debug) {
 		/* In debug mode, an output to be captured must still be
 		 * added to the normal stack, to trace the explored grammar
@@ -521,7 +521,7 @@ if (capture) {
 if (!process_output(output,p,stack,capture && p->debug)) {
 	return 0;
 }
-if (capture_mode(p->output_variables)) {
+if (capture) {
 	stack->stack[stack->stack_pointer+1]='\0';
 	*captured_chars=add_raw_string_to_output_variables(p->output_variables,stack->stack);
 	free_stack_unichar(stack);
