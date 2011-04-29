@@ -156,17 +156,19 @@ while (list!=NULL) {
 
 
 /**
- * Removes the given pointer from the given list.
+ * Removes all elements that have a weight lesser than the given one.
+ * Note that the list is supposed to be made of elements that all
+ * have the same weight.
  */
-static struct parsing_info* remove_parsing_info(struct parsing_info* list,struct parsing_info* tmp,
+static void filter_lesser_weights(int weight,struct parsing_info* *list,
 									Abstract_allocator prv_alloc_recycle) {
-if (list==tmp) {
-	list=list->next;
+if (*list==NULL || (*list)->weight>=weight) return;
+struct parsing_info* tmp;
+while (*list!=NULL) {
+	tmp=*list;
 	free_parsing_info(tmp,prv_alloc_recycle);
-	return list;
+	(*list)=(*list)->next;
 }
-list->next=remove_parsing_info(list->next,tmp,prv_alloc_recycle);
-return list;
 }
 
 
@@ -180,34 +182,10 @@ struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct 
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
                                       vector_int* insertions,
                                       int weight,Abstract_allocator prv_alloc_recycle) {
+filter_lesser_weights(weight,&list,prv_alloc_recycle);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,prv_alloc_recycle);
-if (weight!=-1) {
-	/* If we have to deal with a match with a weight, we first have to check
-	 * if there already is another match with a weight */
-	struct parsing_info* tmp=list;
-	while (tmp!=NULL && tmp->weight==-1) {
-		tmp=tmp->next;
-	}
-	if (tmp==NULL) {
-		/* No match with a weight ? We add one then */
-		tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
-                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
-		tmp->next=list;
-		return tmp;
-	}
-	if (tmp->weight>=weight) {
-		/* If we already have a better weight, we don't do anything */
-		return list;
-	}
-	/* If the new weight is better, we have to remove tmp */
-	list=remove_parsing_info(list,tmp,prv_alloc_recycle);
-	tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
-	                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
-	tmp->next=list;
-	return tmp;
-}
 if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state
 	&& list->jamo==jamo /* We can because we only work on pointers on unique elements */
 	&& list->pos_in_jamo==pos_in_jamo) {
@@ -264,34 +242,10 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          unichar* jamo,int pos_in_jamo,
                                          vector_int* insertions,
                                          int weight,Abstract_allocator prv_alloc_recycle) {
+	filter_lesser_weights(weight,&list,prv_alloc_recycle);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,prv_alloc_recycle);
-if (weight!=-1) {
-	/* If we have to deal with a match with a weight, we first have to check
-	 * if there already is another match with a weight */
-	struct parsing_info* tmp=list;
-	while (tmp!=NULL && tmp->weight==-1) {
-		tmp=tmp->next;
-	}
-	if (tmp==NULL) {
-		/* No match with a weight ? We add one then */
-		tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
-                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
-		tmp->next=list;
-		return tmp;
-	}
-	if (tmp->weight>=weight) {
-		/* If we already have a better weight, we don't do anything */
-		return list;
-	}
-	/* If the new weight is better, we have to remove tmp */
-	list=remove_parsing_info(list,tmp,prv_alloc_recycle);
-	tmp=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
-	                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle);
-	tmp->next=list;
-	return tmp;
-}
 if ((list->position==pos) /* If the length is the same... */
     && (list->pos_in_token==pos_in_token)
     && (list->state_number==state)

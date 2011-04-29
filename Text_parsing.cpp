@@ -1813,6 +1813,22 @@ static unichar* get_token_sequence(struct locate_parameters*p,
 
 
 /**
+ * Filters the given match list to remove all matches that have a lesser weight.
+ * Note that the given match list is supposed to be made of matches that
+ * all have the same weight.
+ */
+void remove_matches_with_lesser_weights(int weight,struct match_list* *match_cache_first,
+										struct match_list* *match_cache_last,
+										Abstract_allocator prv_alloc) {
+if (*match_cache_first==NULL || (*match_cache_first)->weight>=weight) return;
+/* If the new weight is bigger, we must free the whole match list */
+free_match_list(*match_cache_first,prv_alloc);
+*match_cache_first=NULL;
+*match_cache_last=NULL;
+}
+
+
+/**
  * Stores the given match in a list. All matches will be processed later.
  */
 static void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_allocator prv_alloc) {
@@ -1827,32 +1843,12 @@ static void add_match(int end, unichar* output, struct locate_parameters* p, Abs
 		 * will rebuild the actual output parsing the full debug one */
 		z=p->stack->stack;
 	}
-	if (p->weight!=-1) {
-		/* If there is a weight, we must look for an existing match with a weight */
-		struct match_list* tmp=p->match_cache_first;
-		while (tmp!=NULL && tmp->weight==-1) {
-			tmp=tmp->next;
-		}
-		if (tmp!=NULL) {
-			/* If we have found a match with a weight */
-			if (tmp->weight>=p->weight) {
-				/* The existing weight is better, we do nothing */
-				return;
-			}
-			/* The new match is better, we use it */
-			free(tmp->output);
-			tmp->output=u_strdup(output);
-			tmp->weight=p->weight;
-			tmp->m.start_pos_in_token=start;
-			tmp->m.end_pos_in_token=end;
-			tmp->m.start_pos_in_char=-1;
-			tmp->m.end_pos_in_char=-1;
-			tmp->m.start_pos_in_letter=-1;
-			tmp->m.end_pos_in_letter=-1;
-			return;
-		}
+	remove_matches_with_lesser_weights(p->weight,&(p->match_cache_first),&(p->match_cache_last),prv_alloc);
+	if (p->match_cache_first!=NULL && p->match_cache_first->weight>p->weight) {
+		/* If we have to ignore this match because its weight is lesser
+		 * than the weight of the existing matches */
+		return;
 	}
-
 	struct match_list* m = new_match(start, end, z, p->weight, NULL, prv_alloc);
 	if (p->match_cache_first == NULL) {
 		p->match_cache_first = p->match_cache_last = m;
