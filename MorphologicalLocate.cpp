@@ -43,8 +43,6 @@
 static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
 		struct list_context*, struct locate_parameters*,
 		unichar*, int, unichar*);
-void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
-		struct list_context*, struct locate_parameters*);
 int input_is_token(Fst2Tag tag);
 static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 		int pos_in_token, struct parsing_info* *matches,
@@ -1224,7 +1222,7 @@ int state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int n_matches, /* number of sequences that have matched. It may be different from
+int *n_matches, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatory
  * explosions due to bad written grammars. */

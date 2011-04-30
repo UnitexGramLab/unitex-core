@@ -45,7 +45,7 @@
 
 /* Arbitrary value used as a limit. It is similar to 'MAX_MATCHES_AT_TOKEN_POS',
  * but it concerns each subgraph. */
-#define MAX_MATCHES_PER_SUBGRAPH 50
+#define MAX_MATCHES_PER_SUBGRAPH 200
 
 #define MAX_ERRORS 50  /* Maximal number of errors before exiting:
                           needed to avoid overflow of error buffers in Java GUI */
@@ -56,7 +56,7 @@
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p);
 void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
-void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int,struct list_context*,struct locate_parameters*);
+void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
 
 
 /**

@@ -165,7 +165,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
                 p->no_fail_fast=0;
                 p->weight=-1;
-				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, 0, NULL, p);
+                int n_matches=0;
+				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
 
 
 				int count_call_real = p->counting_step.count_call;
@@ -373,7 +374,7 @@ OptimizedFst2State current_state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
-int n_matches, /* number of sequences that have matched. It may be different from
+int *n_matches, /* number of sequences that have matched. It may be different from
  * the length of the 'matches' list if a given sequence can be
  * matched in several ways. It is used to detect combinatorial
  * explosions due to bad written grammars. */
@@ -438,7 +439,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				lti->pos_in_chars=0;
 
 				lti->matches=matches;
-				lti->n_matches=n_matches;
+				lti->n_matches=*n_matches;
 				lti->ctx=ctx;
 				lti->p=p;
 
@@ -543,7 +544,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			}
 		} else {
 			/* If we are in a subgraph */
-			if (n_matches == MAX_MATCHES_PER_SUBGRAPH) {
+			if (*n_matches >= MAX_MATCHES_PER_SUBGRAPH) {
 				/* If there are too much matches, we suspect an error in the grammar
 				 * like an infinite recursion */
 				error_at_token_pos(
@@ -554,7 +555,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			} else {
 				/* If everything is fine, we add this match to the match list of the
 				 * current graph level */
-				n_matches++;
+				(*n_matches)++;
 				p->stack->stack[stack_top + 1] = '\0';
 				if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
 					(*matches) = insert_if_different(pos, -1, -1, (*matches),
@@ -653,9 +654,10 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 				p->graph_depth ++ ;
 				p->weight=-1;
+				int n_matches_in_subgraph=0;
 				locate(/*graph_depth + 1,*/ /* Exploration of the subgraph */
 				       p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
-				       pos, &L, 0, NULL, /* ctx is set to NULL because the end of a context must occur in the
+				       pos, &L, &n_matches_in_subgraph, NULL, /* ctx is set to NULL because the end of a context must occur in the
 						 * same graph than its beginning */
 				       p);
 				p->graph_depth -- ;
@@ -668,7 +670,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					struct parsing_info* L_first = L;
 					/* If there is at least one match, we process the match list */
 					do {
-
 						/* We restore the settings that we had at the end of the subgraph exploration */
 						if (p->output_policy != IGNORE_OUTPUTS) {
 							u_strcpy(&(p->stack->stack[stack_top + 1]),
