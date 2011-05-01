@@ -692,31 +692,62 @@ merge_grf_states(mine,base,other,result,base_mine,base_other,f_conflicts,conflic
 
 
 /**
+ * Returns 1 if the only changes are cosmetic ones, i.e.
+ * grf header modifications and box moves; 0 otherwise.
+ */
+static int only_cosmetic_changes(int only_cosmetics,GrfDiff* diff) {
+if (!only_cosmetics) return 1;
+for (int i=0;i<diff->diff_ops->nbelems;i++) {
+	DiffOp* op=(DiffOp*)diff->diff_ops->tab[i];
+	if (op->op_type!=DIFF_PROPERTY && op->op_type!=DIFF_BOX_MOVED) return 0;
+}
+return 1;
+}
+
+
+/**
  * Returns the merged grf or NULL in case of unresolved conflicts. In such a case,
  * conflicts are described in f_conflicts.
  */
-static Grf* diff3_internal(U_FILE* f_conflicts,Grf* mine,Grf* base,Grf* other) {
+static Grf* diff3_internal(U_FILE* f_conflicts,Grf* mine,Grf* base,Grf* other,int only_cosmetics) {
 GrfDiff* base_mine=grf_diff(base,mine);
-if (base_mine->diff_ops->nbelems==0) {
+GrfDiff* base_other=grf_diff(base,other);
+GrfDiff* mine_other=grf_diff(mine,other);
+if (base_mine->diff_ops->nbelems==0 && only_cosmetic_changes(only_cosmetics,base_other)) {
 	/* base==mine ? => return other */
 	free_GrfDiff(base_mine);
+	free_GrfDiff(base_other);
+	free_GrfDiff(mine_other);
 	return dup_Grf(other);
 }
-GrfDiff* base_other=grf_diff(base,other);
-if (base_other->diff_ops->nbelems==0) {
+if (base_other->diff_ops->nbelems==0 && only_cosmetic_changes(only_cosmetics,base_mine)) {
 	/* base==other ? => return mine */
-	free_GrfDiff(base_mine);
-	free_GrfDiff(base_other);
-	return dup_Grf(mine);
-}
-GrfDiff* mine_other=grf_diff(mine,other);
-if (mine_other->diff_ops->nbelems==0) {
-	/* mine==other ? => return mine */
 	free_GrfDiff(base_mine);
 	free_GrfDiff(base_other);
 	free_GrfDiff(mine_other);
 	return dup_Grf(mine);
 }
+if (mine_other->diff_ops->nbelems==0) {
+	/* mine==other ? => return mine */
+	/* Note that we don't test cosmetic changes if mine=other, because
+	 * in case of equality, reporting a conflict is always pointless */
+	free_GrfDiff(base_mine);
+	free_GrfDiff(base_other);
+	free_GrfDiff(mine_other);
+	return dup_Grf(mine);
+}
+if (!only_cosmetic_changes(only_cosmetics,base_mine)
+	|| !only_cosmetic_changes(only_cosmetics,base_other)) {
+	/* If there is a non cosmetic change, we report a conflict, which
+	 * may be abusive if the non cosmetic changes are the same and could
+	 * eventually be merged, but this rare case may not be worth the coding
+	 * effort */
+	free_GrfDiff(base_mine);
+	free_GrfDiff(base_other);
+	free_GrfDiff(mine_other);
+	return NULL;
+}
+
 /* If we have to compare and merge different grf, we only need
  * the diffs obtained from base */
 free_GrfDiff(mine_other);
@@ -740,8 +771,8 @@ return result;
  * graph that results from the fusion. In case of conflicts,
  * it returns 1 and prints nothing.
  */
-int diff3(U_FILE* f,U_FILE* f_conflicts,Grf* mine,Grf* base,Grf* other) {
-Grf* result=diff3_internal(f_conflicts,mine,base,other);
+int diff3(U_FILE* f,U_FILE* f_conflicts,Grf* mine,Grf* base,Grf* other,int only_cosmetics) {
+Grf* result=diff3_internal(f_conflicts,mine,base,other,only_cosmetics);
 if (result==NULL) return 1;
 save_Grf(f,result);
 free_Grf(result);

@@ -41,6 +41,7 @@ const char* usage_GrfDiff3 =
          "OPTIONS:\n"
 		 "--output X: saves the result, if any, in X instead of printing it on the output\n"
 		 "--conflicts X: saves the description of the conflicts, if any, in X\n"
+		 "--only-cosmetic: reports a conflict for any change that is not purely cosmetic\n"
 		 "  -h/--help: this help\n"
          "\n"
          "Tries to merge <mine> and <other>. In case of success, the result is printed on the\n"
@@ -60,6 +61,7 @@ const char* optstring_GrfDiff3=":hEmL:";
 const struct option_TS lopts_GrfDiff3[]= {
       {"output",required_argument_TS,NULL,1},
       {"conflicts",required_argument_TS,NULL,2},
+      {"only-cosmetic",no_argument_TS,NULL,3},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -77,6 +79,7 @@ struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";
 char conflicts[FILENAME_MAX]="";
+int only_cosmetics=0;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;
@@ -88,6 +91,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&ind
 	   strcpy(conflicts,vars->optarg);
 	   break;
    }
+   case 3: only_cosmetics=1; break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_GrfDiff3[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -136,7 +140,7 @@ if (other==NULL) {
 	return 2;
 }
 free_OptVars(vars);
-int res=diff3(f,f_conflicts,mine,base,other);
+int res=diff3(f,f_conflicts,mine,base,other,only_cosmetics);
 if (f!=U_STDOUT) {
 	u_fclose(f);
 	if (res!=0) {
