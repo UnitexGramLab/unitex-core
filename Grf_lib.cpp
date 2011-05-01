@@ -333,7 +333,8 @@ GrfState* res=new_GrfState();
 res->box_content=u_strdup(s->box_content);
 res->x=s->x;
 res->y=s->y;
-res->transitions=vector_int_dup(s->transitions);
+res->box_number=s->box_number;
+vector_int_copy(res->transitions,s->transitions);
 return res;
 }
 

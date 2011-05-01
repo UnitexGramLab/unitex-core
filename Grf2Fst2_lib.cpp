@@ -842,6 +842,138 @@ while (input[pos]!='\0') {
 
 
 /**
+ * Takes a string of the form $[...$ and tests if it is a valid range expression.
+ * Returns 1 in case of success; 0 otherwise. For $[m,]$ n value is -1.
+ */
+static int test_range(unichar* s,int *m,int *n) {
+int len=0;
+if (1==u_sscanf(s,"$[%d]$%n",m,&len) && (*m)>=0 && s[len]=='\0') {
+	*n=*m;
+	return 1;
+}
+if (1==u_sscanf(s,"$[%d,]$%n",m,&len) && (*m)>=0 && s[len]=='\0') {
+	*n=-1;
+	return 1;
+}
+if (2==u_sscanf(s,"$[%d,%d]$%n",m,n,&len) && (*m)>=0 && (*n)>=0 && s[len]=='\0') {
+	return 1;
+}
+if (1==u_sscanf(s,"$[,%d]$%n",n,&len) && (*n)>=0 && s[len]=='\0') {
+	*m=1;
+	return 1;
+}
+return 0;
+}
+
+
+/**
+ * Do the actual duplication of the given box according to the given range.
+ */
+static void do_box_range_expansion(Grf* grf,ReverseTransitions* reverse,int box,int m,int n) {
+if (m==0) {
+	/* We first deal with the case of m=0 by adding transitions to skip the box */
+	m=1;
+	vector_int* v=reverse->t[box];
+	for (int i=0;i<v->nbelems;i++) {
+		int previous_state=v->tab[i];
+		for (int j=0;j<grf->states[box]->transitions->nbelems;j++) {
+			int dest_state=grf->states[box]->transitions->tab[j];
+			vector_int_add_if_absent(grf->states[previous_state]->transitions,dest_state);
+		}
+	}
+}
+/* First, we set the m mandatory copies of the box */
+int current=box;
+for (int i=1;i<m;i++) {
+	/* We copy the current box */
+	GrfState* current_state=grf->states[current];
+	GrfState* s=cpy_grf_state(grf->states[current]);
+	/* And we replace all its transitions to a single transition to the new one */
+	current=add_GrfState(grf,s);
+	current_state->transitions->nbelems=0;
+	vector_int_add(current_state->transitions,current);
+}
+/* Then, if n=-1 (no max limit), we just have to add a loop and return */
+if (n==-1) {
+	vector_int_add(grf->states[current]->transitions,current);
+	return;
+}
+/* Otherwise, we add up to n boxes */
+for (int i=m;i<n;i++) {
+	/* We copy the current box */
+	GrfState* current_state=grf->states[current];
+	GrfState* s=cpy_grf_state(grf->states[current]);
+	/* And we just add a transition to the new one */
+	current=add_GrfState(grf,s);
+	vector_int_add(current_state->transitions,current);
+}
+}
+
+
+/**
+ * If a box has an output starting with a range expression, it is replaced
+ * by the equivalent box duplication. Possible ranges expressions are:
+ * $[n]$ => exactly n times
+ * $[m,]$ => at least n times
+ * $[,n]$ => between 1 and n times
+ * $[m,n]$ => between m and n times
+ *
+ * Note that the function raises a fatal error if the box contains a
+ * transition to itself.
+ *
+ * Note also that this function does not apply to the initial and final states.
+ */
+static void expand_box_ranges(Grf* grf) {
+ReverseTransitions* reverse=compute_reverse_transitions(grf);
+int n=grf->n_states;
+for (int i=2;i<n;i++) {
+	GrfState* s=grf->states[i];
+	int m=1,n=1;
+	vector_ptr* lines=tokenize_box_content(s->box_content);
+	unichar* last=(unichar*)lines->tab[lines->nbelems-1];
+	if (last[0]=='/') {
+		/* If the last line starts with a slash, then the box has an output,
+		 * and we look for a range expression */
+		if (last[1]=='$' && last[2]=='[') {
+			int pos=3;
+			while (last[pos]!='\0' && last[pos]!='$') {
+				pos++;
+			}
+			if (last[pos]=='$') {
+				/* We don't care if the end of line was found, it's not
+				 * our business here */
+				unichar old=last[pos+1];
+				last[pos+1]='\0';
+				int ok=test_range(last+1,&m,&n);
+				if (!ok || (m==0 && n==0) || (n!=-1 && n<m)) {
+					fatal_error("Invalid range expression: %S\n",last+1);
+				}
+				/* If we have a valid range, we first test if the box has a
+				 * loop to itself, which would be an error */
+				if (-1!=vector_int_contains(s->transitions,i)) {
+					fatal_error("A box with a range %S cannot have a loop to itself\n",last+1);
+				}
+				last[pos+1]=old;
+								/* Then we adjust the output of the box */
+				int j=u_strlen(s->box_content)-u_strlen(last);
+				pos++;
+				do {
+					s->box_content[j++]=last[pos++];
+				} while (last[pos-1]!='\0');
+				s->box_content[j-1]='"';
+				s->box_content[j]='\0';
+				/* Now we can actually duplicate the box */
+				do_box_range_expansion(grf,reverse,i,m,n);
+			}
+		}
+	}
+	free_vector_ptr(lines,free);
+}
+free_ReverseTransitions(reverse);
+}
+
+
+/**
  * This function compiles the graph number #n and saves its states into the
  * output .fst2.
  */
@@ -866,6 +998,7 @@ if (grf==NULL) {
    if (n==0) return 0;
    return 1;
 }
+expand_box_ranges(grf);
 /* If necessary, we resize the graph that it can hold all the states */
 if (graph->capacity<grf->n_states) {
    set_state_array_capacity(graph,grf->n_states);
