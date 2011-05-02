@@ -83,8 +83,6 @@ typedef struct {
 
 Grf* new_Grf();
 void free_Grf(Grf*);
-GrfState* new_GrfState(const unichar* content,int x,int y,int box_number);
-GrfState* new_GrfState(const char* content,int x,int y,int box_number);
 GrfState* new_GrfState(const unichar* content,int x,int y,int rank,int box_number);
 GrfState* new_GrfState(const char* content,int x,int y,int rank,int box_number);
 void free_GrfState(GrfState*);

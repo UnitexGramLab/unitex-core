@@ -71,34 +71,12 @@ return s;
 /**
  * Creates a grf state.
  */
-GrfState* new_GrfState(const unichar* content,int x,int y,int box_number) {
-GrfState* s=new_GrfState();
-s->box_content=u_strdup(content);
-s->x=x;
-s->y=y;
-s->box_number=box_number;
-return s;
-}
-
-
-/**
- * Creates a grf state.
- */
-GrfState* new_GrfState(const char* content,int x,int y,int box_number) {
-GrfState* s=new_GrfState();
-s->box_content=u_strdup(content);
-s->x=x;
-s->y=y;
-s->box_number=box_number;
-return s;
-}
-
-
-/**
- * Creates a grf state.
- */
 GrfState* new_GrfState(const unichar* content,int x,int y,int rank,int box_number) {
-GrfState* s=new_GrfState(content,x,y,box_number);
+GrfState* s=new_GrfState();
+s->box_content=u_strdup(content);
+s->x=x;
+s->y=y;
+s->box_number=box_number;
 s->rank=rank;
 return s;
 }
@@ -108,7 +86,11 @@ return s;
  * Creates a grf state.
  */
 GrfState* new_GrfState(const char* content,int x,int y,int rank,int box_number) {
-GrfState* s=new_GrfState(content,x,y,box_number);
+GrfState* s=new_GrfState();
+s->box_content=u_strdup(content);
+s->x=x;
+s->y=y;
+s->box_number=box_number;
 s->rank=rank;
 return s;
 }

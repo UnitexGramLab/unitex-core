@@ -246,6 +246,7 @@ if (pos_Y==NULL) {
 	fatal_alloc_error("prepare_grf_for_saving");
 }
 for (int i=0;i<grf->n_states;i++) {
+	if (grf->states[i]->rank<0) error("%d\n",grf->states[i]->rank);
    pos_Y[grf->states[i]->rank]++;
 }
 prepare_grf_header(grf,grf->states[1]->x+300,200+height_indication*100,font,fontsize);
@@ -275,7 +276,7 @@ int max_transitions=get_maximum_difference(n_transitions_before_state,n_states);
 Transition* trans;
 /* We create initial state and set its transitions. We start at 2 because
  * 0 and 1 are respectively reserved for the initial and the final states. */
-add_GrfState(grf,new_GrfState("\"<E>\"",50,0,0));
+add_GrfState(grf,new_GrfState("\"<E>\"",50,0,0,0));
 int j=2;
 trans=tfst->automaton->states[0]->outgoing_transitions;
 while (trans!=NULL) {
@@ -283,7 +284,7 @@ while (trans!=NULL) {
    trans=trans->next;
 }
 /* We create the final state */
-add_GrfState(grf,new_GrfState("\"\"",(width_max+100),0,maximum_rank));
+add_GrfState(grf,new_GrfState("\"\"",(width_max+100),0,maximum_rank,1));
 /* Then, we save all the other grf states */
 Ustring*  content=new_Ustring();
 for (int i=0;i<n_states;i++) {
@@ -305,7 +306,7 @@ for (int i=0;i<n_states;i++) {
                t->m.start_pos_in_token,t->m.start_pos_in_char,t->m.start_pos_in_letter,
                t->m.end_pos_in_token,t->m.end_pos_in_char,t->m.end_pos_in_letter);
       }
-      int index=add_GrfState(grf,new_GrfState(content->str,pos_X[rank[i]],0,rank[i]));
+      int index=add_GrfState(grf,new_GrfState(content->str,pos_X[rank[i]],0,rank[i],grf->n_states));
       /* Now that we have created the grf state, we set its outgoing transitions */
       if (tfst->automaton->states[trans->state_number]->outgoing_transitions==NULL) {
          /* If the current fst2 transition points on the final state,
