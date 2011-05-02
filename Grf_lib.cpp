@@ -475,8 +475,8 @@ while (content[*pos]!='\0' && content[*pos]!='/' && content[*pos]!='+') {
 		}
 		u_strcat(tmp,content[*pos]);
 		(*pos)++;
-		if (content[(*pos)-1]=='"') {
-			/* If we have just read \" then the box line contains
+		if (content[(*pos)-1]=='"' && ((*pos)-2<0 || content[(*pos)-2]!='\\')) {
+			/* If we have just read \" (and not \\\") then the box line contains
 			 * a double quoted sequence that we have to read */
 			if (!read_quoted_sequence(content,pos,tmp)) return 0;
 		}
