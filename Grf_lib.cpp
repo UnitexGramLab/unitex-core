@@ -493,6 +493,28 @@ return 1;
 }
 
 
+static int is_variable_char(unichar c) {
+return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_');
+}
+
+
+/**
+ * Returns 1 if s is a start or end of variable
+ */
+static int is_variable_box(unichar* s)  {
+int pos=0;
+if (s[pos++]!='$') return 0;
+if (s[pos]=='|') pos++;
+while (is_variable_char(s[pos])) pos++;
+if (!is_variable_char(s[pos-1])) {
+	/* Empty variable  name ? */
+	return 0;
+}
+if (s[pos]!='(' && s[pos]!=')') return 0;
+return s[pos+1]=='\0';
+}
+
+
 /**
  * Returns a unichar* vector corresponding to raw box line contents.
  * No protected character has been unprotected, so that the
@@ -506,10 +528,17 @@ return 1;
 vector_ptr* tokenize_box_content(unichar* content) {
 if (content==NULL || content[0]!='"') return NULL;
 vector_ptr* v=new_vector_ptr();
-Ustring* s=new_Ustring();
 int l=u_strlen(content);
 /* We remove the ending double quote */
 content[l-1]='\0';
+if (!u_strcmp(content+1,"$<") || !u_strcmp(content+1,"$>")
+	|| !u_strcmp(content+1,"$[") || !u_strcmp(content+1,"$![") || !u_strcmp(content+1,"$]")
+	|| is_variable_box(content+1)) {
+	vector_ptr_add(v,u_strdup(content+1));
+	content[l-1]='"';
+	return v;
+}
+Ustring* s=new_Ustring();
 int pos=1;
 while (content[pos]!='\0') {
 	if (content[pos]=='/') {
