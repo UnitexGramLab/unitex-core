@@ -449,14 +449,10 @@ if (!skip_normal_tag(f,pos)) {
 	error("Invalid xml tag\n");
 	return 0;
 }
-if (!html) {
-	write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
-} else {
-	/* In html files, we replace tags by a space */
-	write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
-	(*new_pos)++;
-	u_fputc_raw(' ',f_out);
-}
+/* We replace tags by a space */
+write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
+(*new_pos)++;
+u_fputc_raw(' ',f_out);
 return 1;
 }
 
