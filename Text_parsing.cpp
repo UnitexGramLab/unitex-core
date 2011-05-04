@@ -1888,6 +1888,30 @@ while (*L != NULL) {
 (*L) = new_match(start, end, output, -1, NULL, prv_alloc);
 }
 
+static struct match_list* filter_on_weight_matches_with_same_start(struct match_list* l,int start,
+			int weight,int *dont_add_new_match,Abstract_allocator prv_alloc) {
+if (l==NULL) return NULL;
+if (l->m.start_pos_in_token==start) {
+	/* We have a match with the same start */
+	if (l->weight>weight) {
+		/* There is at least one match with a bigger weight, we must remove
+		 * the new match */
+		*dont_add_new_match=1;
+		return l;
+	}
+	if (l->weight<weight) {
+		/* The current match must be discarded */
+		struct match_list* tmp=l->next;
+		free_match_list_element(l,prv_alloc);
+		return filter_on_weight_matches_with_same_start(tmp,start,weight,dont_add_new_match,prv_alloc);
+	}
+	/* If both matches have the same weight, we do nothing but exploring the
+	 * remaining list */
+}
+l->next=filter_on_weight_matches_with_same_start(l->next,start,weight,dont_add_new_match,prv_alloc);
+return l;
+}
+
 
 /**
  * Adds a match to the global list of matches. The function takes into
@@ -1900,10 +1924,24 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 	int start = m->m.start_pos_in_token;
 	int end = m->m.end_pos_in_token;
 	unichar* output = m->output;
+	int weight=m->weight;
 	int dont_add_match;
+	/* When we a conflict between two weighted paths, one with a left context and
+	 * not the other, the two matches are processed at different times in this function,
+	 * so their weights have not been compared yet. To address this issue, we always
+	 * filter the existing match list when adding a new match according the following
+	 * rule: if there is a match starting at the same position than the new one,
+	 * then we filter them according to their weights */
+	dont_add_match=0;
+	p->match_list=filter_on_weight_matches_with_same_start(p->match_list,start,
+			weight,&dont_add_match,prv_alloc);
+	if (dont_add_match) {
+		/* There is already a match better than the new one, so we are done */
+		return;
+	}
 	if (p->match_list == NULL) {
 		/* If the match list was empty, we always can put the match in the list */
-		p->match_list = new_match(start, end, output, -1, NULL, prv_alloc);
+		p->match_list = new_match(start, end, output, weight, NULL, prv_alloc);
 		return;
 	}
 	switch (p->match_policy) {
@@ -1916,7 +1954,7 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 		p->match_list = eliminate_shorter_matches(p->match_list, start, end,
 				output, &dont_add_match, p, prv_alloc);
 		if (!dont_add_match) {
-			p->match_list = new_match(start, end, output, -1, p->match_list, prv_alloc);
+			p->match_list = new_match(start, end, output, weight, p->match_list, prv_alloc);
 		}
 		break;
 
@@ -1935,7 +1973,7 @@ static void real_add_match(struct match_list* m, struct locate_parameters* p, Ab
 		p->match_list = eliminate_longer_matches(p->match_list, start, end,
 				output, &dont_add_match, p, prv_alloc);
 		if (!dont_add_match) {
-			p->match_list = new_match(start, end, output, -1, p->match_list, prv_alloc);
+			p->match_list = new_match(start, end, output, weight, p->match_list, prv_alloc);
 		}
 		break;
 	}
@@ -2013,7 +2051,7 @@ static struct match_list* eliminate_longer_matches(struct match_list *ptr, int s
 
 
 /**
- * Does the as eliminate_longer_matches, but with shorter matches.
+ * Does the same as eliminate_longer_matches, but with shorter matches.
  */
 static struct match_list* eliminate_shorter_matches(struct match_list *ptr, int start,
 		int end, unichar* output, int *dont_add_match,
