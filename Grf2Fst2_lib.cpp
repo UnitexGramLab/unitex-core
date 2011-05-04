@@ -654,7 +654,13 @@ if (is_an_output) {
    u_sprintf(tmp,"%S/%S",token,output);
    /* In debug mode, we have to add the input */
    if (infos->debug && must_add_token_to_debug) {
-	   u_strcat(tmp,token);
+	   int start=0;
+	   if (token[0]=='@' && token[1]!='\0') {
+		   /* double-quoted token are prefixed by @, so we have to remove this
+		    * @ in the debug output */
+		   start++;
+	   }
+	   u_strcat(tmp,token+start);
 	   int size=u_strlen(tmp);
 	   tmp[size]=DEBUG_INFO_END_MARK;
 	   tmp[size+1]='\0';
@@ -682,7 +688,13 @@ while (!is_empty(u_tokens)) {
 	   int i;
 	   for (i=u_strlen(output)-1;output[i]!=DEBUG_INFO_COORD_MARK;i--);
 	   u_strcat(tmp,output+i);
-	   u_strcat(tmp,token);
+	   int start=0;
+	   if (token[0]=='@' && token[1]!='\0') {
+		   /* double-quoted token are prefixed by @, so we have to remove this
+		    * @ in the debug output */
+		   start++;
+	   }
+	   u_strcat(tmp,token+start);
 	   int size=u_strlen(tmp);
 	   tmp[size]=DEBUG_INFO_END_MARK;
 	   tmp[size+1]='\0';
