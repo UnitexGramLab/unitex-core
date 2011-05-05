@@ -792,7 +792,7 @@ while (EOF!=readline(line,f)) {
    free_list_int(ptr_copy);
    if (!is_a_simple_word(entry->inflected,parameters->tokenization_policy,alphabet)) {
       /* If the inflected form is a compound word */
-      if (is_DIC_pattern || is_CDIC_pattern) {
+	  if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
           * must note that all compound words can be matched by them */
          add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy);

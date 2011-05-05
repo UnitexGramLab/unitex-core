@@ -263,7 +263,7 @@ if (alphabet[0]!='\0') {
 	add_long_option(invoker_Locate,"alphabet",alphabet);
 }
 if (char_by_char) {
-	add_argument(invoker_Tokenize,"-c");
+	add_argument(invoker_Locate,"-c");
 }
 add_argument(invoker_Locate,fst2);
 /* Concord */
