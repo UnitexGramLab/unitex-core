@@ -188,7 +188,7 @@ if (output[0]!='\0') {
 		fatal_error("Cannot open output file %s\n",output);
 	}
 }
-char stdout[FILENAME_MAX];
+char fake_stdout[FILENAME_MAX];
 char txt[FILENAME_MAX];
 char snt[FILENAME_MAX];
 char ind[FILENAME_MAX];
@@ -196,10 +196,10 @@ char concord[FILENAME_MAX];
 char fst2[FILENAME_MAX];
 char offsets_in[FILENAME_MAX];
 char offsets_out[FILENAME_MAX];
-sprintf(stdout,"%s/stdout",working_dir);
-U_STDOUT=u_fopen(UTF8,stdout,U_WRITE);
+sprintf(fake_stdout,"%s/stdout",working_dir);
+U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
 if (U_STDOUT==NULL) {
-	fatal_error("Cannot create file %s\n",stdout);
+	fatal_error("Cannot create file %s\n",fake_stdout);
 }
 sprintf(txt,"%s/grf_unit_test.txt",working_dir);
 sprintf(snt,"%s/grf_unit_test_snt",working_dir);
