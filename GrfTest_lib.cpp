@@ -104,7 +104,7 @@ if (2!=u_sscanf(tmp,GRF_UNIT_TEST_PFX"%C:%C@%n",&a,&b,&n) || tmp[n]!='\0'
 	goto end;
 }
 if (lines->nbelems!=3 && (output_policy==MERGE_OUTPUTS || output_policy==REPLACE_OUTPUTS)) {
-	u_sprintf(error_msg,"Missing output line in unit test with output: %S\n",tmp);
+	u_sprintf(error_msg,"Missing output line in unit test requiring output: %S %S\n",tmp,(unichar*)(lines->tab[1]));
 	goto end;
 }
 tmp=(unichar*)lines->tab[1];
@@ -131,9 +131,17 @@ if (tmp[n]!='\0' && P_OK!=parse_string(tmp,&n,text+end+1,P_EMPTY)) {
 	u_strcatf(error_msg,"It should be of the form xxx<yyy>zzz\n");
 	goto end;
 }
-if (lines->nbelems==3) {
+if (lines->nbelems!=2) {
+	if (lines->nbelems!=3) {
+		u_sprintf(error_msg,"Invalid unit test with too many lines\n");
+		goto end;
+	}
 	/* If there is an output */
 	tmp=(unichar*)lines->tab[2];
+	if (output_policy!=MERGE_OUTPUTS && output_policy!=REPLACE_OUTPUTS) {
+		u_sprintf(error_msg,"Invalid unit test with unexpected output: __%S__\n",tmp);
+		goto end;
+	}
 	output=u_strdup(tmp);
 	n=0;
 	if (P_OK!=parse_string(tmp,&n,output,P_EMPTY)) {
@@ -207,7 +215,7 @@ while (EOF!=readline(line,f)) {
 	if (t->must_match==0 && start==t->start && end==t->end) {
 		/* If we have a match when we did not want, we are done */
 		u_fprintf(f_error,"Test failed in graph %s:\n",grf);
-		u_fprintf(f_error,"\"%S\" matched when it was not supposed to\n",t->text);
+		u_fprintf(f_error,"\"%S\" matched when it was not supposed to\n\n",t->text);
 		match=1;
 		break;
 	}
@@ -226,11 +234,11 @@ while (EOF!=readline(line,f)) {
 if (!match && t->must_match) {
 	if (quite_match) {
 		u_fprintf(f_error,"Test failed in graph %s:\n",grf);
-		u_fprintf(f_error,"\"%S\" was matched but with bad output \"%S\" (expected=\"%S\")\n",
+		u_fprintf(f_error,"\"%S\" was matched but with bad output \"%S\" (expected=\"%S\")\n\n",
 				t->text,bad,t->expected_output);
 	} else {
 		u_fprintf(f_error,"Test failed in graph %s:\n",grf);
-		u_fprintf(f_error,"\"%S\" was not matched\n",t->text);
+		u_fprintf(f_error,"\"%S\" was not matched\n\n",t->text);
 	}
 }
 free_Ustring(line);
