@@ -443,26 +443,16 @@ for (int priority=1;priority<4;priority++) {
             int export_in_morpho_dic=DONT_PRODUCE_MORPHO_DIC;
             MatchPolicy matchPolicy=LONGEST_MATCHES;
             analyse_fst2_graph_options(tmp,l,&outputPolicy,&export_in_morpho_dic,&matchPolicy);
-            /*if (l>0 && (tmp[l]=='b' || tmp[l]=='B' || tmp[l]=='z' || tmp[l]=='Z')
-                  && (tmp[l-1]=='-' ||
-                        (l>1 && (tmp[l-1]=='r' || tmp[l-1]=='R') && tmp[l-2]=='-'))) {
-               export_in_morpho_dic=PRODUCE_MORPHO_DIC_AT_THE_END;
-               if (tmp[l]=='z' || tmp[l]=='Z') {
-                  export_in_morpho_dic=PRODUCE_MORPHO_DIC_NOW;
-               }
-               l--;
-            }
-            if (l>0 && (tmp[l]=='r' || tmp[l]=='R') && tmp[l-1]=='-') {
-               outputPolicy=REPLACE_OUTPUTS;
-            }*/
             u_printf("Applying grammar %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,
-            		text,argv[i],alph,outputPolicy,matchPolicy,morpho_dic,1,is_korean,arabic_rules,negation_operator);
+            if (0!=launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,
+            		text,argv[i],alph,outputPolicy,matchPolicy,morpho_dic,1,is_korean,arabic_rules,negation_operator)) {
+            	ret=1;
+            }
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

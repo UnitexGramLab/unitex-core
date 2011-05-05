@@ -473,6 +473,29 @@ GRFDIFF3      = GrfDiff3
 GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
 			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o $(SYSLIBMAPPED)
 
+GRFTEST      = GrfTest
+GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
+			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o File.o \
+			Overlap.o NormalizeAsRoutine.o String_hash.o StringParsing.o AbstractAllocator.o\
+			DELA.o Alphabet.o CompressedDic.o LoadInf.o List_ustring.o \
+			AbstractDelaLoad.o ProgramInvoker.o Fst2Txt.o Fst2TxtAsRoutine.o \
+			Fst2Txt_TokenTree.o Transitions.o Symbol.o LanguageDefinition.o \
+			Tagset.o List_int.o TransductionStack.o Stack_unichar.o VariableUtils.o \
+			TransductionVariables.o OutputTransductionVariables.o \
+			DicVariables.o Korean.o HashTable.o ParsingInfo.o SingleGraph.o \
+			BitArray.o FIFO.o BitMasks.o Buffer.o Fst2Automaton.o ElagFstFilesIO.o\
+			Tfst.o TfstStats.o Fst2.o Pattern.o AbstractFst2Load.o \
+			Tokenize.o Dico.o Snt.o Text_tokens.o ApplyDic.o Match.o \
+			CompoundWordHashTable.o Tokenization.o LocateMatches.o \
+			SortTxt.o Thai.o Compress.o DictionaryTree.o \
+			AutomatonDictionary2Bin.o LocatePattern.o Locate.o \
+			Text_parsing.o DebugMode.o LocateCache.o UserCancelling.o \
+			MorphologicalFilters.o Contexts.o MorphologicalLocate.o Arabic.o \
+			List_pointer.o LocateTrace.o PatternTree.o LocateFst2Tags.o \
+			CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o\
+			Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
+			NewLineShifts.o $(SYSLIBMAPPED)
+
 IMPLODETFST      = ImplodeTfst
 IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Tfst.o File.o SingleGraph.o\
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
@@ -694,7 +717,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
-                  Seq2Grf.o GrfBeauty.o $(SYSLIBMAPPED)
+                  Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -726,7 +749,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
-                  GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o $(SYSLIBMAPPED)
+                  GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o $(SYSLIBMAPPED)
 
 
 ################################
@@ -758,7 +781,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
-		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF)
+		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST)
 
 #PROGS = $(TEST)
 
@@ -774,7 +797,8 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
-		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)
+		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)\
+		$(SEQ2GRF_OBJS) $(GRFTEST_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1133,6 +1157,9 @@ $(BIN_DIR)$(GRFDIFF)$(EXTENSION): $(GRFDIFF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFDIFF3)$(EXTENSION): $(GRFDIFF3_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(GRFTEST)$(EXTENSION): $(GRFTEST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)

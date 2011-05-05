@@ -1,0 +1,370 @@
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2011 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "Unicode.h"
+#include "Alphabet.h"
+#include "Copyright.h"
+#include "Error.h"
+#include "UnitexGetOpt.h"
+#include "GrfTest.h"
+#include "ProgramInvoker.h"
+#include "Normalize.h"
+#include "Fst2Txt.h"
+#include "Tokenize.h"
+#include "Dico.h"
+#include "Grf2Fst2.h"
+#include "Locate.h"
+#include "Concord.h"
+#include "DirHelper.h"
+#include "Grf_lib.h"
+#include "GrfTest_lib.h"
+
+
+#define PFX_TOKENIZE "T:"
+#define PFX_DICO "D:"
+#define PFX_GRF2FST2 "G:"
+#define PFX_LOCATE "L:"
+
+const char* optstring_GrfTest=":ho:d:a:w:c";
+
+const char* usage_GrfTest =
+         "Usage: GrfTest [OPTIONS] <grf_1> [<grf_2> <grf_3> ...]\n"
+         "\n"
+         "  <grf_i>: .grf graphs to be tested\n"
+         "\n"
+         "OPTIONS:\n"
+		 "  -o OUT: file where to report errors (default=stderr)\n"
+		 "  -d DIC: the list of dictionaries to be applied by Dico, separated\n"
+		 "             with semi-colons\n"
+		 "  -a ALPH: alphabet file to use for all programs\n"
+		 "  -w DIR: working directory to use\n"
+		 "  -c: tells all programs that we work in char by char mode\n"
+		 "\n"
+		 "  -h/--help: this help\n"
+         "\n"
+         "Look for unit test patterns in the given grf and runs those tests.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_GrfTest);
+}
+
+
+static struct option_TS create_option(char *name,int has_arg,int *flag,int val) {
+struct option_TS opt={name,has_arg,flag,val};
+return opt;
+}
+
+
+static int get_n_options(const struct option_TS* opt) {
+int i=0;
+while (opt[i].name!=NULL || opt[i].has_arg!=0 || opt[i].flag!=NULL || opt[i].val!=0) i++;
+return i;
+}
+
+
+static void add_options(struct option_TS* opt,int *n,const struct option_TS* lopts,const char* pfx) {
+int i=0;
+while (lopts[i].name!=NULL || lopts[i].has_arg!=0 || lopts[i].flag!=NULL || lopts[i].val!=0) {
+	char* tmp=(char*)malloc(sizeof(char)*(strlen(pfx)+strlen(lopts[i].name)+1));
+	if (tmp==NULL) {
+		fatal_alloc_error("add_options");
+	}
+	sprintf(tmp,"%s%s",pfx,lopts[i].name);
+	opt[*n].name=tmp;
+	opt[*n].has_arg=lopts[i].has_arg;
+	opt[*n].flag=NULL;
+	opt[*n].val=*n;
+	(*n)++;
+	i++;
+}
+}
+
+struct option_TS* filter_options() {
+int size=1+get_n_options(lopts_Tokenize)+get_n_options(lopts_Dico)
+		+get_n_options(lopts_Grf2Fst2)+get_n_options(lopts_Locate);
+struct option_TS* opt=(struct option_TS*)malloc((size+1)*sizeof(struct option_TS));
+if (opt==NULL) {
+	fatal_alloc_error("filter_options");
+}
+int current=0;
+add_options(opt,&current,lopts_Tokenize,PFX_TOKENIZE);
+add_options(opt,&current,lopts_Dico,PFX_DICO);
+add_options(opt,&current,lopts_Grf2Fst2,PFX_GRF2FST2);
+add_options(opt,&current,lopts_Locate,PFX_LOCATE);
+opt[current]=create_option(NULL,0,NULL,0);
+return opt;
+}
+
+struct option_TS* lopts_GrfTest=filter_options();
+
+
+
+int main_GrfTest(int argc,char* const argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+ProgramInvoker* invoker_Normalize=new_ProgramInvoker(main_Normalize,"Normalize");
+ProgramInvoker* invoker_Tokenize=new_ProgramInvoker(main_Tokenize,"Tokenize");
+ProgramInvoker* invoker_Dico=new_ProgramInvoker(main_Dico,"Dico");
+ProgramInvoker* invoker_Grf2Fst2=new_ProgramInvoker(main_Grf2Fst2,"Grf2Fst2");
+ProgramInvoker* invoker_Locate=new_ProgramInvoker(main_Locate,"Locate");
+ProgramInvoker* invoker_Concord=new_ProgramInvoker(main_Concord,"Concord");
+char dic_list[FILENAME_MAX]="";
+char alphabet[FILENAME_MAX]="";
+char working_dir[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+U_FILE* f_output=U_STDERR;
+U_FILE* backup_stdout=U_STDOUT;
+int char_by_char=0;
+int val,index=-1;
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index,vars))) {
+   switch(val) {
+   case 'h': usage(); return 0;
+   case 'o': strcpy(output,vars->optarg); break;
+   case 'd': strcpy(dic_list,vars->optarg); break;
+   case 'a': strcpy(alphabet,vars->optarg); break;
+   case 'w': strcpy(working_dir,vars->optarg); break;
+   case 'c': char_by_char=1; break;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
+             else fatal_error("Missing argument for option --%s\n",lopts_Normalize[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
+             else fatal_error("Invalid option --%s\n",vars->optarg);
+             break;
+   default: {
+	   if (index==-1) {
+		   fatal_error("Internal error in main_GrfTest\n");
+	   }
+	   if (strstr(lopts_GrfTest[index].name,PFX_TOKENIZE)==lopts_GrfTest[index].name) {
+		   add_long_option(invoker_Tokenize,lopts_GrfTest[index].name+strlen(PFX_TOKENIZE),vars->optarg);
+	   } else if (strstr(lopts_GrfTest[index].name,PFX_DICO)==lopts_GrfTest[index].name) {
+		   add_long_option(invoker_Dico,lopts_GrfTest[index].name+strlen(PFX_DICO),vars->optarg);
+	   } else if (strstr(lopts_GrfTest[index].name,PFX_GRF2FST2)==lopts_GrfTest[index].name) {
+		   add_long_option(invoker_Grf2Fst2,lopts_GrfTest[index].name+strlen(PFX_GRF2FST2),vars->optarg);
+	   } else if (strstr(lopts_GrfTest[index].name,PFX_LOCATE)==lopts_GrfTest[index].name) {
+		   add_long_option(invoker_Locate,lopts_GrfTest[index].name+strlen(PFX_LOCATE),vars->optarg);
+	   }
+   }
+   }
+   index=-1;
+}
+if (vars->optind==argc) {
+	/* If there is no .grf we report no error, in order not
+	 * to block test procedures if the program is called with *.grf
+	 * on an empty directory */
+	goto end;
+}
+if (working_dir[0]=='\0') {
+	fatal_error("You must specify a working directory\n");
+}
+if (output[0]!='\0') {
+	f_output=u_fopen(UTF8,output,U_WRITE);
+	if (f_output==NULL) {
+		fatal_error("Cannot open output file %s\n",output);
+	}
+}
+char stdout[FILENAME_MAX];
+char txt[FILENAME_MAX];
+char snt[FILENAME_MAX];
+char ind[FILENAME_MAX];
+char concord[FILENAME_MAX];
+char fst2[FILENAME_MAX];
+char offsets_in[FILENAME_MAX];
+char offsets_out[FILENAME_MAX];
+sprintf(stdout,"%s/stdout",working_dir);
+U_STDOUT=u_fopen(UTF8,stdout,U_WRITE);
+if (U_STDOUT==NULL) {
+	fatal_error("Cannot create file %s\n",stdout);
+}
+sprintf(txt,"%s/grf_unit_test.txt",working_dir);
+sprintf(snt,"%s/grf_unit_test_snt",working_dir);
+sprintf(ind,"%s/grf_unit_test_snt/concord.ind",working_dir);
+sprintf(concord,"%s/grf_unit_test_snt/concord.txt",working_dir);
+mkDirPortable(snt);
+sprintf(snt,"%s/grf_unit_test.snt",working_dir);
+sprintf(fst2,"%s/test.fst2",working_dir);
+/* We prepare all the invokers */
+int n_offsets;
+n_offsets=0;
+/* Normalize */
+add_argument(invoker_Normalize,txt);
+sprintf(offsets_out,"%s/offsets%d.txt",working_dir,n_offsets);
+add_long_option(invoker_Normalize,"output_offsets",offsets_out);
+n_offsets++;
+/* Tokenize */
+add_argument(invoker_Tokenize,snt);
+if (alphabet[0]!='\0') {
+	/* If there is a global alphabet option, we use it */
+	add_long_option(invoker_Tokenize,"alphabet",alphabet);
+}
+if (char_by_char) {
+	add_argument(invoker_Tokenize,"-c");
+}
+sprintf(offsets_in,"%s/offsets%d.txt",working_dir,n_offsets-1);
+add_long_option(invoker_Tokenize,"input_offsets",offsets_in);
+sprintf(offsets_out,"%s/offsets%d.txt",working_dir,n_offsets);
+add_long_option(invoker_Tokenize,"output_offsets",offsets_out);
+n_offsets++;
+/* Dico */
+if (dic_list[0]=='\0') {
+	free_ProgramInvoker(invoker_Dico);
+	invoker_Dico=NULL;
+} else {
+	add_long_option(invoker_Dico,"text",snt);
+	if (alphabet[0]!='\0') {
+		/* If there is a global alphabet option, we use it */
+		add_long_option(invoker_Tokenize,"alphabet",alphabet);
+	}
+	int pos=0,start,done=0;
+	while (!done) {
+		start=pos;
+		while (dic_list[pos]!='\0' && dic_list[pos]!=';') pos++;
+		if (dic_list[pos]=='\0') done=1;
+		dic_list[pos]='\0';
+		add_argument(invoker_Dico,dic_list+start);
+		if (!done) pos++;
+	}
+}
+/* Grf2Fst2 */
+add_argument(invoker_Grf2Fst2,"-y");
+add_long_option(invoker_Grf2Fst2,"output",fst2);
+if (alphabet[0]!='\0') {
+	/* If there is a global alphabet option, we use it */
+	add_long_option(invoker_Grf2Fst2,"alphabet",alphabet);
+}
+/* Locate */
+add_long_option(invoker_Locate,"text",snt);
+if (alphabet[0]!='\0') {
+	/* If there is a global alphabet option, we use it */
+	add_long_option(invoker_Locate,"alphabet",alphabet);
+}
+if (char_by_char) {
+	add_argument(invoker_Tokenize,"-c");
+}
+add_argument(invoker_Locate,fst2);
+/* Concord */
+add_argument(invoker_Concord,ind);
+add_long_option(invoker_Concord,"uima",offsets_out);
+
+/* Now we process the grf files */
+U_FILE* f;
+int ret;
+char line[4096];
+ret=0;
+for (int i=vars->optind;i<argc;i++) {
+	u_fprintf(backup_stdout,"Testing graph %s\n",argv[i]);
+	Grf* grf=load_Grf(argv[i]);
+	if (grf==NULL) {
+		error("Cannot load graph %s\n",argv[i]);
+		continue;
+	}
+	vector_ptr* tests=get_grf_unit_tests(grf,argv[i],f_output);
+	free_Grf(grf);
+	if (tests==NULL) {
+		goto next;
+	}
+	add_argument(invoker_Grf2Fst2,argv[i]);
+	if (invoke(invoker_Grf2Fst2)) {
+		error("Failure: cannot compile graph %s\n",argv[i]);
+		ret=1;
+		goto next;
+	}
+	/* We clean the graph name for the next grf */
+	remove_last_argument(invoker_Grf2Fst2);
+	/* And we launch the loop on all tests */
+	for (int j=0;j<tests->nbelems;j++) {
+		GrfUnitTest* t=(GrfUnitTest*)(tests->tab[j]);
+		f=u_fopen(UTF16_LE,txt,U_WRITE);
+		if (f==NULL) {
+			fatal_error("Cannot create file %s\n",txt);
+		}
+		u_fprintf(f,"%S",t->text);
+		u_fclose(f);
+		if (invoke(invoker_Normalize)) {
+			build_command_line(invoker_Normalize,line);
+			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+		}
+		if (invoke(invoker_Tokenize)) {
+			build_command_line(invoker_Tokenize,line);
+			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+		}
+		if (invoker_Dico!=NULL) {
+			if (invoke(invoker_Dico)) {
+				build_command_line(invoker_Dico,line);
+				fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+			}
+		}
+		/* We have to adjust Locate parameters for the current test */
+		switch(t->output_policy) {
+		case IGNORE_OUTPUTS: add_argument(invoker_Locate,"-I"); break;
+		case MERGE_OUTPUTS: add_argument(invoker_Locate,"-M"); break;
+		case REPLACE_OUTPUTS: add_argument(invoker_Locate,"-R"); break;
+		default: fatal_error("Internal error: invalid output policy in unit test\n");
+		}
+		switch(t->match_policy) {
+		case SHORTEST_MATCHES: add_argument(invoker_Locate,"-S"); break;
+		case LONGEST_MATCHES: add_argument(invoker_Locate,"-L"); break;
+		case ALL_MATCHES: add_argument(invoker_Locate,"-A"); break;
+		default: fatal_error("Internal error: invalid match policy in unit test\n");
+		}
+		if (invoke(invoker_Locate)) {
+			build_command_line(invoker_Locate,line);
+			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+		}
+		/* And we clean Locate parameters for the next test */
+		remove_last_argument(invoker_Locate);
+		remove_last_argument(invoker_Locate);
+		if (invoke(invoker_Concord)) {
+			build_command_line(invoker_Concord,line);
+			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+		}
+		if (!check_test_results(t,concord,argv[i],f_output)) ret=1;
+	}
+	next:
+	/* Don't forget to free the tests */
+	free_vector_ptr(tests,(void(*)(void*))free_GrfUnitTest);
+}
+
+end:
+u_fprintf(backup_stdout,"Completed: %s\n",(ret==0)?"success":"some tests failed");
+/* As we made malloc to construct the option array, we have some free to do */
+int n=get_n_options(lopts_GrfTest);
+for (int i=0;i<n;i++) {
+	free((void*)lopts_GrfTest[i].name);
+}
+free(lopts_GrfTest);
+u_fclose(U_STDOUT);
+if (f_output!=U_STDERR) u_fclose(f_output);
+free_ProgramInvoker(invoker_Normalize);
+free_ProgramInvoker(invoker_Tokenize);
+free_ProgramInvoker(invoker_Dico);
+free_ProgramInvoker(invoker_Grf2Fst2);
+free_ProgramInvoker(invoker_Locate);
+free_ProgramInvoker(invoker_Concord);
+free_OptVars(vars);
+return ret;
+}

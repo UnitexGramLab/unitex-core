@@ -19,33 +19,30 @@
  *
  */
 
-#ifndef ProgramInvokerH
-#define ProgramInvokerH
+#ifndef GrfTest_libH
+#define GrfTest_libH
 
-/**
- * This library provides an easy way to build the argc and argv parameters
- * needed by any main_Foo function.
- */
-
+#include "Unicode.h"
+#include "Grf_lib.h"
 #include "Vector.h"
-#include "Ustring.h"
+#include "LocateConstants.h"
 
-typedef int (*MAIN_FUNCTION)(int argc,char* const argv[]);
+#define GRF_UNIT_TEST_PFX "@TEST:"
 
 typedef struct {
-   MAIN_FUNCTION main;
-   vector_ptr* args;
-} ProgramInvoker;
+	unichar* text;
+	int start,end;
+	int must_match;
+	OutputPolicy output_policy;
+	MatchPolicy match_policy;
+	unichar* expected_output;
+} GrfUnitTest;
 
 
-ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name);
-void free_ProgramInvoker(ProgramInvoker*);
-void add_argument(ProgramInvoker* invoker,const char* arg);
-void add_long_option(ProgramInvoker* invoker,const char* opt_name,const char* opt_value);
-void remove_last_argument(ProgramInvoker* invoker);
-int invoke(ProgramInvoker* invoker);
-int invoke_as_new_process(ProgramInvoker* invoker);
-void build_command_line(ProgramInvoker* invoker,char* line);
-
+GrfUnitTest* new_GrfUnitTest();
+void free_GrfUnitTest(GrfUnitTest* test);
+vector_ptr* get_grf_unit_tests(Grf* grf,char* grf_name,U_FILE* f_error);
+int check_test_results(GrfUnitTest* t,char* concord,char* grf,U_FILE* f_error);
 
 #endif
+

@@ -68,13 +68,76 @@ vector_ptr_add(invoker->args,tmp);
 
 
 /**
+ * Add the given option to the invoker as an argument of the form:
+ *
+ *    --opt_name=opt_value
+ *
+ * or
+ *    --opt_name
+ *
+ * if opt_value is NULL.
+ */
+void add_long_option(ProgramInvoker* invoker,const char* opt_name,const char* opt_value) {
+if (opt_name==NULL) {
+   fatal_error("NULL argument in new_ProgramInvoker\n");
+}
+int size=2+strlen(opt_name)+1;
+if (opt_value!=NULL) {
+	size=size+1+strlen(opt_value);
+}
+char* tmp=(char*)malloc(size*sizeof(char));
+if (tmp==NULL) {
+   fatal_alloc_error("add_long_option");
+}
+if (opt_value==NULL) {
+	sprintf(tmp,"--%s",opt_name);
+} else {
+	sprintf(tmp,"--%s=%s",opt_name,opt_value);
+}
+vector_ptr_add(invoker->args,tmp);
+}
+
+
+/**
+ * Removes the last argument of the given invoker.
+ */
+void remove_last_argument(ProgramInvoker* invoker) {
+if (invoker->args->nbelems==0) {
+	fatal_error("remove_last_argument: cannot remove an argument from an empty invoker\n");
+}
+free(invoker->args->tab[--(invoker->args->nbelems)]);
+invoker->args->tab[invoker->args->nbelems]=NULL;
+}
+
+
+
+/**
  * Invoke the main function.
  */
 int invoke(ProgramInvoker* invoker) {
 if (invoker->main==NULL) {
    fatal_error("NULL main pointer in invoke\n");
 }
-return invoker->main(invoker->args->nbelems,(char**)(invoker->args->tab));
+int argc=invoker->args->nbelems;
+/* We duplicate the argv array, since the caller may not want
+ * the arguments to be reordered by getopt */
+char** argv=(char**)malloc((argc+1)*sizeof(char*));
+if (argv==NULL) {
+	fatal_alloc_error("invoke");
+}
+for (int i=0;i<argc;i++) {
+	argv[i]=strdup((char*)(invoker->args->tab[i]));
+	if (argv[i]==NULL) {
+		fatal_alloc_error("invoke");
+	}
+}
+argv[argc]=NULL;
+int ret=invoker->main(argc,argv);
+for (int i=0;i<argc;i++) {
+	free(argv[i]);
+}
+free(argv);
+return ret;
 }
 
 

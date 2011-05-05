@@ -59,7 +59,6 @@ void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
                            Korean* korean,struct l_morpho_t* morpho,
                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                            Dictionary* d) {
-int size_line;
 int line_number=0;
 struct dela_entry* entries[MAX_PARTS];
 int n_parts;

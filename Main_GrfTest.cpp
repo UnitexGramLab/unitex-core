@@ -19,33 +19,15 @@
  *
  */
 
-#ifndef ProgramInvokerH
-#define ProgramInvokerH
+#include "IOBuffer.h"
+#include "GrfTest.h"
 
-/**
- * This library provides an easy way to build the argc and argv parameters
- * needed by any main_Foo function.
- */
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-#include "Vector.h"
-#include "Ustring.h"
+return main_GrfTest(argc,argv);
+}
 
-typedef int (*MAIN_FUNCTION)(int argc,char* const argv[]);
-
-typedef struct {
-   MAIN_FUNCTION main;
-   vector_ptr* args;
-} ProgramInvoker;
-
-
-ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name);
-void free_ProgramInvoker(ProgramInvoker*);
-void add_argument(ProgramInvoker* invoker,const char* arg);
-void add_long_option(ProgramInvoker* invoker,const char* opt_name,const char* opt_value);
-void remove_last_argument(ProgramInvoker* invoker);
-int invoke(ProgramInvoker* invoker);
-int invoke_as_new_process(ProgramInvoker* invoker);
-void build_command_line(ProgramInvoker* invoker,char* line);
-
-
-#endif

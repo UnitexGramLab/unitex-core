@@ -693,22 +693,6 @@ remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
 info->d=new_Dictionary(name_bin,name_inf);
 if (info->d==NULL) return 1;
-#if 0
-/* We load the .bin file */
-info->bin=load_abstract_BIN_file(name_bin,&(info->bin_free));
-if (info->bin==NULL) {
-   error("Cannot open %s\n",name_bin);
-   return 1;
-}
-/* We load the .inf file */
-info->inf=load_abstract_INF_file(name_inf,&(info->inf_free));
-if (info->inf==NULL) {
-   free_abstract_BIN(info->bin,&info->bin_free);
-   error("Cannot open %s\n",name_inf);
-   return 1;
-}
-#endif
-
 info->word_array=new_word_struct_array(info->tokens->N);
 /* And then we look simple and then compound words.
  * IMPORTANT: it is crucial to look for simple words first, since
@@ -731,10 +715,6 @@ u_printf("%2.8f seconds\n",elapsedTime);
 free_word_struct_array(info->word_array);
 free_Dictionary(info->d);
 info->d=NULL;
-#if 0
-free_abstract_INF(info->inf,&info->inf_free);
-free_abstract_BIN(info->bin,&info->bin_free);
-#endif
 return 0;
 }
 
