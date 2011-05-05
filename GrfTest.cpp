@@ -252,9 +252,12 @@ if (dic_list[0]=='\0') {
 /* Grf2Fst2 */
 add_argument(invoker_Grf2Fst2,"-y");
 add_long_option(invoker_Grf2Fst2,"output",fst2);
-if (alphabet[0]!='\0') {
+if (alphabet[0]!='\0' && !char_by_char) {
 	/* If there is a global alphabet option, we use it */
 	add_long_option(invoker_Grf2Fst2,"alphabet",alphabet);
+}
+if (char_by_char) {
+	add_argument(invoker_Grf2Fst2,"-c");
 }
 /* Locate */
 add_long_option(invoker_Locate,"text",snt);
