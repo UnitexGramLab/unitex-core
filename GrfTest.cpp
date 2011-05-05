@@ -60,11 +60,17 @@ const char* usage_GrfTest =
 		 "  -a ALPH: alphabet file to use for all programs\n"
 		 "  -w DIR: working directory to use\n"
 		 "  -c: tells all programs that we work in char by char mode\n"
-		 "\n"
 		 "  -h/--help: this help\n"
+		 "\n"
+		 "EXTRA OPTIONS:\n"
+		 "Additional long options can be passed to Tokenize, Dico, Grf2Fst2 and Locate. To\n"
+		 "do that, prefix the long option you want with T: D: G: or L:\n"
+		 "For instance, if you want to specify a graph repository TMP that Grf2Fst2 should use,\n"
+		 "you must use --G:pkgdir=TMP\n"
+		 "Note that this works only with long options.\n"
          "\n"
-         "Look for unit test patterns in the given grf and runs those tests. Returns 0\n"
-		 "if there is no problem; 1 otherwise.";
+         "This program looks for unit test patterns in grf files and runs those tests. Returns 0\n"
+		 "if there is no problem; 1 otherwise.\n";
 
 
 static void usage() {
