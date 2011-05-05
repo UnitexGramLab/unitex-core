@@ -63,7 +63,8 @@ const char* usage_GrfTest =
 		 "\n"
 		 "  -h/--help: this help\n"
          "\n"
-         "Look for unit test patterns in the given grf and runs those tests.\n";
+         "Look for unit test patterns in the given grf and runs those tests. Returns 0\n"
+		 "if there is no problem; 1 otherwise.";
 
 
 static void usage() {
