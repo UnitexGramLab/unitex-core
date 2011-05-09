@@ -552,6 +552,10 @@ if (input[*pos]=='\\') {
       }
       /* If we have \x where x is not a \ neither a " */
       get_character(input,pos,token);
+      if (token[0]=='#') {
+    	  /* Special case of \# that must be compiled as "#" */
+    	  u_strcpy(token,"@#");
+      }
       put_ptr(tokens,u_strdup(token));
       return 0;
    }
