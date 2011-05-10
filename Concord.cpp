@@ -189,6 +189,7 @@ const struct option_TS lopts_Concord[]= {
       {"uima",required_argument_TS,NULL,'u'},
       {"axis",no_argument_TS,NULL,'A'},
       {"xalign",no_argument_TS,NULL,'x'},
+      {"diff",no_argument_TS,NULL,7},
       {"merge",required_argument_TS,NULL,'m'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"thai",no_argument_TS,NULL,'T'},
@@ -258,6 +259,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
    case 4: options->sort_mode=CENTER_RIGHT; break;
    case 5: options->sort_mode=RIGHT_LEFT; break;
    case 6: options->sort_mode=RIGHT_CENTER; break;
+   case 7: options->result_mode=DIFF_; break;
    case 'H': options->result_mode=HTML_; break;
    case 't': options->result_mode=TEXT_; break;
    case 'g': options->result_mode=GLOSSANET_;
@@ -390,7 +392,7 @@ if (options->only_ambiguous) {
 	/* We force text order when displaying only ambiguous outputs */
 	options->sort_mode=TEXT_ORDER;
 }
-if (options->result_mode==HTML_) {
+if (options->result_mode==HTML_ || options->result_mode==DIFF_) {
 	/* We need the offset file if and only if we have to produce
 	 * an html concordance with positions in .snt file */
 	options->snt_offsets=load_snt_offsets(snt_files->snt_offsets_pos);

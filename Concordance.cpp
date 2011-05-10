@@ -155,7 +155,7 @@ strcat(temp_file_name,"concord_.txt");
 strcpy(options->output,options->working_directory);
 if (options->result_mode==TEXT_ || options->result_mode==INDEX_
       || options->result_mode==UIMA_ || options->result_mode==AXIS_
-      || options->result_mode==XALIGN_)
+      || options->result_mode==XALIGN_ || options->result_mode==DIFF_)
 	strcat(options->output,"concord.txt");
 else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_))
 	strcat(options->output,"concord.xml");
@@ -202,7 +202,8 @@ if (f==NULL) {
 }
 if (options->result_mode==TEXT_ || options->result_mode==INDEX_
       || options->result_mode==XML_ || options->result_mode==XML_WITH_HEADER_
-      || options->result_mode==UIMA_ || options->result_mode==AXIS_) {
+      || options->result_mode==UIMA_ || options->result_mode==AXIS_
+      || options->result_mode==DIFF_) {
    /* If we have to produce a unicode text file, we open it
     * as a UTF16LE one */
    out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,options->output,U_WRITE);
@@ -366,6 +367,10 @@ while ((c=u_fgetc(f))!=EOF) {
 		/* If we must produce a text concordance */
 		else if (options->result_mode==TEXT_) {
 			u_fprintf(out,"\t%S\t%S\n",middle,right);
+		}
+		/* If we must produce a concordance to be used by ConcorDiff*/
+		else if (options->result_mode==DIFF_) {
+			u_fprintf(out,"\t%S\t%S\t%S\n",middle,right,indices);
 		}
       /* If must must produce an index file */
       else if (options->result_mode==INDEX_) {
@@ -1008,8 +1013,7 @@ while (matches!=NULL) {
 			u_fprintf(output,"\t%S",href);
 		}
 
-		if(expected_result==XALIGN_) u_fprintf(output,"\n");
-		else u_fprintf(output,"\n");
+		u_fprintf(output,"\n");
 		/* We increase the number of matches actually written to the output */
 		number_of_matches++;
 	}

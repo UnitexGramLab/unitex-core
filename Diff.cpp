@@ -26,13 +26,19 @@
 #include "Concordance.h"
 
 
+#define RED "#FF0000"
+#define GREEN "#008000"
+#define BLUE "#0000FF"
+#define VIOLET "#800080"
+
+
 /**
  * This function takes two concordance index 'in1' and 'in2', and builds
- * the associated concordacnces 'out1' and 'out2'.
+ * the associated concordances 'out1' and 'out2'.
  */
 void create_text_concordances(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out1,const char* out2) {
 pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,
-		in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0,0);
+		in1,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
@@ -40,7 +46,7 @@ af_remove(out1);
 af_rename(f,out1);
 
 pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,
-		in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0,0);
+		in2,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
 af_remove(out2);
 af_rename(f,out2);
 }
@@ -55,7 +61,7 @@ u_fprintf(f,"<head>\n");
 u_fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
 u_fprintf(f,"   <style type=\"text/css\">\n");
 u_fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
-u_fprintf(f,"   a.orange {color:orange; text-decoration:underline;}\n");
+u_fprintf(f,"   a.violet {color:violet; text-decoration:underline;}\n");
 u_fprintf(f,"   a.red {color:red; text-decoration:underline;}\n");
 u_fprintf(f,"   a.green {color:green; text-decoration:underline;}\n");
 u_fprintf(f,"   </style>\n");
@@ -63,7 +69,7 @@ u_fprintf(f,"</head>\n");
 u_fprintf(f,"<body>\n");
 u_fprintf(f,"<h4>\n");
 u_fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
-u_fprintf(f,"<font color=\"orange\">Orange:</font> identical sequences with different outputs<br>\n");
+u_fprintf(f,"<font color=\"#800080\">Violet:</font> identical sequences with different outputs<br>\n");
 u_fprintf(f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
 u_fprintf(f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
 u_fprintf(f,"<table border=\"1\" cellpadding=\"5\" style=\"font-family: %s; font-size: %d\">\n",font,size);
@@ -151,14 +157,14 @@ while (!(list1==NULL && list2==NULL)) {
    if (list1==NULL) {
       /* If the first list is empty, then the current match in the second list
        * must be green */
-      print_diff_matches(output,NULL,f2,"green");
+      print_diff_matches(output,NULL,f2,GREEN);
       list2=list2->next;
       continue;
    }
    if (list2==NULL) {
       /* If the second list is empty, then the current match in the first list
        * must be green */
-      print_diff_matches(output,f1,NULL,"green");
+      print_diff_matches(output,f1,NULL,GREEN);
       list1=list1->next;
       continue;
    }
@@ -166,14 +172,14 @@ while (!(list1==NULL && list2==NULL)) {
       case A_BEFORE_B: {
          /* list1 has no common part with list2:
           * abcd,efgh */
-         print_diff_matches(output,f1,NULL,"green");
+         print_diff_matches(output,f1,NULL,GREEN);
          list1=list1->next;
          break;
       }
       case A_INCLUDES_B: {
          /* list2 is included in list1:
           * abcdef,cdef */
-         print_diff_matches(output,f1,f2,"red");
+         print_diff_matches(output,f1,f2,RED);
          list1=list1->next;
          list2=list2->next;
          break;
@@ -184,21 +190,21 @@ while (!(list1==NULL && list2==NULL)) {
           *
           * We consider that they are two distinct lines, and we
           * print the first */
-         print_diff_matches(output,f1,NULL,"green");
+         print_diff_matches(output,f1,NULL,GREEN);
          list1=list1->next;
          break;
       }
       case A_AFTER_B: {
          /* list2 has no common part with list1:
           * abcd,efgh */
-         print_diff_matches(output,NULL,f2,"green");
+         print_diff_matches(output,NULL,f2,GREEN);
          list2=list2->next;
          break;
       }
       case B_INCLUDES_A: {
          /* list1 is included in list2:
           * abcd,abcdef */
-         print_diff_matches(output,f1,f2,"red");
+         print_diff_matches(output,f1,f2,RED);
          list1=list1->next;
          list2=list2->next;
          break;
@@ -208,7 +214,7 @@ while (!(list1==NULL && list2==NULL)) {
           * abcdef,cdefgh
           * We consider that they are two distinct lines, and we
           * print the first */
-         print_diff_matches(output,NULL,f2,"green");
+         print_diff_matches(output,NULL,f2,GREEN);
          list2=list2->next;         
          break;
       }
@@ -217,7 +223,7 @@ while (!(list1==NULL && list2==NULL)) {
           * abcd,abcd */
     	 int different_outputs=u_strcmp(list1->output,list2->output);
     	 if (!diff_only || different_outputs) {
-            print_diff_matches(output,f1,f2,different_outputs?"orange":"blue");
+            print_diff_matches(output,f1,f2,different_outputs?VIOLET:BLUE);
     	 } else {
     		 /* We have to skip the unused lines */
     		 u_fskip_line(f1);
@@ -236,7 +242,7 @@ while (!(list1==NULL && list2==NULL)) {
  * This function reads one concordance line from 'f', and splits its
  * components into 'left', 'middle' and 'right'.
  */
-void read_concordance_line(U_FILE* f,unichar* left,unichar* middle,unichar* right) {
+void read_concordance_line(U_FILE* f,unichar* left,unichar* middle,unichar* right,unichar* indices) {
 int i,c;
 i=0;
 while ((c=u_fgetc(f))!='\t') {
@@ -249,45 +255,77 @@ while ((c=u_fgetc(f))!='\t') {
 }
 middle[i]='\0';
 i=0;
-while ((c=u_fgetc(f))!='\n') {
+while ((c=u_fgetc(f))!='\t') {
    right[i++]=(unichar)c;
 }
 right[i]='\0';
+i=0;
+while ((c=u_fgetc(f))!='\n') {
+   indices[i++]=(unichar)c;
+}
+indices[i]='\0';
 }
 
 
-
+/**
+ * This function inserts the nth first chars of src at the beginning of
+ * dst whose content is shifted to the right.
+ */
+static void adjust(unichar* src,unichar* dst,int n) {
+int l=u_strlen(dst);
+for (int i=l+1;i>=0;i--) {
+	dst[i+n]=dst[i];
+}
+for (int i=0;i<n;i++) {
+	dst[i]=src[i];
+}
+}
 
 /**
  * This function loads concordance lines from 'f1' and/or 'f2' and prints them to
  * 'output' in the given color.
  */
 void print_diff_matches(U_FILE* output,U_FILE* f1,U_FILE* f2,const char* color) {
-unichar left[MAX_CONTEXT_IN_UNITS];
-unichar middle[MAX_CONTEXT_IN_UNITS];
-unichar right[MAX_CONTEXT_IN_UNITS];
-/* We print the line from the first file, if needed */
-u_fprintf(output,"<tr><td width=\"450\"><font color=\"%s\">",color);
+unichar left1[MAX_CONTEXT_IN_UNITS];
+unichar middle1[MAX_CONTEXT_IN_UNITS];
+unichar right1[MAX_CONTEXT_IN_UNITS];
+unichar indices1[MAX_CONTEXT_IN_UNITS];
+unichar left2[MAX_CONTEXT_IN_UNITS];
+unichar middle2[MAX_CONTEXT_IN_UNITS];
+unichar right2[MAX_CONTEXT_IN_UNITS];
+unichar indices2[MAX_CONTEXT_IN_UNITS];
 if (f1!=NULL) {
-   read_concordance_line(f1,left,middle,right);
-   u_fprintf(output,"%HS<u>%HS</u>%HS",left,middle,right);
-   /*u_fprints_html(left,output);
-   fprintf(output,"<u>");
-   u_fprints_html(middle,output);
-   fprintf(output,"</u>");
-   u_fprints_html(right,output);*/
+   read_concordance_line(f1,left1,middle1,right1,indices1);
 }
-u_fprintf(output,"</font></td>");
-u_fprintf(output,"<td width=\"450\"><font color=\"%s\">",color);
+if (f2!=NULL) {
+   read_concordance_line(f2,left2,middle2,right2,indices2);
+}
+if (!strcmp(color,RED)) {
+	/* If we have one match included in the another, we want to align
+	 * them. We do that by adjusting their left contexts */
+	int pos1,pos2;
+	u_sscanf(indices1,"%d",&pos1);
+	u_sscanf(indices2,"%d",&pos2);
+	if (pos1<pos2) {
+		adjust(left1,left2,pos2-pos1);
+	} else if (pos1>pos2) {
+		adjust(left2,left1,pos1-pos2);
+	} /*  Nothing to adjust if pos1==pos2 */
+}
+/* We print the line from the first file, if needed */
+u_fprintf(output,"<tr><td nowrap bgcolor=\"#FFE4C4\"><font color=\"%s\">",color);
+if (f1!=NULL) {
+   u_fprintf(output,"%HS<a href=\"%S\" style=\"color:%s\">%HS</a>%HS",left1,indices1,color,middle1,right1);
+} else {
+	u_fprintf(output,"&nbsp;");
+}
+u_fprintf(output,"</font></td></tr>\n");
+u_fprintf(output,"<tr><td nowrap bgcolor=\"#90EE90\"><font color=\"%s\">",color);
 /* We print the line from the second file, if needed */
 if (f2!=NULL) {
-   read_concordance_line(f2,left,middle,right);
-   u_fprintf(output,"%HS<u>%HS</u>%HS",left,middle,right);
-   /*u_fprints_html(left,output);
-   fprintf(output,"<u>");
-   u_fprints_html(middle,output);
-   fprintf(output,"</u>");
-   u_fprints_html(right,output);*/
+   u_fprintf(output,"%HS<a href=\"%S\" style=\"color:%s\">%HS</a>%HS",left2,indices2,color,middle2,right2);
+} else {
+	u_fprintf(output,"&nbsp;");
 }
 u_fprintf(output,"</font></td></tr>\n");
 }
