@@ -528,8 +528,7 @@ while (pos>=0 && count<option->left_context) {
 	if (l<0) {
 		/* If we must change of token */
 		if (option->left_context_until_eos
-//                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->skip+pos]],"{S}"))
-                    && (buffer->int_buffer_[buffer->skip+pos] != tokens->SENTENCE_MARKER))
+                    && (buffer->int_buffer_[buffer->skip+pos] == tokens->SENTENCE_MARKER))
                   break; /* token was "{S}" */
 		pos--;
 		if (pos>=0) {
@@ -648,8 +647,7 @@ while (pos<buffer->size && count<right_context_length) {
 	if (s[l]=='\0') {
 		/* If we must change of token */
 		if (option->right_context_until_eos
-//                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->skip+pos]],"{S}"))
-                    && (buffer->int_buffer_[buffer->skip+pos] != tokens->SENTENCE_MARKER))
+                    && (buffer->int_buffer_[buffer->skip+pos] == tokens->SENTENCE_MARKER))
                   break; /* token was "{S}" */
 		pos++;
 		if (pos<buffer->size) {
