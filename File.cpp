@@ -59,7 +59,7 @@ l=(int)strlen(filename)-1;
 while (l>=0 && filename[l]!='/' && filename[l]!='\\' && filename[l]!='.') {
    l--;
 }
-if (filename[l]=='.') filename[l]='\0';
+if (l>=0 && filename[l]=='.') filename[l]='\0';
 }
 
 
