@@ -406,7 +406,7 @@ for (int priority=1;priority<4;priority++) {
          /* If we must must process a dictionary, we check its type */
          char tmp2[FILENAME_MAX];
          get_extension(argv[i],tmp2);
-         if (!strcmp(tmp2,".bin"))    {
+         if (!strcmp(tmp2,".bin") || !strcmp(tmp2,".bin2"))    {
             /*
              * If it is a .bin dictionary
              */
