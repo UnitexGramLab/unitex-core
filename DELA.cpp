@@ -1755,3 +1755,24 @@ void debug_println_entry(struct dela_entry* e) {
 debug_print_entry(e);
 error("\n");
 }
+
+
+/**
+ * Prints the given entry to the given string.
+ */
+void dela_entry_to_string(Ustring* s,struct dela_entry* e) {
+empty(s);
+escape(e->inflected,s,P_COMMA);
+u_strcat(s,",");
+escape(e->lemma,s,P_DOT);
+u_strcat(s,".");
+escape(e->semantic_codes[0],s,P_PLUS_COLON_SLASH_BACKSLASH);
+for (int i=1;i<e->n_semantic_codes;i++) {
+	u_strcat(s,"+");
+	escape(e->semantic_codes[i],s,P_PLUS_COLON_SLASH_BACKSLASH);
+}
+for (int i=0;i<e->n_inflectional_codes;i++) {
+	u_strcat(s,":");
+	escape(e->inflectional_codes[i],s,P_COLON_SLASH_BACKSLASH);
+}
+}

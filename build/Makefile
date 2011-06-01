@@ -591,6 +591,12 @@ SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o\
                ProgramInvoker.o $(SYSLIBMAPPED)
 
+SPELLCHECK      = SpellCheck
+SPELLCHECK_OBJS = Main_SpellCheck.o SpellCheck.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o\
+               ProgramInvoker.o File.o SpellChecking.o CompressedDic.o AbstractDelaLoad.o \
+               LoadInf.o List_ustring.o Ustring.o StringParsing.o DELA.o String_hash.o \
+               Alphabet.o Keyboard.o $(SYSLIBMAPPED)
+
 STATS      = Stats
 STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o\
                ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
@@ -717,7 +723,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
-                  Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o $(SYSLIBMAPPED)
+                  Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
+                  Keyboard.o $(SYSLIBMAPPED)
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -749,7 +756,8 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
-                  GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o $(SYSLIBMAPPED)
+                  GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
+                  SpellChecking.o Keyboard.o $(SYSLIBMAPPED)
 
 
 ################################
@@ -781,7 +789,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
-		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST)
+		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST) $(SPELLCHECK)
 
 #PROGS = $(TEST)
 
@@ -798,7 +806,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
 		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)\
-		$(SEQ2GRF_OBJS) $(GRFTEST_OBJS)
+		$(SEQ2GRF_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1196,6 +1204,9 @@ $(BIN_DIR)$(SEQ2GRF)$(EXTENSION): $(SEQ2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(SPELLCHECK)$(EXTENSION): $(SPELLCHECK_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(STATS)$(EXTENSION): $(STATS_OBJS)

@@ -69,6 +69,18 @@ return d;
 
 
 /**
+ * Loads and returns a compressed dictionary, but no need to specify the .inf file
+ * that is deduced from 'bin'.
+ */
+Dictionary* new_Dictionary(const char* bin,Abstract_allocator prv_alloc) {
+char inf[FILENAME_MAX];
+remove_extension(bin,inf);
+strcat(inf,".inf");
+return new_Dictionary(bin,inf,prv_alloc);
+}
+
+
+/**
  * Frees all resources associated to the given dictionary
  */
 void free_Dictionary(Dictionary* d,Abstract_allocator /* prv_alloc*/) {

@@ -93,6 +93,7 @@ typedef struct {
 
 
 Dictionary* new_Dictionary(const char* bin,const char* inf,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Dictionary* new_Dictionary(const char* bin,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int read_dictionary_state(const Dictionary*,int,int*,int*,int*);
 t_fnc_bin_write_bytes get_bin_write_function_for_encoding(BinEncoding e) ;
