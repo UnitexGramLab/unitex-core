@@ -307,11 +307,11 @@ for (int il=0;il<res->n_semantic_codes;il++) {
       }
    }
 }
-free(temp);
+free_cb(temp,prv_alloc);
 return res;
 error:
 free_dela_entry(res,prv_alloc);
-free(temp);
+free_cb(temp,prv_alloc);
 return NULL;
 }
 
