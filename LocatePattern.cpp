@@ -301,6 +301,7 @@ switch(p->real_output_policy) {
    case IGNORE_OUTPUTS: u_fprintf(out,"#I\n"); break;
    case MERGE_OUTPUTS: u_fprintf(out,"#M\n"); break;
    case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
+   default:break;
 }
 
 Abstract_allocator locate_abstract_allocator=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);

@@ -206,7 +206,7 @@ if (snt_offsets->nbelems%3 != 0) {
 }
 U_FILE* f=u_fopen(BINARY,name,U_WRITE);
 if (f==NULL) return 0;
-int ret=fwrite(snt_offsets->tab,sizeof(int),snt_offsets->nbelems,f);
+int ret=(int)(fwrite(snt_offsets->tab,sizeof(int),snt_offsets->nbelems,f));
 u_fclose(f);
 return (ret==snt_offsets->nbelems);
 }
@@ -223,7 +223,7 @@ if (size%(3*sizeof(int))!=0) {
 	u_fclose(f);
 	return NULL;
 }
-vector_int* v=new_vector_int(size/sizeof(int));
+vector_int* v=new_vector_int((int)(size/sizeof(int)));
 if (size!=0) {
 	int n=(int)fread(v->tab,sizeof(int),size/sizeof(int),f);
 	u_fclose(f);

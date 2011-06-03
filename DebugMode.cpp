@@ -45,6 +45,7 @@ switch (policy) {
 case IGNORE_OUTPUTS: print_input=1; print_output=0; break;
 case MERGE_OUTPUTS: print_input=1; print_output=1; break;
 case REPLACE_OUTPUTS: print_input=0; print_output=1; break;
+default:break;
 }
 Ustring* output=new_Ustring();
 Ustring* tmp=new_Ustring();
