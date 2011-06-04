@@ -81,9 +81,9 @@ void add_long_option(ProgramInvoker* invoker,const char* opt_name,const char* op
 if (opt_name==NULL) {
    fatal_error("NULL argument in new_ProgramInvoker\n");
 }
-int size=2+strlen(opt_name)+1;
+int size=2+(int)strlen(opt_name)+1;
 if (opt_value!=NULL) {
-	size=size+1+strlen(opt_value);
+	size=size+1+(int)strlen(opt_value);
 }
 char* tmp=(char*)malloc(size*sizeof(char));
 if (tmp==NULL) {

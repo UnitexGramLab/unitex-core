@@ -388,7 +388,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 	int token, token2;
 	Transition* t1;
 	int stack_top = p->stack->stack_pointer;
-	int old_weight=p->weight;
+	int old_weight1=p->weight;
 	unichar* output;
 	int captured_chars;
 
@@ -617,7 +617,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		struct dic_variable* dic_variables_backup = NULL;
 		int old_StackBase = p->stack_base;
 		unichar* output_var_backup=NULL;
-		int old_weight=p->weight;
+		int old_weight2=p->weight;
 		if (p->output_policy != IGNORE_OUTPUTS) {
 			/* For better performance when ignoring outputs */
 
@@ -704,7 +704,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 //variable_backup_memory_reserve* reserve_new=p->backup_memory_reserve;
 //p->backup_memory_reserve=reserve_previous;
 
-						p->weight=old_weight;
+						p->weight=old_weight2;
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number],
 								L->position, matches, n_matches,
@@ -737,7 +737,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			} /* end of while (t!=NULL) */
 		} while ((graph_call_list = graph_call_list->next) != NULL);
 		/* Finally, we have to restore the stack and other backup stuff */
-		p->weight=old_weight;
+		p->weight=old_weight2;
 		p->stack->stack_pointer = stack_top;
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 		if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
@@ -924,7 +924,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 									end_of_compound + 1, matches,
 									n_matches, ctx, p);
 							p->stack->stack_pointer = stack_top;
-							p->weight=old_weight;
+							p->weight=old_weight1;
 							if (p->nb_output_variables != 0) {
 							    remove_chars_from_output_variables(p->output_variables,captured_chars);
 							}
@@ -1008,7 +1008,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 								p->optimized_states[t1->state_number],
 								end_of_compound + 1, matches,
 								n_matches, ctx, p);
-						p->weight=old_weight;
+						p->weight=old_weight1;
 						if (p->nb_output_variables != 0) {
 						    remove_chars_from_output_variables(p->output_variables,captured_chars);
 						}
@@ -1216,7 +1216,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				 install_variable_backup(p->variables,var_backup);
 				 free_variable_backup(var_backup);
 				 }*/
-				p->weight=old_weight;
+				p->weight=old_weight1;
 				p->left_ctx_shift = current_shift;
 				p->left_ctx_base = old_left_ctx_stack_base;
 				p->stack->stack_pointer = stack_top;
@@ -1250,7 +1250,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				locate(/*graph_depth,*/ p->optimized_states[t1->state_number], end,
 						matches, n_matches, ctx, p);
 				/* Once we have finished, we restore the stack */
-				p->weight=old_weight;
+				p->weight=old_weight1;
 				p->stack->stack_pointer = stack_top;
 				if (p->nb_output_variables != 0) {
 				  remove_chars_from_output_variables(p->output_variables,captured_chars);
@@ -1272,7 +1272,7 @@ while (output_variable_list != NULL) {
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, matches, n_matches, ctx, p);
-	p->weight=old_weight;
+	p->weight=old_weight1;
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	free_Ustring(p->output_variables->variables[output_variable_list->variable_number]);
 	p->output_variables->variables[output_variable_list->variable_number]=old_value;
@@ -1288,7 +1288,7 @@ while (output_variable_list != NULL) {
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
 			pos, matches, n_matches, ctx, p);
-	p->weight=old_weight;
+	p->weight=old_weight1;
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
@@ -1310,7 +1310,7 @@ while (output_variable_list != NULL) {
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
 				pos, matches, n_matches, ctx, p);
-		p->weight=old_weight;
+		p->weight=old_weight1;
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1342,7 +1342,7 @@ while (output_variable_list != NULL) {
 		locate(/*graph_depth,*/
 				p->optimized_states[variable_list->transition->state_number],
 				pos, matches, n_matches, ctx, p);
-		p->weight=old_weight;
+		p->weight=old_weight1;
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1368,7 +1368,7 @@ while (output_variable_list != NULL) {
 			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
-			p->weight=old_weight;
+			p->weight=old_weight1;
 			/* Note that there is no match to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			p->stack->stack[stack_top+1]='\0';
@@ -1385,14 +1385,14 @@ while (output_variable_list != NULL) {
 					 */
 					backup=u_strdup(p->stack->stack);
 					u_strcat(p->stack->stack,c->output+stack_top+1);
-					int pos=u_strlen(p->stack->stack);
-					p->stack->stack_pointer=pos-1;
+					int pos3=u_strlen(p->stack->stack);
+					p->stack->stack_pointer=pos3-1;
 				}
 				while (states != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
 							matches, n_matches, ctx, p);
-					p->weight=old_weight;
+					p->weight=old_weight1;
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1410,7 +1410,7 @@ while (output_variable_list != NULL) {
 			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
-			p->weight=old_weight;
+			p->weight=old_weight1;
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (!c->n) {
@@ -1421,7 +1421,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/
 							p->optimized_states[states->state_number], pos,
 							matches, n_matches, ctx, p);
-					p->weight=old_weight;
+					p->weight=old_weight1;
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1508,7 +1508,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, matches, n_matches,
 							ctx, p);
-					p->weight=old_weight;
+					p->weight=old_weight1;
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1568,7 +1568,7 @@ while (output_variable_list != NULL) {
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							end_of_compound + 1, matches, n_matches,
 							ctx, p);
-					p->weight=old_weight;
+					p->weight=old_weight1;
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
@@ -1605,7 +1605,7 @@ while (output_variable_list != NULL) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
 								matches, n_matches, ctx, p);
-						p->weight=old_weight;
+						p->weight=old_weight1;
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1631,7 +1631,7 @@ while (output_variable_list != NULL) {
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number], pos2 + 1,
 								matches, n_matches, ctx, p);
-						p->weight=old_weight;
+						p->weight=old_weight1;
 						p->stack->stack_pointer = stack_top;
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 					}
@@ -1674,7 +1674,7 @@ while (output_variable_list != NULL) {
 					}
 					locate(/*graph_depth,*/ p->optimized_states[t1->state_number],
 							pos2 + 1, matches, n_matches, ctx, p);
-					p->weight=old_weight;
+					p->weight=old_weight1;
 					p->stack->stack_pointer = stack_top;
 					remove_chars_from_output_variables(p->output_variables,captured_chars);
 				}
