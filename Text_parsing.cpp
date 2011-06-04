@@ -311,7 +311,7 @@ void error_at_token_pos(const char* message, int start, int length,
 		return;
 	}
 	error("%s\n  ", message);
-	for (i = (start - 4); i <= (start + 20); i++) {
+	for (i = (start - 4); (i <= (start + 20)) && (i < p->buffer_size); i++) {
 		if (i < 0) {
 			continue;
 		}
