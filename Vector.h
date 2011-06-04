@@ -23,6 +23,7 @@
 #define VectorH
 
 #include <stdlib.h>
+#include "AbstractAllocator.h"
 #include "Error.h"
 
 /**
@@ -119,15 +120,15 @@ return vec->nbelems-1;
 }
 
 
-inline vector_int* new_vector_int(int size=16) {
-vector_int* vec=(vector_int*)malloc(sizeof(vector_int));
+inline vector_int* new_vector_int(int size=16,Abstract_allocator prv_alloc=NULL) {
+vector_int* vec=(vector_int*)malloc_cb(sizeof(vector_int),prv_alloc);
 if (vec==NULL) {
    fatal_alloc_error("new_vector_int");
 }
 if (size<=0) {
    size=1;
 }
-vec->tab=(int*)malloc(size*sizeof(int));
+vec->tab=(int*)malloc_cb(size*sizeof(int),prv_alloc);
 if (vec==NULL) {
    fatal_alloc_error("new_vector_int");
 }
@@ -137,21 +138,21 @@ return vec;
 }
 
 
-inline void free_vector_int(vector_int* vec) {
+inline void free_vector_int(vector_int* vec,Abstract_allocator prv_alloc=NULL) {
 if (vec==NULL) return;
-free(vec->tab);
-free(vec);
+free_cb(vec->tab,prv_alloc);
+free_cb(vec,prv_alloc);
 }
 
 
-inline void vector_int_resize(vector_int* vec,int size) {
+inline void vector_int_resize(vector_int* vec,int size,Abstract_allocator prv_alloc=NULL) {
 if (size<=0) {
    size=1;
 }
 if (size<vec->nbelems) {
    fatal_error("vector_int_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
 }
-vec->tab=(int*)realloc(vec->tab,size*sizeof(int));
+vec->tab=(int*)realloc_cb(vec->tab,vec->size*sizeof(int),size*sizeof(int),prv_alloc);
 if (vec->tab==NULL) {
    fatal_alloc_error("vector_int_resize");
 }
@@ -159,30 +160,30 @@ vec->size=size;
 }
 
 
-inline int vector_int_add(vector_int* vec,int data) {
+inline int vector_int_add(vector_int* vec,int data,Abstract_allocator prv_alloc=NULL) {
 while (vec->nbelems>=vec->size) {
-   vector_int_resize(vec,vec->size*2);
+   vector_int_resize(vec,vec->size*2,prv_alloc);
 }
 vec->tab[vec->nbelems++]=data;
 return vec->nbelems-1;
 }
 
 
-inline void vector_int_copy(vector_int* dst,vector_int* src) {
+inline void vector_int_copy(vector_int* dst,vector_int* src,Abstract_allocator prv_alloc=NULL) {
 if (dst==NULL) return;
 dst->nbelems=0;
 if (src==NULL) return;
 for (int i=0;i<src->nbelems;i++) {
-	vector_int_add(dst,src->tab[i]);
+	vector_int_add(dst,src->tab[i],prv_alloc);
 }
 }
 
 
-inline vector_int* vector_int_dup(vector_int* src) {
+inline vector_int* vector_int_dup(vector_int* src,Abstract_allocator prv_alloc=NULL) {
 if (src==NULL) return NULL;
-vector_int* dst=new_vector_int(src->nbelems);
+vector_int* dst=new_vector_int(src->nbelems,prv_alloc);
 for (int i=0;i<src->nbelems;i++) {
-	vector_int_add(dst,src->tab[i]);
+	vector_int_add(dst,src->tab[i],prv_alloc);
 }
 return dst;
 }
