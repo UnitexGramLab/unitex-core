@@ -472,7 +472,7 @@ static void restore(vector_int* v, int n) {
 	v->nbelems = n;
 }
 
-int at_text_start(struct fst2txt_parameters* p, int pos) {
+static inline int at_text_start(struct fst2txt_parameters* p, int pos) {
 	return p->absolute_offset == 0 && pos == 0 && (p->current_origin == 0
 			|| (p->current_origin == 1 && p->buffer[0] == ' '));
 }

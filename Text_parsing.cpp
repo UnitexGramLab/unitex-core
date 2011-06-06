@@ -51,7 +51,7 @@ static struct match_list* eliminate_shorter_matches(struct match_list*, int, int
 		unichar*, int*, struct locate_parameters*, Abstract_allocator);
 static struct match_list* save_matches(struct match_list*, int, U_FILE*,
 		struct locate_parameters*, Abstract_allocator);
-int at_text_start(struct locate_parameters*,int);
+static inline int at_text_start(struct locate_parameters*,int);
 
 
 static long CalcPerfHalfHundred(long text_size, long matching_units) {
@@ -359,7 +359,7 @@ return 0;
 }
 
 
-int at_text_start(struct locate_parameters* p,int pos) {
+static inline int at_text_start(struct locate_parameters* p,int pos) {
 int ret=pos == 0 && (p->current_origin == 0
 				|| (p->current_origin == 1 && p->buffer[0] == p->SPACE));
 return ret;

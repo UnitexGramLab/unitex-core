@@ -315,3 +315,168 @@ list->next=insert_morphological_match(pos,pos_in_token,state,list->next,dic_entr
 return list;
 }
 
+
+// experimental no recursive code. To be check for performance and reliability
+/*
+
+struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
+                                      unichar* stack,Variables* v,OutputVariables* output_var,
+                                      struct dic_variable* v2,
+                                      int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
+                                      vector_int* insertions,
+                                      int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
+
+struct parsing_info**lnext=&list;
+for (;;) {
+  struct parsing_info*lcur=*lnext;
+
+  if (lcur==NULL) {
+	  *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+                                        left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
+                                        weight,prv_alloc_recycle,prv_alloc_vector_int);
+	  break;
+  }
+  if (lcur->position==pos && lcur->pos_in_token==pos_in_token && lcur->state_number==state
+	&& lcur->jamo==jamo // We can because we only work on pointers on unique elements
+	&& lcur->pos_in_jamo==pos_in_jamo) {
+   lcur->stack_pointer=stack_pointer;
+   // We update the stack value
+   update_parsing_info_stack(lcur,stack);
+
+   int v_variable_index_size=0;
+   if (v!=NULL)
+     if (v->variable_index!=NULL)
+         v_variable_index_size=v->variable_index->size;
+
+   if (lcur->variable_backup_size == v_variable_index_size) {
+      update_variable_backup(lcur->input_variable_backup,v);
+   }
+   else {
+      free_variable_backup(lcur->input_variable_backup,prv_alloc_recycle);
+      lcur->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
+      lcur->variable_backup_size=v_variable_index_size;
+   }
+   free_output_variable_backup(lcur->output_variable_backup);
+   lcur->output_variable_backup=create_output_variable_backup(output_var);
+   clear_dic_variable_list(&lcur->dic_variable_backup);
+   lcur->dic_variable_backup=clone_dic_variable_list(v2);
+   if (lcur->dic_entry!=NULL) {
+      fatal_error("Unexpected non NULL dic_entry in insert_if_absent\n");
+   }
+   lcur->left_ctx_shift=left_ctx_shift;
+   lcur->left_ctx_base=left_ctx_base;
+   if (insertions!=NULL && insertions->nbelems!=0) {
+	   if (lcur->insertions==NULL) {
+		   lcur->insertions=new_vector_int(insertions->nbelems, prv_alloc_vector_int);
+	   }
+	   vector_int_copy(lcur->insertions,insertions, prv_alloc_vector_int);
+   } else {
+	   /* We always need such a vector, even empty */
+	   if (lcur->insertions==NULL) lcur->insertions=new_vector_int(1, prv_alloc_vector_int);
+   }
+   break;
+   }
+
+   lnext=&(lcur->next);
+}
+return list;
+}
+
+
+
+
+struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
+                                         unichar* stack,Variables* v,OutputVariables* output_var,
+                                         struct dic_variable* v2,
+                                         int left_ctx_shift,int left_ctx_base,
+                                         unichar* jamo,int pos_in_jamo,
+                                         vector_int* insertions,
+                                         int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+	filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
+
+struct parsing_info**lnext=&list;
+for (;;) {
+  struct parsing_info*lcur=*lnext;
+  if ((lcur)==NULL) {
+	  *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+                                        left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
+                                        weight,prv_alloc_recycle,prv_alloc_vector_int);
+	  break;
+  }
+
+if ((lcur->position==pos) // If the length is the same...
+    && (lcur->pos_in_token==pos_in_token)
+    && (lcur->state_number==state)
+    && !(u_strcmp(lcur->stack,stack)) // ...and if the stack content too */
+    && lcur->left_ctx_shift==left_ctx_shift
+    && lcur->left_ctx_base==left_ctx_base
+    && lcur->jamo==jamo // See comment in insert_if_absent
+    && lcur->pos_in_jamo==pos_in_jamo) {
+    // then we overwrite the current list element
+   lcur->stack_pointer=stack_pointer;
+
+   int v_variable_index_size=0;
+   if (v!=NULL)
+     if (v->variable_index!=NULL)
+         v_variable_index_size=v->variable_index->size;
+
+   if (lcur->variable_backup_size == v_variable_index_size) {
+      update_variable_backup(lcur->input_variable_backup,v);
+   }
+   else {
+      free_variable_backup(lcur->input_variable_backup,prv_alloc_recycle);
+      lcur->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
+      lcur->variable_backup_size=v_variable_index_size;
+   }
+   free_output_variable_backup(lcur->output_variable_backup);
+   lcur->output_variable_backup=create_output_variable_backup(output_var);
+   clear_dic_variable_list(&lcur->dic_variable_backup);
+   lcur->dic_variable_backup=clone_dic_variable_list(v2);
+   if (lcur->dic_entry!=NULL) {
+      fatal_error("Unexpected non NULL dic_entry in insert_if_different\n");
+   }
+   if (insertions!=NULL && insertions->nbelems!=0) {
+	   if (lcur->insertions==NULL) {
+		   lcur->insertions=new_vector_int(insertions->nbelems, prv_alloc_vector_int);
+	   }
+	   vector_int_copy(list->insertions,insertions, prv_alloc_vector_int);
+   }
+   break;
+}
+lnext=&(lcur->next);
+}
+// Otherwise, we look in the rest of the list
+return list;
+}
+
+
+
+
+												
+struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
+                                                struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
+                                                Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+struct parsing_info**lnext=&list;
+for (;;) {
+  struct parsing_info*lcur=*lnext;
+  if ((lcur)==NULL) {
+		*lnext=new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
+		  jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle,prv_alloc_vector_int);
+		break;
+  }
+  if (lcur->position==pos && lcur->pos_in_token==pos_in_token && lcur->state_number==state
+    && lcur->dic_entry==dic_entry
+    && lcur->jamo==jamo // See comment in insert_if_absent
+    && lcur->pos_in_jamo==pos_in_jamo) {
+    // If the morphological match is already in the list, we do nothing.
+    // Note that this may occur when we don't take DELAF entries into account
+    // (i.e. dic_entry==NULL)
+   break;   
+  }
+  lnext=&(lcur->next);
+}
+return list;
+}
+
+*/
