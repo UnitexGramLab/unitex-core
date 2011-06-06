@@ -372,7 +372,7 @@ for (;;) {
 	   }
 	   vector_int_copy(lcur->insertions,insertions, prv_alloc_vector_int);
    } else {
-	   /* We always need such a vector, even empty */
+	   // We always need such a vector, even empty
 	   if (lcur->insertions==NULL) lcur->insertions=new_vector_int(1, prv_alloc_vector_int);
    }
    break;
@@ -408,7 +408,7 @@ for (;;) {
 if ((lcur->position==pos) // If the length is the same...
     && (lcur->pos_in_token==pos_in_token)
     && (lcur->state_number==state)
-    && !(u_strcmp(lcur->stack,stack)) // ...and if the stack content too */
+    && !(u_strcmp(lcur->stack,stack)) // ...and if the stack content too
     && lcur->left_ctx_shift==left_ctx_shift
     && lcur->left_ctx_base==left_ctx_base
     && lcur->jamo==jamo // See comment in insert_if_absent
