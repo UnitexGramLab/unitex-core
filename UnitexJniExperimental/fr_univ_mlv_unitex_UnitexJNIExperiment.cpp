@@ -10,8 +10,6 @@
 
 
 #include "UnitexTool.h"
-#include "UniRunLogger.h"
-#include "SyncLogger.h"
 
 #include "AbstractFilePlugCallback.h"
 #include "UserCancellingPlugCallback.h"

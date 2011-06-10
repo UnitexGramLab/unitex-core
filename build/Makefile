@@ -111,7 +111,16 @@ else
 CFLAGS += -O3
 endif
 
+ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
+DEFFLAGS += -I$(ADDITIONAL_INCLUDE)
+endif
+
 ifeq ($(LIBRARY),yes)
+CFLAGS += -fPIC
+DEFFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(JNILIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
 endif
@@ -184,6 +193,9 @@ else
 CFLAGS += -O3
 endif
 
+ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
+CFLAGS += -I$(ADDITIONAL_INCLUDE)
+endif
 
 LIBTRE   = libtre.a
 
@@ -191,8 +203,15 @@ LIBTRE   = libtre.a
 #ifeq ($(LIBRARY),yes)
 #CFLAGS += -fPIC
 #endif
+#ifeq ($(JNILIBRARY),yes)
+#CFLAGS += -fPIC
+#endif
 
 ifeq ($(LIBRARY),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(JNILIBRARY),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
 
@@ -263,6 +282,9 @@ else
 CFLAGS += -O3
 endif
 
+ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
+CFLAGS += -I$(ADDITIONAL_INCLUDE)
+endif
 
 LIBTRE   = libtre.a
 
@@ -270,8 +292,15 @@ LIBTRE   = libtre.a
 #ifeq ($(LIBRARY),yes)
 #CFLAGS += -fPIC
 #endif
+#ifeq ($(JNILIBRARY),yes)
+#CFLAGS += -fPIC
+#endif
 
 ifeq ($(LIBRARY),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(JNILIBRARY),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
 
@@ -759,6 +788,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
                   SpellChecking.o Keyboard.o $(SYSLIBMAPPED)
 
+UNITEX_JNI_OBJS = fr_univ_mlv_unitex_UnitexJNIExperiment.o
 
 ################################
 ################################
@@ -834,7 +864,11 @@ ifeq ($(SYSTEM),linux-like)
 ifeq ($(LIBRARY),yes)
 all: $(LIBTRE) .libunitex
 else
+ifeq ($(JNILIBRARY),yes)
+all: $(LIBTRE) .libunitexjni
+else
 all: bin
+endif
 endif
 
 bin: $(LIBTRE) $(BINARIES)
@@ -909,8 +943,13 @@ else
 ifeq ($(LIBRARY),yes)
 all: $(LIBTRE) .libunitex
 else
+ifeq ($(JNILIBRARY),yes)
+all: $(LIBTRE) .libunitexjni
+else
 all: bin
 endif
+endif
+
 
 
 TRE_LIB = libtre.a
@@ -1300,7 +1339,8 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
-
+fr_univ_mlv_unitex_UnitexJNIExperiment.o : ../UnitexJniExperimental/fr_univ_mlv_unitex_UnitexJNIExperiment.cpp
+	$(CC) -c ../UnitexJniExperimental/fr_univ_mlv_unitex_UnitexJNIExperiment.cpp $(OPTIONS)
 
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
@@ -1314,6 +1354,9 @@ no_o_files:
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.so
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
+.libunitexjni: no_o_files $(OBJS) $(UNITEX_JNI_OBJS)
+	rm -f Main_*.o
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJNIExperiment.so
 
 else
 
@@ -1325,5 +1368,9 @@ no_o_files:
 	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
+
+.libunitexjni: no_o_files $(LIBTRE) $(OBJS) $(UNITEX_JNI_OBJS)
+	rm -f Main_*.o
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/UnitexJNIExperiment.dll
 
 endif
