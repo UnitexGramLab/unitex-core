@@ -175,6 +175,24 @@
 		2237A95111E3F1C000D247CF /* Cassys_tokens.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A94D11E3F1C000D247CF /* Cassys_tokens.cpp */; };
 		2237A95211E3F1C000D247CF /* Cassys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A94F11E3F1C000D247CF /* Cassys.cpp */; };
 		2237A97A11E45C0E00D247CF /* DirHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A97911E45C0E00D247CF /* DirHelperPosix.cpp */; };
+		2245787D13A2BCA4002E0C5D /* SpellChecking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245785913A2BCA4002E0C5D /* SpellChecking.cpp */; };
+		2245787E13A2BCA4002E0C5D /* SpellCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245785A13A2BCA4002E0C5D /* SpellCheck.cpp */; };
+		2245787F13A2BCA4002E0C5D /* Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245785B13A2BCA4002E0C5D /* Keyboard.cpp */; };
+		2245788013A2BCA4002E0C5D /* GrfTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245785C13A2BCA4002E0C5D /* GrfTest.cpp */; };
+		2245788113A2BCA4002E0C5D /* GrfSvn_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245785D13A2BCA4002E0C5D /* GrfSvn_lib.cpp */; };
+		2245788213A2BCA4002E0C5D /* Grf_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245785F13A2BCA4002E0C5D /* Grf_lib.cpp */; };
+		2245788313A2BCA4002E0C5D /* GrfBeauty.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786013A2BCA4002E0C5D /* GrfBeauty.cpp */; };
+		2245788413A2BCA4002E0C5D /* Seq2Grf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786213A2BCA4002E0C5D /* Seq2Grf.cpp */; };
+		2245788513A2BCA4002E0C5D /* GrfTest_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786313A2BCA4002E0C5D /* GrfTest_lib.cpp */; };
+		2245788613A2BCA4002E0C5D /* DebugMode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786413A2BCA4002E0C5D /* DebugMode.cpp */; };
+		2245788713A2BCA4002E0C5D /* Offsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786513A2BCA4002E0C5D /* Offsets.cpp */; };
+		2245788813A2BCA4002E0C5D /* CompressedDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786813A2BCA4002E0C5D /* CompressedDic.cpp */; };
+		2245788913A2BCA4002E0C5D /* Xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786B13A2BCA4002E0C5D /* Xml.cpp */; };
+		2245788A13A2BCA4002E0C5D /* GrfDiff3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245786F13A2BCA4002E0C5D /* GrfDiff3.cpp */; };
+		2245788B13A2BCA4002E0C5D /* LoadInf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245787113A2BCA4002E0C5D /* LoadInf.cpp */; };
+		2245788C13A2BCA4002E0C5D /* GrfDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245787713A2BCA4002E0C5D /* GrfDiff.cpp */; };
+		2245788D13A2BCA4002E0C5D /* Unxmlize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245787913A2BCA4002E0C5D /* Unxmlize.cpp */; };
+		2245788E13A2BCA4002E0C5D /* Overlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2245787A13A2BCA4002E0C5D /* Overlap.cpp */; };
 		225CCA8210DA9DB1003F0910 /* regcomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92210DA9DB1003F0910 /* regcomp.c */; };
 		225CCA8310DA9DB1003F0910 /* regerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92310DA9DB1003F0910 /* regerror.c */; };
 		225CCA8410DA9DB1003F0910 /* regexec.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC92510DA9DB1003F0910 /* regexec.c */; };
@@ -572,6 +590,43 @@
 		2237A95011E3F1C000D247CF /* Cassys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys.h; path = ../Cassys.h; sourceTree = SOURCE_ROOT; };
 		2237A97811E45C0E00D247CF /* DirHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DirHelper.h; path = ../DirHelper.h; sourceTree = SOURCE_ROOT; };
 		2237A97911E45C0E00D247CF /* DirHelperPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirHelperPosix.cpp; path = ../DirHelperPosix.cpp; sourceTree = SOURCE_ROOT; };
+		2245785813A2BCA4002E0C5D /* SpellChecking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpellChecking.h; path = ../SpellChecking.h; sourceTree = SOURCE_ROOT; };
+		2245785913A2BCA4002E0C5D /* SpellChecking.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpellChecking.cpp; path = ../SpellChecking.cpp; sourceTree = SOURCE_ROOT; };
+		2245785A13A2BCA4002E0C5D /* SpellCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpellCheck.cpp; path = ../SpellCheck.cpp; sourceTree = SOURCE_ROOT; };
+		2245785B13A2BCA4002E0C5D /* Keyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Keyboard.cpp; path = ../Keyboard.cpp; sourceTree = SOURCE_ROOT; };
+		2245785C13A2BCA4002E0C5D /* GrfTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfTest.cpp; path = ../GrfTest.cpp; sourceTree = SOURCE_ROOT; };
+		2245785D13A2BCA4002E0C5D /* GrfSvn_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfSvn_lib.cpp; path = ../GrfSvn_lib.cpp; sourceTree = SOURCE_ROOT; };
+		2245785E13A2BCA4002E0C5D /* Grf_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grf_lib.h; path = ../Grf_lib.h; sourceTree = SOURCE_ROOT; };
+		2245785F13A2BCA4002E0C5D /* Grf_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grf_lib.cpp; path = ../Grf_lib.cpp; sourceTree = SOURCE_ROOT; };
+		2245786013A2BCA4002E0C5D /* GrfBeauty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfBeauty.cpp; path = ../GrfBeauty.cpp; sourceTree = SOURCE_ROOT; };
+		2245786113A2BCA4002E0C5D /* DebugMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DebugMode.h; path = ../DebugMode.h; sourceTree = SOURCE_ROOT; };
+		2245786213A2BCA4002E0C5D /* Seq2Grf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Seq2Grf.cpp; path = ../Seq2Grf.cpp; sourceTree = SOURCE_ROOT; };
+		2245786313A2BCA4002E0C5D /* GrfTest_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfTest_lib.cpp; path = ../GrfTest_lib.cpp; sourceTree = SOURCE_ROOT; };
+		2245786413A2BCA4002E0C5D /* DebugMode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DebugMode.cpp; path = ../DebugMode.cpp; sourceTree = SOURCE_ROOT; };
+		2245786513A2BCA4002E0C5D /* Offsets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Offsets.cpp; path = ../Offsets.cpp; sourceTree = SOURCE_ROOT; };
+		2245786613A2BCA4002E0C5D /* Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Keyboard.h; path = ../Keyboard.h; sourceTree = SOURCE_ROOT; };
+		2245786713A2BCA4002E0C5D /* CompressedDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressedDic.h; path = ../CompressedDic.h; sourceTree = SOURCE_ROOT; };
+		2245786813A2BCA4002E0C5D /* CompressedDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressedDic.cpp; path = ../CompressedDic.cpp; sourceTree = SOURCE_ROOT; };
+		2245786913A2BCA4002E0C5D /* CharNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CharNames.h; path = ../CharNames.h; sourceTree = SOURCE_ROOT; };
+		2245786A13A2BCA4002E0C5D /* SpellCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpellCheck.h; path = ../SpellCheck.h; sourceTree = SOURCE_ROOT; };
+		2245786B13A2BCA4002E0C5D /* Xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Xml.cpp; path = ../Xml.cpp; sourceTree = SOURCE_ROOT; };
+		2245786C13A2BCA4002E0C5D /* GrfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfTest.h; path = ../GrfTest.h; sourceTree = SOURCE_ROOT; };
+		2245786D13A2BCA4002E0C5D /* GrfTest_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfTest_lib.h; path = ../GrfTest_lib.h; sourceTree = SOURCE_ROOT; };
+		2245786E13A2BCA4002E0C5D /* GrfSvn_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfSvn_lib.h; path = ../GrfSvn_lib.h; sourceTree = SOURCE_ROOT; };
+		2245786F13A2BCA4002E0C5D /* GrfDiff3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfDiff3.cpp; path = ../GrfDiff3.cpp; sourceTree = SOURCE_ROOT; };
+		2245787013A2BCA4002E0C5D /* Seq2Grf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Seq2Grf.h; path = ../Seq2Grf.h; sourceTree = SOURCE_ROOT; };
+		2245787113A2BCA4002E0C5D /* LoadInf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadInf.cpp; path = ../LoadInf.cpp; sourceTree = SOURCE_ROOT; };
+		2245787213A2BCA4002E0C5D /* GrfBeauty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfBeauty.h; path = ../GrfBeauty.h; sourceTree = SOURCE_ROOT; };
+		2245787313A2BCA4002E0C5D /* Unxmlize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Unxmlize.h; path = ../Unxmlize.h; sourceTree = SOURCE_ROOT; };
+		2245787413A2BCA4002E0C5D /* Offsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Offsets.h; path = ../Offsets.h; sourceTree = SOURCE_ROOT; };
+		2245787513A2BCA4002E0C5D /* GrfDiff3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfDiff3.h; path = ../GrfDiff3.h; sourceTree = SOURCE_ROOT; };
+		2245787613A2BCA4002E0C5D /* GrfDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfDiff.h; path = ../GrfDiff.h; sourceTree = SOURCE_ROOT; };
+		2245787713A2BCA4002E0C5D /* GrfDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfDiff.cpp; path = ../GrfDiff.cpp; sourceTree = SOURCE_ROOT; };
+		2245787813A2BCA4002E0C5D /* Xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Xml.h; path = ../Xml.h; sourceTree = SOURCE_ROOT; };
+		2245787913A2BCA4002E0C5D /* Unxmlize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Unxmlize.cpp; path = ../Unxmlize.cpp; sourceTree = SOURCE_ROOT; };
+		2245787A13A2BCA4002E0C5D /* Overlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Overlap.cpp; path = ../Overlap.cpp; sourceTree = SOURCE_ROOT; };
+		2245787B13A2BCA4002E0C5D /* LoadInf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoadInf.h; path = ../LoadInf.h; sourceTree = SOURCE_ROOT; };
+		2245787C13A2BCA4002E0C5D /* Overlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Overlap.h; path = ../Overlap.h; sourceTree = SOURCE_ROOT; };
 		225CC91F10DA9DB1003F0910 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		225CC92010DA9DB1003F0910 /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
 		225CC92110DA9DB1003F0910 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -651,6 +706,43 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2245785813A2BCA4002E0C5D /* SpellChecking.h */,
+				2245785913A2BCA4002E0C5D /* SpellChecking.cpp */,
+				2245785A13A2BCA4002E0C5D /* SpellCheck.cpp */,
+				2245785B13A2BCA4002E0C5D /* Keyboard.cpp */,
+				2245785C13A2BCA4002E0C5D /* GrfTest.cpp */,
+				2245785D13A2BCA4002E0C5D /* GrfSvn_lib.cpp */,
+				2245785E13A2BCA4002E0C5D /* Grf_lib.h */,
+				2245785F13A2BCA4002E0C5D /* Grf_lib.cpp */,
+				2245786013A2BCA4002E0C5D /* GrfBeauty.cpp */,
+				2245786113A2BCA4002E0C5D /* DebugMode.h */,
+				2245786213A2BCA4002E0C5D /* Seq2Grf.cpp */,
+				2245786313A2BCA4002E0C5D /* GrfTest_lib.cpp */,
+				2245786413A2BCA4002E0C5D /* DebugMode.cpp */,
+				2245786513A2BCA4002E0C5D /* Offsets.cpp */,
+				2245786613A2BCA4002E0C5D /* Keyboard.h */,
+				2245786713A2BCA4002E0C5D /* CompressedDic.h */,
+				2245786813A2BCA4002E0C5D /* CompressedDic.cpp */,
+				2245786913A2BCA4002E0C5D /* CharNames.h */,
+				2245786A13A2BCA4002E0C5D /* SpellCheck.h */,
+				2245786B13A2BCA4002E0C5D /* Xml.cpp */,
+				2245786C13A2BCA4002E0C5D /* GrfTest.h */,
+				2245786D13A2BCA4002E0C5D /* GrfTest_lib.h */,
+				2245786E13A2BCA4002E0C5D /* GrfSvn_lib.h */,
+				2245786F13A2BCA4002E0C5D /* GrfDiff3.cpp */,
+				2245787013A2BCA4002E0C5D /* Seq2Grf.h */,
+				2245787113A2BCA4002E0C5D /* LoadInf.cpp */,
+				2245787213A2BCA4002E0C5D /* GrfBeauty.h */,
+				2245787313A2BCA4002E0C5D /* Unxmlize.h */,
+				2245787413A2BCA4002E0C5D /* Offsets.h */,
+				2245787513A2BCA4002E0C5D /* GrfDiff3.h */,
+				2245787613A2BCA4002E0C5D /* GrfDiff.h */,
+				2245787713A2BCA4002E0C5D /* GrfDiff.cpp */,
+				2245787813A2BCA4002E0C5D /* Xml.h */,
+				2245787913A2BCA4002E0C5D /* Unxmlize.cpp */,
+				2245787A13A2BCA4002E0C5D /* Overlap.cpp */,
+				2245787B13A2BCA4002E0C5D /* LoadInf.h */,
+				2245787C13A2BCA4002E0C5D /* Overlap.h */,
 				22C781511297481D00EDC8D5 /* VariableUtils.cpp */,
 				22C781521297481D00EDC8D5 /* VariableUtils.h */,
 				2294F4A5122EEB1C009495A8 /* LocateTrace.cpp */,
@@ -1346,6 +1438,24 @@
 				222D09EA125CE6DD00497A10 /* MzRepairUlp.cpp in Sources */,
 				222D09EB125CE6DD00497A10 /* MzToolsUlp.cpp in Sources */,
 				22C781531297481D00EDC8D5 /* VariableUtils.cpp in Sources */,
+				2245787D13A2BCA4002E0C5D /* SpellChecking.cpp in Sources */,
+				2245787E13A2BCA4002E0C5D /* SpellCheck.cpp in Sources */,
+				2245787F13A2BCA4002E0C5D /* Keyboard.cpp in Sources */,
+				2245788013A2BCA4002E0C5D /* GrfTest.cpp in Sources */,
+				2245788113A2BCA4002E0C5D /* GrfSvn_lib.cpp in Sources */,
+				2245788213A2BCA4002E0C5D /* Grf_lib.cpp in Sources */,
+				2245788313A2BCA4002E0C5D /* GrfBeauty.cpp in Sources */,
+				2245788413A2BCA4002E0C5D /* Seq2Grf.cpp in Sources */,
+				2245788513A2BCA4002E0C5D /* GrfTest_lib.cpp in Sources */,
+				2245788613A2BCA4002E0C5D /* DebugMode.cpp in Sources */,
+				2245788713A2BCA4002E0C5D /* Offsets.cpp in Sources */,
+				2245788813A2BCA4002E0C5D /* CompressedDic.cpp in Sources */,
+				2245788913A2BCA4002E0C5D /* Xml.cpp in Sources */,
+				2245788A13A2BCA4002E0C5D /* GrfDiff3.cpp in Sources */,
+				2245788B13A2BCA4002E0C5D /* LoadInf.cpp in Sources */,
+				2245788C13A2BCA4002E0C5D /* GrfDiff.cpp in Sources */,
+				2245788D13A2BCA4002E0C5D /* Unxmlize.cpp in Sources */,
+				2245788E13A2BCA4002E0C5D /* Overlap.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
