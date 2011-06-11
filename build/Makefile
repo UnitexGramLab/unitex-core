@@ -115,6 +115,10 @@ ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
 DEFFLAGS += -I$(ADDITIONAL_INCLUDE)
 endif
 
+ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
+DEFFLAGS += -I$(ADDITIONAL_INCLUDE2)
+endif
+
 ifeq ($(LIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
@@ -195,6 +199,10 @@ endif
 
 ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
 CFLAGS += -I$(ADDITIONAL_INCLUDE)
+endif
+
+ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
+CFLAGS += -I$(ADDITIONAL_INCLUDE2)
 endif
 
 LIBTRE   = libtre.a
@@ -284,6 +292,10 @@ endif
 
 ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
 CFLAGS += -I$(ADDITIONAL_INCLUDE)
+endif
+
+ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
+CFLAGS += -I$(ADDITIONAL_INCLUDE2)
 endif
 
 LIBTRE   = libtre.a

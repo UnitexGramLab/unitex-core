@@ -1,3 +1,12 @@
+/*
+   build Jni on MacOs :
+ make JNILIBRARY=yes ADDITIONAL_INCLUDE=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Headers/
+  (and after rename libUnitexJNIExperiment.so as libUnitexJNIExperiment.dylib)
+
+ mingw32-make.exe SYSTEM=windows JNILIBRARY=yes ADDITIONAL_INCLUDE=c:\Progra~2\Java\jdk1.6.0_13\include ADDITIONAL_INCLUDE2=c:\Progra~2\Java\jdk1.6.0_13\include\win32
+ */
+
+
 
 #include "fr_univ_mlv_unitex_UnitexJNIExperiment.h"
 
@@ -59,3 +68,21 @@ JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexJNIExperiment_PerformUnite
 
     return retval;
 }
+
+/* now : compiling jni under MinGW32 don't add underscore, so I add manually */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+JNIEXPORT jint JNICALL _Java_fr_univ_1mlv_unitex_UnitexJNIExperiment_PerformUnitexToolByStringArray
+  (JNIEnv *jenv, jclass jcl, jobjectArray strArray)
+{
+    return Java_fr_univ_1mlv_unitex_UnitexJNIExperiment_PerformUnitexToolByStringArray(jenv, jcl, strArray);
+}
+
+#ifdef __cplusplus
+}
+#endif
