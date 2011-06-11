@@ -1,9 +1,13 @@
 /*
    build Jni on MacOs :
  make JNILIBRARY=yes ADDITIONAL_INCLUDE=/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Headers/
-  (and after rename libUnitexJNIExperiment.so as libUnitexJNIExperiment.dylib)
+  and after rename and move bin/libUnitexJNIExperiment.so to UnitexJniExperimental/libUnitexJNIExperiment.dylib)
 
+ make JNILIBRARY=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-6-openjdk/include ADDITIONAL_INCLUDE2=/usr/lib/jvm/java-6-openjdk/include/linux
+  and after move bin/libUnitexJNIExperiment.so to UnitexJniExperimental/libUnitexJNIExperiment.so)
+ 
  mingw32-make.exe SYSTEM=windows JNILIBRARY=yes ADDITIONAL_INCLUDE=c:\Progra~2\Java\jdk1.6.0_13\include ADDITIONAL_INCLUDE2=c:\Progra~2\Java\jdk1.6.0_13\include\win32
+  and after move bin\UnitexJNIExperiment.dll to UnitexJniExperimental\UnitexJNIExperiment.dll)
  */
 
 
