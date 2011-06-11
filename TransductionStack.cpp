@@ -514,7 +514,8 @@ if (capture) {
 		 * since no output is really produced there */
 		push_output_char(p->stack,DEBUG_INFO_OUTPUT_MARK);
 		int i;
-		for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++);
+		for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++) {
+		}
 		push_output_string(p->stack,output+i);
 	}
 }
