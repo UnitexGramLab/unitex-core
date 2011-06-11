@@ -690,7 +690,8 @@ while (!is_empty(u_tokens)) {
 	   unichar foo[2]={DEBUG_INFO_OUTPUT_MARK,0};
 	   u_strcat(tmp,foo);
 	   int i;
-	   for (i=u_strlen(output)-1;output[i]!=DEBUG_INFO_COORD_MARK;i--);
+	   for (i=u_strlen(output)-1;output[i]!=DEBUG_INFO_COORD_MARK;i--) {
+	   }
 	   u_strcat(tmp,output+i);
 	   int start=0;
 	   if (token[0]=='@' && token[1]!='\0') {
