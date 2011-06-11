@@ -148,6 +148,7 @@ U_FILE* f_output=U_STDERR;
 U_FILE* backup_stdout=U_STDOUT;
 int char_by_char=0;
 int val,index=-1;
+int ret=0;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index,vars))) {
    switch(val) {
@@ -282,7 +283,7 @@ add_long_option(invoker_Concord,"uima",offsets_out);
 
 /* Now we process the grf files */
 U_FILE* f;
-int ret=0;
+
 char line[4096];
 
 for (int i=vars->optind;i<argc;i++) {
