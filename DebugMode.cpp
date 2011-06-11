@@ -58,7 +58,8 @@ while (*s!='\0') {
 		s++;
 	}
 	/* Skipping everything until char #3 */
-	while (*(s++)!=DEBUG_INFO_INPUT_MARK);
+	while (*(s++)!=DEBUG_INFO_INPUT_MARK) {
+	}
 	empty(tmp);
 	/* Skipping everything until char #4 */
 	while (*s!=DEBUG_INFO_END_MARK) {
