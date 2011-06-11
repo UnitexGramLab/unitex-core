@@ -282,9 +282,9 @@ add_long_option(invoker_Concord,"uima",offsets_out);
 
 /* Now we process the grf files */
 U_FILE* f;
-int ret;
+int ret=0;
 char line[4096];
-ret=0;
+
 for (int i=vars->optind;i<argc;i++) {
 	u_fprintf(backup_stdout,"Testing graph %s\n",argv[i]);
 	Grf* grf=load_Grf(argv[i]);
