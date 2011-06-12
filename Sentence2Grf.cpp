@@ -409,6 +409,7 @@ for (int i=0;i<entry->n_inflectional_codes;i++) {
    tmp=tmp+1+u_strlen(entry->inflectional_codes[i]);
 }
 if (tmp>width) width=tmp;
+width=width/2;
 free_dela_entry(entry);
 return width;
 }
