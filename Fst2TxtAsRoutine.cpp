@@ -637,7 +637,7 @@ void scan_graph(
 				u_strcpy(p->stack->stack, liste->stack);
 				p->current_insertions = liste->insertions;
 				liste->insertions = NULL;
-				scan_graph(n_graph, t->state_number, liste->position, depth,
+				scan_graph(n_graph, t->state_number, liste->pos_in_tokens, depth,
 						match_list, word_token_buffer, p);
 				free_vector_int(p->current_insertions);
 				struct parsing_info* l_tmp = liste;

@@ -165,6 +165,11 @@ for (int i=0;i<tokens->size;i++) {
 	} else {
 	   Hanguls_to_Jamos(tokens->value[i],foo,korean,0);
 	   res[i]=u_strdup(foo);
+	   /*error("<%S> (%x) => \n",tokens->value[i],tokens->value[i][0]);
+	   for (int j=0;foo[j]!=0;j++) {
+		   error("[ %C %x] ",foo[j],foo[j]);
+	   }
+	   error("\n");*/
 	}
 }
 return res;

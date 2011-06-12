@@ -707,7 +707,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						p->weight=old_weight2;
 						locate(/*graph_depth,*/
 								p->optimized_states[t1->state_number],
-								L->position, matches, n_matches,
+								L->pos_in_tokens, matches, n_matches,
 								ctx, p);
 
 //p->backup_memory_reserve=reserve_new;

@@ -193,13 +193,16 @@ return u_strlen(t2+pos);
 static unichar* kdup(unichar first,...) {
 unichar* result=new unichar[MAX_ORDER_JAMO_SIZE];
 result[0]=first;
+//error("[  %C  ] (%x) => ",first,first);
 int d,n=1;
 if (first!=0) {
    va_list args;
    va_start(args,first);
    while ((d=va_arg(args,int))!=0) {
       result[n++]=(unichar)d;
+	  //if (n>2) error("[  %C  ] (%x)   ",d,d);
    }
+   //error("\n");
    va_end(args);
 }
 while (n!=MAX_ORDER_JAMO_SIZE) {
@@ -214,6 +217,7 @@ return result;
  */
 void Korean::initJamoMap() {
 /* First, we initialize the initial consonants */
+//error("----initial consonants----------\n");
 jamo_table[ 0]=kdup(0x1100, 0x3131, 0x1100, 0);
 jamo_table[ 1]=kdup(0x1101, 0x3132, 0x1100, 0x1100, 0);
 jamo_table[ 2]=kdup(0x1102, 0x3134, 0x1102, 0);
@@ -228,12 +232,15 @@ jamo_table[10]=kdup(0x110A, 0x3146, 0x1109, 0x1109, 0);
 jamo_table[11]=kdup(0x110B, 0x3147, 0x110B, 0);
 jamo_table[12]=kdup(0x110C, 0x3148, 0x110C, 0);
 jamo_table[13]=kdup(0x110D, 0x3149, 0x110C, 0x110C, 0);
-jamo_table[14]=kdup(0x110E, 0x314A, 0x1112, 0x110C, 0);
-jamo_table[15]=kdup(0x110F, 0x314B, 0x1112, 0x1100, 0);
-jamo_table[16]=kdup(0x1110, 0x314C, 0x1112, 0x1103, 0);
+/* SP commented the following transcription rules since they
+ * corresponded to historical things */
+jamo_table[14]=kdup(0x110E, 0x314A, 0x110E, 0/*, 0x1112, 0x110C, 0*/);
+jamo_table[15]=kdup(0x110F, 0x314B, 0x110F, 0/*, 0x1112, 0x1100, 0*/);
+jamo_table[16]=kdup(0x1110, 0x314C, 0x1110, 0/*, 0x1112, 0x1103, 0*/);
 jamo_table[17]=kdup(0x1111, 0x314D, 0x1111, 0);
 jamo_table[18]=kdup(0x1112, 0x314E, 0x1112, 0);
 /* Then, we initialize the 21 vowels */
+//error("----vowels----------\n");
 jamo_table[19]=kdup(0x1161, 0x314F, 0x1161, 0);
 jamo_table[20]=kdup(0x1162, 0x3150, 0x1161, 0x1175, 0);
 jamo_table[21]=kdup(0x1163, 0x3151, 0x1175, 0x1161, 0);
@@ -256,6 +263,7 @@ jamo_table[37]=kdup(0x1173, 0x3161, 0x1173, 0);
 jamo_table[38]=kdup(0x1174, 0x3162, 0x1173, 0x1175, 0);
 jamo_table[39]=kdup(0x1175, 0x3163, 0x1175, 0);
 /* Finally, we initialize the 28 final consonants */
+//error("----final consonants----------\n");
 jamo_table[40]=kdup(0); /* Special case of the empty final consonant */
 jamo_table[41]=kdup(0x11A8, 0x3131, 0x1100, 0);
 jamo_table[42]=kdup(0x11A9, 0x3132, 0x1100, 0x1100, 0);

@@ -471,7 +471,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						/* We reset the weight since its a value that is graph specific */
 						p->weight=old_weight;
 						morphological_locate(/*graph_depth,*/ t->state_number,
-								L->position, L->pos_in_token,
+								L->pos_in_tokens, L->pos_in_chars,
 								matches, n_matches, ctx, p,
 								L->jamo, L->pos_in_jamo, content_buffer);
 						clear_dic_variable_list(&(p->dic_variables));
@@ -604,7 +604,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					/* If there is at least one match, we process the match list */
 					do {
 						get_content(content1, p, pos_in_tokens, pos_in_chars,
-								L2->position, L2->pos_in_token);
+								L2->pos_in_tokens, L2->pos_in_chars);
 #ifdef TRE_WCHAR
 						int filter_number =
 								p->tags[t->tag_number]->filter_number;
@@ -635,16 +635,16 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						}
 						unichar* reached_token =
 								p->tokens->value[p->buffer[p->current_origin
-										+ L2->position]];
+										+ L2->pos_in_tokens]];
 						int new_pos, new_pos_in_token;
-						if (reached_token[L2->pos_in_token] == '\0') {
+						if (reached_token[L2->pos_in_chars] == '\0') {
 							/* If we are at the end of the last token matched by the <DIC> tag */
-							new_pos = L2->position + 1;
+							new_pos = L2->pos_in_tokens + 1;
 							new_pos_in_token = 0;
 						} else {
 							/* If not */
-							new_pos = L2->position;
-							new_pos_in_token = L2->pos_in_token;
+							new_pos = L2->pos_in_tokens;
+							new_pos_in_token = L2->pos_in_chars;
 						}
 						/* We continue the exploration */
 						struct dela_entry* old_value = NULL;
@@ -846,9 +846,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								break;
 							}
 						}
-						if (jamo[new_pos_in_jamo] != '\0') {
+						/*if (jamo[new_pos_in_jamo] != '\0') {
 							fatal_error("Unexpected end of Jamo sequence\n");
-						}
+						}*/
 					}
 				}
 				morphological_locate(/*graph_depth,*/ t->state_number, new_pos,
@@ -908,6 +908,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						variable_list->variable_number);
 		set_variable_start(p->input_variables, variable_list->variable_number, pos_in_tokens);
 		set_variable_start_in_chars(p->input_variables, variable_list->variable_number, pos_in_chars);
+		//error("var start=tok=%d char=%d\n",pos_in_tokens,pos_in_chars);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 						pos_in_chars, matches, n_matches, ctx,
 						p, jamo, pos_in_jamo,
@@ -949,6 +950,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			new_end_in_token=pos_in_tokens+1;
 			new_end_in_chars=pos_in_chars-1;
 		}
+		//error("var end=tok=%d char=%d\n",new_end_in_token,new_end_in_chars);
 		set_variable_end(p->input_variables, variable_list->variable_number, new_end_in_token);
 		set_variable_end_in_chars(p->input_variables, variable_list->variable_number,new_end_in_chars);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -1014,6 +1016,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				int tag_token_length = u_strlen(tag_token);
 				if (jamo != NULL) {
 					/* KOREAN token matching */
+					//error("comparing txt=<%S> and tag=<%S>\n",jamo,tag_token);
 					int new_pos_in_jamo = pos_in_jamo;
 					int new_pos_in_token = pos_in_chars;
 					int result = get_jamo_longest_prefix(jamo,
@@ -1131,7 +1134,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					/* If there is at least one match, we process the match list */
 					do {
 						get_content(content2, p, pos_in_tokens, pos_in_chars,
-								L->position, L->pos_in_token);
+								L->pos_in_tokens, L->pos_in_chars);
 #ifdef TRE_WCHAR
 						int filter_number =
 								p->tags[trans->tag_number]->filter_number;
@@ -1161,16 +1164,16 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						}
 						unichar* reached_token =
 								p->tokens->value[p->buffer[p->current_origin
-										+ L->position]];
+										+ L->pos_in_tokens]];
 						int new_pos, new_pos_in_token;
-						if (reached_token[L->pos_in_token] == '\0') {
+						if (reached_token[L->pos_in_chars] == '\0') {
 							/* If we are at the end of the last token matched by the dictionary search */
-							new_pos = L->position + 1;
+							new_pos = L->pos_in_tokens + 1;
 							new_pos_in_token = 0;
 						} else {
 							/* If not */
-							new_pos = L->position;
-							new_pos_in_token = L->pos_in_token;
+							new_pos = L->pos_in_tokens;
+							new_pos_in_token = L->pos_in_chars;
 						}
 						/* We continue the exploration */
 						struct dela_entry* old_value = NULL;
@@ -1297,7 +1300,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			p->weight=L->weight;
 			locate(/*graph_depth, */p->optimized_states[L->state_number],
-					L->position, matches, n_matches, ctx, p);
+					L->pos_in_tokens, matches, n_matches, ctx, p);
             /*
 			if ((p->max_count_call > 0) && (p->counting_step.count_call >= p->max_count_call)) {
 				u_printf("stop computing token %u after %u step computing\n",
@@ -1444,6 +1447,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 		if (jamo[pos_in_jamo] == KR_SYLLABLE_BOUND) {
 			/* If we have a syllable bound */
 			after_syllab_bound = 1;
+			pos_in_current_token++;
 			//pos_in_jamo++;
 		} else if (pos_in_jamo > 0 && jamo[pos_in_jamo - 1]
 				== KR_SYLLABLE_BOUND) {

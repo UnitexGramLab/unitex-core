@@ -71,7 +71,7 @@ void update_parsing_info_stack(struct parsing_info*list,const unichar* new_stack
 /**
  * Allocates, initializes and returns a new parsing info structure.
  */
-struct parsing_info* new_parsing_info(int pos,int pos_in_token,int state,int stack_pointer,unichar* stack,
+struct parsing_info* new_parsing_info(int pos_in_tokens,int pos_in_chars,int state,int stack_pointer,unichar* stack,
                                       Variables* v,OutputVariables* output_var,struct dela_entry* dic_entry,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_int_jamo,
@@ -100,8 +100,8 @@ info->input_variable_backup_must_be_free=0;
 info->stack_must_be_free=0;
 
 
-info->position=pos;
-info->pos_in_token=pos_in_token;
+info->pos_in_tokens=pos_in_tokens;
+info->pos_in_chars=pos_in_chars;
 info->state_number=state;
 info->next=NULL;
 info->stack_pointer=stack_pointer;
@@ -186,7 +186,7 @@ filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,prv_alloc_recycle,prv_alloc_vector_int);
-if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state
+if (list->pos_in_tokens==pos && list->pos_in_chars==pos_in_token && list->state_number==state
 	&& list->jamo==jamo /* We can because we only work on pointers on unique elements */
 	&& list->pos_in_jamo==pos_in_jamo) {
    list->stack_pointer=stack_pointer;
@@ -246,8 +246,8 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,prv_alloc_recycle,prv_alloc_vector_int);
-if ((list->position==pos) /* If the length is the same... */
-    && (list->pos_in_token==pos_in_token)
+if ((list->pos_in_tokens==pos) /* If the length is the same... */
+    && (list->pos_in_chars==pos_in_token)
     && (list->state_number==state)
     && !(u_strcmp(list->stack,stack)) /* ...and if the stack content too */
     && list->left_ctx_shift==left_ctx_shift
@@ -297,12 +297,12 @@ return list;
  * we take a DELAF entry into account, and that we don't have to take care of
  * the stack and variables.
  */
-struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
+struct parsing_info* insert_morphological_match(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
                                                 Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
-if (list==NULL) return new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
+if (list==NULL) return new_parsing_info(pos_in_tokens,pos_in_chars,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
 		jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle,prv_alloc_vector_int);
-if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state
+if (list->pos_in_tokens==pos_in_tokens && list->pos_in_chars==pos_in_chars && list->state_number==state
     && list->dic_entry==dic_entry
     && list->jamo==jamo /* See comment in insert_if_absent*/
     && list->pos_in_jamo==pos_in_jamo) {
@@ -311,7 +311,7 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
      * (i.e. dic_entry==NULL) */
    return list;
 }
-list->next=insert_morphological_match(pos,pos_in_token,state,list->next,dic_entry,jamo,pos_in_jamo,prv_alloc_recycle,prv_alloc_vector_int);
+list->next=insert_morphological_match(pos_in_tokens,pos_in_chars,state,list->next,dic_entry,jamo,pos_in_jamo,prv_alloc_recycle,prv_alloc_vector_int);
 return list;
 }
 

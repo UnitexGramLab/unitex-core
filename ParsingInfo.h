@@ -43,11 +43,11 @@ size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar);
 struct parsing_info {
    /* Current position in the text, i.e. position in the text when the
     * final state of the subgraph was reached. */
-   int position;
+   int pos_in_tokens;
 
    /* This field is used in the morphological mode to know where the
     * matches ends in the current token. -1 means "end of the token". */
-   int pos_in_token;
+   int pos_in_chars;
 
    /* This field is used in the morphological mode to know the
     * number of the state pointed by the $> transition that ends the
