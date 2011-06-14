@@ -72,7 +72,7 @@ if (tfst==NULL) {
 }
 Transition* l;
 SingleGraphState state;
-for (int sentence=1;sentence<tfst->N;sentence++) {
+for (int sentence=1;sentence<=tfst->N;sentence++) {
    load_sentence(tfst,sentence);
    state=tfst->automaton->states[0];
    l=state->outgoing_transitions;
