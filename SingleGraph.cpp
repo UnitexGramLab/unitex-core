@@ -1285,39 +1285,6 @@ free(renumber);
 }
 
 
-#if 0
-
-/* all this is only used by Evamb, and it is about to change with the new Tfst* type */
-
-/**
- * This function takes a .fst2 and return the automaton corresponding to its
- * subgraph #n. Note that the resulting automaton considers state numbers
- * from 0 to n_states-1 and not global state numbers as in a Fst2 structure.
- */
-SingleGraph get_subgraph(Fst2* fst2,int n) {
-if (n<=0 || n>fst2->number_of_graphs) {
-   fatal_error("Invalid subgraph number %d in get_subgraph: should be in [1;%d]\n",n,fst2->number_of_graphs);
-}
-SingleGraph graph=new_SingleGraph(fst2->number_of_states_per_graphs[n]);
-int initial_state=fst2->initial_states[n];
-int max_states=fst2->number_of_states_per_graphs[n]+initial_state;
-for (int i=initial_state;i<max_states;i++) {
-   SingleGraphState state=add_state(graph);
-   if (i==initial_state) {
-      set_initial_state(state);
-   }
-   if (is_final_state(fst2->states[i])) {
-      set_final_state(state);
-   }
-   Transition* t=fst2->states[i]->transitions;
-   while (t!=NULL) {
-      add_outgoing_transition(state,t->tag_number,t->state_number-initial_state);
-      t=t->next;
-   }
-}
-return graph;
-}
-#endif
 
 /**
  * This function computes the number of paths between the states q1 and q2.
