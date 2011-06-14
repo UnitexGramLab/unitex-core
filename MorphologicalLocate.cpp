@@ -455,7 +455,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							p->stack->stack_pointer = L->stack_pointer;
 							p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
 							if (p->nb_output_variables != 0) {
-								install_output_variable_backup(p->output_variables,output_variable_backup);
+								install_output_variable_backup(p->output_variables,L->output_variable_backup);
 							}
 							if (save_previous_ptr_var == NULL && (var_backup != NULL)) {
 								save_previous_ptr_var
