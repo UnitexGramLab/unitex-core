@@ -484,11 +484,18 @@ for (;;) {
         	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
         		  push_input_string(stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
         	  }
+
         	  /* Finally, we copy the last token */
-        	  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
-        	  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
-        	  for (int k=0;k<=last;k++) {
-        		  push_input_char(stack,tok[k],p->protect_dic_chars);
+
+        	  if ((v->end_in_tokens-1+p->current_origin) < 0) {
+        		  error("v->end_in_tokens-1+p->current_origin is below 0");
+        	  }
+        	  else {
+        		  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+        		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+        		  for (int k=0;k<=last;k++) {
+        		    push_input_char(stack,tok[k],p->protect_dic_chars);
+        	  	}
         	  }
     	  }
       }
