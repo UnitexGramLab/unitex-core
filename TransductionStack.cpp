@@ -488,7 +488,7 @@ for (;;) {
         	  /* Finally, we copy the last token */
 
         	  if ((v->end_in_tokens-1+p->current_origin) < 0) {
-        		  error("v->end_in_tokens-1+p->current_origin is below 0");
+        		  error("v->end_in_tokens-1+p->current_origin is below 0\n");
         	  }
         	  else {
         		  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
