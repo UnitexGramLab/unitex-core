@@ -26,7 +26,7 @@
 #include "Grf_lib.h"
 
 
-Grf* sentence_to_grf(Tfst*,char*,int);
+Grf* sentence_to_grf(Tfst*,char*,int,int);
 int width_of_tag(TfstTag*);
 
 #endif

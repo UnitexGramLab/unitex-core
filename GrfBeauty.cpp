@@ -360,7 +360,7 @@ void beautify(Grf* grf,Alphabet* alph) {
 if (grf==NULL) return;
 merge_case_equivalent_boxes(grf,alph);
 merge_pseudo_case_equivalent_boxes(grf,alph);
-merge_box_pair(grf,alph);
+//merge_box_pair(grf,alph);
 merge_boxes_with_same_transition(grf);
 replace_transition_by_E(grf);
 /* 6: si A, B et C sont toutes reliées à X, Y et Z, utiliser une boîte <E> intermédiaire pour

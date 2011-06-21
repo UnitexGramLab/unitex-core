@@ -164,9 +164,9 @@ CC     = $(COMMANDPREFIX)g++
 CC_GCC = $(COMMANDPREFIX)gcc
 AR     = $(COMMANDPREFIX)ar
 else
-CC     = i386-mingw32msvc-g++
-CC_GCC = i386-mingw32msvc-gcc
-AR     = i386-mingw32msvc-ar
+CC     = i586-mingw32msvc-g++
+CC_GCC = i586-mingw32msvc-gcc
+AR     = i586-mingw32msvc-ar
 endif
 
 RM      = rm -f
@@ -624,10 +624,6 @@ REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o RegularExpressions.o Error.o File.o\
                List_int.o Stack_int.o UnitexGetOpt.o Ustring.o $(SYSLIBMAPPED)
 
-SEQ2GRF      = Seq2Grf
-SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o\
-               UnitexGetOpt.o Ustring.o Grf_lib.o GrfBeauty.o Alphabet.o $(SYSLIBMAPPED)
-
 SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o\
                ProgramInvoker.o $(SYSLIBMAPPED)
@@ -701,7 +697,8 @@ TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o I
 			  DictionaryTree.o AutomatonDictionary2Bin.o AbstractDelaLoad.o CompressedDic.o LoadInf.o $(SYSLIBMAPPED)
 
 TXT2TFST      = Txt2Tfst
-TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o DELA_tree.o\
+TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Af_stdio.o\
+				ActivityLogger.o Unicode.o AbstractAllocator.o DELA_tree.o\
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o AbstractFst2Load.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
@@ -709,6 +706,15 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
                 Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o \
                 CompressedDic.o LoadInf.o Offsets.o Overlap.o DebugMode.o Grf_lib.o $(SYSLIBMAPPED)
+                
+
+SEQ2GRF      = Seq2Grf
+SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o\
+               StringParsing.o DELA.o List_ustring.o String_hash.o DELA_tree.o TfstStats.o BitArray.o FIFO.o Grf2Fst2_lib.o\
+               Tfst.o SingleGraph.o Txt2Tfst.o BitMasks.o HashTable.o BuildTextAutomaton.o Text_tokens.o Offsets.o Sentence2Grf.o\
+               AbstractDelaLoad.o UnitexGetOpt.o Ustring.o Grf_lib.o Match.o Transitions.o List_int.o Korean.o NewLineShifts.o\
+               Symbol.o LanguageDefinition.o Tagset.o Overlap.o NormalizationFst2.o AbstractFst2Load.o Fst2.o Pattern.o\
+               DebugMode.o CompressedDic.o LoadInf.o LocateMatches.o GrfBeauty.o File.o Alphabet.o $(SYSLIBMAPPED)
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Fst2.o AbstractFst2Load.o Alphabet.o \

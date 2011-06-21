@@ -83,6 +83,7 @@ int SENTENCE=-1;
 int size=10;
 char* fontname=NULL;
 char* output=NULL;
+int is_sequence_automaton=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -201,7 +202,7 @@ for (int i=0;i<tfst->tokens->nbelems;i++) {
 u_fclose(tok);
 
 u_printf("Creating GRF...\n");
-Grf* grf=sentence_to_grf(tfst,fontname,size);
+Grf* grf=sentence_to_grf(tfst,fontname,size,is_sequence_automaton);
 save_Grf(f,grf);
 free_Grf(grf);
 u_fclose(f);
