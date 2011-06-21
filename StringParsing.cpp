@@ -86,6 +86,7 @@ while ((*s)) {
 return NULL;
 }
 
+
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
 int j=0;
@@ -176,6 +177,94 @@ return value;
 
 
 /**
+ * The Ustring version, in order to avoid buffer overflow in result.
+ * Note that this version appends the string to result instead of replacing
+ * its previous content.
+ */
+int parse_string(const unichar* s,int *ptr,Ustring* result,const unichar* stop_chars,
+                 const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
+if (s[*ptr]=='\0') return P_EOS;
+while (s[*ptr]!='\0') {
+   if (s[*ptr]==PROTECTION_CHAR) {
+      /* If there is a protection character (backslash) */
+      if (s[(*ptr)+1]=='\0') {
+         /* It must not appear at the end of the string */
+         return P_BACKSLASH_AT_END;
+      }
+      if (chars_to_keep_protected==NULL || local_u_strchr(chars_to_keep_protected,s[(*ptr)+1])) {
+         /* If the character must keep its backslash */
+         u_strcat(result,PROTECTION_CHAR);
+      }
+      u_strcat(result,s[(*ptr)+1]);
+      (*ptr)=(*ptr)+2;
+   } else {
+      /* If we have an unprotected character */
+      if (local_u_strchr(stop_chars,s[*ptr])) {
+         /* If it is a stop char, we have finished */
+         return P_OK;
+      }
+      if (local_u_strchr(forbidden_chars,s[*ptr])) {
+         /* If it is a forbidden char, it's an error */
+         return P_FORBIDDEN_CHAR;
+      }
+      /* If it's a normal char, we copy it */
+      u_strcat(result,s[(*ptr)++]);
+   }
+}
+/* If we arrive here, we have reached the end of the string without error */
+return P_OK;
+}
+
+
+/**
+ * Parses the string 's' from '*ptr' until it finds '\0' or a character that is in
+ * 'stop_chars'. '*ptr' is updated. All protected characters will be unprotected.
+ * If an error occurs, it returns an error code; otherwise, the substring obtained
+ * is stored in 'result' and P_OK is returned.
+ */
+int parse_string(const unichar* s,int *ptr,Ustring* result,const unichar* stop_chars) {
+return parse_string(s,ptr,result,stop_chars,P_EMPTY,P_EMPTY);
+}
+
+
+/**
+ * Parses the string 's' from '*ptr' until it finds '\0' or a character that is in
+ * 'stop_chars'. '*ptr' is updated. All protected characters will be unprotected.
+ * If an error occurs, it returns an error code; otherwise, the substring obtained
+ * is stored in 'result' and P_OK is returned.
+ */
+int parse_string(const unichar* s,int *ptr,Ustring* result,const char* stop_chars) {
+unichar* tmp=u_strdup(stop_chars);
+int value=parse_string(s,ptr,result,tmp,P_EMPTY,P_EMPTY);
+free(tmp);
+return value;
+}
+
+
+/**
+ * This function do the same as above, except that it starts from the
+ * beginning of the string. It can be used for one-shot tokenization.
+ */
+int parse_string(const unichar* s,Ustring* result,const unichar* stop_chars) {
+int ptr=0;
+return parse_string(s,&ptr,result,stop_chars,P_EMPTY,P_EMPTY);
+}
+
+
+/**
+ * This function do the same as above, except that it starts from the
+ * beginning of the string. It can be used for one-shot tokenization.
+ */
+int parse_string(const unichar* s,Ustring* result,const char* stop_chars) {
+unichar* tmp=u_strdup(stop_chars);
+int ptr=0;
+int value=parse_string(s,&ptr,result,tmp,P_EMPTY,P_EMPTY);
+free(tmp);
+return value;
+}
+
+
+/**
  * This function copies 's' into 'result', escaping the chars in
  * 'chars_to_escape'. Protected chars are not taken into account.
  * 
@@ -206,7 +295,9 @@ return j;
 
 
 /**
- * The same, with a Ustring. Returns the length of the added string.
+ * Quite the same, with a Ustring. Returns the length of the added string.
+ * Note that this version appends the string to result instead of replacing
+ * its previous content.
  */
 int escape(const unichar* s,Ustring* result,const unichar* chars_to_escape) {
 int n=result->len;

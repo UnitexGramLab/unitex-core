@@ -151,7 +151,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 
 	struct OUTBUF OutBuf;
 	OutBuf.pos = 0;
-	unichar tmp[MAX_TAG_LENGTH];
+	Ustring* tmp=new_Ustring(MAX_TAG_LENGTH);
 	//struct buffer* buffer=new_buffer_for_file(UNICHAR_BUFFER,input);
 
 	long save_pos = ftell(input);
@@ -229,8 +229,8 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 				/* If we don't increase the position, the parse will stop on the initial { */
 				current_start_pos++;
 
-				tmp[0] = '{';
-				int code = parse_string(buff, &current_start_pos, &(tmp[1]),
+				u_strcpy(tmp,"{");
+				int code = parse_string(buff, &current_start_pos, tmp,
 						stop_chars, forbidden_chars, NULL);
 				if (code == P_FORBIDDEN_CHAR || code == P_BACKSLASH_AT_END
 						|| buff[current_start_pos] != '}') {
@@ -249,11 +249,11 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 					/* If we have read a sequence like {....}, we assume that there won't be
 					 * a buffer overflow if we add the } */
 					u_strcat(tmp, close_bracket);
-					if (!u_strcmp(tmp, "{S}") || !u_strcmp(tmp, "{STOP}")
-							|| check_tag_token(tmp)) {
+					if (!u_strcmp(tmp->str, "{S}") || !u_strcmp(tmp->str, "{STOP}")
+							|| check_tag_token(tmp->str)) {
 						/* If this is a special tag or a valid tag token, we just print
 						 * it to the output */
-						WriteOufBuf(&OutBuf, convLFtoCRLF, tmp, output, 0);
+						WriteOufBuf(&OutBuf, convLFtoCRLF, tmp->str, output, 0);
 						current_start_pos++;
 						int l=u_strlen(tmp);
 						old_start_pos=old_start_pos+l;
@@ -384,7 +384,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 
 	free(line_read);
 	free_string_hash(replacements);
-
+	free_Ustring(tmp);
 	u_fclose(input);
 	u_fclose(output);
 	return 0;

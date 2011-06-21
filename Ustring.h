@@ -58,6 +58,7 @@ void free_Ustring(Ustring * ustr);
 static inline void empty(Ustring * ustr);
 void truncate(Ustring* ustr,unsigned int length);
 
+static inline int u_strlen(Ustring*);
 void u_strcat(Ustring*,const unichar*,unsigned int);
 void u_strcat(Ustring*,const char*,unsigned int);
 void u_strcat(Ustring*,unichar);
@@ -104,6 +105,11 @@ if (ustr==NULL) {
 }
 if (str==NULL || str[0]=='\0') return;
 u_strcat(ustr,str,u_strlen(str));
+}
+
+
+static inline int u_strlen(Ustring* s) {
+return s->len;
 }
 
 
