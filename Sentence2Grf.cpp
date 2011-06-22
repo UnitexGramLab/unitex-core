@@ -304,7 +304,7 @@ Grf* tfst_transitions_to_grf_states(Tfst* tfst,
 				} else if(!u_strcmp(t->content,"+")){
 					u_strcpy(content,"\"\\+\"");
 				} else if(!u_strcmp(t->content,"-")){
-					u_strcpy(content,"\"\\\-\"");
+					u_strcpy(content,"\"\\-\"");
 				} else if(!u_strcmp(t->content,":")){
 					u_strcpy(content,"\"\\:\"");
 				} else if(!u_strcmp(t->content,"/")){
