@@ -164,9 +164,9 @@ CC     = $(COMMANDPREFIX)g++
 CC_GCC = $(COMMANDPREFIX)gcc
 AR     = $(COMMANDPREFIX)ar
 else
-CC     = i586-mingw32msvc-g++
-CC_GCC = i586-mingw32msvc-gcc
-AR     = i586-mingw32msvc-ar
+CC     = i386-mingw32msvc-g++
+CC_GCC = i386-mingw32msvc-gcc
+AR     = i386-mingw32msvc-ar
 endif
 
 RM      = rm -f
