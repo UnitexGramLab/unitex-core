@@ -413,6 +413,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 		// apply transducer
 		transducer *current_transducer = (transducer*)take_ptr(transducer_list);
+		fprintf(stdout,"Applying transducer %d: %s\n", transducer_number, current_transducer->transducer_file_name);
 		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 		// generate concordance for this transducer
