@@ -391,11 +391,11 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	int transducer_number = 1;
     char *labeled_text_name = NULL;
+    char last_labeled_text_name[FILENAME_MAX];
 
     if ((in_place != 0))
 	   labeled_text_name = create_labeled_files_and_directory(text,
 		    transducer_number*0, must_create_directory,0);
-
 
 	while(!is_empty(transducer_list)){
 
@@ -432,9 +432,9 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		free(current_transducer -> transducer_file_name);
 		free(current_transducer);
 
+		sprintf(last_labeled_text_name, "%s", labeled_text_name);
         if ((in_place == 0))
 		       free(labeled_text_name);
-
 	}
     if ((in_place != 0))
 		    free(labeled_text_name);
@@ -443,7 +443,6 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	construct_cascade_concord(tokens_list,text,transducer_number,encoding_output,bom_output,mask_encoding_compatibility_input);
 
-
 	struct snt_files *snt_files = new_snt_files(text);
 
 	char result_file_name[FILENAME_MAX];
@@ -451,8 +450,16 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	remove_extension(text,text_name_without_extension);
 	sprintf(result_file_name,"%s.csc",text_name_without_extension);
 
-	copy_file(result_file_name,text);
+	// make a copy of the last resulting text of the cascade in the file named text.csc (in the same directory than text.snt)
+	char path[FILENAME_MAX];
+	get_path(text,path);
+	char last_resulting_text_path[FILENAME_MAX];
+	char result_file_name_path[FILENAME_MAX];
+	sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
+	sprintf(result_file_name_path,"%s", result_file_name);
+	copy_file(result_file_name_path, last_resulting_text_path);
 	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
+
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);
