@@ -458,7 +458,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
 	sprintf(result_file_name_path,"%s", result_file_name);
 	copy_file(result_file_name_path, last_resulting_text_path);
-	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
+	//launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 
     free_cassys_tokens_list(tokens_list);
