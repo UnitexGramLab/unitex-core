@@ -35,7 +35,7 @@ if (tfst==NULL) {
 }
 Transition* l;
 SingleGraphState state;
-for (int sentence=1;sentence<tfst->N;sentence++) {
+for (int sentence=1;sentence<=tfst->N;sentence++) {
    load_sentence(tfst,sentence);
    int n=tfst->automaton->number_of_states;
    for (int i=0;i<n;i++) {
@@ -55,6 +55,13 @@ for (int sentence=1;sentence<tfst->N;sentence++) {
    }
 }
 return LINEAR_AUTOMATON;
+}
+
+
+void insert_separators(U_FILE* f,TfstTag* current,TfstTag* next) {
+if (current->m.end_pos_in_token!=next->m.start_pos_in_token-1) {
+	u_fprintf(f," ");
+}
 }
 
 
@@ -96,9 +103,10 @@ for (int sentence=1;sentence<=tfst->N;sentence++) {
             return sentence;
          }
          TfstTag* tag=(TfstTag*)(tfst->tags->tab[l->tag_number]);
-         u_fprintf(f,"%S ",tag->content);
+         u_fprintf(f,"%S",tag->content);
          state=tfst->automaton->states[l->state_number];
          l=state->outgoing_transitions;
+         if (l!=NULL) insert_separators(f,tag,(TfstTag*)(tfst->tags->tab[l->tag_number]));
       }
    } while (state!=NULL);
 }
