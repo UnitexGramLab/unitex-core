@@ -880,6 +880,38 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
     Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
 
+	// verify the braces in concordance
+		U_FILE *concord;
+		unichar line[4096];
+		int brace_level;
+		int i;
+		int l;
+
+		concord = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, index_file,U_READ);
+		if( concord == NULL){
+			perror("u_fopen\n");
+			fprintf(stderr,"Cannot open file %s\n",index_file);
+			exit(1);
+		}
+		while(!u_feof(concord)){
+			u_fgets(line, concord);
+			brace_level=0;
+			i=0;
+			l=u_strlen(line);
+			while(i<l) {
+				if(line[i]=='{')
+					brace_level++;
+				else if(line[i]=='}')
+					brace_level--;
+				i++;
+			}
+			if( brace_level!=0){
+				fprintf(stderr, "File %s\nProblem of brackets in line %S\n", index_file, line);
+				fatal_error("cassys_tokenize_word_by_word : correct the current graph if possible.\n");
+			}
+		}
+		u_fclose(concord);
+
 	add_argument(invoker,index_file);
 
     char tmp[FILENAME_MAX];
@@ -1227,7 +1259,7 @@ void protect_special_characters(const char *text,Encoding encoding_output,int bo
 		fprintf(stderr,"Cannot open file %s\n",temp_name_file);
 		exit(1);
 	}
-
+//fprintf(stderr, "source : %s\n", text);
 	int a;
 	a = u_fgetc(source);
 	while(a!=EOF){
@@ -1285,25 +1317,29 @@ unichar *get_braced_string(U_FILE *u){
 			} else {
 				if (c == '}') {
 					if (brace_level == 0) {
+						//////brace_level--;
 						break;
 					}
 					else {
 						brace_level--;
 					}
 				}
-				if(c=='{'){
+				if(c == '{'){
 					brace_level++;
 				}
+				//if (c == '\n') {
+				//	break;
+				//}
 
 			}
 		}
 		length++;
 		a = u_fgetc(u);
+
 	}
 
 	//u_printf("\n");
-
-
+	//fprintf(stdout, "braces : %d\n", brace_level);
 	if(a == EOF){
 		fatal_error("Unexpected end of file");
 	}
@@ -1321,7 +1357,7 @@ unichar *get_braced_string(U_FILE *u){
 		perror("fseek");
 		fatal_error("fseek");
 	}
-
+	//fprintf(stdout, "%d braces : %d\n", length, brace_level);
 	for (int i = 0; i < length; ++i) {
 		result[i]=(unichar)u_fgetc(u);
 	}
@@ -1385,7 +1421,7 @@ unichar *protect_lem_in_braced_string(const unichar *s){
 	}
 
 	if (i < 0) {
-		fatal_error("protect_text error : no dots in string %S", s);
+		fatal_error("protect_lem error : no dots in string %S", s);
 	}
 
 
@@ -1418,12 +1454,12 @@ unichar *protect_text_in_braced_string(const unichar *s){
 	}
 
 	if(i<0){
-		fatal_error("protect_text error : no dots in string %s",s);
+		fatal_error("protect_text error : no dots in string %S",s);
 	}
 
 	i--;
 	if(s[i] != ','){
-		fatal_error("protect_text error : no comma in string %s",s);
+		fatal_error("protect_text error : no comma in string %S",s);
 	}
 
 
