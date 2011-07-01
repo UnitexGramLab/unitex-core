@@ -435,7 +435,7 @@ for (;;) {
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }
       } else if (v->start_in_tokens>v->end_in_tokens
-				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars!=-1 && v->end_in_chars<v->start_in_chars)) {
+				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
@@ -476,6 +476,8 @@ for (;;) {
     		  for (int k=v->start_in_chars;k<=last;k++) {
     			  push_input_char(stack,tok[k],p->protect_dic_chars);
     		  }
+    	  } else if (v->start_in_tokens==v->end_in_tokens) {
+    		  /* If the variable is empty, do nothing */
     	  } else {
     		  /* Case 2: first we deal with first token */
     		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
@@ -489,6 +491,7 @@ for (;;) {
 
         	  if ((v->end_in_tokens-1+p->current_origin) < 0) {
         		  error("v->end_in_tokens-1+p->current_origin is below 0\n");
+        		  error("start=%d  end=%d\n",v->start_in_tokens,v->end_in_tokens);
         	  }
         	  else {
         		  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
