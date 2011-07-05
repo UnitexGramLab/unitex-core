@@ -117,11 +117,11 @@ typedef struct fst_file_out_t {
 } Elag_fst_file_out;
 
 
-Elag_Tfst_file_in* load_tfst_file(char*,language_t*);
+Elag_Tfst_file_in* load_tfst_file(VersatileEncodingConfig*,char*,language_t*);
 void load_tfst_sentence_automaton(Elag_Tfst_file_in*,int);
 void tfst_file_close_in(Elag_Tfst_file_in*);
 
-Elag_fst_file_in* load_fst_file(char*,int,language_t*);
+Elag_fst_file_in* load_fst_file(VersatileEncodingConfig*,char*,int,language_t*);
 void fst_file_close_in(Elag_fst_file_in*);
 
 void fst_file_seek(Elag_fst_file_in*,int);
@@ -129,9 +129,9 @@ inline void fst_file_rewind(Elag_fst_file_in* fstin) { fst_file_seek(fstin, 1); 
 
 Fst2Automaton* load_automaton(Elag_fst_file_in*);
 Fst2Automaton* fst_file_autalmot_load(Elag_fst_file_in*,int);
-Fst2Automaton* load_elag_grammar_automaton(char* fst2,language_t*);
+Fst2Automaton* load_elag_grammar_automaton(VersatileEncodingConfig*,char* fst2,language_t*);
 
-Elag_fst_file_out* fst_file_out_open(char*,Encoding,int,int);
+Elag_fst_file_out* fst_file_out_open(VersatileEncodingConfig*,char*,int);
 void fst_file_close_out(Elag_fst_file_out * fstout);
 
 void fst_file_write(Elag_fst_file_out * fstf, const Fst2Automaton * A);

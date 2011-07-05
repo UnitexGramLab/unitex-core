@@ -70,7 +70,7 @@ u_printf(usage_Grf2Fst2);
 /**
  * A convenient way to call the main function within a Unitex program.
  */
-int pseudo_main_Grf2Fst2(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int pseudo_main_Grf2Fst2(VersatileEncodingConfig* vec,
                          const char* name,int yes_or_no,const char* alphabet,
                          int no_empty_graph_warning,int tfst_check,
                          const char* pkgdir) {
@@ -80,14 +80,14 @@ add_argument(invoker,yes_or_no?"-y":"-n");
 char tmp[FILENAME_MAX];
 {
     tmp[0]=0;
-    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-k");
         add_argument(invoker,tmp);
     }
 
     tmp[0]=0;
-    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-q");
         add_argument(invoker,tmp);
@@ -142,12 +142,14 @@ if (argc==1) {
 }
 struct compilation_info* infos=new_compilation_info();
 int check_recursion=0,tfst_check=0;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
+infos->vec.mask_encoding_compatibility_input=DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+infos->vec.encoding_output=DEFAULT_ENCODING_OUTPUT;
+infos->vec.bom_output=DEFAULT_BOM_OUTPUT;
+
 char fst2_file_name[FILENAME_MAX];
 infos->verbose_name_grf=1;
-
+char alph[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 fst2_file_name[0]='\0';
@@ -165,13 +167,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
    case 'e': infos->no_empty_graph_warning=1; break;
    case 'c': infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'a': infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
-             if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file\n");
-             }
-             infos->alphabet=load_alphabet(vars->optarg);
-             if (infos->alphabet==NULL) {
-                fatal_error("Cannot load alphabet file %s\n",vars->optarg);
-             }
+			   strcpy(alph,vars->optarg);
              break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output\n");
@@ -186,12 +182,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(infos->vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(infos->vec.encoding_output),&(infos->vec.bom_output),vars->optarg);
              break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
@@ -199,21 +195,22 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
    }
    index=-1;
 }
-
+if (alph[0]!='\0') {
+	infos->alphabet=load_alphabet(&(infos->vec),alph);
+	if (infos->alphabet==NULL) {
+		fatal_error("Cannot load alphabet file %s\n",alph);
+	}
+}
 if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-
 if (fst2_file_name[0]=='\0') {
 	strcpy(fst2_file_name,argv[vars->optind]);
 }
 remove_extension(fst2_file_name);
 strcat(fst2_file_name,".fst2");
-infos->encoding_output = encoding_output;
-infos->bom_output = bom_output;
-infos->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
-if ((infos->fst2=u_fopen_creating_unitex_text_format(encoding_output,bom_output,fst2_file_name,U_WRITE))==NULL) {
+if ((infos->fst2=u_fopen(&(infos->vec),fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
    return 1;
 }
@@ -229,15 +226,15 @@ free_alphabet(infos->alphabet);
 write_tags(infos->fst2,infos->tags);
 u_fclose(infos->fst2);
 free_OptVars(vars);
-write_number_of_graphs(fst2_file_name,infos->graph_names->size-1,infos->debug);
+write_number_of_graphs(&(infos->vec),fst2_file_name,infos->graph_names->size-1,infos->debug);
 if (check_recursion) {
-   if (!OK_for_Locate(fst2_file_name,infos->no_empty_graph_warning)) {
+   if (!OK_for_Locate(&(infos->vec),fst2_file_name,infos->no_empty_graph_warning)) {
       free_compilation_info(infos);
       return 1;
    }
 }
 if (tfst_check) {
-   if (!valid_sentence_automaton(fst2_file_name)) {
+   if (!valid_sentence_automaton(&(infos->vec),fst2_file_name)) {
       free_compilation_info(infos);
       return 1;
    }

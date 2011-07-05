@@ -42,13 +42,14 @@
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
-int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,
-		int bom_output,int mask_encoding_compatibility_input,SU_id_T* SU_id,f_morpho_T* feat,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
+		VersatileEncodingConfig* vec,
+		SU_id_T* SU_id,f_morpho_T* feat,
 		SU_forms_T* forms,int,Korean* korean,const char* pkgdir);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,
-		int bom_output,int mask_encoding_compatibility_input,unichar* lemma,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
+		VersatileEncodingConfig* vec,unichar* lemma,
 		char* inflection_code,unichar **filters,SU_forms_T* forms,
 		int,Korean* korean,const char* pkgdir);
 

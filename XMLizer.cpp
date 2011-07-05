@@ -38,7 +38,7 @@
 #define XML 0
 #define TEI 1
 
-void xmlize(int,const char*,const char*,int);
+void xmlize(VersatileEncodingConfig*,const char*,const char*,int);
 
 
 /* Headers (XML & TEI) Variables
@@ -100,9 +100,7 @@ char output[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char normalization[FILENAME_MAX]="";
 char segmentation[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int convLFtoCRLF=1;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -136,12 +134,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
@@ -164,12 +162,10 @@ strcat(snt,"_tmp.snt");
 char tmp[FILENAME_MAX];
 remove_extension(input,tmp);
 strcat(tmp,".tmp");
-normalize(input,snt,encoding_output,bom_output,mask_encoding_compatibility_input,KEEP_CARRIAGE_RETURN,convLFtoCRLF,
+normalize(input,snt,&vec,KEEP_CARRIAGE_RETURN,convLFtoCRLF,
 		normalization,NULL,1);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
-p->encoding_output = encoding_output;
-p->bom_output = bom_output;
-p->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
+p->vec=vec;
 p->text_file=strdup(snt);
 if (p->text_file==NULL) {
    fatal_alloc_error("main_XMLizer");
@@ -195,7 +191,7 @@ if (output[0]=='\0') {
    remove_extension(input,output);
 	strcat(output,".xml");
 }
-xmlize(mask_encoding_compatibility_input,snt,output,output_style);
+xmlize(&vec,snt,output,output_style);
 af_remove(snt);
 af_remove(tmp);
 free_OptVars(vars);
@@ -204,8 +200,8 @@ return 0;
 
 
 
-void xmlize(int mask_encoding_compatibility_input,const char* fin,const char* fout,int ouput_style) {
-	U_FILE* input = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, fin, U_READ);
+void xmlize(VersatileEncodingConfig* vec,const char* fin,const char* fout,int ouput_style) {
+	U_FILE* input = u_fopen(vec, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
 	U_FILE* output = u_fopen(UTF8, fout, U_WRITE);

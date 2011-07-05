@@ -38,7 +38,7 @@
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
 // Returns 0 on success, 1 otherwise.   
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-		Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+		VersatileEncodingConfig* vec,
 		MU_lemma_T* lemma, MU_forms_T* forms,const char* pkgdir);
 
 ////////////////////////////////////////////

@@ -121,12 +121,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&p->mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(p->vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&p->encoding_output,&p->bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(p->vec.encoding_output),&(p->vec.bom_output),vars->optarg);
              break;
    case '$': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_offsets argument\n");
@@ -153,13 +153,13 @@ if (p->text_file==NULL) {
    fatal_error("You must specify the text file\n");
 }
 if (out_offsets[0]!='\0') {
-	p->f_out_offsets=u_fopen_creating_versatile_encoding(p->encoding_output,p->bom_output,out_offsets,U_WRITE);
+	p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
 	if (p->f_out_offsets==NULL) {
 		fatal_error("Cannot create file %s\n",out_offsets);
 	}
 	/* We deal with offsets only if the program is expected to produce some */
 	if (in_offsets[0]!='\0') {
-		p->v_in_offsets=load_offsets(in_offsets,p->mask_encoding_compatibility_input);
+		p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
 		if (p->v_in_offsets==NULL) {
 			fatal_error("Cannot load offset file %s\n",in_offsets);
 		}

@@ -30,8 +30,8 @@
 /**
  * Loads the given offset file. Returns NULL in case of error.
  */
-vector_offset* load_offsets(char* name,int MASK_ENCODING_COMPATIBILITY) {
-U_FILE* f=u_fopen_existing_versatile_encoding(MASK_ENCODING_COMPATIBILITY,name,U_READ);
+vector_offset* load_offsets(VersatileEncodingConfig* vec,char* name) {
+U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) return NULL;
 int a,b,c,d,n;
 vector_offset* res=new_vector_offset();
@@ -251,9 +251,9 @@ vector_int_add(snt_offsets,shift_after);
  * Reads the start and end positions of each token stored in the file
  * produced by Tokenize's --output_offsets option.
  */
-vector_int* load_uima_offsets(char* name,int mask_encoding_compatibility_input) {
+vector_int* load_uima_offsets(VersatileEncodingConfig* vec,char* name) {
 U_FILE* f;
-f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
+f=u_fopen(vec,name,U_READ);
 if (f==NULL) {
    return NULL;
 }

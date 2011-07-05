@@ -95,9 +95,7 @@ char temp[FILENAME_MAX]="";
 char data[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
-Encoding enc = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
@@ -123,12 +121,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,v
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&enc,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -154,7 +152,7 @@ strcpy(tind,tfst);
 remove_extension(tind);
 strcat(tind,".tind");
 
-Alphabet* alpha = load_alphabet(alphabet);
+Alphabet* alpha = load_alphabet(&vec,alphabet);
 
 get_path(tfst,temp);
 strcat(temp,"temp.tfst");
@@ -162,23 +160,10 @@ strcat(temp,"temp.tfst");
 char data_inf[FILENAME_MAX];
 remove_extension(data,data_inf);
 strcat(data_inf,".inf");
-Dictionary* d=new_Dictionary(data,data_inf);
+Dictionary* d=new_Dictionary(&vec,data,data_inf);
 if (d==NULL) {
 	return 1;
 }
-#if 0
-struct BIN_free_info bin_free;
-const unsigned char* bin=load_abstract_BIN_file(data,&bin_free);
-if (bin==NULL) {
-	fatal_error("Cannot open .bin data file.");
-}
-struct INF_free_info inf_free;
-const struct INF_codes* inf=load_abstract_INF_file(data_inf,&inf_free);
-if (inf==NULL) {
-	fatal_error("Cannot open .inf data file");
-}
-#endif
-
 char* current_tfst = tfst;
 int form_type = get_form_type(d,alpha);
 if(form_type == 1){
@@ -196,13 +181,13 @@ if(form_type == 1){
 	strcpy(tmp_tfst,tfst);
 	remove_extension(tmp_tfst);
 	strcat(tmp_tfst,"_explode.tfst");
-	language_t* lang = load_language_definition(tagset);
-	explode_tfst(tfst,tmp_tfst,enc,bom_output,lang,NULL);
+	language_t* lang = load_language_definition(&vec,tagset);
+	explode_tfst(tfst,tmp_tfst,&vec,lang,NULL);
 	free_language_t(lang);
 	current_tfst = tmp_tfst;
 	u_printf("\n");
 }
-Tfst* input_tfst = open_text_automaton(current_tfst);
+Tfst* input_tfst = open_text_automaton(&vec,current_tfst);
 if(input_tfst == NULL) {
 	fatal_error("Cannot load input .tfst\n");
 }
@@ -210,7 +195,7 @@ if(input_tfst == NULL) {
 remove_extension(temp,tmp_tind);
 strcat(tmp_tind,".tind");
 
-U_FILE* out_tfst=u_fopen_creating_versatile_encoding(enc,bom_output,temp,U_WRITE);
+U_FILE* out_tfst=u_fopen(&vec,temp,U_WRITE);
 if (out_tfst==NULL) {
 	fatal_error("Cannot create output .tfst\n");
 }
@@ -247,11 +232,11 @@ if (output[0]!='\0') {
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
 }
-U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(enc,bom_output,tfst_tags_by_freq,U_WRITE);
+U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_freq);
 }
-U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(enc,bom_output,tfst_tags_by_alph,U_WRITE);
+U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }
@@ -275,8 +260,6 @@ else {
 }
 free_alphabet(alpha);
 free_Dictionary(d);
-/*free_abstract_BIN(bin,&bin_free);
-free_abstract_INF(inf,&inf_free);*/
 free_OptVars(vars);
 u_printf("Done.\n");
 return 0;

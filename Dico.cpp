@@ -57,7 +57,7 @@
 #define PRODUCE_MORPHO_DIC_NOW 2
 
 
-int raw_dic_application(U_FILE* text,U_FILE* raw_output,Alphabet* alphabet,int ind,char* const argv[]);
+int raw_dic_application(VersatileEncodingConfig*,U_FILE* text,U_FILE* raw_output,Alphabet* alphabet,int ind,char* const argv[]);
 
 
 const char* usage_Dico =
@@ -136,8 +136,8 @@ u_printf(usage_Dico);
 /**
  * This function stores some statistics in 'stat_dic.n'.
  */
-void save_statistics(Encoding encoding_output,int bom_output,char* name,struct dico_application_info* info) {
-U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,name,U_WRITE);
+void save_statistics(VersatileEncodingConfig* vec,char* name,struct dico_application_info* info) {
+U_FILE* f=u_fopen(vec,name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);
    return;
@@ -233,9 +233,7 @@ char* morpho_dic=NULL;
 int is_korean=0;
 int semitic=0;
 U_FILE* f_raw_output=NULL;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars))) {
    switch(val) {
@@ -305,12 +303,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    }
    index=-1;
@@ -325,7 +323,7 @@ if (vars->optind==argc) {
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
    /* We load the alphabet */
-   alphabet=load_alphabet(alph,is_korean);
+   alphabet=load_alphabet(&vec,alph,is_korean);
    if (alphabet==NULL) {
       error("Cannot open alphabet file %s\n",alph);
       return 1;
@@ -333,17 +331,17 @@ if (alph[0]!='\0') {
 }
 
 if (raw_output[0]!='\0') {
-	f_raw_output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,raw_output,U_WRITE);
+	f_raw_output=u_fopen(&vec,raw_output,U_WRITE);
 	if (f_raw_output==NULL) {
 		fatal_error("Cannot create output file %s\n",raw_output);
 	}
 }
 if (f_raw_output!=NULL) {
-	U_FILE* f_text=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,text,U_READ);
+	U_FILE* f_text=u_fopen(&vec,text,U_READ);
 	if (text==NULL) {
 		fatal_error("Cannot open text file %s\n",text);
 	}
-	int ret_applic=raw_dic_application(f_text,f_raw_output,alphabet,vars->optind,argv);
+	int ret_applic=raw_dic_application(&vec,f_text,f_raw_output,alphabet,vars->optind,argv);
 	u_fclose(f_text);
 	if (f_raw_output!=U_STDOUT) u_fclose(f_raw_output);
 	free_alphabet(alphabet);
@@ -356,16 +354,16 @@ U_FILE* text_cod;
 struct text_tokens* tokens;
 
 /* And we create empty files in order to append things to them */
-if (!u_fempty(encoding_output,bom_output,snt_files->dlf)) {
+if (!u_fempty(&vec,snt_files->dlf)) {
    fatal_error("Cannot create %s\n",snt_files->dlf);
 }
-if (!u_fempty(encoding_output,bom_output,snt_files->dlc)) {
+if (!u_fempty(&vec,snt_files->dlc)) {
    fatal_error("Cannot create %s\n",snt_files->dlc);
 }
-if (!u_fempty(encoding_output,bom_output,snt_files->err)) {
+if (!u_fempty(&vec,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
-if (!u_fempty(encoding_output,bom_output,snt_files->tags_err)) {
+if (!u_fempty(&vec,snt_files->tags_err)) {
    fatal_error("Cannot create %s\n",snt_files->tags_err);
 }
 /* We remove the text morphological dictionary files, if any */
@@ -373,7 +371,7 @@ af_remove(snt_files->morpho_dic);
 af_remove(snt_files->morpho_bin);
 af_remove(snt_files->morpho_inf);
 /* We load the text tokens */
-tokens=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
+tokens=load_text_tokens(&vec,snt_files->tokens_txt);
 if (tokens==NULL) {
    free_alphabet(alphabet);
    error("Cannot open token file %s\n",snt_files->tokens_txt);
@@ -389,7 +387,7 @@ if (text_cod==NULL) {
 }
 u_fclose(text_cod);
 u_printf("Initializing...\n");
-struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,NULL,snt_files->tags_ind,snt_files->text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,NULL,snt_files->tags_ind,snt_files->text_cod,alphabet,&vec);
 
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
@@ -418,11 +416,11 @@ for (int priority=1;priority<4;priority++) {
             /* 
              * We are using encoding preference
              */
-            info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
-            info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
-            info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
+            info->dlf=u_fopen(&vec,snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen(&vec,snt_files->dlc,U_APPEND);
+            info->err=u_fopen(&vec,snt_files->err,U_WRITE);
             /* Working... */
-            if (dico_application(argv[i],info,priority) != 0)
+            if (dico_application(&vec,argv[i],info,priority) != 0)
               ret = 1;
             /* Dumping and closing output files */
             save_unknown_words(info);
@@ -449,21 +447,21 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            if (0!=launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,
+            if (0!=launch_locate_as_routine(&vec,
             		text,argv[i],alph,outputPolicy,matchPolicy,morpho_dic,1,is_korean,arabic_rules,negation_operator)) {
             	ret=1;
             }
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
-            info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
-            info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
+            info->dlf=u_fopen(&vec,snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen(&vec,snt_files->dlc,U_APPEND);
+            info->err=u_fopen(&vec,snt_files->err,U_WRITE);
             if (export_in_morpho_dic!=DONT_PRODUCE_MORPHO_DIC) {
                /* If necessary, we deal with the morpho.dic file */
                if (info->morpho==NULL) {
                   /* We create it if needed */
-                  info->morpho=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->morpho_dic,U_WRITE);
+                  info->morpho=u_fopen(&vec,snt_files->morpho_dic,U_WRITE);
                   if (info->morpho==NULL) {
                      fatal_error("");
                   }
@@ -475,11 +473,11 @@ for (int priority=1;priority<4;priority++) {
                /* If we have to compress right now the local morphological dictionary,
                 * we must close it, sort it, call Compress and reopen it in append mode */
                u_fclose(info->morpho);
-               pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
+               pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
                                    snt_files->morpho_dic);
                /* Then we compress it */
-               pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,snt_files->morpho_dic,1);
-               info->morpho=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->morpho_dic,U_APPEND);
+               pseudo_main_Compress(&vec,0,semitic,snt_files->morpho_dic,1);
+               info->morpho=u_fopen(&vec,snt_files->morpho_dic,U_APPEND);
                if (info->morpho==NULL) {
                   fatal_error("");
                }
@@ -503,13 +501,13 @@ save_and_sort_tag_sequences(info);
 /* Finally, we have to save the definitive list of unknown words */
 u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
-	info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
+	info->err=u_fopen(&vec,snt_files->err,U_WRITE);
 }
-info->tags_err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->tags_err,U_WRITE);
+info->tags_err=u_fopen(&vec,snt_files->tags_err,U_WRITE);
 save_unknown_words(info);
 
 /* We compute some statistics */
-save_statistics(encoding_output,bom_output,snt_files->stat_dic_n,info);
+save_statistics(&vec,snt_files->stat_dic_n,info);
 u_printf("Done.\n");
 /* And we free remaining things */
 free_alphabet(alphabet);
@@ -522,10 +520,10 @@ if (info->morpho!=NULL) {
    /* If we have produced a morpho.dic file, it's time to work with it */
    u_fclose(info->morpho);
    /* We sort it to remove duplicates */
-   pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
+   pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
                        snt_files->morpho_dic);
    /* Then we compress it */
-   pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,semitic,
+   pseudo_main_Compress(&vec,0,semitic,
 		   snt_files->morpho_dic,1);
 }
 
@@ -542,7 +540,7 @@ return ret;
  * regardless if they are simple or compound words. fst2 are skipped.
  * Returns 0 in case of success; 1 otherwise.
  */
-int raw_dic_application(U_FILE* text,U_FILE* output,Alphabet* alphabet,int ind,char* const argv[]) {
+int raw_dic_application(VersatileEncodingConfig* vec,U_FILE* text,U_FILE* output,Alphabet* alphabet,int ind,char* const argv[]) {
 unichar* sequence=readline_safe(text);
 if (sequence==NULL) return 1;
 if (sequence[0]=='\0') {
@@ -566,7 +564,7 @@ for (int priority=1;priority<4;priority++) {
          char tmp2[FILENAME_MAX];
          get_extension(argv[i],tmp2);
          if (!strcmp(tmp2,".bin"))    {
-        	 dico_application_simplified(sequence,argv[i],&info);
+        	 dico_application_simplified(vec,sequence,argv[i],&info);
          }
       }
    }

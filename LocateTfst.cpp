@@ -122,10 +122,7 @@ if (argc==1) {
    return 0;
 }
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char text[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
@@ -188,12 +185,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);
@@ -210,14 +207,13 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 if (selected_negation_operator==0)
-    get_graph_compatibity_mode_by_file(&tilde_negation_operator);
+    get_graph_compatibility_mode_by_file(&vec,&tilde_negation_operator);
 strcpy(grammar,argv[vars->optind]);
 get_path(text,output);
 strcat(output,"concord.ind");
 
 int OK=locate_tfst(text,grammar,alphabet,output,
-                   encoding_output,bom_output,
-                   match_policy,output_policy,
+                   &vec,match_policy,output_policy,
                    ambiguous_output_policy,variable_error_policy,search_limit,is_korean,tilde_negation_operator);
 
 free_OptVars(vars);

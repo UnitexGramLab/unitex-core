@@ -105,17 +105,17 @@ return s;
  * It returns 1 in case of success; 0 otherwise.
  */
 int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
-                Encoding encoding_output,int bom_output,
+                VersatileEncodingConfig* vec,
                 MatchPolicy match_policy,
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,int tilde_negation_operator) {
-Tfst* tfst=open_text_automaton(text);
+Tfst* tfst=open_text_automaton(vec,text);
 if (tfst==NULL) {
 	return 0;
 }
 struct FST2_free_info fst2_free;
 struct locate_tfst_infos infos;
-infos.fst2=load_abstract_fst2(grammar,1,&fst2_free);
+infos.fst2=load_abstract_fst2(vec,grammar,1,&fst2_free);
 if (infos.fst2==NULL) {
 	close_text_automaton(tfst);
 	return 0;
@@ -126,7 +126,7 @@ infos.alphabet=NULL;
 if (alphabet!=NULL && alphabet[0]!='\0') {
    /* We want to allow undefined alphabets (see comments above 'is_letter'
     * in Alphabet.cpp) */
-   infos.alphabet=load_alphabet(alphabet,is_korean);
+   infos.alphabet=load_alphabet(vec,alphabet,is_korean);
    if (infos.alphabet==NULL) {
 	   close_text_automaton(tfst);
 	   free_abstract_Fst2(infos.fst2,&fst2_free);
@@ -134,7 +134,7 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
 	   return 0;
    }
 }
-infos.output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
+infos.output=u_fopen(vec,output,U_WRITE);
 if (infos.output==NULL) {
 	close_text_automaton(tfst);
 	free_abstract_Fst2(infos.fst2,&fst2_free);
@@ -229,7 +229,7 @@ u_printf("\rDone.                                    \n");
 char concord_tfst_n[FILENAME_MAX];
 get_path(output,concord_tfst_n);
 strcat(concord_tfst_n,"concord_tfst.n");
-U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,concord_tfst_n,U_WRITE);
+U_FILE* f=u_fopen(vec,concord_tfst_n,U_WRITE);
 if (f==NULL) {
 	error("Cannot save information in %s\n",concord_tfst_n);
 } else {

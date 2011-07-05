@@ -76,9 +76,7 @@ struct fst2txt_parameters {
    /* Used to know how long was the input that has been matched */
    int input_length;
 
-   Encoding encoding_output;
-   int bom_output;
-   int mask_encoding_compatibility_input;
+   VersatileEncodingConfig vec;
 
    /* Offset management:
     * v_in_offsets=input offsets

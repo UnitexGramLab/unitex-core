@@ -140,9 +140,7 @@ char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 int is_korean=0;
 int CLEAN=0;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&index,vars))) {
@@ -169,12 +167,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Txt2Tfst[index].name);
@@ -218,17 +216,17 @@ strcat(dlc,"dlc");
 get_snt_path(argv[vars->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
 struct match_list* tag_list=NULL;
-load_DELA(dlf,mask_encoding_compatibility_input,tree);
-load_DELA(dlc,mask_encoding_compatibility_input,tree);
+load_DELA(&vec,dlf,tree);
+load_DELA(&vec,dlc,tree);
 u_printf("Loading %s...\n",tags_ind);
-U_FILE* tag_file=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,tags_ind,U_READ);
+U_FILE* tag_file=u_fopen(&vec,tags_ind,U_READ);
 if (tag_file!=NULL) {
    tag_list=load_match_list(tag_file,NULL);
    u_fclose(tag_file);
 }
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
-   alph=load_alphabet(alphabet,is_korean);
+   alph=load_alphabet(&vec,alphabet,is_korean);
    if (alph==NULL) {
       fatal_error("Cannot open %s\n",alphabet);
    }
@@ -237,7 +235,7 @@ Korean* korean=NULL;
 if (is_korean) {
    korean=new Korean(alph);
 }
-struct text_tokens* tokens=load_text_tokens(tokens_txt,mask_encoding_compatibility_input);
+struct text_tokens* tokens=load_text_tokens(&vec,tokens_txt);
 if (tokens==NULL) {
    fatal_error("Cannot open %s\n",tokens_txt);
 }
@@ -248,7 +246,7 @@ if (f==NULL) {
 char text_tfst[FILENAME_MAX];
 get_snt_path(argv[vars->optind],text_tfst);
 strcat(text_tfst,"text.tfst");
-U_FILE* tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,text_tfst,U_WRITE);
+U_FILE* tfst=u_fopen(&vec,text_tfst,U_WRITE);
 if (tfst==NULL) {
    u_fclose(f);
    fatal_error("Cannot create %s\n",text_tfst);
@@ -264,7 +262,7 @@ if (tind==NULL) {
 }
 struct normalization_tree* normalization_tree=NULL;
 if (norm[0]!='\0') {
-   normalization_tree=load_normalization_fst2(norm,alph,tokens);
+   normalization_tree=load_normalization_fst2(&vec,norm,alph,tokens);
 }
 char enter_pos_f[FILENAME_MAX];
 get_snt_path(argv[vars->optind],enter_pos_f);
@@ -297,7 +295,7 @@ if (snt_offsets==NULL) {
 
 language_t* language=NULL;
 if (tagset[0]!='\0') {
-   language=load_language_definition(tagset);
+   language=load_language_definition(&vec,tagset);
 }
 
 int sentence_number=1;
@@ -337,11 +335,11 @@ get_snt_path(argv[vars->optind],tfst_tags_by_freq);
 strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
 get_snt_path(argv[vars->optind],tfst_tags_by_alph);
 strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
-U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_freq);
 }
-U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }
@@ -356,7 +354,7 @@ u_fclose(tind);
 if (korean!=NULL) {
    delete korean;
 }
-write_number_of_graphs(text_tfst,sentence_number-1,0);
+write_number_of_graphs(&vec,text_tfst,sentence_number-1,0);
 free_DELA_tree(tree);
 free_text_tokens(tokens);
 free_alphabet(alph);

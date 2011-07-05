@@ -56,8 +56,8 @@ void copy_tags_into_file(Fst2*,U_FILE*);
  * 'RTN' is non null, we want to get a strictly equivalent grammar,
  * even if it is not a strict FST.
  */
-int flatten_fst2(Fst2* origin,int depth,char* temp,Encoding encoding_output,int bom_output,int RTN) {
-U_FILE* res=u_fopen_creating_unitex_text_format(encoding_output,bom_output,temp,U_WRITE);
+int flatten_fst2(Fst2* origin,int depth,char* temp,VersatileEncodingConfig* vec,int RTN) {
+U_FILE* res=u_fopen(vec,temp,U_WRITE);
 if (res==NULL) {
    error("Cannot create %s\n",temp);
    return FLATTEN_ERROR;

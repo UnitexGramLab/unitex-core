@@ -73,13 +73,13 @@ unichar* d_get_str_class(l_class_T* cl);
 /*                    n:Gen=neu                                                       */
 /* The function fills out pL_MORPHO->D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file) {
+int d_init_morpho_equiv(VersatileEncodingConfig* vec,struct l_morpho_t* pL_MORPHO,char* equiv_file) {
 
   U_FILE* ef; //equivalence file
   int line_no;  //number of the current line
 
   //Opening the equivalence file
-  ef = u_fopen_existing_unitex_text_format(equiv_file,U_READ);
+  ef = u_fopen(vec,equiv_file,U_READ);
   if (!ef)  {
     error("Unable to open equivalence file %s\n",equiv_file);
     return 1;

@@ -70,9 +70,7 @@ if (argc==1) {
 
 char output[FILENAME_MAX]="";
 char output_offsets[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&index,vars))) {
@@ -90,12 +88,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -119,7 +117,7 @@ if (output[0]=='\0') {
     strcat(output,".txt");
 }
 
-f_input=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+f_input=u_fopen(&vec,argv[vars->optind],U_READ);
 if (f_input==NULL) {
 	error("Cannot open file %s\n",argv[vars->optind]);
 	return 1;
@@ -130,7 +128,7 @@ get_extension(argv[vars->optind],extension);
 if (!strcmp(extension,".html") || !strcmp(extension,".HTML")) {
 	html=1;
 }
-f_output = u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
+f_output = u_fopen(&vec,output,U_WRITE);
 if (f_output==NULL) {
    error("Cannot create text file %s\n",output);
    u_fclose(f_input);
@@ -138,7 +136,7 @@ if (f_output==NULL) {
 }
 
 if (output_offsets[0]!='\0') {
-	f_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output_offsets,U_WRITE);
+	f_offsets=u_fopen(&vec,output_offsets,U_WRITE);
 	if (f_offsets==NULL) {
 	   error("Cannot create offset file %s\n",output_offsets);
 	   u_fclose(f_input);

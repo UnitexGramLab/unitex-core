@@ -98,9 +98,7 @@ char tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TagsetNormTfst,lopts_TagsetNormTfst,&index,vars))) {
@@ -120,12 +118,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TagsetNormTfst,lopts_TagsetN
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -158,9 +156,9 @@ if (output_tfst[0]=='\0') {
 }
 
 u_printf("Loading tagset...\n");
-language_t* language=load_language_definition(tagset);
+language_t* language=load_language_definition(&vec,tagset);
 
-Elag_Tfst_file_in* txtin=load_tfst_file(tfst,language);
+Elag_Tfst_file_in* txtin=load_tfst_file(&vec,tfst,language);
 if (txtin==NULL) {
    fatal_error("Unable to load text automaton '%s'\n",tfst);
 }
@@ -169,7 +167,7 @@ if (txtin==NULL) {
 struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
-U_FILE* out_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output_tfst,U_WRITE);
+U_FILE* out_tfst=u_fopen(&vec,output_tfst,U_WRITE);
 if (out_tfst==NULL) {
    fatal_error("Unable to open text automaton '%s'\n",output_tfst);
 }
@@ -340,11 +338,11 @@ if (elag) {
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
 }
-U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_freq);
 }
-U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }

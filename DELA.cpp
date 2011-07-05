@@ -1208,8 +1208,8 @@ free_Ustring(ustr);
  * used in the Locate program in order to know if XYZ can be such a
  * code when there is a pattern like "<XYZ>".
  */
-void extract_semantic_codes(const char* delaf,struct string_hash* hash) {
-U_FILE* f=u_fopen_existing_unitex_text_format(delaf,U_READ);
+void extract_semantic_codes(VersatileEncodingConfig* vec,const char* delaf,struct string_hash* hash) {
+U_FILE* f=u_fopen(vec,delaf,U_READ);
 if (f==NULL) return;
 int i;
 struct dela_entry* entry;

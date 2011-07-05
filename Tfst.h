@@ -120,7 +120,7 @@ typedef struct {
 } TfstTag;
 
 Tfst* new_Tfst(U_FILE* tfst,U_FILE* tind,int N);
-Tfst* open_text_automaton(char* tfst);
+Tfst* open_text_automaton(VersatileEncodingConfig*,char* tfst);
 void close_text_automaton(Tfst* tfst);
 void load_sentence(Tfst* tfst,int n);
 void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* tind,unichar** tags,int n_tags,

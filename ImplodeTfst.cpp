@@ -75,10 +75,7 @@ if (argc==1) {
    return 0;
 }
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";
@@ -98,12 +95,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ImplodeTfst,lopts_ImplodeTfs
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
@@ -129,11 +126,11 @@ if (output_tfst[0]=='\0') {
    sprintf(output_tind,"%s.new",input_tind);
 }
 u_printf("Loading '%s'...\n",input_tfst);
-Tfst* tfst=open_text_automaton(input_tfst);
+Tfst* tfst=open_text_automaton(&vec,input_tfst);
 if (tfst==NULL) {
    fatal_error("Unable to load '%s'\n",input_tfst);
 }
-U_FILE* f_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output_tfst,U_WRITE);
+U_FILE* f_tfst=u_fopen(&vec,output_tfst,U_WRITE);
 if (f_tfst==NULL) {
    fatal_error("Cannot open '%s' for writing\n",output_tfst);
 }
@@ -165,11 +162,11 @@ if (elag) {
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
 }
-U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_freq);
 }
-U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }

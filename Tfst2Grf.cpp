@@ -84,9 +84,7 @@ int size=10;
 char* fontname=NULL;
 char* output=NULL;
 int is_sequence_automaton=0;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char foo;
 struct OptVars* vars=new_OptVars();
@@ -121,12 +119,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -171,18 +169,18 @@ if (fontname==NULL) {
       fatal_alloc_error("main_Tfst2Grf");
    }
 }
-U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,grf_name,U_WRITE);
+U_FILE* f=u_fopen(&vec,grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot file %s\n",grf_name);
    return 1;
 }
-U_FILE* txt=u_fopen_creating_versatile_encoding(encoding_output,bom_output,txt_name,U_WRITE);
+U_FILE* txt=u_fopen(&vec,txt_name,U_WRITE);
 if (txt==NULL) {
    error("Cannot file %s\n",txt_name);
    u_fclose(f);
    return 1;
 }
-U_FILE* tok=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tok_name,U_WRITE);
+U_FILE* tok=u_fopen(&vec,tok_name,U_WRITE);
 if (tok==NULL) {
    error("Cannot file %s\n",tok_name);
    u_fclose(f);
@@ -190,7 +188,7 @@ if (tok==NULL) {
    return 1;
 }
 u_printf("Loading %s...\n",argv[vars->optind]);
-Tfst* tfst=open_text_automaton(argv[vars->optind]);
+Tfst* tfst=open_text_automaton(&vec,argv[vars->optind]);
 
 load_sentence(tfst,SENTENCE);
 u_fprintf(txt,"%S\n",tfst->text);

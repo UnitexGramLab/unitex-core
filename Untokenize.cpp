@@ -99,12 +99,8 @@ if (argc==1) {
 
 char alphabet[FILENAME_MAX]="";
 char token_file[FILENAME_MAX]="";
-
 char dynamicSntDir[FILENAME_MAX]="";
-
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 int range_start,range_stop,use_range;
 int token_step_number=0;
@@ -131,12 +127,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Untokenize,lopts_Untokenize,
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
 
    case 'n': if (1!=sscanf(vars->optarg,"%d%c",&token_step_number,&foo) || token_step_number<=0) {
@@ -182,9 +178,7 @@ U_FILE* text;
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
-
 Alphabet* alph=NULL;
-
 if (dynamicSntDir[0]=='\0') {
     get_snt_path(argv[vars->optind],dynamicSntDir);
 }
@@ -194,11 +188,8 @@ strcpy(enter_pos,dynamicSntDir);
 strcat(enter_pos,"enter.pos");
 strcpy(tokens_txt,dynamicSntDir);
 strcat(tokens_txt,"tokens.txt");
-
-
-
 if (alphabet[0]!='\0') {
-   alph=load_alphabet(alphabet);
+   alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
       return 1;
@@ -215,10 +206,7 @@ if (af_text_cod==NULL) {
 }
 
 ABSTRACTMAPFILE* af_enter_pos=af_open_mapfile(enter_pos,MAPFILE_OPTION_READ,0);
-
-text = u_fopen_creating_versatile_encoding(encoding_output,bom_output,argv[vars->optind],U_WRITE);
-
-
+text = u_fopen(&vec,argv[vars->optind],U_WRITE);
 if (text==NULL) {
    error("Cannot create text file %s\n",argv[vars->optind]);
    if (alph!=NULL) {
@@ -228,11 +216,8 @@ if (text==NULL) {
    return 1;
 }
 
-
-struct text_tokens* tok=load_text_tokens(tokens_txt,mask_encoding_compatibility_input);
-
+struct text_tokens* tok=load_text_tokens(&vec,tokens_txt);
 u_printf("Untokenizing text...\n");
-
 size_t nb_item = af_get_mapfile_size(af_text_cod)/sizeof(int);
 const int* buf=(const int*)af_get_mapfile_pointer(af_text_cod);
 
@@ -249,13 +234,12 @@ if (af_enter_pos!=NULL) {
 size_t count_pos=0;
 for (size_t i=0;i<nb_item;i++) {
     int is_in_range=1;
-
-    if ((use_range!=0) && (i<(size_t)range_start))
+    if ((use_range!=0) && (i<(size_t)range_start)) {
         is_in_range=0;
-
-    if ((use_range!=0) && (range_stop!=0) && (i>(size_t)range_stop))
+    }
+    if ((use_range!=0) && (range_stop!=0) && (i>(size_t)range_stop)) {
         is_in_range=0;
-
+    }
     int is_newline=0;
     if (count_pos<nb_item_enter_pos) {
         if (i==(size_t)(*(buf_enter+count_pos))) {
@@ -278,8 +262,6 @@ for (size_t i=0;i<nb_item;i++) {
     }
 }
 
-
-
 af_release_mapfile_pointer(af_text_cod,buf);
 if (buf_enter!=NULL) {
     af_release_mapfile_pointer(af_enter_pos,buf_enter);
@@ -288,18 +270,11 @@ if (af_enter_pos!=NULL) {
     af_close_mapfile(af_enter_pos);
 }
 af_close_mapfile(af_text_cod);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
-
-
-
-
+if (alph!=NULL) {
+   free_alphabet(alph);
+}
 u_fclose(text);
-
-
 free_text_tokens(tok);
-
 if (alph!=NULL) {
    free_alphabet(alph);
 }

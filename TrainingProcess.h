@@ -48,11 +48,9 @@ struct corpus_entry{
 	unichar* overall_codes;
 };
 
-void create_disclaimer(const char* file);
+void create_disclaimer(VersatileEncodingConfig* vec,const char* file);
 void free_corpus_entry(corpus_entry*);
 void push_corpus_entry(corpus_entry*,corpus_entry**);
-int u_strrchr(unichar*,unichar);
-int u_strrchr(unichar*,char);
 struct corpus_entry* new_corpus_entry(const unichar*);
 struct corpus_entry* create_corpus_entry(const unichar*);
 void free_context_matrix(struct corpus_entry**);

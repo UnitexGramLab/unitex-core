@@ -76,12 +76,9 @@ if (argc==1) {
    return 0;
 }
 
-
 int RTN=1;
 int depth=10;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char foo;
 struct OptVars* vars=new_OptVars();
@@ -97,12 +94,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Flatten,lopts_Flatten,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -121,7 +118,7 @@ if (vars->optind!=argc-1) {
 
 u_printf("Loading %s...\n",argv[vars->optind]);
 struct FST2_free_info fst2_free;
-Fst2* origin=load_abstract_fst2(argv[vars->optind],1,&fst2_free);
+Fst2* origin=load_abstract_fst2(&vec,argv[vars->optind],1,&fst2_free);
 if (origin==NULL) {
    error("Cannot load %s\n",argv[vars->optind]);
    return 1;
@@ -129,7 +126,7 @@ if (origin==NULL) {
 char temp[FILENAME_MAX];
 strcpy(temp,argv[vars->optind]);
 strcat(temp,".tmp.fst2");
-switch (flatten_fst2(origin,depth,temp,encoding_output,bom_output,RTN)) {
+switch (flatten_fst2(origin,depth,temp,&vec,RTN)) {
    case EQUIVALENT_FST:
       u_printf("The resulting grammar is an equivalent finite-state transducer.\n");
       break;

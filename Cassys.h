@@ -135,7 +135,7 @@ int main_Cassys(int argc,char* const argv[]);
  *
  * \param[in] file_list_transducer_name user file containing the list of transducers
  */
-struct fifo *load_transducer(const char *file_list_transducer_name);
+struct fifo *load_transducer(VersatileEncodingConfig*,const char *file_list_transducer_name);
 
 
 /**
@@ -147,7 +147,8 @@ struct fifo *load_transducer(const char *file_list_transducer_name);
  *
  * return 0 if correct
  */
-int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,
+		VersatileEncodingConfig*);
 
 
 /**
@@ -162,7 +163,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
  */
 int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
                             const char*negation_operator,
-                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+                            VersatileEncodingConfig*);
 
 
 /**
@@ -175,7 +176,8 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
  * \param index_file name of the file containing the matches
  * \param alphabet_name name of the file containing the alphabet of the text
  */
-int launch_concord_in_Cassys(const char *text_name, const char* index_file, const char *alphabet_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int launch_concord_in_Cassys(const char *text_name, const char* index_file, const char *alphabet_name,
+		VersatileEncodingConfig*);
 
 
 
@@ -191,7 +193,8 @@ int launch_concord_in_Cassys(const char *text_name, const char* index_file, cons
  * \param token_txt_name name of the file containing tokens from a precedent call to tokenize
  *
  */
-int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,
+		VersatileEncodingConfig*);
 
 
 
@@ -280,7 +283,7 @@ int copy_directory_snt_content(const char *dest, const char *src);
  *
  * \param concord_file_name file containing the matches
  */
-struct fifo *read_concord_file(const char *concord_file_name,int mask_encoding_compatibility_input);
+struct fifo *read_concord_file(const char *concord_file_name,VersatileEncodingConfig*);
 
 /**
  * \brief Reads a line of the 'concord.ind' file and and returns the content in a struct locate_pos
@@ -301,13 +304,13 @@ locate_pos *read_concord_line(const unichar *line);
  *
  * Each element of the cassys_tokens_list token field is pointing on a element of tokens.
  */
-cassys_tokens_list *cassys_load_text(const char *token_text_name, const char * text_cod_name, struct text_tokens **tokens);
+cassys_tokens_list *cassys_load_text(VersatileEncodingConfig*,const char *token_text_name, const char * text_cod_name, struct text_tokens **tokens);
 
 
 
 
 cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list,
-		 int transducer_id, const char *alphabet,int mask_encoding_compatibility_input);
+		 int transducer_id, const char *alphabet,VersatileEncodingConfig*);
 
 /**
  * \brief Produces a concordance file with the matches found by all the locates program called during the cascade
@@ -317,7 +320,7 @@ cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list
  * \param[in] the number of transducers applied during the cascade
  */
 void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, int number_of_transducer,
-    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+    VersatileEncodingConfig*);
 
 void follow_text(cassys_tokens_list *list, int transducer_id);
 void display_locate_pos(const locate_pos *l);
@@ -328,7 +331,7 @@ void display_list_ustring(const struct list_ustring *l);
  *
  * \param[in/out] text file name of the text to be protected
  */
-void protect_special_characters(const char *text,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+void protect_special_characters(const char *text,VersatileEncodingConfig*);
 
 /**
  * \brief Adds protection characters in the lem zone. (currently does nothing)

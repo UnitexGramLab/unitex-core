@@ -66,10 +66,12 @@ u_printf(usage_GrfDiff);
 
 /* Undocumented short options are those given by the svn client. They
  * are listed here just to be safely ignored by getopt */
-const char* optstring_GrfDiff=":huL:";
+const char* optstring_GrfDiff=":huL:k:q:";
 const struct option_TS lopts_GrfDiff[] = {
       {"output",required_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -82,6 +84,7 @@ if (argc==1) {
 	usage();
 	return 0;
 }
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";
@@ -92,6 +95,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index
 	   strcpy(output,vars->optarg);
 	   break;
    }
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_GrfDiff[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -105,19 +118,21 @@ if (vars->optind!=argc-2) {
 }
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
-	f=u_fopen_creating_versatile_encoding(UTF8,0,output,U_WRITE);
+	/* Since the output is supposed to be a diff-like one, there is no point
+	 * in outputing in a variable encoding, so we force UTF8 */
+	f=u_fopen(UTF8,output,U_WRITE);
 	if (f==NULL) {
 		error("Cannot create file %s\n",output);
 		free_OptVars(vars);
 		return 2;
 	}
 }
-Grf* a=load_Grf(argv[vars->optind]);
+Grf* a=load_Grf(&vec,argv[vars->optind]);
 if (a==NULL) {
 	free_OptVars(vars);
 	return 2;
 }
-Grf* b=load_Grf(argv[vars->optind+1]);
+Grf* b=load_Grf(&vec,argv[vars->optind+1]);
 if (b==NULL) {
 	free_Grf(a);
 	free_OptVars(vars);

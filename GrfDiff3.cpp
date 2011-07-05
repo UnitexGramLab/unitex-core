@@ -57,11 +57,13 @@ u_printf(usage_GrfDiff3);
 
 /* Undocumented short options are those given by the svn client. They
  * are listed here just to be safely ignored by getopt */
-const char* optstring_GrfDiff3=":hEmL:";
+const char* optstring_GrfDiff3=":hEmL:k:q:";
 const struct option_TS lopts_GrfDiff3[]= {
       {"output",required_argument_TS,NULL,1},
       {"conflicts",required_argument_TS,NULL,2},
       {"only-cosmetic",no_argument_TS,NULL,3},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -75,6 +77,7 @@ if (argc==1) {
 	usage();
 	return 0;
 }
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";
@@ -92,6 +95,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&ind
 	   break;
    }
    case 3: only_cosmetics=1; break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_GrfDiff3[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -105,7 +118,7 @@ if (vars->optind!=argc-3) {
 }
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
-	f=u_fopen_creating_versatile_encoding(UTF16_LE,DEFAULT_BOM_OUTPUT,output,U_WRITE);
+	f=u_fopen(&vec,output,U_WRITE);
 	if (f==NULL) {
 		error("Cannot create file %s\n",output);
 		free_OptVars(vars);
@@ -114,25 +127,26 @@ if (output[0]!='\0') {
 }
 U_FILE* f_conflicts=NULL;
 if (conflicts[0]!='\0') {
-	f_conflicts=u_fopen_creating_versatile_encoding(UTF8,0,conflicts,U_WRITE);
+	/* There is no point in encoding the conflict file in UTF16 */
+	f_conflicts=u_fopen(UTF8,conflicts,U_WRITE);
 	if (f_conflicts==NULL) {
 		error("Cannot create file %s\n",conflicts);
 		free_OptVars(vars);
 		return 2;
 	}
 }
-Grf* mine=load_Grf(argv[vars->optind]);
+Grf* mine=load_Grf(&vec,argv[vars->optind]);
 if (mine==NULL) {
 	free_OptVars(vars);
 	return 2;
 }
-Grf* base=load_Grf(argv[vars->optind+1]);
+Grf* base=load_Grf(&vec,argv[vars->optind+1]);
 if (base==NULL) {
 	free_Grf(mine);
 	free_OptVars(vars);
 	return 2;
 }
-Grf* other=load_Grf(argv[vars->optind+2]);
+Grf* other=load_Grf(&vec,argv[vars->optind+2]);
 if (other==NULL) {
 	free_Grf(mine);
 	free_Grf(base);

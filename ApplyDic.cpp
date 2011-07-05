@@ -610,7 +610,7 @@ for (int i=0;i<info->tokens->N;i++) {
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
                                                     U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* tags_err,U_FILE* morpho,
                                                     const char* tags,const char* text_cod,Alphabet* alphabet,
-                                                    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
+                                                    VersatileEncodingConfig* vec) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
    fatal_alloc_error("init_dico_application");
@@ -648,9 +648,7 @@ info->UNKNOWN_WORDS=0;
 info->tag_sequences=NULL;
 info->n_tag_sequences=0;
 info->tag_sequences_capacity=0;
-info->encoding_output = encoding_output;
-info->bom_output = bom_output;
-info->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
+info->vec=*vec;
 return info;
 }
 
@@ -687,11 +685,11 @@ free(info);
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int dico_application(char* name_bin,struct dico_application_info* info,int priority) {
+int dico_application(VersatileEncodingConfig* vec,char* name_bin,struct dico_application_info* info,int priority) {
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
-info->d=new_Dictionary(name_bin,name_inf);
+info->d=new_Dictionary(vec,name_bin,name_inf);
 if (info->d==NULL) return 1;
 info->word_array=new_word_struct_array(info->tokens->N);
 /* And then we look simple and then compound words.
@@ -725,11 +723,11 @@ return 0;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int dico_application_simplified(unichar* text,char* name_bin,struct dico_application_info* info) {
+int dico_application_simplified(VersatileEncodingConfig* vec,unichar* text,char* name_bin,struct dico_application_info* info) {
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
-info->d=new_Dictionary(name_bin,name_inf);
+info->d=new_Dictionary(vec,name_bin,name_inf);
 if (info->d==NULL) return 1;
 unichar entry[DIC_WORD_SIZE];
 Ustring* ustr=new_Ustring();
@@ -789,7 +787,7 @@ int merge_dic_locate_results(struct dico_application_info* info,char* concord_fi
 int token_tab_coumpounds[TOKENS_IN_A_COMPOUND];
 u_printf("Merging dic/locate result...\n");
 /* First, we load the match list */
-U_FILE* f=u_fopen_existing_versatile_encoding(info->mask_encoding_compatibility_input,concord_filename,U_READ);
+U_FILE* f=u_fopen(&(info->vec),concord_filename,U_READ);
 if (f==NULL) {
    error("Cannot open %s\n",concord_filename);
    return 0;
@@ -918,7 +916,7 @@ return 0; /* Just to avoid a warning */
  */
 void save_and_sort_tag_sequences(struct dico_application_info* info) {
 qsort(info->tag_sequences,info->n_tag_sequences,sizeof(struct match_list*),compare_matches);
-U_FILE* f=u_fopen_creating_versatile_encoding(info->encoding_output,info->bom_output,info->tags_ind,U_WRITE);
+U_FILE* f=u_fopen(&(info->vec),info->tags_ind,U_WRITE);
 if (f==NULL) {return;}
 /* We use the header T, just to say something different from I, M and R */
 u_fprintf(f,"#T\n");

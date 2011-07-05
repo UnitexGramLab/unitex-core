@@ -102,22 +102,19 @@ return 1;
  *
  * Note that 'replacements' is supposed to contain replacement rules for { and }
  */
-int normalize(const char *fin, const char *fout, Encoding encoding_output,
-		int bom_output, int mask_encoding_compatibility_input,
+int normalize(const char *fin, const char *fout, VersatileEncodingConfig* vec,
 		int carriage_return_policy, int convLFtoCRLF,const char *rules,
 		vector_offset* offsets,
 		int separator_normalization) {
 	U_FILE* input;
-	input = u_fopen_existing_versatile_encoding(
-			mask_encoding_compatibility_input, fin, U_READ);
+	input = u_fopen(vec, fin, U_READ);
 	if (input == NULL) {
 		error("Cannot open file %s\n", fin);
 		return 1;
 	}
 
 	U_FILE* output;
-	output = u_fopen_creating_versatile_encoding(encoding_output, bom_output,
-			fout, U_WRITE);
+	output = u_fopen(vec, fout, U_WRITE);
 	if (output == NULL) {
 		error("Cannot create file %s\n", fout);
 		u_fclose(input);
@@ -125,8 +122,7 @@ int normalize(const char *fin, const char *fout, Encoding encoding_output,
 	}
 	struct string_hash* replacements = NULL;
 	if (rules != NULL && rules[0] != '\0') {
-		replacements = load_key_value_list(rules,
-				mask_encoding_compatibility_input, '\t');
+		replacements = load_key_value_list(rules, vec, '\t');
 		if (replacements == NULL) {
 			error("Cannot load replacement rules file %s\n", rules);
 			replacements = new_string_hash();

@@ -93,9 +93,7 @@ char dictionary[FILENAME_MAX]="";
 char pronoun_rules[FILENAME_MAX]="";
 char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index,vars))) {
@@ -133,12 +131,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstru
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -173,14 +171,14 @@ if (output[0]=='\0') {
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
    u_printf("Loading alphabet...\n");
-   alph=load_alphabet(alphabet);
+   alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
       fatal_error("Cannot load alphabet file %s\n",alphabet);
       return 1;
    }
 }
 u_printf("Loading match list...\n");
-U_FILE* f_list=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* f_list=u_fopen(&vec,argv[vars->optind],U_READ);
 if (f_list==NULL) {
    error("Cannot load match list %s\n",argv[vars->optind]);
    free_alphabet(alph);
@@ -198,24 +196,7 @@ char root_inf_file[FILENAME_MAX];
 remove_extension(root,root_inf_file);
 strcat(root_inf_file,".inf");
 u_printf("Loading radical form dictionary...\n");
-#if 0
-struct BIN_free_info root_bin_free;
-const unsigned char* root_bin=load_abstract_BIN_file(root,&root_bin_free);
-if (root_bin==NULL) {
-   error("Cannot load radical form dictionary %s\n",root);
-   free_alphabet(alph);
-   return 1;
-}
-struct INF_free_info root_inf_free;
-const struct INF_codes* root_inf=load_abstract_INF_file(root_inf_file,&root_inf_free);
-if (root_bin==NULL) {
-   error("Cannot load radical form dictionary %s\n",root_inf_file);
-   free_alphabet(alph);
-   free_abstract_BIN(root_bin,&root_bin_free);
-   return 1;
-}
-#endif
-Dictionary* root_dic=new_Dictionary(root,root_inf_file);
+Dictionary* root_dic=new_Dictionary(&vec,root,root_inf_file);
 if (root==NULL) {
 	free_alphabet(alph);
 	return 1;
@@ -224,71 +205,37 @@ u_printf("Loading inflected form dictionary...\n");
 char inflected_inf_file[FILENAME_MAX];
 remove_extension(dictionary,inflected_inf_file);
 strcat(inflected_inf_file,".inf");
-Dictionary* inflected_dic=new_Dictionary(dictionary,inflected_inf_file);
+Dictionary* inflected_dic=new_Dictionary(&vec,dictionary,inflected_inf_file);
 if (inflected_dic==NULL) {
 	free_Dictionary(root_dic);
 	free_alphabet(alph);
 	return 1;
 }
-#if 0
-struct BIN_free_info inflected_bin_free;
-const unsigned char* inflected_bin=load_abstract_BIN_file(dictionary,&inflected_bin_free);
-if (inflected_bin==NULL) {
-   error("Cannot load inflected form dictionary %s\n",dictionary);
-   free_alphabet(alph);
-   free_abstract_BIN(root_bin,&root_bin_free);
-   free_abstract_INF(root_inf,&root_inf_free);
-   return 1;
-}
-struct INF_free_info inflected_inf_free;
-const struct INF_codes* inflected_inf=load_abstract_INF_file(inflected_inf_file,&inflected_inf_free);
-if (inflected_inf==NULL) {
-   error("Cannot load inflected form dictionary %s\n",inflected_inf_file);
-   free_alphabet(alph);
-   free_abstract_BIN(root_bin,&root_bin_free);
-   free_abstract_BIN(inflected_bin,&inflected_bin_free);
-   free_abstract_INF(root_inf,&root_inf_free);
-   return 1;
-}
-#endif
 u_printf("Loading pronoun rewriting rule grammar...\n");
-struct normalization_tree* rewriting_rules=load_normalization_transducer_string(pronoun_rules);
+struct normalization_tree* rewriting_rules=load_normalization_transducer_string(&vec,pronoun_rules);
 if (rewriting_rules==NULL) {
    error("Cannot load pronoun rewriting grammar %s\n",pronoun_rules);
    free_alphabet(alph);
    free_Dictionary(root_dic);
    free_Dictionary(inflected_dic);
-   /*free_abstract_BIN(root_bin,&root_bin_free);
-   free_abstract_BIN(inflected_bin,&inflected_bin_free);
-   free_abstract_INF(root_inf,&root_inf_free);
-   free_abstract_INF(inflected_inf,&inflected_inf_free);*/
    return 1;
 }
 u_printf("Loading nasal pronoun rewriting rule grammar...\n");
-struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_string(nasal_pronoun_rules);
+struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_string(&vec,nasal_pronoun_rules);
 if (rewriting_rules==NULL) {
    error("Cannot load nasal pronoun rewriting grammar %s\n",nasal_pronoun_rules);
    free_alphabet(alph);
    free_Dictionary(root_dic);
    free_Dictionary(inflected_dic);
-   /*free_abstract_BIN(root_bin,&root_bin_free);
-   free_abstract_BIN(inflected_bin,&inflected_bin_free);
-   free_abstract_INF(root_inf,&root_inf_free);
-   free_abstract_INF(inflected_inf,&inflected_inf_free);*/
    free_normalization_tree(rewriting_rules);
    return 1;
 }
 u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_dic,inflected_dic,output,
-                                       encoding_output,bom_output,
-                                       rewriting_rules,nasal_rewriting_rules);
+                                       &vec,rewriting_rules,nasal_rewriting_rules);
 free_alphabet(alph);
 free_Dictionary(root_dic);
 free_Dictionary(inflected_dic);
-/*free_abstract_BIN(root_bin,&root_bin_free);
-free_abstract_INF(root_inf,&root_inf_free);
-free_abstract_BIN(inflected_bin,&inflected_bin_free);
-free_abstract_INF(inflected_inf,&inflected_inf_free);*/
 free_normalization_tree(rewriting_rules);
 free_normalization_tree(nasal_rewriting_rules);
 free_OptVars(vars);

@@ -44,7 +44,7 @@ void tokenize_kr_mwu_dic_line(vector_ptr* parts,unichar* line,Ustring* foo);
 void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
                          Korean* korean,
                          struct l_morpho_t* morpho,
-                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         VersatileEncodingConfig* vec,
                          vector_int* state_index,int *current_state,int end_state,int *line,
                          struct string_hash* subgraphs,int *subgraph_Y);
 int tokens_to_dela_entries(vector_ptr* line_tokens,struct dela_entry** entries,int *n_entries,Ustring* foo,int line_number);
@@ -57,7 +57,7 @@ int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
  */
 void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
                            Korean* korean,struct l_morpho_t* morpho,
-                           Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                           VersatileEncodingConfig* vec,
                            Dictionary* d) {
 int line_number=0;
 struct dela_entry* entries[MAX_PARTS];
@@ -97,7 +97,7 @@ while (EOF!=readline(line,delas)) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
       produce_mwu_entries(grf,n_parts,entries,ctx,korean,morpho,
-            encoding_output,bom_output,mask_encoding_compatibility_input,state_index,
+            vec,state_index,
             &current_state,end_state,&line_grf,subgraphs,&subgraph_Y);
    } else {
 	   n_errors++;
@@ -195,7 +195,7 @@ while ((name[i]=code[i])!='\0') {
  */
 void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
                          Korean* korean,struct l_morpho_t* morpho,
-                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         VersatileEncodingConfig* vec,
                          vector_int* state_index,int *current_state,int end_state,int *line,
                          struct string_hash* subgraphs,int *subgraph_Y) {
 SU_forms_T forms;
@@ -209,7 +209,7 @@ get_inflection_code(entries[n_parts-1]->semantic_codes[0],
                     inflection_code, code_gramm, &semitic);
 /* And we inflect the word */
 const char* pkgdir="";
-SU_inflect(ctx,morpho,encoding_output,bom_output,mask_encoding_compatibility_input,
+SU_inflect(ctx,morpho,vec,
       entries[n_parts-1]->lemma,inflection_code,
       NULL, &forms, semitic, korean, pkgdir);
 if (forms.no_forms==0) {

@@ -35,7 +35,7 @@
 
 void build_portuguese_normalization_grammar(const Alphabet*,struct match_list*,
 											Dictionary*,Dictionary*,
-                                            const char*,Encoding, int,
+                                            const char*,VersatileEncodingConfig*,
                                             struct normalization_tree*, struct normalization_tree* nasal_norm_tree);
 int replace_match_output_by_normalization_line(struct match_list*,const Alphabet*,
 												Dictionary*,Dictionary*,
@@ -44,7 +44,7 @@ int tokenize_portuguese_match(const unichar*,unichar*,unichar*,unichar*,unichar*
 int get_radical_lemma(unichar*,struct list_ustring**,const Alphabet*,Dictionary*);
 int get_inf_number_for_token(int,const unichar*,int,unichar*,const Alphabet*,Dictionary*,Ustring*);
 int compatible_portuguese_inflectional_codes(struct dela_entry*,int,unichar**);
-void save_portuguese_normalization_grammar(int,struct match_list*,const char*,Encoding,int);
+void save_portuguese_normalization_grammar(int,struct match_list*,const char*,VersatileEncodingConfig*);
 int explore_portuguese_normalization_tree(unichar*,const unichar*,struct list_ustring*,struct normalization_tree*,
                                           const Alphabet*);
 struct list_ustring* tokenize_portuguese_pronoun(const unichar*);

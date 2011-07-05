@@ -88,9 +88,7 @@ char inflection_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char dic_bin[FILENAME_MAX]="";
 char dic_inf[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrMwuDic,&index,vars))) {
    switch(val) {
@@ -125,12 +123,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrM
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    }
    index=-1;
@@ -151,15 +149,15 @@ if (dic_bin[0]=='\0') {
    fatal_error("Binary dictionary must be specified\n");
 }
 
-U_FILE* delas=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* delas=u_fopen(&vec,argv[vars->optind],U_READ);
 if (delas==NULL) {
    fatal_error("Cannot open %s\n",argv[vars->optind]);
 }
-U_FILE* grf=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,output,U_WRITE);
+U_FILE* grf=u_fopen(&vec,output,U_WRITE);
 if (grf==NULL) {
    fatal_error("Cannot open %s\n",output);
 }
-Alphabet* alph=load_alphabet(alphabet,1);
+Alphabet* alph=load_alphabet(&vec,alphabet,1);
 if (alph==NULL) {
    fatal_error("Cannot open alphabet file %s\n",alphabet);
 }
@@ -176,10 +174,9 @@ struct l_morpho_t* pL_MORPHO=init_langage_morph();
 if (pL_MORPHO == NULL) {
    fatal_error("init_langage_morph error\n");
 }
-Dictionary* d=new_Dictionary(dic_bin,dic_inf);
+Dictionary* d=new_Dictionary(&vec,dic_bin,dic_inf);
 
-create_mwu_dictionary(delas,grf,multiFlex_ctx,korean,pL_MORPHO,encoding_output,
-       bom_output,mask_encoding_compatibility_input,d);
+create_mwu_dictionary(delas,grf,multiFlex_ctx,korean,pL_MORPHO,&vec,d);
 
 free_Dictionary(d);
 u_fclose(delas);

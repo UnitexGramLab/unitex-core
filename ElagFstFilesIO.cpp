@@ -84,7 +84,7 @@ return 0;
  * Loads a .fst2 file with the given name and type, according to the
  * given language description.
  */
-Elag_fst_file_in* load_elag_fst2_file(char* fname,language_t* language) {
+Elag_fst_file_in* load_elag_fst2_file(VersatileEncodingConfig* vec,char* fname,language_t* language) {
 Elag_fst_file_in* fstf=(Elag_fst_file_in*)malloc(sizeof(Elag_fst_file_in));
 if (fstf==NULL) {
    fatal_alloc_error("load_elag_fst2_file");
@@ -93,7 +93,7 @@ fstf->name=strdup(fname);
 if (fstf->name==NULL) {
    fatal_alloc_error("load_elag_fst2_file");
 }
-if ((fstf->f=u_fopen_existing_unitex_text_format(fname,U_READ))==NULL) {
+if ((fstf->f=u_fopen(vec,fname,U_READ))==NULL) {
    error("load_fst_file: unable to open '%s' for reading\n",fname);
    goto error_fstf;
 }
@@ -270,7 +270,7 @@ return load_automaton(fstin);
  * Opens a .fst2 file in output mode and returns the associated fst_file_out_t
  * structure, or NULL in case of error.
  */
-Elag_fst_file_out* fst_file_out_open(char* fname,Encoding encoding_output,int bom_output,int type) {
+Elag_fst_file_out* fst_file_out_open(VersatileEncodingConfig* vec,char* fname,int type) {
 Elag_fst_file_out* res=(Elag_fst_file_out*)malloc(sizeof(Elag_fst_file_out));
 if (res==NULL) {
    fatal_alloc_error("fst_file_out_open");
@@ -278,7 +278,7 @@ if (res==NULL) {
 if (type<0 || type>=FST_BAD_TYPE) {
    fatal_error("fst_file_out_open: bad FST_TYPE\n");
 }
-if ((res->f=u_fopen_creating_unitex_text_format(encoding_output,bom_output,fname,U_WRITE))==NULL) {
+if ((res->f=u_fopen(vec,fname,U_WRITE))==NULL) {
    error("fst_out_open: unable to open '%s'\n",fname);
    free(res);
    return NULL;
@@ -460,11 +460,11 @@ fstf->nb_automata++;
 /**
  * Loads and returns the first automaton of the given .fst2 file.
  */
-Fst2Automaton* load_elag_grammar_automaton(char* fst2,language_t* language) {
+Fst2Automaton* load_elag_grammar_automaton(VersatileEncodingConfig* vec,char* fst2,language_t* language) {
 if (language==NULL) {
    fatal_error("NULL language error in load_elag_grammar_automaton\n");
 }
-Elag_fst_file_in* fstin=load_elag_fst2_file(fst2,language);
+Elag_fst_file_in* fstin=load_elag_fst2_file(vec,fst2,language);
 if (fstin==NULL) {
    error("Unable to open '%s'\n", fst2);
    return NULL;
@@ -483,12 +483,12 @@ return A;
  * Loads a .tfst file with the given name, according to the
  * given language description.
  */
-Elag_Tfst_file_in* load_tfst_file(char* fname,language_t* language) {
+Elag_Tfst_file_in* load_tfst_file(VersatileEncodingConfig* vec,char* fname,language_t* language) {
 Elag_Tfst_file_in* fstf=(Elag_Tfst_file_in*)malloc(sizeof(Elag_Tfst_file_in));
 if (fstf==NULL) {
    fatal_alloc_error("load_tfst_file");
 }
-fstf->tfst=open_text_automaton(fname);
+fstf->tfst=open_text_automaton(vec,fname);
 fstf->language=language;
 return fstf;
 }

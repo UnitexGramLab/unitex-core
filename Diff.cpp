@@ -36,17 +36,14 @@
  * This function takes two concordance index 'in1' and 'in2', and builds
  * the associated concordances 'out1' and 'out2'.
  */
-void create_text_concordances(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out1,const char* out2) {
-pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,
-		in1,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
+void create_text_concordances(VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out1,const char* out2) {
+pseudo_main_Concord(vec,in1,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
 af_remove(out1);
 af_rename(f,out1);
-
-pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,
-		in2,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
+pseudo_main_Concord(vec,in2,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
 af_remove(out2);
 af_rename(f,out2);
 }
@@ -89,9 +86,8 @@ u_fprintf(f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-		const char* in1,const char* in2,const char* out,const char* font,int size,
-		int diff_only) {
+int diff(VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out,
+		const char* font,int size,int diff_only) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);
@@ -99,27 +95,28 @@ strcat(concor1,"concord-1.txt");
 get_path(in2,concor2);
 strcat(concor2,"concord-2.txt");
 /* First, we build the two concordances */
-create_text_concordances(encoding_output,bom_output,mask_encoding_compatibility_input,in1,in2,concor1,concor2);
+create_text_concordances(vec,in1,in2,concor1,concor2);
 /* Then, we load the two index */
-U_FILE* f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,in1,U_READ);
+U_FILE* f1=u_fopen(vec,in1,U_READ);
 if (f1==NULL) return 0;
 struct match_list* l1=load_match_list(f1,NULL);
 u_fclose(f1);
-U_FILE* f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,in2,U_READ);
+U_FILE* f2=u_fopen(vec,in2,U_READ);
 if (f2==NULL) {
    return 0;
 }
 struct match_list* l2=load_match_list(f2,NULL);
 u_fclose(f2);
-/* We open the output file */
+/* We open the output file in UTF8, because the GUI expects this file
+ * to be that encoded */
 U_FILE* output=u_fopen(UTF8,out,U_WRITE);
 if (output==NULL) {
    fatal_error("Cannot open output file %s\n",out);
    return 0;
 }
 /* We open the two concordance files */
-f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor1,U_READ);
-f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor2,U_READ);
+f1=u_fopen(vec,concor1,U_READ);
+f2=u_fopen(vec,concor2,U_READ);
 /* And then we fill the output file with the differences
  * between the two concordances */
 print_diff_HTML_header(output,font,size);

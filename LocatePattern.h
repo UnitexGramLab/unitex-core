@@ -259,8 +259,6 @@ struct locate_parameters {
    /* Size of previous arrays */
    int n_morpho_dics;
 
-   int mask_encoding_compatibility_input;
-
    /* The DELAF entry variables filled in morphological mode */
    struct dic_variable* dic_variables;
 
@@ -340,12 +338,12 @@ struct locate_parameters {
 
 
 int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
-                   MatchPolicy,OutputPolicy,Encoding,int,int,const char*,TokenizationPolicy,
+                   MatchPolicy,OutputPolicy,VersatileEncodingConfig*,const char*,TokenizationPolicy,
                    SpacePolicy,int,const char*,AmbiguousOutputPolicy,
                    VariableErrorPolicy,int,int,int,int,char*,int,int,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(const unichar*,const Alphabet*,struct string_hash*,TokenizationPolicy);
-void compute_token_controls(Alphabet*,const char*,struct locate_parameters*);
+void compute_token_controls(VersatileEncodingConfig*,Alphabet*,const char*,struct locate_parameters*);
 
 #endif

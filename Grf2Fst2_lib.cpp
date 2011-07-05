@@ -65,9 +65,9 @@ infos->alphabet=NULL;
 infos->fst2=NULL;
 infos->no_empty_graph_warning=0;
 infos->CONTEXT_COUNTER=0;
-infos->encoding_output = DEFAULT_ENCODING_OUTPUT;
-infos->bom_output = DEFAULT_BOM_OUTPUT;
-infos->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+infos->vec.mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+infos->vec.encoding_output = DEFAULT_ENCODING_OUTPUT;
+infos->vec.bom_output = DEFAULT_BOM_OUTPUT;
 infos->verbose_name_grf=1;
 infos->debug=0;
 return infos;
@@ -1007,12 +1007,12 @@ char* full_name=NULL;
 if (infos->debug) {
 	full_name=name;
 }
-Grf* grf=load_Grf(name);
+Grf* grf=load_Grf(&(infos->vec),name);
 if (grf==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
-   if (n==0) return 0;
+   if (n==1) return 0;
    return 1;
 }
 expand_box_ranges(grf);
@@ -1125,8 +1125,8 @@ return 1;
  * In debug mode, the first char is a 'd' followed by the number of
  * graphs written on 9 digits.
  */
-void write_number_of_graphs(char* name,int n,int debug) {
-U_FILE* f=u_fopen_existing_unitex_text_format(name,U_MODIFY);
+void write_number_of_graphs(VersatileEncodingConfig* vec,char* name,int n,int debug) {
+U_FILE* f=u_fopen(vec,name,U_MODIFY);
 /* And we print the number of graphs on 10 digits */
 u_fprintf(f,"%c%09d",debug?'d':'0',n);
 u_fclose(f);

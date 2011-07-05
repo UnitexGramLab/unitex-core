@@ -92,7 +92,6 @@ if (argc==1) {
    return 0;
 }
 
-
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
@@ -102,9 +101,7 @@ MultiFlex_ctx* p_multiFlex_ctx;
 //Current language's alphabet
 Alphabet* alph=NULL;
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&index,vars))) {
@@ -127,12 +124,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&i
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'p': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty package directory name\n");
@@ -169,14 +166,14 @@ struct l_morpho_t* pL_MORPHO=init_langage_morph();
 if (pL_MORPHO == NULL) {
    fatal_error("init_langage_morph error\n");
 }
-err=read_language_morpho(pL_MORPHO,morphology);
+err=read_language_morpho(&vec,pL_MORPHO,morphology);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
 print_language_morpho(pL_MORPHO);
 if (alphabet[0]!='\0') {
    //Load alphabet
-   alph=load_alphabet(alphabet,1);  //To be done once at the beginning of the inflection
+   alph=load_alphabet(&vec,alphabet,1);  //To be done once at the beginning of the inflection
    if (alph==NULL) {
       error("Cannot open alphabet file %s\n",alphabet);
       free_language_morpho(pL_MORPHO);
@@ -187,7 +184,7 @@ if (alphabet[0]!='\0') {
 //Init equivalence files
 char equivalences[FILENAME_MAX];
 new_file(config_dir,"Equivalences.txt",equivalences);
-err=d_init_morpho_equiv(pL_MORPHO,equivalences);
+err=d_init_morpho_equiv(&vec,pL_MORPHO,equivalences);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
@@ -212,7 +209,7 @@ if (is_korean) {
 }
 
 //DELAC inflection
-err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,encoding_output, bom_output, mask_encoding_compatibility_input,
+err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,&vec,
             config_files_status,&D_CLASS_EQUIV,
 		      error_check_status,korean,pkgdir);
 MU_graph_free_graphs(p_multiFlex_ctx);

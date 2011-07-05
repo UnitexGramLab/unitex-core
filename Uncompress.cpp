@@ -69,10 +69,7 @@ if (argc==1) {
    return 0;
 }
 
-//int FLIP=0;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char output[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
@@ -86,12 +83,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Uncompress,lopts_Uncompress,
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -111,14 +108,14 @@ if (output[0]=='\0') {
    remove_extension(argv[vars->optind],output);
    strcat(output,".dic");
 }
-U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
+U_FILE* f=u_fopen(&vec,output,U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open file %s\n",output);
 }
 char inf_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],inf_file);
 strcat(inf_file,".inf");
-Dictionary* d=new_Dictionary(argv[vars->optind],inf_file);
+Dictionary* d=new_Dictionary(&vec,argv[vars->optind],inf_file);
 if (d!=NULL) rebuild_dictionary(d,f);
 u_fclose(f);
 free_Dictionary(d);

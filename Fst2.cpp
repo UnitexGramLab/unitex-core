@@ -646,10 +646,9 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL,prv_alloc);
 #define GRAPH_IS_EMPTY 1
 #define FILE_POINTER_NULL 2
 
-Fst2* load_fst2(const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
-
+Fst2* load_fst2(VersatileEncodingConfig* vec,const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
 U_FILE* f;
-f=u_fopen_existing_unitex_text_format(filename,U_READ);
+f=u_fopen(vec,filename,U_READ);
 Fst2* fst2;
 if (f==NULL) {
 	error("Cannot open the file %s\n",filename);
@@ -731,23 +730,13 @@ return 0;
 /**
  * Loads a .fst2 file and returns its representation in a Fst2 structure.
  */
-Fst2* load_fst2(const char* filename,int read_names,Abstract_allocator prv_alloc) {
-return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
+Fst2* load_fst2(VersatileEncodingConfig* vec,const char* filename,int read_names,Abstract_allocator prv_alloc) {
+return load_fst2(vec,filename,read_names,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 }
 
 int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2,Abstract_allocator prv_alloc) {
 	return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 
-}
-
-
-/**
- * Loads one graph from a .fst2 file that represents a text automaton,
- * and returns its representation in a Fst2 structure. The graph name
- * is stored because it represents the text of the sentence.
- */
-Fst2* load_one_sentence_from_fst2(const char* filename,int sentence_number,Abstract_allocator prv_alloc) {
-return load_fst2(filename,1,sentence_number,prv_alloc);
 }
 
 
@@ -829,14 +818,14 @@ u_fprintf(f,"f \n");
 /**
  * Saves the given fst2 into a file.
  */
-void save_Fst2(char* name,Fst2* fst2,Encoding encoding,int bom) {
+void save_Fst2(VersatileEncodingConfig* vec,char* name,Fst2* fst2) {
 if (fst2==NULL) {
    fatal_error("NULL fst2 in save_Fst2\n");
 }
 if (name==NULL || name[0]=='\0') {
    fatal_error("NULL or empty name in save_Fst2\n");
 }
-U_FILE* f=u_fopen_creating_unitex_text_format(encoding,bom,name,U_WRITE);
+U_FILE* f=u_fopen(vec,name,U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open %s in save_Fst2\n",name);
 }
@@ -849,9 +838,9 @@ write_fst2_tags(f,fst2);
 u_fclose(f);
 }
 
-int get_graph_compatibity_mode_by_file(int * p_tilde_negation_operator) {
+int get_graph_compatibility_mode_by_file(VersatileEncodingConfig* vec,int *p_tilde_negation_operator) {
 
-    U_FILE *fin = u_fopen_existing_versatile_encoding(UTF8_NO_BOM_POSSIBLE|ALL_ENCODING_BOM_POSSIBLE,"unitex_graph_compatibilty_mode.txt",U_READ);
+    U_FILE *fin = u_fopen(vec,"unitex_graph_compatibilty_mode.txt",U_READ);
     if (fin == NULL)
         return 0;
 

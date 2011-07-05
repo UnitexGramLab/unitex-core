@@ -135,9 +135,7 @@ if (argc==1) {
 	usage();
 	return 0;
 }
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char mode=0;
 char snt[FILENAME_MAX]="";
@@ -271,12 +269,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_SpellCheck,lopts_SpellCheck,
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -296,7 +294,7 @@ if (config.dics==NULL) {
 	fatal_alloc_error("main_SpellCheck");
 }
 for (int i=0;i<config.n_dics;i++) {
-	config.dics[i]=new_Dictionary(argv[i+vars->optind]);
+	config.dics[i]=new_Dictionary(&vec,argv[i+vars->optind]);
 	if (config.dics[i]==NULL) {
 		error("Cannot load dictionary %s\n",argv[i+vars->optind]);
 	}
@@ -315,7 +313,7 @@ if (mode=='s') {
 	 * dlf file, if any */
 	get_snt_path(snt,output);
 	strcat(output,"dlf.n");
-	U_FILE* f=u_fopen(UTF16_LE,output,U_READ);
+	U_FILE* f=u_fopen(&vec,output,U_READ);
 	if (f!=NULL) {
 		u_fscanf(f,"%d",&(config.n_output_lines));
 		u_fclose(f);
@@ -332,9 +330,9 @@ if (mode=='s') {
 }
 if (output_set) {
 	if (output_op=='O') {
-		config.out=u_fopen(UTF16_LE,output,U_WRITE);
+		config.out=u_fopen(&vec,output,U_WRITE);
 	} else {
-		config.out=u_fopen(UTF16_LE,output,U_APPEND);
+		config.out=u_fopen(&vec,output,U_APPEND);
 	}
 	if (config.out==NULL) {
 		fatal_error("Cannot open output file %s\n",output);
@@ -345,12 +343,12 @@ char modified_input[FILENAME_MAX]="";
 if (config.input_op!='D') {
 	strcpy(modified_input,txt);
 	strcat(modified_input,".tmp");
-	config.modified_input=u_fopen(UTF16_LE,modified_input,U_WRITE);
+	config.modified_input=u_fopen(&vec,modified_input,U_WRITE);
 	if (config.modified_input==NULL) {
 		fatal_error("Cannot open tmp file %s\n",modified_input);
 	}
 }
-config.in=u_fopen(UTF16_LE,txt,U_READ);
+config.in=u_fopen(&vec,txt,U_READ);
 if (config.in==NULL) {
 	fatal_error("Cannot open file %s\n",txt);
 }
@@ -377,7 +375,7 @@ if (config.modified_input!=NULL) {
 if (mode=='s') {
 	get_snt_path(snt,output);
 	strcat(output,"err.n");
-	U_FILE* f=u_fopen(UTF16_LE,output,U_WRITE);
+	U_FILE* f=u_fopen(&vec,output,U_WRITE);
 	if (f!=NULL) {
 		u_fprintf(f,"%d",config.n_input_lines);
 		u_fclose(f);
@@ -385,7 +383,7 @@ if (mode=='s') {
 	if (config.input_op!='D') {
 		get_snt_path(snt,output);
 		strcat(output,"dlf.n");
-		U_FILE* f=u_fopen(UTF16_LE,output,U_WRITE);
+		U_FILE* f=u_fopen(&vec,output,U_WRITE);
 		if (f!=NULL) {
 			u_fprintf(f,"%d",config.n_output_lines);
 			u_fclose(f);

@@ -89,9 +89,7 @@ int is_a_DELAF=-1;
 int strict_unprotected=0;
 int skip_path=0;
 char alph[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 int space_warnings=1;
 struct OptVars* vars=new_OptVars();
@@ -112,12 +110,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
@@ -133,18 +131,18 @@ if (is_a_DELAF==-1 || vars->optind!=argc-1) {
    return 1;
 }
 
-U_FILE* dic=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* dic=u_fopen(&vec,argv[vars->optind],U_READ);
 if (dic==NULL) {
 	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
 }
 Alphabet* alphabet0=NULL;
 if (alph[0]!='\0') {
-   alphabet0=load_alphabet(alph,1);
+   alphabet0=load_alphabet(&vec,alph,1);
 }
 char output_filename[FILENAME_MAX];
 get_path(argv[vars->optind],output_filename);
 strcat(output_filename,"CHECK_DIC.TXT");
-U_FILE* out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output_filename,U_WRITE);
+U_FILE* out=u_fopen(&vec,output_filename,U_WRITE);
 if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);

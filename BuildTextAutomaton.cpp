@@ -989,21 +989,6 @@ free_Ustring(foo);
 
 
 /**
- * Loads a whole file as a string. This is used to load the content
- * of the current sentence, or NULL if the file is empty.
- */
-unichar* load_as_a_string(int mask_encoding_compatibility_input,char* name) {
-U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
-if (f==NULL) {
-   fatal_error("Cannot open %s in load_as_a_string\n",name);
-}
-unichar* result=readline_safe(f);
-u_fclose(f);
-return result;
-}
-
-
-/**
  * This function stores in dest:
  * - a copy of src if src is not a dictionary tag
  * - its inflected form otherwise

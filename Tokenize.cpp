@@ -51,14 +51,12 @@ int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table
 		vector_int*,vector_int*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 void save_new_line_positions(U_FILE*,vector_int*);
-void load_token_file(char* filename,int mask_encoding_compatibility_input,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
+void load_token_file(char* filename,VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
-void write_number_of_tokens(const char* name,Encoding encoding_output,int bom_output,int n) {
+void write_number_of_tokens(VersatileEncodingConfig* vec,const char* name,int n) {
   U_FILE* f;
   char number[11];
-
-  f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,name,U_MODIFY);
-  
+  f=u_fopen(vec,name,U_MODIFY);
   number[10]=0;
   int offset=9;
   for (;;) {
@@ -136,9 +134,7 @@ char token_file[FILENAME_MAX]="";
 char in_offsets[FILENAME_MAX]="";
 char out_offsets[FILENAME_MAX]="";
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 int mode=NORMAL;
 struct OptVars* vars=new_OptVars();
@@ -159,12 +155,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case '$': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_offsets argument\n");
@@ -209,12 +205,12 @@ get_snt_path(argv[vars->optind],enter_pos);
 strcat(enter_pos,"enter.pos");
 get_snt_path(argv[vars->optind],snt_offsets_pos);
 strcat(snt_offsets_pos,"snt_offsets.pos");
-text=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+text=u_fopen(&vec,argv[vars->optind],U_READ);
 if (text==NULL) {
    fatal_error("Cannot open text file %s\n",argv[vars->optind]);
 }
 if (alphabet[0]!='\0') {
-   alph=load_alphabet(alphabet);
+   alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
       u_fclose(text);
@@ -241,13 +237,13 @@ if (enter==NULL) {
    return 1;
 }
 if (out_offsets[0]!='\0') {
-	f_out_offsets=u_fopen_creating_versatile_encoding(encoding_output,bom_output,out_offsets,U_WRITE);
+	f_out_offsets=u_fopen(&vec,out_offsets,U_WRITE);
 	if (f_out_offsets==NULL) {
 		fatal_error("Cannot create file %s\n",out_offsets);
 	}
 	/* We deal with offsets only if the program is expected to produce some */
 	if (in_offsets[0]!='\0') {
-		v_in_offsets=load_offsets(in_offsets,mask_encoding_compatibility_input);
+		v_in_offsets=load_offsets(&vec,in_offsets);
 		if (v_in_offsets==NULL) {
 			fatal_error("Cannot load offset file %s\n",in_offsets);
 		}
@@ -266,10 +262,10 @@ vector_int* snt_offsets=new_vector_int(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
                                             (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 if (token_file[0]!='\0') {
-   load_token_file(token_file,mask_encoding_compatibility_input,tokens,hashtable,n_occur);
+   load_token_file(token_file,&vec,tokens,hashtable,n_occur);
 }
 
-output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
+output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot create file %s\n",tokens_txt);
    u_fclose(text);
@@ -306,11 +302,11 @@ u_fclose(enter);
 u_fclose(text);
 u_fclose(out);
 u_fclose(output);
-write_number_of_tokens(tokens_txt,encoding_output,bom_output,tokens->nbelems);
+write_number_of_tokens(&vec,tokens_txt,tokens->nbelems);
 // we compute some statistics
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
-output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
+output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -321,7 +317,7 @@ else {
 // we save the tokens by frequence
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
-output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
+output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -332,7 +328,7 @@ else {
 // we save the tokens by alphabetical order
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
-output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
+output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -376,8 +372,8 @@ return n;
 /**
  * Loads an existing token file.
  */
-void load_token_file(char* filename,int mask_encoding_compatibility_input,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
-U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,filename,U_READ);
+void load_token_file(char* filename,VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+U_FILE* f=u_fopen(vec,filename,U_READ);
 if (f==NULL) {
    fatal_error("Cannot open token file %s\n",filename);
 }

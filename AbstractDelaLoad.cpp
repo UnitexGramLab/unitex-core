@@ -136,13 +136,13 @@ const AbstractDelaSpace * GetDelaSpaceForFileName(const char*name)
 
 /*******************************/
 
-const struct INF_codes* load_abstract_INF_file(const char* name,struct INF_free_info* p_inf_free_info)
+const struct INF_codes* load_abstract_INF_file(VersatileEncodingConfig* vec,const char* name,struct INF_free_info* p_inf_free_info)
 {
 	struct INF_codes* res = NULL;
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
 	if (pads == NULL)
 	{
-		res = load_INF_file(name);
+		res = load_INF_file(vec,name);
 		if (res != NULL)
 		{
 			p_inf_free_info->must_be_free = 1;

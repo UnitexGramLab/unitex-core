@@ -193,9 +193,7 @@ int useLocateCache=1;
 int selected_negation_operator=0;
 int allow_trace=1;
 char foo;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,vars))) {
    switch(val) {
@@ -295,12 +293,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'u': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty arabic rule configuration file name\n");
@@ -317,7 +315,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
 }
 
 if (selected_negation_operator==0)
-    get_graph_compatibity_mode_by_file(&tilde_negation_operator);
+    get_graph_compatibility_mode_by_file(&vec,&tilde_negation_operator);
 
 if (text[0]=='\0') {
    fatal_error("You must specify a .snt text file\n");
@@ -354,7 +352,7 @@ strcpy(err,staticSntDir);
 strcat(err,"err");
 
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
-               encoding_output,bom_output,mask_encoding_compatibility_input,
+               &vec,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
                max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator,
@@ -375,7 +373,7 @@ return (!OK);
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int launch_locate_as_routine(VersatileEncodingConfig* vec,
                              const char* text_snt,const char* fst2,const char* alphabet,
                              OutputPolicy output_policy,MatchPolicy match_policy,const char* morpho_dic,
                              int protect_dic_chars,int is_korean,const char* arabic_rules,const char*negation_operator) {
@@ -397,14 +395,14 @@ ProgramInvoker* invoker=new_ProgramInvoker(main_Locate,"main_Locate");
 char tmp[FILENAME_MAX];
 {
     tmp[0]=0;
-    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-k");
         add_argument(invoker,tmp);
     }
 
     tmp[0]=0;
-    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-q");
         add_argument(invoker,tmp);

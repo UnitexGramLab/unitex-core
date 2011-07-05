@@ -65,12 +65,12 @@ l_category_T* get_cat(struct l_morpho_t*,const unichar* val);
 /*                      adv: (Gr,<var>)                                               */
 /* Fills out pL_MORPHO->L_CLASSES and pL_MORPHO->L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(struct l_morpho_t* pL_MORPHO, const char *file) {
+int read_language_morpho(VersatileEncodingConfig* vec,struct l_morpho_t* pL_MORPHO, const char *file) {
   //Initialise the symbol representing an empty morphological value
   u_strcpy(pL_MORPHO->EMPTY_VAL,"<E>");
 
   //Open the Morphology file
-  pL_MORPHO->lf = u_fopen_existing_unitex_text_format(file,U_READ);
+  pL_MORPHO->lf = u_fopen(vec,file,U_READ);
   if ( !(pL_MORPHO->lf))  {
     error("Unable to open language morphology file %s\n",file);
     return 1;

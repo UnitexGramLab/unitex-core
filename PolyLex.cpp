@@ -100,15 +100,12 @@ if (argc==1) {
    return 0;
 }
 
-
 int language=-1;
 char alphabet[FILENAME_MAX]="";
 char name_bin[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char info[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PolyLex,lopts_PolyLex,&index,vars))) {
@@ -140,12 +137,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PolyLex,lopts_PolyLex,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -174,7 +171,7 @@ if (language==-1) {
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
    u_printf("Loading alphabet...\n");
-   alph=load_alphabet(alphabet);
+   alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
       fatal_error("Cannot load alphabet file %s\n",alphabet);
    }
@@ -184,12 +181,12 @@ struct string_hash* forbiddenWords=NULL;
 if (language==DUTCH || language==NORWEGIAN) {
    get_path(name_bin,name_inf);
    strcat(name_inf,"ForbiddenWords.txt");
-   forbiddenWords=load_key_list(name_inf,mask_encoding_compatibility_input);
+   forbiddenWords=load_key_list(&vec,name_inf);
 }
 strcpy(name_inf,name_bin);
 name_inf[strlen(name_bin)-3]='\0';
 strcat(name_inf,"inf");
-Dictionary* d=new_Dictionary(name_bin,name_inf);
+Dictionary* d=new_Dictionary(&vec,name_bin,name_inf);
 if (d==NULL) {
 	fatal_error("Cannot load dictionary %s\n",name_bin);
 	   free_alphabet(alph);
@@ -199,7 +196,7 @@ if (d==NULL) {
 char tmp[FILENAME_MAX];
 strcpy(tmp,argv[vars->optind]);
 strcat(tmp,".tmp");
-U_FILE* words=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* words=u_fopen(&vec,argv[vars->optind],U_READ);
 if (words==NULL) {
    error("Cannot open word list file %s\n",argv[vars->optind]);
    free_alphabet(alph);
@@ -212,25 +209,21 @@ if (words==NULL) {
    // so that there is no "err" file
    return 0;
 }
-U_FILE* new_unknown_words=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,tmp,U_WRITE);
+U_FILE* new_unknown_words=u_fopen(&vec,tmp,U_WRITE);
 if (new_unknown_words==NULL) {
    error("Cannot open temporary word list file %s\n",tmp);
    free_alphabet(alph);
    free_Dictionary(d);
-   /*free_abstract_BIN(bin,&bin_free);
-   free_abstract_INF(inf,&inf_free);*/
    u_fclose(words);
    free_string_hash(forbiddenWords);
    return 1;
 }
 
-U_FILE* res=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_APPEND);
+U_FILE* res=u_fopen(&vec,output,U_APPEND);
 if (res==NULL) {
    error("Cannot open result file %s\n",output);
    free_alphabet(alph);
    free_Dictionary(d);
-   /*free_abstract_BIN(bin,&bin_free);
-   free_abstract_INF(inf,&inf_free);*/
    u_fclose(words);
    u_fclose(new_unknown_words);
    free_string_hash(forbiddenWords);
@@ -238,7 +231,7 @@ if (res==NULL) {
 }
 U_FILE* debug=NULL;
 if (info!=NULL) {
-   debug=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,info,U_WRITE);
+   debug=u_fopen(&vec,info,U_WRITE);
    if (debug==NULL) {
       error("Cannot open debug file %s\n",info);
    }
@@ -257,8 +250,6 @@ case RUSSIAN:
 
 free_alphabet(alph);
 free_Dictionary(d);
-/*free_abstract_BIN(bin,&bin_free);
-free_abstract_INF(inf,&inf_free);*/
 u_fclose(words);
 u_fclose(new_unknown_words);
 free_string_hash(forbiddenWords);

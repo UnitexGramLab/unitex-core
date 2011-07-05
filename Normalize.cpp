@@ -92,9 +92,7 @@ int separator_normalization=1;
 char rules[FILENAME_MAX]="";
 char input_offsets[FILENAME_MAX]="";
 char output_offsets[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int convLFtoCRLF=1;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -111,12 +109,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&i
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case '$': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty input offset file name\n");
@@ -148,14 +146,14 @@ U_FILE* f_output_offsets=NULL;
 
 if (output_offsets[0]!='\0') {
 	/* We deal with offsets only if we have to produce output offsets */
-	f_output_offsets=u_fopen_creating_versatile_encoding(encoding_output, bom_output, output_offsets, U_WRITE);
+	f_output_offsets=u_fopen(&vec, output_offsets, U_WRITE);
 	if (f_output_offsets==NULL) {
 		error("Cannot create offset file %s\n",output_offsets);
 		return 1;
 	}
 	v_output_offsets=new_vector_offset();
 	if (input_offsets[0]!='\0') {
-		v_input_offsets=load_offsets(input_offsets,mask_encoding_compatibility_input);
+		v_input_offsets=load_offsets(&vec,input_offsets);
 	}
 }
 char tmp_file[FILENAME_MAX];
@@ -174,8 +172,8 @@ char dest_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[vars->optind]);
-int result=normalize(tmp_file, dest_file, encoding_output,bom_output,
-		mask_encoding_compatibility_input,mode, convLFtoCRLF,rules,v_output_offsets,separator_normalization);
+int result=normalize(tmp_file, dest_file, &vec, mode, convLFtoCRLF,rules,
+		v_output_offsets,separator_normalization);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {

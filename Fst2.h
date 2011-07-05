@@ -218,22 +218,21 @@ typedef struct fst2 Fst2;
 
 
 /* Functions for loading grammars */
-Fst2* load_fst2(const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Fst2* load_fst2(VersatileEncodingConfig*,const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 int   load_fst2_from_file(U_FILE*,int,Fst2 **,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int   load_fst2_from_file(U_FILE*,int,Fst2 **, int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-Fst2* load_one_sentence_from_fst2(const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Fst2(Fst2*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-int get_graph_compatibity_mode_by_file(int * p_tilde_negation_operator);
+int get_graph_compatibility_mode_by_file(VersatileEncodingConfig*,int *p_tilde_negation_operator);
 
 Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 /* Functions for writing grammars */
 void write_graph(U_FILE*,Fst2*,int);
 void write_fst2_tags(U_FILE*,Fst2*);
-void save_Fst2(char*,Fst2*,Encoding,int);
+void save_Fst2(VersatileEncodingConfig*,char*,Fst2*);
 
 
 int is_initial_state(Fst2State);

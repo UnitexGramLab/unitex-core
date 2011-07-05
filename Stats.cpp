@@ -33,7 +33,8 @@
 
 // main work functions
 
-void concord_stats(const char* , int , const char *, const char* , const char* , const char*, Encoding, int, int, int , int, int );
+void concord_stats(const char* , int , const char *, const char* , const char* , const char*,
+		VersatileEncodingConfig*, int , int, int );
 void build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
 void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
 
@@ -157,9 +158,7 @@ const char* optstring_Stats=":m:a:l:r:c:o:k:q:";
 	 } ;
 
 int main_Stats(int argc,char* const argv[]) {
-
-	if (argc <= 1)
-	{
+	if (argc <= 1) {
 		usage();
 		return 0;
 	}
@@ -170,11 +169,7 @@ int main_Stats(int argc,char* const argv[]) {
 	char text_cod[FILENAME_MAX]="";
 	char output[FILENAME_MAX]="";
 	char alphabet[FILENAME_MAX]="";
-
-	Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-	int bom_output = DEFAULT_BOM_OUTPUT;
-	int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-
+	VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 	int val,index=-1;
 	char foo;
 	struct OptVars* vars=new_OptVars();
@@ -209,12 +204,12 @@ int main_Stats(int argc,char* const argv[]) {
       case 'k': if (vars->optarg[0]=='\0') {
                   fatal_error("Empty input_encoding argument\n");
                 }
-                decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+                decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
                 break;
       case 'q': if (vars->optarg[0]=='\0') {
                   fatal_error("Empty output_encoding argument\n");
                 }
-                decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+                decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
                 break;
 	   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
 	             else fatal_error("Missing argument for option --%s\n",lopts_Stats[index].name);
@@ -238,8 +233,7 @@ get_path(concord_ind,text_cod);
 strcat(text_cod,"text.cod");
 
 concord_stats(output, mode, concord_ind, tokens_txt, text_cod, alphabet, 
-              encoding_output,bom_output,mask_encoding_compatibility_input,
-              leftContext, rightContext, caseSensitive);
+              &vec, leftContext, rightContext, caseSensitive);
 free_OptVars(vars);
 return 0;
 }
@@ -256,17 +250,17 @@ return 0;
  */
 void concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
 				   const char* alphabetName, 
-                   Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                   VersatileEncodingConfig* vec,
                    int leftContext, int rightContext, int caseSensitive)
 {
-	U_FILE* concord = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, concordfname, U_READ);
-	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen_creating_versatile_encoding(encoding_output,bom_output, outfilename, U_WRITE);
+	U_FILE* concord = u_fopen(vec, concordfname, U_READ);
+	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(vec, outfilename, U_WRITE);
 	U_FILE* cod = u_fopen(BINARY, codname, U_READ);
 	match_list* matches = load_match_list(concord, NULL);
 	u_fclose(concord);
 
 
-	text_tokens* tokens = load_text_tokens(tokens_path,mask_encoding_compatibility_input);
+	text_tokens* tokens = load_text_tokens(vec,tokens_path);
 
 	if (tokens == NULL)
 	{
@@ -275,7 +269,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 
 	Alphabet* alphabet = NULL;
 	if (alphabetName!=NULL && alphabetName[0]!='\0') {
-	   alphabet=load_alphabet(alphabetName);
+	   alphabet=load_alphabet(vec,alphabetName);
 	   if (alphabet == NULL) {
 	      fatal_error("Error in concord_stats, alphabet cannot be loaded!");
 	   }

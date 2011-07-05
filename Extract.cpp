@@ -81,9 +81,7 @@ char extract_matching_units=1;
 char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Extract,lopts_Extract,&index,vars))) {
    switch(val) {
@@ -108,12 +106,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Extract,lopts_Extract,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    }
    index=-1;
@@ -133,7 +131,7 @@ if (text==NULL) {
    error("Cannot open %s\n",snt_files->text_cod);
    return 1;
 }
-struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
+struct text_tokens* tok=load_text_tokens(&vec,snt_files->tokens_txt);
 if (tok==NULL) {
    error("Cannot load token list %s\n",snt_files->tokens_txt);
    af_close_mapfile(text);
@@ -157,14 +155,14 @@ if (concord_ind[0]=='\0') {
    strcat(concord_ind,PATH_SEPARATOR_STRING);
    strcat(concord_ind,"concord.ind");
 }
-U_FILE* concord=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concord_ind,U_READ);
+U_FILE* concord=u_fopen(&vec,concord_ind,U_READ);
 if (concord==NULL) {
    error("Cannot open concordance %s\n",concord_ind);
    af_close_mapfile(text);
    free_text_tokens(tok);
    return 1;
 }
-U_FILE* result=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
+U_FILE* result=u_fopen(&vec,output,U_WRITE);
 if (result==NULL) {
    error("Cannot write output file %s\n",output);
    af_close_mapfile(text);

@@ -30,7 +30,7 @@
 #include "TEI2Txt.h"
 
 
-void tei2txt(char*, char*, Encoding, int);
+void tei2txt(char*, char*, VersatileEncodingConfig*);
 
 const char* usage_TEI2Txt =
          "Usage: TEI2Txt [OPTIONS] <xml>\n"
@@ -67,9 +67,7 @@ if (argc==1) {
 }
 
 char output[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index,vars))) {
@@ -82,12 +80,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -107,7 +105,7 @@ if(output[0]=='\0') {
    remove_extension(argv[vars->optind],output);
 	strcat(output,".txt");
 }
-tei2txt(argv[vars->optind],output,encoding_output,bom_output);
+tei2txt(argv[vars->optind],output,&vec);
 free_OptVars(vars);
 return 0;
 }
@@ -115,14 +113,14 @@ return 0;
 
 static const char *body = "body";
 
-void tei2txt(char *fin, char *fout,Encoding encoding_output,int bom_output) {
+void tei2txt(char *fin, char *fout,VersatileEncodingConfig* vec) {
 	void* html_ctx = init_HTML_character_context();
 	if (html_ctx == NULL) fatal_alloc_error("tei2txt");
 
-	U_FILE* input = u_fopen(UTF8, fin, U_READ);
+	U_FILE* input = u_fopen(vec, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
-	U_FILE* output = u_fopen_creating_versatile_encoding(encoding_output, bom_output, fout, U_WRITE);
+	U_FILE* output = u_fopen(vec, fout, U_WRITE);
 	if (output == NULL) {
 		u_fclose(input);
 		fatal_error("Cannot open output file '%s'!\n", fout);

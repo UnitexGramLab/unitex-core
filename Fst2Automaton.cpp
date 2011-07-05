@@ -99,8 +99,8 @@ while (label!=NULL) {
  * with the given name. 'type' indicates the kind of automaton
  * (text fst, elag grammar, ...).
  */
-void save_automaton(const Fst2Automaton* A,char* name,Encoding encoding_output,int bom_output,int type) {
-Elag_fst_file_out* fstf=fst_file_out_open(name,encoding_output,bom_output,type);
+void save_automaton(const Fst2Automaton* A,char* name,VersatileEncodingConfig* vec,int type) {
+Elag_fst_file_out* fstf=fst_file_out_open(vec,name,type);
 if (fstf==NULL) {
    error("Unable to open '%s'\n",name);
    return;

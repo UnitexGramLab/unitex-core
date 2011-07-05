@@ -54,14 +54,14 @@ vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
  */
-void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encoding encoding_output,int bom_output,language_t* language) {
-   Elag_Tfst_file_in* input=load_tfst_file(input_tfst,language);
+void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,VersatileEncodingConfig* vec,language_t* language) {
+   Elag_Tfst_file_in* input=load_tfst_file(vec,input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
    error("%d sentence(s) in %s\n", input->tfst->N,input_tfst);
 
-   U_FILE* output_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output,U_WRITE);
+   U_FILE* output_tfst=u_fopen(vec,output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
    }
@@ -200,11 +200,11 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
    strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
    get_path(input_tfst,tfst_tags_by_alph);
    strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
-   U_FILE* f_tfst_tags_by_freq=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_freq,U_WRITE);
+   U_FILE* f_tfst_tags_by_freq=u_fopen(vec,tfst_tags_by_freq,U_WRITE);
    if (f_tfst_tags_by_freq==NULL) {
    	error("Cannot open %s\n",tfst_tags_by_freq);
    }
-   U_FILE* f_tfst_tags_by_alph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tfst_tags_by_alph,U_WRITE);
+   U_FILE* f_tfst_tags_by_alph=u_fopen(vec,tfst_tags_by_alph,U_WRITE);
    if (f_tfst_tags_by_alph==NULL) {
    	error("Cannot open %s\n",tfst_tags_by_alph);
    }
@@ -230,18 +230,18 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
  * The 'elag_fst' parameter is used to know whether the form frequencies files must be named
  * tfst_tags_by_freq/alph.txt or tfst_tags_by_freq/alph.new.txt
  */
-void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom_output,language_t* language,
+void explode_tfst(char* input_tfst,char* output,VersatileEncodingConfig* vec,language_t* language,
 		struct hash_table* form_frequencies) {
    static const unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static const unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
    symbol_t* rejected = new_symbol_UNKNOWN(language, language_add_form(language,_rejected),-1);
 
-   Elag_Tfst_file_in* input=load_tfst_file(input_tfst,language);
+   Elag_Tfst_file_in* input=load_tfst_file(vec,input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
-   U_FILE* output_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output,U_WRITE);
+   U_FILE* output_tfst=u_fopen(vec,output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
    }
@@ -281,7 +281,7 @@ void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom
 /**
  * Loads all the ELAG grammars contained in the given .elg file.
  */
-vector_ptr* load_elag_grammars(char* filename,language_t* language,char* directory) {
+vector_ptr* load_elag_grammars(VersatileEncodingConfig* vec,char* filename,language_t* language,char* directory) {
 U_FILE* f=u_fopen(ASCII,filename,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",filename);
@@ -309,7 +309,7 @@ while (af_fgets(buf,FILENAME_MAX,f->f) != NULL) {
    } else {
       sprintf(buf2,"%s%s",directory,buf+1);
    }
-   Fst2Automaton* A=load_elag_grammar_automaton(buf2,language);
+   Fst2Automaton* A=load_elag_grammar_automaton(vec,buf2,language);
    if (A==NULL) {
       error("Unable to load '%s' automaton\n",buf2);
       free_vector_ptr(grammars,(release_f)free_Fst2Automaton_excluding_symbols);

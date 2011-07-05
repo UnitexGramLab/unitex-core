@@ -57,7 +57,7 @@ u_printf(usage_Table2Grf);
 }
 
 
-void table2grf(U_FILE*,U_FILE*,U_FILE*,Encoding, int, char*, char*);
+void table2grf(U_FILE*,U_FILE*,U_FILE*,VersatileEncodingConfig*, char*, char*);
 
 
 const char* optstring_Table2Grf=":r:o:s:hk:q:";
@@ -80,9 +80,7 @@ if (argc==1) {
 char reference_graph_name[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char subgraph_pattern[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&index,vars))) {
@@ -105,12 +103,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&i
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -133,17 +131,17 @@ if (output[0]=='\0') {
    fatal_error("You must specify the output graph name\n");
 }
 
-U_FILE* table=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* table=u_fopen(&vec,argv[vars->optind],U_READ);
 if (table==NULL) {
    fatal_error("Cannot open table %s\n",argv[vars->optind]);
 }
-U_FILE* reference_graph=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,reference_graph_name,U_READ);
+U_FILE* reference_graph=u_fopen(&vec,reference_graph_name,U_READ);
 if (reference_graph==NULL) {
    error("Cannot open reference graph %s\n",reference_graph_name);
    u_fclose(table);
    return 1;
 }
-U_FILE* result_graph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
+U_FILE* result_graph=u_fopen(&vec,output,U_WRITE);
 if (result_graph==NULL) {
    error("Cannot create result graph %s\n",output);
    u_fclose(table);
@@ -158,7 +156,7 @@ if (subgraph_pattern[0]=='\0') {
 }
 char path[FILENAME_MAX];
 get_path(output,path);
-table2grf(table,reference_graph,result_graph,encoding_output,bom_output,subgraph_pattern,path);
+table2grf(table,reference_graph,result_graph,&vec,subgraph_pattern,path);
 free_OptVars(vars);
 return 0;
 }
@@ -169,19 +167,19 @@ return 0;
 
 
 
-struct etat {
-  unichar contenu[5000];
+struct state {
+  unichar content[5000];
   int x;
   int y;
   int n_trans;
-  int marque;
+  int mark;
   int trans[200];
 };
 
-struct graphe_patron {
-  unichar en_tete[3000];
-  int n_etats;
-  struct etat* tab[2000];
+struct reference_graph {
+  unichar header[3000];
+  int n_states;
+  struct state* tab[2000];
 };
 
 
@@ -214,35 +212,34 @@ u_fprintf(f,"#Unigraph\n"
 }
 
 
-struct etat* nouvel_etat() {
-struct etat* e;
-e=(struct etat*)malloc(sizeof(struct etat));
+struct state* new_state() {
+struct state* e;
+e=(struct state*)malloc(sizeof(struct state));
 if (e==NULL) {
-   fatal_alloc_error("nouvel_etat");
+   fatal_alloc_error("new_state");
 }
-e->contenu[0]='\0';
+e->content[0]='\0';
 e->x=0;
 e->y=0;
-e->marque=0;
+e->mark=0;
 e->n_trans=0;
 return e;
 }
 
 
 
-void lire_ligne(U_FILE *f,struct etat *e) {
+void read_line(U_FILE *f,struct state *e) {
 int i;
 int c;
 while (u_fgetc(f)!='"') {}
 i=0;
 while ((c=u_fgetc(f))!='"') {
-  e->contenu[i++]=(unichar)c;
+  e->content[i++]=(unichar)c;
   if (c=='\\') {
-    // cas d'un caractere protege par un back-slash
-    e->contenu[i++]=(unichar)u_fgetc(f);
+    e->content[i++]=(unichar)u_fgetc(f);
   }
 }
-e->contenu[i]='\0';
+e->content[i]='\0';
 // we read the space after the "
 /*u_fgetc(f);
 e->x=u_read_int(f);
@@ -259,31 +256,31 @@ u_fgetc(f);
 
 
 
-void charger_graphe_patron(U_FILE *f,struct graphe_patron *g) {
+void look_for_reference_graph(U_FILE *f,struct reference_graph *g) {
 int i;
 int c;
-g->en_tete[0]=(unichar)u_fgetc(f);
+g->header[0]=(unichar)u_fgetc(f);
 i=1;
 while ((c=u_fgetc(f))!='#')
-  g->en_tete[i++]=(unichar)c;
-g->en_tete[i]='#';
-g->en_tete[i+1]='\0';
+  g->header[i++]=(unichar)c;
+g->header[i]='#';
+g->header[i+1]='\0';
 // we read th \n after the #
 //u_fgetc(f);
 // we read the number of states
 //g->n_etats=u_read_int(f);
-u_fscanf(f,"%d\n",&(g->n_etats));
+u_fscanf(f,"%d\n",&(g->n_states));
 // we read the lines of the graph
-for (i=0;i<g->n_etats;i++) {
-  g->tab[i]=nouvel_etat();
-  lire_ligne(f,g->tab[i]);
+for (i=0;i<g->n_states;i++) {
+  g->tab[i]=new_state();
+  read_line(f,g->tab[i]);
 }
 }
 
-void free_graphe_patron(struct graphe_patron* p)
+void free_reference_graph(struct reference_graph* p)
 {
 int i;
-for (i=0;i<p->n_etats;i++) {
+for (i=0;i<p->n_states;i++) {
   free(p->tab[i]);
 }
 }
@@ -299,38 +296,38 @@ while ((c=u_fgetc(f))!='\n') {
 
 
 
-int read_field(U_FILE *f,unichar** ligne,int colonne,int delimiteur) {
+int read_field(U_FILE *f,unichar** ligne,int column,int delimitor) {
 int i;
 int c;
 unichar tmp[1000];
 i=0;
-while ((c=u_fgetc(f))!=EOF && c!=delimiteur && c!='\n') {
+while ((c=u_fgetc(f))!=EOF && c!=delimitor && c!='\n') {
   tmp[i]=(unichar)c;
   i++;
 }
-if ((i==0 && c==EOF) || c!=delimiteur) return 0;
+if ((i==0 && c==EOF) || c!=delimitor) return 0;
 tmp[i]='\0';
-ligne[colonne]=u_strdup(tmp);
+ligne[column]=u_strdup(tmp);
 return 1;
 }
 
 
 
-int read_table_line(U_FILE *f,unichar** ligne,int n_champs) {
+int read_table_line(U_FILE *f,unichar** line,int n_fields) {
 int i;
-for (i=0;i<n_champs;i++) {
-   if (!read_field(f,ligne,i,(i!=(n_champs-1))?'\t':'\n')) {
+for (i=0;i<n_fields;i++) {
+   if (!read_field(f,line,i,(i!=(n_fields-1))?'\t':'\n')) {
       if (i==0) {
          // case of an empty line
          return 0;
       } else {
          // case of missing fields at the end of line
-         for (int j=i;j<n_champs;j++) {
-            ligne[j]=(unichar*)malloc(sizeof(unichar));
-            if (ligne[j]==NULL) {
+         for (int j=i;j<n_fields;j++) {
+            line[j]=(unichar*)malloc(sizeof(unichar));
+            if (line[j]==NULL) {
                fatal_alloc_error("read_table_line");
             }
-            ligne[j][0]='\0';
+            line[j][0]='\0';
          }
          return 1;
       }
@@ -375,7 +372,7 @@ return (n>='A') && (n<='Z');
 // this function takes a string and replace in it every reference to a table
 // variable
 //
-void convertir(unichar* dest,unichar* source,unichar** champ,int n_champs,int ligne_courante) {
+void convert(unichar* dest,unichar* source,unichar** field,int n_fields,int current_line) {
 int pos_in_dest;
 unichar line_number[5];
 int row_number;
@@ -394,21 +391,21 @@ if (source[pos_in_src]=='@' && is_in_A_Z(source[pos_in_src+1])) {
    if (source[pos_in_src+2]=='\0' || source[pos_in_src+2]=='/') {
       // if we are in the case @A or @A/something
       row_number=source[pos_in_src+1]-'A';
-      if (row_number >= n_champs)
+      if (row_number >= n_fields)
         fatal_error("Error in parameterized graph: row #%d (@%C) not defined in table\n",
                     row_number,source[pos_in_src+1]);
    }
    else if (is_in_A_Z(source[pos_in_src+2]) && (source[pos_in_src+3]=='\0' || source[pos_in_src+3]=='/')) {
            // if we are in the case @AB or @AB/something
            row_number=(source[pos_in_src+1]-'A'+1)*(26)+(source[pos_in_src+2]-'A');
-           if (row_number >= n_champs)
+           if (row_number >= n_fields)
              fatal_error("Error in parameterized graph: row #%d (@%C%C) not defined in table\n",
                          row_number,source[pos_in_src+1],source[pos_in_src+2]);
    }
    if (row_number!=-1) {
       // if we have a valid row reference
-      if ((!negation && !u_strcmp(champ[row_number],"-"))
-          || (negation && !u_strcmp(champ[row_number],"+"))) {
+      if ((!negation && !u_strcmp(field[row_number],"-"))
+          || (negation && !u_strcmp(field[row_number],"+"))) {
          // and if this reference points on a -,
          // then we must remove this state
          u_strcpy(dest,"");
@@ -418,7 +415,7 @@ if (source[pos_in_src]=='@' && is_in_A_Z(source[pos_in_src+1])) {
 }
 
 // then, we can focus on the general case
-u_sprintf(line_number,"%04d",ligne_courante);
+u_sprintf(line_number,"%04d",current_line);
 
 pos_in_src=0;
 pos_in_dest=0;
@@ -452,19 +449,19 @@ while (source[pos_in_src]!='\0') {
          if (is_in_A_Z(source[pos_in_src+1])) {
             // if we are in the @AB case
             row_number=(source[pos_in_src]-'A'+1)*(26)+(source[pos_in_src+1]-'A');
-            if (row_number > n_champs)
+            if (row_number > n_fields)
               fatal_error("Error: row #%d (@%c%c) not defined in table\n",
                           row_number,source[pos_in_src],source[pos_in_src+1]);
             pos_in_src++;
          }
          else {
            row_number=source[pos_in_src]-'A';
-           if (row_number > n_champs)
+           if (row_number > n_fields)
              fatal_error("Error: row #%d (@%c) not defined in table\n",
                          row_number,source[pos_in_src]);
          }
          pos_in_src++;
-         if (!u_strcmp(champ[row_number],"+")) {
+         if (!u_strcmp(field[row_number],"+")) {
             if (negation) {
                // if we have a - sign, we do nothing
             }
@@ -475,7 +472,7 @@ while (source[pos_in_src]!='\0') {
                dest[pos_in_dest++]='>';
             }
          }
-         else if (!u_strcmp(champ[row_number],"-")) {
+         else if (!u_strcmp(field[row_number],"-")) {
             if (!negation) {
                // if we have a - sign, we do nothing
             }
@@ -491,8 +488,8 @@ while (source[pos_in_src]!='\0') {
             // if we had a negation, we restore the ! char
             if (negation) {dest[pos_in_dest++]='!';}
             int i=0;
-            while (champ[row_number][i]!='\0') {
-               dest[pos_in_dest++]=champ[row_number][i++];
+            while (field[row_number][i]!='\0') {
+               dest[pos_in_dest++]=field[row_number][i++];
             }
          }
       }
@@ -522,14 +519,14 @@ dest[pos_in_dest]='\0';
 
 
 
-int co_accessibilite(struct graphe_patron* g,int e) {
+int co_accessibility(struct reference_graph* g,int e) {
 int i;
-if (g->tab[e]->marque) return 1;
-if (g->tab[e]->contenu[0]=='\0') return 0;
-g->tab[e]->marque=1;
+if (g->tab[e]->mark) return 1;
+if (g->tab[e]->content[0]=='\0') return 0;
+g->tab[e]->mark=1;
 i=0;
 while (i<g->tab[e]->n_trans) {
-  if (!co_accessibilite(g,g->tab[e]->trans[i])) {
+  if (!co_accessibility(g,g->tab[e]->trans[i])) {
     g->tab[e]->trans[i]=g->tab[e]->trans[g->tab[e]->n_trans-1];
     g->tab[e]->n_trans--;
   }
@@ -540,57 +537,57 @@ return 1;
 
 
 
-int nettoyer_graphe(struct graphe_patron *G) {
-int i,n_etats,etat_courant,j;
+int clean_graph(struct reference_graph *G) {
+int i,n_states,current_state,j;
 int *t;
 
-if (G->tab[0]->contenu==NULL) {
-   fatal_error("internal error in nettoyer_graphe: NULL for initial state content\n");
+if (G->tab[0]->content==NULL) {
+   fatal_error("Internal error in clean_graph: NULL for initial state content\n");
 }
-if (G->tab[0]->contenu[0]=='\0') {
+if (G->tab[0]->content[0]=='\0') {
    // if the initial state is empty, we must remove the whole graph
    return 0;
 }
-n_etats=G->n_etats;
-G->tab[1]->marque=1;
-co_accessibilite(G,0);
+n_states=G->n_states;
+G->tab[1]->mark=1;
+co_accessibility(G,0);
 if (G->tab[0]->n_trans==0) {
    // if there is no more transition out of the initial state, we return 0
    return 0;
 }
-t=(int*)malloc(sizeof(int)*n_etats);
+t=(int*)malloc(sizeof(int)*n_states);
 if (t==NULL) {
-   fatal_alloc_error("nettoyer_graphe");
+   fatal_alloc_error("clean_graph");
 }
-for (i=0;i<n_etats;i++) {
+for (i=0;i<n_states;i++) {
   t[i]=i;
 }
-etat_courant=2; // we do not remove nor state 0 neither state 1
-while (etat_courant<n_etats) {
-  while (etat_courant<n_etats && G->tab[etat_courant]->marque==1)
-    etat_courant++;
-  while (n_etats>etat_courant && G->tab[n_etats-1]->marque==0) {
+current_state=2; // we do not remove nor state 0 neither state 1
+while (current_state<n_states) {
+  while (current_state<n_states && G->tab[current_state]->mark==1)
+    current_state++;
+  while (n_states>current_state && G->tab[n_states-1]->mark==0) {
     // tant que le dernier etat est a virer, on le vire
-    free(G->tab[n_etats-1]);
-    n_etats--;
+    free(G->tab[n_states-1]);
+    n_states--;
   }
-  if (etat_courant==n_etats-1) {
+  if (current_state==n_states-1) {
     // si on doit virer le dernier etat sans faire d'echange
-    free(G->tab[etat_courant]);
-    n_etats--;
+    free(G->tab[current_state]);
+    n_states--;
   }
   else
-  if (etat_courant<n_etats) {
+  if (current_state<n_states) {
     // on est dans le cas ou l'etat courant est a virer
-    free(G->tab[etat_courant]);
-    G->tab[etat_courant]=G->tab[n_etats-1];
-    G->tab[n_etats-1]=NULL;
-    t[n_etats-1]=etat_courant;
-    n_etats--;
+    free(G->tab[current_state]);
+    G->tab[current_state]=G->tab[n_states-1];
+    G->tab[n_states-1]=NULL;
+    t[n_states-1]=current_state;
+    n_states--;
   }
 }
-G->n_etats=n_etats;
-for (i=0;i<n_etats;i++)
+G->n_states=n_states;
+for (i=0;i<n_states;i++)
   for (j=0;j<G->tab[i]->n_trans;j++) {
     G->tab[i]->trans[j]=t[G->tab[i]->trans[j]];
   }
@@ -600,41 +597,40 @@ return 1;
 
 
 
-bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
-                  Encoding encoding_output,int bom_output,
-                  char* nom_resultat,char* chemin,U_FILE *f_coord,int graphs_printed) {
-
-struct graphe_patron r;
-struct graphe_patron* res;
+bool create_graph(int current_line,unichar** line,int n_fields,struct reference_graph* g,
+                  VersatileEncodingConfig* vec,
+                  char* name_result,char* path,U_FILE *f_coord,int graphs_printed) {
+struct reference_graph r;
+struct reference_graph* res;
 int i,j;
 U_FILE* f;
 res=&r;
 //determine_subgraph_name(nom_resultat,nom_res,ligne_courante);
 
-res->n_etats=g->n_etats;
-for (i=0;i<g->n_etats;i++) {
-  res->tab[i]=nouvel_etat();
+res->n_states=g->n_states;
+for (i=0;i<g->n_states;i++) {
+  res->tab[i]=new_state();
   res->tab[i]->x=g->tab[i]->x;
   res->tab[i]->y=g->tab[i]->y;
   res->tab[i]->n_trans=g->tab[i]->n_trans;
   for (j=0;j<g->tab[i]->n_trans;j++) {
     res->tab[i]->trans[j]=g->tab[i]->trans[j];
   }
-  convertir(res->tab[i]->contenu,g->tab[i]->contenu,ligne,n_champs,ligne_courante);
+  convert(res->tab[i]->content,g->tab[i]->content,line,n_fields,current_line);
 }
 
 // we print the name of the subgraph
 unichar tmp[FILENAME_MAX];
 unichar current_graph[FILENAME_MAX];
 char current_graph_char[FILENAME_MAX];
-u_strcpy(tmp,nom_resultat);
+u_strcpy(tmp,name_result);
 current_graph[0]='\0';
-convertir(current_graph,tmp,ligne,n_champs,ligne_courante);
+convert(current_graph,tmp,line,n_fields,current_line);
 u_to_char(current_graph_char,current_graph);
-if (!nettoyer_graphe(res)) {
+if (!clean_graph(res)) {
   // if the graph has been emptied, we return
   error("%S has been emptied\n",current_graph);
-  free_graphe_patron(res);
+  free_reference_graph(res);
   return false;
 }
 if (graphs_printed!=0) {
@@ -648,11 +644,11 @@ u_fprintf(f_coord,":");
 char tmp3[FILENAME_MAX];
 char tmp4[FILENAME_MAX];
 get_path(current_graph_char,tmp3);
-if ( ! strncmp(tmp3,chemin,strlen(chemin)) ) /* the subgraph is in a subdirectory
+if ( ! strncmp(tmp3,path,strlen(path)) ) /* the subgraph is in a subdirectory
                                                 relative to the path of the result graph:
                                                 we strip the common path */
   {
-    strcpy(tmp3,&current_graph_char[strlen(chemin)]);
+    strcpy(tmp3,&current_graph_char[strlen(path)]);
   }
 else /* we take the full name (including the path) */
   strcpy(tmp3,current_graph_char);
@@ -665,19 +661,19 @@ remove_extension(tmp3,tmp4);
 u_fprintf(f_coord,"%s",tmp4);
 }
 
-f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,current_graph_char,U_WRITE);
+f=u_fopen(vec,current_graph_char,U_WRITE);
 if (f==NULL) {
   error("Cannot create subgraph %s\n",current_graph_char);
-  free_graphe_patron(res);
+  free_reference_graph(res);
   return false;
 }
-if (ligne_courante%10==0) {
-   u_printf("%d table entries done...    \r",ligne_courante);
+if (current_line%10==0) {
+   u_printf("%d table entries done...    \r",current_line);
 }
-u_fprintf(f,"%S\n",g->en_tete);
-u_fprintf(f,"%d\n",res->n_etats);
-for (i=0;i<res->n_etats;i++) {
-  u_fprintf(f,"\"%S",res->tab[i]->contenu);
+u_fprintf(f,"%S\n",g->header);
+u_fprintf(f,"%d\n",res->n_states);
+for (i=0;i<res->n_states;i++) {
+  u_fprintf(f,"\"%S",res->tab[i]->content);
   u_fprintf(f,"\" %d %d %d",res->tab[i]->x,res->tab[i]->y,res->tab[i]->n_trans);
   for (j=0;j<res->tab[i]->n_trans;j++) {
      u_fprintf(f," %d",res->tab[i]->trans[j]);
@@ -692,36 +688,34 @@ return true;
 
 
 void table2grf(U_FILE* table,U_FILE* reference_graph,U_FILE* result_graph,
-               Encoding encoding_output,int bom_output,
-               char* subgraph,char* chemin) {
-int ligne_courante;
-struct graphe_patron structure;
-unichar* ligne[MAX_LINES_IN_TABLE];
-int n_champs;
+               VersatileEncodingConfig* vec,
+               char* subgraph,char* path) {
+int current_line;
+struct reference_graph structure;
+unichar* line[MAX_LINES_IN_TABLE];
+int n_fields;
 int i;
 int graphs_printed;
 write_result_graph_header(result_graph);
 u_printf("Loading reference graph...\n");
-charger_graphe_patron(reference_graph,&structure);
+look_for_reference_graph(reference_graph,&structure);
 u_fclose(reference_graph);
 u_printf("Reading lexicon-grammar table...\n");
-read_table_first_line(table,&n_champs);
-ligne_courante=1;
+read_table_first_line(table,&n_fields);
+current_line=1;
 graphs_printed=0;
-while (read_table_line(table,(unichar**)ligne,n_champs)) {
-   if (create_graph(ligne_courante,ligne,n_champs,&structure,
-                    encoding_output,bom_output,
-                    subgraph,chemin,result_graph,graphs_printed)) {
+while (read_table_line(table,(unichar**)line,n_fields)) {
+   if (create_graph(current_line,line,n_fields,&structure,
+                    vec,subgraph,path,result_graph,graphs_printed)) {
       graphs_printed++;
    }
-   for (i=0;i<n_champs;i++) {
-     free(ligne[i]);
+   for (i=0;i<n_fields;i++) {
+     free(line[i]);
    }
-   ligne_courante++;
+   current_line++;
 }
 u_fclose(table);
-
-free_graphe_patron(&structure);
+free_reference_graph(&structure);
 u_fprintf(result_graph,"\" 216 368 1 1 \n");
 u_fclose(result_graph);
 u_printf("Done.                                             \n");

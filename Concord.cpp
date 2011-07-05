@@ -103,7 +103,7 @@ u_printf(usage_Concord);
 }
 
 
-int pseudo_main_Concord(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int pseudo_main_Concord(VersatileEncodingConfig* vec,
                         const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,
                         const char* output,const char* directory,const char* alphabet,
@@ -112,14 +112,14 @@ ProgramInvoker* invoker=new_ProgramInvoker(main_Concord,"main_Concord");
 char tmp[256];
 {
     tmp[0]=0;
-    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-k");
         add_argument(invoker,tmp);
     }
 
     tmp[0]=0;
-    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-q");
         add_argument(invoker,tmp);
@@ -214,9 +214,7 @@ if (argc==1) {
 int val,index=-1;
 struct conc_opt* options=new_conc_opt();
 char foo;
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int ret;
 char* uima_offset_file=NULL;
 struct OptVars* vars=new_OptVars();
@@ -315,12 +313,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    }
    index=-1;
@@ -334,7 +332,7 @@ if (options->fontname==NULL || options->fontsize<=0) {
       fatal_error("The specified output mode is an HTML file: you must specify font parameters\n");
    }
 }
-U_FILE* concor=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* concor=u_fopen(&vec,argv[vars->optind],U_READ);
 if (concor==NULL) {
    error("Cannot open concordance index file %s\n",argv[vars->optind]);
    return 1;
@@ -352,7 +350,7 @@ if (text==NULL) {
 	free_snt_files(snt_files);
 	return 1;
 }
-struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
+struct text_tokens* tok=load_text_tokens(&vec,snt_files->tokens_txt);
 if (tok==NULL) {
 	error("Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(concor);
@@ -401,7 +399,7 @@ if (options->result_mode==HTML_ || options->result_mode==DIFF_) {
 	}
 }
 if (options->result_mode==UIMA_) {
-	options->uima_offsets=load_uima_offsets(uima_offset_file,mask_encoding_compatibility_input);
+	options->uima_offsets=load_uima_offsets(&vec,uima_offset_file);
 	if (options->uima_offsets==NULL) {
 		fatal_error("Cannot read offset file %s\n",uima_offset_file);
 	}
@@ -410,7 +408,7 @@ if (options->result_mode==UIMA_) {
 
 /* Once we have set all parameters, we call the function that
  * will actually create the concordance. */
-create_concordance(encoding_output,bom_output,concor,text,tok,n_enter_char,enter_pos,options);
+create_concordance(&vec,concor,text,tok,n_enter_char,enter_pos,options);
 free(enter_pos);
 u_fclose(concor);
 af_close_mapfile(text);

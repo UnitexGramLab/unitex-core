@@ -30,7 +30,7 @@ extern const struct option_TS lopts_Concord[];
 extern const char* usage_Concord;
 
 int main_Concord(int argc,char* const argv[]);
-int pseudo_main_Concord(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int pseudo_main_Concord(VersatileEncodingConfig*,
                         const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,
                         const char* output,const char* directory,const char* alphabet,

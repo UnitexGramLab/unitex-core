@@ -32,10 +32,10 @@
 #include "LocateTrace.h"
 
 
-void load_dic_for_locate(const char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
+void load_dic_for_locate(const char*,VersatileEncodingConfig*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*,Abstract_allocator);
-void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p);
-void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
+void load_morphological_dictionaries(VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
+void load_morphological_dictionaries(VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
 
 
 /**
@@ -99,7 +99,6 @@ p->protect_dic_chars=0;
 p->graph_depth=0;
 p->korean=NULL;
 p->jamo_tags=NULL;
-p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 p->recyclable_wchart_buffer=(wchar_t*)malloc(sizeof(wchar_t)*SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 if (p->recyclable_wchart_buffer==NULL) {
    fatal_alloc_error("new_locate_parameters");
@@ -179,7 +178,7 @@ return res;
 
 int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name,const char* dlf,const char* dlc,const char* err,
                    const char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
-                   Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                   VersatileEncodingConfig* vec,
                    const char* dynamicDir,TokenizationPolicy tokenization_policy,
                    SpacePolicy space_policy,int search_limit,const char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
@@ -210,7 +209,6 @@ p->search_limit=search_limit;
 p->ambiguous_output_policy=ambiguous_output_policy;
 p->variable_error_policy=variable_error_policy;
 p->protect_dic_chars=protect_dic_chars;
-p->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
 p->max_count_call = max_count_call;
 p->max_count_call_warning = max_count_call_warning;
 p->token_filename = tokens;
@@ -227,9 +225,9 @@ char morpho_bin[FILENAME_MAX];
 strcpy(morpho_bin,dynamicDir);
 strcat(morpho_bin,"morpho.bin");
 if (arabic_rules!=NULL && arabic_rules[0]!='\0') {
-	load_arabic_typo_rules(arabic_rules,&(p->arabic));
+	load_arabic_typo_rules(vec,arabic_rules,&(p->arabic));
 }
-out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
+out=u_fopen(vec,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
@@ -239,13 +237,13 @@ if (out==NULL) {
    u_fclose(out);
    return 0;
 }
-info=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord_info,U_WRITE);
+info=u_fopen(vec,concord_info,U_WRITE);
 if (info==NULL) {
    error("Cannot write %s\n",concord_info);
 }
 if (alphabet!=NULL && alphabet[0]!='\0') {
    u_printf("Loading alphabet...\n");
-   p->alphabet=load_alphabet(alphabet,is_korean);
+   p->alphabet=load_alphabet(vec,alphabet,is_korean);
    if (p->alphabet==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
       af_release_mapfile_pointer(p->text_cod,p->buffer);
@@ -258,8 +256,8 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
    }
 }
 struct string_hash* semantic_codes=new_string_hash();
-extract_semantic_codes(dlf,semantic_codes);
-extract_semantic_codes(dlc,semantic_codes);
+extract_semantic_codes(vec,dlf,semantic_codes);
+extract_semantic_codes(vec,dlc,semantic_codes);
 
 if (is_cancelling_requested() != 0) {
 	   error("user cancel request.\n");
@@ -276,7 +274,7 @@ if (is_cancelling_requested() != 0) {
 
 u_printf("Loading fst2...\n");
 struct FST2_free_info fst2load_free;
-Fst2* fst2load=load_abstract_fst2(fst2_name,1,&fst2load_free);
+Fst2* fst2load=load_abstract_fst2(vec,fst2_name,1,&fst2load_free);
 if (fst2load==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
@@ -351,7 +349,7 @@ if (p->filters==NULL) {
 u_printf("Loading token list...\n");
 int n_text_tokens=0;
 
-p->tokens=load_text_tokens_hash(tokens,mask_encoding_compatibility_input,&(p->SENTENCE),&(p->STOP),&n_text_tokens);
+p->tokens=load_text_tokens_hash(tokens,vec,&(p->SENTENCE),&(p->STOP),&n_text_tokens);
 if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(p->alphabet);
@@ -395,7 +393,7 @@ if (allow_trace!=0) {
 }
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");
-load_morphological_dictionaries(morpho_dic_list,p,morpho_bin);
+load_morphological_dictionaries(vec,morpho_dic_list,p,morpho_bin);
 extract_semantic_codes_from_morpho_dics(p->morpho_dic,p->n_morpho_dics,semantic_codes,locate_abstract_allocator);
 p->token_control=(unsigned char*)malloc(n_text_tokens*sizeof(unsigned char));
 if (p->token_control==NULL) {
@@ -409,7 +407,7 @@ for (int i=0;i<n_text_tokens;i++) {
   p->token_control[i]=0;
   p->matching_patterns[i]=NULL;
 }
-compute_token_controls(p->alphabet,err,p);
+compute_token_controls(vec,p->alphabet,err,p);
 int number_of_patterns,is_DIC,is_CDIC,is_SDIC;
 p->pattern_tree_root=new_pattern_node(locate_abstract_allocator);
 u_printf("Computing fst2 tags...\n");
@@ -418,9 +416,9 @@ p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
 u_printf("Loading dlf...\n");
-load_dic_for_locate(dlf,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
+load_dic_for_locate(dlf,vec,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 u_printf("Loading dlc...\n");
-load_dic_for_locate(dlc,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
+load_dic_for_locate(dlc,vec,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
 check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p,locate_abstract_allocator);
 u_printf("Optimizing fst2 pattern tags...\n");
@@ -539,7 +537,7 @@ return n;
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
  */
-void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p) {
+void load_morphological_dictionaries(VersatileEncodingConfig* vec,const char* morpho_dic_list,struct locate_parameters* p) {
 if (morpho_dic_list==NULL || morpho_dic_list[0]=='\0') {
    return;
 }
@@ -565,7 +563,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
    char inf[FILENAME_MAX];
    remove_extension(bin,inf);
    strcat(inf,".inf");
-   p->morpho_dic[i]=new_Dictionary(bin,inf);
+   p->morpho_dic[i]=new_Dictionary(vec,bin,inf);
 }
 }
 
@@ -574,7 +572,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
  */
-void load_morphological_dictionaries(const char* morpho_dic_list,struct locate_parameters* p,
+void load_morphological_dictionaries(VersatileEncodingConfig* vec,const char* morpho_dic_list,struct locate_parameters* p,
                                      const char* local_morpho_dic) {
 if (fexists(local_morpho_dic)) {
    if (morpho_dic_list!=NULL && morpho_dic_list[0]!='\0') {
@@ -586,16 +584,16 @@ if (fexists(local_morpho_dic)) {
          fatal_alloc_error("load_morphological_dictionaries");
       }
       sprintf(temp,"%s;%s",local_morpho_dic,morpho_dic_list);
-      load_morphological_dictionaries(temp,p);
+      load_morphological_dictionaries(vec,temp,p);
       free(temp);
       return;
    } else {
       /* We just have the local one */
-      return load_morphological_dictionaries(local_morpho_dic,p);
+      return load_morphological_dictionaries(vec,local_morpho_dic,p);
    }
 }
 /* We have no local dictionary*/
-load_morphological_dictionaries(morpho_dic_list,p);
+load_morphological_dictionaries(vec,morpho_dic_list,p);
 }
 
 
@@ -700,8 +698,8 @@ return c;
  * We use the unknown word file 'err' in order to determine if a token
  * must be matched by <!DIC>
  */
-void compute_token_controls(Alphabet* alph,const char* err,struct locate_parameters* p) {
-struct string_hash* ERR=load_key_list(err,p->mask_encoding_compatibility_input);
+void compute_token_controls(VersatileEncodingConfig* vec,Alphabet* alph,const char* err,struct locate_parameters* p) {
+struct string_hash* ERR=load_key_list(vec,err);
 int n=p->tokens->size;
 for (int i=0;i<n;i++) {
    p->token_control[i]=get_control_byte(p->tokens->value[i],alph,ERR,p->tokenization_policy);
@@ -727,13 +725,13 @@ free_string_hash(ERR);
  * the pattern "<CDIC>" is used in the grammar, it means that any token sequence that is a
  * compound word must be marked as be matched by this pattern.
  */
-void load_dic_for_locate(const char* dic_name,int mask_encoding_compatibility_input,Alphabet* alphabet,
+void load_dic_for_locate(const char* dic_name,VersatileEncodingConfig* vec,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,
                          struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 U_FILE* f;
-f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,dic_name,U_READ);
+f=u_fopen(vec,dic_name,U_READ);
 if (f==NULL) {
    error("Cannot open dictionary %s\n",dic_name);
    return;

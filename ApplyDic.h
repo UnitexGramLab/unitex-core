@@ -158,16 +158,15 @@ struct dico_application_info {
    struct match_list** tag_sequences;
    int n_tag_sequences;
    int tag_sequences_capacity;
-   Encoding encoding_output;
-   int bom_output;
-   int mask_encoding_compatibility_input;
+   VersatileEncodingConfig vec;
 };
 
 
 struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,
-                                                    U_FILE*,const char*,const char*,Alphabet*,Encoding,int,int);
-int dico_application(char*,struct dico_application_info*,int);
-int dico_application_simplified(unichar*,char*,struct dico_application_info*);
+                                                    U_FILE*,const char*,const char*,Alphabet*,
+                                                    VersatileEncodingConfig*);
+int dico_application(VersatileEncodingConfig*,char*,struct dico_application_info*,int);
+int dico_application_simplified(VersatileEncodingConfig*,unichar*,char*,struct dico_application_info*);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);
 void save_unknown_words(struct dico_application_info*);

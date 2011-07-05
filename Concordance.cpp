@@ -32,7 +32,7 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(Encoding,int,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
+void create_modified_text_file(VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
 		char*,int,int*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
@@ -113,7 +113,7 @@ static size_t buf_map_int_pseudo_read(struct buffer_mapped* buffer,size_t size_r
  * This segment
  * 2.5  9
  */
-void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
+void create_concordance(VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* options) {
 U_FILE* out;
 U_FILE* f;
@@ -130,7 +130,7 @@ compute_token_length(token_length,tokens);
 if (options->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
-	create_modified_text_file(encoding_output,bom_output,concordance,text,tokens,
+	create_modified_text_file(vec,concordance,text,tokens,
 			options->output,n_enter_char,enter_pos);
 	free(token_length);
 	return;
@@ -166,7 +166,7 @@ int N_MATCHES;
 /* If we are in the 'xalign' mode, we don't need to sort the results.
  * So, we don't need to store the results in a temporary file */
 if (options->result_mode==XALIGN_) f=u_fopen(UTF8,options->output,U_WRITE);
-else f=u_fopen(UTF16_LE,temp_file_name,U_WRITE);
+else f=u_fopen(vec,temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
 	free(token_length);
@@ -186,16 +186,14 @@ if(options->result_mode==XALIGN_) return;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (options->sort_mode!=TEXT_ORDER) {
-   // we dont use pseudo_main_SortTxt(encoding_output,bom_output,mask_encoding_compatibility_input,0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
-   // because we work only on temp_file_name which is only internal temp file, so UTF16_LE
-   pseudo_main_SortTxt(UTF16_LE,1,ALL_ENCODING_BOM_POSSIBLE,0,0,options->sort_alphabet,NULL,options->thai_mode,temp_file_name);
+   pseudo_main_SortTxt(vec,0,0,options->sort_alphabet,NULL,options->thai_mode,temp_file_name);
 }
 /* Now, we will take the sorted raw text concordance and we will:
  * 1) reorder the columns
  * 2) insert HTML info if needed
  */
 
-f=u_fopen(UTF16_LE,temp_file_name,U_READ);
+f=u_fopen(vec,temp_file_name,U_READ);
 if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
 	return;
@@ -206,7 +204,7 @@ if (options->result_mode==TEXT_ || options->result_mode==INDEX_
       || options->result_mode==DIFF_) {
    /* If we have to produce a unicode text file, we open it
     * as a UTF16LE one */
-   out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,options->output,U_WRITE);
+   out=u_fopen(vec,options->output,U_WRITE);
 }
 else {
    /* Otherwise, we open it as a UTF8 HTML file */
@@ -223,11 +221,11 @@ if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->
 	write_HTML_header(out,N_MATCHES,options);
 }
 if ((options->result_mode==XML_WITH_HEADER_)) {
-  if ((encoding_output == UTF16_LE) || (encoding_output == BIG_ENDIAN_UTF16)) {
+  if ((vec->encoding_output == UTF16_LE) || (vec->encoding_output == BIG_ENDIAN_UTF16)) {
     u_fprintf(out,"<?xml version='1.0' encoding='UTF-16'?>\n<concord>\n");
   }
   else
-  if ((encoding_output == UTF8)) {
+  if ((vec->encoding_output == UTF8)) {
     u_fprintf(out,"<?xml version='1.0' encoding='UTF-8'?>\n<concord>\n");
   }
   else
@@ -1127,10 +1125,10 @@ return pos_in_enter_pos;
  * the longest is preferred. If 2 matches start and end at the same positions,
  * then the first one is arbitrarily preferred.
  */
-void create_modified_text_file(Encoding encoding_output,int bom_output,U_FILE* concordance,ABSTRACTMAPFILE* text,
+void create_modified_text_file(VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
                                struct text_tokens* tokens,char* output_name,
                                int n_enter_char,int* enter_pos) {
-U_FILE* output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output_name,U_WRITE);
+U_FILE* output=u_fopen(vec,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
 	af_close_mapfile(text);

@@ -76,10 +76,7 @@ if (argc==1) {
    return 0;
 }
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index,vars))) {
@@ -87,12 +84,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -108,7 +105,7 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+U_FILE* f=u_fopen(&vec,argv[vars->optind],U_READ);
 if (f==NULL) {
    fatal_error("Cannot open file %s\n",argv[vars->optind]);
 }
@@ -121,7 +118,7 @@ u_fclose(f);
 char grf_name[FILENAME_MAX];
 get_path(argv[vars->optind],grf_name);
 strcat(grf_name,"regexp.grf");
-if (!reg2grf(exp,grf_name,encoding_output,bom_output)) {
+if (!reg2grf(exp,grf_name,&vec)) {
 	free(exp);
    return 1;
 }

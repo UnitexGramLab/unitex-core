@@ -80,9 +80,7 @@ if (argc==1) {
    return 0;
 }
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
@@ -109,12 +107,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Elag,lopts_Elag,&index,vars)
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -139,7 +137,7 @@ char input_tfst[FILENAME_MAX];
 strcpy(input_tfst,argv[vars->optind]);
 
 u_printf("Loading %s language definition ...\n",language);
-language_t* lang = load_language_definition(language);
+language_t* lang = load_language_definition(&vec,language);
 if (output_tfst[0]=='\0') {
    remove_extension(input_tfst,output_tfst);
    strcat(output_tfst,"-elag.tfst");
@@ -147,13 +145,13 @@ if (output_tfst[0]=='\0') {
 
 get_path(rule_file,directory);
 vector_ptr* grammars;
-if ((grammars=load_elag_grammars(rule_file,lang,directory)) == NULL) {
+if ((grammars=load_elag_grammars(&vec,rule_file,lang,directory)) == NULL) {
    free_language_t(lang);
    free_OptVars(vars);
    fatal_error("Unable to load grammar %s", rule_file);
 }
 u_printf("Grammars are loaded.\n");
-remove_ambiguities(input_tfst,grammars,output_tfst,encoding_output,bom_output,lang);
+remove_ambiguities(input_tfst,grammars,output_tfst,&vec,lang);
 free_language_t(lang);
 free_vector_ptr(grammars,(release_f)free_Fst2Automaton_including_symbols);
 free_OptVars(vars);

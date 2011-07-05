@@ -256,9 +256,10 @@ while (trans!=NULL) {
  * This function constructs and returns a token tree from a normalization grammar.
  * Tokens are represented by integers.
  */
-struct normalization_tree* load_normalization_fst2(const char* grammar,const Alphabet* alph,struct text_tokens* tok) {
+struct normalization_tree* load_normalization_fst2(VersatileEncodingConfig* vec,const char* grammar,
+		const Alphabet* alph,struct text_tokens* tok) {
 struct FST2_free_info fst2_free;
-Fst2* fst2=load_abstract_fst2(grammar,0,&fst2_free);
+Fst2* fst2=load_abstract_fst2(vec,grammar,0,&fst2_free);
 if (fst2==NULL) {
    return NULL;
 }
@@ -421,9 +422,9 @@ while (trans!=NULL) {
 // this function constructs a token tree from a normalization grammar
 // tokens are represented by strings
 //
-struct normalization_tree* load_normalization_transducer_string(const char* nom) {
+struct normalization_tree* load_normalization_transducer_string(VersatileEncodingConfig* vec,const char* name) {
 struct FST2_free_info fst2_free;
-Fst2* automate=load_abstract_fst2(nom,0,&fst2_free);
+Fst2* automate=load_abstract_fst2(vec,name,0,&fst2_free);
 if (automate==NULL) {
    // if the loading of the normalization transducer has failed, we return
    return NULL;

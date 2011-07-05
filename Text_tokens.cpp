@@ -37,9 +37,9 @@ return tmp;
 }
 
 
-struct text_tokens* load_text_tokens(const char* nom,int mask_encoding_compatibility_input,Abstract_allocator prv_alloc) {
+struct text_tokens* load_text_tokens(VersatileEncodingConfig* vec,const char* nom,Abstract_allocator prv_alloc) {
 U_FILE* f;
-f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
+f=u_fopen(vec,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
@@ -75,12 +75,12 @@ return res;
 }
 
 
-struct string_hash* load_text_tokens_hash(const char* nom,int mask_encoding_compatibility_input,
+struct string_hash* load_text_tokens_hash(const char* nom,VersatileEncodingConfig* vec,
                                           int *SENTENCE_MARKER,
                                           int* STOP_MARKER,
                                           int *NUMBER_OF_TEXT_TOKENS,Abstract_allocator /* prv_alloc */) {
 U_FILE* f;
-f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
+f=u_fopen(vec,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }

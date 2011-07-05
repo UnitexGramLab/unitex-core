@@ -34,7 +34,7 @@ static int read_bin_header(Dictionary*);
 /**
  * Loads and returns a compressed dictionary.
  */
-Dictionary* new_Dictionary(const char* bin,const char* inf,Abstract_allocator prv_alloc) {
+Dictionary* new_Dictionary(VersatileEncodingConfig* vec,const char* bin,const char* inf,Abstract_allocator prv_alloc) {
 Dictionary* d=(Dictionary*)malloc_cb(sizeof(Dictionary),prv_alloc);
 if (d==NULL) {
 	fatal_alloc_error("new_Dictionary");
@@ -57,7 +57,7 @@ if (d->type==BIN_CLASSIC) {
 		free(d);
 		return NULL;
 	}
-	d->inf=load_abstract_INF_file(inf,&d->inf_free);
+	d->inf=load_abstract_INF_file(vec,inf,&d->inf_free);
 	if (d->inf==NULL) {
 		free_abstract_BIN(d->bin,&d->bin_free);
 		free(d);
@@ -72,11 +72,11 @@ return d;
  * Loads and returns a compressed dictionary, but no need to specify the .inf file
  * that is deduced from 'bin'.
  */
-Dictionary* new_Dictionary(const char* bin,Abstract_allocator prv_alloc) {
+Dictionary* new_Dictionary(VersatileEncodingConfig* vec,const char* bin,Abstract_allocator prv_alloc) {
 char inf[FILENAME_MAX];
 remove_extension(bin,inf);
 strcat(inf,".inf");
-return new_Dictionary(bin,inf,prv_alloc);
+return new_Dictionary(vec,bin,inf,prv_alloc);
 }
 
 

@@ -255,7 +255,7 @@ return 1;
  * is set to 0.
  * "YES" value means 1, any other value means 0;
  */
-int load_arabic_typo_rules(const char* name,ArabicTypoRules *rules) {
+int load_arabic_typo_rules(VersatileEncodingConfig* vec,const char* name,ArabicTypoRules *rules) {
 memset(rules,0,sizeof(ArabicTypoRules));
 if (name==NULL) {
 	fatal_error("NULL arabic rule configuration file name!\n");
@@ -263,7 +263,7 @@ if (name==NULL) {
 if (rules==NULL) {
 	fatal_error("Unexpected NULL pointer in load_arabic_typo_rules\n");
 }
-struct string_hash* h=load_key_value_list(name,DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,'=');
+struct string_hash* h=load_key_value_list(name,vec,'=');
 if (h==NULL) {
 	error("Cannot load %s\n",name);
 	return 0;

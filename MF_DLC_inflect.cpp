@@ -53,7 +53,7 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF, 
 		    MultiFlex_ctx* p_multiFlex_ctx, struct l_morpho_t* pL_MORPHO, Alphabet* alph,
-		    Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
+		    VersatileEncodingConfig* vec,
 		    int config_files_status,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
 		    Korean* korean,const char* pkgdir) {
@@ -65,12 +65,12 @@ int inflect(char* DLC, char* DLCF,
 	int err;
 
 	//Open DELAS/DELAC
-	dlc = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, DLC, U_READ);
+	dlc = u_fopen(vec, DLC, U_READ);
 	if (!dlc) {
 		return 1;
 	}
 	//Open DELAF/DELACF
-	dlcf = u_fopen_creating_versatile_encoding(encoding_output, bom_output, DLCF, U_WRITE);
+	dlcf = u_fopen(vec, DLCF, U_WRITE);
 	if (!dlcf) {
 		error("Unable to open file: '%s' !\n", DLCF);
 		return 1;
@@ -106,7 +106,7 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
-			err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,DELAS_entry->lemma, inflection_code,
+			err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,vec,DELAS_entry->lemma, inflection_code,
 					DELAS_entry->filters, &forms, semitic, korean,pkgdir);
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
@@ -160,8 +160,7 @@ int inflect(char* DLC, char* DLCF,
 				if (!err) {
 					//Inflect the entry
 					MU_init_forms(&MU_forms);
-					err = MU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,
-							mask_encoding_compatibility_input,dlc_entry->lemma, &MU_forms,pkgdir);
+					err = MU_inflect(p_multiFlex_ctx,pL_MORPHO,vec,dlc_entry->lemma, &MU_forms,pkgdir);
 					if (!err) {
 						int f; //index of the current inflected form
 						//Inform the user if no form generated

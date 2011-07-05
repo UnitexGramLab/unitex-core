@@ -34,8 +34,7 @@ void build_state_token_trees(struct fst2txt_parameters*);
 void parse_text(struct fst2txt_parameters*);
 
 int main_fst2txt(struct fst2txt_parameters* p) {
-	p->f_input = u_fopen_existing_versatile_encoding(
-			p->mask_encoding_compatibility_input, p->text_file, U_READ);
+	p->f_input = u_fopen(&(p->vec), p->text_file, U_READ);
 	if (p->f_input == NULL) {
 		error("Cannot open file %s\n", p->text_file);
 		return 1;
@@ -45,15 +44,14 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 			CAPACITY_LIMIT);
 	p->buffer = p->text_buffer->unichar_buffer;
 
-	p->f_output = u_fopen_creating_versatile_encoding(p->encoding_output,
-			p->bom_output, p->temp_file, U_WRITE);
+	p->f_output = u_fopen(&(p->vec), p->temp_file, U_WRITE);
 	if (p->f_output == NULL) {
 		error("Cannot open temporary file %s\n", p->temp_file);
 		u_fclose(p->f_input);
 		return 1;
 	}
 
-	p->fst2 = load_abstract_fst2(p->fst_file, 1, NULL);
+	p->fst2 = load_abstract_fst2(&(p->vec), p->fst_file, 1, NULL);
 	if (p->fst2 == NULL) {
 		error("Cannot load grammar %s\n", p->fst_file);
 		u_fclose(p->f_input);
@@ -69,7 +67,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 
 
 	if (p->alphabet_file != NULL && p->alphabet_file[0] != '\0') {
-		p->alphabet = load_alphabet(p->alphabet_file);
+		p->alphabet = load_alphabet(&(p->vec), p->alphabet_file);
 		if (p->alphabet == NULL) {
 			error("Cannot load alphabet file %s\n", p->alphabet_file);
 			u_fclose(p->f_input);
@@ -126,10 +124,10 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	p->absolute_offset = 0;
 	p->stack = new_stack_unichar(MAX_OUTPUT_LENGTH);
 	p->input_length = 0;
-	p->encoding_output = DEFAULT_ENCODING_OUTPUT;
-	p->bom_output = DEFAULT_BOM_OUTPUT;
-	p->mask_encoding_compatibility_input
-			= DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+	p->vec.mask_encoding_compatibility_input
+				= DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+	p->vec.encoding_output = DEFAULT_ENCODING_OUTPUT;
+	p->vec.bom_output = DEFAULT_BOM_OUTPUT;
 	p->v_in_offsets = NULL;
 	p->v_out_offsets = NULL;
 	p->f_out_offsets = NULL;
@@ -174,10 +172,10 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 ////////////////////////////////////////////////////////////////////////
 
 
-void
-		scan_graph(int, int, int, int, struct parsing_info**, unichar*,
+void scan_graph(int, int, int, int, struct parsing_info**, unichar*,
 				struct fst2txt_parameters*,
 				Abstract_allocator prv_alloc_recycle = NULL);
+
 int write_transduction();
 
 static void push_output_string(struct fst2txt_parameters* p, unichar s[]) {

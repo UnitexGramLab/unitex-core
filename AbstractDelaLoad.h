@@ -53,7 +53,7 @@ struct BIN_free_info
 
 const struct BIN_free_info BIN_free_info_init={NULL,NULL,NULL,1};
 
-const struct INF_codes* load_abstract_INF_file(const char*,struct INF_free_info*);
+const struct INF_codes* load_abstract_INF_file(VersatileEncodingConfig*,const char*,struct INF_free_info*);
 void free_abstract_INF(const struct INF_codes*,struct INF_free_info*);
 
 const unsigned char* load_abstract_BIN_file(const char*,long*,struct BIN_free_info*);

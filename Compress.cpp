@@ -68,11 +68,8 @@ u_printf(usage_Compress);
  * of the file named 'name'. This file is supposed to be a UTF-16
  * Little-Endian one, starting by a sequence made of ten zeros.
  */
-void write_INF_file_header(char* name,int n) {
-U_FILE* f;
-
-f=u_fopen_existing_unitex_text_format(name,U_MODIFY);
-
+void write_INF_file_header(VersatileEncodingConfig* vec,char* name,int n) {
+U_FILE* f=u_fopen(vec,name,U_MODIFY);
 char number[11];
 number[10]=0;
 int offset=9;
@@ -88,18 +85,18 @@ u_fclose(f);
 }
 
 
-int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int pseudo_main_Compress(VersatileEncodingConfig* vec,
                          int flip,int semitic,char* dic,int new_style_bin) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Compress,"main_Compress");
 char tmp[200];
 tmp[0]=0;
-get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
 if (tmp[0] != '\0') {
     add_argument(invoker,"-k");
     add_argument(invoker,tmp);
 }
 tmp[0]=0;
-get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
 if (tmp[0] != '\0') {
     add_argument(invoker,"-q");
     add_argument(invoker,tmp);
@@ -157,9 +154,7 @@ int new_style_bin=1;
 int semitic=0;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 bin[0]='\0';
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -181,12 +176,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
@@ -216,7 +211,7 @@ struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
 int line=0; /* Current line number */
 
-f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+f=u_fopen(&vec,argv[vars->optind],U_READ);
 if (f==NULL) {
 	fatal_error("Cannot open %s\n",argv[vars->optind]);
 }
@@ -232,7 +227,7 @@ if (bin[0]=='\0') {
 remove_extension(bin,inf);
 strcat(inf,".inf");
 if (bin_type==BIN_CLASSIC) {
-	INF_file=u_fopen_creating_unitex_text_format(encoding_output,bom_output,inf,U_WRITE);
+	INF_file=u_fopen(&vec,inf,U_WRITE);
 	if (INF_file==NULL) {
 		u_fclose(f);
 		fatal_error("Cannot create %s\n",inf);
@@ -384,7 +379,7 @@ if (INF_file!=NULL) {
 	/* Now we can dump the INF codes into the .inf file */
 	dump_values(INF_file,INF_codes);
 	u_fclose(INF_file);
-	write_INF_file_header(inf,INF_codes->size);
+	write_INF_file_header(&vec,inf,INF_codes->size);
 	INF_codes->size=old_size;
 } /* End of dealing with the .inf file, if needed */
 

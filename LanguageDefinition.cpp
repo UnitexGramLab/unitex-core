@@ -447,8 +447,8 @@ return language;
 /**
  * Loads and returns the given tagset definition file.
  */
-language_t* load_language_definition(char* name) {
-U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
+language_t* load_language_definition(VersatileEncodingConfig* vec,char* name) {
+U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) {
    fatal_error("Unable to open %s for reading.\n",name);
 }

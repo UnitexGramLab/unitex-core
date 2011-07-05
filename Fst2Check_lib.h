@@ -29,10 +29,10 @@
 #include "AbstractFst2Load.h"
 
 
-int OK_for_Locate(const char*,char);
-int OK_for_Locate_write_error(const char*,char,U_FILE*);
-int valid_sentence_automaton(const char*);
-int valid_sentence_automaton_write_error(const char*,U_FILE*);
+int OK_for_Locate(VersatileEncodingConfig*,const char*,char);
+int OK_for_Locate_write_error(VersatileEncodingConfig*,const char*,char,U_FILE*);
+int valid_sentence_automaton(VersatileEncodingConfig*,const char*);
+int valid_sentence_automaton_write_error(VersatileEncodingConfig*,const char*,U_FILE*);
 
 
 #endif

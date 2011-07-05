@@ -73,7 +73,7 @@ free(t);
  *  - the .tind does not exist
  *  - the .tfst does not start by a number >0
  */
-Tfst* open_text_automaton(char* tfst) {
+Tfst* open_text_automaton(VersatileEncodingConfig* vec,char* tfst) {
 char tind[FILENAME_MAX];
 remove_extension(tfst,tind);
 strcat(tind,".tind");
@@ -82,7 +82,7 @@ if (size==-1) {
    error("Cannot get size of file %s\n",tind);
    return NULL;
 }
-U_FILE* f=u_fopen_existing_unitex_text_format(tfst,U_READ);
+U_FILE* f=u_fopen(vec,tfst,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",tfst);
    return NULL;

@@ -46,7 +46,7 @@
 #define ELAG_UNDEFINED (-1)
 
 
-void split_elag_rule(elRule*,Encoding encoding_output,int bom_output,language_t*);
+void split_elag_rule(elRule*,VersatileEncodingConfig*,language_t*);
 int count_constraints(Fst2Automaton*,int*);
 Fst2Automaton* compile_elag_rule(elRule*,language_t*);
 int get_sub_automaton(SingleGraph,SingleGraph,int,int,int);
@@ -108,7 +108,7 @@ for (int i=0;i<A->number_of_states;i++) {
  * Allocates, initializes and returns a new Elag rule from the given .fst2.
  * Returns NULL in case of error at loading the rule.
  */
-elRule* new_elRule(char* fst2,Encoding encoding_output,int bom_output,language_t* language) {
+elRule* new_elRule(char* fst2,VersatileEncodingConfig* vec,language_t* language) {
 elRule* rule=(elRule*)malloc(sizeof(elRule));
 if (rule==NULL) {
    fatal_alloc_error("new_elRule");
@@ -120,13 +120,13 @@ rule->name=strdup(fst2);
 if (rule->name==NULL) {
    fatal_alloc_error("new_elRule");
 }
-if ((rule->automaton=load_elag_grammar_automaton(rule->name,language))==NULL) {
+if ((rule->automaton=load_elag_grammar_automaton(vec,rule->name,language))==NULL) {
    error("Cannot load '%s' automaton.\n", fst2);
    free(rule->name);
    free(rule);
    return NULL;
 }
-split_elag_rule(rule,encoding_output,bom_output,language);
+split_elag_rule(rule,vec,language);
 return rule;
 }
 
@@ -221,9 +221,9 @@ return Result;
  * Compiles the given .fst2 grammar into the given .elg file.
  * Returns 0 in case of success; -1 otherwise.
  */
-int compile_elag_grammar(char* grammar,char* elg_file,Encoding encoding_output,int bom_output,
+int compile_elag_grammar(char* grammar,char* elg_file,VersatileEncodingConfig* vec,
                          language_t* language) {
-elRule* rule=new_elRule(grammar,encoding_output,bom_output,language);
+elRule* rule=new_elRule(grammar,vec,language);
 if (rule==NULL) {
    error("Unable to read grammar '%s'\n",grammar);
    return -1;
@@ -233,7 +233,7 @@ if (A==NULL) {
    fatal_error("Unable to compile rule '%s'\n",grammar);
 }
 free_elRule(rule);
-save_automaton(A,elg_file,encoding_output,bom_output,FST_GRAMMAR);
+save_automaton(A,elg_file,vec,FST_GRAMMAR);
 free_Fst2Automaton(A,free_symbol);
 return 0;
 }
@@ -245,7 +245,7 @@ return 0;
  * automaton is too big, it will be saved in several automata inside
  * the output file.
  */
-int compile_elag_rules(char* rulesname,char* outname,Encoding encoding_output,int bom_output,language_t* language) {
+int compile_elag_rules(char* rulesname,char* outname,VersatileEncodingConfig* vec,language_t* language) {
 u_printf("Compilation of %s\n",rulesname);
 U_FILE* f=NULL;
 U_FILE* frules=u_fopen(ASCII,rulesname,U_READ);
@@ -290,7 +290,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       remove_extension(buf);
       u_printf("Precompiling %s.fst2\n",buf);
       strcat(buf,".fst2");
-      elRule* rule=new_elRule(buf,encoding_output,bom_output,language);
+      elRule* rule=new_elRule(buf,vec,language);
       if (rule==NULL) {
          fatal_error("Unable to read grammar '%s'\n",buf);
       }
@@ -301,7 +301,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
    } else {
       /* If there is already .elg, we use it */
       u_fclose(f);
-      A=load_elag_grammar_automaton(buf,language);
+      A=load_elag_grammar_automaton(vec,buf,language);
       if (A==NULL) {
          fatal_error("Unable to load '%s'\n",buf);
       }
@@ -330,7 +330,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
       free(res->name);
       res->name=u_strdup(ustr->str);
-      save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
+      save_automaton(res,fstoutname,vec,FST_GRAMMAR);
       free_Fst2Automaton(res,NULL);
       res=NULL;
    }
@@ -344,7 +344,7 @@ if (res!=NULL) {
    u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
    free(res->name);
    res->name=u_strdup(ustr->str);
-   save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
+   save_automaton(res,fstoutname,vec,FST_GRAMMAR);
    free_Fst2Automaton(res,free_symbol);
 }
 time_t end_time=time(0);
@@ -392,7 +392,7 @@ return res;
  * a fst2 grammar ("foo.fst2" => "foo-conc.fst2") that can be used by
  * the Locate program to match the <!> .... <!> .... <!> part of the rule.
  */
-void split_elag_rule(elRule* rule,Encoding encoding_output,int bom_output,language_t* language) {
+void split_elag_rule(elRule* rule,VersatileEncodingConfig* vec,language_t* language) {
 int c;
 /* This array contains the numbers of the states that are pointed to by
  * middle '<=>' of the constraints */
@@ -458,7 +458,7 @@ strcat(buf,"-conc.fst2");
 
 /* We create the.fst2 to be used by Locate */
 Fst2Automaton* locate=make_locate_automaton(rule,language);
-save_automaton(locate,buf,encoding_output,bom_output,FST_LOCATE);
+save_automaton(locate,buf,vec,FST_LOCATE);
 free_Fst2Automaton(locate,free_symbol);
 }
 

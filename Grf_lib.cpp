@@ -214,8 +214,8 @@ return 1;
 /**
  * Loads and returns a grf file, or NULL in case of error.
  */
-Grf* load_Grf(const char* name) {
-U_FILE* f=u_fopen_existing_versatile_encoding(DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,name,U_READ);
+Grf* load_Grf(VersatileEncodingConfig* vec,const char* name) {
+U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) return NULL;
 Ustring* line=new_Ustring();
 Grf* grf=new_Grf();
@@ -265,16 +265,8 @@ return grf;
 
 /**
  * Saves the given grf to the given file.
- *
- * Note that if the output is the standard output, we have to add the
- * BOM character so that redirecting the output to a file produces a valid
- * UTF16LE grf. We also force the encoding to UTF16LE.
  */
 void save_Grf(U_FILE* f,Grf* grf) {
-if (f==U_STDOUT) {
-	f->enc=UTF16_LE;
-	u_fputc(U_BYTE_ORDER_MARK,f);
-}
 u_fprintf(f,"#Unigraph\n");
 u_fprintf(f,"%S\n",grf->size);
 u_fprintf(f,"%S\n",grf->font);

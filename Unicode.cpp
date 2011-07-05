@@ -500,7 +500,7 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
 {
     af_fseek(f,0,0);
 
-    if ((MASK_ENCODING_COMPATIBILITY & (UTF16_LE_BOM_POSSIBLE | BIG_ENDIAN_UTF16_BOM_POSSIBLE | UTF8_BOM_POSSIBLE)) != 0)
+    if ((MASK_ENCODING_COMPATIBILITY & DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT) != 0)
     {
         /* check the BOM */
         unsigned char tab[4];
@@ -544,7 +544,6 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
         af_fseek(f,0,0);
     }
     /* we known there is no BOM */
-
 
     if ((MASK_ENCODING_COMPATIBILITY & UTF8_NO_BOM_POSSIBLE) != 0)
     {
@@ -603,7 +602,7 @@ if (MODE==U_APPEND || MODE==U_MODIFY) {
           if (GetFileEncoding(f,&encoding,&is_BOM,MASK_ENCODING_COMPATIBILITY) == 0)
           {
               af_fclose(f);
-              error("u_fopen error: %s is not a compatible text file\n",name);
+              error("u_fopen error 1: %s is not a compatible text file\n",name);
               return NULL;
           }
       /* If the file exists, we close it and reopen it in APPEND mode */
@@ -642,10 +641,9 @@ if (MODE==U_READ) {
       if (GetFileEncoding(f,&encoding,&is_BOM,MASK_ENCODING_COMPATIBILITY) == 0)
       {
           af_fclose(f);
-          error("u_fopen error: %s is not a compatible text file\n",name);
+          error("u_fopen error 2: %s is not a compatible text file\n",name);
           return NULL;
       }
-
    if ((encoding==UTF16_LE) && (is_BOM!=0)) {
       c=u_fgetc_UTF16LE(f);
       if (c!=U_BYTE_ORDER_MARK) {
@@ -695,6 +693,10 @@ U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
     return u_fopen_internal(encoding,2,name,MODE,USE_ENCODING_VALUE);
 }
 
+U_FILE* u_fopen(VersatileEncodingConfig* cfg,const char* name,OpenMode MODE) {
+	return u_fopen_internal(cfg->encoding_output,cfg->bom_output,name,MODE,cfg->mask_encoding_compatibility_input);
+}
+
 /*
  * open existing text file, whith versatile encoding compatibility
  * the encoding parameter we give will be used only if we create file
@@ -718,30 +720,6 @@ U_FILE* u_fopen_creating_versatile_encoding(Encoding encoding,int write_bom,cons
     return u_fopen_internal(encoding,write_bom,name,MODE,USE_ENCODING_VALUE);
 }
 
-/*
- * an opening creating function for Unitex specific file
- * (like .FST2, .INF, .TFST
- * MODE must be U_WRITE, be this parameter is not removed for easy modification of code
- * we try use encoding parameter, but we create always UTF (UTF16LE, UTF16BE or UTF8) with BOM
- */
-U_FILE* u_fopen_creating_unitex_text_format(Encoding encoding,int write_bom,const char* name,OpenMode MODE) {
-    if ((encoding != UTF16_LE) && (encoding != BIG_ENDIAN_UTF16))
-        encoding = UTF8;
-    write_bom = 1;
-    return u_fopen_internal(encoding,write_bom,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
-}
-
-
-/*
- * function to open same file than u_fopen_creating_unitex_text_format
- * this function accept all UTF with BOM file, regardless user parameter
- * so FST2, INF, TFST... file are universal
- * MODE must be U_READ, U_MODIFY or U_APPEND
- */
-U_FILE* u_fopen_existing_unitex_text_format(const char* name,OpenMode MODE)
-{
-    return u_fopen_internal(UTF16_LE,1,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
-}
 
 /**
  * Closes a file.
@@ -756,10 +734,23 @@ return ret;
 
 /**
  * This function creates an empty Unicode file that just contains the
- * byte order mark. It returns 0 if it fails; 1 otherwise.
+ * byte order mark, if any. It returns 0 if it fails; 1 otherwise.
  */
 int u_fempty(Encoding encoding,int bom,const char* name) {
 U_FILE* f=u_fopen_versatile_encoding(encoding,bom,USE_ENCODING_VALUE,name,U_WRITE);
+if (f==NULL) {
+   return 0;
+}
+u_fclose(f);
+return 1;
+}
+
+/**
+ * This function creates an empty Unicode file that just contains the
+ * byte order mark, if any. It returns 0 if it fails; 1 otherwise.
+ */
+int u_fempty(VersatileEncodingConfig* vec,const char* name) {
+U_FILE* f=u_fopen(vec,name,U_WRITE);
 if (f==NULL) {
    return 0;
 }
@@ -3202,6 +3193,29 @@ while (*s) {
    s++;
 }
 return NULL;
+}
+
+
+/**
+ * searches for a character in a string by starting from the end.
+ * Return index of the position if found, -1 otherwise.
+ */
+int u_strrchr(const unichar* s,unichar t){
+for(int i=u_strlen(s)-1;i>0;i--){
+	if(s[i]==t){
+		return i;
+	}
+}
+return -1;
+}
+
+/**
+ * same as u_strrchr(unichar*,unichar) but here a char is searched.
+ */
+int u_strrchr(const unichar* s,char t){
+unichar dest[2];
+u_sprintf(dest,"%c",t);
+return u_strrchr(s,dest[0]);
 }
 
 

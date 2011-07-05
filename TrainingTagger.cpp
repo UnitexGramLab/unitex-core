@@ -94,9 +94,7 @@ char text[FILENAME_MAX]="";
 char raw_forms[FILENAME_MAX]="";
 char inflected_forms[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_TrainingTagger,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
@@ -118,12 +116,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_Trainin
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -141,7 +139,7 @@ if (vars->optind!=argc-1) {
    return 1;
 }
 strcpy(text,argv[vars->optind]);
-U_FILE* input_text=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,text,U_READ);
+U_FILE* input_text=u_fopen(&vec,text,U_READ);
 if (input_text==NULL) {
    free_OptVars(vars);
    fatal_error("cannot open file %s\n",text);
@@ -162,12 +160,12 @@ U_FILE* rforms_file = NULL, *iforms_file = NULL;
 if(r_forms == 1){
 	sprintf(filename,"%s_data_cat.dic",output);
 	new_file(path,filename,raw_forms);
-	rforms_file=u_fopen_creating_versatile_encoding(encoding_output,bom_output,raw_forms,U_WRITE);
+	rforms_file=u_fopen(&vec,raw_forms,U_WRITE);
 }
 if(i_forms == 1){
 	sprintf(filename,"%s_data_morph.dic",output);
 	new_file(path,filename,inflected_forms);
-	iforms_file=u_fopen_creating_versatile_encoding(encoding_output,bom_output,inflected_forms,U_WRITE);
+	iforms_file=u_fopen(&vec,inflected_forms,U_WRITE);
 }
 
 u_printf("Gathering statistics from tagged corpus...\n");
@@ -178,32 +176,30 @@ u_fclose(input_text);
 char disclaimer[FILENAME_MAX];
 if(rforms_file != NULL){
 	u_fclose(rforms_file);
-	pseudo_main_SortTxt(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,raw_forms);
+	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,raw_forms);
 	strcpy(disclaimer,raw_forms);
 	remove_extension(disclaimer);
 	strcat(disclaimer,".txt");
-	create_disclaimer(disclaimer);
+	create_disclaimer(&vec,disclaimer);
 }
 if(iforms_file != NULL){
 	u_fclose(iforms_file);
-	pseudo_main_SortTxt(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,inflected_forms);
+	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,inflected_forms);
 	strcpy(disclaimer,inflected_forms);
 	remove_extension(disclaimer);
 	strcat(disclaimer,".txt");
-	create_disclaimer(disclaimer);
+	create_disclaimer(&vec,disclaimer);
 }
 
 /* we compress dictionaries if option is specified by user (output is ".bin") */
 if(binaries == 1){
 /* simple forms dictionary */
 if(r_forms == 1){
-	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,
-			semitic,raw_forms,1);
+	pseudo_main_Compress(&vec,0,semitic,raw_forms,1);
 }
 /* compound forms dictionary */
 if(i_forms == 1){
-	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,
-			semitic,inflected_forms,1);
+	pseudo_main_Compress(&vec,0,semitic,inflected_forms,1);
 }
 }
 free_OptVars(vars);

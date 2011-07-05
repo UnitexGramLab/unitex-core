@@ -84,9 +84,7 @@ if (argc==1) {
    return 0;
 }
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char compilename[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
@@ -121,12 +119,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ElagComp,lopts_ElagComp,&ind
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -149,7 +147,7 @@ if (vars->optind!=argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-language_t* language=load_language_definition(lang);
+language_t* language=load_language_definition(&vec,lang);
 if (rule_file[0]=='\0' && grammar[0]=='\0') {
    fatal_error("You must specified a grammar or a rule file name\n");
 }
@@ -167,7 +165,7 @@ if (rule_file[0]!='\0') {
          sprintf(compilename,"%s.rul",rule_file);
       }
    }
-   if (compile_elag_rules(rule_file,compilename,encoding_output,bom_output,language)==-1) {
+   if (compile_elag_rules(rule_file,compilename,&vec,language)==-1) {
       error("An error occurred\n");
       return 1;
    }
@@ -181,7 +179,7 @@ if (rule_file[0]!='\0') {
    }
    remove_extension(grammar,elg_file);
    strcat(elg_file,".elg");
-   if (compile_elag_grammar(grammar,elg_file,encoding_output,bom_output,language)==-1) {
+   if (compile_elag_grammar(grammar,elg_file,&vec,language)==-1) {
      error("An error occured while compiling %s\n",grammar);
      free_language_t(language);
      free_OptVars(vars);

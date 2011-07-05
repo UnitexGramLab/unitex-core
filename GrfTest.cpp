@@ -46,7 +46,7 @@
 #define PFX_GRF2FST2 "G:"
 #define PFX_LOCATE "L:"
 
-const char* optstring_GrfTest=":ho:d:a:w:c";
+const char* optstring_GrfTest=":ho:d:a:w:ck:q:";
 
 const char* usage_GrfTest =
          "Usage: GrfTest [OPTIONS] <grf_1> [<grf_2> <grf_3> ...]\n"
@@ -150,6 +150,7 @@ int char_by_char=0;
 int val,index=-1;
 int ret=0;
 struct OptVars* vars=new_OptVars();
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;
@@ -158,6 +159,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index
    case 'a': strcpy(alphabet,vars->optarg); break;
    case 'w': strcpy(working_dir,vars->optarg); break;
    case 'c': char_by_char=1; break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Normalize[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -190,7 +201,7 @@ if (working_dir[0]=='\0') {
 	fatal_error("You must specify a working directory\n");
 }
 if (output[0]!='\0') {
-	f_output=u_fopen(UTF8,output,U_WRITE);
+	f_output=u_fopen(&vec,output,U_WRITE);
 	if (f_output==NULL) {
 		fatal_error("Cannot open output file %s\n",output);
 	}
@@ -204,6 +215,7 @@ char fst2[FILENAME_MAX];
 char offsets_in[FILENAME_MAX];
 char offsets_out[FILENAME_MAX];
 sprintf(fake_stdout,"%s/stdout",working_dir);
+/* tmp file, so we can force the encoding */
 U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
 if (U_STDOUT==NULL) {
 	fatal_error("Cannot create file %s\n",fake_stdout);
@@ -288,7 +300,7 @@ char line[4096];
 
 for (int i=vars->optind;i<argc;i++) {
 	u_fprintf(backup_stdout,"Testing graph %s\n",argv[i]);
-	Grf* grf=load_Grf(argv[i]);
+	Grf* grf=load_Grf(&vec,argv[i]);
 	if (grf==NULL) {
 		error("Cannot load graph %s\n",argv[i]);
 		continue;
@@ -309,6 +321,7 @@ for (int i=vars->optind;i<argc;i++) {
 	/* And we launch the loop on all tests */
 	for (int j=0;j<tests->nbelems;j++) {
 		GrfUnitTest* t=(GrfUnitTest*)(tests->tab[j]);
+		/* tmp file, we can force the encoding */
 		f=u_fopen(UTF16_LE,txt,U_WRITE);
 		if (f==NULL) {
 			fatal_error("Cannot create file %s\n",txt);

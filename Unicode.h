@@ -175,16 +175,26 @@ int u_fscanf(U_FILE*,const char*,...);
 //void u_fprints(Encoding,char*,ABSTRACTFILE*);
 
 /* ------------------- File functions ------------------- */
-U_FILE* u_fopen(Encoding,const char*,OpenMode);
-U_FILE* u_fopen_versatile_encoding(Encoding,int,int,const char*,OpenMode);
-U_FILE* u_fopen_existing_versatile_encoding(int,const char*,OpenMode);
 
-U_FILE* u_fopen_existing_unitex_text_format(const char*,OpenMode);
-U_FILE* u_fopen_creating_versatile_encoding(Encoding,int,const char* name,OpenMode MODE);
-U_FILE* u_fopen_creating_unitex_text_format(Encoding,int,const char*,OpenMode);
+
+/* NOTE: the u_fopen taking an Encoding should not be used unless the
+ *       encoding of the file will NEVER change. It should only be used
+ *       for binary files, ascii files and tmp files whose encoding does not
+ *       matter since they should not be used outside the programs.
+ *
+ *       In any other case, prefer the second one taking a VersatileEncodingConfig*.
+ *       Doing this, you make all Unitex programs encoding-customizable with options
+ *       -q and -k. The default behaviour is to read any file encoded with utf16le-bom,
+ *       utf16be-bom and utf8, with or without bom. The default encoding output is
+ *       utf16le-bom
+ */
+U_FILE* u_fopen(Encoding,const char*,OpenMode);
+U_FILE* u_fopen(VersatileEncodingConfig* cfg,const char*,OpenMode);
+
 
 int u_fclose(U_FILE*);
 int u_fempty(Encoding,int,const char*);
+int u_fempty(VersatileEncodingConfig*,const char*);
 int u_is_UTF16(const char*);
 int u_is_UTF16(U_FILE*);
 
@@ -250,6 +260,8 @@ unichar* u_strdup(const char*);
 const unichar* u_strchr(const unichar*,unichar,int);
 const unichar* u_strchr(const unichar*,unichar);
 unichar* u_strchr(unichar*,unichar);
+int u_strrchr(const unichar*,unichar);
+int u_strrchr(const unichar*,char);
 const char* u_strchr(const char*,unichar);
 unichar* u_strpbrk(const unichar*,unichar*);
 unichar* u_strpbrk(const unichar*,char*);

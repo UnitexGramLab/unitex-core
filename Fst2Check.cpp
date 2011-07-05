@@ -65,10 +65,9 @@ if (ferr != NULL) {
 }
 
 
-int display_fst2_file_stat(const char* name,U_FILE*ferr)
-{
+int display_fst2_file_stat(VersatileEncodingConfig* vec,const char* name,U_FILE* ferr) {
 struct FST2_free_info fst2_free;
-Fst2* fst2=load_abstract_fst2(name,1,&fst2_free);
+Fst2* fst2=load_abstract_fst2(vec,name,1,&fst2_free);
 char name_without_path[FILENAME_MAX];
 remove_path(name,name_without_path);
 if (fst2==NULL) {
@@ -85,6 +84,7 @@ display_fst2_stat(fst2,ferr);
 free_abstract_Fst2(fst2,&fst2_free);
 return 1;
 }
+
 
 const char* usage_Fst2Check =
          "Usage : Fst2Check [OPTIONS] <fst2>\n"
@@ -115,7 +115,7 @@ u_printf(usage_Fst2Check);
  * A convenient way to call the main function within a Unitex program.
  */
 
-int pseudo_main_Fst2Check(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int pseudo_main_Fst2Check(VersatileEncodingConfig* vec,
                           const char* fst2name,const char* output_name,int append,int display_statistics,
                           int yes_or_no,int no_empty_graph_warning,int tfst_check) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Fst2Check,"main_Fst2Check");
@@ -124,14 +124,14 @@ add_argument(invoker,yes_or_no?"-y":"-n");
 char tmp[FILENAME_MAX];
 {
     tmp[0]=0;
-    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-k");
         add_argument(invoker,tmp);
     }
 
     tmp[0]=0;
-    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
     if (tmp[0] != '\0') {
         add_argument(invoker,"-q");
         add_argument(invoker,tmp);
@@ -191,11 +191,7 @@ int append_output=0;
 int display_statistics=0;
 char no_empty_graph_warning=0;
 char output[FILENAME_MAX]="";
-
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&index,vars))) {
@@ -217,12 +213,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&i
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
              break;
    case 'q': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_encoding argument\n");
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'o': if (vars->optarg[0]=='\0') {
                    fatal_error("You must specify a non empty output file name\n");
@@ -248,23 +244,22 @@ strcpy(fst2_file_name,argv[vars->optind]);
 U_FILE* ferr=NULL;
 free_OptVars(vars);
 
-if (output[0]!=0)
-{
+if (output[0]!=0) {
   if (append_output == 0) {
-      ferr=u_fopen_creating_versatile_encoding(encoding_output,bom_output, output, U_WRITE);
+      ferr=u_fopen(&vec,output,U_WRITE);
   }
   else {
-      ferr = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,output,U_APPEND);
+      ferr=u_fopen(&vec,output,U_APPEND);
   }  
 }
 
 if (display_statistics) {
-    display_fst2_file_stat(fst2_file_name,ferr);
+    display_fst2_file_stat(&vec,fst2_file_name,ferr);
 }
 
 
 if (check_recursion) {
-   if (!OK_for_Locate_write_error(fst2_file_name,no_empty_graph_warning,ferr)) {
+   if (!OK_for_Locate_write_error(&vec,fst2_file_name,no_empty_graph_warning,ferr)) {
       if (ferr != NULL) {
           u_fclose(ferr);
       }
@@ -272,7 +267,7 @@ if (check_recursion) {
    }
 }
 if (tfst_check) {
-   if (!valid_sentence_automaton_write_error(fst2_file_name,ferr)) {
+   if (!valid_sentence_automaton_write_error(&vec,fst2_file_name,ferr)) {
       if (ferr != NULL) {
           u_fclose(ferr);
       }

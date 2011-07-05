@@ -29,11 +29,9 @@
  * Creates a Disclaimer text file for each one of the training dictionaries.
  * Indicates that those cannot be used like other dictionaries.
  */
-void create_disclaimer(const char* file){
-	U_FILE* disclaimer = u_fopen_creating_versatile_encoding(UTF8,0,file,U_WRITE);
-	unichar* text = u_strdup("This file contains statistics gathered from a tagged corpus.\nIt cannot be used like other .bin dictionaries but only in input of Tagger program.\n\nContact : unitex@univ-mlv.fr");
-	u_fprintf(disclaimer,"%S",text);
-	free(text);
+void create_disclaimer(VersatileEncodingConfig* vec,const char* file){
+	U_FILE* disclaimer = u_fopen(vec,file,U_WRITE);
+	u_fprintf(disclaimer,"This file contains statistics gathered from a tagged corpus.\nIt cannot be used like other .bin dictionaries but only in input of Tagger program.\n\nContact : unitex@univ-mlv.fr");
 	u_fclose(disclaimer);
 }
 
@@ -58,28 +56,6 @@ for(int i=0;i<MAX_CONTEXT-1;i++){
 	context[i] = context[i+1];
 }
 context[MAX_CONTEXT-1] = entry;
-}
-
-/**
- * searches for a character in a string by starting from the end.
- * Return index of the position if found, -1 otherwise.
- */
-int u_strrchr(const unichar* s,unichar t){
-for(int i=u_strlen(s)-1;i>0;i--){
-	if(s[i]==t){
-		return i;
-	}
-}
-return -1;
-}
-
-/**
- * same as u_strrchr(unichar*,unichar) but here a char is searched.
- */
-int u_strrchr(const unichar* s,char t){
-unichar dest[2];
-u_sprintf(dest,"%c",t);
-return u_strrchr(s,dest[0]);
 }
 
 /**
