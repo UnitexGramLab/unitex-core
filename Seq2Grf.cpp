@@ -308,7 +308,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		strcat(tok_name, ".tok");
 	}
 
-	U_FILE* text;
+	U_FILE* text=NULL;
 	U_FILE* out;
 	Alphabet* alph = NULL;
 	if (alphabet[0] != '\0') {
@@ -462,6 +462,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	INFO.tok = tokens;
 	INFO.alph = alph;
 	INFO.SPACE = tokens->SPACE;
+	INFO.length_max = 0;
 	int N = 2;
 	int total = 2;
 	int buffer[MAX_TOKENS_IN_SENTENCE];
