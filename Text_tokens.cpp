@@ -75,7 +75,7 @@ return res;
 }
 
 
-struct string_hash* load_text_tokens_hash(const char* nom,VersatileEncodingConfig* vec,
+struct string_hash* load_text_tokens_hash(const char* nom, const VersatileEncodingConfig* vec,
                                           int *SENTENCE_MARKER,
                                           int* STOP_MARKER,
                                           int *NUMBER_OF_TEXT_TOKENS,Abstract_allocator /* prv_alloc */) {

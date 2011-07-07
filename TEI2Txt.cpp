@@ -30,7 +30,7 @@
 #include "TEI2Txt.h"
 
 
-void tei2txt(char*, char*, VersatileEncodingConfig*);
+void tei2txt(char*, char*, const VersatileEncodingConfig*);
 
 const char* usage_TEI2Txt =
          "Usage: TEI2Txt [OPTIONS] <xml>\n"
@@ -113,7 +113,7 @@ return 0;
 
 static const char *body = "body";
 
-void tei2txt(char *fin, char *fout,VersatileEncodingConfig* vec) {
+void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 	void* html_ctx = init_HTML_character_context();
 	if (html_ctx == NULL) fatal_alloc_error("tei2txt");
 

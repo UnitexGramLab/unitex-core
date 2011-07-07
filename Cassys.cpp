@@ -494,7 +494,7 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const ch
 
 
 cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *list,
-		 int transducer_id, const char *alphabet_name,VersatileEncodingConfig* vec) {
+		 int transducer_id, const char *alphabet_name, const VersatileEncodingConfig* vec) {
 
 
 	Alphabet *alphabet = load_alphabet(vec,alphabet_name);
@@ -560,7 +560,7 @@ cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *lis
  * \return a fifo list of all the matches found with their replacement sentences. Each element is
  * stored in a locate_pos structure
  */
-struct fifo *read_concord_file(const char *concord_file_name,VersatileEncodingConfig* vec){
+struct fifo *read_concord_file(const char *concord_file_name, const VersatileEncodingConfig* vec){
 	unichar line[4096];
 
 	struct fifo *f = new_fifo();
@@ -1190,7 +1190,7 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 }
 
 
-void protect_special_characters(const char *text,VersatileEncodingConfig* vec){
+void protect_special_characters(const char *text, const VersatileEncodingConfig* vec){
 
 	U_FILE *source;
 	U_FILE *destination;

@@ -108,7 +108,7 @@ info->states[src].transitions=sorted_insert(dest,info->states[src].transitions);
  * This function takes a unicode string representing a regular expression and
  * compiles it into a .grf file. It returns 1 in case of success; 0 otherwise.
  */
-int reg2grf(const unichar* regexp,const char* name_grf,VersatileEncodingConfig* vec) {
+int reg2grf(const unichar* regexp,const char* name_grf, const VersatileEncodingConfig* vec) {
 if (regexp[0]=='\0') {
    error("You must specify a non empty regular expression\n");
    return 0;

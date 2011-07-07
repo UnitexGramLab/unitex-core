@@ -46,7 +46,7 @@
 #define ELAG_UNDEFINED (-1)
 
 
-void split_elag_rule(elRule*,VersatileEncodingConfig*,language_t*);
+void split_elag_rule(elRule*, const VersatileEncodingConfig*,language_t*);
 int count_constraints(Fst2Automaton*,int*);
 Fst2Automaton* compile_elag_rule(elRule*,language_t*);
 int get_sub_automaton(SingleGraph,SingleGraph,int,int,int);
@@ -108,7 +108,7 @@ for (int i=0;i<A->number_of_states;i++) {
  * Allocates, initializes and returns a new Elag rule from the given .fst2.
  * Returns NULL in case of error at loading the rule.
  */
-elRule* new_elRule(char* fst2,VersatileEncodingConfig* vec,language_t* language) {
+elRule* new_elRule(char* fst2, const VersatileEncodingConfig* vec,language_t* language) {
 elRule* rule=(elRule*)malloc(sizeof(elRule));
 if (rule==NULL) {
    fatal_alloc_error("new_elRule");
@@ -221,7 +221,7 @@ return Result;
  * Compiles the given .fst2 grammar into the given .elg file.
  * Returns 0 in case of success; -1 otherwise.
  */
-int compile_elag_grammar(char* grammar,char* elg_file,VersatileEncodingConfig* vec,
+int compile_elag_grammar(char* grammar,char* elg_file, const VersatileEncodingConfig* vec,
                          language_t* language) {
 elRule* rule=new_elRule(grammar,vec,language);
 if (rule==NULL) {
@@ -245,7 +245,7 @@ return 0;
  * automaton is too big, it will be saved in several automata inside
  * the output file.
  */
-int compile_elag_rules(char* rulesname,char* outname,VersatileEncodingConfig* vec,language_t* language) {
+int compile_elag_rules(char* rulesname,char* outname, const VersatileEncodingConfig* vec,language_t* language) {
 u_printf("Compilation of %s\n",rulesname);
 U_FILE* f=NULL;
 U_FILE* frules=u_fopen(ASCII,rulesname,U_READ);
@@ -392,7 +392,7 @@ return res;
  * a fst2 grammar ("foo.fst2" => "foo-conc.fst2") that can be used by
  * the Locate program to match the <!> .... <!> .... <!> part of the rule.
  */
-void split_elag_rule(elRule* rule,VersatileEncodingConfig* vec,language_t* language) {
+void split_elag_rule(elRule* rule, const VersatileEncodingConfig* vec,language_t* language) {
 int c;
 /* This array contains the numbers of the states that are pointed to by
  * middle '<=>' of the constraints */

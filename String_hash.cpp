@@ -355,7 +355,7 @@ s[j]='\0';
  * However, the preferred way to manipulate new lines is to use \r and \n in
  * keys and values.
  */
-struct string_hash* load_key_value_list(const char* name,VersatileEncodingConfig* vec,unichar separator) {
+struct string_hash* load_key_value_list(const char* name, const VersatileEncodingConfig* vec,unichar separator) {
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash();

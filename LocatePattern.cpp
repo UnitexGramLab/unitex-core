@@ -32,7 +32,7 @@
 #include "LocateTrace.h"
 
 
-void load_dic_for_locate(const char*,VersatileEncodingConfig*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
+void load_dic_for_locate(const char*, const VersatileEncodingConfig*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*,Abstract_allocator);
 void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
 void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
@@ -725,7 +725,7 @@ free_string_hash(ERR);
  * the pattern "<CDIC>" is used in the grammar, it means that any token sequence that is a
  * compound word must be marked as be matched by this pattern.
  */
-void load_dic_for_locate(const char* dic_name,VersatileEncodingConfig* vec,Alphabet* alphabet,
+void load_dic_for_locate(const char* dic_name, const VersatileEncodingConfig* vec,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,
                          struct lemma_node* root,struct locate_parameters* parameters) {

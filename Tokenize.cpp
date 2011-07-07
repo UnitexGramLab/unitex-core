@@ -51,7 +51,7 @@ int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table
 		vector_int*,vector_int*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 void save_new_line_positions(U_FILE*,vector_int*);
-void load_token_file(char* filename,VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
+void load_token_file(char* filename, const VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
 void write_number_of_tokens(const VersatileEncodingConfig* vec,const char* name,int n) {
   U_FILE* f;
@@ -372,7 +372,7 @@ return n;
 /**
  * Loads an existing token file.
  */
-void load_token_file(char* filename,VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+void load_token_file(char* filename, const VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
 U_FILE* f=u_fopen(vec,filename,U_READ);
 if (f==NULL) {
    fatal_error("Cannot open token file %s\n",filename);

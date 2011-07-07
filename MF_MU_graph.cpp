@@ -35,58 +35,58 @@
 int MU_graph_init_graphs(MultiFlex_ctx*);
 void MU_graph_free_graphs(MultiFlex_ctx*);
 Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
-		char* graph_name, VersatileEncodingConfig*, const char* pkgdir);
+		char* graph_name, const VersatileEncodingConfig*, const char* pkgdir);
 int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*, Fst2State q,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, Fst2State q,
 		MU_forms_T* forms, const char* pkgdir);
 int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_label_T* l, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir);
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx, unichar* label_in,
 		unichar* label_out, MU_graph_label_T* MU_label);
 int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*, SU_id_T* u,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir);
 int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*, SU_id_T* u,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat,
 		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir);
 int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*, SU_id_T* u,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, SU_id_T* u,
 		f_morpho_T* feat, SU_forms_T* SU_forms, const char* pkgdir);
 int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir);
 int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir);
 int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir);
 int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir);
 int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir);
 int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho,
 		f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir);
 int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig*,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho,
 		f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir);
@@ -113,7 +113,7 @@ void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho);
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_lemma_T* MU_l, MU_forms_T* forms, const char* pkgdir) {
 	int res;
 
@@ -158,7 +158,7 @@ void MU_graph_free_graphs(MultiFlex_ctx* p_multiFlex_ctx) {
 // In the graph not yet loaded loads it otherwise searches for it in the structure.
 // On success returns the graph's initial state, otherwise returns NULL.
 Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
-		char* graph_name, VersatileEncodingConfig* vec, const char* pkgdir) {
+		char* graph_name, const VersatileEncodingConfig* vec, const char* pkgdir) {
 	//Get the index of the tranducer in the transducer table
 	p_multiFlex_ctx->T = get_transducer(p_multiFlex_ctx, graph_name, vec,
 			pkgdir);
@@ -181,7 +181,7 @@ Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, 'forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		Fst2State q, MU_forms_T* forms, const char* pkgdir) {
 	int err;
 	MU_graph_label_T* lab;
@@ -248,7 +248,7 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, '*forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_label_T* l, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir) {
 	int err;
@@ -328,7 +328,7 @@ int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec, SU_id_T* u,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {
 	int err;
@@ -354,7 +354,7 @@ int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec, SU_id_T* u,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat,
 		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir) {
@@ -442,7 +442,7 @@ int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, 'SU_forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec, SU_id_T* u,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec, SU_id_T* u,
 		f_morpho_T* feat, SU_forms_T* SU_forms, const char* pkgdir) {
 	int err;
 	f_morpho_T old_feat; //Features that the current unit has in the lemma of the MWU
@@ -480,7 +480,7 @@ int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {
@@ -515,7 +515,7 @@ int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {
@@ -588,7 +588,7 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {
@@ -690,7 +690,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, '*forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_morpho_T* l_out_morpho,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {
 	int err;
@@ -714,7 +714,7 @@ int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_morpho_T* l_out_morpho,
 		int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,
 		const char* pkgdir) {
@@ -791,7 +791,7 @@ int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c,
 		MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {
@@ -821,7 +821,7 @@ int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, VersatileEncodingConfig* vec,
+		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c,
 		MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
 		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir) {

@@ -47,7 +47,7 @@ void free_Fst2Automaton_including_symbols(Fst2Automaton*);
 void free_Fst2Automaton_excluding_symbols(Fst2Automaton*);
 void free_Fst2Automaton(Fst2Automaton*,void (*free_elag_symbol)(symbol_t*));
 void add_transition(SingleGraph,struct string_hash_ptr*,int,symbol_t*,int);
-void save_automaton(const Fst2Automaton * A, char * name,VersatileEncodingConfig*, int type);
+void save_automaton(const Fst2Automaton * A, char * name, const VersatileEncodingConfig*, int type);
 
 
 #endif

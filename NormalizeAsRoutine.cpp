@@ -102,7 +102,7 @@ return 1;
  *
  * Note that 'replacements' is supposed to contain replacement rules for { and }
  */
-int normalize(const char *fin, const char *fout, VersatileEncodingConfig* vec,
+int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* vec,
 		int carriage_return_policy, int convLFtoCRLF,const char *rules,
 		vector_offset* offsets,
 		int separator_normalization) {

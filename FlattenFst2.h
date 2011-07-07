@@ -31,6 +31,6 @@
 #define EQUIVALENT_RTN 3
 
 
-int flatten_fst2(Fst2*,int,char*,VersatileEncodingConfig*,int);
+int flatten_fst2(Fst2*,int,char*, const VersatileEncodingConfig*,int);
 
 #endif

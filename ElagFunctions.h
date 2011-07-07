@@ -31,9 +31,9 @@
 #include "Vector.h"
 #include "LanguageDefinition.h"
 
-void remove_ambiguities(char* input_tfst,vector_ptr* grammars,char* output_tfst,VersatileEncodingConfig*,
+void remove_ambiguities(char* input_tfst,vector_ptr* grammars,char* output_tfst, const VersatileEncodingConfig*,
 		language_t* language);
-void explode_tfst(char* input_tfst,char* output_tfst,VersatileEncodingConfig*,language_t* language,struct hash_table* form_frequencies);
+void explode_tfst(char* input_tfst,char* output_tfst, const VersatileEncodingConfig*,language_t* language,struct hash_table* form_frequencies);
 vector_ptr* load_elag_grammars(const VersatileEncodingConfig*,char* filename,language_t* language,char* directory);
 
 #endif

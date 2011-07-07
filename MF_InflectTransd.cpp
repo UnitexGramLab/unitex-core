@@ -45,7 +45,7 @@ struct transition* new_transition(char c);
 void free_transition(struct transition* t);
 void free_node(struct node* n);
 struct transition* get_transition(char c,struct transition* t,struct node** n);
-int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,VersatileEncodingConfig*,
+int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex, const VersatileEncodingConfig*,
 		int pos,struct node* n,const char* pkgdir);
 
 ///////////////////////////////

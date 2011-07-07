@@ -283,7 +283,7 @@ int copy_directory_snt_content(const char *dest, const char *src);
  *
  * \param concord_file_name file containing the matches
  */
-struct fifo *read_concord_file(const char *concord_file_name,VersatileEncodingConfig*);
+struct fifo *read_concord_file(const char *concord_file_name, const VersatileEncodingConfig*);
 
 /**
  * \brief Reads a line of the 'concord.ind' file and and returns the content in a struct locate_pos
@@ -310,7 +310,7 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig*,const char *
 
 
 cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list,
-		 int transducer_id, const char *alphabet,VersatileEncodingConfig*);
+		 int transducer_id, const char *alphabet, const VersatileEncodingConfig*);
 
 /**
  * \brief Produces a concordance file with the matches found by all the locates program called during the cascade
@@ -331,7 +331,7 @@ void display_list_ustring(const struct list_ustring *l);
  *
  * \param[in/out] text file name of the text to be protected
  */
-void protect_special_characters(const char *text,VersatileEncodingConfig*);
+void protect_special_characters(const char *text, const VersatileEncodingConfig*);
 
 /**
  * \brief Adds protection characters in the lem zone. (currently does nothing)

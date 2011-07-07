@@ -57,7 +57,7 @@ u_printf(usage_Table2Grf);
 }
 
 
-void table2grf(U_FILE*,U_FILE*,U_FILE*,VersatileEncodingConfig*, char*, char*);
+void table2grf(U_FILE*,U_FILE*,U_FILE*, const VersatileEncodingConfig*, char*, char*);
 
 
 const char* optstring_Table2Grf=":r:o:s:hk:q:";

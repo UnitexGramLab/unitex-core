@@ -31,7 +31,7 @@
  * we will refill it, unless we are at the end of the input file. */
 #define MARGIN_BEFORE_BUFFER_END (MAX_TAG_LENGTH+1000)
 
-int normalize(const char*, const char*, VersatileEncodingConfig*, int, int, const char*,
+int normalize(const char*, const char*, const VersatileEncodingConfig*, int, int, const char*,
 		vector_offset*,int);
 
 #endif

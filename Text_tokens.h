@@ -51,7 +51,7 @@ struct text_tokens {
 
 
 struct text_tokens* load_text_tokens(const VersatileEncodingConfig* vec,const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-struct string_hash* load_text_tokens_hash(const char*,VersatileEncodingConfig* vec,int*,int*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct string_hash* load_text_tokens_hash(const char*, const VersatileEncodingConfig* vec,int*,int*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_text_tokens(struct text_tokens*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_int* get_token_list_for_sequence(const unichar*,const Alphabet*,struct string_hash*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int get_token_number(const unichar*,struct text_tokens*);
