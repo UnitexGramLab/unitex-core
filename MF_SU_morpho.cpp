@@ -119,7 +119,7 @@ int SU_delete_lemma(SU_lemma_T* l);
 //
 // Returns 0 on success, 1 otherwise.
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-				VersatileEncodingConfig* vec,
+				const VersatileEncodingConfig* vec,
                SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
                int semitic,Korean* korean,const char* pkgdir) {
 	int err;
@@ -149,7 +149,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
  * The output DELAF lines will have to be built from 'forms'.
  */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-				VersatileEncodingConfig* vec,
+				const VersatileEncodingConfig* vec,
                unichar* lemma, char* inflection_code, unichar** filters,
                SU_forms_T* forms, int semitic,Korean* korean,const char* pkgdir) {
 	int err;

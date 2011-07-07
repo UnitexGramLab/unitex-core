@@ -598,7 +598,7 @@ return 1;
 
 
 bool create_graph(int current_line,unichar** line,int n_fields,struct reference_graph* g,
-                  VersatileEncodingConfig* vec,
+                  const VersatileEncodingConfig* vec,
                   char* name_result,char* path,U_FILE *f_coord,int graphs_printed) {
 struct reference_graph r;
 struct reference_graph* res;
@@ -688,7 +688,7 @@ return true;
 
 
 void table2grf(U_FILE* table,U_FILE* reference_graph,U_FILE* result_graph,
-               VersatileEncodingConfig* vec,
+               const VersatileEncodingConfig* vec,
                char* subgraph,char* path) {
 int current_line;
 struct reference_graph structure;

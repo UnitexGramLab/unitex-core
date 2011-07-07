@@ -53,7 +53,7 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF, 
 		    MultiFlex_ctx* p_multiFlex_ctx, struct l_morpho_t* pL_MORPHO, Alphabet* alph,
-		    VersatileEncodingConfig* vec,
+		    const VersatileEncodingConfig* vec,
 		    int config_files_status,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
 		    Korean* korean,const char* pkgdir) {

@@ -105,7 +105,7 @@ return s;
  * It returns 1 in case of success; 0 otherwise.
  */
 int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
-                VersatileEncodingConfig* vec,
+                const VersatileEncodingConfig* vec,
                 MatchPolicy match_policy,
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,int tilde_negation_operator) {

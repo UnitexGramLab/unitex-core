@@ -34,7 +34,7 @@
 // main work functions
 
 void concord_stats(const char* , int , const char *, const char* , const char* , const char*,
-		VersatileEncodingConfig*, int , int, int );
+		const VersatileEncodingConfig*, int , int, int );
 void build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
 void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
 
@@ -250,7 +250,7 @@ return 0;
  */
 void concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
 				   const char* alphabetName, 
-                   VersatileEncodingConfig* vec,
+                   const VersatileEncodingConfig* vec,
                    int leftContext, int rightContext, int caseSensitive)
 {
 	U_FILE* concord = u_fopen(vec, concordfname, U_READ);

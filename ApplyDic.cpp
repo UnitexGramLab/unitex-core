@@ -610,7 +610,7 @@ for (int i=0;i<info->tokens->N;i++) {
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
                                                     U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* tags_err,U_FILE* morpho,
                                                     const char* tags,const char* text_cod,Alphabet* alphabet,
-                                                    VersatileEncodingConfig* vec) {
+                                                    const VersatileEncodingConfig* vec) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
    fatal_alloc_error("init_dico_application");

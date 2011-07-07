@@ -178,7 +178,7 @@ return res;
 
 int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name,const char* dlf,const char* dlc,const char* err,
                    const char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
-                   VersatileEncodingConfig* vec,
+                   const VersatileEncodingConfig* vec,
                    const char* dynamicDir,TokenizationPolicy tokenization_policy,
                    SpacePolicy space_policy,int search_limit,const char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,

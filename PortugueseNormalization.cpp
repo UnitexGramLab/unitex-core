@@ -76,7 +76,7 @@ void build_portuguese_normalization_grammar(const Alphabet* alph,struct match_li
 											Dictionary* root_dic,
 											Dictionary* inflected_dic,
                                             const char* res_grf_name,
-                                            VersatileEncodingConfig* vec,
+                                            const VersatileEncodingConfig* vec,
                                             struct normalization_tree* norm_tree,
                                             struct normalization_tree* nasal_norm_tree) {
 DISCARD_UNUSED_PARAMETER(nasal_norm_tree)
@@ -475,7 +475,7 @@ u_fprintf(f,"%d\n",n_states);
 // this function saves the normalization rules into a file
 //
 void save_portuguese_normalization_grammar(int N,struct match_list* list,const char* res_grf_name,
-                                           VersatileEncodingConfig* vec) {
+                                           const VersatileEncodingConfig* vec) {
 U_FILE* f=u_fopen(vec,res_grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot create file %s\n",res_grf_name);

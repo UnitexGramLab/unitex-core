@@ -38,7 +38,7 @@
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-		VersatileEncodingConfig* vec,MU_lemma_T* lemma,
+		const VersatileEncodingConfig* vec,MU_lemma_T* lemma,
 		MU_forms_T* forms,const char* pkgdir) {
 	int err;
 

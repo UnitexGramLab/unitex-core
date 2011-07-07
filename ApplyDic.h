@@ -164,7 +164,7 @@ struct dico_application_info {
 
 struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,
                                                     U_FILE*,const char*,const char*,Alphabet*,
-                                                    VersatileEncodingConfig*);
+                                                    const VersatileEncodingConfig*);
 int dico_application(const VersatileEncodingConfig*,char*,struct dico_application_info*,int);
 int dico_application_simplified(const VersatileEncodingConfig*,unichar*,char*,struct dico_application_info*);
 void free_dico_application(struct dico_application_info*);

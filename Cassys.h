@@ -163,7 +163,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
  */
 int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
                             const char*negation_operator,
-                            VersatileEncodingConfig*);
+                            const VersatileEncodingConfig*);
 
 
 /**

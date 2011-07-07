@@ -71,7 +71,7 @@ free_node(p_multiFlex_ctx->root);
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array. Returns -1 if the transducer cannot be loaded
 int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
-		VersatileEncodingConfig* vec,const char* pkgdir) {
+		const VersatileEncodingConfig* vec,const char* pkgdir) {
 return get_node(p_multiFlex_ctx,flex,vec,0,p_multiFlex_ctx->root,pkgdir);
 }
 
@@ -165,7 +165,7 @@ return (get_file_date(grf)>=get_file_date(fst2));
 // Look for the path to 'flex', creating it if necessary
 // The current node is n, and pos is the position in the flex string
 int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
-		VersatileEncodingConfig* vec,int pos,struct node* n,const char* pkgdir) {
+		const VersatileEncodingConfig* vec,int pos,struct node* n,const char* pkgdir) {
 if (flex[pos]=='\0') {
     // we are at the final node for flex (a leaf)
     if (n->final!=-1) {
