@@ -55,6 +55,7 @@ typedef enum {
 #define DEFAULT_ENCODING_OUTPUT (UTF16_LE)
 #define DEFAULT_BOM_OUTPUT (2)
 
+#define VersatileEncodingConfigDefined 1
 
 typedef struct {
 	/* Describes the encodings that are supported in input files */
