@@ -93,7 +93,7 @@ char dictionary[FILENAME_MAX]="";
 char pronoun_rules[FILENAME_MAX]="";
 char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index,vars))) {

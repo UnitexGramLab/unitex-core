@@ -84,7 +84,7 @@ int size=10;
 char* fontname=NULL;
 char* output=NULL;
 int is_sequence_automaton=0;
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char foo;
 struct OptVars* vars=new_OptVars();

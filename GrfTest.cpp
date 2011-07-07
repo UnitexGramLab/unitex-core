@@ -150,7 +150,7 @@ int char_by_char=0;
 int val,index=-1;
 int ret=0;
 struct OptVars* vars=new_OptVars();
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;

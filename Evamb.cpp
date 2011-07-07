@@ -76,7 +76,7 @@ int val,index=-1;
 int sentence_number=-1;
 const char* outfilename=NULL;
 char output_name_buffer[FILENAME_MAX]="";
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Evamb,lopts_Evamb,&index,vars))) {
    switch(val) {

@@ -81,7 +81,7 @@ char extract_matching_units=1;
 char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Extract,lopts_Extract,&index,vars))) {
    switch(val) {

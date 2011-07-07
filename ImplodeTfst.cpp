@@ -75,7 +75,7 @@ if (argc==1) {
    return 0;
 }
 
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int val,index=-1;
 char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";

@@ -94,7 +94,7 @@ char text[FILENAME_MAX]="";
 char raw_forms[FILENAME_MAX]="";
 char inflected_forms[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_TrainingTagger,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
