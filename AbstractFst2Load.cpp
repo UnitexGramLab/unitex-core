@@ -163,7 +163,7 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
 			p_fst2_free_info->privateSpacePtr = pads->privateSpacePtr;
 			p_fst2_free_info->func_free_fst2 = (void*)(pads->func_array.fnc_free_abstract_fst2);
 		}
-		res = (*(pads->func_array.fnc_load_abstract_fst2))(filename,read_names,p_fst2_free_info,pads->privateSpacePtr);
+		res = (*(pads->func_array.fnc_load_abstract_fst2))(vec, filename,read_names,p_fst2_free_info,pads->privateSpacePtr);
 		return res;
 	}
 }

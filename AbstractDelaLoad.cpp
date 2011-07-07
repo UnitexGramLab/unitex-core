@@ -157,7 +157,7 @@ const struct INF_codes* load_abstract_INF_file(const VersatileEncodingConfig* ve
 		p_inf_free_info->private_ptr = NULL;
 		p_inf_free_info->privateSpacePtr = pads->privateSpacePtr;
 		p_inf_free_info->func_free_inf = (void*)(pads->func_array.fnc_free_abstract_INF);
-		res = (*(pads->func_array.fnc_load_abstract_INF_file))(name,p_inf_free_info,pads->privateSpacePtr);
+		res = (*(pads->func_array.fnc_load_abstract_INF_file))(vec, name,p_inf_free_info,pads->privateSpacePtr);
 		return res;
 	}
 }
