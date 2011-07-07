@@ -224,7 +224,7 @@ int main_Cassys(int argc,char* const argv[]) {
 	bool has_alphabet = false;
     char negation_operator[0x20];
 
-    const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+    VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
     int must_create_directory = 1;
     int in_place = 0;
 

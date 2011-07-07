@@ -214,7 +214,7 @@ if (argc==1) {
 int val,index=-1;
 struct conc_opt* options=new_conc_opt();
 char foo;
-const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 int ret;
 char* uima_offset_file=NULL;
 struct OptVars* vars=new_OptVars();

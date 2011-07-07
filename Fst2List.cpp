@@ -1922,7 +1922,7 @@ int main_Fst2List(int argc,char* const argv[]) {
 
 	char *wp;
 	unichar *wp2,*wp3;
-	const VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+	VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 	while(iargIndex < argc){
 		if(*argv[iargIndex] != '-') break;
 		switch(argv[iargIndex][1]){
