@@ -36,7 +36,7 @@
  * This function takes two concordance index 'in1' and 'in2', and builds
  * the associated concordances 'out1' and 'out2'.
  */
-void create_text_concordances(VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out1,const char* out2) {
+void create_text_concordances(const VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out1,const char* out2) {
 pseudo_main_Concord(vec,in1,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
@@ -86,7 +86,7 @@ u_fprintf(f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out,
+int diff(const VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out,
 		const char* font,int size,int diff_only) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];

@@ -299,7 +299,7 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
  * the remaining string as key and value. An error message will be printed if
  * an empty line is found.
  */
-struct string_hash* load_key_list(VersatileEncodingConfig* vec,const char* name) {
+struct string_hash* load_key_list(const VersatileEncodingConfig* vec,const char* name) {
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);

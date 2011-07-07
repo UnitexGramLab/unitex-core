@@ -52,7 +52,7 @@ struct DELA_tree {
 
 struct DELA_tree* new_DELA_tree();
 void free_DELA_tree(struct DELA_tree*);
-void load_DELA(VersatileEncodingConfig*,char*,struct DELA_tree*);
+void load_DELA(const VersatileEncodingConfig*,char*,struct DELA_tree*);
 
 #endif
 

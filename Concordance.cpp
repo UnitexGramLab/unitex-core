@@ -32,7 +32,7 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
+void create_modified_text_file(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
 		char*,int,int*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
@@ -113,7 +113,7 @@ static size_t buf_map_int_pseudo_read(struct buffer_mapped* buffer,size_t size_r
  * This segment
  * 2.5  9
  */
-void create_concordance(VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
+void create_concordance(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* options) {
 U_FILE* out;
 U_FILE* f;
@@ -1125,7 +1125,7 @@ return pos_in_enter_pos;
  * the longest is preferred. If 2 matches start and end at the same positions,
  * then the first one is arbitrarily preferred.
  */
-void create_modified_text_file(VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
+void create_modified_text_file(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
                                struct text_tokens* tokens,char* output_name,
                                int n_enter_char,int* enter_pos) {
 U_FILE* output=u_fopen(vec,output_name,U_WRITE);

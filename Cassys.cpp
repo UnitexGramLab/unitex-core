@@ -459,7 +459,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 }
 
 
-cassys_tokens_list *cassys_load_text(VersatileEncodingConfig* vec,const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens){
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens){
 
 	*tokens = load_text_tokens(vec,tokens_text_name);
 

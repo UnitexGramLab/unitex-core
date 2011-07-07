@@ -30,7 +30,7 @@ extern const struct option_TS lopts_SortTxt[];
 extern const char* usage_SortTxt;
 
 int main_SortTxt(int argc,char* const argv[]);
-int pseudo_main_SortTxt(VersatileEncodingConfig*,
+int pseudo_main_SortTxt(const VersatileEncodingConfig*,
                         int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char*);
 
 #endif

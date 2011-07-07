@@ -693,7 +693,7 @@ U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
     return u_fopen_internal(encoding,2,name,MODE,USE_ENCODING_VALUE);
 }
 
-U_FILE* u_fopen(VersatileEncodingConfig* cfg,const char* name,OpenMode MODE) {
+U_FILE* u_fopen(const VersatileEncodingConfig* cfg,const char* name,OpenMode MODE) {
 	return u_fopen_internal(cfg->encoding_output,cfg->bom_output,name,MODE,cfg->mask_encoding_compatibility_input);
 }
 
@@ -749,7 +749,7 @@ return 1;
  * This function creates an empty Unicode file that just contains the
  * byte order mark, if any. It returns 0 if it fails; 1 otherwise.
  */
-int u_fempty(VersatileEncodingConfig* vec,const char* name) {
+int u_fempty(const VersatileEncodingConfig* vec,const char* name) {
 U_FILE* f=u_fopen(vec,name,U_WRITE);
 if (f==NULL) {
    return 0;

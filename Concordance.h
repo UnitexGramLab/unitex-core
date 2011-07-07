@@ -80,7 +80,7 @@ struct conc_opt {
 struct conc_opt* new_conc_opt();
 void free_conc_opt(struct conc_opt*);
 
-void create_concordance(VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
+void create_concordance(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
                         int,int*,struct conc_opt*);
 
 

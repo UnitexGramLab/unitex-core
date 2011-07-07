@@ -37,7 +37,7 @@ return tmp;
 }
 
 
-struct text_tokens* load_text_tokens(VersatileEncodingConfig* vec,const char* nom,Abstract_allocator prv_alloc) {
+struct text_tokens* load_text_tokens(const VersatileEncodingConfig* vec,const char* nom,Abstract_allocator prv_alloc) {
 U_FILE* f;
 f=u_fopen(vec,nom,U_READ);
 if (f==NULL) {

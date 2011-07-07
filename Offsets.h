@@ -116,7 +116,7 @@ return vec->nbelems-1;
 }
 
 
-vector_offset* load_offsets(VersatileEncodingConfig*,char*);
+vector_offset* load_offsets(const VersatileEncodingConfig*,char*);
 void process_offsets(vector_offset* old_offsets, vector_offset* new_offsets,
 		U_FILE* f);
 
@@ -124,7 +124,7 @@ int save_snt_offsets(vector_int*,char*);
 vector_int* load_snt_offsets(char*);
 void add_snt_offsets(vector_int*,int,int,int);
 
-vector_int* load_uima_offsets(VersatileEncodingConfig*,char* name);
+vector_int* load_uima_offsets(const VersatileEncodingConfig*,char* name);
 
 
 #endif

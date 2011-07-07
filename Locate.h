@@ -31,7 +31,7 @@ extern const struct option_TS lopts_Locate[];
 extern const char* usage_Locate;
 
 int main_Locate(int argc,char* const argv[]);
-int launch_locate_as_routine(VersatileEncodingConfig*,const char*,const char*,const char*,
+int launch_locate_as_routine(const VersatileEncodingConfig*,const char*,const char*,const char*,
                              OutputPolicy,MatchPolicy,const char*,int,int,const char*,const char*);
 
 

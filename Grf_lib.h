@@ -87,7 +87,7 @@ GrfState* new_GrfState(const unichar* content,int x,int y,int rank,int box_numbe
 GrfState* new_GrfState(const char* content,int x,int y,int rank,int box_number);
 void free_GrfState(GrfState*);
 int add_GrfState(Grf*,GrfState*);
-Grf* load_Grf(VersatileEncodingConfig*,const char*);
+Grf* load_Grf(const VersatileEncodingConfig*,const char*);
 void save_Grf(U_FILE*,Grf*);
 Grf* dup_Grf(Grf*);
 GrfState* cpy_grf_state(GrfState*);

@@ -173,7 +173,7 @@ free(inf);
 /**
  * This function reads the given char order file.
  */
-void read_char_order(VersatileEncodingConfig* vec,char* name,struct sort_infos* inf) {
+void read_char_order(const VersatileEncodingConfig* vec,char* name,struct sort_infos* inf) {
 int c;
 int current_line=1;
 U_FILE* f=u_fopen(vec,name,U_READ);
@@ -231,7 +231,7 @@ u_printf(usage_SortTxt);
 }
 
 
-int pseudo_main_SortTxt(VersatileEncodingConfig* vec,int duplicates,int reverse,
+int pseudo_main_SortTxt(const VersatileEncodingConfig* vec,int duplicates,int reverse,
 		char* sort_alphabet,char* line_info,int thai,char* text) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_SortTxt,"main_SortTxt");
 char tmp[200];

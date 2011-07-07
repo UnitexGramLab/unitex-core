@@ -53,7 +53,7 @@ int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table
 void save_new_line_positions(U_FILE*,vector_int*);
 void load_token_file(char* filename,VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
-void write_number_of_tokens(VersatileEncodingConfig* vec,const char* name,int n) {
+void write_number_of_tokens(const VersatileEncodingConfig* vec,const char* name,int n) {
   U_FILE* f;
   char number[11];
   f=u_fopen(vec,name,U_MODIFY);

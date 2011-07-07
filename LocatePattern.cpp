@@ -34,8 +34,8 @@
 
 void load_dic_for_locate(const char*,VersatileEncodingConfig*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*,Abstract_allocator);
-void load_morphological_dictionaries(VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
-void load_morphological_dictionaries(VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
+void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
+void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
 
 
 /**
@@ -537,7 +537,7 @@ return n;
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
  */
-void load_morphological_dictionaries(VersatileEncodingConfig* vec,const char* morpho_dic_list,struct locate_parameters* p) {
+void load_morphological_dictionaries(const VersatileEncodingConfig* vec,const char* morpho_dic_list,struct locate_parameters* p) {
 if (morpho_dic_list==NULL || morpho_dic_list[0]=='\0') {
    return;
 }
@@ -572,7 +572,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
  */
-void load_morphological_dictionaries(VersatileEncodingConfig* vec,const char* morpho_dic_list,struct locate_parameters* p,
+void load_morphological_dictionaries(const VersatileEncodingConfig* vec,const char* morpho_dic_list,struct locate_parameters* p,
                                      const char* local_morpho_dic) {
 if (fexists(local_morpho_dic)) {
    if (morpho_dic_list!=NULL && morpho_dic_list[0]!='\0') {
@@ -698,7 +698,7 @@ return c;
  * We use the unknown word file 'err' in order to determine if a token
  * must be matched by <!DIC>
  */
-void compute_token_controls(VersatileEncodingConfig* vec,Alphabet* alph,const char* err,struct locate_parameters* p) {
+void compute_token_controls(const VersatileEncodingConfig* vec,Alphabet* alph,const char* err,struct locate_parameters* p) {
 struct string_hash* ERR=load_key_list(vec,err);
 int n=p->tokens->size;
 for (int i=0;i<n;i++) {

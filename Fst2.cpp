@@ -646,7 +646,7 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL,prv_alloc);
 #define GRAPH_IS_EMPTY 1
 #define FILE_POINTER_NULL 2
 
-Fst2* load_fst2(VersatileEncodingConfig* vec,const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
+Fst2* load_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
 U_FILE* f;
 f=u_fopen(vec,filename,U_READ);
 Fst2* fst2;
@@ -730,7 +730,7 @@ return 0;
 /**
  * Loads a .fst2 file and returns its representation in a Fst2 structure.
  */
-Fst2* load_fst2(VersatileEncodingConfig* vec,const char* filename,int read_names,Abstract_allocator prv_alloc) {
+Fst2* load_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,Abstract_allocator prv_alloc) {
 return load_fst2(vec,filename,read_names,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 }
 
@@ -818,7 +818,7 @@ u_fprintf(f,"f \n");
 /**
  * Saves the given fst2 into a file.
  */
-void save_Fst2(VersatileEncodingConfig* vec,char* name,Fst2* fst2) {
+void save_Fst2(const VersatileEncodingConfig* vec,char* name,Fst2* fst2) {
 if (fst2==NULL) {
    fatal_error("NULL fst2 in save_Fst2\n");
 }
@@ -838,7 +838,7 @@ write_fst2_tags(f,fst2);
 u_fclose(f);
 }
 
-int get_graph_compatibility_mode_by_file(VersatileEncodingConfig* vec,int *p_tilde_negation_operator) {
+int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int *p_tilde_negation_operator) {
 
     U_FILE *fin = u_fopen(vec,"unitex_graph_compatibilty_mode.txt",U_READ);
     if (fin == NULL)

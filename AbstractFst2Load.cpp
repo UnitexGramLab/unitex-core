@@ -138,7 +138,7 @@ const AbstractFst2Space * GetFst2SpaceForFileName(const char*name)
 /*******************************/
 
 
-Fst2* load_abstract_fst2(VersatileEncodingConfig* vec,const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
+Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
 {
 	Fst2* res = NULL;
 	const AbstractFst2Space * pads = GetFst2SpaceForFileName(filename) ;

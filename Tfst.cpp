@@ -73,7 +73,7 @@ free(t);
  *  - the .tind does not exist
  *  - the .tfst does not start by a number >0
  */
-Tfst* open_text_automaton(VersatileEncodingConfig* vec,char* tfst) {
+Tfst* open_text_automaton(const VersatileEncodingConfig* vec,char* tfst) {
 char tind[FILENAME_MAX];
 remove_extension(tfst,tind);
 strcat(tind,".tind");

@@ -140,7 +140,7 @@ struct l_morpho_t* init_langage_morph();
 /*                      adv: (Gr,<var>)                                               */
 /* Fills out L_CLASSES and L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(VersatileEncodingConfig*,struct l_morpho_t*, const char *file);
+int read_language_morpho(const VersatileEncodingConfig*,struct l_morpho_t*, const char *file);
 
 /**************************************************************************************/
 /* Prints to the standard output the morphological system of the language             */

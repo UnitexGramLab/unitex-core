@@ -47,7 +47,7 @@ return result;
  * a structure containing the lines of the file tokenized into INF
  * codes.
  */
-struct INF_codes* load_INF_file(VersatileEncodingConfig* vec,const char* name,Abstract_allocator prv_alloc) {
+struct INF_codes* load_INF_file(const VersatileEncodingConfig* vec,const char* name,Abstract_allocator prv_alloc) {
 struct INF_codes* res;
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) {

@@ -70,7 +70,7 @@ u_printf(usage_Grf2Fst2);
 /**
  * A convenient way to call the main function within a Unitex program.
  */
-int pseudo_main_Grf2Fst2(VersatileEncodingConfig* vec,
+int pseudo_main_Grf2Fst2(const VersatileEncodingConfig* vec,
                          const char* name,int yes_or_no,const char* alphabet,
                          int no_empty_graph_warning,int tfst_check,
                          const char* pkgdir) {

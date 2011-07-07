@@ -189,12 +189,12 @@ int u_fscanf(U_FILE*,const char*,...);
  *       utf16le-bom
  */
 U_FILE* u_fopen(Encoding,const char*,OpenMode);
-U_FILE* u_fopen(VersatileEncodingConfig* cfg,const char*,OpenMode);
+U_FILE* u_fopen(const VersatileEncodingConfig* cfg,const char*,OpenMode);
 
 
 int u_fclose(U_FILE*);
 int u_fempty(Encoding,int,const char*);
-int u_fempty(VersatileEncodingConfig*,const char*);
+int u_fempty(const VersatileEncodingConfig*,const char*);
 int u_is_UTF16(const char*);
 int u_is_UTF16(U_FILE*);
 

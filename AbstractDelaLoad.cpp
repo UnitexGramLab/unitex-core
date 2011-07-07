@@ -136,7 +136,7 @@ const AbstractDelaSpace * GetDelaSpaceForFileName(const char*name)
 
 /*******************************/
 
-const struct INF_codes* load_abstract_INF_file(VersatileEncodingConfig* vec,const char* name,struct INF_free_info* p_inf_free_info)
+const struct INF_codes* load_abstract_INF_file(const VersatileEncodingConfig* vec,const char* name,struct INF_free_info* p_inf_free_info)
 {
 	struct INF_codes* res = NULL;
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;

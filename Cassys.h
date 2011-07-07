@@ -135,7 +135,7 @@ int main_Cassys(int argc,char* const argv[]);
  *
  * \param[in] file_list_transducer_name user file containing the list of transducers
  */
-struct fifo *load_transducer(VersatileEncodingConfig*,const char *file_list_transducer_name);
+struct fifo *load_transducer(const VersatileEncodingConfig*,const char *file_list_transducer_name);
 
 
 /**
@@ -304,7 +304,7 @@ locate_pos *read_concord_line(const unichar *line);
  *
  * Each element of the cassys_tokens_list token field is pointing on a element of tokens.
  */
-cassys_tokens_list *cassys_load_text(VersatileEncodingConfig*,const char *token_text_name, const char * text_cod_name, struct text_tokens **tokens);
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig*,const char *token_text_name, const char * text_cod_name, struct text_tokens **tokens);
 
 
 

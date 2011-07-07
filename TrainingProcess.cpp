@@ -29,7 +29,7 @@
  * Creates a Disclaimer text file for each one of the training dictionaries.
  * Indicates that those cannot be used like other dictionaries.
  */
-void create_disclaimer(VersatileEncodingConfig* vec,const char* file){
+void create_disclaimer(const VersatileEncodingConfig* vec,const char* file){
 	U_FILE* disclaimer = u_fopen(vec,file,U_WRITE);
 	u_fprintf(disclaimer,"This file contains statistics gathered from a tagged corpus.\nIt cannot be used like other .bin dictionaries but only in input of Tagger program.\n\nContact : unitex@univ-mlv.fr");
 	u_fclose(disclaimer);

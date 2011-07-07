@@ -38,7 +38,7 @@
 #define XML 0
 #define TEI 1
 
-void xmlize(VersatileEncodingConfig*,const char*,const char*,int);
+void xmlize(const VersatileEncodingConfig*,const char*,const char*,int);
 
 
 /* Headers (XML & TEI) Variables
@@ -200,7 +200,7 @@ return 0;
 
 
 
-void xmlize(VersatileEncodingConfig* vec,const char* fin,const char* fout,int ouput_style) {
+void xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,int ouput_style) {
 	U_FILE* input = u_fopen(vec, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 

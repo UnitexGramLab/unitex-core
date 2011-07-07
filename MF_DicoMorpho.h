@@ -114,7 +114,7 @@ typedef struct {
 /*                    n:Gen=neu                                                       */
 /* The function fills out D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(VersatileEncodingConfig*,struct l_morpho_t* pL_MORPHO,char* equiv_file);
+int d_init_morpho_equiv(const VersatileEncodingConfig*,struct l_morpho_t* pL_MORPHO,char* equiv_file);
 
 /**************************************************************************************/
 /* Initialises the set of equivalences between class names in a dictionary (e.g. "N") */

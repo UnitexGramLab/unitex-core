@@ -105,7 +105,7 @@ struct dela_entry* is_strict_DELAS_line(const unichar*,Alphabet*,Abstract_alloca
 void get_compressed_line(struct dela_entry*,unichar*,int);
 void uncompress_entry(const unichar*,unichar*,Ustring*);
 void rebuild_dictionary(Dictionary*,U_FILE*);
-void extract_semantic_codes(VersatileEncodingConfig*,const char*,struct string_hash*);
+void extract_semantic_codes(const VersatileEncodingConfig*,const char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(const unichar*,unichar*,unichar*,unichar*);
 void check_DELA_line(const unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
                      struct string_hash*,struct string_hash*,int*,int*,Alphabet*,int,Abstract_allocator prv_alloc=NULL);

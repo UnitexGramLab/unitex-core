@@ -34,7 +34,7 @@ static int read_bin_header(Dictionary*);
 /**
  * Loads and returns a compressed dictionary.
  */
-Dictionary* new_Dictionary(VersatileEncodingConfig* vec,const char* bin,const char* inf,Abstract_allocator prv_alloc) {
+Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,const char* inf,Abstract_allocator prv_alloc) {
 Dictionary* d=(Dictionary*)malloc_cb(sizeof(Dictionary),prv_alloc);
 if (d==NULL) {
 	fatal_alloc_error("new_Dictionary");
@@ -72,7 +72,7 @@ return d;
  * Loads and returns a compressed dictionary, but no need to specify the .inf file
  * that is deduced from 'bin'.
  */
-Dictionary* new_Dictionary(VersatileEncodingConfig* vec,const char* bin,Abstract_allocator prv_alloc) {
+Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,Abstract_allocator prv_alloc) {
 char inf[FILENAME_MAX];
 remove_extension(bin,inf);
 strcat(inf,".inf");

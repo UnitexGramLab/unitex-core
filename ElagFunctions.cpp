@@ -281,7 +281,7 @@ void explode_tfst(char* input_tfst,char* output,VersatileEncodingConfig* vec,lan
 /**
  * Loads all the ELAG grammars contained in the given .elg file.
  */
-vector_ptr* load_elag_grammars(VersatileEncodingConfig* vec,char* filename,language_t* language,char* directory) {
+vector_ptr* load_elag_grammars(const VersatileEncodingConfig* vec,char* filename,language_t* language,char* directory) {
 U_FILE* f=u_fopen(ASCII,filename,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",filename);

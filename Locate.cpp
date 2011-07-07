@@ -373,7 +373,7 @@ return (!OK);
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int launch_locate_as_routine(VersatileEncodingConfig* vec,
+int launch_locate_as_routine(const VersatileEncodingConfig* vec,
                              const char* text_snt,const char* fst2,const char* alphabet,
                              OutputPolicy output_policy,MatchPolicy match_policy,const char* morpho_dic,
                              int protect_dic_chars,int is_korean,const char* arabic_rules,const char*negation_operator) {

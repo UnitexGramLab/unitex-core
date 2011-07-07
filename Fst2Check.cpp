@@ -65,7 +65,7 @@ if (ferr != NULL) {
 }
 
 
-int display_fst2_file_stat(VersatileEncodingConfig* vec,const char* name,U_FILE* ferr) {
+int display_fst2_file_stat(const VersatileEncodingConfig* vec,const char* name,U_FILE* ferr) {
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(vec,name,1,&fst2_free);
 char name_without_path[FILENAME_MAX];
@@ -115,7 +115,7 @@ u_printf(usage_Fst2Check);
  * A convenient way to call the main function within a Unitex program.
  */
 
-int pseudo_main_Fst2Check(VersatileEncodingConfig* vec,
+int pseudo_main_Fst2Check(const VersatileEncodingConfig* vec,
                           const char* fst2name,const char* output_name,int append,int display_statistics,
                           int yes_or_no,int no_empty_graph_warning,int tfst_check) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Fst2Check,"main_Fst2Check");

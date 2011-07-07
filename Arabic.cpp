@@ -255,7 +255,7 @@ return 1;
  * is set to 0.
  * "YES" value means 1, any other value means 0;
  */
-int load_arabic_typo_rules(VersatileEncodingConfig* vec,const char* name,ArabicTypoRules *rules) {
+int load_arabic_typo_rules(const VersatileEncodingConfig* vec,const char* name,ArabicTypoRules *rules) {
 memset(rules,0,sizeof(ArabicTypoRules));
 if (name==NULL) {
 	fatal_error("NULL arabic rule configuration file name!\n");

@@ -138,7 +138,7 @@ if (alphabet->korean_equivalent_syllable!=NULL) {
  * If 'korean' is non null, we compute the equivalences between Chinese and Hangul
  * characters.
  */
-Alphabet* load_alphabet(VersatileEncodingConfig* vec,const char* filename,int korean) {
+Alphabet* load_alphabet(const VersatileEncodingConfig* vec,const char* filename,int korean) {
 U_FILE* f;
 f=u_fopen(vec,filename,U_READ);
 if (f==NULL) {
@@ -192,7 +192,7 @@ return alphabet;
 /**
  * Loads an alphabet file and returns the associated 'Alphabet*' structure.
  */
-Alphabet* load_alphabet(VersatileEncodingConfig* vec,const char* filename) {
+Alphabet* load_alphabet(const VersatileEncodingConfig* vec,const char* filename) {
 return load_alphabet(vec,filename,0);
 }
 

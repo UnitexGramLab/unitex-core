@@ -57,7 +57,7 @@
 #define PRODUCE_MORPHO_DIC_NOW 2
 
 
-int raw_dic_application(VersatileEncodingConfig*,U_FILE* text,U_FILE* raw_output,Alphabet* alphabet,int ind,char* const argv[]);
+int raw_dic_application(const VersatileEncodingConfig*,U_FILE* text,U_FILE* raw_output,Alphabet* alphabet,int ind,char* const argv[]);
 
 
 const char* usage_Dico =
@@ -136,7 +136,7 @@ u_printf(usage_Dico);
 /**
  * This function stores some statistics in 'stat_dic.n'.
  */
-void save_statistics(VersatileEncodingConfig* vec,char* name,struct dico_application_info* info) {
+void save_statistics(const VersatileEncodingConfig* vec,char* name,struct dico_application_info* info) {
 U_FILE* f=u_fopen(vec,name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);
@@ -540,7 +540,7 @@ return ret;
  * regardless if they are simple or compound words. fst2 are skipped.
  * Returns 0 in case of success; 1 otherwise.
  */
-int raw_dic_application(VersatileEncodingConfig* vec,U_FILE* text,U_FILE* output,Alphabet* alphabet,int ind,char* const argv[]) {
+int raw_dic_application(const VersatileEncodingConfig* vec,U_FILE* text,U_FILE* output,Alphabet* alphabet,int ind,char* const argv[]) {
 unichar* sequence=readline_safe(text);
 if (sequence==NULL) return 1;
 if (sequence[0]=='\0') {

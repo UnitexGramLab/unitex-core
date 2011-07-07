@@ -214,7 +214,7 @@ return 1;
 /**
  * Loads and returns a grf file, or NULL in case of error.
  */
-Grf* load_Grf(VersatileEncodingConfig* vec,const char* name) {
+Grf* load_Grf(const VersatileEncodingConfig* vec,const char* name) {
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) return NULL;
 Ustring* line=new_Ustring();

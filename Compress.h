@@ -30,7 +30,7 @@ extern const struct option_TS lopts_Compress[];
 extern const char* usage_Compress;
 
 int main_Compress(int argc,char* const argv[]);
-int pseudo_main_Compress(VersatileEncodingConfig*,
+int pseudo_main_Compress(const VersatileEncodingConfig*,
                          int flip,int semitic,char* dic,int new_style_bin);
 
 

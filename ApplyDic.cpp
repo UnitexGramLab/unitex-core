@@ -685,7 +685,7 @@ free(info);
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int dico_application(VersatileEncodingConfig* vec,char* name_bin,struct dico_application_info* info,int priority) {
+int dico_application(const VersatileEncodingConfig* vec,char* name_bin,struct dico_application_info* info,int priority) {
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
@@ -723,7 +723,7 @@ return 0;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int dico_application_simplified(VersatileEncodingConfig* vec,unichar* text,char* name_bin,struct dico_application_info* info) {
+int dico_application_simplified(const VersatileEncodingConfig* vec,unichar* text,char* name_bin,struct dico_application_info* info) {
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");

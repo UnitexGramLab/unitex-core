@@ -84,8 +84,8 @@ typedef struct alphabet_ Alphabet;
 #define IS_UPPER_MACRO(c,alphabet) \
 	            ((CASE_FLAG_MACRO(c,alphabet)) & 1)
 
-Alphabet* load_alphabet(VersatileEncodingConfig*,const char*);
-Alphabet* load_alphabet(VersatileEncodingConfig*,const char*,int);
+Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*);
+Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*,int);
 void free_alphabet(Alphabet*);
 int is_upper_of(unichar,unichar,const Alphabet*);
 int is_equal_ignore_case(unichar,unichar,const Alphabet*);
