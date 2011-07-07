@@ -216,6 +216,7 @@ struct fst2 {
 };
 typedef struct fst2 Fst2;
 
+#define FST2_STRUCTURE_HAS_DEBUG_MEMBER 1
 
 /* Functions for loading grammars */
 Fst2* load_fst2(const VersatileEncodingConfig*,const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
