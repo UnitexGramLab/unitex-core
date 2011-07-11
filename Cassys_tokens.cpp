@@ -131,6 +131,8 @@ cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id){
 	cassys_tokens_list *current = head;
 
 	while(l_u!=NULL){
+		// free ajouté pour libérer next_token : verifier son utilité !
+		free(current->next_token);
 		current -> next_token = new_element(l_u -> string, transducer_id);
 
 
