@@ -389,6 +389,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	int transducer_number = 1;
     char *labeled_text_name = NULL;
+    char last_labeled_text_name[FILENAME_MAX];
 
     if ((in_place != 0))
 	   labeled_text_name = create_labeled_files_and_directory(text,
@@ -411,7 +412,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 		// apply transducer
 		transducer *current_transducer = (transducer*)take_ptr(transducer_list);
-		fprintf(stdout,"Applying transducer %d: %s\n", transducer_number, current_transducer->transducer_file_name);
+		fprintf(stdout,"Applying transducer %s (numbered %d)\n", current_transducer->transducer_file_name,  transducer_number);
 		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,vec);
 
 		// generate concordance for this transducer
@@ -430,6 +431,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		free(current_transducer -> transducer_file_name);
 		free(current_transducer);
 
+		sprintf(last_labeled_text_name, "%s", labeled_text_name);
         if ((in_place == 0))
 		       free(labeled_text_name);
 
@@ -447,10 +449,18 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	char result_file_name[FILENAME_MAX];
 	char text_name_without_extension[FILENAME_MAX];
 	remove_extension(text,text_name_without_extension);
-	sprintf(result_file_name,"%s.csc",text_name_without_extension);
+	sprintf(result_file_name,"%s_csc.snt",text_name_without_extension);
 
-	copy_file(result_file_name,text);
-	launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,vec);
+	// make a copy of the last resulting text of the cascade in the file named text.csc (in the same directory than text.snt)
+	char path[FILENAME_MAX];
+	get_path(text,path);
+	char last_resulting_text_path[FILENAME_MAX];
+	char result_file_name_path[FILENAME_MAX];
+	sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
+	sprintf(result_file_name_path,"%s", result_file_name);
+	copy_file(result_file_name_path, last_resulting_text_path);
+	//copy_file(result_file_name,text);
+	//launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,vec);
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);
@@ -868,6 +878,41 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 int launch_concord_in_Cassys(const char *text_name, const char *index_file, const char *alphabet_name,
     VersatileEncodingConfig* vec){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
+
+	// verify the braces in concordance
+			U_FILE *concord;
+			unichar line[4096];
+			int brace_level;
+			int i;
+			int l;
+
+			//concord = u_fopen_exis(mask_encoding_compatibility_input, index_file,U_READ);
+			concord = u_fopen(vec, index_file, U_READ);
+			if( concord == NULL){
+				perror("u_fopen\n");
+				fprintf(stderr,"Cannot open file %s\n",index_file);
+				exit(1);
+			}
+			while(!u_feof(concord)){
+				u_fgets(line, concord);
+				brace_level=0;
+				i=0;
+				l=u_strlen(line);
+				while(i<l) {
+					if(line[i]=='{')
+						brace_level++;
+					else if(line[i]=='}')
+						brace_level--;
+					i++;
+				}
+				if( brace_level!=0){
+					fprintf(stderr, "File %s\nProblem of brackets in line %S\n", index_file, line);
+					fatal_error("cassys_tokenize_word_by_word : correct the current graph if possible.\n");
+				}
+			}
+			u_fclose(concord);
+
+	// end of veifying braces
 
 	add_argument(invoker,index_file);
 
