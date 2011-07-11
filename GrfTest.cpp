@@ -125,7 +125,7 @@ opt[current]=create_option(NULL,0,NULL,0);
 return opt;
 }
 
-struct option_TS* lopts_GrfTest=filter_options();
+struct option_TS* lopts_GrfTest;
 
 
 
@@ -134,6 +134,7 @@ if (argc==1) {
    usage();
    return 0;
 }
+lopts_GrfTest=filter_options();
 ProgramInvoker* invoker_Normalize=new_ProgramInvoker(main_Normalize,"Normalize");
 ProgramInvoker* invoker_Tokenize=new_ProgramInvoker(main_Tokenize,"Tokenize");
 ProgramInvoker* invoker_Dico=new_ProgramInvoker(main_Dico,"Dico");

@@ -155,17 +155,7 @@ cassys_tokens_list *new_element( unichar *u, int transducer_id){
 	l->transducer_id = transducer_id;
 	l->output = NULL;
 	l->next_token = NULL;
-
-	int token_size = u_strlen(u);
-	l->token = (unichar*)malloc(sizeof(unichar)*(token_size+1));
-	if(l->token == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible to allocate memory\n");
-		exit(1);
-	}
-
-	u_strcpy(l->token,u);
-
+	l->token=u_strdup(u);
 	return l;
 }
 
