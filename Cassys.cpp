@@ -906,7 +906,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 					i++;
 				}
 				if( brace_level!=0){
-					fprintf(stderr, "File %s\nProblem of brackets in line %S\n", index_file, line);
+					error("File %s\nProblem of brackets in line %S\n", index_file, line);
 					fatal_error("cassys_tokenize_word_by_word : correct the current graph if possible.\n");
 				}
 			}
