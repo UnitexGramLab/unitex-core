@@ -1877,7 +1877,7 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
         if (runLog_ctx.quiet == 0)
           fwrite((prunLog_ThreadData+ut)->summary,strlen((prunLog_ThreadData+ut)->summary),1,U_STDOUT);
 
-        if (runLog_ctx.summaryfile != NULL)
+        if ((*(runLog_ctx.summaryfile)) != '\0')
         {
             ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summaryfile,"ab");
             if (afw != NULL)
@@ -1895,7 +1895,7 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
         if (runLog_ctx.quiet == 0)
           fwrite((prunLog_ThreadData+ut)->summary_error,strlen((prunLog_ThreadData+ut)->summary_error),1,U_STDERR);
 
-        if (runLog_ctx.summary_error_file != NULL)
+        if ((*(runLog_ctx.summary_error_file)) != '\0')
         {
             ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summary_error_file,"ab");
             if (afw != NULL)

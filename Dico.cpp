@@ -338,7 +338,7 @@ if (raw_output[0]!='\0') {
 }
 if (f_raw_output!=NULL) {
 	U_FILE* f_text=u_fopen(&vec,text,U_READ);
-	if (text==NULL) {
+	if ((*text)=='\0') {
 		fatal_error("Cannot open text file %s\n",text);
 	}
 	int ret_applic=raw_dic_application(&vec,f_text,f_raw_output,alphabet,vars->optind,argv);

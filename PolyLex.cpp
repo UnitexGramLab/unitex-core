@@ -230,7 +230,7 @@ if (res==NULL) {
    return 1;
 }
 U_FILE* debug=NULL;
-if (info!=NULL) {
+if ((*info)!='\0') {
    debug=u_fopen(&vec,info,U_WRITE);
    if (debug==NULL) {
       error("Cannot open debug file %s\n",info);

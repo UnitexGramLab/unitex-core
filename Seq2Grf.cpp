@@ -295,7 +295,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		tag_list = load_match_list(tag_file, NULL);
 		u_fclose(tag_file);
 	}
-	if (output == NULL) {
+	if ((*output) == '\0') {
 		strcat(grf_name, "cursentence.grf");
 		strcat(txt_name, "cursentence.txt");
 		strcat(tok_name, "cursentence.tok");

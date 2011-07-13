@@ -197,7 +197,7 @@ remove_extension(root,root_inf_file);
 strcat(root_inf_file,".inf");
 u_printf("Loading radical form dictionary...\n");
 Dictionary* root_dic=new_Dictionary(&vec,root,root_inf_file);
-if (root==NULL) {
+if ((*root)=='\0') {
 	free_alphabet(alph);
 	return 1;
 }
