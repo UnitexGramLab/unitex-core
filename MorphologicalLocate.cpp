@@ -506,7 +506,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						p->backup_memory_reserve);
 
 				if (reserve_previous != NULL) {
-					if ((reserve_freeable == 0)) {
+					if (reserve_freeable == 0) {
 							fatal_error("incoherent reserve free result\n");
 					}
 					free_reserve(p->backup_memory_reserve);

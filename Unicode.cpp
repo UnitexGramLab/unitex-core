@@ -358,7 +358,7 @@ char *strdup_lower_case(const char* text)
     for (size_t i=0;i < len_text;i++)
     {
         if (((*(new_str+i))>='A') && ((*(new_str+i))<='Z')) (*(new_str+i)) += 32; /* 32 = 'a'-'A' */
-        if (((*(new_str+i))=='_')) (*(new_str+i)) = '-'; /* 32 = 'a'-'A' */
+        if ((*(new_str+i))=='_') (*(new_str+i)) = '-'; /* 32 = 'a'-'A' */
     }
 
     return new_str;

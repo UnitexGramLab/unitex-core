@@ -750,7 +750,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			int reserve_freeable = free_variable_backup_using_reserve(
 							p->backup_memory_reserve);
 			if (reserve_previous != NULL) {
-					if ((reserve_freeable == 0)) {
+					if (reserve_freeable == 0) {
 						fatal_error("incoherent reserve free result\n");
 					}
 					free_reserve(p->backup_memory_reserve);

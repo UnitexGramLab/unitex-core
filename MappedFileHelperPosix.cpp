@@ -97,7 +97,7 @@ void iomap_release_mapfile_pointer(MAPFILE *mf, const void*buf, size_t sizemap)
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return ;
-    if ((sizemap==0))
+    if (sizemap==0)
         sizemap=mfr->filesize;
     munmap((void*)buf,sizemap);
 }

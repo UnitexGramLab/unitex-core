@@ -220,7 +220,7 @@ if (out==NULL) {
 if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
 	write_HTML_header(out,N_MATCHES,options);
 }
-if ((options->result_mode==XML_WITH_HEADER_)) {
+if (options->result_mode==XML_WITH_HEADER_) {
   if ((vec->encoding_output == UTF16_LE) || (vec->encoding_output == BIG_ENDIAN_UTF16)) {
     u_fprintf(out,"<?xml version='1.0' encoding='UTF-16'?>\n<concord>\n");
   }
@@ -231,7 +231,7 @@ if ((options->result_mode==XML_WITH_HEADER_)) {
   else
     u_fprintf(out,"<?xml version='1.0'>\n<concord>\n");
 }
-if ((options->result_mode==XML_)) {
+if (options->result_mode==XML_) {
   u_fprintf(out,"<concord>\n");
 }
 unichar* unichar_buffer=(unichar*)malloc(sizeof(unichar)*((3000*4) + 100));

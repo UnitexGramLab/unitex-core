@@ -398,7 +398,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	while(!is_empty(transducer_list)){
 
-        if ((in_place == 0))
+        if (in_place == 0)
 		    labeled_text_name = create_labeled_files_and_directory(text,
 				    transducer_number, must_create_directory,1);
         /*
@@ -432,7 +432,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		free(current_transducer);
 
 		sprintf(last_labeled_text_name, "%s", labeled_text_name);
-        if ((in_place == 0))
+        if (in_place == 0)
 		       free(labeled_text_name);
 
 	}

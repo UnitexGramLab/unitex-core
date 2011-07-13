@@ -178,7 +178,7 @@ static inline int* create_variable_backup_using_reserve(const Variables* v,varia
    - the last used array is not a "swapper" 
     so we can reuse the backup previously made !  
  */
-if ((r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0))
+if (r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0)
 {
     r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]++;
     int* prev = &(r->array_int[OFFSET_BACKUP+((r->pos_used-1) * r->size_aligned)]);

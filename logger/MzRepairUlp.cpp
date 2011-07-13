@@ -140,7 +140,7 @@ if ((retRepair!=0)) {
 	}
 }
 
-if ((retRepair==0)) {
+if (retRepair==0) {
 	if ((verbose==1) && (quiet == 0)) {
 		u_printf("success in UlpRepair from %s to %s : return value = %d",ulpFile,outputFile,retRepair);
 	}

@@ -235,10 +235,10 @@ struct stdwrite_param* get_std_write_param(ABSTRACTFILE*stream)
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	if (p_abfr->afs == NULL)
 	{
-		if (((p_abfr->f)==stdout))
+		if ((p_abfr->f)==stdout)
 			return &stdwrite_setparam[stdwrite_kind_out];
 
-		if (((p_abfr->f)==stderr))
+		if ((p_abfr->f)==stderr)
 			return &stdwrite_setparam[stdwrite_kind_err];
 	}
 
@@ -300,7 +300,7 @@ struct t_stdin_param* get_std_in(ABSTRACTFILE*stream)
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	if (p_abfr->afs == NULL)
 	{
-		if (((p_abfr->f)==stdin))
+		if ((p_abfr->f)==stdin)
 			return &stdin_param;
 	}
 
