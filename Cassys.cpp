@@ -385,7 +385,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	struct text_tokens *tokens = NULL;
 	cassys_tokens_list *tokens_list = cassys_load_text(vec,snt_text_files->tokens_txt, snt_text_files->text_cod,&tokens);
 
-	fprintf(stdout,"Cascade begins\n");
+	fprintf(stdout,"CasSys Cascade begins\n");
 
 	int transducer_number = 1;
     char *labeled_text_name = NULL;
@@ -449,7 +449,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	char result_file_name[FILENAME_MAX];
 	char text_name_without_extension[FILENAME_MAX];
 	remove_extension(text,text_name_without_extension);
-	sprintf(result_file_name,"%s_csc.snt",text_name_without_extension);
+	sprintf(result_file_name,"%s_csc.txt",text_name_without_extension);
 
 	// make a copy of the last resulting text of the cascade in the file named text.csc (in the same directory than text.snt)
 	char path[FILENAME_MAX];
@@ -736,8 +736,7 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,
     VersatileEncodingConfig* vec){
 
-	fprintf(stdout,"Launch tokenize in Cassys\n");
-
+	fprintf(stdout,"Launch tokenize in Cassys \n");
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
 
     char tmp[FILENAME_MAX];
@@ -822,7 +821,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
         }
     }
 
-	add_argument(invoker, transducer->transducer_file_name);
+    add_argument(invoker, transducer->transducer_file_name);
 
 	// add the text
 	char text_argument[FILENAME_MAX+7];
