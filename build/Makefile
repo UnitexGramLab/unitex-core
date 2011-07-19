@@ -508,11 +508,13 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o Acti
 
 GRFDIFF      = GrfDiff
 GRFDIFF_OBJS = Main_GrfDiff.o GrfDiff.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
-			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o $(SYSLIBMAPPED)
+			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
+			StringParsing.o AbstractAllocator.o $(SYSLIBMAPPED)
 
 GRFDIFF3      = GrfDiff3
 GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
-			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o $(SYSLIBMAPPED)
+			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
+			StringParsing.o AbstractAllocator.o $(SYSLIBMAPPED)
 
 GRFTEST      = GrfTest
 GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\

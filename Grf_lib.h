@@ -70,6 +70,8 @@ typedef struct {
 	unichar fits[GRF_HEADER_LINE_SIZE];
 	unichar porient[GRF_HEADER_LINE_SIZE];
 
+	vector_ptr* metadata;
+
 	int n_states;
 	GrfState** states;
 } Grf;

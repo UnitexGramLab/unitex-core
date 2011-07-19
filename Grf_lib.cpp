@@ -48,6 +48,7 @@ grf->drig[0]='\0';
 grf->drst[0]='\0';
 grf->fits[0]='\0';
 grf->porient[0]='\0';
+grf->metadata=new_vector_ptr(1);
 grf->n_states=0;
 grf->states=NULL;
 return grf;
@@ -115,6 +116,7 @@ if (grf==NULL) return;
 for (int i=0;i<grf->n_states;i++) {
 	free_GrfState(grf->states[i]);
 }
+free_vector_ptr(grf->metadata,free);
 free(grf->states);
 free(grf);
 }
@@ -212,6 +214,35 @@ return 1;
 
 
 /**
+ * Reads lines until a # line is found. Each line is supposed to be of the form:
+ *
+ *   key=value
+ *
+ * Those key/value pairs are stored in the grf's metadata. No interpretation
+ * is made of key/value contents.
+ * Returns 1 in case of success, 0 otherwise (no # line is found,
+ * line with no =, or several lines with the same key).
+ */
+static int read_metadata(Ustring* line,U_FILE* f,Grf* grf) {
+while (EOF!=readline(line,f)) {
+	if (!u_strcmp(line->str,"#")) return 1;
+	unichar* value=u_strchr(line->str,'=');
+	if (value==NULL) return 0;
+	*value='\0';
+	value++;
+	for (int i=0;i<grf->metadata->nbelems;i=i+2) {
+		if (!u_strcmp((unichar*)(grf->metadata->tab[i]),line->str)) {
+			return 0;
+		}
+	}
+	vector_ptr_add(grf->metadata,u_strdup(line->str));
+	vector_ptr_add(grf->metadata,u_strdup(value));
+}
+return 0;
+}
+
+
+/**
  * Loads and returns a grf file, or NULL in case of error.
  */
 Grf* load_Grf(const VersatileEncodingConfig* vec,const char* name) {
@@ -241,7 +272,7 @@ if (!read_grf_header_line(f,line,grf->drig)) goto error;
 if (!read_grf_header_line(f,line,grf->drst)) goto error;
 if (!read_grf_header_line(f,line,grf->fits)) goto error;
 if (!read_grf_header_line(f,line,grf->porient)) goto error;
-if (EOF==readline(line,f) || u_strcmp(line->str,"#")) goto error;
+if (!read_metadata(line,f,grf)) goto error;
 if (!read_grf_n_states(f,line,&(grf->n_states))) goto error;
 grf->states=(GrfState**)calloc(grf->n_states,sizeof(GrfState*));
 if (grf->states==NULL) {
@@ -285,6 +316,9 @@ u_fprintf(f,"%S\n",grf->drig);
 u_fprintf(f,"%S\n",grf->drst);
 u_fprintf(f,"%S\n",grf->fits);
 u_fprintf(f,"%S\n",grf->porient);
+for (int i=0;i<grf->metadata->nbelems;i=i+2) {
+	u_fprintf(f,"%S=%S\n",grf->metadata->tab[i],grf->metadata->tab[i+1]);
+}
 u_fprintf(f,"#\n");
 u_fprintf(f,"%d\n",grf->n_states);
 for (int i=0;i<grf->n_states;i++) {
@@ -334,6 +368,9 @@ u_strcpy(dst->drig,src->drig);
 u_strcpy(dst->drst,src->drst);
 u_strcpy(dst->fits,src->fits);
 u_strcpy(dst->porient,src->porient);
+for (int i=0;i<src->metadata->nbelems;i++) {
+	vector_ptr_add(dst->metadata,u_strdup((unichar*)(src->metadata->tab[i])));
+}
 }
 
 
