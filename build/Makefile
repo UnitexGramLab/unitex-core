@@ -628,7 +628,8 @@ REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 
 SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o\
-               ProgramInvoker.o $(SYSLIBMAPPED)
+               ProgramInvoker.o DELA.o StringParsing.o Ustring.o String_hash.o Alphabet.o \
+               CompressedDic.o AbstractDelaLoad.o LoadInf.o List_ustring.o File.o $(SYSLIBMAPPED)
 
 SPELLCHECK      = SpellCheck
 SPELLCHECK_OBJS = Main_SpellCheck.o SpellCheck.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o\

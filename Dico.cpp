@@ -474,7 +474,7 @@ for (int priority=1;priority<4;priority++) {
                 * we must close it, sort it, call Compress and reopen it in append mode */
                u_fclose(info->morpho);
                pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
-                                   snt_files->morpho_dic);
+                                   snt_files->morpho_dic,1);
                /* Then we compress it */
                pseudo_main_Compress(&vec,0,semitic,snt_files->morpho_dic,1);
                info->morpho=u_fopen(&vec,snt_files->morpho_dic,U_APPEND);
@@ -521,7 +521,7 @@ if (info->morpho!=NULL) {
    u_fclose(info->morpho);
    /* We sort it to remove duplicates */
    pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
-                       snt_files->morpho_dic);
+                       snt_files->morpho_dic,1);
    /* Then we compress it */
    pseudo_main_Compress(&vec,0,semitic,
 		   snt_files->morpho_dic,1);

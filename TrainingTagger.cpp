@@ -176,7 +176,7 @@ u_fclose(input_text);
 char disclaimer[FILENAME_MAX];
 if(rforms_file != NULL){
 	u_fclose(rforms_file);
-	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,raw_forms);
+	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,raw_forms,0);
 	strcpy(disclaimer,raw_forms);
 	remove_extension(disclaimer);
 	strcat(disclaimer,".txt");
@@ -184,7 +184,7 @@ if(rforms_file != NULL){
 }
 if(iforms_file != NULL){
 	u_fclose(iforms_file);
-	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,inflected_forms);
+	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,inflected_forms,0);
 	strcpy(disclaimer,inflected_forms);
 	remove_extension(disclaimer);
 	strcat(disclaimer,".txt");
