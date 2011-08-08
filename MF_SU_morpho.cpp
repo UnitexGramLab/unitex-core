@@ -512,6 +512,10 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 		   /* Removal of the first val letters */
 		   shift_stack_left2(p_SU_buf->stack,val);
 		   pos=pos-val;
+	   } else if (/*semitic &&*/ !u_strcmp(p_SU_buf->tag,"<LEMMA>")) {
+		   for (int e=0;lemma[e]!='\0';e++) {
+		         p_SU_buf->stack[pos++] = lemma[e];
+		   }
 	   } else if (semitic && 1==u_sscanf(p_SU_buf->tag,"<%d>%C",&val,&foo)) {
          /* If we are in semitic mode, we must handle tags like <12> like references
           * to letters in the lemma. We must deal this way with values >9, because
