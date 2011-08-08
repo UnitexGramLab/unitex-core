@@ -515,6 +515,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			}
 	} /* End of processing subgraphs */
 
+	/* This variable will be used to store the results provided by <DIC>. It
+	 * is useful to cache the exploration of the morphological dictionaries,
+	 * so that there will only be one even if there are several patterns requiring it,
+	 * like <DIC>, <A>, <N:s>, etc */
+	int DIC_cached=0;
+	struct parsing_info* DIC_consultation = NULL;
+
+
 	/**
 	 * METAS
 	 */
@@ -592,15 +600,23 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 #else
 				unichar var_name[len_var_name + 1];
 #endif
+				/*
 				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
 						&& !capture_mode(p->output_variables)
 						&& is_morpho_variable_output(
 								p->tags[t->tag_number]->output, var_name));
 				explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L2, NULL,
-						save_dic_entry, jamo, pos_in_jamo);
+						save_dic_entry, jamo, pos_in_jamo);*/
+				/* In order to make the cache system work, we always have to save dic entries */
+				int save_dic_entry=1;
+				if (!DIC_cached) {
+					DIC_cached=1;
+					explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &DIC_consultation, NULL,
+											save_dic_entry, jamo, pos_in_jamo);
+				}
+				L2=DIC_consultation;
 				unichar *content1 = content_buffer;
 				if (L2 != NULL) {
-					struct parsing_info* L_first = L2;
 					/* If there is at least one match, we process the match list */
 					do {
 						get_content(content1, p, pos_in_tokens, pos_in_chars,
@@ -668,7 +684,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						remove_chars_from_output_variables(p->output_variables,captured_chars);
 						L2 = L2->next;
 					} while (L2 != NULL);
-					free_parsing_info(L_first, p->prv_alloc_recycle, p->prv_alloc);
+					/* With the cache system, we must not free the parsing information list
+					 * free_parsing_info(L_first, p->prv_alloc_recycle, p->prv_alloc);
+					 */
 				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 				free(var_name);
@@ -1123,16 +1141,30 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 #else
 				unichar var_name[len_var_name + 1];
 #endif
-				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
+
+				/*int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
 						&& is_morpho_variable_output(tag->output, var_name));
 
 				explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L,
-						tag->pattern, save_dic_entry, jamo, pos_in_jamo);
+						tag->pattern, save_dic_entry, jamo, pos_in_jamo);*/
+				int save_dic_entry=1;
+				if (!DIC_cached) {
+					DIC_cached=1;
+					explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &DIC_consultation,
+											NULL, save_dic_entry, jamo, pos_in_jamo);
+				}
+				L=DIC_consultation;
 				unichar *content2 = content_buffer;
 				if (L != NULL) {
-					struct parsing_info* L_first = L;
 					/* If there is at least one match, we process the match list */
 					do {
+						if (!is_entry_compatible_with_pattern(L->dic_entry,tag->pattern)) {
+							/* We take all <DIC> entries from the cache, and we compare them
+							 * with the actual <X> pattern of the current tag */
+							p->stack->stack_pointer = stack_top;
+							L = L->next;
+							continue;
+						}
 						get_content(content2, p, pos_in_tokens, pos_in_chars,
 								L->pos_in_tokens, L->pos_in_chars);
 #ifdef TRE_WCHAR
@@ -1196,7 +1228,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						p->stack->stack_pointer = stack_top;
 						L = L->next;
 					} while (L != NULL);
-					free_parsing_info(L_first, p->prv_alloc_recycle, p->prv_alloc);
+					/* No free, because of the cache system
+					 * free_parsing_info(L_first, p->prv_alloc_recycle, p->prv_alloc);
+					 */
 				}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 				free(var_name);
@@ -1207,6 +1241,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		trans = trans->next;
 	}
     p->explore_depth -- ;
+    free_parsing_info(DIC_consultation, p->prv_alloc_recycle, p->prv_alloc);
 }
 
 /**
