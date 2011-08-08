@@ -26,6 +26,7 @@
 #include "String_hash.h"
 #include "List_ustring.h"
 #include "Ustring.h"
+#include "Vector.h"
 
 /**
  * This structure is used to store the list of current pending output variables while
@@ -53,7 +54,7 @@ typedef struct {
 } OutputVariables;
 
 
-OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar);
+OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
 void free_OutputVariables(OutputVariables*);
 Ustring* get_output_variable(OutputVariables*,unichar*);
 

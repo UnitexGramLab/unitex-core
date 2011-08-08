@@ -33,6 +33,7 @@
 #include "DicVariables.h"
 #include "TransductionVariables.h"
 #include "OutputTransductionVariables.h"
+#include "Vector.h"
 
 /* Following values must be !=-1, because -1 is used in
  * OptimizedTfstTagMatching to indicate that the result of a match
@@ -111,7 +112,7 @@ struct locate_tfst_infos {
 
 
 int locate_tfst(char*,char*,char*,char*, const VersatileEncodingConfig*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,
-                VariableErrorPolicy,int,int,int);
+                VariableErrorPolicy,int,int,int,vector_ptr*);
 
 
 #endif

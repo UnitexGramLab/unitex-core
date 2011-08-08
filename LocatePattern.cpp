@@ -184,7 +184,8 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning,
-                   char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace) {
+                   char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,
+                   vector_ptr* injected_vars) {
 
 U_FILE* out;
 U_FILE* info;
@@ -428,8 +429,7 @@ optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
 int nb_input_variable=0;
 p->input_variables=new_Variables(p->fst2->input_variables,&nb_input_variable);
-p->output_variables=new_OutputVariables(p->fst2->output_variables,&p->nb_output_variables);
-
+p->output_variables=new_OutputVariables(p->fst2->output_variables,&p->nb_output_variables,injected_vars);
 
 Abstract_allocator locate_recycle_abstract_allocator=NULL;
 locate_recycle_abstract_allocator=create_abstract_allocator("locate_pattern_recycle",

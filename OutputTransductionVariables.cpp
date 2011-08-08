@@ -32,18 +32,22 @@ static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustrin
  * whose names are in 'list'. The variable values are initialized
  * with empty strings.
  */
-OutputVariables* new_OutputVariables(struct list_ustring* list,int* p_nbvar) {
+OutputVariables* new_OutputVariables(struct list_ustring* list,int* p_nbvar,vector_ptr* injected) {
 OutputVariables* v=(OutputVariables*)malloc(sizeof(OutputVariables));
 if (v==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
 v->variable_index=new_string_hash(DONT_USE_VALUES);
-int l=0;
 while (list!=NULL) {
    get_value_index(list->string,v->variable_index);
-   l++;
    list=list->next;
 }
+if (injected!=NULL) {
+	for (int i=0;i<injected->nbelems;i+=2) {
+		get_value_index((unichar*)(injected->tab[i]),v->variable_index);
+	}
+}
+int l=v->variable_index->size;
 v->variables=(Ustring**)malloc(l*sizeof(Ustring*));
 if (v->variables==NULL) {
    fatal_alloc_error("new_OutputVariables");
@@ -58,6 +62,12 @@ if (v->is_pending==NULL) {
 }
 if (p_nbvar!=NULL) {
     *p_nbvar = l;
+}
+if (injected!=NULL) {
+	for (int i=0;i<injected->nbelems;i+=2) {
+		int index=get_value_index((unichar*)(injected->tab[i]),v->variable_index);
+		u_strcpy(v->variables[index],(unichar*)(injected->tab[i+1]));
+	}
 }
 return v;
 }

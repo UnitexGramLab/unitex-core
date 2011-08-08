@@ -106,7 +106,10 @@ const char* usage_Locate =
          "  -Y/--ignore_variable_errors: acts as if the variable has an empty content (default)\n"
          "  -Z/--backtrack_on_variable_errors: stop exploring the current path of the grammar\n"
          "\n"
-         "  -h/--help: this help\n"
+		 "Variable injection:\n"
+		 "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y\n"
+		 "\n"
+		 "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text, and saves the matching sequence index in a\n"
          "file named \"concord.ind\" stored in the text directory. A result info file\n"
@@ -123,7 +126,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:T";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -155,6 +158,7 @@ const struct option_TS lopts_Locate[]= {
       {"negation_operator",required_argument_TS,NULL,'g'},
       {"dont_use_locate_cache",no_argument_TS,NULL,'e'},
       {"dont_allow_trace",no_argument_TS,NULL,'T'},
+      {"variable",required_argument_TS,NULL,'v'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -193,6 +197,7 @@ int useLocateCache=1;
 int selected_negation_operator=0;
 int allow_trace=1;
 char foo;
+vector_ptr* injected_vars=new_vector_ptr();
 VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,vars))) {
@@ -305,6 +310,19 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
              }
              strcpy(arabic_rules,vars->optarg);
              break;
+   case 'v': {
+	   unichar* key=u_strdup(vars->optarg);
+	   unichar* value=u_strchr(key,'=');
+	   if (value==NULL) {
+		   fatal_error("Invalid variable injection: %s\n",vars->optarg);
+	   }
+	   (*value)='\0';
+	   value++;
+	   value=u_strdup(value);
+	   vector_ptr_add(injected_vars,key);
+	   vector_ptr_add(injected_vars,value);
+	   break;
+   }
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Locate[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -356,10 +374,11 @@ int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,ma
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
                max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator,
-               useLocateCache,allow_trace);
+               useLocateCache,allow_trace,injected_vars);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
+free_vector_ptr(injected_vars,free);
 free_OptVars(vars);
 return (!OK);
 }

@@ -74,7 +74,10 @@ const char* usage_LocateTfst =
          "  -Y/--ignore_variable_errors: acts as if the variable has an empty content (default)\n"
          "  -Z/--backtrack_on_variable_errors: stop exploring the current path of the grammar\n"
          "\n"
-         "  -h/--help: this help\n"
+		 "Variable injection:\n"
+		 "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y\n"
+		 "\n"
+		 "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
          "file named 'concord.ind', just as Locate does.\n";
@@ -86,7 +89,7 @@ u_printf(usage_LocateTfst);
 }
 
 
-const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzhg:k:q:";
+const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzhg:k:q:v:";
 const struct option_TS lopts_LocateTfst[]= {
      {"text",required_argument_TS,NULL,'t'},
      {"alphabet",required_argument_TS,NULL,'a'},
@@ -108,6 +111,7 @@ const struct option_TS lopts_LocateTfst[]= {
      {"output_encoding",required_argument_TS,NULL,'q'},
      {"help",no_argument_TS,NULL,'h'},
      {"negation_operator",required_argument_TS,NULL,'g'},
+     {"variable",required_argument_TS,NULL,'v'},
      {NULL,no_argument_TS,NULL,0}
 };
 
@@ -136,6 +140,7 @@ VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int search_limit=NO_MATCH_LIMIT;
 struct OptVars* vars=new_OptVars();
 char foo;
+vector_ptr* injected=new_vector_ptr();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,&index,vars))) {
    switch(val) {
    case 't': if (vars->optarg[0]=='\0') {
@@ -192,6 +197,19 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
+   case 'v': {
+	   unichar* key=u_strdup(vars->optarg);
+	   unichar* value=u_strchr(key,'=');
+	   if (value==NULL) {
+		   fatal_error("Invalid variable injection: %s\n",vars->optarg);
+	   }
+	   (*value)='\0';
+	   value++;
+	   value=u_strdup(value);
+	   vector_ptr_add(injected,key);
+	   vector_ptr_add(injected,value);
+	   break;
+   }
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -214,8 +232,9 @@ strcat(output,"concord.ind");
 
 int OK=locate_tfst(text,grammar,alphabet,output,
                    &vec,match_policy,output_policy,
-                   ambiguous_output_policy,variable_error_policy,search_limit,is_korean,tilde_negation_operator);
-
+                   ambiguous_output_policy,variable_error_policy,search_limit,is_korean,
+                   tilde_negation_operator,injected);
+free_vector_ptr(injected);
 free_OptVars(vars);
 return (!OK);
 }

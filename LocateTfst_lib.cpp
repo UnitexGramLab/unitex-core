@@ -108,7 +108,8 @@ int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
                 const VersatileEncodingConfig* vec,
                 MatchPolicy match_policy,
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
-		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,int tilde_negation_operator) {
+		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,
+		          int tilde_negation_operator,vector_ptr* injected_vars) {
 Tfst* tfst=open_text_automaton(vec,text);
 if (tfst==NULL) {
 	return 0;
@@ -180,7 +181,7 @@ infos.match_policy=match_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
 infos.variable_error_policy=variable_error_policy;
 infos.input_variables=new_Variables(infos.fst2->input_variables);
-infos.output_variables=new_OutputVariables(infos.fst2->output_variables,NULL);
+infos.output_variables=new_OutputVariables(infos.fst2->output_variables,NULL,injected_vars);
 infos.dic_variables=NULL;
 infos.number_of_outputs=0;
 infos.start_position_last_printed_match_token=-1;
