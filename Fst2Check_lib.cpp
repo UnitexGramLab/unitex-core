@@ -91,16 +91,23 @@ while (l!=NULL) {
 /**
  * Returns a copy of the given condition list.
  */
-ConditionList clone_ConditionList(ConditionList l) {
-ConditionList tmp;
-if (l==NULL) return NULL;
-tmp=(ConditionList)malloc(sizeof(struct condition_list));
-if (tmp==NULL) {
-   fatal_alloc_error("clone_ConditionList");
+static ConditionList clone_ConditionList(ConditionList l) {
+ConditionList retList=NULL;
+ConditionList* toWrite=&retList;
+
+while (l!=NULL) {
+  ConditionList tmp;
+  tmp=(ConditionList)malloc(sizeof(struct condition_list));
+  if (tmp==NULL) {
+    fatal_alloc_error("clone_ConditionList");
+  }
+  tmp->condition=clone(l->condition);
+  tmp->next=NULL;
+  *toWrite=tmp;
+  toWrite=&(tmp->next);
+  l=l->next;
 }
-tmp->condition=clone(l->condition);
-tmp->next=clone_ConditionList(l->next);
-return tmp;
+return retList;
 }
 
 
@@ -275,7 +282,7 @@ return ret_value;
  * tests if all the corresponding graphs match <E>. In that case, it sets
  * '*matches_E' to E_IS_MATCHED.
  */
-struct list_int* resolve_simple_condition(struct list_int* c,Fst2State* states,
+static struct list_int* resolve_simple_condition(struct list_int* c,Fst2State* states,
                                     int* initial_states,int *modification,
                                     int *matches_E) {
 struct list_int* tmp;
@@ -337,7 +344,7 @@ return c;
  * then '*modification' is set to 1. See 'resolve_simple_condition' for
  * the values to be taken by '*matches_E'.
  */
-ConditionList resolve_condition_list(ConditionList l,Fst2State* states,
+static ConditionList resolve_condition_list(ConditionList l,Fst2State* states,
                                int* initial_states,int *modification,int *matches_E,U_FILE*ferr) {
 ConditionList tmp;
 if (l==NULL) return NULL;
