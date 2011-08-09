@@ -344,31 +344,34 @@ return c;
  * then '*modification' is set to 1. See 'resolve_simple_condition' for
  * the values to be taken by '*matches_E'.
  */
-static ConditionList resolve_condition_list(ConditionList l,Fst2State* states,
-                               int* initial_states,int *modification,int *matches_E,U_FILE*ferr) {
-ConditionList tmp;
-if (l==NULL) return NULL;
-if (l->condition==NULL) {
+static void resolve_condition_list(ConditionList *l,Fst2State* states,
+                               int* initial_states,int *modification,int *matches_E,U_FILE*ferr)
+{
+while ((*l)!=NULL) {
+if ((*l)->condition==NULL) {
    error("NULL internal error in resolve_condition_list\n");
    if (ferr != NULL)
      u_fprintf(ferr,"NULL internal error in resolve_condition_list\n");
-   return NULL;
+   return;
 }
-l->condition=resolve_simple_condition(l->condition,states,initial_states,modification,matches_E);
+(*l)->condition=resolve_simple_condition((*l)->condition,states,initial_states,modification,matches_E);
 if (*matches_E==E_IS_MATCHED) {
    /* If condition is verified, then the graph matches <E>, so we return */
-   return l;
+   return ;
 }
-if (l->condition==NULL) {
+if ((*l)->condition==NULL) {
    /* If we have removed the whole condition, we delete it and we
     * clean the rest of the condition list. */
-   tmp=l->next;
-   free(l);
-   return resolve_condition_list(tmp,states,initial_states,modification,matches_E,ferr);
+   ConditionList tmp=(*l);
+   *l=tmp->next;
+   free(tmp);
 }
+else
 /* Otherwise, we clean the rest of the condition list. */
-l->next=resolve_condition_list(l->next,states,initial_states,modification,matches_E,ferr);
-return l;
+{
+	l=&((*l)->next);
+}
+}
 }
 
 
@@ -386,7 +389,7 @@ if (conditions[n]==NULL) {
      u_fprintf(ferr,"NULL internal error in resolve_conditions_for_one_graph for graph %d\n",n);
    return modification;
 }
-conditions[n]=resolve_condition_list(conditions[n],states,initial_states,&modification,&matches_E,ferr);
+resolve_condition_list(&(conditions[n]),states,initial_states,&modification,&matches_E,ferr);
 if (matches_E==E_IS_MATCHED) {
    /* If at least one condition was verified */
    set_bit_mask(&(states[initial_states[n]]->control),UNCONDITIONAL_E_MATCH);
