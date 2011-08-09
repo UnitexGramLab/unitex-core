@@ -600,19 +600,17 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 #else
 				unichar var_name[len_var_name + 1];
 #endif
-				/*
 				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
 						&& !capture_mode(p->output_variables)
 						&& is_morpho_variable_output(
 								p->tags[t->tag_number]->output, var_name));
-				explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L2, NULL,
+				/*explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L2, NULL,
 						save_dic_entry, jamo, pos_in_jamo);*/
 				/* In order to make the cache system work, we always have to save dic entries */
-				int save_dic_entry=1;
 				if (!DIC_cached) {
 					DIC_cached=1;
 					explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &DIC_consultation, NULL,
-											save_dic_entry, jamo, pos_in_jamo);
+											1, jamo, pos_in_jamo);
 				}
 				L2=DIC_consultation;
 				unichar *content1 = content_buffer;
@@ -1142,16 +1140,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				unichar var_name[len_var_name + 1];
 #endif
 
-				/*int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
+				int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
 						&& is_morpho_variable_output(tag->output, var_name));
 
-				explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L,
+				/*explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L,
 						tag->pattern, save_dic_entry, jamo, pos_in_jamo);*/
-				int save_dic_entry=1;
 				if (!DIC_cached) {
 					DIC_cached=1;
 					explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &DIC_consultation,
-											NULL, save_dic_entry, jamo, pos_in_jamo);
+											NULL, 1, jamo, pos_in_jamo);
 				}
 				L=DIC_consultation;
 				unichar *content2 = content_buffer;
