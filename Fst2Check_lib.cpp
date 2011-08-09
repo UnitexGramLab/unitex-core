@@ -31,7 +31,7 @@
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-int look_for_recursion(int,struct list_int*,Fst2*,int*,U_FILE*);
+static int look_for_recursion(int,struct list_int*,Fst2*,int*,U_FILE*);
 
 
 #define NO_LEFT_RECURSION 1
@@ -77,7 +77,7 @@ typedef struct condition_list* ConditionList;
 /**
  * Frees all the memory associated to the given condition list.
  */
-void free_ConditionList(ConditionList l) {
+static void free_ConditionList(ConditionList l) {
 ConditionList tmp;
 while (l!=NULL) {
    free_list_int(l->condition);
@@ -114,7 +114,7 @@ return retList;
 /**
  * Inserts the graph number 'n' in the given condition list.
  */
-void insert_graph_in_conditions(int n,ConditionList* l) {
+static void insert_graph_in_conditions(int n,ConditionList* l) {
 ConditionList tmp;
 if (*l==NULL) {
    /* If the condition list is empty, we create one */
@@ -139,7 +139,7 @@ while (tmp!=NULL) {
 /**
  * Appends the condition list 'd' to the condition list 'c'.
  */
-void merge_condition_lists(ConditionList *c,ConditionList d) {
+static void merge_condition_lists(ConditionList *c,ConditionList d) {
 ConditionList tmp;
 if (*c==NULL) {
    *c=d;
@@ -162,7 +162,7 @@ tmp->next=d;
  * 
  * WARNING: <E> problem detection does not take contexts into account!
  */
-void check_epsilon_tag(Fst2Tag e) {
+static void check_epsilon_tag(Fst2Tag e) {
 if (!u_strcmp(e->input,"<E>")) e->control=1;
 else if (e->input[0]=='$' && e->input[1]!='\0') {
    /* If we have a variable mark */
@@ -175,7 +175,7 @@ else e->control=0;
 /**
  * Prints the graph call sequence that leads to the graph #n.
  */
-void print_reversed_list(const struct list_int* l,int n,unichar**  graph_names,U_FILE* ferr) {
+static void print_reversed_list(const struct list_int* l,int n,unichar**  graph_names,U_FILE* ferr) {
 if (l->n==n) {
    error("ERROR: %S",graph_names[l->n]);
    if (ferr != NULL)
@@ -193,7 +193,7 @@ if (ferr != NULL)
  * Returns 1 if we can match <E> from the current state, with or without
  * conditions; 0 otherwise.
  */
-int graph_matches_E(int initial_state,int current_state,const Fst2State* states,Fst2Tag* tags,
+static int graph_matches_E(int initial_state,int current_state,const Fst2State* states,Fst2Tag* tags,
                       int current_graph,unichar** graph_names,
                       ConditionList conditions_for_states[],
                       ConditionList *graph_conditions) {
@@ -379,7 +379,7 @@ else
  * This function tries to resolve the conditions of the graph #n.
  * It returns 1 if at least one condition was resolved.
  */
-int resolve_conditions_for_one_graph(int n,ConditionList* conditions,
+static int resolve_conditions_for_one_graph(int n,ConditionList* conditions,
                                      Fst2State* states,int* initial_states,U_FILE*ferr) {
 int modification=0;
 int matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
@@ -415,7 +415,7 @@ return modification;
  * It returns a non zero value if some conditions have been resolved, 
  * even just one; 0 otherwise.
  */
-int resolve_conditions(ConditionList* conditions,int n_graphs,
+static int resolve_conditions(ConditionList* conditions,int n_graphs,
                        Fst2State* states,int* initial_states,U_FILE*ferr) {
 int modification=0;
 for (int i=1;i<n_graphs+1;i++) {
@@ -442,7 +442,7 @@ return modification;
  * is not null, graphs_matching_E[i] is set to 1 if the graph #i matches <E>;
  * 0 otherwise.
  */
-void clean_controls(Fst2* fst2,int* graphs_matching_E) {
+static void clean_controls(Fst2* fst2,int* graphs_matching_E) {
 int i;
 if (graphs_matching_E!=NULL) {
    for (i=1;i<fst2->number_of_graphs+1;i++) {
@@ -461,7 +461,7 @@ for (i=0;i<fst2->number_of_states;i++) {
 /**
  * Returns 1 if the given state has already been visited; 0 otherwise.
  */
-int look_for_E_loop_in_state(int state_number,Fst2* fst2,int* graphs_matching_E) {
+static int look_for_E_loop_in_state(int state_number,Fst2* fst2,int* graphs_matching_E) {
 Transition* l;
 Fst2State e=fst2->states[state_number];
 if (is_bit_mask_set(e->control,TMP_LOOP_MARK)) {
@@ -502,7 +502,7 @@ return 0;
  * Returns 1 and prints an error message if an <E> loop is found the graph #n;
  * returns 0 otherwise.
  */
-int look_for_E_loops(int n,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
+static int look_for_E_loops(int n,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
 int first_state=fst2->initial_states[n];
 for (int i=0;i<fst2->number_of_states_per_graphs[n];i++) {
    if (look_for_E_loop_in_state(first_state+i,fst2,graphs_matching_E)) {
@@ -558,7 +558,7 @@ return ret;
  * Returns 1 and prints an error message if a recursion is found in graph #n;
  * returns 0 otherwise.
  */
-int look_for_recursion(int n,struct list_int* l,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
+static int look_for_recursion(int n,struct list_int* l,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
 if (is_in_list(n,l)) {
    /* If we find a graph that has already been visited */
    print_reversed_list(l,n,fst2->graph_names,ferr);
@@ -695,7 +695,7 @@ int OK_for_Locate(const VersatileEncodingConfig* vec,const char* name,char no_em
  * Returns 1 if the exploration of the current state leads to the conclusion that
  * the automaton is acyclic; 0 otherwise.
  */
-int is_acyclic(Fst2* fst2,char* mark,int current_state_index,int shift) {
+static int is_acyclic(Fst2* fst2,char* mark,int current_state_index,int shift) {
 if (mark[current_state_index-shift]==BEING_EXPLORED) {
    /* If we find a state that is currently being explored, then we found
     * a cycle */
@@ -723,7 +723,7 @@ return 1;
 /**
  * Returns 1 if the given sentence automaton is acylic; 0 otherwise.
  */
-int is_acyclic(Fst2* fst2,int graph_number) {
+static int is_acyclic(Fst2* fst2,int graph_number) {
 if (graph_number<1 || graph_number>fst2->number_of_graphs) {
    fatal_error("Invalid graph number in is_acyclic\n");
 }
@@ -746,7 +746,7 @@ return is_acyclic(fst2,mark,fst2->initial_states[graph_number],fst2->initial_sta
 /**
  * Returns 1 if all tags have valid sentence automaton outputs; 0 otherwise.
  */
-int valid_outputs(Fst2* fst2) {
+static int valid_outputs(Fst2* fst2) {
 if (u_strcmp(fst2->tags[0]->input,"<E>") || fst2->tags[0]->output!=NULL) {
    /* Should never happen */
    fatal_error("valid_outputs: the first tag of the .fst2 should be <E>\n");
