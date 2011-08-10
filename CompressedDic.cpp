@@ -32,6 +32,23 @@
 static int read_bin_header(Dictionary*);
 
 /**
+ * return 1 if Bin data is a classic bin which need inf file
+ */
+int isDictionaryNeedInf(const unsigned char* binData, size_t binSize)
+{
+	if (binSize<5) {
+		return 0;
+	}
+	Dictionary d;
+	d.bin=binData;
+	if (!read_bin_header(&d)) {
+		return 0;
+	}
+	return  (d.type==BIN_CLASSIC) ? 1 : 0;
+}
+
+
+/**
  * Loads and returns a compressed dictionary.
  */
 Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,const char* inf,Abstract_allocator prv_alloc) {

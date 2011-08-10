@@ -26,6 +26,8 @@
 #include "AbstractDelaLoad.h"
 #include "Ustring.h"
 
+#define HAS_BIN2_SUPPORT   1
+
 #define BIN_V1_HEADER_SIZE 4
 #define BIN_V2_HEADER_SIZE 9
 
@@ -91,7 +93,7 @@ typedef struct {
 
 
 
-
+int isDictionaryNeedInf(const unsigned char* binData, size_t binSize);
 Dictionary* new_Dictionary(const VersatileEncodingConfig*,const char* bin,const char* inf,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 Dictionary* new_Dictionary(const VersatileEncodingConfig*,const char* bin,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
