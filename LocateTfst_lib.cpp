@@ -104,7 +104,7 @@ return s;
  * This function applies the given grammar to the given text automaton.
  * It returns 1 in case of success; 0 otherwise.
  */
-int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
+int locate_tfst(const char* text,const char* grammar,const char* alphabet,const char* output,
                 const VersatileEncodingConfig* vec,
                 MatchPolicy match_policy,
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
