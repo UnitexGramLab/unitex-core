@@ -28,6 +28,7 @@
 #include "List_ustring.h"
 #include "LoadInf.h"
 #include "AbstractDelaLoad.h"
+#include "Persistence.h"
 
 static int read_bin_header(Dictionary*);
 
@@ -90,6 +91,10 @@ return d;
  * that is deduced from 'bin'.
  */
 Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,Abstract_allocator prv_alloc) {
+void* ptr=get_persistent_structure(bin);
+if (ptr!=NULL) {
+	return (Dictionary*)ptr;
+}
 char inf[FILENAME_MAX];
 remove_extension(bin,inf);
 strcat(inf,".inf");
@@ -101,7 +106,7 @@ return new_Dictionary(vec,bin,inf,prv_alloc);
  * Frees all resources associated to the given dictionary
  */
 void free_Dictionary(Dictionary* d,Abstract_allocator /* prv_alloc*/) {
-if (d==NULL) return;
+if (d==NULL || is_persistent_structure(d)) return;
 if (d->bin!=NULL) free_abstract_BIN(d->bin,&d->bin_free);
 if (d->inf!=NULL) {
 	free_abstract_INF(d->inf,&d->inf_free);
@@ -569,3 +574,17 @@ if (output!=NULL && output->str[base]!='\0') {
 return 1;
 }
 
+
+
+void load_persistent_dictionary(const char* name) {
+VersatileEncodingConfig vec=VEC_DEFAULT;
+Dictionary* d=new_Dictionary(&vec,name);
+set_persistent_structure(name,d);
+}
+
+
+void free_persistent_dictionary(const char* name) {
+Dictionary* d=(Dictionary*)get_persistent_structure(name);
+set_persistent_structure(name,NULL);
+free_Dictionary(d);
+}

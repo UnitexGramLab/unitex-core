@@ -119,5 +119,8 @@ void restore_output(int,Ustring*);
 
 int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustring* *inf_codes,int base);
 
+void load_persistent_dictionary(const char* name);
+void free_persistent_dictionary(const char* name);
+
 #endif
 

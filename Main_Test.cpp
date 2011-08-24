@@ -38,6 +38,7 @@
  */
 int main(int argc,char* argv[]) {
 setBufferMode();
+#if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <txt> start end\n");
 }
@@ -69,6 +70,7 @@ u_printf("\n");
 
 u_fclose(f);
 return 0;
+#endif
 #if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <alph> <grf_in> <grf_out\n");
@@ -92,6 +94,22 @@ free_Grf(grf);
 free_alphabet(alph);
 return 0;
 #endif
+
+VersatileEncodingConfig vec=VEC_DEFAULT;
+
+load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+
+for (int i=0;i<1000;i++) {
+	Dictionary* d=new_Dictionary(&vec,"/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+	if (d==NULL) {
+		fatal_error("Cannot load dic\n");
+	}
+	free_Dictionary(d);
+}
+
+free_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+
+return 0;
 }
 
 
