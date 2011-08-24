@@ -240,5 +240,9 @@ int is_initial_state(Fst2State);
 int is_final_state(Fst2State);
 
 
+void load_persistent_fst2(const char* filename);
+void free_persistent_fst2(const char* filename);
+
+
 #endif
 

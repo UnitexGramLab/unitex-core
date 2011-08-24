@@ -23,7 +23,7 @@
 #include "Error.h"
 #include "LocateConstants.h"
 #include "BitMasks.h"
-
+#include "Persistence.h"
 
 /*
  * These two constants are declared here instead of in the .h because
@@ -92,7 +92,7 @@ return a;
  * its field are neither NULL nor already freed.
  */
 void free_Fst2(Fst2* fst2,Abstract_allocator prv_alloc) {
-if (fst2==NULL) return;
+if (fst2==NULL || is_persistent_structure(fst2)) return;
 int i;
 for (i=0;i<fst2->number_of_states;i++) {
   free_Fst2State(fst2->states[i],prv_alloc);
@@ -647,6 +647,10 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL,prv_alloc);
 #define FILE_POINTER_NULL 2
 
 Fst2* load_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
+void* ptr=get_persistent_structure(filename);
+if (ptr!=NULL) {
+	return new_Fst2_clone((Fst2*)ptr);
+}
 U_FILE* f;
 f=u_fopen(vec,filename,U_READ);
 Fst2* fst2;
@@ -913,7 +917,7 @@ Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc)
 {
 Fst2* fst2ret;
     fst2ret =(Fst2*)malloc_cb(sizeof(Fst2),prv_alloc);
-    if (fst2ret==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+    if (fst2ret==NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 
     if (fst2ret != NULL)
     {
@@ -945,20 +949,20 @@ Fst2* fst2ret;
 
    
         fst2ret->initial_states=(int*)malloc_cb((fst2ret->number_of_graphs+1)*sizeof(int),prv_alloc);
-        if (fst2ret->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+        if (fst2ret->initial_states==NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 
         for (i=0;i<fst2ret->number_of_graphs+1;i++)
             fst2ret->initial_states[i] = fst2org->initial_states[i];
 
         fst2ret->number_of_states_per_graphs=(int*)malloc_cb((fst2ret->number_of_graphs+1)*sizeof(int),prv_alloc);
-        if (fst2ret->number_of_states_per_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+        if (fst2ret->number_of_states_per_graphs==NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 
         for (i=0;i<fst2ret->number_of_graphs+1;i++)
             fst2ret->number_of_states_per_graphs[i] = fst2org->number_of_states_per_graphs[i];
 
         if (fst2org->graph_names!=NULL) {
           fst2ret->graph_names = (unichar**)malloc_cb(sizeof(unichar*) * (fst2ret->number_of_graphs+1),prv_alloc);
-          if (fst2ret->graph_names==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+          if (fst2ret->graph_names==NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 
           if (fst2ret->graph_names != NULL)
           {
@@ -969,9 +973,10 @@ Fst2* fst2ret;
                                                     number_of_graphs+1 */
                     i++ )
                 {
-                  if (fst2org->graph_names[i] != NULL)
+                  if (fst2org->graph_names[i] != NULL) {
                       fst2ret->graph_names[i] = u_strdup(fst2org->graph_names[i],prv_alloc);
-                  else
+                      if (fst2ret->graph_names[i]==NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
+                  } else
                       fst2ret->graph_names[i] = NULL;
                 }
           }
@@ -979,14 +984,27 @@ Fst2* fst2ret;
 
 	    if (fst2org->input_variables!=NULL) {
 		    fst2ret->input_variables = clone(fst2org->input_variables,prv_alloc);
-		    if (fst2ret->input_variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
+		    if (fst2ret->input_variables == NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 	    }
 	    if (fst2org->output_variables!=NULL) {
 		    fst2ret->output_variables = clone(fst2org->output_variables,prv_alloc);
-		    if (fst2ret->output_variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
+		    if (fst2ret->output_variables == NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 	    }
 
     }
 	return fst2ret;
 }
 
+
+void load_persistent_fst2(const char* name) {
+VersatileEncodingConfig vec=VEC_DEFAULT;
+Fst2* f=load_fst2(&vec,name,1,NO_GRAPH_NUMBER_SPECIFIED,NULL);
+set_persistent_structure(name,f);
+}
+
+
+void free_persistent_fst2(const char* name) {
+Fst2* f=(Fst2*)get_persistent_structure(name);
+set_persistent_structure(name,NULL);
+free_Fst2(f);
+}

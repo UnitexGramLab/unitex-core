@@ -448,7 +448,8 @@ for (int priority=1;priority<4;priority++) {
              * is running, because this function tries to read in these files.
              */
             if (0!=launch_locate_as_routine(&vec,
-            		text,argv[i],alph,outputPolicy,matchPolicy,morpho_dic,1,is_korean,arabic_rules,negation_operator)) {
+            		text,argv[i],alph,outputPolicy,matchPolicy,morpho_dic,1,
+            		is_korean,arabic_rules,negation_operator,-1)) {
             	ret=1;
             }
 	         /* We open output files: dictionaries in APPEND mode since we

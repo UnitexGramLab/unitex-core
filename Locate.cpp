@@ -395,7 +395,9 @@ return (!OK);
 int launch_locate_as_routine(const VersatileEncodingConfig* vec,
                              const char* text_snt,const char* fst2,const char* alphabet,
                              OutputPolicy output_policy,MatchPolicy match_policy,const char* morpho_dic,
-                             int protect_dic_chars,int is_korean,const char* arabic_rules,const char*negation_operator) {
+                             int protect_dic_chars,int is_korean,const char* arabic_rules,
+                             const char* negation_operator,
+                             int n_matches_max) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
 char lang[FILENAME_MAX];
@@ -452,7 +454,12 @@ switch (output_policy) {
    default: add_argument(invoker,"-I"); break;
 }
 /* We look for all the occurrences */
-add_argument(invoker,"--all");
+if (n_matches_max==-1) {
+	add_argument(invoker,"--all");
+} else {
+	sprintf(tmp,"-n%d",n_matches_max);
+	add_argument(invoker,tmp);
+}
 /* If needed, we add the -thai option */
 if (thai) {
    add_argument(invoker,"--thai");

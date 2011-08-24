@@ -338,7 +338,17 @@ TEST      = Test
 TEST_OBJS = Main_Test.o Unicode.o DELA.o Error.o StringParsing.o String_hash.o AbstractAllocator.o\
 			Alphabet.o List_ustring.o Af_stdio.o ActivityLogger.o IOBuffer.o \
 			File.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
-			Grf_lib.o GrfBeauty.o Persistence.o $(SYSLIBMAPPED)
+			Grf_lib.o GrfBeauty.o Persistence.o Locate.o ProgramInvoker.o \
+			UnitexGetOpt.o LocatePattern.o Korean.o HashTable.o BitArray.o \
+			Pattern.o Stack_unichar.o Arabic.o UserCancelling.o AbstractFst2Load.o \
+			Fst2.o Transitions.o List_int.o MorphologicalFilters.o \
+			Text_tokens.o LocateTrace.o PatternTree.o List_pointer.o \
+			LocateFst2Tags.o BitMasks.o Tokenization.o CompoundWordTree.o \
+			LemmaTree.o TransductionVariables.o OutputTransductionVariables.o \
+			ParsingInfo.o DicVariables.o OptimizedFst2.o Contexts.o \
+			Text_parsing.o LocateCache.o LocateMatches.o Match.o \
+			TransductionStack.o VariableUtils.o MorphologicalLocate.o \
+			DebugMode.o Symbol.o LanguageDefinition.o Tagset.o $(SYSLIBMAPPED)
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\

@@ -53,6 +53,10 @@ int isDictionaryNeedInf(const unsigned char* binData, size_t binSize)
  * Loads and returns a compressed dictionary.
  */
 Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,const char* inf,Abstract_allocator prv_alloc) {
+void* ptr=get_persistent_structure(bin);
+if (ptr!=NULL) {
+	return (Dictionary*)ptr;
+}
 Dictionary* d=(Dictionary*)malloc_cb(sizeof(Dictionary),prv_alloc);
 if (d==NULL) {
 	fatal_alloc_error("new_Dictionary");
@@ -91,10 +95,6 @@ return d;
  * that is deduced from 'bin'.
  */
 Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,Abstract_allocator prv_alloc) {
-void* ptr=get_persistent_structure(bin);
-if (ptr!=NULL) {
-	return (Dictionary*)ptr;
-}
 char inf[FILENAME_MAX];
 remove_extension(bin,inf);
 strcat(inf,".inf");

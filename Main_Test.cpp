@@ -30,8 +30,9 @@
 #include "Alphabet.h"
 #include "Grf_lib.h"
 #include "GrfBeauty.h"
-
-
+#include "LocateConstants.h"
+#include "Locate.h"
+#include "Fst2.h"
 
 /**
  * This program is designed for test purpose only.
@@ -97,17 +98,29 @@ return 0;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 
+load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
 load_persistent_alphabet("/home/paumier/Unitex3.0beta/French/Alphabet.txt");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2");
 
-for (int i=0;i<100000;i++) {
-	Alphabet* d=load_alphabet(&vec,"/home/paumier/Unitex3.0beta/French/Alphabet.txt");
-	if (d==NULL) {
-		fatal_error("Cannot load dic\n");
-	}
-	free_alphabet(d);
+for (int i=0;i<50;i++) {
+	/*launch_locate_as_routine(&vec,"/home/paumier/unitex/French/Corpus/80jours.snt",
+			"/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2",
+			"/home/paumier/Unitex3.0beta/French/Alphabet.txt",
+			IGNORE_OUTPUTS,
+			LONGEST_MATCHES,
+			"/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin",
+			0,
+			0,
+			NULL,
+			NULL,
+			200
+			);*/
+	load_fst2(&vec,"/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2",1);
 }
 
 free_persistent_alphabet("/home/paumier/Unitex3.0beta/French/Alphabet.txt");
+free_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+free_persistent_fst2("/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2");
 
 return 0;
 }
