@@ -21,6 +21,8 @@
 
 #include "Alphabet.h"
 #include "Error.h"
+#include "Persistence.h"
+
 
 // 0x400 in final release, good for all langage 
 #define FIRST_SIZE_ARRAYCOLLECTION 0x400
@@ -76,7 +78,7 @@ return alphabet;
  * Frees a given 'Alphabet*' structure
  */
 void free_alphabet(Alphabet* alphabet) {
-if (alphabet==NULL) return;
+if (alphabet==NULL || is_persistent_structure(alphabet)) return;
 /*
 for (int i=0;i<alphabet->higher_written;i++) {
   if (alphabet->t[i]!=NULL)
@@ -139,6 +141,10 @@ if (alphabet->korean_equivalent_syllable!=NULL) {
  * characters.
  */
 Alphabet* load_alphabet(const VersatileEncodingConfig* vec,const char* filename,int korean) {
+void* a=get_persistent_structure(filename);
+if (a!=NULL) {
+	return (Alphabet*)a;
+}
 U_FILE* f;
 f=u_fopen(vec,filename,U_READ);
 if (f==NULL) {
@@ -534,4 +540,18 @@ if (a==NULL || b==NULL) {
 int i=0;
 while (is_equal_or_uppercase(b[i],a[i],alphabet) && a[i]!='\0') i++;
 return i;
+}
+
+
+void load_persistent_alphabet(const char* name) {
+VersatileEncodingConfig vec=VEC_DEFAULT;
+Alphabet* a=load_alphabet(&vec,name);
+set_persistent_structure(name,a);
+}
+
+
+void free_persistent_alphabet(const char* name) {
+Alphabet* a=(Alphabet*)get_persistent_structure(name);
+set_persistent_structure(name,NULL);
+free_alphabet(a);
 }

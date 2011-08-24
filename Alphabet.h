@@ -101,4 +101,8 @@ void turn_portuguese_sequence_to_lowercase(unichar*);
 void replace_letter_by_letter_set(const Alphabet*,unichar*,const unichar*);
 int get_longuest_prefix_ignoring_case(const unichar*,const unichar*,const Alphabet*);
 
+void load_persistent_alphabet(const char* name);
+void free_persistent_alphabet(const char* name);
+
+
 #endif

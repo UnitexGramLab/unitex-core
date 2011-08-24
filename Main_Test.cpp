@@ -97,17 +97,17 @@ return 0;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 
-load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+load_persistent_alphabet("/home/paumier/Unitex3.0beta/French/Alphabet.txt");
 
-for (int i=0;i<1000;i++) {
-	Dictionary* d=new_Dictionary(&vec,"/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+for (int i=0;i<100000;i++) {
+	Alphabet* d=load_alphabet(&vec,"/home/paumier/Unitex3.0beta/French/Alphabet.txt");
 	if (d==NULL) {
 		fatal_error("Cannot load dic\n");
 	}
-	free_Dictionary(d);
+	free_alphabet(d);
 }
 
-free_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+free_persistent_alphabet("/home/paumier/Unitex3.0beta/French/Alphabet.txt");
 
 return 0;
 }

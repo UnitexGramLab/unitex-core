@@ -803,7 +803,7 @@ UNXMLIZE       = Unxmlize
 UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o File.o Error.o Unicode.o Xml.o Af_stdio.o \
                  ActivityLogger.o AbstractAllocator.o\
                  UnitexGetOpt.o IOBuffer.o Offsets.o Overlap.o HTMLCharacters.o\
-                 AsciiSearchTree.o Alphabet.o Ustring.o $(SYSLIBMAPPED)
+                 AsciiSearchTree.o Alphabet.o Ustring.o Persistence.o $(SYSLIBMAPPED)
 
 UNITEXTOOL   = UnitexTool
 UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
@@ -901,7 +901,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
 		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST) $(SPELLCHECK)
 
-#PROGS += $(TEST)
+PROGS += $(TEST)
 
 
 OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
