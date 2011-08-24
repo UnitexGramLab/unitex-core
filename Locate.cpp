@@ -198,7 +198,7 @@ int selected_negation_operator=0;
 int allow_trace=1;
 char foo;
 vector_ptr* injected_vars=new_vector_ptr();
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,vars))) {
    switch(val) {

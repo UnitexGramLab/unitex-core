@@ -191,7 +191,7 @@ int append_output=0;
 int display_statistics=0;
 char no_empty_graph_warning=0;
 char output[FILENAME_MAX]="";
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&index,vars))) {

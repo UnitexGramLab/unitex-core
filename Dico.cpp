@@ -233,7 +233,7 @@ char* morpho_dic=NULL;
 int is_korean=0;
 int semitic=0;
 U_FILE* f_raw_output=NULL;
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars))) {
    switch(val) {

@@ -100,7 +100,7 @@ if (argc==1) {
 char alphabet[FILENAME_MAX]="";
 char token_file[FILENAME_MAX]="";
 char dynamicSntDir[FILENAME_MAX]="";
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int range_start,range_stop,use_range;
 int token_step_number=0;

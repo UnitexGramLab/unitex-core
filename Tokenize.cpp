@@ -134,7 +134,7 @@ char token_file[FILENAME_MAX]="";
 char in_offsets[FILENAME_MAX]="";
 char out_offsets[FILENAME_MAX]="";
 
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int mode=NORMAL;
 struct OptVars* vars=new_OptVars();

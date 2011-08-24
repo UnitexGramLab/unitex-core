@@ -77,7 +77,7 @@ if (argc==1) {
 	usage();
 	return 0;
 }
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";

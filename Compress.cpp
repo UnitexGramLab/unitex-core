@@ -154,7 +154,7 @@ int new_style_bin=1;
 int semitic=0;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
-VersatileEncodingConfig vec={DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT};
+VersatileEncodingConfig vec=VEC_DEFAULT;
 bin[0]='\0';
 int val,index=-1;
 struct OptVars* vars=new_OptVars();

@@ -57,6 +57,8 @@ typedef enum {
 
 #define VersatileEncodingConfigDefined 1
 
+#define VEC_DEFAULT {DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT}
+
 typedef struct {
 	/* Describes the encodings that are supported in input files */
 	int mask_encoding_compatibility_input;
