@@ -36,7 +36,9 @@
 #include "UnitexGetOpt.h"
 #include "AbstractCallbackFuncModifier.h"
 
-#define _UNITEX_VER 0210
+#define _UNITEX_VER 0300
+
+#define UNITEX_HAVING_OFFSET_FILE 1
 
 #ifdef __cplusplus
 extern "C" {
