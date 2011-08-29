@@ -186,9 +186,14 @@ filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,prv_alloc_recycle,prv_alloc_vector_int);
-if (list->pos_in_tokens==pos && list->pos_in_chars==pos_in_token && list->state_number==state
+if (list->pos_in_tokens==pos
+	&& list->pos_in_chars==pos_in_token
+	&& list->state_number==state
 	&& list->jamo==jamo /* We can because we only work on pointers on unique elements */
-	&& list->pos_in_jamo==pos_in_jamo) {
+	&& list->pos_in_jamo==pos_in_jamo
+	&& same_input_variables(list->input_variable_backup,v)
+	&& same_output_variables(list->output_variable_backup,output_var)
+	&& same_dic_variables(list->dic_variable_backup,v2)) {
    list->stack_pointer=stack_pointer;
    /* We update the stack value */
    update_parsing_info_stack(list,stack);
@@ -253,7 +258,10 @@ if ((list->pos_in_tokens==pos) /* If the length is the same... */
     && list->left_ctx_shift==left_ctx_shift
     && list->left_ctx_base==left_ctx_base
     && list->jamo==jamo /* See comment in insert_if_absent*/
-    && list->pos_in_jamo==pos_in_jamo) {
+    && list->pos_in_jamo==pos_in_jamo
+    && same_input_variables(list->input_variable_backup,v)
+	&& same_output_variables(list->output_variable_backup,output_var)
+	&& same_dic_variables(list->dic_variable_backup,v2)) {
     /* then we overwrite the current list element */
    list->stack_pointer=stack_pointer;
 

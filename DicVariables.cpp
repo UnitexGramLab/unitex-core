@@ -117,3 +117,18 @@ struct dic_variable* clone_dic_variable_list(const struct dic_variable* list) {
 if (list==NULL) return NULL;
 return new_dic_variable(list->name,list->dic_entry,clone_dic_variable_list(list->next),1);
 }
+
+
+/**
+ * Returns 1 if the two given dic variable lists are identical; 0 otherwise.
+ */
+int same_dic_variables(struct dic_variable* backup,struct dic_variable* v) {
+while (backup!=NULL && v!=NULL) {
+	if (u_strcmp(backup->name,v->name)
+		|| !equal(backup->dic_entry,v->dic_entry)) return 0;
+	backup=backup->next;
+	v=v->next;
+}
+
+return (backup==NULL && v==NULL);
+}

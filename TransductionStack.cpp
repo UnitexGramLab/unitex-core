@@ -346,15 +346,15 @@ for (;;) {
          } else if (!u_strcmp(field,"LEMMA")) {
         	 push_input_string(stack,entry->lemma,p->protect_dic_chars);
          } else if (!u_strcmp(field,"CODE")) {
-        	   push_output_string(stack,entry->semantic_codes[0]);
-            for (int i=1;i<entry->n_semantic_codes;i++) {
-               push_output_char(stack,'+');
-               push_output_string(stack,entry->semantic_codes[i]);
-            }
-            for (int i=0;i<entry->n_inflectional_codes;i++) {
-            	push_output_char(stack,':');
-               push_output_string(stack,entry->inflectional_codes[i]);
-            }
+        	push_output_string(stack,entry->semantic_codes[0]);
+        	for (int i=1;i<entry->n_semantic_codes;i++) {
+        		push_output_char(stack,'+');
+        	   push_output_string(stack,entry->semantic_codes[i]);
+        	}
+        	for (int i=0;i<entry->n_inflectional_codes;i++) {
+        	   push_output_char(stack,':');
+        	   push_output_string(stack,entry->inflectional_codes[i]);
+        	}
          } else if (!u_strcmp(field,"CODE.GRAM")) {
             push_output_string(stack,entry->semantic_codes[0]);
          } else if (!u_strcmp(field,"CODE.SEM")) {

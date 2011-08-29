@@ -1424,7 +1424,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
 				uncompress_entry(inflected, tmp->string, line_buffer);
-				//error("\non decompresse la ligne _%S_\n",line);
+				//error("\non decompresse la ligne _%S_\n",line_buffer->str);
 				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str);
 				if (dela_entry != NULL
 						&& (pattern == NULL

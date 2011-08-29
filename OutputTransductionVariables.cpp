@@ -287,3 +287,20 @@ void unset_output_variable_pending(OutputVariables* var,const unichar* var_name)
 unset_output_variable_pending(var,get_value_index(var_name,var->variable_index,DONT_INSERT));
 }
 
+
+/**
+ * Returns 1 if the given backup correspond to the same values than the given
+ * output variables; 0 otherwise.
+ */
+int same_output_variables(unichar* backup,OutputVariables* v) {
+int l=v->variable_index->size;
+for (int i=0;i<l;i++) {
+	if (backup[i]!=v->is_pending[i]) return 0;
+}
+int pos=l;
+for (int i=0;i<l;i++) {
+	if (u_strcmp(backup+pos,v->variables[i]->str)) return 0;
+	pos=pos+v->variables[i]->len+1;
+}
+return 1;
+}

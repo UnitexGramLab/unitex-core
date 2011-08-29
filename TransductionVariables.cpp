@@ -363,3 +363,18 @@ void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* 
 
     v->variables = (struct transduction_variable*)rest;
 }
+
+
+/**
+ * Returns 1 if the given backup and the given variables correspond to the same
+ * values.
+ */
+int same_input_variables(int* input_variable_backup,Variables* v) {
+int* tmp=(int*)v->variables;
+for (int i=0;i<v->variable_index->size;i++) {
+	if (tmp[i]!=input_variable_backup[i]) return 0;
+}
+return 1;
+}
+
+

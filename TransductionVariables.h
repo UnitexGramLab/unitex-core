@@ -114,6 +114,7 @@ size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb);
 void install_variable_backup(Variables*,const int*);
 void update_variable_backup(int*,const Variables*);
 
+int same_input_variables(int* input_variable_backup,Variables* v);
 
 /* to limit number of malloc, we define a pool of memory
    we use this thing : free will be done in reverse order than alloc
