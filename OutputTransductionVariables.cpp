@@ -293,6 +293,9 @@ unset_output_variable_pending(var,get_value_index(var_name,var->variable_index,D
  * output variables; 0 otherwise.
  */
 int same_output_variables(unichar* backup,OutputVariables* v) {
+if (v==NULL) {
+	return backup==NULL;
+}
 int l=v->variable_index->size;
 for (int i=0;i<l;i++) {
 	if (backup[i]!=v->is_pending[i]) return 0;
