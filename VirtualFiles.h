@@ -22,6 +22,11 @@
 #ifndef VirtualFiles_H
 #define VirtualFiles_H
 
-
+/* List current virtual files */
+void init_virtual_files();
+void VFS_ls();
+int VFS_dump(const char* name);
+void VFS_remove(const char* name);
+void VFS_reset();
 
 #endif

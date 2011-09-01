@@ -22,10 +22,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+/* We need fopen */
+FILE* (*real_fopen)(const char *,const char *)=fopen;
+
+#include "Unicode.h"
 #include "VirtualFiles.h"
 #include "Error.h"
 #include "AbstractFilePlugCallback.h"
 #include "UnusedParameter.h"
+#include "File.h"
+
 
 #define PFX "$:"
 
@@ -59,7 +65,6 @@ typedef struct {
 
 
 static t_fileio_func_array my_VFS;
-static t_fileio_func_array_ex my_VFS_ex;
 
 
 /**
@@ -146,7 +151,7 @@ vfs->list=remove_inode(vfs->list,inode);
  * is no memory enough to load the file.
  */
 static int load_file_content(VFS_INODE* inode) {
-FILE* f=fopen(inode->name+strlen(inode->vfs->pfx),"rb");
+FILE* f=real_fopen(inode->name+strlen(inode->vfs->pfx),"rb");
 if (f==NULL) {
 	return 0;
 }
@@ -361,7 +366,7 @@ return 0;
 /**
  * Initialization of the virtual file system
  */
-static int init() {
+void init_virtual_files() {
 my_VFS.fnc_is_filename_object=my_fnc_is_filename_object;
 my_VFS.fnc_Init_FileSpace=NULL;
 my_VFS.fnc_Uninit_FileSpace=NULL;
@@ -379,8 +384,51 @@ my_VFS.fnc_memFileRename=my_fnc_memFileRename;
 if (!AddAbstractFileSpace(&my_VFS,&VFS_id)) {
 	fatal_error("Cannot create virtual file system\n");
 }
-return 0;
 }
 
 
-static int init_=init();
+/**
+ * Prints on stdout the current list of virtual files.
+ */
+void VFS_ls() {
+VFS_INODE* inode=VFS_id.list;
+while (inode!=NULL) {
+	u_printf("%s (%ld)\n",inode->name,inode->size);
+	inode=inode->next;
+}
+}
+
+
+/**
+ * Dumps the given file on the disk.
+ * Returns 1 in case of success; 0 otherwise.
+ */
+int VFS_dump(const char* name) {
+VFS_INODE* inode=get_inode(&VFS_id,name);
+if (inode==NULL) return 0;
+create_path_to_file(name+strlen(inode->vfs->pfx));
+FILE* f=real_fopen(name+strlen(inode->vfs->pfx),"wb");
+if (f==NULL) {
+	return 0;
+}
+if (inode->size!=fwrite(inode->ptr,1,inode->size,f)) {
+	fclose(f);
+	return 0;
+}
+fclose(f);
+return 1;
+}
+
+
+void VFS_remove(const char* name) {
+VFS_INODE* inode=get_inode(&VFS_id,name);
+if (inode==NULL) return;
+my_fnc_memFileRemove(inode->name,&VFS_id);
+}
+
+
+void VFS_reset() {
+while (VFS_id.list!=NULL) {
+	my_fnc_memFileRemove(VFS_id.list->name,&VFS_id);
+}
+}

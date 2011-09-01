@@ -308,3 +308,37 @@ return ((path[0]>='a' && path[0]<='z') || (path[0]>='A' && path[0]<='Z'))
        && path[1]==':' && path[2]=='\\';
 #endif
 }
+
+/**
+ * Returns 1 if the given path is a root; 0 otherwise.
+ */
+int is_root(const char* path) {
+#ifdef _NOT_UNDER_WINDOWS
+return !strcmp(path,PATH_SEPARATOR_STRING);
+#else
+return ((path[0]>='a' && path[0]<='z') || (path[0]>='A' && path[0]<='Z'))
+       && path[1]==':' && path[2]=='\\' && path[3]=='\0';
+#endif
+}
+
+
+static void create_path(const char* path) {
+char command[10+FILENAME_MAX];
+#ifdef _NOT_UNDER_WINDOWS
+sprintf(command,"mkdir -p %s",path);
+system(command);
+#else
+sprintf(command,"mkdir %s",path);
+system(command);
+#endif
+}
+
+/**
+ * Tries to create all directories that lead to 'name' with
+ * system("mkdir ...");
+ */
+void create_path_to_file(const char* name) {
+char path[FILENAME_MAX];
+get_path(name,path);
+create_path(path);
+}

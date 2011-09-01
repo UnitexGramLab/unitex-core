@@ -40,6 +40,7 @@
 #include "SortTxt.h"
 #include "Locate.h"
 #include "Concord.h"
+#include "VirtualFiles.h"
 #include <time.h>
 
 /**
@@ -173,9 +174,10 @@ load_persistent_fst2("/home/paumier/unitex/French/Dela/fogg-r.fst2");
 load_persistent_fst2("/home/paumier/Unitex3.0beta/French/Dela/Suffixes+.fst2");
 load_persistent_fst2("/home/paumier/unitex/French/Graphs/essai_poids.fst2");
 
+init_virtual_files();
 
 #define PFX "$:"
-#define N 10
+#define N 1
 
 for (int i=0;i<N;i++) {
 	exec_unitex_command(main_Normalize,"Normalize",PFX"/home/paumier/tmp/toto.txt","-r/home/paumier/unitex/French/Norm.txt","-qutf8-no-bom",NULL);
@@ -189,7 +191,6 @@ for (int i=0;i<N;i++) {
 	exec_unitex_command(main_SortTxt,"SortTxt",PFX"/home/paumier/tmp/toto_snt/tags_err","-l"PFX"/home/paumier/tmp/toto_snt/tags_err.n","-o/home/paumier/unitex/French/Alphabet_sort.txt","-qutf8-no-bom",NULL);
 	exec_unitex_command(main_Locate,"Locate","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/essai_poids.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-L","-M","--all","-m/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin","-m/home/paumier/unitex/French/Dela/communesFR+.bin","-b","-Y","-qutf8-no-bom",NULL);
 	exec_unitex_command(main_Concord,"Concord",PFX"/home/paumier/tmp/toto_snt/concord.ind","-fCourier 10 Pitch","-s12","-l40","-r55","--html","-a/home/paumier/unitex/French/Alphabet_sort.txt","--CL","-qutf8-no-bom",NULL);
-
 }
 return 0;
 }
