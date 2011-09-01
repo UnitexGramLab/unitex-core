@@ -31,12 +31,16 @@
 #include "Grf_lib.h"
 #include "GrfBeauty.h"
 #include "LocateConstants.h"
-#include "Locate.h"
 #include "Fst2.h"
 #include "ProgramInvoker.h"
 #include "Normalize.h"
 #include "Fst2Txt.h"
 #include "Tokenize.h"
+#include "Dico.h"
+#include "SortTxt.h"
+#include "Locate.h"
+#include "Concord.h"
+#include <time.h>
 
 /**
  * This program is designed for test purpose only.
@@ -79,15 +83,116 @@ return 0;
 
 /*VersatileEncodingConfig vec=VEC_DEFAULT;*/
 
-#define PFX ""
+/* benchmark A: 80 jours, 10 itérations */
 
-exec_unitex_command(main_Normalize,"Normalize",PFX"/home/paumier/tmp/toto.txt","-r/home/paumier/unitex/French/Norm.txt","-qutf8-no-bom",NULL);
-exec_unitex_command(main_Fst2Txt,"Fst2Txt","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/Preprocessing/Sentence/Sentence.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-M","-qutf8-no-bom",NULL);
-exec_unitex_command(main_Fst2Txt,"Fst2Txt","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/Preprocessing/Replace/Replace.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-R","-qutf8-no-bom",NULL);
-exec_unitex_command(main_Tokenize,"Tokenize",PFX"/home/paumier/tmp/toto.snt","-a/home/paumier/unitex/French/Alphabet.txt","-qutf8-no-bom",NULL);
+/*
+ * benchmark A1: aucune optimisation
+ *
+real	0m34.424s
+user	0m33.070s
+sys		0m1.264s
+*/
+
+/*
+ * benchmark A2: avec persistance des fichiers suivants:
+
+load_persistent_alphabet("/home/paumier/unitex/French/Alphabet.txt");
+load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+load_persistent_dictionary("/home/paumier/unitex/French/Dela/communesFR+.bin");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/Preprocessing/Sentence/Sentence.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/Preprocessing/Replace/Replace.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Dela/la_N-r+.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Dela/fogg-r-.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Dela/fogg-r.fst2");
+load_persistent_fst2("/home/paumier/Unitex3.0beta/French/Dela/Suffixes+.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/essai_poids.fst2");
+
+real	0m31.826s
+user	0m30.938s
+sys		0m0.804s
+*/
+
+/*
+ * benchmark A3: avec virtualisation
+
+real	0m29.476s
+user	0m29.446s
+sys		0m0.024s
+*/
+
+
+/* benchmark B: 4k pris au début de 80 jours, 10 itérations
+
+
+B1:
+real	0m6.341s
+user	0m5.852s
+sys			0m0.428s
+
+B2:
+real	0m4.557s
+user	0m4.084s
+sys		0m0.092s
+
+B3:
+real	0m3.914s
+user	0m3.896s
+sys		0m0.016s
+
+ */
+
+
+/* benchmark C: 4k pris au début de 80 jours, 100 itérations
+
+
+C1:
+real	1m3.768s
+user	0m59.080s
+sys		0m3.996s
+
+C2:
+real	0m41.341s
+user	0m39.054s
+sys		0m0.700s
+
+C3:
+real	0m38.694s
+user	0m38.546s
+sys		0m0.136s
+
+ */
+
+load_persistent_alphabet("/home/paumier/unitex/French/Alphabet.txt");
+load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
+load_persistent_dictionary("/home/paumier/unitex/French/Dela/communesFR+.bin");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/Preprocessing/Sentence/Sentence.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/Preprocessing/Replace/Replace.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Dela/la_N-r+.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Dela/fogg-r-.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Dela/fogg-r.fst2");
+load_persistent_fst2("/home/paumier/Unitex3.0beta/French/Dela/Suffixes+.fst2");
+load_persistent_fst2("/home/paumier/unitex/French/Graphs/essai_poids.fst2");
+
+
+#define PFX "$:"
+#define N 10
+
+for (int i=0;i<N;i++) {
+	exec_unitex_command(main_Normalize,"Normalize",PFX"/home/paumier/tmp/toto.txt","-r/home/paumier/unitex/French/Norm.txt","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_Fst2Txt,"Fst2Txt","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/Preprocessing/Sentence/Sentence.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-M","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_Fst2Txt,"Fst2Txt","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/Preprocessing/Replace/Replace.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-R","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_Tokenize,"Tokenize",PFX"/home/paumier/tmp/toto.snt","-a/home/paumier/unitex/French/Alphabet.txt","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_Dico,"Dico","-t"PFX"/home/paumier/tmp/toto.snt","-a/home/paumier/unitex/French/Alphabet.txt","-m/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin","-m/home/paumier/unitex/French/Dela/communesFR+.bin","/home/paumier/unitex/French/Dela/la_N-r+.fst2","/home/paumier/unitex/French/Dela/fogg-r-.fst2","/home/paumier/unitex/French/Dela/fogg-r.fst2","/home/paumier/Unitex3.0beta/French/Dela/Suffixes+.fst2","/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_SortTxt,"SortTxt",PFX"/home/paumier/tmp/toto_snt/dlf","-l"PFX"/home/paumier/tmp/toto_snt/dlf.n","-o/home/paumier/unitex/French/Alphabet_sort.txt","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_SortTxt,"SortTxt",PFX"/home/paumier/tmp/toto_snt/dlc","-l"PFX"/home/paumier/tmp/toto_snt/dlc.n","-o/home/paumier/unitex/French/Alphabet_sort.txt","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_SortTxt,"SortTxt",PFX"/home/paumier/tmp/toto_snt/err","-l"PFX"/home/paumier/tmp/toto_snt/err.n","-o/home/paumier/unitex/French/Alphabet_sort.txt","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_SortTxt,"SortTxt",PFX"/home/paumier/tmp/toto_snt/tags_err","-l"PFX"/home/paumier/tmp/toto_snt/tags_err.n","-o/home/paumier/unitex/French/Alphabet_sort.txt","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_Locate,"Locate","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/essai_poids.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-L","-M","--all","-m/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin","-m/home/paumier/unitex/French/Dela/communesFR+.bin","-b","-Y","-qutf8-no-bom",NULL);
+	exec_unitex_command(main_Concord,"Concord",PFX"/home/paumier/tmp/toto_snt/concord.ind","-fCourier 10 Pitch","-s12","-l40","-r55","--html","-a/home/paumier/unitex/French/Alphabet_sort.txt","--CL","-qutf8-no-bom",NULL);
+
+}
 return 0;
 }
-
 
 
 

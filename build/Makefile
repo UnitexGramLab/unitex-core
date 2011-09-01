@@ -334,25 +334,6 @@ endif ## MINGW (ifeq)
 ##################################
 ##################################
 
-TEST      = Test
-TEST_OBJS = Main_Test.o Unicode.o DELA.o Error.o StringParsing.o String_hash.o AbstractAllocator.o\
-			Alphabet.o List_ustring.o Af_stdio.o ActivityLogger.o IOBuffer.o \
-			File.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
-			Grf_lib.o GrfBeauty.o Persistence.o Locate.o ProgramInvoker.o \
-			UnitexGetOpt.o LocatePattern.o Korean.o HashTable.o BitArray.o \
-			Pattern.o Stack_unichar.o Arabic.o UserCancelling.o AbstractFst2Load.o \
-			Fst2.o Transitions.o List_int.o MorphologicalFilters.o \
-			Text_tokens.o LocateTrace.o PatternTree.o List_pointer.o \
-			LocateFst2Tags.o BitMasks.o Tokenization.o CompoundWordTree.o \
-			LemmaTree.o TransductionVariables.o OutputTransductionVariables.o \
-			ParsingInfo.o DicVariables.o OptimizedFst2.o Contexts.o \
-			Text_parsing.o LocateCache.o LocateMatches.o Match.o \
-			TransductionStack.o VariableUtils.o MorphologicalLocate.o \
-			DebugMode.o Symbol.o LanguageDefinition.o Tagset.o \
-			VirtualFiles.o Normalize.o Offsets.o Overlap.o NormalizeAsRoutine.o \
-			Fst2Txt.o Fst2TxtAsRoutine.o Fst2Txt_TokenTree.o Buffer.o \
-			Tokenize.o $(SYSLIBMAPPED)
-
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
 					 Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o\
@@ -849,10 +830,9 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Keyboard.o Persistence.o $(SYSLIBMAPPED)
 
 
-UNITEXTOOL_LOGGER   = UnitexToolLogger
-UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
+UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
                   FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o $(SYSLIBLOGGER) \
-                  Main_UnitexToolLogger.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
+                  UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
@@ -881,7 +861,14 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
                   SpellChecking.o Keyboard.o Persistence.o $(SYSLIBMAPPED)
 
+UNITEXTOOL_LOGGER   = UnitexToolLogger
+UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
+
 UNITEX_JNI_OBJS = fr_univ_mlv_unitex_UnitexJNIExperiment.o
+
+TEST      = Test
+TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
+
 
 ################################
 ################################

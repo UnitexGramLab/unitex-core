@@ -25,6 +25,7 @@
 #include "VirtualFiles.h"
 #include "Error.h"
 #include "AbstractFilePlugCallback.h"
+#include "UnusedParameter.h"
 
 #define PFX "$:"
 
@@ -35,8 +36,8 @@ typedef struct VFS_INODE_ {
 	struct VFS* vfs;
 	char* name;
 	void* ptr;
-	long size;
-	long capacity;
+	unsigned long size;
+	unsigned long capacity;
 	int open_in_write_mode;
 	/* How many open pointers have we on this inode ?
 	 * If we don't know, we can't make remove operation safely */
@@ -53,7 +54,7 @@ typedef struct VFS_INODE_ {
 typedef struct {
 	VFS_INODE* inode;
 	TYPEOPEN_MF open_type;
-	long pos;
+	unsigned long pos;
 } VFS_FILE;
 
 
@@ -66,10 +67,11 @@ static t_fileio_func_array_ex my_VFS_ex;
  */
 struct VFS {
 	const char* pfx;
+	int default_block_size;
 	VFS_INODE* list;
 };
 
-static struct VFS VFS_id={PFX,NULL};
+static struct VFS VFS_id={PFX,1024,NULL};
 
 
 /**
@@ -95,6 +97,7 @@ return NULL;
 
 
 static VFS_INODE* create_inode(VFS* vfs,const char* name,TYPEOPEN_MF TypeOpen) {
+DISCARD_UNUSED_PARAMETER(TypeOpen)
 VFS_INODE* inode=(VFS_INODE*)malloc(sizeof(VFS_INODE));
 if (inode==NULL) {
 	fatal_alloc_error("create_inode");
@@ -104,9 +107,12 @@ inode->name=strdup(name);
 if (inode->name==NULL) {
 	fatal_alloc_error("create_inode");
 }
-inode->ptr=NULL;
 inode->size=0;
-inode->capacity=0;
+inode->capacity=inode->vfs->default_block_size;
+inode->ptr=malloc(inode->capacity);
+if (inode->ptr==NULL) {
+	fatal_alloc_error("create_inode");
+}
 inode->open_in_write_mode=0;
 inode->n_open=0;
 inode->to_remove=0;
@@ -152,7 +158,7 @@ inode->ptr=malloc(inode->size);
 if (inode->ptr==NULL) {
 	fatal_alloc_error("load_file_content");
 }
-if (inode->size!=(long)fread(inode->ptr,1,inode->size,f)) {
+if (inode->size!=(unsigned long)fread(inode->ptr,1,inode->size,f)) {
 	fatal_error("Error loading content of %s\n",inode->name);
 }
 fclose(f);
@@ -165,9 +171,16 @@ return 1;
  */
 ABSTRACTFILE_PTR my_fnc_memOpenLowLevel(const char* name,TYPEOPEN_MF TypeOpen,void* privateSpacePtr) {
 VFS* vfs=(VFS*)privateSpacePtr;
+/*switch(TypeOpen) {
+case OPEN_READ_MF: error("open READ: %s\n",name); break;
+case OPEN_READWRITE_MF: error("open READWRITE: %s\n",name); break;
+case OPEN_CREATE_MF: error("open CREATE: %s\n",name); break;
+}*/
 VFS_INODE* inode=get_inode(vfs,name);
+int inode_created=0;
 if (inode==NULL) {
 	inode=create_inode(vfs,name,TypeOpen);
+	inode_created=1;
 }
 /* If an inode exists, we must test if there is a concurrent
  * write access on the file */
@@ -178,9 +191,11 @@ if (TypeOpen!=OPEN_READ_MF) {
 		inode->open_in_write_mode=1;
 	}
 }
-if (inode->ptr==NULL && TypeOpen!=OPEN_CREATE_MF) {
+if (inode_created && TypeOpen!=OPEN_CREATE_MF) {
 	/* If we have to load the file content from disk, we do it */
-	if (!load_file_content(inode)) return NULL;
+	if (!load_file_content(inode)) {
+		return NULL;
+	}
 }
 if (TypeOpen==OPEN_CREATE_MF) {
 	/* A created file must be truncated */
@@ -202,16 +217,17 @@ return f;
  * read
  */
 size_t my_fnc_memLowLevelRead(ABSTRACTFILE_PTR llFile, void *Buf, size_t size,void* privateSpacePtr) {
+DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 if (f->open_type==OPEN_CREATE_MF) {
 	/* Cannot read in write-only mode */
 	return 0;
 }
-int to_read=f->inode->size-f->pos;
+unsigned int to_read=f->inode->size-f->pos;
 if (size<to_read) {
 	to_read=size;
 }
-memcpy(Buf,f->inode->ptr+f->pos,to_read);
+memcpy(Buf,((char*)f->inode->ptr)+f->pos,to_read);
 f->pos+=to_read;
 return to_read;
 }
@@ -221,6 +237,7 @@ return to_read;
  * write
  */
 size_t my_fnc_memLowLevelWrite(ABSTRACTFILE_PTR llFile, void const *Buf, size_t size,void* privateSpacePtr) {
+DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 if (f->open_type==OPEN_READ_MF) {
 	/* Cannot write in read-only mode */
@@ -228,7 +245,7 @@ if (f->open_type==OPEN_READ_MF) {
 }
 if (f->pos+size>f->inode->capacity) {
 	/* We need to enlarge our buffer */
-	int n=f->inode->capacity;
+	unsigned int n=f->inode->capacity;
 	if (n==0) n=1;
 	while (f->pos+size>n) n=n*2;
 	f->inode->ptr=realloc(f->inode->ptr,n);
@@ -237,7 +254,7 @@ if (f->pos+size>f->inode->capacity) {
 	}
 	f->inode->capacity=n;
 }
-memcpy(f->inode->ptr+f->pos,Buf,size);
+memcpy((char*)(f->inode->ptr)+f->pos,Buf,size);
 f->pos+=size;
 if (f->pos>f->inode->size) {
 	f->inode->size=f->pos;
@@ -250,6 +267,7 @@ return size;
  * seek
  */
 int my_fnc_memLowLevelSeek(ABSTRACTFILE_PTR llFile, afs_size_type Pos, int TypeSeek,void* privateSpacePtr) {
+DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 int new_pos;
 switch (TypeSeek) {
@@ -258,7 +276,7 @@ case SEEK_CUR: new_pos=f->pos+Pos; break;
 case SEEK_END: new_pos=f->inode->size+Pos; break;
 }
 if (new_pos<0) return -1;
-if (new_pos>f->inode->size) {
+if ((unsigned int)new_pos>f->inode->size) {
 	fatal_error("Nasty fseek beyond the end of virtual file %s is not permitted\n",f->inode->name);
 	return -1;
 }
@@ -271,6 +289,7 @@ return 0;
  * close
  */
 int my_fnc_memLowLevelClose(ABSTRACTFILE_PTR llFile,void* privateSpacePtr) {
+DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 VFS_INODE* inode=f->inode;
 (f->inode->n_open)--;
@@ -293,6 +312,7 @@ return 0;
  * getSize
  */
 void my_fnc_memLowLevelGetSize(ABSTRACTFILE_PTR llFile,afs_size_type *pPos,void* privateSpacePtr) {
+DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 *pPos=f->inode->size;
 }
@@ -302,6 +322,7 @@ VFS_FILE* f=(VFS_FILE*)llFile;
  * ftell
  */
 void my_fnc_memLowLevelTell(ABSTRACTFILE_PTR llFile,afs_size_type *pPos,void* privateSpacePtr) {
+DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 *pPos=f->pos;
 }

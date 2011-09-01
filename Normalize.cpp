@@ -184,7 +184,7 @@ u_fclose(f_output_offsets);
 free_vector_offset(v_input_offsets);
 free_vector_offset(v_output_offsets);
 free_OptVars(vars);
-u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
+u_printf((result==0) ? "Done.\n" : "Unsuccessfull.\n");
 return result;
 }
 
