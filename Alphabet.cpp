@@ -543,10 +543,12 @@ return i;
 }
 
 
-void load_persistent_alphabet(const char* name) {
+int load_persistent_alphabet(const char* name) {
 VersatileEncodingConfig vec=VEC_DEFAULT;
 Alphabet* a=load_alphabet(&vec,name);
+if (a==NULL) return 0;
 set_persistent_structure(name,a);
+return 1;
 }
 
 

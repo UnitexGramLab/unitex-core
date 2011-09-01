@@ -576,10 +576,12 @@ return 1;
 
 
 
-void load_persistent_dictionary(const char* name) {
+int load_persistent_dictionary(const char* name) {
 VersatileEncodingConfig vec=VEC_DEFAULT;
 Dictionary* d=new_Dictionary(&vec,name);
+if (d==NULL) return 0;
 set_persistent_structure(name,d);
+return 1;
 }
 
 
