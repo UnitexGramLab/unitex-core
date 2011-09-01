@@ -19,10 +19,10 @@
  *
  */
 
+#include <string.h>
 #include "ProgramInvoker.h"
 #include "Error.h"
 #include "Ustring.h"
-#include <string.h>
 
 /**
  * Allocates, initializes and returns a new program invoker.
@@ -172,3 +172,23 @@ for (int i=1;i<invoker->args->nbelems;i++) {
 }
 strcat(line,protection);
 }
+
+
+/**
+ * The full version, receiving all arguments with NULL to end the list.
+ */
+int exec_unitex_command(MAIN_FUNCTION f,const char* name,...) {
+ProgramInvoker* invoker=new_ProgramInvoker(f,name);
+va_list list;
+va_start(list,name);
+char* arg;
+while ((arg=va_arg(list,char*))!=NULL) {
+	add_argument(invoker,arg);
+}
+va_end(list);
+int ret=invoke(invoker);
+free_ProgramInvoker(invoker);
+return ret;
+}
+
+

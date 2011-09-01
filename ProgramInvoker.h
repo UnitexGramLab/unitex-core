@@ -46,6 +46,6 @@ void remove_last_argument(ProgramInvoker* invoker);
 int invoke(ProgramInvoker* invoker);
 int invoke_as_new_process(ProgramInvoker* invoker);
 void build_command_line(ProgramInvoker* invoker,char* line);
-
+int exec_unitex_command(MAIN_FUNCTION f,const char* name,...);
 
 #endif

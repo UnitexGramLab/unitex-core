@@ -348,7 +348,10 @@ TEST_OBJS = Main_Test.o Unicode.o DELA.o Error.o StringParsing.o String_hash.o A
 			ParsingInfo.o DicVariables.o OptimizedFst2.o Contexts.o \
 			Text_parsing.o LocateCache.o LocateMatches.o Match.o \
 			TransductionStack.o VariableUtils.o MorphologicalLocate.o \
-			DebugMode.o Symbol.o LanguageDefinition.o Tagset.o $(SYSLIBMAPPED)
+			DebugMode.o Symbol.o LanguageDefinition.o Tagset.o \
+			VirtualFiles.o Normalize.o Offsets.o Overlap.o NormalizeAsRoutine.o \
+			Fst2Txt.o Fst2TxtAsRoutine.o Fst2Txt_TokenTree.o Buffer.o \
+			Tokenize.o $(SYSLIBMAPPED)
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\

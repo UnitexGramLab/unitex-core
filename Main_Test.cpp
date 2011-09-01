@@ -33,6 +33,10 @@
 #include "LocateConstants.h"
 #include "Locate.h"
 #include "Fst2.h"
+#include "ProgramInvoker.h"
+#include "Normalize.h"
+#include "Fst2Txt.h"
+#include "Tokenize.h"
 
 /**
  * This program is designed for test purpose only.
@@ -72,56 +76,15 @@ u_printf("\n");
 u_fclose(f);
 return 0;
 #endif
-#if 0
-if (argc!=4) {
-	fatal_error("Usage: cmd <alph> <grf_in> <grf_out\n");
-}
-Alphabet* alph=load_alphabet(argv[1]);
-if (alph==NULL) {
-	fatal_error("Cannot load alphabet file %s\n",argv[1]);
-}
-Grf* grf=load_Grf(argv[2]);
-if (grf==NULL) {
-	fatal_error("Cannot load graph %s\n",argv[2]);
-}
-U_FILE* f=u_fopen(UTF16_LE,argv[3],U_WRITE);
-if (f==NULL) {
-	fatal_error("Cannot write %s\n",argv[3]);
-}
-beautify(grf,alph);
-save_Grf(f,grf);
-u_fclose(f);
-free_Grf(grf);
-free_alphabet(alph);
-return 0;
-#endif
 
-VersatileEncodingConfig vec=VEC_DEFAULT;
+/*VersatileEncodingConfig vec=VEC_DEFAULT;*/
 
-load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
-load_persistent_alphabet("/home/paumier/Unitex3.0beta/French/Alphabet.txt");
-load_persistent_fst2("/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2");
+#define PFX ""
 
-for (int i=0;i<50;i++) {
-	/*launch_locate_as_routine(&vec,"/home/paumier/unitex/French/Corpus/80jours.snt",
-			"/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2",
-			"/home/paumier/Unitex3.0beta/French/Alphabet.txt",
-			IGNORE_OUTPUTS,
-			LONGEST_MATCHES,
-			"/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin",
-			0,
-			0,
-			NULL,
-			NULL,
-			200
-			);*/
-	load_fst2(&vec,"/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2",1);
-}
-
-free_persistent_alphabet("/home/paumier/Unitex3.0beta/French/Alphabet.txt");
-free_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
-free_persistent_fst2("/home/paumier/unitex/French/Graphs/GNSimpleDet0.fst2");
-
+exec_unitex_command(main_Normalize,"Normalize",PFX"/home/paumier/tmp/toto.txt","-r/home/paumier/unitex/French/Norm.txt","-qutf8-no-bom",NULL);
+exec_unitex_command(main_Fst2Txt,"Fst2Txt","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/Preprocessing/Sentence/Sentence.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-M","-qutf8-no-bom",NULL);
+exec_unitex_command(main_Fst2Txt,"Fst2Txt","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/Preprocessing/Replace/Replace.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-R","-qutf8-no-bom",NULL);
+exec_unitex_command(main_Tokenize,"Tokenize",PFX"/home/paumier/tmp/toto.snt","-a/home/paumier/unitex/French/Alphabet.txt","-qutf8-no-bom",NULL);
 return 0;
 }
 
