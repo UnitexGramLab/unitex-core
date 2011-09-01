@@ -22,11 +22,31 @@
 #ifndef VirtualFiles_H
 #define VirtualFiles_H
 
-/* List current virtual files */
+/**
+ * The goal of this library is to offer a virtual file system.
+ * To make a file virtual, you just have to prefix its name with $:
+ * Then, if the file is not already present in memory, on the first
+ * open in read mode, its content will be loaded. Then, the disk
+ * will not be touched again, until VFS_dump is called to save the file
+ * or VFS_reload is called to load again the file from the disk.
+ */
+
+/* Starts the virtual file system */
 void init_virtual_files();
+
+/* List current virtual files */
 void VFS_ls();
+
+/* Reloads a file from the disk */
+int VFS_reload(const char* name);
+
+/* Dumps a virtual file to the disk */
 int VFS_dump(const char* name);
+
+/* Deletes a virtual file */
 void VFS_remove(const char* name);
+
+/* Deletes all virtual files */
 void VFS_reset();
 
 #endif

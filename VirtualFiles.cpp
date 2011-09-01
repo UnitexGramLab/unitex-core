@@ -400,6 +400,19 @@ while (inode!=NULL) {
 
 
 /**
+ * Reloads the given file from the disk if it is already loaded in memory.
+ * Returns 1 in case of success; 0 otherwise.
+ */
+int VFS_reload(const char* name) {
+VFS_INODE* inode=get_inode(&VFS_id,name);
+if (inode==NULL) {
+	return 0;
+}
+return load_file_content(inode);
+}
+
+
+/**
  * Dumps the given file on the disk.
  * Returns 1 in case of success; 0 otherwise.
  */
