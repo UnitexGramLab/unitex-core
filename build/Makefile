@@ -119,6 +119,14 @@ ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
 DEFFLAGS += -I$(ADDITIONAL_INCLUDE2)
 endif
 
+ifneq ($(strip $(ADDITIONAL_CFLAG)),)
+CFLAGS += $(ADDITIONAL_CFLAG)
+endif
+
+ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
+CFLAGS += $(ADDITIONAL_CFLAG2)
+endif
+
 ifeq ($(LIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
@@ -142,6 +150,11 @@ LIBS   = -Llibtre/lib -ltre -lpthread
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
 EXTENSION =
+
+ifneq ($(strip $(ADDITIONAL_OPTIONS)),)
+OPTIONS += $(ADDITIONAL_OPTIONS)
+endif
+
 
 ###################
 ###################
