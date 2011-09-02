@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Unitex
  *
  * Copyright (C) 2001-2011 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
@@ -82,7 +82,7 @@ static struct VFS VFS_id={PFX,1024,NULL};
 /**
  * Is the given file name concerned by our VSF ?
  */
-int my_fnc_is_filename_object(const char* name,void* privateSpacePtr) {
+int ABSTRACT_CALLBACK_UNITEX my_fnc_is_filename_object(const char* name,void* privateSpacePtr) {
 VFS* vfs=(VFS*)privateSpacePtr;
 return strstr(name,vfs->pfx)==name;
 }
@@ -174,7 +174,7 @@ return 1;
 /**
  * open
  */
-ABSTRACTFILE_PTR my_fnc_memOpenLowLevel(const char* name,TYPEOPEN_MF TypeOpen,void* privateSpacePtr) {
+ABSTRACTFILE_PTR ABSTRACT_CALLBACK_UNITEX my_fnc_memOpenLowLevel(const char* name,TYPEOPEN_MF TypeOpen,void* privateSpacePtr) {
 VFS* vfs=(VFS*)privateSpacePtr;
 /*switch(TypeOpen) {
 case OPEN_READ_MF: error("open READ: %s\n",name); break;
@@ -221,7 +221,7 @@ return f;
 /**
  * read
  */
-size_t my_fnc_memLowLevelRead(ABSTRACTFILE_PTR llFile, void *Buf, size_t size,void* privateSpacePtr) {
+size_t ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelRead(ABSTRACTFILE_PTR llFile, void *Buf, size_t size,void* privateSpacePtr) {
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 if (f->open_type==OPEN_CREATE_MF) {
@@ -241,7 +241,7 @@ return to_read;
 /**
  * write
  */
-size_t my_fnc_memLowLevelWrite(ABSTRACTFILE_PTR llFile, void const *Buf, size_t size,void* privateSpacePtr) {
+size_t ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelWrite(ABSTRACTFILE_PTR llFile, void const *Buf, size_t size,void* privateSpacePtr) {
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 if (f->open_type==OPEN_READ_MF) {
@@ -271,10 +271,10 @@ return size;
 /**
  * seek
  */
-int my_fnc_memLowLevelSeek(ABSTRACTFILE_PTR llFile, afs_size_type Pos, int TypeSeek,void* privateSpacePtr) {
+int ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelSeek(ABSTRACTFILE_PTR llFile, afs_size_type Pos, int TypeSeek,void* privateSpacePtr) {
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
-int new_pos;
+int new_pos=0;
 switch (TypeSeek) {
 case SEEK_SET: new_pos=Pos; break;
 case SEEK_CUR: new_pos=f->pos+Pos; break;
@@ -293,7 +293,7 @@ return 0;
 /**
  * close
  */
-int my_fnc_memLowLevelClose(ABSTRACTFILE_PTR llFile,void* privateSpacePtr) {
+int ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelClose(ABSTRACTFILE_PTR llFile,void* privateSpacePtr) {
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 VFS_INODE* inode=f->inode;
@@ -316,7 +316,7 @@ return 0;
 /**
  * getSize
  */
-void my_fnc_memLowLevelGetSize(ABSTRACTFILE_PTR llFile,afs_size_type *pPos,void* privateSpacePtr) {
+void ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelGetSize(ABSTRACTFILE_PTR llFile,afs_size_type *pPos,void* privateSpacePtr) {
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 *pPos=f->inode->size;
@@ -326,7 +326,7 @@ VFS_FILE* f=(VFS_FILE*)llFile;
 /**
  * ftell
  */
-void my_fnc_memLowLevelTell(ABSTRACTFILE_PTR llFile,afs_size_type *pPos,void* privateSpacePtr) {
+void ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelTell(ABSTRACTFILE_PTR llFile,afs_size_type *pPos,void* privateSpacePtr) {
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 *pPos=f->pos;
@@ -336,7 +336,7 @@ VFS_FILE* f=(VFS_FILE*)llFile;
 /**
  * rename
  */
-int my_fnc_memFileRename(const char* _OldFilename,const char* _NewFilename,void* privateSpacePtr) {
+int ABSTRACT_CALLBACK_UNITEX my_fnc_memFileRename(const char* _OldFilename,const char* _NewFilename,void* privateSpacePtr) {
 VFS_INODE* inode=get_inode((VFS*)privateSpacePtr,_OldFilename);
 if (inode==NULL) return 1;
 if (!strcmp(_OldFilename,_NewFilename)) return 0;
@@ -352,7 +352,7 @@ return 0;
 /**
  * remove
  */
-int my_fnc_memFileRemove(const char* lpFileName,void* privateSpacePtr) {
+int ABSTRACT_CALLBACK_UNITEX my_fnc_memFileRemove(const char* lpFileName,void* privateSpacePtr) {
 VFS_INODE* inode=get_inode((VFS*)privateSpacePtr,lpFileName);
 if (inode==NULL) return 1;
 inode->to_remove=1;
