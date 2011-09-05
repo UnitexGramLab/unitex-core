@@ -21,7 +21,7 @@
 #
 # The option
 #    make UNITEX_RELEASE_MEMORY_AT_EXIT=yes
-# request freeing all memory possible at exit (
+# request freeing all memory possible at exit
 #
 # The option
 #    make UNITEXTOOLONLY=yes
@@ -39,6 +39,12 @@
 #
 #    make DEBUG=yes UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # request freeing all memory possible at exit and produce debug version (useful for valgrind)
+#
+#    make JNILIBRARY=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-6-openjdk/include/linux ADDITIONAL_INCLUDE2=/usr/lib/jvm/java-6-openjdk/include
+# create the Jni and Library lib libUnitexLibAndJni.so under Linux
+#
+#    mingw32-make.exe SYSTEM=windows JNILIBRARY=yes ADDITIONAL_INCLUDE=c:\Progra~1\Java\jdk1.6.0_26\include" ADDITIONAL_INCLUDE2=c:\Progra~1\Java\jdk1.6.0_26\include\win32"
+# create the Jni and Library lib libUnitexLibAndJni.so under Windows with MinGW32 (fix the path, of course)
 #
 #-----------------------------------
 #
@@ -193,6 +199,10 @@ BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 
+ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
+TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+endif
+
 #
 # Compiling instructions for the TRE library
 #
@@ -216,6 +226,14 @@ endif
 
 ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
 CFLAGS += -I$(ADDITIONAL_INCLUDE2)
+endif
+
+ifneq ($(strip $(ADDITIONAL_CFLAG)),)
+CFLAGS += $(ADDITIONAL_CFLAG)
+endif
+
+ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
+CFLAGS += $(ADDITIONAL_CFLAG2)
 endif
 
 LIBTRE   = libtre.a
@@ -287,6 +305,10 @@ endif
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 
+ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
+TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+endif
+
 
 #
 # USING TRE STATIC LIBRARY
@@ -309,6 +331,14 @@ endif
 
 ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
 CFLAGS += -I$(ADDITIONAL_INCLUDE2)
+endif
+
+ifneq ($(strip $(ADDITIONAL_CFLAG)),)
+CFLAGS += $(ADDITIONAL_CFLAG)
+endif
+
+ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
+CFLAGS += $(ADDITIONAL_CFLAG2)
 endif
 
 LIBTRE   = libtre.a

@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitexToolLogger", "UnitexT
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitexLibrary", "UnitexLibrary.vcxproj", "{408B2E68-262A-407D-B29E-C52F0ED76F6F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitexLibAndJni", "UnitexLibAndJni.vcxproj", "{E9200EE5-2807-2803-1401-76B7485A8F10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,13 +45,22 @@ Global
 		{CC5073E9-1660-2660-AD1B-366D74B57072}.Release|x64.Build.0 = Release|x64
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Debug|Win32.Build.0 = Debug|Win32
-		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Debug|x64.ActiveCfg = Debug|Win32
+		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Debug|x64.ActiveCfg = Debug|X64
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.DebugOptim|Win32.ActiveCfg = Debug|Win32
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.DebugOptim|Win32.Build.0 = Debug|Win32
-		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.DebugOptim|x64.ActiveCfg = Debug|Win32
+		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.DebugOptim|x64.ActiveCfg = Debug|X64
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Release|Win32.ActiveCfg = Release|Win32
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Release|Win32.Build.0 = Release|Win32
 		{408B2E68-262A-407D-B29E-C52F0ED76F6F}.Release|x64.ActiveCfg = Release|X64
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.Debug|Win32.Build.0 = Debug|Win32
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.Debug|x64.ActiveCfg = Debug|x64
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.DebugOptim|Win32.ActiveCfg = Debug|Win32
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.DebugOptim|Win32.Build.0 = Debug|Win32
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.DebugOptim|x64.ActiveCfg = Debug|x64
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.Release|Win32.ActiveCfg = Release|Win32
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.Release|Win32.Build.0 = Release|Win32
+		{E9200EE5-2807-2803-1401-76B7485A8F10}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

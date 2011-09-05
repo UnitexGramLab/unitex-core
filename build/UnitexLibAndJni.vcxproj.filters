@@ -1,0 +1,741 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Unitex-C++">
+      <UniqueIdentifier>{a42ef11f-b7fa-4ddb-9a8e-41f772f700da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UnitexLibraryJni">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Unitex-C++\Source Files">
+      <UniqueIdentifier>{890ab41f-dd0d-4600-a63f-669d2432b450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Unitex-C++\logger">
+      <UniqueIdentifier>{2452c94e-6d87-428f-b6bc-1851f63ab0f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Unitex-C++\TreLib">
+      <UniqueIdentifier>{c67057a2-4d5f-4f67-ab56-511c39805dab}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\logger\MzRepairUlp.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\MzToolsUlp.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\FilePack.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\FilePackCrc32.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\FilePackIo.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\FileUnPack.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\ReworkArg.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\SyncLoggerDummy.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\SyncLoggerPosix.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\SyncLoggerWin.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\UniLogger.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\UniLoggerAutoInstall.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\UniRunLogger.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\regcomp.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\regerror.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\regexec.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-ast.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-compile.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-match-approx.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-match-backtrack.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-match-parallel.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-mem.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-parse.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\tre-stack.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tre-0.8.0\lib\xmalloc.c">
+      <Filter>Unitex-C++\TreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\XMLizer.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AbstractAllocator.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AbstractDelaLoad.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AbstractFst2Load.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ActivityLogger.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Af_stdio.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Alphabet.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ApplyDic.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Arabic.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AsciiSearchTree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AutComplementation.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AutConcat.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AutDeterminization.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AutIntersection.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AutMinimization.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\AutomatonDictionary2Bin.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BitArray.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BitMasks.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Buffer.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BuildKrMwuDic.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BuildTextAutomaton.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Cassys.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Cassys_tokens.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CheckDic.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CodePages.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CompoundWordHashTable.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CompoundWordTree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Compress.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Concord.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Concordance.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ConcorDiff.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Contexts.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Convert.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DELA.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DELA_tree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dico.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DictionaryTree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DicVariables.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Diff.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirHelperWin.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DuplicateFile.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DutchCompounds.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Elag.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ElagComp.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ElagDebug.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ElagFstFilesIO.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ElagFunctions.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ElagRulesCompilation.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ElagStateSet.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Error.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Evamb.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Extract.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ExtractUnits.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FIFO.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\File.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Flatten.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FlattenFst2.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2Automaton.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2Check.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2Check_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2List.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2Txt.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2Txt_TokenTree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Fst2TxtAsRoutine.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GeneralDerivation.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GermanCompounds.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Grf2Fst2.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Grf2Fst2_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HashTable.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HTMLCharacters.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ImplodeTfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\IOBuffer.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Korean.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\KrMwuDic.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LanguageDefinition.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LemmaTree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LinearAutomaton2Txt.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\List_int.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\List_pointer.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\List_ustring.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Locate.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateCache.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateFst2Tags.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateMatches.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocatePattern.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateTfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateTfst_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateTfstMatches.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateTrace.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MappedFileHelperWin.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Match.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_DicoMorpho.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_DLC_inflect.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_FormMorpho.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_InflectTransd.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_LangMorpho.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_MU_graph.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_MU_morpho.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_Operators_Util.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_SU_morpho.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_Unif.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MF_Util.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MorphologicalFilters.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MorphologicalLocate.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MultiFlex.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NewLineShifts.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NormalizationFst2.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Normalize.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NormalizeAsRoutine.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NorwegianCompounds.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OptimizedFst2.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OptimizedTfstTagMatching.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OutputTransductionVariables.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ParsingInfo.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pattern.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PatternTree.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PolyLex.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PortugueseNormalization.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProgramInvoker.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RebuildTfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Reconstrucao.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Reg2Grf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RegularExpressions.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RussianCompounds.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Sentence2Grf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SingleGraph.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Snt.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SortTxt.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Stack_int.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Stack_pointer.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Stack_unichar.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Stats.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\String_hash.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\StringParsing.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\symbol.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\symbol_op.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SymbolAlphabet.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Table2Grf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tagger.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TaggingProcess.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tagset.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TagsetNormTfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TEI2Txt.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Text_parsing.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Text_tokens.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tfst2Grf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tfst2Unambig.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TfstStats.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Thai.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tokenization.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tokenize.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TrainingProcess.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TrainingTagger.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TransductionStack.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TransductionStackTfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TransductionVariables.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Transitions.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Txt2Tfst.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Uncompress.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unicode.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexGetOpt.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexTool.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Untokenize.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UserCancelling.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ustring.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VariableUtils.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibAndJni\fr_univ_mlv_unitex_UnitexLibAndJni.cpp">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirPosix.cpp">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirWin.cpp">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibAndJni\UnitexLibIO.cpp">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\logger\MzRepairUlp.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\MzToolsUlp.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\FilePack.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\FilePackCrc32.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\FilePackIo.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\FileUnPack.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\ReworkArg.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\SyncLogger.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\UniLogger.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\UniRunLogger.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractCallbackFuncModifier.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractDelaLoad.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractDelaPlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractFilePlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractFst2Load.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractFst2PlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ActivityLogger.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ActivityLoggerPlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Af_stdio.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Arabic.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CompoundWordHashTable.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirHelper.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateCache.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateTrace.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateTracePlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MappedFileHelper.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\OutputTransductionVariables.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tagger.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TaggingProcess.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TrainingProcess.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TrainingTagger.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TransductionVariables.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Untokenize.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UserCancelling.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UserCancellingPlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VariableUtils.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexLibAndJni\fr_univ_mlv_unitex_UnitexLibAndJni.h">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexLibAndJni\UnitexLibDir.h">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexLibAndJni\UnitexLibIO.h">
+      <Filter>UnitexLibraryJni</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
