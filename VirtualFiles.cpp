@@ -388,14 +388,60 @@ if (!AddAbstractFileSpace(&my_VFS,&VFS_id)) {
 
 
 /**
- * Prints on stdout the current list of virtual files.
+ * Returns the current list of virtual files.
  */
-void VFS_ls() {
+char** VFS_ls() {
 VFS_INODE* inode=VFS_id.list;
+int n=0;
 while (inode!=NULL) {
-	u_printf("%s (%ld)\n",inode->name,inode->size);
+	n++;
 	inode=inode->next;
 }
+n++;
+char** names=(char**)malloc(n*sizeof(char**));
+if (names==NULL) {
+	fatal_alloc_error("VFS_ls");
+}
+inode=VFS_id.list;
+n=0;
+while (inode!=NULL) {
+	names[n]=strdup(inode->name);
+	if (names[n]==NULL) {
+		fatal_alloc_error("VFS_ls");
+	}
+	n++;
+	inode=inode->next;
+}
+names[n]=NULL;
+return names;
+}
+
+
+/**
+ * Returns the length in bytes of the given virtual file,
+ * or -1 if not found
+ */
+long VFS_size(const char* name) {
+VFS_INODE* inode=get_inode(&VFS_id,name);
+if (inode==NULL) {
+	return -1;
+}
+return inode->size;
+}
+
+
+/**
+ * Returns the pointer to the memory content of the given virtual file,
+ * or NULL if not found.
+ *
+ * DON'T FREE THIS POINTER!
+ */
+void* VFS_content(const char* name) {
+VFS_INODE* inode=get_inode(&VFS_id,name);
+if (inode==NULL) {
+	return NULL;
+}
+return inode->ptr;
 }
 
 

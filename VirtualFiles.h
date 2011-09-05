@@ -34,8 +34,17 @@
 /* Starts the virtual file system */
 void init_virtual_files();
 
-/* List current virtual files */
-void VFS_ls();
+/* Returns a list of current virtual file names as
+ * a NULL terminated char* array */
+char** VFS_ls();
+
+/* Returns the length in bytes of the given virtual file,
+ * or -1 if not found */
+long VFS_size(const char* name);
+
+/* Returns a pointer on the virtual file content
+ * THIS MUST NOT BE FREED! */
+void* VFS_content(const char* name);
 
 /* Reloads a file from the disk */
 int VFS_reload(const char* name);
