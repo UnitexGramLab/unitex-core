@@ -56,8 +56,14 @@ ABSTRACTMAPFILE* af_open_mapfile(const char*name,int options, size_t value_for_o
 ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char*name,int options, size_t value_for_option);
 
 size_t af_get_mapfile_size(ABSTRACTMAPFILE*);
+
+#ifdef __cplusplus
 const void* af_get_mapfile_pointer(ABSTRACTMAPFILE*, size_t pos=0, size_t sizemap=0);
 void af_release_mapfile_pointer(ABSTRACTMAPFILE*, const void*,size_t sizemap=0);
+#else
+const void* af_get_mapfile_pointer(ABSTRACTMAPFILE*, size_t pos, size_t sizemap);
+void af_release_mapfile_pointer(ABSTRACTMAPFILE*, const void*,size_t sizemap);
+#endif
 
 void af_close_mapfile(ABSTRACTMAPFILE*);
 void af_close_mapfile_unlogged(ABSTRACTMAPFILE*);
