@@ -86,7 +86,7 @@ int inflect(char* DLC, char* DLCF,
 	int semitic;
 	int current_line=0;
 	while (l != EOF) {
-	   current_line++;
+	    current_line++;
 		DELAS_entry = is_strict_DELAS_line(input_line->str, alph);
 		if (DELAS_entry != NULL) {
 			/* If we have a strict DELAS line, that is to say, one with

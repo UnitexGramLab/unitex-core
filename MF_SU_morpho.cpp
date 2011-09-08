@@ -736,6 +736,9 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 						return 0;
 					}
 					p_SU_buf->stack[pos++] = lemma[ip];
+				} else {
+					/* Someone wants to print a digit */
+					p_SU_buf->stack[pos++]=p_SU_buf->tag[pos_tag++];
 				}
 				break;
 
