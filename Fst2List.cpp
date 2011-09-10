@@ -1401,7 +1401,8 @@ int CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int stat
 	if(listOut && WasCycleNode(automateNo,stateNo)){
 		pathEtiQ[pathEtiQidx-1].etatNo |= LOOP_PATH_MARK;
 	}
-	if( pathEtiQidx > PATH_QUEUE_MAX){
+	if( pathEtiQidx >= PATH_QUEUE_MAX){
+		pathEtiQidx=PATH_QUEUE_MAX-1;
 		if(listOut){
 				errPath++;
 				pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
