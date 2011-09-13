@@ -174,10 +174,10 @@ load_persistent_fst2("/home/paumier/unitex/French/Dela/fogg-r.fst2");
 load_persistent_fst2("/home/paumier/Unitex3.0beta/French/Dela/Suffixes+.fst2");
 load_persistent_fst2("/home/paumier/unitex/French/Graphs/essai_poids.fst2");
 
-init_virtual_files();
+//init_virtual_files();
 
-#define PFX "$:"
-#define N 1
+#define PFX ""
+#define N 100
 
 for (int i=0;i<N;i++) {
 	exec_unitex_command(main_Normalize,"Normalize",PFX"/home/paumier/tmp/toto.txt","-r/home/paumier/unitex/French/Norm.txt","-qutf8-no-bom",NULL);
