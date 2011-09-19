@@ -46,7 +46,6 @@ import java.util.List;
 public class UnitexJni {
 	/* Load the .dll/.so that exports functions callable from java */
 	static {
-		System.out.println("Loading Unitex library "+System.mapLibraryName("UnitexJni"));
 		System.loadLibrary("UnitexJni");
 	}
 
