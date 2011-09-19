@@ -40,6 +40,13 @@
 #    make DEBUG=yes UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 # request freeing all memory possible at exit and produce debug version (useful for valgrind)
 #
+#
+#  UNITEX AS A JNI:
+#  
+#  To produce a JNI, you need to have a JDK installed and must provide
+#  additional include paths. Those paths correspond to the locations
+#  of jni.h and jni_md.h
+#
 #    make JNILIBRARY=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-6-openjdk/include/linux ADDITIONAL_INCLUDE2=/usr/lib/jvm/java-6-openjdk/include
 # create the Jni and Library lib libUnitexLibAndJni.so under Linux
 #
@@ -907,7 +914,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
 
-UNITEX_JNI_OBJS = fr_univ_mlv_unitex_UnitexJNIExperiment.o
+UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexLibAndJni.o
 
 TEST      = Test
 TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
@@ -1462,8 +1469,11 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
-fr_univ_mlv_unitex_UnitexJNIExperiment.o : ../UnitexJniExperimental/fr_univ_mlv_unitex_UnitexJNIExperiment.cpp
-	$(CC) -c ../UnitexJniExperimental/fr_univ_mlv_unitex_UnitexJNIExperiment.cpp $(OPTIONS)
+fr_umlv_unitex_jni_UnitexLibAndJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.cpp\
+                                       ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
+	javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
+	javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.h fr.umlv.unitex.jni.UnitexJni
+	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.cpp -c ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.o $(OPTIONS) -I"../logger"
 
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
@@ -1477,9 +1487,10 @@ no_o_files:
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.so
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
-.libunitexjni: no_o_files $(OBJS) $(UNITEX_JNI_OBJS)
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJNIExperiment.so
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.so
+	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 else
 
@@ -1492,8 +1503,9 @@ no_o_files:
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(LIBTRE) $(OBJS) $(UNITEX_JNI_OBJS)
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(LIBTRE) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/UnitexJNIExperiment.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/UnitexJni.dll
+	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 endif

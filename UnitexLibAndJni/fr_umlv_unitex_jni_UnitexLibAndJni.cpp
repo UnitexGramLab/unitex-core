@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2011 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2011 UniversitÃ© Paris-Est Marne-la-VallÃ©e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
  *
  */
 
-#include "fr_univ_mlv_unitex_UnitexLibAndJni.h"
+#include "fr_umlv_unitex_jni_UnitexLibAndJni.h"
 
 
 #include <stdio.h>
@@ -259,11 +259,11 @@ static char**argsFromJString(JNIEnv* jenv, jstring jstr)
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    execUnitexTool
  * Signature: ([Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_execUnitexTool___3Ljava_lang_String_2
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool___3Ljava_lang_String_2
   (JNIEnv *jenv, jclass, jobjectArray strArray)
 {
 	char**args=argsFromStrArray(jenv, strArray);
@@ -273,11 +273,11 @@ JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_execUnitexTool__
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    execUnitexTool
  * Signature: (Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_execUnitexTool__Ljava_lang_String_2
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool__Ljava_lang_String_2
   (JNIEnv *jenv, jclass, jstring jstr)
 {
 	char**args=argsFromJString(jenv, jstr);
@@ -287,11 +287,11 @@ JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_execUnitexTool__
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    usingOffsetFile
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_usingOffsetFile
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_usingOffsetFile
   (JNIEnv *, jclass)
 {
 #ifdef UNITEX_HAVING_OFFSET_FILE
@@ -305,11 +305,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_usingOffsetF
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    numberAbstractFileSpaceInstalled
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_numberAbstractFileSpaceInstalled
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_numberAbstractFileSpaceInstalled
   (JNIEnv *, jclass)
 {
 	return (jint)GetNbAbstractFileSpaceInstalled();
@@ -317,11 +317,11 @@ JNIEXPORT jint JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_numberAbstractFi
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    writeUnitexFile
  * Signature: (Ljava/lang/String;[C)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexFile__Ljava_lang_String_2_3C
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2_3C
   (JNIEnv *env, jclass, jstring filename, jcharArray filedata)
 {
 	jstringToCUtf jstc_filename;
@@ -335,11 +335,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexF
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    writeUnitexFile
  * Signature: (Ljava/lang/String;[B)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexFile__Ljava_lang_String_2_3B
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2_3B
   (JNIEnv *env, jclass, jstring filename, jbyteArray filedata)
 {
 	jstringToCUtf jstc_filename;
@@ -354,11 +354,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexF
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    writeUnitexFile
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)
 {
 	jstringToCUtf jstc_filename;
@@ -434,33 +434,33 @@ static jboolean doWriteUnitexFileUtf(JNIEnv* env,jstring filename,jstring fileco
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    writeUnitexFileUtf
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexFileUtf__Ljava_lang_String_2Ljava_lang_String_2
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)
 {
 	return doWriteUnitexFileUtf(env,filename,filecontent,JNI_FALSE);
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    writeUnitexFileUtf
  * Signature: (Ljava/lang/String;Ljava/lang/String;Z)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexFileUtf__Ljava_lang_String_2Ljava_lang_String_2Z
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf__Ljava_lang_String_2Ljava_lang_String_2Z
  (JNIEnv *env, jclass, jstring filename, jstring filecontent, jboolean has_bom)
 {
 	return doWriteUnitexFileUtf(env,filename,filecontent,has_bom);
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    getUnitexFileDataChar
  * Signature: (Ljava/lang/String;)[C
  */
-JNIEXPORT jcharArray JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_getUnitexFileDataChar
+JNIEXPORT jcharArray JNICALL fr_umlv_unitex_jni_UnitexJni_getUnitexFileDataChar
   (JNIEnv *env, jclass, jstring filename)
 {
 	jstringToCUtf jstc_filename;
@@ -478,11 +478,11 @@ JNIEXPORT jcharArray JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_getUnitexF
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    getUnitexFileData
  * Signature: (Ljava/lang/String;)[B
  */
-JNIEXPORT jbyteArray JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_getUnitexFileData
+JNIEXPORT jbyteArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileData
   (JNIEnv *env, jclass, jstring filename)
 {
 	jstringToCUtf jstc_filename;
@@ -500,11 +500,11 @@ JNIEXPORT jbyteArray JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_getUnitexF
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    getUnitexFileString
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_getUnitexFileString
+JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
   (JNIEnv *env, jclass, jstring filename)
 {
 	jstringToCUtf jstc_filename;
@@ -580,11 +580,11 @@ JNIEXPORT jstring JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_getUnitexFile
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    removeUnitexFile
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_removeUnitexFile
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeUnitexFile
   (JNIEnv *env, jclass, jstring filename)
 {
 	jstringToCUtf jstc_filename;
@@ -594,11 +594,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_removeUnitex
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    createUnitexFolder
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_createUnitexFolder
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_createUnitexFolder
   (JNIEnv *env, jclass, jstring foldername)
 {
 	jstringToCUtf jstc_foldername;
@@ -608,11 +608,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_createUnitex
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    removeUnitexFolder
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_removeUnitexFolder
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJniremoveUnitexFolder
   (JNIEnv *env, jclass, jstring foldername)
 {
 	jstringToCUtf jstc_foldername;
@@ -622,11 +622,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_removeUnitex
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    renameUnitexFile
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_renameUnitexFile
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_renameUnitexFile
   (JNIEnv *env, jclass, jstring filenameSrc, jstring filenameDst)
 {
 	jstringToCUtf jstc_filenameSrc;
@@ -638,11 +638,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_renameUnitex
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    copyUnitexFile
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_copyUnitexFile
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_copyUnitexFile
   (JNIEnv *env, jclass, jstring filenameSrc, jstring filenameDst)
 {
 	jstringToCUtf jstc_filenameSrc;
@@ -653,11 +653,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_copyUnitexFi
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    setStdOutTrashMode
  * Signature: (Z)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_setStdOutTrashMode
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_setStdOutTrashMode
   (JNIEnv *, jclass, jboolean trashOutput)
 {
 	enum stdwrite_kind swk=stdwrite_kind_out;
@@ -665,11 +665,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_setStdOutTra
 }
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    setStdErrTrashMode
  * Signature: (Z)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_setStdErrTrashMode
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_setStdErrTrashMode
   (JNIEnv *, jclass, jboolean trashOutput)
 {
 	enum stdwrite_kind swk=stdwrite_kind_err;
@@ -681,11 +681,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_setStdErrTra
 static struct UniLoggerSpace * p_ule = NULL;
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    installLogger
  * Signature: (Ljava/lang/String;Z)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_installLogger
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_installLogger
   (JNIEnv *env, jclass, jstring foldername, jboolean store_file_out_content)
 {
 	jstringToCUtf jstc_foldername;
@@ -720,11 +720,11 @@ JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_installLogge
 
 
 /*
- * Class:     fr_univ_mlv_unitex_UnitexLibAndJni
+ * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    removeLogger
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_removeLogger
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
   (JNIEnv *, jclass)
 {
 	if (p_ule == NULL)
