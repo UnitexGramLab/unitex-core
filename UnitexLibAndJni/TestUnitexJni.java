@@ -24,14 +24,13 @@ import fr.umlv.unitex.jni.UnitexJni;
 public class TestUnitexJni {
 
 	public static void main(String[] args) {
-	//try {
-		System.out.println("path="+System.getProperty("java.library.path"));
+	try {
 		UnitexJni.execUnitexTool(new String[] {"UnitexToolLogger","Normalize","--help"});
-	/*} catch (UnsatisfiedLinkError e) {
+	} catch (UnsatisfiedLinkError e) {
 		System.err.println("Cannot load the UnitexJni library. You may have to set the java.library.path");
 		System.err.println("property as follows:\n");
 		System.err.println("java -Djava.library.path=<path to [lib]UnitexJni.so/dll> ...\n");
-	}*/
+	}
 	}
 
 }
