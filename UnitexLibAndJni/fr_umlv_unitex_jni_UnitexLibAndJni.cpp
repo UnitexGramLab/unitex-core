@@ -44,7 +44,9 @@
 #include "UniLogger.h"
 
 #include "UnitexLibIO.h"
-
+#include "CompressedDic.h"
+#include "Fst2.h"
+#include "Alphabet.h"
 
 
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
@@ -736,4 +738,87 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
 	return JNI_TRUE;
 }
 
+
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    loadPersistentDictionary
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentDictionary
+  (JNIEnv* env, jclass, jstring filename) {
+jstringToCUtf name;
+name.initJString(env,filename);
+if (load_persistent_dictionary(name.getJString())) {
+	return JNI_TRUE;
+}
+return JNI_FALSE;
+}
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    freePersistentDictionary
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentDictionary
+	(JNIEnv* env, jclass, jstring filename) {
+jstringToCUtf name;
+name.initJString(env,filename);
+free_persistent_dictionary(name.getJString());
+}
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    loadPersistentFst2
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentFst2
+	(JNIEnv* env, jclass, jstring filename) {
+jstringToCUtf name;
+name.initJString(env,filename);
+if (load_persistent_fst2(name.getJString())) {
+	return JNI_TRUE;
+}
+return JNI_FALSE;
+}
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    freePersistentFst2
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentFst2
+	(JNIEnv* env, jclass, jstring filename) {
+jstringToCUtf name;
+name.initJString(env,filename);
+free_persistent_fst2(name.getJString());
+}
+
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    loadPersistentAlphabet
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentAlphabet
+	(JNIEnv* env, jclass, jstring filename) {
+jstringToCUtf name;
+name.initJString(env,filename);
+if (load_persistent_alphabet(name.getJString())) {
+	return JNI_TRUE;
+}
+return JNI_FALSE;
+}
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    freePersistentAlphabet
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentAlphabet
+	(JNIEnv* env, jclass, jstring filename) {
+jstringToCUtf name;
+name.initJString(env,filename);
+free_persistent_alphabet(name.getJString());
+}
 

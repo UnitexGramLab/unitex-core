@@ -255,4 +255,18 @@ public class UnitexJni {
 		}
 		return "\"" + retStr + "\"";
 	}
+	
+	/**
+	 * Note: The persistence mechanism uses file name comparisons
+	 *       to detect that a file has already been loaded. So, you
+	 *       must use the exact same file name if your system
+	 *       is case tolerant
+	 */
+	public native static boolean loadPersistentDictionary(String filename);
+	public native static void freePersistentDictionary(String filename);
+	public native static boolean loadPersistentFst2(String filename);
+	public native static void freePersistentFst2(String filename);
+	public native static boolean loadPersistentAlphabet(String filename);
+	public native static void freePersistentAlphabet(String filename);
+	
 }
