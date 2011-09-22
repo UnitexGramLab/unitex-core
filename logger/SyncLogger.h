@@ -37,6 +37,7 @@
 #ifndef _SYNC_LOGGER_H
 #define _SYNC_LOGGER_H
 
+#include "AbstractCallbackFuncModifier.h"
 
 #ifdef __cplusplus
 extern "C" {

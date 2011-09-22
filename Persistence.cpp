@@ -23,6 +23,7 @@
 #include <string.h>
 #include "Persistence.h"
 #include "Error.h"
+#include "logger/SyncLogger.h"
 
 typedef struct PS_ {
 	char* name;
@@ -32,19 +33,25 @@ typedef struct PS_ {
 
 
 static PersistentStructure* list=NULL;
-
+static SYNC_Mutex_OBJECT mutex=SyncBuildMutex();
 
 /**
  * Returns the persistent pointer associated to the given file name,
  * if any; NULL otherwise.
  */
 void* get_persistent_structure(const char* filename) {
+SyncGetMutex(mutex);
 PersistentStructure* tmp=list;
+void* res=NULL;
 while (tmp!=NULL) {
-	if (!strcmp(tmp->name,filename)) return tmp->ptr;
+	if (!strcmp(tmp->name,filename)) {
+		res=tmp->ptr;
+		break;
+	}
 	tmp=tmp->next;
 }
-return NULL;
+SyncReleaseMutex(mutex);
+return res;
 }
 
 
@@ -66,8 +73,10 @@ return l;
  * If ptr is NULL, then the pointer is removed from the list.
  */
 void set_persistent_structure(const char* filename,void* ptr) {
+SyncGetMutex(mutex);
 if (ptr==NULL) {
 	list=remove_filename(list,filename);
+	SyncReleaseMutex(mutex);
 	return;
 }
 PersistentStructure* tmp=(PersistentStructure*)malloc(sizeof(PersistentStructure));
@@ -81,17 +90,24 @@ if (tmp->name==NULL) {
 tmp->ptr=ptr;
 tmp->next=list;
 list=tmp;
+SyncReleaseMutex(mutex);
 }
 
 /**
  * Returns 1 if the given pointer is a persistent one; 0 otherwise.
  */
 int is_persistent_structure(void* ptr) {
+SyncGetMutex(mutex);
+int res=0;
 PersistentStructure* tmp=list;
 while (tmp!=NULL) {
-	if (tmp->ptr==ptr) return 1;
+	if (tmp->ptr==ptr) {
+		res=1;
+		break;
+	}
 	tmp=tmp->next;
 }
-return 0;
+SyncReleaseMutex(mutex);
+return res;
 }
 
