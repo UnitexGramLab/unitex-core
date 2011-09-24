@@ -742,20 +742,19 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
 
 
 #ifdef UNITEX_HAVING_MINI_PERSISTANCE
-
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    loadPersistentDictionary
- * Signature: (Ljava/lang/String;)Z
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentDictionary
+JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentDictionary
   (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
 if (load_persistent_dictionary(name.getJString())) {
-	return JNI_TRUE;
+	return env->NewStringUTF(name.getJString());
 }
-return JNI_FALSE;
+return NULL;
 }
 
 /*
@@ -773,16 +772,16 @@ free_persistent_dictionary(name.getJString());
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    loadPersistentFst2
- * Signature: (Ljava/lang/String;)Z
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentFst2
+JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentFst2
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
 if (load_persistent_fst2(name.getJString())) {
-	return JNI_TRUE;
+	return env->NewStringUTF(name.getJString());
 }
-return JNI_FALSE;
+return NULL;
 }
 
 /*
@@ -801,16 +800,16 @@ free_persistent_fst2(name.getJString());
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    loadPersistentAlphabet
- * Signature: (Ljava/lang/String;)Z
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentAlphabet
+JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentAlphabet
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
 if (load_persistent_alphabet(name.getJString())) {
-	return JNI_TRUE;
+	return env->NewStringUTF(name.getJString());
 }
-return JNI_FALSE;
+return NULL;
 }
 
 /*
