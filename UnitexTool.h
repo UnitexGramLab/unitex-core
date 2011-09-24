@@ -40,6 +40,8 @@
 
 #define UNITEX_HAVING_OFFSET_FILE 1
 
+#define UNITEX_HAVING_MINI_PERSISTANCE 1
+
 #ifdef __cplusplus
 extern "C" {
 #endif

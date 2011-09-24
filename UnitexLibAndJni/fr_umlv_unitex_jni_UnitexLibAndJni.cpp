@@ -741,6 +741,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
 }
 
 
+#ifdef UNITEX_HAVING_MINI_PERSISTANCE
 
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
@@ -824,3 +825,4 @@ name.initJString(env,filename);
 free_persistent_alphabet(name.getJString());
 }
 
+#endif
