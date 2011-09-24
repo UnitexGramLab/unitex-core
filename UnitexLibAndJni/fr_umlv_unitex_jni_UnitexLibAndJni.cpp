@@ -204,6 +204,8 @@ char **args=NULL;
 		    CopyStrArg(sz,args[i],string_alloc_size);
 
 			jenv->ReleaseStringUTFChars(jstr, sz);
+			/* explicitly releasing to assist garbage collection, though not required */
+			jenv->DeleteLocalRef(jstr);
 	    }
 		args[i] = NULL;
     }
