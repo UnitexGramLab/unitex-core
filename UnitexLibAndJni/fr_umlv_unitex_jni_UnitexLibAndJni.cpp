@@ -741,7 +741,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
 }
 
 
-#ifdef UNITEX_HAVING_MINI_PERSISTANCE
+#if defined(UNITEX_HAVING_MINI_PERSISTANCE) && (!(defined(UNITEX_PREVENT_USING_MINIPERSISTANCE)))
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    loadPersistentDictionary
