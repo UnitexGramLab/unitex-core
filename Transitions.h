@@ -86,5 +86,6 @@ void renumber_transitions(Transition*,int,int);
 Transition* shift_destination_states(Transition*,int);
 void add_transitions_int(Transition*,Transition**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void add_transitions_ptr(Transition*,Transition**,Abstract_allocator prv_alloc);
+Transition* reverse_list(Transition*);
 
 #endif

@@ -658,7 +658,6 @@ if (f==NULL) {
 	error("Cannot open the file %s\n",filename);
 	return NULL;
 }
-
 int ret=load_fst2_from_file(f,read_names, &fst2, graph_number, prv_alloc);
 switch (ret) {
 case GRAPH_IS_EMPTY:

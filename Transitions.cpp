@@ -268,3 +268,40 @@ while (src!=NULL) {
 }
 }
 
+
+static void reverse_list(Transition* t,Transition* *first,Transition* *last) {
+if (t==NULL) {
+	*first=*last=NULL;
+	return;
+}
+if (t->next==NULL) {
+	*first=*last=t;
+	(*first)->next=(*last)->next=NULL;
+	return;
+}
+if (t->next->next==NULL) {
+	/* If there are only two elements, we swap them */
+	(*last)=t;
+	(*first)=t->next;
+	(*first)->next=(*last);
+	(*last)->next=NULL;
+	return;
+}
+reverse_list(t->next,first,last);
+(*last)->next=t;
+t->next=NULL;
+*last=t;
+}
+
+
+/**
+ * In order to maintain log compatibility, in some .fst2, transition lists
+ * have to stay in the same order. However, loading a .fst2 and saving it reverse
+ * the transition lists, so we may need this function to reverse them again.
+ */
+Transition* reverse_list(Transition* t) {
+Transition* first;
+Transition* last;
+reverse_list(t,&first,&last);
+return first;
+}

@@ -29,6 +29,7 @@
 #include "LocateConstants.h"
 #include "String_hash.h"
 #include "SingleGraph.h"
+#include "Vector.h"
 
 
 /**
@@ -71,6 +72,13 @@ struct compilation_info {
    VersatileEncodingConfig vec;
    int verbose_name_grf;
    int debug;
+
+   /* This array indicates the renumbering to apply to each graph call. If
+    * no .fst2 was loaded, we should always have t[i]==i, but it may be different
+    * if a precompiled .fst2 contains more than 1 graph
+    */
+   vector_int* renumber;
+   int current_saved_graph;
 };
 
 
@@ -82,7 +90,7 @@ int compile_grf(char*,struct compilation_info*);
 void write_tags(U_FILE*,struct string_hash*);
 void write_number_of_graphs(const VersatileEncodingConfig*,char*,int,int);
 void write_graph(U_FILE*,SingleGraph,int,unichar*);
-
+void renumber_graph_calls(Fst2*,vector_int*);
 
 #endif
 

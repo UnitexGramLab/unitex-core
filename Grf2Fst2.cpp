@@ -226,7 +226,15 @@ free_alphabet(infos->alphabet);
 write_tags(infos->fst2,infos->tags);
 u_fclose(infos->fst2);
 free_OptVars(vars);
-write_number_of_graphs(&(infos->vec),fst2_file_name,infos->graph_names->size-1,infos->debug);
+write_number_of_graphs(&(infos->vec),fst2_file_name,infos->current_saved_graph,infos->debug);
+/* Now, we may have to renumber graph calls */
+if (1 || infos->renumber->tab[infos->graph_names->size]!=infos->graph_names->size) {
+	Fst2* fst2=load_fst2(&(infos->vec),fst2_file_name,1);
+	renumber_graph_calls(fst2,infos->renumber);
+	save_Fst2(&(infos->vec),fst2_file_name,fst2);
+	free_Fst2(fst2);
+}
+
 if (check_recursion) {
    if (!OK_for_Locate(&(infos->vec),fst2_file_name,infos->no_empty_graph_warning)) {
       free_compilation_info(infos);

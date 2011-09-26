@@ -70,6 +70,10 @@ infos->vec.encoding_output = DEFAULT_ENCODING_OUTPUT;
 infos->vec.bom_output = DEFAULT_BOM_OUTPUT;
 infos->verbose_name_grf=1;
 infos->debug=0;
+infos->renumber=new_vector_int();
+/* We set a dummy #0 cell in order to avoid painful +/- 1 at each graph access */
+vector_int_add(infos->renumber,0);
+infos->current_saved_graph=0;
 return infos;
 }
 
@@ -81,6 +85,7 @@ void free_compilation_info(struct compilation_info* infos) {
 if (infos==NULL) return;
 free_string_hash(infos->graph_names);
 free_string_hash(infos->tags);
+free_vector_int(infos->renumber);
 free(infos);
 }
 
@@ -991,29 +996,98 @@ free_ReverseTransitions(reverse);
 
 
 /**
+ * We have to copy the given fst2 as some graphs in the current .fst2
+ * being saved.
+ */
+void save_compiled_fst2(char* name,Fst2* fst2,struct compilation_info* infos) {
+Ustring* ustr=new_Ustring();
+int n=infos->current_saved_graph;
+for (int i=0;i<fst2->number_of_graphs;i++) {
+	u_fprintf(infos->fst2,"-%d %s:%s\n",n++,name,fst2->graph_names[i+1]);
+	int N=fst2->initial_states[i+1];
+	for (int j=0;j<fst2->number_of_states_per_graphs[i+1];j++) {
+		Fst2State s=fst2->states[N+j];
+		if (!is_final_state(s)) {
+			u_fprintf(infos->fst2,": ");
+		} else {
+			u_fprintf(infos->fst2,"t ");
+		}
+		Transition* t=s->transitions;
+		while (t!=NULL) {
+			if (t->tag_number<0) {
+				u_fprintf(infos->fst2,"-%d ",(infos->current_saved_graph-1)-t->tag_number);
+			} else {
+				empty(ustr);
+				Fst2Tag tag=fst2->tags[t->tag_number];
+				if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
+				   u_strcat(ustr,"@");
+				}
+				u_strcatf(ustr,"%S",tag->input);
+				if (tag->morphological_filter!=NULL) {
+					u_strcatf(ustr,"%S",tag->morphological_filter);
+				}
+				if (tag->output!=NULL) {
+					u_strcatf(ustr,"/%S",tag->output);
+				}
+				u_fprintf(infos->fst2,"%d ",get_value_index(ustr->str,infos->tags));
+			}
+			u_fprintf(infos->fst2,"%d ",t->state_number-N);
+			t=t->next;
+		}
+		u_fprintf(infos->fst2,"\n");
+	}
+	u_fprintf(infos->fst2,"f \n");
+}
+free_Ustring(ustr);
+}
+
+
+/**
  * This function compiles the graph number #n and saves its states into the
  * output .fst2.
  */
 int compile_grf(int n,struct compilation_info* infos) {
 int i;
 char name[FILENAME_MAX];
+char name_fst2[FILENAME_MAX];
 SingleGraph graph=new_SingleGraph();
-if (infos->verbose_name_grf!=0) {
-  u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
-}
 /* We get the absolute path of the graph */
 get_absolute_name(name,n,infos);
 char* full_name=NULL;
 if (infos->debug) {
 	full_name=name;
 }
+infos->current_saved_graph++;
+vector_int_add(infos->renumber,infos->current_saved_graph);
 Grf* grf=load_Grf(&(infos->vec),name);
 if (grf==NULL) {
-   error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
-   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
-   free_SingleGraph(graph,NULL);
-   if (n==1) return 0;
-   return 1;
+	/* If we can't load the .grf, maybe we should try the .fst2 */
+	remove_extension(name,name_fst2);
+	strcat(name_fst2,".fst2");
+	Fst2* fst2=NULL;
+	if (n!=1) {
+		/* We don't try to load the .fst2 for the main graph */
+		fst2=load_fst2(&(infos->vec),name_fst2,1);
+	}
+	if (fst2==NULL) {
+		error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
+		write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
+		free_SingleGraph(graph,NULL);
+		if (n==1) return 0;
+		return 1;
+	}
+	if (infos->verbose_name_grf!=0) {
+		u_printf("Loading compiled graph %s\n",name_fst2);
+	}
+	save_compiled_fst2(name_fst2,fst2,infos);
+	/* -1 because we already made infos->current_saved_graph++ */
+	infos->current_saved_graph+=(fst2->number_of_graphs-1);
+	free_Fst2(fst2);
+	free_SingleGraph(graph,NULL);
+	return 1;
+}
+if (infos->verbose_name_grf!=0) {
+  u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
 }
 expand_box_ranges(grf);
 /* If necessary, we resize the graph that it can hold all the states */
@@ -1061,7 +1135,7 @@ if (graph->states[0]==NULL) {
 /* Now, we minimize the automaton assuming that reversed transitions are still there */
 minimize(graph,0);
 /* Finally we save the graph */
-write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
+write_graph(infos->fst2,graph,-infos->current_saved_graph,infos->graph_names->value[n],full_name);
 free_SingleGraph(graph,NULL);
 return 1;
 }
@@ -1156,4 +1230,21 @@ u_fprintf(fst2,"f\n");
 }
 
 
+/**
+ * Performs the graph call renumbering that may have been made
+ * necessary if some precompiled .fst2 were loaded
+ */
+void renumber_graph_calls(Fst2* fst2,vector_int* renumber) {
+for (int i=0;i<fst2->number_of_states;i++) {
+	Fst2State s=fst2->states[i];
+	s->transitions=reverse_list(s->transitions);
+	Transition* t=s->transitions;
+	while (t!=NULL) {
+		if (t->tag_number<0) {
+			t->tag_number=-(renumber->tab[-(t->tag_number)]);
+		}
+		t=t->next;
+	}
+}
+}
 
