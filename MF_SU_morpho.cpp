@@ -128,7 +128,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 	unichar local_sem_code[MAX_CHARS_IN_STACK];
 	inflection_codes[0] = '\0';
 	int T = get_transducer(p_multiFlex_ctx,SU_id->lemma->paradigm,vec,pkgdir);
-	if (p_multiFlex_ctx->fst2[p_multiFlex_ctx->T] == NULL) {
+	if (p_multiFlex_ctx->fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
 	}
@@ -159,7 +159,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 
 	inflection_codes[0] = '\0';
 	int T = get_transducer(p_multiFlex_ctx,inflection_code,vec,pkgdir);
-	if (p_multiFlex_ctx->fst2[T] == NULL) {
+	if (T==-1 || p_multiFlex_ctx->fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
 	}

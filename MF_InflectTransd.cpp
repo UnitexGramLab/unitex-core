@@ -69,7 +69,7 @@ free_node(p_multiFlex_ctx->root);
 
 ///////////////////////////////
 // Try to load the transducer flex and returns its position in the
-// 'fst2' array. Returns -1 if the transducer cannot be loaded
+// 'fst2' array.
 int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
 		const VersatileEncodingConfig* vec,const char* pkgdir) {
 return get_node(p_multiFlex_ctx,flex,vec,0,p_multiFlex_ctx->root,pkgdir);

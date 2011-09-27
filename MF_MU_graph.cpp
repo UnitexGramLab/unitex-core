@@ -489,7 +489,6 @@ int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 	//Add the current label's category-value pair to the features of the single unit to be generated
 	err = f_add_morpho(feat, c->cat, c->val.value);
 	if (err == -1) {
-		error(" in graph %s.\n", p_multiFlex_ctx->MU_lemma->paradigm);
 		MU_delete_inflection(forms);
 		return 1;
 	}
@@ -614,7 +613,6 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 		err = f_add_morpho(feat, c->cat, unif_get_val_index(p_multiFlex_ctx,
 				var));
 		if (err == -1) {
-			error(" in graph %s.\n", p_multiFlex_ctx->MU_lemma->paradigm);
 			MU_delete_inflection(forms);
 			return 1;
 		}
@@ -624,7 +622,6 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 				vec, u, l_in_morpho, i_morpho, feat, l_out_morpho, q_bis,
 				forms, pkgdir);
 		if (err == -1) {
-			error(" in graph %s.\n", p_multiFlex_ctx->MU_lemma->paradigm);
 			MU_delete_inflection(forms);
 			return 1;
 		}
@@ -746,8 +743,6 @@ int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
 				err = f_add_morpho(forms->forms[f].features, feat->cats[c].cat,
 						feat->cats[c].val);
 				if (err == -1) {
-					error(" in graph %s.\n",
-							p_multiFlex_ctx->MU_lemma->paradigm);
 					MU_delete_inflection(forms);
 					return 1;
 				}
@@ -799,7 +794,6 @@ int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 	//Add the current label's category-value pair to the features of the single unit to be generated
 	err = f_add_morpho(feat, c->cat, c->val.value);
 	if (err == -1) {
-		error(" in graph %s.\n", p_multiFlex_ctx->MU_lemma->paradigm);
 		MU_delete_inflection(forms);
 		return 1;
 	}
@@ -841,7 +835,6 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 		err = f_add_morpho(feat, c->cat, unif_get_val_index(p_multiFlex_ctx,
 				var));
 		if (err == -1) {
-			error(" in graph %s.\n", p_multiFlex_ctx->MU_lemma->paradigm);
 			MU_delete_inflection(forms);
 			return 1;
 		}
@@ -868,7 +861,6 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 			//Add the the instantiated category-value pair to the features of the single unit to be generated
 			err = f_add_morpho(feat, c->cat, val); //e.g. 'feat' devient <Nb=pl; Case=Nom; Gen=fem>
 			if (err == -1) {
-				error(" in graph %s.\n", p_multiFlex_ctx->MU_lemma->paradigm);
 				MU_delete_inflection(forms);
 				return 1;
 			}
