@@ -606,7 +606,7 @@
     <ClCompile Include="..\VariableUtils.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
-    <ClCompile Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexLibAndJni.cpp">
+    <ClCompile Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.cpp">
       <Filter>UnitexLibraryJni</Filter>
     </ClCompile>
     <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirPosix.cpp">
@@ -728,7 +728,7 @@
     <ClInclude Include="..\VariableUtils.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexLibAndJni.h">
+    <ClInclude Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.h">
       <Filter>UnitexLibraryJni</Filter>
     </ClInclude>
     <ClInclude Include="..\UnitexLibAndJni\UnitexLibDir.h">

@@ -1478,11 +1478,11 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
-fr_umlv_unitex_jni_UnitexLibAndJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.cpp\
+fr_umlv_unitex_jni_UnitexLibAndJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
 	javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
-	javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.h fr.umlv.unitex.jni.UnitexJni
-	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.cpp -c ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.o $(OPTIONS) -I"../logger"
+	javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.h fr.umlv.unitex.jni.UnitexJni
+	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.o $(OPTIONS) -I"../logger"
 
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)

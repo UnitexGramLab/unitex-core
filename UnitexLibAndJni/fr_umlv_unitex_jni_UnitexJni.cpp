@@ -29,7 +29,7 @@
  *
  */
 
-#include "fr_umlv_unitex_jni_UnitexLibAndJni.h"
+#include "fr_umlv_unitex_jni_UnitexJni.h"
 
 
 #include <stdio.h>

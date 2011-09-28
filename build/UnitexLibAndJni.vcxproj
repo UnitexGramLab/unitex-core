@@ -378,7 +378,7 @@
     <ClCompile Include="..\Uncompress.cpp" />
     <ClCompile Include="..\Unicode.cpp" />
     <ClCompile Include="..\UnitexGetOpt.cpp" />
-    <ClCompile Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexLibAndJni.cpp" />
+    <ClCompile Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.cpp" />
     <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirPosix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -427,7 +427,7 @@
     <ClInclude Include="..\TrainingProcess.h" />
     <ClInclude Include="..\TrainingTagger.h" />
     <ClInclude Include="..\TransductionVariables.h" />
-    <ClInclude Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexLibAndJni.h" />
+    <ClInclude Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.h" />
     <ClInclude Include="..\UnitexLibAndJni\UnitexLibDir.h" />
     <ClInclude Include="..\UnitexLibAndJni\UnitexLibIO.h" />
     <ClInclude Include="..\Untokenize.h" />
