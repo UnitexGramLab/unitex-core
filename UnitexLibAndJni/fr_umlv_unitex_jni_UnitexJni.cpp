@@ -466,7 +466,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf_
  * Method:    getUnitexFileDataChar
  * Signature: (Ljava/lang/String;)[C
  */
-JNIEXPORT jcharArray JNICALL fr_umlv_unitex_jni_UnitexJni_getUnitexFileDataChar
+JNIEXPORT jcharArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileDataChar
   (JNIEnv *env, jclass, jstring filename)
 {
 	jstringToCUtf jstc_filename;
@@ -476,9 +476,9 @@ JNIEXPORT jcharArray JNICALL fr_umlv_unitex_jni_UnitexJni_getUnitexFileDataChar
     const void*buffer;
     size_t size_file;
 	GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
-	jcharArray jarrRet=env->NewCharArray(size_file);
+	jcharArray jarrRet=env->NewCharArray((jsize)size_file);
 	if (jarrRet != NULL)
-		env->SetCharArrayRegion(jarrRet,0,size_file,(const jchar*)buffer);
+		env->SetCharArrayRegion(jarrRet,0,(jsize)size_file,(const jchar*)buffer);
     CloseUnitexFileReadBuffer(amf, buffer, size_file);
     return jarrRet;
 }
@@ -498,9 +498,9 @@ JNIEXPORT jbyteArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileData
     const void*buffer;
     size_t size_file;
 	GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
-	jbyteArray jarrRet=env->NewByteArray(size_file);
+	jbyteArray jarrRet=env->NewByteArray((jsize)size_file);
 	if (jarrRet != NULL)
-		env->SetByteArrayRegion(jarrRet,0,size_file,(const jbyte*)buffer);
+		env->SetByteArrayRegion(jarrRet,0,(jsize)size_file,(const jbyte*)buffer);
     CloseUnitexFileReadBuffer(amf, buffer, size_file);
     return jarrRet;
 }
@@ -552,7 +552,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
 
 	if (is_utf16_native_endianess)
 	{
-		jstrRet = env->NewString((const jchar*)(bufchar+size_bom), (size_file - size_bom) / sizeof(jchar));
+		jstrRet = env->NewString((const jchar*)(bufchar+size_bom), (jsize)((size_file - size_bom) / sizeof(jchar)));
 	}
 	else
     if (is_utf16_swap_endianess)
@@ -567,7 +567,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
 				*(returnedUTF16buffer+i) = c2;
 				*(returnedUTF16buffer+i+1) = c1;
 			}
-			jstrRet = env->NewString((const jchar*)(returnedUTF16buffer+size_bom), (size_file - size_bom) / sizeof(jchar));
+			jstrRet = env->NewString((const jchar*)(returnedUTF16buffer+size_bom), (jsize)((size_file - size_bom) / sizeof(jchar)));
 			free(returnedUTF16buffer);
 		}
 	}
@@ -618,7 +618,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_createUnitexFolder
  * Method:    removeUnitexFolder
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJniremoveUnitexFolder
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeUnitexFolder
   (JNIEnv *env, jclass, jstring foldername)
 {
 	jstringToCUtf jstc_foldername;
