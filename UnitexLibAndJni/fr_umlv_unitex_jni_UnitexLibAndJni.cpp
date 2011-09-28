@@ -392,7 +392,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 
 
 /* utf16be version
-JNIEXPORT jboolean JNICALL Java_fr_univ_1mlv_unitex_UnitexLibAndJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)
 {
 	jstringToCUtf jstc_filename;
