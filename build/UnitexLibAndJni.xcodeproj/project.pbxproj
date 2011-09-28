@@ -121,8 +121,8 @@
 		222A006F1411336600F74409 /* Vector.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFEF01411336600F74409 /* Vector.h */; };
 		222A00701411336600F74409 /* XMLizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFEF11411336600F74409 /* XMLizer.cpp */; };
 		222A00711411336600F74409 /* XMLizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFEF21411336600F74409 /* XMLizer.h */; };
-		222A00831411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222A00791411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.cpp */; };
-		222A00841411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.h in Headers */ = {isa = PBXBuildFile; fileRef = 222A007A1411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.h */; };
+		222A00831411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222A00791411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.cpp */; };
+		222A00841411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.h in Headers */ = {isa = PBXBuildFile; fileRef = 222A007A1411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.h */; };
 		222A00851411342B00F74409 /* UnitexLibDir.h in Headers */ = {isa = PBXBuildFile; fileRef = 222A007D1411342B00F74409 /* UnitexLibDir.h */; };
 		222A00861411342B00F74409 /* UnitexLibDirPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222A007E1411342B00F74409 /* UnitexLibDirPosix.cpp */; };
 		222A00881411342B00F74409 /* UnitexLibIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222A00801411342B00F74409 /* UnitexLibIO.cpp */; };
@@ -420,8 +420,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		222A00791411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fr_univ_mlv_unitex_UnitexLibAndJni.cpp; sourceTree = "<group>"; };
-		222A007A1411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fr_univ_mlv_unitex_UnitexLibAndJni.h; sourceTree = "<group>"; };
+		222A00791411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fr_umlv_unitex_jni_UnitexLibAndJni.cpp; sourceTree = "<group>"; };
+		222A007A1411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fr_umlv_unitex_jni_UnitexLibAndJni.h; sourceTree = "<group>"; };
 		222A007D1411342B00F74409 /* UnitexLibDir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitexLibDir.h; sourceTree = "<group>"; };
 		222A007E1411342B00F74409 /* UnitexLibDirPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnitexLibDirPosix.cpp; sourceTree = "<group>"; };
 		222A00801411342B00F74409 /* UnitexLibIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnitexLibIO.cpp; sourceTree = "<group>"; };
@@ -888,8 +888,8 @@
 		222A00741411342B00F74409 /* UnitexLibAndJni */ = {
 			isa = PBXGroup;
 			children = (
-				222A00791411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.cpp */,
-				222A007A1411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.h */,
+				222A00791411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.cpp */,
+				222A007A1411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.h */,
 				222A007D1411342B00F74409 /* UnitexLibDir.h */,
 				222A007E1411342B00F74409 /* UnitexLibDirPosix.cpp */,
 				222A00801411342B00F74409 /* UnitexLibIO.cpp */,
@@ -1554,7 +1554,7 @@
 				222A006E1411336600F74409 /* Ustring.h in Headers */,
 				222A006F1411336600F74409 /* Vector.h in Headers */,
 				222A00711411336600F74409 /* XMLizer.h in Headers */,
-				222A00841411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.h in Headers */,
+				222A00841411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.h in Headers */,
 				222A00851411342B00F74409 /* UnitexLibDir.h in Headers */,
 				222A00891411342B00F74409 /* UnitexLibIO.h in Headers */,
 				222A00C81411358600F74409 /* regex.h in Headers */,
@@ -1800,7 +1800,7 @@
 				222A006B1411336600F74409 /* Untokenize.cpp in Sources */,
 				222A006D1411336600F74409 /* Ustring.cpp in Sources */,
 				222A00701411336600F74409 /* XMLizer.cpp in Sources */,
-				222A00831411342B00F74409 /* fr_univ_mlv_unitex_UnitexLibAndJni.cpp in Sources */,
+				222A00831411342B00F74409 /* fr_umlv_unitex_jni_UnitexLibAndJni.cpp in Sources */,
 				222A00861411342B00F74409 /* UnitexLibDirPosix.cpp in Sources */,
 				222A00881411342B00F74409 /* UnitexLibIO.cpp in Sources */,
 				222A00C61411358600F74409 /* regcomp.c in Sources */,
