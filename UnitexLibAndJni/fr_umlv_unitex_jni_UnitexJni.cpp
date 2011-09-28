@@ -44,9 +44,11 @@
 #include "UniLogger.h"
 
 #include "UnitexLibIO.h"
+#ifdef UNITEX_HAVING_MINI_PERSISTANCE
 #include "CompressedDic.h"
 #include "Fst2.h"
 #include "Alphabet.h"
+#endif
 
 
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
