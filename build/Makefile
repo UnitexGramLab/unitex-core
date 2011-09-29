@@ -923,7 +923,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
 
-UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexLibAndJni.o
+UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o
 
 TEST      = Test
 TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
@@ -1478,11 +1478,11 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
-fr_umlv_unitex_jni_UnitexLibAndJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
+fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
 	javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
 	javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.h fr.umlv.unitex.jni.UnitexJni
-	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexLibAndJni.o $(OPTIONS) -I"../logger"
+	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c $(OPTIONS) -I"../logger"
 
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
