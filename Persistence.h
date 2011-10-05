@@ -26,6 +26,9 @@
  * This library is designed to maintain persistent pointers associated
  * to file names. This may be useful when Unitex is used as a library
  * for repetitive batch processing.
+ *
+ * NOTE: persistence features are not activated if Unitex is not built
+ *       as a library (either normal or JNI)
  */
 
 void* get_persistent_structure(const char* filename);
