@@ -73,6 +73,9 @@ infos->debug=0;
 infos->renumber=new_vector_int();
 /* We set a dummy #0 cell in order to avoid painful +/- 1 at each graph access */
 vector_int_add(infos->renumber,0);
+infos->part_of_precompiled_fst2=new_vector_int();
+/* We set a dummy #0 cell in order to avoid painful +/- 1 at each graph access */
+vector_int_add(infos->part_of_precompiled_fst2,0);
 infos->current_saved_graph=0;
 return infos;
 }
@@ -86,6 +89,7 @@ if (infos==NULL) return;
 free_string_hash(infos->graph_names);
 free_string_hash(infos->tags);
 free_vector_int(infos->renumber);
+free_vector_int(infos->part_of_precompiled_fst2);
 free(infos);
 }
 
@@ -1003,7 +1007,13 @@ void save_compiled_fst2(char* name,Fst2* fst2,struct compilation_info* infos) {
 Ustring* ustr=new_Ustring();
 int n=infos->current_saved_graph;
 for (int i=0;i<fst2->number_of_graphs;i++) {
-	u_fprintf(infos->fst2,"-%d %s:%s\n",n++,name,fst2->graph_names[i+1]);
+	/* We indicate that we have a graph that is part of a .fst2 */
+	vector_int_add(infos->part_of_precompiled_fst2,1);
+	if (i==0) {
+		u_fprintf(infos->fst2,"-%d %s\n",n++,name);
+	} else {
+		u_fprintf(infos->fst2,"-%d %s:<%S>\n",n++,name,fst2->graph_names[i+1]);
+	}
 	int N=fst2->initial_states[i+1];
 	for (int j=0;j<fst2->number_of_states_per_graphs[i+1];j++) {
 		Fst2State s=fst2->states[N+j];
@@ -1016,6 +1026,7 @@ for (int i=0;i<fst2->number_of_graphs;i++) {
 		while (t!=NULL) {
 			if (t->tag_number<0) {
 				u_fprintf(infos->fst2,"-%d ",(infos->current_saved_graph-1)-t->tag_number);
+				error("** -%d **\n",(infos->current_saved_graph-1)-t->tag_number);
 			} else {
 				empty(ustr);
 				Fst2Tag tag=fst2->tags[t->tag_number];
@@ -1089,6 +1100,8 @@ if (grf==NULL) {
 if (infos->verbose_name_grf!=0) {
   u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
 }
+/* We indicate that we have a .grf */
+vector_int_add(infos->part_of_precompiled_fst2,0);
 expand_box_ranges(grf);
 /* If necessary, we resize the graph that it can hold all the states */
 if (graph->capacity<grf->n_states) {
@@ -1234,8 +1247,8 @@ u_fprintf(fst2,"f\n");
  * Performs the graph call renumbering that may have been made
  * necessary if some precompiled .fst2 were loaded
  */
-void renumber_graph_calls(Fst2* fst2,vector_int* renumber) {
-for (int i=0;i<fst2->number_of_states;i++) {
+void renumber_graph_calls(Fst2* fst2,vector_int* renumber,vector_int* part_of_precompiled_fst2) {
+/*for (int i=0;i<fst2->number_of_states;i++) {
 	Fst2State s=fst2->states[i];
 	s->transitions=reverse_list(s->transitions);
 	Transition* t=s->transitions;
@@ -1244,6 +1257,21 @@ for (int i=0;i<fst2->number_of_states;i++) {
 			t->tag_number=-(renumber->tab[-(t->tag_number)]);
 		}
 		t=t->next;
+	}
+}*/
+for (int i=1;i<=fst2->number_of_graphs;i++) {
+	if (part_of_precompiled_fst2->tab[i]) continue;
+	int n=fst2->number_of_states_per_graphs[i]+fst2->initial_states[i];
+	for (int j=fst2->initial_states[i];j<n;j++) {
+		Fst2State s=fst2->states[j];
+		s->transitions=reverse_list(s->transitions);
+		Transition* t=s->transitions;
+		while (t!=NULL) {
+			if (t->tag_number<0) {
+				t->tag_number=-(renumber->tab[-(t->tag_number)]);
+			}
+			t=t->next;
+		}
 	}
 }
 }

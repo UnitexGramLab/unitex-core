@@ -78,6 +78,10 @@ struct compilation_info {
     * if a precompiled .fst2 contains more than 1 graph
     */
    vector_int* renumber;
+   /* This array indicates whether a graph was a real .grf or a part of a
+    * precompiled .fst2, because in this last case, graph calls shouldn't be
+    * renumbered */
+   vector_int* part_of_precompiled_fst2;
    int current_saved_graph;
 };
 
@@ -90,7 +94,7 @@ int compile_grf(char*,struct compilation_info*);
 void write_tags(U_FILE*,struct string_hash*);
 void write_number_of_graphs(const VersatileEncodingConfig*,char*,int,int);
 void write_graph(U_FILE*,SingleGraph,int,unichar*);
-void renumber_graph_calls(Fst2*,vector_int*);
+void renumber_graph_calls(Fst2*,vector_int*,vector_int*);
 
 #endif
 
