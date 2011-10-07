@@ -238,7 +238,7 @@ for (;;) {
             } else {
                if (v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
                      || v->start_in_tokens>v->end_in_tokens
-                     || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars!=-1 && v->end_in_chars<v->start_in_chars)) {
+                     || (v->start_in_tokens==v->end_in_tokens && (v->end_in_chars==-1 || v->end_in_chars<v->start_in_chars))) {
                   /* If the variable is not defined properly */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
