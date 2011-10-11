@@ -49,6 +49,8 @@ if (v->variables==NULL) {
 for (int i=0;i<l;i++) {
    v->variables[i].start_in_tokens=UNDEF_VAR_BOUND;
    v->variables[i].end_in_tokens=UNDEF_VAR_BOUND;
+   v->variables[i].start_in_chars=UNDEF_VAR_BOUND;
+   v->variables[i].end_in_chars=UNDEF_VAR_BOUND;
 }
 if (p_nb_variable!=NULL) {
     *p_nb_variable=l;
