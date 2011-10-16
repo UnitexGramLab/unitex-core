@@ -112,6 +112,16 @@ return entry;
 }
 
 /**
+ * Check the format of the first line of the corpus in order
+ * to determine the format of the whole corpus.
+ */
+int check_corpus_entry(const unichar* line){
+if(u_strrchr(line,'/') == -1 || line[0] == '{')
+	return 1;
+return 0;
+}
+
+/**
  * Frees all the memory associated to the given matrix of corpus_entry structure.
  */
 void free_context_matrix(struct corpus_entry** context){
@@ -327,30 +337,108 @@ if(rforms_file != NULL){
 if(iforms_file != NULL){
 	iforms_table = new_string_hash_ptr(200000);
 }
+
+
 /* we initialize a contextual matrix */
 struct corpus_entry** context = new_context_matrix();
 initialize_context_matrix(context);
-unichar line[4096];
-while(u_fgets(line,input_text) !=EOF){
-	if(u_strlen(line) == 0){
-		initialize_context_matrix(context);
-	}
-	else{
-		corpus_entry* entry = new_corpus_entry(line);
-		if(u_strchr(line,'_')!=NULL && line[0]!='_'){
-			corpus_entry** entries = extract_simple_words(entry);
-			free_corpus_entry(entry);
-			for(int i=0;entries[i]!=NULL;i++){
-				push_corpus_entry(entries[i],context);
+
+
+unichar line[MAX_TAGGED_CORPUS_LINE];
+
+/* check the format of the corpus */
+if(u_fgets(line,input_text) == EOF){
+	fatal_error("File is empty");
+}
+rewind(input_text);
+int format_corpus = check_corpus_entry(line);
+
+if(format_corpus == 0){
+	// the corpus is in the Tagger format, one word per line where line=word/tag
+	while(u_fgets(line,input_text) !=EOF){
+		if(u_strlen(line) == 0){
+			initialize_context_matrix(context);
+		}
+		else{
+			corpus_entry* entry = new_corpus_entry(line);
+			if(u_strchr(line,'_')!=NULL && line[0]!='_'){
+				corpus_entry** entries = extract_simple_words(entry);
+				free_corpus_entry(entry);
+				for(int i=0;entries[i]!=NULL;i++){
+					push_corpus_entry(entries[i],context);
+					add_statistics(context,rforms_table,iforms_table);
+				}
+				free(entries);
+			}
+			else {
+				push_corpus_entry(entry,context);
 				add_statistics(context,rforms_table,iforms_table);
 			}
-			free(entries);
-		}
-		else {
-			push_corpus_entry(entry,context);
-			add_statistics(context,rforms_table,iforms_table);
 		}
 	}
+}
+else {
+	// the corpus is in the Unitex tagged format, one sentence per line where token={word,lemma.tag}
+	unichar *tmp,*s = (unichar*)malloc(sizeof(unichar)*(MAX_TAGGED_CORPUS_LINE));
+	int current_len,len,i;
+	while(u_fgets(line,input_text) != EOF){
+		current_len = 0, len = 0;
+		/* extract each token of the sentence */
+		while(1){
+			len = 1+u_strlen(line+current_len)-u_strlen(u_strchr(line+current_len,'}'));
+			tmp = u_strcpy_sized(s,len-1,line+current_len+1);
+			u_strcat(tmp,"\0");
+			if(u_strcmp(s,"S") == 0)
+				break;
+
+			//particular case: '\},\}.PONCT'
+			if(line[current_len+2] == '}'){
+				int start = current_len+3;
+				do{
+					tmp = u_strchr(line+start,'}');
+					start += 1+u_strlen(line+start)-u_strlen(tmp);
+				}
+				while(*(tmp+1) != ' ');
+				tmp = u_strcpy_sized(s,start-current_len-1,line+current_len+1);
+				u_strcat(tmp,"\0");
+				len += start-current_len-3;
+			}
+
+			/* format the {XX.YY} into standard tagger format, XX/YY */
+			unichar* newline = (unichar*)malloc(sizeof(unichar)*(8096));
+			if(u_strchr(s,',')[1] == ','){
+				u_strcpy(newline,",");
+			}
+			else
+				u_strcpy_sized(newline,1+u_strlen(s)-u_strlen(u_strchr(s,',')),s);
+			u_sprintf(newline,"%S/%S\0",newline,s+u_strrchr(s,'.')+1);
+			for(i=0;i<u_strlen(newline);i++){
+				if(newline[i] == ' ')
+					newline[i] = '_';
+			}
+
+			//create corpus entry
+			corpus_entry* entry = new_corpus_entry(newline);
+			if(u_strchr(newline,'_') != NULL && newline[0] != '_'){
+				corpus_entry** entries = extract_simple_words(entry);
+				free_corpus_entry(entry);
+				for(int i=0;entries[i]!=NULL;i++){
+					push_corpus_entry(entries[i],context);
+					add_statistics(context,rforms_table,iforms_table);
+				}
+				free(entries);
+			}
+			else {
+				push_corpus_entry(entry,context);
+				add_statistics(context,rforms_table,iforms_table);
+			}
+
+			free(newline);
+			current_len += len+1;
+		}
+		initialize_context_matrix(context);
+	}
+	free(s);
 }
 free_context_matrix(context);
 /* we fill dictionary files with pairs (tuple,value) and then

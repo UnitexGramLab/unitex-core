@@ -41,6 +41,7 @@
 #define MAX_CONTEXT 3
 #define RAW_FORMS 0
 #define INFLECTED_FORMS 1
+#define MAX_TAGGED_CORPUS_LINE 20000
 
 struct corpus_entry{
 	unichar* word;
@@ -52,6 +53,7 @@ void create_disclaimer(const VersatileEncodingConfig* vec,const char* file);
 void free_corpus_entry(corpus_entry*);
 void push_corpus_entry(corpus_entry*,corpus_entry**);
 struct corpus_entry* new_corpus_entry(const unichar*);
+int check_corpus_entry(const unichar*);
 struct corpus_entry* create_corpus_entry(const unichar*);
 void free_context_matrix(struct corpus_entry**);
 void initialize_context_matrix(struct corpus_entry**);
