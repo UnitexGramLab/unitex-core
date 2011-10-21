@@ -70,15 +70,14 @@ cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, 
 	cassys_tokens_list *temp = list;
     if (temp==NULL)
         return NULL;
-
-	while(current_position < position){
+ 	while(current_position < position){
         if(temp->next_token != NULL)
         {
             temp=temp->next_token;
 
 	        while (temp -> output != NULL && temp -> output -> transducer_id
 			        <= transducer_id) {
-		        temp = temp -> output;
+	            temp = temp -> output;
 	        }
         }
         else
@@ -99,16 +98,13 @@ cassys_tokens_list *add_output(cassys_tokens_list *list,
 	if (list == NULL) {
 		return NULL;
 	}
-	list ->output = output;
 
-	cassys_tokens_list *replacement_end = get_element_at(list, transducer_id,
-			number_of_tokens_replaced);
+    	list ->output = output;
 
+	cassys_tokens_list *replacement_end = get_element_at(list, transducer_id, number_of_tokens_replaced);
 	cassys_tokens_list *output_end =NULL;
 	if(list->output!=NULL)
-		output_end = get_element_at(list->output,
-			list->output->transducer_id, number_of_output_tokens);
-
+		output_end = get_element_at(list->output, list->output->transducer_id, number_of_output_tokens);
 	if (output_end == NULL) {
 		return NULL;
 	}
