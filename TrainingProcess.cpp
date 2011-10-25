@@ -347,10 +347,12 @@ initialize_context_matrix(context);
 unichar line[MAX_TAGGED_CORPUS_LINE];
 
 /* check the format of the corpus */
+long previous_file_position = ftell(input_text);
 if(u_fgets(line,input_text) == EOF){
 	fatal_error("File is empty");
 }
-rewind(input_text);
+fseek(input_text,previous_file_position,SEEK_SET);
+
 int format_corpus = check_corpus_entry(line);
 
 if(format_corpus == 0){
