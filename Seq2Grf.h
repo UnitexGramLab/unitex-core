@@ -33,6 +33,6 @@ extern const char* usage_Seq2Grf;
 
 int main_Seq2Grf(int argc,char* const argv[]);
 void build_sequences_automaton(U_FILE*, const struct text_tokens*,
-		const Alphabet*, U_FILE*, U_FILE*, int, struct hash_table*);
+		const Alphabet*, U_FILE*, U_FILE*, int, struct hash_table*,int,int,int,int);
 #endif
 
