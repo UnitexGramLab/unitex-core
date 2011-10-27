@@ -77,7 +77,7 @@ const char* usage_Dico =
 		 "  -u X/--arabic_rules=X: Arabic typographic rule configuration file\n"
 		 "  -r X/--raw=X: indicates that Dico should just produce one output file X containing\n"
 		 "                both simple and compound words, without requiring a text directory.\n"
-		 "                If X is omitted, results are displayed on the standard output."
+		 "                If X is omitted, results are displayed on the standard output.\n"
 		 "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
