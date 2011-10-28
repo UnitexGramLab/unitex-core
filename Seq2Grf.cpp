@@ -41,10 +41,9 @@
 #include "Txt2Tfst.h"
 #include "TfstStats.h"
 
-#include <vector>
-
 #define STR_VALUE_MACRO(x) #x
 #define STR_VALUE_MACRO_STRING(x) STR_VALUE_MACRO(x)
+
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
  */
@@ -56,7 +55,8 @@ struct info {
 	int length_max;
 };
 
-const char * usage_Seq2Grf =
+const char
+* usage_Seq2Grf =
 		"Usage: Seq2Tfst [OPTIONS] <snt>\n"
 		"\n"
 		"TEEEEEEEEEEST"
@@ -67,7 +67,6 @@ const char * usage_Seq2Grf =
 		"  -c/---clean: cleans each sentence automaton, keeping best paths\n"
 		"  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
 		"  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
-		//        "  -K/--korean: tells Txt2Tfst that it works on Korean\n"
 		"  -h/--help: this help\n"
 		"\n"
 		"Constructs the sequences automaton. If the sequences must be delimited\n"
@@ -91,25 +90,17 @@ const struct option_TS lopts_Seq2Grf[] = {
 		{ NULL, no_argument_TS, NULL, 0 }
 };
 
-/*
- * pouvoir paramétrer seq2grf pour
- * 1 fonctionnement standard
- * 2 génerer un graphe de seq avec jokers :
- * 		pour tte seq de n termes : n sequences à n-1 termes
- * 								   n sequences avec 1 joker à la place d'un terme
- * 								   n-1 sequences avec un joker entre 2 termes
- */
-
-
 int main_Seq2Grf(int argc, char* const argv[]) {
 	if (argc == 1) {
 		usage();
 		return 0;
 	}
+
 	char alphabet[FILENAME_MAX] = "";
 	char output[FILENAME_MAX] = "";
 	char norm[FILENAME_MAX] = "";
 	char tagset[FILENAME_MAX] = "";
+	int n_op=0,n_sup=0,n_rep=0,n_ins=0;
 	int is_korean = 0;
 	int CLEAN = 0;
 	char* fontname = NULL;
@@ -189,8 +180,10 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 				fatal_error("Invalid option --%s\n", vars->optarg);
 			break;
 		}
+
 		index = -1;
 	}
+
 	if (vars->optind != argc - 1) {
 		fatal_error("Invalid arguments: rerun with --help\n");
 	}
@@ -245,6 +238,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		strcat(tok_name, output);
 		strcat(tok_name, ".tok");
 	}
+
 	U_FILE* text=NULL;
 	U_FILE* out;
 	Alphabet* alph = NULL;
@@ -256,6 +250,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			return 1;
 		}
 	}
+
 	text = u_fopen(&vec, argv[vars->optind], U_READ);
 	if (text == NULL) {
 		fatal_error("Cannot open text file %s\n", argv[vars->optind]);
@@ -293,13 +288,14 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			(FREE_FUNCTION) free,
 			NULL,
 			(KEYCOPY_FUNCTION) keycopy);
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	int 	err=10,	insert=0,	replace=0,	suppr=1;
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
 
-	//////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////
-	int n_op=1,n_replace=1,n_reduce=0,n_enlarge=0;
-	//////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////
-	build_sequences_automaton(f, tokens, alph, tfst, tind, CLEAN,form_frequencies, n_op,n_replace,n_reduce,n_enlarge);
+	build_sequences_automaton(f, tokens, alph, tfst, tind, CLEAN,form_frequencies,err,insert,replace,suppr    		);
+	//    u_printf("BUILD_SEQUENCES_AUTOMATON\tSTOP\n");
 	//    /* Finally, we save statistics */
 	char tfst_tags_by_freq[FILENAME_MAX];
 	char tfst_tags_by_alph[FILENAME_MAX];
@@ -341,406 +337,197 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	free_Grf(grfObj);
 	free_hash_table(form_frequencies);
 	u_fclose(tag_file);
+
+
 	close_text_automaton(tfstFile);
-	free_DELA_tree(tree);
 	u_fclose(out);
 	u_fclose(grf);
 	u_fclose(f);
 	free_text_tokens(tokens);
 	u_fclose(text);
 	free_alphabet(alph);
+	free_DELA_tree(tree);
 	free_OptVars(vars);
 	return 0;
 }
 
-int** concat_arrays(int N,int n,int **array_a, int a, int ** array_b,int b ){
-	int** array_c=new int*[N];
-	for (int i=0;i<N;i++){
-		array_c[i]= new int[n];
+void add_path(Tfst * tfst,
+		int seq[],
+		int N,
+		struct info INFO,
+		const struct text_tokens* tokens,
+		Ustring * text,
+		int & current_state,
+		struct string_hash* tmp_tags ){
+	bool linked = false;
+	INFO.buffer = seq;
+	int tmp_final_state = 1;
+	Ustring* tmp_states = new_Ustring();
+	Ustring* states = new_Ustring();
+	if (N > INFO.length_max)
+		INFO.length_max = N;
+	int n_nodes = count_non_space_tokens(seq, N, tokens->SPACE);
+	for (int i = 0; i < n_nodes; i++) {
+		add_state(tfst->automaton);
+		u_printf("%d ",seq[i]);
 	}
-	for (int i=0;i<a;i++){
-		array_c[i]=array_a[i];
-	}
-	for (int i=0;i<b;i++){
-		array_c[i+a]=array_b[i];
-	}
-	return array_c;
-}
-/*
- * flatten an array of arrays of sequences
- * into an array of sequences
- * [[()()()][()()()()()][()()]]
- * =>
- * [()()()()()()()()()]
- */
-int flatten_array(int*** buffers, int N,int** flatten_buffer){
-	int s=0;
-	u_printf("test 1\n");
-	for(int i=0;i<N;i++){
-		s+=sizeof(buffers[i])/sizeof(int);
-	}
-	u_printf("test 2\n");
-	flatten_buffer= new int*[s];
-	int k =0;
-	for (int i=0;i<N;i++){
-		u_printf("test\n");
-		s=sizeof(buffers[i])/sizeof(int);
-		u_printf("test\n");
-		for (int j=0;j<s;j++){
-			u_printf("toto\ts=%d\ti=%d\tj=%d\n",s,i,j);
-			u_printf("buffers[i][j]=%d\t",buffers[i][j]);
-			flatten_buffer[k]=buffers[i][j];
-			k++;
-		}
-	}
-	u_printf("test 3\n");
-	return k;
-}
-//int** concat_arrays(int ** buffer1, int buffer2)
-
-void build_reduced_buffer(int* buffer, int N,int **reduced_buffer, int n_reduce, int n_op){
-	u_printf("[[[[[[[build_reduced_buffer]]]]]]]\n");
-	for(int i=0;i<N-1;i++){
-		u_printf("[%d]",buffer[i]);
-	}
-	u_printf("\n");
-	u_printf("n_reduce = %d\tn_op = %d\tN=%d\tbuffer_length =%d\n",n_reduce,n_op,N,sizeof(buffer)/sizeof(int));
-	if(n_reduce>0 && n_op>0){
-		u_printf("\nGO\n");
-		for (int i=0;i<N;i++){
-			for (int j=0;j<N-1;j++){
-				if(j<i){
-					reduced_buffer[i][j]=buffer[j];
-				}else if(j>i){
-					reduced_buffer[i][j]=buffer[j+1];
-				}else{
-					if (j+1<N){
-						reduced_buffer[i][j]=buffer[j+1];
-					}
-				}
-				if(j==N-1){
-					u_printf("buffer[%d]=%S\n\n",j,buffer[j]);
-				}
-			}
-		}
-	}
-
-	u_printf("print reduced buffer :\n");
-	u_printf("N=%d\n",N);
-	for (int i=0;i<N;i++){
-		u_printf("(%d)",buffer[i]);
-	}
-	u_printf("\n");
-	u_printf("inside "
-			"\tvoid build_reduced_buffer(int* buffer, \n\tint N=%d, \n\tint **reduced_buffer, \n\tint n_reduce=%d, \n\tint n_op=%d){\n",N,n_reduce,n_op);
-	for (int i=0;i<N;i++){
-		u_printf("<");
-		for (int j=0;j<N-1;j++){
-			u_printf("%d ",reduced_buffer[i][j]);
-		}
-		u_printf(">\n");
-	}
-
-	u_printf("build_reduce_buffer : done\n");
-}
-//void build_reduced_buffer(int** buffer, int N,int ** reduced_buffer, int n_reduce, int n_op, struct info inf){
-//	u_printf("\n\tEMPTY FUNCTION\n");
-//}
-void build_enlarged_buffer(int* buffer, int N, int **enlarged_buffer, int n_enlarge,int n_op){
-	u_printf("build_enlarged_buffer\n");
-	u_printf("n_enlarge=%d>0 && n_op=%d>0\n",n_enlarge,n_op);
-	if(n_enlarge>0 &&n_op>0){
-		//enlarged_buffer = new int*[N+1];
-		for (int i=0;i<N;i++){
-			enlarged_buffer[i] = new int[N-1];
-			u_printf("%d ",buffer[i]);
-		}
-		for (int i=0;i<N;i++){
-			for (int j=0;j<N+1;j++){
-				if (j<i){
-					enlarged_buffer[i][j]=buffer[j];
-				}else if (j==i){
-					enlarged_buffer[i][j]=-1;
-				}else{
-					if (i<N){
-						enlarged_buffer[i][j]=buffer[j-1];
-					}
-				}
-			}
-		}
-	}
-	u_printf("inside \n\t"
-			"void build_enlarged_buffer(int* buffer, int N, int** enlarged_buffer, int n_enlarge,int n_op){\n");
-	for (int i=0;i<N;i++){
-		u_printf("<");
-		for (int j=0;j<N+1;j++){
-			u_printf("%d ",enlarged_buffer[i][j]);
-		}
-		u_printf(">\n");
-	}
-	u_printf("\n");
-}
-void build_replaced_buffer(int* buffer, int N, int** replaced_buffer,int n_replace, int n_op){
-	if(n_replace>0 && n_op>0){
-		for (int i=0;i<N;i++){
-			//		int k=0;
-			for (int j=0;j<N;j++){
-				if(i==j)	replaced_buffer[i][j]=-1;
-				else		replaced_buffer[i][j]=buffer[j];
-			}
-		}
-	}
-}
-
-
-
-
-// recursif
-void build_derived_buffer(int** buffer,		//
-		int N,								//
-		int n_seq,
-		int ** derived_buffer,				//
-		int n_reduce,						//
-		int n_enlarge,						//
-		int n_replace,						//
-		int n_op,							//
-		struct info inf){
-	u_printf("\n>>>>>>>>build_derived_buffer<<<<<<<<<<<\n");
-	u_printf(	"\tn_reduce=%d\n\tn_enlarge=%d\n\tn_replace=%d\n\tn_op=%d\n",
-			n_reduce,n_enlarge,n_replace,n_op);
-	for (int i=0;i<N;i++){
-		u_printf("%d",buffer[0][i]);
-	}
-	u_printf("\n");
-	if (n_op>0){
-		//		int** produced;
-		u_printf("n_op=%d>0",n_op);
-//REDUCE////////////////////////////
-		if(
-								n_reduce>0
-//				false
-		){
-			//false){//
-			u_printf("[[[[[[[[[[[REDUCE]]]]]]]]]]]\n");
-
-			//			for (int i=0;i<N;i++){
-			u_printf("n_reduce=%d>0\n",n_reduce);
-			for (int i=0;i<N;i++){
-				u_printf("%d ",buffer[0][i]);
-			}
-			u_printf("\n");
-			int ** produced= new int*[N];
-			for (int i=0;i<N;i++){
-				produced[i]= new int[N-1];
-			}
-			for (int i=0;i<n_seq;i++){
-				u_printf("\t\tderivation n°%d\n",i);
-				for (int j= 0;j<N;j++){
-					u_printf("%d-",buffer[i][j]);
-				}
-				u_printf("\n");
-				build_reduced_buffer(	buffer[i], 	N, 	produced,			n_reduce, 						n_op);
-				for (int j= 0;j<N;j++){
-					u_printf("%d-",buffer[0][j]);
-				}
-				u_printf("\n");
-				u_printf("\noutside\n");
-				for (int j=0;j<N;j++){
-					u_printf("[");
-					for (int k=0;k<N-1;k++){
-						u_printf("%d ",produced[j][k]);
-					}
-					u_printf("]\n");
-				}
-//				u_printf("\nnow recursive call\n");
-				//				derived += produced
-				//				build_derived_buffer(	produced,	N,	derived_buffer,	n_reduce-1,n_enlarge, n_replace,n_op-1,	inf);
-			}
-			////////////////////////////////////////////////////////////////
-			////////////////////////////////////////////////////////////////
-			u_printf("derived buffer <= produced\n");
-			for (int i=0;i<N;i++){
-				for (int j=0;j<N-1;j++)
-				derived_buffer[i][j]=
-						produced[i][j];
-			}
-			u_printf("N=%d\n",N);
-			u_printf("test reduce delete produced[][]\n");
-			for(int i=0;i<N;i++) {
-				delete [] produced[i];
-			}
-			delete [] produced;
-			u_printf("delete produced (reduced) ok\n");
-			////////////////////////////////////////////////////////////////
-			////////////////////////////////////////////////////////////////
-//			derived_buffer = concat_arrays(N,)
-			u_printf("[[[[[[[[[[[[[[[[reduce : done]]]]]]]]]]]]]]\n");
-		}else
-			u_printf("n_reduce =0\n");
-//ENLARGE////////////////////////////
-		if(
-								n_enlarge>0
-//				false
-		){
-			u_printf("[[[[[[[[[[[ENLARGE]]]]]]]]]]]\n");
-
-			u_printf("n_enlarge=%d>0\n",n_enlarge);
-			u_printf("enlarge : produced = new int[%d]\n",N);
-			////////////////////////////
-			int ** produced2= new int*[N+1];
-			for (int i=0;i<N;i++){
-				produced2[i]= new int[N+1];
-			}
-			/////////////////////
-			for (int i=0;i<n_seq;i++){
-				//				u_printf("i=%d\n",i);
-				//				for (int j= 0;j<N;j++){
-				//					u_printf("%d.",j);
-				//				}
-				//				u_printf("\n");
-				//				for (int j= 0;j<N;j++){
-				//					u_printf("%d-",buffer[0][j]);
-				//				}
-				//				u_printf("\n");
-				//				u_printf("\tN=%d\n\tn_enlarge=%d\n\tn_op=%d\n ",N,n_enlarge,n_op);
-				build_enlarged_buffer(	buffer[i], 	N, 	produced2,				n_enlarge, 				n_op);
-				//				derived += produced
-
-				//build_derived_buffer(	produced,	N,n_seq,	derived_buffer,n_reduce,n_enlarge-1, n_replace,	n_op-1,	inf);
-
-				//				u_printf("\noutside\n");
-				for (int j=0;j<N;j++){
-					u_printf("%d[",j);
-					for (int k=0;k<N+1;k++){
-						u_printf("%d ",produced2[j][k]);
-					}
-					u_printf("]\n");
-				}
-				u_printf("\n");
-			}
-			u_printf("now delete produced\n");
-			u_printf("N=%d\n",N);
-			////////////////////////////////////////////////////////////////			u_printf("test enlarge delete produced[][]\n");
-			////////////////////////////////////////////////////////////////			u_printf("test enlarge delete produced[][]\n");
-						for(int i=0;i<N;i++) {
-							u_printf("i=%d\n",i);
-							u_printf("%d[",i);
-							for (int k=0;k<N+1;k++){
-								u_printf("%d ",produced2[i][k]);
-							}
-							u_printf("]\n");
-							free( produced2[i]);
-//							delete produced2[i];
-
-						}
-
-						u_printf("delete produced 2\n");
-						free( produced2);
-//						delete [] produced;
-						u_printf("[[[[[[[[[[[[[[[[enlarge : done]]]]]]]]]]]]]]\n");
-
-			////////////////////////////////////////////////////////////////			u_printf("test enlarge delete produced[][]\n");
-			////////////////////////////////////////////////////////////////			u_printf("test enlarge delete produced[][]\n");
-			u_printf("[[[[[[[[[[[[[[[[enlarge : done]]]]]]]]]]]]]]\n");
-
-		}
-		//REPLACE///////////////////////
-		u_printf("n_replace=%d\n",n_replace);
-		if(
-				n_replace>0
-				//				false
-		){
-			u_printf("[[[[[[[[[[[REPLACE]]]]]]]]]]]\n");
-			u_printf("1\n");
-			int**
-				produced= new int*[N];
-			u_printf("1\n");
-			for (int i=0;i<N;i++){
-				produced[i]= new int[N];
-			}
-			for (int i=0;i<N;i++){
-				u_printf("%d ",buffer[0][i]);
-			}
-			u_printf("\n");
-			//				derived += produced
-			for (int i=0;i<n_seq;i++){
-				build_replaced_buffer(	buffer[i], 	N, 	produced,							n_replace, 	n_op);
-				//				build_derived_buffer(	produced,	N,n_seq,	derived_buffer,n_reduce,n_enlarge, 	n_replace-1,n_op-1,	inf);
-			}
-			//			for(int i=0;i<N;i++) delete produced[i];
-			//			delete [] produced;
-			for (int j=0;j<N;j++){
-				u_printf("[");
-				for (int k=0;k<N;k++){
-					u_printf("%d ",produced[j][k]);
-				}
-				u_printf("]\n");
-			}
-			u_printf("[[[[[[[[[[[[[[[[replace: done]]]]]]]]]]]]]]\n");
-		}
-
-		//		u_printf("N=%d",N);
-		//		u_printf("test reduce delete produced[][]\n");
-		//		for(int i=0;i<N;i++) delete produced[i];
-		//		delete [] produced;
-		//		u_printf("delete produced (reduced) ok\n");
-	}
-	else{
-		u_printf("n_op=0\n");
-
-	}
-	u_printf("derived_buffer inside\n");
-	for (int i=0;i<N;i++){
-		u_printf("[");
-		for (int j=0;j<N-1;j++){
-			u_printf("%d ",derived_buffer[i][j]);
-		}
-		u_printf("]\n");
-	}
-
-	u_printf("build_derived_buffer out\n");
-}
-
-void remove_space_tokens(int buffer[],int N,int space_token_id, int* &cleaned_buffer){
-
-	int n_ns_tok= count_non_space_tokens(buffer, N, space_token_id);
-	cleaned_buffer = new int[n_ns_tok];
-	//	u_printf("space_token_id : %d\n",space_token_id);
-	int k=0;
-	u_printf("\nremove_space_tokens\n");
-	for (int i=0;i<N;i++){
-		u_printf("(%d)",buffer[i]);
-		if(buffer[i]!=space_token_id){
-			cleaned_buffer[k]=buffer[i];
-			u_printf("[%d]",cleaned_buffer[k]);
-			k++;
-		}
-	}
-	u_printf("\n");
-	for (int i=0;i<k;i++){
-		u_printf("[%d]",cleaned_buffer[i]);
-	}
-
 	u_printf("\n\n");
-	//	for (int i=0;i<n_ns_tok;i++){
-	//		u_printf("[%d]",cleaned_buffer[i]);
-	//	}
+	while (N>0 && seq[N - 1] == tokens->SPACE){
+		N = N - 1;
+	}
+	u_printf("tokens->SPACE=%d\n",tokens->SPACE);
+	u_printf("N=%d\n",N);
+
+	for (int il = 0; il < N; il++) {
+		u_printf("%d=%d:%S\t",il,seq[il],tokens->token[seq[il]]);
+		vector_int_add(tfst->tokens, seq[il]);
+		int l = u_strlen(tokens->token[seq[il]]);
+		vector_int_add(tfst->token_sizes, l);
+		u_strcat(text, tokens->token[seq[il]], l);
+	}
+
+	tfst->text= text->str;
+
+	/* Transitions */
+	for (int i = 0; i < N; i++) {
+		if (seq[i] == tokens->SENTENCE_MARKER) {
+			u_printf(">>>#>>>\ti = %d ET buffer[%d] = %s\n",i,i,tokens->SENTENCE_MARKER);
+		} else {
+			if (seq[i] != tokens->SPACE) {
+				u_sprintf(tmp_states, "@STD\n@%S\n@%d.0.0-%d.%d.%d\n.\n",
+						tokens->token[seq[i]], 0, //i,
+						0, //i,
+						1, //tfst->token_sizes->tab[i]-1,
+						1 //get_length_in_jamo(tokens->token[buffer[i]][tfst->token_sizes->tab[i]-1],korean)-1
+				);
+				u_strcat(states, tmp_states);
+				int tag_number = get_value_index(tmp_states->str, tmp_tags);
+				if (linked==false) {
+					Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
+					add_outgoing_transition(
+							tfst->automaton->states[0],
+							tag_number,
+							current_state + 1);
+					//    trans    = tfst->automaton->states[current_state]->outgoing_transitions;
+					linked=true;
+				} else if (i == N - 1) {
+					u_printf("Last word Transition : \t");
+					Transition *trans = tfst->automaton->states[current_state]->outgoing_transitions;
+					add_outgoing_transition(
+							tfst->automaton->states[current_state],
+							tag_number,
+							tmp_final_state);
+					u_printf("add_outgoing_transition(");
+					u_printf("state(%d), ",current_state);
+					u_printf("%d, ",tag_number);
+					u_printf("%d)\n",tmp_final_state);
+				} else {
+					Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
+					add_outgoing_transition(
+							tfst->automaton->states[current_state],
+							tag_number,
+							current_state + 1);
+					trans = tfst->automaton->states[current_state]->outgoing_transitions;
+					if (trans == NULL) {
+						u_printf("ERROR 3 : transition not added\n");
+					}
+				}
+				current_state++;
+			}
+		}
+	}
 }
+
+
+
+int work(	int t[],
+		int size,		int current,
+		int errors,		int insert,		int replace,		int suppr,
+		char last_op,
+		int res[],
+		int pos_res,
+		int & cur,
+		Tfst * tfst,
+		struct info INFO,
+		const struct text_tokens* tokens,
+		Ustring * text,
+		int & current_state,
+		struct string_hash* tmp_tags
+		) {
+	if (current==size) {
+		/* We print the current line */
+		//			printf("%d/>",cur);
+		for (int i=0;i<pos_res;i++) {
+			u_printf("%d ",res[i]);
+		}
+		add_path(
+				tfst,
+				res,
+				pos_res,
+				INFO,
+				tokens,
+				text,
+				current_state,
+				tmp_tags );
+		u_printf("current_state : %d", current_state);
+		u_printf("\n");
+		cur++;
+		if (errors==0) {
+			/* If we are done, we quit */
+			return cur;
+		}
+		/* If we have reached the end of the array, we can only consider insertions,
+		 * but only if the previous op wasn't a suppr, because it would become then a replace op */
+		if (insert!=0 && last_op!='S') {
+			res[pos_res]='*';
+			work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,cur//,total
+					,tfst,	INFO,	tokens,	text,	current_state,
+					tmp_tags);
+		}
+		return cur;
+	}
+	/* Normal case */
+	res[pos_res]=t[current];
+	work(t,size,current+1,errors,insert,replace,suppr,0,res,pos_res+1,cur//,total
+			,tfst,	INFO,	tokens,	text,	current_state,
+			tmp_tags);
+	/* Now, we consider errors */
+	if (errors==0) return cur;
+	if (insert!=0 && last_op!='S') {
+		// id du token <E>...
+		res[pos_res]='*';
+		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,cur//,total
+				,tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags);
+	}
+	if (suppr!=0 && last_op!='I') {
+		work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,pos_res,cur//,total
+				,tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags);
+	}
+	if (replace!=0) {
+		// id du token <E>...
+		res[pos_res]='*';
+		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,pos_res+1,cur//,total
+				,tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags);
+	}
+	return cur;
+}
+
+
 /**
  * This function builds the sequences automaton that correspond to the
  * sequences from the input file. It saves it into the given file.
  */
+
+// txt -> tfst (objet) tfst2grf -> .grf, pas de fichier .tfst
 void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		const Alphabet* alph, U_FILE* out_tfst, U_FILE* out_tind,
 		int we_must_clean, struct hash_table* form_frequencies,
-		int n_op, int n_reduce, int n_enlarge, int n_replace
-) {
+		int err,int insert, int replace, int suppr) {
 	u_printf("build_sequences_automaton START\n");
-	u_printf("n_op=%d\n",n_op);
-	//	u_printf("%d",info.SPACE);
-	///////////////////////////////////////
 	// New Automaton
-	///////////////////////////////////////
 	Tfst* tfst = new_Tfst(NULL, NULL, 0);
 	tfst->current_sentence = 1;
 	tfst->automaton = new_SingleGraph();
@@ -748,22 +535,17 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	tfst->offset_in_tokens = 0;
 	tfst->tokens = new_vector_int(2);
 	tfst->token_sizes = new_vector_int(0);
-
-	//	bool do_replace=true, do_reduce=true, do_enlarge=true;
 	int current_state = 0;
-	///////////////////////////////////////
 	// New Initial State
-	///////////////////////////////////////
 	add_state(tfst->automaton); /* initial state */
+	//    add_state(tfst->automaton); /* final state*/
 	set_initial_state(tfst->automaton->states[current_state]);
 	int initial_state = current_state;
 	u_printf("current_state : %d\n",current_state);
 	u_printf("intitial_state : %d\n",initial_state);
-
 	current_state++;
 	int tmp_final_state = 1;
 	u_printf("current_state : %d\n",current_state);
-
 	struct string_hash* tags = new_string_hash(132);
 	struct string_hash* tmp_tags = new_string_hash(132);
 	unichar EPSILON_TAG[] = { '@', '<', 'E', '>', '\n', '.', '\n', '\0' };
@@ -775,249 +557,48 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	INFO.alph = alph;
 	INFO.SPACE = tokens->SPACE;
 	INFO.length_max = 0;
-	int N = 2;
-	int total = 2;
+	int N,total;
+	int nbsentence = 0;
 	int buffer[MAX_TOKENS_IN_SENTENCE];
 	Ustring* tmp_states = new_Ustring();
 	Ustring* states = new_Ustring();
 	Ustring* foo = new_Ustring(1);
+
+
 	u_fprintf(out_tfst, "0000000001\n");
 	if (f == NULL) {
 		u_printf("f NULL\n");
 		fatal_error("Cannot open file\n");
 	}
-	int nbsentence = 0;
-	//    int n_added_states = 0;
 	bool linked;
+	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
 
-	///////////////////////////////////////
-	// While there is a sequence to read
-	///////////////////////////////////////
-
-	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)&& count_non_space_tokens(buffer, N, tokens->SPACE)>0) {
-		u_printf("///////////////////////////////////////////////\n");
-		u_printf("While : Start\tsentence = %d\n",nbsentence);
-		u_printf("///////////////////////////////////////////////\n");
-		//buffers / sequences
-		linked = false;
-		INFO.buffer = buffer;
-		u_printf("N=%d\n",N);
-		if (N > INFO.length_max)
-			INFO.length_max = N;
-		u_printf("test 1\n");
-		int n_nodes = count_non_space_tokens(buffer, N, tokens->SPACE);
-		u_printf("n_nodes : %d\n",n_nodes);
-		u_printf(" test 2 : n_nodes=%d\n",n_nodes);
-		int *clean_buffer =new int[n_nodes];
-
-		u_printf("n_enlarge=%d\n\n\n\n",n_enlarge);
-		int **derived_buffer = new int *[N+n_enlarge];
-		for (int i=0;i<N;i++){
-			derived_buffer[i]=new int[N+n_enlarge];
-		}
-		int ** buffers = new int *[1];
-		buffers[0]= new int[N];
-		u_printf("buffers init\n");
-		for(int i=0; i<N;i++){
-			buffers[0][i]=buffer[i];
-			u_printf("%d ",buffers[0][i]);
-		}
-
-
-		u_printf("\nbuild_derived_buffer\n");
-		int n_seq =1;
-		build_derived_buffer(buffers, N,n_seq,derived_buffer,n_reduce,n_enlarge,n_replace,n_op,INFO);
-		u_printf("\nDERIVED_BUFFER :\n");
-		for (int i=0;i<N;i++){
-			u_printf("[");
-			for (int j=0;j<N-1;j++){
-				u_printf("%d",derived_buffer[i][j]);
-			}
-			u_printf("]\n");
-		}
-
-		u_printf("build_derived_buffer : done\n");
-		int n_derived_sequences=0;
-/*
-		/////////////////////////////////////
-		// check
-		/////////////////////////////////////
-		//		u_printf("\nbuffer\n");
-		//		for (int i=0;i<N;i++){
-		//			if (buffer[i]==tokens->SPACE) 	u_printf("_");
-		//			else 							u_printf("%S",tokens->token[buffer[i]]);
-		//		}
-		//		u_printf("\n\n>>>>>reduced<<<<<\n");
-		//		for (int i=0;i<n_nodes;i++){
-		//			for(int j=0;j<n_nodes-1;j++){
-		//				if (reduced_buffer[i][j]==tokens->SPACE) 	u_printf("_ ");
-		//				else 										u_printf("%S ",tokens->token[reduced_buffer[i][j]]);
-		//			}
-		//			u_printf("\n");
-		//		}
-		//		u_printf("\n>>>>>replaced<<<<<\n");
-		//		for (int i=0;i<n_nodes;i++){
-		//			for(int j=0;j<n_nodes;j++){
-		//				if (replaced_buffer[i][j]==tokens->SPACE)	u_printf("_ ");
-		//				else if(replaced_buffer[i][j]==-1) 			u_printf("<E> ");
-		//				else 										u_printf("%S ",tokens->token[replaced_buffer[i][j]]);
-		//			}
-		//			u_printf("\n");
-		//		}
-		//		u_printf("\n>>>>>enlarged<<<<<\n");
-		//		for (int i=0;i<n_nodes+1;i++){
-		//			for(int j=0;j<n_nodes+1;j++){
-		//				if (enlarged_buffer[i][j]==tokens->SPACE)	u_printf("_ ");
-		//				else if(enlarged_buffer[i][j]==-1)			u_printf("<E> ");
-		//				else										u_printf("%S ",tokens->token[enlarged_buffer[i][j]]);
-		//			}
-		//			u_printf("\n");
-		//		}
-		//		u_printf("enlarged_buffer[%d][%d]=%S\n",n_nodes,n_nodes,tokens->token[enlarged_buffer[n_nodes][n_nodes]]);
-		 *
-		 */
-		u_printf("========================================\n");
-		///////////////////////////////////////
-		// Count of the number of states to create
-		///////////////////////////////////////
-		// Sequences done
-		//Automaton
-//		for each produced sequence
-		for (int a=0;a<N;a++){
-			u_printf("for each produced sequence :\n");
-			u_printf("sequence num %d\n",a);
-			u_printf("[");
-			for (int i=0;i<N-1;i++){
-				buffer[i]=derived_buffer[a][i];
-				u_printf("%d ",buffer[i]);
-			}
-			u_printf("]\n");
-
-			int n_nodes = count_non_space_tokens(buffer, N, tokens->SPACE);
-			u_printf("n_nodes : %d\n",n_nodes);
-			u_printf(" test 2 : n_nodes=%d\n",n_nodes);
-//			int *clean_buffer =new int[n_nodes];
-
-			remove_space_tokens(buffer, N, tokens->SPACE, clean_buffer);
-			///////////////////////////////////////
-			//	Adding States
-			///////////////////////////////////////
-			u_printf("Adding States !\n");
-
-			u_printf("n_nodes=%d\n",n_nodes);
-			for (int i = 0; i < n_nodes; i++) {
-				add_state(tfst->automaton);
-			}
-			u_printf("");
-			while (N>0 && buffer[N - 1] == tokens->SPACE){
-				N = N - 1;
-			}
-			for (int il = 0; il < N; il++) {
-				vector_int_add(tfst->tokens, buffer[il]);
-				int l = u_strlen(tokens->token[buffer[il]]);
-				vector_int_add(tfst->token_sizes, l);
-				u_strcat(foo, tokens->token[buffer[il]], l);
-			}
-			tfst->text= foo->str;
-
-			///////////////////////////////////////
-			//	Adding Transitions
-			///////////////////////////////////////
-			u_printf("Adding Transitions !\t");
-			for (int i = 0; i < N; i++) {
-				if (buffer[i] == tokens->SENTENCE_MARKER) {
-					u_printf(">>>#>>>\ti = %d ET buffer[%d] = %s\n",i,i,tokens->SENTENCE_MARKER);
-				} else {
-					if (buffer[i] != tokens->SPACE) {
-						unichar* token=tokens->token[buffer[i]];
-						u_sprintf(tmp_states, "@STD\n@%S\n@%d.0.0-%d.%d.%d\n.\n",
-								token, 0, 0, 1, 1 );
-						u_strcat(states, tmp_states);
-						int tag_number = get_value_index(tmp_states->str, tmp_tags);
-						if (linked==false) {
-							Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
-							add_outgoing_transition(
-									tfst->automaton->states[0],
-									tag_number, current_state + 1);
-							linked=true;
-						} else if (i == N - 1) {
-							//						u_printf("Last word Transition : \t");
-							Transition *trans = tfst->automaton->states[current_state]->outgoing_transitions;
-							add_outgoing_transition(
-									tfst->automaton->states[current_state],
-									tag_number, tmp_final_state);
-						} else {
-							Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
-							add_outgoing_transition(tfst->automaton->states[current_state],
-									tag_number, current_state + 1);
-							trans = tfst->automaton->states[current_state]->outgoing_transitions;
-						}
-						current_state++;
-					}
-				}
-			}
-			u_printf("nbstates =%d/%d\n",current_state,tfst->automaton->number_of_states);
-			//		delete [] *reduced_buffer;
-			//		delete [] reduced_buffer;
-			//
-			//		delete [] *replaced_buffer;
-			//		delete [] replaced_buffer;
-			//
-			//		delete [] *enlarged_buffer;
-			//		delete [] enlarged_buffer
-
-			u_printf("DELETES !!!!!\n");
-			u_printf("test reduced\n");
-			//		for (int i = 0; i < N; i++) {
-			//			delete[] reduced_buffer[i] ;
-			//		}
-			//		delete[] reduced_buffer;
-			//
-			//		for (int i = 0; i < N; i++) {
-			//			delete[] replaced_buffer[i] ;
-			//		}
-			//		delete[] replaced_buffer;
-			//		//			free(replaced_buffer);
-			//		for (int i = 0; i < N; i++) {
-			//			delete[] enlarged_buffer[i] ;
-			//		}
-			//		delete[] enlarged_buffer;
-
-			//		for( int i=0;i<N;i++){
-			//			delete [] approx_buffer[i];
-			//		}
-			//		delete [] approx_buffer;
-			for( int i=0;i<N;i++){
-				delete [] derived_buffer[i];
-			}
-			delete [] derived_buffer;
-			delete [] clean_buffer;
-			delete [] buffers[0];
-			delete [] buffers;
-			nbsentence++;
-			u_printf("DELETE OK !!\n");
-			u_printf("OKOKOK\n");
-		}
-		u_printf("OKOKOK\n");
-		u_printf("while : out \n");
+		// sequences produites par dérivations :
+		int *res =new int[N+insert];
+		int curr=0;
+		int n_seq=work(buffer, N,0, err,insert, replace,suppr,0, res,0,curr,//sequences,
+				tfst,	INFO,	tokens,	foo,	current_state,
+				tmp_tags);
 	}
-	//	free_Ustring(foo);
-	///////////////////////////////////////
-	// adding final state and
-	// declaring it as final state
-	///////////////////////////////////////
-	add_state(tfst->automaton);
-	int final_state = current_state;
 
+	//    adding final state :
+	add_state(tfst->automaton);
+	// declaring it as final state
+	int final_state = current_state;
 	u_printf("final_state : %d\n",final_state);
 	set_final_state(tfst->automaton->states[tmp_final_state]);
 	int tag_number = get_value_index(EPSILON_TAG, tmp_tags);
+	u_printf("add_outgoing_transition(");
+	u_printf("state(%d), ",tmp_final_state);
+	u_printf("%d, ",tag_number);
+	u_printf("%d)\n",final_state);
+	//minimize(tfst->automaton,1);
 	if (we_must_clean) {
 		/* If necessary, we apply the "good paths" heuristic */
 		keep_best_paths(tfst->automaton, tmp_tags);
 	}
 	if (tfst->automaton->number_of_states == 0) {
-		/* Case 1: the automaton has been emptied because of the tagset filtering */
+		//        /* Case 1: the automaton has been emptied because of the tagset filtering */
 		error("Sentence %d is empty\n", tfst->current_sentence);
 		SingleGraphState initial = add_state(tfst->automaton);
 		set_initial_state(initial);
@@ -1026,20 +607,26 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		vector_ptr_add(tfst->tags, new_TfstTag(T_EPSILON));
 		save_current_sentence(tfst, out_tfst, out_tind, NULL, 0, NULL);
 	} else { /* Case 2: the automaton is not empty */
-		/* We minimize the sentence automaton. It will remove the unused states and may
-		 * factorize suffixes introduced during the application of the normalization tree. */
-		minimize(tfst->automaton, 1);
-		/* We explore all the transitions of the automaton in order to renumber transitions */
+			/* We minimize the sentence automaton. It will remove the unused states and may
+			 * factorize suffixes introduced during the application of the normalization tree. */
+
+			minimize(tfst->automaton, 1);
+			/* We explore all the transitions of the automaton in order to renumber transitions */
+		u_printf("tfst->automaton->number_of_states =%d\n",tfst->automaton->number_of_states);
+
 		for (int i = 0; i < tfst->automaton->number_of_states; i++) {
 			Transition* trans =
 					tfst->automaton->states[i]->outgoing_transitions;
+			int k=0;
 			while (trans != NULL) {
 				/* For each tag of the graph that is actually used, we put it in the main
 				 * tags and we use this index in the tfst transition */
-				trans->tag_number = get_value_index(
-						tmp_tags->value[trans->tag_number], tags);
+				trans->tag_number =
+						get_value_index(tmp_tags->value[trans->tag_number], tags);
 				trans = trans->next;
+				k++;
 			}
+			u_printf("*");
 		}
 	}
 
@@ -1047,13 +634,15 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	u_printf("save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,NULL)\n");
 	save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,
 			NULL);
-	//
+
 	free_Ustring(states);
 	free_Ustring(tmp_states);
-//	free_Ustring(foo);
-		foo->str=NULL;
+	foo->str=NULL;
+	free_Ustring(foo);
 	free_string_hash(tags);
 	free_string_hash(tmp_tags);
 	close_text_automaton(tfst);
 
 }
+
+
