@@ -823,7 +823,7 @@ buffer->size=0;
 u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
-matches=load_match_list(concordance,NULL);
+matches=load_match_list(concordance,NULL,NULL);
 /* In an html concordance, we have to know the match number in the
  * concord.ind file, but we need a renumber system, since in
  * ambiguous output only mode, we have to keep trace of the original
@@ -1150,7 +1150,7 @@ buffer->pos_next_read=0;
 buffer->size=0;
 
 /* We load the match list */
-matches=load_match_list(concordance,NULL);
+matches=load_match_list(concordance,NULL,NULL);
 int pos_in_enter_pos=0;
 u_printf("Merging outputs with text...\n");
 while (matches!=NULL) {

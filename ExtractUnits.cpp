@@ -51,7 +51,7 @@ int N_TOKENS_READ;
 OutputPolicy output_policy;
 int current_beginning,current_end,RESULT;
 /* We load the match list */
-struct match_list* l=load_match_list(concord,&output_policy);
+struct match_list* l=load_match_list(concord,&output_policy,NULL);
 current_end=-1;
 
 struct extract_buf_mapped* buffer=(struct extract_buf_mapped*)malloc(sizeof(struct extract_buf_mapped));

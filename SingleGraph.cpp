@@ -1456,3 +1456,9 @@ for (q=0;q<B->number_of_states;q++) {
 free_SingleGraph(B,NULL);
 }
 
+
+void reverse_transition_lists(SingleGraph g) {
+for (int i=0;i<g->number_of_states;i++) {
+	g->states[i]->outgoing_transitions=reverse_list(g->states[i]->outgoing_transitions);
+}
+}

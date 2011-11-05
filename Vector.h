@@ -168,6 +168,13 @@ vec->tab[vec->nbelems++]=data;
 return vec->nbelems-1;
 }
 
+inline int vector_int_set(vector_int* vec,int pos,int data,Abstract_allocator prv_alloc=NULL) {
+while (pos>=vec->size) {
+   vector_int_resize(vec,vec->size*2,prv_alloc);
+}
+vec->tab[vec->nbelems++]=data;
+return vec->nbelems-1;
+}
 
 inline void vector_int_copy(vector_int* dst,vector_int* src,Abstract_allocator prv_alloc=NULL) {
 if (dst==NULL) return;

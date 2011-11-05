@@ -271,6 +271,7 @@ if (first_text_dependent_tag==NULL) {
    e->m.end_pos_in_token=-1;
    return;
 }
+e->end=first_text_dependent_tag->dest_state_text;
 struct list_int* tags=first_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
    if (tags->n!=-1) {
@@ -294,6 +295,7 @@ if (last_text_dependent_tag==NULL) {
    e->m.end_pos_in_token=-1;
    return;
 }
+e->start=last_text_dependent_tag->source_state_text;
 e->m.start_pos_in_token=-1;
 e->m.start_pos_in_char=-1;
 e->m.start_pos_in_letter=-1;
@@ -653,7 +655,7 @@ while (text_tags!=NULL) {
           * with special value -1 */
          goto restore_dic_variable;
       } else if (fst2_tag->type==BEGIN_POSITIVE_CONTEXT_TAG) {
-    	  error("coucou $[\n");
+    	  fatal_error("problem $[\n");
       }
    } else {
       current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
@@ -809,6 +811,11 @@ u_fprintf(f,"%d.%d.%d %d.%d.%d",l->m.start_pos_in_token,l->m.start_pos_in_char,
 if (l->output!=NULL) {
 	/* If there is an output */
 	u_fprintf(f," ");
+	if (p->tagging) {
+		/* In tagging mode, we add the sentence number as well as
+		 * the start and end states in the .tfst of the match */
+		u_fprintf(f,"%d %d %d:",p->tfst->current_sentence,l->start,l->end);
+	}
 	if (p->debug) {
 		save_real_output_from_debug(f,p->output_policy,l->output);
 	}

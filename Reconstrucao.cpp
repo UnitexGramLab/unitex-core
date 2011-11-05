@@ -185,7 +185,7 @@ if (f_list==NULL) {
    return 1;
 }
 OutputPolicy output_policy;
-struct match_list* list=load_match_list(f_list,&output_policy);
+struct match_list* list=load_match_list(f_list,&output_policy,NULL);
 u_fclose(f_list);
 if (output_policy==IGNORE_OUTPUTS) {
    error("Invalid match list %s\n",argv[vars->optind]);

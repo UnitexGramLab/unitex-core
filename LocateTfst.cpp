@@ -77,6 +77,10 @@ const char* usage_LocateTfst =
 		 "Variable injection:\n"
 		 "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y\n"
 		 "\n"
+		 "Tagging option:\n"
+		 "  --tagging: indicates that the concordance must be a tagging one, containing\n"
+		 "             additional information on the start and end states of each match\n"
+		 "\n"
 		 "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
@@ -112,6 +116,7 @@ const struct option_TS lopts_LocateTfst[]= {
      {"help",no_argument_TS,NULL,'h'},
      {"negation_operator",required_argument_TS,NULL,'g'},
      {"variable",required_argument_TS,NULL,'v'},
+     {"tagging",no_argument_TS,NULL,1},
      {NULL,no_argument_TS,NULL,0}
 };
 
@@ -133,6 +138,7 @@ char alphabet[FILENAME_MAX]="";
 int is_korean=0;
 int tilde_negation_operator=1;
 int selected_negation_operator=0;
+int tagging=0;
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
@@ -187,6 +193,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'h': usage(); return 0;
+   case 1: tagging=1; break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -233,7 +240,7 @@ strcat(output,"concord.ind");
 int OK=locate_tfst(text,grammar,alphabet,output,
                    &vec,match_policy,output_policy,
                    ambiguous_output_policy,variable_error_policy,search_limit,is_korean,
-                   tilde_negation_operator,injected);
+                   tilde_negation_operator,injected,tagging);
 free_vector_ptr(injected);
 free_OptVars(vars);
 return (!OK);

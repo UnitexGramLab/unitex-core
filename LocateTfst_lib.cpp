@@ -109,7 +109,7 @@ int locate_tfst(const char* text,const char* grammar,const char* alphabet,const 
                 MatchPolicy match_policy,
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,
-		          int tilde_negation_operator,vector_ptr* injected_vars) {
+		          int tilde_negation_operator,vector_ptr* injected_vars,int tagging) {
 Tfst* tfst=open_text_automaton(vec,text);
 if (tfst==NULL) {
 	return 0;
@@ -121,6 +121,7 @@ if (infos.fst2==NULL) {
 	close_text_automaton(tfst);
 	return 0;
 }
+infos.tagging=tagging;
 infos.tfst=tfst;
 infos.number_of_matches=0;
 infos.alphabet=NULL;
@@ -150,6 +151,9 @@ if (infos.fst2->debug) {
 	/* If LocateTfst uses a debug fst2, we force the output mode to MERGE,
 	 * we allow ambiguous outputs and we write graph names into the
 	 * concordance file */
+	if (tagging) {
+		fatal_error("--tagging option cannot be used with a debug-compiled .fst2\n");
+	}
 	infos.output_policy=MERGE_OUTPUTS;
 	infos.ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 	infos.debug=1;
@@ -159,11 +163,15 @@ if (infos.fst2->debug) {
 		u_fprintf(infos.output,"%S\n",infos.fst2->graph_names[i+1]);
 	}
 }
-switch (infos.real_output_policy) {
-case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
-case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
-case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
-default: break;
+if (tagging) {
+	u_fprintf(infos.output,"#X\n");
+} else {
+	switch (infos.real_output_policy) {
+	case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
+	case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
+	case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
+	default: break;
+}
 }
 #ifdef TRE_WCHAR
 infos.filters=new_FilterSet(infos.fst2,infos.alphabet);

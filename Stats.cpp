@@ -256,7 +256,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 	U_FILE* concord = u_fopen(vec, concordfname, U_READ);
 	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(vec, outfilename, U_WRITE);
 	U_FILE* cod = u_fopen(BINARY, codname, U_READ);
-	match_list* matches = load_match_list(concord, NULL);
+	match_list* matches = load_match_list(concord,NULL,NULL);
 	u_fclose(concord);
 
 

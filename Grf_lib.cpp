@@ -570,7 +570,6 @@ return v;
 }
 
 
-
 /**
  * Computes and returns g's reverse transitions.
  */

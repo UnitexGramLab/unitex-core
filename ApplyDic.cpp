@@ -792,7 +792,7 @@ if (f==NULL) {
    error("Cannot open %s\n",concord_filename);
    return 0;
 }
-struct match_list* l=load_match_list(f,NULL);
+struct match_list* l=load_match_list(f,NULL,NULL);
 u_fclose(f);
 while (l!=NULL) {
    if (l->output!=NULL && l->output[0]=='/') {

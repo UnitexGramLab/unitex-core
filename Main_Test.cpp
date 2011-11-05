@@ -48,6 +48,8 @@
  */
 int main(int argc,char* argv[]) {
 setBufferMode();
+VersatileEncodingConfig vec=VEC_DEFAULT;
+
 #if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <txt> start end\n");
@@ -82,7 +84,6 @@ u_fclose(f);
 return 0;
 #endif
 
-/*VersatileEncodingConfig vec=VEC_DEFAULT;*/
 
 /* benchmark A: 80 jours, 10 itérations */
 
@@ -163,6 +164,7 @@ sys		0m0.136s
 
  */
 
+#if 0
 load_persistent_alphabet("/home/paumier/unitex/French/Alphabet.txt");
 load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
 load_persistent_dictionary("/home/paumier/unitex/French/Dela/communesFR+.bin");
@@ -192,6 +194,28 @@ for (int i=0;i<N;i++) {
 	exec_unitex_command(main_Locate,"Locate","-t"PFX"/home/paumier/tmp/toto.snt","/home/paumier/unitex/French/Graphs/essai_poids.fst2","-a/home/paumier/unitex/French/Alphabet.txt","-L","-M","--all","-m/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin","-m/home/paumier/unitex/French/Dela/communesFR+.bin","-b","-Y","-qutf8-no-bom",NULL);
 	exec_unitex_command(main_Concord,"Concord",PFX"/home/paumier/tmp/toto_snt/concord.ind","-fCourier 10 Pitch","-s12","-l40","-r55","--html","-a/home/paumier/unitex/French/Alphabet_sort.txt","--CL","-qutf8-no-bom",NULL);
 }
+#endif
+
+/*
+~/workspace/C++/bin/Test ~/unitex/French/Corpus/seq2grf_snt/seq2grf.grf ~/unitex/French/Corpus/seq2grf_snt/beautiful.grf
+ */
+if (argc!=3) {
+	fatal_error("Usage: Test <grf> <output grf>\n");
+	return 1;
+}
+Grf* grf=load_Grf(&vec,argv[1]);
+if (grf==NULL) {
+	fatal_error("Cannot load %s\n",argv[1]);
+}
+beautify(grf,NULL);
+U_FILE* f=u_fopen(&vec,argv[2],U_WRITE);
+if (f==NULL) {
+	fatal_error("Cannot create %s\n",argv[2]);
+}
+save_Grf(f,grf);
+u_fclose(f);
+free_Grf(grf);
+
 return 0;
 }
 

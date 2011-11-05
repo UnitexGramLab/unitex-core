@@ -84,6 +84,9 @@ struct tfst_match_list {
 struct tfst_simple_match_list {
 	struct tfst_match* match;
 	Match m;
+	/* start and end are the tfst states that bound the match */
+	int start;
+	int end;
 	unichar* output;
 	struct tfst_simple_match_list* next;
 };

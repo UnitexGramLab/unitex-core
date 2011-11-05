@@ -108,11 +108,12 @@ struct locate_tfst_infos {
 	struct opt_contexts** contexts;
 
 	int debug;
+	int tagging;
 };
 
 
 int locate_tfst(const char*,const char*,const char*,const char*, const VersatileEncodingConfig*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,
-                VariableErrorPolicy,int,int,int,vector_ptr*);
+                VariableErrorPolicy,int,int,int,vector_ptr*,int);
 
 
 #endif

@@ -99,13 +99,13 @@ create_text_concordances(vec,in1,in2,concor1,concor2);
 /* Then, we load the two index */
 U_FILE* f1=u_fopen(vec,in1,U_READ);
 if (f1==NULL) return 0;
-struct match_list* l1=load_match_list(f1,NULL);
+struct match_list* l1=load_match_list(f1,NULL,NULL);
 u_fclose(f1);
 U_FILE* f2=u_fopen(vec,in2,U_READ);
 if (f2==NULL) {
    return 0;
 }
-struct match_list* l2=load_match_list(f2,NULL);
+struct match_list* l2=load_match_list(f2,NULL,NULL);
 u_fclose(f2);
 /* We open the output file in UTF8, because the GUI expects this file
  * to be that encoded */

@@ -219,7 +219,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	u_printf("Loading %s...\n", tags_ind);
 	U_FILE* tag_file = u_fopen(&vec, tags_ind, U_READ);
 	if (tag_file != NULL) {
-		tag_list = load_match_list(tag_file, NULL);
+		tag_list = load_match_list(tag_file,NULL,NULL);
 		u_fclose(tag_file);
 		tag_file =NULL;
 	}
