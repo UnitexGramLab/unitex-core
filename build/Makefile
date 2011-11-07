@@ -106,6 +106,7 @@ INSTALL_COMMAND = make install
 
 SYSLIBLOGGER = SyncLoggerPosix.o
 SYSLIBMAPPED = MappedFileHelperPosix.o DirHelperPosix.o
+SYSLIBDIRIO = UnitexLibDirPosix.o
 
 #APPDIR = where to install binaries
 APPDIR = ../../../App
@@ -263,6 +264,7 @@ endif
 
 SYSLIBLOGGER = SyncLoggerWin.o
 SYSLIBMAPPED = MappedFileHelperWin.o DirHelperWin.o
+SYSLIBDIRIO = UnitexLibDirWin.o
 
 APPDIR = ../../../App
 
@@ -301,6 +303,7 @@ TAR_PARAM =
 
 SYSLIBLOGGER = SyncLoggerWin.o
 SYSLIBMAPPED = MappedFileHelperWin.o DirHelperWin.o
+SYSLIBDIRIO = UnitexLibDirWin.o
 
 APPDIR = ../../../App
 
@@ -933,7 +936,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
 
-UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o
+UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o UnitexLibIO.o $(SYSLIBDIRIO)
 
 TEST      = Test
 TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
@@ -1490,6 +1493,15 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
+
+UnitexLibDirPosix.o : ../UnitexLibAndJni/UnitexLibDirPosix.cpp
+	$(CC) -c ../UnitexLibAndJni/UnitexLibDirPosix.cpp $(OPTIONS)
+
+UnitexLibDirWin.o : ../UnitexLibAndJni/UnitexLibDirWin.cpp
+	$(CC) -c ../UnitexLibAndJni/UnitexLibDirWin.cpp $(OPTIONS)
+
+UnitexLibIO.o : ../UnitexLibAndJni/UnitexLibIO.cpp
+	$(CC) -c ../UnitexLibAndJni/UnitexLibIO.cpp $(OPTIONS)
 
 fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
