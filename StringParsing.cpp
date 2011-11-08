@@ -52,6 +52,7 @@ const unichar P_COMMA_DOT_BACKSLASH_DIGITS[] = { ',', '.' , '\\', '0', '1', '2',
 const unichar P_DOT_PLUS_SLASH_BACKSLASH[] = { '.', '+', '/', '\\', 0 };
 const unichar P_DOT_COMMA_PLUS_SLASH_BACKSLASH[] = { '.', ',', '+', '/', '\\', 0 };
 const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
+const unichar P_DIGITS[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0 };
 
 
 /**
@@ -309,6 +310,57 @@ for (int i=0;s[i]!='\0';i++) {
       u_strcat(result,PROTECTION_CHAR);
    }
    u_strcat(result,s[i]);
+}
+return result->len-n;
+}
+
+
+/**
+ * This function performs a string copy where any protected char that
+ * appears in chars_to_unprotect is unprotected.
+ * The function returns the length of the resulting string.
+ */
+int unprotect(const unichar* s,unichar* result,const unichar* chars_to_unprotect) {
+int j=0;
+for (int i=0;s[i]!='\0';i++) {
+	if (s[i]==PROTECTION_CHAR) {
+		if (s[i+1]=='\0') {
+			fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
+		}
+		if (!local_u_strchr(chars_to_unprotect,s[i+1])) {
+			result[j++]=PROTECTION_CHAR;
+		}
+		result[j++]=s[i+1];
+		i++;
+	} else {
+		result[j++]=s[i];
+	}
+}
+result[j]='\0';
+return j;
+}
+
+
+/**
+ * This function performs a string copy where any protected char that
+ * appears in chars_to_unprotect is unprotected.
+ * The function returns the length of the resulting string.
+ */
+int unprotect(const unichar* s,Ustring* result,const unichar* chars_to_unprotect) {
+int n=result->len;
+for (int i=0;s[i]!='\0';i++) {
+	if (s[i]==PROTECTION_CHAR) {
+		if (s[i+1]=='\0') {
+			fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
+		}
+		if (!local_u_strchr(chars_to_unprotect,s[i+1])) {
+			u_strcat(result,PROTECTION_CHAR);
+		}
+		u_strcat(result,s[i+1]);
+		i++;
+	} else {
+		u_strcat(result,s[i]);
+	}
 }
 return result->len-n;
 }

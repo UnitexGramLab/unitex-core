@@ -954,7 +954,8 @@ if (!u_strcmp(e->inflected,e->lemma)) {
 /* We test if the 2 strings have the same number of tokens */
 int n_inflected=get_number_of_tokens(e->inflected);
 int n_lemma=get_number_of_tokens(e->lemma);
-if (n_inflected!=n_lemma) {
+if (n_inflected!=n_lemma
+		|| !u_strcmp(e->inflected," ") ||  !u_strcmp(e->inflected,"-")) {
    /* If the 2 strings have not the same number of tokens,
     * we rawly consider them as two big tokens. However,
     * we put the prefix "_" in order to indicate that we have
@@ -1030,6 +1031,9 @@ inflected[i]='\0';
  *       => inflected="write"
  */
 void rebuild_token(unichar* inflected,unichar* compress_info) {
+if (inflected[0]=='\0') {
+	fatal_error("Unexpected empty inflected form in rebuild_token\n");
+}
 int n=0;
 int i,pos=0;
 /* We count the number of characters to remove */
@@ -1040,7 +1044,7 @@ while (compress_info[pos]>='0' && compress_info[pos]<='9') {
 i=u_strlen(inflected)-n;
 if (i<0) {
    /* This case should never happen */
-   fatal_error("Internal error in rebuild_token\n");
+   fatal_error("Internal error in rebuild_token:\ninflected=<%S>\ninf code=<%S>\n",inflected,compress_info);
 }
 /* Then we append the remaining suffix */
 if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
@@ -1057,6 +1061,9 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
  * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
  */
 void uncompress_entry(const unichar* inflected,unichar* INF_code,Ustring* result) {
+if (inflected[0]=='\0') {
+	fatal_error("Unexpected empty inflected form in uncompress_entry\n");
+}
 unsigned int n;
 int pos;
 empty(result);
@@ -1087,11 +1094,11 @@ if (INF_code[0]=='_' && !semitic) {
 	   fatal_error("Unexpected problem in uncompress_entry: inflected=<%S> inf=<%S>\n",inflected,INF_code);
    }
    truncate(result,result->len-n);
-   while (INF_code[pos]!='\0') {
-      /* If a char is protected in the code, it must stay protected,
-       * so there is nothing to do but a raw copy. */
-      u_strcat(result,INF_code[pos++]);
-   }
+
+   /* If a char is protected in the code, it must stay protected except if it's a digit,
+    * because digit protection was only necessary because of the number after "_" in
+    * lines like "_15Einstein.N+Npr" */
+   unprotect(INF_code+pos,result,P_DIGITS);
    return;
 }
 /* Last case: we have to process token by token */

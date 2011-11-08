@@ -80,6 +80,7 @@ extern const unichar P_COMMA_DOT_BACKSLASH_DIGITS[] ;
 extern const unichar P_DOT_PLUS_SLASH_BACKSLASH[] ;
 extern const unichar P_DOT_COMMA_PLUS_SLASH_BACKSLASH[] ;
 extern const unichar P_ELAG_TAG[] ;
+extern const unichar P_DIGITS[] ;
 
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
       const unichar* forbidden_chars,const unichar* chars_to_keep_protected);
@@ -97,5 +98,7 @@ int parse_string(const unichar* s,Ustring* result,const char* stop_chars);
 
 int escape(const unichar* s,unichar* result,const unichar* chars_to_escape);
 int escape(const unichar* s,Ustring* result,const unichar* chars_to_escape);
+int unprotect(const unichar* s,unichar* result,const unichar* chars_to_unprotect);
+int unprotect(const unichar* s,Ustring* result,const unichar* chars_to_unprotect);
 
 #endif
