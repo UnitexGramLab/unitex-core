@@ -706,7 +706,7 @@ void explore_node(struct sort_tree_node* n, struct sort_infos* inf,
 				 *
 				 * NOTE: in factorize mode, we always ignore duplicates */
 				int err;
-				struct dela_entry* entry = tokenize_DELAF_line(couple->s,1,0,&err,0);
+				struct dela_entry* entry = tokenize_DELAF_line(couple->s,1,&err,0);
 				if (entry==NULL) {
 					/* We have a non DELAF entry line, like for instance a comment one */
 					if (*last!=NULL && *last!=(struct dela_entry*)-1) {

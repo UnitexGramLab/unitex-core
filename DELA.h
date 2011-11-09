@@ -98,7 +98,7 @@ int equal(const struct dela_entry*,const struct dela_entry*);
 struct dela_entry* tokenize_DELAF_line(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAF_line_opt(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAF_line(const unichar*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-struct dela_entry* tokenize_DELAF_line(const unichar*,int,int,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_DELAF_line(const unichar*,int,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_tag_token(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAS_line(const unichar*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* is_strict_DELAS_line(const unichar*,Alphabet*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
@@ -130,6 +130,7 @@ void debug_print_entry(struct dela_entry*);
 void debug_println_entry(struct dela_entry*);
 
 void dela_entry_to_string(Ustring* s,struct dela_entry* e);
+void replace_special_equal_signs(unichar* s);
 
 #endif
 

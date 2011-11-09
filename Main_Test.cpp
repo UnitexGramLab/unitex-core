@@ -196,28 +196,11 @@ for (int i=0;i<N;i++) {
 }
 #endif
 
-if (argc!=3) return 1;
-U_FILE* f_in=u_fopen(&vec,argv[1],U_READ);
-if (f_in==NULL) {
-	fatal_error("Cannot open %s\n",argv[1]);
-}
-U_FILE* f_out=u_fopen(&vec,argv[2],U_WRITE);
-if (f_out==NULL) {
-	fatal_error("Cannot open %s\n",argv[2]);
-}
-int n;
-unichar c;
-while ((n=u_fgetc_raw(f_in))!=EOF) {
-	c=(unichar)n;
-	if (c!=0) u_fputc_raw(c,f_out);
-}
-u_fclose(f_in);
-u_fclose(f_out);
-return 0;
-
 
 /*
 ~/workspace/C++/bin/Test ~/unitex/French/Corpus/seq2grf_snt/seq2grf.grf ~/unitex/French/Corpus/seq2grf_snt/beautiful.grf
+
+~/workspace/C++/bin/Test ~/unitex/French/Graphs/a.grf ~/unitex/French/Graphs/a_beautiful.grf
  */
 if (argc!=3) {
 	fatal_error("Usage: Test <grf> <output grf>\n");

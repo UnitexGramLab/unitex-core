@@ -97,7 +97,7 @@ if(mx == NULL){
 (*mx)->tag_number = tag_number;
 (*mx)->state_number = state_number;
 int verbose = 0;
-struct dela_entry* tmp = tokenize_DELAF_line(tag,1,0,&verbose);
+struct dela_entry* tmp = tokenize_DELAF_line(tag,1,&verbose);
 free_dela_entry(tmp);
 if(verbose == 0){
 	(*mx)->tag = tokenize_tag_token(tag);

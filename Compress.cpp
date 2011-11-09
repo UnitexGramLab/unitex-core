@@ -254,7 +254,15 @@ while(EOF!=readline(s,f)) {
 	}
 	else {
 		/* If we have a line, we tokenize it */
-		entry=tokenize_DELAF_line(s->str,1,1,NULL,compress_tokenize_abstract_allocator);
+		/* First, to avoid problems, we replace by the char #1 any occurrence of '='
+		 * that should be replaced by ' ' and and '-'. For instance:
+		 *
+		 * =,X.Y   =>   $,X.Y  ($ stands here for the char whose code is 1)
+		 * \=,X.Y   =>  \=,X.Y
+		 * \\=,X.Y   =>  \$,X.Y
+		 */
+		replace_special_equal_signs(s->str);
+		entry=tokenize_DELAF_line(s->str,1,NULL,compress_tokenize_abstract_allocator);
 		if (entry!=NULL) {
 			/* If the entry is well-formed */
 			if (FLIP) {
@@ -264,7 +272,6 @@ while(EOF!=readline(s,f)) {
 				entry->inflected=entry->lemma;
 				entry->lemma=o;
 			}
-
 			if (contains_unprotected_equal_sign(entry->inflected)
 				|| contains_unprotected_equal_sign(entry->lemma)) {
 				/* If the inflected form or lemma contains any unprotected = sign,
@@ -272,6 +279,11 @@ while(EOF!=readline(s,f)) {
 				 * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
 				 *                        pomme-de-terre,pomme-de-terre.N
 				 */
+				unichar* inflected=u_strdup(entry->inflected);
+				unichar* lemma=u_strdup(entry->lemma);
+				if (inflected==NULL || lemma==NULL) {
+					fatal_alloc_error("main_Compress");
+				}
 				unichar inf_tmp[DIC_WORD_SIZE];
 				unichar lem_tmp[DIC_WORD_SIZE];
 				u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
@@ -279,9 +291,6 @@ while(EOF!=readline(s,f)) {
 				/* We replace the unprotected = signs by spaces */
 				replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
 				replace_unprotected_equal_sign(entry->lemma,(unichar)' ');
-				/* And then we unprotect the other = signs */
-				unprotect_equal_signs(entry->inflected);
-				unprotect_equal_signs(entry->lemma);
 				/* We insert "pomme de terre,pomme de terre.N" */
 				get_compressed_line(entry,tmp,semitic);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
@@ -289,19 +298,14 @@ while(EOF!=readline(s,f)) {
 				u_strcpy(entry->inflected,inf_tmp);
 				u_strcpy(entry->lemma,lem_tmp);
 				/* We replace the unprotected = signs by minus */
+				free(entry->inflected); entry->inflected=inflected;
+				free(entry->lemma); entry->lemma=lemma;
 				replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
 				replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
-				/* And then we unprotect the other = signs */
-				unprotect_equal_signs(entry->inflected);
-				unprotect_equal_signs(entry->lemma);
 				get_compressed_line(entry,tmp,semitic);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
 			}
 			else {
-				/* If the entry does not contain any unprotected = sign,
-				 * we unprotect the = signs */
-				unprotect_equal_signs(entry->inflected);
-				unprotect_equal_signs(entry->lemma);
 				get_compressed_line(entry,tmp,semitic);
 				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
 			}

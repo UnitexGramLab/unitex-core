@@ -81,6 +81,10 @@ extern const unichar P_DOT_PLUS_SLASH_BACKSLASH[] ;
 extern const unichar P_DOT_COMMA_PLUS_SLASH_BACKSLASH[] ;
 extern const unichar P_ELAG_TAG[] ;
 extern const unichar P_DIGITS[] ;
+extern const unichar P_BACKSLASH_EQUAL[] ;
+extern const unichar P_BACKSLASH[] ;
+extern const unichar P_COMMA_DOT_EQUAL_BACKSLASH[] ;
+
 
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
       const unichar* forbidden_chars,const unichar* chars_to_keep_protected);

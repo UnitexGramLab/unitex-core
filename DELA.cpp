@@ -113,14 +113,12 @@ return 0;
 /**
  * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
  * NULL if there is an error in the line. The second parameter indicates if
- * comments are allowed at the end of the line or not. 'keep_equal_signs' indicates
- * if protected equal signs must be unprotected. This option is used by the Compress
- * program. If 'verbose' is NULL, the
+ * comments are allowed at the end of the line or not. If 'verbose' is NULL, the
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
  * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
-struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,int keep_equal_signs,
+struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,
                                        int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
 int i,val;
@@ -149,7 +147,7 @@ i=0;
 /*
  * We read the inflected part
  */
-val=parse_string(line,&i,temp,P_COMMA,strict_unprotected ? P_DOT : P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
+val=parse_string(line,&i,temp,P_COMMA,strict_unprotected ? P_DOT : P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
@@ -181,7 +179,7 @@ res->inflected=u_strdup(temp,prv_alloc);
  * We read the lemma part
  */
 i++;
-val=parse_string(line,&i,temp,P_DOT,strict_unprotected ? P_COMMA : P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
+val=parse_string(line,&i,temp,P_DOT,strict_unprotected ? P_COMMA : P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
@@ -325,9 +323,9 @@ return NULL;
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
  */
-struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,int keep_equal_signs,
+struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,
                                        int *verbose,Abstract_allocator prv_alloc) {
-return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0,prv_alloc);
+return tokenize_DELAF_line(line,comments_allowed,verbose,0,prv_alloc);
 }
 
 /**
@@ -337,7 +335,7 @@ return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0,prv_
  * error message to the standard output in case of error.
  */
 struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,Abstract_allocator prv_alloc) {
-return tokenize_DELAF_line(line,comments_allowed,0,NULL,0,prv_alloc);
+return tokenize_DELAF_line(line,comments_allowed,NULL,0,prv_alloc);
 }
 
 
@@ -347,7 +345,7 @@ return tokenize_DELAF_line(line,comments_allowed,0,NULL,0,prv_alloc);
  * line.
  */
 struct dela_entry* tokenize_DELAF_line(const unichar* line,Abstract_allocator prv_alloc) {
-return tokenize_DELAF_line(line,1,0,NULL,0,prv_alloc);
+return tokenize_DELAF_line(line,1,NULL,0,prv_alloc);
 }
 
 
@@ -1068,7 +1066,7 @@ unsigned int n;
 int pos;
 empty(result);
 /* The rebuilt line must start by the inflected form, followed by a comma */
-escape(inflected,result,P_COMMA_DOT);
+escape(inflected,result,P_COMMA_DOT_EQUAL_BACKSLASH);
 u_strcat(result,",");
 if (INF_code[0]=='.') {
    /* First case: the lemma is the same than the inflected form
@@ -1261,7 +1259,7 @@ if (DELA_line==NULL) return;
 int error_code;
 struct dela_entry* entry;
 if (is_a_DELAF) {
-   entry=tokenize_DELAF_line(DELA_line,1,0,&error_code,strict_unprotected,prv_alloc);
+   entry=tokenize_DELAF_line(DELA_line,1,&error_code,strict_unprotected,prv_alloc);
 } else {
    entry=tokenize_DELAS_line(DELA_line,&error_code,prv_alloc);
 }
@@ -1439,28 +1437,31 @@ return 0;
  * Tests if the given sequence contains an unprotected = sign
  */
 int contains_unprotected_equal_sign(const unichar* s) {
-if (s[0]=='=') {
+/*if (s[0]=='=') {
    return 1;
 }
 for (int i=1;s[i]!='\0';i++) {
    if (s[i]=='=' && s[i-1]!='\\') {
       return 1;
    }
+}*/
+while (*s!='\0') {
+	if (*s==1) return 1;
+	s++;
 }
 return 0;
 }
 
 
 /**
- * Replaces all the unprotected = signs by the char 'c'
+ * Replaces all the unprotected = signs by the char 'c'.
+ * Now, such '=' signs are supposed to have been previously
+ * replaced by chars #1.
  */
 void replace_unprotected_equal_sign(unichar* s,unichar c) {
-if (s[0]=='=') {
-   s[0]=c;
-}
-for (int i=1;s[i]!='\0';i++) {
-   if (s[i]=='=' && s[i-1]!='\\') {
-      s[i]=c;
+for (int i=0;s[i]!='\0';i++) {
+   if (s[i]==1) {
+	   s[i]=c;
    }
 }
 }
@@ -1783,3 +1784,28 @@ for (int i=0;i<e->n_inflectional_codes;i++) {
 	escape(e->inflectional_codes[i],s,P_COLON_SLASH_BACKSLASH);
 }
 }
+
+
+/**
+ * This function replaces any '=' char by a char #1 if the '=' sign
+ * is not protected by a \
+ * For instance:
+ * =,X.Y   =>   $,X.Y  ($ stands here for the char whose code is 1)
+ * \=,X.Y   =>  \=,X.Y
+ * \\=,X.Y   =>  \$,X.Y
+ */
+void replace_special_equal_signs(unichar* s) {
+int i=0;
+while (s[i]!='\0') {
+	if (s[i]==PROTECTION_CHAR) {
+		if (s[i+1]=='\0') {
+			fatal_error("Unexpected \\ at end of string in replace_special_equal_signs\n");
+		}
+		i=i+2;
+	} else {
+		if (s[i]=='=') s[i]=1;
+		i++;
+	}
+}
+}
+

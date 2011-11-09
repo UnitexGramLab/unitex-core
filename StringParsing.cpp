@@ -53,6 +53,9 @@ const unichar P_DOT_PLUS_SLASH_BACKSLASH[] = { '.', '+', '/', '\\', 0 };
 const unichar P_DOT_COMMA_PLUS_SLASH_BACKSLASH[] = { '.', ',', '+', '/', '\\', 0 };
 const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
 const unichar P_DIGITS[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0 };
+const unichar P_BACKSLASH_EQUAL[] = { '\\', '=', 0 };
+const unichar P_BACKSLASH[] = { '\\', 0 };
+const unichar P_COMMA_DOT_EQUAL_BACKSLASH[] = { ',', '.', '=', '\\', 0 };
 
 
 /**
@@ -305,11 +308,14 @@ int n=result->len;
 for (int i=0;s[i]!='\0';i++) {
    if (local_u_strchr(chars_to_escape,s[i])) {
       u_strcat(result,PROTECTION_CHAR);
+      u_strcat(result,s[i]);
    } else if (s[i]==PROTECTION_CHAR) {
       i++;
       u_strcat(result,PROTECTION_CHAR);
+      u_strcat(result,s[i]);
+   } else {
+	   u_strcat(result,s[i]);
    }
-   u_strcat(result,s[i]);
 }
 return result->len-n;
 }
