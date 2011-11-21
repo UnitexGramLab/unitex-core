@@ -131,7 +131,7 @@ Fst2Automaton* load_automaton(Elag_fst_file_in*);
 Fst2Automaton* fst_file_autalmot_load(Elag_fst_file_in*,int);
 Fst2Automaton* load_elag_grammar_automaton(const VersatileEncodingConfig*,char* fst2,language_t*);
 
-Elag_fst_file_out* fst_file_out_open(const VersatileEncodingConfig*,char*,int);
+Elag_fst_file_out* fst_file_out_open(const VersatileEncodingConfig*,const char*,int);
 void fst_file_close_out(Elag_fst_file_out * fstout);
 
 void fst_file_write(Elag_fst_file_out * fstf, const Fst2Automaton * A);

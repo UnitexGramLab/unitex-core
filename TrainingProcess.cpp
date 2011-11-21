@@ -382,11 +382,12 @@ if(format_corpus == 0){
 else {
 	// the corpus is in the Unitex tagged format, one sentence per line where token={word,lemma.tag}
 	unichar *tmp,*s = (unichar*)malloc(sizeof(unichar)*(MAX_TAGGED_CORPUS_LINE));
-	int current_len,len,i;
+	int current_len,len;
+	unsigned int i;
 	while(u_fgets(line,input_text) != EOF){
 		current_len = 0, len = 0;
 		/* extract each token of the sentence */
-		while(1){
+		for (;;) {
 			len = 1+u_strlen(line+current_len)-u_strlen(u_strchr(line+current_len,'}'));
 			tmp = u_strcpy_sized(s,len-1,line+current_len+1);
 			u_strcat(tmp,"\0");

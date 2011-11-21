@@ -23,6 +23,7 @@
 #include <string.h>
 #include "Persistence.h"
 #include "Error.h"
+#include "AbstractCallbackFuncModifier.h"
 #include "logger/SyncLogger.h"
 
 

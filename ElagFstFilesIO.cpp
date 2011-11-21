@@ -270,7 +270,7 @@ return load_automaton(fstin);
  * Opens a .fst2 file in output mode and returns the associated fst_file_out_t
  * structure, or NULL in case of error.
  */
-Elag_fst_file_out* fst_file_out_open(const VersatileEncodingConfig* vec,char* fname,int type) {
+Elag_fst_file_out* fst_file_out_open(const VersatileEncodingConfig* vec,const char* fname,int type) {
 Elag_fst_file_out* res=(Elag_fst_file_out*)malloc(sizeof(Elag_fst_file_out));
 if (res==NULL) {
    fatal_alloc_error("fst_file_out_open");
