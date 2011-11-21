@@ -233,7 +233,7 @@ Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc=STANDARD_ALLOCAT
 /* Functions for writing grammars */
 void write_graph(U_FILE*,Fst2*,int);
 void write_fst2_tags(U_FILE*,Fst2*);
-void save_Fst2(const VersatileEncodingConfig*,char*,Fst2*);
+void save_Fst2(const VersatileEncodingConfig*,const char*,Fst2*);
 
 
 int is_initial_state(Fst2State);

@@ -821,7 +821,7 @@ u_fprintf(f,"f \n");
 /**
  * Saves the given fst2 into a file.
  */
-void save_Fst2(const VersatileEncodingConfig* vec,char* name,Fst2* fst2) {
+void save_Fst2(const VersatileEncodingConfig* vec,const char* name,Fst2* fst2) {
 if (fst2==NULL) {
    fatal_error("NULL fst2 in save_Fst2\n");
 }
