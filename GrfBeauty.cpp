@@ -949,7 +949,7 @@ free(g);
 
 
 static int process_group(Grf* grf,int parent_group,int start,int end,struct list_int** t,
-					vector_ptr* groups,int *group_of,ReverseTransitions* reverse,
+					vector_ptr* groups,ReverseTransitions* reverse,
 					int* box_width,int* box_height);
 
 /**
@@ -1002,15 +1002,13 @@ return (a>b)?a:b;
  * of several subgroups.
  */
 static int process_lemon_group(Grf* grf,int parent_group,int start,int end,struct list_int** t,
-					vector_ptr* groups,int *group_of,ReverseTransitions* reverse,
+					vector_ptr* groups,ReverseTransitions* reverse,
 					int* box_width,int* box_height) {
 /* First case, a subgraph made of only two linked states: start --> end */
 if (-1!=vector_int_contains(grf->states[start]->transitions,end)) {
 	int current_group=groups->nbelems;
 	BoxGroup* group=new_BoxGroup(PAIR,start,end);
 	group->parent=parent_group;
-	group_of[start]=current_group;
-	group_of[end]=current_group;
 	group->width=box_width[start]+WIDTH_MARGIN+box_width[end];
 	group->height=max(box_height[start],box_height[end]);
 	vector_ptr_add(groups,group);
@@ -1019,7 +1017,6 @@ if (-1!=vector_int_contains(grf->states[start]->transitions,end)) {
 int current_group=groups->nbelems;
 BoxGroup* group=new_BoxGroup(LEMON,start,end);
 group->parent=parent_group;
-group_of[start]=current_group;
 group->width=box_width[start]+2*WIDTH_MARGIN+box_width[end];
 group->height=max(box_height[start],box_height[end]);
 vector_ptr_add_if_absent(groups,group);
@@ -1029,7 +1026,7 @@ int height=0;
 for (int i=0;i<transitions->nbelems;i++) {
 	int subend=get_last_state_before_end(grf,transitions->tab[i],end);
 	int subgroup_index=process_group(grf,current_group,transitions->tab[i],subend,t,groups,
-									group_of,reverse,box_width,box_height);
+									reverse,box_width,box_height);
 	if (subgroup_index==-1) return -1;
 	vector_int_add(group->subgroups,subgroup_index);
 	BoxGroup* subgroup=(BoxGroup*)groups->tab[subgroup_index];
@@ -1054,7 +1051,7 @@ return current_group;
  * happen if the given grf has not been fully cleaned by compute_ignorable_transitions.
  */
 static int process_group(Grf* grf,int parent_group,int start,int end,struct list_int** t,
-					vector_ptr* groups,int *group_of,ReverseTransitions* reverse,
+					vector_ptr* groups,ReverseTransitions* reverse,
 					int* box_width,int* box_height) {
 if (start==end) {
 	/* If we have a single state, then it is a group of size 1 for whose
@@ -1062,7 +1059,6 @@ if (start==end) {
 	int current_group=groups->nbelems;
 	BoxGroup* group=new_BoxGroup(SINGLE,start,end);
 	group->parent=parent_group;
-	group_of[start]=current_group;
 	group->width=box_width[start];
 	group->height=box_height[start];
 	vector_ptr_add(groups,group);
@@ -1080,7 +1076,7 @@ if (n_factorizing==2) {
 	/* If there are none other factorizing states that the start and end ones,
 	 * then we can directly call process_lemon_group */
 	free(factorizing);
-	return process_lemon_group(grf,parent_group,start,end,t,groups,group_of,reverse,
+	return process_lemon_group(grf,parent_group,start,end,t,groups,reverse,
 								box_width,box_height);
 }
 int current_group=groups->nbelems;
@@ -1093,7 +1089,7 @@ for (int i=1;i<n_factorizing;i++) {
 	int AA=factorizing[i-1];
 	int BB=factorizing[i];
 	int subgroup_index=process_lemon_group(grf,current_group,factorizing[i-1],factorizing[i],t,
-									groups,group_of,reverse,box_width,box_height);
+									groups,reverse,box_width,box_height);
 	vector_int_add(group->subgroups,subgroup_index);
 	if (subgroup_index==-1) {
 		free(factorizing);
@@ -1229,14 +1225,6 @@ for (int i=0;i<grf->n_states;i++) {
 static void organize_boxes(Grf* grf) {
 struct list_int** t=compute_ignorable_or_artificial_transitions(grf);
 vector_ptr* groups=new_vector_ptr(grf->n_states);
-/* group_of[x] will indicate the smallest subgroup that box x belongs to */
-int* group_of=(int*)malloc(grf->n_states*sizeof(int));
-if (group_of==NULL) {
-	fatal_alloc_error("organize_boxes");
-}
-for (int i=0;i<grf->n_states;i++) {
-	group_of[i]=-1;
-}
 int* box_width=(int*)malloc(grf->n_states*sizeof(int));
 if (box_width==NULL) {
 	fatal_alloc_error("organize_boxes");
@@ -1248,13 +1236,15 @@ if (box_height==NULL) {
 compute_box_dimensions(grf,box_width,box_height);
 /* Now we do the job */
 ReverseTransitions* reverse=compute_reverse_transitions(grf);
-process_group(grf,-1,0,1,t,groups,group_of,reverse,box_width,box_height);
+process_group(grf,-1,0,1,t,groups,reverse,box_width,box_height);
 free_ReverseTransitions(reverse);
 int* is_placed=(int*)calloc(grf->n_states,sizeof(int));
 if (is_placed==NULL) {
 	fatal_alloc_error("organize_boxes");
 }
 place_groups(grf,0,40,40,groups,is_placed,box_width,box_height);
+u_sprintf(grf->size,"SIZE %d %d",((BoxGroup*)groups->tab[0])->width+4*WIDTH_MARGIN,
+		((BoxGroup*)groups->tab[0])->height+4*HEIGHT_MARGIN);
 free(is_placed);
 free(box_width);
 free(box_height);
@@ -1274,7 +1264,6 @@ for (int i=0;i<grf->n_states;i++) {
 	}
 }
 /* And we clean our stuffs */
-free(group_of);
 free_vector_ptr(groups,(void(*)(void*))free_BoxGroup);
 free_ignorable_or_artificial_transitions(t,grf->n_states);
 }
