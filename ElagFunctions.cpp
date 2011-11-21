@@ -54,7 +54,7 @@ vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
  */
-void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output, const VersatileEncodingConfig* vec,language_t* language) {
+void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* output, const VersatileEncodingConfig* vec,language_t* language) {
    Elag_Tfst_file_in* input=load_tfst_file(vec,input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
@@ -230,7 +230,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output, const 
  * The 'elag_fst' parameter is used to know whether the form frequencies files must be named
  * tfst_tags_by_freq/alph.txt or tfst_tags_by_freq/alph.new.txt
  */
-void explode_tfst(char* input_tfst,char* output, const VersatileEncodingConfig* vec,language_t* language,
+void explode_tfst(const char* input_tfst,const char* output, const VersatileEncodingConfig* vec,language_t* language,
 		struct hash_table* form_frequencies) {
    static const unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static const unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
@@ -281,7 +281,7 @@ void explode_tfst(char* input_tfst,char* output, const VersatileEncodingConfig* 
 /**
  * Loads all the ELAG grammars contained in the given .elg file.
  */
-vector_ptr* load_elag_grammars(const VersatileEncodingConfig* vec,char* filename,language_t* language,char* directory) {
+vector_ptr* load_elag_grammars(const VersatileEncodingConfig* vec,const char* filename,language_t* language,const char* directory) {
 U_FILE* f=u_fopen(ASCII,filename,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",filename);

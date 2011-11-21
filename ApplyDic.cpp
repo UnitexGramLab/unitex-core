@@ -265,7 +265,7 @@ free_Ustring(s);
  * in the DLF.
  */
 void explore_bin_simple_words(struct dico_application_info* info,
-                              int offset,unichar* token,unichar* inflected,
+                              int offset,const unichar* token,unichar* inflected,
                               int pos,int token_number,int priority,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
 /* We compute the number of transitions that outgo from the current node */
@@ -723,7 +723,7 @@ return 0;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int dico_application_simplified(const VersatileEncodingConfig* vec,unichar* text,const char* name_bin,struct dico_application_info* info) {
+int dico_application_simplified(const VersatileEncodingConfig* vec,const unichar* text,const char* name_bin,struct dico_application_info* info) {
 char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
@@ -780,7 +780,7 @@ return 1;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-int merge_dic_locate_results(struct dico_application_info* info,char* concord_filename,
+int merge_dic_locate_results(struct dico_application_info* info,const char* concord_filename,
                              int priority,int export_to_morpho_dic) {
 /* This array is used to represent a compound word at a token sequence ended by -1.
  * Example: cinquante-deux could be represented by (1347,35,582,-1) */

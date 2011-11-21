@@ -84,7 +84,7 @@ return 0;
  * Loads a .fst2 file with the given name and type, according to the
  * given language description.
  */
-Elag_fst_file_in* load_elag_fst2_file(const VersatileEncodingConfig* vec,char* fname,language_t* language) {
+Elag_fst_file_in* load_elag_fst2_file(const VersatileEncodingConfig* vec,const char* fname,language_t* language) {
 Elag_fst_file_in* fstf=(Elag_fst_file_in*)malloc(sizeof(Elag_fst_file_in));
 if (fstf==NULL) {
    fatal_alloc_error("load_elag_fst2_file");
@@ -460,7 +460,7 @@ fstf->nb_automata++;
 /**
  * Loads and returns the first automaton of the given .fst2 file.
  */
-Fst2Automaton* load_elag_grammar_automaton(const VersatileEncodingConfig* vec,char* fst2,language_t* language) {
+Fst2Automaton* load_elag_grammar_automaton(const VersatileEncodingConfig* vec,const char* fst2,language_t* language) {
 if (language==NULL) {
    fatal_error("NULL language error in load_elag_grammar_automaton\n");
 }
@@ -483,7 +483,7 @@ return A;
  * Loads a .tfst file with the given name, according to the
  * given language description.
  */
-Elag_Tfst_file_in* load_tfst_file(const VersatileEncodingConfig* vec,char* fname,language_t* language) {
+Elag_Tfst_file_in* load_tfst_file(const VersatileEncodingConfig* vec,const char* fname,language_t* language) {
 Elag_Tfst_file_in* fstf=(Elag_Tfst_file_in*)malloc(sizeof(Elag_Tfst_file_in));
 if (fstf==NULL) {
    fatal_alloc_error("load_tfst_file");
