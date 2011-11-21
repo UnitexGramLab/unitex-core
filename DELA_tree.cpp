@@ -135,7 +135,7 @@ tree->dela_entries[n]=insert_if_not_present(entry,tree->dela_entries[n]);
 /**
  * Loads the given DELA into the given DELA tree.
  */
-void load_DELA(const VersatileEncodingConfig* vec,char* name,struct DELA_tree* tree) {
+void load_DELA(const VersatileEncodingConfig* vec,const char* name,struct DELA_tree* tree) {
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) {
    error("Cannot load dictionary %s\n",name);

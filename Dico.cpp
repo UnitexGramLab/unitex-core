@@ -136,7 +136,7 @@ u_printf(usage_Dico);
 /**
  * This function stores some statistics in 'stat_dic.n'.
  */
-void save_statistics(const VersatileEncodingConfig* vec,char* name,struct dico_application_info* info) {
+static void save_statistics(const VersatileEncodingConfig* vec,const char* name,struct dico_application_info* info) {
 U_FILE* f=u_fopen(vec,name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);

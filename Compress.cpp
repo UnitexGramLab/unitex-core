@@ -68,7 +68,7 @@ u_printf(usage_Compress);
  * of the file named 'name'. This file is supposed to be a UTF-16
  * Little-Endian one, starting by a sequence made of ten zeros.
  */
-void write_INF_file_header(const VersatileEncodingConfig* vec,char* name,int n) {
+static void write_INF_file_header(const VersatileEncodingConfig* vec,const char* name,int n) {
 U_FILE* f=u_fopen(vec,name,U_MODIFY);
 char number[11];
 number[10]=0;

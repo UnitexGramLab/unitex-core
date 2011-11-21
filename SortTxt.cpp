@@ -170,7 +170,7 @@ void free_sort_infos(struct sort_infos* inf) {
 /**
  * This function reads the given char order file.
  */
-void read_char_order(const VersatileEncodingConfig* vec, char* name,
+void read_char_order(const VersatileEncodingConfig* vec, const char* name,
 		struct sort_infos* inf) {
 	int c;
 	int current_line = 1;

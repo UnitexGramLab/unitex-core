@@ -1212,7 +1212,7 @@ return 1;
  * In debug mode, the first char is a 'd' followed by the number of
  * graphs written on 9 digits.
  */
-void write_number_of_graphs(const VersatileEncodingConfig* vec,char* name,int n,int debug) {
+void write_number_of_graphs(const VersatileEncodingConfig* vec,const char* name,int n,int debug) {
 U_FILE* f=u_fopen(vec,name,U_MODIFY);
 /* And we print the number of graphs on 10 digits */
 u_fprintf(f,"%c%09d",debug?'d':'0',n);

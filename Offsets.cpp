@@ -30,7 +30,7 @@
 /**
  * Loads the given offset file. Returns NULL in case of error.
  */
-vector_offset* load_offsets(const VersatileEncodingConfig* vec,char* name) {
+vector_offset* load_offsets(const VersatileEncodingConfig* vec,const char* name) {
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) return NULL;
 int a,b,c,d,n;
@@ -197,7 +197,7 @@ while (i < old_offsets->nbelems) {
  * Saves snt offsets to the given file, as a binary file containing integers.
  * Returns 1 in case of success; 0 otherwise.
  */
-int save_snt_offsets(vector_int* snt_offsets,char* name) {
+int save_snt_offsets(vector_int* snt_offsets,const char* name) {
 if (snt_offsets==NULL) {
 	fatal_error("Unexpected NULL offsets in save_snt_offsets\n");
 }
@@ -215,7 +215,7 @@ return (ret==snt_offsets->nbelems);
 /**
  * Loads snt offsets from the given binary file.
  */
-vector_int* load_snt_offsets(char* name) {
+vector_int* load_snt_offsets(const char* name) {
 U_FILE* f=u_fopen(BINARY,name,U_READ);
 if (f==NULL) return NULL;
 long size=get_file_size(f);
@@ -251,7 +251,7 @@ vector_int_add(snt_offsets,shift_after);
  * Reads the start and end positions of each token stored in the file
  * produced by Tokenize's --output_offsets option.
  */
-vector_int* load_uima_offsets(const VersatileEncodingConfig* vec,char* name) {
+vector_int* load_uima_offsets(const VersatileEncodingConfig* vec,const char* name) {
 U_FILE* f;
 f=u_fopen(vec,name,U_READ);
 if (f==NULL) {

@@ -92,7 +92,7 @@ void free_compilation_info(struct compilation_info*);
 
 int compile_grf(char*,struct compilation_info*);
 void write_tags(U_FILE*,struct string_hash*);
-void write_number_of_graphs(const VersatileEncodingConfig*,char*,int,int);
+void write_number_of_graphs(const VersatileEncodingConfig*,const char*,int,int);
 void write_graph(U_FILE*,SingleGraph,int,unichar*);
 void renumber_graph_calls(Fst2*,vector_int*,vector_int*);
 
