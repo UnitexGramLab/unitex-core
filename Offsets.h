@@ -121,7 +121,7 @@ void process_offsets(vector_offset* old_offsets, vector_offset* new_offsets,
 		U_FILE* f);
 
 int save_snt_offsets(vector_int*,const char*);
-vector_int* load_snt_offsets(char*);
+vector_int* load_snt_offsets(const char*);
 void add_snt_offsets(vector_int*,int,int,int);
 
 vector_int* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
