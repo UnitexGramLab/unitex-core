@@ -45,8 +45,14 @@ import java.util.List;
  */
 public class UnitexJni {
 	/* Load the .dll/.so that exports functions callable from java */
+	public static boolean loaded;
 	static {
-		System.loadLibrary("UnitexJni");
+		try {
+			System.loadLibrary("UnitexJni");
+			loaded=true;
+		} catch (UnsatisfiedLinkError e) {
+			loaded=false;
+		}
 	}
 
 	/*
@@ -274,5 +280,8 @@ public class UnitexJni {
 	 * information was not provided at compile time.
 	 */
 	public native static int getSvnRevisionNumber();
-
+	
+	public static boolean isJniLoaded() {
+		return loaded;
+	}
 }
