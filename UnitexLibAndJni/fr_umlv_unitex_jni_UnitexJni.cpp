@@ -50,6 +50,10 @@
 #include "Alphabet.h"
 #endif
 
+#if ((!defined(SVN_REVISION)) && (defined(HAS_UNITEX_REVISION_H_FILE)))
+#include "Unitex_revision.h"
+#define SVN_REVISION UNITEX_REVISION
+#endif
 
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
      defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \

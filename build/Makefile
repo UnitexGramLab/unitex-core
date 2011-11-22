@@ -53,8 +53,9 @@
 #    mingw32-make.exe SYSTEM=windows JNILIBRARY=yes ADDITIONAL_INCLUDE=c:\Progra~1\Java\jdk1.6.0_26\include" ADDITIONAL_INCLUDE2=c:\Progra~1\Java\jdk1.6.0_26\include\win32"
 # create the Jni and Library lib libUnitexLibAndJni.so under Windows with MinGW32 (fix the path, of course)
 #
-#  If you want to have access to the SVN revision number  from the JNI, you may
-#  provide this number with the extra option SVN_REVISION=xxx
+#  If you want to have access to the SVN revision number from the JNI or LIBRARY, you may
+#  provide this number with the extra option SVN_REVISION=xxx or with the extra option HAS_UNITEX_REVISION_H_FILE
+#  and create an Unitex_revision.h with "#define UNITEX_REVISION xxx" inside
 #-----------------------------------
 #
 # If you want to generate a dynamic library, use:
@@ -146,6 +147,12 @@ endif
 ifeq ($(LIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
+ifneq ($(SVN_REVISION),)
+DEFFLAGS += -DSVN_REVISION=$(SVN_REVISION)
+endif
+ifneq ($(HAS_UNITEX_REVISION_H_FILE),)
+DEFFLAGS += -DHAS_UNITEX_REVISION_H_FILE
+endif
 endif
 
 ifeq ($(JNILIBRARY),yes)
@@ -153,7 +160,10 @@ CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
 ifneq ($(SVN_REVISION),)
 DEFFLAGS += -DSVN_REVISION=$(SVN_REVISION)
-endif 
+endif
+ifneq ($(HAS_UNITEX_REVISION_H_FILE),)
+DEFFLAGS += -DHAS_UNITEX_REVISION_H_FILE
+endif
 endif
 
 ifeq ($(UNITEX_RELEASE_MEMORY_AT_EXIT),yes)
@@ -881,7 +891,9 @@ UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o File.o Error.o Unicode.o Xml.o Af_st
                   $(SYSLIBLOGGER)
 
 UNITEXTOOL   = UnitexTool
-UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
+UNITEXTOOL_OBJS = Main_UnitexTool.o \
+                  UnitexTool.o UnitexRevisionInfo.o \
+                  AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
@@ -913,7 +925,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
                   FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o $(SYSLIBLOGGER) \
-                  UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
+                  UnitexTool.o UnitexRevisionInfo.o \
+                  AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
