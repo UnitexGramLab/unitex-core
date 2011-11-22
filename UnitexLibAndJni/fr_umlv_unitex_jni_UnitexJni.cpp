@@ -743,6 +743,16 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
 }
 
 
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getSvnRevisionNumber
+  (JNIEnv *, jclass) {
+#ifdef SVN_REVISION
+return (jint)SVN_REVISION;
+#else
+return (jint)-1;
+#endif
+}
+
+
 #if defined(UNITEX_HAVING_MINI_PERSISTANCE) && (!(defined(UNITEX_PREVENT_USING_MINIPERSISTANCE)))
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni

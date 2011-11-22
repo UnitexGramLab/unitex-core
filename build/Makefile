@@ -53,6 +53,8 @@
 #    mingw32-make.exe SYSTEM=windows JNILIBRARY=yes ADDITIONAL_INCLUDE=c:\Progra~1\Java\jdk1.6.0_26\include" ADDITIONAL_INCLUDE2=c:\Progra~1\Java\jdk1.6.0_26\include\win32"
 # create the Jni and Library lib libUnitexLibAndJni.so under Windows with MinGW32 (fix the path, of course)
 #
+#  If you want to have access to the SVN revision number  from the JNI, you may
+#  provide this number with the extra option SVN_REVISION=xxx
 #-----------------------------------
 #
 # If you want to generate a dynamic library, use:
@@ -149,6 +151,9 @@ endif
 ifeq ($(JNILIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
+ifneq ($(SVN_REVISION),)
+DEFFLAGS += -DSVN_REVISION=$(SVN_REVISION)
+endif 
 endif
 
 ifeq ($(UNITEX_RELEASE_MEMORY_AT_EXIT),yes)
@@ -368,6 +373,10 @@ endif
 ifeq ($(JNILIBRARY),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
+
+ifneq ($(SVN_REVISION),)
+DEFFLAGS += -DSVN_REVISION=$(SVN_REVISION)
+endif 
 
 OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe

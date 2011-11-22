@@ -268,5 +268,11 @@ public class UnitexJni {
 	public native static void freePersistentFst2(String filename);
 	public native static String loadPersistentAlphabet(String filename);
 	public native static void freePersistentAlphabet(String filename);
-	
+
+	/**
+	 * Returns the SVN revision number of the C/C++ code or -1 if this
+	 * information was not provided at compile time.
+	 */
+	public native static int getSvnRevisionNumber();
+
 }
