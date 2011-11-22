@@ -57,6 +57,67 @@ typedef struct {
 } BoxGroup;
 
 
+typedef struct {
+	int n;
+	struct list_int** to_restore;
+	struct list_int** to_remove;
+} TransitionModifs;
+
+
+static TransitionModifs* new_TransitionModifs(int n) {
+TransitionModifs* t=(TransitionModifs*)malloc(sizeof(TransitionModifs));
+if (t==NULL) {
+	fatal_alloc_error("new_TransitionModifs");
+}
+t->n=n;
+t->to_restore=(struct list_int**)calloc(n,sizeof(struct list_int*));
+t->to_remove=(struct list_int**)calloc(n,sizeof(struct list_int*));
+if (t->to_restore==NULL || t->to_remove==NULL) {
+	fatal_alloc_error("new_TransitionModifs");
+}
+return t;
+}
+
+
+static void free_TransitionModifs(TransitionModifs* t) {
+if (t==NULL) return;
+for (int i=0;i<t->n;i++) {
+	free_list_int(t->to_restore[i]);
+	free_list_int(t->to_remove[i]);
+}
+free(t->to_restore);
+free(t->to_remove);
+free(t);
+}
+
+
+static void resize(TransitionModifs* t,int n) {
+t->to_restore=(struct list_int**)realloc(t->to_restore,n*sizeof(struct list_int*));
+t->to_remove=(struct list_int**)realloc(t->to_remove,n*sizeof(struct list_int*));
+if (t->to_restore==NULL || t->to_remove==NULL) {
+	fatal_alloc_error("resize");
+}
+for (int i=t->n;i<n;i++) {
+	t->to_restore[i]=NULL;
+	t->to_remove[i]=NULL;
+}
+t->n=n;
+}
+
+
+static void to_remove(TransitionModifs* t,int src,int dst) {
+t->to_remove[src]=sorted_insert(dst,t->to_remove[src]);
+}
+
+static void to_restore(TransitionModifs* t,int src,int dst) {
+t->to_restore[src]=sorted_insert(dst,t->to_restore[src]);
+}
+
+
+static int was_one_to_remove(TransitionModifs* t,int src,int dst) {
+return remove(dst,&(t->to_remove[src]));
+}
+
 
 /**
  * Makes state #n an empty comment box, removing all its incoming and
@@ -393,7 +454,7 @@ free_ReverseTransitions(reverse_transitions);
  *       1=visited
  *       2=visit in progress
  */
-static int remove_back_transitions(Grf* grf,int current_state,int* mark,struct list_int** t) {
+static int remove_back_transitions(Grf* grf,int current_state,int* mark,TransitionModifs* t) {
 if (mark[current_state]==1) return 1;
 if (mark[current_state]==2) return 0;
 mark[current_state]=2;
@@ -403,7 +464,7 @@ for (int i=0;i<copy->nbelems;i++) {
 	int dest_state=copy->tab[i];
 	if (!remove_back_transitions(grf,dest_state,mark,t)) {
 		vector_int_remove(transitions,dest_state);
-		t[current_state]=sorted_insert(dest_state,t[current_state]);
+		to_restore(t,current_state,dest_state);
 	}
 }
 free_vector_int(copy);
@@ -443,7 +504,7 @@ for (int i=0;i<transitions->nbelems;i++) {
 /**
  * We remove transitions that lead to non-coaccessible states.
  */
-static void deal_with_non_coaccessibility(Grf* grf,int* mark,struct list_int** t) {
+static void deal_with_non_coaccessibility(Grf* grf,int* mark,TransitionModifs* t) {
 ReverseTransitions* reverse=compute_reverse_transitions(grf);
 for (int i=0;i<grf->n_states;i++) {
 	mark[i]=0;
@@ -456,7 +517,7 @@ for (int i=0;i<grf->n_states;i++) {
 	for (int i=transitions->nbelems-1;i>=0;i--) {
 		int dest=transitions->tab[i];
 		if (!mark[dest]) {
-			t[i]=sorted_insert(dest,t[i]);
+			to_restore(t,i,dest);
 			vector_int_remove(transitions,dest);
 		}
 	}
@@ -490,7 +551,7 @@ free_fifo(f);
  * to detect and remove transverse transitions. For convenience reason,
  * we reuse an existing int array for the rank.
  */
-static void remove_transverse_transitions(Grf* grf,int* rank,struct list_int** t) {
+static void remove_transverse_transitions(Grf* grf,int* rank,TransitionModifs* t) {
 /* First, we compute ranks and reverse transitions */
 compute_ranks(grf,rank);
 ReverseTransitions* reverse=compute_reverse_transitions(grf);
@@ -508,8 +569,8 @@ for (int state=0;state<grf->n_states;state++) {
 	for (int i=transitions->nbelems-1;i>=0;i--) {
 		int dest=transitions->tab[i];
 		if (rank[dest]<(rank[state]+1)) {
-			error("pb 1 between %S and %S\n",grf->states[state]->box_content,grf->states[dest]->box_content);
-			t[state]=sorted_insert(dest,t[state]);
+			//error("pb 1 between %S and %S\n",grf->states[state]->box_content,grf->states[dest]->box_content);
+			to_restore(t,state,dest);
 			vector_int_remove(transitions,dest);
 			vector_int_remove(reverse->t[dest],state);
 			continue;
@@ -540,7 +601,8 @@ for (int state=0;state<grf->n_states;state++) {
 					int Xindex=reverse->t[dest]->tab[j];
 					GrfState* X=grf->states[Xindex];
 					if (X->transitions->nbelems>1) {
-						t[Xindex]=sorted_insert(dest,t[Xindex]);
+						//t[Xindex]=sorted_insert(dest,t[Xindex]);
+						to_restore(t,Xindex,dest);
 						vector_int_remove(X->transitions,dest);
 						vector_int_remove(reverse->t[dest],Xindex);
 					}
@@ -555,8 +617,6 @@ free_ReverseTransitions(reverse);
 
 static int* compute_factorizing_states(Grf* grf,int start,int end,ReverseTransitions* reverse,
 									int *n_factorizing_states);
-static void ensure_graph_form_rec(Grf* grf,struct list_int** t,ReverseTransitions* reverse,
-		                          int start,int end);
 
 
 /**
@@ -564,14 +624,14 @@ static void ensure_graph_form_rec(Grf* grf,struct list_int** t,ReverseTransition
  */
 enum {UNVISITED,BEING_VISITED,VISITED};
 
-static int check_states(Grf* grf,struct list_int** *t,int state,char* mark_global,
+static int check_states(Grf* grf,TransitionModifs* t,int state,char* mark_global,
 						char* mark_local,int end,ReverseTransitions* reverse) {
 if (state==end) return 1;
 if (mark_global[state]) return 0;
 if (mark_local[state]==BEING_VISITED || mark_local[state]==VISITED) return 1;
 mark_local[state]=BEING_VISITED;
 vector_int* transitions=grf->states[state]->transitions;
-struct list_int* to_remove=NULL;
+struct list_int* to_be_removed=NULL;
 for (int i=0;i<transitions->nbelems;i++) {
 	int dest=transitions->tab[i];
 	if (!check_states(grf,t,dest,mark_global,mark_local,end,reverse)) {
@@ -579,24 +639,28 @@ for (int i=0;i<transitions->nbelems;i++) {
 		 * we have found a transition to be removed, and replaced by a fake
 		 * one to the end state of the current group.
 		 */
-		to_remove=head_insert(dest,to_remove);
+		to_be_removed=head_insert(dest,to_be_removed);
 	}
 }
 /* Finally, we actually remove the transitions */
-if (to_remove!=NULL) {
+if (to_be_removed!=NULL) {
 	/* If there is at least one transition to remove, then we have
 	 * to add a fake transition to the end of the subgroup
 	 */
+	int already_a_real_transition_to_end=vector_int_contains(transitions,end);
 	vector_int_add_if_absent(transitions,end);
 	vector_int_add_if_absent(reverse->t[end],state);
-	(*t)[state]=sorted_insert(end,(*t)[state]);
+	if (!already_a_real_transition_to_end) {
+		to_remove(t,state,end);
+	}
 }
-while (to_remove!=NULL) {
-	vector_int_remove(transitions,to_remove->n);
-	vector_int_remove(reverse->t[to_remove->n],state);
-	(*t)[state]=sorted_insert(to_remove->n,(*t)[state]);
-	struct list_int* tmp=to_remove;
-	to_remove=to_remove->next;
+while (to_be_removed!=NULL) {
+	vector_int_remove(transitions,to_be_removed->n);
+	vector_int_remove(reverse->t[to_be_removed->n],state);
+	//(*t)[state]=sorted_insert(to_be_removed->n,(*t)[state]);
+	to_restore(t,state,to_be_removed->n);
+	struct list_int* tmp=to_be_removed;
+	to_be_removed=to_be_removed->next;
 	tmp->next=NULL;
 	free_list_int(tmp);
 }
@@ -606,7 +670,7 @@ return 1;
 
 
 static void get_last_states_before_end(Grf* grf,int current,int end,struct list_int* *list);
-static void ensure_graph_form_rec(Grf* grf,struct list_int** *t,ReverseTransitions* reverse,
+static void ensure_graph_form_rec(Grf* grf,TransitionModifs* t,ReverseTransitions* reverse,
 		                          int start,int end);
 
 /**
@@ -615,7 +679,7 @@ static void ensure_graph_form_rec(Grf* grf,struct list_int** *t,ReverseTransitio
  * only this single state that will have a transition to state #end.
  */
 static int lemonize(Grf* grf,struct list_int* subends,int end,ReverseTransitions* reverse,
-			struct list_int** *t) {
+					TransitionModifs* t) {
 int n=grf->n_states;
 (grf->n_states)++;
 /* We enlarge the state array */
@@ -631,12 +695,7 @@ if (reverse->t==NULL) {
 }
 reverse->t[n]=new_vector_int();
 /* And also *t */
-*t=(struct list_int**)realloc(*t,grf->n_states*sizeof(struct list_int*));
-if (*t==NULL) {
-	fatal_alloc_error("lemonize");
-}
-(*t)[n]=NULL;
-
+resize(t,grf->n_states);
 /* Now, we create the new state with content "<E>" */
 GrfState* state=new_GrfState("\"<E>\"",0,0,0,0);
 grf->states[n]=state;
@@ -648,12 +707,17 @@ while (subends!=NULL) {
 	/* We remove the old transition */
 	vector_int_remove(grf->states[subends->n]->transitions,end);
 	vector_int_remove(reverse->t[end],subends->n);
-	int was_a_t_one=remove(end,&((*t)[subends->n]));
+	/*error("lemonizing between %S and %S\n",grf->states[subends->n]->box_content,
+			grf->states[end]->box_content);
+	*/
+	int was_a_t_one=was_one_to_remove(t,subends->n,end);
+	//error("was a t one=%d\n",was_a_t_one);
 	/* Replacing it by the new one */
 	vector_int_add(grf->states[subends->n]->transitions,n);
 	vector_int_add(reverse->t[n],subends->n);
 	if (was_a_t_one) {
-		(*t)[subends->n]=sorted_insert(n,(*t)[subends->n]);
+		//(*t)[subends->n]=sorted_insert(n,(*t)[subends->n]);
+		to_remove(t,subends->n,n);
 	}
 	subends=subends->next;
 }
@@ -664,7 +728,7 @@ return n;
 /**
  * Here, we are sure, that there is no factorizing state between start and end.
  */
-static void ensure_graph_form_lemon(Grf* grf,struct list_int** *t,ReverseTransitions* reverse,
+static void ensure_graph_form_lemon(Grf* grf,TransitionModifs* t,ReverseTransitions* reverse,
 		                          int start,int end) {
 char* mark_global=(char*)calloc(grf->n_states,sizeof(char));
 if (mark_global==NULL) {
@@ -710,7 +774,7 @@ for (int i=0;i<transitions->nbelems;i++) {
 /**
  * General case.
  */
-static void ensure_graph_form_rec(Grf* grf,struct list_int** *t,ReverseTransitions* reverse,
+static void ensure_graph_form_rec(Grf* grf,TransitionModifs* t,ReverseTransitions* reverse,
 		                          int start,int end) {
 int n_factorizing_states;
 if (start==end) return;
@@ -730,7 +794,7 @@ free(factorizing);
  * that it is in the form expected by process_groups. This function
  * may remove transitions and also insert some fake ones.
  */
-static void ensure_graph_form(Grf* grf,struct list_int** *t) {
+static void ensure_graph_form(Grf* grf,TransitionModifs* t) {
 ReverseTransitions* reverse=compute_reverse_transitions(grf);
 ensure_graph_form_rec(grf,t,reverse,0,1);
 free_ReverseTransitions(reverse);
@@ -752,11 +816,8 @@ free_ReverseTransitions(reverse);
  *      - if the transition exists, then remove it
  *      - otherwise, add it
  */
-static struct list_int** compute_ignorable_or_artificial_transitions(Grf* grf) {
-struct list_int** t=(struct list_int**)calloc(grf->n_states,sizeof(struct list_int*));
-if (t==NULL) {
-	fatal_alloc_error("compute_ignorable_transitions");
-}
+static TransitionModifs* compute_ignorable_or_artificial_transitions(Grf* grf) {
+TransitionModifs* t=new_TransitionModifs(grf->n_states);
 int* mark=(int*)calloc(grf->n_states,sizeof(int));
 if (mark==NULL) {
 	fatal_alloc_error("compute_ignorable_transitions");
@@ -768,7 +829,7 @@ deal_with_non_coaccessibility(grf,mark,t);
 /* Then, we use state ranks to detect transverse transitions */
 remove_transverse_transitions(grf,mark,t);
 free(mark);
-ensure_graph_form(grf,&t);
+ensure_graph_form(grf,t);
 return t;
 }
 
@@ -948,7 +1009,7 @@ free(g);
 }
 
 
-static int process_group(Grf* grf,int parent_group,int start,int end,struct list_int** t,
+static int process_group(Grf* grf,int parent_group,int start,int end,TransitionModifs* t,
 					vector_ptr* groups,ReverseTransitions* reverse,
 					int* box_width,int* box_height);
 
@@ -1001,7 +1062,7 @@ return (a>b)?a:b;
  * except states #start and #end and it divides it into a conjunction
  * of several subgroups.
  */
-static int process_lemon_group(Grf* grf,int parent_group,int start,int end,struct list_int** t,
+static int process_lemon_group(Grf* grf,int parent_group,int start,int end,TransitionModifs* t,
 					vector_ptr* groups,ReverseTransitions* reverse,
 					int* box_width,int* box_height) {
 /* First case, a subgraph made of only two linked states: start --> end */
@@ -1050,7 +1111,7 @@ return current_group;
  * Returns the number of the main group 1 in case of success, or -1 if something went wrong, which may
  * happen if the given grf has not been fully cleaned by compute_ignorable_transitions.
  */
-static int process_group(Grf* grf,int parent_group,int start,int end,struct list_int** t,
+static int process_group(Grf* grf,int parent_group,int start,int end,TransitionModifs* t,
 					vector_ptr* groups,ReverseTransitions* reverse,
 					int* box_width,int* box_height) {
 if (start==end) {
@@ -1223,7 +1284,7 @@ for (int i=0;i<grf->n_states;i++) {
  * disjunct groups.
  */
 static void organize_boxes(Grf* grf) {
-struct list_int** t=compute_ignorable_or_artificial_transitions(grf);
+TransitionModifs * t=compute_ignorable_or_artificial_transitions(grf);
 vector_ptr* groups=new_vector_ptr(grf->n_states);
 int* box_width=(int*)malloc(grf->n_states*sizeof(int));
 if (box_width==NULL) {
@@ -1251,13 +1312,22 @@ free(box_height);
 /* We restore the ignored transitions */
 for (int i=0;i<grf->n_states;i++) {
 	vector_int* transitions=grf->states[i]->transitions;
-	struct list_int* tmp=t[i];
+	struct list_int* tmp=t->to_restore[i];
 	while (tmp!=NULL) {
-		if (-1==vector_int_contains(transitions,tmp->n)) {
+		if (-1!=vector_int_contains(transitions,tmp->n)) {
 			/* If the transition does not exist, we add it */
 			vector_int_add(transitions,tmp->n);
-		} else {
-			/* Otherwise we remove it */
+		}
+		tmp=tmp->next;
+	}
+}
+/* And remove the added fake ones */
+for (int i=0;i<grf->n_states;i++) {
+	vector_int* transitions=grf->states[i]->transitions;
+	struct list_int* tmp=t->to_remove[i];
+	while (tmp!=NULL) {
+		if (-1!=vector_int_contains(transitions,tmp->n)) {
+			/* If the transition exists, we remove it */
 			vector_int_remove(transitions,tmp->n);
 		}
 		tmp=tmp->next;
@@ -1265,7 +1335,7 @@ for (int i=0;i<grf->n_states;i++) {
 }
 /* And we clean our stuffs */
 free_vector_ptr(groups,(void(*)(void*))free_BoxGroup);
-free_ignorable_or_artificial_transitions(t,grf->n_states);
+free_TransitionModifs(t);
 }
 
 
