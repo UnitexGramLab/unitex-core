@@ -51,9 +51,9 @@ int i,j,l,retour;
 
     i=0; j = 0; retour=1; result[0]='\0';
     if (sortie[i] == ':' ) i++;
-    else  {//fprintf(stderr,"erreur Sortie sans : -->");
-    //u_fprintf(stderr,"%S",sortie);
-    //fprintf(stderr,"\n");
+    else  {//error("erreur Sortie sans : -->");
+    //error("%S",sortie);
+    //error("\n");
     retour=0;}
 
     l = u_strlen(sortie);
@@ -190,20 +190,20 @@ unsigned int protege;
   last_pos_match = -1; *pos_match = -1;
   l = u_strlen(facteur);
   pos_test = *pos  -l + 1;
-  if (isVerbose()) fprintf(stderr,"l = %d\n",l);
+  if (isVerbose()) error("l = %d\n",l);
 
   if ( pos_test < 0 ) {
-    if (isVerbose()) fprintf(stderr,"facteur > pile \n");
+    if (isVerbose()) error("facteur > pile \n");
     return 0;
   }
   while ( pos_test >= 0 ) {
     parcours_pile = pos_test;
     parcours_fact = 0;
     while (parcours_fact < l && pile[parcours_pile] == facteur[parcours_fact]){
-      if (isVerbose()) fprintf(stderr,"Equality: %c\n",pile[parcours_pile]);
+      if (isVerbose()) error("Equality: %c\n",pile[parcours_pile]);
       parcours_pile++; parcours_fact++;
     }
-    if (isVerbose()) fprintf(stderr,"parcours_fact = %d\n",parcours_fact);
+    if (isVerbose()) error("parcours_fact = %d\n",parcours_fact);
     if ( parcours_fact == l ) MATCH = 1; else MATCH = 0;
 
     if ( match_type == IMMEDIAT ) {
@@ -251,20 +251,20 @@ unsigned int mode=0;
     retour = 0;
 
     while (etiq[pos_pattern] != '<' ) {
-       //if (VERBOSE) u_fprintf(stderr,"***DEBUT***\n");
+       //if (VERBOSE) error("***DEBUT***\n");
       if (get_var_op(var_name,etiq,&pos_pattern)) {
-    //if (VERBOSE) u_fprintf(stderr,"GET Variable name  : %S\n",var_name);
+    //if (VERBOSE) error("GET Variable name  : %S\n",var_name);
 	 if (is_var_op(etiq,pos_pattern-1) || etiq[pos_pattern-1] == '<') {
          // si <$  ou <$1$  ou (POUND?) $ ....on capte le contenu de la variable
              (*pos)--;
              var_end = *pos;
              if (var_name[0] == '$' ) {pos_match = var_end-1;}
 	     else { pos_match = -1; *pos = 0;}
-     // if (VERBOSE) u_fprintf(stderr,"pos_match = %d var_end = %d \n",pos_match,var_end);
+     // if (VERBOSE) error("pos_match = %d var_end = %d \n",pos_match,var_end);
              init_var(var_name,Variables,pile,pos_match + 1,var_end);
              ind = get_indice_var_op(var_name);
              add_flag_var(ind,var_in_use);
-     // if (VERBOSE) u_fprintf(stderr,"SPECIAL pos = %d  pos_pattern =  %dVariable %S = %S\n",*pos,pos_pattern,var_name,Variables[ind]);
+     // if (VERBOSE) error("SPECIAL pos = %d  pos_pattern =  %dVariable %S = %S\n",*pos,pos_pattern,var_name,Variables[ind]);
             if (*pos == -1) *pos = 0;
             retour = 1;
           }
@@ -273,33 +273,33 @@ unsigned int mode=0;
       pos_pattern--;
       }
       if (get_factor(facteur,etiq,&pos_pattern,&mode) ) {
-       // if (VERBOSE) u_fprintf(stderr,"FACTOR facteur : %S\n",facteur);
+       // if (VERBOSE) error("FACTOR facteur : %S\n",facteur);
          if (var_precede == 0) match_type = IMMEDIAT;
          else if (var_name[0] == '$') match_type = SHORTEST;
          else if (var_name[0] == POUND) match_type = LONGEST;
          match_type |= mode;
-         if (isVerbose()) fprintf(stderr,"var_name[0]:%c match_type: %d\n",var_name[0],match_type);
+         if (isVerbose()) error("var_name[0]:%c match_type: %d\n",var_name[0],match_type);
          pos_match = 0;
          int tmp_pos = 0;
          if (mode == PROTEGE) tmp_pos = (*pos);
          (*pos)--;
-     // if (VERBOSE) u_fprintf(stderr,"APPEL pos:%d match_type:%d facteur: %s\n",*pos,match_type,facteur);
+     // if (VERBOSE) error("APPEL pos:%d match_type:%d facteur: %s\n",*pos,match_type,facteur);
          var_end = *pos;
          retour = get_pos_factor(pile,pos,facteur,match_type,&pos_match);
          if (mode == PROTEGE)  (*pos) = tmp_pos;
 	 if (retour == 0) { *pos = init_pos; return retour;}
-     //if (VERBOSE) u_fprintf(stderr,"RETOUR %d pos:%d match_type:%d facteur:%s pos_match %d\n",retour,*pos,match_type,facteur,pos_match);
+     //if (VERBOSE) error("RETOUR %d pos:%d match_type:%d facteur:%s pos_match %d\n",retour,*pos,match_type,facteur,pos_match);
          if (var_precede) {
             init_var(var_name,Variables,pile,pos_match + 1,var_end);
             ind = get_indice_var_op(var_name);
             add_flag_var(ind,var_in_use);
-   //if (VERBOSE) u_fprintf(stderr,"Variable  %S = %S\n",var_name,Variables[ind]);
+   //if (VERBOSE) error("Variable  %S = %S\n",var_name,Variables[ind]);
          }
          var_precede = 0;
          pos_pattern--;
       }
     }
-   //if (VERBOSE) u_fprintf(stderr,"FIN TRAITEMENT PATTERN\n");
+   //if (VERBOSE) error("FIN TRAITEMENT PATTERN\n");
     if (retour == 0) *pos = init_pos;
 return retour;
 }

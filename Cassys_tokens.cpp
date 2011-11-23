@@ -145,8 +145,7 @@ cassys_tokens_list *new_element( unichar *u, int transducer_id){
 
 	cassys_tokens_list *l = (cassys_tokens_list*)malloc(sizeof(cassys_tokens_list)*1);
 	if(l == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible d'allouer de la mémoire\n");
+		fatal_alloc_error("new_element");
 		exit(1);
 	}
 

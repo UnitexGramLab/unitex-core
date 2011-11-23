@@ -187,7 +187,7 @@ Transition* explore_trans(Transition** T, Transition** debut, Fst2* a) {
 				ptr->next = ptr->next->next;
 				defaut->next = empty.next;
 				empty.next = defaut;
-				//u_fprintf(stderr,"PASS0  def==%x\n",defaut);
+				//error("PASS0  def==%x\n",defaut);
 				*T = empty.next;
 				*debut = empty.next->next;
 				return defaut;
@@ -197,7 +197,7 @@ Transition* explore_trans(Transition** T, Transition** debut, Fst2* a) {
 	}
 	*T = empty.next;
 	*debut = *T;
-	//u_fprintf(stderr,"PASS1\n");
+	//error("PASS1\n");
 	return defaut;
 }
 
@@ -314,14 +314,14 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 
 	default_trans = explore_trans(&(e->transitions), &t, a);
 
-	while (t != NULL) {//u_fprintf(stderr,"Explore 1\n");
+	while (t != NULL) {//error("Explore 1\n");
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, flechi, canonique, sortie, a, NULL,
 				desired_features, forms, semitic, flag_var, var_name, var_in_use,
 				filters, local_semantic_codes,korean);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
-	if (default_trans != NULL) {//u_fprintf(stderr,"PASS02\n");retour_tag = SU_explore_tag(default_trans,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic,flag_var,var_name, var_in_use,filters);
+	if (default_trans != NULL) {//error("PASS02\n");retour_tag = SU_explore_tag(default_trans,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic,flag_var,var_name, var_in_use,filters);
 		//default_trans->next=e2->transitions->next;e2->transitions=default_trans;e=e2;
 	}
 
@@ -399,14 +399,14 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 	//static Transition *default_trans=explore_trans(&t,a);
 	int retour_all_tags = 0;
 	int retour_tag;
-	while (t != NULL) {//u_fprintf(stderr,"Explore 2\n");local_
+	while (t != NULL) {//error("Explore 2\n");local_
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_name, var_in_use,
 				filters, local_semantic_codes,korean);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
-	if (default_trans != NULL) { //u_fprintf(stderr,"PASS2\n");
+	if (default_trans != NULL) { //error("PASS2\n");
 		SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,default_trans, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_name, var_in_use,
 				filters, local_semantic_codes,korean);
@@ -447,13 +447,13 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 				forms, semitic, flag_var, var_name, var_in_use, filters,
 				local_semantic_codes,korean);
 		while (L != NULL) {
-			if (LIST == NULL) {//u_fprintf(stderr,"Explore state 1\n");
+			if (LIST == NULL) {//error("Explore state 1\n");
 				retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma, L->output,
 						a, T->state_number, desired_features, forms,
 						semitic, flag_var, var_name, var_in_use, filters,
 						L->local_semantic_code,korean);
 				retour_all_states += (retour_state + 1);
-			} else {//u_fprintf(stderr,"Explore state recursion 1\n");
+			} else {//error("Explore state recursion 1\n");
 				retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
 						forms, semitic, flag_var, var_name, var_in_use, filters,
@@ -557,7 +557,7 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 					for (i = 0; i < ln; i++, pos++)
 						p_SU_buf->stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 				}
-				//if (VERBOSE) fprintf(stderr,"COPIE VAR \n");
+				//if (VERBOSE) error("COPIE VAR \n");
 				flag_var = 1;
 				pos_tag++;
 			}
@@ -780,12 +780,12 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 
 	int retour_state = 1;
 	if (retour) {
-		if (LIST == NULL) {//u_fprintf(stderr,"Explore state 2\n");
+		if (LIST == NULL) {//error("Explore state 2\n");
 			retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,p_SU_buf->stack, lemma, p_SU_buf->out, a,
 					T->state_number, desired_features, forms,
 					semitic, flag_var, var_name, var_in_use, filters,
 					local_semantic_codes,korean);
-		} else {//u_fprintf(stderr,"Explore state recursion 2\n");
+		} else {//error("Explore state recursion 2\n");
 			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,p_SU_buf->stack, lemma, p_SU_buf->out, a,
 					T->state_number, LIST, desired_features, forms,
 					semitic, flag_var, var_name, var_in_use, filters,

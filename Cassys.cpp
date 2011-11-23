@@ -108,8 +108,7 @@ struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name
 {
     struct transducer_name_and_mode_linked_list* new_item=(struct transducer_name_and_mode_linked_list*)malloc(sizeof(struct transducer_name_and_mode_linked_list));
     if (new_item==NULL) {
-		perror("malloc\n");
-		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		fatal_alloc_error("add_transducer_linked_list_new_name");
 		exit(1);
 	}
     
@@ -117,8 +116,7 @@ struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name
     new_item->transducer_mode=IGNORE_OUTPUTS;
     new_item->next=NULL;
     if (new_item->transducer_filename==NULL) {
-		perror("malloc\n");
-		fprintf(stderr, "Impossible d'allouer de la mémoire\n");
+		fatal_alloc_error("add_transducer_linked_list_new_name");
 		exit(1);
 	}
 
@@ -168,8 +166,7 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 
 	file_transducer_list = u_fopen(ASCII, transducer_list_name,U_READ);
 	if( file_transducer_list == NULL){
-		perror("u_fopen\n");
-		fprintf(stderr,"Impossible d'ouvrir le fichier %s\n",transducer_list_name);
+		fatal_error("Cannot open file %s\n",transducer_list_name);
 		exit(1);
 	}
 
@@ -475,8 +472,7 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const ch
 
 	U_FILE *f = u_fopen(BINARY, text_cod_name,U_READ);
 	if( f == NULL){
-		perror("fopen\n");
-		fprintf(stderr,"Cannot open file  %s\n",text_cod_name);
+		fatal_error("Cannot open file %s\n",text_cod_name);
 		exit(1);
 	}
 
@@ -594,8 +590,7 @@ struct fifo *read_concord_file(const char *concord_file_name, const VersatileEnc
 	U_FILE *concord_desc_file;
 	concord_desc_file = u_fopen(vec,concord_file_name,U_READ);
 	if( concord_desc_file == NULL){
-		perror("u_fopen\n");
-		fprintf(stderr,"Cannot open file %s\n",concord_file_name);
+		fatal_error("Cannot open file %s\n",concord_file_name);
 		exit(1);
 	}
 
@@ -632,14 +627,12 @@ locate_pos *read_concord_line(const unichar *line) {
 	locate_pos *l;
 	l = (locate_pos*) malloc(sizeof(locate_pos) * 1);
 	if (l == NULL) {
-		perror("malloc\n");
-		fprintf(stderr, "Impossible to allocate memory\n");
+		fatal_alloc_error("read_concord_line");
 		exit(1);
 	}
 	l->label = (unichar*) malloc(sizeof(unichar) * (u_strlen(line) + 1));
 	if (l->label == NULL) {
-		perror("malloc\n");
-		fprintf(stderr, "Impossible to allocate memory\n");
+		fatal_alloc_error("read_concord_line");
 		exit(1);
 	}
 
@@ -690,8 +683,7 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 			//fprintf(stdout,"transducer to be loaded\n");
 			t = (transducer*) malloc(sizeof(transducer) * 1);
 			if (t == NULL) {
-				perror("malloc\n");
-				fprintf(stderr, "Impossible to allocate memory\n");
+				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
             size_t transducer_filename_prefix_len = 0;
@@ -699,8 +691,7 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
                 transducer_filename_prefix_len = strlen(transducer_filename_prefix);
 			t->transducer_file_name = (char*)malloc(sizeof(char)*(transducer_filename_prefix_len+strlen(transducer_file_name)+1));
 			if(t->transducer_file_name == NULL){
-				perror("malloc\n");
-				fprintf(stderr,"Impossible to allocate memory\n");
+				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
@@ -904,8 +895,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 			//concord = u_fopen_exis(mask_encoding_compatibility_input, index_file,U_READ);
 			concord = u_fopen(vec, index_file, U_READ);
 			if( concord == NULL){
-				perror("u_fopen\n");
-				fprintf(stderr,"Cannot open file %s\n",index_file);
+				fatal_error("Cannot open file %s\n",index_file);
 				exit(1);
 			}
 			while(!u_feof(concord)){
@@ -999,8 +989,7 @@ char* extract_cassys_transducer_name(const char *line){
 
 	transducer_name = (char*)malloc(sizeof(char)*((i-j)+1));
 	if(transducer_name == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible to allocate memory\n");
+		fatal_alloc_error("extract_cassys_transducer_name");
 		exit(1);
 	}
 	strncpy(transducer_name,line+j,(i-j));
@@ -1241,8 +1230,7 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 	char *labeled_text_name;
 	labeled_text_name = (char*)malloc(sizeof(char)*(strlen(new_labeled_text_name)+1));
 	if(labeled_text_name == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible to allocate memory\n");
+		fatal_alloc_error("create_labeled_files_and_directory");
 		exit(1);
 	}
 	strcpy(labeled_text_name, new_labeled_text_name);
@@ -1265,15 +1253,13 @@ void protect_special_characters(const char *text, const VersatileEncodingConfig*
 
 	source = u_fopen(vec,text,U_READ);
 	if( source == NULL){
-		perror("u_fopen\n");
-		fprintf(stderr,"Cannot open file %s\n",text);
+		fatal_error("Cannot open file %s\n",text);
 		exit(1);
 	}
 
 	destination = u_fopen(vec,temp_name_file,U_WRITE);
 	if( destination == NULL){
-		perror("u_fopen\n");
-		fprintf(stderr,"Cannot open file %s\n",temp_name_file);
+		fatal_error("Cannot open file %s\n",temp_name_file);
 		exit(1);
 	}
 
@@ -1316,7 +1302,6 @@ unichar *get_braced_string(U_FILE *u){
 
 	long origin_position = ftell(u);
 	if (origin_position == -1) {
-		perror("ftell\n");
 		fatal_error("ftell");
 	}
 
@@ -1360,14 +1345,12 @@ unichar *get_braced_string(U_FILE *u){
 	unichar *result;
 	result = (unichar*)malloc(sizeof(unichar)*(length+1));
 	if(result == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible to allocate memory\n");
+		fatal_alloc_error("get_braced_string");
 		exit(1);
 	}
 
 	int fseek_result = fseek(u,origin_position,SEEK_SET);
 	if(fseek_result==-1){
-		perror("fseek");
 		fatal_error("fseek");
 	}
 
@@ -1386,8 +1369,7 @@ unichar *protect_braced_string(const unichar *s){
 
 	stop_sentence = (unichar*) malloc(sizeof(unichar) * (1 + 1));
 	if (stop_sentence == NULL) {
-		perror("malloc\n");
-		fprintf(stderr, "Impossible to allocate memory\n");
+		fatal_alloc_error("protect_braced_string");
 		exit(1);
 	}
 	u_sprintf(stop_sentence, "S");
@@ -1407,8 +1389,7 @@ unichar *protect_braced_string(const unichar *s){
 		result = (unichar*) malloc(sizeof(unichar) * (length_t + length_l + 2
 				+ 1));
 		if (result == NULL) {
-			perror("malloc\n");
-			fprintf(stderr, "Impossible to allocate memory\n");
+			fatal_alloc_error("protect_braced_string");
 			exit(1);
 		}
 
@@ -1441,8 +1422,7 @@ unichar *protect_lem_in_braced_string(const unichar *s){
 	// nothing to do, just copy the lem
 	unichar *result = (unichar*)malloc(sizeof(unichar)*(length+1));
 	if(result == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible to allocate memory\n");
+		fatal_alloc_error("protect_lem_in_braced_string");
 		exit(1);
 	}
 	i++;
@@ -1480,8 +1460,7 @@ unichar *protect_text_in_braced_string(const unichar *s){
 	// Alloc twice the memory of s to be sure to have enough space for escape chars.
 	result = (unichar*)malloc(sizeof(unichar)*(length*2+1));
 	if(result == NULL){
-		perror("malloc\n");
-		fprintf(stderr,"Impossible to allocate memory\n");
+		fatal_alloc_error("protect_text_in_braced_string");
 		exit(1);
 	}
 
@@ -1518,8 +1497,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 
 	U_FILE *concord_desc_file = u_fopen(vec, snt_file->concord_ind,U_WRITE);
 	if( concord_desc_file == NULL){
-		perror("u_fopen\n");
-		fprintf(stderr,"Cannot open file %s\n",snt_file->concord_ind);
+		fatal_error("Cannot open file %s\n",snt_file->concord_ind);
 		exit(1);
 	}
 
