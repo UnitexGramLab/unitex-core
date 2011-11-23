@@ -28,25 +28,16 @@
  *
  */
 
-#ifndef UnitexRevisionInfoH
-#define UnitexRevisionInfoH
 
 
-#include "AbstractCallbackFuncModifier.h"
 
-int get_unitex_revision();
+#ifndef VersionInfoH
+#define VersionInfoH
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern const char* optstring_VersionInfo;
+extern const struct option_TS lopts_VersionInfo[];
+extern const char* usage_VersionInfo;
 
-
-UNITEX_FUNC int UNITEX_CALL GetUnitexRevision();
-
-#ifdef __cplusplus
-}
-#endif
-
+int main_VersionInfo(int argc,char* const argv[]);
 
 #endif
-

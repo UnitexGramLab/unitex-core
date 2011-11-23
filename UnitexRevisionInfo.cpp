@@ -36,11 +36,17 @@
 #define SVN_REVISION UNITEX_REVISION
 #endif
 
-UNITEX_FUNC int UNITEX_CALL GetUnitexRevision()
+int get_unitex_revision()
 {
 #ifdef SVN_REVISION
 return (int)SVN_REVISION;
 #else
 return (int)-1;
 #endif
+}
+
+
+UNITEX_FUNC int UNITEX_CALL GetUnitexRevision()
+{
+	return get_unitex_revision();
 }

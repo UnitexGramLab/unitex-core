@@ -212,6 +212,10 @@
 #include "Unxmlize.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_VERSIONINFO))) || defined(TOOL_VERSIONINFO))
+#include "VersionInfo.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
 #include "XMLizer.h"
 #endif
@@ -412,6 +416,10 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNXMLIZE))) || defined(TOOL_UNXMLIZE))
 	{ "Unxmlize", 8, &main_Unxmlize, usage_Unxmlize, optstring_Unxmlize, lopts_Unxmlize } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_VERSIONINFO))) || defined(TOOL_VERSIONINFO))
+	{ "VersionInfo", 11, &main_VersionInfo, usage_VersionInfo, optstring_VersionInfo, lopts_VersionInfo } ,
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_XMLIZER))) || defined(TOOL_XMLIZER))
