@@ -56,12 +56,26 @@ UNITEX_FUNC int UNITEX_CALL GetUnitexRevision()
 
 void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number)
 {
+// macro UNITEX_MAJOR_VERSION_NUMBER and UNITEX_MINOR_VERSION_NUMBER were introduced
+//   in Unitex 3.0. Unitex 2.1 is the only version compatible with UnitexRevisionInfo without version
+#ifdef UNITEX_MAJOR_VERSION_NUMBER
+unsigned int unitexMajorVersion = UNITEX_MAJOR_VERSION_NUMBER;
+#else
+unsigned int unitexMajorVersion = 2;
+#endif
+
+#ifdef UNITEX_MINOR_VERSION_NUMBER
+unsigned int unitexMinorVersion = UNITEX_MINOR_VERSION_NUMBER;
+#else
+unsigned int unitexMinorVersion = 1;
+#endif
+
 	if (major_version_number != NULL) {
-		*major_version_number = UNITEX_MAJOR_VERSION_NUMBER;
+		*major_version_number = unitexMajorVersion;
 	}
 
 	if (minor_version_number != NULL) {
-		*minor_version_number = UNITEX_MINOR_VERSION_NUMBER;
+		*minor_version_number = unitexMinorVersion;
 	}
 }
 

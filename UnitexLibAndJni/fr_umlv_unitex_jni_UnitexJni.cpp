@@ -50,6 +50,8 @@
 #include "Alphabet.h"
 #endif
 
+#include "Copyright.h"
+
 #if ((!defined(SVN_REVISION)) && (defined(HAS_UNITEX_REVISION_H_FILE)))
 #include "Unitex_revision.h"
 #define SVN_REVISION UNITEX_REVISION
@@ -57,8 +59,8 @@
 
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
      defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \
-     defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
-	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || \
+     defined(_M_X64) || defined(_M_X86) || defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
+	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
 	 defined(__LITTLE_ENDIAN__) \
            ) && (!(defined(INTEL_X86_LIKE_LITTLE_ENDIAN))))
 #define INTEL_X86_LIKE_LITTLE_ENDIAN 1
@@ -664,6 +666,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_copyUnitexFile
 	return (CopyUnitexFile(jstc_filenameSrc.getJString(),jstc_filenameDst.getJString()) == 0);
 }
 
+
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    unitexPathExists
@@ -688,6 +691,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_setStdOutTrashMode
 	enum stdwrite_kind swk=stdwrite_kind_out;
 	return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? JNI_TRUE : JNI_FALSE;
 }
+
 
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
@@ -762,6 +766,11 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
 }
 
 
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    getSvnRevisionNumber
+ * Signature: ()I
+ */
 JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getSvnRevisionNumber
   (JNIEnv *, jclass) {
 #ifdef SVN_REVISION
@@ -770,6 +779,39 @@ return (jint)SVN_REVISION;
 return (jint)-1;
 #endif
 }
+
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    getMajorVersionNumber
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getMajorVersionNumber
+  (JNIEnv *, jclass) {
+// macro UNITEX_MAJOR_VERSION_NUMBER and UNITEX_MINOR_VERSION_NUMBER were introduced
+//   in Unitex 3.0. Unitex 2.1 is the only version compatible with jni without version
+#ifdef UNITEX_MAJOR_VERSION_NUMBER
+return (jint)UNITEX_MAJOR_VERSION_NUMBER;
+#else
+return (jint)2;
+#endif
+}
+
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    getMinorVersionNumber
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getMinorVersionNumber
+  (JNIEnv *, jclass) {
+#ifdef UNITEX_MINOR_VERSION_NUMBER
+return (jint)UNITEX_MINOR_VERSION_NUMBER;
+#else
+return (jint)1;
+#endif
+}
+
 
 
 #if defined(UNITEX_HAVING_MINI_PERSISTANCE) && (!(defined(UNITEX_PREVENT_USING_MINIPERSISTANCE)))

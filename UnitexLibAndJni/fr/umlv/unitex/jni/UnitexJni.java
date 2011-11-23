@@ -280,6 +280,17 @@ public class UnitexJni {
 	public native static String loadPersistentAlphabet(String filename);
 	public native static void freePersistentAlphabet(String filename);
 
+
+	/**
+	 * Returns the major Unitex version number
+	 */
+	public native static int getMajorVersionNumber();
+
+	/**
+	 * Returns the minor Unitex version number
+	 */
+	public native static int getMinorVersionNumber();
+
 	/**
 	 * Returns the SVN revision number of the C/C++ code or -1 if this
 	 * information was not provided at compile time.
