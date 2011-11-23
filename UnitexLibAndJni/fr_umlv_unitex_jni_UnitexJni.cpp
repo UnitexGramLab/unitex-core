@@ -669,7 +669,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_copyUnitexFile
 
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
- * Method:    unitexPathExists
+ * Method:    unitexAbstractPathExists
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_unitexAbstractPathExists
