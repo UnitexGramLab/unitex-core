@@ -54,7 +54,7 @@
 # create the Jni and Library lib libUnitexLibAndJni.so under Windows with MinGW32 (fix the path, of course)
 #
 #  If you want to have access to the SVN revision number from the JNI or LIBRARY, you may
-#  provide this number with the extra option SVN_REVISION=xxx or with the extra option HAS_UNITEX_REVISION_H_FILE
+#  provide this number with the extra option SVN_REVISION=xxx or with the extra option HAS_UNITEX_REVISION_H_FILE=yes
 #  and create an Unitex_revision.h with "#define UNITEX_REVISION xxx" inside
 #-----------------------------------
 #

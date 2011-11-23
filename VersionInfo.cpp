@@ -128,8 +128,14 @@ else if (do_version_only) {
 	u_sprintf(DisplayText,"%d.%d",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER);
 }
 else {
-	u_sprintf(DisplayText,"%S\nUnitex Version: %d.%d\nUnitex SVN revision: %d\n",
-			COPYRIGHT,UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,revision);
+	if (revision == -1) {
+		u_sprintf(DisplayText,"%S\nUnitex Version: %d.%d\n",
+				COPYRIGHT,UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER);
+	}
+	else {
+		u_sprintf(DisplayText,"%S\nUnitex Version: %d.%d\nUnitex SVN revision: %d\n",
+				COPYRIGHT,UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,revision);
+	}
 }
 
 if (output_file!=NULL) {
