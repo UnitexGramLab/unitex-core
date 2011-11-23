@@ -34,7 +34,7 @@
 #include "UnitexRevisionInfo.h"
 
 
-#if ((!defined(SVN_REVISION)) && (defined(HAS_UNITEX_REVISION_H_FILE)))
+#if (!defined(SVN_REVISION))
 #include "Unitex_revision.h"
 #define SVN_REVISION UNITEX_REVISION
 #endif
