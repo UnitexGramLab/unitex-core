@@ -1248,17 +1248,6 @@ u_fprintf(fst2,"f\n");
  * necessary if some precompiled .fst2 were loaded
  */
 void renumber_graph_calls(Fst2* fst2,vector_int* renumber,vector_int* part_of_precompiled_fst2) {
-/*for (int i=0;i<fst2->number_of_states;i++) {
-	Fst2State s=fst2->states[i];
-	s->transitions=reverse_list(s->transitions);
-	Transition* t=s->transitions;
-	while (t!=NULL) {
-		if (t->tag_number<0) {
-			t->tag_number=-(renumber->tab[-(t->tag_number)]);
-		}
-		t=t->next;
-	}
-}*/
 for (int i=1;i<=fst2->number_of_graphs;i++) {
 	if (part_of_precompiled_fst2->tab[i]) continue;
 	int n=fst2->number_of_states_per_graphs[i]+fst2->initial_states[i];
