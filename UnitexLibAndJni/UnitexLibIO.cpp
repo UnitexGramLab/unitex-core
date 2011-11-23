@@ -33,6 +33,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <stdio.h>
+
 #include "Af_stdio.h"
 #include "DirHelper.h"
 #include "UnitexLibDir.h"
@@ -83,17 +85,22 @@ UNITEX_FUNC int UNITEX_CALL WriteUnitexFile(const char*name,const void*buffer_pr
     ABSTRACTFILE* vfWrite = af_fopen(name, "wb");
     if (vfWrite == NULL)
     {
+		fprintf(stderr, "WriteUnitexFile: could not open file %s\n", name);
         return 1;
     }
     int retValue = 0;
     if (size_prefix > 0)
-        if (size_prefix != af_fwrite(buffer_prefix,1,size_prefix,vfWrite))
+        if (size_prefix != af_fwrite(buffer_prefix,1,size_prefix,vfWrite)) {
+			fprintf(stderr, "WriteUnitexFile: could not write prefix of file %s\n", name);
             retValue = 1;
-
+		}
+		
     if (retValue==0 && (size_suffix > 0))
-        if (size_suffix != af_fwrite(buffer_suffix,1,size_suffix,vfWrite))
+        if (size_suffix != af_fwrite(buffer_suffix,1,size_suffix,vfWrite)) {
+			fprintf(stderr, "WriteUnitexFile: could not write suffix of file %s\n", name);
             retValue = 1;
-
+		}
+		
     af_fclose(vfWrite);
     return retValue;
 }
@@ -146,6 +153,14 @@ int af_create_folder_unlogged(const char*folderName)
 UNITEX_FUNC int UNITEX_CALL CreateUnitexFolder(const char*folderName)
 {
     return af_create_folder_unlogged(folderName);
+}
+
+/**
+ * Check if a path is present in abstract file space.
+ */
+UNITEX_FUNC bool UNITEX_CALL UnitexPathExists(const char* path) 
+{
+    return (is_filename_in_abstract_file_space(path) == 0);
 }
 
 int af_remove_folder_unlogged(const char*folderName)
