@@ -491,3 +491,10 @@ while (VFS_id.list!=NULL) {
 	my_fnc_memFileRemove(VFS_id.list->name,&VFS_id);
 }
 }
+
+static int init() {
+init_virtual_files();
+return 0;
+}
+
+static int foo=init();
