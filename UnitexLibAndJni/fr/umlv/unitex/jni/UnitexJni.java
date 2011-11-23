@@ -188,7 +188,7 @@ public class UnitexJni {
 	/**
 	 * tests whether a path is already present in Unitex's abstact file space
 	 */
-	public native static boolean unitexPathExists(String path);
+	public native static boolean unitexAbstractPathExists(String path);
 	
 	/**
 	 * allow ignore (flushMode is TRUE) or emit normal message to stdout

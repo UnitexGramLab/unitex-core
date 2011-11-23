@@ -63,7 +63,7 @@ UNITEX_FUNC int UNITEX_CALL CreateUnitexFolder(const char*name);
     
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexFolder(const char*name);
 
-UNITEX_FUNC bool UNITEX_CALL UnitexPathExists(const char* path);
+UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path);
     
 #ifdef __cplusplus
 }

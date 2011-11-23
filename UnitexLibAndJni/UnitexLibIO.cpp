@@ -157,10 +157,13 @@ UNITEX_FUNC int UNITEX_CALL CreateUnitexFolder(const char*folderName)
 
 /**
  * Check if a path is present in abstract file space.
+ * is_filename_in_abstract_file_space return 
+ *   0 if a filename is a file opened with fopen
+ *   1 if a filename use an installed abstract filespace
  */
-UNITEX_FUNC bool UNITEX_CALL UnitexPathExists(const char* path) 
+UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path) 
 {
-    return (is_filename_in_abstract_file_space(path) == 0);
+    return is_filename_in_abstract_file_space(path);
 }
 
 int af_remove_folder_unlogged(const char*folderName)

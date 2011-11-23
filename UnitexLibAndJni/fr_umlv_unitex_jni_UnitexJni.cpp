@@ -672,12 +672,12 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_copyUnitexFile
  * Method:    unitexPathExists
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_unitexPathExists
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_unitexAbstractPathExists
   (JNIEnv *env, jclass, jstring path)
 {
     jstringToCUtf jstc_path;
 	jstc_path.initJString(env, path);
-	return UnitexPathExists(jstc_path.getJString());
+	return (UnitexAbstractPathExists(jstc_path.getJString()) != 0);
 }
 
 /*
