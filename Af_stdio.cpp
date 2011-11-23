@@ -31,7 +31,6 @@
 
 
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -366,7 +365,6 @@ ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE)
 		if (vf->f == NULL) {
 			free(vf);
 			vf = NULL;
-            fprintf(stderr, "af_fopen_unlogged: could not open %s\n", name);
 		}
 	}
 	else
@@ -390,7 +388,6 @@ ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE)
         {
             free(vf);
             vf= NULL;
-            fprintf(stderr, "af_fopen_unlogged: could not get low level file object for %s\n", name);
        }
         else
         {
