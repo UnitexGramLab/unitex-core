@@ -57,7 +57,9 @@
 
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
      defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \
-     defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || defined(__LITTLE_ENDIAN__) \
+     defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
+	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || \
+	 defined(__LITTLE_ENDIAN__) \
            ) && (!(defined(INTEL_X86_LIKE_LITTLE_ENDIAN))))
 #define INTEL_X86_LIKE_LITTLE_ENDIAN 1
 #endif

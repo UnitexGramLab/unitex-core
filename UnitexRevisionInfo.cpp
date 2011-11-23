@@ -28,6 +28,9 @@
  *
  */
 
+
+#include "Unicode.h"
+#include "Copyright.h"
 #include "UnitexRevisionInfo.h"
 
 
@@ -49,4 +52,21 @@ return (int)-1;
 UNITEX_FUNC int UNITEX_CALL GetUnitexRevision()
 {
 	return get_unitex_revision();
+}
+
+void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number)
+{
+	if (major_version_number != NULL) {
+		*major_version_number = UNITEX_MAJOR_VERSION_NUMBER;
+	}
+
+	if (minor_version_number != NULL) {
+		*minor_version_number = UNITEX_MINOR_VERSION_NUMBER;
+	}
+}
+
+
+UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number)
+{
+	get_unitex_version(major_version_number, minor_version_number);
 }

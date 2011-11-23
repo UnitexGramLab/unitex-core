@@ -35,6 +35,7 @@
 #include "AbstractCallbackFuncModifier.h"
 
 int get_unitex_revision();
+void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number);
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +43,7 @@ extern "C" {
 
 
 UNITEX_FUNC int UNITEX_CALL GetUnitexRevision();
+UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number);
 
 #ifdef __cplusplus
 }
