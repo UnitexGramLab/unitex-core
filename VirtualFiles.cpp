@@ -64,7 +64,7 @@ typedef struct {
 } VFS_FILE;
 
 
-static t_fileio_func_array my_VFS;
+static t_fileio_func_array_ex my_VFS;
 
 
 /**
@@ -76,7 +76,7 @@ struct VFS {
 	VFS_INODE* list;
 };
 
-static struct VFS VFS_id={PFX,1024,NULL};
+static struct VFS VFS_id={PFX,4096,NULL};
 
 
 /**
@@ -363,6 +363,12 @@ return 0;
 }
 
 
+const void* my_fnc_memFile_getMapPointer(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type len,int options,
+		afs_size_type value_for_options,void* privateSpacePtr) {
+VFS_FILE* f=(VFS_FILE*)llFile;
+return ((char*)f->inode->ptr)+pos;
+}
+
 /**
  * Initialization of the virtual file system
  */
@@ -380,8 +386,9 @@ my_VFS.fnc_memLowLevelClose=my_fnc_memLowLevelClose;
 my_VFS.fnc_memLowLevelSetSizeReservation=NULL;
 my_VFS.fnc_memFileRemove=my_fnc_memFileRemove;
 my_VFS.fnc_memFileRename=my_fnc_memFileRename;
-
-if (!AddAbstractFileSpace(&my_VFS,&VFS_id)) {
+my_VFS.fnc_memFile_getMapPointer=my_fnc_memFile_getMapPointer;
+my_VFS.fnc_memFile_releaseMapPointer=NULL;
+if (!AddAbstractFileSpaceEx(&my_VFS,&VFS_id)) {
 	fatal_error("Cannot create virtual file system\n");
 }
 }
