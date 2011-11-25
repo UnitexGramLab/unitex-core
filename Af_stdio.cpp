@@ -30,6 +30,7 @@
 
 
 
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -43,7 +44,7 @@
 
 
 struct AbstractFileSpace {
-	t_fileio_func_array_ex func_array;
+	t_fileio_func_array_extensible func_array;
 	void* privateSpacePtr;
 } ;
 
@@ -58,14 +59,43 @@ struct List_AbstractFileSpace* p_abstract_file_space_list=NULL;
 
 
 
-UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array,void* privateSpacePtr)
+static void FillFuncArrayExtensibleFromFuncArray(t_fileio_func_array_extensible *func_array_extensible_res,
+	                                                       const t_fileio_func_array* func_array) 
+{
+    memset(func_array_extensible_res,0,sizeof(t_fileio_func_array_extensible));
+	memcpy(&(func_array_extensible_res->fnc_is_filename_object),&(func_array->fnc_is_filename_object),sizeof(t_fileio_func_array));
+	func_array_extensible_res->size_func_array = sizeof(t_fileio_func_array_extensible);
+}
+
+static void FillFuncArrayExtensibleFromFuncArrayEx(t_fileio_func_array_extensible *func_array_extensible_res,
+	                                                       const t_fileio_func_array_ex* func_array_ex) 
+{
+    memset(func_array_extensible_res,0,sizeof(t_fileio_func_array_extensible));
+	memcpy(&(func_array_extensible_res->fnc_is_filename_object),&(func_array_ex->fnc_is_filename_object),sizeof(t_fileio_func_array_ex));
+	func_array_extensible_res->size_func_array = sizeof(t_fileio_func_array_extensible);
+}
+
+static void FillFuncArrayExtensibleFromFuncArrayExtensible(t_fileio_func_array_extensible *func_array_extensible_res,
+	                                                       const t_fileio_func_array_extensible* func_array_extensible_src) 
+{
+    memset(func_array_extensible_res,0,sizeof(t_fileio_func_array_extensible));
+	size_t copy_size = (func_array_extensible_src->size_func_array < sizeof(t_fileio_func_array_extensible)) ?
+							(func_array_extensible_res->size_func_array) : sizeof(t_fileio_func_array_extensible);
+	memcpy(func_array_extensible_res,func_array_extensible_src,copy_size);
+	func_array_extensible_res->size_func_array = sizeof(t_fileio_func_array_extensible);
+}
+
+
+
+UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceExtensible(const t_fileio_func_array_extensible* func_array_extensible_param,void* privateSpacePtr)
 {
 	struct List_AbstractFileSpace* new_item;
 	new_item = (struct List_AbstractFileSpace*)malloc(sizeof(struct List_AbstractFileSpace));
 	if (new_item == NULL)
 		return 0;
 
-	new_item->afs.func_array = *func_array;
+	FillFuncArrayExtensibleFromFuncArrayExtensible(&(new_item->afs.func_array),func_array_extensible_param);
+
 	new_item->afs.privateSpacePtr = privateSpacePtr;
 	new_item->next = NULL;
 
@@ -84,14 +114,17 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceEx(const t_fileio_func_array_ex*
 	return 1;
 }
 
-UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array,void* privateSpacePtr)
+UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceExtensible(const t_fileio_func_array_extensible* func_array_extensible_param,void* privateSpacePtr)
 {
+	t_fileio_func_array_extensible func_array_extensible_work;
+	FillFuncArrayExtensibleFromFuncArrayExtensible(&func_array_extensible_work,func_array_extensible_param);
+
 	struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;
 	struct List_AbstractFileSpace* tmp_previous = NULL;
 
 	while (tmp != NULL)
 	{
-		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_fileio_func_array_ex))==0) &&
+		if ((memcmp(&tmp->afs.func_array,&func_array_extensible_work,sizeof(t_fileio_func_array_extensible))==0) &&
 			(tmp->afs.privateSpacePtr == privateSpacePtr))
 		{
 			if (tmp_previous == NULL)
@@ -112,19 +145,31 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceEx(const t_fileio_func_array_
 }
 
 UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
+{	
+    t_fileio_func_array_extensible func_array_extensible;
+	FillFuncArrayExtensibleFromFuncArray(&func_array_extensible,func_array);
+    return AddAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
+}
+
+UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array_ex,void* privateSpacePtr)
 {
-    t_fileio_func_array_ex func_array_ex;
-    memset(&func_array_ex,0,sizeof(t_fileio_func_array_ex));
-    memcpy(&func_array_ex,func_array,sizeof(t_fileio_func_array));
-    return AddAbstractFileSpaceEx(&func_array_ex,privateSpacePtr);
+    t_fileio_func_array_extensible func_array_extensible;
+	FillFuncArrayExtensibleFromFuncArrayEx(&func_array_extensible,func_array_ex);
+    return AddAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
 }
 
 UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
 {
-    t_fileio_func_array_ex func_array_ex;
-    memset(&func_array_ex,0,sizeof(t_fileio_func_array_ex));
-    memcpy(&func_array_ex,func_array,sizeof(t_fileio_func_array));
-    return RemoveAbstractFileSpaceEx(&func_array_ex,privateSpacePtr);
+    t_fileio_func_array_extensible func_array_extensible;
+	FillFuncArrayExtensibleFromFuncArray(&func_array_extensible,func_array);
+    return RemoveAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
+}
+
+UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array_ex,void* privateSpacePtr)
+{
+    t_fileio_func_array_extensible func_array_extensible;
+	FillFuncArrayExtensibleFromFuncArrayEx(&func_array_extensible,func_array_ex);
+    return RemoveAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
 }
 
 UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled()
@@ -365,6 +410,7 @@ ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE)
 		if (vf->f == NULL) {
 			free(vf);
 			vf = NULL;
+            fprintf(stderr, "af_fopen_unlogged: could not open %s\n", name);
 		}
 	}
 	else
@@ -388,6 +434,7 @@ ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE)
         {
             free(vf);
             vf= NULL;
+            fprintf(stderr, "af_fopen_unlogged: could not get low level file object for %s\n", name);
        }
         else
         {
@@ -715,6 +762,45 @@ void af_setsizereservation(ABSTRACTFILE* stream, long size_planned)
 		if (p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation != NULL)
 			(*(p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation))(p_abfr->fabstr, size_planned,p_abfr->afs->privateSpacePtr);	
 }
+
+
+
+char** af_get_list_file(const char*name)
+{
+	const AbstractFileSpace * pafs ;
+	pafs = GetFileSpaceForFileName(name);
+	 
+	if (pafs == NULL)
+	{
+		return NULL;
+	}
+	else {
+        if (pafs->func_array.fnc_memFile_getList != NULL) {
+			return (*(pafs->func_array.fnc_memFile_getList))(pafs->privateSpacePtr);
+            }
+        
+	}
+	return NULL;
+}
+
+void af_release_list_file(const char*name,char**list)
+{
+	const AbstractFileSpace * pafs ;
+	pafs = GetFileSpaceForFileName(name);
+	 
+	if (pafs == NULL)
+	{
+		return ;
+	}
+	else {
+        if ((pafs->func_array.fnc_memFile_getList != NULL) && (pafs->func_array.fnc_memFile_releaseList != NULL)) {
+			return (*(pafs->func_array.fnc_memFile_releaseList))(list,pafs->privateSpacePtr);
+            }
+        
+	}
+	return ;
+}
+
 
 int af_remove_unlogged(const char * Filename)
 {

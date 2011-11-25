@@ -34,7 +34,7 @@
 #ifndef _ABSTRACT_FILE_STDIO_INCLUDED
 #define _ABSTRACT_FILE_STDIO_INCLUDED
 
-
+#define HAS_LIST_FILE 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,6 +93,13 @@ int af_fclose(ABSTRACTFILE* stream) ;
 int af_fclose_unlogged(ABSTRACTFILE* stream) ;
 
 void af_setsizereservation(ABSTRACTFILE* stream, long size_planned);
+
+
+char** af_get_list_file(const char*name);
+
+void af_release_list_file(const char*name,char**list);
+
+
 
 int af_rename(const char * OldFilename, const char * NewFilename);
 int af_rename_unlogged(const char * OldFilename, const char * NewFilename);
