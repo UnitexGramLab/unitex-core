@@ -85,19 +85,25 @@ UNITEX_FUNC int UNITEX_CALL WriteUnitexFile(const char*name,const void*buffer_pr
     ABSTRACTFILE* vfWrite = af_fopen(name, "wb");
     if (vfWrite == NULL)
     {
+#ifdef VERBOSE_WRITEUNITEXFILE_ERROR
 		fprintf(stderr, "WriteUnitexFile: could not open file %s\n", name);
+#endif
         return 1;
     }
     int retValue = 0;
     if (size_prefix > 0)
         if (size_prefix != af_fwrite(buffer_prefix,1,size_prefix,vfWrite)) {
+#ifdef VERBOSE_WRITEUNITEXFILE_ERROR
 			fprintf(stderr, "WriteUnitexFile: could not write prefix of file %s\n", name);
+#endif
             retValue = 1;
 		}
 		
     if (retValue==0 && (size_suffix > 0))
         if (size_suffix != af_fwrite(buffer_suffix,1,size_suffix,vfWrite)) {
+#ifdef VERBOSE_WRITEUNITEXFILE_ERROR
 			fprintf(stderr, "WriteUnitexFile: could not write suffix of file %s\n", name);
+#endif
             retValue = 1;
 		}
 		
