@@ -375,8 +375,8 @@ return ((char*)f->inode->ptr)+pos;
 void init_virtual_files() {
 t_fileio_func_array_extensible my_VFS;
 
-my_VFS.size_func_array = sizeof(t_fileio_func_array_extensible);
 memset(&my_VFS,0,sizeof(t_fileio_func_array_extensible));
+my_VFS.size_func_array = sizeof(t_fileio_func_array_extensible);
 my_VFS.fnc_is_filename_object=my_fnc_is_filename_object;
 my_VFS.fnc_Init_FileSpace=NULL;
 my_VFS.fnc_Uninit_FileSpace=NULL;
