@@ -64,7 +64,6 @@ typedef struct {
 } VFS_FILE;
 
 
-static t_fileio_func_array_ex my_VFS;
 
 
 /**
@@ -230,7 +229,7 @@ if (f->open_type==OPEN_CREATE_MF) {
 }
 unsigned int to_read=f->inode->size-f->pos;
 if (size<to_read) {
-	to_read=size;
+	to_read=(unsigned int)size;
 }
 memcpy(Buf,((char*)f->inode->ptr)+f->pos,to_read);
 f->pos+=to_read;
@@ -260,7 +259,7 @@ if (f->pos+size>f->inode->capacity) {
 	f->inode->capacity=n;
 }
 memcpy((char*)(f->inode->ptr)+f->pos,Buf,size);
-f->pos+=size;
+f->pos+=(unsigned long)size;
 if (f->pos>f->inode->size) {
 	f->inode->size=f->pos;
 }
@@ -276,9 +275,9 @@ DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 int new_pos=0;
 switch (TypeSeek) {
-case SEEK_SET: new_pos=Pos; break;
-case SEEK_CUR: new_pos=f->pos+Pos; break;
-case SEEK_END: new_pos=f->inode->size+Pos; break;
+case SEEK_SET: new_pos=(int)Pos; break;
+case SEEK_CUR: new_pos=(int)(f->pos+Pos); break;
+case SEEK_END: new_pos=(int)(f->inode->size+Pos); break;
 }
 if (new_pos<0) return -1;
 if ((unsigned int)new_pos>f->inode->size) {
@@ -363,8 +362,8 @@ return 0;
 }
 
 
-const void* my_fnc_memFile_getMapPointer(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type len,int options,
-		afs_size_type value_for_options,void* privateSpacePtr) {
+const void* my_fnc_memFile_getMapPointer(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type /*len*/,int /*options*/,
+		afs_size_type /* value_for_options*/,void* /* privateSpacePtr */) {
 VFS_FILE* f=(VFS_FILE*)llFile;
 return ((char*)f->inode->ptr)+pos;
 }
@@ -372,7 +371,12 @@ return ((char*)f->inode->ptr)+pos;
 /**
  * Initialization of the virtual file system
  */
+
 void init_virtual_files() {
+t_fileio_func_array_extensible my_VFS;
+
+my_VFS.size_func_array = sizeof(t_fileio_func_array_extensible);
+memset(&my_VFS,0,sizeof(t_fileio_func_array_extensible));
 my_VFS.fnc_is_filename_object=my_fnc_is_filename_object;
 my_VFS.fnc_Init_FileSpace=NULL;
 my_VFS.fnc_Uninit_FileSpace=NULL;
@@ -386,13 +390,10 @@ my_VFS.fnc_memLowLevelClose=my_fnc_memLowLevelClose;
 my_VFS.fnc_memLowLevelSetSizeReservation=NULL;
 my_VFS.fnc_memFileRemove=my_fnc_memFileRemove;
 my_VFS.fnc_memFileRename=my_fnc_memFileRename;
-my_VFS.fnc_memFile_getMapPointer=my_fnc_memFile_getMapPointer;
-my_VFS.fnc_memFile_releaseMapPointer=NULL;
-if (!AddAbstractFileSpaceEx(&my_VFS,&VFS_id)) {
-	fatal_error("Cannot create virtual file system\n");
-}
-}
 
+if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
+	fatal_error("Cannot create virtual file system\n");}
+}
 
 /**
  * Returns the current list of virtual files.
