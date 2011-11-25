@@ -184,12 +184,17 @@ public class UnitexJni {
 	 */
 	public native static boolean copyUnitexFile(String fileNameSrc,
 			String fileNameDst);
-
+			
 	/**
 	 * tests whether a path is already present in Unitex's abstact file space
 	 */
 	public native static boolean unitexAbstractPathExists(String path);
-	
+
+	/**
+	 * retrieve array of file in abstract space
+	 */
+	public native static String[] getFileList(String path);
+
 	/**
 	 * allow ignore (flushMode is TRUE) or emit normal message to stdout
 	 */

@@ -813,6 +813,45 @@ return (jint)1;
 }
 
 
+#ifdef UNITEX_IO_HAS_LIST_FILE
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    getFileList
+ * Signature: (Ljava/lang/String;)[Ljava/lang/String;
+ */
+JNIEXPORT jobjectArray JNICALL Java_unitex_UnitexJNI_getFileList
+(JNIEnv *env, jclass , jstring filename)
+{
+	jstringToCUtf jstc_foldername;
+	jstc_foldername.initJString(env,filename);
+
+	jclass cls = env->FindClass("java/lang/String");
+
+	char**list=GetUnitexFileList(jstc_foldername.getJString());
+	if (list==NULL)
+		return env->NewObjectArray(0, cls, NULL);
+
+	unsigned int nb_file = 0;
+	while ((*(list + nb_file))!=NULL)
+	{
+		nb_file ++;
+	}
+
+	jobjectArray jarray = env->NewObjectArray((jsize)nb_file, cls, NULL);
+	unsigned int iter_file = 0;
+	while ((*(list + iter_file))!=NULL)
+	{
+        jstring jstr = env->NewStringUTF(*(list + iter_file));
+        env->SetObjectArrayElement(jarray, iter_file, jstr);
+		nb_file ++;
+	}
+
+
+	ReleaseUnitexFileList(jstc_foldername.getJString(),list);
+	return jarray;
+}
+#endif
+
 
 #if defined(UNITEX_HAVING_MINI_PERSISTANCE) && (!(defined(UNITEX_PREVENT_USING_MINIPERSISTANCE)))
 /*

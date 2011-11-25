@@ -196,3 +196,15 @@ UNITEX_FUNC int UNITEX_CALL RemoveUnitexFolder(const char*folderName)
 {
     return af_remove_folder_unlogged(folderName);
 }
+
+#ifdef HAS_LIST_FILE
+UNITEX_FUNC char** UNITEX_CALL GetUnitexFileList(const char* path)
+{
+	return af_get_list_file(path);
+}
+
+UNITEX_FUNC void UNITEX_CALL ReleaseUnitexFileList(const char* path,char**list)
+{
+	af_release_list_file(path,list);
+}
+#endif

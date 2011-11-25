@@ -36,7 +36,7 @@
 
 
 #include "AbstractCallbackFuncModifier.h"
-
+#include "Af_stdio.h"
 
 
 #ifdef __cplusplus
@@ -64,6 +64,15 @@ UNITEX_FUNC int UNITEX_CALL CreateUnitexFolder(const char*name);
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexFolder(const char*name);
 
 UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path);
+
+
+#ifdef HAS_LIST_FILE
+#define UNITEX_IO_HAS_LIST_FILE 1	
+
+UNITEX_FUNC char** UNITEX_CALL GetUnitexFileList(const char* path);
+
+UNITEX_FUNC void UNITEX_CALL ReleaseUnitexFileList(const char* path,char**list);
+#endif
     
 #ifdef __cplusplus
 }
