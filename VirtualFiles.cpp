@@ -369,33 +369,6 @@ return ((char*)f->inode->ptr)+pos;
 }
 
 /**
- * Initialization of the virtual file system
- */
-
-void init_virtual_files() {
-t_fileio_func_array_extensible my_VFS;
-
-memset(&my_VFS,0,sizeof(t_fileio_func_array_extensible));
-my_VFS.size_func_array = sizeof(t_fileio_func_array_extensible);
-my_VFS.fnc_is_filename_object=my_fnc_is_filename_object;
-my_VFS.fnc_Init_FileSpace=NULL;
-my_VFS.fnc_Uninit_FileSpace=NULL;
-my_VFS.fnc_memOpenLowLevel=my_fnc_memOpenLowLevel;
-my_VFS.fnc_memLowLevelWrite=my_fnc_memLowLevelWrite;
-my_VFS.fnc_memLowLevelRead=my_fnc_memLowLevelRead;
-my_VFS.fnc_memLowLevelSeek=my_fnc_memLowLevelSeek;
-my_VFS.fnc_memLowLevelGetSize=my_fnc_memLowLevelGetSize;
-my_VFS.fnc_memLowLevelTell=my_fnc_memLowLevelTell;
-my_VFS.fnc_memLowLevelClose=my_fnc_memLowLevelClose;
-my_VFS.fnc_memLowLevelSetSizeReservation=NULL;
-my_VFS.fnc_memFileRemove=my_fnc_memFileRemove;
-my_VFS.fnc_memFileRename=my_fnc_memFileRename;
-
-if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
-	fatal_error("Cannot create virtual file system\n");}
-}
-
-/**
  * Returns the current list of virtual files.
  */
 char** VFS_ls() {
@@ -422,6 +395,54 @@ while (inode!=NULL) {
 }
 names[n]=NULL;
 return names;
+}
+
+char** ABSTRACT_CALLBACK_UNITEX my_memFile_getList(void* /*privateSpacePtr*/) {
+	return VFS_ls();
+}
+
+
+void ABSTRACT_CALLBACK_UNITEX my_memFile_releaseList(char**list,void* /*privateSpacePtr*/)
+{
+	if (list==NULL)
+		return;
+
+	char** list_walk=list;
+	while ((*list_walk)!=NULL)
+	{
+		free(*list_walk);
+		list_walk++;
+	}
+	free(list);
+}
+
+/**
+ * Initialization of the virtual file system
+ */
+
+void init_virtual_files() {
+t_fileio_func_array_extensible my_VFS;
+
+memset(&my_VFS,0,sizeof(t_fileio_func_array_extensible));
+my_VFS.size_func_array = sizeof(t_fileio_func_array_extensible);
+my_VFS.fnc_is_filename_object=my_fnc_is_filename_object;
+my_VFS.fnc_Init_FileSpace=NULL;
+my_VFS.fnc_Uninit_FileSpace=NULL;
+my_VFS.fnc_memOpenLowLevel=my_fnc_memOpenLowLevel;
+my_VFS.fnc_memLowLevelWrite=my_fnc_memLowLevelWrite;
+my_VFS.fnc_memLowLevelRead=my_fnc_memLowLevelRead;
+my_VFS.fnc_memLowLevelSeek=my_fnc_memLowLevelSeek;
+my_VFS.fnc_memLowLevelGetSize=my_fnc_memLowLevelGetSize;
+my_VFS.fnc_memLowLevelTell=my_fnc_memLowLevelTell;
+my_VFS.fnc_memLowLevelClose=my_fnc_memLowLevelClose;
+my_VFS.fnc_memLowLevelSetSizeReservation=NULL;
+my_VFS.fnc_memFileRemove=my_fnc_memFileRemove;
+my_VFS.fnc_memFileRename=my_fnc_memFileRename;
+my_VFS.fnc_memFile_getList=my_memFile_getList;
+my_VFS.fnc_memFile_releaseList=my_memFile_releaseList;
+
+if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
+	fatal_error("Cannot create virtual file system\n");}
 }
 
 
