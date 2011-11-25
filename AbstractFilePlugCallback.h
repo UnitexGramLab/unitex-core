@@ -36,6 +36,7 @@
 #include "AbstractCallbackFuncModifier.h"
 
 #define HAS_FILE_FUNC_ARRAY_EXTENSIBLE 1
+#define HAS_FILE_FUNC_ARRAY_GETLIST 1
 
 #ifdef __cplusplus
 extern "C" {
