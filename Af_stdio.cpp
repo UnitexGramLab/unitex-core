@@ -794,7 +794,8 @@ void af_release_list_file(const char*name,char**list)
 	}
 	else {
         if ((pafs->func_array.fnc_memFile_getList != NULL) && (pafs->func_array.fnc_memFile_releaseList != NULL)) {
-			return (*(pafs->func_array.fnc_memFile_releaseList))(list,pafs->privateSpacePtr);
+			 (*(pafs->func_array.fnc_memFile_releaseList))(list,pafs->privateSpacePtr);
+			 return;
             }
         
 	}
