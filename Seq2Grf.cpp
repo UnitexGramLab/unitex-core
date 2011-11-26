@@ -475,7 +475,8 @@ void add_path(Tfst * tfst,
 //					u_printf("here\n");
 //					u_printf("\t\tind = %d\n",ind);
 //					u_printf("\t\ttag = \n%S\n\n",_tag);
-					tmp_tags->value[ind]=(*_tag).str;
+					tmp_tags->value[ind]=u_strdup((*_tag).str);
+					free_Ustring(_tag);
 				}
 				u_printf(" SEQ[%d]=%S\tvalue index=%d\n",i,seq[i],ind);
 
@@ -810,11 +811,19 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		u_printf("\n");
 		// sequences produites par dérivations :
 		unichar **res =new unichar*[N+insert];
+		for (int i=0;i<(N+insert);i++){
+			res[i]=NULL;
+		}
 		u_printf("N+insert=%d+%d=%d\n",N,insert,N+insert);
 		int curr=0;
 		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res,0,curr,//sequences,
 				tfst,	INFO,	tokens,	foo,	current_state,
 				tmp_tags);
+		for (int i=0;i<(N+insert);i++){
+			if (res[i]!=NULL){
+				free(res[i]);
+			}
+		}
 		delete [] res;
 		delete [] non_space_buffer;
 		//		}
