@@ -741,6 +741,9 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	tfst->offset_in_chars = 0;
 	tfst->offset_in_tokens = 0;
 	tfst->tokens = new_vector_int(2);
+	// the line below is a temporary hack to ensure the result is always same with same input file
+	tfst->tokens->tab[0] = tfst->tokens->tab[1] = 0;
+
 	tfst->token_sizes = new_vector_int(0);
 	int current_state = 0;
 	// New Initial State
