@@ -22,7 +22,8 @@
 #ifndef DebugModeH
 #define DebugModeH
 
-#include "LocatePattern.h"
+#include "LocateConstants.h"
+#include "Ustring.h"
 #include "Unicode.h"
 
 /**
