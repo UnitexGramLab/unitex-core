@@ -448,6 +448,9 @@ void add_path(Tfst * tfst,
 	/* Transitions */
 
 	for (int i = 0; i < N; i++) {
+		if (tokens->SENTENCE_MARKER == -1) {
+			u_printf("Warning : tokens->SENTENCE_MARKER == -1, compare aborted against invalid memory pointer usage!!!\n");
+		} else {
 		if (seq[i] == tokens->token[tokens->SENTENCE_MARKER]) {
 			u_printf(">>>#>>>\ti = %d ET buffer[%d] = %s\n",i,i,tokens->SENTENCE_MARKER);
 		} else {
