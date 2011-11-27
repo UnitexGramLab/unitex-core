@@ -481,7 +481,9 @@ void add_path(Tfst * tfst,
 					if (tmp_tags->value[ind] != NULL) {
 						free(tmp_tags->value[ind]);
 					}
-					tmp_tags->value[ind]=u_strdup((*_tag).str);
+					tmp_tags->value[ind]=(*_tag).str;
+					// we want keep the buffer or (*_tag).str by calling free_Ustring
+					(*_tag).str = NULL;
 					free_Ustring(_tag);
 				}
 				u_printf(" SEQ[%d]=%S\tvalue index=%d\n",i,seq[i],ind);
