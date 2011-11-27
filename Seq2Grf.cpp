@@ -58,22 +58,21 @@ struct info {
 
 const char
 * usage_Seq2Grf =
-		"Usage: Seq2Tfst [OPTIONS] <snt>\n"
+		"Usage: Seq2Grf [OPTIONS] <snt>\n"
 		"\n"
 		"  <snt> : the .snt text file\n"
 		"\n"
 		"OPTIONS:\n"
 		"  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		"  -c/---clean: cleans each sentence automaton, keeping best paths\n"
-		"  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
-		"  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
+		"  -o XXX/--output=XXX: the output GRF ﬁle\n"
 		"  -h/--help: this help\n"
 		"\n"
-		"Constructs the sequences automaton. If the sequences must be delimited\n"
-		"with the special tag {S}. The result files\n"
-		"named \"text.tfst\" and \"text.tind\" are stored is the text directory.\n"
+		"Constructs the sequences automaton : one single automaton that recognizes\n"
+		"all the sequences from the SNT. The sequences must be delimited with the\n"
+		"special tag {S}. The result ﬁles, named text.tfst, text.tind and\n"
+		"XXX, the GRF ﬁle are stored is the text directory.\n"
 		"\n"
-		"Note that the program will also take into account the file \"tags.ind\", if any.\n";
+		;
 
 static void usage() {
 	u_printf("%S", COPYRIGHT);
@@ -902,3 +901,4 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 }
 
 
+
