@@ -475,6 +475,9 @@ void add_path(Tfst * tfst,
 //					u_printf("here\n");
 //					u_printf("\t\tind = %d\n",ind);
 //					u_printf("\t\ttag = \n%S\n\n",_tag);
+					if (tmp_tags->value[ind] != NULL) {
+						free(tmp_tags->value[ind]);
+					}
 					tmp_tags->value[ind]=u_strdup((*_tag).str);
 					free_Ustring(_tag);
 				}
