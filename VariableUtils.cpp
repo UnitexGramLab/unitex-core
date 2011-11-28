@@ -97,7 +97,7 @@ return get_dic_variable_content(name,p);
  * Note 2: you can compare a variable to a constant string. To do that, the string
  *         must start with #
  */
-int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p) {
+int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters) {
 Ustring* v1=get_var_content(var1,p);
 if (!v1) {
 	return VAR_CMP_ERROR;
@@ -107,7 +107,7 @@ if (!v2) {
 	free_Ustring(v1);
 	return VAR_CMP_ERROR;
 }
-int ret=u_strcmp(v1->str,v2->str);
+int ret=case_matters?u_strcmp(v1->str,v2->str):u_strcmp_ignore_case(v1->str,v2->str);
 free_Ustring(v1);
 free_Ustring(v2);
 if (ret==0) {

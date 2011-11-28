@@ -2913,7 +2913,6 @@ if ((a!=NULL) && (b!=NULL)) {
     unichar a_c;
     unichar b_c;
 
-
     for(;;) {
        a_c=(unichar)*(a_p);
        b_c=(unichar)*(b_p);
@@ -2938,6 +2937,57 @@ if ((a!=NULL) && (b!=NULL)) {
 
        a_c=(unichar)*(a_p+3);
        b_c=(unichar)*(b_p+3);
+       a_p+=4;
+	   b_p+=4;
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+    } ;
+} else {
+  if (a==NULL) {
+       if (b==NULL) return 0;
+       return 1;
+    }
+  return -1;
+  }
+}
+
+
+/**
+ * Unicode version of strcmp that tolerates NULL strings and ignores case.
+ */
+int u_strcmp_ignore_case(const unichar* a,const unichar* b) {
+if ((a!=NULL) && (b!=NULL)) {
+    const unichar *a_p=a;
+    const unichar *b_p=b;
+    unichar a_c;
+    unichar b_c;
+
+    for(;;) {
+       a_c=u_toupper((unichar)*(a_p));
+       b_c=u_toupper((unichar)*(b_p));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+
+       a_c=u_toupper((unichar)*(a_p+1));
+       b_c=u_toupper((unichar)*(b_p+1));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+
+       a_c=u_toupper((unichar)*(a_p+2));
+       b_c=u_toupper((unichar)*(b_p+2));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+
+       a_c=u_toupper((unichar)*(a_p+3));
+       b_c=u_toupper((unichar)*(b_p+3));
        a_p+=4;
 	   b_p+=4;
 	   if (a_c=='\0')
@@ -3007,11 +3057,73 @@ if ((a!=NULL) && (b!=NULL)) {
 
 
 /**
+ * Unicode version of strcmp that tolerates NULL strings, ignoring case.
+ */
+int u_strcmp_ignore_case(const unichar* a,const char* b) {
+if ((a!=NULL) && (b!=NULL)) {
+    const unichar *a_p=a;
+    const unsigned char *b_p=(const unsigned char*)b;
+    unichar a_c;
+    unichar b_c;
+
+    for(;;) {
+       a_c=u_toupper((unichar)*(a_p));
+       b_c=u_toupper((unichar)((unsigned char)*(b_p)));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+
+       a_c=u_toupper((unichar)*(a_p+1));
+       b_c=u_toupper((unichar)((unsigned char)*(b_p+1)));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+
+       a_c=u_toupper((unichar)*(a_p+2));
+       b_c=u_toupper((unichar)((unsigned char)*(b_p+2)));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+
+       a_c=u_toupper((unichar)*(a_p+3));
+       b_c=u_toupper((unichar)((unsigned char)*(b_p+3)));
+       a_p+=4;
+	   b_p+=4;
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
+    } ;
+} else {
+  if (a==NULL) {
+       if (b==NULL) return 0;
+       return 1;
+    }
+  return -1;
+  }
+}
+
+
+
+/**
  * Returns 1 if a is the same as b; 0 otherwise.
  */
 int u_equal(const unichar* a, const unichar* b) {
 return !u_strcmp(a,b);
 }
+
+
+/**
+ * Returns 1 if a is the same as b; 0 otherwise.
+ */
+int u_equal_ignore_case(const unichar* a, const unichar* b) {
+return !u_strcmp_ignore_case(a,b);
+}
+
+
 
 /**
  * Unicode version of strdup.
