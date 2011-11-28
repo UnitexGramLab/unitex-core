@@ -899,6 +899,3 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	close_text_automaton(tfst);
 
 }
-
-
-
