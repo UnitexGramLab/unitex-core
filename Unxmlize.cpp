@@ -40,6 +40,8 @@ const char* usage_Unxmlize =
          "OPTIONS:\n"
          "  -o TXT/--output=TXT: output file. By default, foo.xml => foo.txt\n"
 		 "  --output_offsets=XXX: specifies the offset file to be produced\n"
+		 "  --PRLG=XXX: extracts to file XXX special information used in the\n"
+		 "              PRLG project on ancient Greek (requires --output_offsets)\n"
          "  -h/--help: this help\n"
          "\n"
          "Removes all xml tags from the given .xml file to produce a text file that\n"
@@ -55,6 +57,7 @@ const char* optstring_Unxmlize=":o:h:k:q:";
 const struct option_TS lopts_Unxmlize[]={
    {"output", required_argument_TS, NULL, 'o'},
    {"output_offsets",required_argument_TS,NULL,1},
+   {"PRLG",required_argument_TS,NULL,2},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
@@ -70,6 +73,7 @@ if (argc==1) {
 
 char output[FILENAME_MAX]="";
 char output_offsets[FILENAME_MAX]="";
+char output_PRLG[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -84,6 +88,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
                    fatal_error("You must specify a non empty offset file name\n");
                 }
                 strcpy(output_offsets,vars->optarg);
+                break;
+   case 2: if (vars->optarg[0]=='\0') {
+                   fatal_error("You must specify a non empty PRLG file name\n");
+                }
+                strcpy(output_PRLG,vars->optarg);
                 break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -145,11 +154,25 @@ if (output_offsets[0]!='\0') {
 	}
 	offsets=new_vector_offset();
 }
-if (!unxmlize(f_input,f_output,offsets,html)) {
+unichar* PRLG_ptrs[10]={0,0,0,0,0,0,0,0,0,0};
+unichar** PRLG=NULL;
+U_FILE* f_PRLG=NULL;
+if (output_PRLG[0]!='\0') {
+	if (f_offsets==NULL) {
+		fatal_error("Cannot use the --PRLG option if --output_offsets is not used\n");
+	}
+	PRLG=PRLG_ptrs;
+	f_PRLG=u_fopen(&vec,output_PRLG,U_WRITE);
+	if (f_offsets==NULL) {
+		fatal_error("Cannot create PRLG file %s\n",output_PRLG);
+	}
+}
+if (!unxmlize(f_input,f_output,offsets,html,PRLG,f_PRLG)) {
 	error("The input file was not a valid xml one. Operation aborted.\n");
 	u_fclose(f_input);
 	u_fclose(f_output);
 	u_fclose(f_offsets);
+	u_fclose(f_PRLG);
 	af_remove(output);
 	if (f_output!=NULL) {
 		af_remove(output_offsets);
@@ -158,12 +181,16 @@ if (!unxmlize(f_input,f_output,offsets,html)) {
 	free_OptVars(vars);
 	return 1;
 }
+for (int i=0;i<10;i++) {
+	free(PRLG_ptrs[i]);
+}
 if (offsets!=NULL) {
 	process_offsets(NULL,offsets,f_offsets);
 }
 u_fclose(f_input);
 u_fclose(f_output);
 u_fclose(f_offsets);
+u_fclose(f_PRLG);
 free_vector_offset(offsets);
 free_OptVars(vars);
 u_printf("\nDone.\n");

@@ -25,7 +25,8 @@
 #include "Unicode.h"
 #include "Offsets.h"
 
-int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html);
+int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html,
+		unichar* bastien[],U_FILE* f_bastien);
 
 #endif
 

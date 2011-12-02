@@ -23,9 +23,11 @@
 #include "Xml.h"
 #include "HTMLCharacters.h"
 #include "Alphabet.h"
+#include "Ustring.h"
 
 
-int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html);
+int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html,
+		unichar* bastien[],U_FILE* f_bastien);
 int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
 		void* html_ctx);
 
@@ -37,14 +39,15 @@ int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset
  * If 'html' is non null, special HTML filtering is applied
  * (i.e. skipping script code, replacing any tag by a space).
  */
-int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html) {
+int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html,
+		unichar* bastien[],U_FILE* f_bastien) {
 int c;
 int pos=0,new_pos=0;
 void* html_ctx=init_HTML_character_context();
 while ((c=u_fgetc_raw(input))!=EOF) {
 	pos++;
 	if (c=='<') {
-		if (!skip_tag(input,output,&pos,&new_pos,offsets,html)) {
+		if (!skip_tag(input,output,&pos,&new_pos,offsets,html,bastien,f_bastien)) {
 			free_HTML_character_context(html_ctx);
 			return 0;
 		}
@@ -286,16 +289,40 @@ return 1;
  * This function is called when < was read and it skips everything
  * until > has been read.
  */
-int skip_normal_tag(U_FILE* f,int *pos) {
+int skip_normal_tag(U_FILE* f,int *pos,unichar* bastien[],U_FILE* f_bastien) {
 int c;
+Ustring* ustr=new_Ustring();
+int tag_name_found=(bastien!=NULL)?0:-1;
+int tag_index=-1;
+int old_pos=*pos;
 while ((c=u_fgetc_raw(f))!='>') {
-	if (c==EOF) return 0;
+	if (c==EOF) goto err;
 	(*pos)++;
 	if (c=='"') {
 		/* If we have to skip an attribute between double quotes */
+		empty(ustr);
 		while ((c=u_fgetc_raw(f))!='"') {
-			if (c==EOF) return 0;
+			if (c==EOF) goto err;
+			u_strcat(ustr,c);
 			(*pos)++;
+		}
+		if (tag_name_found==2) {
+			tag_name_found=3;
+			for (int i=tag_index;i<10;i++) {
+				free(bastien[i]);
+				bastien[i]=NULL;
+			}
+			bastien[tag_index]=u_strdup(ustr->str);
+			empty(ustr);
+			for (int i=0;i<10;i++) {
+				if (bastien[i]!=NULL) {
+					if (ustr->len!=0) {
+						u_strcat(ustr,'-');
+					}
+					u_strcat(ustr,bastien[i]);
+				}
+			}
+			u_fprintf(f_bastien,"%d %S\n",old_pos,ustr->str);
 		}
 		(*pos)++;
 		continue;
@@ -303,15 +330,40 @@ while ((c=u_fgetc_raw(f))!='>') {
 	if (c=='\'') {
 		/* If we have to skip an attribute between single quotes */
 		while ((c=u_fgetc_raw(f))!='\'') {
-			if (c==EOF) return 0;
+			if (c==EOF) goto err;
 			(*pos)++;
 		}
 		(*pos)++;
 		continue;
 	}
+	if (c!=' ' && c!='=') {
+		u_strcat(ustr,c);
+	}
+	if (c==' ') {
+		if (tag_name_found==0) {
+			tag_name_found=1;
+			unichar z,foo;
+			if (1==u_sscanf(ustr->str,"R%C%C",&z,&foo) && z>='0' && z<='9') {
+				tag_index=z-'0';
+			}
+		}
+		empty(ustr);
+	}
+	if (c=='=') {
+		if (tag_name_found==1) {
+			if (!u_strcmp(ustr->str,"utxShort")) {
+				tag_name_found=2;
+			}
+		}
+		empty(ustr);
+	}
 }
 (*pos)++;
+free_Ustring(ustr);
 return 1;
+err:
+free_Ustring(ustr);
+return 0;
 }
 
 
@@ -387,7 +439,8 @@ return 1;
  * save the offsets shifts.
  * Returns 1 in case of success; 0 if the tag is malformed.
  */
-int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html) {
+int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html,
+		unichar* bastien[],U_FILE* f_bastien) {
 int old_pos=(*pos)-1;
 long current=ftell(f);
 /* We may read a comment */
@@ -445,7 +498,7 @@ if (html) {
 }
 fseek(f,current,SEEK_SET);
 /* Or a normal tag */
-if (!skip_normal_tag(f,pos)) {
+if (!skip_normal_tag(f,pos,bastien,f_bastien)) {
 	error("Invalid xml tag\n");
 	return 0;
 }
