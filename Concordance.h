@@ -24,6 +24,7 @@
 
 #include "Text_tokens.h"
 #include "Offsets.h"
+#include "PRLG.h"
 
 #define TEXT_ORDER 0
 #define LEFT_CENTER 1
@@ -75,6 +76,8 @@ struct conc_opt {
   vector_int* snt_offsets;
   /* uima_offsets is used with --uima option */
   vector_int* uima_offsets;
+  /* Data extracted from the PRLG file produced by Unxmlize's --PRLG option */
+  PRLG* PRLG_data;
 };
 
 struct conc_opt* new_conc_opt();

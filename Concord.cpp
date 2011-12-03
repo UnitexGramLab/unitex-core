@@ -38,7 +38,7 @@
 #include "ProgramInvoker.h"
 #include "Concord.h"
 #include "Offsets.h"
-
+#include "PRLG.h"
 
 
 const char* usage_Concord =
@@ -73,7 +73,12 @@ const char* usage_Concord =
         "  -u offsets/--uima=offsets: produces an index of the concordance relative to the\n"
 		"                             original text file, before any Unitex operation. offsets\n"
 		"                             is supposed to be the file produced by Tokenize's\n"
-		"                             --output_offsets option.\n"
+		"                             --output_offsets option\n"
+		"  --PRLG=X,Y: produces a concordance for PRLG corpora where each line is prefixed\n"
+		"              by information extracted with Unxmlize's --PRLG option. X is the\n"
+		"              file produced by Unxmlize's --PRLG option and Y is the file produced\n"
+		"              by Tokenize's --output_offsets option. Note that if this option is\n"
+		"              used in addition with -u, the Y argument overrides the argument of -u\n"
         "  -e/--xml: produces xml index of the concordance\n"
         "  -w/--xml-with-header: produces xml index of the concordance with header\n"
         "  -A/--axis: produces an axis file for the concordance (cf. [Melamed 06])\n"
@@ -194,6 +199,7 @@ const struct option_TS lopts_Concord[]= {
       {"alphabet",required_argument_TS,NULL,'a'},
       {"thai",no_argument_TS,NULL,'T'},
       {"directory",required_argument_TS,NULL,'d'},
+      {"PRLG",required_argument_TS,NULL,9},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -216,7 +222,8 @@ struct conc_opt* options=new_conc_opt();
 char foo;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int ret;
-char* uima_offset_file=NULL;
+char uima_offset_file[FILENAME_MAX]="";
+char PRLG[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index,vars))) {
    switch(val) {
@@ -249,7 +256,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
                 options->right_context_until_eos=1;
              }
              break;
-   case 8: options->only_ambiguous=1; break;
    case 0: options->sort_mode=TEXT_ORDER; break;
    case 1: options->sort_mode=LEFT_CENTER; break;
    case 2: options->sort_mode=LEFT_RIGHT; break;
@@ -258,6 +264,17 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
    case 5: options->sort_mode=RIGHT_LEFT; break;
    case 6: options->sort_mode=RIGHT_CENTER; break;
    case 7: options->result_mode=DIFF_; break;
+   case 8: options->only_ambiguous=1; break;
+   case 9: {
+	   strcpy(PRLG,vars->optarg);
+	   char* pos=strchr(PRLG,',');
+	   if (pos==NULL || pos==PRLG || *(pos+1)=='\0') {
+		   fatal_error("Invalid argument for option --PRLG: %s\n",vars->optarg);
+	   }
+	   *pos='\0';
+	   strcpy(uima_offset_file,pos+1);
+	   break;
+   }
    case 'H': options->result_mode=HTML_; break;
    case 't': options->result_mode=TEXT_; break;
    case 'g': options->result_mode=GLOSSANET_;
@@ -279,7 +296,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
              }
              break;
    case 'i': options->result_mode=INDEX_; break;
-   case 'u': options->result_mode=UIMA_; uima_offset_file=strdup(vars->optarg); break;
+   case 'u': options->result_mode=UIMA_; strcpy(uima_offset_file,vars->optarg); break;
    case 'e': options->result_mode=XML_; break;
    case 'w': options->result_mode=XML_WITH_HEADER_; break;
    case 'A': options->result_mode=AXIS_; break;
@@ -398,12 +415,17 @@ if (options->result_mode==HTML_ || options->result_mode==DIFF_) {
 		fatal_error("Cannot read snt offset file %s\n",snt_files->snt_offsets_pos);
 	}
 }
-if (options->result_mode==UIMA_) {
+if (options->result_mode==UIMA_ || PRLG[0]!='\0') {
 	options->uima_offsets=load_uima_offsets(&vec,uima_offset_file);
 	if (options->uima_offsets==NULL) {
 		fatal_error("Cannot read offset file %s\n",uima_offset_file);
 	}
-	free(uima_offset_file);
+}
+if (PRLG[0]!='\0') {
+	options->PRLG_data=load_PRLG_data(&vec,PRLG);
+	if (options->PRLG_data==NULL) {
+		fatal_error("Cannot read PRLG file %s\n",PRLG);
+	}
 }
 
 /* Once we have set all parameters, we call the function that

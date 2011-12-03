@@ -246,10 +246,12 @@ unichar* indices = unichar_buffer + (3000 * 4);
 unichar* left=NULL;
 unichar* middle=NULL;
 unichar* right=NULL;
+Ustring* PRLG_tag=new_Ustring(32);
 int j;
 int c;
 /* Now we process each line of the sorted raw text concordance */
 while ((c=u_fgetc(f))!=EOF) {
+	empty(PRLG_tag);
 	j=0;
 	/* We save the first column in A... */
 	while (c!=0x09) {
@@ -268,7 +270,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	c=u_fgetc(f);
 	j=0;
 	/* ...and the third in C */
-	while (c!='\n' && c!='\t') {
+	while (c!='\n' && c!='\t' && c!='[') {
 		C[j++]=(unichar)c;
 		c=u_fgetc(f);
 	}
@@ -278,7 +280,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	if (c=='\t') {
 		c=u_fgetc(f);
 		j=0;
-		while (c!='\t' && c!='\n') {
+		while (c!='\t' && c!='\n' && c!='[') {
 			indices[j++]=(unichar)c;
 			c=u_fgetc(f);
 		}
@@ -291,13 +293,20 @@ while ((c=u_fgetc(f))!=EOF) {
 				href[0]='\0';
 			} else {
 				j=0;
-				while ((c=u_fgetc(f))!='\n') {
+				while ((c=u_fgetc(f))!='\n' && c!='[') {
 					href[j++]=(unichar)c;
 				}
 				href[j]='\0';
 			}
 		}
 		/*------------end GlossaNet-------------------*/
+	}
+	if (c=='[') {
+		while (c!='\n') {
+			u_strcat(PRLG_tag,c);
+			c=u_fgetc(f);
+		}
+		u_strcat(PRLG_tag,"  ");
 	}
 	/* Now we will reorder the columns according to the sort mode */
 	switch(options->sort_mode) {
@@ -314,7 +323,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	int can_print_line=1;
 	if (options->result_mode==GLOSSANET_) {
 		unichar line[4000];
-      u_sprintf(line,"%S\t%S\t%S",left,middle,right);
+      u_sprintf(line,"%S%S\t%S\t%S",PRLG_tag->str,left,middle,right);
 		/* We test if the line was already seen */
 		if (NO_VALUE_INDEX==get_value_index(line,glossa_hash,DONT_INSERT)) {
 			can_print_line=1;
@@ -333,7 +342,7 @@ while ((c=u_fgetc(f))!=EOF) {
 			if (options->thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
 			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
-            u_fprintf(out,"<tr><td nowrap>%HR",left);
+            u_fprintf(out,"<tr><td nowrap>%S%HR",PRLG_tag->str,left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
@@ -421,6 +430,7 @@ u_fclose(f);
 af_remove(temp_file_name);
 u_fclose(out);
 free(unichar_buffer);
+free_Ustring(PRLG_tag);
 if (options->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
 }
@@ -955,7 +965,7 @@ while (matches!=NULL) {
 		is_a_good_match=extract_href(end_pos,href,tokens,buffer,open_bracket,close_bracket);
 	}
 	/* We compute the shift due to the new lines that count for 2 characters */
-	unichar positions[100];
+	unichar positions[1024];
 	unichar positions_from_eos[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
@@ -975,9 +985,14 @@ while (matches!=NULL) {
 		start_pos_char=options->uima_offsets->tab[first_token*2];
 		end_pos_char=options->uima_offsets->tab[last_token*2+1];
 	}
-
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,concord_ind_match_number);
+	const unichar* closest_tag=NULL;
+	if (options->PRLG_data!=NULL) {
+		int first_token=matches->m.start_pos_in_token;
+		int offset_in_original_file=options->uima_offsets->tab[first_token*2];
+		closest_tag=get_closest_PRLG_tag(options->PRLG_data,offset_in_original_file);
+	}
 	u_sprintf(positions_from_eos,"%d\t%d\t%d",current_sentence,start_from_eos,end_from_eos);
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
@@ -1008,7 +1023,12 @@ while (matches!=NULL) {
 		if (expected_result==GLOSSANET_) {
 			u_fprintf(output,"\t%S",href);
 		}
-
+		if (closest_tag!=NULL) {
+			u_fprintf(output,"[%S",closest_tag);
+			int padding=options->PRLG_data->max_width-u_strlen(closest_tag);
+			for (int k=0;k<padding;k++) u_fprintf(output," ");
+			u_fprintf(output,"]");
+		}
 		u_fprintf(output,"\n");
 		/* We increase the number of matches actually written to the output */
 		number_of_matches++;
@@ -1244,6 +1264,7 @@ opt->sort_alphabet=NULL;
 opt->working_directory[0]='\0';
 opt->snt_offsets=NULL;
 opt->uima_offsets=NULL;
+opt->PRLG_data=NULL;
 return opt;
 }
 
@@ -1258,6 +1279,7 @@ if (opt->script!=NULL) free(opt->script);
 if (opt->sort_alphabet!=NULL) free(opt->sort_alphabet);
 free_vector_int(opt->snt_offsets);
 free_vector_int(opt->uima_offsets);
+free_PRLG(opt->PRLG_data);
 free(opt);
 }
 
