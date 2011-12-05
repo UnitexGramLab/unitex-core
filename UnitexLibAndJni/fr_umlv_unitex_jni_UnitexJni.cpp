@@ -819,7 +819,7 @@ return (jint)1;
  * Method:    getFileList
  * Signature: (Ljava/lang/String;)[Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_unitex_UnitexJNI_getFileList
+JNIEXPORT jobjectArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getFileList
 (JNIEnv *env, jclass , jstring filename)
 {
 	jstringToCUtf jstc_foldername;
