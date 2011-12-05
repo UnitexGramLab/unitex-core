@@ -226,8 +226,8 @@ INSTALL_COMMAND = make install
 LIBS =  -L "." -ltre
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
-CXXFLAGS = $(CXXINCS)  -Wall
-CFLAGS = $(INCS)  -Wall
+CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
+CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0
@@ -1556,7 +1556,7 @@ no_o_files:
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(LIBTRE) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/UnitexJni.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 endif
