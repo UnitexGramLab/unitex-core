@@ -618,6 +618,81 @@
     <ClCompile Include="..\UnitexLibAndJni\UnitexLibIO.cpp">
       <Filter>UnitexLibraryJni</Filter>
     </ClCompile>
+    <ClCompile Include="..\CompressedDic.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DebugMode.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Grf_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfBeauty.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfDiff.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfDiff3.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfSvn_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfTest.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfTest_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Keyboard.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LoadInf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Offsets.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Overlap.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Persistence.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PRLG.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Seq2Grf.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SpellCheck.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SpellChecking.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Test_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TfstTag.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexRevisionInfo.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unxmlize.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VersionInfo.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VirtualFiles.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Xml.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -736,6 +811,582 @@
     </ClInclude>
     <ClInclude Include="..\UnitexLibAndJni\UnitexLibIO.h">
       <Filter>UnitexLibraryJni</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractAllocator.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AbstractAllocatorPlugCallback.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Alphabet.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Any.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ApplyDic.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AsciiSearchTree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AutComplementation.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AutConcat.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AutDeterminization.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AutIntersection.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AutMinimization.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\AutomatonDictionary2Bin.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BitArray.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BitMasks.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Buffer.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BuildKrMwuDic.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BuildTextAutomaton.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Cassys.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Cassys_tokens.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CharNames.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CheckDic.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CodePages.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CompoundWordTree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Compress.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CompressedDic.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Concord.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Concordance.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ConcorDiff.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\config.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Contexts.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Convert.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Copyright.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DebugMode.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DELA.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DELA_tree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dico.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DictionaryTree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DicVariables.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Diff.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DuplicateFile.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DutchCompounds.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Elag.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ElagComp.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ElagDebug.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ElagFstFilesIO.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ElagFunctions.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ElagRulesCompilation.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ElagStateSet.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Error.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Evamb.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Extract.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ExtractUnits.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FIFO.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\File.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FileEncoding.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Flatten.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FlattenFst2.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2Automaton.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2Check.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2Check_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2List.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2Txt.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2Txt_TokenTree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Fst2TxtAsRoutine.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GeneralDerivation.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GermanCompounds.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Grf_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Grf2Fst2.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Grf2Fst2_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfBeauty.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfDiff.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfDiff3.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfSvn_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfTest.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfTest_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HashTable.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HTMLCharacters.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ImplodeTfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\IOBuffer.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Keyboard.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Korean.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\KrMwuDic.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LanguageDefinition.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LemmaTree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LinearAutomaton2Txt.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\List_int.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\List_pointer.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\List_ustring.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LoadInf.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Locate.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateConstants.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateFst2Tags.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateMatches.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocatePattern.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateTfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateTfst_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LocateTfstMatches.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Match.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MetaSymbols.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_DicoMorpho.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_DicoMorphoBase.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_DLC_inflect.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_FormMorpho.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_InflectTransd.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_InflectTransdBase.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_LangMorpho.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_LangMorphoBase.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_MU_graph.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_MU_morpho.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_MU_morphoBase.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Operators_Util.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_SU_morpho.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_SU_morphoBase.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Unif.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_UnifBase.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Util.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MorphologicalFilters.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MorphologicalLocate.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MultiFlex.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NewLineShifts.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NormalizationFst2.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Normalize.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NormalizeAsRoutine.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NorwegianCompounds.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Offsets.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\OptimizedFst2.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\OptimizedTfstTagMatching.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Overlap.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ParsingInfo.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Pattern.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PatternTree.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Persistence.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PolyLex.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PortugueseNormalization.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PRLG.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProgramInvoker.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RebuildTfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Reconstrucao.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Reg2Grf.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RegularExpressions.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RussianCompounds.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Sentence2Grf.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Seq2Grf.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SingleGraph.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Snt.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SortTxt.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SpellCheck.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SpellChecking.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Stack_int.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Stack_pointer.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Stack_unichar.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Stats.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\String_hash.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\StringParsing.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Symbol.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Symbol_op.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SymbolAlphabet.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Table2Grf.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tagset.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TagsetNormTfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TEI2Txt.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Text_parsing.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Text_tokens.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tfst2Grf.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tfst2Unambig.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TfstStats.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TfstTag.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Thai.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Token.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tokenization.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tokenize.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TransductionStack.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TransductionStackTfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Transitions.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Txt2Tfst.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Uncompress.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Unicode.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Unitex_revision.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexGetOpt.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexRevisionInfo.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexTool.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnusedParameter.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Unxmlize.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Ustring.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vector.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VersionInfo.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VirtualFiles.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Xml.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\XMLizer.h">
+      <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
