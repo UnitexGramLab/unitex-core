@@ -20,8 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E9200EE5-2807-2803-1401-76B7485A8F10}</ProjectGuid>
-    <RootNamespace>UnitexLibAndJni</RootNamespace>
+    <RootNamespace>UnitexJni</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>UnitexJni</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
