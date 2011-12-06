@@ -774,9 +774,36 @@ char** af_get_list_file(const char*name)
 	}
 	else {
         if (pafs->func_array.fnc_memFile_getList != NULL) {
-			return (*(pafs->func_array.fnc_memFile_getList))(pafs->privateSpacePtr);
-            }
-        
+			char** all_files = (*(pafs->func_array.fnc_memFile_getList))(pafs->privateSpacePtr);
+			size_t nb_files = 0;
+			while (all_files[nb_files] != NULL) {
+				nb_files++;
+			}
+			char* keep = (char*)calloc(nb_files, sizeof(char));
+			memset(keep, 0, nb_files * sizeof(char));
+			size_t nb_files_to_keep = 0;
+			size_t name_length = strlen(name);
+			for (size_t i = 0; i < nb_files; i++) {
+				if (strlen(all_files[i]) >= name_length) {
+					if (!strncmp(name, all_files[i], name_length)) {
+						keep[i] = 1;
+						nb_files_to_keep++;
+					}
+				}
+			}
+			char** files = (char**)calloc(nb_files_to_keep + 1, sizeof(char*));
+			size_t j = 0;
+			for (size_t i = 0; i < nb_files; i++) {
+				if (keep[i]) {
+					files[j] = strdup(all_files[i]);
+					j++;
+				}
+			}
+			files[nb_files] = NULL;
+			free(keep);
+			af_release_list_file(name, all_files);
+			return files;
+        }
 	}
 	return NULL;
 }

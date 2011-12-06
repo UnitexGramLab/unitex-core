@@ -843,9 +843,8 @@ JNIEXPORT jobjectArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getFileList
 	{
         jstring jstr = env->NewStringUTF(*(list + iter_file));
         env->SetObjectArrayElement(jarray, iter_file, jstr);
-		nb_file ++;
+		iter_file ++;
 	}
-
 
 	ReleaseUnitexFileList(jstc_foldername.getJString(),list);
 	return jarray;
