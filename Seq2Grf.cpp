@@ -53,6 +53,7 @@ struct info {
 	const int* buffer;
 	const Alphabet* alph;
 	int SPACE;
+	int TOKEN;
 	int length_max;
 };
 
@@ -140,8 +141,6 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			/////////////////////////////////////////////////
 		case 'j':
 			if (1!=sscanf(vars->optarg,"%d%c",&n_op,&foo)){
-//				u_printf("n_op =%d\n",n_op);
-//				u_printf("vars->optarg = %s\n",vars->optarg);
 				fatal_error("Invalid jokers number argument: %s\n",vars->optarg);
 			}
 			break;
@@ -322,12 +321,6 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			(FREE_FUNCTION) free,
 			NULL,
 			(KEYCOPY_FUNCTION) keycopy);
-	///////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////
-	//	int 	err=2,	insert=0,	replace=0,	suppr=2;
-	///////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////
-
 	u_printf("tokens :\n");
 	u_printf("%S \n",tokens->token[0]);
 	u_printf("n_op=%d\n",n_op);
@@ -371,13 +364,11 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		u_printf("tfst NULL\n");
 	Grf* grfObj = sentence_to_grf(tfstFile, fontname, size,
 			is_sequence_automaton);
-	beautify(grfObj, alph);
+//	beautify(grfObj, alph);
 	save_Grf(out, grfObj);
 	free_Grf(grfObj);
 	free_hash_table(form_frequencies);
 	u_fclose(tag_file);
-
-
 	close_text_automaton(tfstFile);
 	u_fclose(out);
 	u_fclose(grf);
@@ -389,171 +380,95 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	free_OptVars(vars);
 	return 0;
 }
-
 void add_path(Tfst * tfst,
-		unichar* seq[],
-		int N,
-		struct info INFO,
+		int seq[],
+		int pos_res,
+//		struct info INFO,
 		const struct text_tokens* tokens,
 		Ustring * text,
 		int & current_state,
 		struct string_hash *&tmp_tags ){
-	u_printf("((((((((add_path)))))))))\n");
-//
-//	u_printf("token = [");
-//	for (int i=0;i<N+1;i++)
-//		u_printf("%d:%S ",i,tokens->token[i]);
-//	u_printf("]\n");
-//		u_printf("\n\nseq = [");
-//		for (int i=0;i<N+1;i++){
-//			u_printf("%S ",seq[i]);
-//		}
-//		u_printf("]\n\n");
+	u_printf("add_path2\t\t");
+	for (int i=0;i<pos_res;i++){
+		if (seq[i]==-1){
+			u_strcat(text,"<TOKEN>");
+			vector_int_add(tfst->tokens,1);
+			vector_int_add(tfst->token_sizes, 7);
+		}
+		else{
+			int ind=get_value_index(tokens->token[seq[i]],tmp_tags);
+			if (ind!=0 && ind !=1){
+				int l=u_strlen(tokens->token[seq[i]]);
+				vector_int_add(tfst->tokens,ind);
+				vector_int_add(tfst->token_sizes, l);
+				u_strcat(text,tokens->token[seq[i]]);
+				Ustring * _tag=new_Ustring();
+				u_strcat(_tag, "@STD\n@");
+				u_strcat(_tag, tokens->token[seq[i]]);
+				u_strcat(_tag,"\n@0.0.0-0.1.1\n.\n");
+				if (tmp_tags->value[ind] != NULL) {
+					free(tmp_tags->value[ind]);
+				}
+				tmp_tags->value[ind]=(*_tag).str;
+				// we want keep the buffer or (*_tag).str by calling free_Ustring
+				(*_tag).str = NULL;
+				free_Ustring(_tag);
+			}
+		}
+		u_strcat(text," ");
+	}
 	bool linked = false;
-	/*
-	 * /!\
-	 */
-	//INFO.buffer = seq;
-	int tmp_final_state = 1;
-	Ustring* tmp_states = new_Ustring();
-	Ustring* states = new_Ustring();
-	if (N > INFO.length_max)
-		INFO.length_max = N;
-	/*
-	 * /!\ Je peux considérer que n_nodes = N uniquement si
-	 * je supprime les espaces de buffer avant l'appel à work
-	 * & je ne peux plus appeler count_non_space_tokens si le buffer
-	 * contient des charù et pas des inta
-	 */
-	//	int n_nodes = count_non_space_tokens(seq, N, tokens->SPACE);
-	int n_nodes = N;
+	int n_nodes = pos_res;
 	for (int i = 0; i < n_nodes; i++) {
 		add_state(tfst->automaton);
 	}
-	for (int il = 0; il < N; il++) {
-		//		vector_int_add(tfst->tokens, seq[il]);
-		// ?
-		//		int l = u_strlen(tokens->token[seq[il]]);
-		int l = u_strlen(seq[il]);
-		//		vector_int_add(tfst->token_sizes, l);
-		vector_int_add(tfst->token_sizes, l);
-		//		u_strcat(text, tokens->token[seq[il]], l);
-		u_strcat(text, seq[il], l);
-	}
 	tfst->text= text->str;
-	for (int i=0;i<N;i++)
-	{		u_printf("seq[%d]=%S\n",i,seq[i]);
-	}
-	/* Transitions */
-
-	for (int i = 0; i < N; i++) {
-		if (tokens->SENTENCE_MARKER == -1) {
-			u_printf("Warning : tokens->SENTENCE_MARKER == -1, compare aborted against invalid memory pointer usage!!!\n");
-		}
-		if ((tokens->SENTENCE_MARKER != -1) && (seq[i] == tokens->token[tokens->SENTENCE_MARKER])) {
-			u_printf(">>>#>>>\ti = %d ET buffer[%d] = %s\n",i,i,tokens->SENTENCE_MARKER);
+	Ustring* tmp_states = new_Ustring();
+	Ustring* states = new_Ustring();
+	int tmp_final_state = 1;
+	for (int i = 0; i < pos_res; i++) {
+		int k;
+		if (seq[i]==-1) k=1;
+		else k=get_value_index(tokens->token[seq[i]],tmp_tags);
+		u_sprintf(tmp_states,"%S",tmp_tags->value[k]);
+		int tag_number = get_value_index(tmp_states->str, tmp_tags);
+		u_strcat(states, tmp_states->str);
+		if (linked==false) {
+			add_outgoing_transition(
+					tfst->automaton->states[0],
+					tag_number,
+					current_state + 1);
+			linked=true;
+		} else if (i == pos_res - 1) {
+			add_outgoing_transition(
+					tfst->automaton->states[current_state],
+					tag_number,
+					tmp_final_state);
 		} else {
-			u_printf("teest\n");
-			if (seq[i]!=NULL){
-//				u_printf("seq[%d]!=NULL\n",i);
-//				u_printf("seq[%d]=%S",i,seq[i]);
-				int ind=get_value_index(seq[i],tmp_tags);
-//				u_printf("tmp_tags->value[2]=%S\n",tmp_tags->value[2]);
-//				u_printf("\t\t\tind=%d\n",ind);
-				if (ind!=0 && ind !=1){
-					u_printf("\tif\n");
-					unichar _tag1[] ={'@','S','T','D','\n','@','\0'};
-					unichar _tag2[]={'\n','@','0','.','0','.','0','-','0','.','1','.','1','\n','.','\n','\0'};
-					Ustring * _tag=new_Ustring(1);
-//					u_printf("_tag=%S\n",_tag);
-//					u_printf("test >\n");
-//					u_printf("u_strlen(\n_tag1=%S)=%d\n",_tag1,u_strlen(_tag1));
-//					u_printf("test >>\n");
-					u_strcat(_tag , _tag1);
-//					u_printf("test >>>\n");
-//					u_printf(">>>>seq[%d]=%S\n",i,seq[i]);
-					u_strcat(_tag, seq[i]);
-					u_strcat(_tag,_tag2);
-//					u_printf("here\n");
-//					u_printf("\t\tind = %d\n",ind);
-//					u_printf("\t\ttag = \n%S\n\n",_tag);
-					if (tmp_tags->value[ind] != NULL) {
-						free(tmp_tags->value[ind]);
-					}
-					tmp_tags->value[ind]=(*_tag).str;
-					// we want keep the buffer or (*_tag).str by calling free_Ustring
-					(*_tag).str = NULL;
-					free_Ustring(_tag);
-				}
-				u_printf(" SEQ[%d]=%S\tvalue index=%d\n",i,seq[i],ind);
-
-				if (seq[i] != tokens->token[tokens->SPACE]) {
-					int k= get_value_index(seq[i],tmp_tags);
-//					u_printf("tmp_tags->value[%d] = \n",k);
-//					u_printf("%S\n",tmp_tags->value[k]);
-					u_sprintf(tmp_states,
-							"%S",
-							tmp_tags->value[k]
-					);
-//					u_printf("tmp_states->str = %S\n",tmp_states->str);
-					int tag_number = get_value_index(tmp_states->str, tmp_tags);
-//					for (int t=0;t<tag_number;t++){
-//						u_printf("tag_number = %d\t",t);
-//						u_printf("tmp_tag->value[%d] = %S\n",t,tmp_tags->value[t]);
-//					}
-//					u_printf("1\ttest\n");
-					u_strcat(states, tmp_states->str);
-//					u_printf("1.1\ttest\n");
-					if (linked==false) {
-						u_printf("2\ttest\n");
-						Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
-						add_outgoing_transition(
-								tfst->automaton->states[0],
-								tag_number,
-								current_state + 1);
-						linked=true;
-					} else if (i == N - 1) {
-						u_printf("3\ttest\n");
-						Transition *trans = tfst->automaton->states[current_state]->outgoing_transitions;
-						add_outgoing_transition(
-								tfst->automaton->states[current_state],
-								tag_number,
-								tmp_final_state);
-					} else {
-						u_printf("4\ttest\n");
-						Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
-						add_outgoing_transition(
-								tfst->automaton->states[current_state],
-								tag_number,
-								current_state + 1);
-						trans = tfst->automaton->states[current_state]->outgoing_transitions;
-						if (trans == NULL) {
-							u_printf("ERROR 3 : transition not added\n");
-						}
-					}
-					u_printf("5\t\ttest\n");
-					current_state++;
-				}
+			Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
+			if (	tfst->automaton->states[current_state]==NULL)
+				u_printf("	tfst->automaton->states[current_state] = NULL \n");
+			add_outgoing_transition(
+					tfst->automaton->states[current_state],
+					tag_number,
+					current_state + 1);
+			trans = tfst->automaton->states[current_state]->outgoing_transitions;
+			if (trans == NULL) {
+				u_printf("ERROR 3 : transition not added\n");
 			}
 		}
-
+		current_state++;
 	}
-	free_Ustring(tmp_states);
-	free_Ustring(states);
-
-//	u_printf("token = <");
-//	for (int i=0;i<N+1;i++)
-//		u_printf("%d:%S ",i,tokens->token[i]);
-//	u_printf(">\n");
+		free_Ustring(tmp_states);
+		free_Ustring(states);
 }
-
-
 
 int work(	int t[],
 		int size,		int current,
 		int errors,		int insert,		int replace,		int suppr,
 		char last_op,
-		unichar* res[],	//résultat
+		int res[],	//résultat
+		int max_length,
 		int pos_res,
 		int & cur,
 		Tfst * tfst,
@@ -563,170 +478,80 @@ int work(	int t[],
 		int & current_state,
 		struct string_hash* &tmp_tags
 ) {
-	u_printf(">>>>>>>>>>>>>>>>>>>>>>>work<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-	u_printf("]]]]\tres = [");
-	u_printf("]\t[[[[\n");
-	u_printf("\tt = [");
-	for (int i=0;i<size+insert;i++)
-		u_printf("%d ",t[i]);
-	u_printf("]\n");
-	u_printf("token = [");
-	for (int i=0;i<size+insert;i++)
-		u_printf("%d:%S ",t[i],tokens->token[t[i]]);
-	u_printf("]\n");
-	if (current==size) {
-//		u_printf("res = [");
-//		for (int i=0;i<size+insert;i++){
-//			u_printf("%S ",res[i]);
-//		}
-		u_printf("]\n");
-		u_printf("add_path\n");
-
-		add_path(
-				tfst,
-				res,
-				pos_res,
-				INFO,
-				tokens,
-				text,
-				current_state,
-				tmp_tags );
-		u_printf("current_state : %d\t", current_state);
-		cur++;
-		if (errors==0) {
-			/* If we are done, we quit */
-			u_printf("cur=%d\t",cur);
-			return cur;
-		}
-		u_printf("errors=%d\t",errors);
-		/* If we have reached the end of the array, we can only consider insertions,
-		 * but only if the previous op wasn't a suppr, because it would become then a replace op */
-		if (insert!=0 && last_op!='S') {
-			u_printf("pos_res = %d\n",pos_res);
-			for (int i=0;i<size+insert;i++){
-				u_printf("\tres[%d]=%S\n",i,res[i]);
+		if (current==size) {
+			//####################################
+			// produce sequence
+			//####################################
+			u_printf("res =[");
+			for (int i=0;i<pos_res;i++){
+//				if(res[i]==-1) u_printf("%d:%s",res[i],"<TOKEN>");
+//				else u_printf("%d:%S ",res[i],tokens->token[res[i]]);
+				if(res[i]==-1) u_printf("%s ","<TOKEN>");
+				else u_printf("%S ",tokens->token[res[i]]);
 			}
-			u_printf("%S\n",res[pos_res]);
-			unichar s[]= {'<','T','O','K','E','N','>','\0'};
-			res[pos_res]=s;
-			work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,cur//,total
+			u_printf("]\n");
+			add_path(
+							tfst,
+							res,
+							pos_res,
+//							INFO,
+							tokens,
+							text,
+							current_state,
+							tmp_tags );
+					cur++;
+					if (errors==0) {
+						/* If we are done, we quit */
+						return cur;
+					}
+					if (insert!=0 && last_op!='S') {
+						res[pos_res]=INFO.TOKEN;
+						//####################################
+						// s'il reste un joker je l'ajoute au bout (utile ?)
+						//####################################
+						work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,cur//,total
+								,tfst,	INFO,	tokens,	text,	current_state,
+								tmp_tags);
+					}
+		return cur;
+		}
+		res[pos_res]=t[current];
+		//####################################
+		// ici j'ajoute le token courrant et je passe au suivant
+		//####################################
+		work(t,size,current+1,errors,insert,replace,suppr,0,res,max_length,pos_res+1,cur//,total
+		,tfst,	INFO,	tokens,	text,	current_state,
+		tmp_tags);
+		/* Now, we consider errors */
+		if (errors==0) return cur;
+		if (insert!=0 && last_op!='S' /*&& pos_res>0*/) {
+			//####################################
+			//		insert
+			//####################################
+			res[pos_res]=INFO.TOKEN;
+			work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,
+					cur, tfst,	INFO,	tokens,	text,	current_state,
+					tmp_tags);
+		}
+		if (suppr!=0 && last_op!='I') {
+			//####################################
+			//		suppr
+			//####################################
+			work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,max_length,pos_res,
+					cur ,tfst,	INFO,	tokens,	text,	current_state,
+					tmp_tags);
+		}
+		if (replace!=0 /*&& pos_res>0*/) {
+			//####################################
+			//		replace
+			//####################################
+			res[pos_res]=INFO.TOKEN;
+			work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
 					,tfst,	INFO,	tokens,	text,	current_state,
 					tmp_tags);
 		}
 		return cur;
-	}
-
-	/* Normal case */
-
-	u_printf("\t\t\tpos_res=%d\tcurrent=%d\n",pos_res,current);
-	u_printf("t = [");
-	for (int i=0;i<size+insert;i++)
-		u_printf("%d ",t[i]);
-	u_printf("]\n");
-	u_printf("token = [");
-	for (int i=0;i<size+insert;i++)
-		u_printf("%S ",tokens->token[t[i]]);
-	u_printf("]\n");
-	u_printf("tokens->token[t[current]] =%S\n",tokens->token[t[current]]);
-	u_printf("pos_res=%d\n",pos_res);
-	u_printf("test\n");
-	res[pos_res]='\0';
-	res[pos_res]=u_strdup(tokens->token[t[current]]);
-	/// !!!!!!!!! \\\_
-	//	res[pos_res]=tokens->token[t[current]];
-	//	u_printf("res[pos_res]=%S\n",res[pos_res]);
-	//	u_printf("tokens->token[t[current=%d]=%d]=%S\n",current, t[current],tokens->token[t[current]]);
-	//	u_strcpy(res[pos_res],tokens->token[t[current]]);
-	//	u_printf("res[pos_res]=%S\n",res[pos_res]);
-	//	u_printf("\t\t\tres (errors=%d,insert=%d,replace=%d,suppr=%d) : \n\t\t\t",errors,insert,replace,suppr);
-	//	for (int i =0;i<pos_res;i++)u_printf("%S ",res[i]);
-	//	u_printf("\n\t\t\t");
-	//	for (int i =0;i<pos_res;i++)u_printf("%d ",t[i]);
-	//	u_printf("\n");
-	u_printf("res : \n");
-	//	for (int i=0;i<size+insert;i++){
-	//		if (i==current){
-	//			u_printf("<%S> ",res[i]);
-	//		}
-	//		else u_printf("%S ",res[i]);
-	//	}
-	u_printf("\n");
-	u_printf("token = [");
-	for (int i=0;i<size+insert;i++)
-		u_printf("%S ",tokens->token[t[i]]);
-	u_printf("]\n");
-	u_printf(">work\n");
-	work(t,size,current+1,errors,insert,replace,suppr,0,res,pos_res+1,cur//,total
-			,tfst,	INFO,	tokens,	text,	current_state,
-			tmp_tags);
-	/* Now, we consider errors */
-	if (errors==0) return cur;
-//	u_printf("\t\t\tres (errors=%d,insert=%d,replace=%d,suppr=%d) : \n\t\t\t",errors,insert,replace,suppr);
-
-	if (insert!=0 && last_op!='S') {
-		u_printf("\t\tinsert\n");
-//				u_printf("[({");
-//				for (int i=0;i<size+1;i++)u_printf("%S ",res[i]);
-//				u_printf("})]\n");
-//
-//		for (int i=0;i<size+insert;i++){
-//			if (i==current){
-//				u_printf("<%S> ",res[i]);
-//			}
-//			else u_printf("%S ",res[i]);
-//		}
-//		u_printf("\n");
-		u_strcpy(res[pos_res],"<TOKEN>");
-		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,
-				cur, tfst,	INFO,	tokens,	text,	current_state,
-				tmp_tags);
-	}
-	if (suppr!=0 && last_op!='I') {
-		u_printf("\t\tsuppr\n");
-		for (int i=0;i<size+insert;i++){
-			if (i==current){
-				u_printf("<%S> ",res[i]);
-			}
-			else u_printf("%S ",res[i]);
-		}
-		u_printf("\n");
-		work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,pos_res,
-				cur ,tfst,	INFO,	tokens,	text,	current_state,
-				tmp_tags);
-	}
-	if (replace!=0) {
-		u_printf("\t\treplace\n");
-		for (int i=0;i<size+insert;i++){
-			if (i==current){
-				u_printf("<%S> ",res[i]);
-			}
-			else u_printf("%S ",res[i]);
-		}
-//		u_printf("\n");
-//		u_printf("\n");
-//		u_printf("token = [");
-//		for (int i=0;i<size+insert;i++)
-//			u_printf("%d:%S ",t[i],tokens->token[t[i]]);
-//		u_printf("]\n");
-//		u_printf("\t\t\tu_strcpy(res[pos_res],\"TOKEN\");\n");
-		u_strcpy(res[pos_res],"<TOKEN>");
-//		u_printf("token = [");
-//		for (int i=0;i<size+insert;i++)
-//			u_printf("%d:%S ",t[i],tokens->token[t[i]]);
-//		u_printf("]\n");
-		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,pos_res+1,cur//,total
-				,tfst,	INFO,	tokens,	text,	current_state,
-				tmp_tags);
-	}
-//	u_printf("\n!!!!!\tres = [");
-//	for (int i=0;i<size+insert;i++){
-//		u_printf("%S ",res[i]);
-//	}
-//	u_printf("]\t!!!!!\n");
-	u_printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<work>>>>>>>>>>>>>>>>>>>>>>>\n");
-	return cur;
 }
-
 
 /**
  * This function builds the sequences automaton that correspond to the
@@ -751,19 +576,13 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	tfst->tokens = new_vector_int(2);
 	// the line below is a temporary hack to ensure the result is always same with same input file
 	tfst->tokens->tab[0] = tfst->tokens->tab[1] = 0;
-
 	tfst->token_sizes = new_vector_int(0);
 	int current_state = 0;
 	// New Initial State
 	add_state(tfst->automaton); /* initial state */
-	//    add_state(tfst->automaton); /* final state*/
 	set_initial_state(tfst->automaton->states[current_state]);
-	int initial_state = current_state;
-	u_printf("current_state : %d\n",current_state);
-	u_printf("intitial_state : %d\n",initial_state);
 	current_state++;
-	int tmp_final_state = 1;
-	u_printf("current_state : %d\n",current_state);
+	int final_state = 1;
 	struct string_hash* tags = new_string_hash(132);
 	struct string_hash* tmp_tags = new_string_hash(132);
 	unichar EPSILON_TAG[] = { '@', '<', 'E', '>', '\n', '.', '\n', '\0' };
@@ -776,18 +595,14 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	get_value_index(EPSILON_TAG, tmp_tags);
 	get_value_index(EPSILON_TAG, tags);
 	get_value_index(TOKEN_TAG, tmp_tags);
-	get_value_index(TOKEN_TAG, tags);
-	Ustring current_tag;
 	struct info INFO;
 	INFO.tok = tokens;
 	INFO.alph = alph;
 	INFO.SPACE = tokens->SPACE;
 	INFO.length_max = 0;
+	INFO.TOKEN=-1;
 	int N,total;
-	int nbsentence = 0;
 	int buffer[MAX_TOKENS_IN_SENTENCE];
-	Ustring* tmp_states = new_Ustring();
-	Ustring* states = new_Ustring();
 	Ustring* foo = new_Ustring(1);
 
 	u_fprintf(out_tfst, "0000000001\n");
@@ -795,7 +610,6 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		u_printf("f NULL\n");
 		fatal_error("Cannot open file\n");
 	}
-	bool linked;
 	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
 		int nst=count_non_space_tokens(buffer, N, tokens->SPACE);
 		int *non_space_buffer=new int[nst];
@@ -806,7 +620,6 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 				k++;
 			}
 		}
-
 		u_printf("buffer : \t");
 		for (int i=0;i<N;i++){
 			u_printf("%d ",buffer[i]);
@@ -816,38 +629,38 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 			u_printf("%d ",non_space_buffer[i]);
 		}
 		u_printf("\n");
+		u_printf("EPS\n");
+		int max_length=nst+insert;
 		// sequences produites par dérivations :
-		unichar **res =new unichar*[N+insert];
-		for (int i=0;i<(N+insert);i++){
-			res[i]=NULL;
-		}
-		u_printf("N+insert=%d+%d=%d\n",N,insert,N+insert);
+//		unichar **res =new unichar*[max_length];
+
+		int res2[max_length];
+		u_printf("max_length=%d+%d=%d\n",nst,insert,max_length);
 		int curr=0;
-		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res,0,curr,//sequences,
+		INFO.length_max=max_length;
+//		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res,max_length,0,curr,//sequences,
+//				tfst,	INFO,	tokens,	foo,	current_state,
+//				tmp_tags);
+		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res2,max_length,0,curr,//sequences,
 				tfst,	INFO,	tokens,	foo,	current_state,
 				tmp_tags);
-		for (int i=0;i<(N+insert);i++){
-			if (res[i]!=NULL){
-				free(res[i]);
-			}
-		}
-		delete [] res;
+		u_printf("work2 : done %d sequences produced \n",n_seq);
+//		delete [] res;
 		delete [] non_space_buffer;
-		//		}
 	}
-
 	//    adding final state :
 	add_state(tfst->automaton);
 	// declaring it as final state
-	int final_state = current_state;
 	u_printf("final_state : %d\n",final_state);
-	set_final_state(tfst->automaton->states[tmp_final_state]);
+	set_final_state(tfst->automaton->states[final_state]);
 	int tag_number = get_value_index(EPSILON_TAG, tmp_tags);
 	u_printf("add_outgoing_transition(");
-	u_printf("state(%d), ",tmp_final_state);
+	u_printf("state(%d), ",final_state);
 	u_printf("%d, ",tag_number);
 	u_printf("%d)\n",final_state);
+	u_printf("minimize\n");
 	minimize(tfst->automaton,1);
+	u_printf("minimize : done\n");
 	if (we_must_clean) {
 		/* If necessary, we apply the "good paths" heuristic */
 		keep_best_paths(tfst->automaton, tmp_tags);
@@ -861,18 +674,19 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		tfst->tags = new_vector_ptr(1);
 		vector_ptr_add(tfst->tags, new_TfstTag(T_EPSILON));
 		save_current_sentence(tfst, out_tfst, out_tind, NULL, 0, NULL);
-	} else { /* Case 2: the automaton is not empty */
+	} else {
+		/* Case 2: the automaton is not empty */
 		/* We minimize the sentence automaton. It will remove the unused states and may
 		 * factorize suffixes introduced during the application of the normalization tree. */
 
-		minimize(tfst->automaton, 1);
+//		minimize(tfst->automaton, 1);
 		/* We explore all the transitions of the automaton in order to renumber transitions */
 		u_printf("tfst->automaton->number_of_states =%d\n",tfst->automaton->number_of_states);
 
+		int k=0;
 		for (int i = 0; i < tfst->automaton->number_of_states; i++) {
 			Transition* trans =
 					tfst->automaton->states[i]->outgoing_transitions;
-			int k=0;
 			while (trans != NULL) {
 				/* For each tag of the graph that is actually used, we put it in the main
 				 * tags and we use this index in the tfst transition */
@@ -881,17 +695,13 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 				trans = trans->next;
 				k++;
 			}
-			u_printf("*");
 		}
 	}
-
+	u_printf("out\n");
 	minimize(tfst->automaton, 1);
-	u_printf("save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,NULL)\n");
+	u_printf("\nsave_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,NULL)\n");
 	save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,
 			NULL);
-
-	free_Ustring(states);
-	free_Ustring(tmp_states);
 	foo->str=NULL;
 	free_Ustring(foo);
 	free_string_hash(tags);
