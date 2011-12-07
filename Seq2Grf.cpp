@@ -634,7 +634,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		// sequences produites par dérivations :
 //		unichar **res =new unichar*[max_length];
 
-		int res2[max_length];
+		int* res2 = (int*)calloc(max_length, sizeof(int));
 		u_printf("max_length=%d+%d=%d\n",nst,insert,max_length);
 		int curr=0;
 		INFO.length_max=max_length;
@@ -645,6 +645,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 				tfst,	INFO,	tokens,	foo,	current_state,
 				tmp_tags);
 		u_printf("work2 : done %d sequences produced \n",n_seq);
+		free(res2);
 //		delete [] res;
 		delete [] non_space_buffer;
 	}
