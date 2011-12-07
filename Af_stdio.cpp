@@ -779,7 +779,7 @@ char** af_get_list_file(const char*name)
 			while (all_files[nb_files] != NULL) {
 				nb_files++;
 			}
-			char* keep = (char*)calloc(nb_files, sizeof(char));
+			char* keep = (char*)malloc((nb_files + 1) * sizeof(char));
 			memset(keep, 0, nb_files * sizeof(char));
 			size_t nb_files_to_keep = 0;
 			size_t name_length = strlen(name);
@@ -791,7 +791,7 @@ char** af_get_list_file(const char*name)
 					}
 				}
 			}
-			char** files = (char**)calloc(nb_files_to_keep + 1, sizeof(char*));
+			char** files = (char**)malloc((nb_files_to_keep + 1) * sizeof(char*));
 			size_t j = 0;
 			for (size_t i = 0; i < nb_files; i++) {
 				if (keep[i]) {
@@ -800,8 +800,12 @@ char** af_get_list_file(const char*name)
 				}
 			}
 			files[nb_files] = NULL;
-			free(keep);
-			af_release_list_file(name, all_files);
+			free(keep);			
+
+			if (pafs->func_array.fnc_memFile_releaseList != NULL) {
+				(*(pafs->func_array.fnc_memFile_releaseList))(all_files,pafs->privateSpacePtr);
+			}
+
 			return files;
         }
 	}
@@ -813,18 +817,17 @@ void af_release_list_file(const char*name,char**list)
 	const AbstractFileSpace * pafs ;
 	pafs = GetFileSpaceForFileName(name);
 	 
-	if (pafs == NULL)
-	{
+	if (pafs == NULL) {
 		return ;
 	}
 	else {
-        if ((pafs->func_array.fnc_memFile_getList != NULL) && (pafs->func_array.fnc_memFile_releaseList != NULL)) {
-			 (*(pafs->func_array.fnc_memFile_releaseList))(list,pafs->privateSpacePtr);
-			 return;
-            }
-        
+		char** list_walk=list;
+		while ((*list_walk)!=NULL) {
+			free(*list_walk);
+			list_walk++;
+		}
+		free(list);
 	}
-	return ;
 }
 
 
