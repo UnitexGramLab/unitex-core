@@ -319,17 +319,19 @@ void parse_text(struct fst2txt_parameters* p) {
 		} else if (p->output_policy == REPLACE_OUTPUTS && p->input_length != 0) {
 			int a = p->current_origin + p->CR_shift + p->absolute_offset;
 			int b = a + p->input_length;
+			int output_length=u_strlen(p->output);
 			int diff = 0;
-			int i;
-			for (i = 0; i < p->input_length; i++) {
+			int i,j;
+			for (i=0,j=0; i < p->input_length && j<output_length; i++,j++) {
 				if (p->buffer[i + p->current_origin] == '\n')
 					b++;
-				if (!diff && p->buffer[i + p->current_origin] != p->output[i]) {
+				if (!diff && p->buffer[i + p->current_origin] != p->output[j]) {
 					diff = 1;
 				}
 			}
-			if (p->output[i] != '\0')
+			if (!diff && p->output[j] != '\0') {
 				diff = 1;
+			}
 			if (diff) {
 				/* There is no need to consider fake replace that happen when
 				 * normalizing quotes or dashes */
