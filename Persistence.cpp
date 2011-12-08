@@ -25,7 +25,7 @@
 #include "Error.h"
 #include "AbstractCallbackFuncModifier.h"
 #include "logger/SyncLogger.h"
-
+#include "VirtualFiles.h"
 
 
 typedef struct PS_ {
@@ -49,6 +49,9 @@ static SYNC_Mutex_OBJECT mutex=NULL;
 void* get_persistent_structure(const char* filename) {
 if (mutex==NULL) return NULL;
 SyncGetMutex(mutex);
+if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
+	filename=filename+strlen(VIRTUAL_FILE_PFX);
+}
 PersistentStructure* tmp=list;
 void* res=NULL;
 while (tmp!=NULL) {
@@ -65,6 +68,9 @@ return res;
 
 static PersistentStructure* remove_filename(PersistentStructure* l,const char* filename) {
 if (mutex==NULL || l==NULL) return NULL;
+if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
+	filename=filename+strlen(VIRTUAL_FILE_PFX);
+}
 if (!strcmp(l->name,filename)) {
 	PersistentStructure* next=l->next;
 	free(l->name);
@@ -83,6 +89,9 @@ return l;
 void set_persistent_structure(const char* filename,void* ptr) {
 if (mutex==NULL) return;
 SyncGetMutex(mutex);
+if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
+	filename=filename+strlen(VIRTUAL_FILE_PFX);
+}
 if (ptr==NULL) {
 	list=remove_filename(list,filename);
 	SyncReleaseMutex(mutex);

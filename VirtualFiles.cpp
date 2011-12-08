@@ -33,8 +33,6 @@ FILE* (*real_fopen)(const char *,const char *)=fopen;
 #include "File.h"
 
 
-#define PFX "$:"
-
 /**
  * Description of a VFS inode.
  */
@@ -75,7 +73,7 @@ struct VFS {
 	VFS_INODE* list;
 };
 
-static struct VFS VFS_id={PFX,4096,NULL};
+static struct VFS VFS_id={VIRTUAL_FILE_PFX,4096,NULL};
 
 
 /**

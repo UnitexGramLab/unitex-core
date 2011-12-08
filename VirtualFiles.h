@@ -31,6 +31,8 @@
  * or VFS_reload is called to load again the file from the disk.
  */
 
+#define VIRTUAL_FILE_PFX "$:"
+
 /* Starts the virtual file system */
 void init_virtual_files();
 
