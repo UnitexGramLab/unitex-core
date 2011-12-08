@@ -779,7 +779,7 @@ char** af_get_list_file(const char*name)
 			while (all_files[nb_files] != NULL) {
 				nb_files++;
 			}
-			char* keep = (char*)malloc((nb_files + 1) * sizeof(char));
+			char* keep = (char*)calloc((nb_files + 1),sizeof(char));
 			size_t nb_files_to_keep = 0;
 			size_t name_length = strlen(name);
 			for (size_t i = 0; i < nb_files; i++) {
@@ -787,7 +787,7 @@ char** af_get_list_file(const char*name)
 					if (!strncmp(name, all_files[i], name_length)) {
 						keep[i] = 1;
 						nb_files_to_keep++;
-					}
+					} 
 				}
 			}
 			char** files = (char**)malloc((nb_files_to_keep + 1) * sizeof(char*));
