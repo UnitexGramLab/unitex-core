@@ -230,7 +230,7 @@ CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+CFLAGS += -g -O0 -Wl,--add-stdcall-alias
 else
 CFLAGS += -O3
 endif

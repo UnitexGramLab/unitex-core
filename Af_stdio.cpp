@@ -780,7 +780,6 @@ char** af_get_list_file(const char*name)
 				nb_files++;
 			}
 			char* keep = (char*)malloc((nb_files + 1) * sizeof(char));
-			memset(keep, 0, nb_files * sizeof(char));
 			size_t nb_files_to_keep = 0;
 			size_t name_length = strlen(name);
 			for (size_t i = 0; i < nb_files; i++) {
@@ -799,7 +798,7 @@ char** af_get_list_file(const char*name)
 					j++;
 				}
 			}
-			files[nb_files] = NULL;
+			files[nb_files_to_keep] = NULL;
 			free(keep);			
 
 			if (pafs->func_array.fnc_memFile_releaseList != NULL) {
