@@ -84,9 +84,6 @@ return res;
 void free_INF_codes(struct INF_codes* INF,Abstract_allocator prv_alloc) {
 if (INF==NULL) {return;}
 for (int i=0;i<INF->N;i++) {
-	u_printf("i=%d\n", i);
-	if (i==317)
-		u_printf("TOTO");
    free_list_ustring(INF->codes[i],prv_alloc);
 }
 free_cb(INF->codes,prv_alloc);
