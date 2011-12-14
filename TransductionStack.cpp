@@ -198,7 +198,7 @@ for (;;) {
          }
          i1++;
          if (u_starts_with(field,"EQUAL=")) {
-        	 int n=compare_variables(name,field+strlen("EQUAL="),p,1);
+        	 int n=compare_variables(name,field+6,p,1); // strlen("EQUAL=") == 6
         	 if (n==VAR_CMP_EQUAL) {
         		 continue;
         	 }
@@ -214,7 +214,7 @@ for (;;) {
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
         	 }
          } else if (u_starts_with(field,"EQUALcC=")) {
-        	 int n=compare_variables(name,field+strlen("EQUALcC="),p,0);
+        	 int n=compare_variables(name,field+8,p,0); // strlen("EQUALcC=") == 8
         	 if (n==VAR_CMP_EQUAL) {
         		 continue;
         	 }
@@ -230,7 +230,7 @@ for (;;) {
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
         	 }
          } else if (u_starts_with(field,"UNEQUAL=")) {
-        	 int n=compare_variables(name,field+strlen("UNEQUAL="),p,1);
+        	 int n=compare_variables(name,field+8,p,1); // strlen("UNEQUAL=") == 8
         	 if (n==VAR_CMP_DIFF) continue;
         	 if (n==VAR_CMP_EQUAL) {
         		 stack->stack_pointer=old_stack_pointer;
@@ -244,7 +244,7 @@ for (;;) {
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
         	 }
          } else if (u_starts_with(field,"UNEQUALcC=")) {
-        	 int n=compare_variables(name,field+strlen("UNEQUALcC="),p,0);
+        	 int n=compare_variables(name,field+10,p,0); // strlen("UNEQUALcC=") == 10
         	 if (n==VAR_CMP_DIFF) continue;
         	 if (n==VAR_CMP_EQUAL) {
         		 stack->stack_pointer=old_stack_pointer;
