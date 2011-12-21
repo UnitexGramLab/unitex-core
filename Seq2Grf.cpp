@@ -364,7 +364,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		u_printf("tfst NULL\n");
 	Grf* grfObj = sentence_to_grf(tfstFile, fontname, size,
 			is_sequence_automaton);
-//	beautify(grfObj, alph);
+	beautify(grfObj, alph);
 	save_Grf(out, grfObj);
 	free_Grf(grfObj);
 	free_hash_table(form_frequencies);
@@ -680,7 +680,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		/* We minimize the sentence automaton. It will remove the unused states and may
 		 * factorize suffixes introduced during the application of the normalization tree. */
 
-//		minimize(tfst->automaton, 1);
+		minimize(tfst->automaton, 1);
 		/* We explore all the transitions of the automaton in order to renumber transitions */
 		u_printf("tfst->automaton->number_of_states =%d\n",tfst->automaton->number_of_states);
 

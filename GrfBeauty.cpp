@@ -566,7 +566,8 @@ for (int state=0;state<grf->n_states;state++) {
 		/* If there is only one outgoing transition, there is nothing to do */
 		continue;
 	}
-	for (int i=transitions->nbelems-1;i>=0;i--) {
+	for (int i=transitions->nbelems-1;transitions->nbelems>1 && i>=0;i--) {
+		/* transitions->nbelems>1: we want to keep at least one transition */
 		int dest=transitions->tab[i];
 		if (rank[dest]<(rank[state]+1)) {
 			//error("pb 1 between %S and %S\n",grf->states[state]->box_content,grf->states[dest]->box_content);
@@ -1314,7 +1315,7 @@ for (int i=0;i<grf->n_states;i++) {
 	vector_int* transitions=grf->states[i]->transitions;
 	struct list_int* tmp=t->to_restore[i];
 	while (tmp!=NULL) {
-		if (-1!=vector_int_contains(transitions,tmp->n)) {
+		if (-1==vector_int_contains(transitions,tmp->n)) {
 			/* If the transition does not exist, we add it */
 			vector_int_add(transitions,tmp->n);
 		}
