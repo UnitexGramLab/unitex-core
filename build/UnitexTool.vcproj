@@ -655,6 +655,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CompressedDic.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Concord.cpp"
 				>
 			</File>
@@ -672,6 +676,10 @@
 			</File>
 			<File
 				RelativePath="..\Convert.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\DebugMode.cpp"
 				>
 			</File>
 			<File
@@ -823,6 +831,26 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Grf_lib.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfBeauty.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfDiff.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfDiff3.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfSvn_lib.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\HashTable.cpp"
 				>
 			</File>
@@ -836,6 +864,10 @@
 			</File>
 			<File
 				RelativePath="..\IOBuffer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Keyboard.cpp"
 				>
 			</File>
 			<File
@@ -868,6 +900,10 @@
 			</File>
 			<File
 				RelativePath="..\List_ustring.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LoadInf.cpp"
 				>
 			</File>
 			<File
@@ -1011,6 +1047,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Offsets.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\OptimizedFst2.cpp"
 				>
 			</File>
@@ -1020,6 +1060,10 @@
 			</File>
 			<File
 				RelativePath="..\OutputTransductionVariables.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Overlap.cpp"
 				>
 			</File>
 			<File
@@ -1035,11 +1079,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Persistence.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Persistence.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PolyLex.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\PortugueseNormalization.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PRLG.cpp"
 				>
 			</File>
 			<File
@@ -1071,6 +1127,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Seq2Grf.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\SingleGraph.cpp"
 				>
 			</File>
@@ -1080,6 +1140,14 @@
 			</File>
 			<File
 				RelativePath="..\SortTxt.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\SpellCheck.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\SpellChecking.cpp"
 				>
 			</File>
 			<File
@@ -1311,7 +1379,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\Unitex_revision.h"
+				>
+			</File>
+			<File
 				RelativePath="..\UnitexGetOpt.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\UnitexRevisionInfo.cpp"
 				>
 			</File>
 			<File
@@ -1324,6 +1400,10 @@
 			</File>
 			<File
 				RelativePath="..\Untokenize.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Unxmlize.cpp"
 				>
 			</File>
 			<File
@@ -1352,6 +1432,18 @@
 			</File>
 			<File
 				RelativePath="..\VariableUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\VersionInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\VirtualFiles.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Xml.cpp"
 				>
 			</File>
 			<File
@@ -1439,6 +1531,18 @@
 				</File>
 				<File
 					RelativePath="..\tre-0.8.0\lib\xmalloc.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="logger"
+				>
+				<File
+					RelativePath="..\logger\SyncLogger.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\SyncLoggerWin.cpp"
 					>
 				</File>
 			</Filter>
