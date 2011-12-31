@@ -56,6 +56,7 @@ Unitex-C++/GrfTest_lib.cpp Unitex-C++/Grf_lib.cpp Unitex-C++/Keyboard.cpp Unitex
 Unitex-C++/Offsets.cpp Unitex-C++/Overlap.cpp Unitex-C++/Persistence.cpp \
 Unitex-C++/Seq2Grf.cpp Unitex-C++/SpellCheck.cpp Unitex-C++/SpellChecking.cpp \
 Unitex-C++/Unxmlize.cpp Unitex-C++/VersionInfo.cpp Unitex-C++/VirtualFiles.cpp Unitex-C++/Xml.cpp \
+Unitex-C++/PRLG.cpp \
 Unitex-C++/build/tre-0.8.0/lib/regcomp.c \
 Unitex-C++/build/tre-0.8.0/lib/regerror.c \
 Unitex-C++/build/tre-0.8.0/lib/regexec.c \
