@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2011 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2012 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,8 +34,8 @@ static unichar COPYRIGHT[256];
 #define UNITEX_MINOR_VERSION_NUMBER 0
 
 static int init_copyright() {
-u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d%C version\nCopyright %C 2001-2011 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,0x3B2,0xA9,0xE9,0xE9);
-//u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d\nCopyright %C 2001-2011 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,0xA9,0xE9,0xE9);
+u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d%C version\nCopyright %C 2001-2012 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,0x3B2,0xA9,0xE9,0xE9);
+//u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d\nCopyright %C 2001-2012 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,0xA9,0xE9,0xE9);
 return 0;
 }
 
