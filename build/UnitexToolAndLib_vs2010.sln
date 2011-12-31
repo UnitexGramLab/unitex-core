@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitexLibrary", "UnitexLibr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitexJni", "UnitexLibAndJni.vcxproj", "{E9200EE5-2807-2803-1401-76B7485A8F10}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "avir", "..\avir\avir.vcxproj", "{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -63,15 +61,6 @@ Global
 		{E9200EE5-2807-2803-1401-76B7485A8F10}.Release|Win32.ActiveCfg = Release|Win32
 		{E9200EE5-2807-2803-1401-76B7485A8F10}.Release|Win32.Build.0 = Release|Win32
 		{E9200EE5-2807-2803-1401-76B7485A8F10}.Release|x64.ActiveCfg = Release|x64
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.Debug|Win32.Build.0 = Debug|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.Debug|x64.ActiveCfg = Debug|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.DebugOptim|Win32.ActiveCfg = Debug|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.DebugOptim|Win32.Build.0 = Debug|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.DebugOptim|x64.ActiveCfg = Debug|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.Release|Win32.ActiveCfg = Release|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.Release|Win32.Build.0 = Release|Win32
-		{5BEFFB5B-9A4F-4C90-9B0F-39CAB2B368E5}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
