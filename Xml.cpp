@@ -303,7 +303,7 @@ while ((c=u_fgetc_raw(f))!='>') {
 		empty(ustr);
 		while ((c=u_fgetc_raw(f))!='"') {
 			if (c==EOF) goto err;
-			u_strcat(ustr,c);
+			u_strcat(ustr,(unichar)c);
 			(*pos)++;
 		}
 		if (tag_name_found==2) {
@@ -337,7 +337,7 @@ while ((c=u_fgetc_raw(f))!='>') {
 		continue;
 	}
 	if (c!=' ' && c!='=') {
-		u_strcat(ustr,c);
+		u_strcat(ustr,(unichar)c);
 	}
 	if (c==' ') {
 		if (tag_name_found==0) {
