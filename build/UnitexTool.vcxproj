@@ -291,6 +291,7 @@
     <ClInclude Include="..\LocateTrace.h" />
     <ClInclude Include="..\LocateTracePlugCallback.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
+    <ClInclude Include="..\PRLG.h" />
     <ClInclude Include="..\Tagger.h" />
     <ClInclude Include="..\TaggingProcess.h" />
     <ClInclude Include="..\TrainingProcess.h" />
@@ -329,11 +330,13 @@
     <ClCompile Include="..\CompoundWordHashTable.cpp" />
     <ClCompile Include="..\CompoundWordTree.cpp" />
     <ClCompile Include="..\Compress.cpp" />
+    <ClCompile Include="..\CompressedDic.cpp" />
     <ClCompile Include="..\Concord.cpp" />
     <ClCompile Include="..\Concordance.cpp" />
     <ClCompile Include="..\ConcorDiff.cpp" />
     <ClCompile Include="..\Contexts.cpp" />
     <ClCompile Include="..\Convert.cpp" />
+    <ClCompile Include="..\DebugMode.cpp" />
     <ClCompile Include="..\DELA.cpp" />
     <ClCompile Include="..\DELA_tree.cpp" />
     <ClCompile Include="..\Dico.cpp" />
@@ -368,6 +371,21 @@
     <ClCompile Include="..\Fst2TxtAsRoutine.cpp" />
     <ClCompile Include="..\GeneralDerivation.cpp" />
     <ClCompile Include="..\GermanCompounds.cpp" />
+    <ClCompile Include="..\GrfBeauty.cpp" />
+    <ClCompile Include="..\GrfDiff.cpp" />
+    <ClCompile Include="..\GrfDiff3.cpp" />
+    <ClCompile Include="..\GrfSvn_lib.cpp" />
+    <ClCompile Include="..\Grf_lib.cpp" />
+    <ClCompile Include="..\Keyboard.cpp" />
+    <ClCompile Include="..\LoadInf.cpp" />
+    <ClCompile Include="..\logger\SyncLoggerWin.cpp" />
+    <ClCompile Include="..\Offsets.cpp" />
+    <ClCompile Include="..\Overlap.cpp" />
+    <ClCompile Include="..\Persistence.cpp" />
+    <ClCompile Include="..\PRLG.cpp" />
+    <ClCompile Include="..\Seq2Grf.cpp" />
+    <ClCompile Include="..\SpellCheck.cpp" />
+    <ClCompile Include="..\SpellChecking.cpp" />
     <ClCompile Include="..\UnitexGetOpt.cpp" />
     <ClCompile Include="..\Grf2Fst2.cpp" />
     <ClCompile Include="..\Grf2Fst2_lib.cpp" />
@@ -478,11 +496,16 @@
     <ClCompile Include="..\Unicode.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
+    <ClCompile Include="..\UnitexRevisionInfo.cpp" />
     <ClCompile Include="..\UnitexTool.cpp" />
     <ClCompile Include="..\Untokenize.cpp" />
+    <ClCompile Include="..\Unxmlize.cpp" />
     <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\ustring.cpp" />
     <ClCompile Include="..\VariableUtils.cpp" />
+    <ClCompile Include="..\VersionInfo.cpp" />
+    <ClCompile Include="..\VirtualFiles.cpp" />
+    <ClCompile Include="..\Xml.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
     <ClCompile Include="..\tre-0.8.0\lib\regcomp.c" />
     <ClCompile Include="..\tre-0.8.0\lib\regerror.c" />

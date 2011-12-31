@@ -15,6 +15,9 @@
     <Filter Include="Source Files\TreLib">
       <UniqueIdentifier>{f53448d1-da45-4be0-8630-2e3b4c1b32fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\logger">
+      <UniqueIdentifier>{e0f3d3c5-894e-4809-9fbc-f23c19910412}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbstractCallbackFuncModifier.h">
@@ -90,6 +93,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\VariableUtils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PRLG.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -638,6 +644,72 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\VariableUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unxmlize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfDiff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfDiff3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Seq2Grf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PRLG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexRevisionInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VersionInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Overlap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DebugMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SpellCheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SpellChecking.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Grf_lib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Offsets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LoadInf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Keyboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CompressedDic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfSvn_lib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Persistence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VirtualFiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GrfBeauty.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\SyncLoggerWin.cpp">
+      <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Xml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
