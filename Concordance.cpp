@@ -303,7 +303,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	}
 	if (c=='[') {
 		while (c!='\n') {
-			u_strcat(PRLG_tag,c);
+			u_strcat(PRLG_tag,(unichar)c);
 			c=u_fgetc(f);
 		}
 		u_strcat(PRLG_tag,"  ");
