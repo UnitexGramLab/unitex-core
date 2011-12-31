@@ -417,6 +417,55 @@
 		222AFFFD1411336600F74409 /* MorphologicalLocate.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE7D1411336600F74409 /* MorphologicalLocate.h */; };
 		222AFFFE1411336600F74409 /* MultiFlex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE7E1411336600F74409 /* MultiFlex.cpp */; };
 		222AFFFF1411336600F74409 /* MultiFlex.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE7F1411336600F74409 /* MultiFlex.h */; };
+		22C27FDA14AF6D63006A1F5D /* CharNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FA914AF6D62006A1F5D /* CharNames.h */; };
+		22C27FDB14AF6D63006A1F5D /* CompressedDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */; };
+		22C27FDC14AF6D63006A1F5D /* CompressedDic.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FAB14AF6D62006A1F5D /* CompressedDic.h */; };
+		22C27FDD14AF6D63006A1F5D /* DebugMode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FAC14AF6D62006A1F5D /* DebugMode.cpp */; };
+		22C27FDE14AF6D63006A1F5D /* DebugMode.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FAD14AF6D62006A1F5D /* DebugMode.h */; };
+		22C27FDF14AF6D63006A1F5D /* Grf_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FAE14AF6D62006A1F5D /* Grf_lib.cpp */; };
+		22C27FE014AF6D63006A1F5D /* Grf_lib.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FAF14AF6D62006A1F5D /* Grf_lib.h */; };
+		22C27FE114AF6D63006A1F5D /* GrfBeauty.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FB014AF6D62006A1F5D /* GrfBeauty.cpp */; };
+		22C27FE214AF6D63006A1F5D /* GrfBeauty.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FB114AF6D62006A1F5D /* GrfBeauty.h */; };
+		22C27FE314AF6D63006A1F5D /* GrfDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FB214AF6D62006A1F5D /* GrfDiff.cpp */; };
+		22C27FE414AF6D63006A1F5D /* GrfDiff.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FB314AF6D62006A1F5D /* GrfDiff.h */; };
+		22C27FE514AF6D63006A1F5D /* GrfDiff3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FB414AF6D62006A1F5D /* GrfDiff3.cpp */; };
+		22C27FE614AF6D63006A1F5D /* GrfDiff3.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FB514AF6D62006A1F5D /* GrfDiff3.h */; };
+		22C27FE714AF6D63006A1F5D /* GrfSvn_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FB614AF6D62006A1F5D /* GrfSvn_lib.cpp */; };
+		22C27FE814AF6D63006A1F5D /* GrfSvn_lib.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FB714AF6D62006A1F5D /* GrfSvn_lib.h */; };
+		22C27FE914AF6D63006A1F5D /* GrfTest_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FB814AF6D62006A1F5D /* GrfTest_lib.cpp */; };
+		22C27FEA14AF6D63006A1F5D /* GrfTest_lib.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FB914AF6D62006A1F5D /* GrfTest_lib.h */; };
+		22C27FEB14AF6D63006A1F5D /* GrfTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FBA14AF6D62006A1F5D /* GrfTest.cpp */; };
+		22C27FEC14AF6D63006A1F5D /* GrfTest.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FBB14AF6D62006A1F5D /* GrfTest.h */; };
+		22C27FED14AF6D63006A1F5D /* Keyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FBC14AF6D62006A1F5D /* Keyboard.cpp */; };
+		22C27FEE14AF6D63006A1F5D /* Keyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FBD14AF6D62006A1F5D /* Keyboard.h */; };
+		22C27FEF14AF6D63006A1F5D /* LoadInf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FBE14AF6D62006A1F5D /* LoadInf.cpp */; };
+		22C27FF014AF6D63006A1F5D /* LoadInf.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FBF14AF6D62006A1F5D /* LoadInf.h */; };
+		22C27FF114AF6D63006A1F5D /* Offsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FC014AF6D62006A1F5D /* Offsets.cpp */; };
+		22C27FF214AF6D63006A1F5D /* Offsets.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FC114AF6D62006A1F5D /* Offsets.h */; };
+		22C27FF314AF6D63006A1F5D /* Overlap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FC214AF6D62006A1F5D /* Overlap.cpp */; };
+		22C27FF414AF6D63006A1F5D /* Overlap.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FC314AF6D62006A1F5D /* Overlap.h */; };
+		22C27FF514AF6D63006A1F5D /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FC414AF6D62006A1F5D /* Persistence.cpp */; };
+		22C27FF614AF6D63006A1F5D /* Persistence.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FC514AF6D62006A1F5D /* Persistence.h */; };
+		22C27FF714AF6D63006A1F5D /* PRLG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FC614AF6D62006A1F5D /* PRLG.cpp */; };
+		22C27FF814AF6D63006A1F5D /* PRLG.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FC714AF6D62006A1F5D /* PRLG.h */; };
+		22C27FF914AF6D63006A1F5D /* Seq2Grf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FC814AF6D62006A1F5D /* Seq2Grf.cpp */; };
+		22C27FFA14AF6D63006A1F5D /* Seq2Grf.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FC914AF6D62006A1F5D /* Seq2Grf.h */; };
+		22C27FFB14AF6D63006A1F5D /* SpellCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FCA14AF6D62006A1F5D /* SpellCheck.cpp */; };
+		22C27FFC14AF6D63006A1F5D /* SpellCheck.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FCB14AF6D63006A1F5D /* SpellCheck.h */; };
+		22C27FFD14AF6D63006A1F5D /* SpellChecking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FCC14AF6D63006A1F5D /* SpellChecking.cpp */; };
+		22C27FFE14AF6D63006A1F5D /* SpellChecking.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FCD14AF6D63006A1F5D /* SpellChecking.h */; };
+		22C27FFF14AF6D63006A1F5D /* TfstTag.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FCE14AF6D63006A1F5D /* TfstTag.cpp */; };
+		22C2800014AF6D63006A1F5D /* TfstTag.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FCF14AF6D63006A1F5D /* TfstTag.h */; };
+		22C2800114AF6D63006A1F5D /* UnitexRevisionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD014AF6D63006A1F5D /* UnitexRevisionInfo.cpp */; };
+		22C2800214AF6D63006A1F5D /* UnitexRevisionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD114AF6D63006A1F5D /* UnitexRevisionInfo.h */; };
+		22C2800314AF6D63006A1F5D /* Unxmlize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD214AF6D63006A1F5D /* Unxmlize.cpp */; };
+		22C2800414AF6D63006A1F5D /* Unxmlize.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD314AF6D63006A1F5D /* Unxmlize.h */; };
+		22C2800514AF6D63006A1F5D /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD414AF6D63006A1F5D /* VersionInfo.cpp */; };
+		22C2800614AF6D63006A1F5D /* VersionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD514AF6D63006A1F5D /* VersionInfo.h */; };
+		22C2800714AF6D63006A1F5D /* VirtualFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD614AF6D63006A1F5D /* VirtualFiles.cpp */; };
+		22C2800814AF6D63006A1F5D /* VirtualFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD714AF6D63006A1F5D /* VirtualFiles.h */; };
+		22C2800914AF6D63006A1F5D /* Xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD814AF6D63006A1F5D /* Xml.cpp */; };
+		22C2800A14AF6D63006A1F5D /* Xml.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD914AF6D63006A1F5D /* Xml.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -835,6 +884,55 @@
 		222AFEF01411336600F74409 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Vector.h; path = ../Vector.h; sourceTree = SOURCE_ROOT; };
 		222AFEF11411336600F74409 /* XMLizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = XMLizer.cpp; path = ../XMLizer.cpp; sourceTree = SOURCE_ROOT; };
 		222AFEF21411336600F74409 /* XMLizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XMLizer.h; path = ../XMLizer.h; sourceTree = SOURCE_ROOT; };
+		22C27FA914AF6D62006A1F5D /* CharNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CharNames.h; path = ../CharNames.h; sourceTree = SOURCE_ROOT; };
+		22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressedDic.cpp; path = ../CompressedDic.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FAB14AF6D62006A1F5D /* CompressedDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressedDic.h; path = ../CompressedDic.h; sourceTree = SOURCE_ROOT; };
+		22C27FAC14AF6D62006A1F5D /* DebugMode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DebugMode.cpp; path = ../DebugMode.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FAD14AF6D62006A1F5D /* DebugMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DebugMode.h; path = ../DebugMode.h; sourceTree = SOURCE_ROOT; };
+		22C27FAE14AF6D62006A1F5D /* Grf_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grf_lib.cpp; path = ../Grf_lib.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FAF14AF6D62006A1F5D /* Grf_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grf_lib.h; path = ../Grf_lib.h; sourceTree = SOURCE_ROOT; };
+		22C27FB014AF6D62006A1F5D /* GrfBeauty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfBeauty.cpp; path = ../GrfBeauty.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FB114AF6D62006A1F5D /* GrfBeauty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfBeauty.h; path = ../GrfBeauty.h; sourceTree = SOURCE_ROOT; };
+		22C27FB214AF6D62006A1F5D /* GrfDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfDiff.cpp; path = ../GrfDiff.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FB314AF6D62006A1F5D /* GrfDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfDiff.h; path = ../GrfDiff.h; sourceTree = SOURCE_ROOT; };
+		22C27FB414AF6D62006A1F5D /* GrfDiff3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfDiff3.cpp; path = ../GrfDiff3.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FB514AF6D62006A1F5D /* GrfDiff3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfDiff3.h; path = ../GrfDiff3.h; sourceTree = SOURCE_ROOT; };
+		22C27FB614AF6D62006A1F5D /* GrfSvn_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfSvn_lib.cpp; path = ../GrfSvn_lib.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FB714AF6D62006A1F5D /* GrfSvn_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfSvn_lib.h; path = ../GrfSvn_lib.h; sourceTree = SOURCE_ROOT; };
+		22C27FB814AF6D62006A1F5D /* GrfTest_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfTest_lib.cpp; path = ../GrfTest_lib.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FB914AF6D62006A1F5D /* GrfTest_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfTest_lib.h; path = ../GrfTest_lib.h; sourceTree = SOURCE_ROOT; };
+		22C27FBA14AF6D62006A1F5D /* GrfTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GrfTest.cpp; path = ../GrfTest.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FBB14AF6D62006A1F5D /* GrfTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GrfTest.h; path = ../GrfTest.h; sourceTree = SOURCE_ROOT; };
+		22C27FBC14AF6D62006A1F5D /* Keyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Keyboard.cpp; path = ../Keyboard.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FBD14AF6D62006A1F5D /* Keyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Keyboard.h; path = ../Keyboard.h; sourceTree = SOURCE_ROOT; };
+		22C27FBE14AF6D62006A1F5D /* LoadInf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadInf.cpp; path = ../LoadInf.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FBF14AF6D62006A1F5D /* LoadInf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoadInf.h; path = ../LoadInf.h; sourceTree = SOURCE_ROOT; };
+		22C27FC014AF6D62006A1F5D /* Offsets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Offsets.cpp; path = ../Offsets.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FC114AF6D62006A1F5D /* Offsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Offsets.h; path = ../Offsets.h; sourceTree = SOURCE_ROOT; };
+		22C27FC214AF6D62006A1F5D /* Overlap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Overlap.cpp; path = ../Overlap.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FC314AF6D62006A1F5D /* Overlap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Overlap.h; path = ../Overlap.h; sourceTree = SOURCE_ROOT; };
+		22C27FC414AF6D62006A1F5D /* Persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Persistence.cpp; path = ../Persistence.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FC514AF6D62006A1F5D /* Persistence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Persistence.h; path = ../Persistence.h; sourceTree = SOURCE_ROOT; };
+		22C27FC614AF6D62006A1F5D /* PRLG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PRLG.cpp; path = ../PRLG.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FC714AF6D62006A1F5D /* PRLG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PRLG.h; path = ../PRLG.h; sourceTree = SOURCE_ROOT; };
+		22C27FC814AF6D62006A1F5D /* Seq2Grf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Seq2Grf.cpp; path = ../Seq2Grf.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FC914AF6D62006A1F5D /* Seq2Grf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Seq2Grf.h; path = ../Seq2Grf.h; sourceTree = SOURCE_ROOT; };
+		22C27FCA14AF6D62006A1F5D /* SpellCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpellCheck.cpp; path = ../SpellCheck.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FCB14AF6D63006A1F5D /* SpellCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpellCheck.h; path = ../SpellCheck.h; sourceTree = SOURCE_ROOT; };
+		22C27FCC14AF6D63006A1F5D /* SpellChecking.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SpellChecking.cpp; path = ../SpellChecking.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FCD14AF6D63006A1F5D /* SpellChecking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SpellChecking.h; path = ../SpellChecking.h; sourceTree = SOURCE_ROOT; };
+		22C27FCE14AF6D63006A1F5D /* TfstTag.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TfstTag.cpp; path = ../TfstTag.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FCF14AF6D63006A1F5D /* TfstTag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TfstTag.h; path = ../TfstTag.h; sourceTree = SOURCE_ROOT; };
+		22C27FD014AF6D63006A1F5D /* UnitexRevisionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexRevisionInfo.cpp; path = ../UnitexRevisionInfo.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FD114AF6D63006A1F5D /* UnitexRevisionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexRevisionInfo.h; path = ../UnitexRevisionInfo.h; sourceTree = SOURCE_ROOT; };
+		22C27FD214AF6D63006A1F5D /* Unxmlize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Unxmlize.cpp; path = ../Unxmlize.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FD314AF6D63006A1F5D /* Unxmlize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Unxmlize.h; path = ../Unxmlize.h; sourceTree = SOURCE_ROOT; };
+		22C27FD414AF6D63006A1F5D /* VersionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VersionInfo.cpp; path = ../VersionInfo.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FD514AF6D63006A1F5D /* VersionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VersionInfo.h; path = ../VersionInfo.h; sourceTree = SOURCE_ROOT; };
+		22C27FD614AF6D63006A1F5D /* VirtualFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VirtualFiles.cpp; path = ../VirtualFiles.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FD714AF6D63006A1F5D /* VirtualFiles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VirtualFiles.h; path = ../VirtualFiles.h; sourceTree = SOURCE_ROOT; };
+		22C27FD814AF6D63006A1F5D /* Xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Xml.cpp; path = ../Xml.cpp; sourceTree = SOURCE_ROOT; };
+		22C27FD914AF6D63006A1F5D /* Xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Xml.h; path = ../Xml.h; sourceTree = SOURCE_ROOT; };
 		D2AAC09D05546B4700DB518D /* libUnitexLibAndJni.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libUnitexLibAndJni.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -943,6 +1041,55 @@
 		222AFD6D1411335700F74409 /* Unitex-C++ */ = {
 			isa = PBXGroup;
 			children = (
+				22C27FA914AF6D62006A1F5D /* CharNames.h */,
+				22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */,
+				22C27FAB14AF6D62006A1F5D /* CompressedDic.h */,
+				22C27FAC14AF6D62006A1F5D /* DebugMode.cpp */,
+				22C27FAD14AF6D62006A1F5D /* DebugMode.h */,
+				22C27FAE14AF6D62006A1F5D /* Grf_lib.cpp */,
+				22C27FAF14AF6D62006A1F5D /* Grf_lib.h */,
+				22C27FB014AF6D62006A1F5D /* GrfBeauty.cpp */,
+				22C27FB114AF6D62006A1F5D /* GrfBeauty.h */,
+				22C27FB214AF6D62006A1F5D /* GrfDiff.cpp */,
+				22C27FB314AF6D62006A1F5D /* GrfDiff.h */,
+				22C27FB414AF6D62006A1F5D /* GrfDiff3.cpp */,
+				22C27FB514AF6D62006A1F5D /* GrfDiff3.h */,
+				22C27FB614AF6D62006A1F5D /* GrfSvn_lib.cpp */,
+				22C27FB714AF6D62006A1F5D /* GrfSvn_lib.h */,
+				22C27FB814AF6D62006A1F5D /* GrfTest_lib.cpp */,
+				22C27FB914AF6D62006A1F5D /* GrfTest_lib.h */,
+				22C27FBA14AF6D62006A1F5D /* GrfTest.cpp */,
+				22C27FBB14AF6D62006A1F5D /* GrfTest.h */,
+				22C27FBC14AF6D62006A1F5D /* Keyboard.cpp */,
+				22C27FBD14AF6D62006A1F5D /* Keyboard.h */,
+				22C27FBE14AF6D62006A1F5D /* LoadInf.cpp */,
+				22C27FBF14AF6D62006A1F5D /* LoadInf.h */,
+				22C27FC014AF6D62006A1F5D /* Offsets.cpp */,
+				22C27FC114AF6D62006A1F5D /* Offsets.h */,
+				22C27FC214AF6D62006A1F5D /* Overlap.cpp */,
+				22C27FC314AF6D62006A1F5D /* Overlap.h */,
+				22C27FC414AF6D62006A1F5D /* Persistence.cpp */,
+				22C27FC514AF6D62006A1F5D /* Persistence.h */,
+				22C27FC614AF6D62006A1F5D /* PRLG.cpp */,
+				22C27FC714AF6D62006A1F5D /* PRLG.h */,
+				22C27FC814AF6D62006A1F5D /* Seq2Grf.cpp */,
+				22C27FC914AF6D62006A1F5D /* Seq2Grf.h */,
+				22C27FCA14AF6D62006A1F5D /* SpellCheck.cpp */,
+				22C27FCB14AF6D63006A1F5D /* SpellCheck.h */,
+				22C27FCC14AF6D63006A1F5D /* SpellChecking.cpp */,
+				22C27FCD14AF6D63006A1F5D /* SpellChecking.h */,
+				22C27FCE14AF6D63006A1F5D /* TfstTag.cpp */,
+				22C27FCF14AF6D63006A1F5D /* TfstTag.h */,
+				22C27FD014AF6D63006A1F5D /* UnitexRevisionInfo.cpp */,
+				22C27FD114AF6D63006A1F5D /* UnitexRevisionInfo.h */,
+				22C27FD214AF6D63006A1F5D /* Unxmlize.cpp */,
+				22C27FD314AF6D63006A1F5D /* Unxmlize.h */,
+				22C27FD414AF6D63006A1F5D /* VersionInfo.cpp */,
+				22C27FD514AF6D63006A1F5D /* VersionInfo.h */,
+				22C27FD614AF6D63006A1F5D /* VirtualFiles.cpp */,
+				22C27FD714AF6D63006A1F5D /* VirtualFiles.h */,
+				22C27FD814AF6D63006A1F5D /* Xml.cpp */,
+				22C27FD914AF6D63006A1F5D /* Xml.h */,
 				222AFD921411336600F74409 /* logger */,
 				222AFD721411336600F74409 /* VariableUtils.cpp */,
 				222AFD731411336600F74409 /* VariableUtils.h */,
@@ -1567,6 +1714,31 @@
 				222A00D81411358600F74409 /* tre-stack.h in Headers */,
 				222A00D91411358600F74409 /* tre.h in Headers */,
 				222A00DB1411358600F74409 /* xmalloc.h in Headers */,
+				22C27FDA14AF6D63006A1F5D /* CharNames.h in Headers */,
+				22C27FDC14AF6D63006A1F5D /* CompressedDic.h in Headers */,
+				22C27FDE14AF6D63006A1F5D /* DebugMode.h in Headers */,
+				22C27FE014AF6D63006A1F5D /* Grf_lib.h in Headers */,
+				22C27FE214AF6D63006A1F5D /* GrfBeauty.h in Headers */,
+				22C27FE414AF6D63006A1F5D /* GrfDiff.h in Headers */,
+				22C27FE614AF6D63006A1F5D /* GrfDiff3.h in Headers */,
+				22C27FE814AF6D63006A1F5D /* GrfSvn_lib.h in Headers */,
+				22C27FEA14AF6D63006A1F5D /* GrfTest_lib.h in Headers */,
+				22C27FEC14AF6D63006A1F5D /* GrfTest.h in Headers */,
+				22C27FEE14AF6D63006A1F5D /* Keyboard.h in Headers */,
+				22C27FF014AF6D63006A1F5D /* LoadInf.h in Headers */,
+				22C27FF214AF6D63006A1F5D /* Offsets.h in Headers */,
+				22C27FF414AF6D63006A1F5D /* Overlap.h in Headers */,
+				22C27FF614AF6D63006A1F5D /* Persistence.h in Headers */,
+				22C27FF814AF6D63006A1F5D /* PRLG.h in Headers */,
+				22C27FFA14AF6D63006A1F5D /* Seq2Grf.h in Headers */,
+				22C27FFC14AF6D63006A1F5D /* SpellCheck.h in Headers */,
+				22C27FFE14AF6D63006A1F5D /* SpellChecking.h in Headers */,
+				22C2800014AF6D63006A1F5D /* TfstTag.h in Headers */,
+				22C2800214AF6D63006A1F5D /* UnitexRevisionInfo.h in Headers */,
+				22C2800414AF6D63006A1F5D /* Unxmlize.h in Headers */,
+				22C2800614AF6D63006A1F5D /* VersionInfo.h in Headers */,
+				22C2800814AF6D63006A1F5D /* VirtualFiles.h in Headers */,
+				22C2800A14AF6D63006A1F5D /* Xml.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1815,6 +1987,30 @@
 				222A00D51411358600F74409 /* tre-parse.c in Sources */,
 				222A00D71411358600F74409 /* tre-stack.c in Sources */,
 				222A00DA1411358600F74409 /* xmalloc.c in Sources */,
+				22C27FDB14AF6D63006A1F5D /* CompressedDic.cpp in Sources */,
+				22C27FDD14AF6D63006A1F5D /* DebugMode.cpp in Sources */,
+				22C27FDF14AF6D63006A1F5D /* Grf_lib.cpp in Sources */,
+				22C27FE114AF6D63006A1F5D /* GrfBeauty.cpp in Sources */,
+				22C27FE314AF6D63006A1F5D /* GrfDiff.cpp in Sources */,
+				22C27FE514AF6D63006A1F5D /* GrfDiff3.cpp in Sources */,
+				22C27FE714AF6D63006A1F5D /* GrfSvn_lib.cpp in Sources */,
+				22C27FE914AF6D63006A1F5D /* GrfTest_lib.cpp in Sources */,
+				22C27FEB14AF6D63006A1F5D /* GrfTest.cpp in Sources */,
+				22C27FED14AF6D63006A1F5D /* Keyboard.cpp in Sources */,
+				22C27FEF14AF6D63006A1F5D /* LoadInf.cpp in Sources */,
+				22C27FF114AF6D63006A1F5D /* Offsets.cpp in Sources */,
+				22C27FF314AF6D63006A1F5D /* Overlap.cpp in Sources */,
+				22C27FF514AF6D63006A1F5D /* Persistence.cpp in Sources */,
+				22C27FF714AF6D63006A1F5D /* PRLG.cpp in Sources */,
+				22C27FF914AF6D63006A1F5D /* Seq2Grf.cpp in Sources */,
+				22C27FFB14AF6D63006A1F5D /* SpellCheck.cpp in Sources */,
+				22C27FFD14AF6D63006A1F5D /* SpellChecking.cpp in Sources */,
+				22C27FFF14AF6D63006A1F5D /* TfstTag.cpp in Sources */,
+				22C2800114AF6D63006A1F5D /* UnitexRevisionInfo.cpp in Sources */,
+				22C2800314AF6D63006A1F5D /* Unxmlize.cpp in Sources */,
+				22C2800514AF6D63006A1F5D /* VersionInfo.cpp in Sources */,
+				22C2800714AF6D63006A1F5D /* VirtualFiles.cpp in Sources */,
+				22C2800914AF6D63006A1F5D /* Xml.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

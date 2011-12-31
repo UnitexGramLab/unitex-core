@@ -214,6 +214,12 @@
 		229851B0111A6F3300503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Check_lib.cpp */; };
 		229D935811CB412D007BC1B4 /* Arabic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229D935611CB412D007BC1B4 /* Arabic.cpp */; };
 		22B2EB68118B169600E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB67118B169600E00A77 /* MappedFileHelperPosix.cpp */; };
+		22C2909D14AF6DAE006A1F5D /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D0D14AF6DAE006A1F5D /* Persistence.cpp */; };
+		22C2909E14AF6DAE006A1F5D /* PRLG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D0F14AF6DAE006A1F5D /* PRLG.cpp */; };
+		22C2909F14AF6DAE006A1F5D /* TfstTag.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D1114AF6DAE006A1F5D /* TfstTag.cpp */; };
+		22C290A014AF6DAE006A1F5D /* UnitexRevisionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D1414AF6DAE006A1F5D /* UnitexRevisionInfo.cpp */; };
+		22C290A114AF6DAE006A1F5D /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D1614AF6DAE006A1F5D /* VersionInfo.cpp */; };
+		22C290A214AF6DAE006A1F5D /* VirtualFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D1814AF6DAE006A1F5D /* VirtualFiles.cpp */; };
 		22C781531297481D00EDC8D5 /* VariableUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C781511297481D00EDC8D5 /* VariableUtils.cpp */; };
 		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
 		22FE473F117A22860011D758 /* LocateCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22FE473D117A22860011D758 /* LocateCache.cpp */; };
@@ -672,6 +678,19 @@
 		229D935711CB412D007BC1B4 /* Arabic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Arabic.h; path = ../Arabic.h; sourceTree = SOURCE_ROOT; };
 		22B2EB66118B169600E00A77 /* MappedFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MappedFileHelper.h; path = ../MappedFileHelper.h; sourceTree = SOURCE_ROOT; };
 		22B2EB67118B169600E00A77 /* MappedFileHelperPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MappedFileHelperPosix.cpp; path = ../MappedFileHelperPosix.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D0D14AF6DAE006A1F5D /* Persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Persistence.cpp; path = ../Persistence.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D0E14AF6DAE006A1F5D /* Persistence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Persistence.h; path = ../Persistence.h; sourceTree = SOURCE_ROOT; };
+		22C28D0F14AF6DAE006A1F5D /* PRLG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PRLG.cpp; path = ../PRLG.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D1014AF6DAE006A1F5D /* PRLG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PRLG.h; path = ../PRLG.h; sourceTree = SOURCE_ROOT; };
+		22C28D1114AF6DAE006A1F5D /* TfstTag.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TfstTag.cpp; path = ../TfstTag.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D1214AF6DAE006A1F5D /* TfstTag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TfstTag.h; path = ../TfstTag.h; sourceTree = SOURCE_ROOT; };
+		22C28D1314AF6DAE006A1F5D /* Unitex_revision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Unitex_revision.h; path = ../Unitex_revision.h; sourceTree = SOURCE_ROOT; };
+		22C28D1414AF6DAE006A1F5D /* UnitexRevisionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexRevisionInfo.cpp; path = ../UnitexRevisionInfo.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D1514AF6DAE006A1F5D /* UnitexRevisionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexRevisionInfo.h; path = ../UnitexRevisionInfo.h; sourceTree = SOURCE_ROOT; };
+		22C28D1614AF6DAE006A1F5D /* VersionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VersionInfo.cpp; path = ../VersionInfo.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D1714AF6DAE006A1F5D /* VersionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VersionInfo.h; path = ../VersionInfo.h; sourceTree = SOURCE_ROOT; };
+		22C28D1814AF6DAE006A1F5D /* VirtualFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VirtualFiles.cpp; path = ../VirtualFiles.cpp; sourceTree = SOURCE_ROOT; };
+		22C28D1914AF6DAE006A1F5D /* VirtualFiles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VirtualFiles.h; path = ../VirtualFiles.h; sourceTree = SOURCE_ROOT; };
 		22C781511297481D00EDC8D5 /* VariableUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VariableUtils.cpp; path = ../VariableUtils.cpp; sourceTree = SOURCE_ROOT; };
 		22C781521297481D00EDC8D5 /* VariableUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VariableUtils.h; path = ../VariableUtils.h; sourceTree = SOURCE_ROOT; };
 		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
@@ -706,6 +725,19 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				22C28D0D14AF6DAE006A1F5D /* Persistence.cpp */,
+				22C28D0E14AF6DAE006A1F5D /* Persistence.h */,
+				22C28D0F14AF6DAE006A1F5D /* PRLG.cpp */,
+				22C28D1014AF6DAE006A1F5D /* PRLG.h */,
+				22C28D1114AF6DAE006A1F5D /* TfstTag.cpp */,
+				22C28D1214AF6DAE006A1F5D /* TfstTag.h */,
+				22C28D1314AF6DAE006A1F5D /* Unitex_revision.h */,
+				22C28D1414AF6DAE006A1F5D /* UnitexRevisionInfo.cpp */,
+				22C28D1514AF6DAE006A1F5D /* UnitexRevisionInfo.h */,
+				22C28D1614AF6DAE006A1F5D /* VersionInfo.cpp */,
+				22C28D1714AF6DAE006A1F5D /* VersionInfo.h */,
+				22C28D1814AF6DAE006A1F5D /* VirtualFiles.cpp */,
+				22C28D1914AF6DAE006A1F5D /* VirtualFiles.h */,
 				2245785813A2BCA4002E0C5D /* SpellChecking.h */,
 				2245785913A2BCA4002E0C5D /* SpellChecking.cpp */,
 				2245785A13A2BCA4002E0C5D /* SpellCheck.cpp */,
@@ -1456,6 +1488,12 @@
 				2245788C13A2BCA4002E0C5D /* GrfDiff.cpp in Sources */,
 				2245788D13A2BCA4002E0C5D /* Unxmlize.cpp in Sources */,
 				2245788E13A2BCA4002E0C5D /* Overlap.cpp in Sources */,
+				22C2909D14AF6DAE006A1F5D /* Persistence.cpp in Sources */,
+				22C2909E14AF6DAE006A1F5D /* PRLG.cpp in Sources */,
+				22C2909F14AF6DAE006A1F5D /* TfstTag.cpp in Sources */,
+				22C290A014AF6DAE006A1F5D /* UnitexRevisionInfo.cpp in Sources */,
+				22C290A114AF6DAE006A1F5D /* VersionInfo.cpp in Sources */,
+				22C290A214AF6DAE006A1F5D /* VirtualFiles.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1476,6 +1514,12 @@
 					"_GLIBCXX_DEBUG_PEDANTIC=1",
 				);
 				INSTALL_PATH = /usr/local/bin;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/libtre/lib\"",
+					"\"$(SRCROOT)/tre-0.8.0/lib/.libs\"",
+					"\"$(SRCROOT)/tre-0.8.0/lib\"",
+				);
 				PRODUCT_NAME = UnitexToolLogger;
 			};
 			name = Debug;
@@ -1487,6 +1531,12 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/bin;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/libtre/lib\"",
+					"\"$(SRCROOT)/tre-0.8.0/lib/.libs\"",
+					"\"$(SRCROOT)/tre-0.8.0/lib\"",
+				);
 				PRODUCT_NAME = UnitexToolLogger;
 			};
 			name = Release;
