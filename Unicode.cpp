@@ -27,26 +27,46 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 #include "Error.h"
 #include "AbstractAllocator.h"
 
-/* you can define here (or in project preprocessor macro CASE_CONVERSION_BY_TAB
+/* you can define here (or in project preprocessor macro)
+   CASE_CONVERSION_BY_TAB_UPPER
    to optimise u_strcmp_ignore_case by using array
-   this will take more memory (512 KB) and init time
+   this will take more memory (128 KB) and init time
+
+   CASE_CONVERSION_BY_TAB_LOWER optimize u_tolower which is user in Alphabet.cpp
+
+   CASE_CONVERSION_BY_TAB optimizes both and take 256 KB
  */
+
+//  here you can define one
 // #define CASE_CONVERSION_BY_TAB 1
+// #define CASE_CONVERSION_BY_TAB_UPPER 1
+
+#if (defined(CASE_CONVERSION_BY_TAB) && (!(defined(CASE_CONVERSION_BY_TAB_UPPER))))
+#define CASE_CONVERSION_BY_TAB_UPPER 1
+#endif
+
+#if (defined(CASE_CONVERSION_BY_TAB) && (!(defined(CASE_CONVERSION_BY_TAB_LOWER))))
+#define CASE_CONVERSION_BY_TAB_LOWER 1
+#endif
 
 /* This array is a bit array used to define characters that are letters */
 static unsigned char tab_is_letter[8192];
 
-#ifdef CASE_CONVERSION_BY_TAB
-static unichar lowerChar[0x10000];
+
+#ifdef CASE_CONVERSION_BY_TAB_UPPER
 static unichar upperChar[0x10000];
 
-static unichar u_tolower_switch (unichar c);
 static unichar u_toupper_switch (unichar c);
 #define fast_u_toupper(c) (upperChar[(unichar)(c)])
 #else
 #define fast_u_toupper(c) (u_toupper((unichar)(c)))
 #endif
 
+#ifdef CASE_CONVERSION_BY_TAB_LOWER
+static unichar lowerChar[0x10000];
+
+static unichar u_tolower_switch (unichar c);
+#endif
 /**
  * We define here the unicode NULL character and the unicode
  * empty string.
@@ -4046,14 +4066,19 @@ for (i=0;i<=0xFFFF;i++) {
       tab_is_letter[i/8]=(char)(tab_is_letter[i/8]|(1<<(i%8)));
    }
 }
-#ifdef CASE_CONVERSION_BY_TAB
-for (i=0;i<=0xFFFF;i++) {
-   lowerChar[i]=u_tolower_switch((unichar)i);
-}
+
+#ifdef CASE_CONVERSION_BY_TAB_UPPER
 for (i=0;i<=0xFFFF;i++) {
    upperChar[i]=u_toupper_switch((unichar)i);
 }
 #endif
+
+#ifdef CASE_CONVERSION_BY_TAB_LOWER
+for (i=0;i<=0xFFFF;i++) {
+   lowerChar[i]=u_tolower_switch((unichar)i);
+}
+#endif
+
 return 1;
 }
 
@@ -4176,7 +4201,7 @@ Since Unicode code points > 0xffff can't be used with Unitex,
 they are skipped from the table.
 *************************************************************/
 
-#ifdef CASE_CONVERSION_BY_TAB
+#ifdef CASE_CONVERSION_BY_TAB_UPPER
 static unichar u_toupper_switch (unichar c) {
 #else
 unichar u_toupper (unichar c) {
@@ -4961,7 +4986,7 @@ unichar u_toupper (unichar c) {
   return r;
 }
 
-#ifdef CASE_CONVERSION_BY_TAB
+#ifdef CASE_CONVERSION_BY_TAB_LOWER
 static unichar u_tolower_switch (unichar c) {
 #else
 unichar u_tolower (unichar c) {
@@ -6845,16 +6870,16 @@ unichar u_deaccentuate (unichar c) {
   return r;
 }
 
-#ifdef CASE_CONVERSION_BY_TAB
-unichar u_tolower (unichar c) {
-	return lowerChar[c];
-}
-
+#ifdef CASE_CONVERSION_BY_TAB_UPPER
 unichar u_toupper (unichar c) {
 	return upperChar[c];
 }
 #endif
 
+#ifdef CASE_CONVERSION_BY_TAB_LOWER
+unichar u_tolower (unichar c) {
+	return lowerChar[c];
+}
+#endif
 
 /* end of Sebastian Nagel */
-
