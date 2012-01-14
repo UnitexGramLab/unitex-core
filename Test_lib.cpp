@@ -28,16 +28,20 @@
 #include "ProgramInvoker.h"
 #include "tre.h"
 #include "UnusedParameter.h"
+#include "logger/UniLogger.h"
+#include "logger/UniRunLogger.h"
 
 /**
  * This program is an example of compilation using the unitex library (unitex.dll/libunitex.so).
  * It prints the .grf file corresponding to "a+(b.c)".
  */
 int main(int argc,char *argv[]) {
-/* Stupid expression, but its real purpose is to avoid the 'unused parameter warning' */
-    DISCARD_UNUSED_PARAMETER(argc)
-    DISCARD_UNUSED_PARAMETER(argv)
 setBufferMode();
+if (argc>1) {
+  if (strcmp(argv[1],"RunLog")==0) {
+    return RunLog_run_main(argc-1,argv+1);
+  }
+}
 
 const char* name="biniou";
 U_FILE* f=u_fopen(UTF16_LE,"biniou",U_WRITE);
