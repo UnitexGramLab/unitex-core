@@ -28,6 +28,7 @@
 #include "ProgramInvoker.h"
 #include "tre.h"
 #include "UnusedParameter.h"
+#include "UnitexTool.h"
 #include "logger/UniLogger.h"
 #include "logger/UniRunLogger.h"
 
@@ -40,6 +41,9 @@ setBufferMode();
 if (argc>1) {
   if (strcmp(argv[1],"RunLog")==0) {
     return RunLog_run_main(argc-1,argv+1);
+  }
+  if (strcmp(argv[1],"UnitexTool")==0) {
+    return UnitexTool_public_run(argc-1,argv+1,NULL,NULL);
   }
 }
 
