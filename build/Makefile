@@ -84,13 +84,6 @@ SYSTEM = linux-like
 OBJ_DIR = build/
 BIN_DIR = ../bin/
 
-ifeq ($(TRE_DIRECT_LINK), yes)
-TRE_LINK_OPTION = libtre/obj/tre-ast.o libtre/obj/tre-match-approx.o libtre/obj/tre-match-parallel.o\
-                     libtre/obj/tre-parse.o libtre/obj/tre-stack.o libtre/obj/regcomp.o libtre/obj/regerror.o\
-					 libtre/obj/regexec.o libtre/obj/tre-mem.o libtre/obj/tre-match-backtrack.o libtre/obj/tre-compile.o
-else
-TRE_LINK_OPTION = -ltre
-endif
 
 ifeq ($(SYSTEM),linux-like)
 ###################
@@ -176,7 +169,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -lpthread
+LIBS   = -Llibtre/lib -ltre -lpthread
 
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -233,7 +226,7 @@ endif
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." $(TRE_LINK_OPTION)
+LIBS =  -L "." -ltre
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
@@ -340,7 +333,7 @@ endif
 #
 # USING TRE STATIC LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." $(TRE_LINK_OPTION)
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre
 INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
@@ -1062,7 +1055,6 @@ $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
-
 ifeq ($(TRE_DIRECT_LINK), yes)
 TRE_GCC_OPTIONS = -DHAVE_CONFIG_H=1 $(CFLAGS)
 
@@ -1074,31 +1066,20 @@ endif
 	@echo "Making TRE library ..."
 	chmod +x $(TRE_SRC)/configure
 	cd $(TRE_SRC) && ./configure --disable-shared --enable-static
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_GCC_OPTIONS)
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_GCC_OPTIONS)
 	mkdir -p libtre/lib libtre/include libtre/obj
-	mv tre-stack.o libtre/obj
-	mv tre-parse.o libtre/obj
-	mv regexec.o libtre/obj
-	mv xmalloc.o libtre/obj
-	mv tre-match-parallel.o libtre/obj
-	mv tre-match-approx.o libtre/obj
-	mv tre-ast.o libtre/obj
-	mv regcomp.o libtre/obj
-	mv regerror.o libtre/obj
-	mv tre-compile.o libtre/obj
-	mv tre-match-backtrack.o libtre/obj
-	mv tre-mem.o libtre/obj
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-stack.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-parse.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_GCC_OPTIONS) -o libtre/obj/regexec.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_GCC_OPTIONS) -o libtre/obj/xmalloc.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-parallel.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-approx.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-ast.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_GCC_OPTIONS) -o libtre/obj/regcomp.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_GCC_OPTIONS) -o libtre/obj/regerror.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-compile.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-backtrack.o
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-mem.o
+	cd libtre/obj && ar rcs ../lib/libtre.a *.o
 	touch .libtre-done
 else
 .libtre-done: $(TRE_SRC)
@@ -1301,7 +1282,7 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
-LIBS   = -L"." $(TRE_LINK_OPTION)
+LIBS   = -L"." -ltre
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1344,7 +1325,7 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
-LIBS   = -L"." $(TRE_LINK_OPTION)
+LIBS   = -L"." -ltre
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1366,157 +1347,157 @@ endif
 endif
 
 $(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(BUILDKRMWUDIC)$(EXTENSION): $(BUILDKRMWUDIC_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CASSYS)$(EXTENSION): $(CASSYS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CONCORD)$(EXTENSION): $(CONCORD_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CONCORDIFF)$(EXTENSION): $(CONCORDIFF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CONVERT)$(EXTENSION): $(CONVERT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(DICO)$(EXTENSION): $(DICO_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(ELAG)$(EXTENSION): $(ELAG_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(ELAGCOMP)$(EXTENSION): $(ELAGCOMP_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EVAMB)$(EXTENSION): $(EVAMB_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FLATTEN)$(EXTENSION): $(FLATTEN_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2CHECK)$(EXTENSION): $(FST2CHECK_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRF2FST2)$(EXTENSION): $(GRF2FST2_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFDIFF)$(EXTENSION): $(GRFDIFF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFDIFF3)$(EXTENSION): $(GRFDIFF3_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFTEST)$(EXTENSION): $(GRFTEST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION) 
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(LOCATETFST)$(EXTENSION): $(LOCATETFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(MULTIFLEX)$(EXTENSION): $(MULTIFLEX_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(MZREPAIRULP)$(EXTENSION): $(MZREPAIRULP_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(NORMALIZE)$(EXTENSION): $(NORMALIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(POLYLEX)$(EXTENSION): $(POLYLEX_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(REBUILDTFST)$(EXTENSION): $(REBUILDTFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(RECONSTRUCAO)$(EXTENSION): $(RECONSTRUCAO_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(REG2GRF)$(EXTENSION): $(REG2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SEQ2GRF)$(EXTENSION): $(SEQ2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SPELLCHECK)$(EXTENSION): $(SPELLCHECK_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(STATS)$(EXTENSION): $(STATS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TABLE2GRF)$(EXTENSION): $(TABLE2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TAGGER)$(EXTENSION): $(TAGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TAGSETNORMTFST)$(EXTENSION): $(TAGSETNORMTFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TEI2TXT)$(EXTENSION): $(TEI2TXT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TFST2GRF)$(EXTENSION): $(TFST2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TFSTTAG)$(EXTENSION): $(TFSTTAG_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TFST2UNAMBIG)$(EXTENSION): $(TFST2UNAMBIG_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TOKENIZE)$(EXTENSION): $(TOKENIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TRAININGTAGGER)$(EXTENSION): $(TRAININGTAGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNCOMPRESS)$(EXTENSION): $(UNCOMPRESS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNTOKENIZE)$(EXTENSION): $(UNTOKENIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNXMLIZE)$(EXTENSION): $(UNXMLIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS) $(TRE_LINK_OPTION)
+	$(CC) -o $@ $+ $(OPTIONS)
 
 #
 # Compilation instructions for Logger
@@ -1585,12 +1566,12 @@ no_o_files:
 
 .libunitex: no_o_files $(OBJS) Test_lib.o
 	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) $(TRE_LINK_OPTION) -shared -o ../bin/libunitex.so
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.so
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) $(TRE_LINK_OPTION) -shared -o ../bin/libUnitexJni.so
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.so
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 else
@@ -1601,12 +1582,12 @@ no_o_files:
 
 .libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_OPTION) -o ../bin/unitex.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(LIBTRE) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_OPTION) -o ../bin/UnitexJni.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 endif
