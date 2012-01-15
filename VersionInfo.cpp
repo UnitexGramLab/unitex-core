@@ -50,6 +50,7 @@ const char* usage_VersionInfo =
 		 "  -c/--copyright: display only copyright text\n"
 		 "  -v/--version: display only version number\n"
 		 "  -r/--revision: display only SVN revision number (if available)\n"
+		 "  -p/--platform: platform info\n"
 		 "  -h/--help: this help\n"
          "\n";
 
@@ -60,11 +61,12 @@ u_printf(usage_VersionInfo);
 }
 
 
-const char* optstring_VersionInfo=":hcrvo:k:q:";
+const char* optstring_VersionInfo=":hcrvpo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
       {"copyright",no_argument_TS,NULL,'c'},
       {"version",no_argument_TS,NULL,'v'},
       {"revision",no_argument_TS,NULL,'r'},
+      {"platform",no_argument_TS,NULL,'p'},
       {"output",required_argument_TS,NULL,'o'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -86,6 +88,7 @@ const char *output_file = NULL;
 int do_version_only=0;
 int do_revision_only=0;
 int do_copyright_only=0;
+int do_platform_info=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -94,6 +97,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInf
    case 'c': do_copyright_only=1; break;
    case 'r': do_revision_only=1; break;
    case 'v': do_version_only=1; break;
+   case 'p': do_platform_info=1; break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output argument\n");
              }
@@ -130,6 +134,7 @@ unsigned int unitexMajorVersion = 0;
 unsigned int unitexMinorVersion = 0;
 get_unitex_version(&unitexMajorVersion, &unitexMinorVersion);
 
+DisplayText[0] = 0;
 if (do_copyright_only) {
 	u_sprintf(DisplayText,"%S",COPYRIGHT);
 }
@@ -148,6 +153,24 @@ else {
 		u_sprintf(DisplayText,"%S\nUnitex Version: %u.%u\nUnitex SVN revision: %d\n",
 				COPYRIGHT,unitexMajorVersion,unitexMinorVersion,revision);
 	}
+}
+
+if (do_platform_info) {
+	union {
+		unsigned short int i;
+		unsigned char c[8];
+	} endianText;
+	
+	for (int i=0;i<8;i++) {
+		endianText.c[i] = 0;
+	}
+
+	endianText.c[0] = 1;
+	endianText.c[1] = 2;
+	u_sprintf(DisplayText + u_strlen(DisplayText),"\nsizeof(void*):%u, sizeof(int):%u, endianess:%s\n",
+				sizeof(void*),sizeof(int),
+				((endianText.i)==0x0102) ? "big endian" :
+				  ((endianText.i)==0x0201) ? "little endian" : "unknown endianness");
 }
 
 if (output_file!=NULL) {
