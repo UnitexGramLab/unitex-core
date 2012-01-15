@@ -58,6 +58,7 @@ public class UnitexJni {
 	/*
 	 * function imported from Jni
 	 */
+
 	/**
 	 * Function to run UnitexTool with string or string array, like java exec in
 	 * java runtime <br>
@@ -84,11 +85,36 @@ public class UnitexJni {
 	 * UnitexLibAndJni.execUnitexTool("UnitexTool Tokenize \"corpus.txt\" -a \"Alphabet.txt\"");
 	 * <br>
 	 * UnitexLibAndJni.execUnitexTool("UnitexTool { Normalize \"corpus.txt\" -r \"Norm.txt\" } { Tokenize \"corpus.txt\" -a \"Alphabet.txt\" }");
-         * </code>
+     * </code>
 	 * 
 	 * @return value : the return value of the tools (0 for success)
 	 */
 	public native static int execUnitexTool(String cmdline);
+
+
+	/**
+	 * Function to run RunLog with string or string array, like java exec in
+	 * java runtime <br>
+	 * <code>
+	 * String [] strArrayCmds={"RunLog","mylog.ulp"};
+	 * <br>
+	 * UnitexLibAndJni.execRunLog(strArrayCmds);
+     * </code>
+	 * 
+	 * @return value : the return value of the tools (0 for success)
+	 */
+	public native static int execRunLog(String[] cmdarray);
+
+	/**
+	 * Function to run RunLog with string or string array, like java exec in
+	 * java runtime <br>
+	 * <code>
+	 * UnitexLibAndJni.execRunLog("RunLog mylog.ulp");
+     * </code>
+	 * 
+	 * @return value : the return value of the tools (0 for success)
+	 */
+	public native static int execRunLog(String cmdline);
 
 	/**
 	 * function to check the compatibility of Unitex with offset file

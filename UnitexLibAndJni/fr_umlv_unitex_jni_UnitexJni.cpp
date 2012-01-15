@@ -42,6 +42,7 @@
 #include "AbstractFilePlugCallback.h"
 #include "UserCancellingPlugCallback.h"
 #include "UniLogger.h"
+#include "UniRunLogger.h"
 
 #include "UnitexLibIO.h"
 #ifdef UNITEX_HAVING_MINI_PERSISTANCE
@@ -299,6 +300,35 @@ JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool__Ljava_l
 	freeArgs(args);
 	return retValue;
 }
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    execRunLog
+ * Signature: ([Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execRunLog___3Ljava_lang_String_2
+  (JNIEnv *jenv, jclass, jobjectArray strArray)
+{
+	char**args=argsFromStrArray(jenv, strArray);
+	jint retValue = (jint)main_RunLog(countArgs(args),args);
+	freeArgs(args);
+	return retValue;
+}
+
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    execRunLog
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execRunLog__Ljava_lang_String_2
+  (JNIEnv *jenv, jclass, jstring jstr)
+{
+	char**args=argsFromJString(jenv, jstr);
+	jint retValue = (jint)main_RunLog(countArgs(args),args);
+	freeArgs(args);
+	return retValue;
+}
+
 
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
