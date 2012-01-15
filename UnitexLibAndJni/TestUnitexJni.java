@@ -27,10 +27,18 @@ public class TestUnitexJni {
 	try {
 
 		boolean tryNormalize = true;
+
 		if (args.length>0) {
 			if (args[0].equals("UnitexTool")) {
 				tryNormalize = false;
 				UnitexJni.execUnitexTool(args);
+			}
+		}
+
+		if (args.length>0) {
+			if (args[0].equals("RunLog")) {
+				tryNormalize = false;
+				UnitexJni.execRunLog(args);
 			}
 		}
 
