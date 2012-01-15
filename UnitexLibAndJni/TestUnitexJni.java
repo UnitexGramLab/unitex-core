@@ -25,7 +25,18 @@ public class TestUnitexJni {
 
 	public static void main(String[] args) {
 	try {
-		UnitexJni.execUnitexTool(new String[] {"UnitexToolLogger","Normalize","--help"});
+
+		boolean tryNormalize = true;
+		if (args.length>0) {
+			if (args[0].equals("UnitexTool")) {
+				tryNormalize = false;
+				UnitexJni.execUnitexTool(args);
+			}
+		}
+
+		if (tryNormalize) {
+			UnitexJni.execUnitexTool(new String[] {"UnitexToolLogger","Normalize","--help"});
+		}
 	} catch (UnsatisfiedLinkError e) {
 		System.err.println("Cannot load the UnitexJni library. You may have to set the java.library.path");
 		System.err.println("property as follows:\n");
