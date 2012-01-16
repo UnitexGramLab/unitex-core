@@ -23,8 +23,8 @@
 #define UnitexRevisionH
 
 /**
- * This file may be overwritten to indicate the actual SVN revision number of
- * the C/C++ code of Unitex.
+ * This file may be overwritten to indicate the actual SVN revision number
+ * of the C/C++ code of Unitex.
  */
 
 #define UNITEX_REVISION (-1)
