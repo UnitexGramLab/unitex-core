@@ -169,7 +169,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre -lpthread
+LIBS   = -Llibtre/lib -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
 
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -226,7 +226,7 @@ endif
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." -ltre
+LIBS =  -L "." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
@@ -333,7 +333,7 @@ endif
 #
 # USING TRE STATIC LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
@@ -1282,7 +1282,7 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
-LIBS   = -L"." -ltre
+LIBS   = -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1325,7 +1325,7 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
-LIBS   = -L"." -ltre
+LIBS   = -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1582,12 +1582,12 @@ no_o_files:
 
 .libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/unitex.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(LIBTRE) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre -o ../bin/UnitexJni.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 endif
