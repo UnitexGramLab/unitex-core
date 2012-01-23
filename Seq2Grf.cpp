@@ -66,6 +66,10 @@ const char
 		"OPTIONS:\n"
 		"  -a ALPH/--alphabet=ALPH: the alphabet file\n"
 		"  -o XXX/--output=XXX: the output GRF ﬁle\n"
+		"  -j n_jokers\n"
+		"  -i n_insertion\n"
+		"  -r n_replace\n"
+		"  -d n_delete\n"
 		"  -h/--help: this help\n"
 		"\n"
 		"Constructs the sequences automaton : one single automaton that recognizes\n"
@@ -80,7 +84,7 @@ static void usage() {
 	u_printf(usage_Seq2Grf);
 }
 
-const char* optstring_Seq2Grf = ":a:o:i:r:d:h:k:q:j:";
+const char* optstring_Seq2Grf = ":a:o:i:r:d:h:k:q:j:b:";
 const struct option_TS lopts_Seq2Grf[] = {
 		{ "alphabet",required_argument_TS,    NULL, 'a' },
 		{ "output", required_argument_TS, NULL, 'o' },
@@ -88,6 +92,7 @@ const struct option_TS lopts_Seq2Grf[] = {
 		{ "insert", required_argument_TS,NULL, 'i'},
 		{ "replace", required_argument_TS,NULL, 'r'},
 		{ "delete", required_argument_TS,NULL, 'd'},
+		{ "beautify", optional_argument_TS,NULL, 'b'},
 		{ "input_encoding", required_argument_TS, NULL, 'k' },
 		{ "output_encoding", required_argument_TS, NULL, 'q' },
 		{ "help", no_argument_TS, NULL, 'h' },
@@ -109,6 +114,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	int is_korean = 0;
 	int CLEAN = 0;
 	char* fontname = NULL;
+	int do_beautify=0;
 	VersatileEncodingConfig vec = { DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,
 			DEFAULT_ENCODING_OUTPUT, DEFAULT_BOM_OUTPUT };
 	int val, index = -1;
@@ -164,6 +170,10 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 				fatal_error("Invalid deletions argument: %s\n",vars->optarg);
 			}
 			u_printf("vars->optarg = %s\n",vars->optarg);
+			break;
+		case 'b':
+			u_printf("beautify \n");
+			do_beautify = 1;
 			break;
 			/////////////////////////////////////////////////
 		case 'f':
@@ -321,8 +331,8 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			(FREE_FUNCTION) free,
 			NULL,
 			(KEYCOPY_FUNCTION) keycopy);
-	u_printf("tokens :\n");
-	u_printf("%S \n",tokens->token[0]);
+//	u_printf("tokens :\n");
+//	u_printf("%S \n",tokens->token[0]);
 	u_printf("n_op=%d\n",n_op);
 	u_printf("n_ins=%d\n",n_ins);
 	u_printf("n_rep=%d\n",n_rep);
@@ -364,7 +374,11 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		u_printf("tfst NULL\n");
 	Grf* grfObj = sentence_to_grf(tfstFile, fontname, size,
 			is_sequence_automaton);
-	beautify(grfObj, alph);
+	if (do_beautify){
+		u_printf("beautify = true\n");
+		beautify(grfObj, alph);
+	}
+	else u_printf("beautify = false\n");
 	save_Grf(out, grfObj);
 	free_Grf(grfObj);
 	free_hash_table(form_frequencies);
@@ -392,10 +406,12 @@ void add_path(Tfst * tfst,
 	for (int i=0;i<pos_res;i++){
 		if (seq[i]==-1){
 			u_strcat(text,"<TOKEN>");
+			u_printf("<TOKEN> ");
 			vector_int_add(tfst->tokens,1);
 			vector_int_add(tfst->token_sizes, 7);
 		}
 		else{
+			u_printf("%S ",tokens->token[seq[i]]);
 			int ind=get_value_index(tokens->token[seq[i]],tmp_tags);
 			if (ind!=0 && ind !=1){
 				int l=u_strlen(tokens->token[seq[i]]);
@@ -417,6 +433,7 @@ void add_path(Tfst * tfst,
 		}
 		u_strcat(text," ");
 	}
+	u_printf("\t\t>>pos_res=%d\n",pos_res);
 	bool linked = false;
 	int n_nodes = pos_res;
 	for (int i = 0; i < n_nodes; i++) {
@@ -604,13 +621,16 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	int N,total;
 	int buffer[MAX_TOKENS_IN_SENTENCE];
 	Ustring* foo = new_Ustring(1);
-
+	u_printf(">>>here\n");
 	u_fprintf(out_tfst, "0000000001\n");
 	if (f == NULL) {
 		u_printf("f NULL\n");
 		fatal_error("Cannot open file\n");
 	}
+	u_printf("read_sentence :\n");
 	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
+		u_printf("\tN=%d\n",N);
+		u_printf("\tread_sentence : in\n");
 		int nst=count_non_space_tokens(buffer, N, tokens->SPACE);
 		int *non_space_buffer=new int[nst];
 		int k=0;
@@ -618,8 +638,10 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 			if (buffer[i]!=tokens->SPACE){
 				non_space_buffer[k]=buffer[i];
 				k++;
+				u_printf("%S ", tokens->token[buffer[i]]);
 			}
 		}
+		u_printf("\n");
 		u_printf("buffer : \t");
 		for (int i=0;i<N;i++){
 			u_printf("%d ",buffer[i]);
@@ -650,6 +672,10 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		delete [] non_space_buffer;
 	}
 	//    adding final state :
+	u_printf("N=%d\n",N);
+	for (int i=0;i<N;i++){
+		u_printf("buffer[%d]=%d\n",i,buffer[i]);
+	}
 	add_state(tfst->automaton);
 	// declaring it as final state
 	u_printf("final_state : %d\n",final_state);
@@ -660,12 +686,14 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	u_printf("%d, ",tag_number);
 	u_printf("%d)\n",final_state);
 	u_printf("minimize\n");
-	minimize(tfst->automaton,1);
-	u_printf("minimize : done\n");
-	if (we_must_clean) {
-		/* If necessary, we apply the "good paths" heuristic */
-		keep_best_paths(tfst->automaton, tmp_tags);
-	}
+//	minimize(tfst->automaton,1);
+	u_printf("minimize : skipped"
+//			"done"
+			"\n");
+//	if (we_must_clean) {
+//		/* If necessary, we apply the "good paths" heuristic */
+//		keep_best_paths(tfst->automaton, tmp_tags);
+//	}
 	if (tfst->automaton->number_of_states == 0) {
 		//        /* Case 1: the automaton has been emptied because of the tagset filtering */
 		error("Sentence %d is empty\n", tfst->current_sentence);
@@ -680,7 +708,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		/* We minimize the sentence automaton. It will remove the unused states and may
 		 * factorize suffixes introduced during the application of the normalization tree. */
 
-		minimize(tfst->automaton, 1);
+//		minimize(tfst->automaton, 1);
 		/* We explore all the transitions of the automaton in order to renumber transitions */
 		u_printf("tfst->automaton->number_of_states =%d\n",tfst->automaton->number_of_states);
 
@@ -699,7 +727,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		}
 	}
 	u_printf("out\n");
-	minimize(tfst->automaton, 1);
+//	minimize(tfst->automaton, 1);
 	u_printf("\nsave_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,NULL)\n");
 	save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,
 			NULL);
