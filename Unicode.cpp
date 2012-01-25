@@ -3177,6 +3177,24 @@ return (unichar*)memcpy(res,str,buflen);
 }
 
 
+/**
+ * Copy at most n chars.
+ */
+unichar* u_strndup(const unichar* str,int n) {
+if (str==NULL) return NULL;
+int size=0;
+while (size<n && str[size]) size++;
+size_t buflen=(size+1)*sizeof(unichar);
+unichar* res=(unichar*)malloc(buflen);
+if (res==NULL) {
+   fatal_alloc_error("u_strndup");
+}
+memcpy(res,str,buflen-1*sizeof(unichar));
+res[size]='\0';
+return res;
+}
+
+
 unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc) {
 if (str==NULL) return NULL;
 size_t buflen=(u_strlen(str)+1)*sizeof(unichar);

@@ -256,6 +256,7 @@ int u_strcmp_ignore_case(const unichar*, const char*);
 int u_equal(const unichar*, const unichar*);
 int u_equal_ignore_case(const unichar*, const unichar*);
 unichar* u_strdup(const unichar*);
+unichar* u_strndup(const unichar*,int);
 unichar* keycopy(unichar*);
 unichar* u_strdup(const unichar*,unsigned int);
 unichar* u_strdup(const char*);
