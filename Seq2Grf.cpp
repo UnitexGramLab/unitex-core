@@ -686,9 +686,8 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	u_printf("%d, ",tag_number);
 	u_printf("%d)\n",final_state);
 	u_printf("minimize\n");
-//	minimize(tfst->automaton,1);
-	u_printf("minimize : skipped"
-//			"done"
+	minimize(tfst->automaton,1);
+	u_printf("minimize : done"
 			"\n");
 //	if (we_must_clean) {
 //		/* If necessary, we apply the "good paths" heuristic */
