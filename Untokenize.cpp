@@ -48,11 +48,6 @@
 #include "Text_tokens.h"
 #include "Untokenize.h"
 
-#define NORMAL 0
-#define CHAR_BY_CHAR 1
-
-
-
 
 const char* usage_Untokenize =
          "Usage: Untokenize [OPTIONS] <txt>\n"
@@ -282,4 +277,3 @@ free_OptVars(vars);
 u_printf("\nDone.\n");
 return 0;
 }
-//---------------------------------------------------------------------------
