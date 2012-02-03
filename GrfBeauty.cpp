@@ -648,7 +648,7 @@ if (to_be_removed!=NULL) {
 	/* If there is at least one transition to remove, then we have
 	 * to add a fake transition to the end of the subgroup
 	 */
-	int already_a_real_transition_to_end=vector_int_contains(transitions,end);
+	int already_a_real_transition_to_end=(-1!=vector_int_contains(transitions,end));
 	vector_int_add_if_absent(transitions,end);
 	vector_int_add_if_absent(reverse->t[end],state);
 	if (!already_a_real_transition_to_end) {
@@ -1148,7 +1148,6 @@ group->width=0;
 group->height=0;
 vector_ptr_add(groups,group);
 for (int i=1;i<n_factorizing;i++) {
-	int AA=factorizing[i-1];
 	int BB=factorizing[i];
 	int subgroup_index=process_lemon_group(grf,current_group,factorizing[i-1],factorizing[i],t,
 									groups,reverse,box_width,box_height);
@@ -1327,10 +1326,8 @@ for (int i=0;i<grf->n_states;i++) {
 	vector_int* transitions=grf->states[i]->transitions;
 	struct list_int* tmp=t->to_remove[i];
 	while (tmp!=NULL) {
-		if (-1!=vector_int_contains(transitions,tmp->n)) {
-			/* If the transition exists, we remove it */
-			vector_int_remove(transitions,tmp->n);
-		}
+		/* If the transition exists, we remove it */
+		vector_int_remove(transitions,tmp->n);
 		tmp=tmp->next;
 	}
 }
