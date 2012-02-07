@@ -28,6 +28,8 @@
 #include "Thai.h"
 #include "NewLineShifts.h"
 
+#define PRLG_DELIMITOR 0x02
+
 int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
@@ -270,7 +272,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	c=u_fgetc(f);
 	j=0;
 	/* ...and the third in C */
-	while (c!='\n' && c!='\t' && c!='[') {
+	while (c!='\n' && c!='\t') {
 		C[j++]=(unichar)c;
 		c=u_fgetc(f);
 	}
@@ -280,7 +282,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	if (c=='\t') {
 		c=u_fgetc(f);
 		j=0;
-		while (c!='\t' && c!='\n' && c!='[') {
+		while (c!='\t' && c!='\n' && c!=PRLG_DELIMITOR) {
 			indices[j++]=(unichar)c;
 			c=u_fgetc(f);
 		}
@@ -293,7 +295,7 @@ while ((c=u_fgetc(f))!=EOF) {
 				href[0]='\0';
 			} else {
 				j=0;
-				while ((c=u_fgetc(f))!='\n' && c!='[') {
+				while ((c=u_fgetc(f))!='\n' && c!=PRLG_DELIMITOR) {
 					href[j++]=(unichar)c;
 				}
 				href[j]='\0';
@@ -301,7 +303,12 @@ while ((c=u_fgetc(f))!=EOF) {
 		}
 		/*------------end GlossaNet-------------------*/
 	}
-	if (c=='[') {
+	if (c==PRLG_DELIMITOR) {
+		/* If there is a PRLG tag */
+		c=u_fgetc(f);
+		if (c!='[') {
+			fatal_error("Invalid PRLG tag in create_concordance");
+		}
 		while (c!='\n') {
 			u_strcat(PRLG_tag,(unichar)c);
 			c=u_fgetc(f);
@@ -1024,7 +1031,7 @@ while (matches!=NULL) {
 			u_fprintf(output,"\t%S",href);
 		}
 		if (closest_tag!=NULL) {
-			u_fprintf(output,"[%S",closest_tag);
+			u_fprintf(output,"%C[%S",PRLG_DELIMITOR,closest_tag);
 			int padding=options->PRLG_data->max_width-u_strlen(closest_tag);
 			for (int k=0;k<padding;k++) u_fprintf(output," ");
 			u_fprintf(output,"]");
