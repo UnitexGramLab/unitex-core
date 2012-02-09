@@ -331,8 +331,6 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			(FREE_FUNCTION) free,
 			NULL,
 			(KEYCOPY_FUNCTION) keycopy);
-//	u_printf("tokens :\n");
-//	u_printf("%S \n",tokens->token[0]);
 	u_printf("n_op=%d\n",n_op);
 	u_printf("n_ins=%d\n",n_ins);
 	u_printf("n_rep=%d\n",n_rep);
@@ -397,12 +395,11 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 void add_path(Tfst * tfst,
 		int seq[],
 		int pos_res,
-//		struct info INFO,
 		const struct text_tokens* tokens,
 		Ustring * text,
 		int & current_state,
 		struct string_hash *&tmp_tags ){
-	u_printf("add_path2\t\t");
+	u_printf("add_path\t\tpos_res=%d\n",pos_res);
 	for (int i=0;i<pos_res;i++){
 		if (seq[i]==-1){
 			u_strcat(text,"<TOKEN>");
@@ -445,34 +442,42 @@ void add_path(Tfst * tfst,
 	int tmp_final_state = 1;
 	for (int i = 0; i < pos_res; i++) {
 		int k;
-		if (seq[i]==-1) k=1;
-		else k=get_value_index(tokens->token[seq[i]],tmp_tags);
+		if (seq[i]==-1){
+			k=1;
+		}
+		else{
+			k=get_value_index(tokens->token[seq[i]],tmp_tags);
+		}
 		u_sprintf(tmp_states,"%S",tmp_tags->value[k]);
 		int tag_number = get_value_index(tmp_states->str, tmp_tags);
 		u_strcat(states, tmp_states->str);
 		if (linked==false) {
+
+			if (i==pos_res -1){
+				add_outgoing_transition(
+						tfst->automaton->states[0],
+						tag_number,
+						tmp_final_state
+						);
+			}else{
 			add_outgoing_transition(
 					tfst->automaton->states[0],
 					tag_number,
 					current_state + 1);
 			linked=true;
+			}
 		} else if (i == pos_res - 1) {
 			add_outgoing_transition(
 					tfst->automaton->states[current_state],
 					tag_number,
 					tmp_final_state);
 		} else {
-			Transition * trans = tfst->automaton->states[current_state]->outgoing_transitions;
 			if (	tfst->automaton->states[current_state]==NULL)
 				u_printf("	tfst->automaton->states[current_state] = NULL \n");
 			add_outgoing_transition(
 					tfst->automaton->states[current_state],
 					tag_number,
 					current_state + 1);
-			trans = tfst->automaton->states[current_state]->outgoing_transitions;
-			if (trans == NULL) {
-				u_printf("ERROR 3 : transition not added\n");
-			}
 		}
 		current_state++;
 	}
@@ -530,7 +535,7 @@ int work(	int t[],
 								,tfst,	INFO,	tokens,	text,	current_state,
 								tmp_tags);
 					}
-		return cur;
+					return cur;
 		}
 		res[pos_res]=t[current];
 		//####################################
@@ -541,7 +546,7 @@ int work(	int t[],
 		tmp_tags);
 		/* Now, we consider errors */
 		if (errors==0) return cur;
-		if (insert!=0 && last_op!='S' /*&& pos_res>0*/) {
+		if (insert!=0 && last_op!='S' && pos_res>0) {
 			//####################################
 			//		insert
 			//####################################
@@ -681,10 +686,6 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	u_printf("final_state : %d\n",final_state);
 	set_final_state(tfst->automaton->states[final_state]);
 	int tag_number = get_value_index(EPSILON_TAG, tmp_tags);
-	u_printf("add_outgoing_transition(");
-	u_printf("state(%d), ",final_state);
-	u_printf("%d, ",tag_number);
-	u_printf("%d)\n",final_state);
 	u_printf("minimize\n");
 	minimize(tfst->automaton,1);
 	u_printf("minimize : done"
