@@ -329,6 +329,10 @@ void parse_text(struct fst2txt_parameters* p) {
 					diff = 1;
 				}
 			}
+			if (p->input_length>0 && p->output[0]=='\0') {
+				/* any input deletion must be considered */
+				diff=1;
+			}
 			if (!diff && p->output[j] != '\0') {
 				diff = 1;
 			}
@@ -513,6 +517,7 @@ void scan_graph(
 	depth++;
 
 	if (is_final_state(current_state)) {
+
 		// if we are in a final state
 		p->stack->stack[p->stack->stack_pointer + 1] = '\0';
 		if (n_graph == 0) { // in main graph
@@ -544,7 +549,7 @@ void scan_graph(
 			if (p->output_policy == MERGE_OUTPUTS)
 				push(p->stack, ' ');
 		}
-		/* we don't keep this line because of problems occuring in sentence tokenizing
+		/* we don't keep this line because of problems occurring in sentence tokenizing
 		 * if the return sequence is defautly considered as a separator like space
 		 else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
 		 */
