@@ -458,13 +458,13 @@ void add_path(Tfst * tfst,
 						tfst->automaton->states[0],
 						tag_number,
 						tmp_final_state
-						);
+				);
 			}else{
-			add_outgoing_transition(
-					tfst->automaton->states[0],
-					tag_number,
-					current_state + 1);
-			linked=true;
+				add_outgoing_transition(
+						tfst->automaton->states[0],
+						tag_number,
+						current_state + 1);
+				linked=true;
 			}
 		} else if (i == pos_res - 1) {
 			add_outgoing_transition(
@@ -481,8 +481,8 @@ void add_path(Tfst * tfst,
 		}
 		current_state++;
 	}
-		free_Ustring(tmp_states);
-		free_Ustring(states);
+	free_Ustring(tmp_states);
+	free_Ustring(states);
 }
 
 int work(	int t[],
@@ -500,79 +500,106 @@ int work(	int t[],
 		int & current_state,
 		struct string_hash* &tmp_tags
 ) {
-		if (current==size) {
-			//####################################
-			// produce sequence
-			//####################################
-			u_printf("res =[");
-			for (int i=0;i<pos_res;i++){
-//				if(res[i]==-1) u_printf("%d:%s",res[i],"<TOKEN>");
-//				else u_printf("%d:%S ",res[i],tokens->token[res[i]]);
-				if(res[i]==-1) u_printf("%s ","<TOKEN>");
-				else u_printf("%S ",tokens->token[res[i]]);
+	if (current==size) {
+		//####################################
+		// produce sequence
+		//####################################
+		u_printf("!!!!pos_res= %d\tres =[",pos_res);
+		// filters the empty sequences or the ones with only one or several "<TOKEN>"
+		bool is_only_token=true;
+		for (int i=0;i<pos_res;i++){
+			if(res[i]!=-1) {
+				is_only_token=false;
+				u_printf("%S ",tokens->token[res[i]]);
 			}
-			u_printf("]\n");
+			else u_printf("%s ","<TOKEN>");
+		}
+		u_printf("]\t");
+		if (is_only_token){
+			u_printf("only_token\n");
+			u_printf("!!!!we skip this sequence :\t\t\"");
+						for (int i=0;i<pos_res;i++){
+							if (res[i]==-1)
+								u_printf("%s ","<TOKEN>");
+							else{
+								u_printf("%S ",tokens->token[res[i]]);
+							}
+						}
+						u_printf("\"\n");
+		}
+		else{
+			u_printf("not only_token\n");
+			u_printf("!!!!we add this sequence :\t\t\"");
+			for (int i=0;i<pos_res;i++){
+				if (res[i]==-1)
+					u_printf("%s ","<TOKEN>");
+				else{
+					u_printf("%S ",tokens->token[res[i]]);
+				}
+			}
+			u_printf("\"\n");
 			add_path(
-							tfst,
-							res,
-							pos_res,
-//							INFO,
-							tokens,
-							text,
-							current_state,
-							tmp_tags );
-					cur++;
-					if (errors==0) {
-						/* If we are done, we quit */
-						return cur;
-					}
-					if (insert!=0 && last_op!='S') {
-						res[pos_res]=INFO.TOKEN;
-						//####################################
-						// s'il reste un joker je l'ajoute au bout (utile ?)
-						//####################################
-						work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,cur//,total
-								,tfst,	INFO,	tokens,	text,	current_state,
-								tmp_tags);
-					}
-					return cur;
+					tfst,
+					res,
+					pos_res,
+					//							INFO,
+					tokens,
+					text,
+					current_state,
+					tmp_tags );
 		}
-		res[pos_res]=t[current];
-		//####################################
-		// ici j'ajoute le token courrant et je passe au suivant
-		//####################################
-		work(t,size,current+1,errors,insert,replace,suppr,0,res,max_length,pos_res+1,cur//,total
-		,tfst,	INFO,	tokens,	text,	current_state,
-		tmp_tags);
-		/* Now, we consider errors */
-		if (errors==0) return cur;
-		if (insert!=0 && last_op!='S' && pos_res>0) {
-			//####################################
-			//		insert
-			//####################################
+		cur++;
+		if (errors==0) {
+			/* If we are done, we quit */
+			return cur;
+		}
+		if (insert!=0 && last_op!='S') {
 			res[pos_res]=INFO.TOKEN;
-			work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,
-					cur, tfst,	INFO,	tokens,	text,	current_state,
-					tmp_tags);
-		}
-		if (suppr!=0 && last_op!='I') {
 			//####################################
-			//		suppr
+			// s'il reste un joker je l'ajoute au bout (utile ?)
 			//####################################
-			work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,max_length,pos_res,
-					cur ,tfst,	INFO,	tokens,	text,	current_state,
-					tmp_tags);
-		}
-		if (replace!=0 /*&& pos_res>0*/) {
-			//####################################
-			//		replace
-			//####################################
-			res[pos_res]=INFO.TOKEN;
-			work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
+			work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,cur//,total
 					,tfst,	INFO,	tokens,	text,	current_state,
 					tmp_tags);
 		}
 		return cur;
+	}
+	res[pos_res]=t[current];
+	//####################################
+	// ici j'ajoute le token courrant et je passe au suivant
+	//####################################
+	work(t,size,current+1,errors,insert,replace,suppr,0,res,max_length,pos_res+1,cur//,total
+			,tfst,	INFO,	tokens,	text,	current_state,
+			tmp_tags);
+	/* Now, we consider errors */
+	if (errors==0) return cur;
+	if (insert!=0 && last_op!='S' && pos_res>0) {
+		//####################################
+		//		insert
+		//####################################
+		res[pos_res]=INFO.TOKEN;
+		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,
+				cur, tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags);
+	}
+	if (suppr!=0 && last_op!='I') {
+		//####################################
+		//		suppr
+		//####################################
+		work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,max_length,pos_res,
+				cur ,tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags);
+	}
+	if (replace!=0 /*&& pos_res>0*/) {
+		//####################################
+		//		replace
+		//####################################
+		res[pos_res]=INFO.TOKEN;
+		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
+				,tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags);
+	}
+	return cur;
 }
 
 /**
@@ -659,21 +686,21 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		u_printf("EPS\n");
 		int max_length=nst+insert;
 		// sequences produites par dérivations :
-//		unichar **res =new unichar*[max_length];
+		//		unichar **res =new unichar*[max_length];
 
 		int* res2 = (int*)calloc(max_length, sizeof(int));
 		u_printf("max_length=%d+%d=%d\n",nst,insert,max_length);
 		int curr=0;
 		INFO.length_max=max_length;
-//		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res,max_length,0,curr,//sequences,
-//				tfst,	INFO,	tokens,	foo,	current_state,
-//				tmp_tags);
+		//		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res,max_length,0,curr,//sequences,
+		//				tfst,	INFO,	tokens,	foo,	current_state,
+		//				tmp_tags);
 		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res2,max_length,0,curr,//sequences,
 				tfst,	INFO,	tokens,	foo,	current_state,
 				tmp_tags);
 		u_printf("work2 : done %d sequences produced \n",n_seq);
 		free(res2);
-//		delete [] res;
+		//		delete [] res;
 		delete [] non_space_buffer;
 	}
 	//    adding final state :
@@ -690,10 +717,10 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	minimize(tfst->automaton,1);
 	u_printf("minimize : done"
 			"\n");
-//	if (we_must_clean) {
-//		/* If necessary, we apply the "good paths" heuristic */
-//		keep_best_paths(tfst->automaton, tmp_tags);
-//	}
+	//	if (we_must_clean) {
+	//		/* If necessary, we apply the "good paths" heuristic */
+	//		keep_best_paths(tfst->automaton, tmp_tags);
+	//	}
 	if (tfst->automaton->number_of_states == 0) {
 		//        /* Case 1: the automaton has been emptied because of the tagset filtering */
 		error("Sentence %d is empty\n", tfst->current_sentence);
@@ -708,7 +735,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		/* We minimize the sentence automaton. It will remove the unused states and may
 		 * factorize suffixes introduced during the application of the normalization tree. */
 
-//		minimize(tfst->automaton, 1);
+		//		minimize(tfst->automaton, 1);
 		/* We explore all the transitions of the automaton in order to renumber transitions */
 		u_printf("tfst->automaton->number_of_states =%d\n",tfst->automaton->number_of_states);
 
@@ -727,7 +754,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		}
 	}
 	u_printf("out\n");
-//	minimize(tfst->automaton, 1);
+	//	minimize(tfst->automaton, 1);
 	u_printf("\nsave_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,NULL)\n");
 	save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,
 			NULL);
