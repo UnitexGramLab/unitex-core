@@ -25,6 +25,8 @@
 #include "Grf_lib.h"
 #include "Vector.h"
 
+namespace unitex {
+
 typedef enum {
 	DIFF_PROPERTY='P',
 	DIFF_BOX_MOVED='M',
@@ -74,6 +76,8 @@ void normalize_grf(Grf* grf);
 GrfDiff* grf_diff(Grf* base,Grf* dest);
 void free_GrfDiff(GrfDiff*);
 void print_diff(U_FILE* f,GrfDiff* diff);
+
+} // namespace unitex
 
 #endif
 

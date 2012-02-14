@@ -28,6 +28,7 @@
 #include "List_int.h"
 #include "LocateConstants.h"
 
+namespace unitex {
 
 #define NO_CASE_VARIANT_IS_ALLOWED 0
 #define ALL_CASE_VARIANTS_ARE_ALLOWED 1
@@ -158,5 +159,6 @@ void add_compound_word_with_pattern(const unichar*,int,const Alphabet*,struct st
 int conditional_insertion_in_DLC_tree(const unichar*,int,int,const Alphabet*,struct string_hash*,struct DLC_tree_info*,TokenizationPolicy);
 void optimize_DLC(struct DLC_tree_info*);
 
+} // namespace unitex
 
 #endif

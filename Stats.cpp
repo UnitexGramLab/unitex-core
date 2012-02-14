@@ -31,6 +31,8 @@
 
 #include "Stats.h"
 
+namespace unitex {
+
 // main work functions
 
 void concord_stats(const char* , int , const char *, const char* , const char* , const char*,
@@ -1278,3 +1280,5 @@ void free_token_as_int(void* t)
 {
 	free_int_CS_tag((int_CS_tag*)t);
 }
+
+} // namespace unitex

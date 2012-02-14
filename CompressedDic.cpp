@@ -30,6 +30,8 @@
 #include "AbstractDelaLoad.h"
 #include "Persistence.h"
 
+namespace unitex {
+
 static int read_bin_header(Dictionary*);
 
 /**
@@ -590,3 +592,5 @@ Dictionary* d=(Dictionary*)get_persistent_structure(name);
 set_persistent_structure(name,NULL);
 free_Dictionary(d);
 }
+
+} // namespace unitex

@@ -29,6 +29,7 @@
 #include "UnitexGetOpt.h"
 #include "ConcorDiff.h"
 
+namespace unitex {
 
 const char* usage_ConcorDiff =
          "Usage: ConcorDiff [OPTIONS] <concor1> <concor2>\n"
@@ -144,3 +145,5 @@ free(font);
 free_OptVars(vars);
 return 0;
 }
+
+} // namespace unitex

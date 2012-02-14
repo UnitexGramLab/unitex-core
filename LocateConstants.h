@@ -22,6 +22,8 @@
 #ifndef LocateConstantsH
 #define LocateConstantsH
 
+namespace unitex {
+
 /* Bit masks used in the control byte of each token of the text */
 #define MOT_TOKEN_BIT_MASK 1
 #define DIC_TOKEN_BIT_MASK 2
@@ -84,6 +86,8 @@ typedef enum {
    IGNORE_VARIABLE_ERRORS,
    BACKTRACK_ON_VARIABLE_ERRORS
 } VariableErrorPolicy;
+
+} // namespace unitex
 
 #endif
 

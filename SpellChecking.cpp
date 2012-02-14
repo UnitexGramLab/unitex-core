@@ -23,6 +23,8 @@
 #include "Ustring.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 int default_scores[N_SPSubOp]={5,50,5,50,10,10,10,20,50};
 
 
@@ -437,3 +439,5 @@ score[SP_CHANGE_CASE]=s7;
 score[SP_CHANGE_KEYBOARD]=s8;
 score[SP_CHANGE_DEFAULT]=s9;
 }
+
+} // namespace unitex

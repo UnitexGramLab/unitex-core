@@ -25,8 +25,12 @@
 #include "Unicode.h"
 #include "Offsets.h"
 
+namespace unitex {
+
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html,
 		unichar* bastien[],U_FILE* f_bastien);
+
+} // namespace unitex
 
 #endif
 

@@ -22,6 +22,8 @@
 #ifndef PersistenceH
 #define PersistenceH
 
+namespace unitex {
+
 /**
  * This library is designed to maintain persistent pointers associated
  * to file names. This may be useful when Unitex is used as a library
@@ -35,5 +37,6 @@ void* get_persistent_structure(const char* filename);
 void set_persistent_structure(const char* filename,void* ptr);
 int is_persistent_structure(void* ptr);
 
+} // namespace unitex
 
 #endif

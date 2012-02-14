@@ -24,6 +24,8 @@
 
 #include "Symbol.h"
 
+namespace unitex {
+
 /* operations ensemblistes sur les symboles  */
 
 /* comparaison */
@@ -55,5 +57,7 @@ symbol_t * minus_symbols(language_t* language,const symbol_t * B);
 
 
 symbol_t* LEXIC_minus_POS(language_t* language,POS_t* POS);
+
+} // namespace unitex
 
 #endif

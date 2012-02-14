@@ -27,6 +27,9 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 #include "Error.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
+
 /* you can define here (or in project preprocessor macro)
    CASE_CONVERSION_BY_TAB_UPPER
    to optimise u_strcmp_ignore_case by using array
@@ -6901,3 +6904,5 @@ unichar u_tolower (unichar c) {
 #endif
 
 /* end of Sebastian Nagel */
+
+} // namespace unitex

@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_Elag;
 extern const struct option_TS lopts_Elag[];
 extern const char* usage_Elag;
 
 int main_Elag(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

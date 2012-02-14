@@ -33,6 +33,11 @@
 #ifndef ABSTRACT_DELA_LOAD_H
 #define ABSTRACT_DELA_LOAD_H
 
+#include "LoadInf.h"
+#include "FileEncoding.h"
+
+namespace unitex {
+
 struct INF_free_info
 {
 	void *func_free_inf;
@@ -58,5 +63,7 @@ void free_abstract_INF(const struct INF_codes*,struct INF_free_info*);
 
 const unsigned char* load_abstract_BIN_file(const char*,long*,struct BIN_free_info*);
 void free_abstract_BIN(const unsigned char*,struct BIN_free_info*);
+
+} // namespace unitex
 
 #endif

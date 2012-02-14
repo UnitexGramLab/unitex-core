@@ -24,6 +24,7 @@
 #include "BitMasks.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -812,3 +813,5 @@ return 1;
 int valid_sentence_automaton(const VersatileEncodingConfig* vec,const char* name) {
     return valid_sentence_automaton_write_error(vec,name,NULL);
 }
+
+} // namespace unitex

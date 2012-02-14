@@ -27,6 +27,7 @@
 #include "String_hash.h"
 #include "SingleGraph.h"
 
+namespace unitex {
 
 /**
  * This library is used to manage an alphabet made of Elag symbols.
@@ -53,5 +54,6 @@ SymbolAlphabet* build_symbol_alphabet(SingleGraph);
 int add_symbol(SymbolAlphabet*,symbol_t*);
 int alphabet_lookup(SymbolAlphabet*,symbol_t*);
 
+} // namespace unitex
 
 #endif

@@ -21,6 +21,8 @@
 
 #include "Thai.h"
 
+namespace unitex {
+
 /**
  * Returns a non-zero if 'c' is a Thai diacritic.
  */
@@ -59,3 +61,5 @@ while (s[i]!='\0') {
 }
 return n;
 }
+
+} // namespace unitex

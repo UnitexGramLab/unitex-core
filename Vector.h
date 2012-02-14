@@ -26,6 +26,8 @@
 #include "AbstractAllocator.h"
 #include "Error.h"
 
+namespace unitex {
+
 /**
  * This library provides implementations of autoresizable arrays:
  * 
@@ -462,5 +464,7 @@ free_vector_int(x);
 free_vector_int(y);
 return ret;
 }
+
+} // namespace unitex
 
 #endif

@@ -44,6 +44,8 @@
 #ifndef _ZLIBIOAPI_H
 #define _ZLIBIOAPI_H
 
+namespace unitex {
+namespace logger {
 
 #define ZLIB_FILEFUNC_SEEK_CUR (1)
 #define ZLIB_FILEFUNC_SEEK_END (2)
@@ -105,6 +107,9 @@ void fill_afopen_filefunc OF((zlib_filefunc_def* pzlib_filefunc_def));
 #ifdef __cplusplus
 }
 #endif
+
+} // namespace logger
+} // namespace unitex
 
 #endif
 

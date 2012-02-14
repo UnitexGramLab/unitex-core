@@ -37,6 +37,7 @@
 #include "MF_Global.h"
 #include "Arabic.h"
 
+namespace unitex {
 
 #define MAX_CHARS_IN_STACK 4096
 
@@ -1298,3 +1299,5 @@ int SU_delete_lemma(SU_lemma_T* l) {
 //	3) If the inflection paradigm is missing we may not produce other inflected forms.
 //	4) If the inflection deatures are missing the may be an ambiguity in case of homographs e.g. "rece" may be both
 //	   {Gen=fem,Nb=pl,Case=Nom} and {Gen=fem,Nb=pl,Case=Acc}
+
+} // namespace unitex

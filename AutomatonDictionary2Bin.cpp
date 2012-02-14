@@ -24,6 +24,7 @@
 #include "Error.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 /**
  * This function associates an offset to the given dictionary node and updates
@@ -292,3 +293,5 @@ if (new_style_bin) {
 u_fclose(f);
 free(bin);
 }
+
+} // namespace unitex

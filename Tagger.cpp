@@ -37,6 +37,7 @@
 #include "TfstStats.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 const char* usage_Tagger =
          "Usage: Tagger [OPTIONS] <tfst>\n"
@@ -265,3 +266,4 @@ u_printf("Done.\n");
 return 0;
 }
 
+} // namespace unitex

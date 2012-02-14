@@ -38,6 +38,8 @@
 #include "TfstStats.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
  */
@@ -1405,3 +1407,4 @@ void explore_korean_automaton_for_positions(Tfst* tfst, Fst2* jamo,
 			syllab_tag);
 }
 
+} // namespace unitex

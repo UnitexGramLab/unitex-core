@@ -36,6 +36,8 @@
 #include "File.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 const char* usage_BuildKrMwuDic =
         "Usage: BuildKrMwuDic [OPTIONS] <dic>\n"
         "\n"
@@ -195,3 +197,4 @@ u_printf("Done.\n");
 return 0;
 }
 
+} // namespace unitex

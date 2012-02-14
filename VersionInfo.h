@@ -34,10 +34,14 @@
 #ifndef VersionInfoH
 #define VersionInfoH
 
+namespace unitex {
+
 extern const char* optstring_VersionInfo;
 extern const struct option_TS lopts_VersionInfo[];
 extern const char* usage_VersionInfo;
 
 int main_VersionInfo(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif

@@ -35,6 +35,8 @@
 #include "OutputTransductionVariables.h"
 #include "Vector.h"
 
+namespace unitex {
+
 /* Following values must be !=-1, because -1 is used in
  * OptimizedTfstTagMatching to indicate that the result of a match
  * is not known yet */
@@ -115,6 +117,7 @@ struct locate_tfst_infos {
 int locate_tfst(const char*,const char*,const char*,const char*, const VersatileEncodingConfig*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,
                 VariableErrorPolicy,int,int,int,vector_ptr*,int);
 
+} // namespace unitex
 
 #endif
 

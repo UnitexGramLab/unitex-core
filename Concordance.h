@@ -26,6 +26,8 @@
 #include "Offsets.h"
 #include "PRLG.h"
 
+namespace unitex {
+
 #define TEXT_ORDER 0
 #define LEFT_CENTER 1
 #define LEFT_RIGHT 2
@@ -86,5 +88,6 @@ void free_conc_opt(struct conc_opt*);
 void create_concordance(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
                         int,int*,struct conc_opt*);
 
+} // namespace unitex
 
 #endif

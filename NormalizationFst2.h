@@ -32,6 +32,8 @@
 #include "List_int.h"
 #include "List_ustring.h"
 
+namespace unitex {
+
 #define EMPTY_TOKEN -4
 
 
@@ -68,5 +70,7 @@ void free_normalization_tree(struct normalization_tree*);
 
 struct normalization_tree_transition* new_trans_arbre_normalization_string(const unichar*);
 struct normalization_tree* load_normalization_transducer_string(const VersatileEncodingConfig*,const char*);
+
+} // namespace unitex
 
 #endif

@@ -30,6 +30,7 @@
 #include "MF_FormMorpho.h"
 #include "Korean.h"
 
+namespace unitex {
 
 /////////////////////////////////////////////////
 //Structure for the morphology of a single (inflected) form
@@ -82,5 +83,7 @@ typedef struct {
   f_morpho_T* feat;    //the form's morphology, e.g. {Gen=fem; Nb=sing; Case=I}
   //  int form_nr;   	 //identifier of the form in the list of all inflected forms of the lemma; irrelevant for a separator
 } SU_id_T;
+
+} // namespace unitex
 
 #endif

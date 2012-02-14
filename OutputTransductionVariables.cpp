@@ -22,6 +22,7 @@
 #include "OutputTransductionVariables.h"
 #include "Error.h"
 
+namespace unitex {
 
 static void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
 static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
@@ -307,3 +308,5 @@ for (int i=0;i<l;i++) {
 }
 return 1;
 }
+
+} // namespace unitex

@@ -24,6 +24,8 @@
 #include "HTMLCharacters.h"
 #include "Error.h"
 
+namespace unitex {
+
 /**
  * This library provides facilities to replace HTML characters encoding like
  * &#eacute; by their unicode numbers. All the codes present here have been
@@ -463,3 +465,4 @@ int is_HTML_control_character(unichar c) {
 return c=='<' || c=='>' || c=='&' || c=='\'';
 }
 
+} // namespace unitex

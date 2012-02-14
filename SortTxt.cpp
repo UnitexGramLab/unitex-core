@@ -32,6 +32,8 @@
 #include "ProgramInvoker.h"
 #include "DELA.h"
 
+namespace unitex {
+
 #define DEFAULT 0
 #define THAI 1
 
@@ -933,3 +935,4 @@ struct couple* insert_string_thai(unichar* line, struct couple* couple,
 	return couple;
 }
 
+} // namespace unitex

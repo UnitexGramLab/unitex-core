@@ -22,6 +22,8 @@
 #include "Ustring.h"
 #include "Error.h"
 
+namespace unitex {
+
 #define MAXBUF 1024
 
 
@@ -283,3 +285,5 @@ if (ret!=EOF) {
 free_Ustring(s);
 return result;
 }
+
+} // namespace unitex

@@ -25,6 +25,8 @@
 #include "HashTable.h"
 #include "Vector.h"
 
+namespace unitex {
+
 /**
  * This library provides a data structure to optimize TfstTag/Fst2Tag matching,
  * using a cache.
@@ -53,5 +55,7 @@ void set_cached_result(LocateTfstTagMatchingCache* cache,
                       int tfst_tag_index,int fst2_tag_index,
                       int old_pos_fst2,int old_pos_tfst,int new_pos_fst2,int new_pos_tfst,int result);
 
+
+} // namespace unitex
 
 #endif

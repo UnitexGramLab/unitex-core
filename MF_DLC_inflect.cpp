@@ -35,6 +35,8 @@
 #include "Error.h"
 #include "DELA.h"
 
+namespace unitex {
+
 //Alphabet of the current language
 //extern Alphabet* alph;
 
@@ -626,3 +628,4 @@ void DLC_delete_entry(DLC_entry_T* entry) {
 	free(entry);
 }
 
+} // namespace unitex

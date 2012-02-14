@@ -32,6 +32,8 @@
 
 typedef int (*MAIN_FUNCTION)(int argc,char* const argv[]);
 
+namespace unitex {
+
 typedef struct {
    MAIN_FUNCTION main;
    vector_ptr* args;
@@ -47,5 +49,7 @@ int invoke(ProgramInvoker* invoker);
 int invoke_as_new_process(ProgramInvoker* invoker);
 void build_command_line(ProgramInvoker* invoker,char* line);
 int exec_unitex_command(MAIN_FUNCTION f,const char* name,...);
+
+} // namespace unitex
 
 #endif

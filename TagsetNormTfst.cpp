@@ -39,6 +39,7 @@
 #include "TfstStats.h"
 #include "HashTable.h"
 
+namespace unitex {
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -385,3 +386,5 @@ t->content=u_strdup(content);
 t->m=(*m);
 return vector_ptr_add(tags,t);
 }
+
+} // namespace unitex

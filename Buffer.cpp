@@ -24,6 +24,7 @@
 #include "Buffer.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new buffer of the given capacity.
@@ -194,3 +195,4 @@ int fill_buffer(struct buffer* buffer,U_FILE* f) {
 return fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,f);
 }
 
+} // namespace unitex

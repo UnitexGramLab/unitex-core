@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_Normalize;
 extern const struct option_TS lopts_Normalize[];
 extern const char* usage_Normalize;
 
 int main_Normalize(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

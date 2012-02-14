@@ -34,6 +34,8 @@
 
 #include "MF_Global.h"
 
+namespace unitex {
+
 ////////////////////////////////////////////
 // For a given single word, generates all the inflected forms corresponding to the given inflection features.
 // SU_id:  single word form's identifier
@@ -147,4 +149,7 @@ int SU_delete_lemma(SU_lemma_T* l);
 //	   {Gen=fem,Nb=pl,Case=Nom} and {Gen=fem,Nb=pl,Case=Acc}
 //
 // A UNIQUE identification of a form in the set of all inflected forms
+
+} // namespace unitex
+
 #endif

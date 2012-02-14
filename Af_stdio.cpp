@@ -41,7 +41,7 @@
 #include "MappedFileHelper.h"
 #include "ActivityLogger.h"
 
-
+using namespace unitex;
 
 struct AbstractFileSpace {
 	t_fileio_func_array_extensible func_array;

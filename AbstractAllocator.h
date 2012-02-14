@@ -39,6 +39,8 @@
 
 #include "AbstractCallbackFuncModifier.h"
 
+namespace unitex {
+
 struct tag_abstract_allocator;
 struct tag_abstract_allocator_info_public_with_allocator;
 
@@ -143,5 +145,6 @@ int clean_allocator(Abstract_allocator aa);
     ((prv_ptr==NULL) ? (0) : \
                        ((prv_ptr->pub.fnc_get_flag_allocator)((prv_ptr->pub.abstract_allocator_ptr))))
 
+} // namespace unitex
 
 #endif

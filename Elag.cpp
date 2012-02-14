@@ -41,6 +41,7 @@
 #include "Tfst.h"
 #include "Elag.h"
 
+namespace unitex {
 
 const char* usage_Elag =
          "Usage: Elag [OPTIONS] <tfst>\n"
@@ -157,3 +158,5 @@ free_vector_ptr(grammars,(release_f)free_Fst2Automaton_including_symbols);
 free_OptVars(vars);
 return 0;
 }
+
+} // namespace unitex

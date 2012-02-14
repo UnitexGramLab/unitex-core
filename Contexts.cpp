@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "BitArray.h"
 
+namespace unitex {
 
 /**
  * This function looks for context mark ends in the given fst2.
@@ -256,3 +257,5 @@ if (l==NULL) return;
 free(l->output);
 free(l);
 }
+
+} // namespace unitex

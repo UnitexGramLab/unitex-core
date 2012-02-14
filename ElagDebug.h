@@ -26,10 +26,14 @@
 #include "Symbol.h"
 #include "Symbol_op.h"
 
+namespace unitex {
+
 void print_graph(SingleGraph);
 
 void set_debug();
 void unset_debug();
 int is_set_debug();
+
+} // namespace unitex
 
 #endif

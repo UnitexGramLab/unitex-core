@@ -26,6 +26,7 @@
 #include "Error.h"
 #include "Arabic.h"
 
+namespace unitex {
 
 /**
  * This library provides facilities for converting text files from
@@ -2053,3 +2054,5 @@ if (!get_string_number(ectx->encoding_names,name_in_lower,&encoding_number)) {
 }
 return ectx->encodings[encoding_number];
 }
+
+} // namespace unitex

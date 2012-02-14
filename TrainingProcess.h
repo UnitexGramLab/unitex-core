@@ -38,6 +38,8 @@
 #include "SortTxt.h"
 #include "Compress.h"
 
+namespace unitex {
+
 #define MAX_CONTEXT 3
 #define RAW_FORMS 0
 #define INFLECTED_FORMS 1
@@ -64,6 +66,8 @@ unichar* compute_contextual_entries(struct corpus_entry**,int,int);
 void add_statistics(struct corpus_entry**,struct string_hash_ptr*,struct string_hash_ptr*);
 void write_keys_values(struct string_hash_ptr*,struct string_hash_tree_node*,const unichar*,U_FILE*);
 void do_training(U_FILE*,U_FILE*,U_FILE*);
+
+} // namespace unitex
 
 #endif
 

@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new match list element.
@@ -241,3 +242,5 @@ while (l!=NULL) {
 	}
 }
 }
+
+} // namespace unitex

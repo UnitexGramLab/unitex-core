@@ -40,6 +40,8 @@
 #include <windows.h>
 #include <windowsx.h>
 
+namespace unitex {
+namespace logger {
 
 
 typedef struct
@@ -472,5 +474,9 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
         free(pstoi);
     }
 }
+
+} // namespace logger
+} // namespace unitex
+
 #endif
 

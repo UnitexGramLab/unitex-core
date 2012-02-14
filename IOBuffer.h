@@ -22,7 +22,11 @@
 #ifndef IOBufferH
 #define IOBufferH
 
+namespace unitex {
+
 void setBufferMode();
+
+} // namespace unitex
 
 #endif
 

@@ -25,6 +25,8 @@
 
 #include "Fst2.h"
 
+namespace unitex {
+
 #define FLATTEN_ERROR 0
 #define EQUIVALENT_FST 1
 #define APPROXIMATIVE_FST 2
@@ -32,5 +34,7 @@
 
 
 int flatten_fst2(Fst2*,int,char*, const VersatileEncodingConfig*,int);
+
+} // namespace unitex
 
 #endif

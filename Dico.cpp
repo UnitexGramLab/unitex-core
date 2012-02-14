@@ -42,6 +42,8 @@
 #include "SortTxt.h"
 #include "Compress.h"
 
+namespace unitex {
+
 /**
  * This enhanced version of Dico was rewritten by Alexis Neme,
  * based on the original version written by Sébastien Paumier
@@ -573,3 +575,5 @@ for (int priority=1;priority<4;priority++) {
 free(sequence);
 return 0;
 }
+
+} // namespace unitex

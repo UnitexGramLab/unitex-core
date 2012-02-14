@@ -35,6 +35,7 @@
 #include <ctype.h>
 #include "Unicode.h"
 
+namespace unitex {
 
 #define MAX_STR_LEN 2000  //Maximum length of strings treated by this library
 
@@ -114,5 +115,7 @@ int u_add_unitab_elem(unichar* form,unitab_t* tab);
 ///////////////////////////////////////////////////////////////////////////
 // Print the contents of a table of unicode strings to the standard output.
 void u_print_unitab(unitab_t tab);
+
+} // namespace unitex
 
 #endif

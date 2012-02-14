@@ -26,6 +26,7 @@
 #include "DELA.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -477,4 +478,5 @@ int get_max_width_for_ranks(Tfst* tfst,int* pos_X,int* rank,int maximum_rank,int
 	return pos_X[maximum_rank];
 }
 
+} // namespace unitex
 

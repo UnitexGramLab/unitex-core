@@ -22,9 +22,13 @@
 #ifndef Fst2ListH
 #define Fst2ListH
 
+namespace unitex {
+
 extern const char* usage_Fst2List;
 
 int main_Fst2List(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

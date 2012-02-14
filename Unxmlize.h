@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_Unxmlize;
 extern const struct option_TS lopts_Unxmlize[];
 extern const char* usage_Unxmlize;
 
 int main_Unxmlize(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

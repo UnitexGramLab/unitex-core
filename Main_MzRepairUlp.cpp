@@ -35,6 +35,9 @@
 #include "IOBuffer.h"
 #include "logger/MzRepairUlp.h"
 
+using namespace unitex;
+using namespace unitex::logger;
+
 int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from

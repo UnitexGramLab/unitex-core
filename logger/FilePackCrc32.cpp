@@ -46,6 +46,10 @@
 #define NO_ZLIB 1
 #include "FilePack.h"
 #include "FilePackCrc32.h"
+
+namespace unitex {
+namespace logger {
+
 /*
  * --------------------------------------------------------------------------
  *  module wide definitions
@@ -218,5 +222,8 @@ uLong crc32(uLong dwCRC, const void* pvBuffer, size_t cbBuffer)
 
   return dwCRC ;
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

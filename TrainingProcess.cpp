@@ -25,6 +25,8 @@
 
 #include "TrainingProcess.h"
 
+namespace unitex {
+
 /**
  * Creates a Disclaimer text file for each one of the training dictionaries.
  * Indicates that those cannot be used like other dictionaries.
@@ -460,3 +462,5 @@ if(iforms_table != NULL){
 }
 free(str);
 }
+
+} // namespace unitex

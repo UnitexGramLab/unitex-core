@@ -22,6 +22,8 @@
 #ifndef AsciiSearchTreeH
 #define AsciiSearchTreeH
 
+namespace unitex {
+
 /**
  * This structure is used to integer values associated to strings.
  * 
@@ -45,6 +47,9 @@ struct search_tree_node {
 int insert_string(struct search_tree_node**,const char*,int);
 int get_string_number(const struct search_tree_node*,const char*,int*);
 void free_search_tree_node(struct search_tree_node*);
+
+} // namespace unitex
+
 #endif
 
 

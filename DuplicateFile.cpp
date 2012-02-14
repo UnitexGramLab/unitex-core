@@ -37,6 +37,7 @@
 #include "DuplicateFile.h"
 #include "UnitexGetOpt.h"
 
+namespace unitex {
 
 const char* usage_DuplicateFile =
          "Usage: DuplicateFile [OPTIONS] <outfile>\n"
@@ -145,3 +146,5 @@ else {
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
 return result;
 }
+
+} // namespace unitex

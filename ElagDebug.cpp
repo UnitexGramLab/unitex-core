@@ -22,6 +22,7 @@
 #include "ElagDebug.h"
 
 
+namespace unitex {
 
 /**
  * A debug printing of a SingleGraph.
@@ -70,3 +71,4 @@ int is_set_debug() {
 return DEBUG;
 }
 
+} // namespace unitex

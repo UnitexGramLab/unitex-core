@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_PolyLex;
 extern const struct option_TS lopts_PolyLex[];
 extern const char* usage_PolyLex;
 
 int main_PolyLex(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

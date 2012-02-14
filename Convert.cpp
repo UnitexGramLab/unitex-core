@@ -30,6 +30,7 @@
 #include "UnitexGetOpt.h"
 #include "Convert.h"
 
+namespace unitex {
 
 #define REPLACE_FILE 0
 #define PREFIX_SRC 1
@@ -297,5 +298,6 @@ free_encodings_context(encoding_ctx);
 return 0;
 }
 
+} // namespace unitex
 
 

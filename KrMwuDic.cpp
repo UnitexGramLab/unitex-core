@@ -32,6 +32,7 @@
 #include "Vector.h"
 #include "String_hash.h"
 
+namespace unitex {
 
 #define MAX_LINE_SIZE 4096
 #define MAX_PARTS 32
@@ -660,3 +661,5 @@ for (int i=0;i<n_entries;i++) {
 free_Ustring(line);
 return OK;
 }
+
+} // namespace unitex

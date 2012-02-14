@@ -23,6 +23,8 @@
 #include "Error.h"
 #include "DELA.h"
 
+namespace unitex {
+
 #ifdef TRE_WCHAR
 
 #define HASH_FILTERS_DIM 1024
@@ -318,5 +320,6 @@ int i=0;
 while ((target[i]=(wchar_t)source[i])!= L'\0') i++;
 }
 
+} // namespace unitex
 
 #endif

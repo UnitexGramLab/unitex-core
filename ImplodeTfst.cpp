@@ -36,6 +36,8 @@
 #include "TfstStats.h"
 #include "HashTable.h"
 
+namespace unitex {
+
 void implode(Tfst*,U_FILE*,U_FILE*,struct hash_table* form_frequencies);
 
 
@@ -397,3 +399,4 @@ for (int i=1;i<=tfst->N;i++) {
 u_printf("Done.                          \n");
 }
 
+} // namespace unitex

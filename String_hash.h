@@ -26,6 +26,7 @@
 #include "Alphabet.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
 
 #define ENLARGE_IF_NEEDED 0
 #define DONT_ENLARGE 1
@@ -122,5 +123,7 @@ int get_value_index(const unichar*,struct string_hash_ptr*);
 int get_value_index(const unichar*,struct string_hash_ptr*,int,void*);
 void* get_value(const unichar*,struct string_hash_ptr*);
 int add_value(void*,struct string_hash_ptr*);
+
+} // namespace unitex
 
 #endif

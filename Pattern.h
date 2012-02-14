@@ -28,6 +28,7 @@
 #include "DELA.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
 
 /**
  * We define here the different kind of pattern that we can
@@ -97,5 +98,7 @@ struct pattern* build_token_pattern(const unichar*,Abstract_allocator prv_alloc=
 void free_pattern(struct pattern*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int is_entry_compatible_with_pattern(const struct dela_entry* entry,const struct pattern* pattern);
 struct pattern* clone(const struct pattern* src,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+
+} // namespace unitex
 
 #endif

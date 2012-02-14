@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 /**
  * This enumeration describes the possible kind of buffers.
  */
@@ -55,6 +57,8 @@ struct buffer* new_buffer_for_file(BufferType,U_FILE*,int capacity_limit);
 void free_buffer(struct buffer*);
 int fill_buffer(struct buffer*,int,U_FILE*);
 int fill_buffer(struct buffer*,U_FILE*);
+
+} // namespace unitex
 
 #endif
 

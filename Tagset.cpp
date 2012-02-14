@@ -23,6 +23,7 @@
 #include "Error.h"
 #include <ctype.h>
 
+namespace unitex {
 
 /**
  * This structure defines a keyword and its associated value.
@@ -545,3 +546,5 @@ free_token_t(toks);
 u_printf("%d POS definitions loaded.\n",nb);
 return tagset;
 }
+
+} // namespace unitex

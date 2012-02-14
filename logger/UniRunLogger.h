@@ -41,6 +41,8 @@
 #include "UnitexTool.h"
 
 #ifdef __cplusplus
+namespace unitex {
+namespace logger {
 extern "C" {
 #endif
 
@@ -81,7 +83,9 @@ int main_RunLog(int argc,char* const argv[]);
 
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 #endif

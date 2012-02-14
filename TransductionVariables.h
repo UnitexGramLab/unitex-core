@@ -27,6 +27,7 @@
 #include "String_hash.h"
 #include "List_ustring.h"
 
+namespace unitex {
 
 /* Value to use to indicate that a variable bound is undefined */
 #define UNDEF_VAR_BOUND -666666
@@ -256,5 +257,7 @@ void dec_dirty(variable_backup_memory_reserve* r) ;
 
 int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,const int*);
 void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int*);
+
+} // namespace unitex
 
 #endif

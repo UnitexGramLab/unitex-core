@@ -33,6 +33,7 @@
 #include "Uncompress.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 const char* usage_Uncompress =
          "Usage: Uncompress [OPTIONS] <dictionary>\n"
@@ -124,3 +125,4 @@ free_OptVars(vars);
 return 0;
 }
 
+} // namespace unitex

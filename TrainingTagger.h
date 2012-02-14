@@ -28,11 +28,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_TrainingTagger;
 extern const struct option_TS lopts_TrainingTagger[];
 extern const char* usage_TrainingTagger;
 
 int main_TrainingTagger(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

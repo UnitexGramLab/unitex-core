@@ -24,10 +24,14 @@
 
 #include "SingleGraph.h"
 
+namespace unitex {
+
 /**
  * This library provides a function for complementing ELAG automata.
  */
 
 void elag_complementation(language_t*,SingleGraph);
+
+} // namespace unitex
 
 #endif

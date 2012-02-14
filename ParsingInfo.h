@@ -29,6 +29,8 @@
 #include "DELA.h"
 #include "Vector.h"
 
+namespace unitex {
+
 #define SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC (0x100)
 
 #define AroundAllocAlign(x) ((((x)+0x0f)/0x10)*0x10)
@@ -113,5 +115,7 @@ struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,un
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,
                                                 struct parsing_info* list,struct dela_entry*,
                                                 unichar* jamo,int pos_in_jamo,Abstract_allocator,Abstract_allocator);
+
+} // namespace unitex
 
 #endif

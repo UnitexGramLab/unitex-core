@@ -22,6 +22,7 @@
 #include "Overlap.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Tests if a overlaps b.
@@ -39,3 +40,4 @@ fatal_error("Unexpected case in overlap");
 return (Overlap)-1;
 }
 
+} // namespace unitex

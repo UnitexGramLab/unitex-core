@@ -23,6 +23,7 @@
 #include "Fst2Automaton.h"
 #include "Symbol_op.h"
 
+namespace unitex {
 
 /**
  * Returns a list of symbols that corresponds to all the symbols
@@ -109,4 +110,5 @@ free(renumber);
 free_list_int(initials);
 }
 
+} // namespace unitex
 

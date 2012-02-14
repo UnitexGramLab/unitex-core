@@ -68,6 +68,8 @@
 #endif
 
 
+namespace unitex {
+namespace logger {
 
 
 /* I've found an old Unix (a SunOS 4.1.3_U1) without all SEEK_* defined.... */
@@ -254,6 +256,9 @@ void fill_afopen_filefunc (
     pzlib_filefunc_def->zerror_file = aferror_file_func;
     pzlib_filefunc_def->opaque = NULL;
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif
 

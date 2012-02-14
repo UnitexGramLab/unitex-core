@@ -22,6 +22,8 @@
 #include "IOBuffer.h"
 #include "Fst2List.h"
 
+using namespace unitex;
+
 int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from

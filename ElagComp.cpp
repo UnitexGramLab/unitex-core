@@ -42,6 +42,7 @@
 #include "File.h"
 
 
+namespace unitex {
 
 const char* usage_ElagComp =
          "Usage: ElagComp [OPTIONS]\n"
@@ -192,3 +193,4 @@ free_OptVars(vars);
 return 0;
 }
 
+} // namespace unitex

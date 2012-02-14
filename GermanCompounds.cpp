@@ -23,6 +23,8 @@
 #include "Error.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 void explore_state_german(int,unichar*,int,const unichar*,int,const unichar*,unichar*,
       struct german_word_decomposition_list**,int,const char*,const char*,const Alphabet*,
       Dictionary*,Ustring*,int);
@@ -412,3 +414,5 @@ for (int i=0;i<n_transitions;i++) {
   restore_output(z,ustr);
 }
 }
+
+} // namespace unitex

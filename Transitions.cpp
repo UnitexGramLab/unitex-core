@@ -23,6 +23,7 @@
 #include "Transitions.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Creates, initializes and returns a transition tagged by an integer.
@@ -305,3 +306,5 @@ Transition* last;
 reverse_list(t,&first,&last);
 return first;
 }
+
+} // namespace unitex

@@ -45,6 +45,8 @@
 #include <stdio.h>
 #include "Unicode.h"
 
+namespace unitex {
+
 void add_suffix_to_file_name(char*,const char*,const char*);
 void add_prefix_to_file_name(char*,const char*,const char*);
 void get_extension(const char*,char*);
@@ -66,5 +68,7 @@ int add_path_separator(char*);
 int is_absolute_path(const char*);
 int is_root(const char*);
 void create_path_to_file(const char*);
+
+} // namespace unitex
 
 #endif

@@ -27,6 +27,9 @@
 #include "logger/SyncLogger.h"
 #include "VirtualFiles.h"
 
+using namespace unitex::logger;
+
+namespace unitex {
 
 typedef struct PS_ {
 	char* name;
@@ -130,3 +133,4 @@ SyncReleaseMutex(mutex);
 return res;
 }
 
+} // namespace unitex

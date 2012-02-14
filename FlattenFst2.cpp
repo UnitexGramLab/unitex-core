@@ -27,6 +27,7 @@
 #include "Error.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 /**
  * During the flatten operation, some graphs may be kept and some
@@ -501,4 +502,6 @@ for (int i=2;i<=grammar->number_of_graphs;i++) {
    }
 }
 }
+
+} // namespace unitex
 

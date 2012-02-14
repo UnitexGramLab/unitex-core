@@ -46,6 +46,7 @@
 #include "TfstStats.h"
 #include "Offsets.h"
 
+namespace unitex {
 
 /**
  * This function tries to read a sentence from the given file.
@@ -366,3 +367,4 @@ free_OptVars(vars);
 return 0;
 }
 
+} // namespace unitex

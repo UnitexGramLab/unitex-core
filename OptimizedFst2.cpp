@@ -28,6 +28,7 @@
 #include "String_hash.h"
 #include "Contexts.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new optimized graph call.
@@ -565,3 +566,5 @@ for (int i=0;i<size;i++) {
 }
 free_cb(states,prv_alloc);
 }
+
+} // namespace unitex

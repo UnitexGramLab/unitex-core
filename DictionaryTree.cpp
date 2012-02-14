@@ -23,6 +23,8 @@
 #include "Error.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 /**
  * Allocates, initializes and returns a dictionary node.
  */
@@ -665,3 +667,4 @@ subsequential_to_normal_transducer(root,root,inf_codes,pos,z,normalizedOutput);
 free_Ustring(normalizedOutput);
 }
 
+} // namespace unitex

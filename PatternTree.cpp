@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "BitArray.h"
 
+namespace unitex {
 
 /* This value is used for the initialization of constraint list cells */
 #define UNDEFINED_PATTERN -1
@@ -365,3 +366,5 @@ struct list_pointer* get_matching_patterns(struct dela_entry* entry,
                                            Abstract_allocator prv_alloc) {
 return get_matching_patterns(entry,root,NULL,prv_alloc);
 }
+
+} // namespace unitex

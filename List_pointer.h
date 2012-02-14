@@ -24,6 +24,8 @@
 
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 /**
  * This is a simple structure for manipulating pointer lists.
  */
@@ -36,6 +38,8 @@ struct list_pointer {
 struct list_pointer* new_list_pointer(void*,struct list_pointer*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_list_pointer(struct list_pointer*,void (*)(void*),Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_list_pointer(struct list_pointer*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+
+} // namespace unitex
 
 #endif
 

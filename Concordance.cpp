@@ -28,6 +28,8 @@
 #include "Thai.h"
 #include "NewLineShifts.h"
 
+namespace unitex {
+
 #define PRLG_DELIMITOR 0x02
 
 int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,int,int,
@@ -1290,3 +1292,4 @@ free_PRLG(opt->PRLG_data);
 free(opt);
 }
 
+} // namespace unitex

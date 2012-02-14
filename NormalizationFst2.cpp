@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 /**
  * This structure represents a list of pairs (output,normalization tree node).
@@ -437,4 +438,5 @@ free_abstract_Fst2(automate,&fst2_free);
 return root;
 }
 
+} // namespace unitex
 

@@ -24,6 +24,7 @@
 #include "Symbol.h"
 
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new feature_info_t.
@@ -473,3 +474,5 @@ struct dela_entry* result=symbol_to_dela_entry(symbol);
 free_symbols(symbol);
 return result;
 }
+
+} // namespace unitex

@@ -31,6 +31,7 @@
 #include "UserCancelling.h"
 #include "LocateTrace.h"
 
+namespace unitex {
 
 void load_dic_for_locate(const char*, const VersatileEncodingConfig*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*,Abstract_allocator);
@@ -873,4 +874,6 @@ for (int i=0;i<tokens->size;i++) {
    }
 }
 }
+
+} // namespace unitex
 

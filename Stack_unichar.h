@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 /**
  * This structure represents a stack of unicode characters.
  */
@@ -70,5 +72,7 @@ if (stack->stack_pointer==stack->capacity-1) {
 }
 stack->stack[++(stack->stack_pointer)]=c;
 }
+
+} // namespace unitex
 
 #endif

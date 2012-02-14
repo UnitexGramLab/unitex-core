@@ -26,6 +26,7 @@
 #include "Transitions.h"
 #include "AutIntersection.h"
 
+namespace unitex {
 
 /**
  * This function looks for a transition of 'trans' that is tagged
@@ -228,5 +229,6 @@ free(renumber);
 return res;
 }
 
+} // namespace unitex
 
 

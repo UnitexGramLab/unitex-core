@@ -46,7 +46,7 @@
 
 
 
-
+namespace unitex {
 
 const char* usage_Locate =
          "Usage: Locate [OPTIONS] <fst2>\n"
@@ -484,3 +484,5 @@ int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 return ret;
 }
+
+} // namespace unitex

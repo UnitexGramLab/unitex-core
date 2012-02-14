@@ -22,9 +22,13 @@
 #ifndef BitMasksH
 #define BitMasksH
 
+namespace unitex {
+
 int is_bit_mask_set(unsigned char,unsigned char);
 void set_bit_mask(unsigned char*,unsigned char);
 void unset_bit_mask(unsigned char*,unsigned char);
+
+} // namespace unitex
 
 #endif
 

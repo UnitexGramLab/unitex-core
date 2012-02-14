@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 /*
  * This is the copyright string that must be displayed by any
  * Unitex program when called with no parameter.
@@ -40,5 +42,7 @@ return 0;
 }
 
 static int foo_copyright=init_copyright();
+
+} // namespace unitex
 
 #endif

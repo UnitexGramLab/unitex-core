@@ -26,6 +26,8 @@
 #include "Symbol_op.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 /**
  * This library provides functions and types for manipulating 
  * automaton transitions that can be tagged either by integers
@@ -87,5 +89,7 @@ Transition* shift_destination_states(Transition*,int);
 void add_transitions_int(Transition*,Transition**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void add_transitions_ptr(Transition*,Transition**,Abstract_allocator prv_alloc);
 Transition* reverse_list(Transition*);
+
+} // namespace unitex
 
 #endif

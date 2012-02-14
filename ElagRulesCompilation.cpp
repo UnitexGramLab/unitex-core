@@ -37,7 +37,7 @@
 #include "ElagDebug.h"
 
 
-
+namespace unitex {
 
 /* Maximum number of states for a grammar before we split it in several fst2 */
 #define MAX_GRAM_SIZE   128
@@ -719,4 +719,5 @@ elag_minimize(a1);
 return a1;
 }
 
+} // namespace unitex
 

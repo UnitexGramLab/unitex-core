@@ -40,6 +40,7 @@
 
 #ifdef __cplusplus
 extern "C" {
+using namespace unitex;
 #endif
 
 /* use this header to define an Unitex allocator

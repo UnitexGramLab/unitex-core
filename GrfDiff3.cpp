@@ -31,6 +31,8 @@
 #include "UnitexGetOpt.h"
 #include "GrfDiff3.h"
 
+namespace unitex {
+
 const char* usage_GrfDiff3 =
          "Usage: GrfDiff3 <mine> <base> <other>\n"
          "\n"
@@ -174,3 +176,5 @@ free_Grf(base);
 free_Grf(other);
 return res;
 }
+
+} // namespace unitex

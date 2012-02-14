@@ -24,6 +24,8 @@
 
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 /**
  * This is a simple structure for manipulating int lists.
  */
@@ -50,6 +52,8 @@ void delete_tail(struct list_int**,Abstract_allocator prv_alloc=STANDARD_ALLOCAT
 struct list_int* clone(const struct list_int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int* dump(struct list_int*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int remove(int,struct list_int**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+
+} // namespace unitex
 
 #endif
 

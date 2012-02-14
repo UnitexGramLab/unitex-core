@@ -40,6 +40,8 @@
 #include "AbstractCallbackFuncModifier.h"
 
 #ifdef __cplusplus
+namespace unitex {
+namespace logger {
 extern "C" {
 #endif
 
@@ -72,7 +74,9 @@ UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls);
 UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls);
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 #endif

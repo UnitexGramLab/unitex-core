@@ -31,6 +31,7 @@
 #include "Tfst2Unambig.h"
 
 
+namespace unitex {
 
 const char* usage_Tfst2Unambig =
          "Usage: Tfst2Unambig  [OPTIONS] <tfst>\n"
@@ -143,3 +144,5 @@ free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }
+
+} // namespace unitex

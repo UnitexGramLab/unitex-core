@@ -28,6 +28,9 @@
 #include "VariableUtils.h"
 #include "DebugMode.h"
 
+namespace unitex {
+
+const int TRANSDUCTION_STACK_SIZE = 10000;
 
 /**
  * This function returns a non zero value if c can be a part of a variable name;
@@ -567,3 +570,5 @@ if (capture) {
 }
 return 1;
 }
+
+} // namespace unitex

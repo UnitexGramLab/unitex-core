@@ -33,6 +33,7 @@
 #include "Transitions.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
 
 /* Maximum number of tags in a .fst2 */
 #define MAX_FST2_TAGS 100000
@@ -243,6 +244,7 @@ int is_final_state(Fst2State);
 int load_persistent_fst2(const char* filename);
 void free_persistent_fst2(const char* filename);
 
+} // namespace unitex
 
 #endif
 

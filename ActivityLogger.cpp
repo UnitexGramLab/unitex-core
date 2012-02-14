@@ -38,6 +38,7 @@
 
 
 
+namespace unitex {
 
 struct LoggerInfo {
 	t_logger_func_array func_array;
@@ -278,3 +279,5 @@ void Call_logger_fnc_LogErrWrite(const void*Buf, size_t size)
 		tmp = tmp->next;
 	}
 }
+
+} // namespace unitex

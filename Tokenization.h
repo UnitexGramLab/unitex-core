@@ -32,11 +32,15 @@
 #include "List_ustring.h"
 #include "LocateConstants.h"
 
+namespace unitex {
+
 struct list_ustring* tokenize(const unichar*,TokenizationPolicy,const Alphabet*);
 struct list_ustring* tokenize_char_by_char(const unichar*);
 struct list_ustring* tokenize_word_by_word(const unichar*,const Alphabet*);
 int is_a_simple_token(const unichar*,TokenizationPolicy,const Alphabet*);
 int is_a_simple_word(const unichar*,TokenizationPolicy,const Alphabet*);
+
+} // namespace unitex
 
 #endif
 

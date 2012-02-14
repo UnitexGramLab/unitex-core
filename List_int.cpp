@@ -23,7 +23,7 @@
 #include "List_int.h"
 #include "Error.h"
 
-
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new int list element.
@@ -326,3 +326,4 @@ free_cb(tmp2,prv_alloc);
 return 1;
 }
 
+} // namespace unitex

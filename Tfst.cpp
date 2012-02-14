@@ -25,6 +25,7 @@
 #include "File.h"
 #include "TfstStats.h"
 
+namespace unitex {
 
 void free_current_sentence(Tfst*);
 
@@ -520,3 +521,4 @@ for (int i=0;i<t->token_sizes->nbelems;i++) {
 }
 }
 
+} // namespace unitex

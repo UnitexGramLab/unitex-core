@@ -23,6 +23,8 @@
 #include "OptimizedTfstTagMatching.h"
 #include "Error.h"
 
+namespace unitex {
+
 #define DEFAULT_CACHE_SIZE 4096
 
 
@@ -243,3 +245,5 @@ if (array==NULL) {
 }
 array[fst2_tag_index]=new_element(result,old_pos_fst2,old_pos_tfst,new_pos_fst2,new_pos_tfst,array[fst2_tag_index]);
 }
+
+} // namespace unitex

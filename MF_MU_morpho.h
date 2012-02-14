@@ -33,6 +33,8 @@
 #include "MF_MU_morphoBase.h"
 #include "MF_Global.h"
 
+namespace unitex {
+
 ////////////////////////////////////////////
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
@@ -100,5 +102,7 @@ int MU_print_lemma(MU_lemma_T* l);
 ////////////////////////////////////////////
 // Delete sample lemma stucture for tests.
 void MU_delete_lemma(MU_lemma_T* l);
+
+} // namespace unitex
 
 #endif

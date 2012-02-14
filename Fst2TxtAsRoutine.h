@@ -35,6 +35,8 @@
 #include "Offsets.h"
 #include "Vector.h"
 
+namespace unitex {
+
 #define MAX_OUTPUT_LENGTH 10000
 
 
@@ -99,5 +101,7 @@ struct fst2txt_parameters {
 struct fst2txt_parameters* new_fst2txt_parameters();
 void free_fst2txt_parameters(struct fst2txt_parameters*);
 int main_fst2txt(struct fst2txt_parameters*);
+
+} // namespace unitex
 
 #endif

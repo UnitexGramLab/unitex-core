@@ -25,10 +25,14 @@
 #include "SingleGraph.h"
 #include "LanguageDefinition.h"
 
+namespace unitex {
+
 /**
  * This library provides a function for concatenating automata.
  */
 
 void elag_concat(language_t*,SingleGraph,SingleGraph);
+
+} // namespace unitex
 
 #endif

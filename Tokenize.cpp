@@ -37,6 +37,7 @@
 #include "Offsets.h"
 #include "Overlap.h"
 
+namespace unitex {
 
 #define NORMAL 0
 #define CHAR_BY_CHAR 1
@@ -721,3 +722,5 @@ u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%
 void save_new_line_positions(U_FILE* f,vector_int* n_enter_pos) {
 fwrite(n_enter_pos->tab,sizeof(int),n_enter_pos->nbelems,f);
 }
+
+} // namespace unitex

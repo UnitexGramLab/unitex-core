@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "StringParsing.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new pattern.
@@ -354,4 +355,5 @@ struct pattern* clone(const struct pattern* src,Abstract_allocator prv_alloc) {
 	return dst;
 }
 
+} // namespace unitex
 

@@ -24,12 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_BuildKrMwuDic;
 extern const struct option_TS lopts_BuildKrMwuDic[];
 extern const char* usage_BuildKrMwuDic;
 
 int main_BuildKrMwuDic(int argc,char* const argv[]);
 
+} // namespace unitex
 
 #endif
 

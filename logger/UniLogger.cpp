@@ -50,6 +50,9 @@
 #include "SyncLogger.h"
 #include "ReworkArg.h"
 
+namespace unitex {
+namespace logger {
+
 struct ArrayExpanding {    
     unsigned int nb_item_filled;
     unsigned int nb_item_allocated;
@@ -1257,5 +1260,8 @@ UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule)
     free(pALPD);
     return RemoveLoggerInfo(&logger_func_array,p_ule);
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

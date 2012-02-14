@@ -24,6 +24,8 @@
 
 #include "Offsets.h"
 
+namespace unitex {
+
 #define MAX_TAG_LENGTH 4000
 #define KEEP_CARRIAGE_RETURN 0
 #define REMOVE_CARRIAGE_RETURN 1
@@ -33,5 +35,7 @@
 
 int normalize(const char*, const char*, const VersatileEncodingConfig*, int, int, const char*,
 		vector_offset*,int);
+
+} // namespace unitex
 
 #endif

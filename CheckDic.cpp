@@ -33,6 +33,7 @@
 #include "Alphabet.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 /* Maximum size of a DIC line */
 #define CHECKDIC_LINE_SIZE 10000
@@ -295,4 +296,6 @@ free_string_hash(compound_lemmas);
 #endif
 return 0;
 }
+
+} // namespace unitex
 

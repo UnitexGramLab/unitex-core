@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "LocatePattern.h"
 
+namespace unitex {
 
 #define VAR_CMP_ERROR -1
 #define VAR_CMP_DIFF 0
@@ -35,5 +36,7 @@ int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p,in
 Ustring* get_variable_content(unichar* name,struct locate_parameters* p);
 Ustring* get_output_variable_content(unichar* name,struct locate_parameters* p);
 Ustring* get_dic_variable_content(unichar* name,struct locate_parameters* p);
+
+} // namespace unitex
 
 #endif

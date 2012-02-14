@@ -36,6 +36,9 @@
 #include "SyncLogger.h"
 #include <time.h>
 
+namespace unitex {
+namespace logger {
+
 UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible()
 {
     return 0;
@@ -178,3 +181,6 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
         free(pstoi);
     }
 }
+
+} // namespace logger
+} // namespace unitex

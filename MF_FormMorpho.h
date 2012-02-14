@@ -29,6 +29,8 @@
 #include "Unicode.h"
 #include "MF_LangMorphoBase.h"
 
+namespace unitex {
+
 // Structure for a category-value couple, e.g. Gen=fem
 typedef struct {
   l_category_T* cat;   //category, e.g. Gen
@@ -106,4 +108,6 @@ int f_print_morpho(f_morpho_T *feat);
 // Returns 0 on success, -1 on error
 int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2);
   
+} // namespace unitex
+
 #endif

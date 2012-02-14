@@ -29,6 +29,8 @@
 #include "List_pointer.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 /**
  * This structure defines a list of constraints that is associated to a given
  * grammatical/semantic code set.
@@ -76,6 +78,7 @@ void free_pattern_node(struct pattern_node*,Abstract_allocator prv_alloc=STANDAR
 int add_pattern(int*,struct pattern*,struct pattern_node*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_pointer* get_matching_patterns(struct dela_entry*,struct pattern_node*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
+} // namespace unitex
 
 #endif
 

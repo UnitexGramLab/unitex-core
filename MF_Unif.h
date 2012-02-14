@@ -33,6 +33,8 @@
 #include "MF_Unif.h"
 #include "MF_LangMorpho.h"
 
+namespace unitex {
+
 ////////////////////////////////////////////
 // Initializes the set of instantiations. 
 int unif_init_vars(MultiFlex_ctx* p_multiFlex_ctx);
@@ -82,5 +84,7 @@ int unif_get_val_index(MultiFlex_ctx* p_multiFlex_ctx,unichar* var);
 // If the unification variable "var" is instantiated returns its category, 
 // otherwisz returns NULL..
 l_category_T* unif_get_cat(MultiFlex_ctx* p_multiFlex_ctx,unichar* var);
+
+} // namespace unitex
 
 #endif

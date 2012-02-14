@@ -27,6 +27,8 @@
 #include "Ustring.h"
 #include "LocateTfst_lib.h"
 
+namespace unitex {
+
 /* Every character or string that comes from the input text must be
  * pushed with the following functions, because some characters like dots
  * and commas may have to be protected when they come from the input. This
@@ -43,6 +45,9 @@ void push_output_char_tfst(Ustring*,unichar);
 void push_output_string_tfst(Ustring*,const unichar*);
 void insert_text_interval_tfst(struct locate_tfst_infos*,Ustring*,int,int,int,int);
 int deal_with_output_tfst(Ustring*,const unichar*,struct locate_tfst_infos*,int*);
+
+} // namespace unitex
+
 
 #endif
 

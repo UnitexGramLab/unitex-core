@@ -28,11 +28,13 @@
 #include "Fst2.h"
 #include "AbstractFst2Load.h"
 
+namespace unitex {
 
 int OK_for_Locate(const VersatileEncodingConfig*,const char*,char);
 int OK_for_Locate_write_error(const VersatileEncodingConfig*,const char*,char,U_FILE*);
 int valid_sentence_automaton(const VersatileEncodingConfig*,const char*);
 int valid_sentence_automaton_write_error(const VersatileEncodingConfig*,const char*,U_FILE*);
 
+} // namespace unitex
 
 #endif

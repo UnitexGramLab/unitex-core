@@ -31,6 +31,8 @@
 #include "HashTable.h"
 #include "FIFO.h"
 
+namespace unitex {
+
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
@@ -1462,3 +1464,5 @@ for (int i=0;i<g->number_of_states;i++) {
 	g->states[i]->outgoing_transitions=reverse_list(g->states[i]->outgoing_transitions);
 }
 }
+
+} // namespace unitex

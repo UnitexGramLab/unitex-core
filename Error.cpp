@@ -26,6 +26,8 @@
 #include "Unicode.h"
 #include "UnusedParameter.h"
 
+namespace unitex {
+
 #define DEFAULT_ERROR_CODE 1
 #define ALLOC_ERROR_CODE 2
 
@@ -114,3 +116,5 @@ DISCARD_UNUSED_PARAMETER(mode)
 void fatal_alloc_error(const char* function) {
 fatal_error(ALLOC_ERROR_CODE,"Not enough memory in %s\n",function);
 }
+
+} // namespace unitex

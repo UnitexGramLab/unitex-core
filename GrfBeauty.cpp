@@ -28,6 +28,8 @@
 #include "FIFO.h"
 #include "BitArray.h"
 
+namespace unitex {
+
 #define WIDTH_PER_CHAR 8
 #define HEIGHT_PER_CHAR 12
 
@@ -1354,3 +1356,5 @@ replace_transition_by_E(grf);
 remove_isolated_boxes(grf);
 organize_boxes(grf);
 }
+
+} // namespace unitex

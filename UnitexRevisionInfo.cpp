@@ -39,6 +39,8 @@
 #define SVN_REVISION UNITEX_REVISION
 #endif
 
+namespace unitex {
+
 int get_unitex_revision()
 {
 #ifdef SVN_REVISION
@@ -84,3 +86,5 @@ UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number
 {
 	get_unitex_version(major_version_number, minor_version_number);
 }
+
+} // namespace unitex

@@ -26,6 +26,7 @@
 
 #include "Cassys_tokens.h"
 
+namespace unitex {
 
 cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id){
 	if(list->next_token == NULL){
@@ -127,7 +128,7 @@ cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id){
 	cassys_tokens_list *current = head;
 
 	while(l_u!=NULL){
-		// free ajouté pour libérer next_token : verifier son utilité !
+		// free ajoutï¿½ pour libï¿½rer next_token : verifier son utilitï¿½ !
 		free(current->next_token);
 		current -> next_token = new_element(l_u -> string, transducer_id);
 
@@ -178,6 +179,7 @@ void display_text(cassys_tokens_list *l, int transducer_id){
 	u_printf("\n");
 }
 
+} // namespace unitex
 
 
 

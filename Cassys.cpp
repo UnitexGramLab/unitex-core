@@ -34,6 +34,7 @@
 #include "Copyright.h"
 #include "DirHelper.h"
 
+namespace unitex {
 
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
@@ -1527,7 +1528,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 					current_pos_in_original_text = current_pos_in_original_text -> next_token;
 				}
 
-				// token position pointe sur le token suivant 
+				// token position pointe sur le token suivantï¿½
 				int end_position=token_position-1;
 
 				if(sentence == NULL){
@@ -1674,3 +1675,5 @@ list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* a
 	//display_list_ustring(result);
 	return result;
 }
+
+} // namespace unitex

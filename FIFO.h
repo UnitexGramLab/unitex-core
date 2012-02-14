@@ -24,6 +24,7 @@
 
 #include "Any.h"
 
+namespace unitex {
 
 /**
  * This is the generic linked list used to encode FIFOs.
@@ -59,6 +60,8 @@ void* take_ptr(struct fifo*);
 
 void put_int(struct fifo*,int);
 int take_int(struct fifo*);
+
+} // namespace unitex
 
 #endif
 

@@ -31,6 +31,7 @@
 #include "Copyright.h"
 #include "Offsets.h"
 
+namespace unitex {
 
 const char* usage_Unxmlize =
          "Usage: Unxmlize <xml>\n"
@@ -197,3 +198,4 @@ u_printf("\nDone.\n");
 return 0;
 }
 
+} // namespace unitex

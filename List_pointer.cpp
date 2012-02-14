@@ -23,6 +23,7 @@
 #include "List_pointer.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a pointer list cell.
@@ -60,3 +61,5 @@ while (list!=NULL) {
 void free_list_pointer(struct list_pointer* list,Abstract_allocator prv_alloc) {
 free_list_pointer(list,NULL,prv_alloc);
 }
+
+} // namespace unitex

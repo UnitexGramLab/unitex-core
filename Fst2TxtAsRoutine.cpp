@@ -24,6 +24,8 @@
 #include "TransductionStack.h"
 #include "Overlap.h"
 
+namespace unitex {
+
 #define MAX_DEPTH 300
 #define MOT_BUFFER_TOKEN_SIZE (1000)
 
@@ -1229,3 +1231,5 @@ void build_state_token_trees(struct fst2txt_parameters* p) {
 				p->token_tree[i], p->fst2->states[i]->transitions, p);
 	}
 }
+
+} // namespace unitex

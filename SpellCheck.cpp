@@ -31,6 +31,7 @@
 #include "SpellChecking.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 const char* usage_SpellCheck =
         "Usage: SpellCheck [OPTIONS] <dic1> [<dic2> <dic3> ...]\n"
@@ -394,5 +395,6 @@ free_OptVars(vars);
 return 0;
 }
 
+} // namespace unitex
 
 

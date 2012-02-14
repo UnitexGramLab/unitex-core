@@ -42,6 +42,8 @@
 #include "File.h"
 #include "ReworkArg.h"
 
+namespace unitex {
+namespace logger {
 
 unsigned int get_filename_withoutpath_position(const char*filename)
 {
@@ -277,5 +279,8 @@ void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunP
         }
     }
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

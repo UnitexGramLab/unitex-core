@@ -32,6 +32,8 @@
 #include <stdio.h>
 #include "MF_LangMorphoBase.h"
 
+namespace unitex {
+
 ///// CONSTANTS
 //Maximum number of unification variables
 #define MAX_UNIF_VARS 50
@@ -52,5 +54,7 @@ typedef struct {
   int no_vars;     //number of unification variables
   unif_v_T vars[MAX_UNIF_VARS];
 } unif_vars_T;
+
+} // namespace unitex
 
 #endif

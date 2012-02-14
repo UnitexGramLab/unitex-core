@@ -59,6 +59,9 @@
 #include "AbstractFilePlugCallback.h"
 #include "UserCancellingPlugCallback.h"
 
+namespace unitex {
+namespace logger {
+
 class InstallLoggerForRunner
 {
 public:
@@ -98,7 +101,7 @@ InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log) :
 
 int InstallLoggerForRunner::SelectNextLogName(const char*LogName,const char*portion_ignore_pathname)
 {
-    return ::SelectNextLogName(&ule,LogName,portion_ignore_pathname);
+    return unitex::logger::SelectNextLogName(&ule,LogName,portion_ignore_pathname);
 }
 
 InstallLoggerForRunner::~InstallLoggerForRunner()
@@ -1944,5 +1947,8 @@ UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* const argv[])
 {
     return main_RunLog(argc,argv);
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

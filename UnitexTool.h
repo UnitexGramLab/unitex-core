@@ -43,6 +43,7 @@
 #define UNITEX_HAVING_MINI_PERSISTANCE 1
 
 #ifdef __cplusplus
+namespace unitex {
 extern "C" {
 #endif
 
@@ -84,7 +85,8 @@ UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_byname(const char* too
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace unitex
 #endif
 
 

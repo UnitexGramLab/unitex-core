@@ -25,6 +25,7 @@
 #include "Ustring.h"
 #include "StringParsing.h"
 
+namespace unitex {
 
 GrfUnitTest* new_GrfUnitTest(unichar* text,int start,int end,int must_match,
 		OutputPolicy output_policy,MatchPolicy match_policy,unichar* output) {
@@ -246,3 +247,5 @@ free(bad);
 u_fclose(f);
 return match==t->must_match;
 }
+
+} // namespace unitex

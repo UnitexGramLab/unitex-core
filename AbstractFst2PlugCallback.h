@@ -38,6 +38,7 @@
 
 #ifdef __cplusplus
 extern "C" {
+using namespace unitex;
 #endif
 
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_is_filename_Fst2Space_object)(const char*name,void* privateSpacePtr);

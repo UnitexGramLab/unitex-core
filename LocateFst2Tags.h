@@ -30,6 +30,8 @@
 #include "LemmaTree.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 void process_tags(int*,
                   struct string_hash*,
                   int*,int*,
@@ -37,5 +39,7 @@ void process_tags(int*,
                   Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 void optimize_pattern_tags(Alphabet*,struct lemma_node*,struct locate_parameters*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+
+} // namespace unitex
 
 #endif

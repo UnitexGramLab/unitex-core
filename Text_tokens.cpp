@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Token.h"
 
+namespace unitex {
 
 struct text_tokens* new_text_tokens(Abstract_allocator prv_alloc) {
 struct text_tokens* tmp;
@@ -231,6 +232,8 @@ for (int i=0;i<N;i++) {
    }
 }
 }
+
+} // namespace unitex
 
 //---------------------------------------------------------------------------
 

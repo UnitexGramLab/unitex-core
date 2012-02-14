@@ -44,6 +44,7 @@
 #include "TfstStats.h"
 #include "HashTable.h"
 
+namespace unitex {
 
 static void add_sentence_delimiters(Tfst* tfst,language_t*);
 static void remove_sentence_delimiters(Tfst* tfst,language_t*);
@@ -482,4 +483,5 @@ free_TfstTag(foo_tag);
 return tags;
 }
 
+} // namespace unitex
 

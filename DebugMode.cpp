@@ -21,6 +21,7 @@
 
 #include "DebugMode.h"
 
+namespace unitex {
 
 /**
  * Adds debug information at the end of the given output string.
@@ -107,4 +108,5 @@ dst[n++]=before_call?'<':'>';
 u_sprintf(dst+n,"%d%C",graph_number,DEBUG_INFO_END_MARK);
 }
 
+} // namespace unitex
 

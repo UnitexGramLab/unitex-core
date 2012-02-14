@@ -32,6 +32,8 @@
 #include "LocateMatches.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 /**
  * This structure is used to represent a list of offsets in the current
  * .bin dictionary. For each offset, 'content' contains the sequence that
@@ -175,5 +177,7 @@ void save_unknown_words(struct dico_application_info*);
 int merge_dic_locate_results(struct dico_application_info*,const char*,int,int);
 
 void save_and_sort_tag_sequences(struct dico_application_info*);
+
+} // namespace unitex
 
 #endif

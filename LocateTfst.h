@@ -24,12 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_LocateTfst;
 extern const struct option_TS lopts_LocateTfst[];
 extern const char* usage_LocateTfst;
 
 int main_LocateTfst(int argc,char* const argv[]);
 
+} // namespace unitex
 
 #endif
 

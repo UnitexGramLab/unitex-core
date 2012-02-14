@@ -28,6 +28,7 @@
 #include "Fst2Txt.h"
 #include "Offsets.h"
 
+namespace unitex {
 
 const char* usage_Fst2Txt =
          "Usage: Fst2Txt [OPTIONS] <fst2>\n"
@@ -186,3 +187,5 @@ free_fst2txt_parameters(p);
 free_OptVars(vars);
 return result;
 }
+
+} // namespace unitex

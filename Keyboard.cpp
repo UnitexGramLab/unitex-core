@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "CharNames.h"
 
+namespace unitex {
 
 static Keyboard keyboards[N_KEYBOARDS];
 
@@ -562,3 +563,5 @@ for (int i=0;i<N_KEYBOARDS;i++) {
    u_fprintf(out,"\n\n--------------------------------------------------------------\n\n");
 }
 }
+
+} // namespace unitex

@@ -48,6 +48,7 @@
 #include "Fst2Check.h"
 
 
+namespace unitex {
 
 void display_fst2_stat(Fst2* fst2,U_FILE*ferr)
 {
@@ -283,3 +284,5 @@ if ((check_recursion) || (tfst_check)) {
 }
 return 0;
 }
+
+} // namespace unitex

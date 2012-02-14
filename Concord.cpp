@@ -40,6 +40,7 @@
 #include "Offsets.h"
 #include "PRLG.h"
 
+namespace unitex {
 
 const char* usage_Concord =
          "Usage: Concord [OPTIONS] <concord>\n"
@@ -442,3 +443,4 @@ u_printf("Done.\n");
 return 0;
 }
 
+} // namespace unitex

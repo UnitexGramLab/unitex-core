@@ -230,6 +230,8 @@
 
 #include "UserCancelling.h"
 
+namespace unitex {
+
 struct utility_item {
 	const char* name;
 	int len_name;
@@ -728,3 +730,5 @@ UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_bynumber(int toolnumbe
 {
     return GetToolInfo_bynumber(toolnumber,toolname, pfunc, usage, optstring, lopts);
 }
+
+} // namespace unitex

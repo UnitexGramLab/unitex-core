@@ -27,6 +27,8 @@
 #include "Vector.h"
 #include "LocateConstants.h"
 
+namespace unitex {
+
 #define GRF_UNIT_TEST_PFX "@TEST:"
 
 typedef struct {
@@ -43,6 +45,8 @@ GrfUnitTest* new_GrfUnitTest();
 void free_GrfUnitTest(GrfUnitTest* test);
 vector_ptr* get_grf_unit_tests(Grf* grf,char* grf_name,U_FILE* f_error);
 int check_test_results(GrfUnitTest* t,char* concord,char* grf,U_FILE* f_error);
+
+} // namespace unitex
 
 #endif
 

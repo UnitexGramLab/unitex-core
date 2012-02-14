@@ -24,6 +24,7 @@
 #include "Error.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 /**
  * Creates an empty grf object.
@@ -639,4 +640,5 @@ return have_same_outgoing_transitions(grf,a,b)
 	&& have_same_incoming_transitions(a,b,r);
 }
 
+} // namespace unitex
 

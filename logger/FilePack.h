@@ -104,6 +104,8 @@ extern "C" {
 #include "FilePackIo.h"
 #endif
 
+namespace unitex {
+namespace logger {
 
 
 #if defined(STRICTZIP) || defined(STRICTZIPUNZIP)
@@ -280,6 +282,9 @@ extern int ZEXPORT zipClose OF((zipFile file,
 #ifdef __cplusplus
 }
 #endif
+
+} // namespace logger
+} // namespace unitex
 
 #endif /* _zip_H */
 

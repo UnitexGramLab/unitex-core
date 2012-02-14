@@ -26,6 +26,8 @@
 #include "Unicode.h"
 #include "FileEncoding.h"
 
+namespace unitex {
+
 /**
  * This structure is used to represent an anchor in a .xml PRLG
  * corpus.
@@ -47,6 +49,8 @@ typedef struct {
 PRLG* load_PRLG_data(VersatileEncodingConfig* vec,char* filename);
 void free_PRLG(PRLG*);
 const unichar* get_closest_PRLG_tag(PRLG* p,int offset);
+
+} // namespace unitex
 
 #endif
 

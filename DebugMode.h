@@ -26,6 +26,8 @@
 #include "Ustring.h"
 #include "Unicode.h"
 
+namespace unitex {
+
 /**
  * This library is used to generate debug fst2 tags. In normal mode,
  * a fst2 tag may or may not have an output. In debug mode, all tags (except
@@ -52,6 +54,8 @@
 void add_debug_infos(unichar* output,int graph,int box,int line);
 void save_real_output_from_debug(U_FILE* f,OutputPolicy policy,unichar* s);
 void create_graph_call_debug_tag(unichar* dst,unichar* src,int graph_number,int before_call);
+
+} // namespace unitex
 
 #endif
 

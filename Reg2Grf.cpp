@@ -31,6 +31,7 @@
 #include "Reg2Grf.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 
 const char* usage_Reg2Grf =
@@ -128,3 +129,4 @@ u_printf("Expression converted.\n");
 return 0;
 }
 
+} // namespace unitex

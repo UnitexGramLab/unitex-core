@@ -40,6 +40,8 @@
 #include <stdlib.h>
 
 
+namespace unitex {
+namespace logger {
 
 
 typedef struct
@@ -240,3 +242,5 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
     }
 }
 
+} // namespace logger
+} // namespace unitex

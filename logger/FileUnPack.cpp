@@ -96,6 +96,8 @@
 
 
 
+namespace unitex {
+namespace logger {
 
 const char unz_copyright[] =
    " unzip 1.01 Copyright 1998-2004 Gilles Vollant - http://www.winimage.com/zLibDll";
@@ -163,10 +165,15 @@ typedef struct
 #    endif
 } unz_s;
 
+} // namespace logger
+} // namespace unitex
 
 #ifndef NOUNCRYPT
 #include "crypt.h"
 #endif
+
+namespace unitex {
+namespace logger {
 
 /* ===========================================================================
      Read a byte from a gz_stream; update next_in and avail_in. Return EOF
@@ -1582,5 +1589,8 @@ extern int ZEXPORT unzSetOffset (
     s->current_file_ok = (err == UNZ_OK);
     return err;
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

@@ -32,6 +32,7 @@
 #include "Error.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 
 const char* usage_Fst2List =
@@ -2117,3 +2118,5 @@ int main_Fst2List(int argc,char* const argv[]) {
 	if(ofilename) delete ofilename;
 	return 0;
 }
+
+} // namespace unitex

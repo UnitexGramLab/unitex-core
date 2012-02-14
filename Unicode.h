@@ -33,6 +33,8 @@
 
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 /* This line is used to prevent people from using printf and scanf. We do
  * that because we want to parametrize I/O operations with encodings. */
 #define printf DONT_USE_PRINTF_BUT_U_PRINTF
@@ -339,5 +341,6 @@ unichar u_tolower(unichar);
 unichar u_deaccentuate(unichar);
 // end of Sebastian Nagel's functions
 
+} // namespace unitex
 
 #endif

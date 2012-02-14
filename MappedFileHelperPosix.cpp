@@ -46,6 +46,8 @@
 #include "Error.h"
 #include "MappedFileHelper.h"
 
+using namespace unitex;
+
 struct _MAPFILE_REAL {
         FILE*f;
         long filesize;

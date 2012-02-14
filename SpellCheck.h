@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_SpellCheck;
 extern const struct option_TS lopts_SpellCheck[];
 extern const char* usage_SpellCheck;
 
 int main_SpellCheck(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

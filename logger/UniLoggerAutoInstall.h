@@ -33,6 +33,9 @@
 
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_LOGGER_AUTOINSTALL))))
 
+namespace unitex {
+namespace logger {
+
 extern const char* usage_CreateLog;
 extern const char* optstring_CreateLog;
 extern const struct option_TS lopts_CreateLog[];
@@ -50,5 +53,7 @@ private:
     void ClearUniLoggerSpaceStruct(int clear_memory);
 };
 
+} // namespace logger
+} // namespace unitex
 
 #endif

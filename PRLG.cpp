@@ -24,6 +24,7 @@
 #include "PRLG.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 PRLG_DATA* new_PRLG_DATA(int offset,unichar* s) {
 PRLG_DATA* d=(PRLG_DATA*)malloc(sizeof(PRLG_DATA));
@@ -108,3 +109,5 @@ int current=get_closest_offset(p,offset,0,p->data->nbelems-1);
 if (current==-1) return U_EMPTY;
 return get_tag(current);
 }
+
+} // namespace unitex

@@ -25,6 +25,7 @@
 #include "File.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Takes a file name and copies its extension in a given string
@@ -342,3 +343,5 @@ char path[FILENAME_MAX];
 get_path(name,path);
 create_path(path);
 }
+
+} // namespace unitex

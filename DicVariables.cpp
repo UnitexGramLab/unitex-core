@@ -22,6 +22,7 @@
 #include "DicVariables.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a dic_variable.
@@ -132,3 +133,5 @@ while (backup!=NULL && v!=NULL) {
 
 return (backup==NULL && v==NULL);
 }
+
+} // namespace unitex

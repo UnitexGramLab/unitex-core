@@ -25,6 +25,7 @@
 #include "StringParsing.h"
 
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a dela_entry.
@@ -1809,3 +1810,4 @@ while (s[i]!='\0') {
 }
 }
 
+} // namespace unitex

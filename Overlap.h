@@ -22,6 +22,8 @@
 #ifndef OverlapH
 #define OverlapH
 
+namespace unitex {
+
 /**
  * This enum is used to compare intervals.
  */
@@ -38,6 +40,7 @@ typedef enum {
 
 Overlap overlap(int a_start,int a_end,int b_start,int b_end);
 
+} // namespace unitex
 
 #endif
 

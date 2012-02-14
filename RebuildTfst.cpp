@@ -36,6 +36,7 @@
 #include "HashTable.h"
 #include "TfstStats.h"
 
+namespace unitex {
 
 const char* usage_RebuildTfst =
       "Usage: RebuildTfst <tfst>\n"
@@ -284,3 +285,5 @@ for (int i=1;i<fst2->number_of_tags;i++) {
 }
 return tags;
 }
+
+} // namespace unitex

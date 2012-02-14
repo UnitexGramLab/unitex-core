@@ -28,6 +28,7 @@
 #include "DebugMode.h"
 #include "Grf_lib.h"
 
+namespace unitex {
 
 /* Maximum length for the content of a grf box */
 #define MAX_GRF_BOX_CONTENT 10000
@@ -1265,3 +1266,4 @@ for (int i=1;i<=fst2->number_of_graphs;i++) {
 }
 }
 
+} // namespace unitex

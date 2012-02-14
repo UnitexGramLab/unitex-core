@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
 
 /**
  * This is a simple structure for manipulating unicode string lists.
@@ -46,6 +47,8 @@ int is_in_list(const unichar*,const struct list_ustring*);
 int equal(const struct list_ustring*,const struct list_ustring*);
 struct list_ustring* clone(const struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int length(const struct list_ustring*);
+
+} // namespace unitex
 
 #endif
 

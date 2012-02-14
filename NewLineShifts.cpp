@@ -24,6 +24,8 @@
 #include "NewLineShifts.h"
 #include "UnusedParameter.h"
 
+namespace unitex {
+
 /**
  * This function takes an integer 'a' and an array 't' of size 'n'.
  * It returns the greatest value x so that t[x]<=a.
@@ -111,3 +113,5 @@ if (snt_offsets==NULL) return 0;
 int res2=find_snt_shift_by_dichotomy(pos,snt_offsets->tab,snt_offsets->nbelems);
 return res2;
 }
+
+} // namespace unitex

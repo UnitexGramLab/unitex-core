@@ -33,6 +33,8 @@
 #include "Match.h"
 #include "HashTable.h"
 
+namespace unitex {
+
 #define NO_SENTENCE_LOADED -1
 
 /**
@@ -131,6 +133,8 @@ void free_TfstTag(TfstTag*);
 void TfstTag_to_string(TfstTag*,unichar*);
 
 void compute_token_contents(Tfst*);
+
+} // namespace unitex
 
 #endif
 

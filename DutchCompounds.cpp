@@ -24,6 +24,7 @@
 #include "List_ustring.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 #define is_N 0
 #define is_A 1
@@ -684,3 +685,5 @@ for (int i=0;i<n_transitions;i++) {
 	restore_output(z,ustr);
 }
 }
+
+} // namespace unitex

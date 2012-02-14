@@ -25,10 +25,14 @@
 #include "SingleGraph.h"
 #include "LanguageDefinition.h"
 
+namespace unitex {
+
 /**
  * This library provides a function for determinizing ELAG automata.
  */
 
 void elag_determinize(language_t*,SingleGraph,void (*free_elag_symbol)(symbol_t*));
+
+} // namespace unitex
 
 #endif

@@ -25,6 +25,8 @@
 #include "Unicode.h"
 #include "Vector.h"
 
+namespace unitex {
+
 #define GRF_HEADER_LINE_SIZE 128
 
 
@@ -104,6 +106,7 @@ int have_same_outgoing_transitions(Grf*,int,int);
 int have_same_incoming_transitions(int,int,ReverseTransitions*);
 int have_same_transitions(Grf*,int,int,ReverseTransitions*);
 
+} // namespace unitex
 
 #endif
 

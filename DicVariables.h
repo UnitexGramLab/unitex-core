@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "DELA.h"
 
+namespace unitex {
 
 /**
  * This structure represents a list of DELAF entry variables.
@@ -43,5 +44,7 @@ void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_vari
 struct dela_entry* get_dic_variable(unichar* name,struct dic_variable* list);
 struct dic_variable* clone_dic_variable_list(const struct dic_variable* list);
 int same_dic_variables(struct dic_variable* backup,struct dic_variable* v);
+
+} // namespace unitex
 
 #endif

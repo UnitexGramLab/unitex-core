@@ -22,6 +22,8 @@
 #include "ParsingInfo.h"
 #include "Error.h"
 
+namespace unitex {
+
 size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar)
 {
     return AroundAllocAlign(sizeof(struct parsing_info)) + 
@@ -488,3 +490,4 @@ return list;
 }
 
 */
+} // namespace unitex

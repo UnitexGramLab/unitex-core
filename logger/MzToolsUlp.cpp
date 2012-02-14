@@ -24,6 +24,9 @@
 #include "FilePackType.h"
 #include "MzToolsUlp.h"
 
+namespace unitex {
+namespace logger {
+
 #define READ_8(adr)  ((unsigned char)*(adr))
 #define READ_16(adr) ( READ_8(adr) | (READ_8(adr+1) << 8) )
 #define READ_32(adr) ( READ_16(adr) | (READ_16((adr)+2) << 16) )
@@ -311,5 +314,8 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
   }
   return err;
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

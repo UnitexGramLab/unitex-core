@@ -33,6 +33,7 @@
 #include "MorphologicalFilters.h"
 #include "Contexts.h"
 
+namespace unitex {
 
 #define STACK_MAX 1000 /* The maximal size of recursive calls of the
                           function parcourir_opt =~ the maximal number
@@ -65,6 +66,8 @@ void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int*,st
 static inline int XOR(int a, int b) {
 	return (a && !b) || (!a && b);
 }
+
+} // namespace unitex
 
 #endif
 

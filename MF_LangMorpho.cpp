@@ -29,6 +29,8 @@
 #include "MF_Unif.h"   //debug
 #include "Error.h"
 
+namespace unitex {
+
 ///////////////////////////////////////
 //All functions defined in this file
 int read_language_morpho(struct l_morpho_t*,char *lan_file, const char *dir);
@@ -475,3 +477,5 @@ int copy_val_str(unichar* val_str, l_category_T* cat, int val) {
   u_strcpy(val_str,cat->values[val]);
   return 0;
 }
+
+} // namespace unitex

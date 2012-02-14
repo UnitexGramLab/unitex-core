@@ -24,10 +24,14 @@
 
 #include "Vector.h"
 
+namespace unitex {
+
 /**
  * This library is used to compute shifts due to normalization of \r\n into space.
  */
 
 int get_shift(int n_enter_char,int* enter_pos,int pos,vector_int* snt_offsets);
+
+} // namespace unitex
 
 #endif

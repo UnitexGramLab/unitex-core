@@ -36,6 +36,7 @@
 #include "AbstractAllocator.h"
 #include "AbstractAllocatorPlugCallback.h"
 
+namespace unitex {
 
 struct AllocatorSpace {
 	t_allocator_func_array func_array;
@@ -275,3 +276,4 @@ abstract_allocator_info_public_with_allocator* get_abstract_allocator_info_publi
     return ret;
 }
 
+} // namespace unitex

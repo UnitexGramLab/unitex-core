@@ -30,6 +30,7 @@
 #include "LoadInf.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 struct german_word_decomposition {
    int n_parts;
@@ -58,5 +59,7 @@ struct german_word_decomposition* new_german_word_decomposition();
 void free_german_word_decomposition(struct german_word_decomposition*);
 struct german_word_decomposition_list* new_german_word_decomposition_list();
 void free_german_word_decomposition_list(struct german_word_decomposition_list*);
+
+} // namespace unitex
 
 #endif

@@ -27,6 +27,8 @@
 #include "DELA_tree.h"
 #include "Tfst.h"
 
+namespace unitex {
+
 extern const char* optstring_Seq2Grf;
 extern const struct option_TS lopts_Seq2Grf[];
 extern const char* usage_Seq2Grf;
@@ -36,5 +38,8 @@ void build_sequences_automaton(
 		U_FILE*, const struct text_tokens*,
 		const Alphabet*, U_FILE*, U_FILE*, int, struct hash_table*,
 		int,int,int,int);
+
+} // namespace unitex
+
 #endif
 

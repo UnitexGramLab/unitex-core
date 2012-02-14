@@ -27,6 +27,7 @@
 #include "Fst2.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 /**
  * This structure is used to associate lists of transitions with tokens.
@@ -50,5 +51,6 @@ void free_fst2txt_token_tree(struct fst2txt_token_tree*);
 void add_tag(unichar*,int,int,struct fst2txt_token_tree*);
 Transition* get_matching_tags(unichar*,struct fst2txt_token_tree*,Alphabet*);
 
+} // namespace unitex
 
 #endif

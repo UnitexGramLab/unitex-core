@@ -32,6 +32,8 @@
 #include "Transitions.h"
 #include "MF_Global.h"
 
+namespace unitex {
+
 int MU_graph_init_graphs(MultiFlex_ctx*);
 void MU_graph_free_graphs(MultiFlex_ctx*);
 Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
@@ -1308,3 +1310,5 @@ void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho) {
 		else if (MU_morpho->cats[cv].type == inherit_var)
 			free(MU_morpho->cats[cv].val.inherit_var);
 }
+
+} // namespace unitex

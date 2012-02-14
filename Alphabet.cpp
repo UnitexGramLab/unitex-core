@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Persistence.h"
 
+namespace unitex {
 
 // 0x400 in final release, good for all langage 
 #define FIRST_SIZE_ARRAYCOLLECTION 0x400
@@ -556,4 +557,6 @@ void free_persistent_alphabet(const char* name) {
 Alphabet* a=(Alphabet*)get_persistent_structure(name);
 set_persistent_structure(name,NULL);
 free_alphabet(a);
+}
+
 }

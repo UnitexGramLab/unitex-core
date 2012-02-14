@@ -25,6 +25,8 @@
 #include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
+namespace unitex {
+
 extern const char* optstring_Concord;
 extern const struct option_TS lopts_Concord[];
 extern const char* usage_Concord;
@@ -35,6 +37,8 @@ int pseudo_main_Concord(const VersatileEncodingConfig*,
                         int left_context,int right_context,const char* sort_order,
                         const char* output,const char* directory,const char* alphabet,
                         int thai,int only_ambiguous);
+
+} // namespace unitex
 
 #endif
 

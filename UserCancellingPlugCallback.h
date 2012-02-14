@@ -38,6 +38,7 @@
 #include "UserCancelling.h"
 
 #ifdef __cplusplus
+namespace unitex {
 extern "C" {
 #endif
 
@@ -89,7 +90,8 @@ UNITEX_FUNC int UNITEX_CALL UnitexIsUserCancellingRequested();
 
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace unitex
 #endif
 
 #endif

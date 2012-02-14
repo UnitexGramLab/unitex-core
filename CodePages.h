@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 
+namespace unitex {
+
 /*
  * Encoding types
  */
@@ -96,5 +98,7 @@ void print_encoding_main_names(const void*);
 void print_encoding_aliases(const void*);
 void print_encoding_infos(const void*,const char*);
 void print_information_for_all_encodings(const void*);
+
+} // namespace unitex
 
 #endif

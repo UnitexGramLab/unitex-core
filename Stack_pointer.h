@@ -22,6 +22,7 @@
 #ifndef Stack_pointerH
 #define Stack_pointerH
 
+namespace unitex {
 
 /**
  * This structure represents a stack of pointers.
@@ -42,5 +43,7 @@ void empty(struct stack_pointer* stack);
 int is_full(const struct stack_pointer*);
 void push(struct stack_pointer*,void*);
 void* pop(struct stack_pointer*);
+
+} // namespace unitex
 
 #endif

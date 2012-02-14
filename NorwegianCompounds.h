@@ -28,8 +28,11 @@
 #include "LoadInf.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 void analyse_norwegian_unknown_words(const Alphabet*,Dictionary*,U_FILE*,
 									U_FILE*,U_FILE*,U_FILE*,struct string_hash*);
 
+} // namespace unitex
 
 #endif

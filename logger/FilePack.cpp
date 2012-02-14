@@ -80,6 +80,8 @@
 #   include <errno.h>
 #endif
 
+namespace unitex {
+namespace logger {
 
 #ifndef local
 #  define local static
@@ -1279,5 +1281,8 @@ extern int ZEXPORT zipClose (
 
     return err;
 }
+
+} // namespace logger
+} // namespace unitex
 
 #endif

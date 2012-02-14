@@ -25,6 +25,8 @@
 
 #include "TaggingProcess.h"
 
+namespace unitex {
+
 /**
  * Computes the tag code of a token according to its tokenized tag.
  * For example if we have a dela_entry with semantic code = N
@@ -739,3 +741,5 @@ for(int i=1;i<=input_tfst->N;i++){
 }
 u_printf("\n");
 }
+
+} // namespace unitex

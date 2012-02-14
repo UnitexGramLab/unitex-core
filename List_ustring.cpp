@@ -23,6 +23,7 @@
 #include "List_ustring.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new string list element.
@@ -210,3 +211,5 @@ while (list!=NULL) {
 }
 return n;
 }
+
+} // namespace unitex

@@ -22,6 +22,7 @@
 #ifndef Stack_intH
 #define Stack_intH
 
+namespace unitex {
 
 /**
  * This structure represents a stack of integers.
@@ -42,5 +43,7 @@ void stacki_empty(struct stack_int* stack);
 int stacki_is_full(struct stack_int*);
 void stacki_push(struct stack_int*,int);
 int stacki_pop(struct stack_int*);
+
+} // namespace unitex
 
 #endif

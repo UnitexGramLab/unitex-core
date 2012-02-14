@@ -35,6 +35,8 @@
 #include "HashTable.h"
 #include "SingleGraph.h"
 
+namespace unitex {
+
 #define MAX_TOKENS_IN_SENTENCE 2000
 
 
@@ -47,4 +49,7 @@ void build_sentence_automaton(const int*,int,const struct text_tokens*,
                               struct hash_table* form_frequencies);
 void keep_best_paths(SingleGraph graph,struct string_hash* tmp_tags) ;
 int count_non_space_tokens(const int* buffer,int length,int SPACE);
+
+} // namespace unitex
+
 #endif

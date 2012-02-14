@@ -22,6 +22,7 @@
 #include "HashTable.h"
 #include "Error.h"
 
+namespace unitex {
 
 #define DEFAULT_HASH_SIZE 1024
 #define DEFAULT_RATIO 0.75f
@@ -479,3 +480,5 @@ struct any* a=(struct any*)any_ptr;
 free(a->_ptr);
 free(a);
 }
+
+} // namespace unitex

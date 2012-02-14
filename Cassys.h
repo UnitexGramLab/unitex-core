@@ -46,6 +46,7 @@
 #include "Cassys_tokens.h"
 
 
+namespace unitex {
 
 /**
   * Structure storing the list of transducer
@@ -368,6 +369,8 @@ int token_length(list_ustring *l);
  * \param[in] alphabet the alphabet of the text
  */
 list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* alphabet);
+
+} // namespace unitex
 
 #endif /* CASSYS_H_ */
 

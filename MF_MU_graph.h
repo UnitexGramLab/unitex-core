@@ -35,6 +35,8 @@
 #include "MF_MU_morpho.h"
 #include "MF_Global.h"
 
+namespace unitex {
+
 #define MAX_GRAPH_NODE 2000  //Maximum length of the contents of a graph node
 
 /////////////////////////////////////////////////
@@ -135,5 +137,6 @@ void MU_graph_print_label(MU_graph_label_T* MU_label);
 // Liberates the memory allocated for a MU_graph label.    
 void MU_graph_free_label(MU_graph_label_T* MU_label);
 
+} // namespace unitex
 
 #endif

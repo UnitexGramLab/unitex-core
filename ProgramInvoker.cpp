@@ -24,6 +24,8 @@
 #include "Error.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 /**
  * Allocates, initializes and returns a new program invoker.
  */
@@ -191,4 +193,4 @@ free_ProgramInvoker(invoker);
 return ret;
 }
 
-
+} // namespace unitex

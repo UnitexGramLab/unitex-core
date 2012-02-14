@@ -22,6 +22,9 @@
 #ifndef VirtualFiles_H
 #define VirtualFiles_H
 
+namespace unitex {
+namespace virtualfile {
+
 /**
  * The goal of this library is to offer a virtual file system.
  * To make a file virtual, you just have to prefix its name with $:
@@ -59,5 +62,8 @@ void VFS_remove(const char* name);
 
 /* Deletes all virtual files */
 void VFS_reset();
+
+} // namespace virtualfile
+} // namespace unitex
 
 #endif

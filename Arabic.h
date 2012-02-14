@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 /* Here are the absolute definition of the arabic letters */
 
 /* Plain letters */
@@ -340,5 +342,7 @@ int is_lunar(unichar);
 int load_arabic_typo_rules(const VersatileEncodingConfig*,const char* f,ArabicTypoRules *rules);
 int was_Al_before(const unichar* token,int pos,ArabicTypoRules rules);
 int is_arabic_letter(unichar c);
+
+} // namespace unitex
 
 #endif

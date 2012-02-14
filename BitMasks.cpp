@@ -21,6 +21,7 @@
 
 #include "BitMasks.h"
 
+namespace unitex {
 
 /**
  * Tests if the given bit mask is set on the given byte.
@@ -45,3 +46,5 @@ unset_bit_mask(value,mask);
 void unset_bit_mask(unsigned char *value,unsigned char mask) {
 (*value)=(*value) & (0xFF-mask);
 }
+
+} // namespace unitex

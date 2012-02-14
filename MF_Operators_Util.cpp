@@ -22,6 +22,7 @@
 #include "MF_Operators_Util.h"
 #include "Error.h"
 
+namespace unitex {
 
 /*
  * fonction comparer  qu'un code de sortie est conforme ou non aux filtres
@@ -304,3 +305,4 @@ unsigned int mode=0;
 return retour;
 }
 
+} // namespace unitex

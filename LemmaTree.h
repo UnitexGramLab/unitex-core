@@ -25,6 +25,8 @@
 #include "Unicode.h"
 #include "List_ustring.h"
 
+namespace unitex {
+
 /**
  * These structures are used to build a tree of lemmas. For each lemma,
  * the associated final node contains a list of all the inflected forms
@@ -53,6 +55,8 @@ struct lemma_node* new_lemma_node();
 void free_lemma_node(struct lemma_node*);
 void add_inflected_form_for_lemma(unichar*,unichar*,struct lemma_node*);
 struct list_ustring* get_inflected_forms(unichar*,struct lemma_node*);
+
+} // namespace unitex
 
 #endif
 

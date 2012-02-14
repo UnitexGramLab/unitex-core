@@ -34,13 +34,17 @@
 #ifndef NO_UNITEX_LOGGER
 
 #ifdef __cplusplus
+namespace unitex {
+namespace logger {
 extern "C" {
 #endif
 
 uLong crc32(uLong dwCRC, const void* pvBuffer, size_t cbBuffer);
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 

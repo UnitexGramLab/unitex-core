@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_CheckDic;
 extern const struct option_TS lopts_CheckDic[];
 extern const char* usage_CheckDic;
 
 int main_CheckDic(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

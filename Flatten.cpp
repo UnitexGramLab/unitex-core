@@ -31,6 +31,7 @@
 #include "UnitexGetOpt.h"
 #include "Flatten.h"
 
+namespace unitex {
 
 const char* usage_Flatten =
        "Usage: Flatten [OPTIONS] <fst2>\n"
@@ -144,3 +145,5 @@ af_rename(temp,argv[vars->optind]);
 free_OptVars(vars);
 return 0;
 }
+
+} // namespace unitex

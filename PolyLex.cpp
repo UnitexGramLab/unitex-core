@@ -39,6 +39,7 @@
 #include "PolyLex.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 enum {DUTCH,GERMAN,NORWEGIAN,RUSSIAN};
 
@@ -263,3 +264,4 @@ free_OptVars(vars);
 return 0;
 }
 
+} // namespace unitex

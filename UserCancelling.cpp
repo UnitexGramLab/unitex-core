@@ -37,6 +37,7 @@
 #include "UserCancellingPlugCallback.h"
 
 
+namespace unitex {
 
 struct UserCancellingInfo {
 	t_user_cancelling_func_array func_array;
@@ -143,3 +144,5 @@ UNITEX_FUNC int UNITEX_CALL UnitexIsUserCancellingRequested()
 {
     return is_cancelling_requested();
 }
+
+} // namespace unitex

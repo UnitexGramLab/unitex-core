@@ -33,7 +33,10 @@
 #ifndef _USER_CANCELLING_H_INCLUDED
 #define _USER_CANCELLING_H_INCLUDED 1
 
+namespace unitex {
 
 int is_cancelling_requested();
+
+} // namespace unitex
 
 #endif

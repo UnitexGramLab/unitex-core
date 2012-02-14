@@ -36,6 +36,8 @@
 #include "MF_DicoMorpho.h"
 #include "Korean.h"
 
+namespace unitex {
+
 #define ONLY_SIMPLE_WORDS 0
 #define ONLY_COMPOUND_WORDS 1
 #define SIMPLE_AND_COMPOUND_WORDS 2
@@ -73,5 +75,7 @@ int DLC_print_entry(struct l_morpho_t* pL_MORPHO, DLC_entry_T* entry);
 /////////////////////////////////////////////////////////////////////////////////
 // Liberates the memory allocated for a DELAC entry.
 void DLC_delete_entry(DLC_entry_T* entry);
+
+} // namespace unitex
 
 #endif

@@ -38,6 +38,8 @@
 #include "Af_stdio.h"
 #include "UnitexTool.h"
 
+namespace unitex {
+
 void Call_logger_fnc_before_af_fopen(const char* name,const char* MODE);
 void Call_logger_fnc_after_af_fopen(const char* name,const char* MODE,ABSTRACTFILE*);
 
@@ -59,5 +61,7 @@ void Call_logger_fnc_after_calling_tool(mainFunc*,int argc,char* const argv[],in
 
 void Call_logger_fnc_LogOutWrite(const void*Buf, size_t size);
 void Call_logger_fnc_LogErrWrite(const void*Buf, size_t size);
+
+} // namespace unitex
 
 #endif

@@ -30,6 +30,7 @@
 #include "Contexts.h"
 #include "List_int.h"
 
+namespace unitex {
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -1294,3 +1295,5 @@ if (grammar_tag->filter_number==-1) {
 }
 return string_match_filter(infos->filters,content,grammar_tag->filter_number);
 }
+
+} // namespace unitex

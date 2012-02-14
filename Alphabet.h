@@ -24,7 +24,7 @@
 
 #include "Unicode.h"
 
-
+namespace unitex {
 
 struct alphabet_ {
 	
@@ -104,5 +104,6 @@ int get_longuest_prefix_ignoring_case(const unichar*,const unichar*,const Alphab
 int load_persistent_alphabet(const char* name);
 void free_persistent_alphabet(const char* name);
 
+} // namespace unitex
 
 #endif

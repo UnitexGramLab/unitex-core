@@ -24,7 +24,7 @@
 #include "Error.h"
 #include "Tokenization.h"
 
-
+namespace unitex {
 
 void increment_reference_DLC_tree_node(struct DLC_tree_node*);
 void decrement_reference_DLC_tree_node(struct DLC_tree_node*);
@@ -727,4 +727,6 @@ do {
 } while (a_c==b_c);
 return a_c - b_c;
 }
+
+} // namespace unitex
 

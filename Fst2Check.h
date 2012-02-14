@@ -37,6 +37,8 @@
 #include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
+namespace unitex {
+
 extern const char* optstring_Fst2Check;
 extern const struct option_TS lopts_Fst2Check[];
 extern const char* usage_Fst2Check;
@@ -45,5 +47,8 @@ int main_Fst2Check(int argc,char* const argv[]);
 int pseudo_main_Fst2Check(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                           const char* fst2name,const char* output_name,int append,int display_statistics,
                           int yes_or_no,int no_empty_graph_warning,int tfst_check);
+
+} // namespace unitex
+
 #endif
 

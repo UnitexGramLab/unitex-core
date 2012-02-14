@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Unicode.h"
 
+namespace unitex {
 
 /**
  * This function takes a text sequence and returns the list of its tokens.
@@ -136,3 +137,5 @@ if (sequence[i]=='\0') {
 }
 return 0;
 }
+
+} // namespace unitex

@@ -21,6 +21,8 @@
 
 #include "Korean.h"
 
+namespace unitex {
+
 static int test_letter(unichar c,Alphabet* alphabet) {
 if (alphabet==NULL) return 0;
 return is_letter(c,alphabet);
@@ -1219,5 +1221,7 @@ if (res==KR_JAMO_ERROR) {
 }
 return pos_output;
 }
+
+} // namespace unitex
 
 

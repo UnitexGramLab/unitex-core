@@ -24,6 +24,7 @@
 
 #include "Unicode.h"
 
+namespace unitex {
 
 #define REG_EXP_MAX_LENGTH 10000
 
@@ -466,5 +467,7 @@ Conflit entre la règle 3 et le jeton '*' résolu par décalage ('.' < '*').
     E  aller à l'état 12
     Y  aller à l'état 13
 */
+
+} // namespace unitex
 
 #endif

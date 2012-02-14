@@ -25,6 +25,8 @@
 #include "SingleGraph.h"
 #include "LanguageDefinition.h"
 
+namespace unitex {
+
 /**
  * This library provides a function for intersecting ELAG automata.
  */
@@ -33,5 +35,7 @@
 #define TEXT_GRAMMAR 1
 
 SingleGraph elag_intersection(language_t*,const SingleGraph,const SingleGraph,int type);
+
+} // namespace unitex
 
 #endif

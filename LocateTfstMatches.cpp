@@ -28,6 +28,8 @@
 #include "DicVariables.h"
 #include "DebugMode.h"
 
+namespace unitex {
+
 
 /* This special negative value is used to indicate that a $* tag was found, and that
  * we wait for a text dependent tag to set the actual beginning of the match to
@@ -859,3 +861,5 @@ p->matches=ptr;
 save_tfst_matches(p);
 return;
 }
+
+} // namespace unitex

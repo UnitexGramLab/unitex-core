@@ -21,6 +21,7 @@
 
 #include "StringParsing.h"
 
+namespace unitex {
 
 /**
  * Here we define some separator sets that will be used
@@ -370,3 +371,5 @@ for (int i=0;s[i]!='\0';i++) {
 }
 return result->len-n;
 }
+
+} // namespace unitex

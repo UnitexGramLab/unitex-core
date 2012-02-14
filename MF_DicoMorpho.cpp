@@ -31,6 +31,7 @@
 #include "MF_Util.h"
 #include "Error.h"
 
+namespace unitex {
 
 ///////////////////////////////////////
 //All functions defined in this file
@@ -335,3 +336,5 @@ unichar* d_get_str_class(l_class_T* cl,d_class_equiv_T* D_CLASS_EQUIV) {
   return NULL;
 
 }
+
+} // namespace unitex

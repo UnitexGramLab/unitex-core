@@ -22,6 +22,7 @@
 #include "SymbolAlphabet.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new symbol alphabet.
@@ -89,3 +90,5 @@ for (int i=0;i<A->number_of_states;i++) {
 }
 return alph;
 }
+
+} // namespace unitex

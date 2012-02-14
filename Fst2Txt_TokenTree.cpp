@@ -23,6 +23,7 @@
 #include "Error.h"
 
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new token tree.
@@ -124,3 +125,4 @@ explore_token_tree(token,0,tree->hash->root,alphabet,0,&list,tree);
 return list;
 }
 
+} // namespace unitex

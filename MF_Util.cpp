@@ -34,6 +34,8 @@
 #include "Alphabet.h"
 #include "Error.h"
 
+namespace unitex {
+
 /****************************************************************/
 /* Verifier si le caractere c a un correspondant parmi les 	*/
 /* elements de la chaine qui ne sont pas encore marqu�s dans 	*/
@@ -342,3 +344,5 @@ void u_print_unitab(unitab_t tab) {
    }
    u_printf("\n");
 }
+
+} // namespace unitex

@@ -24,6 +24,7 @@
 #include "Error.h"
 #include "SingleGraph.h"
 
+namespace unitex {
 
 
 /**
@@ -108,3 +109,5 @@ if (fstf==NULL) {
 fst_file_write(fstf,A);
 fst_file_close_out(fstf);
 }
+
+} // namespace unitex

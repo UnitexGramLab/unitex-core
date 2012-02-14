@@ -41,6 +41,8 @@
 #include "AbstractCallbackFuncModifier.h"
 
 #ifdef __cplusplus
+namespace unitex {
+namespace logger {
 extern "C" {
 #endif
 
@@ -75,7 +77,9 @@ UNITEX_FUNC int UNITEX_CALL SelectNextLogName(struct UniLoggerSpace *p_ule,const
 
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 #endif

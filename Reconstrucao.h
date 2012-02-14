@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_Reconstrucao;
 extern const struct option_TS lopts_Reconstrucao[];
 extern const char* usage_Reconstrucao;
 
 int main_Reconstrucao(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

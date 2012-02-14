@@ -26,7 +26,10 @@
 #include "LocatePattern.h"
 #include "Stack_unichar.h"
 
-#define TRANSDUCTION_STACK_SIZE 10000
+namespace unitex {
+
+extern const int TRANSDUCTION_STACK_SIZE;
+//#define TRANSDUCTION_STACK_SIZE 10000
 
 
 int is_variable_char(unichar);
@@ -46,6 +49,8 @@ void push_input_substring(struct stack_unichar* stack,unichar* s,int length,int)
 void push_output_char(struct stack_unichar*,unichar);
 void push_output_string(struct stack_unichar*,unichar*);
 int deal_with_output(unichar*,struct locate_parameters*,int*);
+
+} // namespace unitex
 
 #endif
 

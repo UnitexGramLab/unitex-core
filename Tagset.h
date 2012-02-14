@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include "Unicode.h"
 
+namespace unitex {
 
 /**
  * Here are the possible token types.
@@ -106,5 +107,7 @@ typedef struct tagset_t {
 
 tagset_t* load_tagset(U_FILE*);
 void free_tagset_t(tagset_t*);
+
+} // namespace unitex
 
 #endif

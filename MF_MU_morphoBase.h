@@ -34,6 +34,8 @@
 #include "MF_FormMorpho.h"
 #include "MF_SU_morphoBase.h"
 
+namespace unitex {
+
 /////////////////////////////////////////////////
 //Maximum number of constituents in a multi-word unit
 #define MAX_UNITS 20
@@ -70,5 +72,7 @@ typedef struct {
   f_morpho_T* feat;   //the form's morphology, e.g. {Gen=fem; Nb=pl; Case=I}
   //  int form_nr;   	//ordinal number of the form in the list of all inflected forms of the lemma
 } MU_id_T;
+
+} // namespace unitex
 
 #endif

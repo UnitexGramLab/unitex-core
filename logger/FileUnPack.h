@@ -80,9 +80,9 @@
 #ifndef _unz_H
 #define _unz_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 #define NO_ZLIB 1
 
@@ -91,10 +91,7 @@ extern "C" {
 #include "zlib.h"
 #endif
 #else
-
-
 #include "FilePackType.h"
-
 #endif
 
 
@@ -102,6 +99,11 @@ extern "C" {
 #include "FilePackIo.h"
 #endif
 
+#ifdef __cplusplus
+namespace unitex {
+namespace logger {
+extern "C" {
+#endif
 
 #if defined(STRICTUNZIP) || defined(STRICTZIPUNZIP)
 /* like the STRICT of WIN32, we define a pointer that cannot be converted
@@ -395,7 +397,9 @@ extern int ZEXPORT unzSetOffset (unzFile file, uLong pos);
 
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 #endif /* _unz_H */

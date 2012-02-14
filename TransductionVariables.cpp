@@ -22,6 +22,7 @@
 #include "TransductionVariables.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates and returns a structure representing the variables
@@ -379,4 +380,4 @@ for (int i=0;i<v->variable_index->size;i++) {
 return 1;
 }
 
-
+} // namespace unitex

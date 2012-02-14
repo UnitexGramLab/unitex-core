@@ -25,6 +25,8 @@
 #include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
+namespace unitex {
+
 extern const char* optstring_SortTxt;
 extern const struct option_TS lopts_SortTxt[];
 extern const char* usage_SortTxt;
@@ -32,6 +34,8 @@ extern const char* usage_SortTxt;
 int main_SortTxt(int argc,char* const argv[]);
 int pseudo_main_SortTxt(const VersatileEncodingConfig*,
                         int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char*,int);
+
+} // namespace unitex
 
 #endif
 

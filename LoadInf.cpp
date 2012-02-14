@@ -22,6 +22,8 @@
 #include "LoadInf.h"
 #include "StringParsing.h"
 
+namespace unitex {
+
 #define INF_LINE_SIZE 4096
 
 /**
@@ -90,4 +92,5 @@ free_cb(INF->codes,prv_alloc);
 free_cb(INF,prv_alloc);
 }
 
+} // namespace unitex
 

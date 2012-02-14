@@ -27,6 +27,8 @@
 #include "Match.h"
 #include "Vector.h"
 
+namespace unitex {
+
 /**
  * This structure represents a match list. [start;end] is the interval
  * that corresponds to the matched sequence. 'start' and 'end' are absolute
@@ -47,5 +49,7 @@ void free_match_list_element(struct match_list*,Abstract_allocator prv_alloc=NUL
 void free_match_list(struct match_list*,Abstract_allocator prv_alloc=NULL);
 struct match_list* load_match_list(U_FILE*,OutputPolicy*,unichar*,Abstract_allocator prv_alloc=NULL);
 void filter_unambiguous_outputs(struct match_list* *list,vector_int*);
+
+} // namespace unitex
 
 #endif

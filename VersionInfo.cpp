@@ -39,6 +39,7 @@
 #include "UnitexRevisionInfo.h"
 #include "UnitexGetOpt.h"
 
+namespace unitex {
 
 const char* usage_VersionInfo =
          "Usage: VersionInfo [OPTIONS] <outfile>\n"
@@ -189,3 +190,5 @@ else {
 
 return 0;
 }
+
+} // namespace unitex

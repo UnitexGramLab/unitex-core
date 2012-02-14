@@ -34,6 +34,8 @@
 #include "LocateTrace.h"
 #include "LocateTracePlugCallback.h"
 
+namespace unitex {
+
 UNITEX_FUNC int UNITEX_CALL SetLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobal);
 UNITEX_FUNC int UNITEX_CALL RemoveLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobal);
 
@@ -81,3 +83,5 @@ UNITEX_FUNC int UNITEX_CALL IsLocateTraceInfoInstalled()
 {
     return is_locate_trace_installed;
 }
+
+} // namespace unitex

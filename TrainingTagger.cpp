@@ -34,6 +34,7 @@
 #include "TrainingTagger.h"
 #include "TrainingProcess.h"
 
+namespace unitex {
 
 const char* usage_TrainingTagger =
          "Usage: TrainingTagger [OPTIONS] <text>\n"
@@ -207,3 +208,4 @@ u_printf("Done.\n");
 return 0;
 }
 
+} // namespace unitex

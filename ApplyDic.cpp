@@ -24,6 +24,7 @@
 #include "Error.h"
 #include "File.h"
 
+namespace unitex {
 
 /*
  * "pomme de terre" is made of 5 tokens : "pomme" SPACE "de" SPACE "terre"
@@ -929,4 +930,5 @@ for (int i=0;i<info->n_tag_sequences;i++) {
 u_fclose(f);
 }
 
+} // namespace unitex
 

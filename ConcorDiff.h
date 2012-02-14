@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_ConcorDiff;
 extern const struct option_TS lopts_ConcorDiff[];
 extern const char* usage_ConcorDiff;
 
 int main_ConcorDiff(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

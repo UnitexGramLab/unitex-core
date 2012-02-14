@@ -26,6 +26,8 @@
 #include "LanguageDefinition.h"
 #include "DELA.h"
 
+namespace unitex {
+
 struct POS_t;
 struct language_t;
 
@@ -182,5 +184,6 @@ int type_symbol(symbol_t * symb);
 
 symbol_t * new_symbol_PUNC(language_t * lang, int idx,int);
 
+} // namespace unitex
 
 #endif

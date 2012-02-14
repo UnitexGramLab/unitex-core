@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "Transitions.h"
 
+namespace unitex {
 
 /**
  * This functions returns -1 if the given .fst2 is linear, i.e. if
@@ -112,5 +113,7 @@ for (int sentence=1;sentence<=tfst->N;sentence++) {
 }
 return LINEAR_AUTOMATON;
 }
+
+} // namespace unitex
 
 

@@ -35,6 +35,7 @@
 #include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 
+namespace unitex {
 
 const char* usage_Grf2Fst2 =
          "Usage : Grf2Fst2 [OPTIONS] <grf>\n"
@@ -251,3 +252,5 @@ free_compilation_info(infos);
 u_printf("Compilation has succeeded\n");
 return 0;
 }
+
+} // namespace unitex

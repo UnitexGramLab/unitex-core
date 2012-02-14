@@ -34,6 +34,7 @@
 
 
 
+namespace unitex {
 
 const char* usage_LocateTfst =
          "Usage: LocateTfst [OPTIONS] <fst2>\n"
@@ -245,3 +246,5 @@ free_vector_ptr(injected);
 free_OptVars(vars);
 return (!OK);
 }
+
+} // namespace unitex

@@ -21,6 +21,7 @@
 
 #include "Match.h"
 
+namespace unitex {
 
 /**
  * Returns 1 if a is longer than b; 0 otherwise.
@@ -141,3 +142,4 @@ if (a->start_pos_in_token>b->end_pos_in_token) return 0;
 return (a->start_pos_in_char<=b->end_pos_in_char);
 }
 
+} // namespace unitex

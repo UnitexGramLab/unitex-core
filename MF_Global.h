@@ -31,6 +31,8 @@
 #include "MF_MU_morphoBase.h"
 #include "MF_UnifBase.h"
 
+namespace unitex {
+
 typedef struct {
 
 // GLOBAL VARIABLES
@@ -63,5 +65,7 @@ int save_pos;
 
 unif_vars_T UNIF_VARS;
 } MultiFlex_ctx;
+
+} // namespace unitex
 
 #endif

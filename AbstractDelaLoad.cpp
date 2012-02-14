@@ -36,6 +36,8 @@
 #include "AbstractDelaLoad.h"
 #include "AbstractDelaPlugCallback.h"
 
+namespace unitex {
+
 struct AbstractDelaSpace {
 	t_persistent_dic_func_array func_array;
 	void* privateSpacePtr;
@@ -241,3 +243,5 @@ void free_abstract_BIN(const unsigned char* BIN,struct BIN_free_info* p_bin_free
 		}
 	}
 }
+
+} // namespace unitex

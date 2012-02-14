@@ -41,6 +41,7 @@
 #include "UnitexTool.h"
 
 #ifdef __cplusplus
+namespace unitex {
 extern "C" {
 #endif
 
@@ -132,7 +133,8 @@ UNITEX_FUNC int UNITEX_CALL GetNbLoggerInfoInstalled();
 
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace unitex
 #endif
 
 #endif

@@ -31,10 +31,14 @@
 #include "LoadInf.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
                            Korean* korean,struct l_morpho_t* morpho,
                            const VersatileEncodingConfig*,
                            Dictionary* d);
+
+} // namespace unitex
 
 #endif
 

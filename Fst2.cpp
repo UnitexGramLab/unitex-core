@@ -25,6 +25,8 @@
 #include "BitMasks.h"
 #include "Persistence.h"
 
+namespace unitex {
+
 /*
  * These two constants are declared here instead of in the .h because
  * we don't want people to write tests like (e->control & FST2_FINAL_STATE_BIT_MASK)
@@ -1009,3 +1011,5 @@ Fst2* f=(Fst2*)get_persistent_structure(name);
 set_persistent_structure(name,NULL);
 free_Fst2(f);
 }
+
+} // namespace unitex

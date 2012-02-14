@@ -29,6 +29,9 @@
 //#include "MF_DicoMorpho.h" //add
 #include "MF_DicoMorphoBase.h" //add
 #include "MF_LangMorphoBase.h" //add
+
+namespace unitex {
+
 /**
  * 
  * This library is used to parse the "Morphology" file that is 
@@ -192,5 +195,7 @@ int copy_cat_str(unichar* cat_str, const l_category_T* cat);
 /* If 'cat' is a valid category, copies its name of its value number 'val' to 'val_str'*/
 /* which should have its space allocated, and returns 0. Otherwise returns 1.         */
 int copy_val_str(unichar* val_str, l_category_T* cat, int val);
+
+} // namespace unitex
 
 #endif

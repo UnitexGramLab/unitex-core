@@ -25,6 +25,8 @@
 #include "LocateMatches.h"
 #include "Vector.h"
 
+namespace unitex {
+
 /**
  * This library provides a cache for storing match lists associated to token
  * sequences, using a ternary search tree.
@@ -44,5 +46,7 @@ LocateCache new_LocateCache(int token,struct match_list* matches,Abstract_alloca
 void free_LocateCache(LocateCache c,Abstract_allocator);
 void cache_match(struct match_list* matches,const int* tab,int start,int end,LocateCache* c,Abstract_allocator);
 int consult_cache(const int* tab,int start,int tab_size,LocateCache* c,vector_ptr* res);
+
+} // namespace unitex
 
 #endif

@@ -35,6 +35,8 @@
 
 #include "Fst2.h"
 
+namespace unitex {
+
 struct FST2_free_info
 {
 	void *func_free_fst2;
@@ -48,5 +50,7 @@ const struct FST2_free_info FST2_free_info_init={NULL,NULL,NULL,1};
 int is_abstract_fst2_filename(const char* filename);
 Fst2* load_abstract_fst2(const VersatileEncodingConfig*,const char* filename,int read_names,struct FST2_free_info*);
 void free_abstract_Fst2(Fst2*,struct FST2_free_info*);
+
+} // namespace unitex
 
 #endif

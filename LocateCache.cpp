@@ -25,6 +25,7 @@
 #include "Error.h"
 #include "Match.h"
 
+namespace unitex {
 
 /**
  * Builds, initializes and returns a new LocateCache.
@@ -162,3 +163,4 @@ explore_cache_node(tab,start+1,tab_size,caches[first_token],res);
 return res->nbelems!=0;
 }
 
+} // namespace unitex

@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 #define POUND 0x00A3
 #define L1 100
 #define L2 300
@@ -43,6 +45,7 @@ int get_indice_var_op(unichar *);
 int flex_op_with_var(unichar (*)[L1],unichar *,unichar *,int *,int *,unsigned int *);
 unsigned int get_flag_var(int,unsigned int);
 
+} // namespace unitex
 
 #endif
 

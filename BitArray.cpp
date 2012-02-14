@@ -24,6 +24,7 @@
 #include "BitArray.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new bit array of the given number
@@ -111,3 +112,5 @@ int mask=((1<<length)-1)<<((n%divider)*length);
 int unshifted_value=array->array[n/array->divider] & mask;
 return unshifted_value>>((n%divider)*length);
 }
+
+} // namespace unitex

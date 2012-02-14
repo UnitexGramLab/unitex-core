@@ -22,6 +22,7 @@
 #include "VariableUtils.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 Ustring* get_variable_content(unichar* name,struct locate_parameters* p) {
 struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
@@ -115,3 +116,5 @@ if (ret==0) {
 }
 return VAR_CMP_DIFF;
 }
+
+} // namespace unitex

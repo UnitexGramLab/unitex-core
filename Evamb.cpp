@@ -30,6 +30,7 @@
 #include "UnitexGetOpt.h"
 #include "Evamb.h"
 
+namespace unitex {
 
 const char* usage_Evamb =
          "Usage: Evamb [OPTIONS] <tfst>\n"
@@ -202,3 +203,5 @@ close_text_automaton(tfst);
 free_OptVars(vars);
 return 0;
 }
+
+} // namespace unitex

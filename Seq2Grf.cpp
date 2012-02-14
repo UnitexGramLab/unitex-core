@@ -42,6 +42,8 @@
 #include "Txt2Tfst.h"
 #include "TfstStats.h"
 
+namespace unitex {
+
 #define STR_VALUE_MACRO(x) #x
 #define STR_VALUE_MACRO_STRING(x) STR_VALUE_MACRO(x)
 
@@ -765,3 +767,5 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	close_text_automaton(tfst);
 
 }
+
+} // namespace unitex

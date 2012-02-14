@@ -32,6 +32,8 @@ FILE* (*real_fopen)(const char *,const char *)=fopen;
 #include "UnusedParameter.h"
 #include "File.h"
 
+namespace unitex {
+namespace virtualfile {
 
 /**
  * Description of a VFS inode.
@@ -525,3 +527,6 @@ return 0;
 }
 
 static int foo=init();
+
+} // namespace virtualfile
+} // namespace unitex

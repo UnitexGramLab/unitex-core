@@ -27,6 +27,7 @@
 #include "DELA.h"
 #include "String_hash.h"
 
+namespace unitex {
 
 /* This structure represents a list of DELA entries */
 struct dela_entry_list {
@@ -53,6 +54,8 @@ struct DELA_tree {
 struct DELA_tree* new_DELA_tree();
 void free_DELA_tree(struct DELA_tree*);
 void load_DELA(const VersatileEncodingConfig*,const char*,struct DELA_tree*);
+
+} // namespace unitex
 
 #endif
 

@@ -41,6 +41,7 @@
 #include "Reconstrucao.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 const char* usage_Reconstrucao =
          "Usage: Reconstrucao [OPTIONS] <index>\n"
@@ -242,4 +243,5 @@ free_OptVars(vars);
 return 0;
 }
 
+} // namespace unitex
 

@@ -68,6 +68,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 #define PC_KEYBOARD_UPPER_LINE_SIZE 13  // number of keys in the digits keyboard line
 #define PC_KEYBOARD_LINE_SIZE 12        // number of keys in a keyboard line
 #define PC_KEYBOARD_LOWER_LINE_SIZE 11  // number of keys in the lowest keyboard line
@@ -99,6 +101,8 @@ int areCloseOnKeyboard(unichar,unichar,Keyboard*);
 void print_Keyboard(Keyboard*,U_FILE*);
 
 void print_available_keyboards(U_FILE*);
+
+} // namespace unitex
 
 #endif
 

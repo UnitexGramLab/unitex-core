@@ -23,6 +23,7 @@
 #include "Error.h"
 #include "StringParsing.h"
 
+namespace unitex {
 
 #define DEFAULT_STRING_HASH_SIZE 4096
 
@@ -612,3 +613,5 @@ if (hash->hash->size==hash->capacity) {
 hash->value[index]=value;
 return index;
 }
+
+} // namespace unitex

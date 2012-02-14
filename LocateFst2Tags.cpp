@@ -28,6 +28,7 @@
 #include "Alphabet.h"
 #include "Tokenization.h"
 
+namespace unitex {
 
 /**
  * This function analyses the inputs of all the tags of the given .fst2 in
@@ -382,3 +383,5 @@ for (int i=0;i<n_tags;i++) {
    }
 }
 }
+
+} // namespace unitex

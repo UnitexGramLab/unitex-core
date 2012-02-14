@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "List_ustring.h"
 
+namespace unitex {
 
 /**
  * This structure is used to store all the INF codes of an .inf file.
@@ -50,6 +51,8 @@ struct INF_codes {
 struct INF_codes* load_INF_file(const VersatileEncodingConfig*,const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void free_INF_codes(struct INF_codes*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_ustring* tokenize_compressed_info(const unichar* line,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+
+} // namespace unitex
 
 #endif
 

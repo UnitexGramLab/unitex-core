@@ -35,6 +35,7 @@
 #include "Error.h"
 #include "HashTable.h"
 
+namespace unitex {
 
 #define JAMO_SIZE 68
 #define MAX_ORDER_JAMO_SIZE 8
@@ -274,5 +275,7 @@ int single_HGJ_to_Jamos(unichar c,unichar* dest,Korean* korean);
 int convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean);
 void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean,int only_syllables);
 int get_length_in_jamo(unichar hangul,Korean* korean);
+
+} // namespace unitex
 
 #endif

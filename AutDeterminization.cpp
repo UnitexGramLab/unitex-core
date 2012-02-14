@@ -22,6 +22,7 @@
 #include "ElagStateSet.h"
 #include "ElagDebug.h"
 
+namespace unitex {
 
 /**
  * Determinizes an automaton with transitions tagged with Elag symbols.
@@ -83,3 +84,5 @@ free_state_set_array(ARRAY);
 /* Now, we empty A's automaton and replace it by res */
 move_SingleGraph(A,&res,free_elag_symbol);
 }
+
+} // namespace unitex

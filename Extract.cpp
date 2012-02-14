@@ -32,6 +32,7 @@
 #include "UnitexGetOpt.h"
 #include "Extract.h"
 
+namespace unitex {
 
 const char* usage_Extract =
          "Usage: Extract [OPTIONS] <text>\n"
@@ -181,3 +182,4 @@ u_printf("Done.\n");
 return 0;
 }
 
+} // namespace unitex

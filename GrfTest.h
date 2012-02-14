@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_GrfTest;
 extern struct option_TS* lopts_GrfTest;
 extern const char* usage_GrfTest;
 
 int main_GrfTest(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

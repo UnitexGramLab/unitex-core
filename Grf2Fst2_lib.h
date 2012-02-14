@@ -31,6 +31,7 @@
 #include "SingleGraph.h"
 #include "Vector.h"
 
+namespace unitex {
 
 /**
  * This structure defines all the information that will be useful for the
@@ -95,6 +96,8 @@ void write_tags(U_FILE*,struct string_hash*);
 void write_number_of_graphs(const VersatileEncodingConfig*,const char*,int,int);
 void write_graph(U_FILE*,SingleGraph,int,unichar*);
 void renumber_graph_calls(Fst2*,vector_int*,vector_int*);
+
+} // namespace unitex
 
 #endif
 

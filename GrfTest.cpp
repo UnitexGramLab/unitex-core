@@ -40,6 +40,7 @@
 #include "Grf_lib.h"
 #include "GrfTest_lib.h"
 
+namespace unitex {
 
 #define PFX_TOKENIZE "T:"
 #define PFX_DICO "D:"
@@ -393,3 +394,5 @@ free_ProgramInvoker(invoker_Concord);
 free_OptVars(vars);
 return ret;
 }
+
+} // namespace unitex

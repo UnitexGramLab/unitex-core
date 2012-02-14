@@ -33,6 +33,7 @@
 #include "Symbol.h"
 #include "DELA.h"
 
+namespace unitex {
 
 /* Predefined POSs */
 static const unichar UNKNOWN_STR[] = { '?', 0 };
@@ -241,5 +242,7 @@ static inline unichar * language_get_form(language_t * lang, int idx) {
 }
 
 struct dela_entry* filter_dela_entry(struct dela_entry*,unichar* tag,language_t*,int);
+
+} // namespace unitex
 
 #endif

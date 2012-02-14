@@ -23,6 +23,8 @@
 #include "PortugueseNormalization.h"
 #include "Error.h"
 
+namespace unitex {
+
 //
 // this function takes a string like "[aaa]bbb" and put aaa in the
 // parameter prefix while the parameter s is replaced by bbb
@@ -598,3 +600,5 @@ while (pronoun[i]!='\0') {
 }
 return res;
 }
+
+} // namespace unitex

@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_Table2Grf;
 extern const struct option_TS lopts_Table2Grf[];
 extern const char* usage_Table2Grf;
 
 int main_Table2Grf(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

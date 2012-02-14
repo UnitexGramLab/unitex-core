@@ -25,12 +25,16 @@
 #include "UnitexGetOpt.h"
 #include "Unicode.h"
 
+namespace unitex {
+
 int main_Txt2Tfst(int argc,char* const argv[]);
 int read_sentence(int* buffer,int *N,int *total,U_FILE* f,int SENTENCE_MARKER);
 
 extern const char* optstring_Txt2Tfst;
 extern const struct option_TS lopts_Txt2Tfst[];
 extern const char* usage_Txt2Tfst;
+
+} // namespace unitex
 
 #endif
 

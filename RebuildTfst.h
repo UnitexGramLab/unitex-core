@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_RebuildTfst;
 extern const struct option_TS lopts_RebuildTfst[];
 extern const char* usage_RebuildTfst;
 
 int main_RebuildTfst(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

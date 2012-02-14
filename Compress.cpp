@@ -37,6 +37,8 @@
 #include "CompressedDic.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 const char* usage_Compress =
          "Usage: Compress [OPTIONS] <dictionary>\n"
          "\n"
@@ -425,3 +427,4 @@ compress_abstract_allocator=NULL;
 return 0;
 }
 
+} // namespace unitex

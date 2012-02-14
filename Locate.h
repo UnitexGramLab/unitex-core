@@ -26,6 +26,8 @@
 #include "FileEncoding.h"
 #include "LocateConstants.h"
 
+namespace unitex {
+
 extern const char* optstring_Locate;
 extern const struct option_TS lopts_Locate[];
 extern const char* usage_Locate;
@@ -34,6 +36,7 @@ int main_Locate(int argc,char* const argv[]);
 int launch_locate_as_routine(const VersatileEncodingConfig*,const char*,const char*,const char*,
                              OutputPolicy,MatchPolicy,const char*,int,int,const char*,const char*,int);
 
+} // namespace unitex
 
 #endif
 

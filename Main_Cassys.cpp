@@ -8,6 +8,7 @@
 #include "IOBuffer.h"
 #include "Cassys.h"
 
+using namespace unitex;
 
 int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,

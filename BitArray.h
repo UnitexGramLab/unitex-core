@@ -24,6 +24,7 @@
 
 #include "AbstractAllocator.h"
 
+namespace unitex {
 
 /**
  * This enumeration describes the valid lengthes for an information
@@ -57,4 +58,7 @@ struct bit_array* new_bit_array(int,InfoLength,Abstract_allocator prv_alloc=STAN
 void free_bit_array(struct bit_array*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void set_value(struct bit_array*,int,int);
 int get_value(const struct bit_array*,int);
+
+} // namespace unitex
+
 #endif

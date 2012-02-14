@@ -34,6 +34,7 @@
 #include "UnitexGetOpt.h"
 #include "XMLizer.h"
 
+namespace unitex {
 
 #define XML 0
 #define TEI 1
@@ -336,3 +337,5 @@ void xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,
 	u_fclose(output);
 	u_printf("Done.\n");
 }
+
+} // namespace unitex

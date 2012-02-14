@@ -28,6 +28,7 @@
 #include "Vector.h"
 #include "Keyboard.h"
 
+namespace unitex {
 
 /**
  * Here are the four main kinds of tolerated errors.
@@ -134,6 +135,8 @@ extern int default_scores[N_SPSubOp];
 
 void spellcheck(SpellCheckConfig*);
 void init_scores(int* score,int s1,int s2,int s3,int s4,int s5,int s6,int s7,int s8,int s9);
+
+} // namespace unitex
 
 #endif
 

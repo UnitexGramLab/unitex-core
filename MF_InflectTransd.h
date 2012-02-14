@@ -38,6 +38,7 @@
 
 #include "MF_InflectTransdBase.h"
 
+namespace unitex {
 
 
 ///////////////////////////////
@@ -53,5 +54,7 @@ void free_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx);
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array.
 int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex, const VersatileEncodingConfig*,const char* pkgdir);
+
+} // namespace unitex
 
 #endif

@@ -40,6 +40,8 @@
 
 
 #ifdef __cplusplus
+namespace unitex {
+namespace logger {
 extern "C" {
 #endif
 
@@ -53,7 +55,9 @@ int main_MzRepairUlp(int argc,char* const argv[]);
 
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 #endif

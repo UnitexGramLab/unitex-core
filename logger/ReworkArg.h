@@ -39,6 +39,8 @@
 
 
 #ifdef __cplusplus
+namespace unitex {
+namespace logger {
 extern "C" {
 #endif
 
@@ -58,7 +60,9 @@ const char* GetFileNameRemovePrefixIfFound(const char* filename,const char*porti
 const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy);
 
 #ifdef __cplusplus
-}
+} // extern "C"
+} // namespace logger
+} // namespace unitex
 #endif
 
 #endif

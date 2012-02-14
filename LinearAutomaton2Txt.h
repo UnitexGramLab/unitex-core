@@ -25,11 +25,15 @@
 #include "Tfst.h"
 #include "Unicode.h"
 
+namespace unitex {
+
 #define LINEAR_AUTOMATON -1
 
 
 int isLinearAutomaton(Tfst*);
 int convertLinearAutomaton(Tfst*,U_FILE*);
+
+} // namespace unitex
 
 #endif
 

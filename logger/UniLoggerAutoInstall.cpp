@@ -50,6 +50,8 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+namespace logger {
 
 void InstallLogger::LoadParamFile(const char* parameter_filename)
 {
@@ -303,5 +305,9 @@ InstallLogger::~InstallLogger()
 #ifdef UNITEX_LOGGER_AUTOINSTALL_AUTOINSTANCE
 InstallLogger InstallLoggerInstance;
 #endif
+
+} // namespace logger
+} // namespace unitex
+
 #endif
 

@@ -25,6 +25,8 @@
 #include "Unicode.h"
 #include "Overlap.h"
 
+namespace unitex {
+
 /**
  * This structure is used to define the core information about a match,
  * either for Locate or LocateTfst.
@@ -52,6 +54,8 @@ int same_positions(Match* a,Match* b);
 int match_start_before(Match* a,Match* b);
 Overlap compare_matches(Match* a,Match* b);
 int valid_text_interval_tfst(Match* a,Match* b);
+
+} // namespace unitex
 
 #endif
 

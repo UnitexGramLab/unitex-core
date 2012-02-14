@@ -23,6 +23,7 @@
 #include "Stack_int.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a stack of the given size.
@@ -106,3 +107,4 @@ if (stacki_is_empty(stack)) {
 return stack->stack[(stack->stack_pointer)--];
 }
 
+} // namespace unitex

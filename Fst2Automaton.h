@@ -27,6 +27,8 @@
 #include "SingleGraph.h"
 #include "String_hash.h"
 
+namespace unitex {
+
 /**
  * This structure defines an automaton of .fst2, ready to be used
  * for by ELAG programs.
@@ -49,5 +51,6 @@ void free_Fst2Automaton(Fst2Automaton*,void (*free_elag_symbol)(symbol_t*));
 void add_transition(SingleGraph,struct string_hash_ptr*,int,symbol_t*,int);
 void save_automaton(const Fst2Automaton * A, const char * name, const VersatileEncodingConfig*, int type);
 
+} // namespace unitex
 
 #endif

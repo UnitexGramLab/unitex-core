@@ -24,7 +24,7 @@
 #include "AsciiSearchTree.h"
 #include "Error.h"
 
-
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a search tree node.
@@ -169,3 +169,5 @@ void free_search_tree_node(struct search_tree_node* root)
 		free(root);
 	}
 }
+
+} // namespace unitex

@@ -24,6 +24,7 @@
 #include "LemmaTree.h"
 #include "Error.h"
 
+namespace unitex {
 
 void free_lemma_node_list(struct lemma_node_list*);
 
@@ -187,3 +188,5 @@ else return get_inflected_forms(lemma,pos,dest_node);
 struct list_ustring* get_inflected_forms(unichar* lemma,struct lemma_node* root) {
 return get_inflected_forms(lemma,0,root);
 }
+
+} // namespace unitex

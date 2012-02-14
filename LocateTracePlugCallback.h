@@ -39,6 +39,7 @@
 
 #ifdef __cplusplus
 extern "C" {
+using namespace unitex;
 #endif
 
 typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_open_locate_trace)(void* privatePtrGlobal,struct locate_parameters* p);

@@ -25,6 +25,10 @@
 #include "DictionaryTree.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 void create_and_save_bin(struct dictionary_node*,const char*,int*,int*,int*,int*,int,BinType);
+
+} // namespace unitex
 
 #endif

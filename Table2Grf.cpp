@@ -29,6 +29,7 @@
 #include "UnitexGetOpt.h"
 #include "Table2Grf.h"
 
+namespace unitex {
 
 #define MAX_LINES_IN_TABLE 10000
 
@@ -721,3 +722,4 @@ u_fclose(result_graph);
 u_printf("Done.                                             \n");
 }
 
+} // namespace unitex

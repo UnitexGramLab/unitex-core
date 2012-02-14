@@ -25,6 +25,7 @@
 #include "Alphabet.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html,
 		unichar* bastien[],U_FILE* f_bastien);
@@ -547,3 +548,5 @@ write_offsets(offsets,(*pos)-(2+i),*pos,*new_pos,(*new_pos)+1);
 (*new_pos)++;
 return 1;
 }
+
+} // namespace unitex

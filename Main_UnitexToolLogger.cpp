@@ -48,6 +48,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+using namespace unitex;
+using namespace unitex::logger;
 
 const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\n"
                                 "or \n"

@@ -33,6 +33,7 @@
 #include "Tfst2Grf.h"
 #include "Grf_lib.h"
 
+namespace unitex {
 
 const char* usage_Tfst2Grf =
          "Usage: Tfst2Grf [OPTIONS] <tfst>\n"
@@ -213,3 +214,5 @@ free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }
+
+} // namespace unitex

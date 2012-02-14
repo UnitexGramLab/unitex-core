@@ -26,6 +26,8 @@
 #include "Transitions.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
+
 /**
  * This structure stores the information needed to deal with 
  * the context marks $[ $![ and $]
@@ -65,6 +67,8 @@ struct opt_contexts** compute_contexts(Fst2*,Abstract_allocator prv_alloc=STANDA
 
 struct list_context* new_list_context(int n,struct list_context* next);
 void free_list_context(struct list_context* l);
+
+} // namespace unitex
 
 #endif
 

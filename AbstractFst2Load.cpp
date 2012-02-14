@@ -36,6 +36,7 @@
 #include "AbstractFst2Load.h"
 #include "AbstractFst2PlugCallback.h"
 
+namespace unitex {
 
 struct AbstractFst2Space {
 	t_persistent_fst2_func_array func_array;
@@ -196,3 +197,5 @@ void free_abstract_Fst2(Fst2* fst2,struct FST2_free_info* p_fst2_free_info)
         }
     }
 }
+
+} // namespace unitex

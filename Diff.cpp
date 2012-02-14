@@ -25,6 +25,7 @@
 #include "Concord.h"
 #include "Concordance.h"
 
+namespace unitex {
 
 #define RED "#FF0000"
 #define GREEN "#008000"
@@ -326,3 +327,5 @@ if (f2!=NULL) {
 }
 u_fprintf(output,"</font></td></tr>\n");
 }
+
+} // namespace unitex

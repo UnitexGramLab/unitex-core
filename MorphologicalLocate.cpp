@@ -33,6 +33,7 @@
 #include "CompressedDic.h"
 #include "Contexts.h"
 
+namespace unitex {
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
  see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
@@ -2092,3 +2093,5 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
 	free_Ustring(line_buffer);
 	free(buffer_line_buffer_inflected);
 }
+
+} // namespace unitex

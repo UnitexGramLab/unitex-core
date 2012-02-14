@@ -29,6 +29,8 @@
 //#include "MF_DicoMorpho.h" //add
 //#include "MF_DicoMorphoBase.h" //add
 
+namespace unitex {
+
 /**
  * 
  * This library is used to parse the "Morphology" file that is 
@@ -90,5 +92,6 @@ typedef struct{
   l_class_T classes[MAX_CLASSES];  //e.g. (noun, verb, etc.)
 } l_classes_T;
 
+} // namespace unitex
 
 #endif

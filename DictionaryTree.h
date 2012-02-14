@@ -28,6 +28,7 @@
 #include "List_int.h"
 #include "BitArray.h"
 
+namespace unitex {
 
 /**
  * This structure represents a node of a DELAF dictionary being loaded before
@@ -96,5 +97,7 @@ struct dictionary_node* new_dictionary_node(Abstract_allocator);
 
 void minimize_tree(struct dictionary_node*,struct bit_array*,Abstract_allocator);
 void move_outputs_on_transitions(struct dictionary_node* root,struct string_hash* inf_codes);
+
+} // namespace unitex
 
 #endif

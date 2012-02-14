@@ -25,8 +25,11 @@
 #include "Grf_lib.h"
 #include "Alphabet.h"
 
+namespace unitex {
+
 void beautify(Grf* grf,Alphabet* alphabet);
 
+} // namespace unitex
 
 
 #endif

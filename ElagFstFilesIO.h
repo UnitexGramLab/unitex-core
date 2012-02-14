@@ -28,6 +28,7 @@
 #include "Tfst.h"
 
 
+namespace unitex {
 
 /* for symbol -> label translation */
 
@@ -135,5 +136,7 @@ Elag_fst_file_out* fst_file_out_open(const VersatileEncodingConfig*,const char*,
 void fst_file_close_out(Elag_fst_file_out * fstout);
 
 void fst_file_write(Elag_fst_file_out * fstf, const Fst2Automaton * A);
+
+} // namespace unitex
 
 #endif

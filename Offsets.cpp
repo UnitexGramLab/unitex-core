@@ -27,6 +27,8 @@
 #include "File.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 /**
  * Loads the given offset file. Returns NULL in case of error.
  */
@@ -270,3 +272,4 @@ u_fclose(f);
 return v;
 }
 
+} // namespace unitex

@@ -32,6 +32,7 @@
 #include "MappedFileHelper.h"
 #include "DebugMode.h"
 
+namespace unitex {
 
 /* Delay between two prints (yyy% done) */
 #define DELAY CLOCKS_PER_SEC
@@ -2275,3 +2276,4 @@ void shift_variable_bounds(Variables* v, int shift) {
 	}
 }
 
+} // namespace unitex

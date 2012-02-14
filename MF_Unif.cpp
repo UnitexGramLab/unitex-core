@@ -31,6 +31,8 @@
 #include "MF_Unif.h"
 #include "Error.h"
 
+namespace unitex {
+
 ///////////////////////////////////////////////////////////////////////////////////////
 //Global structure describing the morphological categories of a language
 //extern l_cats_T L_CATS;
@@ -195,3 +197,5 @@ int unif_free_vars(MultiFlex_ctx* p_multiFlex_ctx) {
     free((p_multiFlex_ctx->UNIF_VARS).vars[v].id);
   return 0;
 }
+
+} // namespace unitex

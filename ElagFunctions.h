@@ -31,9 +31,13 @@
 #include "Vector.h"
 #include "LanguageDefinition.h"
 
+namespace unitex {
+
 void remove_ambiguities(const char* input_tfst,vector_ptr* grammars,const char* output_tfst, const VersatileEncodingConfig*,
 		language_t* language);
 void explode_tfst(const char* input_tfst,const char* output_tfst, const VersatileEncodingConfig*,language_t* language,struct hash_table* form_frequencies);
 vector_ptr* load_elag_grammars(const VersatileEncodingConfig*,const char* filename,language_t* language,const char* directory);
+
+} // namespace unitex
 
 #endif

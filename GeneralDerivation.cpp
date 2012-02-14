@@ -24,6 +24,7 @@
 #include "Vector.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 // main internal functions:
 void analyse_word_list(Dictionary*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,const Alphabet*,
@@ -1237,3 +1238,5 @@ if (final) { // if we are in a terminal state
     restore_output(z,ustr);
   }
 }
+
+} // namespace unitex

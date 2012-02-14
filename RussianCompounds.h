@@ -24,6 +24,10 @@
 
 #include "GeneralDerivation.h"
 
+namespace unitex {
+
 void init_russian(struct utags *UTAG);
+
+} // namespace unitex
 
 #endif

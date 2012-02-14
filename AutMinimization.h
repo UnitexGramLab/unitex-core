@@ -25,6 +25,7 @@
 #include "SingleGraph.h"
 #include "String_hash.h"
 
+namespace unitex {
 
 /**
  * This library provides a function for minimizing ELAG automata.
@@ -39,5 +40,7 @@
  */
 
 void elag_minimize(SingleGraph,int level=0);
+
+} // namespace unitex
 
 #endif

@@ -22,6 +22,7 @@
 #include "DELA_tree.h"
 #include "Error.h"
 
+namespace unitex {
 
 void free_dela_entry_list(struct dela_entry_list*);
 
@@ -154,3 +155,5 @@ while (EOF!=readline(line,f)) {
 free_Ustring(line);
 u_fclose(f);
 }
+
+} // namespace unitex

@@ -35,6 +35,7 @@
 #include "File.h"
 #include "Grf2Fst2.h"
 
+namespace unitex {
 
 ///////////////////////////////
 // ALL FUNCTIONS IN THIS MODULE
@@ -200,3 +201,5 @@ if (trans->n==NULL) {
 }
 return get_node(p_multiFlex_ctx,flex,vec,pos+1,trans->n,pkgdir);
 }
+
+} // namespace unitex

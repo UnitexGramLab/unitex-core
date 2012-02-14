@@ -42,6 +42,8 @@
 #define CONFIG_FILES_OK 0
 #define CONFIG_FILES_ERROR 1
 
+namespace unitex {
+
 //maximum length of a line in the file containing equivalences between morphological and dictionary values
 #define MAX_EQUIV_LINE 100
 //maximum number of equivalences between morphological and dictionary values
@@ -62,5 +64,7 @@ typedef struct {
   int no_equiv;       //number of equivalences
   d_morpho_eq_T equiv[MAX_MORPHO_EQUIV];  //set of equivalences
 } d_morpho_equiv_T;
+
+} // namespace unitex
 
 #endif

@@ -22,12 +22,16 @@
 #ifndef ErrorH
 #define ErrorH
 
+namespace unitex {
+
 void fatal_error(int,const char*,...);
 void fatal_error(const char*,...);
 void fatal_alloc_error(const char*);
 void error(const char*,...);
 void debug(const char*,...);
 void set_debug(char);
+
+} // namespace unitex
 
 #endif
 

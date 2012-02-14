@@ -31,6 +31,8 @@
 #include "CompressedDic.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 /* Maximum size of a DELA line */
 #define DIC_LINE_SIZE 4096
 
@@ -131,6 +133,8 @@ void debug_println_entry(struct dela_entry*);
 
 void dela_entry_to_string(Ustring* s,struct dela_entry* e);
 void replace_special_equal_signs(unichar* s);
+
+} // namespace unitex
 
 #endif
 

@@ -24,6 +24,7 @@
 #include "Stack_int.h"
 #include "Error.h"
 
+namespace unitex {
 
 #define MAX_REG2GRF_STATES 10000
 
@@ -1018,4 +1019,5 @@ free_stack_int(couples);
 return value;
 }
 
+} // namespace unitex
 

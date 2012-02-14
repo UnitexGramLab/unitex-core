@@ -32,6 +32,8 @@
 #include "LoadInf.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 /*
  * This is the structure that holds 
  *  - The strings that each token represent (unichar **token)
@@ -58,6 +60,8 @@ int get_token_number(const unichar*,struct text_tokens*);
 int is_a_digit_token(const unichar* s);
 void extract_semantic_codes_from_tokens(const struct string_hash*,struct string_hash*,Abstract_allocator prv_alloc);
 void extract_semantic_codes_from_morpho_dics(Dictionary**,int,struct string_hash*,Abstract_allocator prv_alloc);
+
+} // namespace unitex
 
 //---------------------------------------------------------------------------
 #endif

@@ -32,6 +32,7 @@
 #include "DELA.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 void build_portuguese_normalization_grammar(const Alphabet*,struct match_list*,
 											Dictionary*,Dictionary*,
@@ -48,5 +49,7 @@ void save_portuguese_normalization_grammar(int,struct match_list*,const char*, c
 int explore_portuguese_normalization_tree(unichar*,const unichar*,struct list_ustring*,struct normalization_tree*,
                                           const Alphabet*);
 struct list_ustring* tokenize_portuguese_pronoun(const unichar*);
+
+} // namespace unitex
 
 #endif

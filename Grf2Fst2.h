@@ -25,6 +25,8 @@
 #include "UnitexGetOpt.h"
 #include "FileEncoding.h"
 
+namespace unitex {
+
 extern const char* optstring_Grf2Fst2;
 extern const struct option_TS lopts_Grf2Fst2[];
 extern const char* usage_Grf2Fst2;
@@ -33,6 +35,8 @@ int main_Grf2Fst2(int argc,char* const argv[]);
 int pseudo_main_Grf2Fst2(const VersatileEncodingConfig*,
                          const char* name,int yes_or_no,const char* alphabet,
                          int no_empty_graph_warning,int tfst_check,const char* pkgdir);
+
+} // namespace unitex
 
 #endif
 

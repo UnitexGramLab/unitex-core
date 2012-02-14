@@ -31,6 +31,8 @@
 #include "MF_LangMorpho.h"
 #include "Error.h"
 
+namespace unitex {
+
 //extern l_cats_T L_CATS;
 
 ////////////////////////////////////////////
@@ -237,4 +239,5 @@ int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2) {
   return 0;
 }
 
+} // namespace unitex
 

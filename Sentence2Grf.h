@@ -25,8 +25,11 @@
 #include "Tfst.h"
 #include "Grf_lib.h"
 
+namespace unitex {
 
 Grf* sentence_to_grf(Tfst*,char*,int,int);
 int width_of_tag(TfstTag*);
+
+} // namespace unitex
 
 #endif

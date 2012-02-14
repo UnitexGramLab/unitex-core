@@ -23,6 +23,7 @@
 #include "String_hash.h"
 #include "Error.h"
 
+namespace unitex {
 
 unichar to_buckwalter(unichar c) {
 switch (c) {
@@ -476,3 +477,5 @@ return 1;
 default: return 0;
 }
 }
+
+} // namespace unitex

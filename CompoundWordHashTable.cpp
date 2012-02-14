@@ -26,6 +26,7 @@
 #include "List_ustring.h"
 #include "LocateConstants.h"
 
+namespace unitex {
 
 int get_tct_hash_block_item_size_array(int nb_Item)
 {
@@ -284,3 +285,5 @@ while (list!=NULL) {
 token_sequence[i]=-1;
 return 1;
 }
+
+} // namespace unitex

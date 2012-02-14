@@ -26,6 +26,8 @@
 #include "AbstractDelaLoad.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 #define HAS_BIN2_SUPPORT   1
 
 #define BIN_V1_HEADER_SIZE 4
@@ -121,6 +123,8 @@ int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustri
 
 int load_persistent_dictionary(const char* name);
 void free_persistent_dictionary(const char* name);
+
+} // namespace unitex
 
 #endif
 

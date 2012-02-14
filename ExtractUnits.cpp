@@ -23,6 +23,8 @@
 #include "LocateMatches.h"
 #include "Error.h"
 
+namespace unitex {
+
 struct extract_buf_mapped {
     ABSTRACTMAPFILE* amf;
     const int*int_buffer_;
@@ -160,3 +162,4 @@ while (L!=NULL && L->m.start_pos_in_token<=end) {
 return L;
 }
 
+} // namespace unitex

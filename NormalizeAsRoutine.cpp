@@ -24,6 +24,7 @@
 #include "StringParsing.h"
 #include "NormalizeAsRoutine.h"
 
+namespace unitex {
 
 #define MAX_LINE_BUFFER_SIZE (32768)
 #define MINIMAL_CHAR_IN_BUFFER_BEFORE_CONTINUE_LINE (256)
@@ -386,3 +387,4 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 	return 0;
 }
 
+} // namespace unitex

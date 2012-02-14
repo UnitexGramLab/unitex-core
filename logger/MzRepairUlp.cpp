@@ -15,6 +15,8 @@
 
 #ifndef NO_UNITEX_LOGGER
 
+namespace unitex {
+namespace logger {
 
 extern const char* optstring_MzRepairUlp;
 extern const struct option_TS lopts_MzRepairUlp[];
@@ -147,5 +149,8 @@ if (retRepair==0) {
 }
 return retRepair;
 }
+
+} // namespace unitex
+} // namespace logger
 
 #endif

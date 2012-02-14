@@ -43,6 +43,7 @@
 #include "BitArray.h"
 
 
+namespace unitex {
 
 /**
  * This structure defines a morphological filter.
@@ -94,5 +95,8 @@ int string_match_filter(const FilterSet*,const unichar*,int,wchar_t*);
 int token_match_filter(FilterMatchIndex*,int,int);
 
 #endif
+
+} // namespace unitex
+
 #endif
 

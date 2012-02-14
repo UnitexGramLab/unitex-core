@@ -43,6 +43,8 @@
 #include "LoadInf.h"
 #include "CompressedDic.h"
 
+namespace unitex {
+
 /**
  * This structure corresponds to a entry in the viterbi
  * matrix (and a transition tag in the automata).
@@ -94,6 +96,8 @@ void compute_best_probability(Dictionary*,const Alphabet*,struct matrix_entry**,
 vector_ptr* do_viterbi(Dictionary*,const Alphabet*,Tfst*,int);
 int get_form_type(Dictionary*,const Alphabet*);
 void do_tagging(Tfst*,Tfst*,Dictionary*,const Alphabet*,int,struct hash_table*);
+
+} // namespace unitex
 
 #endif
 

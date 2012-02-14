@@ -28,6 +28,8 @@
 #include "Ustring.h"
 #include "Vector.h"
 
+namespace unitex {
+
 /**
  * This structure is used to store the list of current pending output variables while
  * exploring a grammar
@@ -77,5 +79,7 @@ void unset_output_variable_pending(OutputVariables* var,const unichar* var_name)
 
 unsigned int add_raw_string_to_output_variables(OutputVariables*,unichar*);
 void remove_chars_from_output_variables(OutputVariables*,unsigned int);
+
+} // namespace unitex
 
 #endif

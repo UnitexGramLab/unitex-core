@@ -29,6 +29,7 @@
 #include "UnitexGetOpt.h"
 #include "TEI2Txt.h"
 
+namespace unitex {
 
 void tei2txt(char*, char*, const VersatileEncodingConfig*);
 
@@ -242,3 +243,5 @@ void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 	u_fclose(output);
 	u_printf("Done.\n");
 }
+
+} // namespace unitex

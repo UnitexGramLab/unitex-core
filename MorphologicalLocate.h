@@ -32,6 +32,7 @@
 #include "LocatePattern.h"
 #include "MorphologicalFilters.h"
 
+namespace unitex {
 
 void enter_morphological_mode(/*int graph_depth, */ /* 0 means that we are in the top level graph */
             int state, /* current state in the grammar */
@@ -46,6 +47,8 @@ void enter_morphological_mode(/*int graph_depth, */ /* 0 means that we are in th
             struct locate_parameters* p /* miscellaneous parameters needed by the function */
             //,variable_backup_memory_reserve* backup_reserve
 );
+
+} // namespace unitex
 
 #endif
 

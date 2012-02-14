@@ -31,6 +31,7 @@
 #include "Symbol.h"
 #include "LanguageDefinition.h"
 
+namespace unitex {
 
 #define AUT_INITIAL    1
 #define AUT_FINAL      2
@@ -124,5 +125,7 @@ void flatten_transition(Transition*);
 void expand_transitions(language_t*,Transition*,Transition*);
 
 void debug_print(state_set*);
+
+} // namespace unitex
 
 #endif

@@ -25,6 +25,8 @@
 #include "Unicode.h"
 #include "Ustring.h"
 
+namespace unitex {
+
 /** 
  * Here are the error codes used for string parsing. Some of them like
  * P_UNEXPECTED_COMMENT are specially designed for errors in DELA lines.
@@ -104,5 +106,7 @@ int escape(const unichar* s,unichar* result,const unichar* chars_to_escape);
 int escape(const unichar* s,Ustring* result,const unichar* chars_to_escape);
 int unprotect(const unichar* s,unichar* result,const unichar* chars_to_unprotect);
 int unprotect(const unichar* s,Ustring* result,const unichar* chars_to_unprotect);
+
+} // namespace unitex
 
 #endif

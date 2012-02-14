@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 static DiffOp* new_DiffOp(DiffOpType type) {
 DiffOp* d=(DiffOp*)malloc(sizeof(DiffOp));
@@ -1151,3 +1152,4 @@ for (int i=0;i<diff->diff_ops->nbelems;i++) {
 }
 }
 
+} // namespace unitex

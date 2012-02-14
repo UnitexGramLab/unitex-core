@@ -24,11 +24,15 @@
 
 #include "UnitexGetOpt.h"
 
+namespace unitex {
+
 extern const char* optstring_TfstTag;
 extern const struct option_TS lopts_TfstTag[];
 extern const char* usage_TfstTag;
 
 int main_TfstTag(int argc,char* const argv[]);
+
+} // namespace unitex
 
 #endif
 

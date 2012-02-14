@@ -25,6 +25,7 @@
 #include "ElagDebug.h"
 
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new state id.
@@ -563,3 +564,4 @@ while (l!=NULL) {
 }
 }
 
+} // namespace unitex

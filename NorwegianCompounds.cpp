@@ -24,6 +24,7 @@
 #include "List_ustring.h"
 #include "Ustring.h"
 
+namespace unitex {
 
 /**
  * As the PolyLex program was originaly designed for Norwegian,
@@ -921,3 +922,5 @@ for (int i=0;i<n_transitions;i++) {
 	restore_output(z,ustr);
 }
 }
+
+} // namespace unitex

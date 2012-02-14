@@ -30,6 +30,7 @@
 #include "LoadInf.h"
 #include "CompressedDic.h"
 
+namespace unitex {
 
 // 0 no debugging information
 // 1 for additional debugging information
@@ -60,5 +61,7 @@ struct utags init_utags (tags);
 
 void analyse_compounds(const Alphabet*, Dictionary*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,
                        struct utags);
+
+} // namespace unitex
 
 #endif

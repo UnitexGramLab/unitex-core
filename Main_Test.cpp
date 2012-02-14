@@ -43,6 +43,8 @@
 #include "VirtualFiles.h"
 #include <time.h>
 
+using namespace unitex;
+
 /**
  * This program is designed for test purpose only.
  */

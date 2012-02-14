@@ -29,6 +29,7 @@
 
 #define MAXBUF  1024
 
+namespace unitex {
 
 /**
  * Loads the tags of the given .fst2 file. Returns 0 in case of success; -1 otherwise.
@@ -558,3 +559,5 @@ close_text_automaton(fstf->tfst);
 //free_language_t(fstf->language);
 free(fstf);
 }
+
+} // namespace unitex

@@ -24,6 +24,7 @@
 
 #include "Fst2Automaton.h"
 
+namespace unitex {
 
 /**
  * This library provides the tools for compiling Elag rules.
@@ -70,5 +71,7 @@ typedef struct {
 
 int compile_elag_grammar(char*,char*, const VersatileEncodingConfig*,language_t*);
 int compile_elag_rules(char*,char*, const VersatileEncodingConfig*,language_t*);
+
+} // namespace unitex
 
 #endif

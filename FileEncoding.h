@@ -21,6 +21,9 @@
 
 #ifndef FileEncodingH
 #define FileEncodingH
+
+namespace unitex {
+
 /**
  * We define here the I/O encodings that are supported by the Unicode library.
  */
@@ -68,5 +71,7 @@ typedef struct {
 	 * 0=no 1=yes 2=yes for UTF16LE and UTF16BE */
 	int bom_output;
 } VersatileEncodingConfig;
+
+} // namespace unitex
 
 #endif

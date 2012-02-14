@@ -31,6 +31,8 @@
 #include "TfstTag.h"
 #include "LocateMatches.h"
 
+namespace unitex {
+
 static void process(Tfst* in,Tfst* out,struct match_list* matches);
 
 const char* usage_TfstTag =
@@ -150,10 +152,10 @@ close_text_automaton(input_tfst);
 close_text_automaton(output_tfst);
 if (output[0]=='\0') {
 	/* If we wanted to replace the given text automaton, we do it now */
-	remove(in_tfst);
-	remove(in_tind);
-	rename(out_tfst,in_tfst);
-	rename(out_tind,in_tind);
+	::remove(in_tfst);
+	::remove(in_tind);
+	::rename(out_tfst,in_tfst);
+	::rename(out_tind,in_tind);
 }
 free_OptVars(vars);
 u_printf("Done.\n");
@@ -210,3 +212,5 @@ for (int i=1;i<=in->N;i++) {
 	save_current_sentence(in,out->tfst,out->tind,NULL,0,NULL);
 }
 }
+
+} // namespace unitex

@@ -32,6 +32,8 @@
 #include "MF_SU_morpho.h"
 #include "Error.h"
 
+namespace unitex {
+
 ////////////////////////////////////////////
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["m�moire vive",{Gen=fem,Nb=sing}],["m�moires vives",{Gen=fem,Nb=pl}]}
@@ -306,3 +308,4 @@ void MU_delete_lemma(MU_lemma_T* l) {
 	free(l);
 }
 
+} // namespace unitex

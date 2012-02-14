@@ -22,6 +22,7 @@
 #include "SymbolAlphabet.h"
 #include "AutMinimization.h"
 
+namespace unitex {
 
 /**
  * This structure defines a collection of transitions to be
@@ -341,4 +342,6 @@ move_SingleGraph(automaton,&result,free_symbol);
 free(color);
 free(chosen);
 }
+
+} // namespace unitex
 

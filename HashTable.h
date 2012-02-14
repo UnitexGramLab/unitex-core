@@ -25,6 +25,7 @@
 #include "Any.h"
 #include "AbstractAllocator.h"
 
+namespace unitex {
 
 /* Values used to set the behavior if the key is not in the table */
 #define HT_INSERT_IF_NEEDED 0
@@ -104,6 +105,8 @@ struct any* get_value(struct hash_table*,int,int,int*);
 struct any* get_value(struct hash_table*,void*,int);
 struct any* get_value(struct hash_table*,int,int);
 void free_any_ptr(void*);
+
+} // namespace unitex
 
 #endif
 

@@ -38,6 +38,9 @@
  *
  */
 #include "MF_DicoMorphoBase.h"
+
+namespace unitex {
+
 /*
 #define CONFIG_FILES_OK 0
 #define CONFIG_FILES_ERROR 1
@@ -156,5 +159,7 @@ l_class_T* d_get_class_str(unichar* cl_str,d_class_equiv_T* D_CLASS_EQUIV);
 /*If no string corresponds to the class, returns NULL.                                */
 /* The return structure is NOT allocated in the function.                             */
 unichar* d_get_str_class(l_class_T* cl,d_class_equiv_T* D_CLASS_EQUIV);
+
+} // namespace unitex
 
 #endif

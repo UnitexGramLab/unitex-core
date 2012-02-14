@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 
+namespace unitex {
+
 /**
  * This structure is used to handle a value of any type. If we want to
  * use a new type, we just have to add the corresponding line in the union.
@@ -38,6 +40,8 @@ struct any {
       double _double;
    };
 };
+
+} // namespace unitex
 
 #endif
 

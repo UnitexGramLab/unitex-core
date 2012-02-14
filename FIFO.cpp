@@ -22,6 +22,7 @@
 #include "FIFO.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a new FIFO.
@@ -171,3 +172,4 @@ struct any tmp=take_any(f);
 return tmp._int;
 }
 
+} // namespace unitex

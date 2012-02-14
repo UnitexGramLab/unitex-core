@@ -22,6 +22,7 @@
 #include "RussianCompounds.h"
 #include "GeneralDerivation.h"
 
+namespace unitex {
 
 void init_russian(struct utags *UTAG) {
 
@@ -35,3 +36,5 @@ void init_russian(struct utags *UTAG) {
   *UTAG = init_utags(RUSSIAN_TAG);
 
 }
+
+} // namespace unitex

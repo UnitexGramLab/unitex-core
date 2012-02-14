@@ -24,6 +24,7 @@
 #include "Symbol.h"
 #include "Symbol_op.h"
 
+namespace unitex {
 
 #define MIN(a, b) ((a <= b) ? a : b)
 
@@ -1310,3 +1311,5 @@ symbol_t* res=symbol_minus_symbols(language,LEX,b);
 free_symbol(LEX);
 return res;
 }
+
+} // namespace unitex

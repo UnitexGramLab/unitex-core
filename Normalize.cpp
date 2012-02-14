@@ -32,6 +32,7 @@
 #include "Normalize.h"
 #include "Offsets.h"
 
+namespace unitex {
 
 const char* usage_Normalize =
          "Usage: Normalize [OPTIONS] <text>\n"
@@ -188,5 +189,6 @@ u_printf((result==0) ? "Done.\n" : "Unsuccessfull.\n");
 return result;
 }
 
+} // namespace unitex
 
 

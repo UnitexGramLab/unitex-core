@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * This library provides functions for safely manipulating
@@ -201,5 +202,7 @@ if (n>ustr->len) n=ustr->len;
 ustr->len=ustr->len-n;
 ustr->str[ustr->len]='\0';
 }
+
+} // namespace unitex
 
 #endif

@@ -39,6 +39,7 @@
 #include "MultiFlex.h"
 #include "MF_Global.h"
 
+namespace unitex {
 
 // Directory containing the inflection tranducers and the 'Morphology' file
 //extern char inflection_directory[FILENAME_MAX];
@@ -228,3 +229,4 @@ u_printf("Done.\n");
 return 0;
 }
 
+} // namespace unitex

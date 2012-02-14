@@ -22,6 +22,8 @@
 #ifndef CharNamesH
 #define CharNamesH
 
+namespace unitex {
+
 //------- strict ASCII chars --------
 #define U_SPACE ' '
 #define U_EXCLAMATION '!'
@@ -81,6 +83,8 @@
 #define U_ODIAERESIS_CAP 0xD6
 #define U_ADIAERESIS 0xE4
 #define U_ADIAERESIS_CAP 0xC4
+
+} // namespace unitex
 
 #endif
 

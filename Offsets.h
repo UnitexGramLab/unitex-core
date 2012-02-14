@@ -28,6 +28,7 @@
 #include "Unicode.h"
 #include "Vector.h"
 
+namespace unitex {
 
 /**
  * This library is used to manipulate offset information so that
@@ -126,5 +127,6 @@ void add_snt_offsets(vector_int*,int,int,int);
 
 vector_int* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
 
+} // namespace unitex
 
 #endif

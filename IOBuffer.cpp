@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 
+namespace unitex {
+
 /**
  * This function put the standard output stream in unbufferized mode, so
  * that if a graphical interface listen to this stream, it will be 
@@ -32,3 +34,4 @@ setvbuf(stdin,NULL,_IONBF,0);
 setvbuf(stdout,NULL,_IONBF,0);
 }
 
+} // namespace unitex

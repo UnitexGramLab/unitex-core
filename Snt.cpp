@@ -25,6 +25,7 @@
 #include "Snt.h"
 #include "Error.h"
 
+namespace unitex {
 
 /**
  * Allocates, initializes and returns a structure that contains the names
@@ -84,3 +85,4 @@ if (snt_files==NULL) return;
 free(snt_files);
 }
 
+} // namespace unitex
