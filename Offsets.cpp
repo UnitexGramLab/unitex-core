@@ -54,6 +54,14 @@ u_fprintf(f, "%d %d %d %d\n", a, b, c, d);
 }
 
 
+static void save_offsets(U_FILE* f,vector_offset* v) {
+if (v==NULL) return;
+for (int i=0;i<v->nbelems;i++) {
+	Offsets o=v->tab[i];
+	save_offsets(f,o.old_start,o.old_end,o.new_start,o.new_end);
+}
+}
+
 /**
  * This function takes two offset arrays:
  *

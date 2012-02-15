@@ -402,6 +402,7 @@ u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 int save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
 		int *shift) {
 if (f==NULL) return 0;
+while (1) {
 if (*index==v->nbelems) {
 	/* If there is no more offsets to take into account, we just save the token */
 	save(f,s,n,start+*shift,end+*shift);
@@ -412,21 +413,24 @@ Overlap o=overlap(x.new_start,x.new_end,start,end);
 switch (o) {
 case A_BEFORE_B: {
 	error("A_BEFORE_B: ");
-	error("start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
+	error("shift=%d  token=<%S> start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",
+			*shift,s,start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
 	fatal_error("Unexpected A_BEFORE_B in save_token_offset\n");
-	return 1;
 }
 case A_AFTER_B: {
+	//error("A_AFTER_B:\n");
 	save(f,s,n,start+*shift,end+*shift);
 	return 0;
 }
 case A_EQUALS_B: {
+	//error("A_EQUALS_B:\n");
 	save(f,s,n,x.old_start,x.old_end);
 	(*index)++;
 	(*shift)=x.old_end-end;
 	return 0;
 }
 case A_BEFORE_B_OVERLAP: {
+	//error("A_BEFORE_B_OVERLAP:\n");
 	int j;
 	for (j=(*index)+1;j<v->nbelems && B_INCLUDES_A==overlap(v->tab[j].new_start,v->tab[j].new_end,start,end);j++) {}
 	j--;
@@ -438,11 +442,13 @@ case A_BEFORE_B_OVERLAP: {
 	return 0;
 }
 case A_AFTER_B_OVERLAP: {
+	//error("A_AFTER_B_OVERLAP:\n");
 	int delta=start-x.new_start;
 	save(f,s,n,x.old_start+delta,x.old_end);
 	return 0;
 }
 case A_INCLUDES_B: {
+	//error("A_INCLUDES_B:\n");
 	save(f,s,n,x.old_start,x.old_end);
 	if (x.new_end==end) {
 		(*index)++;
@@ -451,13 +457,15 @@ case A_INCLUDES_B: {
 	return 0;
 }
 case B_INCLUDES_A: {
+	//error("B_INCLUDES_A:\n");
 	int delta_start=start-x.new_start;
 	int old_start=x.old_start+delta_start;
 	int j;
 	Overlap tmp;
 	for (j=(*index)+1;j<v->nbelems &&
 		(B_INCLUDES_A==(tmp=overlap(v->tab[j].new_start,v->tab[j].new_end,start,end))
-		|| A_AFTER_B_OVERLAP==tmp);j++) {}
+			|| A_EQUALS_B==tmp
+			|| A_AFTER_B_OVERLAP==tmp);j++) {}
 	j--;
 	int delta_end=end-v->tab[j].new_end;
 	int old_end=v->tab[j].old_end+delta_end;
@@ -465,6 +473,7 @@ case B_INCLUDES_A: {
 	(*index)=j+1;
 	(*shift)=v->tab[j].old_end-end+delta_end;
 	return 0;
+}
 }
 }
 return 0;

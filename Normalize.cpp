@@ -160,7 +160,7 @@ if (output_offsets[0]!='\0') {
 char tmp_file[FILENAME_MAX];
 get_extension(argv[vars->optind],tmp_file);
 if (!strcmp(tmp_file, ".snt")) {
-   /* If the file to process has allready the .snt extension, we temporary rename it to
+   /* If the file to process has already the .snt extension, we temporary rename it to
 	 * .snt.normalizing */
 	strcpy(tmp_file,argv[vars->optind]);
 	strcat(tmp_file,".normalizing");
