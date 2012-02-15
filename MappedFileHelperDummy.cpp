@@ -44,9 +44,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <memory.h>
-
 #include "Error.h"
 #include "MappedFileHelper.h"
+
+using namespace unitex;
 
 struct _MAPFILE_REAL {
         FILE*f;

@@ -45,6 +45,8 @@
 #include "Error.h"
 #include "MappedFileHelper.h"
 
+using namespace unitex;
+
 struct _MAPFILE_REAL {
         HANDLE hFile;
         HANDLE hMap;
@@ -119,3 +121,5 @@ void iomap_close_mapfile(MAPFILE* mf)
 }
 
 //#endif
+
+} //namespace unitex

@@ -32,8 +32,6 @@
 
 
 #include <direct.h>
-
-#include "Error.h"
 #include "AbstractFilePlugCallback.h"
 #include "Af_stdio.h"
 
