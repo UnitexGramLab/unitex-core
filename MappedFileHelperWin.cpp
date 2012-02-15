@@ -121,5 +121,3 @@ void iomap_close_mapfile(MAPFILE* mf)
 }
 
 //#endif
-
-} //namespace unitex
