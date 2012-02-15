@@ -102,7 +102,7 @@ int verbose = 0;
 struct dela_entry* tmp = tokenize_DELAF_line(tag,1,&verbose);
 free_dela_entry(tmp);
 if(verbose == 0){
-	(*mx)->tag = tokenize_tag_token(tag);
+	(*mx)->tag = tokenize_tag_token(tag,1);
 	(*mx)->tag_code = (unichar*)malloc(sizeof(unichar)*DIC_LINE_SIZE);
 	if((*mx)->tag_code == NULL){
 		fatal_alloc_error("create_matrix_entry");
@@ -197,7 +197,7 @@ void free_viterbi_matrix(struct matrix_entry** matrix,int size){
  */
 int search_matrix_predecessor(struct matrix_entry** matrix,unichar* tag,int start,
 		                      int tag_number,int state_number){
-struct dela_entry* entry = tokenize_tag_token(tag);
+struct dela_entry* entry = tokenize_tag_token(tag,1);
 for(int i=start;i>=0;i--){
 	if(equal(entry,matrix[i]->tag) == 1 && matrix[i]->tag_number == tag_number && matrix[i]->state_number == state_number){
 		free_dela_entry(entry);
@@ -603,7 +603,7 @@ for(int i=state_sequence[1];i<=index;i=state_sequence[i]){
 	for(Transition* transO=state->outgoing_transitions;transO!=NULL;transO=transO->next){
 		TfstTag* tag = (TfstTag*)tags->tab[transO->tag_number];
 		unichar* content = compound_to_simple(tag->content);
-		struct dela_entry* entry = tokenize_tag_token(content);
+		struct dela_entry* entry = tokenize_tag_token(content,1);
 		free(content);
 		if(((same_codes(entry,matrix[i]->tag) == 1 && form_type == 1) ||
 				(form_type == 0 && (u_strcmp(entry->semantic_codes[0],matrix[i]->tag->semantic_codes[0]) == 0))) &&

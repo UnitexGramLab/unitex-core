@@ -101,7 +101,7 @@ struct dela_entry* tokenize_DELAF_line(const unichar*,Abstract_allocator prv_all
 struct dela_entry* tokenize_DELAF_line_opt(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAF_line(const unichar*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAF_line(const unichar*,int,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-struct dela_entry* tokenize_tag_token(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_tag_token(const unichar*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAS_line(const unichar*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* is_strict_DELAS_line(const unichar*,Alphabet*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void get_compressed_line(struct dela_entry*,unichar*,int);
@@ -116,7 +116,7 @@ int contains_unprotected_equal_sign(const unichar*);
 void replace_unprotected_equal_sign(unichar*,unichar);
 void unprotect_equal_signs(unichar*);
 void free_dela_entry(struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-int check_tag_token(const unichar*);
+int check_tag_token(const unichar*,int);
 int dic_entry_contain_gram_code(const struct dela_entry*,const unichar*);
 int dic_entry_contain_inflectional_code(const struct dela_entry*,const unichar*);
 void get_inflection_code(unichar*,char*,unichar*,int*);

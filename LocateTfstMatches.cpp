@@ -488,7 +488,7 @@ if (tag->content[0] != '{' || tag->content[1] == '\0') {
 	}
 }
 /* We can capture the tag */
-struct dela_entry* e=tokenize_tag_token(tag->content);
+struct dela_entry* e=tokenize_tag_token(tag->content,1);
 if (e==NULL) {
 	/* Should not happen */
 	fatal_error("Unexpected tag tokenization error in do_variable_capture for tag:\n%S\n",tag->content);

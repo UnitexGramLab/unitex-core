@@ -213,7 +213,7 @@ unichar* opt_token=tag[i]->pattern->inflected;
 /* First, we check if this token pattern can recognize some tag tokens */
 struct list_int* list=p->tag_token_list;
 while (list!=NULL) {
-   struct dela_entry* entry=tokenize_tag_token(p->tokens->value[list->n]);
+   struct dela_entry* entry=tokenize_tag_token(p->tokens->value[list->n],1);
    if ((!is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK) && is_equal_or_uppercase(opt_token,entry->inflected,alph)) ||
        !u_strcmp(opt_token,entry->inflected)) {
       tag[i]->matching_tokens=sorted_insert(list->n,tag[i]->matching_tokens,prv_alloc);
@@ -244,7 +244,7 @@ void optimize_full_pattern_for_tag(unichar* tag_token,int i,Fst2Tag* tag,Alphabe
                struct locate_parameters* p,Abstract_allocator prv_alloc) {
 DISCARD_UNUSED_PARAMETER(alph)
 int token_number=get_value_index(tag_token,p->tokens);
-struct dela_entry* entry=tokenize_tag_token(tag_token);
+struct dela_entry* entry=tokenize_tag_token(tag_token,1);
 struct pattern* pattern=tag[i]->pattern;
 if ((pattern->type==LEMMA_PATTERN) || (pattern->type==INFLECTED_AND_LEMMA_PATTERN)) {
    /* If the pattern has a constraint on the lemma, we check it */

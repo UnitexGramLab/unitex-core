@@ -376,7 +376,7 @@ for (int i=1;i<=tfst->N;i++) {
             /* We don't test {S} or {STOP} since we are supposed
              * to manipulate a text automaton that should not
              * contain such things */
-            struct dela_entry* entry=tokenize_tag_token(input);
+            struct dela_entry* entry=tokenize_tag_token(input,1);
             entry_list=merge_entry(entry_list,entry,tag);
          } else {
             /* If we have a tag that is not a DELA entry, we just add

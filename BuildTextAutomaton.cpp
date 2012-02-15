@@ -306,7 +306,7 @@ struct output_info* new_output_info(unichar* tag) {
 	}
 	x->output = u_strdup(tag);
 	if (tag[0] == '{' && tag[1] != '\0') {
-		struct dela_entry* entry = tokenize_tag_token(tag);
+		struct dela_entry* entry = tokenize_tag_token(tag,1);
 		if (entry == NULL) {
 			fatal_error("new_output_info: Invalid tag token %S\n", tag);
 		}
@@ -1066,7 +1066,7 @@ void get_tag_content(unichar* src, unichar* dest) {
 		u_strcpy(dest, src);
 		return;
 	}
-	struct dela_entry* e = tokenize_tag_token(src);
+	struct dela_entry* e = tokenize_tag_token(src,1);
 	if (e == NULL) {
 		fatal_error("Invalid tag in get_tag_content: %S\n", src);
 	}

@@ -247,7 +247,7 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 					 * a buffer overflow if we add the } */
 					u_strcat(tmp, close_bracket);
 					if (!u_strcmp(tmp->str, "{S}") || !u_strcmp(tmp->str, "{STOP}")
-							|| check_tag_token(tmp->str)) {
+							|| check_tag_token(tmp->str,0)) {
 						/* If this is a special tag or a valid tag token, we just print
 						 * it to the output */
 						WriteOufBuf(&OutBuf, convLFtoCRLF, tmp->str, output, 0);

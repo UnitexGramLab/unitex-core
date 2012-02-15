@@ -92,7 +92,7 @@ if (l!=NULL) {
 		u_strcat(s,tag->content);
 	} else {
 		/* Real tag ? We only take the inflected form */
-		struct dela_entry* d=tokenize_tag_token(tag->content);
+		struct dela_entry* d=tokenize_tag_token(tag->content,1);
 		u_strcat(s,d->inflected);
 		free_dela_entry(d);
 	}
@@ -309,7 +309,7 @@ for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
    if (t->input[0]=='{' && t->input[1]!='\0') {
       /* If we have a tag like {today,.ADV}, we compute the jamo version
        * of its inflected form */
-      struct dela_entry* entry=tokenize_tag_token(t->input);
+      struct dela_entry* entry=tokenize_tag_token(t->input,1);
       if (entry==NULL) {
          fatal_error("NULL dela_entry in init_Korean_stuffs\n");
       }
@@ -380,7 +380,7 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
    if (t->content[0]=='{' && t->content[1]!='\0') {
       /* If we have a tag like {today,.ADV}, we compute the jamo version
        * of its inflected form */
-      struct dela_entry* entry=tokenize_tag_token(t->content);
+      struct dela_entry* entry=tokenize_tag_token(t->content,1);
       if (entry==NULL) {
          fatal_error("NULL dela_entry in compute_jamo_tfst_tags\n");
       }
@@ -929,7 +929,7 @@ if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='
    } else {
 	   if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
 	         /* text={toto,tutu.XXX} */
-		  my_entry=tokenize_tag_token(text_tag->content);
+		  my_entry=tokenize_tag_token(text_tag->content,1);
 	   	  if (my_entry==NULL) {
 	   		  fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
 	   	  }
@@ -1003,7 +1003,7 @@ if (is_letter(grammar_tag->input[0],infos->alphabet)) {
       }
    } else if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
       /* text={toto,tutu.XXX} */
-	  text_entry=tokenize_tag_token(text_tag->content);
+	  text_entry=tokenize_tag_token(text_tag->content,1);
 	  if (text_entry==NULL) {
 		  fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
 	  }
@@ -1033,8 +1033,8 @@ if (grammar_tag->input[0]=='{' && u_strcmp(grammar_tag->input,"{S}")) {
       /* If the text tag is not of the form "{tutu,toto.XXX}" */
       return NO_MATCH_STATUS;
    }
-   grammar_entry=tokenize_tag_token(grammar_tag->input);
-   text_entry=tokenize_tag_token(text_tag->content);
+   grammar_entry=tokenize_tag_token(grammar_tag->input,1);
+   text_entry=tokenize_tag_token(text_tag->content,1);
    if (!is_equal_or_uppercase(grammar_entry->inflected,text_entry->inflected,infos->alphabet)) {
       /* We allow case variations on the inflected form :
        * if there is "{tutu,toto.XXX}" in the grammar, we want it
@@ -1059,7 +1059,7 @@ if (grammar_tag->input[0]=='{' && u_strcmp(grammar_tag->input,"{S}")) {
 if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
 	/* We tokenize the text tag, if we have one */
 	if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
-	   text_entry=tokenize_tag_token(text_tag->content);
+	   text_entry=tokenize_tag_token(text_tag->content,1);
 	}
    if (!u_strcmp(grammar_tag->input,"<MOT>")) {
       /* <MOT> matches a sequence of letters or a tag like {tutu,toto.XXX}, even

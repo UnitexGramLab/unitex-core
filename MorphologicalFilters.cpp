@@ -279,7 +279,7 @@ return get_value(index->matching_tokens[filter_number],token);
  * stores it in the given wchar_t* string.
  */
 void w_extract_inflected(const unichar* tag_token,wchar_t* inflected) {
-struct dela_entry* entry=tokenize_tag_token(tag_token);
+struct dela_entry* entry=tokenize_tag_token(tag_token,1);
 if (entry==NULL) {
    fatal_error("Invalid tag token in w_extract_inflected\n");
 }

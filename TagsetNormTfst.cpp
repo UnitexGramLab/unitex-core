@@ -199,7 +199,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
       int t_to_free=0;
       if (t->type==T_STD && t->content[0]=='{' && t->content[1]!='\0') {
          /* If the tag is a dictionary entry */
-         struct dela_entry* e=tokenize_tag_token(t->content);
+         struct dela_entry* e=tokenize_tag_token(t->content,1);
          if (e==NULL) continue;
          e=filter_dela_entry(e,t->content,language,1);
          if (e==NULL) {

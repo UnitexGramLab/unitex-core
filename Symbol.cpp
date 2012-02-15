@@ -931,7 +931,7 @@ if (label[0]=='\0') {
 }
 if (label[0]=='{' && label[1]!='\0') {
    /* If we have something that looks like a tag token of the form {__,__.__} */
-   return (check_tag_token(label)==1)?0:-1;
+   return (check_tag_token(label,1)==1)?0:-1;
 }
 return 0;
 }
@@ -1070,7 +1070,7 @@ if (!u_strcmp(tag,"<def>")) {
 }
 if (tag[0]=='{' && tag[1]!='\0') {
    /*  If we have something that looks like a dictionary entry of the form {__,__.__} */
-   struct dela_entry* entry=tokenize_tag_token(tag);
+   struct dela_entry* entry=tokenize_tag_token(tag,1);
    if (entry==NULL) {
       fatal_error("Cannot load invalid tag '%S'\n",tag);
    }
@@ -1346,7 +1346,7 @@ if (tag[0]=='{' && tag[1]!='\0') {
    }
    /* If it is really a dictionary entry, it shouldn't be there */
    error("'%S': DELAF entry should not appear in Elag grammar\n",tag);
-   struct dela_entry* entry=tokenize_tag_token(tag);
+   struct dela_entry* entry=tokenize_tag_token(tag,1);
    /*if (check_dic_entry(buf)==-1) {
       fatal_error("bad grammar label '%S'\n",tag);
    }*/

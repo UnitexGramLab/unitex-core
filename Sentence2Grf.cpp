@@ -425,7 +425,7 @@ int width_of_tag(TfstTag* e) {
 	}
 	/* If the tag is a tag token like {today,.ADV}, we take the maximum
 	 * of the lengths of the inflected form, the lemma and the codes */
-	struct dela_entry* entry=tokenize_tag_token(e->content);
+	struct dela_entry* entry=tokenize_tag_token(e->content,1);
 	int width=u_strlen(entry->inflected);
 	int tmp=u_strlen(entry->lemma);
 	if (tmp>width) width=tmp;

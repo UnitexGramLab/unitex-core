@@ -508,7 +508,8 @@ return res;
  * information in a dela_entry structure, or NULL if there is an error in
  * the tag.
  */
-struct dela_entry* tokenize_tag_token(const unichar* tag,Abstract_allocator prv_alloc) {
+struct dela_entry* tokenize_tag_token(const unichar* tag,
+					int emit_error,Abstract_allocator prv_alloc) {
 if (tag==NULL || tag[0]!='{') {
 	error("Internal error in tokenize_tag_token\n");
 	return NULL;
@@ -527,12 +528,13 @@ if (temp==NULL) {
 }
 int val=parse_string(tag,&i,temp,P_CLOSING_ROUND_BRACKET,P_EMPTY,NULL);
 if (tag[i]!='}' || val!=P_OK) {
-   error("Invalid tag in tokenize_tag_token\n");
+   if (emit_error) error("Invalid tag in tokenize_tag_token\n");
    free(temp);
    return NULL;
 }
 /* And we tokenize it as a normal DELAF line */
-struct dela_entry* result=tokenize_DELAF_line(temp,0,prv_alloc);
+int foo_error;
+struct dela_entry* result=tokenize_DELAF_line(temp,0,&foo_error,0,prv_alloc);
 free(temp);
 return result;
 }
@@ -1358,14 +1360,14 @@ switch (error_code) {
  *    {being,be.V:G}
  *
  * It returns 1 on success. Otherwise, it prints an error message to the error output
- * and returns 0.
+ * if emit_error is non null and returns 0.
  */
-int check_tag_token(const unichar* s) {
+int check_tag_token(const unichar* s,int emit_error) {
 if (s==NULL) {
    /* This case should never happen */
    fatal_error("Interal NULL error in check_tag_token\n");
 }
-struct dela_entry* entry=tokenize_tag_token(s);
+struct dela_entry* entry=tokenize_tag_token(s,emit_error);
 if (entry==NULL) {
    return 0;
 }

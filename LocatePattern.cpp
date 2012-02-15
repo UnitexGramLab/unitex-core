@@ -654,7 +654,7 @@ if (is_letter(token[0],alph)) {
 if (token[0]=='{' && u_strcmp(token,"{S}") && u_strcmp(token,"{STOP}")) {
    /* Anyway, such a tag is classed as verifying <MOT> and <DIC> */
    set_bit_mask(&c,MOT_TOKEN_BIT_MASK|DIC_TOKEN_BIT_MASK|TDIC_TOKEN_BIT_MASK);
-   struct dela_entry* temp=tokenize_tag_token(token);
+   struct dela_entry* temp=tokenize_tag_token(token,1);
    if (is_upper(temp->inflected[0],alph)) {
       set_bit_mask(&c,PRE_TOKEN_BIT_MASK);
       i=0;
@@ -841,7 +841,7 @@ for (int i=0;i<tokens->size;i++) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
       parameters->tag_token_list=head_insert(i,parameters->tag_token_list,prv_alloc);
       /* And we look for the patterns that can match it */
-      struct dela_entry* entry=tokenize_tag_token(tokens->value[i]);
+      struct dela_entry* entry=tokenize_tag_token(tokens->value[i],1);
       if (entry==NULL) {
          /* This should never happen */
          fatal_error("Invalid tag token in function check_patterns_for_tag_tokens\n");

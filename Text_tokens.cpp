@@ -189,7 +189,7 @@ void extract_semantic_codes_from_tokens(const struct string_hash* tok,
 for (int i=0;i<tok->size;i++) {
     if (tok->value[i][0]=='{' && u_strcmp(tok->value[i],"{S}")
                             && u_strcmp(tok->value[i],"{STOP}")) {
-       struct dela_entry* temp=tokenize_tag_token(tok->value[i],prv_alloc);
+       struct dela_entry* temp=tokenize_tag_token(tok->value[i],1,prv_alloc);
        for (int j=0;j<temp->n_semantic_codes;j++) {
           get_value_index(temp->semantic_codes[j],semantic_codes);
        }

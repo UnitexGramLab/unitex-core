@@ -561,7 +561,7 @@ while (c!=EOF) {
         // if we have found a sentence delimiter
         (*SENTENCES)++;
      } else {
-        if (u_strcmp(s,"{STOP}") && !check_tag_token(s)) {
+        if (u_strcmp(s,"{STOP}") && !check_tag_token(s,1)) {
            // if a tag is incorrect, we exit
            fatal_error("The text contains an invalid tag. Unitex cannot process it.");
         }
