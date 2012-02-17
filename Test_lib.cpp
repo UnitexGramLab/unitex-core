@@ -32,6 +32,9 @@
 #include "logger/UniLogger.h"
 #include "logger/UniRunLogger.h"
 
+using namespace unitex;
+using namespace unitex::logger;
+
 /**
  * This program is an example of compilation using the unitex library (unitex.dll/libunitex.so).
  * It prints the .grf file corresponding to "a+(b.c)".
