@@ -70,7 +70,11 @@
 # mingw32:  make SYSTEM=mingw32 LIBRARY=yes
 # => creates unitex.dll
 #
-#
+# If you want to generate a static library, yse:
+# make STATICLIB=yes
+# => creates libunitex.a
+
+
 
 
 ################################
@@ -78,8 +82,15 @@
 ################################
 ################################
 
+UNAME = $(shell uname -s)
+
 SYSTEM = linux-like
 64BITS = no
+
+ifeq ($(UNAME),Darwin)
+SYSTEM = linux-like
+64BITS = yes
+endif
 
 OBJ_DIR = build/
 BIN_DIR = ../bin/
@@ -153,6 +164,11 @@ DEFFLAGS += -DUNITEX_LIBRARY
 endif
 
 ifeq ($(JNILIBRARY),yes)
+CFLAGS += -fPIC
+DEFFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(STATICLIB),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
 endif
@@ -272,6 +288,10 @@ ifeq ($(JNILIBRARY),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
 
+ifeq ($(STATICLIB),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
 SYSLIBLOGGER = SyncLoggerWin.o
 SYSLIBMAPPED = MappedFileHelperWin.o DirHelperWin.o
 SYSLIBDIRIO = UnitexLibDirWin.o
@@ -376,6 +396,10 @@ CFLAGS += -DUNITEX_LIBRARY
 endif
 
 ifeq ($(JNILIBRARY),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(STATICLIB),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
 
@@ -1039,7 +1063,11 @@ else
 ifeq ($(JNILIBRARY),yes)
 all: $(LIBTRE) .libunitexjni
 else
+ifeq ($(STATICLIB),yes)
+all: $(LIBTRE) .libunitexstatic
+else
 all: bin
+endif
 endif
 endif
 
@@ -1560,20 +1588,28 @@ fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
 
+DYLIBEXT = so
+ifeq ($(UNAME),Darwin)
+DYLIBEXT = dylib
+endif
 
 no_o_files:
 	rm -f *.o
 
 .libunitex: no_o_files $(OBJS) Test_lib.o
 	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.so
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS)
 	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.so
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
+.libunitexstatic: $(OBJS)
+	rm -f Main_*.o
+	$(AR) rcs ../bin/libunitex.a *.o
+	touch .libunitexstatic
 else
 
 # Compiling Unitex as a library under Windows
@@ -1589,5 +1625,10 @@ no_o_files:
 	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+
+.libunitexstatic: $(OBJS)
+	rm -f Main_*.o
+	$(AR) rcs ../bin/libunitex.a *.o
+	touch .libunitexstatic
 
 endif
