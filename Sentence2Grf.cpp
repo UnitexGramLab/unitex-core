@@ -80,7 +80,6 @@ void check_automaton_is_empty(Tfst* t) {
  * WARNING: a sentence automaton is supposed to have the following properties:
  *           1) being acyclic
  *           2) being minimal
- *           2) having no outgoing transition from the final state
  */
 Grf* sentence_to_grf(Tfst* tfst,char* font,int fontsize,int sequence) {
 	check_automaton_is_empty(tfst);
@@ -336,15 +335,17 @@ Grf* tfst_transitions_to_grf_states(Tfst* tfst,
 			}
 			int index=add_GrfState(grf,new_GrfState(content->str,pos_X[rank[i]],0,rank[i],grf->n_states));
 			/* Now that we have created the grf state, we set its outgoing transitions */
-			if (tfst->automaton->states[trans->state_number]->outgoing_transitions==NULL) {
-				/* If the current fst2 transition points on the final state,
+			if (tfst->automaton->states[trans->state_number]->outgoing_transitions==NULL
+					|| is_final_state(tfst->automaton->states[trans->state_number])) {
+				/* If the current fst2 transition points to a final state,
 				 * we must put a transition for the current grf state to the
 				 * grf final state */
 				vector_int_add(grf->states[index]->transitions,1);
-			} else {
-				/* Otherwise, we create transitions */
-				Transition* tmp=tfst->automaton->states[trans->state_number]->outgoing_transitions;
-				/* +2 because of the grf states 0 and 1 that are reserved */
+			}
+			/* Then, we create transitions */
+			Transition* tmp=tfst->automaton->states[trans->state_number]->outgoing_transitions;
+			/* +2 because of the grf states 0 and 1 that are reserved */
+			if (tmp!=NULL) {
 				int k=2+n_transitions_before_state[trans->state_number];
 				while (tmp!=NULL) {
 					vector_int_add(grf->states[index]->transitions,k++);
