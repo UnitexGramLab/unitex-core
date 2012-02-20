@@ -67,7 +67,7 @@ const char
 		"\n"
 		"OPTIONS:\n"
 		"  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		"  -o XXX/--output=XXX: the output GRF ﬁle\n"
+		"  -o XXX/--output=XXX: the output GRF file\n"
 		"  -j n_jokers\n"
 		"  -i n_insertion\n"
 		"  -r n_replace\n"
