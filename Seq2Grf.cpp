@@ -184,7 +184,7 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			}
 			fontname = strdup(vars->optarg);//=strdup("Times New Roman");
 			if (fontname == NULL) {
-				fatal_alloc_error("main_Tfst2Grf");
+				fatal_alloc_error("main_Seq2Grf");
 			}
 			break;
 		case 't':
@@ -310,14 +310,9 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	}
 	char text_grf[FILENAME_MAX];
 	get_snt_path(argv[vars->optind], text_grf);
-	U_FILE* grf = u_fopen(&vec, output, U_WRITE);
-	if (grf == NULL) {
-		u_fclose(f);
-		fatal_error("Cannot create %s\n", output);
-	}
-	out = u_fopen(&vec,    output, U_WRITE);
+	out = u_fopen(&vec, grf_name, U_WRITE);
 	if (out == NULL) {
-		error("Cannot create file %s\n", &output);
+		error("Cannot create file %s\n", grf_name);
 		u_fclose(text);
 		free_alphabet(alph);
 		return 1;
@@ -385,7 +380,6 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	u_fclose(tag_file);
 	close_text_automaton(tfstFile);
 	u_fclose(out);
-	u_fclose(grf);
 	u_fclose(f);
 	free_text_tokens(tokens);
 	u_fclose(text);
