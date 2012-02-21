@@ -268,20 +268,15 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 		u_fclose(tag_file);
 		tag_file =NULL;
 	}
-	get_path(argv[vars->optind],grf_name);
 	get_path(argv[vars->optind],txt_name);
+	strcat(txt_name, "cursentence.txt");
 	get_path(argv[vars->optind],tok_name);
+	strcat(tok_name, "cursentence.tok");
+	get_path(argv[vars->optind],grf_name);
 	if ((*output) == '\0') {
 		strcat(grf_name, "cursentence.grf");
-		strcat(txt_name, "cursentence.txt");
-		strcat(tok_name, "cursentence.tok");
 	} else {
-		strcat(grf_name, output);
-		strcat(grf_name, ".grf");
-		strcat(txt_name, output);
-		strcat(txt_name, ".txt");
-		strcat(tok_name, output);
-		strcat(tok_name, ".tok");
+		strcpy(grf_name, output);
 	}
 
 	U_FILE* text=NULL;
