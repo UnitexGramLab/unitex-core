@@ -67,6 +67,10 @@ static char *rcsid = "$OpenBSD: getopt_long.c,v 1.16 2004/02/04 18:17:25 millert
 #include "Unicode.h"
 #include "Error.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 

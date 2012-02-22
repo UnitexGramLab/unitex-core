@@ -30,6 +30,10 @@
 #include "UnitexGetOpt.h"
 #include "Convert.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define REPLACE_FILE 0

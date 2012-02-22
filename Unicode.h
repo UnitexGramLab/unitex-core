@@ -33,6 +33,10 @@
 
 #include "AbstractAllocator.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* This line is used to prevent people from using printf and scanf. We do

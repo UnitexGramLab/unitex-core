@@ -25,6 +25,10 @@
 #include "Any.h"
 #include "AbstractAllocator.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Values used to set the behavior if the key is not in the table */

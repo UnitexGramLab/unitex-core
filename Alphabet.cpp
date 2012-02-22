@@ -23,6 +23,10 @@
 #include "Error.h"
 #include "Persistence.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 // 0x400 in final release, good for all langage 

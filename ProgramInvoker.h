@@ -32,6 +32,10 @@
 
 typedef int (*MAIN_FUNCTION)(int argc,char* const argv[]);
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 typedef struct {

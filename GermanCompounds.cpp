@@ -23,6 +23,10 @@
 #include "Error.h"
 #include "Ustring.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void explore_state_german(int,unichar*,int,const unichar*,int,const unichar*,unichar*,

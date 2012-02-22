@@ -24,6 +24,10 @@
 #include "LemmaTree.h"
 #include "Error.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void free_lemma_node_list(struct lemma_node_list*);

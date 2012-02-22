@@ -24,6 +24,10 @@
 #include "PRLG.h"
 #include "Ustring.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 PRLG_DATA* new_PRLG_DATA(int offset,unichar* s) {

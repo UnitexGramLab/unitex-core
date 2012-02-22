@@ -45,6 +45,10 @@
 #include <stdio.h>
 #include "Unicode.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void add_suffix_to_file_name(char*,const char*,const char*);

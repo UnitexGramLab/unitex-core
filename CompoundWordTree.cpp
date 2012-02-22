@@ -24,6 +24,10 @@
 #include "Error.h"
 #include "Tokenization.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void increment_reference_DLC_tree_node(struct DLC_tree_node*);

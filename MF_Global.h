@@ -31,6 +31,10 @@
 #include "MF_MU_morphoBase.h"
 #include "MF_UnifBase.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 typedef struct {

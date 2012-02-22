@@ -28,6 +28,10 @@
 #include "Transitions.h"
 #include "Match.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define NO_TEXT_TOKEN_WAS_MATCHED -1

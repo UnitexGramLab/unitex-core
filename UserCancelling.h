@@ -33,6 +33,10 @@
 #ifndef _USER_CANCELLING_H_INCLUDED
 #define _USER_CANCELLING_H_INCLUDED 1
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int is_cancelling_requested();

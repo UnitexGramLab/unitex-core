@@ -39,6 +39,10 @@
 #include "MultiFlex.h"
 #include "MF_Global.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 // Directory containing the inflection tranducers and the 'Morphology' file

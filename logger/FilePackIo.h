@@ -44,7 +44,15 @@
 #ifndef _ZLIBIOAPI_H
 #define _ZLIBIOAPI_H
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
+#ifndef HAS_LOGGER_NAMESPACE
+#define HAS_LOGGER_NAMESPACE 1
+#endif
+
 namespace logger {
 
 #define ZLIB_FILEFUNC_SEEK_CUR (1)

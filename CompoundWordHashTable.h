@@ -33,6 +33,10 @@
  
 #include "Unicode.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define TCT_HASH_SIZE 16384

@@ -22,6 +22,10 @@
 #ifndef Fst2ListH
 #define Fst2ListH
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 extern const char* usage_Fst2List;

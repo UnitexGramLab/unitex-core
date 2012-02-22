@@ -26,6 +26,10 @@
 #include "Alphabet.h"
 #include "AbstractAllocator.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define ENLARGE_IF_NEEDED 0

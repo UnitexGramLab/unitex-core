@@ -35,6 +35,10 @@
 #include <ctype.h>
 #include "Unicode.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define MAX_STR_LEN 2000  //Maximum length of strings treated by this library

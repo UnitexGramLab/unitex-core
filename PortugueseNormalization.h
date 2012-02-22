@@ -32,6 +32,10 @@
 #include "DELA.h"
 #include "CompressedDic.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void build_portuguese_normalization_grammar(const Alphabet*,struct match_list*,

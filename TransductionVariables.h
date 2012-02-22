@@ -27,6 +27,10 @@
 #include "String_hash.h"
 #include "List_ustring.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Value to use to indicate that a variable bound is undefined */

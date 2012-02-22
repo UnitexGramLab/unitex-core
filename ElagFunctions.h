@@ -31,6 +31,10 @@
 #include "Vector.h"
 #include "LanguageDefinition.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void remove_ambiguities(const char* input_tfst,vector_ptr* grammars,const char* output_tfst, const VersatileEncodingConfig*,

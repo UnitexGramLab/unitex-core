@@ -26,6 +26,10 @@
 
 #include "Cassys_tokens.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id){

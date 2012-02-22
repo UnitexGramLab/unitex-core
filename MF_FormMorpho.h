@@ -29,6 +29,10 @@
 #include "Unicode.h"
 #include "MF_LangMorphoBase.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 // Structure for a category-value couple, e.g. Gen=fem

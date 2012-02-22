@@ -33,6 +33,10 @@
 #include "MorphologicalFilters.h"
 #include "Contexts.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define STACK_MAX 1000 /* The maximal size of recursive calls of the

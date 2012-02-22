@@ -25,6 +25,10 @@
 #include "Alphabet.h"
 #include "Ustring.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html,

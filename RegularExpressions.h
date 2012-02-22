@@ -24,6 +24,10 @@
 
 #include "Unicode.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define REG_EXP_MAX_LENGTH 10000

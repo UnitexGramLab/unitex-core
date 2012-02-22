@@ -25,6 +25,10 @@
 #include "Unicode.h"
 #include "Offsets.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html,

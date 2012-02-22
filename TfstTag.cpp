@@ -31,6 +31,10 @@
 #include "TfstTag.h"
 #include "LocateMatches.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 static void process(Tfst* in,Tfst* out,struct match_list* matches);

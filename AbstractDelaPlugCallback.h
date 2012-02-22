@@ -57,7 +57,11 @@ The dictionary space manager must use load_INF_file and free_INF_codes to load
  */
 
 #ifdef __cplusplus
-namespace unitex {
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+//namespace unitex {
 extern "C" {
 #endif
 
@@ -136,7 +140,7 @@ UNITEX_FUNC int UNITEX_CALL GetNbAbstractDelaSpaceInstalled();
 
 #ifdef __cplusplus
 } // extern "C"
-} // namespace unitex
+//} // namespace unitex
 #endif
 
 #endif

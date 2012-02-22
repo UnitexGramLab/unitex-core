@@ -22,6 +22,10 @@
 #ifndef BitMasksH
 #define BitMasksH
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int is_bit_mask_set(unsigned char,unsigned char);

@@ -32,6 +32,10 @@
 #include "Transitions.h"
 #include "MF_Global.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int MU_graph_init_graphs(MultiFlex_ctx*);

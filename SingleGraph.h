@@ -25,6 +25,10 @@
 #include "Transitions.h"
 #include "List_int.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Here are bit masks that can be used to mark states. Note that lower

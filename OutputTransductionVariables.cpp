@@ -22,6 +22,10 @@
 #include "OutputTransductionVariables.h"
 #include "Error.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 static void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);

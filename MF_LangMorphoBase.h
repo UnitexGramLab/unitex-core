@@ -29,6 +29,10 @@
 //#include "MF_DicoMorpho.h" //add
 //#include "MF_DicoMorphoBase.h" //add
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /**

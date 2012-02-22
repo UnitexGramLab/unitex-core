@@ -29,6 +29,10 @@
 #include "UnitexGetOpt.h"
 #include "TEI2Txt.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void tei2txt(char*, char*, const VersatileEncodingConfig*);

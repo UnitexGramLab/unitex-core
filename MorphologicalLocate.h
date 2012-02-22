@@ -32,6 +32,10 @@
 #include "LocatePattern.h"
 #include "MorphologicalFilters.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void enter_morphological_mode(/*int graph_depth, */ /* 0 means that we are in the top level graph */

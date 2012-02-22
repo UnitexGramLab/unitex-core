@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include "Text_tokens.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void extract_units(char,ABSTRACTMAPFILE*,struct text_tokens*,U_FILE*,U_FILE*);

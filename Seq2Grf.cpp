@@ -43,6 +43,10 @@
 #include "Txt2Tfst.h"
 #include "TfstStats.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define STR_VALUE_MACRO(x) #x

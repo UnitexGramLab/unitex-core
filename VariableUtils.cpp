@@ -22,6 +22,10 @@
 #include "VariableUtils.h"
 #include "Ustring.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 Ustring* get_variable_content(unichar* name,struct locate_parameters* p) {

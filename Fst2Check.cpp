@@ -48,6 +48,10 @@
 #include "Fst2Check.h"
 
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void display_fst2_stat(Fst2* fst2,U_FILE*ferr)

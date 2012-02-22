@@ -27,6 +27,10 @@
 #include "DELA_tree.h"
 #include "Tfst.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 extern const char* optstring_Seq2Grf;

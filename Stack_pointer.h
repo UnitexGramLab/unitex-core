@@ -22,6 +22,10 @@
 #ifndef Stack_pointerH
 #define Stack_pointerH
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /**

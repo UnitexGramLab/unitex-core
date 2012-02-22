@@ -39,6 +39,10 @@
 #define SVN_REVISION UNITEX_REVISION
 #endif
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int get_unitex_revision()

@@ -44,6 +44,10 @@
 #include "Ustring.h"
 #include "TfstStats.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 static void add_sentence_delimiters(Tfst* tfst,language_t*);

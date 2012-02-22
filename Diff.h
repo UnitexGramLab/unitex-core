@@ -24,6 +24,10 @@
 
 #include "LocateMatches.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int diff(const VersatileEncodingConfig*,const char*,const char*,const char*,const char*,int,int);

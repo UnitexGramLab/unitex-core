@@ -31,6 +31,10 @@
 #include "Symbol.h"
 #include "LanguageDefinition.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define AUT_INITIAL    1

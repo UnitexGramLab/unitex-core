@@ -27,6 +27,10 @@
 #include "Ustring.h"
 #include "LocateTfst_lib.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Every character or string that comes from the input text must be

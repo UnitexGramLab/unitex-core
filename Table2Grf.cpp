@@ -29,6 +29,10 @@
 #include "UnitexGetOpt.h"
 #include "Table2Grf.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define MAX_LINES_IN_TABLE 10000

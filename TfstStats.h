@@ -33,6 +33,10 @@
 #include "Vector.h"
 #include "Tfst.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void compute_form_frequencies(SingleGraph g,const unichar* const* string_tags,int n_string_tags,

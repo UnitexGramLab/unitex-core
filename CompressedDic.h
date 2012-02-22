@@ -26,6 +26,10 @@
 #include "AbstractDelaLoad.h"
 #include "Ustring.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define HAS_BIN2_SUPPORT   1

@@ -37,6 +37,10 @@
 #include "ElagDebug.h"
 
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Maximum number of states for a grammar before we split it in several fst2 */

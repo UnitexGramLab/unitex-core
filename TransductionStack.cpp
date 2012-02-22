@@ -28,6 +28,10 @@
 #include "VariableUtils.h"
 #include "DebugMode.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 10000;

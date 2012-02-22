@@ -32,6 +32,10 @@ FILE* (*real_fopen)(const char *,const char *)=fopen;
 #include "UnusedParameter.h"
 #include "File.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 namespace virtualfile {
 

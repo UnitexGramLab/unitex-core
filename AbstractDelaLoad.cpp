@@ -36,7 +36,13 @@
 #include "AbstractDelaLoad.h"
 #include "AbstractDelaPlugCallback.h"
 
-namespace unitex {
+//#ifndef HAS_UNITEX_NAMESPACE
+//#define HAS_UNITEX_NAMESPACE 1
+//#endif
+
+//namespace unitex {
+
+using namespace unitex;
 
 struct AbstractDelaSpace {
 	t_persistent_dic_func_array func_array;
@@ -244,4 +250,4 @@ void free_abstract_BIN(const unsigned char* BIN,struct BIN_free_info* p_bin_free
 	}
 }
 
-} // namespace unitex
+//} // namespace unitex

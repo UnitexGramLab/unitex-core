@@ -25,6 +25,10 @@
 #include "Unicode.h"
 #include "LocatePattern.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define VAR_CMP_ERROR -1

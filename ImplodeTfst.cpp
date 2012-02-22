@@ -36,6 +36,10 @@
 #include "TfstStats.h"
 #include "HashTable.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void implode(Tfst*,U_FILE*,U_FILE*,struct hash_table* form_frequencies);

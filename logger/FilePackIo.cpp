@@ -68,7 +68,15 @@
 #endif
 
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
+#ifndef HAS_LOGGER_NAMESPACE
+#define HAS_LOGGER_NAMESPACE 1
+#endif
+
 namespace logger {
 
 

@@ -38,6 +38,10 @@
 #include "Af_stdio.h"
 #include "UnitexTool.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void Call_logger_fnc_before_af_fopen(const char* name,const char* MODE);

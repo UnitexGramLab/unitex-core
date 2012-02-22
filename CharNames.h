@@ -22,6 +22,10 @@
 #ifndef CharNamesH
 #define CharNamesH
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 //------- strict ASCII chars --------

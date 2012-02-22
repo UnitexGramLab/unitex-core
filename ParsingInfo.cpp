@@ -22,6 +22,10 @@
 #include "ParsingInfo.h"
 #include "Error.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar)

@@ -25,6 +25,10 @@
 #include "Tfst.h"
 #include "Grf_lib.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 Grf* sentence_to_grf(Tfst*,char*,int,int);

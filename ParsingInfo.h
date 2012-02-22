@@ -29,6 +29,10 @@
 #include "DELA.h"
 #include "Vector.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC (0x100)

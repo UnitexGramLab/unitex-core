@@ -36,6 +36,10 @@
 #include "MF_DicoMorpho.h"
 #include "Korean.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define ONLY_SIMPLE_WORDS 0

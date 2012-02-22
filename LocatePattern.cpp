@@ -31,6 +31,10 @@
 #include "UserCancelling.h"
 #include "LocateTrace.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void load_dic_for_locate(const char*, const VersatileEncodingConfig*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);

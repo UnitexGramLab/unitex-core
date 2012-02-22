@@ -25,6 +25,10 @@
 #include "File.h"
 #include "TfstStats.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void free_current_sentence(Tfst*);

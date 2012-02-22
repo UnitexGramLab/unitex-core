@@ -42,6 +42,10 @@
 #define CONFIG_FILES_OK 0
 #define CONFIG_FILES_ERROR 1
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 //maximum length of a line in the file containing equivalences between morphological and dictionary values

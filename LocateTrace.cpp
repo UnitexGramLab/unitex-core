@@ -34,6 +34,10 @@
 #include "LocateTrace.h"
 #include "LocateTracePlugCallback.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 UNITEX_FUNC int UNITEX_CALL SetLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobal);

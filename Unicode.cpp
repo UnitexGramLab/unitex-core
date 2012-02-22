@@ -27,6 +27,10 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 #include "Error.h"
 #include "AbstractAllocator.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 

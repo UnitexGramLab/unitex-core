@@ -24,6 +24,10 @@
 #include "Error.h"
 #include "SingleGraph.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 

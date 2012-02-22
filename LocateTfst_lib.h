@@ -35,6 +35,10 @@
 #include "OutputTransductionVariables.h"
 #include "Vector.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Following values must be !=-1, because -1 is used in

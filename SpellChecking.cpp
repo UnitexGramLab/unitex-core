@@ -23,6 +23,10 @@
 #include "Ustring.h"
 #include "CompressedDic.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 int default_scores[N_SPSubOp]={5,50,5,50,10,10,10,20,50};

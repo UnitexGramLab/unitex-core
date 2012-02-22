@@ -22,6 +22,10 @@
 #ifndef LocateConstantsH
 #define LocateConstantsH
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 /* Bit masks used in the control byte of each token of the text */

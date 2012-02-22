@@ -35,6 +35,10 @@
 
 #include "LocatePattern.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 void open_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step * p_fnc_locate_trace_step,void** p_private_param_locate_trace);

@@ -40,6 +40,10 @@
 #include "Grf_lib.h"
 #include "GrfTest_lib.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define PFX_TOKENIZE "T:"

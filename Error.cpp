@@ -26,6 +26,10 @@
 #include "Unicode.h"
 #include "UnusedParameter.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define DEFAULT_ERROR_CODE 1

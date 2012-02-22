@@ -35,6 +35,10 @@
 #include "MF_MU_morpho.h"
 #include "MF_Global.h"
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
 namespace unitex {
 
 #define MAX_GRAPH_NODE 2000  //Maximum length of the contents of a graph node
