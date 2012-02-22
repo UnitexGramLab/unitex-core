@@ -35,6 +35,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Fst2Automaton.h"
+#include "HashTable.h"
 #include "ElagFunctions.h"
 #include "Error.h"
 #include "File.h"

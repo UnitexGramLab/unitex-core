@@ -29,6 +29,7 @@
 #include "UnitexGetOpt.h"
 #include "Grf_lib.h"
 #include "GrfBeauty.h"
+#include "Text_tokens.h"
 #include "Seq2Grf.h"
 #include "Ustring.h"
 #include "StringParsing.h"

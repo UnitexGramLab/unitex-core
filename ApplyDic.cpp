@@ -20,6 +20,7 @@
  */
 
 #include <time.h>
+#include "Text_tokens.h"
 #include "ApplyDic.h"
 #include "Error.h"
 #include "File.h"

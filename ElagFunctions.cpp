@@ -32,6 +32,7 @@
 #include <math.h>
 
 #include "Fst2Automaton.h"
+#include "HashTable.h"
 #include "ElagFunctions.h"
 #include "ElagFstFilesIO.h"
 #include "AutConcat.h"
@@ -42,7 +43,6 @@
 #include "Symbol.h"
 #include "Ustring.h"
 #include "TfstStats.h"
-#include "HashTable.h"
 
 namespace unitex {
 
@@ -86,7 +86,7 @@ void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* ou
    Tfst* tfst=input->tfst;
 
    /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
-   struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+   hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
            (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
@@ -232,7 +232,7 @@ void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* ou
  * tfst_tags_by_freq/alph.txt or tfst_tags_by_freq/alph.new.txt
  */
 void explode_tfst(const char* input_tfst,const char* output, const VersatileEncodingConfig* vec,language_t* language,
-		struct hash_table* form_frequencies) {
+		hash_table* form_frequencies) {
    static const unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static const unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);

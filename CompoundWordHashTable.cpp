@@ -19,6 +19,7 @@
  *
  */
 
+#include "Text_tokens.h"
 #include "CompoundWordHashTable.h"
 #include "Error.h"
 #include "Text_tokens.h"

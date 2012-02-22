@@ -24,13 +24,13 @@
  *  Authors: David Nott, Nathalie Friburger (nathalie.friburger@univ-tours.fr)
  */
 
+#include "Text_tokens.h"
 #include "Cassys.h"
 #include <ctype.h>
 #include "File.h"
 #include "Snt.h"
 #include "List_ustring.h"
 #include "Tokenization.h"
-#include "Text_tokens.h"
 #include "Copyright.h"
 #include "DirHelper.h"
 

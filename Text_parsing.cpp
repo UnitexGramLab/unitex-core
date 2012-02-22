@@ -21,6 +21,7 @@
 
 #include <time.h>
 #include "Text_tokens.h"
+#include "TransductionStack.h"
 #include "Text_parsing.h"
 #include "Error.h"
 #include "BitArray.h"
