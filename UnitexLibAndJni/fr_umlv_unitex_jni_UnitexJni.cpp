@@ -53,6 +53,14 @@
 
 #include "Copyright.h"
 
+#ifdef HAS_UNITEX_NAMESPACE
+using namespace unitex;
+#endif
+
+#ifdef HAS_LOGGER_NAMESPACE
+using namespace logger;
+#endif
+
 #if (!defined(SVN_REVISION))
 #include "Unitex_revision.h"
 #define SVN_REVISION UNITEX_REVISION
