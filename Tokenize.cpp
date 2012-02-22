@@ -402,7 +402,7 @@ u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 int save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
 		int *shift) {
 if (f==NULL) return 0;
-while (1) {
+for (;;) {
 if (*index==v->nbelems) {
 	/* If there is no more offsets to take into account, we just save the token */
 	save(f,s,n,start+*shift,end+*shift);
