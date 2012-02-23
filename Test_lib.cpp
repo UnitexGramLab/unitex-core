@@ -32,8 +32,13 @@
 #include "logger/UniLogger.h"
 #include "logger/UniRunLogger.h"
 
+#ifdef HAS_UNITEX_NAMESPACE
 using namespace unitex;
-using namespace unitex::logger;
+#endif
+
+#ifdef HAS_LOGGER_NAMESPACE
+using namespace logger;
+#endif
 
 /**
  * This program is an example of compilation using the unitex library (unitex.dll/libunitex.so).
