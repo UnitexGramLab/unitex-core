@@ -34,11 +34,9 @@
 #include "LocateTrace.h"
 #include "LocateTracePlugCallback.h"
 
-#ifndef HAS_UNITEX_NAMESPACE
-#define HAS_UNITEX_NAMESPACE 1
-#endif
 
-namespace unitex {
+
+
 
 UNITEX_FUNC int UNITEX_CALL SetLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobal);
 UNITEX_FUNC int UNITEX_CALL RemoveLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobal);
@@ -46,6 +44,11 @@ UNITEX_FUNC int UNITEX_CALL RemoveLocateTraceInfo(const t_locate_trace_func_arra
 /* just return the number of user cancelling Installed */
 UNITEX_FUNC int UNITEX_CALL IsLocateTraceInfoInstalled();
 
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+namespace unitex {
 int is_locate_trace_installed = 0;
 t_locate_trace_func_array cur_locate_trace_func_array ;
 void* privatePtrGlobal=NULL;
@@ -68,6 +71,8 @@ void close_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step /*fn
 }
 
 
+} // namespace unitex
+
 
 UNITEX_FUNC int UNITEX_CALL SetLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobalSet)
 {
@@ -87,5 +92,3 @@ UNITEX_FUNC int UNITEX_CALL IsLocateTraceInfoInstalled()
 {
     return is_locate_trace_installed;
 }
-
-} // namespace unitex
