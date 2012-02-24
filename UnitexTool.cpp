@@ -585,7 +585,7 @@ static int CallToolLogged(mainFunc* fnc,int argc,char* const argv[])
 {
     int ret;
     Call_logger_fnc_before_calling_tool(fnc,argc,argv);
-    if (CheckDateTimeBomb() && (is_cancelling_requested() != 0))
+    if ((!CheckDateTimeBomb()) || (is_cancelling_requested() != 0))
         ret = 0;
     else
         ret = (*fnc)(argc,argv);
