@@ -41,12 +41,15 @@
 #ifndef UnitexGetOptH
 #define UnitexGetOptH
 
+#ifdef __cplusplus
+
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
-
+#endif
+    
 /**
  * struct option, no_argument, required_argument and optional_argument may already
  * have been defined if someone use both libunitex.so and the original getopt.
@@ -86,7 +89,8 @@ int getopt_TS(int, char * const *, const char *,struct OptVars*);
 int getopt_long_TS(int, char *const *, const char *, const struct option_TS *, int *,struct OptVars*);
 int getopt_long_only_TS(int, char *const *, const char *, const struct option_TS *, int *,struct OptVars*);
 
+#ifdef __cplusplus
 } // namespace unitex
-
+#endif
 
 #endif

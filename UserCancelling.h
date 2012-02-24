@@ -33,14 +33,17 @@
 #ifndef _USER_CANCELLING_H_INCLUDED
 #define _USER_CANCELLING_H_INCLUDED 1
 
+#ifdef __cplusplus
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
-
+#endif
+    
 int is_cancelling_requested();
 
+#ifdef __cplusplus
 } // namespace unitex
-
+#endif
 #endif
