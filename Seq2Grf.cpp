@@ -73,6 +73,7 @@ const char
 		"OPTIONS:\n"
 		"  -a ALPH/--alphabet=ALPH: the alphabet file\n"
 		"  -o XXX/--output=XXX: the output GRF file\n"
+		"  --b : beautify the output graph"
 		"  -j n_jokers\n"
 		"  -i n_insertion\n"
 		"  -r n_replace\n"
@@ -656,7 +657,8 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		fatal_error("Cannot open file\n");
 	}
 	u_printf("read_sentence :\n");
-	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
+	while (read_sentence(buffer, &N, &total, f, tokens->STOP_MARKER)) {
+//	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
 		u_printf("\tN=%d\n",N);
 		u_printf("\tread_sentence : in\n");
 		int nst=count_non_space_tokens(buffer, N, tokens->SPACE);
