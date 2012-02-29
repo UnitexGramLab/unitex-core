@@ -155,7 +155,11 @@ DEFFLAGS += $(ADDITIONAL_CFLAG)
 endif
 
 ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
-DEFFLAGS += $(ADDITIONAL_CFLAG2)
+CFLAGS += $(ADDITIONAL_CFLAG2)
+endif
+
+ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
+DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
 ifeq ($(LIBRARY),yes)
@@ -269,6 +273,10 @@ endif
 
 ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
 CFLAGS += $(ADDITIONAL_CFLAG2)
+endif
+
+ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
+DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
 LIBTRE   = libtre.a
@@ -385,6 +393,10 @@ endif
 
 ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
 CFLAGS += $(ADDITIONAL_CFLAG2)
+endif
+
+ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
+DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
 LIBTRE   = libtre.a
