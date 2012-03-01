@@ -546,19 +546,6 @@ int work(	int t[],
 					tmp_tags );
 		}
 		cur++;
-		if (errors==0) {
-			/* If we are done, we quit */
-			return cur;
-		}
-		if (insert!=0 && last_op!='S') {
-			res[pos_res]=INFO.TOKEN;
-			//####################################
-			// s'il reste un joker je l'ajoute au bout (utile ?)
-			//####################################
-			work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,cur//,total
-					,tfst,	INFO,	tokens,	text,	current_state,
-					tmp_tags);
-		}
 		return cur;
 	}
 	res[pos_res]=t[current];
