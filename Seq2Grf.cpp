@@ -501,7 +501,8 @@ int work(	int t[],
 		//####################################
 		// produce sequence
 		//####################################
-		u_printf("!!!!pos_res= %d\tres =[",pos_res);
+		u_printf("!!!!current = %d ; size = %d pos_res = %d\n",current,size,pos_res);
+		u_printf("!!!!\tres =[",pos_res);
 		// filters the empty sequences or the ones with only one or several "<TOKEN>"
 		bool is_only_token=true;
 		for (int i=0;i<pos_res;i++){
@@ -511,18 +512,34 @@ int work(	int t[],
 			}
 			else u_printf("%s ","<TOKEN>");
 		}
+		bool ends_with_token=false;
+		if (res[pos_res-1]==-1)
+			ends_with_token=true;
+
 		u_printf("]\t");
 		if (is_only_token){
 			u_printf("only_token\n");
 			u_printf("!!!!we skip this sequence :\t\t\"");
-						for (int i=0;i<pos_res;i++){
-							if (res[i]==-1)
-								u_printf("%s ","<TOKEN>");
-							else{
-								u_printf("%S ",tokens->token[res[i]]);
-							}
-						}
-						u_printf("\"\n");
+			for (int i=0;i<pos_res;i++){
+				if (res[i]==-1)
+					u_printf("%s ","<TOKEN>");
+				else{
+					u_printf("%S ",tokens->token[res[i]]);
+				}
+			}
+			u_printf("\"\n");
+		}
+		else if (ends_with_token){
+			u_printf("ends_with_token\n");
+				u_printf("!!!!we skip this sequence :\t\t\"");
+			for (int i=0;i<pos_res;i++){
+				if (res[i]==-1)
+					u_printf("%s ","<TOKEN>");
+				else{
+					u_printf("%S ",tokens->token[res[i]]);
+				}
+			}
+			u_printf("\"\n");
 		}
 		else{
 			u_printf("not only_token\n");
@@ -562,6 +579,15 @@ int work(	int t[],
 		//		insert
 		//####################################
 		res[pos_res]=INFO.TOKEN;
+		u_printf("insert : [");
+		for (int i=0;i<pos_res;i++){
+			if (res[i]==-1)
+				u_printf("%s ","<TOKEN>");
+			else{
+				u_printf("%S ",tokens->token[res[i]]);
+			}
+		}
+		u_printf("]\n");
 		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,
 				cur, tfst,	INFO,	tokens,	text,	current_state,
 				tmp_tags);
@@ -570,6 +596,15 @@ int work(	int t[],
 		//####################################
 		//		suppr
 		//####################################
+		u_printf("suppr : [");
+		for (int i=0;i<pos_res;i++){
+			if (res[i]==-1)
+				u_printf("%s ","<TOKEN>");
+			else{
+				u_printf("%S ",tokens->token[res[i]]);
+			}
+		}
+		u_printf("]\n");
 		work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,max_length,pos_res,
 				cur ,tfst,	INFO,	tokens,	text,	current_state,
 				tmp_tags);
@@ -579,6 +614,15 @@ int work(	int t[],
 		//		replace
 		//####################################
 		res[pos_res]=INFO.TOKEN;
+		u_printf("replace : [");
+		for (int i=0;i<pos_res;i++){
+			if (res[i]==-1)
+				u_printf("%s ","<TOKEN>");
+			else{
+				u_printf("%S ",tokens->token[res[i]]);
+			}
+		}
+		u_printf("]\n");
 		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
 				,tfst,	INFO,	tokens,	text,	current_state,
 				tmp_tags);
