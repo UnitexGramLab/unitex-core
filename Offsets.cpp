@@ -54,7 +54,7 @@ return res;
 
 void save_offsets(U_FILE* f, int a, int b, int c, int d) {
 u_fprintf(f, "%d %d %d %d\n", a, b, c, d);
-//error("%d %d %d %d\n", a, b, c, d);
+//error("save: %d %d %d %d\n", a, b, c, d);
 }
 
 
@@ -65,6 +65,22 @@ for (int i=0;i<v->nbelems;i++) {
 	save_offsets(f,o.old_start,o.old_end,o.new_start,o.new_end);
 }
 }
+
+
+static const char* N(Overlap o) {
+switch (o) {
+case A_BEFORE_B: return "A_BEFORE_B";
+case A_BEFORE_B_OVERLAP: return "A_BEFORE_B_OVERLAP";
+case A_INCLUDES_B: return "A_INCLUDES_B";
+case A_EQUALS_B: return "A_EQUALS_B";
+case B_INCLUDES_A: return "B_INCLUDES_A";
+case A_AFTER_B_OVERLAP: return "A_AFTER_B_OVERLAP";
+case A_AFTER_B: return "A_AFTER_B";
+case -1: return "[-1]";
+default: return "OOOOOOOOPS";
+}
+}
+
 
 /**
  * This function takes two offset arrays:
@@ -107,10 +123,11 @@ while (j < new_offsets->nbelems) {
 	for (; i < old_offsets->nbelems; i++) {
 		x = old_offsets->tab[i];
 		/* Note: below, A stands for x's new interval and B stands for y's old interval */
-		//error("\n\nTEST OVERLAP entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
-		//error("TEST OVERLAP entre %d;%d et %d;%d\n",x.old_start,x.old_end,y.new_start,y.new_end);
+		/*error("\n\nTEST OVERLAP entre %d;%d->%d;%d et %d;%d->%d;%d\n",
+				x.old_start,x.old_end,x.new_start,x.new_end,
+				y.old_start,y.old_end,y.new_start,y.new_end);*/
 		o = overlap(x.new_start, x.new_end, y.old_start, y.old_end);
-		//error("o==%d\n",o);
+		//error("o==%s\n",N(o));
 		if (o == A_BEFORE_B) {
 			save_offsets(f, x.old_start, x.old_end, x.new_start + shift_B,
 					x.new_end + shift_B + A_includes_B_shift);
@@ -193,8 +210,10 @@ while (j < new_offsets->nbelems) {
 	}
 	if (o != (Overlap) -1 && o != A_AFTER_B && i != old_offsets->nbelems)
 		fatal_error("o==%d\n", o);
+	/* Default case: A_AFTER_B */
 	save_offsets(f, y.old_start + shift_A, y.old_end + shift_A
 			+ B_includes_A_shift, y.new_start, y.new_end);
+	shift_A+=B_includes_A_shift;
 	B_includes_A_shift = 0;
 	shift_B = y.new_end - y.old_end;
 }

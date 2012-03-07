@@ -52,7 +52,6 @@ int main(int argc,char* argv[]) {
 setBufferMode();
 VersatileEncodingConfig vec=VEC_DEFAULT;
 
-#if 0
 if (argc!=4) {
 	fatal_error("Usage: cmd <txt> start end\n");
 }
@@ -84,7 +83,7 @@ u_printf("\n");
 
 u_fclose(f);
 return 0;
-#endif
+#if 0
 
 
 /* benchmark A: 80 jours, 10 itérations */
@@ -166,6 +165,7 @@ sys		0m0.136s
 
  */
 
+#endif
 #if 0
 load_persistent_alphabet("/home/paumier/unitex/French/Alphabet.txt");
 load_persistent_dictionary("/home/paumier/Unitex3.0beta/French/Dela/dela-fr-public.bin");
@@ -198,6 +198,7 @@ for (int i=0;i<N;i++) {
 }
 #endif
 
+#if 0
 
 /*
 ~/workspace/C++/bin/Test ~/unitex/French/Corpus/seq2grf_snt/seq2grf.grf ~/unitex/French/Corpus/seq2grf_snt/beautiful.grf
@@ -222,6 +223,7 @@ u_fclose(f);
 free_Grf(grf);
 
 return 0;
+#endif
 }
 
 
