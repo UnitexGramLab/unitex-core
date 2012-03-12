@@ -682,7 +682,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 									L->stack);
 							p->stack->stack_pointer = L->stack_pointer;
 
-							if (save_previous_ptr_var == NULL) {
+							if (save_previous_ptr_var == NULL && ctx==NULL) {
 								save_previous_ptr_var
 										= install_variable_backup_preserving(
 												p->input_variables, p->backup_memory_reserve,
@@ -724,7 +724,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						if (p->dic_variables != NULL) {
 						    clear_dic_variable_list(&(p->dic_variables));
 						}
-						if (p->graph_depth == 0) {
+						if (p->graph_depth == 0 && ctx==NULL) {
 							/* If we are at the top graph level, we restore the variables */
 							if (p->output_policy != IGNORE_OUTPUTS) {
 								if (save_previous_ptr_var != NULL) {
