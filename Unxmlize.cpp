@@ -38,19 +38,29 @@
 namespace unitex {
 
 const char* usage_Unxmlize =
-         "Usage: Unxmlize <xml>\n"
+         "Usage: Unxmlize <file>\n"
          "\n"
-         "  <xml>: an unicode .xml file to be processed\n"
+         "  <file>: an unicode .xml or .html file to be processed\n"
          "\n"
          "OPTIONS:\n"
          "  -o TXT/--output=TXT: output file. By default, foo.xml => foo.txt\n"
 		 "  --output_offsets=XXX: specifies the offset file to be produced\n"
 		 "  --PRLG=XXX: extracts to file XXX special information used in the\n"
 		 "              PRLG project on ancient Greek (requires --output_offsets)\n"
+		 "\n"
+		 "  --comments=IGNORE: every comment is removed (default)\n"
+		 "  --comments=SPACE: every comment is replaced by a single space\n"
+		 "  --scripts=IGNORE: every script block is removed\n"
+		 "  --scripts=SPACE: every comment is replaced by a single space (default for .html)\n"
+		 "    Note: by default, script tags are handled as normal tags (default for .xml)\n"
+		 "\n"
+		 "  --normal_tags=IGNORE: every other tag is removed (default for .xml)\n"
+		 "  --normal_tags=SPACE: every other tag is replaced by a single space(default for .html)\n"
          "  -h/--help: this help\n"
          "\n"
-         "Removes all xml tags from the given .xml file to produce a text file that\n"
+         "Removes all xml tags from the given file to produce a text file that\n"
 		 "can be processed by Unitex.\n";
+
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
@@ -65,6 +75,9 @@ const struct option_TS lopts_Unxmlize[]={
    {"PRLG",required_argument_TS,NULL,2},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
+   {"comments",required_argument_TS,NULL,10},
+   {"scripts",required_argument_TS,NULL,11},
+   {"normal_tags",required_argument_TS,NULL,12},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -79,6 +92,10 @@ if (argc==1) {
 char output[FILENAME_MAX]="";
 char output_offsets[FILENAME_MAX]="";
 char output_PRLG[FILENAME_MAX]="";
+int comments=-1;
+int scripts=-1;
+int normal_tags=-1;
+
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -99,6 +116,36 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
                 }
                 strcpy(output_PRLG,vars->optarg);
                 break;
+   case 10: {
+	   if (!strcmp(vars->optarg,"IGNORE")) {
+		   comments=UNXMLIZE_IGNORE;
+	   } else if (!strcmp(vars->optarg,"SPACE")) {
+		   comments=UNXMLIZE_REPLACE_BY_SPACE;
+	   } else {
+		   fatal_error("Invalid argument for option --comments\n");
+	   }
+	   break;
+   }
+   case 11: {
+	   if (!strcmp(vars->optarg,"IGNORE")) {
+		   scripts=UNXMLIZE_IGNORE;
+	   } else if (!strcmp(vars->optarg,"SPACE")) {
+		   scripts=UNXMLIZE_REPLACE_BY_SPACE;
+	   } else {
+		   fatal_error("Invalid argument for option --scripts\n");
+	   }
+	   break;
+   }
+   case 12: {
+	   if (!strcmp(vars->optarg,"IGNORE")) {
+		   normal_tags=UNXMLIZE_IGNORE;
+	   } else if (!strcmp(vars->optarg,"SPACE")) {
+		   normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
+	   } else {
+		   fatal_error("Invalid argument for option --normal_tags\n");
+	   }
+	   break;
+   }
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -126,6 +173,7 @@ U_FILE* f_input;
 U_FILE* f_output;
 U_FILE* f_offsets=NULL;
 vector_offset* offsets=NULL;
+UnxmlizeOpts opts;
 if (output[0]=='\0') {
     remove_extension(argv[vars->optind],output);
     strcat(output,".txt");
@@ -136,12 +184,20 @@ if (f_input==NULL) {
 	error("Cannot open file %s\n",argv[vars->optind]);
 	return 1;
 }
-int html=0;
 char extension[FILENAME_MAX];
 get_extension(argv[vars->optind],extension);
 if (!strcmp(extension,".html") || !strcmp(extension,".HTML")) {
-	html=1;
+	opts.comments=UNXMLIZE_IGNORE;
+	opts.scripts=UNXMLIZE_REPLACE_BY_SPACE;
+	opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
+} else {
+	opts.comments=UNXMLIZE_IGNORE;
+	opts.scripts=UNXMLIZE_DO_NOTHING;
+	opts.normal_tags=UNXMLIZE_IGNORE;
 }
+if (comments!=-1) opts.comments=comments;
+if (scripts!=-1) opts.scripts=scripts;
+if (normal_tags!=-1) opts.normal_tags=normal_tags;
 f_output = u_fopen(&vec,output,U_WRITE);
 if (f_output==NULL) {
    error("Cannot create text file %s\n",output);
@@ -172,7 +228,7 @@ if (output_PRLG[0]!='\0') {
 		fatal_error("Cannot create PRLG file %s\n",output_PRLG);
 	}
 }
-if (!unxmlize(f_input,f_output,offsets,html,PRLG,f_PRLG)) {
+if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG)) {
 	error("The input file was not a valid xml one. Operation aborted.\n");
 	u_fclose(f_input);
 	u_fclose(f_output);

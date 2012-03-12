@@ -31,7 +31,20 @@
 
 namespace unitex {
 
-int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html,
+/* Do we want to skip the content of a tag ? */
+#define UNXMLIZE_IGNORE 0
+/* Or do we prefer to replace it by a single space ? */
+#define UNXMLIZE_REPLACE_BY_SPACE 1
+/* Or do we prefer to let it unmodified ? */
+#define UNXMLIZE_DO_NOTHING 2
+
+typedef struct {
+	char comments;
+	char scripts;
+	char normal_tags;
+} UnxmlizeOpts;
+
+int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
 		unichar* bastien[],U_FILE* f_bastien);
 
 } // namespace unitex

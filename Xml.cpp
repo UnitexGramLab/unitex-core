@@ -31,8 +31,8 @@
 
 namespace unitex {
 
-int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html,
-		unichar* bastien[],U_FILE* f_bastien);
+int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
+		UnxmlizeOpts* options,unichar* bastien[],U_FILE* f_bastien);
 int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
 		void* html_ctx);
 
@@ -44,7 +44,7 @@ int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset
  * If 'html' is non null, special HTML filtering is applied
  * (i.e. skipping script code, replacing any tag by a space).
  */
-int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,int html,
+int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
 		unichar* bastien[],U_FILE* f_bastien) {
 int c;
 int pos=0,new_pos=0;
@@ -52,7 +52,7 @@ void* html_ctx=init_HTML_character_context();
 while ((c=u_fgetc_raw(input))!=EOF) {
 	pos++;
 	if (c=='<') {
-		if (!skip_tag(input,output,&pos,&new_pos,offsets,html,bastien,f_bastien)) {
+		if (!skip_tag(input,output,&pos,&new_pos,offsets,options,bastien,f_bastien)) {
 			free_HTML_character_context(html_ctx);
 			return 0;
 		}
@@ -444,8 +444,8 @@ return 1;
  * save the offsets shifts.
  * Returns 1 in case of success; 0 if the tag is malformed.
  */
-int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,int html,
-		unichar* bastien[],U_FILE* f_bastien) {
+int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
+		UnxmlizeOpts* options,unichar* bastien[],U_FILE* f_bastien) {
 int old_pos=(*pos)-1;
 long current=ftell(f);
 /* We may read a comment */
@@ -455,10 +455,10 @@ if (read(f,"!--")) {
 		error("Invalid comment\n");
 		return 0;
 	}
-	if (!html) {
+	if (options->comments==UNXMLIZE_IGNORE) {
 		write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
 	} else {
-		/* In html files, we replace comments by a space */
+		/* We may have to replace comments by a space */
 		write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
 		(*new_pos)++;
 		u_fputc_raw(' ',f_out);
@@ -478,7 +478,7 @@ if (read(f,"![CDATA[")) {
 }
 fseek(f,current,SEEK_SET);
 /* Or a html script code */
-if (html) {
+if (options->scripts!=UNXMLIZE_DO_NOTHING) {
 	int ok=read2(f,"script ");
 	if (!ok) {
 		fseek(f,current,SEEK_SET);
@@ -490,10 +490,10 @@ if (html) {
 			error("Invalid script code\n");
 			return 0;
 		}
-		if (!html) {
+		if (options->scripts==UNXMLIZE_IGNORE) {
 			write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
 		} else {
-			/* In html files, we replace script sections by a space */
+			/* We replace script sections by a space */
 			write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
 			(*new_pos)++;
 			u_fputc_raw(' ',f_out);
@@ -507,10 +507,14 @@ if (!skip_normal_tag(f,pos,bastien,f_bastien)) {
 	error("Invalid xml tag\n");
 	return 0;
 }
-/* We replace tags by a space */
-write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
-(*new_pos)++;
-u_fputc_raw(' ',f_out);
+if (options->normal_tags==UNXMLIZE_IGNORE) {
+	write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
+} else {
+	/* We replace tags by a space */
+	write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
+	(*new_pos)++;
+	u_fputc_raw(' ',f_out);
+}
 return 1;
 }
 
