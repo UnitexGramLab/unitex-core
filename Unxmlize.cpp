@@ -48,6 +48,10 @@ const char* usage_Unxmlize =
 		 "  --PRLG=XXX: extracts to file XXX special information used in the\n"
 		 "              PRLG project on ancient Greek (requires --output_offsets)\n"
 		 "\n"
+		 "  -t/--html: consider the file as html file (disregard extension)\n"
+         "  -x/--xml: consider the file as xml file (disregard extension)\n"
+         "  -l/--tolerate: try tolerate somes markup langage malformation\n"
+		 "\n"
 		 "  --comments=IGNORE: every comment is removed (default)\n"
 		 "  --comments=SPACE: every comment is replaced by a single space\n"
 		 "  --scripts=IGNORE: every script block is removed\n"
@@ -68,7 +72,7 @@ u_printf(usage_Unxmlize);
 }
 
 
-const char* optstring_Unxmlize=":o:h:k:q:";
+const char* optstring_Unxmlize=":o:h:k:q:txl";
 const struct option_TS lopts_Unxmlize[]={
    {"output", required_argument_TS, NULL, 'o'},
    {"output_offsets",required_argument_TS,NULL,1},
@@ -78,6 +82,7 @@ const struct option_TS lopts_Unxmlize[]={
    {"comments",required_argument_TS,NULL,10},
    {"scripts",required_argument_TS,NULL,11},
    {"normal_tags",required_argument_TS,NULL,12},
+   {"tolerate", no_argument_TS, NULL, 'l'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -92,9 +97,12 @@ if (argc==1) {
 char output[FILENAME_MAX]="";
 char output_offsets[FILENAME_MAX]="";
 char output_PRLG[FILENAME_MAX]="";
-int comments=-1;
-int scripts=-1;
-int normal_tags=-1;
+char comments=-1;
+char scripts=-1;
+char normal_tags=-1;
+int force_html=0;
+int force_xml=0;
+int tolerate_markup_malformation=0;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
@@ -156,6 +164,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
+   case 't': force_html=1; break;
+   case 'x': force_xml=1; break;
+   case 'l': tolerate_markup_malformation=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Unxmlize[index].name);
@@ -186,7 +197,16 @@ if (f_input==NULL) {
 }
 char extension[FILENAME_MAX];
 get_extension(argv[vars->optind],extension);
-if (!strcmp(extension,".html") || !strcmp(extension,".HTML")) {
+int consider_as_html=0;
+if (force_xml!=0) {
+} else
+if (force_html!=0) {
+	consider_as_html=1;
+} else if (!strcmp(extension,".html") || !strcmp(extension,".HTML") || !strcmp(extension,".htm") || !strcmp(extension,".HTM")) {
+	consider_as_html=1;
+}
+
+if (consider_as_html!=0) {
 	opts.comments=UNXMLIZE_IGNORE;
 	opts.scripts=UNXMLIZE_REPLACE_BY_SPACE;
 	opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
@@ -228,7 +248,7 @@ if (output_PRLG[0]!='\0') {
 		fatal_error("Cannot create PRLG file %s\n",output_PRLG);
 	}
 }
-if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG)) {
+if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malformation)) {
 	error("The input file was not a valid xml one. Operation aborted.\n");
 	u_fclose(f_input);
 	u_fclose(f_output);
@@ -240,11 +260,22 @@ if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG)) {
 	}
 	free_vector_offset(offsets);
 	free_OptVars(vars);
+
+	for (int i=0;i<10;i++) {
+		if (PRLG_ptrs[i]!=NULL) {
+			free(PRLG_ptrs[i]);
+		}
+	}
+
 	return 1;
 }
+
 for (int i=0;i<10;i++) {
-	free(PRLG_ptrs[i]);
+	if (PRLG_ptrs[i]!=NULL) {
+		free(PRLG_ptrs[i]);
+	}
 }
+
 if (offsets!=NULL) {
 	process_offsets(NULL,offsets,f_offsets);
 }

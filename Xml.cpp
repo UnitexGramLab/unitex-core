@@ -45,26 +45,37 @@ int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset
  * (i.e. skipping script code, replacing any tag by a space).
  */
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
-		unichar* bastien[],U_FILE* f_bastien) {
+		unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation) {
 int c;
 int pos=0,new_pos=0;
 void* html_ctx=init_HTML_character_context();
 while ((c=u_fgetc_raw(input))!=EOF) {
+	int markup_malformation=0;
 	pos++;
 	if (c=='<') {
 		if (!skip_tag(input,output,&pos,&new_pos,offsets,options,bastien,f_bastien)) {
-			free_HTML_character_context(html_ctx);
-			return 0;
+			//free_HTML_character_context(html_ctx);
+			markup_malformation=1;
 		}
 	}
 	else if (c=='&') {
 		if (!decode_html_char(input,output,&pos,&new_pos,offsets,html_ctx)) {
-			free_HTML_character_context(html_ctx);
-			return 0;
+			//free_HTML_character_context(html_ctx);
+			markup_malformation=1;
 		}
 	} else {
 		u_fputc_raw((unichar)c,output);
 		new_pos++;
+	}
+
+	if (markup_malformation!=0) {
+		if (tolerate_markup_malformation==0) {
+			free_HTML_character_context(html_ctx);
+			return 0;
+		} else {
+		  u_fputc_raw((unichar)c,output);
+		  new_pos++;
+		}
 	}
 }
 free_HTML_character_context(html_ctx);
@@ -453,6 +464,7 @@ if (read(f,"!--")) {
 	(*pos)+=3;
 	if (!skip_comment(f,pos)) {
 		error("Invalid comment\n");
+		fseek(f,current,SEEK_SET);
 		return 0;
 	}
 	if (options->comments==UNXMLIZE_IGNORE) {
@@ -472,6 +484,7 @@ if (read(f,"![CDATA[")) {
 	write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
 	if (!skip_cdata(f,f_out,pos,new_pos,offsets)) {
 		error("Invalid CDATA\n");
+		fseek(f,current,SEEK_SET);
 		return 0;
 	}
 	return 1;
@@ -488,6 +501,7 @@ if (options->scripts!=UNXMLIZE_DO_NOTHING) {
 		(*pos)+=7;
 		if (!skip_script(f,pos)) {
 			error("Invalid script code\n");
+			fseek(f,current,SEEK_SET);
 			return 0;
 		}
 		if (options->scripts==UNXMLIZE_IGNORE) {
@@ -505,6 +519,7 @@ fseek(f,current,SEEK_SET);
 /* Or a normal tag */
 if (!skip_normal_tag(f,pos,bastien,f_bastien)) {
 	error("Invalid xml tag\n");
+	fseek(f,current,SEEK_SET);
 	return 0;
 }
 if (options->normal_tags==UNXMLIZE_IGNORE) {
@@ -527,11 +542,13 @@ int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset
 		void* html_ctx) {
 char tmp[32];
 int c,i=0;
+long current=ftell(f);
 while (i<32 && (c=u_fgetc_raw(f))!=';') {
 	if (c>255) {
 		/* Should not happen with valid html chars */
 		tmp[i]='\0';
 		error("Invalid html char: &%s%C;\n",tmp,c);
+		fseek(f,current,SEEK_SET);
 		return 0;
 	}
 	tmp[i++]=(char)c;
@@ -542,6 +559,7 @@ if (i==32) {
 	tmp[31]='\0';
 	error("Too long HTML character: %s\n",tmp);
 	error("This may come from an invalid & found in text instead of &amp;\n");
+	fseek(f,current,SEEK_SET);
 	return 0;
 }
 (*pos)++;
@@ -549,6 +567,7 @@ tmp[i]='\0';
 c=get_HTML_character(html_ctx,tmp,1);
 if (c<0) {
 	error("Invalid html character: &%s;\n",tmp);
+	fseek(f,current,SEEK_SET);
 	return 0;
 }
 u_fputc_raw((unichar)c,f_out);
