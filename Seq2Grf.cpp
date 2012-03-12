@@ -333,6 +333,11 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	u_printf("n_ins=%d\n",n_ins);
 	u_printf("n_rep=%d\n",n_rep);
 	u_printf("n_sup=%d\n",n_sup);
+	u_printf("is_koran=%d\n",is_korean);
+	u_printf("CLEAN=%d\n",CLEAN);
+	u_printf("do_beautify=%d\n",do_beautify);
+	u_printf("val=%d\n",val);
+	u_printf("index=%d\n",index);
 	build_sequences_automaton(f, tokens, alph, tfst, tind, CLEAN,form_frequencies,n_op,n_ins,n_rep,n_sup);
 	//    /* Finally, we save statistics */
 	char tfst_tags_by_freq[FILENAME_MAX];
@@ -389,6 +394,22 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	free_OptVars(vars);
 	return 0;
 }
+int count_jokers(int seq[], int size){
+	int nj=0;
+	for (int i=0;i<size;i++){
+		if (seq[i]==-1)
+			nj++;
+	}
+	return nj;
+}
+int count_original_tokens(int seq[], int size){
+	int nb_ot=0;
+	for (int i=0;i<size;i++){
+		if (seq[i]!=-1)
+			nb_ot++;
+	}
+	return nb_ot;
+}
 void add_path(Tfst * tfst,
 		int seq[],
 		int pos_res,
@@ -396,16 +417,27 @@ void add_path(Tfst * tfst,
 		Ustring * text,
 		int & current_state,
 		struct string_hash *&tmp_tags ){
-	u_printf("add_path\t\tpos_res=%d\n",pos_res);
+	u_printf("////////////////////\n");
+	u_printf("//////add_path//////\n");
+	u_printf("////////////////////\t\t\t[");
+	for (int i=0;i<pos_res;i++){
+		if (seq[i]==-1){
+			u_printf("<TOKEN> ");
+		}else{
+			u_printf("%S ",tokens->token[seq[i]]);
+		}
+	}
+	u_printf("]\n");
+//	u_printf("\t\tpos_res=%d\n[",pos_res);
 	for (int i=0;i<pos_res;i++){
 		if (seq[i]==-1){
 			u_strcat(text,"<TOKEN>");
-			u_printf("<TOKEN> ");
+//			u_printf("<TOKEN> ");
 			vector_int_add(tfst->tokens,1);
 			vector_int_add(tfst->token_sizes, 7);
 		}
 		else{
-			u_printf("%S ",tokens->token[seq[i]]);
+//			u_printf("%S ",tokens->token[seq[i]]);
 			int ind=get_value_index(tokens->token[seq[i]],tmp_tags);
 			if (ind!=0 && ind !=1){
 				int l=u_strlen(tokens->token[seq[i]]);
@@ -427,6 +459,7 @@ void add_path(Tfst * tfst,
 		}
 		u_strcat(text," ");
 	}
+//	u_printf("]\n");
 	u_printf("\t\t>>pos_res=%d\n",pos_res);
 	bool linked = false;
 	int n_nodes = pos_res;
@@ -501,10 +534,16 @@ int work(	int t[],
 		//####################################
 		// produce sequence
 		//####################################
+		u_printf("//////////\n");
+		u_printf("///work///\n");
+		u_printf("//////////\n");
 		u_printf("!!!!current = %d ; size = %d pos_res = %d\n",current,size,pos_res);
 		u_printf("!!!!\tres =[",pos_res);
 		// filters the empty sequences or the ones with only one or several "<TOKEN>"
 		bool is_only_token=true;
+		bool ends_with_token=false;
+		bool starts_with_token=false;
+		starts_with_token=(size>0 && res[0]==-1);
 		for (int i=0;i<pos_res;i++){
 			if(res[i]!=-1) {
 				is_only_token=false;
@@ -512,14 +551,13 @@ int work(	int t[],
 			}
 			else u_printf("%s ","<TOKEN>");
 		}
-		bool ends_with_token=false;
-		if (res[pos_res-1]==-1)
+		if (pos_res>0 && res[pos_res-1]==-1)
 			ends_with_token=true;
 
 		u_printf("]\t");
 		if (is_only_token){
 			u_printf("only_token\n");
-			u_printf("!!!!we skip this sequence :\t\t\"");
+			u_printf("????we skip this sequence :\t\t\"");
 			for (int i=0;i<pos_res;i++){
 				if (res[i]==-1)
 					u_printf("%s ","<TOKEN>");
@@ -529,18 +567,30 @@ int work(	int t[],
 			}
 			u_printf("\"\n");
 		}
-		else if (ends_with_token){
-			u_printf("ends_with_token\n");
-				u_printf("!!!!we skip this sequence :\t\t\"");
-			for (int i=0;i<pos_res;i++){
-				if (res[i]==-1)
-					u_printf("%s ","<TOKEN>");
-				else{
-					u_printf("%S ",tokens->token[res[i]]);
-				}
-			}
-			u_printf("\"\n");
-		}
+//		else if (ends_with_token){
+//			u_printf("ends_with_token\n");
+//				u_printf("????we skip this sequence :\t\t\"");
+//			for (int i=0;i<pos_res;i++){
+//				if (res[i]==-1)
+//					u_printf("%s ","<TOKEN>");
+//				else{
+//					u_printf("%S ",tokens->token[res[i]]);
+//				}
+//			}
+//			u_printf("\"\n");
+//		}
+//		else if (starts_with_token){
+//			u_printf("starts_with_token\n");
+//				u_printf("????we skip this sequence :\t\t\"");
+//			for (int i=0;i<pos_res;i++){
+//				if (res[i]==-1)
+//					u_printf("%s ","<TOKEN>");
+//				else{
+//					u_printf("%S ",tokens->token[res[i]]);
+//				}
+//			}
+//			u_printf("\"\n");
+//		}
 		else{
 			u_printf("not only_token\n");
 			u_printf("!!!!we add this sequence :\t\t\"");
@@ -552,15 +602,18 @@ int work(	int t[],
 				}
 			}
 			u_printf("\"\n");
-			add_path(
-					tfst,
-					res,
-					pos_res,
-					//							INFO,
-					tokens,
-					text,
-					current_state,
-					tmp_tags );
+			// only allow sequences with jokers if the original sequence has at least two tokens
+			if(count_original_tokens(res,pos_res)>=2 || count_jokers(res,pos_res)==0){
+				add_path(
+						tfst,
+						res,
+						pos_res,
+						//							INFO,
+						tokens,
+						text,
+						current_state,
+						tmp_tags );
+			}
 		}
 		cur++;
 		return cur;
@@ -614,15 +667,15 @@ int work(	int t[],
 		//		replace
 		//####################################
 		res[pos_res]=INFO.TOKEN;
-		u_printf("replace : [");
-		for (int i=0;i<pos_res;i++){
-			if (res[i]==-1)
-				u_printf("%s ","<TOKEN>");
-			else{
-				u_printf("%S ",tokens->token[res[i]]);
-			}
-		}
-		u_printf("]\n");
+//		u_printf("replace : [");
+//		for (int i=0;i<pos_res;i++){
+//			if (res[i]==-1)
+//				u_printf("%s ","<TOKEN>");
+//			else{
+//				u_printf("%S ",tokens->token[res[i]]);
+//			}
+//		}
+//		u_printf("]\n");
 		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
 				,tfst,	INFO,	tokens,	text,	current_state,
 				tmp_tags);
