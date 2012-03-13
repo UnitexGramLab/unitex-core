@@ -213,7 +213,7 @@ if (consider_as_html!=0) {
 } else {
 	opts.comments=UNXMLIZE_IGNORE;
 	opts.scripts=UNXMLIZE_DO_NOTHING;
-	opts.normal_tags=UNXMLIZE_IGNORE;
+	opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
 }
 if (comments!=-1) opts.comments=comments;
 if (scripts!=-1) opts.scripts=scripts;
