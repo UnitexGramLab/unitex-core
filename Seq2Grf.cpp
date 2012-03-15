@@ -428,16 +428,16 @@ void add_path(Tfst * tfst,
 		}
 	}
 	u_printf("]\n");
-//	u_printf("\t\tpos_res=%d\n[",pos_res);
+	//	u_printf("\t\tpos_res=%d\n[",pos_res);
 	for (int i=0;i<pos_res;i++){
 		if (seq[i]==-1){
 			u_strcat(text,"<TOKEN>");
-//			u_printf("<TOKEN> ");
+			//			u_printf("<TOKEN> ");
 			vector_int_add(tfst->tokens,1);
 			vector_int_add(tfst->token_sizes, 7);
 		}
 		else{
-//			u_printf("%S ",tokens->token[seq[i]]);
+			//			u_printf("%S ",tokens->token[seq[i]]);
 			int ind=get_value_index(tokens->token[seq[i]],tmp_tags);
 			if (ind!=0 && ind !=1){
 				int l=u_strlen(tokens->token[seq[i]]);
@@ -459,7 +459,7 @@ void add_path(Tfst * tfst,
 		}
 		u_strcat(text," ");
 	}
-//	u_printf("]\n");
+	//	u_printf("]\n");
 	u_printf("\t\t>>pos_res=%d\n",pos_res);
 	bool linked = false;
 	int n_nodes = pos_res;
@@ -567,30 +567,30 @@ int work(	int t[],
 			}
 			u_printf("\"\n");
 		}
-//		else if (ends_with_token){
-//			u_printf("ends_with_token\n");
-//				u_printf("????we skip this sequence :\t\t\"");
-//			for (int i=0;i<pos_res;i++){
-//				if (res[i]==-1)
-//					u_printf("%s ","<TOKEN>");
-//				else{
-//					u_printf("%S ",tokens->token[res[i]]);
-//				}
-//			}
-//			u_printf("\"\n");
-//		}
-//		else if (starts_with_token){
-//			u_printf("starts_with_token\n");
-//				u_printf("????we skip this sequence :\t\t\"");
-//			for (int i=0;i<pos_res;i++){
-//				if (res[i]==-1)
-//					u_printf("%s ","<TOKEN>");
-//				else{
-//					u_printf("%S ",tokens->token[res[i]]);
-//				}
-//			}
-//			u_printf("\"\n");
-//		}
+		//		else if (ends_with_token){
+		//			u_printf("ends_with_token\n");
+		//				u_printf("????we skip this sequence :\t\t\"");
+		//			for (int i=0;i<pos_res;i++){
+		//				if (res[i]==-1)
+		//					u_printf("%s ","<TOKEN>");
+		//				else{
+		//					u_printf("%S ",tokens->token[res[i]]);
+		//				}
+		//			}
+		//			u_printf("\"\n");
+		//		}
+		//		else if (starts_with_token){
+		//			u_printf("starts_with_token\n");
+		//				u_printf("????we skip this sequence :\t\t\"");
+		//			for (int i=0;i<pos_res;i++){
+		//				if (res[i]==-1)
+		//					u_printf("%s ","<TOKEN>");
+		//				else{
+		//					u_printf("%S ",tokens->token[res[i]]);
+		//				}
+		//			}
+		//			u_printf("\"\n");
+		//		}
 		else{
 			u_printf("not only_token\n");
 			u_printf("!!!!we add this sequence :\t\t\"");
@@ -602,17 +602,28 @@ int work(	int t[],
 				}
 			}
 			u_printf("\"\n");
+			u_printf("pos_res=%d\tsize=%d\n",pos_res,size);
 			// only allow sequences with jokers if the original sequence has at least two tokens
-			if(count_original_tokens(res,pos_res)>=2 || count_jokers(res,pos_res)==0){
-				add_path(
-						tfst,
-						res,
-						pos_res,
-						//							INFO,
-						tokens,
-						text,
-						current_state,
-						tmp_tags );
+			if(count_original_tokens(res,pos_res)>=2
+					||
+					(
+//							count_jokers(res,pos_res)==0
+//							&&
+							count_original_tokens(res,pos_res) == size
+					)
+				){
+//			???????
+//				if(pos_res>2 || size==pos_res){
+					add_path(
+							tfst,
+							res,
+							pos_res,
+							//							INFO,
+							tokens,
+							text,
+							current_state,
+							tmp_tags );
+//				}
 			}
 		}
 		cur++;
@@ -649,6 +660,8 @@ int work(	int t[],
 		//####################################
 		//		suppr
 		//####################################
+
+		//		if ()
 		u_printf("suppr : [");
 		for (int i=0;i<pos_res;i++){
 			if (res[i]==-1)
@@ -667,15 +680,15 @@ int work(	int t[],
 		//		replace
 		//####################################
 		res[pos_res]=INFO.TOKEN;
-//		u_printf("replace : [");
-//		for (int i=0;i<pos_res;i++){
-//			if (res[i]==-1)
-//				u_printf("%s ","<TOKEN>");
-//			else{
-//				u_printf("%S ",tokens->token[res[i]]);
-//			}
-//		}
-//		u_printf("]\n");
+		//		u_printf("replace : [");
+		//		for (int i=0;i<pos_res;i++){
+		//			if (res[i]==-1)
+		//				u_printf("%s ","<TOKEN>");
+		//			else{
+		//				u_printf("%S ",tokens->token[res[i]]);
+		//			}
+		//		}
+		//		u_printf("]\n");
 		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
 				,tfst,	INFO,	tokens,	text,	current_state,
 				tmp_tags);
@@ -742,7 +755,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	}
 	u_printf("read_sentence :\n");
 	while (read_sentence(buffer, &N, &total, f, tokens->STOP_MARKER)) {
-//	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
+		//	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
 		u_printf("\tN=%d\n",N);
 		u_printf("\tread_sentence : in\n");
 		int nst=count_non_space_tokens(buffer, N, tokens->SPACE);
