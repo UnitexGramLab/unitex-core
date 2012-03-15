@@ -187,6 +187,10 @@ if (language==DUTCH || language==NORWEGIAN) {
    get_path(name_bin,name_inf);
    strcat(name_inf,"ForbiddenWords.txt");
    forbiddenWords=load_key_list(&vec,name_inf);
+   if (forbiddenWords==NULL) {
+	   /* If there was no file, we don't want to block the process */
+	   forbiddenWords=new_string_hash(DONT_USE_VALUES);
+   }
 }
 strcpy(name_inf,name_bin);
 name_inf[strlen(name_bin)-3]='\0';
