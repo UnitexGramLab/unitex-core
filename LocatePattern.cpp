@@ -628,7 +628,7 @@ if (is_letter(token[0],alph)) {
       i=0;
       tmp=0;
       while (token[i]!='\0') {
-         if (is_lower(token[i],alph)) {
+         if (!is_upper(token[i],alph)) {
             tmp=1;
             break;
          }
@@ -642,7 +642,7 @@ if (is_letter(token[0],alph)) {
    i=0;
    tmp=0;
    while (token[i]!='\0') {
-      if (is_upper(token[i],alph)) {
+      if (!is_lower(token[i],alph)) {
          tmp=1;
          break;
       }
