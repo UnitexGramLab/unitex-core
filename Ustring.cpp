@@ -146,6 +146,7 @@ unsigned int newlen=ustr->len+length;
 if (ustr->size<newlen+1) {
    /* If necessary, we enlarge the internal buffer */
 	unsigned int n=ustr->size;
+	if (n==0) n=1;
    while (n<=newlen+1) {
       n=n*2;
    }
@@ -163,14 +164,15 @@ ustr->len=newlen;
  * Concatenates the given unicode character to the given Ustring.
  */
 void u_strcat(Ustring* ustr,unichar c) {
-	unsigned int newlen=ustr->len+1;
+unsigned int newlen=ustr->len+1;
 if (ustr->size<newlen+1) {
-   /* If necessary, we enlarge the internal buffer */
+	/* If necessary, we enlarge the internal buffer */
 	unsigned int n=ustr->size;
-      while (n<=newlen+1) {
-         n=n*2;
-   }
-   resize(ustr,n);
+	if (n==0) n=1;
+    while (n<=newlen+1) {
+    	n=n*2;
+    }
+    resize(ustr,n);
 }
 ustr->str[ustr->len]=c;
 ustr->str[ustr->len+1]='\0';
@@ -191,6 +193,7 @@ unsigned int newlen=ustr->len+length;
 if (ustr->size<newlen+1) {
    /* If necessary, we enlarge the internal buffer */
 	unsigned int n=ustr->size;
+	if (n==0) n=1;
    while (n<=newlen+1) {
        n=n*2;
    }
