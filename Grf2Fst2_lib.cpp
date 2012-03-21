@@ -58,6 +58,7 @@ if (infos==NULL) {
 }
 infos->main_graph_path[0]='\0';
 infos->repository[0]='\0';
+infos->named_repositories=new_string_hash_ptr();
 infos->graph_names=new_string_hash(256);
 /* As the graph numbers start at 1, we insert the empty string at position 0 */
 get_value_index(U_EMPTY,infos->graph_names);
@@ -91,6 +92,7 @@ return infos;
  */
 void free_compilation_info(struct compilation_info* infos) {
 if (infos==NULL) return;
+free_string_hash_ptr(infos->named_repositories,free);
 free_string_hash(infos->graph_names);
 free_string_hash(infos->tags);
 free_vector_int(infos->renumber);
@@ -181,25 +183,54 @@ return 0;
 #endif
 
 
+static int is_variable_char(unichar c) {
+return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_');
+}
+
+
 /**
  * Computes the absolute path of the graph #n, taking into account references
  * to the graph repository, if any.
  */
 void get_absolute_name(char* name,int n,struct compilation_info* infos) {
 unichar temp[FILENAME_MAX];
+/* offset is the position where to start replacing ':' by '/' or '\' */
 int offset;
 int abs_path_name_warning=0; // 1 windows, 2 unix
 temp[0]='\0'; // necessary if we have an absolute path name
+int shift=0;
 if (infos->graph_names->value[n][0]==':') {
-   /* If the graph is located in the repository, then we must test if
-    * the repository is defined. If not, an absolute path is tried
-    * starting with '/' resp. '\\'. This enables absolute path names
-    * under Unixes. */
-   u_strcpy(temp,infos->repository);
-   offset=(int)strlen(infos->repository);
-   if (infos->repository[0]=='\0') {
-      abs_path_name_warning=2;
-   }
+	shift++;
+	if (infos->graph_names->value[n][1]=='$') {
+		/* If we have a graph call using a named repository */
+		shift++;
+		Ustring* foo=new_Ustring();
+		for (unichar* s=infos->graph_names->value[n]+shift;(*s!=':' && *s!='/' && *s!='\\');s++,shift++) {
+			if (!is_variable_char(*s)) {
+				fatal_error("Invalid repository name in graph call: %S\n",infos->graph_names->value[n]);
+			}
+			u_strcat(foo,*s);
+		}
+		/* We skip the final file separator */
+		shift++;
+		int index=get_value_index(foo->str,infos->named_repositories,DONT_INSERT);
+		if (index==-1) {
+			fatal_error("Undefined repository name: %S\n",foo->str);
+		}
+		char* repository=(char*)(infos->named_repositories->value[index]);
+		u_strcpy(temp,repository);
+		free_Ustring(foo);
+	} else {
+		/* If the graph is located in the default repository, then we must test if
+		 * the repository is defined. If not, an absolute path is tried
+		 * starting with '/' resp. '\\'. This enables absolute path names
+		 * under Unixes. */
+		u_strcpy(temp,infos->repository);
+		if (infos->repository[0]=='\0') {
+			abs_path_name_warning=2;
+		}
+	}
+	offset=(int)u_strlen(temp);
 }
 #ifndef _NOT_UNDER_WINDOWS
 else if (test4abs_windows_path_name(infos->graph_names->value[n])) {
@@ -218,7 +249,11 @@ else {
    u_strcpy(temp,infos->main_graph_path);
    offset=u_strlen(infos->main_graph_path);
 }
-u_strcat(temp,infos->graph_names->value[n]);
+int l=u_strlen(temp)-1;
+if (temp[l]!=':' && temp[l]!='/' && temp[l]!='\\') {
+	u_strcat(temp,":");
+}
+u_strcat(temp,infos->graph_names->value[n]+shift);
 u_strcat(temp,".grf");
 /* Finally, we turn the file name into ISO-8859-1 */
 u_to_char(name,temp);
@@ -233,8 +268,7 @@ if (abs_path_name_warning!=0) {
 /* Finally, we turn all the ':' into the system separator ('/' or '\'),
  * but we must ignore the ':' in "C:\...", so we start the
  * replacement after a shift offset */
-name=name+offset;
-replace_colon_by_path_separator(name);
+replace_colon_by_path_separator(name+offset);
 }
 
 
@@ -498,7 +532,6 @@ if (u_ends_with(dest,".grf")) {
    dest[i-4]='\0';
 }
 }
-
 
 /**
  * Takes the given input and tries to read a token from '*pos'.

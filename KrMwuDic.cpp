@@ -213,10 +213,9 @@ int semitic;
 get_inflection_code(entries[n_parts-1]->semantic_codes[0],
                     inflection_code, code_gramm, &semitic);
 /* And we inflect the word */
-const char* pkgdir="";
 SU_inflect(ctx,morpho,vec,
       entries[n_parts-1]->lemma,inflection_code,
-      NULL, &forms, semitic, korean, pkgdir);
+      NULL, &forms, semitic, korean, "", "");
 if (forms.no_forms==0) {
    /* If no form was generated, we have nothing to do */
    SU_delete_inflection(&forms);

@@ -70,7 +70,7 @@ int DLC_line2entry(Alphabet* alph,struct l_morpho_t* pL_MORPHO,unichar* line, DL
 // On error returns 1, 0 otherwise.
 int inflect(char*,char*,MultiFlex_ctx*,struct l_morpho_t*,Alphabet* alph, const VersatileEncodingConfig*,
 		int,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status,
-		Korean* korean,const char* pkgdir);
+		Korean* korean,const char* pkgdir,const char* named_repositories);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.

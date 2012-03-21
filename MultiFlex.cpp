@@ -62,7 +62,11 @@ const char* usage_MultiFlex =
 	     "  -K/--korean: tells MultiFlex that it works on Korean\n"
 		 "  -s/--only-simple-words: the program will consider compound words as errors\n"
 		 "  -c/--only-compound-words: the program will consider simple words as errors\n"
-         "  -p DIR/--pkgdir=DIR: path of the root dir of all grammar packages\n"
+         "  -p DIR/--pkgdir=DIR: path of the default graph repository\n"
+         "  -r XXX/--named_repositories=XXX: declaration of named repositories. XXX is\n"
+		 "                                   made of one or more X=Y sequences, separated by ;\n"
+		 "                                   where X is the name of the repository denoted by\n"
+		 "                                   the pathname Y. You can use this option several times\n"
          "  -h/--help: this help\n"
          "\n"
          "Inflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n"
@@ -75,7 +79,7 @@ u_printf(usage_MultiFlex);
 }
 
 
-const char* optstring_MultiFlex=":o:a:d:Kschk:q:p:";
+const char* optstring_MultiFlex=":o:a:d:Kschk:q:p:r:";
 const struct option_TS lopts_MultiFlex[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -86,6 +90,7 @@ const struct option_TS lopts_MultiFlex[]= {
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"pkgdir",required_argument_TS,NULL,'p'},
+      {"named_repositories",required_argument_TS,NULL,'r'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -101,6 +106,7 @@ char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char pkgdir[FILENAME_MAX]="";
+char* named=NULL;
 int is_korean=0;
 MultiFlex_ctx* p_multiFlex_ctx;
 //Current language's alphabet
@@ -140,6 +146,20 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&i
                 fatal_error("You must specify a non empty package directory name\n");
              }
              strcpy(pkgdir,vars->optarg);
+             break;
+   case 'r': if (named==NULL) {
+                  named=strdup(vars->optarg);
+                  if (named==NULL) {
+                     fatal_alloc_error("main_Grf2Fst2");
+                  }
+             } else {
+            	 named = (char*)realloc((void*)named,strlen(named)+strlen(vars->optarg)+2);
+                 if (named==NULL) {
+                    fatal_alloc_error("main_MultiFlex");
+                 }
+                 strcat(named,";");
+                 strcat(named,vars->optarg);
+             }
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -216,7 +236,8 @@ if (is_korean) {
 //DELAC inflection
 err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,&vec,
             config_files_status,&D_CLASS_EQUIV,
-		      error_check_status,korean,pkgdir);
+		      error_check_status,korean,pkgdir,named);
+free(named);
 MU_graph_free_graphs(p_multiFlex_ctx);
 for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));

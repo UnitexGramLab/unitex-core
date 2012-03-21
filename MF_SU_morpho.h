@@ -51,13 +51,14 @@ namespace unitex {
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		const VersatileEncodingConfig* vec,
 		SU_id_T* SU_id,f_morpho_T* feat,
-		SU_forms_T* forms,int,Korean* korean,const char* pkgdir);
+		SU_forms_T* forms,int,Korean* korean,const char* pkgdir,
+		const char* named_repositories);
 
 /* This prototype has been added in order to deal with simple words */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		const VersatileEncodingConfig* vec,unichar* lemma,
 		char* inflection_code,unichar **filters,SU_forms_T* forms,
-		int,Korean* korean,const char* pkgdir);
+		int,Korean* korean,const char* pkgdir,const char* named_repositories);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

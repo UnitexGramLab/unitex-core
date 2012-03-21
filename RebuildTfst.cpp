@@ -162,7 +162,7 @@ for (int i = 1; i <= tfst->N; i++) {
    if (fexists(grfname)) {
       /* If there is a .grf for the current sentence, then we must
        * take it into account */
-      if (0==pseudo_main_Grf2Fst2(&vec,grfname,0,NULL,1,1,NULL)) {
+      if (0==pseudo_main_Grf2Fst2(&vec,grfname,0,NULL,1,1,NULL,NULL)) {
          /* We proceed only if the graph compilation was a success */
          char fst2name[FILENAME_MAX];
          sprintf(fst2name, "%ssentence%d.fst2", basedir, i);

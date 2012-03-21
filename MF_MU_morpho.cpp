@@ -45,11 +45,12 @@ namespace unitex {
 // Returns 0 on success, 1 otherwise.
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		const VersatileEncodingConfig* vec,MU_lemma_T* lemma,
-		MU_forms_T* forms,const char* pkgdir) {
+		MU_forms_T* forms,const char* pkgdir,const char* named_repositories) {
 	int err;
 
 	//Explore the inflection tranducer and produce the inflected forms
-	err = MU_graph_explore_graph(p_multiFlex_ctx,pL_MORPHO,vec,lemma,forms,pkgdir);
+	err = MU_graph_explore_graph(p_multiFlex_ctx,pL_MORPHO,vec,lemma,forms,pkgdir,
+			named_repositories);
 	if (err)
 		return 1;
 	else

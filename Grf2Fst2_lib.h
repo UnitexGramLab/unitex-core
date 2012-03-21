@@ -44,6 +44,7 @@ namespace unitex {
 struct compilation_info {
    unichar main_graph_path[FILENAME_MAX];
    char repository[FILENAME_MAX];
+   struct string_hash_ptr* named_repositories;
    struct string_hash* tags;
    struct string_hash* graph_names;
    int nombre_graphes_comp;

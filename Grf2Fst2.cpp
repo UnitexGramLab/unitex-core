@@ -58,7 +58,11 @@ const char* usage_Grf2Fst2 =
          "                           lexical units.\n"
          "  -c/--char_by_char: lexical units are single letters. If both -a and -c options are\n"
          "                     unused, lexical units will be sequences of any unicode letters.\n"
-         "  -d DIR/--pkgdir=DIR: path of the root dir of all grammar packages\n"
+         "  -d DIR/--pkgdir=DIR: path of the default graph repository\n"
+         "  -r XXX/--named_repositories=XXX: declaration of named repositories. XXX is\n"
+		 "                                   made of one or more X=Y sequences, separated by ;\n"
+		 "                                   where X is the name of the repository denoted by\n"
+		 "                                   the pathname Y. You can use this option several times\n"
          "  --debug: compile graphs in debug mode\n"
          "  -h/--help: this help\n"
          "\n"
@@ -78,7 +82,7 @@ u_printf(usage_Grf2Fst2);
 int pseudo_main_Grf2Fst2(const VersatileEncodingConfig* vec,
                          const char* name,int yes_or_no,const char* alphabet,
                          int no_empty_graph_warning,int tfst_check,
-                         const char* pkgdir) {
+                         const char* pkgdir,const char* named_repositories) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Grf2Fst2,"main_Grf2Fst2");
 add_argument(invoker,name);
 add_argument(invoker,yes_or_no?"-y":"-n");
@@ -112,13 +116,17 @@ if (pkgdir!=NULL && pkgdir[0]!='\0') {
    sprintf(tmp,"--pkgdir=%s",pkgdir);
    add_argument(invoker,tmp);
 }
+if (named_repositories!=NULL && named_repositories[0]!='\0') {
+   sprintf(tmp,"--named_repositories=%s",named_repositories);
+   add_argument(invoker,tmp);
+}
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:";
+const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:r:";
 const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -133,8 +141,56 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"debug",no_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
+      {"named_repositories",required_argument_TS,NULL,'r'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+static int count_semi_colons(const char* s) {
+int n=0;
+for (int i=0;s[i]!='\0';i++) {
+   if (s[i]==';') n++;
+}
+return n;
+}
+
+
+/**
+ * Takes a string containing .bin names separated with semi-colons and
+ * loads the corresponding dictionaries.
+ */
+static void deal_with_named_repositories(const char* s,struct string_hash_ptr* hash) {
+const char* src=s;
+if (s==NULL || s[0]=='\0') {
+   return;
+}
+int n_morpho_dics=1+count_semi_colons(s);
+unichar name[FILENAME_MAX];
+char value[FILENAME_MAX];
+int pos;
+for (int i=0;i<n_morpho_dics;i++) {
+   pos=0;
+   while (*s!='\0' && *s!='=') {
+      name[pos++]=*s;
+      s++;
+   }
+   name[pos]='\0';
+   if (*s!='=') {
+	   fatal_error("Invalid named_repositories: %s\n",src);
+   }
+   s++;
+   pos=0;
+   while (*s!='\0' && *s!=';') {
+      value[pos++]=*s;
+      s++;
+   }
+   value[pos]='\0';
+   if (*s==';') {
+      s++;
+   }
+   get_value_index(name,hash,INSERT_IF_NEEDED,strdup(value));
+}
+}
 
 
 /**
@@ -152,6 +208,7 @@ infos->vec.mask_encoding_compatibility_input=DEFAULT_MASK_ENCODING_COMPATIBILITY
 infos->vec.encoding_output=DEFAULT_ENCODING_OUTPUT;
 infos->vec.bom_output=DEFAULT_BOM_OUTPUT;
 
+char* named=NULL;
 char fst2_file_name[FILENAME_MAX];
 infos->verbose_name_grf=1;
 char alph[FILENAME_MAX]="";
@@ -194,12 +251,28 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
              }
              decode_writing_encoding_parameter(&(infos->vec.encoding_output),&(infos->vec.bom_output),vars->optarg);
              break;
+   case 'r': if (named==NULL) {
+                  named=strdup(vars->optarg);
+                  if (named==NULL) {
+                     fatal_alloc_error("main_Grf2Fst2");
+                  }
+             } else {
+            	 named = (char*)realloc((void*)named,strlen(named)+strlen(vars->optarg)+2);
+                 if (named==NULL) {
+                    fatal_alloc_error("main_Grf2Fst2");
+                 }
+                 strcat(named,";");
+                 strcat(named,vars->optarg);
+             }
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
+deal_with_named_repositories(named,infos->named_repositories);
+free(named);
 if (alph[0]!='\0') {
 	infos->alphabet=load_alphabet(&(infos->vec),alph);
 	if (infos->alphabet==NULL) {

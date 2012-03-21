@@ -45,7 +45,8 @@ namespace unitex {
 // Returns 0 on success, 1 otherwise.   
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 		const VersatileEncodingConfig* vec,
-		MU_lemma_T* lemma, MU_forms_T* forms,const char* pkgdir);
+		MU_lemma_T* lemma, MU_forms_T* forms,const char* pkgdir,
+		const char* named_repositories);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

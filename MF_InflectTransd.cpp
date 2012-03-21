@@ -51,7 +51,7 @@ void free_transition(struct transition* t);
 void free_node(struct node* n);
 struct transition* get_transition(char c,struct transition* t,struct node** n);
 int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex, const VersatileEncodingConfig*,
-		int pos,struct node* n,const char* pkgdir);
+		int pos,struct node* n,const char* pkgdir,const char* named_repositories);
 
 ///////////////////////////////
 //Initiate the tree for inflection transducers' names
@@ -76,8 +76,9 @@ free_node(p_multiFlex_ctx->root);
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array.
 int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
-		const VersatileEncodingConfig* vec,const char* pkgdir) {
-return get_node(p_multiFlex_ctx,flex,vec,0,p_multiFlex_ctx->root,pkgdir);
+		const VersatileEncodingConfig* vec,const char* pkgdir,
+		const char* named_repositories) {
+return get_node(p_multiFlex_ctx,flex,vec,0,p_multiFlex_ctx->root,pkgdir,named_repositories);
 }
 
 ///////////////////////////////
@@ -170,7 +171,8 @@ return (get_file_date(grf)>=get_file_date(fst2));
 // Look for the path to 'flex', creating it if necessary
 // The current node is n, and pos is the position in the flex string
 int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
-		const VersatileEncodingConfig* vec,int pos,struct node* n,const char* pkgdir) {
+		const VersatileEncodingConfig* vec,int pos,struct node* n,
+		const char* pkgdir,const char* named_repositories) {
 if (flex[pos]=='\0') {
     // we are at the final node for flex (a leaf)
     if (n->final!=-1) {
@@ -191,7 +193,7 @@ if (flex[pos]=='\0') {
         if (must_compile_grf(grf,s)) {
            /* If there is no .fst2 file, of a one than is older than the
             * corresponding .grf, we try to compile it */
-           pseudo_main_Grf2Fst2(vec,grf,1,NULL,1,0,pkgdir);
+           pseudo_main_Grf2Fst2(vec,grf,1,NULL,1,0,pkgdir,named_repositories);
         }
         p_multiFlex_ctx->fst2[p_multiFlex_ctx->n_fst2]=load_abstract_fst2(vec,s,1,&(p_multiFlex_ctx->fst2_free[p_multiFlex_ctx->n_fst2]));
         n->final=p_multiFlex_ctx->n_fst2;
@@ -203,7 +205,7 @@ struct transition* trans=get_transition(flex[pos],n->t,&n);
 if (trans->n==NULL) {
     trans->n=new_node();
 }
-return get_node(p_multiFlex_ctx,flex,vec,pos+1,trans->n,pkgdir);
+return get_node(p_multiFlex_ctx,flex,vec,pos+1,trans->n,pkgdir,named_repositories);
 }
 
 } // namespace unitex

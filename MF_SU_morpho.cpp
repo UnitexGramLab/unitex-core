@@ -131,13 +131,13 @@ int SU_delete_lemma(SU_lemma_T* l);
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 				const VersatileEncodingConfig* vec,
                SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
-               int semitic,Korean* korean,const char* pkgdir) {
+               int semitic,Korean* korean,const char* pkgdir,const char* named_repositories) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
 	unichar local_sem_code[MAX_CHARS_IN_STACK];
 	inflection_codes[0] = '\0';
-	int T = get_transducer(p_multiFlex_ctx,SU_id->lemma->paradigm,vec,pkgdir);
+	int T = get_transducer(p_multiFlex_ctx,SU_id->lemma->paradigm,vec,pkgdir,named_repositories);
 	if (p_multiFlex_ctx->fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
@@ -163,14 +163,15 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
 				const VersatileEncodingConfig* vec,
                unichar* lemma, char* inflection_code, unichar** filters,
-               SU_forms_T* forms, int semitic,Korean* korean,const char* pkgdir) {
+               SU_forms_T* forms, int semitic,Korean* korean,const char* pkgdir,
+               const char* named_repositories) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
 	unichar local_semantic_code[MAX_CHARS_IN_STACK];
 
 	inflection_codes[0] = '\0';
-	int T = get_transducer(p_multiFlex_ctx,inflection_code,vec,pkgdir);
+	int T = get_transducer(p_multiFlex_ctx,inflection_code,vec,pkgdir,named_repositories);
 	if (T==-1 || p_multiFlex_ctx->fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
