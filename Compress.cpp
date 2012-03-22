@@ -59,7 +59,7 @@ const char* usage_Compress =
 		 "  -h/--help: this help\n"
          "\n"
          "Compresses a dictionary into an finite state automaton. This automaton\n"
-         "is stored is a .bin file, and the associated flexional codes are\n"
+         "is stored is a .bin file, and the associated inflectional codes are\n"
          "written in a .inf file.\n\n";
 
 
