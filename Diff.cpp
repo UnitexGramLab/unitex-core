@@ -42,13 +42,13 @@ namespace unitex {
  * the associated concordances 'out1' and 'out2'.
  */
 void create_text_concordances(const VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out1,const char* out2) {
-pseudo_main_Concord(vec,in1,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
+pseudo_main_Concord(vec,in1,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
 af_remove(out1);
 af_rename(f,out1);
-pseudo_main_Concord(vec,in2,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0);
+pseudo_main_Concord(vec,in2,NULL,0,20,40,NULL,"--diff",NULL,NULL,0,0,0);
 af_remove(out2);
 af_rename(f,out2);
 }

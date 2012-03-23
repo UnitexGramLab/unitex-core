@@ -386,7 +386,10 @@ while ((c=u_fgetc(f))!=EOF) {
 		}
 		/* If we must produce a text concordance */
 		else if (options->result_mode==TEXT_) {
-			u_fprintf(out,"\t%S\t%S\n",middle,right);
+			if (!options->only_matches) u_fputc('\t',out);
+			u_fprintf(out,"%S",middle);
+			if (!options->only_matches) u_fputc('\t',out);
+			u_fprintf(out,"%S\n",right);
 		}
 		/* If we must produce a concordance to be used by ConcorDiff*/
 		else if (options->result_mode==DIFF_) {
@@ -1278,6 +1281,7 @@ opt->working_directory[0]='\0';
 opt->snt_offsets=NULL;
 opt->uima_offsets=NULL;
 opt->PRLG_data=NULL;
+opt->only_matches=0;
 return opt;
 }
 

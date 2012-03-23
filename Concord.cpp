@@ -57,6 +57,8 @@ const char* usage_Concord =
         "  -l X/--left=X: left context length in chars; if followed by s (i.e. \"80s\") indicates\n"
         "                 that the match can end before the limit if there is a {S}. Default=0\n"
         "  -r X/--right=X: the same for right context. Default=0\n"
+		"  --only_matches: this option will force empty left and right contexts. Moreover, if\n"
+		"                  used with -t/--text, Concord will not surround matches with tabulations\n"
 		"  --only_ambiguous: Only displays identical occurrences with ambiguous outputs, in text order\n"
         "\n"
         "Sort order options:\n"
@@ -117,7 +119,7 @@ int pseudo_main_Concord(const VersatileEncodingConfig* vec,
                         const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,
                         const char* output,const char* directory,const char* alphabet,
-                        int thai,int only_ambiguous) {
+                        int thai,int only_ambiguous,int only_matches) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Concord,"main_Concord");
 char tmp[256];
 {
@@ -168,6 +170,9 @@ if (thai) {
 if (only_ambiguous) {
    add_argument(invoker,"--only_ambiguous");
 }
+if (only_matches) {
+   add_argument(invoker,"--only_matches");
+}
 add_argument(invoker,index_file);
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
@@ -182,6 +187,7 @@ const struct option_TS lopts_Concord[]= {
       {"left",required_argument_TS,NULL,'l'},
       {"right",required_argument_TS,NULL,'r'},
       {"only_ambiguous",no_argument_TS,NULL,8},
+      {"only_matches",no_argument_TS,NULL,10},
       {"TO",no_argument_TS,NULL,0},
       {"LC",no_argument_TS,NULL,1},
       {"LR",no_argument_TS,NULL,2},
@@ -280,6 +286,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
 	   strcpy(uima_offset_file,pos+1);
 	   break;
    }
+   case 10: options->only_matches=1; break;
    case 'H': options->result_mode=HTML_; break;
    case 't': options->result_mode=TEXT_; break;
    case 'g': options->result_mode=GLOSSANET_;
@@ -362,6 +369,10 @@ if (concor==NULL) {
 
 if (options->working_directory[0]=='\0') {
    get_path(argv[vars->optind],options->working_directory);
+}
+if (options->only_matches) {
+	options->left_context=0;
+	options->right_context=0;
 }
 /* We compute the name of the files associated to the text */
 struct snt_files* snt_files=new_snt_files_from_path(options->working_directory);

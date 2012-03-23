@@ -40,7 +40,7 @@ int pseudo_main_Concord(const VersatileEncodingConfig*,
                         const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,
                         const char* output,const char* directory,const char* alphabet,
-                        int thai,int only_ambiguous);
+                        int thai,int only_ambiguous,int only_matches);
 
 } // namespace unitex
 

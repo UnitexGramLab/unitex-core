@@ -84,6 +84,7 @@ struct conc_opt {
   vector_int* uima_offsets;
   /* Data extracted from the PRLG file produced by Unxmlize's --PRLG option */
   PRLG* PRLG_data;
+  char only_matches;
 };
 
 struct conc_opt* new_conc_opt();
