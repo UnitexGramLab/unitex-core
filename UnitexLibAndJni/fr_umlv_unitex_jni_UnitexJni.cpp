@@ -45,10 +45,9 @@
 #include "UniRunLogger.h"
 
 #include "UnitexLibIO.h"
-#ifdef UNITEX_HAVING_MINI_PERSISTANCE
-#include "CompressedDic.h"
-#include "Fst2.h"
-#include "Alphabet.h"
+
+#if defined(UNITEX_HAVING_PERSISTANCE_INTERFACE) && (!(defined(UNITEX_PREVENT_USING_PERSISTANCE_INTERFACE)))
+#include "PersistenceInterface.h"
 #endif
 
 #include "Copyright.h"
@@ -889,8 +888,7 @@ JNIEXPORT jobjectArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getFileList
 }
 #endif
 
-
-#if defined(UNITEX_HAVING_MINI_PERSISTANCE) && (!(defined(UNITEX_PREVENT_USING_MINIPERSISTANCE)))
+#if defined(UNITEX_HAVING_PERSISTANCE_INTERFACE) && (!(defined(UNITEX_PREVENT_USING_PERSISTANCE_INTERFACE)))
 /*
  * Class:     fr_umlv_unitex_jni_UnitexJni
  * Method:    loadPersistentDictionary
@@ -899,11 +897,17 @@ JNIEXPORT jobjectArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getFileList
 JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentDictionary
   (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
+jstring jret=NULL;
 name.initJString(env,filename);
-if (load_persistent_dictionary(name.getJString())) {
-	return env->NewStringUTF(name.getJString());
+size_t len_buffer=strlen(name.getJString()+0x200);
+char* persistent_filename=(char*)malloc(len_buffer+1);
+if (persistent_filename == NULL) {
+	return NULL;
 }
-return NULL;
+if (standard_load_persistence_dictionary(name.getJString(),persistent_filename,len_buffer)) {
+	jret = env->NewStringUTF(persistent_filename);
+}
+return jret;
 }
 
 /*
@@ -915,7 +919,7 @@ JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentDictionar
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
-free_persistent_dictionary(name.getJString());
+standard_unload_persistence_dictionary(name.getJString());
 }
 
 /*
@@ -926,11 +930,17 @@ free_persistent_dictionary(name.getJString());
 JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentFst2
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
+jstring jret=NULL;
 name.initJString(env,filename);
-if (load_persistent_fst2(name.getJString())) {
-	return env->NewStringUTF(name.getJString());
+size_t len_buffer=strlen(name.getJString()+0x200);
+char* persistent_filename=(char*)malloc(len_buffer+1);
+if (persistent_filename == NULL) {
+	return NULL;
 }
-return NULL;
+if (standard_load_persistence_fst2(name.getJString(),persistent_filename,len_buffer)) {
+	jret = env->NewStringUTF(persistent_filename);
+}
+return jret;
 }
 
 /*
@@ -942,7 +952,7 @@ JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentFst2
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
-free_persistent_fst2(name.getJString());
+standard_unload_persistence_fst2(name.getJString());
 }
 
 
@@ -954,11 +964,17 @@ free_persistent_fst2(name.getJString());
 JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentAlphabet
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
+jstring jret=NULL;
 name.initJString(env,filename);
-if (load_persistent_alphabet(name.getJString())) {
-	return env->NewStringUTF(name.getJString());
+size_t len_buffer=strlen(name.getJString()+0x200);
+char* persistent_filename=(char*)malloc(len_buffer+1);
+if (persistent_filename == NULL) {
+	return NULL;
 }
-return NULL;
+if (standard_load_persistence_alphabet(name.getJString(),persistent_filename,len_buffer)) {
+	jret = env->NewStringUTF(persistent_filename);
+}
+return jret;
 }
 
 /*
@@ -970,7 +986,7 @@ JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentAlphabet
 	(JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
-free_persistent_alphabet(name.getJString());
+standard_unload_persistence_alphabet(name.getJString());
 }
 
 #endif
