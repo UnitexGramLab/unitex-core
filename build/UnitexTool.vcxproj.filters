@@ -98,6 +98,7 @@
     <ClInclude Include="..\PRLG.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\PersistenceInterface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -710,6 +711,9 @@
       <Filter>Source Files\logger</Filter>
     </ClCompile>
     <ClCompile Include="..\Xml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PersistenceInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

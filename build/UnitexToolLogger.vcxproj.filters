@@ -131,6 +131,9 @@
     <ClInclude Include="..\PRLG.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\PersistenceInterface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -785,6 +788,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\UnitexRevisionInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PersistenceInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

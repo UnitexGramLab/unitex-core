@@ -198,6 +198,7 @@
 		225FE86511256AB900F33C2A /* TaggingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86011256AB900F33C2A /* TaggingProcess.cpp */; };
 		225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86211256AB900F33C2A /* TrainingTagger.cpp */; };
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
+		2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C99C151E085700A820F3 /* PersistenceInterface.cpp */; };
 		2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294EE7C11A01195003CE92B /* Untokenize.cpp */; };
 		2294F4AC122EEB30009495A8 /* LocateTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294F4AB122EEB30009495A8 /* LocateTrace.cpp */; };
 		229851AA111A6F2000503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */; };
@@ -635,6 +636,8 @@
 		225FE86311256AB900F33C2A /* TrainingTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingTagger.h; path = ../TrainingTagger.h; sourceTree = SOURCE_ROOT; };
 		225FE87811256B7B00F33C2A /* TrainingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingProcess.cpp; path = ../TrainingProcess.cpp; sourceTree = SOURCE_ROOT; };
 		225FE87911256B7B00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
+		2287C99C151E085700A820F3 /* PersistenceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistenceInterface.cpp; path = ../PersistenceInterface.cpp; sourceTree = SOURCE_ROOT; };
+		2287C99D151E085700A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
 		2294EE7B11A0118E003CE92B /* Untokenize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Untokenize.h; path = ../Untokenize.h; sourceTree = SOURCE_ROOT; };
 		2294EE7C11A01195003CE92B /* Untokenize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Untokenize.cpp; path = ../Untokenize.cpp; sourceTree = SOURCE_ROOT; };
 		2294F4AB122EEB30009495A8 /* LocateTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocateTrace.cpp; path = ../LocateTrace.cpp; sourceTree = SOURCE_ROOT; };
@@ -696,6 +699,8 @@
 			isa = PBXGroup;
 			children = (
 				22C290BB14AF6E47006A1F5D /* logger */,
+				2287C99C151E085700A820F3 /* PersistenceInterface.cpp */,
+				2287C99D151E085700A820F3 /* PersistenceInterface.h */,
 				22C284BE14AF6D8B006A1F5D /* Persistence.cpp */,
 				22C284BF14AF6D8B006A1F5D /* Persistence.h */,
 				22C284C014AF6D8B006A1F5D /* PRLG.cpp */,
@@ -1435,6 +1440,7 @@
 				22C2885214AF6D8C006A1F5D /* VersionInfo.cpp in Sources */,
 				22C2885314AF6D8C006A1F5D /* VirtualFiles.cpp in Sources */,
 				22C290DD14AF6E47006A1F5D /* SyncLoggerPosix.cpp in Sources */,
+				2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

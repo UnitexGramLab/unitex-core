@@ -693,6 +693,9 @@
     <ClCompile Include="..\Xml.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="..\PersistenceInterface.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">

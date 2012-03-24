@@ -417,6 +417,8 @@
 		222AFFFD1411336600F74409 /* MorphologicalLocate.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE7D1411336600F74409 /* MorphologicalLocate.h */; };
 		222AFFFE1411336600F74409 /* MultiFlex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE7E1411336600F74409 /* MultiFlex.cpp */; };
 		222AFFFF1411336600F74409 /* MultiFlex.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE7F1411336600F74409 /* MultiFlex.h */; };
+		2287C97E151E081600A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C97C151E081600A820F3 /* PersistenceInterface.cpp */; };
+		2287C97F151E081600A820F3 /* PersistenceInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2287C97D151E081600A820F3 /* PersistenceInterface.h */; };
 		22C27FDA14AF6D63006A1F5D /* CharNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FA914AF6D62006A1F5D /* CharNames.h */; };
 		22C27FDB14AF6D63006A1F5D /* CompressedDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */; };
 		22C27FDC14AF6D63006A1F5D /* CompressedDic.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FAB14AF6D62006A1F5D /* CompressedDic.h */; };
@@ -884,6 +886,8 @@
 		222AFEF01411336600F74409 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Vector.h; path = ../Vector.h; sourceTree = SOURCE_ROOT; };
 		222AFEF11411336600F74409 /* XMLizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = XMLizer.cpp; path = ../XMLizer.cpp; sourceTree = SOURCE_ROOT; };
 		222AFEF21411336600F74409 /* XMLizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XMLizer.h; path = ../XMLizer.h; sourceTree = SOURCE_ROOT; };
+		2287C97C151E081600A820F3 /* PersistenceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistenceInterface.cpp; path = ../PersistenceInterface.cpp; sourceTree = SOURCE_ROOT; };
+		2287C97D151E081600A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
 		22C27FA914AF6D62006A1F5D /* CharNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CharNames.h; path = ../CharNames.h; sourceTree = SOURCE_ROOT; };
 		22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressedDic.cpp; path = ../CompressedDic.cpp; sourceTree = SOURCE_ROOT; };
 		22C27FAB14AF6D62006A1F5D /* CompressedDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressedDic.h; path = ../CompressedDic.h; sourceTree = SOURCE_ROOT; };
@@ -1110,6 +1114,8 @@
 				222AFD821411336600F74409 /* OutputTransductionVariables.h */,
 				222AFD831411336600F74409 /* MappedFileHelper.h */,
 				222AFD841411336600F74409 /* MappedFileHelperPosix.cpp */,
+				2287C97C151E081600A820F3 /* PersistenceInterface.cpp */,
+				2287C97D151E081600A820F3 /* PersistenceInterface.h */,
 				222AFD851411336600F74409 /* TrainingProcess.cpp */,
 				222AFD861411336600F74409 /* TrainingProcess.h */,
 				222AFD871411336600F74409 /* Tagger.cpp */,
@@ -1739,6 +1745,7 @@
 				22C2800614AF6D63006A1F5D /* VersionInfo.h in Headers */,
 				22C2800814AF6D63006A1F5D /* VirtualFiles.h in Headers */,
 				22C2800A14AF6D63006A1F5D /* Xml.h in Headers */,
+				2287C97F151E081600A820F3 /* PersistenceInterface.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2011,6 +2018,7 @@
 				22C2800514AF6D63006A1F5D /* VersionInfo.cpp in Sources */,
 				22C2800714AF6D63006A1F5D /* VirtualFiles.cpp in Sources */,
 				22C2800914AF6D63006A1F5D /* Xml.cpp in Sources */,
+				2287C97E151E081600A820F3 /* PersistenceInterface.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
