@@ -1175,7 +1175,7 @@ if (graph->states[0]==NULL) {
    /* If the graph has been emptied */
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
-   if (infos->no_empty_graph_warning) return 1;
+   if (n!=1 && infos->no_empty_graph_warning) return 1;
    if (n==1) {
       error("ERROR: Main graph %S.grf has been emptied\n",infos->graph_names->value[n]);
       return 0;
