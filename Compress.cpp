@@ -271,6 +271,15 @@ while(EOF!=readline(s,f)) {
 		entry=tokenize_DELAF_line(s->str,1,NULL,compress_tokenize_abstract_allocator);
 		if (entry!=NULL) {
 			/* If the entry is well-formed */
+			/* The unescaped = that were not in the inflected or lemma form must
+			 * be restored as real = characters
+			 */
+			for (int i=0;i<entry->n_semantic_codes;i++) {
+				replace_unprotected_equal_sign(entry->semantic_codes[i],(unichar)'=');
+			}
+			for (int i=0;i<entry->n_inflectional_codes;i++) {
+				replace_unprotected_equal_sign(entry->inflectional_codes[i],(unichar)'=');
+			}
 			if (FLIP) {
 				/* If the "-flip" parameter has been used, we flip
 				 * the inflected form and the lemma of the entry */
