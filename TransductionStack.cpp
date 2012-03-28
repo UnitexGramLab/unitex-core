@@ -419,6 +419,7 @@ for (;;) {
         				  continue;
         			  }
         			  push_output_string(stack,entry->semantic_codes[i]+attr_len+1);
+        			  break;
         		  }
         	  }
         	  if (i==entry->n_semantic_codes) {
