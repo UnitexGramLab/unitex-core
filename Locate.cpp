@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "Unicode.h"
 #include "Alphabet.h"
@@ -114,6 +115,8 @@ const char* usage_Locate =
 		 "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y. Note that\n"
 		 "                         Y must be ASCII\n"
 		 "\n"
+		 "  --time: displays on the error output [TIME_IN_SECONDS=XXX] where XXX is the time\n"
+		 "          in seconds used by Locate to work\n"
 		 "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text, and saves the matching sequence index in a\n"
@@ -165,6 +168,7 @@ const struct option_TS lopts_Locate[]= {
       {"dont_allow_trace",no_argument_TS,NULL,'T'},
       {"variable",required_argument_TS,NULL,'v'},
       {"help",no_argument_TS,NULL,'h'},
+      {"time",no_argument_TS,NULL,666},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -179,7 +183,7 @@ if (argc==1) {
    return 0;
 }
 
-
+clock_t startTime=clock();
 int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
@@ -202,6 +206,7 @@ int useLocateCache=1;
 int selected_negation_operator=0;
 int allow_trace=1;
 char foo;
+char displayTime=0;
 vector_ptr* injected_vars=new_vector_ptr();
 VersatileEncodingConfig vec=VEC_DEFAULT;
 struct OptVars* vars=new_OptVars();
@@ -328,6 +333,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
 	   vector_ptr_add(injected_vars,value);
 	   break;
    }
+   case 666: displayTime=1; break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Locate[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -385,6 +391,11 @@ if (morpho_dic!=NULL) {
 }
 free_vector_ptr(injected_vars,free);
 free_OptVars(vars);
+if (displayTime) {
+	double t=clock()-startTime;
+	t=t/CLOCKS_PER_SEC;
+	error("[TIME_IN_SECONDS=%.4f]\n",t);
+}
 return (!OK);
 }
 
