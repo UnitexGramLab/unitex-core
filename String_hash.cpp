@@ -500,7 +500,7 @@ if (s==NULL) {
 s->hash=new_string_hash(DONT_USE_VALUES);
 s->capacity=capacity;
 s->size=0;
-s->value=(void**)malloc(capacity*sizeof(void*));
+s->value=(void**)calloc(capacity,sizeof(void*));
 if (s->value==NULL) {
    fatal_alloc_error("new_string_hash_ptr");
 }
