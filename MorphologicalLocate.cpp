@@ -1454,15 +1454,18 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			/* If we have reached the end of the current token in a non Korean language */
 			pos_offset++;
 			int token_number = p->buffer[pos_offset + p->current_origin];
+			if (((int)((pos_offset + p->current_origin + 1)*sizeof(int))) <= (int)(p->buffer_size)) {
+				token_number = p->buffer[pos_offset + p->current_origin];
+			} else {
+				error("!!!! reading out of file !!!");
+				token_number = -1;			
+			}
+			
 			if (token_number == -1 || token_number == p->STOP) {
 				/* Remember 1) that we must not be out of the array's bounds and
 				 *          2) that the token {STOP} must never be matched */
 				return;
 			}
-
-
-			if ((token_number<0) || (token_number>=p->tokens->capacity))
-				error("!!!! token_number stange value !!!");
 
 			current_token = p->tokens->value[token_number];
 			pos_in_current_token = 0;
