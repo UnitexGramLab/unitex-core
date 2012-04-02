@@ -1453,13 +1453,8 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 		if (jamo == NULL) {
 			/* If we have reached the end of the current token in a non Korean language */
 			pos_offset++;
-			int token_number = p->buffer[pos_offset + p->current_origin];
-			if (((int)((pos_offset + p->current_origin + 1)*sizeof(int))) <= (int)(p->buffer_size)) {
-				token_number = p->buffer[pos_offset + p->current_origin];
-			} else {
-				error("!!!! reading out of file !!!");
-				token_number = -1;			
-			}
+			int token_number = (((int)((pos_offset + p->current_origin + 1)*sizeof(int))) <= (int)(p->buffer_size)) ?
+				p->buffer[pos_offset + p->current_origin] : -1;
 			
 			if (token_number == -1 || token_number == p->STOP) {
 				/* Remember 1) that we must not be out of the array's bounds and
