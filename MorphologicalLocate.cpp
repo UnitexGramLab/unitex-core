@@ -1459,6 +1459,11 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 				 *          2) that the token {STOP} must never be matched */
 				return;
 			}
+
+
+			if ((token_number<0) || (token_number>=p->tokens->capacity))
+				error("!!!! token_number stange value !!!");
+
 			current_token = p->tokens->value[token_number];
 			pos_in_current_token = 0;
 		} else {
