@@ -455,8 +455,10 @@ if (negation_operator != NULL) {
 /* If needed: just to know that the call come from here if necessary */
 sprintf(tmp,"--text=%s",text_snt);
 add_argument(invoker,tmp);
-sprintf(tmp,"-a%s",alphabet);
-add_argument(invoker,tmp);
+if (alphabet!=NULL && alphabet[0]!='\0') {
+	sprintf(tmp,"-a%s",alphabet);
+	add_argument(invoker,tmp);
+}
 /* We set the match policy */
 switch(match_policy) {
 case ALL_MATCHES: add_argument(invoker,"-A"); break;
