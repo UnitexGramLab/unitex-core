@@ -80,7 +80,7 @@ while (text[pos]!='\0') {
       /* If we have a letter, we must read the whole letter sequence */
       int j=0;
       while (j<(4096-1) && is_letter(text[pos],alphabet)) {
-         /* The loop while end if we find a non letter chararacter,
+         /* The while loop end if we find a non letter character,
           * including '\0' */
          tmp[j++]=text[pos++];
       }

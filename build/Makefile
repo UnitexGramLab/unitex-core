@@ -669,6 +669,13 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o Activi
                    BitArray.o HashTable.o FIFO.o Match.o TfstStats.o AbstractDelaLoad.o \
                    CompressedDic.o LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
+KEYWORDS      = KeyWords
+KEYWORDS_OBJS = Main_KeyWords.o KeyWords.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
+			AbstractAllocator.o Alphabet.o StringParsing.o DELA.o File.o UnitexGetOpt.o \
+            Persistence.o Error.o String_hash.o Ustring.o List_ustring.o \
+            CompressedDic.o AbstractDelaLoad.o LoadInf.o KeyWords_lib.o Tokenization.o \
+            $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+
 LOCATE      = Locate
 LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
               AbstractAllocator.o Alphabet.o DELA.o List_ustring.o String_hash.o \
@@ -959,7 +966,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
                   Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
-                  Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+                  Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
+                  KeyWords.o KeyWords_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
@@ -993,7 +1001,8 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
                   GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
-                  SpellChecking.o Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)
+                  SpellChecking.o Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
+                  KeyWords.o KeyWords_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
@@ -1033,7 +1042,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
-		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST) $(SPELLCHECK) $(TFSTTAG)
+		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST) $(SPELLCHECK) $(TFSTTAG) $(KEYWORDS)
 
 PROGS += $(TEST)
 
@@ -1054,7 +1063,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
-		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS)
+		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(KEYWORDS_OBJS)
 
 endif
 endif
@@ -1456,6 +1465,9 @@ $(BIN_DIR)$(GRFTEST)$(EXTENSION): $(GRFTEST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(KEYWORDS)$(EXTENSION): $(KEYWORDS_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS)

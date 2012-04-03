@@ -5011,6 +5011,22 @@ unichar u_toupper (unichar c) {
   return r;
 }
 
+void u_toupper (unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=u_toupper(*s);
+	s++;
+}
+}
+
+void u_tolower (unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=u_tolower(*s);
+	s++;
+}
+}
+
 #ifdef CASE_CONVERSION_BY_TAB_LOWER
 static unichar u_tolower_switch (unichar c) {
 #else

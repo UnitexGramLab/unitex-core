@@ -120,6 +120,10 @@
 #include "ImplodeTfst.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_KEYWORDS))) || defined(TOOL_KEYWORDS))
+#include "KeyWords.h"
+#endif
+
 #if (((!defined(NO_TOOL_LOCATE))) || defined(TOOL_LOCATE))
 #include "Locate.h"
 #endif
@@ -330,6 +334,10 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_KEYWORDS))) || defined(TOOL_KEYWORDS))
+	{ "KeyWords", 8, &main_KeyWords, usage_KeyWords, optstring_KeyWords, lopts_KeyWords } ,
 #endif
 
 #if (((!defined(NO_TOOL_LOCATE))) || defined(TOOL_LOCATE))
