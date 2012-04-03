@@ -160,15 +160,17 @@ if (options->result_mode==GLOSSANET_) {
 /* We set temporary and final file names */
 strcpy(temp_file_name,options->working_directory);
 strcat(temp_file_name,"concord_.txt");
-strcpy(options->output,options->working_directory);
-if (options->result_mode==TEXT_ || options->result_mode==INDEX_
+if (options->output[0]=='\0') {
+	strcpy(options->output,options->working_directory);
+	if (options->result_mode==TEXT_ || options->result_mode==INDEX_
       || options->result_mode==UIMA_ || options->result_mode==AXIS_
       || options->result_mode==XALIGN_ || options->result_mode==DIFF_)
-	strcat(options->output,"concord.txt");
-else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_))
-	strcat(options->output,"concord.xml");
-else
-	strcat(options->output,"concord.html");
+		strcat(options->output,"concord.txt");
+	else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_))
+		strcat(options->output,"concord.xml");
+	else
+		strcat(options->output,"concord.html");
+}
 int N_MATCHES;
 
 /* If we are in the 'xalign' mode, we don't need to sort the results.

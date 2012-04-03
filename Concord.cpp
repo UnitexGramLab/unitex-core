@@ -72,7 +72,8 @@ const char* usage_Concord =
         "\n"
         "Output options:\n"
         "  -H/--html: produces an HTML concordance file (default)\n"
-        "  -t/--text: produces a plain text concordance file\n"
+        "  -t=X/--text=X: produces a plain text concordance file named X. If X is\n"
+		"                 omitted, the result is stored into concord.txt\n"
         "  -g SCRIPT/--glossanet=SCRIPT: produces a glossanet HTML concordance file\n"
 		"  -p SCRIPT/--script=SCRIPT: produces a HTML concordance file where occurrences\n"
 		"                             are links described by SCRIPT\n"
@@ -180,7 +181,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Htewg:p:iu:Axm:a:Td:hk:q:";
+const char* optstring_Concord=":f:s:l:r:Ht::ewg:p:iu:Axm:a:Td:hk:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -196,7 +197,7 @@ const struct option_TS lopts_Concord[]= {
       {"RL",no_argument_TS,NULL,5},
       {"RC",no_argument_TS,NULL,6},
       {"html",no_argument_TS,NULL,'H'},
-      {"text",no_argument_TS,NULL,'t'},
+      {"text",optional_argument_TS,NULL,'t'},
       {"xml",no_argument_TS,NULL,'e'},
       {"xml-with-header",no_argument_TS,NULL,'w'},
       {"glossanet",required_argument_TS,NULL,'g'},
@@ -288,7 +289,13 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
    }
    case 10: options->only_matches=1; break;
    case 'H': options->result_mode=HTML_; break;
-   case 't': options->result_mode=TEXT_; break;
+   case 't': {
+	   options->result_mode=TEXT_;
+	   if (vars->optarg!=NULL) {
+		   strcpy(options->output,vars->optarg);
+	   }
+	   break;
+   }
    case 'g': options->result_mode=GLOSSANET_;
              if (vars->optarg[0]=='\0') {
                 fatal_error("Empty glossanet script argument\n");
