@@ -50,7 +50,7 @@
 #  additional include paths. Those paths correspond to the locations
 #  of jni.h and jni_md.h
 #
-#    make JNILIBRARY=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-6-openjdk/include/linux ADDITIONAL_INCLUDE2=/usr/lib/jvm/java-6-openjdk/include
+#    make JNILIBRARY=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-6-sun-1.6.0.26/include/linux ADDITIONAL_INCLUDE2=/usr/lib/jvm/java-6-sun-1.6.0.26/include
 # create the Jni and Library lib libUnitexLibAndJni.so under Linux
 #
 #    mingw32-make.exe SYSTEM=windows JNILIBRARY=yes ADDITIONAL_INCLUDE=c:\Progra~1\Java\jdk1.6.0_26\include" ADDITIONAL_INCLUDE2=c:\Progra~1\Java\jdk1.6.0_26\include\win32"
