@@ -38,7 +38,7 @@ namespace unitex {
  * sequence associated to a weight information.
  */
 typedef struct keyword {
-	double weight;
+	int weight;
 	unichar* sequence;
 	char lemmatized;
 	struct keyword* next;
@@ -49,15 +49,17 @@ KeyWord* new_KeyWord(double weight,unichar* sequence,KeyWord* next);
 void free_KeyWord(KeyWord* k);
 void free_KeyWord_list(KeyWord* k);
 struct string_hash_ptr* load_tokens_by_freq(char* name,VersatileEncodingConfig* vec);
+void load_compound_words(char* name,VersatileEncodingConfig* vec,
+		struct string_hash_ptr* keywords);
 void filter_non_letter_keywords(struct string_hash_ptr* keywords,Alphabet* alphabet);
 void filter_keywords_with_dic(struct string_hash_ptr* keywords,char* name,
-						VersatileEncodingConfig* vec,Alphabet* alphabet,
-						unichar* forbidden_code);
+						VersatileEncodingConfig* vec,Alphabet* alphabet);
 void merge_case_equivalent_unknown_words(struct string_hash_ptr* keywords,Alphabet* alphabet);
 vector_ptr* sort_keywords(struct string_hash_ptr* keywords);
 void dump_keywords(vector_ptr* keywords,U_FILE* f);
-
-
+struct string_hash* compute_forbidden_lemmas(struct string_hash_ptr* keywords,unichar* code);
+void remove_keywords_with_forbidden_lemma(struct string_hash_ptr* keywords,
+					struct string_hash* lemmas);
 } // namespace unitex
 
 #endif

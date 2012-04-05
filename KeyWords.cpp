@@ -50,6 +50,7 @@ const char* usage_KeyWords =
          "                           lexical units\n"
 		 "  -f CODE/--forbidden_code=CODE: the grammatical/semantic code that will be\n"
 		 "                                 used to filter tokens (default=XXX)\n"
+		 "  -c F/--cdic=F: a text file containing one compound word per line\n"
          "  -h/--help: this help\n"
          "\n"
          "Removes from the given token file every token that is part of a DELAF entry\n"
@@ -63,11 +64,12 @@ u_printf(usage_KeyWords);
 }
 
 
-const char* optstring_KeyWords=":o:a:f:hk:q:";
+const char* optstring_KeyWords=":o:a:f:c:hk:q:";
 const struct option_TS lopts_KeyWords[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"forbidden_code",required_argument_TS,NULL,'f'},
+      {"cdic",required_argument_TS,NULL,'c'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -89,6 +91,7 @@ VersatileEncodingConfig vec=VEC_DEFAULT;
 char tokens[FILENAME_MAX];
 char output[FILENAME_MAX]="";
 char alph[FILENAME_MAX]="";
+char cdic[FILENAME_MAX]="";
 unichar* code=u_strdup("XXX");
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -110,6 +113,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_KeyWords,lopts_KeyWords,&ind
 			 free(code);
 			 code=u_strdup(vars->optarg);
 			 break;
+   case 'c': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty file name\n");
+             }
+             strcpy(cdic,vars->optarg);
+             break;
    case 'h': usage(); return 0;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -147,11 +155,17 @@ if (output[0]=='\0') {
 }
 struct string_hash_ptr* keywords=load_tokens_by_freq(tokens,&vec);
 filter_non_letter_keywords(keywords,alphabet);
+if (cdic[0]!='\0') {
+	load_compound_words(cdic,&vec,keywords);
+}
 
 for (;vars->optind!=argc;(vars->optind)++) {
-	filter_keywords_with_dic(keywords,argv[vars->optind],&vec,alphabet,code);
+	filter_keywords_with_dic(keywords,argv[vars->optind],&vec,alphabet);
 }
 merge_case_equivalent_unknown_words(keywords,alphabet);
+struct string_hash* forbidden_lemmas=compute_forbidden_lemmas(keywords,code);
+remove_keywords_with_forbidden_lemma(keywords,forbidden_lemmas);
+free_string_hash(forbidden_lemmas);
 vector_ptr* sorted=sort_keywords(keywords);
 U_FILE* f_output=u_fopen(&vec,output,U_WRITE);
 if (f_output==NULL) {

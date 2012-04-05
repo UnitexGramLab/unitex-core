@@ -37,7 +37,7 @@ namespace unitex {
 #define LEMMATIZED_KEYWORD 2
 
 
-KeyWord* new_KeyWord(double weight,unichar* sequence,KeyWord* next) {
+KeyWord* new_KeyWord(int weight,unichar* sequence,KeyWord* next) {
 KeyWord* k=(KeyWord*)malloc(sizeof(KeyWord));
 if (k==NULL) {
 	fatal_alloc_error("new_KeyWord");
@@ -99,7 +99,7 @@ while (EOF!=readline(line,f)) {
 		fatal_error("Internal error in load_tokens_by_freq\n");
 	}
 	KeyWord* value=(KeyWord*)res->value[index];
-	res->value[index]=new_KeyWord((double)val,line->str+pos,value);
+	res->value[index]=new_KeyWord(val,line->str+pos,value);
 }
 free_Ustring(line);
 free_Ustring(lower);
@@ -108,9 +108,55 @@ return res;
 }
 
 
+void add_keyword(KeyWord* *list,unichar* keyword,int weight) {
+if (*list==NULL) {
+	*list=new_KeyWord(weight,keyword,NULL);
+	return;
+}
+if (!u_strcmp((*list)->sequence,keyword)) {
+	/* The keyword is already there, we just have to update its weight */
+	(*list)->weight+=weight;
+	return;
+}
+add_keyword(&((*list))->next,keyword,weight);
+}
+
+
+/**
+ * Loads a compound word file, adding each word to the keywords.
+ */
+void load_compound_words(char* name,VersatileEncodingConfig* vec,
+		struct string_hash_ptr* keywords) {
+U_FILE* f=u_fopen(vec,name,U_READ);
+if (f==NULL) return;
+Ustring* line=new_Ustring(256);
+Ustring* lower=new_Ustring(256);
+while (EOF!=readline(line,f)) {
+	if (line->str[0]=='{') {
+		/* We skip tags */
+		continue;
+	}
+	u_strcpy(lower,line->str);
+	u_tolower(lower->str);
+	int index=get_value_index(lower->str,keywords,INSERT_IF_NEEDED,NULL);
+	if (index==-1) {
+		fatal_error("Internal error in load_tokens_by_freq\n");
+	}
+	KeyWord* value=(KeyWord*)keywords->value[index];
+	add_keyword(&value,line->str,1);
+	keywords->value[index]=value;
+}
+free_Ustring(line);
+free_Ustring(lower);
+u_fclose(f);
+}
+
+
 /**
  * Removes every keyword that is not made of letters, by turning
  * the corresponding sequence value to NULL in the 'keywords' structure.
+ *
+ * DON'T CALL IT AFTER load_compound_words!! It would remove all of them
  */
 void filter_non_letter_keywords(struct string_hash_ptr* keywords,Alphabet* alphabet) {
 for (int i=0;i<keywords->size;i++) {
@@ -180,62 +226,15 @@ free_Ustring(tmp);
 
 
 
-void lemmatize_compound_word(struct dela_entry* e,struct list_ustring* tokens,
-							struct string_hash_ptr* keywords,Alphabet* alphabet) {
-double weight=0;
-while (tokens!=NULL) {
-	unichar* lower=u_strdup(tokens->string);
-	u_tolower(lower);
-	KeyWord* k_inflected=(KeyWord*)get_value(lower,keywords);
-	free(lower);
-	/* Now, we look for all the case compatible tokens, and we add
-	 * their weights to the new lemmatized element
-	 */
-	while (k_inflected!=NULL) {
-		if (k_inflected->sequence!=NULL && is_equal_or_uppercase(tokens->string,k_inflected->sequence,alphabet)) {
-			/* We have a match */
-			if (weight==0 || k_inflected->weight<weight) {
-				weight=k_inflected->weight;
-			}
-			k_inflected->lemmatized=1;
-		}
-		k_inflected=k_inflected->next;
-	}
-	tokens=tokens->next;
-}
-if (weight==0) {
-	/* If all the tokens that made the compound form were forbidden
-	 * ones, we have nothing to do */
-	return;
-}
-/* We finally create or update the compound word lemma */
-Ustring* tmp=new_Ustring(64);
-u_sprintf(tmp,"%S.%S",e->lemma,e->semantic_codes[0]);
-KeyWord* k_lemma=(KeyWord*)get_value(tmp->str,keywords);
-if (k_lemma==NULL) {
-	k_lemma=new_KeyWord(0,tmp->str,NULL);
-	k_lemma->lemmatized=LEMMATIZED_KEYWORD;
-	get_value_index(tmp->str,keywords,INSERT_IF_NEEDED,k_lemma);
-}
-k_lemma->weight=weight;
-free_Ustring(tmp);
-}
-
-
-
 /**
- * Loads the given DELAF and modifies the given keywords accordingly by:
- * 1) removing every token that is the inflected form of a DELAF
- *    entry containing the given forbidden code (or a token of it
- *    if the inflected form is a compound word)
- * 2) replacing any non removed token that appear in a DELAF entry
- *    by its lemma. If there are ambiguities, several keywords are
- *    generated. Doing that may merge keywords by adding their weights:
- *    eats/2 + eaten/3 => eat/5
+ * Loads the given DELAF and modifies the given keywords accordingly by
+ * replacing any non removed token that appear in a DELAF entry
+ * by its lemma. If there are ambiguities, several keywords are
+ * generated. Doing that may merge keywords by adding their weights:
+ * eats/2 + eaten/3 => eat/5
  */
 void filter_keywords_with_dic(struct string_hash_ptr* keywords,char* name,
-						VersatileEncodingConfig* vec,Alphabet* alphabet,
-						unichar* forbidden_code) {
+						VersatileEncodingConfig* vec,Alphabet* alphabet) {
 U_FILE* f=u_fopen(vec,name,U_READ);
 if (f==NULL) {
 	error("Cannot load file %s\n",name);
@@ -244,30 +243,8 @@ if (f==NULL) {
 Ustring* line=new_Ustring(128);
 while (EOF!=readline(line,f)) {
 	struct dela_entry* e=tokenize_DELAF_line(line->str);
-	unichar tmp[1024];
-	u_strcpy(tmp,line->str);
 	if (e==NULL) continue;
-	struct list_ustring* tokens=tokenize_word_by_word(e->inflected,alphabet);
-	if (dic_entry_contain_gram_code(e,forbidden_code)) {
-		/* We must remove keywords */
-		if (tokens->next==NULL) {
-			/* Simple word */
-			remove_keyword(e->inflected,keywords);
-		} else {
-			/* Compound word */
-			remove_keywords(tokens,keywords);
-		}
-	} else {
-		/* We must deal with a DELAF entry to keep */
-		if (tokens->next==NULL) {
-			/* Simple word */
-			lemmatize(e,keywords,alphabet);
-		} else {
-			/* Compound word */
-			lemmatize_compound_word(e,tokens,keywords,alphabet);
-		}
-	}
-	free_list_ustring(tokens);
+	lemmatize(e,keywords,alphabet);
 	free_dela_entry(e);
 }
 free_Ustring(line);
@@ -323,7 +300,7 @@ for (int i=0;i<keywords->nbelems;i++) {
 	KeyWord* k=(KeyWord*)keywords->tab[i];
 	while (k!=NULL) {
 		if (k->sequence!=NULL && k->lemmatized!=PART_OF_A_LEMMATIZED_KEYWORD) {
-			u_fprintf(f,"%g\t%S\n",k->weight,k->sequence);
+			u_fprintf(f,"%d\t%S\n",k->weight,k->sequence);
 		}
 		k=k->next;
 	}
@@ -355,6 +332,102 @@ qsort(res->tab,res->nbelems,sizeof(KeyWord*),(int(*)(const void*,const void*))cm
 return res;
 }
 
+
+int last_index_of(unichar* s,unichar c) {
+if (s==NULL) return -1;
+int pos=u_strlen(s)-1;
+while (pos>=0) {
+	if (s[pos]==c) return pos;
+	pos--;
+}
+return pos;
+}
+
+
+/**
+ * Looks for a lemmatized keyword of the form XXX.YYY where YYY
+ * is the forbidden code. Then, it returns 1 and XXX is copied into
+ * res. Otherwise, 0 is returned.
+ */
+int get_forbidden_keyword(KeyWord* list,unichar* code,Ustring* res) {
+if (list==NULL) return 0;
+int pos=last_index_of(list->sequence,(unichar)'.');
+if (pos!=-1 && !u_strcmp(code,list->sequence+pos+1)) {
+	/* If the forbidden code has been found */
+	u_strcpy(res,list->sequence);
+	truncate(res,pos);
+	return 1;
+}
+return 0;
+}
+
+
+/**
+ * Looks for a keyword that has a forbidden lemma or is a forbidden lemma
+ * if the keyword is not a lemmatized one of the form XXX.YYY
+ */
+int has_forbidden_lemma(KeyWord* list,struct string_hash* lemmas) {
+if (list==NULL || list->sequence==NULL) return 0;
+int pos=last_index_of(list->sequence,(unichar)'.');
+if (pos==-1) {
+	/* If the keyword is not lemmatized, we just test
+	 * if it is a forbidden lemma
+	 */
+	return (-1!=get_value_index(list->sequence,lemmas,DONT_INSERT));
+}
+Ustring* tmp=new_Ustring(list->sequence);
+truncate(tmp,pos);
+int index=get_value_index(tmp->str,lemmas,DONT_INSERT);
+free_Ustring(tmp);
+return index!=-1;
+}
+
+
+static KeyWord* remove_keywords_with_forbidden_lemma_(KeyWord* list,
+							struct string_hash* lemmas) {
+if (list==NULL) return NULL;
+if (has_forbidden_lemma(list,lemmas)) {
+	/* If the forbidden lemma has been found */
+	KeyWord* next=list->next;
+	free_KeyWord(list);
+	return remove_keywords_with_forbidden_lemma_(next,lemmas);
+}
+list->next=remove_keywords_with_forbidden_lemma_(list->next,lemmas);
+return list;
+}
+
+
+/**
+ * We remove every keyword that is tagged with the forbidden code. If
+ * a forbidden keyword has several tags, all of them are removed:
+ *
+ * the,.DET + the,.XXX => all 'the' keywords are removed
+ */
+struct string_hash* compute_forbidden_lemmas(struct string_hash_ptr* keywords,unichar* code) {
+struct string_hash* hash=new_string_hash(DONT_USE_VALUES,DONT_ENLARGE);
+Ustring* tmp=new_Ustring();
+for (int i=0;i<keywords->size;i++) {
+	KeyWord* list=(KeyWord*)(keywords->value[i]);
+	while (list!=NULL) {
+		if (get_forbidden_keyword(list,code,tmp)) {
+			get_value_index(tmp->str,hash);
+		}
+		list=list->next;
+	}
+}
+free_Ustring(tmp);
+return hash;
+}
+
+
+void remove_keywords_with_forbidden_lemma(struct string_hash_ptr* keywords,
+					struct string_hash* lemmas) {
+for (int i=0;i<keywords->size;i++) {
+	KeyWord* list=(KeyWord*)(keywords->value[i]);
+	list=remove_keywords_with_forbidden_lemma_(list,lemmas);
+	keywords->value[i]=list;
+}
+}
 
 } // namespace unitex
 
