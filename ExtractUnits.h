@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include "Text_tokens.h"
+#include "LocateMatches.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -31,7 +32,7 @@
 
 namespace unitex {
 
-void extract_units(char,ABSTRACTMAPFILE*,struct text_tokens*,U_FILE*,U_FILE*);
+void extract_units(char,ABSTRACTMAPFILE*,struct text_tokens*,U_FILE*,struct match_list*);
 
 } // namespace unitex
 

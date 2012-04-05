@@ -31,6 +31,7 @@
 #include "Snt.h"
 #include "UnitexGetOpt.h"
 #include "Extract.h"
+#include "LocateMatches.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -142,13 +143,6 @@ if (tok==NULL) {
    af_close_mapfile(text);
    return 1;
 }
-if (tok->SENTENCE_MARKER==-1) {
-   error("The text does not contain any sentence marker {S}\n");
-   af_close_mapfile(text);
-   free_text_tokens(tok);
-   return 1;
-}
-
 if (concord_ind[0]=='\0') {
    char tmp[FILENAME_MAX];
    get_extension(text_name,tmp);
@@ -167,6 +161,27 @@ if (concord==NULL) {
    free_text_tokens(tok);
    return 1;
 }
+struct match_list* l=load_match_list(concord,NULL,NULL);
+u_fclose(concord);
+if (tok->SENTENCE_MARKER==-1) {
+	/* We have a special case when the text has not been
+	 * split into sentences: the result will be either an empty
+	 * file or the text itself
+	 */
+	if ((extract_matching_units && l==NULL)
+			|| (!extract_matching_units && l!=NULL)) {
+		/* result = empty file */
+		u_fempty(&vec,output);
+		return 0;
+	}
+	free_match_list(l);
+	af_copy(text_name,output);
+	return 0;
+}
+
+
+
+
 U_FILE* result=u_fopen(&vec,output,U_WRITE);
 if (result==NULL) {
    error("Cannot write output file %s\n",output);
@@ -176,9 +191,8 @@ if (result==NULL) {
    return 1;
 }
 free_snt_files(snt_files);
-extract_units(extract_matching_units,text,tok,concord,result);
+extract_units(extract_matching_units,text,tok,result,l);
 af_close_mapfile(text);
-u_fclose(concord);
 u_fclose(result);
 free_text_tokens(tok);
 free_OptVars(vars);

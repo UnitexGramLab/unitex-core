@@ -52,12 +52,9 @@ struct match_list* is_a_match_in_the_sentence(struct match_list*,int*,int,int);
  * all sentences that do NOT contain any occurrence.
  */
 void extract_units(char extract_matching_units,ABSTRACTMAPFILE* snt,struct text_tokens* tokens,
-                   U_FILE* concord,U_FILE* result) {
+                   U_FILE* result,struct match_list* l) {
 int N_TOKENS_READ;
-OutputPolicy output_policy;
 int current_beginning,current_end,RESULT;
-/* We load the match list */
-struct match_list* l=load_match_list(concord,&output_policy,NULL);
 current_end=-1;
 
 struct extract_buf_mapped* buffer=(struct extract_buf_mapped*)malloc(sizeof(struct extract_buf_mapped));
