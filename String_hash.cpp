@@ -298,6 +298,16 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
 
 
 /**
+ * Returns the index value associated to the given key, inserting it if needed.
+ * In that case, the key itself will be used as value.
+ */
+int get_value_index(const unichar* key,struct string_hash* hash,unichar* value) {
+return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,value);
+}
+
+
+
+/**
  * Loads the lines of a text file info a string_hash and returns it, or NULL
  * if the file can not be opened.
  * For each line, we ignore the carriage return, if any, and we use

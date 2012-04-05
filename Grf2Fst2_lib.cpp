@@ -192,7 +192,7 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
  * Computes the absolute path of the graph #n, taking into account references
  * to the graph repository, if any.
  */
-void get_absolute_name(char* name,int n,struct compilation_info* infos) {
+void get_absolute_name(int *called_from,char* name,int n,struct compilation_info* infos) {
 unichar temp[FILENAME_MAX];
 /* offset is the position where to start replacing ':' by '/' or '\' */
 int offset;
@@ -269,6 +269,12 @@ if (abs_path_name_warning!=0) {
  * but we must ignore the ':' in "C:\...", so we start the
  * replacement after a shift offset */
 replace_colon_by_path_separator(name+offset);
+int pos=strlen(name)-1;
+while (pos>=0 && name[pos]!=0x02) pos--;
+if (called_from!=NULL) (*called_from)=-1;
+if (pos==-1) return;
+name[pos]='\0';
+if (called_from!=NULL) sscanf(name+pos+1,"%d",called_from);
 }
 
 
@@ -575,7 +581,10 @@ if (input[*pos]==':') {
    get_subgraph_call(input,pos,&(token[l]));
    put_ptr(tokens,u_strdup(token));
    /* We add this graph name to the graph names, if not already present */
-   get_value_index(token+1,infos->graph_names);
+   Ustring* tmp=new_Ustring();
+   u_sprintf(tmp,"%S%C%d",token+1,0x02,n);
+   get_value_index(token+1,infos->graph_names,tmp->str);
+   free_Ustring(tmp);
    return 0;
 }
 /* If we have found a '+' */
@@ -1097,31 +1106,55 @@ free_Ustring(ustr);
  */
 int compile_grf(int n,struct compilation_info* infos) {
 int i;
+char called_from[FILENAME_MAX]="";
 char name[FILENAME_MAX];
 char name_fst2[FILENAME_MAX];
+int n_caller;
 SingleGraph graph=new_SingleGraph();
 /* We get the absolute path of the graph */
-get_absolute_name(name,n,infos);
+get_absolute_name(&n_caller,name,n,infos);
+if (n_caller!=-1) {
+	get_absolute_name(NULL,called_from,n_caller,infos);
+}
 char* full_name=NULL;
 if (infos->debug) {
 	full_name=name;
 }
 infos->current_saved_graph++;
 vector_int_add(infos->renumber,infos->current_saved_graph);
-Grf* grf=load_Grf(&(infos->vec),name);
+char foo[FILENAME_MAX];
+get_extension(name,foo);
+if (foo[0]=='\0') {
+	strcat(name,".grf");
+}
+Grf* grf=NULL;
+if (fexists(name)) {
+	grf=load_Grf(&(infos->vec),name);
+}
 if (grf==NULL) {
 	/* If we can't load the .grf, maybe we should try the .fst2 */
 	remove_extension(name,name_fst2);
 	strcat(name_fst2,".fst2");
 	Fst2* fst2=NULL;
-	if (n!=1) {
+	if (n!=1 && fexists(name_fst2)) {
 		/* We don't try to load the .fst2 for the main graph */
 		fst2=load_fst2(&(infos->vec),name_fst2,1);
-	}
-	if (fst2==NULL) {
-		error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
+		if (fst2==NULL) {
+			error("Cannot load %s\n",name_fst2);
+			write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
+			free_SingleGraph(graph,NULL);
+			vector_int_add(infos->part_of_precompiled_fst2,0);
+			if (n==1) return 0;
+			return 1;
+		}
+	} else {
+		error("Cannot open graph %s\n",name);
+		if (called_from[0]!='\0') {
+			error("which is called from %s\n",called_from);
+		}
 		write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
 		free_SingleGraph(graph,NULL);
+		vector_int_add(infos->part_of_precompiled_fst2,0);
 		if (n==1) return 0;
 		return 1;
 	}
@@ -1136,7 +1169,7 @@ if (grf==NULL) {
 	return 1;
 }
 if (infos->verbose_name_grf!=0) {
-  u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
+  u_printf("Compiling graph %s\n",/*infos->graph_names->value[n]*/name);
 }
 /* We indicate that we have a .grf */
 vector_int_add(infos->part_of_precompiled_fst2,0);

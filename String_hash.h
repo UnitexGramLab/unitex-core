@@ -110,6 +110,7 @@ struct string_hash* new_string_hash(int,int);
 struct string_hash* new_string_hash(int);
 struct string_hash* new_string_hash();
 void free_string_hash(struct string_hash*);
+int get_value_index(const unichar* key,struct string_hash* hash,unichar* value);
 int get_value_index(const unichar*,struct string_hash*,int,unichar*);
 int get_value_index(const unichar*,struct string_hash*,int);
 int get_value_index(const unichar*,struct string_hash*);
