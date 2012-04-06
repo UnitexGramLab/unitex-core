@@ -31,6 +31,9 @@ FILE* (*real_fopen)(const char *,const char *)=fopen;
 #include "AbstractFilePlugCallback.h"
 #include "UnusedParameter.h"
 #include "File.h"
+#include "logger/SyncLogger.h"
+
+using namespace unitex::logger;
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -68,6 +71,7 @@ typedef struct {
 } VFS_FILE;
 
 
+static SYNC_Mutex_OBJECT VFS_mutex=SyncBuildMutex();
 
 
 /**
@@ -95,11 +99,16 @@ return strstr(name,vfs->pfx)==name;
  * Tests if there is an inode for the given name.
  */
 static VFS_INODE* get_inode(VFS* vfs,const char* name) {
+SyncGetMutex(VFS_mutex);
 VFS_INODE* inode=vfs->list;
 while (inode!=NULL) {
-	if (!strcmp(inode->name,name)) return inode;
+	if (!strcmp(inode->name,name)) {
+		SyncReleaseMutex(VFS_mutex);
+		return inode;
+	}
 	inode=inode->next;
 }
+SyncReleaseMutex(VFS_mutex);
 return NULL;
 }
 
@@ -124,14 +133,18 @@ if (inode->ptr==NULL) {
 inode->open_in_write_mode=0;
 inode->n_open=0;
 inode->to_remove=0;
+SyncGetMutex(VFS_mutex);
 inode->next=vfs->list;
 vfs->list=inode;
+SyncReleaseMutex(VFS_mutex);
 return inode;
 }
 
 
 static VFS_INODE* remove_inode(VFS_INODE* list,VFS_INODE* inode) {
-if (list==NULL) return NULL;
+if (list==NULL) {
+	return NULL;
+}
 if (list!=inode) {
 	list->next=remove_inode(list->next,inode);
 	return list;
@@ -143,8 +156,10 @@ return next;
 }
 
 static void delete_inode(VFS_INODE* inode) {
+SyncGetMutex(VFS_mutex);
 VFS* vfs=inode->vfs;
 vfs->list=remove_inode(vfs->list,inode);
+SyncReleaseMutex(VFS_mutex);
 }
 
 
