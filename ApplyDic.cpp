@@ -24,6 +24,7 @@
 #include "ApplyDic.h"
 #include "Error.h"
 #include "File.h"
+#include "BuildTextAutomaton.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -782,6 +783,18 @@ return 1;
 }
 
 
+void check_tag_sequence_validity(unichar* s,Alphabet* alph) {
+if (s==NULL || s[0]=='\0') {
+	fatal_error("Invalid tag sequence: %S\n",s);
+}
+vector_ptr* v=tokenize_normalization_output(s,alph);
+if (v==NULL) {
+	fatal_error("Invalid tag sequence: %S\n",s);
+}
+free_vector_ptr(v,(void(*)(void*))free_output_info);
+}
+
+
 /**
  * @author Alexis Neme
  * Modified by Sébastien Paumier
@@ -804,10 +817,12 @@ while (l!=NULL) {
    if (l->output!=NULL && l->output[0]=='/') {
 	   /* If we have a tag sequence to be used at the time of
 	    * building the text automaton */
+	   check_tag_sequence_validity(l->output+1,info->alphabet);
+	   /* If the tag sequence is not valid, a fatal error will be raised */
 	   if (add_tag_sequence(info,l,priority)) {
 		   /* If we have found and handled a valid tag sequence, we process
-		    * the next match in the list, AND WE DON'T FREE THE CURRENT
-		    * MATCH, since it's now in a pointer array. */
+			* the next match in the list, AND WE DON'T FREE THE CURRENT
+			* MATCH, since it's now in a pointer array. */
 		   for (int i=l->m.start_pos_in_token;i<=l->m.end_pos_in_token;i++) {
 			   set_value(info->part_of_a_word2,info->text_cod_buf[i],1);
 		   }

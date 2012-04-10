@@ -275,26 +275,7 @@ void keep_best_paths(SingleGraph graph, struct string_hash* tmp_tags) {
 	free(weight);
 }
 
-/**
- * This structure is used to compute the list of tags to be inserted in the text automaton,
- * on the base of information taken from either the normalization fst2 or the tags.ind file.
- */
-struct output_info {
-	/* The output to a appear in the .tfst */
-	unichar* output;
-	/* The content of the tag. If the tag is of the form {xx,yyy.zzz},
-	 * it means xx; otherwise it is the same than 'output'. */
-	unichar* content;
-	/* Bounds of the sequence in the sentence, given in the form (X,Y) (W,Z) where
-	 * X is the start position in tokens, Y is the position in char in this token,
-	 * W is the end position in tokens, Z is the position in char in this token. */
-	int start_pos;
-	int end_pos;
-	int start_pos_char;
-	int end_pos_char;
-	int start_pos_letter;
-	int end_pos_letter;
-};
+
 
 /**
  * Allocates, initializes and returns a struct output_info*

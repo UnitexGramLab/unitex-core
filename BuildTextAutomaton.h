@@ -34,6 +34,7 @@
 #include "Korean.h"
 #include "HashTable.h"
 #include "SingleGraph.h"
+#include "Vector.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -41,7 +42,29 @@
 
 namespace unitex {
 
+/**
+ * This structure is used to compute the list of tags to be inserted in the text automaton,
+ * on the base of information taken from either the normalization fst2 or the tags.ind file.
+ */
+struct output_info {
+	/* The output to a appear in the .tfst */
+	unichar* output;
+	/* The content of the tag. If the tag is of the form {xx,yyy.zzz},
+	 * it means xx; otherwise it is the same than 'output'. */
+	unichar* content;
+	/* Bounds of the sequence in the sentence, given in the form (X,Y) (W,Z) where
+	 * X is the start position in tokens, Y is the position in char in this token,
+	 * W is the end position in tokens, Z is the position in char in this token. */
+	int start_pos;
+	int end_pos;
+	int start_pos_char;
+	int end_pos_char;
+	int start_pos_letter;
+	int end_pos_letter;
+};
+
 #define MAX_TOKENS_IN_SENTENCE 2000
+
 
 
 void build_sentence_automaton(const int*,int,const struct text_tokens*,
@@ -53,6 +76,8 @@ void build_sentence_automaton(const int*,int,const struct text_tokens*,
                               struct hash_table* form_frequencies);
 void keep_best_paths(SingleGraph graph,struct string_hash* tmp_tags) ;
 int count_non_space_tokens(const int* buffer,int length,int SPACE);
+vector_ptr* tokenize_normalization_output(unichar* s, const Alphabet* alph);
+void free_output_info(struct output_info* x);
 
 } // namespace unitex
 
