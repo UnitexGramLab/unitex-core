@@ -345,16 +345,16 @@ typedef struct
     struct timeval tp;
 } TIMEBEGIN;
 
-UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
+UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject()
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)malloc(sizeof(TIMEBEGIN));
     pBegin->tm_t = time(NULL);
     gettimeofday(&(pBegin->tp),NULL);
-    return (hTimeElasped)pBegin;
+    return (hTimeElapsed)pBegin;
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElapsed ptr)
 {
     TIMEBEGIN tBegin;
     TIMEBEGIN tEnd;

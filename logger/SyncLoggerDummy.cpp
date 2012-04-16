@@ -65,16 +65,16 @@ typedef struct
     //time_t t_start;
 } TIMEBEGIN;
 
-UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
+UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject()
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)malloc(sizeof(TIMEBEGIN));
     pBegin->startTime=clock();
     //time(&pBegin->t_start);
-    return (hTimeElasped)pBegin;
+    return (hTimeElapsed)pBegin;
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasped ptr, int destructObject)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElapsed ptr, int destructObject)
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)ptr;
     unsigned int iRet;
@@ -92,7 +92,7 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasp
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElapsed ptr)
 {
     return SyncGetMSecElapsedNotDestructive(ptr,1);
 }
