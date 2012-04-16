@@ -1107,7 +1107,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
           }
 
 
-      hTimeElasped htm = NULL;
+      hTimeElapsed htm = NULL;
       if (pTimeElapsed != NULL)
         htm = SyncBuidTimeMarkerObject();
       /* calling the tool to rerun */
