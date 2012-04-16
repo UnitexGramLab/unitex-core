@@ -33,6 +33,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/times.h>
+#include <unistd.h>
 
 #include "Unicode.h"
 
@@ -622,6 +624,14 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	int next_num_util = 0;
 	pos_tools_in_arg tia_dummy;
 
+	char* fTime=NULL;
+
+	if (strstr(argv[1],"--time=")==argv[1]) {
+		fTime=argv[1]+7;
+		argc--;
+		argv++;
+	}
+
 	if (p_number_done == NULL)
 		p_number_done = &number_done_dummy;
 	if (ptia == NULL)
@@ -701,6 +711,17 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 		}
 	}
 
+	if (fTime!=NULL) {
+		struct tms endTime;
+		times(&endTime);
+		clock_t total=endTime.tms_cstime+endTime.tms_cutime+endTime.tms_stime+endTime.tms_utime;
+		U_FILE* f=u_fopen(UTF8,fTime,U_WRITE);
+		if (f==NULL) {
+			fatal_error("Unable to open time file %s\n",fTime);
+		}
+		u_fprintf(f,"%.4g\n",total/(float)sysconf(_SC_CLK_TCK));
+		u_fclose(f);
+	}
 	return ret;
 }
 
