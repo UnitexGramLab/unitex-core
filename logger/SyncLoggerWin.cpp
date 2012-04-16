@@ -58,7 +58,7 @@ typedef struct
     DWORD Tick;
 } TIMEBEGIN;
 
-UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
+UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject()
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)malloc(sizeof(TIMEBEGIN));
     pBegin->Tick = GetTickCount();
@@ -66,7 +66,7 @@ UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasped ptr, int destructObject)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElapsed ptr, int destructObject)
 {
     TIMEBEGIN tBegin;
     TIMEBEGIN tEnd;
@@ -82,7 +82,7 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasp
     return iRet;
 }
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElapsed ptr)
 {
     return SyncGetMSecElapsedNotDestructive(ptr,1);
 }

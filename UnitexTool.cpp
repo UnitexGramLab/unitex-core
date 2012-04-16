@@ -33,10 +33,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/times.h>
 #include <unistd.h>
 
 #include "Unicode.h"
+#include "logger/SyncLogger.h"
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))
 #include "BuildKrMwuDic.h"
@@ -625,9 +625,10 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	pos_tools_in_arg tia_dummy;
 
 	char* fTime=NULL;
-
+	logger::hTimeElapsed startTime=NULL;
 	if (strstr(argv[1],"--time=")==argv[1]) {
 		fTime=argv[1]+7;
+		startTime=logger::SyncBuidTimeMarkerObject();
 		argc--;
 		argv++;
 	}
@@ -712,14 +713,12 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	}
 
 	if (fTime!=NULL) {
-		struct tms endTime;
-		times(&endTime);
-		clock_t total=endTime.tms_cstime+endTime.tms_cutime+endTime.tms_stime+endTime.tms_utime;
+		float msec=logger::SyncGetMSecElapsed(startTime)/1000.;
 		U_FILE* f=u_fopen(UTF8,fTime,U_WRITE);
 		if (f==NULL) {
 			fatal_error("Unable to open time file %s\n",fTime);
 		}
-		u_fprintf(f,"%.4g\n",total/(float)sysconf(_SC_CLK_TCK));
+		u_fprintf(f,"%.4g\n",msec);
 		u_fclose(f);
 	}
 	return ret;

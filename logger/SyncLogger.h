@@ -53,11 +53,11 @@ namespace logger {
 extern "C" {
 #endif
 
-typedef void* hTimeElasped;
+typedef void* hTimeElapsed;
 
-UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject();
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr);
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasped ptr, int destructObject);
+UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject();
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElapsed ptr);
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElapsed ptr, int destructObject);
 
 #define SYNC_CALLBACK_UNITEX ABSTRACT_CALLBACK_UNITEX
 typedef void (SYNC_CALLBACK_UNITEX* t_thread_func)(void* privateDataPtr,unsigned int iNbThread);
