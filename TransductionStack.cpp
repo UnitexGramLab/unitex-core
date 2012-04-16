@@ -106,6 +106,10 @@ push_input_string(stack,s,0);
  * This function processes the given output string.
  * Returns 1 if OK; 0 otherwise (for instance, if a variable is
  * not correctly defined).
+ *
+ * IMPORTANT: every new feature added here to handle new things in outputs
+ *            should also be reported into Grf2Fst2_lib->check_dollar_sequence
+ *
  */
 int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack,
 		int capture_in_debug_mode) {

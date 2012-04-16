@@ -850,6 +850,126 @@ write_transitions(graph,token,transitions,current_state,n);
 }
 
 
+
+/**
+ * 's' is supposed to be a sequence found between two $ in an output.
+ * We test here if this sequence is a valid one, raising a fatal error
+ * if not.
+ */
+static void check_dollar_sequence(int current_graph,struct compilation_info* infos,
+									unichar* s) {
+int foo;
+unichar c;
+unichar* ptr=s;
+if (s[0]=='\0') {
+	/* $$ is fine */
+	return;
+}
+if (u_sscanf(s,"{%d}%C",&foo,&c)==1) {
+	/* If we have a valid weight sequence */
+	return;
+}
+/* Any other sequence should start with a variable name */
+while (is_variable_char(*s)) {s++;}
+if (*s=='\0') {
+	/* $a$ is fine */
+	return;
+}
+if (*s!='.') {
+	char name[FILENAME_MAX];
+	get_absolute_name(NULL,name,current_graph,infos);
+	fatal_error("Graph %s: invalid $...$ sequence in output:\n$%S$\n",name,ptr);
+}
+s++;
+if (u_starts_with(s,"EQUAL=")
+		|| u_starts_with(s,"EQUALcC=")
+		|| u_starts_with(s,"UNEQUAL=")
+		|| u_starts_with(s,"UNEQUALcC=")) {
+	while ((*s)!='=') s++;
+	s++;
+	if ((*s)=='#') {
+		/* If we have a comparison to a constant string, any string is acceptable,
+		 * so it's a success
+		 */
+		return;
+	}
+	if ((*s)=='\0') {
+		char name[FILENAME_MAX];
+		get_absolute_name(NULL,name,current_graph,infos);
+		fatal_error("Graph %s: empty variable name in output:\n$%S$\n",name,ptr);
+	}
+	while ((*s)!='\0') {
+		if (!is_variable_char(*s)) {
+			char name[FILENAME_MAX];
+			get_absolute_name(NULL,name,current_graph,infos);
+			fatal_error("Graph %s: invalid variable name in output:\n$%S$\n",name,ptr);
+		}
+		s++;
+	}
+	/* Everything is ok */
+	return;
+}
+if (!u_strcmp(s,"EQ=")) {
+	char name[FILENAME_MAX];
+	get_absolute_name(NULL,name,current_graph,infos);
+	fatal_error("Graph %s: missing code value in output:\n$%S$\n",name,ptr);
+}
+if (!u_strcmp(s,"CODE.ATTR=")) {
+	char name[FILENAME_MAX];
+	get_absolute_name(NULL,name,current_graph,infos);
+	fatal_error("Graph %s: missing attribute value in output:\n$%S$\n",name,ptr);
+}
+if (!u_strcmp(s,"SET")
+		|| !u_strcmp(s,"UNSET")
+		|| u_starts_with(s,"EQ=")
+		|| !u_strcmp(s,"INFLECTED")
+		|| !u_strcmp(s,"LEMMA")
+		|| !u_strcmp(s,"CODE")
+		|| !u_strcmp(s,"CODE.GRAM")
+		|| !u_strcmp(s,"CODE.SEM")
+		|| !u_strcmp(s,"CODE.FLEX")
+		|| u_starts_with(s,"CODE.ATTR=")) {
+	/* Valid sequence */
+	return;
+}
+char name[FILENAME_MAX];
+get_absolute_name(NULL,name,current_graph,infos);
+fatal_error("Graph %s: invalid $...$ sequence in output:\n$%S$\n",name,ptr);
+}
+
+
+/**
+ * Checks whether the given output sequence is well formed and raises
+ * a fatal error if necessary.
+ */
+static void check_output_validity(int current_graph,struct compilation_info* infos,
+									unichar* output) {
+if (output[0]=='\0') return;
+int i=0;
+Ustring* foo=new_Ustring();
+while (output[i]!='\0') {
+	if (output[i]!='$') {
+		i++;
+	} else {
+		i++;
+		empty(foo);
+		while (output[i]!='\0' && output[i]!='$') {
+			u_strcat(foo,output[i]);
+			i++;
+		}
+		if (output[i]=='\0') {
+			char name[FILENAME_MAX];
+			get_absolute_name(NULL,name,current_graph,infos);
+			fatal_error("Graph %s: invalid output with no closing $:\n%S\n",name,output);
+		}
+		check_dollar_sequence(current_graph,infos,foo->str);
+		i++;
+	}
+}
+free_Ustring(foo);
+}
+
+
 /**
  * Processes the given grf state of the graph #n.
  */
@@ -904,6 +1024,7 @@ if (infos->debug) {
 	output[0]=DEBUG_INFO_OUTPUT_MARK;
 }
 split_input_output(box_content,input,output+shift);
+check_output_validity(n,infos,output+shift);
 /* And we process the box input */
 int pos=0;
 int line=0;
