@@ -1350,7 +1350,7 @@ clean-all-but-tre:
 
 clean: clean-all-but-tre
 	rm -rf tre-0.8.0
-	rm libtre.a
+	rm -rf libtre.a
 
 
 ##########################
@@ -1393,7 +1393,7 @@ clean-all-but-tre:
 
 clean: clean-all-but-tre
 	rm -rf tre-0.8.0
-	rm libtre.a
+	rm -rf libtre.a
 
 
 #################################
