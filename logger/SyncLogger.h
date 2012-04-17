@@ -55,6 +55,8 @@ extern "C" {
 
 typedef void* hTimeElapsed;
 
+#define HTIME_ELASPED_TYPO_FIXED 1
+
 UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject();
 UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElapsed ptr);
 UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElapsed ptr, int destructObject);
