@@ -623,7 +623,7 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	int next_num_util = 0;
 	pos_tools_in_arg tia_dummy;
 
-	char* fTime=NULL;
+	const char* fTime=NULL;
 	logger::hTimeElapsed startTime=NULL;
 	if (strstr(argv[1],"--time=")==argv[1]) {
 		fTime=argv[1]+7;
@@ -712,7 +712,7 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	}
 
 	if (fTime!=NULL) {
-		float msec=logger::SyncGetMSecElapsed(startTime)/1000.;
+		float msec=(float)(logger::SyncGetMSecElapsed(startTime)/1000.);
 		U_FILE* f=u_fopen(UTF8,fTime,U_WRITE);
 		if (f==NULL) {
 			fatal_error("Unable to open time file %s\n",fTime);
