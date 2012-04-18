@@ -625,8 +625,12 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 
 	const char* fTime=NULL;
 	logger::hTimeElapsed startTime=NULL;
-	if (strstr(argv[1],"--time=")==argv[1]) {
-		fTime=argv[1]+7;
+	const char* firstArg=NULL;
+	if (argc>1)
+		firstArg=argv[1];
+
+	if ((firstArg!=NULL) && (strstr(firstArg,"--time=")==firstArg)) {
+		fTime=firstArg+7;
 		startTime=logger::SyncBuidTimeMarkerObject();
 		argc--;
 		argv++;
