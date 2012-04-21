@@ -716,7 +716,7 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	}
 
 	if (fTime!=NULL) {
-		float msec=(float)(logger::SyncGetMSecElapsed(startTime)/1000.);
+		double msec=(double)(logger::SyncGetMSecElapsed(startTime)/((double)1000.));
 		U_FILE* f=u_fopen(UTF8,fTime,U_WRITE);
 		if (f==NULL) {
 			fatal_error("Unable to open time file %s\n",fTime);
