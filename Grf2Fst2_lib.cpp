@@ -1194,7 +1194,7 @@ for (int i=0;i<fst2->number_of_graphs;i++) {
 		while (t!=NULL) {
 			if (t->tag_number<0) {
 				u_fprintf(infos->fst2,"-%d ",(infos->current_saved_graph-1)-t->tag_number);
-				error("** -%d **\n",(infos->current_saved_graph-1)-t->tag_number);
+				//error("** -%d **\n",(infos->current_saved_graph-1)-t->tag_number);
 			} else {
 				empty(ustr);
 				Fst2Tag tag=fst2->tags[t->tag_number];
