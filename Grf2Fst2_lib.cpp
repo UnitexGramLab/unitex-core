@@ -135,7 +135,11 @@ u_fprintf(f," \n");
  * Writes the states and transitions of of the given graph #n into the given file.
  */
 void write_graph(U_FILE* f,SingleGraph graph,int n,unichar* name,char* full_name) {
-u_fprintf(f,"%d %S",n,name);
+u_fprintf(f,"%d ",n);
+while ((*name)!='\0' && (*name)!=2) {
+	u_fputc(*name,f);
+	name++;
+}
 if (full_name!=NULL) {
 	/* In debug mode, we add the full file name, separated by char #1,
 	 * but if the graph is empty, we don't print the full name */
