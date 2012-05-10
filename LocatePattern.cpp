@@ -738,7 +738,6 @@ struct string_hash* tokens=parameters->tokens;
 U_FILE* f;
 f=u_fopen(vec,dic_name,U_READ);
 if (f==NULL) {
-   error("Cannot open dictionary %s\n",dic_name);
    return;
 }
 /* We parse all the lines */
