@@ -253,9 +253,10 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 }
 			}
 		}
+		reset_Variables(p->input_variables);
 		p->match_list = save_matches(p->match_list,p->current_origin, out, p, p->prv_alloc);
 		(p->current_origin)++;
-	}
+	} /* End of the big while */
 	free_reserve(backup_reserve);
     p->backup_memory_reserve = NULL;
 
