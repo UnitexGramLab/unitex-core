@@ -118,6 +118,7 @@ size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb);
 
 void install_variable_backup(Variables*,const int*);
 void update_variable_backup(int*,const Variables*);
+void reset_Variables(Variables* v);
 
 int same_input_variables(int* input_variable_backup,Variables* v);
 

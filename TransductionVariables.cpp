@@ -64,6 +64,17 @@ return v;
 }
 
 
+void reset_Variables(Variables* v) {
+if (v==NULL) return;
+int n=v->variable_index->size;
+for (int i=0;i<n;i++) {
+	   v->variables[i].start_in_tokens=UNDEF_VAR_BOUND;
+	   v->variables[i].end_in_tokens=UNDEF_VAR_BOUND;
+	   v->variables[i].start_in_chars=UNDEF_VAR_BOUND;
+	   v->variables[i].end_in_chars=UNDEF_VAR_BOUND;
+}
+}
+
 /**
  * Frees the memory associated to the given variables.
  */
