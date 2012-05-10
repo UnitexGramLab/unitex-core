@@ -41,6 +41,9 @@
 #include "MappedFileHelper.h"
 #include "ActivityLogger.h"
 
+// TODO: Remove debug
+#include <iostream>
+
 using namespace unitex;
 
 struct AbstractFileSpace {

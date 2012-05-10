@@ -1010,7 +1010,10 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
 
-UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o UnitexLibIO.o $(SYSLIBDIRIO)
+UNITEXLIB_IO_OBJS = UnitexLibIO.o $(SYSLIBDIRIO)
+
+UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o $(UNITEXLIB_IO_OBJS)
+
 
 TEST      = Test
 TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
@@ -1161,10 +1164,10 @@ install: bin
 
 
 clean: $(CLEAN-LIBTRE)
-	rm -f $(OBJS) $(PROGS) *~ Main_*.o
+	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) *~ Main_*.o
 
 clean-all-but-tre:
-	rm -f $(OBJS) $(PROGS) *~ Main_*.o
+	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) *~ Main_*.o
 
 dist: clean
 	if test -d $(BUILD); then rm -rf $(BUILD); fi
@@ -1639,7 +1642,7 @@ no_o_files:
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
-.libunitexstatic: $(OBJS)
+.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
@@ -1659,7 +1662,7 @@ no_o_files:
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
-.libunitexstatic: $(OBJS)
+.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
