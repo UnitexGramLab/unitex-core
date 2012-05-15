@@ -50,7 +50,6 @@ using namespace unitex;
  */
 int main(int argc,char* argv[]) {
 setBufferMode();
-VersatileEncodingConfig vec=VEC_DEFAULT;
 
 if (argc!=4) {
 	fatal_error("Usage: cmd <txt> start end\n");
@@ -199,7 +198,7 @@ for (int i=0;i<N;i++) {
 #endif
 
 #if 0
-
+VersatileEncodingConfig vec=VEC_DEFAULT;
 /*
 ~/workspace/C++/bin/Test ~/unitex/French/Corpus/seq2grf_snt/seq2grf.grf ~/unitex/French/Corpus/seq2grf_snt/beautiful.grf
 
