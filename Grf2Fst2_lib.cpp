@@ -83,6 +83,7 @@ infos->part_of_precompiled_fst2=new_vector_int();
 /* We set a dummy #0 cell in order to avoid painful +/- 1 at each graph access */
 vector_int_add(infos->part_of_precompiled_fst2,0);
 infos->current_saved_graph=0;
+infos->check_outputs=0;
 return infos;
 }
 
@@ -1028,7 +1029,9 @@ if (infos->debug) {
 	output[0]=DEBUG_INFO_OUTPUT_MARK;
 }
 split_input_output(box_content,input,output+shift);
-check_output_validity(n,infos,output+shift);
+if (infos->check_outputs) {
+	check_output_validity(n,infos,output+shift);
+}
 /* And we process the box input */
 int pos=0;
 int line=0;

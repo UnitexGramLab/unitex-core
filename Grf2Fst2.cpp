@@ -64,6 +64,7 @@ const char* usage_Grf2Fst2 =
 		 "                                   where X is the name of the repository denoted by\n"
 		 "                                   the pathname Y. You can use this option several times\n"
          "  --debug: compile graphs in debug mode\n"
+		 "  -v/--check_variables: checks output validity to avoid malformed variable expressions\n"
          "  -h/--help: this help\n"
          "\n"
          "Compiles the grammar <grf> and saves the result in a FST2 file\n"
@@ -126,7 +127,7 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:r:";
+const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:r:v";
 const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -142,6 +143,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"debug",no_argument_TS,NULL,1},
       {"help",no_argument_TS,NULL,'h'},
       {"named_repositories",required_argument_TS,NULL,'r'},
+      {"check_variables",no_argument_TS,NULL,'v'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -265,6 +267,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
                  strcat(named,vars->optarg);
              }
              break;
+   case 'v': infos->check_outputs=1; break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
