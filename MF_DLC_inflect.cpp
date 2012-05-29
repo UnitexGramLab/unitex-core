@@ -48,8 +48,8 @@ int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unicha
 int DLC_scan_codes(unichar* codes[MAX_CODES], unichar* line);
 int DLC_scan_comment(unichar** comment, unichar* line);
 l_class_T* DLC_class_para(unichar* para, d_class_equiv_T* D_CLASS_EQUIV);
-int DLC_print_entry(struct l_morpho_t* pL_MORPHO,DLC_entry_T* entry);
-int DLC_print_unit(struct l_morpho_t* pL_MORPHO,SU_id_T* unit);
+int DLC_print_entry(U_FILE* f,struct l_morpho_t* pL_MORPHO,DLC_entry_T* entry);
+int DLC_print_unit(U_FILE* f,struct l_morpho_t* pL_MORPHO,SU_id_T* unit);
 int DLC_format_form(struct l_morpho_t* pL_MORPHO,unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,
 		d_class_equiv_T* D_CLASS_EQUIV);
 void DLC_delete_entry(DLC_entry_T* entry);
@@ -174,7 +174,7 @@ int inflect(char* DLC, char* DLCF,
 						//Inform the user if no form generated
 						if (MU_forms.no_forms == 0) {
 							error("No inflected form could be generated for ");
-							DLC_print_entry(pL_MORPHO,dlc_entry);
+							DLC_print_entry(U_STDERR,pL_MORPHO,dlc_entry);
 						}
 						//Print inflected forms
 						for (f = 0; f < MU_forms.no_forms; f++) {
@@ -494,49 +494,49 @@ l_class_T* DLC_class_para(unichar* para, d_class_equiv_T* D_CLASS_EQUIV) {
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry into a DELAC file..
 // If entry void or entry's lemma void returns 1, 0 otherwise.
-int DLC_print_entry(struct l_morpho_t* pL_MORPHO,DLC_entry_T* entry) {
+int DLC_print_entry(U_FILE* f,struct l_morpho_t* pL_MORPHO,DLC_entry_T* entry) {
 	if (!entry || !entry->lemma)
 		return 1;
 
 	//Print  units
 	for (int u = 0; u < entry->lemma->no_units; u++) {
-		DLC_print_unit(pL_MORPHO,entry->lemma->units[u]);
+		DLC_print_unit(f,pL_MORPHO,entry->lemma->units[u]);
 	}
 
 	//Print paradigm
-	u_printf(",%s", entry->lemma->paradigm);
+	u_fprintf(f,",%s", entry->lemma->paradigm);
 
 	//Concat codes
 	for (int c = 0; entry->codes[c]; c++) {
-		u_printf("+%S", entry->codes[c]);
+		u_fprintf(f,"+%S", entry->codes[c]);
 	}
 
 	//Concat comment
 	if (entry->comment) {
-		u_printf("/%S", entry->comment);
+		u_fprintf(f,"/%S", entry->comment);
 	}
-	u_printf("\n");
+	u_fprintf(f,"\n");
 	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints single unit into a DELAC file.
 // If 'unit' void returns 1, if memory allocation problem returns -1, 0 otherwise.
-int DLC_print_unit(struct l_morpho_t* pL_MORPHO,SU_id_T* unit) {
+int DLC_print_unit(U_FILE* f,struct l_morpho_t* pL_MORPHO,SU_id_T* unit) {
 	if (unit == NULL)
 		return 1;
-	u_printf("%S", unit->form);
+	u_fprintf(f,"%S", unit->form);
 	if (unit->lemma) {
-		u_printf("(%S.%s", unit->lemma->unit, unit->lemma->paradigm);
+		u_fprintf(f,"(%S.%s", unit->lemma->unit, unit->lemma->paradigm);
 		if (unit->feat) {
 			unichar* tmp;
 			tmp = d_get_str_feat(pL_MORPHO,unit->feat);
 			if (tmp == NULL)
 				return -1;
-			u_printf(":%S", tmp);
+			u_fprintf(f,":%S", tmp);
 			free(tmp);
 		}
-		u_printf(")");
+		u_fprintf(f,")");
 	}
 	return 0;
 }

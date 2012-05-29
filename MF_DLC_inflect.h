@@ -74,7 +74,7 @@ int inflect(char*,char*,MultiFlex_ctx*,struct l_morpho_t*,Alphabet* alph, const 
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.
-int DLC_print_entry(struct l_morpho_t* pL_MORPHO, DLC_entry_T* entry);
+int DLC_print_entry(U_FILE* f,struct l_morpho_t* pL_MORPHO, DLC_entry_T* entry);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Liberates the memory allocated for a DELAC entry.
