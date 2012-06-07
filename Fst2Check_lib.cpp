@@ -818,4 +818,34 @@ int valid_sentence_automaton(const VersatileEncodingConfig* vec,const char* name
     return valid_sentence_automaton_write_error(vec,name,NULL);
 }
 
+
+int OK_for_Fst2Txt(Fst2* fst2) {
+if (fst2==NULL) return 0;
+for (int i=0;i<fst2->number_of_tags;i++) {
+	Fst2Tag tag=fst2->tags[i];
+	switch (tag->type) {
+		case BEGIN_POSITIVE_CONTEXT_TAG:
+		case BEGIN_NEGATIVE_CONTEXT_TAG:
+		case END_CONTEXT_TAG:
+		case LEFT_CONTEXT_TAG: {
+			error("Contexts are not supported in preprocessing graphs\n");
+			return 0;
+		}
+		case BEGIN_MORPHO_TAG:
+		case END_MORPHO_TAG: {
+			error("Morphological mode is not supported in preprocessing graphs\n");
+			return 0;
+		}
+		default: {
+			if (tag->morphological_filter!=NULL && tag->morphological_filter[0]!='\0') {
+				error("Morphological filters are not supported in preprocessing graphs\n");
+				return 0;
+			}
+		}
+	}
+}
+return 1;
+}
+
+
 } // namespace unitex

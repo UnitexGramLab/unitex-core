@@ -617,7 +617,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o \
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o\
 	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
 	           Offsets.o Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
-	           Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+	           Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o ActivityLogger.o \
@@ -912,7 +912,7 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o \
 	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o\
 	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
 	           Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o \
-	           Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+	           Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 
 UNCOMPRESS       = Uncompress
