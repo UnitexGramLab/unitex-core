@@ -281,10 +281,10 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 			free(feat);
 		} else {
 			/* If we want all the inflected forms */
-			if (filters != NULL && filters[/*1*/0] != NULL) {
+			if (filters != NULL && filters[0] != NULL) {
 				filtrer(sortie, filters);
 			}
-			if (sortie[0] == '\0') {
+			if (sortie[0] == '\0' && filters == NULL ) {
 				/* If we have an empty output, for instance in the case of an ADV grammar */
 				//Put the form into 'forms'
 				forms->forms = (SU_f_T*) realloc(forms->forms,

@@ -54,6 +54,8 @@ int filtrer(unichar* sortie, unichar** filtre) {
 unichar result[L2],tmp[L1];
 int i,j,l,retour;
 
+if (sortie[0] == '\0') return 0;
+
     i=0; j = 0; retour=1; result[0]='\0';
     if (sortie[i] == ':' ) i++;
     else  {//error("erreur Sortie sans : -->");

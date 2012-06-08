@@ -651,6 +651,7 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
    res->filters[res->n_filters]=u_strdup(temp,prv_alloc);
    (res->n_filters)++;
 }
+res->filters[res->n_filters]=NULL;
 /*
  * Now we read the other gramatical and semantic codes if any
  */
