@@ -552,7 +552,6 @@ void scan_graph(
 			&& p->buffer[pos + p->current_origin] == ' ';
 	int SOMMET = p->stack->stack_pointer + 1;
 	int pos2;
-
 	/* If there are some letter sequence transitions like %hello, we process them */
 	if (!end_of_text && p->token_tree[e]->transition_array != NULL) {
 		if (p->buffer[pos + p->current_origin] == ' ') {
@@ -564,8 +563,10 @@ void scan_graph(
 		 * if the return sequence is defautly considered as a separator like space
 		 else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
 		 */
-		else
+		else {
 			pos2 = pos;
+		}
+
 		int position = 0;
 		int start_pos_ = pos2;
 		unichar *token = word_token_buffer;
@@ -687,7 +688,8 @@ void scan_graph(
 						fatal_error("Unknown variable: %S\n", etiq->variable);
 					}
 					if (p->buffer[pos + p->current_origin] == ' ' && pos
-							+ p->current_origin + 1 < p->text_buffer->size) {
+							+ p->current_origin + 1 < p->text_buffer->size
+							&& p->space_policy!=START_WITH_SPACE) {
 						pos2 = pos + 1;
 						if (p->output_policy == MERGE_OUTPUTS)
 							push(p->stack, ' ');
@@ -732,7 +734,7 @@ void scan_graph(
 							match_list, word_token_buffer, p);
 					restore(p->current_insertions, old_nb_insert);
 				}
-			} else if ((contenu_len_possible_match == 5)
+			} else if ((contenu_len_possible_match == 5) // <MOT>
 					&& (!u_trymatch_superfast5(contenu, ETIQ_MOT_LN5))) {
 				// case of transition by any sequence of letters
 				if (!end_of_text) {
@@ -775,7 +777,7 @@ void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 4)
+			} else if ((contenu_len_possible_match == 4) //<NB>
 					&& (!u_trymatch_superfast4(contenu, ETIQ_NB_LN4))) {
 				// case of transition by any sequence of digits
 				if (!end_of_text) {
@@ -811,7 +813,7 @@ void scan_graph(
 						restore(p->current_insertions, old_nb_insert);
 					}
 				}
-			} else if ((contenu_len_possible_match == 5)
+			} else if ((contenu_len_possible_match == 5) // <MAJ>
 					&& (!u_trymatch_superfast5(contenu, ETIQ_MAJ_LN5))) {
 				// case of upper case letter sequence
 				if (!end_of_text) {
@@ -855,7 +857,7 @@ void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 5)
+			} else if ((contenu_len_possible_match == 5) // <MIN>
 					&& (!u_trymatch_superfast5(contenu, ETIQ_MIN_LN5))) {
 				// case of lower case letter sequence
 				if (!end_of_text) {
@@ -899,7 +901,7 @@ void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 5)
+			} else if ((contenu_len_possible_match == 5) // <PRE>
 					&& (!u_trymatch_superfast5(contenu, ETIQ_PRE_LN5))) {
 				// case of a sequence beginning by an upper case letter
 				if (!end_of_text) {
@@ -944,7 +946,7 @@ void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 5)
+			} else if ((contenu_len_possible_match == 5)  // <PNC>
 					&& (!u_trymatch_superfast5(contenu, ETIQ_PNC_LN5))) {
 				// case of a punctuation sequence
 				if (!end_of_text) {
@@ -1007,7 +1009,7 @@ void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 3)
+			} else if ((contenu_len_possible_match == 3)  // <E>
 					&& (!u_trymatch_superfast3(contenu, ETIQ_E_LN3))) {
 				// case of an empty sequence
 				// in both modes MERGE and REPLACE, we process the transduction if any
