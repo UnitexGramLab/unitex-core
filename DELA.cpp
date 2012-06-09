@@ -652,6 +652,7 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
    (res->n_filters)++;
 }
 res->filters[res->n_filters]=NULL;
+if (line[i]==']') i++;
 /*
  * Now we read the other gramatical and semantic codes if any
  */
