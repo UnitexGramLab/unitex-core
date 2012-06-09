@@ -819,7 +819,7 @@ int valid_sentence_automaton(const VersatileEncodingConfig* vec,const char* name
 }
 
 
-int OK_for_Fst2Txt(Fst2* fst2,char* basedir) {
+int OK_for_Fst2Txt(Fst2* fst2) {
 if (fst2==NULL) return 0;
 int ret=1;
 int mark,a,b,c;
@@ -843,7 +843,7 @@ for (int i=1;i<=fst2->number_of_graphs;i++) {
 						 * by the Gramlab console in order to display a clickable
 						 * link that the user can use to open the faulty graph
 						 */
-						error("Error in %s%S.grf:\n",basedir,fst2->graph_names[i]);
+						error("Error in graph %S:\n",fst2->graph_names[i]);
 						mark=1;
 					}
 					if (!a) error("- unsupported context\n");
@@ -858,7 +858,7 @@ for (int i=1;i<=fst2->number_of_graphs;i++) {
 						 * by the Gramlab console in order to display a clickable
 						 * link that the user can use to open the faulty graph
 						 */
-						error("Error in %s%S.grf:\n",basedir,fst2->graph_names[i]);
+						error("Error in graph %S:\n",fst2->graph_names[i]);
 						mark=1;
 					}
 					if (!b) error("- unsupported morphological mode\n");
@@ -873,7 +873,7 @@ for (int i=1;i<=fst2->number_of_graphs;i++) {
 							 * by the Gramlab console in order to display a clickable
 							 * link that the user can use to open the faulty graph
 							 */
-							error("Error in %s%S.grf:\n",basedir,fst2->graph_names[i]);
+							error("Error in graph %S:\n",fst2->graph_names[i]);
 							mark=1;
 						}
 						if (!c) error("- unsupported morphological filter\n");

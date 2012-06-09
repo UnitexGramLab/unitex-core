@@ -72,9 +72,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		u_fclose(p->f_output);
 		return 1;
 	}
-	char dir[FILENAME_MAX];
-	get_path(p->fst_file,dir);
-	if (!OK_for_Fst2Txt(p->fst2,dir)) {
+	if (!OK_for_Fst2Txt(p->fst2)) {
 		u_fclose(p->f_input);
 		u_fclose(p->f_output);
 		return 1;
