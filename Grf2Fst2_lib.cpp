@@ -210,7 +210,7 @@ if (infos->graph_names->value[n][0]==':') {
 		/* If we have a graph call using a named repository */
 		shift++;
 		Ustring* foo=new_Ustring();
-		for (unichar* s=infos->graph_names->value[n]+shift;(*s!=':' && *s!='/' && *s!='\\');s++,shift++) {
+		for (unichar* s=infos->graph_names->value[n]+shift;(*s!=':' && *s!='/' && *s!='\\' && *s!=0x02);s++,shift++) {
 			if (!is_variable_char(*s)) {
 				fatal_error("Invalid repository name in graph call: %S\n",infos->graph_names->value[n]);
 			}
@@ -255,10 +255,14 @@ else {
    offset=u_strlen(infos->main_graph_path);
 }
 int l=u_strlen(temp)-1;
-if (temp[l]!=':' && temp[l]!='/' && temp[l]!='\\') {
+if (l>=0 && temp[l]!=':' && temp[l]!='/' && temp[l]!='\\') {
 	u_strcat(temp,":");
 }
 u_strcat(temp,infos->graph_names->value[n]+shift);
+int pos2=u_strrchr(temp,(unichar)0x02);
+if (pos2!=-1) {
+	temp[pos2]='\0';
+}
 u_strcat(temp,".grf");
 /* Finally, we turn the file name into ISO-8859-1 */
 u_to_char(name,temp);
