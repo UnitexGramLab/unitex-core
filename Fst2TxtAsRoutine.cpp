@@ -24,6 +24,7 @@
 #include "TransductionStack.h"
 #include "Overlap.h"
 #include "Fst2Check_lib.h"
+#include "File.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -71,7 +72,9 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		u_fclose(p->f_output);
 		return 1;
 	}
-	if (!OK_for_Fst2Txt(p->fst2)) {
+	char dir[FILENAME_MAX];
+	get_path(p->fst_file,dir);
+	if (!OK_for_Fst2Txt(p->fst2,dir)) {
 		u_fclose(p->f_input);
 		u_fclose(p->f_output);
 		return 1;

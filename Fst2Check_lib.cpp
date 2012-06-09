@@ -757,7 +757,7 @@ if (u_strcmp(fst2->tags[0]->input,"<E>") || fst2->tags[0]->output!=NULL) {
    fatal_error("valid_outputs: the first tag of the .fst2 should be <E>\n");
 }
 for (int i=1;i<fst2->number_of_tags;i++) {
-   /* Condition 3: no tag of the form <E>/XXX */
+   /* Condition 3: no tag of the form <E>/XYZ */
    if (!u_strcmp(fst2->tags[i]->input,"<E>") && fst2->tags[i]->output!=NULL) {
       return 0;
    }
@@ -819,32 +819,75 @@ int valid_sentence_automaton(const VersatileEncodingConfig* vec,const char* name
 }
 
 
-int OK_for_Fst2Txt(Fst2* fst2) {
+int OK_for_Fst2Txt(Fst2* fst2,char* basedir) {
 if (fst2==NULL) return 0;
-for (int i=0;i<fst2->number_of_tags;i++) {
-	Fst2Tag tag=fst2->tags[i];
-	switch (tag->type) {
-		case BEGIN_POSITIVE_CONTEXT_TAG:
-		case BEGIN_NEGATIVE_CONTEXT_TAG:
-		case END_CONTEXT_TAG:
-		case LEFT_CONTEXT_TAG: {
-			error("Contexts are not supported in preprocessing graphs\n");
-			return 0;
-		}
-		case BEGIN_MORPHO_TAG:
-		case END_MORPHO_TAG: {
-			error("Morphological mode is not supported in preprocessing graphs\n");
-			return 0;
-		}
-		default: {
-			if (tag->morphological_filter!=NULL && tag->morphological_filter[0]!='\0') {
-				error("Morphological filters are not supported in preprocessing graphs\n");
-				return 0;
+int ret=1;
+int mark,a,b,c;
+for (int i=1;i<=fst2->number_of_graphs;i++) {
+	mark=a=b=c=0;
+	for (int j=0;j<fst2->number_of_states_per_graphs[i];j++) {
+		Transition* t=fst2->states[fst2->initial_states[i]+j]->transitions;
+		while (t!=NULL) {
+			if (t->tag_number<0) {
+				t=t->next;
+				continue;
 			}
+			Fst2Tag tag=fst2->tags[t->tag_number];
+			switch (tag->type) {
+				case BEGIN_POSITIVE_CONTEXT_TAG:
+				case BEGIN_NEGATIVE_CONTEXT_TAG:
+				case END_CONTEXT_TAG:
+				case LEFT_CONTEXT_TAG: {
+					if (!mark) {
+						/* Don't modify this line!! This exact wording is expected
+						 * by the Gramlab console in order to display a clickable
+						 * link that the user can use to open the faulty graph
+						 */
+						error("Error in %s%S.grf:\n",basedir,fst2->graph_names[i]);
+						mark=1;
+					}
+					if (!a) error("- unsupported context\n");
+					ret=0;
+					a=1;
+					break;
+				}
+				case BEGIN_MORPHO_TAG:
+				case END_MORPHO_TAG: {
+					if (!mark) {
+						/* Don't modify this line!! This exact wording is expected
+						 * by the Gramlab console in order to display a clickable
+						 * link that the user can use to open the faulty graph
+						 */
+						error("Error in %s%S.grf:\n",basedir,fst2->graph_names[i]);
+						mark=1;
+					}
+					if (!b) error("- unsupported morphological mode\n");
+					ret=0;
+					b=1;
+					break;
+				}
+				default: {
+					if (tag->morphological_filter!=NULL && tag->morphological_filter[0]!='\0') {
+						if (!mark) {
+							/* Don't modify this line!! This exact wording is expected
+							 * by the Gramlab console in order to display a clickable
+							 * link that the user can use to open the faulty graph
+							 */
+							error("Error in %s%S.grf:\n",basedir,fst2->graph_names[i]);
+							mark=1;
+						}
+						if (!c) error("- unsupported morphological filter\n");
+						ret=0;
+						c=1;
+						break;
+					}
+				}
+			}
+			t=t->next;
 		}
 	}
 }
-return 1;
+return ret;
 }
 
 
