@@ -246,7 +246,7 @@ if (bin_type==BIN_CLASSIC) {
 root=new_dictionary_node(compress_abstract_allocator);
 INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
-u_printf("Compressing %s...\n",bin);
+u_printf("Compressing %s...\n",argv[vars->optind]);
 /* We read until there is no more lines in the .dic file */
 Ustring* s=new_Ustring(DIC_WORD_SIZE);
 while(EOF!=readline(s,f)) {
