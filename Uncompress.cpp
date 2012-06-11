@@ -120,6 +120,7 @@ if (f==NULL) {
 char inf_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],inf_file);
 strcat(inf_file,".inf");
+u_printf("Uncompressing %s...\n",argv[vars->optind]);
 Dictionary* d=new_Dictionary(&vec,argv[vars->optind],inf_file);
 if (d!=NULL) rebuild_dictionary(d,f);
 u_fclose(f);
