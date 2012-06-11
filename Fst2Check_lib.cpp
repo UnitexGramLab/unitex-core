@@ -648,8 +648,8 @@ if (is_bit_mask_set(fst2->states[fst2->initial_states[1]]->control,UNCONDITIONAL
        error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
        if (ferr != NULL)
          u_fprintf(ferr,"ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+       ERROR=1;
    }
-   ERROR=1;
 }
 if (!ERROR) {
    for (i=1;i<fst2->number_of_graphs+1;i++) {
