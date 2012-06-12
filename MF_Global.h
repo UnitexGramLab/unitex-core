@@ -26,16 +26,39 @@
 #ifndef MF_GlobalH
 #define MF_GlobalH
 
-
-#include "MF_InflectTransdBase.h"
 #include "MF_MU_morphoBase.h"
 #include "MF_UnifBase.h"
+#include "AbstractFst2Load.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
+
+
+
+//Maximum number of flexional transducers
+#define N_FST2 5000
+
+///////////////////////////////
+// A node of the tree for inflection transducers' names
+struct node {
+  int final;  //-1 if the node is non final; otherwise gives the index
+              //of the inflection transducer (whose name leads to this node)
+              //in the tranducer table
+  struct transition* t;
+};
+
+///////////////////////////////
+// A branch of the tree for inflection transducers' names
+struct transition {
+    char c;
+    struct node* n;
+    struct transition* suivant;
+};
+
+
 
 typedef struct {
 

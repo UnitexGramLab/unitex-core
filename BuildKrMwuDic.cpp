@@ -63,8 +63,6 @@ u_printf(usage_BuildKrMwuDic);
 
 
 
-
-
 const char* optstring_BuildKrMwuDic="o:d:a:b:hk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
       {"output",required_argument_TS,NULL,'o'},
