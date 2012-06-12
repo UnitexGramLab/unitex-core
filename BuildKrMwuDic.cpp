@@ -166,34 +166,21 @@ if (alph==NULL) {
    fatal_error("Cannot open alphabet file %s\n",alphabet);
 }
 Korean* korean=new Korean(alph);
-MultiFlex_ctx* multiFlex_ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
-if (multiFlex_ctx==NULL) {
-   fatal_alloc_error("main_BuildKrMwuDic");
-}
-strcpy(multiFlex_ctx->inflection_directory,inflection_dir);
-if (init_transducer_tree(multiFlex_ctx)) {
-   fatal_error("init_transducer_tree error\n");
-}
-struct l_morpho_t* pL_MORPHO=init_langage_morph();
-if (pL_MORPHO == NULL) {
-   fatal_error("init_langage_morph error\n");
-}
+MultiFlex_ctx* multiFlex_ctx=new_MultiFlex_ctx(inflection_dir,NULL,&vec,korean,NULL,NULL);
 Dictionary* d=new_Dictionary(&vec,dic_bin,dic_inf);
 
-create_mwu_dictionary(delas,grf,multiFlex_ctx,korean,pL_MORPHO,&vec,d);
+create_mwu_dictionary(delas,grf,multiFlex_ctx,d);
 
 free_Dictionary(d);
 u_fclose(delas);
 u_fclose(grf);
 free_alphabet(alph);
 delete korean;
-free_transducer_tree(multiFlex_ctx);
 for (int count_free_fst2=0;count_free_fst2<multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(multiFlex_ctx->fst2[count_free_fst2],&(multiFlex_ctx->fst2_free[count_free_fst2]));
     multiFlex_ctx->fst2[count_free_fst2]=NULL;
 }
-free_language_morpho(pL_MORPHO);
-free(multiFlex_ctx);
+free_MultiFlex_ctx(multiFlex_ctx);
 free_OptVars(vars);
 u_printf("Done.\n");
 return 0;

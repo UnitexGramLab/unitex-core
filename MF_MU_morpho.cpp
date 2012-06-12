@@ -43,14 +43,11 @@ namespace unitex {
 // e.g. {["m�moire vive",{Gen=fem,Nb=sing}],["m�moires vives",{Gen=fem,Nb=pl}]}
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
-int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-		const VersatileEncodingConfig* vec,MU_lemma_T* lemma,
-		MU_forms_T* forms,const char* pkgdir,const char* named_repositories) {
+int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,MU_lemma_T* lemma,MU_forms_T* forms) {
 	int err;
 
 	//Explore the inflection tranducer and produce the inflected forms
-	err = MU_graph_explore_graph(p_multiFlex_ctx,pL_MORPHO,vec,lemma,forms,pkgdir,
-			named_repositories);
+	err = MU_graph_explore_graph(p_multiFlex_ctx,lemma,forms);
 	if (err)
 		return 1;
 	else

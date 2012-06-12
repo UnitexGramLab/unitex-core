@@ -448,9 +448,9 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o 
 					 Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o\
 					 Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o Fst2.o\
                      Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o\
-                     Ustring.o MF_InflectTransd.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
+                     Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o\
-                     MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o\
+                     MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o MF_Global.o \
                      MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o \
                      CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)\
                      $(SYSLIBLOGGER)
@@ -711,13 +711,13 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityL
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o \
                  MF_FormMorpho.o MF_LangMorpho.o\
-                 MF_InflectTransd.o MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
+                 MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
                  Fst2.o AbstractFst2Load.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o IOBuffer.o File.o DELA.o StringParsing.o List_ustring.o\
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check_lib.o\
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                  MF_Operators_Util.o UnitexGetOpt.o ProgramInvoker.o Korean.o \
-                 Arabic.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
+                 Arabic.o AbstractDelaLoad.o CompressedDic.o LoadInf.o MF_Global.o\
                  DebugMode.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 MZREPAIRULP   = MzRepairUlp
@@ -953,7 +953,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o \
                   KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
                   Locate.o LocateFst2Tags.o LocatePattern.o LocateTrace.o LocateTfst.o LocateTfst_lib.o LocateTfstMatches.o \
-                  LocateMatches.o Match.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
+                  LocateMatches.o Match.o MF_DicoMorpho.o MF_Global.o MF_DLC_inflect.o MF_FormMorpho.o MF_LangMorpho.o \
                   MF_MU_graph.o MF_MU_morpho.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
                   MorphologicalFilters.o MorphologicalLocate.o MultiFlex.o NewLineShifts.o NormalizationFst2.o \
                   Normalize.o NormalizeAsRoutine.o NorwegianCompounds.o Offsets.o OptimizedFst2.o ParsingInfo.o Pattern.o \
@@ -988,8 +988,8 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o \
                   KrMwuDic.o LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
                   Locate.o LocateFst2Tags.o LocatePattern.o LocateTrace.o LocateTfst.o LocateTfst_lib.o LocateTfstMatches.o \
-                  LocateMatches.o Match.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
-                  MF_MU_graph.o MF_MU_morpho.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
+                  LocateMatches.o Match.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_LangMorpho.o \
+                  MF_MU_graph.o MF_MU_morpho.o MF_Global.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
                   MorphologicalFilters.o MorphologicalLocate.o MultiFlex.o NewLineShifts.o NormalizationFst2.o \
                   Normalize.o NormalizeAsRoutine.o NorwegianCompounds.o Offsets.o OptimizedFst2.o ParsingInfo.o Pattern.o \
                   PatternTree.o PolyLex.o PortugueseNormalization.o ProgramInvoker.o RebuildTfst.o Reconstrucao.o \

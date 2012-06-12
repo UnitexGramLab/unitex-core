@@ -108,7 +108,6 @@ char alphabet[FILENAME_MAX]="";
 char pkgdir[FILENAME_MAX]="";
 char* named=NULL;
 int is_korean=0;
-MultiFlex_ctx* p_multiFlex_ctx;
 //Current language's alphabet
 Alphabet* alph=NULL;
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
@@ -178,10 +177,6 @@ if (vars->optind!=argc-1) {
 if (output[0]=='\0') {
    fatal_error("You must specify the output DELAF name\n");
 }
-p_multiFlex_ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
-if (p_multiFlex_ctx == NULL) {
-   fatal_alloc_error("main_MultiFlex");
-}
 int err;  //0 if a function completes with no error
 //Load morphology description
 char morphology[FILENAME_MAX];
@@ -202,7 +197,6 @@ if (alphabet[0]!='\0') {
    if (alph==NULL) {
       error("Cannot open alphabet file %s\n",alphabet);
       free_language_morpho(pL_MORPHO);
-      free(p_multiFlex_ctx);
       return 1;
    }
 }
@@ -215,14 +209,6 @@ if (err) {
 }
 d_class_equiv_T D_CLASS_EQUIV;
 d_init_class_equiv(pL_MORPHO,&D_CLASS_EQUIV);
-//Initialize the structure for inflection transducers
-strcpy(p_multiFlex_ctx->inflection_directory,config_dir);
-err=MU_graph_init_graphs(p_multiFlex_ctx);
-if (err) {
-   MU_graph_free_graphs(p_multiFlex_ctx);
-   free(p_multiFlex_ctx);
-   return 1;
-}
 
 /* Korean */
 Korean* korean=NULL;
@@ -233,12 +219,13 @@ if (is_korean) {
 	korean=new Korean(alph);
 }
 
+MultiFlex_ctx* p_multiFlex_ctx=new_MultiFlex_ctx(config_dir,morphology,&vec,korean,pkgdir,named);
+
 //DELAC inflection
 err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,&vec,
             config_files_status,&D_CLASS_EQUIV,
 		      error_check_status,korean,pkgdir,named);
 free(named);
-MU_graph_free_graphs(p_multiFlex_ctx);
 for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
     p_multiFlex_ctx->fst2[count_free_fst2] = NULL;
@@ -246,7 +233,7 @@ for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fs
 free_alphabet(alph);
 free_language_morpho(pL_MORPHO);
 free_OptVars(vars);
-free(p_multiFlex_ctx);
+free_MultiFlex_ctx(p_multiFlex_ctx);
 if (korean!=NULL) {
 	delete korean;
 }

@@ -112,9 +112,8 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
-			err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,vec,DELAS_entry->lemma, inflection_code,
-					DELAS_entry->filters, &forms, semitic, korean, pkgdir,
-					named_repositories);
+			err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,
+					DELAS_entry->filters, &forms);
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
@@ -167,8 +166,7 @@ int inflect(char* DLC, char* DLCF,
 				if (!err) {
 					//Inflect the entry
 					MU_init_forms(&MU_forms);
-					err = MU_inflect(p_multiFlex_ctx,pL_MORPHO,vec,dlc_entry->lemma,
-							&MU_forms,pkgdir,named_repositories);
+					err = MU_inflect(p_multiFlex_ctx,dlc_entry->lemma,&MU_forms);
 					if (!err) {
 						int f; //index of the current inflected form
 						//Inform the user if no form generated

@@ -43,10 +43,8 @@ namespace unitex {
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
 // Returns 0 on success, 1 otherwise.   
-int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-		const VersatileEncodingConfig* vec,
-		MU_lemma_T* lemma, MU_forms_T* forms,const char* pkgdir,
-		const char* named_repositories);
+int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
+		MU_lemma_T* lemma, MU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

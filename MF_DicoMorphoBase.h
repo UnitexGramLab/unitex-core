@@ -27,9 +27,8 @@
 #define DicoMorphoBaseH
 
 #include "Unicode.h"
-
-#include "MF_MU_morpho.h"
-
+//#include "MF_MU_morpho.h"
+#include "MF_FormMorpho.h"
 
 /**
  *

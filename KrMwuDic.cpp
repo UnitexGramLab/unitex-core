@@ -47,9 +47,6 @@ void write_grf_end_things(U_FILE* grf,int offset,int start_state_offset,int curr
                           vector_int* state_index);
 void tokenize_kr_mwu_dic_line(vector_ptr* parts,unichar* line,Ustring* foo);
 void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
-                         Korean* korean,
-                         struct l_morpho_t* morpho,
-                         const VersatileEncodingConfig* vec,
                          vector_int* state_index,int *current_state,int end_state,int *line,
                          struct string_hash* subgraphs,int *subgraph_Y);
 int tokens_to_dela_entries(vector_ptr* line_tokens,struct dela_entry** entries,int *n_entries,Ustring* foo,int line_number);
@@ -60,10 +57,7 @@ int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
 /**
  * Builds the .grf dictionary corresponding to the given Korean compound DELAS.
  */
-void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
-                           Korean* korean,struct l_morpho_t* morpho,
-                           const VersatileEncodingConfig* vec,
-                           Dictionary* d) {
+void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,Dictionary* d) {
 int line_number=0;
 struct dela_entry* entries[MAX_PARTS];
 int n_parts;
@@ -101,8 +95,7 @@ while (EOF!=readline(line,delas)) {
    if (OK) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
-      produce_mwu_entries(grf,n_parts,entries,ctx,korean,morpho,
-            vec,state_index,
+      produce_mwu_entries(grf,n_parts,entries,ctx,state_index,
             &current_state,end_state,&line_grf,subgraphs,&subgraph_Y);
    } else {
 	   n_errors++;
@@ -199,23 +192,18 @@ while ((name[i]=code[i])!='\0') {
  * Adds the given compound entries to the given grf.
  */
 void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
-                         Korean* korean,struct l_morpho_t* morpho,
-                         const VersatileEncodingConfig* vec,
                          vector_int* state_index,int *current_state,int end_state,int *line,
                          struct string_hash* subgraphs,int *subgraph_Y) {
 SU_forms_T forms;
 SU_init_forms(&forms); //Allocate the space for forms and initialize it to null values
 char inflection_code[1024];
 unichar code_gramm[1024];
-int semitic;
 /* We take the first grammatical code, and we extract from it the name
  * of the inflection transducer to use */
 get_inflection_code(entries[n_parts-1]->semantic_codes[0],
-                    inflection_code, code_gramm, &semitic);
+                    inflection_code, code_gramm, &(ctx->semitic));
 /* And we inflect the word */
-SU_inflect(ctx,morpho,vec,
-      entries[n_parts-1]->lemma,inflection_code,
-      NULL, &forms, semitic, korean, "", "");
+SU_inflect(ctx,entries[n_parts-1]->lemma,inflection_code,NULL, &forms);
 if (forms.no_forms==0) {
    /* If no form was generated, we have nothing to do */
    SU_delete_inflection(&forms);
@@ -230,7 +218,7 @@ int foo_offset=-1;
 for (int i=0;i<n_parts-1;i++) {
    /* We convert all inflected forms to Jamo, in order to speed up
     * dictionary lookup */
-   Hanguls_to_Jamos(entries[i]->inflected,inflected_jamo,korean,0);
+   Hanguls_to_Jamos(entries[i]->inflected,inflected_jamo,ctx->korean,0);
    u_fprintf(grf,"\"%S\" %d %d 1 %d \n",inflected_jamo,200+i*500,20+(*line)*50,(*current_state)+1);
    (*current_state)++;
    u_fprintf(grf,"\"<E>/%S,%S.%S",entries[i]->inflected,
@@ -263,8 +251,8 @@ for (int i = 0; i < forms.no_forms; i++,(*line)++) {
 	unichar tmp[1024];
 	/* We have to convert to Hangul the result of the inflection process that may have
 	 * produced a combination of Hangul and Jamos */
-	convert_jamo_to_hangul(forms.forms[i].form,tmp,korean);
-	Hanguls_to_Jamos(tmp,inflected_jamo,korean,0);
+	convert_jamo_to_hangul(forms.forms[i].form,tmp,ctx->korean);
+	Hanguls_to_Jamos(tmp,inflected_jamo,ctx->korean,0);
    u_fprintf(grf,"\"%S\" %d %d 1 %d \n",inflected_jamo,200+x*500,20+(*line)*50,(*current_state));
    /* We must backtrack to add the transition to this state */
    fseek(grf,foo_offset,SEEK_SET);

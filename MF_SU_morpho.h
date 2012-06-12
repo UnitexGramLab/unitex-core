@@ -29,9 +29,7 @@
 #include "Alphabet.h"
 #include "MF_FormMorpho.h"
 #include "Korean.h"
-
 #include "MF_SU_morphoBase.h"
-
 #include "MF_Global.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -48,17 +46,13 @@ namespace unitex {
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
-int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-		const VersatileEncodingConfig* vec,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
 		SU_id_T* SU_id,f_morpho_T* feat,
-		SU_forms_T* forms,int,Korean* korean,const char* pkgdir,
-		const char* named_repositories);
+		SU_forms_T* forms);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,
-		const VersatileEncodingConfig* vec,unichar* lemma,
-		char* inflection_code,unichar **filters,SU_forms_T* forms,
-		int,Korean* korean,const char* pkgdir,const char* named_repositories);
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,unichar* lemma,
+		char* inflection_code,unichar **filters,SU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

@@ -22,18 +22,12 @@
 /* Created by Agata Savary (savary@univ-tours.fr)
  */
 
-
-////////////////////////////////////////////////////////////
-// Implementation of the management of inflectional tranducers
-////////////////////////////////////////////////////////////
-// Copy of some functions from Inflect.cpp
-
 #include <stdlib.h>
 #include "MF_Global.h"
-#include "MF_InflectTransd.h"
 #include "Error.h"
 #include "File.h"
 #include "Grf2Fst2.h"
+#include "MF_Global.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -41,8 +35,6 @@
 
 namespace unitex {
 
-///////////////////////////////
-// ALL FUNCTIONS IN THIS MODULE
 int init_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx);
 void free_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx);
 struct node* new_node();
@@ -50,8 +42,57 @@ struct transition* new_transition(char c);
 void free_transition(struct transition* t);
 void free_node(struct node* n);
 struct transition* get_transition(char c,struct transition* t,struct node** n);
-int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex, const VersatileEncodingConfig*,
-		int pos,struct node* n,const char* pkgdir,const char* named_repositories);
+int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,int pos,struct node* n);
+
+
+
+MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
+								VersatileEncodingConfig* vec,Korean* korean,
+								const char* pkgdir,const char* named_repositories) {
+MultiFlex_ctx* ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
+if (ctx==NULL) {
+   fatal_alloc_error("new_MultiFlex_ctx");
+}
+strcpy(ctx->inflection_directory,inflection_dir);
+if (init_transducer_tree(ctx)) {
+   fatal_error("init_transducer_tree error\n");
+}
+ctx->pL_MORPHO=init_langage_morph();
+if (ctx->pL_MORPHO == NULL) {
+   fatal_error("init_langage_morph error\n");
+}
+ctx->vec=vec;
+if (morphologyTxt!=NULL && 0!=read_language_morpho(vec,ctx->pL_MORPHO,morphologyTxt)) {
+   error("read_language_morpho error\n");
+}
+ctx->semitic=0;
+ctx->pkgdir=NULL;
+if (pkgdir!=NULL) {
+	ctx->pkgdir=strdup(pkgdir);
+	if (ctx->pkgdir==NULL) {
+		fatal_alloc_error("new_MultiFlex_ctx");
+	}
+}
+ctx->named_repositories=NULL;
+if (named_repositories!=NULL) {
+	ctx->named_repositories=strdup(named_repositories);
+	if (ctx->named_repositories==NULL) {
+	   fatal_alloc_error("new_MultiFlex_ctx");
+	}
+}
+ctx->korean=korean;
+return ctx;
+}
+
+
+void free_MultiFlex_ctx(MultiFlex_ctx* ctx) {
+if (ctx==NULL) return;
+free_language_morpho(ctx->pL_MORPHO);
+free(ctx->pkgdir);
+free(ctx->named_repositories);
+free_transducer_tree(ctx);
+free(ctx);
+}
 
 ///////////////////////////////
 //Initiate the tree for inflection transducers' names
@@ -60,8 +101,7 @@ int init_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx) {
   p_multiFlex_ctx->n_fst2 = 0;
   p_multiFlex_ctx->root=new_node();
   if (!(p_multiFlex_ctx->root)) {
-    error("Transducer tree could not be initialized in function 'init_transducer_tree'\n");
-    return 1;
+    fatal_error("Transducer tree could not be initialized in function 'init_transducer_tree'\n");
   }
   return  0;
 }
@@ -75,10 +115,8 @@ free_node(p_multiFlex_ctx->root);
 ///////////////////////////////
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array.
-int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
-		const VersatileEncodingConfig* vec,const char* pkgdir,
-		const char* named_repositories) {
-return get_node(p_multiFlex_ctx,flex,vec,0,p_multiFlex_ctx->root,pkgdir,named_repositories);
+int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex) {
+return get_node(p_multiFlex_ctx,flex,0,p_multiFlex_ctx->root);
 }
 
 ///////////////////////////////
@@ -170,9 +208,7 @@ return (get_file_date(grf)>=get_file_date(fst2));
 ///////////////////////////////
 // Look for the path to 'flex', creating it if necessary
 // The current node is n, and pos is the position in the flex string
-int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,
-		const VersatileEncodingConfig* vec,int pos,struct node* n,
-		const char* pkgdir,const char* named_repositories) {
+int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,int pos,struct node* n) {
 if (flex[pos]=='\0') {
     // we are at the final node for flex (a leaf)
     if (n->final!=-1) {
@@ -193,9 +229,10 @@ if (flex[pos]=='\0') {
         if (must_compile_grf(grf,s)) {
            /* If there is no .fst2 file, of a one than is older than the
             * corresponding .grf, we try to compile it */
-           pseudo_main_Grf2Fst2(vec,grf,1,NULL,1,0,pkgdir,named_repositories);
+           pseudo_main_Grf2Fst2(p_multiFlex_ctx->vec,grf,1,NULL,1,0,p_multiFlex_ctx->pkgdir,
+        		   p_multiFlex_ctx->named_repositories);
         }
-        p_multiFlex_ctx->fst2[p_multiFlex_ctx->n_fst2]=load_abstract_fst2(vec,s,1,&(p_multiFlex_ctx->fst2_free[p_multiFlex_ctx->n_fst2]));
+        p_multiFlex_ctx->fst2[p_multiFlex_ctx->n_fst2]=load_abstract_fst2(p_multiFlex_ctx->vec,s,1,&(p_multiFlex_ctx->fst2_free[p_multiFlex_ctx->n_fst2]));
         n->final=p_multiFlex_ctx->n_fst2;
         return (p_multiFlex_ctx->n_fst2)++;
         }
@@ -205,7 +242,11 @@ struct transition* trans=get_transition(flex[pos],n->t,&n);
 if (trans->n==NULL) {
     trans->n=new_node();
 }
-return get_node(p_multiFlex_ctx,flex,vec,pos+1,trans->n,pkgdir,named_repositories);
+return get_node(p_multiFlex_ctx,flex,pos+1,trans->n);
 }
 
+
+
+
 } // namespace unitex
+

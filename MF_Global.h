@@ -29,6 +29,9 @@
 #include "MF_MU_morphoBase.h"
 #include "MF_UnifBase.h"
 #include "AbstractFst2Load.h"
+#include "MF_LangMorpho.h"
+#include "FileEncoding.h"
+#include "Korean.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -91,7 +94,28 @@ unichar Variables_op[22][100];
 int save_pos;
 
 unif_vars_T UNIF_VARS;
+
+struct l_morpho_t* pL_MORPHO;
+
+VersatileEncodingConfig* vec;
+
+Korean* korean;
+
+int semitic;
+
+char* pkgdir;
+
+char* named_repositories;
+
 } MultiFlex_ctx;
+
+
+MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
+								VersatileEncodingConfig* vec,Korean* koran,
+								const char* pkgdir,const char* named_repositories);
+void free_MultiFlex_ctx(MultiFlex_ctx* ctx);
+
+int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex);
 
 } // namespace unitex
 

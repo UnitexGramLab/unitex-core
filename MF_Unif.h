@@ -30,6 +30,7 @@
 #define UnifH
 
 #include <stdio.h>
+#include "MF_Global.h"
 #include "MF_Unif.h"
 #include "MF_LangMorpho.h"
 

@@ -27,7 +27,6 @@
 #include "MF_Util.h"
 #include "MF_SU_morpho.h"
 #include "MF_Unif.h"
-#include "MF_InflectTransd.h"
 #include "Error.h"
 #include "Transitions.h"
 #include "MF_Global.h"
@@ -38,76 +37,54 @@
 
 namespace unitex {
 
-int MU_graph_init_graphs(MultiFlex_ctx*);
-void MU_graph_free_graphs(MultiFlex_ctx*);
-Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
-		char* graph_name, const VersatileEncodingConfig*, const char* pkgdir,
-		const char* named_repositories);
-int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, Fst2State q,
-		MU_forms_T* forms, const char* pkgdir,const char* named_repositories);
+Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name);
+int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx, Fst2State q,MU_forms_T* forms);
 int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
-		MU_graph_label_T* l, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories);
+		MU_graph_label_T* l, Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx, unichar* label_in,
 		unichar* label_out, MU_graph_label_T* MU_label);
-int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, SU_id_T* u,
+int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,const char* named_repositories);
-int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, SU_id_T* u,
+		Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat,
-		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories);
-int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*, SU_id_T* u,
-		f_morpho_T* feat, SU_forms_T* SU_forms, const char* pkgdir,const char* named_repositories);
+		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx, SU_id_T* u,
+		f_morpho_T* feat, SU_forms_T* SU_forms);
 int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,const char* named_repositories);
+		Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,const char* named_repositories);
+		Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,const char* named_repositories);
+		Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
-		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories);
+		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,const char* named_repositories);
+		Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho,
-		f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories);
+		f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig*,
 		MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho,
-		f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories);
+		f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label_in, unichar* label_out,
+		unichar* label_in, unichar* label_out,
 		MU_graph_label_T* MU_label);
 int MU_graph_scan_label_in(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label,
+		unichar* label,
 		MU_graph_in_T* MU_label_in);
 int MU_graph_scan_label_out(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label,
+		unichar* label,
 		MU_graph_out_T* MU_label_out);
 int MU_graph_scan_graph_morpho(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label,
+		unichar* label,
 		MU_graph_morpho_T* MU_graph_morpho);
 void MU_graph_print_label(MU_graph_label_T* MU_label);
 void MU_graph_print_morpho(MU_graph_morpho_T* MU_morpho);
@@ -120,12 +97,10 @@ void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho);
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
-		MU_lemma_T* MU_l, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		MU_lemma_T* MU_l, MU_forms_T* forms) {
 	int res;
 
-	//Initialize the current muli-word unit
+	//Initialize the current multi-word unit
 	p_multiFlex_ctx->MU_lemma = MU_l;
 
 	//Initialize the structure for graph unification variables
@@ -133,44 +108,24 @@ int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,
 
 	//Get the initial state of the inflection tranducer
 	Fst2State initial;
-	initial = MU_graph_get_initial(p_multiFlex_ctx,
-			p_multiFlex_ctx->MU_lemma->paradigm, vec, pkgdir,named_repositories);
+	initial = MU_graph_get_initial(p_multiFlex_ctx,p_multiFlex_ctx->MU_lemma->paradigm);
 
 	if (!initial)
 		return 1;
 
 	//Explore the inflection transducer starting from its initial state
-	res = MU_graph_explore_state(p_multiFlex_ctx, pL_MORPHO, vec, initial,
-			forms, pkgdir,named_repositories);
+	res = MU_graph_explore_state(p_multiFlex_ctx,initial,forms);
 
 	unif_free_vars(p_multiFlex_ctx);
 	return res;
 }
 
 /////////////////////////////////////////////////
-// Initializes the structure for inflection graphs
-// Returns 1 on success, 1 otherwise.
-int MU_graph_init_graphs(MultiFlex_ctx* p_multiFlex_ctx) {
-	if (init_transducer_tree(p_multiFlex_ctx))
-		return 1;
-	return 0;
-}
-
-/////////////////////////////////////////////////
-// Liberates the memory allocated for the structure for inflection graphs' names
-void MU_graph_free_graphs(MultiFlex_ctx* p_multiFlex_ctx) {
-	free_transducer_tree(p_multiFlex_ctx);
-}
-
-/////////////////////////////////////////////////
 // In the graph not yet loaded loads it otherwise searches for it in the structure.
 // On success returns the graph's initial state, otherwise returns NULL.
-Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
-		char* graph_name, const VersatileEncodingConfig* vec, const char* pkgdir,
-		const char* named_repositories) {
+Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name) {
 	//Get the index of the tranducer in the transducer table
-	p_multiFlex_ctx->T = get_transducer(p_multiFlex_ctx, graph_name, vec,
-			pkgdir,named_repositories);
+	p_multiFlex_ctx->T = get_transducer(p_multiFlex_ctx, graph_name);
 	if (p_multiFlex_ctx->fst2[p_multiFlex_ctx->T] == NULL) {
 		// if the automaton has not been loaded
 		return NULL;
@@ -189,9 +144,7 @@ Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms' (which is not identical to ((epsilon,empty_set))).
 // Initially, 'forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
-		Fst2State q, MU_forms_T* forms, const char* pkgdir,const char* named_repositories) {
+int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,Fst2State q, MU_forms_T* forms) {
 	int err;
 	MU_graph_label_T* lab;
 	Fst2State q_bis;
@@ -214,7 +167,7 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 				= p_multiFlex_ctx->fst2[p_multiFlex_ctx->T]->states[t->state_number]; //get the arrival state
 		Fst2Tag e =
 				p_multiFlex_ctx->fst2[p_multiFlex_ctx->T]->tags[t->tag_number]; //get the transition's label
-		err = MU_graph_scan_label(p_multiFlex_ctx, pL_MORPHO, e->input,
+		err = MU_graph_scan_label(p_multiFlex_ctx, e->input,
 				e->output, lab); //transform the label into a MU_graph_label
 		if (err) {
 			MU_graph_free_label(lab);
@@ -223,8 +176,7 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 		}
 		//Initialize the set of inflected forms
 		MU_init_forms(&forms_bis);
-		err = MU_graph_explore_label(p_multiFlex_ctx, pL_MORPHO, vec, lab,
-				q_bis, &forms_bis, pkgdir,named_repositories);
+		err = MU_graph_explore_label(p_multiFlex_ctx, lab, q_bis, &forms_bis);
 		if (err) {
 			MU_graph_free_label(lab);
 			free(lab);
@@ -257,9 +209,7 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, '*forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
-		MU_graph_label_T* l, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories) {
+		MU_graph_label_T* l, Fst2State q_bis, MU_forms_T* forms) {
 	int err;
 	//If the current unit is a reference to a lemma's unit (e.g. <$2>)
 	if (l->in && l->in->unit.type != cst) {
@@ -268,8 +218,8 @@ int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
 		u_no = l->in->unit.u.num - 1;
 		u = p_multiFlex_ctx->MU_lemma->units[u_no]; //Get the referenced lemma's unit
 		//explore the current unit according to its morphology, then the label's output and the rest of the automaton
-		err = MU_graph_explore_label_in_var(p_multiFlex_ctx, pL_MORPHO, vec, u,
-				l->in->morpho, l->out, q_bis, forms, pkgdir,named_repositories);
+		err = MU_graph_explore_label_in_var(p_multiFlex_ctx, u,
+				l->in->morpho, l->out, q_bis, forms);
 		if (err)
 			return err;
 	}
@@ -295,9 +245,8 @@ int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
 		//Get the suffixes of the MWU forms
 		MU_forms_T suffix_forms;
 		MU_init_forms(&suffix_forms);
-		err = MU_graph_explore_label_out(p_multiFlex_ctx, pL_MORPHO, vec,
-				l->out, q_bis, &suffix_forms, pkgdir,
-				named_repositories); //Explore the rest of the automaton
+		err = MU_graph_explore_label_out(p_multiFlex_ctx,
+				l->out, q_bis, &suffix_forms); //Explore the rest of the automaton
 		if (err) {
 			SU_delete_inflection(&SU_forms);
 			MU_delete_inflection(&suffix_forms);
@@ -337,17 +286,14 @@ int MU_graph_explore_label(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec, SU_id_T* u,
+int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err;
 	f_morpho_T feat; //A set of the already treated morphological features contained in the label's input
 	feat.no_cats = 0;
-	err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, pL_MORPHO, vec, u,
-			l_in_morpho, 0, &feat, l_out_morpho, q_bis, forms, pkgdir,
-			named_repositories);
+	err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, u,
+			l_in_morpho, 0, &feat, l_out_morpho, q_bis, forms);
 	return err;
 }
 
@@ -365,11 +311,9 @@ int MU_graph_explore_label_in_var(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec, SU_id_T* u,
+int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx, SU_id_T* u,
 		MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat,
-		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories) {
+		MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
 	int err = 0;
 
 	/////////////////////////////////////////////////////////////////
@@ -380,18 +324,18 @@ int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
 		switch (c->type) {
 		case cnst: //e.g. Nb=pl
 			err = MU_graph_explore_label_in_morph_const(p_multiFlex_ctx,
-					pL_MORPHO, vec, c, u, l_in_morpho, i_morpho + 1, feat,
-					l_out_morpho, q_bis, forms, pkgdir,named_repositories);
+					c, u, l_in_morpho, i_morpho + 1, feat,
+					l_out_morpho, q_bis, forms);
 			break;
 		case inherit_var: //e.g. Gen==$g
 			err = MU_graph_explore_label_in_morph_inher(p_multiFlex_ctx,
-					pL_MORPHO, vec, c, u, l_in_morpho, i_morpho + 1, feat,
-					l_out_morpho, q_bis, forms, pkgdir,named_repositories);
+					c, u, l_in_morpho, i_morpho + 1, feat,
+					l_out_morpho, q_bis, forms);
 			break;
 		case unif_var: //e.g. Case=$c1
 			err = MU_graph_explore_label_in_morph_unif(p_multiFlex_ctx,
-					pL_MORPHO, vec, c, u, l_in_morpho, i_morpho + 1, feat,
-					l_out_morpho, q_bis, forms, pkgdir,named_repositories);
+					c, u, l_in_morpho, i_morpho + 1, feat,
+					l_out_morpho, q_bis, forms);
 			break;
 		}
 		if (err)
@@ -414,8 +358,7 @@ int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
 		//If all morphological category-value equations in the input label treated
 		else {
 			//Inflect the unit concerned according to desired features
-			err = MU_graph_get_unit_forms(p_multiFlex_ctx, pL_MORPHO, vec, u,
-					feat, &SU_forms, pkgdir,named_repositories);
+			err = MU_graph_get_unit_forms(p_multiFlex_ctx, u,feat, &SU_forms);
 			if (err) {
 				SU_delete_inflection(&SU_forms);
 				return err;
@@ -426,8 +369,8 @@ int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
 		//Get the suffixes of the MWU forms
 		MU_forms_T suffix_forms;
 		MU_init_forms(&suffix_forms);
-		err = MU_graph_explore_label_out(p_multiFlex_ctx, pL_MORPHO, vec,
-				l_out_morpho, q_bis, &suffix_forms, pkgdir,named_repositories); //Explore the rest of the automaton
+		err = MU_graph_explore_label_out(p_multiFlex_ctx,
+				l_out_morpho, q_bis, &suffix_forms); //Explore the rest of the automaton
 		if (err) {
 			SU_delete_inflection(&SU_forms);
 			MU_delete_inflection(&suffix_forms);
@@ -453,10 +396,8 @@ int MU_graph_explore_label_in_var_rec(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'SU_forms'.
 // Initially, 'SU_forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec, SU_id_T* u,
-		f_morpho_T* feat, SU_forms_T* SU_forms, const char* pkgdir,
-		const char* named_repositories) {
+int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx, SU_id_T* u,
+		f_morpho_T* feat, SU_forms_T* SU_forms) {
 	int err;
 	f_morpho_T old_feat; //Features that the current unit has in the lemma of the MWU
 
@@ -467,13 +408,12 @@ int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
 		return err;
 
 	//Change the features to adapt them to the desired features, e.g. if 'feat'=<Nb=pl> then old_feat<-<Nb=pl; Gen=fem>
-	err = f_change_morpho(pL_MORPHO, &old_feat, feat);
+	err = f_change_morpho(p_multiFlex_ctx->pL_MORPHO, &old_feat, feat);
 	if (err)
 		return err;
 
 	//Generate the desired inflected forms of the single unit
-	err = SU_inflect(p_multiFlex_ctx, pL_MORPHO, vec, u, &old_feat, SU_forms,
-			0, NULL, pkgdir,named_repositories);
+	err = SU_inflect(p_multiFlex_ctx, u, &old_feat, SU_forms);
 	return err;
 }
 
@@ -493,11 +433,9 @@ int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err;
 
 	//Add the current label's category-value pair to the features of the single unit to be generated
@@ -508,9 +446,8 @@ int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 	}
 
 	//Explore recursively the rest of the label
-	return MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, pL_MORPHO, vec,
-			u, l_in_morpho, i_morpho, feat, l_out_morpho, q_bis, forms, pkgdir,
-			named_repositories);
+	return MU_graph_explore_label_in_var_rec(p_multiFlex_ctx,
+			u, l_in_morpho, i_morpho, feat, l_out_morpho, q_bis, forms);
 }
 
 ////////////////////////////////////////////
@@ -529,11 +466,9 @@ int MU_graph_explore_label_in_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err;
 	int new_instant = 0; //Controls if an instantiation occured in the current instance of the function
 
@@ -546,7 +481,7 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
 
 	//Get the value of the current category (determined by 'c') of the unit as it appears in the lemma of the MWU
 	int val; //Value of the current category (index that this value has in the domain os the category)
-	val = f_get_value(pL_MORPHO, &old_feat, c->cat); //e.g. val: fem
+	val = f_get_value(p_multiFlex_ctx->pL_MORPHO, &old_feat, c->cat); //e.g. val: fem
 
 	if (val == -1)
 		return -1;
@@ -574,9 +509,8 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
 		return err;
 
 	//Explore recursively the rest of the label
-	err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, pL_MORPHO, vec, u,
-			l_in_morpho, i_morpho, feat, l_out_morpho, q_bis, forms, pkgdir,
-			named_repositories);
+	err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, u,
+			l_in_morpho, i_morpho, feat, l_out_morpho, q_bis, forms);
 	if (err)
 		return err;
 
@@ -604,11 +538,9 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho,
 		int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err; //Result of a function called
 
 	unichar* var; //Unification variable's identifier
@@ -636,9 +568,8 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 		}
 
 		//Return MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
-		err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, pL_MORPHO,
-				vec, u, l_in_morpho, i_morpho, feat, l_out_morpho, q_bis,
-				forms, pkgdir,named_repositories);
+		err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx,
+				u, l_in_morpho, i_morpho, feat, l_out_morpho, q_bis,forms);
 		if (err == -1) {
 			MU_delete_inflection(forms);
 			return 1;
@@ -664,10 +595,8 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 
 			//Explore the rest of the label and the rest of the automaton
 			MU_init_forms(&suffix_forms);
-			err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, pL_MORPHO,
-					vec, u, l_in_morpho,
-					i_morpho, feat, l_out_morpho, q_bis, &suffix_forms, pkgdir,
-					named_repositories);
+			err = MU_graph_explore_label_in_var_rec(p_multiFlex_ctx, u, l_in_morpho,
+					i_morpho, feat, l_out_morpho, q_bis, &suffix_forms);
 			if (err) {
 				//Delete the intermediate simple et compound forms
 				MU_delete_inflection(&suffix_forms);
@@ -706,15 +635,14 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 // Initially, '*forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_morpho_T* l_out_morpho,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err;
 	f_morpho_T feat; //A set of the already treated morphological features contained in the label's input
 	f_init_morpho(&feat);
 	//feat.no_cats = 0;
-	err = MU_graph_explore_label_out_rec(p_multiFlex_ctx, pL_MORPHO,
-			vec,l_out_morpho, 0, &feat, q_bis, forms, pkgdir,named_repositories);
+	err = MU_graph_explore_label_out_rec(p_multiFlex_ctx,
+			l_out_morpho, 0, &feat, q_bis, forms);
 	return (err);
 }
 
@@ -730,17 +658,14 @@ int MU_graph_explore_label_out(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_morpho_T* l_out_morpho,
-		int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms,
-		const char* pkgdir,const char* named_repositories) {
+		int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
 	int err = 0;
 
 	//If no morphology in the output label, then go to the next state
 	if (!l_out_morpho) {
 		//Explore the arrival state
-		err = MU_graph_explore_state(p_multiFlex_ctx, pL_MORPHO,
-				vec, q_bis, forms, pkgdir,named_repositories);
+		err = MU_graph_explore_state(p_multiFlex_ctx,q_bis, forms);
 		if (err)
 			return err;
 	} else //Label's input not empty
@@ -749,8 +674,7 @@ int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
 	if (i_morpho == l_out_morpho->no_cats) {
 
 		//Explore the arrival state
-		err = MU_graph_explore_state(p_multiFlex_ctx, pL_MORPHO,vec, q_bis, forms,
-				pkgdir,named_repositories);
+		err = MU_graph_explore_state(p_multiFlex_ctx, q_bis, forms);
 		if (err)
 			return err;
 
@@ -776,13 +700,11 @@ int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
 		switch (c->type) {
 		case cnst: //e.g. Nb=pl
 			err = MU_graph_explore_label_out_morph_const(p_multiFlex_ctx,
-					pL_MORPHO, vec, c, l_out_morpho,
-					i_morpho + 1, feat, q_bis, forms, pkgdir,named_repositories);
+					c, l_out_morpho,i_morpho + 1, feat, q_bis, forms);
 			break;
 		case unif_var: //e.g. Case=$c1
 			err = MU_graph_explore_label_out_morph_unif(p_multiFlex_ctx,
-					pL_MORPHO, vec, c, l_out_morpho,
-					i_morpho + 1, feat, q_bis, forms, pkgdir,named_repositories);
+					c, l_out_morpho,i_morpho + 1, feat, q_bis, forms);
 			break;
 		default:
 			;
@@ -806,11 +728,9 @@ int MU_graph_explore_label_out_rec(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c,
 		MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err;
 	//Add the current label's category-value pair to the features of the single unit to be generated
 	err = f_add_morpho(feat, c->cat, c->val.value);
@@ -819,8 +739,8 @@ int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 		return 1;
 	}
 	//Explore recursively the rest of the label
-	return MU_graph_explore_label_out_rec(p_multiFlex_ctx, pL_MORPHO,
-			vec,l_out_morpho, i_morpho, feat, q_bis, forms, pkgdir,named_repositories);
+	return MU_graph_explore_label_out_rec(p_multiFlex_ctx,
+			l_out_morpho, i_morpho, feat, q_bis, forms);
 }
 
 ////////////////////////////////////////////
@@ -836,11 +756,9 @@ int MU_graph_explore_label_out_morph_const(MultiFlex_ctx* p_multiFlex_ctx,
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, const VersatileEncodingConfig* vec,
 		MU_graph_category_T* c,
 		MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat,
-		Fst2State q_bis, MU_forms_T* forms, const char* pkgdir,
-		const char* named_repositories) {
+		Fst2State q_bis, MU_forms_T* forms) {
 	int err; //Result of a function called
 
 	unichar* var; //Unification variable's identifier
@@ -860,8 +778,8 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 			MU_delete_inflection(forms);
 			return 1;
 		}
-		err = MU_graph_explore_label_out_rec(p_multiFlex_ctx, pL_MORPHO,
-				vec,l_out_morpho, i_morpho, feat, q_bis, forms, pkgdir,named_repositories);
+		err = MU_graph_explore_label_out_rec(p_multiFlex_ctx,
+				l_out_morpho, i_morpho, feat, q_bis, forms);
 
 		//Delete the current category-value pair
 		f_del_one_morpho(feat, c->cat);
@@ -889,9 +807,8 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 
 			//Explore the rest of the label and the rest of the automaton
 			MU_init_forms(&suffix_forms);
-			err = MU_graph_explore_label_out_rec(p_multiFlex_ctx, pL_MORPHO,
-					vec, l_out_morpho, i_morpho, feat, q_bis, &suffix_forms, pkgdir,
-					named_repositories);
+			err = MU_graph_explore_label_out_rec(p_multiFlex_ctx,
+					l_out_morpho, i_morpho, feat, q_bis, &suffix_forms);
 			if (err) {
 				MU_delete_inflection(&suffix_forms);
 				return err;
@@ -914,7 +831,7 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 // We suppose that MU_label already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label_in, unichar* label_out,
+		unichar* label_in, unichar* label_out,
 		MU_graph_label_T* MU_label) {
 	int err1, err2;
 	err1 = err2 = 0;
@@ -932,7 +849,7 @@ int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,
 		if (MU_label->in == NULL) {
 			fatal_alloc_error("MU_graph_scan_label");
 		}
-		err1 = MU_graph_scan_label_in(p_multiFlex_ctx, pL_MORPHO, label_in,
+		err1 = MU_graph_scan_label_in(p_multiFlex_ctx, label_in,
 				MU_label->in);
 	}
 	//Output label
@@ -949,7 +866,7 @@ int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,
 		if (MU_label->out == NULL) {
 			fatal_alloc_error("MU_graph_scan_label");
 		}
-		err2 = MU_graph_scan_label_out(p_multiFlex_ctx, pL_MORPHO, label_out,
+		err2 = MU_graph_scan_label_out(p_multiFlex_ctx,label_out,
 				MU_label->out);
 	}
 	return (err1 || err2);
@@ -960,7 +877,7 @@ int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,
 // We suppose that MU_label_in already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label_in(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label,
+		unichar* label,
 		MU_graph_in_T* MU_label_in) {
 	int l; //length of a scanned sequence
 	unichar* pos; //current position in label
@@ -1026,7 +943,7 @@ int MU_graph_scan_label_in(MultiFlex_ctx* p_multiFlex_ctx,
 			}
 			unichar tmp1[MAX_GRAPH_NODE];
 			l = u_scan_until_char(tmp1, pos, MAX_GRAPH_NODE - 1, ">", 1);
-			err = MU_graph_scan_graph_morpho(p_multiFlex_ctx, pL_MORPHO, tmp1,
+			err = MU_graph_scan_graph_morpho(p_multiFlex_ctx,tmp1,
 					MU_label_in->morpho);
 			pos = pos + l;
 		} else
@@ -1060,7 +977,7 @@ int MU_graph_scan_label_in(MultiFlex_ctx* p_multiFlex_ctx,
 // We suppose that MU_label_out already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label_out(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label,
+		unichar* label,
 		MU_graph_out_T* MU_label_out) {
 	int cv; //number of the current category-value pair
 	int err;
@@ -1080,7 +997,7 @@ int MU_graph_scan_label_out(MultiFlex_ctx* p_multiFlex_ctx,
 	pos++;
 	unichar tmp[MAX_GRAPH_NODE];
 	l = u_scan_until_char(tmp, pos, MAX_GRAPH_NODE - 1, ">", 1);
-	err = MU_graph_scan_graph_morpho(p_multiFlex_ctx, pL_MORPHO, tmp,
+	err = MU_graph_scan_graph_morpho(p_multiFlex_ctx,tmp,
 			MU_label_out);
 	pos = pos + l;
 	if (!err)
@@ -1108,7 +1025,7 @@ int MU_graph_scan_label_out(MultiFlex_ctx* p_multiFlex_ctx,
 // We suppose that MU_graph_morpho already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_graph_morpho(MultiFlex_ctx* p_multiFlex_ctx,
-		struct l_morpho_t* pL_MORPHO, unichar* label,
+		unichar* label,
 		MU_graph_morpho_T* MU_graph_morpho) {
 	int l; //length of a scanned sequence
 	unichar* pos; //current position in label
@@ -1132,7 +1049,7 @@ int MU_graph_scan_graph_morpho(MultiFlex_ctx* p_multiFlex_ctx,
 
 		//Category, e.g. Nb
 		l = u_scan_until_char(tmp, pos, MAX_GRAPH_NODE - 1, " \t=", 1);
-		cat = is_valid_cat(pL_MORPHO, tmp);
+		cat = is_valid_cat(p_multiFlex_ctx->pL_MORPHO, tmp);
 		if (!cat) {
 			error("In graph %s label format incorrect in %S",
 					p_multiFlex_ctx->MU_lemma->paradigm, label);
