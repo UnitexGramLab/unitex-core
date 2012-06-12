@@ -111,6 +111,8 @@ d_class_equiv_T D_CLASS_EQUIV;
 
 int config_files_status;
 
+unichar** filters;
+
 } MultiFlex_ctx;
 
 

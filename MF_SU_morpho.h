@@ -51,8 +51,9 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
 		SU_forms_T* forms);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,unichar* lemma,
-		char* inflection_code,unichar **filters,SU_forms_T* forms);
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
+		unichar* lemma,
+		char* inflection_code,SU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

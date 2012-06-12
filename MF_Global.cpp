@@ -96,6 +96,7 @@ ctx->korean=korean;
 if (ctx->config_files_status!=CONFIG_FILES_ERROR) {
 	d_init_class_equiv(ctx->pL_MORPHO,&(ctx->D_CLASS_EQUIV));
 }
+ctx->filters=NULL;
 return ctx;
 }
 

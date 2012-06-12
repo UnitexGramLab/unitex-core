@@ -109,8 +109,9 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
-			err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,
-					DELAS_entry->filters, &forms);
+			p_multiFlex_ctx->filters=DELAS_entry->filters;
+			err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,&forms);
+			p_multiFlex_ctx->filters=NULL;
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))

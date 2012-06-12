@@ -203,7 +203,7 @@ unichar code_gramm[1024];
 get_inflection_code(entries[n_parts-1]->semantic_codes[0],
                     inflection_code, code_gramm, &(ctx->semitic));
 /* And we inflect the word */
-SU_inflect(ctx,entries[n_parts-1]->lemma,inflection_code,NULL, &forms);
+SU_inflect(ctx,entries[n_parts-1]->lemma,inflection_code,&forms);
 if (forms.no_forms==0) {
    /* If no form was generated, we have nothing to do */
    SU_delete_inflection(&forms);

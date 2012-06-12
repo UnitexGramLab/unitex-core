@@ -26,7 +26,6 @@
 #include "MF_LangMorpho.h"
 #include "MF_FormMorpho.h"
 #include "MF_SU_morpho.h"
-#include "MF_InflectTransd.h"
 #include "MF_DicoMorpho.h"
 #include "MF_Util.h"
 #include "Error.h"
@@ -72,18 +71,18 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 		unichar* flechi, int pos_inflected,
 		unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
-		SU_forms_T* forms, int, unichar* var_name, unsigned int, unichar **,
+		SU_forms_T* forms, int, unichar* var_name, unsigned int,
 		unichar *);
 int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,
 		unichar* flechi, int pos_inflected, unichar* canonique,
 		unichar* sortie, Fst2* a, int etat_courant, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, int, unichar* var_name,
-		unsigned int, unichar **, unichar *);
+		unsigned int,unichar *);
 int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,Transition* T,
 		unichar* flechi, int pos_inflected, unichar* canonique,
 		unichar* sortie, Fst2* a, struct inflect_infos** LISTE,
 		f_morpho_T* desired_features, SU_forms_T* forms, int, unichar* var_name,
-		unsigned int, unichar **, unichar*);
+		unsigned int, unichar*);
 void shift_stack(unichar* stack, int pos, int shift);
 void shift_stack(unichar* stack, int pos);
 void shift_stack_left(unichar* stack, int pos);
@@ -147,7 +146,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
 			u_strlen(inflected),
 			SU_id->lemma->unit, inflection_codes,
 			p_multiFlex_ctx->fst2[T], 0, desired_features, forms, 0, var_name,
-			0, NULL, local_sem_code);
+			0, local_sem_code);
 	return err;
 }
 
@@ -159,7 +158,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
  * The output DELAF lines will have to be built from 'forms'.
  */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
-               unichar* lemma, char* inflection_code, unichar** filters,
+               unichar* lemma, char* inflection_code,
                SU_forms_T* forms) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
@@ -177,8 +176,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
     unichar var_name[100];
 	err = SU_explore_state(p_multiFlex_ctx,inflected, u_strlen(inflected),
 			lemma, inflection_codes, p_multiFlex_ctx->fst2[T], 0,
-			NULL, forms, 0, var_name, 0, filters,
-			local_semantic_code);
+			NULL, forms, 0, var_name, 0, local_semantic_code);
 	return err;
 }
 
@@ -242,7 +240,7 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 		unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, int flag_var, unichar* var_name,
-		unsigned int var_in_use, unichar **filters,
+		unsigned int var_in_use,
 		unichar *local_semantic_codes) {
 	int err;
 	Fst2State e = a->states[etat_courant];
@@ -277,10 +275,10 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 			free(feat);
 		} else {
 			/* If we want all the inflected forms */
-			if (filters != NULL && filters[0] != NULL) {
-				filtrer(sortie, filters);
+			if (p_multiFlex_ctx->filters != NULL && p_multiFlex_ctx->filters[0] != NULL) {
+				filtrer(sortie, p_multiFlex_ctx->filters);
 			}
-			if (sortie[0] == '\0' && filters == NULL ) {
+			if (sortie[0] == '\0' && p_multiFlex_ctx->filters == NULL ) {
 				/* If we have an empty output, for instance in the case of an ADV grammar */
 				//Put the form into 'forms'
 				forms->forms = (SU_f_T*) realloc(forms->forms,
@@ -328,7 +326,7 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,t, flechi,
 				pos_inflected, canonique, sortie, a, NULL,
 				desired_features, forms, flag_var, var_name, var_in_use,
-				filters, local_semantic_codes);
+				local_semantic_codes);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
@@ -386,7 +384,7 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,
 		unichar* inflected, int pos_inflected, unichar* lemma,
 		unichar* output, Fst2* a, int current_state, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms,
-		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
+		int flag_var, unichar* var_name, unsigned int var_in_use,
 		unichar *local_semantic_codes) {
 	Fst2State e = a->states[current_state];
 	if (e->control & 1) {
@@ -398,8 +396,8 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,
 
 		res->local_semantic_code = u_strdup(local_semantic_codes);
 
-		if (filters != NULL && filters[1] != NULL)
-			filtrer(output, filters);
+		if (p_multiFlex_ctx->filters != NULL && p_multiFlex_ctx->filters[1] != NULL)
+			filtrer(output, p_multiFlex_ctx->filters);
 		res->output = u_strdup(output);
 		res->next = (*L);
 		(*L) = res;
@@ -418,7 +416,7 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,t, inflected,
 				pos_inflected, lemma, output, a, L,
 				desired_features, forms, flag_var, var_name, var_in_use,
-				filters, local_semantic_codes);
+				local_semantic_codes);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
@@ -426,7 +424,7 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,
 		SU_explore_tag(p_multiFlex_ctx,default_trans, inflected,
 				pos_inflected, lemma, output, a, L,
 				desired_features, forms, flag_var, var_name, var_in_use,
-				filters, local_semantic_codes);
+				local_semantic_codes);
 	}
 
 	//if ((retour_all_tags+retour_tag)) return 0; else return 1;
@@ -452,7 +450,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,Transition* T,
 		unichar* inflected, int pos_inflected, unichar* lemma,
 		unichar* output, Fst2* a, struct inflect_infos** LIST,
 		f_morpho_T* desired_features, SU_forms_T* forms,
-		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
+		int flag_var, unichar* var_name, unsigned int var_in_use,
 		unichar *local_semantic_codes) {
 int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 	if (T->tag_number < 0) {
@@ -464,7 +462,7 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 		SU_explore_state_recursion(p_multiFlex_ctx,inflected,
 				pos_inflected, lemma, output, a,
 				a->initial_states[-(T->tag_number)], &L, desired_features,
-				forms, flag_var, var_name, var_in_use, filters,
+				forms, flag_var, var_name, var_in_use,
 				local_semantic_codes);
 		while (L != NULL) {
 			if (LIST == NULL) {//error("Explore state 1\n");
@@ -472,14 +470,14 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 						L->pos_inflected,
 						lemma, L->output,
 						a, T->state_number, desired_features, forms,
-						flag_var, var_name, var_in_use, filters,
+						flag_var, var_name, var_in_use,
 						L->local_semantic_code);
 				retour_all_states += (retour_state + 1);
 			} else {//error("Explore state recursion 1\n");
 				retour_state = SU_explore_state_recursion(p_multiFlex_ctx,
 						L->inflected, L->pos_inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
-						forms, flag_var, var_name, var_in_use, filters,
+						forms, flag_var, var_name, var_in_use,
 						L->local_semantic_code);
 				retour_all_states += (1 - retour_state);
 			}
@@ -808,13 +806,13 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 			retour_state = SU_explore_state(p_multiFlex_ctx,p_SU_buf->stack,
 					pos_inflected, lemma, p_SU_buf->out, a,
 					T->state_number, desired_features, forms,
-					flag_var, var_name, var_in_use, filters,
+					flag_var, var_name, var_in_use,
 					local_semantic_codes);
 		} else {//error("Explore state recursion 2\n");
 			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,p_SU_buf->stack,
 					pos_inflected, lemma, p_SU_buf->out, a,
 					T->state_number, LIST, desired_features, forms,
-					flag_var, var_name, var_in_use, filters,
+					flag_var, var_name, var_in_use,
 					local_semantic_codes);
 		}
 	}
