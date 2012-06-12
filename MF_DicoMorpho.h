@@ -27,7 +27,6 @@
 #define DicoMorphoH
 
 #include "Unicode.h"
-//#include "MF_LangMorpho.h" //add
 #include "MF_MU_morpho.h"
 
 

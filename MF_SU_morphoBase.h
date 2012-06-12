@@ -26,9 +26,7 @@
 #define SU_morphoBaseH
 
 #include "Unicode.h"
-#include "Alphabet.h"
 #include "MF_FormMorpho.h"
-#include "Korean.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1

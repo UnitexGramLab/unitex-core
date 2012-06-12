@@ -104,7 +104,7 @@ int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,
 	p_multiFlex_ctx->MU_lemma = MU_l;
 
 	//Initialize the structure for graph unification variables
-	unif_init_vars(p_multiFlex_ctx);
+	unif_init_vars(&(p_multiFlex_ctx->UNIF_VARS));
 
 	//Get the initial state of the inflection tranducer
 	Fst2State initial;
@@ -116,7 +116,7 @@ int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,
 	//Explore the inflection transducer starting from its initial state
 	res = MU_graph_explore_state(p_multiFlex_ctx,initial,forms);
 
-	unif_free_vars(p_multiFlex_ctx);
+	unif_free_vars(&(p_multiFlex_ctx->UNIF_VARS));
 	return res;
 }
 
@@ -489,15 +489,15 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
 	//Instantiate the variable if necessary
 	unichar* var;
 	var = c->val.inherit_var; //get the identifier of the variable, e.g. g1
-	if (unif_instantiated(p_multiFlex_ctx, var)) {
+	if (unif_instantiated(&(p_multiFlex_ctx->UNIF_VARS), var)) {
 		//If the same variable already instantiated to a DIFFERENT value then cut off the exploration path
 		//The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
-		if ((unif_get_cat(p_multiFlex_ctx, var) != c->cat)
-				|| (unif_get_val_index(p_multiFlex_ctx, var) != val))
+		if ((unif_get_cat(&(p_multiFlex_ctx->UNIF_VARS), var) != c->cat)
+				|| (unif_get_val_index(&(p_multiFlex_ctx->UNIF_VARS), var) != val))
 			return 0;
 		//If variable already instantiated to the same value, no further instantiation needed
 	} else { //Variable not yet instantiated
-		err = unif_instantiate_index(p_multiFlex_ctx, var, c->cat, val);
+		err = unif_instantiate_index(&(p_multiFlex_ctx->UNIF_VARS), var, c->cat, val);
 		if (err)
 			return err;
 		new_instant = 1;
@@ -516,7 +516,7 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,
 
 	//Desinstantiate the variable only if it has been instantiated by the current category-value pair 'c'
 	if (new_instant)
-		unif_desinstantiate(p_multiFlex_ctx, var);
+		unif_desinstantiate(&(p_multiFlex_ctx->UNIF_VARS), var);
 
 	err = f_del_one_morpho(feat, c->cat);
 	return err;
@@ -552,15 +552,15 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 	//  if (err)
 	//    return err;
 
-	if (unif_instantiated(p_multiFlex_ctx, var)) {
+	if (unif_instantiated(&(p_multiFlex_ctx->UNIF_VARS), var)) {
 		//If the same variable already instantiated for a DIFFERENT category then cut off the exploration path
 		//The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
-		if (unif_get_cat(p_multiFlex_ctx, var) != c->cat)
+		if (unif_get_cat(&(p_multiFlex_ctx->UNIF_VARS), var) != c->cat)
 			return 0;
 
 		//If the same variable already instantiated for the same category, only this instantiation is taken into account
 		//Add the instantiated category-value pair to the features of the single unit to be generated
-		err = f_add_morpho(feat, c->cat, unif_get_val_index(p_multiFlex_ctx,
+		err = f_add_morpho(feat, c->cat, unif_get_val_index(&(p_multiFlex_ctx->UNIF_VARS),
 				var));
 		if (err == -1) {
 			MU_delete_inflection(forms);
@@ -584,7 +584,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 		for (val = 0; val < c->cat->no_values; val++) {
 
 			//Instantiated to the current value
-			unif_instantiate_index(p_multiFlex_ctx, var, c->cat, val);
+			unif_instantiate_index(&(p_multiFlex_ctx->UNIF_VARS), var, c->cat, val);
 
 			//Add the the instantiated category-value pair to the features of the single unit to be generated
 			err = f_add_morpho(feat, c->cat, val);
@@ -616,7 +616,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 			}
 
 			//Delete the current instantiation
-			unif_desinstantiate(p_multiFlex_ctx, var);
+			unif_desinstantiate(&(p_multiFlex_ctx->UNIF_VARS), var);
 
 			//Delete the intermediate simple et compound forms
 			MU_delete_inflection(&suffix_forms);
@@ -764,15 +764,15 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 	unichar* var; //Unification variable's identifier
 	var = c->val.unif_var;
 
-	if (unif_instantiated(p_multiFlex_ctx, var)) {
+	if (unif_instantiated(&(p_multiFlex_ctx->UNIF_VARS), var)) {
 		//If the same variable already instantiated for a DIFFERENT category then cut off the exploration path
 		//The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
-		if (unif_get_cat(p_multiFlex_ctx, var) != c->cat)
+		if (unif_get_cat(&(p_multiFlex_ctx->UNIF_VARS), var) != c->cat)
 			return 0;
 
 		//If the same variable already instantiated for the same category, only this instantiation is taken into account
 		//Add the the instantiated category-value pair to the features of the single unit to be generated
-		err = f_add_morpho(feat, c->cat, unif_get_val_index(p_multiFlex_ctx,
+		err = f_add_morpho(feat, c->cat, unif_get_val_index(&(p_multiFlex_ctx->UNIF_VARS),
 				var));
 		if (err == -1) {
 			MU_delete_inflection(forms);
@@ -796,7 +796,7 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 		for (val = 0; val < c->cat->no_values; val++) {
 
 			//Instantiated to the current value
-			unif_instantiate_index(p_multiFlex_ctx, var, c->cat, val);
+			unif_instantiate_index(&(p_multiFlex_ctx->UNIF_VARS), var, c->cat, val);
 
 			//Add the the instantiated category-value pair to the features of the single unit to be generated
 			err = f_add_morpho(feat, c->cat, val); //e.g. 'feat' devient <Nb=pl; Case=Nom; Gen=fem>
@@ -820,7 +820,7 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,
 			f_del_one_morpho(feat, c->cat);
 
 			//Delete the current instantiation
-			unif_desinstantiate(p_multiFlex_ctx, var);
+			unif_desinstantiate(&(p_multiFlex_ctx->UNIF_VARS), var);
 		}
 	}
 	return 0;

@@ -26,9 +26,8 @@
 #define LangMorphoH
 
 #include "Unicode.h"
-//#include "MF_DicoMorpho.h" //add
-#include "MF_DicoMorphoBase.h" //add
-#include "MF_LangMorphoBase.h" //add
+#include "MF_DicoMorphoBase.h"
+#include "MF_LangMorphoBase.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
