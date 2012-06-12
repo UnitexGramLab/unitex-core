@@ -68,6 +68,27 @@ typedef struct {
   d_morpho_eq_T equiv[MAX_MORPHO_EQUIV];  //set of equivalences
 } d_morpho_equiv_T;
 
+
+////////////////////////////////////////////
+//A list of equivalences between class names in a dictionary (e.g. "N") and a language class (e.g. noun).
+#ifdef __GNUC__
+#warning Later this table should be replaced by an external file scanned at each initialisation.
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning : Later this table should be replaced by an external file scanned at each initialisation.")
+#endif
+typedef struct {
+  unichar dico_class[MAX_CLASS_NAME];   //morphological class as it appears in a dictionary (e.g. "N")
+  l_class_T* cl;                       //language class
+} d_class_eq_T;
+
+// list of all grammatical code equivalences
+// For instance, "Noun" is represented by "N" in Unitex
+typedef struct {
+  int no_equiv;       //number of class equivalences
+  d_class_eq_T equiv[MAX_CLASS_EQUIV];  //set of class equivalences
+} d_class_equiv_T;
+
+
 } // namespace unitex
 
 #endif

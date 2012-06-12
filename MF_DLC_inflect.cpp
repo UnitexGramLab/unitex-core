@@ -58,11 +58,8 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF, 
-		    MultiFlex_ctx* p_multiFlex_ctx, struct l_morpho_t* pL_MORPHO, Alphabet* alph,
-		    const VersatileEncodingConfig* vec,
-		    int config_files_status,
-		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
-		    Korean* korean,const char* pkgdir,const char* named_repositories) {
+		    MultiFlex_ctx* p_multiFlex_ctx, Alphabet* alph,
+		    int error_check_status) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line
 	int l; //length of the line scanned
@@ -71,12 +68,12 @@ int inflect(char* DLC, char* DLCF,
 	int err;
 
 	//Open DELAS/DELAC
-	dlc = u_fopen(vec, DLC, U_READ);
+	dlc = u_fopen(p_multiFlex_ctx->vec, DLC, U_READ);
 	if (!dlc) {
 		return 1;
 	}
 	//Open DELAF/DELACF
-	dlcf = u_fopen(vec, DLCF, U_WRITE);
+	dlcf = u_fopen(p_multiFlex_ctx->vec, DLCF, U_WRITE);
 	if (!dlcf) {
 		error("Unable to open file: '%s' !\n", DLCF);
 		return 1;
@@ -123,8 +120,8 @@ int inflect(char* DLC, char* DLCF,
 			for (int i = 0; i < forms.no_forms; i++) {
 			   
 			   unichar foo[1024];   
-			   if (korean!=NULL) {
-			      Hanguls_to_Jamos(forms.forms[i].form,foo,korean,1);
+			   if (p_multiFlex_ctx->korean!=NULL) {
+			      Hanguls_to_Jamos(forms.forms[i].form,foo,p_multiFlex_ctx->korean,1);
 			   } else {
 			      u_strcpy(foo,forms.forms[i].form);
 			   }
@@ -154,7 +151,7 @@ int inflect(char* DLC, char* DLCF,
 				error("Unexpected compound word forbidden by -s:\n%S\n",input_line);
 				goto next_line;
 			}
-			if (config_files_status != CONFIG_FILES_ERROR) {
+			if (p_multiFlex_ctx->config_files_status != CONFIG_FILES_ERROR) {
 				/* If this is a compound word, we process it if and only if the
 				 * configuration files have been correctly loaded */
 				dlc_entry = (DLC_entry_T*) malloc(sizeof(DLC_entry_T));
@@ -162,7 +159,7 @@ int inflect(char* DLC, char* DLCF,
 					fatal_alloc_error("inflect");
 				}
 				/* Convert a DELAC entry into the internal multi-word format */
-				err = DLC_line2entry(alph,pL_MORPHO,input_line->str, dlc_entry, D_CLASS_EQUIV);
+				err = DLC_line2entry(alph,p_multiFlex_ctx->pL_MORPHO,input_line->str, dlc_entry, &(p_multiFlex_ctx->D_CLASS_EQUIV));
 				if (!err) {
 					//Inflect the entry
 					MU_init_forms(&MU_forms);
@@ -172,14 +169,14 @@ int inflect(char* DLC, char* DLCF,
 						//Inform the user if no form generated
 						if (MU_forms.no_forms == 0) {
 							error("No inflected form could be generated for ");
-							DLC_print_entry(U_STDERR,pL_MORPHO,dlc_entry);
+							DLC_print_entry(U_STDERR,p_multiFlex_ctx->pL_MORPHO,dlc_entry);
 						}
 						//Print inflected forms
 						for (f = 0; f < MU_forms.no_forms; f++) {
 							//Format the inflected form to the DELACF format
-							err = DLC_format_form(pL_MORPHO,output_line, DIC_LINE_SIZE
+							err = DLC_format_form(p_multiFlex_ctx->pL_MORPHO,output_line, DIC_LINE_SIZE
 									- 1, MU_forms.forms[f], dlc_entry,
-									D_CLASS_EQUIV);
+									&(p_multiFlex_ctx->D_CLASS_EQUIV));
 							if (!err) {
 								//Print one inflected form at a time to the DELACF file
 								u_fprintf(dlcf, "%S\n", output_line);

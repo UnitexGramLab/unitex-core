@@ -31,7 +31,6 @@
 #include "Alphabet.h"
 #include "Korean.h"
 #include "MF_Global.h"
-#include "MF_InflectTransd.h"
 #include "MF_LangMorpho.h"
 #include "File.h"
 #include "CompressedDic.h"
@@ -166,7 +165,7 @@ if (alph==NULL) {
    fatal_error("Cannot open alphabet file %s\n",alphabet);
 }
 Korean* korean=new Korean(alph);
-MultiFlex_ctx* multiFlex_ctx=new_MultiFlex_ctx(inflection_dir,NULL,&vec,korean,NULL,NULL);
+MultiFlex_ctx* multiFlex_ctx=new_MultiFlex_ctx(inflection_dir,NULL,NULL,&vec,korean,NULL,NULL);
 Dictionary* d=new_Dictionary(&vec,dic_bin,dic_inf);
 
 create_mwu_dictionary(delas,grf,multiFlex_ctx,d);

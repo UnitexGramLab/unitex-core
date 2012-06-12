@@ -28,6 +28,8 @@
 #include "File.h"
 #include "Grf2Fst2.h"
 #include "MF_Global.h"
+#include "MF_DicoMorpho.h"
+
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -47,12 +49,14 @@ int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,int pos,struct node* n);
 
 
 MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
+								const char* equivalencesTxt,
 								VersatileEncodingConfig* vec,Korean* korean,
 								const char* pkgdir,const char* named_repositories) {
 MultiFlex_ctx* ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
 if (ctx==NULL) {
    fatal_alloc_error("new_MultiFlex_ctx");
 }
+ctx->config_files_status=CONFIG_FILES_OK;
 strcpy(ctx->inflection_directory,inflection_dir);
 if (init_transducer_tree(ctx)) {
    fatal_error("init_transducer_tree error\n");
@@ -62,8 +66,16 @@ if (ctx->pL_MORPHO == NULL) {
    fatal_error("init_langage_morph error\n");
 }
 ctx->vec=vec;
-if (morphologyTxt!=NULL && 0!=read_language_morpho(vec,ctx->pL_MORPHO,morphologyTxt)) {
+if (morphologyTxt!=NULL && morphologyTxt[0]!='\0'
+		&& 0!=read_language_morpho(vec,ctx->pL_MORPHO,morphologyTxt)) {
    error("read_language_morpho error\n");
+   ctx->config_files_status=CONFIG_FILES_ERROR;
+}
+if (ctx->config_files_status!=CONFIG_FILES_ERROR
+		&& equivalencesTxt!=NULL && equivalencesTxt[0]!='\0'
+		&& 0!=d_init_morpho_equiv(vec,ctx->pL_MORPHO,equivalencesTxt)) {
+	   error("d_init_morpho_equiv error\n");
+	   ctx->config_files_status=CONFIG_FILES_ERROR;
 }
 ctx->semitic=0;
 ctx->pkgdir=NULL;
@@ -81,6 +93,9 @@ if (named_repositories!=NULL) {
 	}
 }
 ctx->korean=korean;
+if (ctx->config_files_status!=CONFIG_FILES_ERROR) {
+	d_init_class_equiv(ctx->pL_MORPHO,&(ctx->D_CLASS_EQUIV));
+}
 return ctx;
 }
 

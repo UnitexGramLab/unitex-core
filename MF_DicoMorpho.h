@@ -45,51 +45,6 @@
 
 namespace unitex {
 
-/*
-#define CONFIG_FILES_OK 0
-#define CONFIG_FILES_ERROR 1
-
-//maximum length of a line in the file containing equivalences between morphological and dictionary values
-#define MAX_EQUIV_LINE 100
-//maximum number of equivalences between morphological and dictionary values
-#define MAX_MORPHO_EQUIV 500
-//maximum number of equivalences between dictionary strings and classes
-#define MAX_CLASS_EQUIV 500
-
-////////////////////////////////////////////
-//A list of equivalences between morphological features in the language file
-//and their surface forms in dictionaries.
-typedef struct{
-  unichar dico_feat;   //a morphological feature in a dictionary is a single character, e.g. 's'
-  f_category_T cat;    //category-value pair corresponding to dico_feat in the current language, e.g. Nb=sing <Nb,0>
-} d_morpho_eq_T;
-
-// list of all inflectional code equivalences
-typedef struct {
-  int no_equiv;       //number of equivalences
-  d_morpho_eq_T equiv[MAX_MORPHO_EQUIV];  //set of equivalences
-} d_morpho_equiv_T;
-
-*/
-
-////////////////////////////////////////////
-//A list of equivalences between class names in a dictionary (e.g. "N") and a language class (e.g. noun).
-#ifdef __GNUC__
-#warning Later this table should be replaced by an external file scanned at each initialisation.
-#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("warning : Later this table should be replaced by an external file scanned at each initialisation.")
-#endif
-typedef struct {
-  unichar dico_class[MAX_CLASS_NAME];   //morphological class as it appears in a dictionary (e.g. "N")
-  l_class_T* cl;                       //language class
-} d_class_eq_T;
-
-// list of all grammatical code equivalences
-// For instance, "Noun" is represented by "N" in Unitex
-typedef struct {
-  int no_equiv;       //number of class equivalences
-  d_class_eq_T equiv[MAX_CLASS_EQUIV];  //set of class equivalences
-} d_class_equiv_T;
 
 
 /**************************************************************************************/
@@ -121,7 +76,7 @@ typedef struct {
 /*                    n:Gen=neu                                                       */
 /* The function fills out D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(const VersatileEncodingConfig*,struct l_morpho_t* pL_MORPHO,char* equiv_file);
+int d_init_morpho_equiv(const VersatileEncodingConfig*,struct l_morpho_t* pL_MORPHO,const char* equiv_file);
 
 /**************************************************************************************/
 /* Initialises the set of equivalences between class names in a dictionary (e.g. "N") */

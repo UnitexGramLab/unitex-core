@@ -107,10 +107,15 @@ char* pkgdir;
 
 char* named_repositories;
 
+d_class_equiv_T D_CLASS_EQUIV;
+
+int config_files_status;
+
 } MultiFlex_ctx;
 
 
 MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
+								const char* equivalencesTxt,
 								VersatileEncodingConfig* vec,Korean* koran,
 								const char* pkgdir,const char* named_repositories);
 void free_MultiFlex_ctx(MultiFlex_ctx* ctx);

@@ -182,33 +182,17 @@ int err;  //0 if a function completes with no error
 char morphology[FILENAME_MAX];
 new_file(config_dir,"Morphology.txt",morphology);
 int config_files_status=CONFIG_FILES_OK;
-struct l_morpho_t* pL_MORPHO=init_langage_morph();
-if (pL_MORPHO == NULL) {
-   fatal_error("init_langage_morph error\n");
-}
-err=read_language_morpho(&vec,pL_MORPHO,morphology);
-if (err) {
-   config_files_status=CONFIG_FILES_ERROR;
-}
-print_language_morpho(pL_MORPHO);
 if (alphabet[0]!='\0') {
    //Load alphabet
    alph=load_alphabet(&vec,alphabet,1);  //To be done once at the beginning of the inflection
    if (alph==NULL) {
       error("Cannot open alphabet file %s\n",alphabet);
-      free_language_morpho(pL_MORPHO);
       return 1;
    }
 }
 //Init equivalence files
 char equivalences[FILENAME_MAX];
 new_file(config_dir,"Equivalences.txt",equivalences);
-err=d_init_morpho_equiv(&vec,pL_MORPHO,equivalences);
-if (err) {
-   config_files_status=CONFIG_FILES_ERROR;
-}
-d_class_equiv_T D_CLASS_EQUIV;
-d_init_class_equiv(pL_MORPHO,&D_CLASS_EQUIV);
 
 /* Korean */
 Korean* korean=NULL;
@@ -218,20 +202,16 @@ if (is_korean) {
    }
 	korean=new Korean(alph);
 }
-
-MultiFlex_ctx* p_multiFlex_ctx=new_MultiFlex_ctx(config_dir,morphology,&vec,korean,pkgdir,named);
+MultiFlex_ctx* p_multiFlex_ctx=new_MultiFlex_ctx(config_dir,morphology,equivalences,&vec,korean,pkgdir,named);
 
 //DELAC inflection
-err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,&vec,
-            config_files_status,&D_CLASS_EQUIV,
-		      error_check_status,korean,pkgdir,named);
+err=inflect(argv[vars->optind],output,p_multiFlex_ctx,alph,error_check_status);
 free(named);
 for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
     p_multiFlex_ctx->fst2[count_free_fst2] = NULL;
 }
 free_alphabet(alph);
-free_language_morpho(pL_MORPHO);
 free_OptVars(vars);
 free_MultiFlex_ctx(p_multiFlex_ctx);
 if (korean!=NULL) {
