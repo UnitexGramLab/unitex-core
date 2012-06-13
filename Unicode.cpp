@@ -1152,14 +1152,12 @@ return 0;
 
 
 /**
- * Unicode version of fputc that saves '\n' as '\r\n', but only if we don't
- * print into stdout or stderr, because under Windows, the \r will already be
- * inserted by the system.
+ * Unicode version of fputc that saves '\n' as '\r\n'.
  * Returns 0 if an error occurs; 1 otherwise.
  */
 int u_fputc(Encoding encoding,unichar c,ABSTRACTFILE* f) {
 if (c=='\n') {
-   if (f!=U_STDOUT->f && f!=U_STDERR->f && !u_fputc_raw(encoding,0x0D,f)) return 0;
+   if (!u_fputc_raw(encoding,0x0D,f)) return 0;
 }
 return u_fputc_raw(encoding,c,f);
 }
