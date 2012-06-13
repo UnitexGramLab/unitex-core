@@ -1300,7 +1300,7 @@ if (grf==NULL) {
 	free_SingleGraph(graph,NULL);
 	return 1;
 }
-if (infos->verbose_name_grf!=0) {
+if (n==1 || infos->verbose_name_grf!=0) {
   u_printf("Compiling graph %s\n",/*infos->graph_names->value[n]*/name);
 }
 /* We indicate that we have a .grf */
