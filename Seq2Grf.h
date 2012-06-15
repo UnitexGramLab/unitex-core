@@ -22,6 +22,7 @@
 #ifndef Seq2GrfH
 #define Seq2GrfH
 
+#include "Unicode.h"
 #include "UnitexGetOpt.h"
 #include "Alphabet.h"
 #include "DELA_tree.h"
@@ -41,7 +42,11 @@ int main_Seq2Grf(int argc,char* const argv[]);
 void build_sequences_automaton(
 		U_FILE*, const struct text_tokens*,
 		const Alphabet*, U_FILE*, U_FILE*, int, struct hash_table*,
-		int,int,int,int);
+		int,int,int,int,
+		language_t* ,
+		const struct DELA_tree*,
+		struct match_list* tag_list
+		);
 
 } // namespace unitex
 

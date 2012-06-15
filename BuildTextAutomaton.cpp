@@ -45,17 +45,6 @@
 namespace unitex {
 
 /**
- * This is an internal structure only used to give a set of parameters to some functions.
- */
-struct info {
-	const struct text_tokens* tok;
-	const int* buffer;
-	const Alphabet* alph;
-	int SPACE;
-	int length_max;
-};
-
-/**
  * This function returns the number of space tokens that are in the
  * given buffer.
  */

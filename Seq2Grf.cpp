@@ -38,6 +38,7 @@
 #include "BuildTextAutomaton.h"
 #include "Sentence2Grf.h"
 #include "String_hash.h"
+#include "Korean.h"
 #include "File.h"
 #include "Tfst.h"
 #include "Txt2Tfst.h"
@@ -52,18 +53,6 @@ namespace unitex {
 #define STR_VALUE_MACRO(x) #x
 #define STR_VALUE_MACRO_STRING(x) STR_VALUE_MACRO(x)
 
-/**
- * This is an internal structure only used to give a set of parameters to some functions.
- */
-struct info {
-	const struct text_tokens* tok;
-	const int* buffer;
-	const Alphabet* alph;
-	int SPACE;
-	int TOKEN;
-	int length_max;
-};
-
 const char
 * usage_Seq2Grf =
 		"Usage: Seq2Grf [OPTIONS] <snt>\n"
@@ -73,16 +62,21 @@ const char
 		"OPTIONS:\n"
 		"  -a ALPH/--alphabet=ALPH: the alphabet file\n"
 		"  -o XXX/--output=XXX: the output GRF file\n"
-		"  --b : beautify the output graph"
-		"  -j n_jokers\n"
+		"  --b : beautify the output graph\n"
+		"  -w n_wildcards\n"
 		"  -i n_insertion\n"
 		"  -r n_replace\n"
 		"  -d n_delete\n"
 		"  -h/--help: this help\n"
+		"-m DIC/--morpho=DIC: specifies that DIC is a .bin dictionary"
+		"                         to use in Locate's morphological mode. Use as many"
+		"                         -m XXX as there are .bin to use. You can also"
+		"                         separate several .bin with semi-colons."
+		""
 		"\n"
 		"Constructs the sequences automaton : one single automaton that recognizes\n"
 		"all the sequences from the SNT. The sequences must be delimited with the\n"
-		"special tag {S}. The result ﬁles, named text.tfst, text.tind and\n"
+		"special tag {STOP}. The result ﬁles, named text.tfst, text.tind and\n"
 		"XXX, the GRF ﬁle are stored is the text directory.\n"
 		"\n"
 		;
@@ -92,11 +86,11 @@ static void usage() {
 	u_printf(usage_Seq2Grf);
 }
 
-const char* optstring_Seq2Grf = ":a:o:i:r:d:h:k:q:j:b:";
+const char* optstring_Seq2Grf = ":a:o:i:r:d:h:k:q:w:b:m";
 const struct option_TS lopts_Seq2Grf[] = {
 		{ "alphabet",required_argument_TS,    NULL, 'a' },
 		{ "output", required_argument_TS, NULL, 'o' },
-		{ "jokers", required_argument_TS,NULL, 'j'},
+		{ "wildcards", required_argument_TS,NULL, 'w'},
 		{ "insert", required_argument_TS,NULL, 'i'},
 		{ "replace", required_argument_TS,NULL, 'r'},
 		{ "delete", required_argument_TS,NULL, 'd'},
@@ -104,6 +98,7 @@ const struct option_TS lopts_Seq2Grf[] = {
 		{ "input_encoding", required_argument_TS, NULL, 'k' },
 		{ "output_encoding", required_argument_TS, NULL, 'q' },
 		{ "help", no_argument_TS, NULL, 'h' },
+		{ "morpho", no_argument_TS, NULL, 'm'},
 		{ NULL, no_argument_TS, NULL, 0 }
 };
 
@@ -117,12 +112,14 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	char output[FILENAME_MAX] = "";
 	char norm[FILENAME_MAX] = "";
 	char tagset[FILENAME_MAX] = "";
+//	char dico[FILENAME_MAX] = "";
 	char foo;
-	int n_op=0,n_sup=0,n_rep=0,n_ins=0;
+	int n_w=0,n_sup=0,n_rep=0,n_ins=0;
 	int is_korean = 0;
 	int CLEAN = 0;
 	char* fontname = NULL;
 	int do_beautify=0;
+	bool use_dic= false;
 	VersatileEncodingConfig vec = { DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,
 			DEFAULT_ENCODING_OUTPUT, DEFAULT_BOM_OUTPUT };
 	int val, index = -1;
@@ -135,7 +132,6 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 				fatal_error("You must specify a non empty alphabet file name\n");
 			}
 			strcpy(alphabet, vars->optarg);
-			u_printf("\t\talphabet : %s\n", alphabet);
 			break;
 		case 'c':
 			CLEAN = 1;
@@ -146,42 +142,41 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 						"You must specify a non empty normalization grammar name\n");
 			}
 			strcpy(norm, vars->optarg);
-			u_printf("\t\tnorm : %d\n", norm);
 			break;
 		case 'o':
 			strcpy(output, vars->optarg);
-			u_printf("\t\toutput : %s\n", output);
 			break;
 			/////////////////////////////////////////////////
-		case 'j':
-			if (1!=sscanf(vars->optarg,"%d%c",&n_op,&foo)){
-				fatal_error("Invalid jokers number argument: %s\n",vars->optarg);
+		case 'w':
+			if (1!=sscanf(vars->optarg,"%d%c",&n_w,&foo)){
+				fatal_error("Invalid wildcards number argument: %s\n",vars->optarg);
 			}
 			break;
 		case 'i':
-			u_printf("option i \n");
 			if (1!=sscanf(vars->optarg,"%d%c",&n_ins,&foo)) {
 				fatal_error("Invalid insertions argument: %s\n",vars->optarg);
 			}
-			u_printf("vars->optarg = %s\n",vars->optarg);
 			break;
 		case 'r':
-			u_printf("option r \n");
 			if (1!=sscanf(vars->optarg,"%d%c",&n_rep,&foo)) {
 				fatal_error("Invalid replacements argument: %s\n",vars->optarg);
 			}
-			u_printf("vars->optarg = %s\n",vars->optarg);
 			break;
 		case 'd':
-			u_printf("option d \n");
 			if (1!=sscanf(vars->optarg,"%d%c",&n_sup,&foo)) {
 				fatal_error("Invalid deletions argument: %s\n",vars->optarg);
 			}
-			u_printf("vars->optarg = %s\n",vars->optarg);
 			break;
 		case 'b':
-			u_printf("beautify \n");
 			do_beautify = 1;
+			break;
+			/////////////////////////////////////////////////
+		case 'm':
+//			if (vars->optarg[0] == '\0') {
+//				fatal_error("You must specify a non empty alphabet file name\n");
+//			}
+//			strcpy(dico, vars->optarg);
+			use_dic=true;
 			break;
 			/////////////////////////////////////////////////
 		case 'f':
@@ -238,12 +233,10 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	if (vars->optind != argc - 1) {
 		fatal_error("Invalid arguments: rerun with --help\n");
 	}
-	struct DELA_tree* tree = new_DELA_tree();
-	char tokens_txt[FILENAME_MAX]; //
-	char text_cod[FILENAME_MAX]; //
-	char dlf[FILENAME_MAX]; //
-	char dlc[FILENAME_MAX]; //
-	char tags_ind[FILENAME_MAX]; //
+
+	char tokens_txt[FILENAME_MAX];
+	char text_cod[FILENAME_MAX];
+	char tags_ind[FILENAME_MAX];
 	char text_tind[FILENAME_MAX];
 	char text_tfst[FILENAME_MAX];
 	char grf_name[FILENAME_MAX];
@@ -255,25 +248,13 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	strcat(tokens_txt, "tokens.txt");
 	get_snt_path(argv[vars->optind], text_cod);
 	strcat(text_cod, "text.cod");
-	get_snt_path(argv[vars->optind], dlf);
-	strcat(dlf, "dlf");
-	get_snt_path(argv[vars->optind], dlc);
-	strcat(dlc, "dlc");
 	get_snt_path(argv[vars->optind], tags_ind);
 	strcat(tags_ind, "tags.ind");
 	get_snt_path(argv[vars->optind], text_tind);
 	strcat(text_tind, "text.tind");
 	U_FILE* tind = u_fopen(BINARY, text_tind, U_WRITE);
 	struct match_list* tag_list = NULL;
-	load_DELA(&vec,dlf,tree);
-	load_DELA(&vec,dlc,tree);
-	u_printf("Loading %s...\n", tags_ind);
-	U_FILE* tag_file = u_fopen(&vec, tags_ind, U_READ);
-	if (tag_file != NULL) {
-		tag_list = load_match_list(tag_file,NULL,NULL);
-		u_fclose(tag_file);
-		tag_file =NULL;
-	}
+
 	get_path(argv[vars->optind],txt_name);
 	strcat(txt_name, "cursentence.txt");
 	get_path(argv[vars->optind],tok_name);
@@ -284,19 +265,38 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	} else {
 		strcpy(grf_name, output);
 	}
+	struct DELA_tree* tree=NULL;
+	U_FILE* tag_file;
+	if(use_dic){
+		tree = new_DELA_tree();
+		char dlf[FILENAME_MAX];
+		char dlc[FILENAME_MAX];
+		get_snt_path(argv[vars->optind], dlf);
+		strcat(dlf, "dlf");
+		get_snt_path(argv[vars->optind], dlc);
+		strcat(dlc, "dlc");
 
+		load_DELA(&vec,dlf,tree);
+		load_DELA(&vec,dlc,tree);
+		u_printf("Loading %s...\n", tags_ind);
+		tag_file = u_fopen(&vec, tags_ind, U_READ);
+		if (tag_file != NULL) {
+			tag_list = load_match_list(tag_file,NULL,NULL);
+			u_fclose(tag_file);
+			tag_file =NULL;
+		}
+	}
 	U_FILE* text=NULL;
 	U_FILE* out;
 	Alphabet* alph = NULL;
 	if (alphabet[0] != '\0') {
 		alph = load_alphabet(&vec,alphabet);
 		if (alph == NULL) {
-			error("Cannot load alphabet file %s\n", alphabet);
-			u_fclose(text);
-			return 1;
+			fatal_error("Cannot load alphabet file %s\n", alphabet);
+//			u_fclose(text);
+//			return 1;
 		}
 	}
-
 	text = u_fopen(&vec, argv[vars->optind], U_READ);
 	if (text == NULL) {
 		fatal_error("Cannot open text file %s\n", argv[vars->optind]);
@@ -329,7 +329,11 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 			(FREE_FUNCTION) free,
 			NULL,
 			(KEYCOPY_FUNCTION) keycopy);
-	u_printf("n_op=%d\n",n_op);
+	language_t* language=NULL;
+	if (tagset[0]!='\0') {
+	   language=load_language_definition(&vec,tagset);
+	}
+	u_printf("n_w=%d\n",n_w);
 	u_printf("n_ins=%d\n",n_ins);
 	u_printf("n_rep=%d\n",n_rep);
 	u_printf("n_sup=%d\n",n_sup);
@@ -338,8 +342,9 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	u_printf("do_beautify=%d\n",do_beautify);
 	u_printf("val=%d\n",val);
 	u_printf("index=%d\n",index);
-	build_sequences_automaton(f, tokens, alph, tfst, tind, CLEAN,form_frequencies,n_op,n_ins,n_rep,n_sup);
-	//    /* Finally, we save statistics */
+	build_sequences_automaton(f, tokens, alph, tfst, tind, CLEAN,form_frequencies, n_w,n_ins,n_rep,n_sup,
+	language,tree, tag_list);
+	/* Finally, we save statistics */
 	char tfst_tags_by_freq[FILENAME_MAX];
 	char tfst_tags_by_alph[FILENAME_MAX];
 	get_snt_path(argv[vars->optind], tfst_tags_by_freq);
@@ -382,25 +387,26 @@ int main_Seq2Grf(int argc, char* const argv[]) {
 	else u_printf("beautify = false\n");
 	save_Grf(out, grfObj);
 	free_Grf(grfObj);
+	if(use_dic){
+		free_DELA_tree(tree);
+	}
 	free_hash_table(form_frequencies);
-	u_fclose(tag_file);
 	close_text_automaton(tfstFile);
 	u_fclose(out);
 	u_fclose(f);
 	free_text_tokens(tokens);
 	u_fclose(text);
 	free_alphabet(alph);
-	free_DELA_tree(tree);
 	free_OptVars(vars);
 	return 0;
 }
-int count_jokers(int seq[], int size){
-	int nj=0;
+int count_wildcards(int seq[], int size){
+	int nw=0;
 	for (int i=0;i<size;i++){
 		if (seq[i]==-1)
-			nj++;
+			nw++;
 	}
-	return nj;
+	return nw;
 }
 int count_original_tokens(int seq[], int size){
 	int nb_ot=0;
@@ -410,6 +416,9 @@ int count_original_tokens(int seq[], int size){
 	}
 	return nb_ot;
 }
+
+
+
 void add_path(Tfst * tfst,
 		int seq[],
 		int pos_res,
@@ -515,11 +524,97 @@ void add_path(Tfst * tfst,
 	free_Ustring(states);
 }
 
+void add_path_2(Tfst * tfst,
+		int buffer[],
+		int length,
+		const struct text_tokens* tokens,
+		Ustring * text,
+		int & current_state,
+		struct string_hash* &tmp_tags,
+		const struct DELA_tree* DELA_tree,
+		language_t* language,
+		const Alphabet* alph,
+		struct match_list* *tag_list
+){
+	u_printf("[[[[[[ADD_PATH_2]]]]\n");
+	unichar EPSILON_TAG[] = { '@', '<', 'E', '>', '\n', '.', '\n', '\0' };
+	get_value_index(EPSILON_TAG, tmp_tags);
+	int i;
+	u_printf("tfst->automaton->number_of_states=%d\n",tfst->automaton->number_of_states);
+	int n_nodes = 1 + count_non_space_tokens(buffer, length, tokens->SPACE);
+	for (i = 0; i < n_nodes; i++) {
+		add_state(tfst->automaton);
+	}
+	struct info INFO;
+	INFO.tok = tokens;
+	INFO.buffer = buffer;
+	INFO.alph = alph;
+	INFO.SPACE = tokens->SPACE;
+	INFO.length_max = length;
+
+	int is_not_unknown_token;
+	unichar inflected[4096];
+
+	Ustring* foo = new_Ustring(4096);
+
+	for (int il = 0; il < length; il++) {
+			vector_int_add(tfst->tokens, buffer[il]);
+			int l = u_strlen(tokens->token[buffer[il]]);
+			vector_int_add(tfst->token_sizes, l);
+			u_strcat(foo, tokens->token[buffer[il]], l);
+		}
+//	tfst->text = u_strdup(foo->str);
+	tfst->text= text->str;
+	u_printf("current_state=%d\n",current_state);
+	add_outgoing_transition(tfst->automaton->states[0],
+							get_value_index(EPSILON_TAG,tmp_tags),
+//							1,
+							current_state);
+	for (i = 0; i < length; i++) {
+		if (buffer[i] != tokens->SPACE) {
+			is_not_unknown_token = 0;
+					unichar tag_buffer[4096];
+					explore_dictionary_tree(0, tokens->token[buffer[i]], inflected, 0,
+							DELA_tree->inflected_forms->root, DELA_tree, &INFO,
+							tfst->automaton->states[current_state], 1, current_state,
+							&is_not_unknown_token, i, i, tmp_tags, foo, language,
+							tag_buffer);
+					if (!is_not_unknown_token) {
+						/* If the token was not matched in the dictionary, we put it as an unknown one */
+						u_sprintf(
+								foo,
+								"@STD\n@%S\n@%d.0.0-%d.%d.%d\n.\n",
+								tokens->token[buffer[i]],
+								i,
+								i,
+								tfst->token_sizes->tab[i] - 1,
+								1);
+						int tag_number = get_value_index(foo->str, tmp_tags);
+						add_outgoing_transition(tfst->automaton->states[current_state],
+								tag_number, current_state + 1);
+					}
+					current_state++;
+				}
+		}
+	add_state(tfst->automaton);
+			u_printf("current_state=%d\n",current_state);
+	add_outgoing_transition(tfst->automaton->states[current_state],
+								get_value_index(EPSILON_TAG,tmp_tags),
+//								1, //=> token_tag
+								1);
+	current_state++;
+//	(*foo).str=NULL;
+	free_Ustring(foo);
+
+}
+
+
+
 int work(	int t[],
 		int size,		int current,
 		int errors,		int insert,		int replace,		int suppr,
 		char last_op,
-		int res[],	//résultat
+		int res[],
 		int max_length,
 		int pos_res,
 		int & cur,
@@ -528,22 +623,22 @@ int work(	int t[],
 		const struct text_tokens* tokens,
 		Ustring * text,
 		int & current_state,
-		struct string_hash* &tmp_tags
+		struct string_hash* &tmp_tags,
+		const struct DELA_tree* tree,
+		const Alphabet* alph,
+		language_t* language,
+		struct match_list* tag_list
 ) {
 	if (current==size) {
 		//####################################
 		// produce sequence
 		//####################################
-		u_printf("//////////\n");
-		u_printf("///work///\n");
-		u_printf("//////////\n");
-		u_printf("!!!!current = %d ; size = %d pos_res = %d\n",current,size,pos_res);
-		u_printf("!!!!\tres =[",pos_res);
 		// filters the empty sequences or the ones with only one or several "<TOKEN>"
 		bool is_only_token=true;
 		bool ends_with_token=false;
 		bool starts_with_token=false;
 		starts_with_token=(size>0 && res[0]==-1);
+		u_printf("[");
 		for (int i=0;i<pos_res;i++){
 			if(res[i]!=-1) {
 				is_only_token=false;
@@ -553,67 +648,39 @@ int work(	int t[],
 		}
 		if (pos_res>0 && res[pos_res-1]==-1)
 			ends_with_token=true;
-
-		u_printf("]\t");
-		if (is_only_token){
-			u_printf("only_token\n");
-			u_printf("????we skip this sequence :\t\t\"");
-			for (int i=0;i<pos_res;i++){
-				if (res[i]==-1)
-					u_printf("%s ","<TOKEN>");
-				else{
-					u_printf("%S ",tokens->token[res[i]]);
-				}
-			}
-			u_printf("\"\n");
-		}
-		//		else if (ends_with_token){
-		//			u_printf("ends_with_token\n");
-		//				u_printf("????we skip this sequence :\t\t\"");
-		//			for (int i=0;i<pos_res;i++){
-		//				if (res[i]==-1)
-		//					u_printf("%s ","<TOKEN>");
-		//				else{
-		//					u_printf("%S ",tokens->token[res[i]]);
-		//				}
-		//			}
-		//			u_printf("\"\n");
-		//		}
-		//		else if (starts_with_token){
-		//			u_printf("starts_with_token\n");
-		//				u_printf("????we skip this sequence :\t\t\"");
-		//			for (int i=0;i<pos_res;i++){
-		//				if (res[i]==-1)
-		//					u_printf("%s ","<TOKEN>");
-		//				else{
-		//					u_printf("%S ",tokens->token[res[i]]);
-		//				}
-		//			}
-		//			u_printf("\"\n");
-		//		}
-		else{
-			u_printf("not only_token\n");
-			u_printf("!!!!we add this sequence :\t\t\"");
-			for (int i=0;i<pos_res;i++){
-				if (res[i]==-1)
-					u_printf("%s ","<TOKEN>");
-				else{
-					u_printf("%S ",tokens->token[res[i]]);
-				}
-			}
-			u_printf("\"\n");
-			u_printf("pos_res=%d\tsize=%d\n",pos_res,size);
-			// only allow sequences with jokers if the original sequence has at least two tokens
-			if(count_original_tokens(res,pos_res)>=2
+		u_printf("]");
+		if (!is_only_token){
+			// only allow sequences with wildcards if the original sequence has at least two tokens
+			if(	count_original_tokens(res,pos_res) >= 2
 					||
-					(
-//							count_jokers(res,pos_res)==0
-//							&&
-							count_original_tokens(res,pos_res) == size
-					)
+				count_original_tokens(res,pos_res) == size
 				){
-//			???????
-//				if(pos_res>2 || size==pos_res){
+				u_printf("\t\tadd_path\n");
+				if (tree!=NULL){
+//				add_path(tfst,res,pos_res,tokens,text,
+//						current_state,tmp_tags,tree,language,alph,NULL
+//						);
+//					current_global_position_in_tokens=current_global_position_in_tokens+total;
+//					   for (int y=0;y<total;y++) {
+//					      current_global_position_in_chars=current_global_position_in_chars+u_strlen(tokens->token[buffer[y]]);
+//					   }
+					add_path_2(tfst,
+							res,
+							pos_res,
+							tokens,
+						text,
+						current_state,
+						tmp_tags,
+						tree,
+						language,
+						alph,
+						&tag_list
+//						,
+//						current_global_position_in_tokens,
+//						current_global_position_in_chars
+						);
+				}
+				else
 					add_path(
 							tfst,
 							res,
@@ -623,19 +690,20 @@ int work(	int t[],
 							text,
 							current_state,
 							tmp_tags );
-//				}
 			}
 		}
+		u_printf("\n");
 		cur++;
 		return cur;
 	}
 	res[pos_res]=t[current];
 	//####################################
-	// ici j'ajoute le token courrant et je passe au suivant
+	// insert current token and continue
 	//####################################
 	work(t,size,current+1,errors,insert,replace,suppr,0,res,max_length,pos_res+1,cur//,total
 			,tfst,	INFO,	tokens,	text,	current_state,
-			tmp_tags);
+			tmp_tags,tree,
+			alph,language,tag_list );
 	/* Now, we consider errors */
 	if (errors==0) return cur;
 	if (insert!=0 && last_op!='S' && pos_res>0) {
@@ -643,68 +711,46 @@ int work(	int t[],
 		//		insert
 		//####################################
 		res[pos_res]=INFO.TOKEN;
-		u_printf("insert : [");
-		for (int i=0;i<pos_res;i++){
-			if (res[i]==-1)
-				u_printf("%s ","<TOKEN>");
-			else{
-				u_printf("%S ",tokens->token[res[i]]);
-			}
-		}
-		u_printf("]\n");
 		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,max_length,pos_res+1,
 				cur, tfst,	INFO,	tokens,	text,	current_state,
-				tmp_tags);
+				tmp_tags,tree,
+				alph,language,tag_list);
 	}
 	if (suppr!=0 && last_op!='I') {
 		//####################################
 		//		suppr
 		//####################################
-
-		//		if ()
-		u_printf("suppr : [");
-		for (int i=0;i<pos_res;i++){
-			if (res[i]==-1)
-				u_printf("%s ","<TOKEN>");
-			else{
-				u_printf("%S ",tokens->token[res[i]]);
-			}
-		}
-		u_printf("]\n");
 		work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,max_length,pos_res,
 				cur ,tfst,	INFO,	tokens,	text,	current_state,
-				tmp_tags);
+				tmp_tags,tree,
+				alph, language,tag_list);
+
 	}
-	if (replace!=0 /*&& pos_res>0*/) {
+	if (replace!=0) {
 		//####################################
 		//		replace
 		//####################################
 		res[pos_res]=INFO.TOKEN;
-		//		u_printf("replace : [");
-		//		for (int i=0;i<pos_res;i++){
-		//			if (res[i]==-1)
-		//				u_printf("%s ","<TOKEN>");
-		//			else{
-		//				u_printf("%S ",tokens->token[res[i]]);
-		//			}
-		//		}
-		//		u_printf("]\n");
-		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,cur
-				,tfst,	INFO,	tokens,	text,	current_state,
-				tmp_tags);
+		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,max_length,pos_res+1,
+				cur	,tfst,	INFO,	tokens,	text,	current_state,
+				tmp_tags,tree,
+				alph,language,tag_list);
 	}
 	return cur;
 }
 
 /**
- * This function builds the sequences automaton that correspond to the
+ * This function builds the sequences automaton that matches the
  * sequences from the input file. It saves it into the given file.
  */
 
 void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		const Alphabet* alph, U_FILE* out_tfst, U_FILE* out_tind,
 		int we_must_clean, struct hash_table* form_frequencies,
-		int err,int insert, int replace, int suppr) {
+		int err,int insert, int replace, int suppr,
+		language_t* language,
+		const struct DELA_tree* tree,
+		struct match_list* tag_list) {
 	u_printf("build_sequences_automaton START\n");
 	u_printf("err=%d\n",err);
 	u_printf("insert=%d\n",insert);
@@ -719,13 +765,16 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	tfst->tokens = new_vector_int(2);
 	// the line below is a temporary hack to ensure the result is always same with same input file
 	tfst->tokens->tab[0] = tfst->tokens->tab[1] = 0;
-	tfst->token_sizes = new_vector_int(0);
+	tfst->token_sizes = new_vector_int(2);
 	int current_state = 0;
 	// New Initial State
 	add_state(tfst->automaton); /* initial state */
+	u_printf("(tfst->automaton->states[current_state])->control=%s\n",tfst->automaton->states[current_state]->control);
 	set_initial_state(tfst->automaton->states[current_state]);
 	current_state++;
 	int final_state = 1;
+	add_state(tfst->automaton); /* final state */
+	current_state++;
 	struct string_hash* tags = new_string_hash(132);
 	struct string_hash* tmp_tags = new_string_hash(132);
 	unichar EPSILON_TAG[] = { '@', '<', 'E', '>', '\n', '.', '\n', '\0' };
@@ -738,6 +787,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	get_value_index(EPSILON_TAG, tmp_tags);
 	get_value_index(EPSILON_TAG, tags);
 	get_value_index(TOKEN_TAG, tmp_tags);
+//	get_value_index(EPSILON_TAG, tags);
 	struct info INFO;
 	INFO.tok = tokens;
 	INFO.alph = alph;
@@ -746,8 +796,7 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	INFO.TOKEN=-1;
 	int N,total;
 	int buffer[MAX_TOKENS_IN_SENTENCE];
-	Ustring* foo = new_Ustring(1);
-	u_printf(">>>here\n");
+	Ustring* foo = new_Ustring(4096);
 	u_fprintf(out_tfst, "0000000001\n");
 	if (f == NULL) {
 		u_printf("f NULL\n");
@@ -755,11 +804,11 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 	}
 	u_printf("read_sentence :\n");
 	while (read_sentence(buffer, &N, &total, f, tokens->STOP_MARKER)) {
-		//	while (read_sentence(buffer, &N, &total, f, tokens->SENTENCE_MARKER)) {
+		//										tokens->SENTENCE_MARKER)) {
 		u_printf("\tN=%d\n",N);
 		u_printf("\tread_sentence : in\n");
 		int nst=count_non_space_tokens(buffer, N, tokens->SPACE);
-		int *non_space_buffer=new int[nst];
+		int* non_space_buffer=new int[nst];
 		int k=0;
 		for (int i=0;i<N;i++){
 			if (buffer[i]!=tokens->SPACE){
@@ -773,51 +822,46 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		for (int i=0;i<N;i++){
 			u_printf("%d ",buffer[i]);
 		}
-		u_printf("\nnon_space_buffer : \n");
+		u_printf("\nnon_space_buffer : \t");
 		for (int i=0;i<nst;i++){
 			u_printf("%d ",non_space_buffer[i]);
 		}
 		u_printf("\n");
-		u_printf("EPS\n");
 		int max_length=nst+insert;
-		// sequences produites par dérivations :
-		//		unichar **res =new unichar*[max_length];
-
 		int* res2 = (int*)calloc(max_length, sizeof(int));
 		u_printf("max_length=%d+%d=%d\n",nst,insert,max_length);
 		int curr=0;
 		INFO.length_max=max_length;
-		//		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res,max_length,0,curr,//sequences,
-		//				tfst,	INFO,	tokens,	foo,	current_state,
-		//				tmp_tags);
-		int n_seq=work(non_space_buffer, nst,0, err,insert, replace,suppr,0, res2,max_length,0,curr,//sequences,
-				tfst,	INFO,	tokens,	foo,	current_state,
-				tmp_tags);
-		u_printf("work2 : done %d sequences produced \n",n_seq);
+		int n_seq=work(
+				non_space_buffer,
+				nst,0,
+				err,insert, replace,suppr,
+				0, res2,max_length,0,curr,
+				tfst, INFO,	tokens,	foo, current_state,
+				tmp_tags, tree,
+				INFO.alph,
+				language,
+				tag_list
+				);
+		u_printf("work : done %d new sequences produced \n",n_seq);
 		free(res2);
-		//		delete [] res;
 		delete [] non_space_buffer;
 	}
-	//    adding final state :
 	u_printf("N=%d\n",N);
 	for (int i=0;i<N;i++){
 		u_printf("buffer[%d]=%d\n",i,buffer[i]);
 	}
-	add_state(tfst->automaton);
+	//    adding final state :
+//	add_state(tfst->automaton);
 	// declaring it as final state
 	u_printf("final_state : %d\n",final_state);
 	set_final_state(tfst->automaton->states[final_state]);
 	int tag_number = get_value_index(EPSILON_TAG, tmp_tags);
 	u_printf("minimize\n");
-	minimize(tfst->automaton,1);
-	u_printf("minimize : done"
-			"\n");
-	//	if (we_must_clean) {
-	//		/* If necessary, we apply the "good paths" heuristic */
-	//		keep_best_paths(tfst->automaton, tmp_tags);
-	//	}
+//	minimize(tfst->automaton,1);
+	u_printf("minimize : done\n");
 	if (tfst->automaton->number_of_states == 0) {
-		//        /* Case 1: the automaton has been emptied because of the tagset filtering */
+		/* Case 1: the automaton has been emptied because of the tagset filtering */
 		error("Sentence %d is empty\n", tfst->current_sentence);
 		SingleGraphState initial = add_state(tfst->automaton);
 		set_initial_state(initial);
@@ -829,11 +873,9 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 		/* Case 2: the automaton is not empty */
 		/* We minimize the sentence automaton. It will remove the unused states and may
 		 * factorize suffixes introduced during the application of the normalization tree. */
-
-		//		minimize(tfst->automaton, 1);
+//				minimize(tfst->automaton, 1);
 		/* We explore all the transitions of the automaton in order to renumber transitions */
 		u_printf("tfst->automaton->number_of_states =%d\n",tfst->automaton->number_of_states);
-
 		int k=0;
 		for (int i = 0; i < tfst->automaton->number_of_states; i++) {
 			Transition* trans =
@@ -848,17 +890,15 @@ void build_sequences_automaton(U_FILE* f, const struct text_tokens* tokens,
 			}
 		}
 	}
-	u_printf("out\n");
-	//	minimize(tfst->automaton, 1);
-	u_printf("\nsave_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,NULL)\n");
+	u_printf("\nsave_current_sentence(..., tags->size=%d,NULL)\n",tags->size);
 	save_current_sentence(tfst, out_tfst, out_tind, tags->value, tags->size,
 			NULL);
-	foo->str=NULL;
-	free_Ustring(foo);
-	free_string_hash(tags);
-	free_string_hash(tmp_tags);
+
+	(*foo).str=NULL;
+//	empty(foo);
 	close_text_automaton(tfst);
-
+	free_string_hash(tmp_tags);
+	free_string_hash(tags);
+	free_Ustring(foo);
 }
-
 } // namespace unitex

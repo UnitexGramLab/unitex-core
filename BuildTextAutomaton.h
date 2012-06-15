@@ -65,7 +65,17 @@ struct output_info {
 
 #define MAX_TOKENS_IN_SENTENCE 2000
 
-
+/**
+ * This is an internal structure only used to give a set of parameters to some functions.
+ */
+struct info {
+	const struct text_tokens* tok;
+	const int* buffer;
+	const Alphabet* alph;
+	int SPACE;
+	int TOKEN;
+	int length_max;
+};
 
 void build_sentence_automaton(const int*,int,const struct text_tokens*,
                               const struct DELA_tree*,
@@ -78,7 +88,26 @@ void keep_best_paths(SingleGraph graph,struct string_hash* tmp_tags) ;
 int count_non_space_tokens(const int* buffer,int length,int SPACE);
 vector_ptr* tokenize_normalization_output(unichar* s, const Alphabet* alph);
 void free_output_info(struct output_info* x);
+void explore_dictionary_tree(int pos ,const unichar* token,	unichar* inflected,
+							int ,const struct string_hash_tree_node* ,
+							const struct DELA_tree* ,struct info* ,
+							SingleGraphState ,
+							int, int, int*, int, int, struct string_hash* ,
+							Ustring* ,language_t* ,unichar* tb);
 
+void add_path_to_sentence_automaton(int start_pos, int end_pos,
+							int start_state_index, const Alphabet* alph,
+							SingleGraph graph,struct string_hash* tmp_tags,
+							unichar* s, int destination_state_index,
+							Ustring* foo, struct info* INFO, Korean* korean);
+void explore_normalization_tree(int first_pos_in_buffer,
+							int current_pos_in_buffer, int token,
+							struct info* INFO,SingleGraph graph,
+							struct string_hash* tmp_tags,
+							struct normalization_tree* norm_tree_node,
+							int first_state_index,int shift, Ustring* foo,
+							int increment, language_t* language,
+							Korean* korean);
 } // namespace unitex
 
 #endif
