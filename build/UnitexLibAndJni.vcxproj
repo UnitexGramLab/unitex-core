@@ -311,7 +311,7 @@
     <ClCompile Include="..\MF_DicoMorpho.cpp" />
     <ClCompile Include="..\MF_DLC_inflect.cpp" />
     <ClCompile Include="..\MF_FormMorpho.cpp" />
-    <ClCompile Include="..\MF_InflectTransd.cpp" />
+    <ClCompile Include="..\MF_Global.cpp" />
     <ClCompile Include="..\MF_LangMorpho.cpp" />
     <ClCompile Include="..\MF_MU_graph.cpp" />
     <ClCompile Include="..\MF_MU_morpho.cpp" />
@@ -554,8 +554,8 @@
     <ClInclude Include="..\MF_DLC_inflect.h" />
     <ClInclude Include="..\MF_FormMorpho.h" />
     <ClInclude Include="..\MF_Global.h" />
-    <ClInclude Include="..\MF_InflectTransd.h" />
-    <ClInclude Include="..\MF_InflectTransdBase.h" />
+    <ClInclude Include="..\MF_Global.h" />
+    <ClInclude Include="..\MF_GlobalBase.h" />
     <ClInclude Include="..\MF_LangMorpho.h" />
     <ClInclude Include="..\MF_LangMorphoBase.h" />
     <ClInclude Include="..\MF_MU_graph.h" />

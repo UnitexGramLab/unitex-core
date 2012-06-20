@@ -359,7 +359,7 @@
     <ClCompile Include="..\MF_FormMorpho.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\MF_InflectTransd.cpp">
+    <ClCompile Include="..\MF_Global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\MF_LangMorpho.cpp">

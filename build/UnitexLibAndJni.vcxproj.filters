@@ -387,7 +387,7 @@
     <ClCompile Include="..\MF_FormMorpho.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
-    <ClCompile Include="..\MF_InflectTransd.cpp">
+    <ClCompile Include="..\MF_Global.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
     <ClCompile Include="..\MF_LangMorpho.cpp">
@@ -1130,10 +1130,10 @@
     <ClInclude Include="..\MF_Global.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_InflectTransd.h">
+    <ClInclude Include="..\MF_Global.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
-    <ClInclude Include="..\MF_InflectTransdBase.h">
+    <ClInclude Include="..\MF_GlobalBase.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\MF_LangMorpho.h">

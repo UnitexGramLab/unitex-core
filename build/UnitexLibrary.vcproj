@@ -813,7 +813,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\MF_InflectTransd.cpp"
+				RelativePath="..\MF_Global.cpp"
 				>
 			</File>
 			<File

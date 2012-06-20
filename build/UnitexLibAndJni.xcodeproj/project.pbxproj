@@ -390,9 +390,9 @@
 		222AFFE21411336600F74409 /* MF_FormMorpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE621411336600F74409 /* MF_FormMorpho.cpp */; };
 		222AFFE31411336600F74409 /* MF_FormMorpho.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE631411336600F74409 /* MF_FormMorpho.h */; };
 		222AFFE41411336600F74409 /* MF_Global.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE641411336600F74409 /* MF_Global.h */; };
-		222AFFE51411336600F74409 /* MF_InflectTransd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE651411336600F74409 /* MF_InflectTransd.cpp */; };
-		222AFFE61411336600F74409 /* MF_InflectTransd.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE661411336600F74409 /* MF_InflectTransd.h */; };
-		222AFFE71411336600F74409 /* MF_InflectTransdBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE671411336600F74409 /* MF_InflectTransdBase.h */; };
+		222AFFE51411336600F74409 /* MF_Global.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE651411336600F74409 /* MF_Global.cpp */; };
+		222AFFE61411336600F74409 /* MF_Global.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE661411336600F74409 /* MF_Global.h */; };
+		222AFFE71411336600F74409 /* MF_GlobalBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE671411336600F74409 /* MF_GlobalBase.h */; };
 		222AFFE81411336600F74409 /* MF_LangMorpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE681411336600F74409 /* MF_LangMorpho.cpp */; };
 		222AFFE91411336600F74409 /* MF_LangMorpho.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE691411336600F74409 /* MF_LangMorpho.h */; };
 		222AFFEA1411336600F74409 /* MF_LangMorphoBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE6A1411336600F74409 /* MF_LangMorphoBase.h */; };
@@ -745,9 +745,9 @@
 		222AFE621411336600F74409 /* MF_FormMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_FormMorpho.cpp; path = ../MF_FormMorpho.cpp; sourceTree = SOURCE_ROOT; };
 		222AFE631411336600F74409 /* MF_FormMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_FormMorpho.h; path = ../MF_FormMorpho.h; sourceTree = SOURCE_ROOT; };
 		222AFE641411336600F74409 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_Global.h; path = ../MF_Global.h; sourceTree = SOURCE_ROOT; };
-		222AFE651411336600F74409 /* MF_InflectTransd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_InflectTransd.cpp; path = ../MF_InflectTransd.cpp; sourceTree = SOURCE_ROOT; };
-		222AFE661411336600F74409 /* MF_InflectTransd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_InflectTransd.h; path = ../MF_InflectTransd.h; sourceTree = SOURCE_ROOT; };
-		222AFE671411336600F74409 /* MF_InflectTransdBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_InflectTransdBase.h; path = ../MF_InflectTransdBase.h; sourceTree = SOURCE_ROOT; };
+		222AFE651411336600F74409 /* MF_Global.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_Global.cpp; path = ../MF_Global.cpp; sourceTree = SOURCE_ROOT; };
+		222AFE661411336600F74409 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_Global.h; path = ../MF_Global.h; sourceTree = SOURCE_ROOT; };
+		222AFE671411336600F74409 /* MF_GlobalBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_GlobalBase.h; path = ../MF_GlobalBase.h; sourceTree = SOURCE_ROOT; };
 		222AFE681411336600F74409 /* MF_LangMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_LangMorpho.cpp; path = ../MF_LangMorpho.cpp; sourceTree = SOURCE_ROOT; };
 		222AFE691411336600F74409 /* MF_LangMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_LangMorpho.h; path = ../MF_LangMorpho.h; sourceTree = SOURCE_ROOT; };
 		222AFE6A1411336600F74409 /* MF_LangMorphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_LangMorphoBase.h; path = ../MF_LangMorphoBase.h; sourceTree = SOURCE_ROOT; };
@@ -1318,9 +1318,9 @@
 				222AFE621411336600F74409 /* MF_FormMorpho.cpp */,
 				222AFE631411336600F74409 /* MF_FormMorpho.h */,
 				222AFE641411336600F74409 /* MF_Global.h */,
-				222AFE651411336600F74409 /* MF_InflectTransd.cpp */,
-				222AFE661411336600F74409 /* MF_InflectTransd.h */,
-				222AFE671411336600F74409 /* MF_InflectTransdBase.h */,
+				222AFE651411336600F74409 /* MF_Global.cpp */,
+				222AFE661411336600F74409 /* MF_Global.h */,
+				222AFE671411336600F74409 /* MF_GlobalBase.h */,
 				222AFE681411336600F74409 /* MF_LangMorpho.cpp */,
 				222AFE691411336600F74409 /* MF_LangMorpho.h */,
 				222AFE6A1411336600F74409 /* MF_LangMorphoBase.h */,
@@ -1635,8 +1635,8 @@
 				222AFFE11411336600F74409 /* MF_DLC_inflect.h in Headers */,
 				222AFFE31411336600F74409 /* MF_FormMorpho.h in Headers */,
 				222AFFE41411336600F74409 /* MF_Global.h in Headers */,
-				222AFFE61411336600F74409 /* MF_InflectTransd.h in Headers */,
-				222AFFE71411336600F74409 /* MF_InflectTransdBase.h in Headers */,
+				222AFFE61411336600F74409 /* MF_Global.h in Headers */,
+				222AFFE71411336600F74409 /* MF_GlobalBase.h in Headers */,
 				222AFFE91411336600F74409 /* MF_LangMorpho.h in Headers */,
 				222AFFEA1411336600F74409 /* MF_LangMorphoBase.h in Headers */,
 				222AFFEC1411336600F74409 /* MF_MU_graph.h in Headers */,
@@ -1917,7 +1917,7 @@
 				222AFFDD1411336600F74409 /* MF_DicoMorpho.cpp in Sources */,
 				222AFFE01411336600F74409 /* MF_DLC_inflect.cpp in Sources */,
 				222AFFE21411336600F74409 /* MF_FormMorpho.cpp in Sources */,
-				222AFFE51411336600F74409 /* MF_InflectTransd.cpp in Sources */,
+				222AFFE51411336600F74409 /* MF_Global.cpp in Sources */,
 				222AFFE81411336600F74409 /* MF_LangMorpho.cpp in Sources */,
 				222AFFEB1411336600F74409 /* MF_MU_graph.cpp in Sources */,
 				222AFFED1411336600F74409 /* MF_MU_morpho.cpp in Sources */,

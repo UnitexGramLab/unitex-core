@@ -176,7 +176,7 @@ Unitex-C++/Match.cpp \
 Unitex-C++/MF_DicoMorpho.cpp \
 Unitex-C++/MF_DLC_inflect.cpp \
 Unitex-C++/MF_FormMorpho.cpp \
-Unitex-C++/MF_InflectTransd.cpp \
+Unitex-C++/MF_Global.cpp \
 Unitex-C++/MF_LangMorpho.cpp \
 Unitex-C++/MF_MU_graph.cpp \
 Unitex-C++/MF_MU_morpho.cpp \
