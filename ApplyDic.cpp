@@ -697,7 +697,10 @@ char name_inf[FILENAME_MAX];
 remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
 info->d=new_Dictionary(vec,name_bin,name_inf);
-if (info->d==NULL) return 1;
+if (info->d==NULL) {
+	error("Cannot open dictionary %s\n",name_bin);
+	return 1;
+}
 info->word_array=new_word_struct_array(info->tokens->N);
 /* And then we look simple and then compound words.
  * IMPORTANT: it is crucial to look for simple words first, since
