@@ -29,7 +29,7 @@
 #include "UnitexGetOpt.h"
 #include "Grf_lib.h"
 #include "GrfBeauty.h"
-#include "Seq2Grf2.h"
+#include "Seq2Grf.h"
 #include "Ustring.h"
 #include "String_hash.h"
 #include "File.h"
@@ -46,7 +46,7 @@ namespace unitex {
 void build_sequence_automaton(char* txt,char* grf,Alphabet* alph,int only_stop,int max_wildcards,
 		int n_delete,int n_insert,int n_replace,int beautify,VersatileEncodingConfig* vec);
 
-const char* usage_Seq2Grf2 =
+const char* usage_Seq2Grf =
 		"Usage: Seq2Grf [OPTIONS] <txt>\n"
 		"\n"
 		"  <txt> : the sequence text file\n"
@@ -70,11 +70,11 @@ const char* usage_Seq2Grf2 =
 
 static void usage() {
 	u_printf("%S", COPYRIGHT);
-	u_printf(usage_Seq2Grf2);
+	u_printf(usage_Seq2Grf);
 }
 
-const char* optstring_Seq2Grf2 = ":a:o:i:r:d:hbnk:q:w:sm";
-const struct option_TS lopts_Seq2Grf2[] = {
+const char* optstring_Seq2Grf = ":a:o:i:r:d:hbnk:q:w:sm";
+const struct option_TS lopts_Seq2Grf[] = {
 		{ "alphabet",required_argument_TS,    NULL, 'a' },
 		{ "output", required_argument_TS, NULL, 'o' },
 		{ "wildcards", required_argument_TS,NULL, 'w'},
@@ -90,7 +90,7 @@ const struct option_TS lopts_Seq2Grf2[] = {
 		{ NULL, no_argument_TS, NULL, 0 }
 };
 
-int main_Seq2Grf2(int argc, char* const argv[]) {
+int main_Seq2Grf(int argc, char* const argv[]) {
 if (argc==1) {
 	usage();
 	return 0;
@@ -102,7 +102,7 @@ int max_wildcards=0,n_delete=0,n_replace=0,n_insert=0,only_stop=0,beautify=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Seq2Grf2,lopts_Seq2Grf2,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Seq2Grf,lopts_Seq2Grf,&index,vars))) {
 	switch (val) {
 		case 'a': {
 			if (vars->optarg[0] == '\0') {
@@ -174,7 +174,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Seq2Grf2,lopts_Seq2Grf2,&ind
 				fatal_error("Missing argument for option -%c\n", vars->optopt);
 			else
 				fatal_error("Missing argument for option --%s\n",
-						lopts_Seq2Grf2[index].name);
+						lopts_Seq2Grf[index].name);
 			break;
 		}
 		case '?': {

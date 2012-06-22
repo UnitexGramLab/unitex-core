@@ -158,7 +158,7 @@
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SEQ2GRF))) || defined(TOOL_SEQ2GRF))
-#include "Seq2Grf2.h"
+#include "Seq2Grf.h"
 #endif
 
 #if (((!defined(NO_TOOL_SORTTXT))) || defined(TOOL_SORTTXT))
@@ -374,7 +374,7 @@ const struct utility_item utility_array[]=
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SEQ2GRF))) || defined(TOOL_SEQ2GRF))
-	{ "Seq2Grf2", 8, &main_Seq2Grf2, usage_Seq2Grf2, optstring_Seq2Grf2, lopts_Seq2Grf2 } ,
+	{ "Seq2Grf", 7, &main_Seq2Grf, usage_Seq2Grf, optstring_Seq2Grf, lopts_Seq2Grf } ,
 #endif
 
 #if (((!defined(NO_TOOL_SORTTXT))) || defined(TOOL_SORTTXT))

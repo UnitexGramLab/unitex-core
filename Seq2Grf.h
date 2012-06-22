@@ -18,18 +18,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
+  
+#ifndef Seq2GrfH
+#define Seq2GrfH
 
-#include "IOBuffer.h"
-#include "Seq2Grf2.h"
+#include "UnitexGetOpt.h"
 
-using namespace unitex;
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+namespace unitex {
 
-return main_Seq2Grf2(argc,argv);
-}
+extern const char* optstring_Seq2Grf;
+extern const struct option_TS lopts_Seq2Grf[];
+extern const char* usage_Seq2Grf;
+
+int main_Seq2Grf(int argc,char* const argv[]);
+
+} // namespace unitex
+
+#endif
 
