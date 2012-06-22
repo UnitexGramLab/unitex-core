@@ -30,10 +30,35 @@
 
 namespace unitex {
 
+
+Grf* new_Grf() {
+return new_Grf(0);
+}
+
+static void set_default_header_values(Grf* grf) {
+u_strcpy(grf->size,"SIZE 1188 840");
+u_strcpy(grf->font,"FONT Times New Roman:  10");
+u_strcpy(grf->ofont,"OFONT Arial Unicode MS:B 12");
+u_strcpy(grf->bcolor,"BCOLOR 16777215");
+u_strcpy(grf->fcolor,"FCOLOR 0");
+u_strcpy(grf->acolor,"ACOLOR 13487565");
+u_strcpy(grf->scolor,"SCOLOR 16711680");
+u_strcpy(grf->ccolor,"CCOLOR 255");
+u_strcpy(grf->dboxes,"DBOXES y");
+u_strcpy(grf->dframe,"DFRAME n");
+u_strcpy(grf->ddate,"DDATE n");
+u_strcpy(grf->dfile,"DFILE n");
+u_strcpy(grf->ddir,"DDIR n");
+u_strcpy(grf->drig,"DRIG n");
+u_strcpy(grf->drst,"DRST n");
+u_strcpy(grf->fits,"FITS 100");
+u_strcpy(grf->porient,"PORIENT L");
+}
+
 /**
  * Creates an empty grf object.
  */
-Grf* new_Grf() {
+Grf* new_Grf(int create_default_header) {
 Grf* grf=(Grf*)malloc(sizeof(Grf));
 if (grf==NULL) fatal_alloc_error("new_Grf");
 grf->size[0]='\0';
@@ -56,6 +81,9 @@ grf->porient[0]='\0';
 grf->metadata=new_vector_ptr(1);
 grf->n_states=0;
 grf->states=NULL;
+if (create_default_header) {
+	set_default_header_values(grf);
+}
 return grf;
 }
 
@@ -643,6 +671,7 @@ int have_same_transitions(Grf* grf,int a,int b,ReverseTransitions* r) {
 return have_same_outgoing_transitions(grf,a,b)
 	&& have_same_incoming_transitions(a,b,r);
 }
+
 
 } // namespace unitex
 

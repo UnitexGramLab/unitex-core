@@ -19,24 +19,17 @@
  *
  */
 
-#ifndef Sentence_to_grfH
-#define Sentence_to_grfH
+#include "IOBuffer.h"
+#include "Seq2Grf2.h"
 
-#include "Tfst.h"
-#include "Grf_lib.h"
-#include "SingleGraph.h"
-#include "String_hash.h"
+using namespace unitex;
 
-#ifndef HAS_UNITEX_NAMESPACE
-#define HAS_UNITEX_NAMESPACE 1
-#endif
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-namespace unitex {
+return main_Seq2Grf2(argc,argv);
+}
 
-Grf* sentence_to_grf(Tfst*,char*,int,int);
-Grf* sentence_to_grf(SingleGraph,struct string_hash*,int);
-int width_of_tag(unichar*);
-
-} // namespace unitex
-
-#endif

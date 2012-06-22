@@ -90,6 +90,7 @@ typedef struct {
 
 
 Grf* new_Grf();
+Grf* new_Grf(int create_default_header);
 void free_Grf(Grf*);
 GrfState* new_GrfState(const unichar* content,int x,int y,int rank,int box_number);
 GrfState* new_GrfState(const char* content,int x,int y,int rank,int box_number);

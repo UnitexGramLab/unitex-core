@@ -18,14 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
+  
+#ifndef Seq2Grf2H
+#define Seq2Grf2H
 
-#ifndef Sentence_to_grfH
-#define Sentence_to_grfH
-
-#include "Tfst.h"
-#include "Grf_lib.h"
-#include "SingleGraph.h"
-#include "String_hash.h"
+#include "UnitexGetOpt.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -33,10 +30,13 @@
 
 namespace unitex {
 
-Grf* sentence_to_grf(Tfst*,char*,int,int);
-Grf* sentence_to_grf(SingleGraph,struct string_hash*,int);
-int width_of_tag(unichar*);
+extern const char* optstring_Seq2Grf2;
+extern const struct option_TS lopts_Seq2Grf2[];
+extern const char* usage_Seq2Grf2;
+
+int main_Seq2Grf2(int argc,char* const argv[]);
 
 } // namespace unitex
 
 #endif
+

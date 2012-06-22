@@ -188,7 +188,7 @@ static inline void chomp_new_line(Ustring* ustr) {
 if (ustr==NULL) {
    fatal_error("NULL Ustring error in chomp_new_line\n");
 }
-if (ustr->len>0 && ustr->str[ustr->len-1]=='\n') {
+while (ustr->len>0 && ustr->str[ustr->len-1]=='\n') {
    ustr->len--;
    ustr->str[ustr->len]='\0';
 }

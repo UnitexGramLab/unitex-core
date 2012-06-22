@@ -42,10 +42,14 @@ namespace unitex {
 #define EMPTY_AUTOMATON_DISCLAIMER_TEXT "THIS SENTENCE AUTOMATON HAS BEEN EMPTIED"
 
 
-int compute_state_ranks(Tfst*,int*);
+int compute_state_ranks(SingleGraph,int*);
 int get_max_width_for_ranks(Tfst*,int*,int*,int,int);
+int get_max_width_for_ranks(SingleGraph,struct string_hash*,int*,int*,int,int);
 Grf* tfst_transitions_to_grf_states(Tfst*,int*,int,int,int*,char*,int,int);
-
+Grf* transitions_to_grf_states(SingleGraph automaton,
+		struct string_hash* tags,
+		int* rank,int maximum_rank,
+		int width_max,int* pos_X,int fontsize);
 
 
 /**
@@ -92,7 +96,7 @@ Grf* sentence_to_grf(Tfst* tfst,char* font,int fontsize,int sequence) {
 	if (rank==NULL) {
 		fatal_alloc_error("sentence_to_grf");
 	}
-	int maximum_rank=compute_state_ranks(tfst,rank);
+	int maximum_rank=compute_state_ranks(tfst->automaton,rank);
 	/* The pos_X array will be used to store the X coordinate of the grf
 	 * boxes that correspond to a given rank. We add +1 to the maximum rank,
 	 * because the rank has been computed on the fst2 states and the
@@ -106,6 +110,33 @@ Grf* sentence_to_grf(Tfst* tfst,char* font,int fontsize,int sequence) {
 	free(rank);
 	free(pos_X);
 	return grf;
+}
+
+
+
+Grf* sentence_to_grf(SingleGraph automaton,struct string_hash* tags,int fontsize) {
+if (automaton->number_of_states==0) {
+	fatal_error("Unexpected empty automaton in sentence_to_grf\n");
+}
+/* The rank array will be used to store the rank of each state */
+int* rank=(int*)malloc(sizeof(int)*automaton->number_of_states);
+if (rank==NULL) {
+	fatal_alloc_error("sentence_to_grf");
+}
+int maximum_rank=compute_state_ranks(automaton,rank);
+/* The pos_X array will be used to store the X coordinate of the grf
+ * boxes that correspond to a given rank. We add +1 to the maximum rank,
+ * because the rank has been computed on the fst2 states and the
+ * X positions concerns fst2 transitions. */
+int* pos_X=(int*)malloc(sizeof(int)*(maximum_rank+1));
+if (pos_X==NULL) {
+	fatal_alloc_error("sentence_to_grf");
+}
+int width_max=get_max_width_for_ranks(automaton,tags,pos_X,rank,maximum_rank,fontsize);
+Grf* grf=transitions_to_grf_states(automaton,tags,rank,maximum_rank,width_max,pos_X,fontsize);
+free(rank);
+free(pos_X);
+return grf;
 }
 
 
@@ -137,8 +168,8 @@ Grf* sentence_to_grf(Tfst* tfst,char* font,int fontsize,int sequence) {
  * Note that the array has an extra cell at its end. We use it to store the
  * total number of transitions in the automaton.
  */
-int* get_n_transitions_before_state(Tfst* tfst) {
-	int max=tfst->automaton->number_of_states;
+int* get_n_transitions_before_state(SingleGraph automaton) {
+	int max=automaton->number_of_states;
 	int* n_transitions_par_state=(int*)malloc((1+max)*sizeof(int));
 	if (n_transitions_par_state==NULL) {
 		fatal_alloc_error("get_n_transitions_par_state");
@@ -147,7 +178,7 @@ int* get_n_transitions_before_state(Tfst* tfst) {
 	n_transitions_par_state[0]=0;
 	for (int i=0;i<max;i++) {
 		n_transitions_par_state[i+1]=n_transitions_par_state[i];
-		trans=tfst->automaton->states[i]->outgoing_transitions;
+		trans=automaton->states[i]->outgoing_transitions;
 		while (trans!=NULL) {
 			n_transitions_par_state[i+1]++;
 			trans=trans->next;
@@ -211,8 +242,9 @@ void remove_duplicate_grf_states(Grf* grf) {
 						vector_int_add(grf->states[k]->transitions,j);
 					}
 				}
+			} else {
+				j++;
 			}
-			j++;
 		}
 	}
 }
@@ -220,8 +252,10 @@ void remove_duplicate_grf_states(Grf* grf) {
 
 static void prepare_grf_header(Grf* grf,int width,int height,char* font,int fontsize) {
 	u_sprintf(grf->size,"SIZE %d %d",width,height);
-	u_sprintf(grf->font,"FONT %s:  %d",font,fontsize);
-	u_sprintf(grf->ofont,"OFONT %s:B %d",font,fontsize);
+	if (font!=NULL) {
+		u_sprintf(grf->font,"FONT %s:  %d",font,fontsize);
+		u_sprintf(grf->ofont,"OFONT %s:B %d",font,fontsize);
+	}
 	u_sprintf(grf->bcolor,"BCOLOR 16777215");
 	u_sprintf(grf->fcolor,"FCOLOR 0");
 	u_sprintf(grf->acolor,"ACOLOR 12632256");
@@ -243,7 +277,7 @@ static void prepare_grf_header(Grf* grf,int width,int height,char* font,int font
  * Saves the given grf states to the given file.
  */
 static void prepare_grf_for_saving(Grf* grf,
-		int maximum_rank,char* font,int height_indication,int fontsize) {
+		int maximum_rank,char* font,int fontsize) {
 	/* We count the number of boxes for each rank */
 	int* pos_Y=(int*)calloc(maximum_rank+1,sizeof(int));
 	if (pos_Y==NULL) {
@@ -253,13 +287,17 @@ static void prepare_grf_for_saving(Grf* grf,
 		if (grf->states[i]->rank<0) error("%d\n",grf->states[i]->rank);
 		pos_Y[grf->states[i]->rank]++;
 	}
-	prepare_grf_header(grf,grf->states[1]->x+300,200+height_indication*100,font,fontsize);
 	/* We set the Y coordinates of all boxes */
 	grf->states[0]->y=100;
 	grf->states[1]->y=100;
+	int maxY=100;
 	for (int i=2;i<grf->n_states;i++) {
 		grf->states[i]->y=100-(50*(grf->states[i]->rank%2))+100*(--pos_Y[grf->states[i]->rank]);
+		if (grf->states[i]->y>maxY) {
+			maxY=grf->states[i]->y;
+		}
 	}
+	prepare_grf_header(grf,grf->states[1]->x+300,200+maxY,font,fontsize);
 	free(pos_Y);
 }
 
@@ -273,10 +311,9 @@ static void prepare_grf_for_saving(Grf* grf,
 Grf* tfst_transitions_to_grf_states(Tfst* tfst,
 		int* rank,int maximum_rank,
 		int width_max,int* pos_X,char* font,int fontsize, int sequences) {
-	Grf* grf=new_Grf();
+	Grf* grf=new_Grf(1);
 	int n_states=tfst->automaton->number_of_states;
-	int* n_transitions_before_state=get_n_transitions_before_state(tfst);
-	int max_transitions=get_maximum_difference(n_transitions_before_state,n_states);
+	int* n_transitions_before_state=get_n_transitions_before_state(tfst->automaton);
 	Transition* trans;
 	/* We create initial state and set its transitions. We start at 2 because
 	 * 0 and 1 are respectively reserved for the initial and the final states. */
@@ -314,7 +351,6 @@ Grf* tfst_transitions_to_grf_states(Tfst* tfst,
 				} else if(!u_strcmp(t->content,"/")){
 					u_strcpy(content,"\"\\/\"");
 				}	else {
-
 					/* Otherwise, we put the content between double quotes */
 					u_strcpy(content,"\"");
 					escape(t->content,content,P_DOUBLE_QUOTE);
@@ -363,7 +399,91 @@ Grf* tfst_transitions_to_grf_states(Tfst* tfst,
 	free(n_transitions_before_state);
 	remove_duplicate_grf_states(grf);
 	/* And we prepare the grf so that it will be ready to be saved on disk */
-	prepare_grf_for_saving(grf,maximum_rank,font,max_transitions,fontsize);
+	prepare_grf_for_saving(grf,maximum_rank,font,fontsize);
+	return grf;
+}
+
+
+
+/**
+ * This function creates the grf states that correspond to the given fst2
+ * and saves them to the given file.
+ */
+Grf* transitions_to_grf_states(SingleGraph automaton,
+		struct string_hash* tags,
+		int* rank,int maximum_rank,
+		int width_max,int* pos_X,int fontsize) {
+	Grf* grf=new_Grf(1);
+	int n_states=automaton->number_of_states;
+	int* n_transitions_before_state=get_n_transitions_before_state(automaton);
+	Transition* trans;
+	/* We create initial state and set its transitions. We start at 2 because
+	 * 0 and 1 are respectively reserved for the initial and the final states. */
+	add_GrfState(grf,new_GrfState("\"<E>\"",50,0,0,0));
+	int j=2;
+	trans=automaton->states[0]->outgoing_transitions;
+	while (trans!=NULL) {
+		vector_int_add_if_absent(grf->states[0]->transitions,j++);
+		trans=trans->next;
+	}
+	/* We create the final state */
+	add_GrfState(grf,new_GrfState("\"\"",(width_max+100),0,maximum_rank,1));
+	/* Then, we save all the other grf states */
+	Ustring*  content=new_Ustring();
+	for (int i=0;i<n_states;i++) {
+		trans=automaton->states[i]->outgoing_transitions;
+		while (trans!=NULL) {
+			unichar* t=tags->value[trans->tag_number];
+			empty(content);
+			if (!u_strcmp(t,"\"")) {
+				/* If the box content is a double quote, we must protect it in a special
+				 * way since both \ and "  are special characters in grf files. */
+				u_sprintf(content,"\"\\\\\\\"\"");
+			} else if(!u_strcmp(t,"<")){
+				u_strcpy(content,"\"\\<\"");
+			} else if(!u_strcmp(t,"\\")){
+				u_strcpy(content,"\"\\\\\"");
+			} else if(!u_strcmp(t,"+")){
+				u_strcpy(content,"\"\\+\"");
+			} else if(!u_strcmp(t,"-")){
+				u_strcpy(content,"\"\\-\"");
+			} else if(!u_strcmp(t,":")){
+				u_strcpy(content,"\"\\:\"");
+			} else if(!u_strcmp(t,"/")){
+				u_strcpy(content,"\"\\/\"");
+			}	else {
+				/* Otherwise, we put the content between double quotes */
+				u_strcpy(content,"\"");
+				escape(t,content,P_DOUBLE_QUOTE);
+				u_strcatf(content,"\"");
+			}
+			int index=add_GrfState(grf,new_GrfState(content->str,pos_X[rank[i]],0,rank[i],grf->n_states));
+			/* Now that we have created the grf state, we set its outgoing transitions */
+			if (automaton->states[trans->state_number]->outgoing_transitions==NULL
+					|| is_final_state(automaton->states[trans->state_number])) {
+				/* If the current fst2 transition points to a final state,
+				 * we must put a transition for the current grf state to the
+				 * grf final state */
+				vector_int_add(grf->states[index]->transitions,1);
+			}
+			/* Then, we create transitions */
+			Transition* tmp=automaton->states[trans->state_number]->outgoing_transitions;
+			/* +2 because of the grf states 0 and 1 that are reserved */
+			if (tmp!=NULL) {
+				int k=2+n_transitions_before_state[trans->state_number];
+				while (tmp!=NULL) {
+					vector_int_add(grf->states[index]->transitions,k++);
+					tmp=tmp->next;
+				}
+			}
+			trans=trans->next;
+		}
+	}
+	free_Ustring(content);
+	free(n_transitions_before_state);
+	remove_duplicate_grf_states(grf);
+	/* And we prepare the grf so that it will be ready to be saved on disk */
+	prepare_grf_for_saving(grf,maximum_rank,NULL,fontsize);
 	return grf;
 }
 
@@ -374,9 +494,9 @@ Grf* tfst_transitions_to_grf_states(Tfst* tfst,
  * is the case, then we increase the rank of B and we mark B as updated.
  * Finally, we explore recursively all the states that have been updated.
  */
-void explore_states_for_ranks(int current_state,int initial_state,Tfst* tfst,
+void explore_states_for_ranks(int current_state,int initial_state,SingleGraph automaton,
 		int* rank,struct bit_array* modified,int* maximum_rank) {
-	Transition* trans=tfst->automaton->states[current_state]->outgoing_transitions;
+	Transition* trans=automaton->states[current_state]->outgoing_transitions;
 	int current_rank=rank[current_state-initial_state];
 	while (trans!=NULL) {
 		if (current_rank+1>rank[trans->state_number-initial_state]) {
@@ -390,10 +510,10 @@ void explore_states_for_ranks(int current_state,int initial_state,Tfst* tfst,
 		trans=trans->next;
 	}
 	/* Then, we process all the states we have modified */
-	trans=tfst->automaton->states[current_state]->outgoing_transitions;
+	trans=automaton->states[current_state]->outgoing_transitions;
 	while (trans!=NULL) {
 		if (get_value(modified,trans->state_number-initial_state)) {
-			explore_states_for_ranks(trans->state_number,initial_state,tfst,rank,modified,maximum_rank);
+			explore_states_for_ranks(trans->state_number,initial_state,automaton,rank,modified,maximum_rank);
 			/* After we have processed the state, we remove the modification mark */
 			set_value(modified,(trans->state_number)-initial_state,0);
 		}
@@ -407,14 +527,14 @@ void explore_states_for_ranks(int current_state,int initial_state,Tfst* tfst,
  * All ranks are stored into the 'rank' array, and the
  * maximum rank is returned.
  */
-int compute_state_ranks(Tfst* tfst,int* rank) {
-	int n_states=tfst->automaton->number_of_states;
+int compute_state_ranks(SingleGraph automaton,int* rank) {
+	int n_states=automaton->number_of_states;
 	int maximum_rank=0;
 	for (int i=0;i<n_states;i++) {
 		rank[i]=0;
 	}
 	struct bit_array* modified=new_bit_array(n_states,ONE_BIT);
-	explore_states_for_ranks(0,0,tfst,rank,modified,&maximum_rank);
+	explore_states_for_ranks(0,0,automaton,rank,modified,&maximum_rank);
 	free_bit_array(modified);
 	return maximum_rank;
 }
@@ -423,14 +543,14 @@ int compute_state_ranks(Tfst* tfst,int* rank) {
 /**
  * This is a raw approximation of the width of a tag.
  */
-int width_of_tag(TfstTag* e) {
-	if (e->content[0]!='{' || !u_strcmp(e->content,"{S}")) {
+int width_of_tag(unichar* tag) {
+	if (tag[0]!='{' || !u_strcmp(tag,"{S}")) {
 		/* Note that the {S} should not appear in a sentence automaton */
-		return u_strlen(e->content);
+		return u_strlen(tag);
 	}
 	/* If the tag is a tag token like {today,.ADV}, we take the maximum
 	 * of the lengths of the inflected form, the lemma and the codes */
-	struct dela_entry* entry=tokenize_tag_token(e->content,1);
+	struct dela_entry* entry=tokenize_tag_token(tag,1);
 	int width=u_strlen(entry->inflected);
 	int tmp=u_strlen(entry->lemma);
 	if (tmp>width) width=tmp;
@@ -465,6 +585,44 @@ int get_max_width_for_ranks(Tfst* tfst,int* pos_X,int* rank,int maximum_rank,int
 		trans=tfst->automaton->states[i]->outgoing_transitions;
 		while (trans!=NULL) {
 			TfstTag* t=(TfstTag*)(tfst->tags->tab[trans->tag_number]);
+			int v=fontsize*(5+width_of_tag(t->content));
+			if (pos_X[rank[i]+1]<v) {
+				pos_X[rank[i]+1]=v;
+			}
+			trans=trans->next;
+		}
+	}
+	/* Now that we have the width for each rank, we compute the absolute X
+	 * for each rank. We arbitrary set a distance of 100 pixels between boxes
+	 * of consecutive ranks. */
+	int tmp=100;
+	for (i=0;i<=maximum_rank;i++) {
+		pos_X[i]=tmp+pos_X[i];
+		tmp=pos_X[i];
+	}
+	return pos_X[maximum_rank];
+}
+
+
+/**
+ * Computes the maximum width in characters associated to each rank and
+ * returns the maximum width. These values will be used to generate
+ * the X coordinates of the grf boxes so that the graph will be readable.
+ * The function returns the X position of the last rank boxes.
+ */
+int get_max_width_for_ranks(SingleGraph automaton,struct string_hash* tags,
+		int* pos_X,int* rank,int maximum_rank,int fontsize) {
+	int n_states=automaton->number_of_states;
+	int i;
+	Transition* trans;
+	for (i=0;i<=maximum_rank;i++) {
+		pos_X[i]=0;
+	}
+	/* First, we compute the maximum width for the boxes of each rank */
+	for (i=0;i<n_states;i++) {
+		trans=automaton->states[i]->outgoing_transitions;
+		while (trans!=NULL) {
+			unichar* t=tags->value[trans->tag_number];
 			int v=fontsize*(5+width_of_tag(t));
 			if (pos_X[rank[i]+1]<v) {
 				pos_X[rank[i]+1]=v;
@@ -482,6 +640,7 @@ int get_max_width_for_ranks(Tfst* tfst,int* pos_X,int* rank,int maximum_rank,int
 	}
 	return pos_X[maximum_rank];
 }
+
 
 } // namespace unitex
 

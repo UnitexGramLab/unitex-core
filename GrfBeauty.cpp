@@ -841,15 +841,6 @@ return t;
 }
 
 
-static void free_ignorable_or_artificial_transitions(struct list_int** t,int n_states) {
-if (t==NULL) return;
-for (int i=0;i<n_states;i++) {
-	free_list_int(t[i]);
-}
-free(t);
-}
-
-
 
 /**
  * Returns an array indicating which states are part of the subgraph from
@@ -1343,6 +1334,46 @@ free_TransitionModifs(t);
 }
 
 
+void clean_useless_states(Grf* grf) {
+int* accessible=(int*)calloc(grf->n_states,sizeof(int));
+int* coaccessible=(int*)calloc(grf->n_states,sizeof(int));
+if (accessible==NULL || coaccessible==NULL) {
+	fatal_alloc_error("beautify");
+}
+explore_accessibility(grf,0,accessible);
+ReverseTransitions* reverse=compute_reverse_transitions(grf);
+explore_coaccessibility(reverse,1,coaccessible);
+/* Here, we reuse the accessible array as a 'state to remove' one */
+int* to_remove=accessible;
+for (int i=0;i<grf->n_states;i++) {
+	to_remove[i]=!(accessible[i]&&coaccessible[i]);
+}
+for (int i=0;i<grf->n_states;i++) {
+	GrfState* s=grf->states[i];
+	if (to_remove[i]) {
+		/* We clear the transition list of a state to be removed */
+		s->transitions->nbelems=0;
+		/* And we set its content to the empty string, to that we can
+		 *  invoke remove_isolated_boxes */
+		s->box_content[0]='\0';
+	} else {
+		/* And we remove transitions to removed states */
+		for (int j=0;j<s->transitions->nbelems;) {
+			int val=s->transitions->tab[j];
+			if (to_remove[val]) {
+				vector_int_remove(s->transitions,val);
+			} else {
+				j++;
+			}
+		}
+	}
+}
+free_ReverseTransitions(reverse);
+free(accessible);
+free(coaccessible);
+remove_isolated_boxes(grf);
+}
+
 /**
  * This function takes a grf generated from a sequence list, and tries
  * to make it more beautiful for a human reader.
@@ -1359,6 +1390,9 @@ replace_transition_by_E(grf);
  */
 remove_isolated_boxes(grf);
 organize_boxes(grf);
+/* Final clean */
+clean_useless_states(grf);
 }
+
 
 } // namespace unitex
