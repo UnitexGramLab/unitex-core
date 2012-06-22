@@ -773,20 +773,6 @@ REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o \
                Unicode.o AbstractAllocator.o RegularExpressions.o Error.o File.o\
                List_int.o Stack_int.o UnitexGetOpt.o Ustring.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
-SEQ2GRF      = Seq2Grf
-SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
-               AbstractAllocator.o Error.o\
-               StringParsing.o DELA.o List_ustring.o String_hash.o DELA_tree.o \
-               TfstStats.o BitArray.o FIFO.o Grf2Fst2_lib.o\
-               Tfst.o SingleGraph.o Txt2Tfst.o BitMasks.o HashTable.o \
-               BuildTextAutomaton.o Text_tokens.o Offsets.o Sentence2Grf.o\
-               AbstractDelaLoad.o UnitexGetOpt.o Ustring.o Grf_lib.o Match.o \
-               Transitions.o List_int.o Korean.o NewLineShifts.o\
-               Symbol.o LanguageDefinition.o Tagset.o Overlap.o NormalizationFst2.o \
-               AbstractFst2Load.o Fst2.o Pattern.o\
-               DebugMode.o CompressedDic.o LoadInf.o LocateMatches.o GrfBeauty.o \
-               File.o Alphabet.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
-
 SEQ2GRF2      = Seq2Grf2
 SEQ2GRF2_OBJS = Main_Seq2Grf2.o Seq2Grf2.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
                AbstractAllocator.o Error.o\
@@ -980,7 +966,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
-                  Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
+                  GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
                   Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
@@ -1015,7 +1001,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
-                  GrfSvn_lib.o DebugMode.o Seq2Grf.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
+                  GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
                   SpellChecking.o Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)
 
@@ -1060,7 +1046,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
-		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(SEQ2GRF) $(SEQ2GRF2) $(GRFTEST) $(SPELLCHECK) $(TFSTTAG) $(KEYWORDS)
+		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF2) $(GRFTEST) $(SPELLCHECK) $(TFSTTAG) $(KEYWORDS)
 
 PROGS += $(TEST)
 
@@ -1077,7 +1063,7 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
 		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)\
-		$(SEQ2GRF_OBJS) $(SEQ2GRF2_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS) $(TFSTTAG_OBJS)
+		$(SEQ2GRF2_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS) $(TFSTTAG_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1513,9 +1499,6 @@ $(BIN_DIR)$(RECONSTRUCAO)$(EXTENSION): $(RECONSTRUCAO_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(REG2GRF)$(EXTENSION): $(REG2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(SEQ2GRF)$(EXTENSION): $(SEQ2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SEQ2GRF2)$(EXTENSION): $(SEQ2GRF2_OBJS)
