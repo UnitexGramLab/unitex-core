@@ -285,7 +285,7 @@ for (int i=0;i<size;i++) {
  * then we consider that the sequence was too much transformed and so, we
  * return 0 to indicate that it should not be accepted; otherwise we return 1.
  */
-int check_sequence(unichar* res[],int n) {
+int check_sequence(unichar* res[],int n,int size_origin) {
 int n_tokens=0,n_lex;
 for (int i=0;i<n;i++) {
 	if (!u_strcmp(res[i],TOKEN)) {
@@ -293,7 +293,7 @@ for (int i=0;i<n;i++) {
 	}
 }
 n_lex=n-n_tokens;
-if (n_lex<2 && n>=2) return 0;
+if (n_lex<2 && size_origin>=2) return 0;
 return 1;
 }
 
@@ -304,7 +304,7 @@ if (current==size) {
 	/* We add the current sequence to the automaton, but only if it contains
 	 * enough non <TOKEN> items
 	 */
-	if (!check_sequence(res,pos_res)) {
+	if (!check_sequence(res,pos_res,size)) {
 		return;
 	}
 	add_sequence(res,pos_res,automaton,tags);
