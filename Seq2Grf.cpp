@@ -227,6 +227,9 @@ while (i!=line->len) {
 			|| line->str[i]=='\r' || line->str[i]=='\n') {
 		/* We ignore separators */
 		i++;
+	} else if (u_starts_with(line->str+i,"{S}")) {
+		vector_ptr_add(tokens,u_strdup("{S}"));
+		i+=3;
 	} else {
 		/* We read a one-char token */
 		u_strcat(tmp,line->str[i]);
