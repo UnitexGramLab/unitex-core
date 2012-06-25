@@ -287,12 +287,8 @@ if (current==size) {
 		/* If we are done, we quit */
 		return;
 	}
-	/* If we have reached the end of the array, we can only consider insertions,
-	 * but only if the previous op wasn't a suppr, because it would become then a replace op */
-	if (insert!=0 && last_op!='S') {
-		res[pos_res]=TOKEN;
-		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,automaton,tags);
-	}
+	/* If we have reached the end of the array, we could only consider insertions,
+	 * but the specifications forbids this */
 	return;
 }
 /* Normal case */
@@ -300,24 +296,25 @@ res[pos_res]=t[current];
 work(t,size,current+1,errors,insert,replace,suppr,0,res,pos_res+1,automaton,tags);
 /* Now, we consider errors */
 if (errors==0) return;
-if (insert!=0 && last_op!='S') {
-		res[pos_res]=TOKEN;
-		work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,automaton,tags);
+if (insert!=0 && last_op!='S' && pos_res>0) {
+	/* We refuse insertions before the sequence */
+	res[pos_res]=TOKEN;
+	work(t,size,current,errors-1,insert-1,replace,suppr,'I',res,pos_res+1,automaton,tags);
 }
 if (suppr!=0 && last_op!='I') {
-		work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,pos_res,automaton,tags);
+	work(t,size,current+1,errors-1,insert,replace,suppr-1,'S',res,pos_res,automaton,tags);
 }
 if (replace!=0) {
-		res[pos_res]=TOKEN;
-		work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,pos_res+1,automaton,tags);
+	res[pos_res]=TOKEN;
+	work(t,size,current+1,errors-1,insert,replace-1,suppr,'R',res,pos_res+1,automaton,tags);
 }
 }
+
 
 void process_sequence(Ustring* line,Alphabet* alph,int max_wildcards,int n_delete,int n_insert,
 		int n_replace,SingleGraph automaton,struct string_hash* tokens) {
 vector_ptr* tok=tokenize_sequence(line,alph);
 unichar** variants=(unichar**)malloc(sizeof(unichar*)*(tok->nbelems+max_wildcards));
-//add_sequence(tok,automaton,tokens);
 work((unichar**)(tok->tab),tok->nbelems,0,max_wildcards,n_insert,n_replace,n_delete,0,variants,0,automaton,tokens);
 free_vector_ptr(tok,free);
 free(variants);
