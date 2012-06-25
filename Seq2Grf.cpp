@@ -277,11 +277,33 @@ for (int i=0;i<size;i++) {
 }
 
 
+/**
+ * If there is less than 2 non <TOKEN> items and if the sequence length >=2,
+ * then we consider that the sequence was too much transformed and so, we
+ * return 0 to indicate that it should not be accepted; otherwise we return 1.
+ */
+int check_sequence(unichar* res[],int n) {
+int n_tokens=0,n_lex;
+for (int i=0;i<n;i++) {
+	if (!u_strcmp(res[i],TOKEN)) {
+		n_tokens++;
+	}
+}
+n_lex=n-n_tokens;
+if (n_lex<2 && n>=2) return 0;
+return 1;
+}
+
 
 void work(unichar* t[],int size,int current,int errors,int insert,int replace,int suppr,char last_op,
 			unichar* res[],int pos_res,SingleGraph automaton,struct string_hash* tags) {
 if (current==size) {
-	/* We add the current sequence to the automaton */
+	/* We add the current sequence to the automaton, but only if it contains
+	 * enough non <TOKEN> items
+	 */
+	if (!check_sequence(res,pos_res)) {
+		return;
+	}
 	add_sequence(res,pos_res,automaton,tags);
 	if (errors==0) {
 		/* If we are done, we quit */
