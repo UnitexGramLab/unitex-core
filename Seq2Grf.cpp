@@ -212,6 +212,20 @@ do {
 } while (is_letter(line[*i],alph));
 }
 
+
+/**
+ * We surround with double-quotes, so that numbers won't be
+ * space separated at Locate time.
+ */
+void read_digit_token(Ustring* tmp,unichar* line,unsigned int *i) {
+u_strcpy(tmp,"\"");
+do {
+	u_strcat(tmp,line[(*i)++]);
+} while (u_is_digit(line[*i]));
+u_strcat(tmp,"\"");
+}
+
+
 const static char* special[]={"{S}",
 		"<MIN>","<!MIN>",
 		"<MAJ>","<!MAJ>",
@@ -254,7 +268,11 @@ while (i!=line->len) {
 		i++;
 	} else if (read_special(tokens,line->str,&i)) {
 		/* Nothing to do */
-	} else {
+	} else if (u_is_digit(line->str[i])) {
+		read_digit_token(tmp,line->str,&i);
+		vector_ptr_add(tokens,u_strdup(tmp->str));
+	}
+	else {
 		/* We read a one-char token */
 		u_strcat(tmp,line->str[i]);
 		i++;
