@@ -294,6 +294,7 @@ for (int i=0;i<n;i++) {
 }
 n_lex=n-n_tokens;
 if (n_lex<2 && size_origin>=2) return 0;
+if (size_origin<=2 && n_tokens>0) return 0;
 return 1;
 }
 
