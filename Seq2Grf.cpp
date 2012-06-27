@@ -212,6 +212,30 @@ do {
 } while (is_letter(line[*i],alph));
 }
 
+const static char* special[]={"{S}",
+		"<MIN>","<!MIN>",
+		"<MAJ>","<!MAJ>",
+		"<MOT>","<!MOT>",
+		"<TOKEN>","<!TOKEN>",
+		"<NB>",
+		"<DIC>","<!DIC>",
+		"<SDIC>","<!SDIC>",
+		"<CDIC>","<!CDIC>",
+		"<TDIC>","<!TDIC>",
+		NULL
+};
+
+
+int read_special(vector_ptr* tokens,unichar* line,unsigned int *pos) {
+for (int i=0;special[i]!=NULL;i++) {
+	if (u_starts_with(line+(*pos),special[i])) {
+		vector_ptr_add(tokens,u_strdup(special[i]));
+		(*pos)+=strlen(special[i]);
+		return 1;
+	}
+}
+return 0;
+}
 
 
 vector_ptr* tokenize_sequence(Ustring* line,Alphabet* alph) {
@@ -227,9 +251,8 @@ while (i!=line->len) {
 			|| line->str[i]=='\r' || line->str[i]=='\n') {
 		/* We ignore separators */
 		i++;
-	} else if (u_starts_with(line->str+i,"{S}")) {
-		vector_ptr_add(tokens,u_strdup("{S}"));
-		i+=3;
+	} else if (read_special(tokens,line->str,&i)) {
+		/* Nothing to do */
 	} else {
 		/* We read a one-char token */
 		u_strcat(tmp,line->str[i]);
