@@ -44,7 +44,8 @@ namespace unitex {
 
 
 void build_sequence_automaton(char* txt,char* grf,Alphabet* alph,int only_stop,int max_wildcards,
-		int n_delete,int n_insert,int n_replace,int beautify,VersatileEncodingConfig* vec);
+		int n_delete,int n_insert,int n_replace,int beautify,VersatileEncodingConfig* vec,
+		int case_sensitive);
 
 const char* usage_Seq2Grf =
 		"Usage: Seq2Grf [OPTIONS] <txt>\n"
@@ -56,6 +57,9 @@ const char* usage_Seq2Grf =
 		"  -o XXX/--output=XXX: the output GRF file\n"
 		"  -s/--only-stop : only consider {STOP}-separated sequences\n"
 		"  -b/--beautify: apply the grf beautifying algorithm\n"
+		"  -n/--no_beautify: do not apply the grf beautifying algorithm (default)\n"
+		"  --case-sensitive: all letter tokens are protected with double-quotes (default)\n"
+		"  --case-insensitive: letter tokens are not protected with double-quotes\n"
 		"  -n/--no_beautify: do not apply the grf beautifying algorithm (default)\n"
 		"  -w n_wildcards\n"
 		"  -i n_insertion\n"
@@ -86,6 +90,8 @@ const struct option_TS lopts_Seq2Grf[] = {
 		{ "no_beautify", no_argument_TS,NULL, 'n'},
 		{ "input_encoding", required_argument_TS, NULL, 'k' },
 		{ "output_encoding", required_argument_TS, NULL, 'q' },
+		{ "case-sensitive", no_argument_TS, NULL, 1 },
+		{ "case-insensitive", no_argument_TS, NULL, 2 },
 		{ "help", no_argument_TS, NULL, 'h' },
 		{ NULL, no_argument_TS, NULL, 0 }
 };
@@ -98,6 +104,7 @@ if (argc==1) {
 char alphabet[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char foo;
+int case_sensitive=1;
 int max_wildcards=0,n_delete=0,n_replace=0,n_insert=0,only_stop=0,beautify=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
@@ -145,6 +152,14 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Seq2Grf,lopts_Seq2Grf,&index
 		}
 		case 'b': {
 			beautify=1;
+			break;
+		}
+		case 1: {
+			case_sensitive=1;
+			break;
+		}
+		case 2: {
+			case_sensitive=0;
 			break;
 		}
 		case 'n': {
@@ -198,7 +213,7 @@ if (alphabet[0]!='\0' ) {
 	alph=load_alphabet(&vec,alphabet,0);
 }
 build_sequence_automaton(argv[vars->optind],output,alph,only_stop,max_wildcards,n_delete,
-		n_insert,n_replace,beautify,&vec);
+		n_insert,n_replace,beautify,&vec,case_sensitive);
 
 free_alphabet(alph);
 free_OptVars(vars);
@@ -206,10 +221,17 @@ return 0;
 }
 
 
-void read_letter_token(Ustring* tmp,unichar* line,unsigned int *i,Alphabet* alph) {
+void read_letter_token(Ustring* tmp,unichar* line,unsigned int *i,Alphabet* alph,
+		int case_sensitive) {
+if (case_sensitive) {
+	u_strcpy(tmp,"\"");
+}
 do {
 	u_strcat(tmp,line[(*i)++]);
 } while (is_letter(line[*i],alph));
+if (case_sensitive) {
+	u_strcat(tmp,"\"");
+}
 }
 
 
@@ -253,14 +275,14 @@ return 0;
 }
 
 
-vector_ptr* tokenize_sequence(Ustring* line,Alphabet* alph) {
+vector_ptr* tokenize_sequence(Ustring* line,Alphabet* alph,int case_sensitive) {
 vector_ptr* tokens=new_vector_ptr(32);
 Ustring* tmp=new_Ustring(128);
 unsigned int i=0;
 while (i!=line->len) {
 	empty(tmp);
 	if (is_letter(line->str[i],alph)) {
-		read_letter_token(tmp,line->str,&i,alph);
+		read_letter_token(tmp,line->str,&i,alph,case_sensitive);
 		vector_ptr_add(tokens,u_strdup(tmp->str));
 	} else if (line->str[i]==' ' || line->str[i]=='\t'
 			|| line->str[i]=='\r' || line->str[i]=='\n') {
@@ -380,8 +402,9 @@ if (replace!=0) {
 
 
 void process_sequence(Ustring* line,Alphabet* alph,int max_wildcards,int n_delete,int n_insert,
-		int n_replace,SingleGraph automaton,struct string_hash* tokens) {
-vector_ptr* tok=tokenize_sequence(line,alph);
+		int n_replace,SingleGraph automaton,struct string_hash* tokens,
+		int case_sensitive) {
+vector_ptr* tok=tokenize_sequence(line,alph,case_sensitive);
 unichar** variants=(unichar**)malloc(sizeof(unichar*)*(tok->nbelems+max_wildcards));
 work((unichar**)(tok->tab),tok->nbelems,0,max_wildcards,n_insert,n_replace,n_delete,0,variants,0,automaton,tokens);
 free_vector_ptr(tok,free);
@@ -390,7 +413,8 @@ free(variants);
 
 
 void build_sequence_automaton(char* txt,char* output,Alphabet* alph,int only_stop,int max_wildcards,
-		int n_delete,int n_insert,int n_replace,int do_beautify,VersatileEncodingConfig* vec) {
+		int n_delete,int n_insert,int n_replace,int do_beautify,VersatileEncodingConfig* vec,
+		int case_sensitive) {
 U_FILE* f=u_fopen(vec,txt,U_READ);
 if (f==NULL) {
 	fatal_error("Cannot open file %s\n",txt);
@@ -419,7 +443,8 @@ while (EOF!=readline(line,f)) {
 			}
 			line->str[i]='\0';
 			u_strcat(seq,line->str+line_start);
-			process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens);
+			process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens,
+					case_sensitive);
 			empty(seq);
 			i=i+5;
 			line_start=i+1;
@@ -432,12 +457,14 @@ while (EOF!=readline(line,f)) {
 	}
 	u_strcat(seq,line->str+line_start);
 	if (!only_stop) {
-		process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens);
+		process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens,
+				case_sensitive);
 		empty(seq);
 	}
 	first_on_this_line=1;
 }
-process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens);
+process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens,
+		case_sensitive);
 u_fclose(f);
 free_Ustring(line);
 free_Ustring(seq);
