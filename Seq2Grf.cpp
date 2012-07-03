@@ -404,6 +404,7 @@ set_initial_state(initial);
 struct string_hash* tokens=new_string_hash(128);
 get_value_index(EPSILON,tokens);
 int first_on_this_line=0,line_start;
+u_printf("Seq2Grf: reading sequence file...\n");
 while (EOF!=readline(line,f)) {
 	/* If there is {STOP} tag, it is always a sequence delimiter */
 	line_start=0;
@@ -440,9 +441,11 @@ process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,to
 u_fclose(f);
 free_Ustring(line);
 free_Ustring(seq);
+u_printf("Seq2Grf: minimizing graph...\n");
 minimize(automaton,1);
 Grf* grf=sentence_to_grf(automaton,tokens,12);
 if (do_beautify) {
+	u_printf("Seq2Grf: beautifying graph...\n");
 	beautify(grf,alph);
 }
 U_FILE* f_output=u_fopen(vec,output,U_WRITE);
@@ -454,6 +457,7 @@ u_fclose(f_output);
 free_Grf(grf);
 free_string_hash(tokens);
 free_SingleGraph(automaton,NULL);
+u_printf("Seq2Grf: done.\n");
 }
 
 
