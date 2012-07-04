@@ -907,6 +907,7 @@ if (persistent_filename == NULL) {
 if (standard_load_persistence_dictionary(name.getJString(),persistent_filename,len_buffer)) {
 	jret = env->NewStringUTF(persistent_filename);
 }
+free(persistent_filename);
 return jret;
 }
 
@@ -940,6 +941,7 @@ if (persistent_filename == NULL) {
 if (standard_load_persistence_fst2(name.getJString(),persistent_filename,len_buffer)) {
 	jret = env->NewStringUTF(persistent_filename);
 }
+free(persistent_filename);
 return jret;
 }
 
@@ -974,6 +976,7 @@ if (persistent_filename == NULL) {
 if (standard_load_persistence_alphabet(name.getJString(),persistent_filename,len_buffer)) {
 	jret = env->NewStringUTF(persistent_filename);
 }
+free(persistent_filename);
 return jret;
 }
 
