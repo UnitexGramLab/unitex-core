@@ -899,7 +899,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentDictio
 jstringToCUtf name;
 jstring jret=NULL;
 name.initJString(env,filename);
-size_t len_buffer=strlen(name.getJString()+0x200);
+size_t len_buffer=strlen(name.getJString())+0x200;
 char* persistent_filename=(char*)malloc(len_buffer+1);
 if (persistent_filename == NULL) {
 	return NULL;
@@ -932,7 +932,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentFst2
 jstringToCUtf name;
 jstring jret=NULL;
 name.initJString(env,filename);
-size_t len_buffer=strlen(name.getJString()+0x200);
+size_t len_buffer=strlen(name.getJString())+0x200;
 char* persistent_filename=(char*)malloc(len_buffer+1);
 if (persistent_filename == NULL) {
 	return NULL;
@@ -966,7 +966,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentAlphab
 jstringToCUtf name;
 jstring jret=NULL;
 name.initJString(env,filename);
-size_t len_buffer=strlen(name.getJString()+0x200);
+size_t len_buffer=strlen(name.getJString())+0x200;
 char* persistent_filename=(char*)malloc(len_buffer+1);
 if (persistent_filename == NULL) {
 	return NULL;
