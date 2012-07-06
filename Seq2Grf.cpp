@@ -240,11 +240,12 @@ if (case_sensitive) {
  * space separated at Locate time.
  */
 void read_digit_token(Ustring* tmp,unichar* line,unsigned int *i) {
-u_strcpy(tmp,"\"");
 do {
+	if (tmp->len!=0) {
+		u_strcat(tmp,"#");
+	}
 	u_strcat(tmp,line[(*i)++]);
 } while (u_is_digit(line[*i]));
-u_strcat(tmp,"\"");
 }
 
 
