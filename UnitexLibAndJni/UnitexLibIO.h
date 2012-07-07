@@ -53,6 +53,8 @@ UNITEX_FUNC void UNITEX_CALL CloseUnitexFileReadBuffer(UNITEXFILEMAPPED *,const 
 
 UNITEX_FUNC int UNITEX_CALL WriteUnitexFile(const char*name,const void*buffer_prefix,size_t size_prefix,const void*buffer_suffix,size_t size_suffix);
 
+UNITEX_FUNC int UNITEX_CALL AppendUnitexFile(const char*name,const void*buffer_data,size_t size_data);
+
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexFile(const char*name);
 
 UNITEX_FUNC int UNITEX_CALL RenameUnitexFile(const char*oldName,const char*newName);

@@ -438,6 +438,25 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 }
 
 
+/*
+ * Class:     fr_umlv_unitex_jni_UnitexJni
+ * Method:    appendUnitexFile
+ * Signature: (Ljava/lang/String;[B)Z
+ */
+JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_appendUnitexFile
+  (JNIEnv *env, jclass, jstring filename, jbyteArray filedata)
+{
+	jstringToCUtf jstc_filename;
+	jstc_filename.initJString(env,filename);
+	jsize len = env->GetArrayLength(filedata);
+	jbyte * buffer=env->GetByteArrayElements(filedata,NULL);
+
+	jboolean retValue= (AppendUnitexFile(jstc_filename.getJString(),buffer,len) == 0);
+	env->ReleaseByteArrayElements(filedata,buffer,0);
+	return retValue;
+}
+
+
 /* utf16be version
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)

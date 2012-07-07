@@ -113,6 +113,35 @@ UNITEX_FUNC int UNITEX_CALL WriteUnitexFile(const char*name,const void*buffer_pr
 
 
 /**
+ * Append data to an Unitex file (to system filesystem or filespace)
+ * it write from two buffer (prefix and suffix). This is useful for writing both header and footer (or BOM and text...)
+ */
+UNITEX_FUNC int UNITEX_CALL AppendUnitexFile(const char*name,const void*buffer_data,size_t size_data)
+{
+    ABSTRACTFILE* vfWrite = af_fopen(name, "ab");
+    if (vfWrite == NULL)
+    {
+		af_fseek(vfWrite, 0, SEEK_END);
+#ifdef VERBOSE_WRITEUNITEXFILE_ERROR
+		fprintf(stderr, "AppendUnitexFile: could not open file %s\n", name);
+#endif
+        return 1;
+    }
+    int retValue = 0;
+    if (size_data > 0)
+        if (size_data != af_fwrite(buffer_data,1,size_data,vfWrite)) {
+#ifdef VERBOSE_WRITEUNITEXFILE_ERROR
+			fprintf(stderr, "AppendUnitexFile: could not write data of file %s\n", name);
+#endif
+            retValue = 1;
+		} 
+		
+    af_fclose(vfWrite);
+    return retValue;
+}
+
+
+/**
  * remove a file
  */
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexFile(const char*name)

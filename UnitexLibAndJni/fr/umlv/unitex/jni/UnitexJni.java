@@ -170,6 +170,12 @@ public class UnitexJni {
 			String fileContent, boolean isBom);
 
 	/**
+	 * append to a file a raw binary byte array
+	 */
+	public native static boolean appendUnitexFile(String fileName,
+			byte[] fileContent);
+
+	/**
 	 * read a file to a raw binary char array representation
 	 */
 	public native static char[] getUnitexFileDataChar(String fileName);
