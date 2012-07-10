@@ -35,9 +35,9 @@ namespace unitex {
 
 
 void free_FilterSet(FilterSet*,int);
-void w_extract_inflected(const unichar*,wchar_t*);
+void w_extract_inflected(const unichar*,unichar_regex*);
 void split_filter(const unichar*,unichar*,char*);
-void w_strcpy(wchar_t*,const unichar*);
+void w_strcpy(unichar_regex*,const unichar*);
 
 
 /**
@@ -66,7 +66,7 @@ if (filters->size>0) {
    unichar filterContent[512];
    char filterOptions[512];
    int regBasic,cflags;
-   wchar_t warray[512];
+   unichar_regex warray[512];
    filter_set->size=filters->size;
    filter_set->filter=(MorphoFilter*)malloc(sizeof(MorphoFilter)*filters->size);
    if (filter_set->filter==NULL) {
@@ -118,7 +118,7 @@ if (filters->size>0) {
       if (filter_set->filter[i].matcher==NULL) {
          fatal_alloc_error("new_FilterSet");
       }
-      /* As the TRE library manipulates wchar_t* strings, we must convert our unichar* one */
+      /* As the TRE library manipulates unichar_regex* strings, we must convert our unichar* one */
       w_strcpy(warray,filter_set->filter[i].content);
       /* Then, we build the regular expression matcher associated to our filter */
       ccode=tre_regwcomp(filter_set->filter[i].matcher,warray,cflags);
@@ -181,7 +181,7 @@ free_FilterSet(filters,filters->size);
  */
 FilterMatchIndex* new_FilterMatchIndex(FilterSet* filters,struct string_hash* tokens) {
 int i,k;
-wchar_t inflected[2048];
+unichar_regex inflected[2048];
 unichar* current_token;
 FilterMatchIndex* index=(FilterMatchIndex*)malloc(sizeof(FilterMatchIndex));
 if (index==NULL) {
@@ -205,7 +205,7 @@ if (filters->size>0) {
          /* If we have a tag token like "{today,.ADV}", we extract its inflected form */
          w_extract_inflected(current_token,inflected);
       } else {
-         /* Otherwise, we just convert the unichar* token into a wchar_t* string */
+         /* Otherwise, we just convert the unichar* token into a unichar_regex* string */
          w_strcpy(inflected,current_token);
       }
       for (k=0;k<filters->size;k++) {
@@ -246,7 +246,7 @@ free(index);
  * Returns 1 if the given string matches the given filter.
  * with a user provided buffer
  */
-int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number,wchar_t* tmp) {
+int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number,unichar_regex* tmp) {
 w_strcpy(tmp,s);
 return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
@@ -256,7 +256,7 @@ return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
  * Returns 1 if the given string matches the given filter.
  */
 int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number) {
-wchar_t tmp[2048];
+unichar_regex tmp[2048];
 w_strcpy(tmp,s);
 return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
@@ -280,9 +280,9 @@ return get_value(index->matching_tokens[filter_number],token);
 
 /**
  * This function extracts the inflected form of the given tag token and
- * stores it in the given wchar_t* string.
+ * stores it in the given unichar_regex* string.
  */
-void w_extract_inflected(const unichar* tag_token,wchar_t* inflected) {
+void w_extract_inflected(const unichar* tag_token,unichar_regex* inflected) {
 struct dela_entry* entry=tokenize_tag_token(tag_token,1);
 if (entry==NULL) {
    fatal_error("Invalid tag token in w_extract_inflected\n");
@@ -317,11 +317,11 @@ filter_options[j]='\0';
 
 
 /**
- * Copies a unichar* string into a wchar_t* one.
+ * Copies a unichar* string into a unichar_regex* one.
  */
-void w_strcpy(wchar_t* target,const unichar* source) {
+void w_strcpy(unichar_regex* target,const unichar* source) {
 int i=0;
-while ((target[i]=(wchar_t)source[i])!= L'\0') i++;
+while ((target[i]=(unichar_regex)source[i])!= L'\0') i++;
 }
 
 } // namespace unitex

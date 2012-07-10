@@ -49,6 +49,8 @@
 
 namespace unitex {
 
+typedef tre_char_t unichar_regex ;
+
 /**
  * This structure defines a morphological filter.
  */
@@ -95,7 +97,7 @@ FilterMatchIndex* new_FilterMatchIndex(FilterSet*,struct string_hash*);
 void free_FilterMatchIndex(FilterMatchIndex*);
 
 int string_match_filter(const FilterSet*,const unichar*,int);
-int string_match_filter(const FilterSet*,const unichar*,int,wchar_t*);
+int string_match_filter(const FilterSet*,const unichar*,int,unichar_regex*);
 int token_match_filter(FilterMatchIndex*,int,int);
 
 #endif

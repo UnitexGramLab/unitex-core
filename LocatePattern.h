@@ -48,11 +48,15 @@
 #include "MappedFileHelper.h"
 #include "Arabic.h"
 
+
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
+
+
+typedef tre_char_t unichar_regex ;
 
 struct counting_step_st
 {
@@ -296,7 +300,7 @@ struct locate_parameters {
 
    /* a recyclable buffer to be given to string_match_filter function.
     *   To avoid stack or heap allocation at each call */
-   wchar_t* recyclable_wchart_buffer;
+   unichar_regex* recyclable_wchart_buffer;
 
    /* This field is used to store the maximum position in tokens reached
     * during an exploration from a given start position. After the exploration
