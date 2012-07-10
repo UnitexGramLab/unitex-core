@@ -268,7 +268,7 @@ int read_special(vector_ptr* tokens,unichar* line,unsigned int *pos) {
 for (int i=0;special[i]!=NULL;i++) {
 	if (u_starts_with(line+(*pos),special[i])) {
 		vector_ptr_add(tokens,u_strdup(special[i]));
-		(*pos)+=strlen(special[i]);
+		(*pos)+=(unsigned int)strlen(special[i]);
 		return 1;
 	}
 }

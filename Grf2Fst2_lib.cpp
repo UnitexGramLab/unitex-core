@@ -278,7 +278,7 @@ if (abs_path_name_warning!=0) {
  * but we must ignore the ':' in "C:\...", so we start the
  * replacement after a shift offset */
 replace_colon_by_path_separator(name+offset);
-int pos=strlen(name)-1;
+int pos=(int)(strlen(name)-1);
 while (pos>=0 && name[pos]!=0x02) pos--;
 if (called_from!=NULL) (*called_from)=-1;
 if (pos==-1) return;
