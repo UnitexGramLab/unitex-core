@@ -158,6 +158,8 @@
 		222F79C51107A48400C91CC7 /* UserCancelling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78F81107A48400C91CC7 /* UserCancelling.cpp */; };
 		222F79C61107A48400C91CC7 /* Ustring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78FB1107A48400C91CC7 /* Ustring.cpp */; };
 		222F79C71107A48400C91CC7 /* XMLizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78FE1107A48400C91CC7 /* XMLizer.cpp */; };
+		222FD83515AE3E920049D6CE /* KeyWords.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222FD83115AE3E920049D6CE /* KeyWords.cpp */; };
+		222FD83615AE3E920049D6CE /* KeyWords_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222FD83315AE3E920049D6CE /* KeyWords_lib.cpp */; };
 		2237A5B111D68EEE00D247CF /* OutputTransductionVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A5AF11D68EEE00D247CF /* OutputTransductionVariables.cpp */; };
 		2237A6BD11D8490800D247CF /* BuildKrMwuDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6BB11D8490800D247CF /* BuildKrMwuDic.cpp */; };
 		2237A6FB11D9522200D247CF /* TfstStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6F911D9522200D247CF /* TfstStats.cpp */; };
@@ -553,6 +555,10 @@
 		222F78FD1107A48400C91CC7 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Vector.h; path = ../Vector.h; sourceTree = SOURCE_ROOT; };
 		222F78FE1107A48400C91CC7 /* XMLizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = XMLizer.cpp; path = ../XMLizer.cpp; sourceTree = SOURCE_ROOT; };
 		222F78FF1107A48400C91CC7 /* XMLizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XMLizer.h; path = ../XMLizer.h; sourceTree = SOURCE_ROOT; };
+		222FD83115AE3E920049D6CE /* KeyWords.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyWords.cpp; path = ../KeyWords.cpp; sourceTree = "<group>"; };
+		222FD83215AE3E920049D6CE /* KeyWords_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyWords_lib.h; path = ../KeyWords_lib.h; sourceTree = "<group>"; };
+		222FD83315AE3E920049D6CE /* KeyWords_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyWords_lib.cpp; path = ../KeyWords_lib.cpp; sourceTree = "<group>"; };
+		222FD83415AE3E920049D6CE /* KeyWords.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyWords.h; path = ../KeyWords.h; sourceTree = "<group>"; };
 		2237A5AF11D68EEE00D247CF /* OutputTransductionVariables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OutputTransductionVariables.cpp; path = ../OutputTransductionVariables.cpp; sourceTree = SOURCE_ROOT; };
 		2237A5B011D68EEE00D247CF /* OutputTransductionVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OutputTransductionVariables.h; path = ../OutputTransductionVariables.h; sourceTree = SOURCE_ROOT; };
 		2237A6BB11D8490800D247CF /* BuildKrMwuDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BuildKrMwuDic.cpp; path = ../BuildKrMwuDic.cpp; sourceTree = SOURCE_ROOT; };
@@ -698,6 +704,10 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				222FD83115AE3E920049D6CE /* KeyWords.cpp */,
+				222FD83215AE3E920049D6CE /* KeyWords_lib.h */,
+				222FD83315AE3E920049D6CE /* KeyWords_lib.cpp */,
+				222FD83415AE3E920049D6CE /* KeyWords.h */,
 				22C290BB14AF6E47006A1F5D /* logger */,
 				2287C99C151E085700A820F3 /* PersistenceInterface.cpp */,
 				2287C99D151E085700A820F3 /* PersistenceInterface.h */,
@@ -1441,6 +1451,8 @@
 				22C2885314AF6D8C006A1F5D /* VirtualFiles.cpp in Sources */,
 				22C290DD14AF6E47006A1F5D /* SyncLoggerPosix.cpp in Sources */,
 				2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */,
+				222FD83515AE3E920049D6CE /* KeyWords.cpp in Sources */,
+				222FD83615AE3E920049D6CE /* KeyWords_lib.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1468,6 +1480,7 @@
 					"\"$(SRCROOT)/tre-0.8.0/lib\"",
 				);
 				PRODUCT_NAME = UnitexTool;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -1485,6 +1498,7 @@
 					"\"$(SRCROOT)/tre-0.8.0/lib\"",
 				);
 				PRODUCT_NAME = UnitexTool;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
