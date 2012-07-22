@@ -265,6 +265,8 @@
     <ClCompile Include="..\ImplodeTfst.cpp" />
     <ClCompile Include="..\IOBuffer.cpp" />
     <ClCompile Include="..\Keyboard.cpp" />
+    <ClCompile Include="..\KeyWords.cpp" />
+    <ClCompile Include="..\KeyWords_lib.cpp" />
     <ClCompile Include="..\Korean.cpp" />
     <ClCompile Include="..\KrMwuDic.cpp" />
     <ClCompile Include="..\LanguageDefinition.cpp" />
@@ -516,6 +518,8 @@
     <ClInclude Include="..\ImplodeTfst.h" />
     <ClInclude Include="..\IOBuffer.h" />
     <ClInclude Include="..\Keyboard.h" />
+    <ClInclude Include="..\KeyWords.h" />
+    <ClInclude Include="..\KeyWords_lib.h" />
     <ClInclude Include="..\Korean.h" />
     <ClInclude Include="..\KrMwuDic.h" />
     <ClInclude Include="..\LanguageDefinition.h" />

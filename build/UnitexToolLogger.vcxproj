@@ -287,6 +287,8 @@
     <ClInclude Include="..\Arabic.h" />
     <ClInclude Include="..\DirHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
+    <ClInclude Include="..\KeyWords.h" />
+    <ClInclude Include="..\KeyWords_lib.h" />
     <ClInclude Include="..\LocateCache.h" />
     <ClInclude Include="..\LocateTrace.h" />
     <ClInclude Include="..\LocateTracePlugCallback.h" />
@@ -391,6 +393,8 @@
     <ClCompile Include="..\GrfTest_lib.cpp" />
     <ClCompile Include="..\Grf_lib.cpp" />
     <ClCompile Include="..\Keyboard.cpp" />
+    <ClCompile Include="..\KeyWords.cpp" />
+    <ClCompile Include="..\KeyWords_lib.cpp" />
     <ClCompile Include="..\LoadInf.cpp" />
     <ClCompile Include="..\Offsets.cpp" />
     <ClCompile Include="..\Overlap.cpp" />

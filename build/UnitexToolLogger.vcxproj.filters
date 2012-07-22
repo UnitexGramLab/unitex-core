@@ -134,6 +134,12 @@
     <ClInclude Include="..\PersistenceInterface.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\KeyWords_lib.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\KeyWords.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -791,6 +797,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\PersistenceInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\KeyWords_lib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\KeyWords.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

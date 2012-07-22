@@ -696,6 +696,12 @@
     <ClCompile Include="..\PersistenceInterface.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="..\KeyWords_lib.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\KeyWords.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -1389,6 +1395,15 @@
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\XMLizer.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\KeyWords.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\KeyWords_lib.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>
