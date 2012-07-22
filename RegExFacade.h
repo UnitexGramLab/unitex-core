@@ -35,7 +35,7 @@ extern "C" {
 #define REGEX_FACADE_REG_NOSUB REG_NOSUB
 #define REGEX_FACADE_REG_EXTENDED REG_EXTENDED
 
-typedef tre_wchar_t unichar_regex;
+typedef tre_char_t unichar_regex;
 typedef regex_t regex_facade_regex_t;
 typedef regmatch_t regex_regmatch_t ;
 
