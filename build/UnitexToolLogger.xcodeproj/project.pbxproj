@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		222AAC1515BC50AA005E9A21 /* RegExFacade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AAC1315BC50AA005E9A21 /* RegExFacade.cpp */; };
 		222D09EA125CE6DD00497A10 /* MzRepairUlp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222D09E6125CE6DD00497A10 /* MzRepairUlp.cpp */; };
 		222D09EB125CE6DD00497A10 /* MzToolsUlp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222D09E8125CE6DD00497A10 /* MzToolsUlp.cpp */; };
 		222F7A051107A64C00C91CC7 /* FilePack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F79F21107A64C00C91CC7 /* FilePack.cpp */; };
@@ -241,6 +242,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		222AAC1315BC50AA005E9A21 /* RegExFacade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExFacade.cpp; path = ../RegExFacade.cpp; sourceTree = SOURCE_ROOT; };
+		222AAC1415BC50AA005E9A21 /* RegExFacade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExFacade.h; path = ../RegExFacade.h; sourceTree = SOURCE_ROOT; };
 		222D09E6125CE6DD00497A10 /* MzRepairUlp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MzRepairUlp.cpp; path = ../logger/MzRepairUlp.cpp; sourceTree = SOURCE_ROOT; };
 		222D09E7125CE6DD00497A10 /* MzRepairUlp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MzRepairUlp.h; path = ../logger/MzRepairUlp.h; sourceTree = SOURCE_ROOT; };
 		222D09E8125CE6DD00497A10 /* MzToolsUlp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MzToolsUlp.cpp; path = ../logger/MzToolsUlp.cpp; sourceTree = SOURCE_ROOT; };
@@ -734,6 +737,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				222AAC1315BC50AA005E9A21 /* RegExFacade.cpp */,
+				222AAC1415BC50AA005E9A21 /* RegExFacade.h */,
 				222FD81B15AE3E5C0049D6CE /* KeyWords.cpp */,
 				222FD81C15AE3E5C0049D6CE /* KeyWords_lib.h */,
 				222FD81D15AE3E5C0049D6CE /* KeyWords_lib.cpp */,
@@ -1512,6 +1517,7 @@
 				2287C989151E084200A820F3 /* PersistenceInterface.cpp in Sources */,
 				222FD81F15AE3E5C0049D6CE /* KeyWords.cpp in Sources */,
 				222FD82015AE3E5C0049D6CE /* KeyWords_lib.cpp in Sources */,
+				222AAC1515BC50AA005E9A21 /* RegExFacade.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

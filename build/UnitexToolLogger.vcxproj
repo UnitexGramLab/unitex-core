@@ -464,6 +464,7 @@
     <ClCompile Include="..\RebuildTfst.cpp" />
     <ClCompile Include="..\Reconstrucao.cpp" />
     <ClCompile Include="..\Reg2Grf.cpp" />
+    <ClInclude Include="..\RegExFacade.cpp" />
     <ClCompile Include="..\RegularExpressions.cpp" />
     <ClCompile Include="..\RussianCompounds.cpp" />
     <ClCompile Include="..\Sentence2Grf.cpp" />

@@ -462,7 +462,7 @@ CASSYS_OBJS	= Main_Cassys.o Cassys.o IOBuffer.o Error.o UnitexGetOpt.o Unicode.o
 			Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
 			DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
 			Tagset.o Tokenize.o HashTable.o Cassys_tokens.o OutputTransductionVariables.o LocateCache.o \
-			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o \
+			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o \
 			DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 
@@ -491,8 +491,8 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
 				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)\
-				$(SYSLIBLOGGER)
+				LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o Persistence.o PRLG.o \
+				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o\
@@ -506,7 +506,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
 				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o DebugMode.o Persistence.o PRLG.o \
+				LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o Persistence.o PRLG.o \
 				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 CONVERT      = Convert
@@ -527,7 +527,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             AutomatonDictionary2Bin.o HashTable.o LocateCache.o Arabic.o \
             OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
             DebugMode.o LoadInf.o Persistence.o BuildTextAutomaton.o Tfst.o SingleGraph.o \
-            FIFO.o TfstStats.o \
+            FIFO.o TfstStats.o RegExFacade.o \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 ELAG      = Elag
@@ -574,7 +574,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o LocateTrace.o
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 	           ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
-	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o \
 	           DebugMode.o LoadInf.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 FLATTEN      = Flatten
@@ -659,7 +659,7 @@ GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Af_stdio.o 
 			List_pointer.o LocateTrace.o PatternTree.o LocateFst2Tags.o \
 			CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o\
 			Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
-			NewLineShifts.o Persistence.o PRLG.o BuildTextAutomaton.o \
+			NewLineShifts.o Persistence.o PRLG.o BuildTextAutomaton.o RegExFacade.o \
 			$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 IMPLODETFST      = ImplodeTfst
@@ -691,7 +691,7 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unic
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
               ProgramInvoker.o Korean.o HashTable.o LocateCache.o Arabic.o \
-              OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+              OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o \
               LoadInf.o DebugMode.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 LOCATETFST      = LocateTfst
@@ -704,7 +704,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityL
                   OptimizedTfstTagMatching.o List_pointer.o\
                   TransductionVariables.o TransductionStackTfst.o Contexts.o \
                   OutputTransductionVariables.o DicVariables.o TfstStats.o AbstractDelaLoad.o \
-                  CompressedDic.o LoadInf.o DebugMode.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+                  CompressedDic.o LoadInf.o DebugMode.o Persistence.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 
 MULTIFLEX      = MultiFlex
@@ -766,7 +766,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-               DebugMode.o LoadInf.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+               DebugMode.o LoadInf.o Grf_lib.o Persistence.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -968,7 +968,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
                   GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
                   Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
-                  KeyWords.o KeyWords_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+                  KeyWords.o KeyWords_lib.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
 
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
@@ -1003,7 +1003,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
                   GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
                   SpellChecking.o Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
-                  KeyWords.o KeyWords_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)
+                  KeyWords.o KeyWords_lib.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)

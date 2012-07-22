@@ -346,6 +346,7 @@
     <ClCompile Include="..\RebuildTfst.cpp" />
     <ClCompile Include="..\Reconstrucao.cpp" />
     <ClCompile Include="..\Reg2Grf.cpp" />
+    <ClCompile Include="..\RegExFacade.cpp" />
     <ClCompile Include="..\RegularExpressions.cpp" />
     <ClCompile Include="..\RussianCompounds.cpp" />
     <ClCompile Include="..\Sentence2Grf.cpp" />
@@ -595,6 +596,7 @@
     <ClInclude Include="..\RebuildTfst.h" />
     <ClInclude Include="..\Reconstrucao.h" />
     <ClInclude Include="..\Reg2Grf.h" />
+    <ClInclude Include="..\RegExFacade.h" />
     <ClInclude Include="..\RegularExpressions.h" />
     <ClInclude Include="..\RussianCompounds.h" />
     <ClInclude Include="..\Sentence2Grf.h" />

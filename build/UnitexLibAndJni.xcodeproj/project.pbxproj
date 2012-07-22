@@ -149,6 +149,8 @@
 		222A00D91411358600F74409 /* tre.h in Headers */ = {isa = PBXBuildFile; fileRef = 222A00C31411358600F74409 /* tre.h */; };
 		222A00DA1411358600F74409 /* xmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 222A00C41411358600F74409 /* xmalloc.c */; };
 		222A00DB1411358600F74409 /* xmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 222A00C51411358600F74409 /* xmalloc.h */; };
+		222AAC1A15BC50B3005E9A21 /* RegExFacade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AAC1815BC50B3005E9A21 /* RegExFacade.cpp */; };
+		222AAC1B15BC50B3005E9A21 /* RegExFacade.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AAC1915BC50B3005E9A21 /* RegExFacade.h */; };
 		222AFEF31411336600F74409 /* VariableUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFD721411336600F74409 /* VariableUtils.cpp */; };
 		222AFEF41411336600F74409 /* VariableUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFD731411336600F74409 /* VariableUtils.h */; };
 		222AFEF51411336600F74409 /* LocateTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFD741411336600F74409 /* LocateTrace.cpp */; };
@@ -508,6 +510,8 @@
 		222A00C31411358600F74409 /* tre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tre.h; sourceTree = "<group>"; };
 		222A00C41411358600F74409 /* xmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xmalloc.c; sourceTree = "<group>"; };
 		222A00C51411358600F74409 /* xmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xmalloc.h; sourceTree = "<group>"; };
+		222AAC1815BC50B3005E9A21 /* RegExFacade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExFacade.cpp; path = ../RegExFacade.cpp; sourceTree = SOURCE_ROOT; };
+		222AAC1915BC50B3005E9A21 /* RegExFacade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExFacade.h; path = ../RegExFacade.h; sourceTree = SOURCE_ROOT; };
 		222AFD721411336600F74409 /* VariableUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VariableUtils.cpp; path = ../VariableUtils.cpp; sourceTree = SOURCE_ROOT; };
 		222AFD731411336600F74409 /* VariableUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VariableUtils.h; path = ../VariableUtils.h; sourceTree = SOURCE_ROOT; };
 		222AFD741411336600F74409 /* LocateTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocateTrace.cpp; path = ../LocateTrace.cpp; sourceTree = SOURCE_ROOT; };
@@ -1055,6 +1059,8 @@
 		222AFD6D1411335700F74409 /* Unitex-C++ */ = {
 			isa = PBXGroup;
 			children = (
+				222AAC1815BC50B3005E9A21 /* RegExFacade.cpp */,
+				222AAC1915BC50B3005E9A21 /* RegExFacade.h */,
 				222FD82815AE3E880049D6CE /* KeyWords.cpp */,
 				222FD82915AE3E880049D6CE /* KeyWords_lib.h */,
 				222FD82A15AE3E880049D6CE /* KeyWords_lib.cpp */,
@@ -1764,6 +1770,7 @@
 				22F11A06151E84310084A2C6 /* Unitex_revision.h in Headers */,
 				222FD82D15AE3E880049D6CE /* KeyWords_lib.h in Headers */,
 				222FD82F15AE3E880049D6CE /* KeyWords.h in Headers */,
+				222AAC1B15BC50B3005E9A21 /* RegExFacade.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2039,6 +2046,7 @@
 				2287C97E151E081600A820F3 /* PersistenceInterface.cpp in Sources */,
 				222FD82C15AE3E880049D6CE /* KeyWords.cpp in Sources */,
 				222FD82E15AE3E880049D6CE /* KeyWords_lib.cpp in Sources */,
+				222AAC1A15BC50B3005E9A21 /* RegExFacade.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

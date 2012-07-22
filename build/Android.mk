@@ -57,7 +57,7 @@ Unitex-C++/Offsets.cpp Unitex-C++/Overlap.cpp Unitex-C++/Persistence.cpp Unitex-
 Unitex-C++/Seq2Grf.cpp Unitex-C++/SpellCheck.cpp Unitex-C++/SpellChecking.cpp \
 Unitex-C++/UnitexRevisionInfo.cpp Unitex-C++/Unxmlize.cpp Unitex-C++/VersionInfo.cpp \
 Unitex-C++/VirtualFiles.cpp Unitex-C++/Xml.cpp \
-Unitex-C++/KeyWords.cpp Unitex-C++/KeyWords_lib.cpp \
+Unitex-C++/KeyWords.cpp Unitex-C++/KeyWords_lib.cpp Unitex-C++/RegExFacade.cpp \
 Unitex-C++/PRLG.cpp \
 Unitex-C++/build/tre-0.8.0/lib/regcomp.c \
 Unitex-C++/build/tre-0.8.0/lib/regerror.c \

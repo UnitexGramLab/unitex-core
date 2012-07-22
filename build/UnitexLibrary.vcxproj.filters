@@ -505,6 +505,9 @@
     <ClCompile Include="..\Reg2Grf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\RegExFacade.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>    
     <ClCompile Include="..\RegularExpressions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

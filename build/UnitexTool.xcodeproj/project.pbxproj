@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		222AABFE15BC507C005E9A21 /* RegExFacade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AABFC15BC507B005E9A21 /* RegExFacade.cpp */; };
 		222F79001107A48400C91CC7 /* AbstractDelaLoad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F778B1107A48300C91CC7 /* AbstractDelaLoad.cpp */; };
 		222F79011107A48400C91CC7 /* AbstractFst2Load.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F778F1107A48300C91CC7 /* AbstractFst2Load.cpp */; };
 		222F79021107A48400C91CC7 /* ActivityLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F77921107A48300C91CC7 /* ActivityLogger.cpp */; };
@@ -231,6 +232,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		222AABFC15BC507B005E9A21 /* RegExFacade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExFacade.cpp; path = ../RegExFacade.cpp; sourceTree = SOURCE_ROOT; };
+		222AABFD15BC507C005E9A21 /* RegExFacade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExFacade.h; path = ../RegExFacade.h; sourceTree = SOURCE_ROOT; };
 		222F778A1107A48300C91CC7 /* AbstractCallbackFuncModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractCallbackFuncModifier.h; path = ../AbstractCallbackFuncModifier.h; sourceTree = SOURCE_ROOT; };
 		222F778B1107A48300C91CC7 /* AbstractDelaLoad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractDelaLoad.cpp; path = ../AbstractDelaLoad.cpp; sourceTree = SOURCE_ROOT; };
 		222F778C1107A48300C91CC7 /* AbstractDelaLoad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractDelaLoad.h; path = ../AbstractDelaLoad.h; sourceTree = SOURCE_ROOT; };
@@ -704,6 +707,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				222AABFC15BC507B005E9A21 /* RegExFacade.cpp */,
+				222AABFD15BC507C005E9A21 /* RegExFacade.h */,
 				222FD83115AE3E920049D6CE /* KeyWords.cpp */,
 				222FD83215AE3E920049D6CE /* KeyWords_lib.h */,
 				222FD83315AE3E920049D6CE /* KeyWords_lib.cpp */,
@@ -1453,6 +1458,7 @@
 				2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */,
 				222FD83515AE3E920049D6CE /* KeyWords.cpp in Sources */,
 				222FD83615AE3E920049D6CE /* KeyWords_lib.cpp in Sources */,
+				222AABFE15BC507C005E9A21 /* RegExFacade.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
