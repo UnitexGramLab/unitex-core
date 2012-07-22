@@ -22,14 +22,6 @@
 #include "RegExFacade.h"
 
 #ifdef TRE_WCHAR
-#define REGEX_FACADE_ENGINE 1
-
-#define REGEX_FACADE_REG_NOSUB REG_NOSUB
-#define REGEX_FACADE_REG_EXTENDED REG_EXTENDED
-
-typedef tre_wchar_t unichar_regex;
-typedef regex_t regex_facade_regex_t;
-typedef regmatch_t regex_regmatch_t ;
 
 int regex_facade_regwcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags)
 {
