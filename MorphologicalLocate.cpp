@@ -625,7 +625,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					do {
 						get_content(content1, p, pos_in_tokens, pos_in_chars,
 								L2->pos_in_tokens, L2->pos_in_chars);
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 						int filter_number =
 								p->tags[t->tag_number]->filter_number;
 						int morpho_filter_OK = (filter_number == -1
@@ -754,7 +754,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				unichar one_letter[2];
 				one_letter[0] = current_token[pos_in_chars];
 				one_letter[1] = '\0';
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 				int filter_number = p->tags[t->tag_number]->filter_number;
 				int morpho_filter_OK = (filter_number == -1
 						|| string_match_filter(p->filters, one_letter,
@@ -1170,7 +1170,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						}
 						get_content(content2, p, pos_in_tokens, pos_in_chars,
 								L->pos_in_tokens, L->pos_in_chars);
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 						int filter_number =
 								p->tags[trans->tag_number]->filter_number;
 						int morpho_filter_OK = (filter_number == -1

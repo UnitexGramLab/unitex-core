@@ -178,7 +178,7 @@ if (tagging) {
 	default: break;
 }
 }
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 infos.filters=new_FilterSet(infos.fst2,infos.alphabet);
 infos.matches=NULL;
 if (infos.filters==NULL) {
@@ -264,7 +264,7 @@ if ((infos.number_of_outputs != infos.number_of_matches)
      }
 u_printf("\n");
 /* And we free things */
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 free_FilterSet(infos.filters);
 #endif
 u_fclose(infos.output);
@@ -1297,7 +1297,11 @@ int morphological_filter_is_ok(const unichar* content,Fst2Tag grammar_tag,const 
 if (grammar_tag->filter_number==-1) {
 	return 1;
 }
+#ifdef REGEX_FACADE_ENGINE
 return string_match_filter(infos->filters,content,grammar_tag->filter_number);
+#else
+return 0;
+#endif
 }
 
 } // namespace unitex

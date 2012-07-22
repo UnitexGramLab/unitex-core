@@ -29,7 +29,7 @@
 
 namespace unitex {
 
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 
 #define HASH_FILTERS_DIM 1024
 
@@ -110,22 +110,22 @@ if (filters->size>0) {
          u_strcpy(filterContent,temp);
       }
       filter_set->filter[i].content=u_strdup(filterContent);
-      cflags=REG_NOSUB;
+      cflags=REGEX_FACADE_REG_NOSUB;
       if (!regBasic) {
-         cflags|=REG_EXTENDED;
+         cflags|=REGEX_FACADE_REG_EXTENDED;
       }
-      filter_set->filter[i].matcher=(regex_t*)malloc(sizeof(regex_t));
+      filter_set->filter[i].matcher=(regex_facade_regex_t*)malloc(sizeof(regex_facade_regex_t));
       if (filter_set->filter[i].matcher==NULL) {
          fatal_alloc_error("new_FilterSet");
       }
       /* As the TRE library manipulates unichar_regex* strings, we must convert our unichar* one */
       w_strcpy(warray,filter_set->filter[i].content);
       /* Then, we build the regular expression matcher associated to our filter */
-      ccode=tre_regwcomp(filter_set->filter[i].matcher,warray,cflags);
+      ccode=regex_facade_regwcomp(filter_set->filter[i].matcher,warray,cflags);
       if (ccode!=0) {
          error("Morphological filter '%S' : ",filter_set->filter[i].content);
          char errbuf[512];
-         tre_regerror(ccode,filter_set->filter[i].matcher,errbuf,512);
+         regex_facade_regerror(ccode,filter_set->filter[i].matcher,errbuf,512);
          error("Syntax error : %s\n",errbuf);
          free_string_hash(filters);
          free_FilterSet(filter_set,i);
@@ -157,7 +157,7 @@ for (int i=0;i<n;i++) {
    if (filters->filter[i].options!= NULL) free(filters->filter[i].options);
    if (filters->filter[i].content!= NULL) free(filters->filter[i].content);
    if (filters->filter[i].matcher!= NULL) {
-	   tre_regfree(filters->filter[i].matcher);
+	   regex_facade_regfree(filters->filter[i].matcher);
 	   free(filters->filter[i].matcher);
    }
 }
@@ -209,7 +209,7 @@ if (filters->size>0) {
          w_strcpy(inflected,current_token);
       }
       for (k=0;k<filters->size;k++) {
-         if (tre_regwexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
+         if (regex_facade_regwexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
             /* If the current token matches the filter k */
             if (index->matching_tokens[k]==NULL) {
                /* If necessary, we allocate the bit array of the filter k */
@@ -248,7 +248,7 @@ free(index);
  */
 int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number,unichar_regex* tmp) {
 w_strcpy(tmp,s);
-return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+return !regex_facade_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
 
 
@@ -258,7 +258,7 @@ return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number) {
 unichar_regex tmp[2048];
 w_strcpy(tmp,s);
-return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+return !regex_facade_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
 
 
@@ -324,6 +324,6 @@ int i=0;
 while ((target[i]=(unichar_regex)source[i])!= L'\0') i++;
 }
 
-} // namespace unitex
-
 #endif
+
+} // namespace unitex

@@ -388,7 +388,7 @@ int *n_matches, /* number of sequences that have matched. It may be different fr
 struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 ) {
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 	int filter_number;
 #endif
 	int pos2 = -1, ctrl = 0, end_of_compound;
@@ -795,7 +795,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			 * if we are at the end of the token buffer. With this trick, the morphofilter test
 			 * will avoid overpassing the end of the token buffer. */
 			int morpho_filter_OK = (token2 != -1) ? 1 : 0;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 			filter_number = p->tags[t1->tag_number]->filter_number;
 			if (token2 != -1) {
 				morpho_filter_OK = (filter_number == -1 || token_match_filter(
@@ -893,7 +893,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					if (end_of_compound != -1) {
 						/* If we find one, we must test if it matches the morphological filter, if any */
 						int OK = 1;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 						if (filter_number == -1)
 							OK = 1;
 						else {
@@ -978,7 +978,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				if (end_of_compound != -1) {
 					/* If we find a compound word */
 					int OK = 1;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 					if (filter_number == -1)
 						OK = 1;
 					else {
@@ -1145,7 +1145,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					start = pos2;
 					end = z;
 
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 					if (filter_number == -1) {
 						update_last_tested_position(p,z+next_pos_add);
 						break;
@@ -1486,7 +1486,7 @@ while (output_variable_list != NULL) {
 	while (pattern_list != NULL) {
 		t1 = pattern_list->transition;
 		while (t1 != NULL) {
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 			filter_number = p->tags[t1->tag_number]->filter_number;
 #endif
 			output = p->tags[t1->tag_number]->output;
@@ -1494,7 +1494,7 @@ while (output_variable_list != NULL) {
 					pattern_list->pattern_number, p->DLC_tree, p);
 			if (end_of_compound != -1 && !(pattern_list->negation)) {
 				int OK = 1;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 				if (filter_number == -1)
 					OK = 1;
 				else {
@@ -1545,7 +1545,7 @@ while (output_variable_list != NULL) {
 	while (pattern_list != NULL) {
 		t1 = pattern_list->transition;
 		while (t1 != NULL) {
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 			filter_number = p->tags[t1->tag_number]->filter_number;
 #endif
 			output = p->tags[t1->tag_number]->output;
@@ -1554,7 +1554,7 @@ while (output_variable_list != NULL) {
 					pattern_list->pattern_number, p->DLC_tree, p);
 			if (end_of_compound != -1 && !(pattern_list->negation)) {
 				int OK = 1;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 				if (filter_number == -1)
 					OK = 1;
 				else {
@@ -1597,7 +1597,7 @@ while (output_variable_list != NULL) {
 			/* And now, we look for simple words */
 			int OK = 1;
 			update_last_tested_position(p, pos2);
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 			OK = (filter_number == -1 || token_match_filter(
 					p->filter_match_index, token2, filter_number));
 #endif
@@ -1670,7 +1670,7 @@ while (output_variable_list != NULL) {
 		if (n != -1) {
 			t1 = current_state->token_transitions[n];
 			while (t1 != NULL) {
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 				filter_number = p->tags[t1->tag_number]->filter_number;
 				if (filter_number == -1 || token_match_filter(
 						p->filter_match_index, token2, filter_number))

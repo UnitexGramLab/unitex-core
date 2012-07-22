@@ -62,7 +62,7 @@ p->SPACE=-1;
 p->SENTENCE=-1;
 p->STOP=-1;
 p->tag_token_list=NULL;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 p->filters=NULL;
 p->filter_match_index=NULL;
 #endif
@@ -335,7 +335,7 @@ if (is_cancelling_requested() != 0) {
 }
 	
 p->tags=p->fst2->tags;
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 p->filters=new_FilterSet(p->fst2,p->alphabet);
 if (p->filters==NULL) {
    error("Cannot compile filter(s)\n");
@@ -377,7 +377,7 @@ if (p->match_cache==NULL) {
 	fatal_alloc_error("locate_pattern");
 }
 
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 p->filter_match_index=new_FilterMatchIndex(p->filters,p->tokens);
 if (p->filter_match_index==NULL) {
    error("Cannot optimize filter(s)\n");
@@ -508,7 +508,7 @@ for (int i=0;i<n_text_tokens;i++) {
    free_bit_array(p->matching_patterns[i]);
 }
 free(p->matching_patterns);
-#ifdef TRE_WCHAR
+#ifdef REGEX_FACADE_ENGINE
 free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
 #endif

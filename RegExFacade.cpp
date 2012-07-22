@@ -20,3 +20,36 @@
  */
 
 #include "RegExFacade.h"
+
+#ifdef TRE_WCHAR
+#define REGEX_FACADE_ENGINE 1
+
+#define REGEX_FACADE_REG_NOSUB REG_NOSUB
+#define REGEX_FACADE_REG_EXTENDED REG_EXTENDED
+
+typedef tre_wchar_t unichar_regex;
+typedef regex_t regex_facade_regex_t;
+typedef regmatch_t regex_regmatch_t ;
+
+int regex_facade_regwcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags)
+{
+	return tre_regwcomp(preg, regex, cflags);
+}
+
+size_t regex_facade_regerror(int errcode, const regex_facade_regex_t *preg, char *errbuf,
+	 size_t errbuf_size)
+{
+	return tre_regerror(errcode, preg, errbuf, errbuf_size);
+}
+
+void regex_facade_regfree(regex_facade_regex_t *preg)
+{
+	tre_regfree(preg);
+}
+
+int regex_facade_regwexec(const regex_facade_regex_t *preg, const unichar_regex *string,
+	 size_t nmatch, regex_regmatch_t pmatch[], int eflags)
+{
+	return tre_regwexec(preg, string, nmatch, pmatch, eflags);
+}
+#endif

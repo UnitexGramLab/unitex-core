@@ -34,9 +34,9 @@
  * Claude Devis (devis@tedm.ucl.ac.be).
  */
 
-#include "tre.h"
-#ifdef TRE_WCHAR
+
 #include "Unicode.h"
+#include "RegExFacade.h"
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "Fst2.h"
@@ -49,7 +49,6 @@
 
 namespace unitex {
 
-typedef tre_char_t unichar_regex ;
 
 /**
  * This structure defines a morphological filter.
@@ -62,7 +61,7 @@ typedef struct {
    unichar* content;
    /* 'matcher' is a TRE object that represents an automaton that can match the same
     * things that the given regular expression. */
-   regex_t* matcher;
+   regex_facade_regex_t* matcher;
 } MorphoFilter;
 
 
@@ -100,9 +99,7 @@ int string_match_filter(const FilterSet*,const unichar*,int);
 int string_match_filter(const FilterSet*,const unichar*,int,unichar_regex*);
 int token_match_filter(FilterMatchIndex*,int,int);
 
-#endif
 
 } // namespace unitex
 
 #endif
-

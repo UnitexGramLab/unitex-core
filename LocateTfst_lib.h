@@ -23,6 +23,7 @@
 #define LocateTfst_libH
 
 #include "Unicode.h"
+#include "RegExFacade.h"
 #include "Alphabet.h"
 #include "Tfst.h"
 #include "MorphologicalFilters.h"
@@ -68,7 +69,7 @@ struct locate_tfst_infos {
 
 	Tfst* tfst;
 
-	#ifdef TRE_WCHAR
+	#ifdef REGEX_FACADE_ENGINE
 	/* These field is used to manipulate morphological filters like:
 	 *
 	 * <<en$>>

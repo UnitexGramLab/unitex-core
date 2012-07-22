@@ -23,6 +23,7 @@
 #define LocatePatternH
 
 #include "Unicode.h"
+#include "RegExFacade.h"
 #include "String_hash.h"
 #include "Fst2.h"
 #include "AbstractFst2Load.h"
@@ -56,7 +57,7 @@
 namespace unitex {
 
 
-typedef tre_char_t unichar_regex ;
+
 
 struct counting_step_st
 {
@@ -166,7 +167,7 @@ struct locate_parameters {
    /* Numbers of the tokens that are tags like {soon,.ADV} */
    struct list_int* tag_token_list;
 
-   #ifdef TRE_WCHAR
+   #ifdef REGEX_FACADE_ENGINE
    /* These two fields are used to manipulate morphological filters like:
     *
     * <<en$>>
