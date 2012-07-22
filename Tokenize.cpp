@@ -480,7 +480,6 @@ case B_INCLUDES_A: {
 }
 }
 }
-return 0;
 }
 
 
