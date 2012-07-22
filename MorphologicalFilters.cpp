@@ -66,7 +66,7 @@ if (filters->size>0) {
    unichar filterContent[512];
    char filterOptions[512];
    int regBasic,cflags;
-   unichar_regex warray[512];
+   unichar_regex warray[512*UNICHAR_REGEX_ALLOC_FACTOR];
    filter_set->size=filters->size;
    filter_set->filter=(MorphoFilter*)malloc(sizeof(MorphoFilter)*filters->size);
    if (filter_set->filter==NULL) {
@@ -119,9 +119,9 @@ if (filters->size>0) {
          fatal_alloc_error("new_FilterSet");
       }
       /* As the TRE library manipulates unichar_regex* strings, we must convert our unichar* one */
-      w_strcpy(warray,filter_set->filter[i].content);
+      regex_facade_strcpy(warray,filter_set->filter[i].content);
       /* Then, we build the regular expression matcher associated to our filter */
-      ccode=regex_facade_regwcomp(filter_set->filter[i].matcher,warray,cflags);
+      ccode=regex_facade_regcomp(filter_set->filter[i].matcher,warray,cflags);
       if (ccode!=0) {
          error("Morphological filter '%S' : ",filter_set->filter[i].content);
          char errbuf[512];
@@ -181,7 +181,7 @@ free_FilterSet(filters,filters->size);
  */
 FilterMatchIndex* new_FilterMatchIndex(FilterSet* filters,struct string_hash* tokens) {
 int i,k;
-unichar_regex inflected[2048];
+unichar_regex inflected[2048*UNICHAR_REGEX_ALLOC_FACTOR];
 unichar* current_token;
 FilterMatchIndex* index=(FilterMatchIndex*)malloc(sizeof(FilterMatchIndex));
 if (index==NULL) {
@@ -209,7 +209,7 @@ if (filters->size>0) {
          w_strcpy(inflected,current_token);
       }
       for (k=0;k<filters->size;k++) {
-         if (regex_facade_regwexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
+         if (regex_facade_regexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
             /* If the current token matches the filter k */
             if (index->matching_tokens[k]==NULL) {
                /* If necessary, we allocate the bit array of the filter k */
@@ -248,7 +248,7 @@ free(index);
  */
 int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number,unichar_regex* tmp) {
 w_strcpy(tmp,s);
-return !regex_facade_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+return !regex_facade_regexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
 
 
@@ -256,9 +256,9 @@ return !regex_facade_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,
  * Returns 1 if the given string matches the given filter.
  */
 int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number) {
-unichar_regex tmp[2048];
+unichar_regex tmp[2048*UNICHAR_REGEX_ALLOC_FACTOR];
 w_strcpy(tmp,s);
-return !regex_facade_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+return !regex_facade_regexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
 
 
@@ -315,14 +315,6 @@ if (filter_all[i]!='\0' && filter_all[i+2]=='_') {
 filter_options[j]='\0';
 }
 
-
-/**
- * Copies a unichar* string into a unichar_regex* one.
- */
-void w_strcpy(unichar_regex* target,const unichar* source) {
-int i=0;
-while ((target[i]=(unichar_regex)source[i])!= L'\0') i++;
-}
 
 #endif
 

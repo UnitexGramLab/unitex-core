@@ -19,11 +19,15 @@
  *
  */
 
+
+#include "Unicode.h"
+
+ 
 #include "RegExFacade.h"
 
 #ifdef TRE_WCHAR
 
-int regex_facade_regwcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags)
+int regex_facade_regcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags)
 {
 	return tre_regwcomp(preg, regex, cflags);
 }
@@ -39,9 +43,60 @@ void regex_facade_regfree(regex_facade_regex_t *preg)
 	tre_regfree(preg);
 }
 
-int regex_facade_regwexec(const regex_facade_regex_t *preg, const unichar_regex *string,
+int regex_facade_regexec(const regex_facade_regex_t *preg, const unichar_regex *string,
 	 size_t nmatch, regex_regmatch_t pmatch[], int eflags)
 {
 	return tre_regwexec(preg, string, nmatch, pmatch, eflags);
 }
+
+
+
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+namespace unitex {
+
+/**
+ * unichar_regex version of strcpy.
+ * Copies a unichar* string into a unichar_regex* one.
+ */
+unichar_regex* regex_facade_strcpy(unichar_regex* dest,const unichar* src) {
+unichar_regex *s = dest; // backup pointer to start of destination string
+register unichar c;
+do {
+   c=*src++;
+   *dest++=(unichar_regex)c;
+} while (c!='\0');
+return s;
+}
+
+/**
+ * unichar_regex version of strncpy
+ * Copies a unichar* string into a unichar_regex* one.
+ */
+unichar_regex* regex_facade_strncpy(unichar_regex *dest,const unichar *src,unsigned int n) {
+register unichar c;
+unichar_regex *s = dest; // backup pointer to start of destination string
+do {
+   c = *src++;
+   *dest++ = (unichar_regex)c;
+   if (--n == 0)
+     return s;
+} while (c != 0);
+// null-padding
+do
+  *dest++ = 0;
+while (--n > 0);
+return s;
+}
+
+
+void w_strcpy(unichar_regex* target,const unichar* source) {
+int i=0;
+while ((target[i]=(unichar_regex)source[i])!= L'\0') i++;
+}
+
+} // namespace unitex
+
 #endif

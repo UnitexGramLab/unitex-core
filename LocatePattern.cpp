@@ -104,7 +104,7 @@ p->protect_dic_chars=0;
 p->graph_depth=0;
 p->korean=NULL;
 p->jamo_tags=NULL;
-p->recyclable_wchart_buffer=(unichar_regex*)malloc(sizeof(unichar_regex)*SIZE_RECYCLABLE_WCHAR_T_BUFFER);
+p->recyclable_wchart_buffer=(unichar_regex*)malloc(sizeof(unichar_regex)*SIZE_RECYCLABLE_WCHAR_T_BUFFER*UNICHAR_REGEX_ALLOC_FACTOR);
 if (p->recyclable_wchart_buffer==NULL) {
    fatal_alloc_error("new_locate_parameters");
 }
