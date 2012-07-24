@@ -124,6 +124,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
              break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
+   	   	   	   break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -236,13 +237,6 @@ u_fprintf(out,"for %d distinct lemma%s\n",compound_lemmas->size,(compound_lemmas
 u_fprintf(out,"-----------------------------------\n");
 u_fprintf(out,"----  All chars used in forms  ----\n");
 u_fprintf(out,"-----------------------------------\n");
-unichar r[4];
-unichar r2[7];
-r[1]=' ';
-r[2]='(';
-r[3]='\0';
-r2[5]='\n';
-r2[6]='\0';
 for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
 	if (alphabet[i]) {
       u_fprintf(out,"%C (%04X)\n",i,i);

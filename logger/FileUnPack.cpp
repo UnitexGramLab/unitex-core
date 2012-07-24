@@ -300,6 +300,7 @@ local int strcmpcasenosensitive_internal(
         if (c1>c2)
             return 1;
     }
+    return 0; /* Just to make happy compilers that can't see this code is unreachable */
 }
 
 
@@ -1056,7 +1057,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (
     int raw,
     const char* password)
 {
-    int err=UNZ_OK;
+    //int err=UNZ_OK;
     uInt iSizeVar;
     unz_s* s;
     file_in_zip_read_info_s* pfile_in_zip_read_info;
@@ -1115,6 +1116,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (
         }
     }
 
+/*
 #ifndef NO_ZLIB
     if ((s->cur_file_info.compression_method!=0) &&
         (s->cur_file_info.compression_method!=Z_DEFLATED))
@@ -1123,7 +1125,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (
     if ((s->cur_file_info.compression_method!=0))
         err=UNZ_BADZIPFILE;
 #endif
-
+*/
     pfile_in_zip_read_info->crc32_wait=s->cur_file_info.crc;
     pfile_in_zip_read_info->crc32=0;
     pfile_in_zip_read_info->compression_method =
@@ -1144,7 +1146,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (
       pfile_in_zip_read_info->stream.next_in = (voidpf)0;
       pfile_in_zip_read_info->stream.avail_in = 0;
 
-      err=inflateInit2(&pfile_in_zip_read_info->stream, -MAX_WBITS);
+      int err=inflateInit2(&pfile_in_zip_read_info->stream, -MAX_WBITS);
       if (err == Z_OK)
         pfile_in_zip_read_info->stream_initialised=1;
       else

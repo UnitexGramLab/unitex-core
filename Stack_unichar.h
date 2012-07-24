@@ -22,6 +22,7 @@
 #ifndef Stack_unicharH
 #define Stack_unicharH
 
+#include <stdio.h>
 #include "Unicode.h"
 
 #ifndef HAS_UNITEX_NAMESPACE

@@ -181,7 +181,7 @@ int err;  //0 if a function completes with no error
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(config_dir,"Morphology.txt",morphology);
-int config_files_status=CONFIG_FILES_OK;
+//int config_files_status=CONFIG_FILES_OK;
 if (alphabet[0]!='\0') {
    //Load alphabet
    alph=load_alphabet(&vec,alphabet,1);  //To be done once at the beginning of the inflection

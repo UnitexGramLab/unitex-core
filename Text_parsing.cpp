@@ -46,8 +46,6 @@ static int binary_search(int, int*, int);
 static int find_compound_word(int, int, struct DLC_tree_info*,
 		struct locate_parameters*);
 static unichar* get_token_sequence(struct locate_parameters*, int, int);
-void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
-		struct list_int*, struct locate_parameters*, struct Token_error_ctx*);
 void shift_variable_bounds(Variables*, int);
 static void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
 static void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
@@ -938,14 +936,14 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						}
 					}
 					/* Now, we look for a simple word */
-					if (ctrl & DIC_TOKEN_BIT_MASK && morpho_filter_OK) {
+					if ((ctrl & DIC_TOKEN_BIT_MASK) && morpho_filter_OK) {
 						start = pos2;
 						end = pos2 + 1;
 					}
 					break;
 				}
 				/* We have the meta <!DIC> */
-				if (ctrl & NOT_DIC_TOKEN_BIT_MASK && morpho_filter_OK) {
+				if ((ctrl & NOT_DIC_TOKEN_BIT_MASK) && morpho_filter_OK) {
 					start = pos2;
 					end = pos2 + 1;
 				}
@@ -1023,7 +1021,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					}
 				}
 				/* Anyway, we could have a tag compound word like {aujourd'hui,.ADV} */
-				if (morpho_filter_OK && ctrl & CDIC_TOKEN_BIT_MASK) {
+				if (morpho_filter_OK && (ctrl & CDIC_TOKEN_BIT_MASK)) {
 					start = pos2;
 					end = pos2 + 1;
 				}

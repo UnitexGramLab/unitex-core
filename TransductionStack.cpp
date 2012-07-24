@@ -19,6 +19,7 @@
  *
  */
 
+#include <stdio.h>
 #include "TransductionStack.h"
 #include "Error.h"
 #include "DicVariables.h"
@@ -27,6 +28,7 @@
 #include "OutputTransductionVariables.h"
 #include "VariableUtils.h"
 #include "DebugMode.h"
+#include "Stack_unichar.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -176,7 +178,7 @@ for (;;) {
       name[l]='\0';
       if (s[i1]!='$' && s[i1]!='.') {
          switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name);
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }
@@ -195,14 +197,14 @@ for (;;) {
          field[l]='\0';
          if (s[i1]=='\0') {
             switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field); break;
                case IGNORE_VARIABLE_ERRORS: continue;
                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
          if (field[0]=='\0') {
             switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                case IGNORE_VARIABLE_ERRORS: continue;
                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
             }
@@ -219,7 +221,7 @@ for (;;) {
         	 }
         	 /* n==VAR_CMP_ERROR means an error while accessing variables */
         	 switch (p->variable_error_policy) {
-        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
         	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
         	                                  * so we consider it to be equivalent to backtrack */
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
@@ -235,7 +237,7 @@ for (;;) {
         	 }
         	 /* n==VAR_CMP_ERROR means an error while accessing variables */
         	 switch (p->variable_error_policy) {
-        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
         	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
         	                                  * so we consider it to be equivalent to backtrack */
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
@@ -249,7 +251,7 @@ for (;;) {
         	 }
         	 /* n==VAR_CMP_ERROR means an error while accessing variables */
         	 switch (p->variable_error_policy) {
-        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
         	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
         	                                  * so we consider it to be equivalent to backtrack */
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
@@ -263,7 +265,7 @@ for (;;) {
         	 }
         	 /* n==VAR_CMP_ERROR means an error while accessing variables */
         	 switch (p->variable_error_policy) {
-        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
         	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
         	                                  * so we consider it to be equivalent to backtrack */
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
@@ -350,7 +352,7 @@ for (;;) {
          struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
          if (entry==NULL) {
             switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name); break;
                case IGNORE_VARIABLE_ERRORS: continue;
                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
             }
@@ -429,14 +431,14 @@ for (;;) {
         	  if (i==entry->n_semantic_codes) {
         		  /* If the attribute was not found, it's an error case */
         		  switch (p->variable_error_policy) {
-        		     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name);
+        		     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name); break;
         		     case IGNORE_VARIABLE_ERRORS: continue;
         		     case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
         		  }
         	  }
            } else {
             switch (p->variable_error_policy) {
-               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field); break;
                case IGNORE_VARIABLE_ERRORS: continue;
                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
             }
@@ -456,7 +458,7 @@ for (;;) {
     	  Ustring* output=get_output_variable(p->output_variables,name);
     	  if (output==NULL) {
     		  switch (p->variable_error_policy) {
-				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
+				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
 				  case IGNORE_VARIABLE_ERRORS: continue;
 				  case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
     		  }
@@ -464,20 +466,20 @@ for (;;) {
     	  push_output_string(stack,output->str);
       } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }
       } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name);
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }
       } else if (v->start_in_tokens>v->end_in_tokens
 				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
          switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }
@@ -499,7 +501,7 @@ for (;;) {
            error("\n");*/
 		 } 
          switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name);
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
          }

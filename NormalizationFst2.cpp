@@ -19,6 +19,7 @@
  *
  */
 
+#include <stdio.h>
 #include "NormalizationFst2.h"
 #include "Error.h"
 #include "Transitions.h"

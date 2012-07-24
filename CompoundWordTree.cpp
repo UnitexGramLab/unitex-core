@@ -176,11 +176,10 @@ free(DLC_tree);
 void tokenize_compound_word(const unichar* word,int tokens[],const Alphabet* alphabet,
                             struct string_hash* tok,TokenizationPolicy tokenization_mode) {
 
-int i,n_token,j;
+int n_token,j;
 struct list_ustring* list=tokenize(word,tokenization_mode,alphabet);
 struct list_ustring* tmp;
 struct list_int* ptr;
-i=0;
 n_token=0;
 while (list!=NULL) {
    j=get_value_index(list->string,tok,DONT_INSERT);
@@ -614,6 +613,7 @@ for (;;) {
       array[j]=tmp;
    } else return j;
 }
+return 0;
 }
 
 
@@ -665,6 +665,7 @@ for (;;) {
       array2[j]=tmp2;
    } else return j;
 }
+return 0;
 }
 
 

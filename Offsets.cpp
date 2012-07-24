@@ -58,16 +58,16 @@ u_fprintf(f, "%d %d %d %d\n", a, b, c, d);
 }
 
 
-static void save_offsets(U_FILE* f,vector_offset* v) {
+/*static void save_offsets(U_FILE* f,vector_offset* v) {
 if (v==NULL) return;
 for (int i=0;i<v->nbelems;i++) {
 	Offsets o=v->tab[i];
 	save_offsets(f,o.old_start,o.old_end,o.new_start,o.new_end);
 }
-}
+}*/
 
 
-static const char* N(Overlap o) {
+/*static const char* N(Overlap o) {
 switch (o) {
 case A_BEFORE_B: return "A_BEFORE_B";
 case A_BEFORE_B_OVERLAP: return "A_BEFORE_B_OVERLAP";
@@ -79,7 +79,7 @@ case A_AFTER_B: return "A_AFTER_B";
 case -1: return "[-1]";
 default: return "OOOOOOOOPS";
 }
-}
+}*/
 
 
 /**

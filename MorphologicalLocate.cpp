@@ -19,7 +19,10 @@
  *
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
+#include "Unicode.h"
 #include "Text_tokens.h"
 #include "TransductionStack.h"
 #include "Text_parsing.h"
@@ -709,6 +712,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
 			case META_TDIC:
 				fatal_error("Unexpected <TDIC> tag in morphological mode\n");
+				break;
+
+			case META_TEXT_START:
+				fatal_error("Unexpected <^> tag in morphological mode\n");
+				break;
+
+			case META_TEXT_END:
+				fatal_error("Unexpected <$> tag in morphological mode\n");
 				break;
 
 			case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
@@ -1482,18 +1493,18 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			}
 		}
 	}
-	int after_syllab_bound = 0;
+	//int after_syllab_bound = 0;
 	if (jamo != NULL) {
 		/* We test whether we are in the middle of a syllable or just after a syllable bound */
 		if (jamo[pos_in_jamo] == KR_SYLLABLE_BOUND) {
 			/* If we have a syllable bound */
-			after_syllab_bound = 1;
+			//after_syllab_bound = 1;
 			pos_in_current_token++;
 			//pos_in_jamo++;
 		} else if (pos_in_jamo > 0 && jamo[pos_in_jamo - 1]
 				== KR_SYLLABLE_BOUND) {
 			/* If we are just after a syllable bound */
-			after_syllab_bound = 1;
+			//after_syllab_bound = 1;
 		} else {
 			/* By default, we must be in the middle of a syllable, and there's nothing to do */
 		}
