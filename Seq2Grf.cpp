@@ -240,17 +240,26 @@ if (case_sensitive) {
 }
 
 
-/**
- * We surround with double-quotes, so that numbers won't be
- * space separated at Locate time.
- */
 void read_digit_token(Ustring* tmp,unichar* line,unsigned int *i) {
 do {
-	if (tmp->len!=0) {
-		u_strcat(tmp,"#");
-	}
 	u_strcat(tmp,line[(*i)++]);
 } while (u_is_digit(line[*i]));
+}
+
+
+void read_tag(Ustring* tmp,unichar* line,unsigned int *i) {
+int backup=*i;
+while (line[*i]!='>' && line[*i]!='\0') {
+	u_strcat(tmp,line[(*i)++]);
+}
+if (line[*i]=='\0') {
+	/* The sequence may have contained a single < char, so we return this
+	 * char as a token */
+	*i=backup+1;
+	u_strcpy(tmp,"<");
+	return;
+}
+(*i)++;
 }
 
 
@@ -296,6 +305,10 @@ while (i!=line->len) {
 		i++;
 	} else if (read_special(tokens,line->str,&i)) {
 		/* Nothing to do */
+	} else if (line->str[i]=='<') {
+		i++;
+		read_tag(tmp,line->str,&i);
+		vector_ptr_add(tokens,u_strdup(tmp->str));
 	} else if (u_is_digit(line->str[i])) {
 		read_digit_token(tmp,line->str,&i);
 		vector_ptr_add(tokens,u_strdup(tmp->str));
