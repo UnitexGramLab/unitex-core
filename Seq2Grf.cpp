@@ -229,6 +229,11 @@ if (case_sensitive) {
 do {
 	u_strcat(tmp,line[(*i)++]);
 } while (is_letter(line[*i],alph));
+if ('\''==line[*i]) {
+	/* We want things like "l'accent" to be displayed in two boxes:   l'   accent */
+	u_strcat(tmp,"'");
+	(*i)++;
+}
 if (case_sensitive) {
 	u_strcat(tmp,"\"");
 }
