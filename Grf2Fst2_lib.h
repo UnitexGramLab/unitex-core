@@ -90,6 +90,7 @@ struct compilation_info {
    vector_int* part_of_precompiled_fst2;
    int current_saved_graph;
    char check_outputs;
+   char strict_tokenization;
 };
 
 

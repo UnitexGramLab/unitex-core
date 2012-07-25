@@ -65,6 +65,10 @@ const char* usage_Grf2Fst2 =
 		 "                                   the pathname Y. You can use this option several times\n"
          "  --debug: compile graphs in debug mode\n"
 		 "  -v/--check_variables: checks output validity to avoid malformed variable expressions\n"
+		 "  -S/--strict_tokenization: spaces and # will be inserted to force box line tokenization\n"
+		 "                            to produce the exact sequence the used typed. For instance,\n"
+		 "                            'let pi=3.14' will be tokenized as:\n"
+		 "                            'let' space 'pi' # '=' # '3' # '.' # '1' # '4'\n"
          "  -h/--help: this help\n"
          "\n"
          "Compiles the grammar <grf> and saves the result in a FST2 file\n"
@@ -83,7 +87,8 @@ u_printf(usage_Grf2Fst2);
 int pseudo_main_Grf2Fst2(const VersatileEncodingConfig* vec,
                          const char* name,int yes_or_no,const char* alphabet,
                          int no_empty_graph_warning,int tfst_check,
-                         const char* pkgdir,const char* named_repositories) {
+                         const char* pkgdir,const char* named_repositories,
+                         int strict_tokenization) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Grf2Fst2,"main_Grf2Fst2");
 add_argument(invoker,name);
 add_argument(invoker,yes_or_no?"-y":"-n");
@@ -121,13 +126,16 @@ if (named_repositories!=NULL && named_repositories[0]!='\0') {
    sprintf(tmp,"--named_repositories=%s",named_repositories);
    add_argument(invoker,tmp);
 }
+if (strict_tokenization) {
+   add_argument(invoker,"-S");
+}
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:r:v";
+const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:r:vS";
 const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -144,6 +152,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"help",no_argument_TS,NULL,'h'},
       {"named_repositories",required_argument_TS,NULL,'r'},
       {"check_variables",no_argument_TS,NULL,'v'},
+      {"strict_tokenization",no_argument_TS,NULL,'S'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -268,6 +277,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
              }
              break;
    case 'v': infos->check_outputs=1; break;
+   case 'S': infos->strict_tokenization=1; break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

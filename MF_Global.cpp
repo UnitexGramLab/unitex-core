@@ -246,7 +246,7 @@ if (flex[pos]=='\0') {
            /* If there is no .fst2 file, of a one than is older than the
             * corresponding .grf, we try to compile it */
            pseudo_main_Grf2Fst2(p_multiFlex_ctx->vec,grf,1,NULL,1,0,p_multiFlex_ctx->pkgdir,
-        		   p_multiFlex_ctx->named_repositories);
+        		   p_multiFlex_ctx->named_repositories,0);
         }
         p_multiFlex_ctx->fst2[p_multiFlex_ctx->n_fst2]=load_abstract_fst2(p_multiFlex_ctx->vec,s,1,&(p_multiFlex_ctx->fst2_free[p_multiFlex_ctx->n_fst2]));
         n->final=p_multiFlex_ctx->n_fst2;

@@ -84,6 +84,7 @@ infos->part_of_precompiled_fst2=new_vector_int();
 vector_int_add(infos->part_of_precompiled_fst2,0);
 infos->current_saved_graph=0;
 infos->check_outputs=0;
+infos->strict_tokenization=0;
 return infos;
 }
 
@@ -601,9 +602,12 @@ if (input[*pos]=='+') {
    (*pos)++;
    return 1;
 }
-/* If we have a space, we skip it */
+/* If we have a space, we skip it, unless we are in strict tokenization mode */
 if (input[*pos]==' ') {
    (*pos)++;
+   if (infos->strict_tokenization) {
+	   put_ptr(tokens,u_strdup(" "));
+   }
    return 0;
 }
 /* If we have a backslash */
@@ -797,6 +801,31 @@ for (int i=0;i<transitions->nbelems;i++) {
 }
 
 
+static struct fifo* insert_sharp_tags(struct fifo* fifo) {
+struct fifo* res=new_fifo();
+if (is_empty(fifo)) {
+	fatal_error("Unexpected empty fifo in insert_sharp_tags");
+}
+unichar* ptr=(unichar*)take_ptr(fifo);
+put_ptr(res,ptr);
+int last_token_was_normal=u_strcmp(ptr,"#") && u_strcmp(ptr," ");
+int current_token_is_normal;
+while (!is_empty(fifo)) {
+	ptr=(unichar*)take_ptr(fifo);
+	current_token_is_normal=u_strcmp(ptr,"#") && u_strcmp(ptr," ");
+	if (last_token_was_normal && current_token_is_normal) {
+		put_ptr(res,u_strdup("#"));
+	}
+	put_ptr(res,ptr);
+	last_token_was_normal=current_token_is_normal;
+}
+
+
+free_fifo(fifo);
+return res;
+}
+
+
 /**
  * This function takes the input and the output that correspond to one box in the graph #n
  * and it adds the necessary states and transitions to
@@ -813,6 +842,10 @@ int result=0;
 struct fifo* sequence=new_fifo();
 while (result==0 && input[*pos]!='\0') {
    result=process_box_line_token(input,pos,sequence,n,infos);
+}
+if (infos->strict_tokenization) {
+	/* If needed, we insert # tags where there were no spaces */
+	sequence=insert_sharp_tags(sequence);
 }
 int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;

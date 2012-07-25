@@ -76,7 +76,7 @@ while (list!=NULL) {
  * Frees a FIFO. If it still contains elements, its linked list is freed.
  * 
  * WARNING: if the remaining elements have pointer values, these pointers
- * are not freed, so that it is the responsability of the user to free this
+ * are not freed, so that it is the responsibility of the user to free this
  * memory.
  */
 void free_fifo(struct fifo* f) {
