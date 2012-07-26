@@ -249,6 +249,7 @@ do {
 
 void read_tag(Ustring* tmp,unichar* line,unsigned int *i) {
 int backup=*i;
+u_strcpy(tmp,"<");
 while (line[*i]!='>' && line[*i]!='\0') {
 	u_strcat(tmp,line[(*i)++]);
 }
@@ -259,6 +260,7 @@ if (line[*i]=='\0') {
 	u_strcpy(tmp,"<");
 	return;
 }
+u_strcat(tmp,">");
 (*i)++;
 }
 
