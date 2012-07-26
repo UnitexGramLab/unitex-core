@@ -44,13 +44,14 @@
 namespace unitex {
 
 const char* usage_Compress =
-         "Usage: Compress [OPTIONS] <dictionary>\n"
+         "Usage: Compress [OPTIONS] <dic1> [<dic2>...]\n"
          "\n"
-         "  <dictionary>: any unicode DELAF or DELACF dictionary\n"
+         "  <dicX>: any unicode DELAF or DELACF dictionary\n"
          "\n"
          "OPTIONS:\n"
          "  -o BIN/--output=BIN: name of destination file (by default, xxx.dic produces\n"
-		 "                       xxx.bin)"
+		 "                       xxx.bin). This option is mandatory when there are more than\n"
+		 "                       one input .dic file\n"
          "  -f/--flip: specifies that the inflected and lemma forms must be swapped\n"
          "  -s/--semitic: uses the semitic compression algorithm\n"
 		 "  --v1: produces an old style .bin file\n"
@@ -58,7 +59,7 @@ const char* usage_Compress =
 		 "        and a smaller size (default)\n"
 		 "  -h/--help: this help\n"
          "\n"
-         "Compresses a dictionary into an finite state automaton. This automaton\n"
+         "Compresses one or more dictionaries into an finite state automaton. This automaton\n"
          "is stored is a .bin file, and the associated inflectional codes are\n"
          "written in a .inf file.\n\n";
 
@@ -140,8 +141,6 @@ const struct option_TS lopts_Compress[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 
-extern void rebuild_token_semitic(unichar* inflected,unichar* compress_info);
-
 
 /**
  * This program reads a .dic file and compress it into a .bin and a .inf file.
@@ -158,8 +157,8 @@ int FLIP=0;
 BinType bin_type=BIN_CLASSIC;
 int new_style_bin=1;
 int semitic=0;
-char bin[DIC_WORD_SIZE];
-char inf[DIC_WORD_SIZE];
+char bin[DIC_WORD_SIZE]="";
+char inf[DIC_WORD_SIZE]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 bin[0]='\0';
 int val,index=-1;
@@ -196,11 +195,14 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
+if (vars->optind==argc) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
 
+if (vars->optind!=argc-1 && bin[0]=='\0') {
+	fatal_error("You must use the -o option when there are more than one .dic\n");
+}
 
 Abstract_allocator compress_abstract_allocator=NULL;
 Abstract_allocator compress_tokenize_abstract_allocator=NULL;
@@ -215,12 +217,7 @@ U_FILE* INF_file=NULL;
 struct dela_entry* entry;
 struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
-int line=0; /* Current line number */
 
-f=u_fopen(&vec,argv[vars->optind],U_READ);
-if (f==NULL) {
-	fatal_error("Cannot open %s\n",argv[vars->optind]);
-}
 /* We compute the name of the output .bin and .inf files */
 if (bin[0]=='\0') {
 	strcpy(bin,argv[vars->optind]);
@@ -235,7 +232,6 @@ strcat(inf,".inf");
 if (bin_type==BIN_CLASSIC) {
 	INF_file=u_fopen(&vec,inf,U_WRITE);
 	if (INF_file==NULL) {
-		u_fclose(f);
 		fatal_error("Cannot create %s\n",inf);
 	}
 	/* First, we print a sequence of zeros at the beginning of the .inf file
@@ -246,109 +242,114 @@ if (bin_type==BIN_CLASSIC) {
 root=new_dictionary_node(compress_abstract_allocator);
 INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
-u_printf("Compressing %s...\n",argv[vars->optind]);
 /* We read until there is no more lines in the .dic file */
 Ustring* s=new_Ustring(DIC_WORD_SIZE);
-while(EOF!=readline(s,f)) {
-	if (s->str[0]=='\0') {
-		/* Empty lines should not appear in a .dic file */
-		error("Line %d: empty line\n",line);
+int line=0; /* Current line number */
+for (;vars->optind!=argc;(vars->optind)++) {
+	u_printf("Compressing %s...\n",argv[vars->optind]);
+	f=u_fopen(&vec,argv[vars->optind],U_READ);
+	if (f==NULL) {
+		fatal_error("Cannot open %s\n",argv[vars->optind]);
 	}
-	else if (s->str[0]=='/') {
-		/* We do nothing if the line begins by a '/', because
-		 * it is considered as a comment line. */
-	}
-	else {
-		/* If we have a line, we tokenize it */
-		/* First, to avoid problems, we replace by the char #1 any occurrence of '='
-		 * that should be replaced by ' ' and and '-'. For instance:
-		 *
-		 * =,X.Y   =>   $,X.Y  ($ stands here for the char whose code is 1)
-		 * \=,X.Y   =>  \=,X.Y
-		 * \\=,X.Y   =>  \$,X.Y
-		 */
-		replace_special_equal_signs(s->str);
-		entry=tokenize_DELAF_line(s->str,1,NULL,compress_tokenize_abstract_allocator);
-		if (entry!=NULL) {
-			/* If the entry is well-formed */
-			/* The unescaped = that were not in the inflected or lemma form must
-			 * be restored as real = characters
+	while(EOF!=readline(s,f)) {
+		if (s->str[0]=='\0') {
+			/* Empty lines should not appear in a .dic file */
+			error("Line %d: empty line\n",line);
+		}
+		else if (s->str[0]=='/') {
+			/* We do nothing if the line begins by a '/', because
+			 * it is considered as a comment line. */
+		}
+		else {
+			/* If we have a line, we tokenize it */
+			/* First, to avoid problems, we replace by the char #1 any occurrence of '='
+			 * that should be replaced by ' ' and and '-'. For instance:
+			 *
+			 * =,X.Y   =>   $,X.Y  ($ stands here for the char whose code is 1)
+			 * \=,X.Y   =>  \=,X.Y
+			 * \\=,X.Y   =>  \$,X.Y
 			 */
-			for (int i=0;i<entry->n_semantic_codes;i++) {
-				replace_unprotected_equal_sign(entry->semantic_codes[i],(unichar)'=');
-			}
-			for (int i=0;i<entry->n_inflectional_codes;i++) {
-				replace_unprotected_equal_sign(entry->inflectional_codes[i],(unichar)'=');
-			}
-			if (FLIP) {
-				/* If the "-flip" parameter has been used, we flip
-				 * the inflected form and the lemma of the entry */
-				unichar* o=entry->inflected;
-				entry->inflected=entry->lemma;
-				entry->lemma=o;
-			}
-			if (contains_unprotected_equal_sign(entry->inflected)
-				|| contains_unprotected_equal_sign(entry->lemma)) {
-				/* If the inflected form or lemma contains any unprotected = sign,
-				 * we must insert the space entry and the - entry:
-				 * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
-				 *                        pomme-de-terre,pomme-de-terre.N
+			replace_special_equal_signs(s->str);
+			entry=tokenize_DELAF_line(s->str,1,NULL,compress_tokenize_abstract_allocator);
+			if (entry!=NULL) {
+				/* If the entry is well-formed */
+				/* The unescaped = that were not in the inflected or lemma form must
+				 * be restored as real = characters
 				 */
-				unichar* inflected=u_strdup(entry->inflected);
-				unichar* lemma=u_strdup(entry->lemma);
-				if (inflected==NULL || lemma==NULL) {
-					fatal_alloc_error("main_Compress");
+				for (int i=0;i<entry->n_semantic_codes;i++) {
+					replace_unprotected_equal_sign(entry->semantic_codes[i],(unichar)'=');
 				}
-				unichar inf_tmp[DIC_WORD_SIZE];
-				unichar lem_tmp[DIC_WORD_SIZE];
-				u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
-				u_strcpy_sized(lem_tmp,DIC_WORD_SIZE,entry->lemma);
-				/* We replace the unprotected = signs by spaces */
-				replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
-				replace_unprotected_equal_sign(entry->lemma,(unichar)' ');
-				/* We insert "pomme de terre,pomme de terre.N" */
-				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
-				/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
-				u_strcpy(entry->inflected,inf_tmp);
-				u_strcpy(entry->lemma,lem_tmp);
-				/* We replace the unprotected = signs by minus */
-				free(entry->inflected); entry->inflected=inflected;
-				free(entry->lemma); entry->lemma=lemma;
-				replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
-				replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
-				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
-			}
-			else {
-				get_compressed_line(entry,tmp,semitic);
-				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
-			}
-			/* and last, but not least: don't forget to free your memory
-			 * or it would be impossible to compress large dictionaries */
-			if (tokenize_allocator_has_clean == 0) {
-				free_dela_entry(entry,compress_tokenize_abstract_allocator);
-			}
-			else {
-				clean_allocator(compress_tokenize_abstract_allocator);
+				for (int i=0;i<entry->n_inflectional_codes;i++) {
+					replace_unprotected_equal_sign(entry->inflectional_codes[i],(unichar)'=');
+				}
+				if (FLIP) {
+					/* If the "-flip" parameter has been used, we flip
+					 * the inflected form and the lemma of the entry */
+					unichar* o=entry->inflected;
+					entry->inflected=entry->lemma;
+					entry->lemma=o;
+				}
+				if (contains_unprotected_equal_sign(entry->inflected)
+						|| contains_unprotected_equal_sign(entry->lemma)) {
+					/* If the inflected form or lemma contains any unprotected = sign,
+					 * we must insert the space entry and the - entry:
+					 * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
+					 *                        pomme-de-terre,pomme-de-terre.N
+					 */
+					unichar* inflected=u_strdup(entry->inflected);
+					unichar* lemma=u_strdup(entry->lemma);
+					if (inflected==NULL || lemma==NULL) {
+						fatal_alloc_error("main_Compress");
+					}
+					unichar inf_tmp[DIC_WORD_SIZE];
+					unichar lem_tmp[DIC_WORD_SIZE];
+					u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
+					u_strcpy_sized(lem_tmp,DIC_WORD_SIZE,entry->lemma);
+					/* We replace the unprotected = signs by spaces */
+					replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
+					replace_unprotected_equal_sign(entry->lemma,(unichar)' ');
+					/* We insert "pomme de terre,pomme de terre.N" */
+					get_compressed_line(entry,tmp,semitic);
+					add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
+					/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
+					u_strcpy(entry->inflected,inf_tmp);
+					u_strcpy(entry->lemma,lem_tmp);
+					/* We replace the unprotected = signs by minus */
+					free(entry->inflected); entry->inflected=inflected;
+					free(entry->lemma); entry->lemma=lemma;
+					replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
+					replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
+					get_compressed_line(entry,tmp,semitic);
+					add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
+				} else {
+					get_compressed_line(entry,tmp,semitic);
+					add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
+				}
+				/* and last, but not least: don't forget to free your memory
+				 * or it would be impossible to compress large dictionaries */
+				if (tokenize_allocator_has_clean == 0) {
+					free_dela_entry(entry,compress_tokenize_abstract_allocator);
+				} else {
+					clean_allocator(compress_tokenize_abstract_allocator);
+				}
 			}
 		}
-	}
-	/* We print something at regular intervals in order to show
-	 * that the program actually works */
-	if (line%10000==0) {
-		u_printf("%d line%s read...       \r",line,(line>1)?"s":"");
-		if (compress_tokenize_abstract_allocator != NULL)
-			if (tokenize_allocator_has_clean == 0)
-			{
-				close_abstract_allocator(compress_tokenize_abstract_allocator);
-				compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
+		/* We print something at regular intervals in order to show
+		 * that the program actually works */
+		if (line%10000==0) {
+			u_printf("%d line%s read...       \r",line,(line>1)?"s":"");
+			if (compress_tokenize_abstract_allocator != NULL) {
+				if (tokenize_allocator_has_clean == 0) {
+					close_abstract_allocator(compress_tokenize_abstract_allocator);
+					compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
+				}
 			}
+		}
+		line++;
 	}
-	line++;
+	u_fclose(f);
 }
 free_Ustring(s);
-u_fclose(f);
 struct bit_array* used_inf_values=new_bit_array(INF_codes->size,ONE_BIT);
 if (bin_type==BIN_BIN2) {
 	/* For a .bin2 dictionary, we have to place the inf codes on transitions outputs */
