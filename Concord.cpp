@@ -84,13 +84,15 @@ const char* usage_Concord =
 		"                             --output_offsets option. If 'offsets' is omitted,\n"
 		"                             the program acts as for the -i option, adding the ending\n"
 		"                             position of the match.\n"
+        "  -e/--xml: produces xml index of the concordance\n"
+        "  -w/--xml-with-header: produces xml index of the concordance with header\n"
+		"  NOTE: both -e and -w options accepts an offset file, as -u does\n"
+		"\n"
 		"  --PRLG=X,Y: produces a concordance for PRLG corpora where each line is prefixed\n"
 		"              by information extracted with Unxmlize's --PRLG option. X is the\n"
 		"              file produced by Unxmlize's --PRLG option and Y is the file produced\n"
 		"              by Tokenize's --output_offsets option. Note that if this option is\n"
 		"              used in addition with -u, the Y argument overrides the argument of -u\n"
-        "  -e/--xml: produces xml index of the concordance\n"
-        "  -w/--xml-with-header: produces xml index of the concordance with header\n"
         "  -A/--axis: produces an axis file for the concordance (cf. [Melamed 06])\n"
         "  -x/--xalign: produces an index file for XAlign display\n"
         "  -m TXT/--merge=TXT: produces a file named TXT which is the SNT file\n"
@@ -183,7 +185,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Ht::ewg:p:iu::Axm:a:Td:hk:q:";
+const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:hk:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -200,8 +202,8 @@ const struct option_TS lopts_Concord[]= {
       {"RC",no_argument_TS,NULL,6},
       {"html",no_argument_TS,NULL,'H'},
       {"text",optional_argument_TS,NULL,'t'},
-      {"xml",no_argument_TS,NULL,'e'},
-      {"xml-with-header",no_argument_TS,NULL,'w'},
+      {"xml",optional_argument_TS,NULL,'e'},
+      {"xml-with-header",optional_argument_TS,NULL,'w'},
       {"glossanet",required_argument_TS,NULL,'g'},
       {"script",required_argument_TS,NULL,'p'},
       {"index",no_argument_TS,NULL,'i'},
@@ -236,7 +238,7 @@ struct conc_opt* options=new_conc_opt();
 char foo;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int ret;
-char uima_offset_file[FILENAME_MAX]="";
+char offset_file[FILENAME_MAX]="";
 char PRLG[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index,vars))) {
@@ -286,7 +288,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
 		   fatal_error("Invalid argument for option --PRLG: %s\n",vars->optarg);
 	   }
 	   *pos='\0';
-	   strcpy(uima_offset_file,pos+1);
+	   strcpy(offset_file,pos+1);
 	   break;
    }
    case 10: options->only_matches=1; break;
@@ -317,9 +319,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
              }
              break;
    case 'i': options->result_mode=INDEX_; break;
-   case 'u': options->result_mode=UIMA_; if (vars->optarg!=NULL) strcpy(uima_offset_file,vars->optarg); break;
-   case 'e': options->result_mode=XML_; break;
-   case 'w': options->result_mode=XML_WITH_HEADER_; break;
+   case 'u': options->result_mode=UIMA_; if (vars->optarg!=NULL) strcpy(offset_file,vars->optarg); break;
+   case 'e': options->result_mode=XML_; if (vars->optarg!=NULL) strcpy(offset_file,vars->optarg); break;
+   case 'w': options->result_mode=XML_WITH_HEADER_; if (vars->optarg!=NULL) strcpy(offset_file,vars->optarg); break;
    case 'A': options->result_mode=AXIS_; break;
    case 'x': options->result_mode=XALIGN_; break;
    case 'm': options->result_mode=MERGE_;
@@ -440,10 +442,10 @@ if (options->result_mode==HTML_ || options->result_mode==DIFF_) {
 		fatal_error("Cannot read snt offset file %s\n",snt_files->snt_offsets_pos);
 	}
 }
-if (uima_offset_file[0]!='\0' && (options->result_mode==UIMA_ || PRLG[0]!='\0')) {
-	options->uima_offsets=load_uima_offsets(&vec,uima_offset_file);
+if (offset_file[0]!='\0') {
+	options->uima_offsets=load_uima_offsets(&vec,offset_file);
 	if (options->uima_offsets==NULL) {
-		fatal_error("Cannot read offset file %s\n",uima_offset_file);
+		fatal_error("Cannot read offset file %s\n",offset_file);
 	}
 }
 if (PRLG[0]!='\0') {

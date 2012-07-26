@@ -902,7 +902,7 @@ while (matches!=NULL) {
 	   /* If we have to go backward, in the case a Locate made in "All matches mode" */
 	   for (int z=position_in_tokens-1; z>=start_pos; z--) {
          int token_size=0;
-         if (expected_result!=UIMA_ || options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
+         if (options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
             token_size=token_length[buffer->int_buffer_[buffer->skip+z]];
          }
          start_pos_char=start_pos_char-token_size;
@@ -921,7 +921,7 @@ while (matches!=NULL) {
 	   /* If we have to go forward */
       for (int z=position_in_tokens; z<start_pos; z++) {
          int token_size=0;
-         if (expected_result!=UIMA_ || options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
+         if (options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
             token_size=token_length[buffer->int_buffer_[buffer->skip+z]];
          }
          start_pos_char=start_pos_char+token_size;
@@ -949,7 +949,7 @@ while (matches!=NULL) {
 	   /* We update 'end_pos_char' in the same way */
 	   for (int z=start_pos;z<end_pos;z++) {
 	      int token_size=0;
-	      if (expected_result!=UIMA_ || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
+	      if (options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
 	         token_size=token_length[buffer->int_buffer_[buffer->skip+z]];
 	      }
 	      end_pos_char=end_pos_char+token_size;
@@ -995,7 +995,7 @@ while (matches!=NULL) {
 	 * position */
 	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token+1,options->snt_offsets);
 	end_pos_char=end_pos_char+shift;
-	if (options->result_mode==UIMA_ && options->uima_offsets!=NULL) {
+	if (options->uima_offsets!=NULL) {
 		/* In UIMA mode, we use the offset file to produce start and end positions
 		 * relative to the original input file, before any Unitex operation */
 		int first_token=matches->m.start_pos_in_token;
