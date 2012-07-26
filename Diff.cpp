@@ -365,10 +365,10 @@ unichar middle2[MAX_CONTEXT_IN_UNITS];
 unichar right2[MAX_CONTEXT_IN_UNITS];
 unichar indices2[MAX_CONTEXT_IN_UNITS];
 if (f1!=NULL) {
-   read_concordance_line(f1,left1,middle1,right1,indices1,u_strlen(match1));
+   read_concordance_line(f1,left1,middle1,right1,indices1,match1==NULL?0:u_strlen(match1));
 }
 if (f2!=NULL) {
-   read_concordance_line(f2,left2,middle2,right2,indices2,u_strlen(match2));
+   read_concordance_line(f2,left2,middle2,right2,indices2,match2==NULL?0:u_strlen(match2));
 }
 if (match1!=NULL) u_strcpy(middle1,match1);
 if (match2!=NULL) u_strcpy(middle2,match2);
