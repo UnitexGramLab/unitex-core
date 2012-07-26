@@ -81,7 +81,9 @@ const char* usage_Concord =
         "  -u offsets/--uima=offsets: produces an index of the concordance relative to the\n"
 		"                             original text file, before any Unitex operation. offsets\n"
 		"                             is supposed to be the file produced by Tokenize's\n"
-		"                             --output_offsets option\n"
+		"                             --output_offsets option. If 'offsets' is omitted,\n"
+		"                             the program acts as for the -i option, adding the ending\n"
+		"                             position of the match.\n"
 		"  --PRLG=X,Y: produces a concordance for PRLG corpora where each line is prefixed\n"
 		"              by information extracted with Unxmlize's --PRLG option. X is the\n"
 		"              file produced by Unxmlize's --PRLG option and Y is the file produced\n"
@@ -181,7 +183,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Ht::ewg:p:iu:Axm:a:Td:hk:q:";
+const char* optstring_Concord=":f:s:l:r:Ht::ewg:p:iu::Axm:a:Td:hk:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -203,7 +205,7 @@ const struct option_TS lopts_Concord[]= {
       {"glossanet",required_argument_TS,NULL,'g'},
       {"script",required_argument_TS,NULL,'p'},
       {"index",no_argument_TS,NULL,'i'},
-      {"uima",required_argument_TS,NULL,'u'},
+      {"uima",optional_argument_TS,NULL,'u'},
       {"axis",no_argument_TS,NULL,'A'},
       {"xalign",no_argument_TS,NULL,'x'},
       {"diff",no_argument_TS,NULL,7},
@@ -315,7 +317,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
              }
              break;
    case 'i': options->result_mode=INDEX_; break;
-   case 'u': options->result_mode=UIMA_; strcpy(uima_offset_file,vars->optarg); break;
+   case 'u': options->result_mode=UIMA_; if (vars->optarg!=NULL) strcpy(uima_offset_file,vars->optarg); break;
    case 'e': options->result_mode=XML_; break;
    case 'w': options->result_mode=XML_WITH_HEADER_; break;
    case 'A': options->result_mode=AXIS_; break;
@@ -438,7 +440,7 @@ if (options->result_mode==HTML_ || options->result_mode==DIFF_) {
 		fatal_error("Cannot read snt offset file %s\n",snt_files->snt_offsets_pos);
 	}
 }
-if (options->result_mode==UIMA_ || PRLG[0]!='\0') {
+if (uima_offset_file[0]!='\0' && (options->result_mode==UIMA_ || PRLG[0]!='\0')) {
 	options->uima_offsets=load_uima_offsets(&vec,uima_offset_file);
 	if (options->uima_offsets==NULL) {
 		fatal_error("Cannot read offset file %s\n",uima_offset_file);
