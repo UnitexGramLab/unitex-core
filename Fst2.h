@@ -248,6 +248,8 @@ int is_final_state(Fst2State);
 int load_persistent_fst2(const char* filename);
 void free_persistent_fst2(const char* filename);
 
+int get_graph_index(Fst2* fst2,int n_state);
+
 } // namespace unitex
 
 #endif

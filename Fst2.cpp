@@ -1016,4 +1016,25 @@ set_persistent_structure(name,NULL);
 free_Fst2(f);
 }
 
+
+/**
+ * Returns the number of the graph (starting at 1) containing the given state.
+ *
+ * NOTE: this function is very inefficient. It was only designed to be invoked
+ *       to identify a graph name at the time of printing a fatal error message.
+ */
+int get_graph_index(Fst2* fst2,int n_state) {
+if (n_state<0 || n_state>=fst2->number_of_states) {
+	fatal_error("Internal error in get_graph_index\n");
+}
+for (int i=1;i<=fst2->number_of_graphs;i++) {
+	if (n_state>=fst2->initial_states[i]
+	    && n_state<(fst2->initial_states[i]+fst2->number_of_states_per_graphs[i])) {
+		return i;
+	}
+}
+/* Should not happen */
+return -1;
+}
+
 } // namespace unitex

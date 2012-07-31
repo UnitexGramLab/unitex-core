@@ -76,8 +76,7 @@ static void get_content(unichar* content, struct locate_parameters* p, int pos,
 			pos_in_token = 0;
 			int token_number = p->buffer[pos + p->current_origin];
 			if (token_number == -1 || token_number == p->STOP) {
-				fatal_error(
-						"Unexpected end of array or {STOP} tag in get_content\n");
+				fatal_error("Unexpected end of array or {STOP} tag in get_content\n");
 			}
 			current_token = p->tokens->value[token_number];
 		}
@@ -336,6 +335,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		/* In we are in the top level graph, it's an error, since we are not supposed
 		 * to reach the end of the graph (we should find a $>) */
 		if (p->graph_depth == 0) {
+			error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 			fatal_error("Unexpected end of graph in morphological mode!\n");
 		} else {
 			/* If we are in a subgraph */
@@ -562,6 +562,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				break;
 
 			case META_SHARP:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected # tag in morphological mode\n");
 				break;
 
@@ -703,22 +704,27 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			}
 
 			case META_SDIC:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <SDIC> tag in morphological mode\n");
 				break;
 
 			case META_CDIC:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <CDIC> tag in morphological mode\n");
 				break;
 
 			case META_TDIC:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <TDIC> tag in morphological mode\n");
 				break;
 
 			case META_TEXT_START:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <^> tag in morphological mode\n");
 				break;
 
 			case META_TEXT_END:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <$> tag in morphological mode\n");
 				break;
 
@@ -749,10 +755,12 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				break;
 
 			case META_PRE:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <PRE> tag in morphological mode\n");
 				break;
 
 			case META_NB:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <NB> tag in morphological mode\n");
 				break;
 
@@ -778,19 +786,20 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			}
 
 			case META_LEFT_CONTEXT:
-				fatal_error(
-						"Unexpected left context mark in morphological mode\n");
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
+				fatal_error("Unexpected left context mark in morphological mode\n");
 				break;
 
 			case META_BEGIN_MORPHO:
+				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected morphological mode begin tag $<\n");
 				break;
 
 			case META_END_MORPHO:
 				/* Should happen, but only at the same level than the $< tag */
 				if ((p->graph_depth) != 0) {
-					fatal_error(
-							"Unexpected end of morphological mode at a different\nlevel than the $< tag\n");
+					error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
+					fatal_error("Unexpected end of morphological mode at a different\nlevel than the $< tag\n");
 				}
 				if (pos_in_chars != 0 || (jamo != NULL && pos_in_jamo != 0)) {
 					/* If the end of the morphological mode occurs in the middle
@@ -862,8 +871,8 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 								/* A syllable bound is OK: we go on the following Jamo */
 								new_pos_in_jamo++;
 								if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-									fatal_error(
-											"Unexpected non Jamo character after a syllable bound\n");
+									error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
+									fatal_error("Unexpected non Jamo character after a syllable bound\n");
 								}
 								break;
 							}
@@ -1017,6 +1026,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	 */
 	struct opt_contexts* contexts = current_state->contexts;
 	if (contexts != NULL) {
+		error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 		fatal_error("Unexpected use of contexts in morphological mode\n");
 	}
 
