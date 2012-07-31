@@ -545,7 +545,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			switch (meta_list->meta) {
 
 			case META_EPSILON:
-				/* We could have an output associated to an epsilon, so we handle this case */
+			case META_SHARP: /* # is no longer considered a problem in morphological mode, because
+			                  * it may have been inserted by Grf2Fst2 */
+				/* We could have an output associated to an epsilon or a #, so we handle this case */
 				captured_chars=0;
 				if (p->output_policy != IGNORE_OUTPUTS) {
 					if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
@@ -559,11 +561,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				p->weight=old_weight;
 				p->stack->stack_pointer = stack_top;
 				remove_chars_from_output_variables(p->output_variables,captured_chars);
-				break;
-
-			case META_SHARP:
-				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
-				fatal_error("Unexpected # tag in morphological mode\n");
 				break;
 
 			case META_SPACE:
