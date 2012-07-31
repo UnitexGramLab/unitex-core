@@ -60,7 +60,6 @@ const char* usage_Seq2Grf =
 		"  -n/--no_beautify: do not apply the grf beautifying algorithm (default)\n"
 		"  --case-sensitive: all letter tokens are protected with double-quotes (default)\n"
 		"  --case-insensitive: letter tokens are not protected with double-quotes\n"
-		"  -n/--no_beautify: do not apply the grf beautifying algorithm (default)\n"
 		"  -w n_wildcards\n"
 		"  -i n_insertion\n"
 		"  -r n_replace\n"

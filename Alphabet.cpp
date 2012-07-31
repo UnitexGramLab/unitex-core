@@ -271,6 +271,41 @@ return (a[i]=='\0' && b[i]=='\0');
 }
 
 
+
+static int test_qp(unichar a,unichar b,int quotes,const Alphabet* alph) {
+if (quotes) return a==b;
+return is_equal_or_uppercase(a,b,alph);
+}
+
+/**
+ * Returns a non-zero value if 'b' is identical to 'a' or if it is
+ * an uppercase equivalent of 'a' according for the given alphabet;
+ * returns 0 otherwise.
+ *
+ * The difference with is_equal_or_uppercase is that the function consider
+ * case-protection with double quotes as in grf boxes. Every sequence surrounded by
+ * double quotes will thus have to be match exactly.
+ *
+ * Examples: Anchor    anchor  => ok
+ *          "Anchor"  "anchor" => X
+ */
+int is_equal_or_uppercase_qp(const unichar* a,const unichar* b,const Alphabet* alphabet) {
+int i=0,quotes=0;
+while (a[i] && b[i]) {
+	if (!test_qp(a[i],b[i],quotes,alphabet)) return 0;
+	if (a[i]=='"') {
+		quotes=!quotes;
+	} else if (a[i]=='\\') {
+		i++;
+		if (!test_qp(a[i],b[i],quotes,alphabet)) return 0;
+	}
+	i++;
+}
+return (a[i]=='\0' && b[i]=='\0');
+}
+
+
+
 /**
  * Returns 1 if 'c' is considered as an uppercase letter
  * in the given alphabet, 0 otherwise.

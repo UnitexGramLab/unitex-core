@@ -208,10 +208,10 @@ for (int i=2;i<grf->n_states-1;i++) {
 		}
 		int isolate_j=0;
 		if (have_same_transitions(grf,i,j,reverse_transitions)) {
-			if (is_equal_or_uppercase(a->box_content,b->box_content,alph)) {
+			if (is_equal_or_uppercase_qp(a->box_content,b->box_content,alph)) {
 				/* We have to remove state b */
 				isolate_j=1;
-			} else if (is_equal_or_uppercase(b->box_content,a->box_content,alph)) {
+			} else if (is_equal_or_uppercase_qp(b->box_content,a->box_content,alph)) {
 				/* We have to remove state a, but not to perturb the algorithm,
 				 * we will swap a and b's content, and actually remove b */
 				unichar* tmp=a->box_content;
@@ -253,9 +253,9 @@ for (int i=2;i<grf->n_states-1;i++) {
 			isolate_j=2; /* 2 means outgoing */
 		}
 		if (isolate_j) {
-			if (is_equal_or_uppercase(a->box_content,b->box_content,alph)) {
+			if (is_equal_or_uppercase_qp(a->box_content,b->box_content,alph)) {
 				/* We have to remove state b */
-			} else if (is_equal_or_uppercase(b->box_content,a->box_content,alph)) {
+			} else if (is_equal_or_uppercase_qp(b->box_content,a->box_content,alph)) {
 				/* We have to remove state a, but not to perturb the algorithm,
 				 * we will swap a and b's content, and actually remove b */
 				unichar* tmp=a->box_content;

@@ -95,6 +95,7 @@ int is_upper_of(unichar,unichar,const Alphabet*);
 int is_equal_ignore_case(unichar,unichar,const Alphabet*);
 int is_equal_or_uppercase(unichar,unichar,const Alphabet*);
 int is_equal_or_uppercase(const unichar*,const unichar*,const Alphabet*);
+int is_equal_or_uppercase_qp(const unichar*,const unichar*,const Alphabet*);
 int is_lower(unichar,const Alphabet*);
 int is_upper(unichar,const Alphabet*);
 int is_letter(unichar,const Alphabet*);
