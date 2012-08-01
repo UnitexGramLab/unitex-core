@@ -665,7 +665,7 @@ free_Ustring(prefix);
  */
 void move_outputs_on_transitions(struct dictionary_node* root,struct string_hash* inf_codes) {
 int pos=0;
-unichar z[100];
+unichar z[0x400];
 Ustring* normalizedOutput=new_Ustring();
 subsequential_to_normal_transducer(root,root,inf_codes,pos,z,normalizedOutput);
 free_Ustring(normalizedOutput);
