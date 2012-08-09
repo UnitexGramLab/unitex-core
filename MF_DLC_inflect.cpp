@@ -109,7 +109,11 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
-			p_multiFlex_ctx->filters=DELAS_entry->filters;
+			if (DELAS_entry->n_filters!=0) {
+				p_multiFlex_ctx->filters=DELAS_entry->filters;
+			} else {
+				p_multiFlex_ctx->filters=NULL;
+			}
 			err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,&forms);
 			p_multiFlex_ctx->filters=NULL;
 #ifdef __GNUC__
@@ -119,7 +123,6 @@ int inflect(char* DLC, char* DLCF,
 #endif
 			/* Then, we print its inflected forms to the output */
 			for (int i = 0; i < forms.no_forms; i++) {
-			   
 			   unichar foo[1024];   
 			   if (p_multiFlex_ctx->korean!=NULL) {
 			      Hanguls_to_Jamos(forms.forms[i].form,foo,p_multiFlex_ctx->korean,1);

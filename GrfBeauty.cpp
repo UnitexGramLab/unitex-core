@@ -976,6 +976,9 @@ for (int i=0;i<n;i++) {
    }
 }
 int* result=(int*)malloc(grf->n_states*sizeof(int));
+if (result==NULL) {
+	fatal_alloc_error("compute_factorizing_states");
+}
 *n_factorizing_states=0;
 for (int i=0;i<n;i++) {
 	if (factorizing[subgraph[i]]) {
