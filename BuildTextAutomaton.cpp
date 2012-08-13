@@ -414,7 +414,7 @@ void solve_alignment_puzzle_for_Korean(vector_ptr* vector, int start, int end,
 	int current_pos_in_char_in_token = 0;
 	/* Warning: the next 2 variable are not to be confused.
 	 * - current_index_in_jamo_token is the index used to browse the jamo string
-	 * - current_pos_in_letter_in_token is not the same, since it doe not take syllable bounds
+	 * - current_pos_in_letter_in_token is not the same, since it does not take syllable bounds
 	 *   into account. Moreover, this one is reinitialized to 0 everytime we cross a syllable
 	 *   bound
 	 */
@@ -761,6 +761,7 @@ void add_path_to_sentence_automaton(int start_pos, int end_pos,
 		int start_state_index, const Alphabet* alph, SingleGraph graph,
 		struct string_hash* tmp_tags, unichar* s, int destination_state_index,
 		Ustring* foo, struct info* INFO, Korean* korean) {
+	//error("start=%d end=%d  output=%S\n",start_state_index,destination_state_index,s);
 	if (!u_strcmp(s, "<E>")) {
 		/* Special case of the <E> insertion */
 		add_outgoing_transition(graph->states[start_state_index], 0,
@@ -785,11 +786,13 @@ void add_path_to_sentence_automaton(int start_pos, int end_pos,
 			add_outgoing_transition(graph->states[current_state],
 					get_value_index(foo->str, tmp_tags),
 					destination_state_index);
+			//error("last transition by %S from %d to %d\n",info->output,current_state,destination_state_index);
 		} else {
 			/* If this transition is not the last one, we must create a new state */
 			add_outgoing_transition(graph->states[current_state],
 					get_value_index(foo->str, tmp_tags),
 					graph->number_of_states);
+			//error("transition by %S from %d to %d\n",info->output,current_state,graph->number_of_states);
 			current_state = graph->number_of_states;
 			add_state(graph);
 		}
@@ -885,6 +888,7 @@ void build_sentence_automaton(const int* buffer, int length,
 		add_state(tfst->automaton);
 	}
 	set_initial_state(tfst->automaton->states[0]);
+	int final_node_index=n_nodes-1;
 	set_final_state(tfst->automaton->states[n_nodes - 1]);
 	struct info INFO;
 	INFO.tok = tokens;
@@ -980,9 +984,12 @@ void build_sentence_automaton(const int* buffer, int length,
 				end_index--;
 			}
 		}
+		if (end_index!=final_node_index) {
+			end_index+=1;
+		}
 		add_path_to_sentence_automaton(start_pos_in_token, end_pos_in_token,
 				start_index, INFO.alph, tfst->automaton, tmp_tags,
-				(*tag_list)->output, end_index + 1, foo, &INFO, korean);
+				(*tag_list)->output, end_index, foo, &INFO, korean);
 		tmp = (*tag_list)->next;
 		free_match_list_element((*tag_list));
 		(*tag_list) = tmp;

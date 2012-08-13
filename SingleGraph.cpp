@@ -1249,8 +1249,12 @@ for (q=0;q<graph->number_of_states;q++) {
    int old=0;
    /* At each step #q of the algorithm, we look for the first state with no
     * incoming transition, and we renumber as the new state #q */
-   while (incoming[old]!=0) {
+   int oops;
+   while ((oops=(old<graph->number_of_states))!=0 && incoming[old]!=0) {
       old++;
+   }
+   if (oops==0) {
+	   fatal_error("Unexpected cyclic graph in topological_sort!\n");
    }
    renumber[old]=q;
    incoming[old]=-1;
