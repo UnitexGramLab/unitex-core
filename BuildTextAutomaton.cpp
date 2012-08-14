@@ -282,7 +282,11 @@ struct output_info* new_output_info(unichar* tag) {
 	if (tag[0] == '{' && tag[1] != '\0') {
 		struct dela_entry* entry = tokenize_tag_token(tag,1);
 		if (entry == NULL) {
-			fatal_error("new_output_info: Invalid tag token %S\n", tag);
+			free_dela_entry(entry);
+			free(x->output);
+			free(x);
+			error("new_output_info: Invalid tag token %S\n", tag);
+			return NULL;
 		}
 		x->content = u_strdup(entry->inflected);
 		free_dela_entry(entry);
@@ -347,7 +351,8 @@ vector_ptr* tokenize_normalization_output(unichar* s, const Alphabet* alph) {
 					tmp[j + 1] = '\0';
 					/* We go on the next char */
 					i++;
-					vector_ptr_add(result, new_output_info(tmp));
+					struct output_info* foo=new_output_info(tmp);
+					if (foo!=NULL) vector_ptr_add(result, foo);
 				}
 			} else if (is_letter(s[i], alph)) {
 				/* Case of a letter sequence like "Rivoli" */
@@ -357,14 +362,16 @@ vector_ptr* tokenize_normalization_output(unichar* s, const Alphabet* alph) {
 				}
 				tmp[j] = '\0';
 				/* We don't have to go on the next char, we are already on it */
-				vector_ptr_add(result, new_output_info(tmp));
+				struct output_info* foo=new_output_info(tmp);
+				if (foo!=NULL) vector_ptr_add(result, foo);
 			} else {
 				/* Case of a single non-space char like "-" */
 				tmp[0] = s[i];
 				tmp[1] = '\0';
 				/* We go on the next char of the string */
 				i++;
-				vector_ptr_add(result, new_output_info(tmp));
+				struct output_info* foo=new_output_info(tmp);
+				if (foo!=NULL) vector_ptr_add(result, foo);
 			}
 		}
 	}
