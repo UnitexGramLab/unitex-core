@@ -1220,7 +1220,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 										+ L->pos_in_tokens]];
 						int new_pos, new_pos_in_token, new_pos_in_jamo;
 						//error("dic match output=<%S>\n",p->stack->stack);
-						if (reached_token[L->pos_in_chars] == '\0' && L->jamo[L->pos_in_jamo]=='\0') {
+						if (reached_token[L->pos_in_chars] == '\0' && (L->jamo==NULL || L->jamo[L->pos_in_jamo]=='\0')) {
 							/* If we are at the end of the last token matched by the dictionary search */
 							new_pos = L->pos_in_tokens + 1;
 							new_pos_in_token = 0;
