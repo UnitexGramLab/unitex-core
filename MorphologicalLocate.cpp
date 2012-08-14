@@ -1218,15 +1218,20 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						unichar* reached_token =
 								p->tokens->value[p->buffer[p->current_origin
 										+ L->pos_in_tokens]];
-						int new_pos, new_pos_in_token;
-						if (reached_token[L->pos_in_chars] == '\0') {
+						int new_pos, new_pos_in_token, new_pos_in_jamo;
+						//error("dic match output=<%S>\n",p->stack->stack);
+						if (reached_token[L->pos_in_chars] == '\0' && L->jamo[L->pos_in_jamo]=='\0') {
 							/* If we are at the end of the last token matched by the dictionary search */
 							new_pos = L->pos_in_tokens + 1;
 							new_pos_in_token = 0;
+							new_pos_in_jamo=0;
+							//error(" => end of the token <%S>  pos=%d  jamo=<%S> pos_jamo=%d\n",reached_token,L->pos_in_chars,L->jamo,L->pos_in_jamo);
 						} else {
 							/* If not */
 							new_pos = L->pos_in_tokens;
 							new_pos_in_token = L->pos_in_chars;
+							new_pos_in_jamo=L->pos_in_jamo;
+							//error(" => token=%d char=%d\n",new_pos,new_pos_in_token);
 						}
 						/* We continue the exploration */
 						struct dela_entry* old_value = NULL;
@@ -1239,7 +1244,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						morphological_locate(/*graph_depth,*/ trans->state_number,
 								new_pos, new_pos_in_token, matches,
 								n_matches, ctx, p, L->jamo,
-								L->pos_in_jamo, content_buffer);
+								new_pos_in_jamo, content_buffer);
 						p->weight=old_weight;
 						if (save_dic_entry) {
 							set_dic_variable(var_name, old_value,
