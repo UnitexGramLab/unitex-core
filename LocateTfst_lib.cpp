@@ -599,7 +599,7 @@ if (is_final_state(current_state_in_grammar)) {
       }
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
-	   if (match_element_list==NULL) {
+	   if (match_element_list!=NULL) {
 		  (*LIST)=add_match_in_list((*LIST),match_element_list);
 	   }
    }
