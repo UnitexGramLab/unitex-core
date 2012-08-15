@@ -275,10 +275,14 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 			free(feat);
 		} else {
 			/* If we want all the inflected forms */
-			if (p_multiFlex_ctx->filters != NULL && p_multiFlex_ctx->filters[0] != NULL) {
-				filtrer(sortie, p_multiFlex_ctx->filters);
+			if (p_multiFlex_ctx->n_filter_codes != 0 ) {
+//				u_fprintf(U_STDERR,"PASS 1\n",sortie);
+//				u_fprintf(U_STDERR,"sortie1:%S\n",sortie);
+				filtrer(sortie, p_multiFlex_ctx);
+//				u_fprintf(U_STDERR,"sortie2:%S\n",sortie);
 			}
-			if (sortie[0] == '\0' && p_multiFlex_ctx->filters == NULL ) {
+			if (sortie[0] == '\0' && p_multiFlex_ctx->n_filter_codes == 0 ) {
+//				u_fprintf(U_STDERR,"***PASS sortie:%S\n",sortie);
 				/* If we have an empty output, for instance in the case of an ADV grammar */
 				//Put the form into 'forms'
 				forms->forms = (SU_f_T*) realloc(forms->forms,
@@ -291,7 +295,8 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,
 						= u_strdup(local_semantic_codes);
 				forms->forms[forms->no_forms].raw_features=u_strdup("");
 				forms->no_forms++;
-			} else {
+			} else {				//u_fprintf(U_STDERR,"***sortie1:%S\n",sortie);
+
 				struct list_ustring* features = SU_split_raw_features(sortie);
 				while (features != NULL) {
 					//Put the form into 'forms'
@@ -396,8 +401,11 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,
 
 		res->local_semantic_code = u_strdup(local_semantic_codes);
 
-		if (p_multiFlex_ctx->filters != NULL && p_multiFlex_ctx->filters[1] != NULL)
-			filtrer(output, p_multiFlex_ctx->filters);
+		if (p_multiFlex_ctx->n_filter_codes != 0 ){
+//			u_fprintf(U_STDERR,"sortie1:%S\n",output);
+			filtrer(output, p_multiFlex_ctx);
+//			u_fprintf(U_STDERR,"sortie2:%S\n",output);
+	}
 		res->output = u_strdup(output);
 		res->next = (*L);
 		(*L) = res;

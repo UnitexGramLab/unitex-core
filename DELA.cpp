@@ -44,7 +44,8 @@ res->lemma=u_strdup(lemma,prv_alloc);
 res->n_semantic_codes=1;
 res->semantic_codes[0]=u_strdup(code,prv_alloc);
 res->n_inflectional_codes=0;
-res->n_filters=0;
+res->n_filter_codes=0;
+res->filter_codes[0]= NULL;
 return res;
 }
 
@@ -71,7 +72,10 @@ res->n_inflectional_codes=entry->n_inflectional_codes;
 for (i=0;i<res->n_inflectional_codes;i++) {
    res->inflectional_codes[i]=u_strdup(entry->inflectional_codes[i],prv_alloc);
 }
-res->n_filters=0;
+res->n_filter_codes= entry->n_filter_codes;
+for (i=0;i<res->n_filter_codes;i++) {
+   res->filter_codes[i]=u_strdup(entry->filter_codes[i],prv_alloc);
+}
 return res;
 }
 
@@ -147,7 +151,8 @@ res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
 res->semantic_codes[0]=NULL;
 res->n_inflectional_codes=0;
 res->inflectional_codes[0]=NULL;
-res->n_filters=0;
+res->n_filter_codes=0;
+res->filter_codes[0]=NULL;
 i=0;
 /*
  * We read the inflected part
@@ -383,7 +388,8 @@ res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
 res->semantic_codes[0]=NULL;
 res->n_inflectional_codes=0;
 res->inflectional_codes[0]=NULL;
-res->n_filters=0;
+res->n_filter_codes=0;
+res->filter_codes[0]=NULL;
 /*
  * We read the inflected part
  */
@@ -573,9 +579,8 @@ res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
 res->semantic_codes[0]=NULL;
 res->n_inflectional_codes=0;
 res->inflectional_codes[0]=NULL;
-res->n_filters=0;
-res->filters[0]=NULL;
-res->filters[1]=NULL;
+res->n_filter_codes = 0;
+res->filter_codes[0] = NULL;
 i=0;
 /*
  * We read the inflected part
@@ -622,18 +627,19 @@ res->semantic_codes[0]=u_strdup(temp,prv_alloc);
 /*
  * Now we read the filters if any
  */
-if (line[i] == '!' ) {//Negative filter
-	res->filters[0]=u_strdup("n",prv_alloc);
+if (line[i] == '!' && line[i+1] == '[') {//Negative filter
+	/* Initialization of the result structure */
+	res->filter_polarity = 0;
 	i=i+2; //we skip !
 }
 else if (line[i] == '[' ) {//Positive filter
-	res->filters[0]=u_strdup("p",prv_alloc);
+	res->filter_polarity = 1;
 	i++;
 }
 /*
  * Now we read the list of filters
  */
-while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
+while ( res->n_filter_codes <MAX_FILTERS && line[i]==':' ) {
    i++;
    val=parse_string(line,&i,temp,P_COLON_CLOSING_BRACKET,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
@@ -648,10 +654,9 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
       } else (*verbose)=P_EMPTY_FILTER;
       goto error;
    }
-   res->filters[res->n_filters]=u_strdup(temp,prv_alloc);
-   (res->n_filters)++;
+   res->filter_codes[res->n_filter_codes]=u_strdup(temp,prv_alloc);
+   (res->n_filter_codes)++;
 }
-res->filters[res->n_filters]=NULL;
 if (line[i]==']') i++;
 /*
  * Now we read the other gramatical and semantic codes if any
@@ -1505,9 +1510,12 @@ for (int i=0;i<d->n_semantic_codes;i++) {
 for (int i=0;i<d->n_inflectional_codes;i++) {
    free_cb(d->inflectional_codes[i],prv_alloc);
 }
-for (int i=0;i<d->n_filters;i++) {
-   free_cb(d->filters[i],prv_alloc);
+
+for (int i=0;i<d->n_filter_codes;i++) {
+   free_cb(d->filter_codes[i],prv_alloc);
 }
+
+
 free_cb(d,prv_alloc);
 }
 

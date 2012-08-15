@@ -204,9 +204,11 @@ if (is_korean) {
 }
 MultiFlex_ctx* p_multiFlex_ctx=new_MultiFlex_ctx(config_dir,morphology,equivalences,&vec,korean,pkgdir,named);
 
+
 //DELAC inflection
 err=inflect(argv[vars->optind],output,p_multiFlex_ctx,alph,error_check_status);
 free(named);
+
 for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
     p_multiFlex_ctx->fst2[count_free_fst2] = NULL;

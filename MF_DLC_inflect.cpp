@@ -109,13 +109,18 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
-			if (DELAS_entry->n_filters!=0) {
-				p_multiFlex_ctx->filters=DELAS_entry->filters;
-			} else {
-				p_multiFlex_ctx->filters=NULL;
+			if (DELAS_entry->n_filter_codes != 0) {
+
+				p_multiFlex_ctx->n_filter_codes = DELAS_entry->n_filter_codes;
+				p_multiFlex_ctx->filter_polarity = DELAS_entry->filter_polarity;
+				p_multiFlex_ctx->filter_codes = DELAS_entry->filter_codes;
+
+				err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,&forms);
+
+				p_multiFlex_ctx->n_filter_codes=0;
 			}
-			err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,&forms);
-			p_multiFlex_ctx->filters=NULL;
+			else err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,&forms);
+
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
@@ -125,6 +130,7 @@ int inflect(char* DLC, char* DLCF,
 			for (int i = 0; i < forms.no_forms; i++) {
 			   unichar foo[1024];   
 			   if (p_multiFlex_ctx->korean!=NULL) {
+
 			      Hanguls_to_Jamos(forms.forms[i].form,foo,p_multiFlex_ctx->korean,1);
 			   } else {
 			      u_strcpy(foo,forms.forms[i].form);
@@ -149,6 +155,7 @@ int inflect(char* DLC, char* DLCF,
 			free_dela_entry(DELAS_entry);
 			/* End of simple word case */
 		} else {
+			u_fprintf(U_STDERR,"we no have a strict DELAS line\n");
 			/* If we have not a simple word DELAS line, we try to analyse it
 			 * as a compound word DELAC line */
 			if (error_check_status==ONLY_SIMPLE_WORDS) {

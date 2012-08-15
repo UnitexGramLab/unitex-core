@@ -21,6 +21,7 @@
 
 #include "MF_Operators_Util.h"
 #include "Error.h"
+#include "DELA.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -37,46 +38,41 @@ static int isVerbose()
     return VERBOSE;
 }
 
-int compare(unichar *tmp,unichar **filtre) {
+int compare(unichar *tmp,MultiFlex_ctx* p_multiFlex_ctx) {
 int i,res;
 
-    res=0;i=1;
-    while(filtre[i]!=NULL && !res) {
-        if (u_strcmp(tmp,filtre[i]) == 0) res = 1;
+    res=0;i=0;
+    while(i < p_multiFlex_ctx->n_filter_codes && !res) {
+        if (u_strcmp(tmp,p_multiFlex_ctx->filter_codes[i]) == 0) res = 1;
         i++;
     }
-    if (filtre[0][0] == 'p') return res;
-    else if (filtre[0][0] == 'n') return (1-res);
+    if (p_multiFlex_ctx->filter_polarity) return res;
+    else return (1-res);
     return 0; // evite warning
 }
 
-int filtrer(unichar* sortie, unichar** filtre) {
+void filtrer(unichar* sortie, MultiFlex_ctx* p_multiFlex_ctx) {
 unichar result[L2],tmp[L1];
-int i,j,l,retour;
+int i,j,l;
 
-if (sortie[0] == '\0') return 0;
+if (sortie[0] != '\0') {
 
-    i=0; j = 0; retour=1; result[0]='\0';
+    i=0; j=0; result[0]='\0';
     if (sortie[i] == ':' ) i++;
-    else  {//error("erreur Sortie sans : -->");
-    //error("%S",sortie);
-    //error("\n");
-    retour=0;}
 
     l = u_strlen(sortie);
     while( i <= l ) {
       if (sortie[i] != ':' && sortie[i] != '\0') tmp[j++] = sortie[i++];
       else {
         tmp[j] = '\0'; i++; j = 0;
-        if (compare(tmp,filtre)) {
+        if (compare(tmp,p_multiFlex_ctx)) {
            u_strcat(result,":");
            u_strcat(result,tmp);
         }
       }
     }
-u_strcpy(sortie,result);
-
-return retour;
+    u_strcpy(sortie,result);
+}
 }
 
 

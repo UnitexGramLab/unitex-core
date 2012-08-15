@@ -23,6 +23,7 @@
 #define MF_Operators_UtilsH
 
 #include "Unicode.h"
+#include "MF_Global.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -43,8 +44,8 @@ namespace unitex {
 
 
 
-int compare(unichar *, unichar **);
-int filtrer(unichar * ,unichar **);
+int compare(unichar *, MultiFlex_ctx *);
+void filtrer(unichar * ,MultiFlex_ctx *);
 int get_indice_var_op(unichar *);
 int flex_op_with_var(unichar (*)[L1],unichar *,unichar *,int *,int *,unsigned int *);
 unsigned int get_flag_var(int,unsigned int);
