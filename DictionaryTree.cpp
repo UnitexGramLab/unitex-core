@@ -326,7 +326,7 @@ free_minimize_arrays(transitions_by_height,transitions);
  * 2) by their hash_number (n� of line in INF file)
  * 3) by the transition that get out of them
  */
-static int compare_nodes(const struct dictionary_node_transition* a,const struct dictionary_node_transition* b) {
+static inline int compare_nodes(const struct dictionary_node_transition* a,const struct dictionary_node_transition* b) {
 if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
    fatal_error("Internal error in compare_nodes\n");
 }
@@ -347,12 +347,12 @@ while(a!=NULL && b!=NULL) {
    int output_diff=u_strcmp(a->output,b->output);
    if (output_diff!=0) return output_diff;
    /* If the characters are equal and destination nodes are different... */
-   if (((size_t)(a->node - b->node)) != 0) return (int)(a->node - b->node);
+   if (((int)(a->node - b->node)) != 0) return (int)(a->node - b->node);
    a=a->next;
    b=b->next;
 }
-if (a==NULL && b==NULL) {
-   /* If the transition lists are equal, the nodes are equivalent */
+if (a==b) { 
+   /* If a==b==NULL, the transition lists are equal, the nodes are equivalent */
    return 0;
 }
 if (a==NULL) {
