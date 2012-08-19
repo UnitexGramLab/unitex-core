@@ -265,7 +265,7 @@ struct transition_list {
    struct transition_list* next;
 };
 
-static int compare_nodes(const struct dictionary_node_transition*,const struct dictionary_node_transition*);
+static inline int compare_nodes(const struct dictionary_node_transition*,const struct dictionary_node_transition*);
 //void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
 void init_minimize_arrays_transition_list(struct transition_list***);
 void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition***,unsigned int nb);
@@ -277,7 +277,7 @@ int convert_list_to_array(unsigned int,struct transition_list**,
 int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height);
 static void quicksort(int,int,struct dictionary_node_transition**);
 static void merge(int,struct dictionary_node_transition**,Abstract_allocator);
-
+static inline void check_nodes(const struct dictionary_node_transition* a);
 
 
 
@@ -308,6 +308,9 @@ init_minimize_arrays_dictionary_node_transition(&transitions,nb);
 float z;
 for (unsigned int k=0;k<=H;k++) {
    int size=convert_list_to_array(k,transitions_by_height,transitions,nb,prv_alloc);
+   for (int l=0;l<size;l++) {
+	   check_nodes(transitions[l]);
+   }
    quicksort(0,size-1,transitions);
    merge(size,transitions,prv_alloc);
    z=(float)(100.0*(float)(k)/(float)H);
@@ -319,6 +322,11 @@ free_minimize_arrays(transitions_by_height,transitions);
 }
 
 
+static inline void check_nodes(const struct dictionary_node_transition* a) {
+if (a==NULL || a->node==NULL) {
+   fatal_error("Internal error in check_nodes\n");
+}
+}
 
 /**
  * This function compares two tree nodes as follow:
@@ -327,9 +335,6 @@ free_minimize_arrays(transitions_by_height,transitions);
  * 3) by the transition that get out of them
  */
 static inline int compare_nodes(const struct dictionary_node_transition* a,const struct dictionary_node_transition* b) {
-if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
-   fatal_error("Internal error in compare_nodes\n");
-}
 /* If the nodes have not the same INF codes, they are different */
 if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list==NULL) return -1;
 if (a->node->single_INF_code_list==NULL && b->node->single_INF_code_list!=NULL) return 1;
@@ -505,7 +510,7 @@ return size;
 /**
  * Builds a quicksort partition of the given array.
  */
-static int partition(int start,int end,struct dictionary_node_transition** transitions) {
+static inline int partition(int start,int end,struct dictionary_node_transition** transitions) {
 struct dictionary_node_transition* pivot;
 struct dictionary_node_transition* tmp;
 int i=start-1;
