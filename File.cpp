@@ -327,6 +327,20 @@ return ((path[0]>='a' && path[0]<='z') || (path[0]>='A' && path[0]<='Z'))
 }
 
 
+#if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_APP)
+#if WINAPI_FAMILY==WINAPI_FAMILY_APP
+#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+#define PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION 1
+#endif
+#endif
+#endif
+
+#ifdef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+#include "DirHelper.h"
+static void create_path(const char* path) {
+	mkDirPortable(path);
+}
+#else
 static void create_path(const char* path) {
 char command[10+FILENAME_MAX];
 #ifdef _NOT_UNDER_WINDOWS
@@ -337,6 +351,7 @@ sprintf(command,"mkdir %s",path);
 system(command);
 #endif
 }
+#endif
 
 /**
  * Tries to create all directories that lead to 'name' with

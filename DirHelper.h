@@ -45,7 +45,18 @@ extern "C" {
 
 int mkDirPortable(const char* dirname);
 
+
+#if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_APP)
+#if WINAPI_FAMILY==WINAPI_FAMILY_APP
+#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+#define PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION 1
+#endif
+#endif
+#endif
+
+#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
 int chDirPortable(const char* dirname);
+#endif
 
 int rmDirPortable(const char* dirname);
 

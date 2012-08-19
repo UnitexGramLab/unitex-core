@@ -51,7 +51,15 @@ namespace logger {
 #include <windows.h>
 #include <windowsx.h>
 
+#if defined(WINAPI_FAMILY_PARTITION) && (!(defined(UNITEX_USING_WINRT_API)))
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define UNITEX_USING_WINRT_API 1
+#endif
+#endif
 
+#ifdef UNITEX_USING_WINRT_API
+#include "ThreadEmulation.h"
+#endif
 
 typedef struct
 {
@@ -61,7 +69,11 @@ typedef struct
 UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject()
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)malloc(sizeof(TIMEBEGIN));
+#ifdef UNITEX_USING_WINRT_API
+    pBegin->Tick = (DWORD)GetTickCount64();
+#else
     pBegin->Tick = GetTickCount();
+#endif
     return pBegin;
 }
 
@@ -73,7 +85,11 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElaps
     TIMEBEGIN* pBegin = (TIMEBEGIN*)ptr;
     unsigned int iRet;
     tBegin = *pBegin;
+#ifdef UNITEX_USING_WINRT_API
+    tEnd.Tick = (DWORD)GetTickCount64();
+#else
     tEnd.Tick = GetTickCount();
+#endif
     if (destructObject != 0)
       free(pBegin);
 
@@ -120,9 +136,18 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
         (pThreadInfoArray+i)->privateDataPtr = privateDataPtr;
         (pThreadInfoArray+i)->thread_func = thread_func;
         (pThreadInfoArray+i)->iNbThread = i;
+#ifdef UNITEX_USING_WINRT_API
+        *(pHandle+i) = ThreadEmulation::CreateThread(NULL,0,SyncThreadWrkFunc,(pThreadInfoArray+i),0,&((pThreadInfoArray+i)->dwThreadId));
+#else
         *(pHandle+i) = CreateThread(NULL,0,SyncThreadWrkFunc,(pThreadInfoArray+i),0,&((pThreadInfoArray+i)->dwThreadId));
+#endif
     }
+	
+#ifdef UNITEX_USING_WINRT_API
+    WaitForMultipleObjectsEx(iNbThread,pHandle,TRUE,INFINITE,FALSE);
+#else
     WaitForMultipleObjects(iNbThread,pHandle,TRUE,INFINITE);
+#endif
     free(pHandle);
     free(pThreadInfoArray);
 }
@@ -179,7 +204,11 @@ UNITEX_FUNC SYNC_Mutex_OBJECT UNITEX_CALL SyncBuildMutex()
     SYNC_MUTEX_OBJECT_INTERNAL* pMoi = (SYNC_MUTEX_OBJECT_INTERNAL*)malloc(sizeof(SYNC_MUTEX_OBJECT_INTERNAL));
     if (pMoi == NULL)
         return NULL;
+#ifdef UNITEX_USING_WINRT_API
+    InitializeCriticalSectionEx(&(pMoi->cs),0,0);
+#else
     InitializeCriticalSection(&(pMoi->cs));
+#endif
 
     return (SYNC_Mutex_OBJECT)pMoi;
 }
@@ -221,12 +250,16 @@ UNITEX_FUNC SYNC_TLS_OBJECT UNITEX_CALL SyncBuildTls()
 
     if (pstoi != NULL)
     {
+#ifdef UNITEX_USING_WINRT_API
+        pstoi -> dwTls = ThreadEmulation::TlsAlloc();
+#else
         pstoi -> dwTls = TlsAlloc();
         if ((pstoi -> dwTls) == TLS_OUT_OF_INDEXES)
         {
             free(pstoi);
             return NULL;
         }
+#endif
     }
 
     return (SYNC_TLS_OBJECT)pstoi;
@@ -238,7 +271,11 @@ UNITEX_FUNC int UNITEX_CALL SyncTlsSetValue(SYNC_TLS_OBJECT pTls,void* pUsrPtr)
     if (pstoi == NULL)
         return 0;
 
+#ifdef UNITEX_USING_WINRT_API
+    if (ThreadEmulation::TlsSetValue(pstoi->dwTls,pUsrPtr))
+#else
     if (TlsSetValue(pstoi->dwTls,pUsrPtr))
+#endif
         return 1;
     else
         return 0;
@@ -250,7 +287,11 @@ UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls)
     if (pstoi == NULL)
         return NULL;
 
+#ifdef UNITEX_USING_WINRT_API
+    return ThreadEmulation::TlsGetValue(pstoi->dwTls);
+#else
     return TlsGetValue(pstoi->dwTls);
+#endif
 }
 
 UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
@@ -258,7 +299,11 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
     SYNC_TLS_OBJECT_INTERNAL_WIN32* pstoi = (SYNC_TLS_OBJECT_INTERNAL_WIN32*)pTls;
     if (pstoi != NULL)
     {
+#ifdef UNITEX_USING_WINRT_API
+        ThreadEmulation::TlsFree(pstoi->dwTls);
+#else
         TlsFree(pstoi->dwTls);
+#endif
         free(pstoi);
     }
 }

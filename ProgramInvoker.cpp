@@ -146,10 +146,19 @@ free(argv);
 return ret;
 }
 
+#if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_APP)
+#if WINAPI_FAMILY==WINAPI_FAMILY_APP
+#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+#define PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION 1
+#endif
+#endif
+#endif
 
 /**
  * Invoke the main function.
  */
+#ifdef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+#else
 int invoke_as_new_process(ProgramInvoker* invoker) {
 char line[4096];
 build_command_line(invoker,line);
@@ -157,7 +166,7 @@ int ret=system(line);
 
 return ret;
 }
-
+#endif
 
 /**
  * Builds and returns a command line ready to be used with a 'system' call.

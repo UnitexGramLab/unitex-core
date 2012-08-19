@@ -282,7 +282,19 @@ parse_long_options_TS(char * const *nargv, const char *options,
 		return (long_options[match].val);
 }
 
+#if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_APP)
+#if WINAPI_FAMILY==WINAPI_FAMILY_APP
+#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+#define PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION 1
+#endif
+#endif
+#endif
+
+#ifdef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
+static const int posixly_correct = 0;
+#else
 static const int posixly_correct = (getenv("POSIXLY_CORRECT") != NULL);
+#endif
 
 /*
  * getopt_internal --

@@ -45,6 +45,13 @@
 #include "Error.h"
 #include "MappedFileHelper.h"
 
+
+#if defined(WINAPI_FAMILY_PARTITION) && (!(defined(UNITEX_USING_WINRT_API)))
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define UNITEX_USING_WINRT_API 1
+#endif
+#endif
+
 using namespace unitex;
 
 struct _MAPFILE_REAL {
@@ -63,11 +70,25 @@ MAPFILE* iomap_open_mapfile(const char*name,int /* option*/, size_t /*value_for_
     }
     mfr->hFile = mfr->hMap = NULL;
 
+#ifdef UNITEX_USING_WINRT_API
+	WCHAR filenameW[FILENAME_MAX + 0x200 + 1];
+	MultiByteToWideChar(CP_ACP,0,name,-1,filenameW,FILENAME_MAX + 0x200);
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+	GetFileAttributesExW(filenameW,GetFileExInfoStandard,&fad);
+	//mfr->len = fad.nFileSizeLow;
+	mfr->li_size.u.LowPart = fad.nFileSizeLow;
+	mfr->li_size.u.HighPart = fad.nFileSizeHigh;
+	mfr->hFile = CreateFile2(filenameW, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, /*FILE_FLAG_RANDOM_ACCESS,*/ NULL);
+    if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
+        mfr->hMap = CreateFileMappingFromApp(mfr->hFile, NULL,
+                        PAGE_READONLY, 0, NULL);
+#else
     mfr->hFile=CreateFileA(name, GENERIC_READ, FILE_SHARE_READ, NULL,
                   OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, NULL);
     if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
         mfr->hMap = CreateFileMapping(mfr->hFile, NULL,
                         PAGE_READONLY, 0, 0, NULL);
+#endif
     if ((mfr->hMap == INVALID_HANDLE_VALUE) || (mfr->hMap == NULL))
     {
         if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
@@ -76,9 +97,11 @@ MAPFILE* iomap_open_mapfile(const char*name,int /* option*/, size_t /*value_for_
         return NULL;
     }
 
-
+#ifdef UNITEX_USING_WINRT_API
+#else
     mfr->li_size.u.HighPart = 0;
     mfr->li_size.u.LowPart = GetFileSize(mfr->hFile,(DWORD*)&(mfr->li_size.u.HighPart));
+#endif
     return (MAPFILE*)mfr;
 }
 
@@ -100,7 +123,11 @@ const void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
         return 0;
     if ((pos==0) && (sizemap==0))
         sizemap=(size_t)(mfr->li_size.QuadPart);
+#ifdef UNITEX_USING_WINRT_API
+    return MapViewOfFileFromApp(mfr->hMap,FILE_MAP_READ,li.QuadPart,sizemap);
+#else
     return MapViewOfFile(mfr->hMap,FILE_MAP_READ,li.u.HighPart,li.u.LowPart,sizemap);
+#endif
 }
 
 void iomap_release_mapfile_pointer(MAPFILE *, const void*buf,size_t)

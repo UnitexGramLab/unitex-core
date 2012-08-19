@@ -37,14 +37,29 @@
 
 #include "DirHelper.h"
 
+#if (defined(_WIN32)) || defined(WIN32)
+#include <windows.h>
+#endif
+
+#if defined(WINAPI_FAMILY_PARTITION) && (!(defined(UNITEX_USING_WINRT_API)))
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define UNITEX_USING_WINRT_API 1
+#endif
+#endif
+
 int mkDirPortable(const char* dirname)
 {
     if (is_filename_in_abstract_file_space(dirname) != 0)
         return 0;
 
+#ifdef UNITEX_USING_WINRT_API
+    return CreateDirectoryA(dirname,NULL) ? 0 : -1;
+#else
     return mkdir(dirname);
+#endif
 }
 
+#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
 int chDirPortable(const char* dirname)
 {
     if (is_filename_in_abstract_file_space(dirname) != 0)
@@ -52,6 +67,7 @@ int chDirPortable(const char* dirname)
 
     return chdir(dirname);
 }
+#endif
 
 int rmDirPortable(const char* dirname)
 {

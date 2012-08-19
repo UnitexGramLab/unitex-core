@@ -79,7 +79,11 @@ af_remove(name);
 af_remove(grf);
 
 /* These lines are just here to test if the TRE library was correctly linked. */
+#ifdef TRE_WCHAR_TYPE_DEFINED
+tre_wchar_t warray[512];
+#else
 wchar_t warray[512];
+#endif
 regex_t matcher;
 tre_regwcomp(&matcher,warray,REG_NOSUB);
 return 0;
