@@ -507,7 +507,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 	res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
 	(res->n_inflectional_codes)++;
 }
-free(temp);
+free_cb(temp,prv_alloc);
 return res;
 }
 
@@ -539,13 +539,13 @@ if (temp==NULL) {
 int val=parse_string(tag,&i,temp,P_CLOSING_ROUND_BRACKET,P_EMPTY,NULL);
 if (tag[i]!='}' || val!=P_OK) {
    if (emit_error) error("Invalid tag in tokenize_tag_token\n");
-   free(temp);
+   free_cb(temp,prv_alloc);
    return NULL;
 }
 /* And we tokenize it as a normal DELAF line */
 int foo_error;
 struct dela_entry* result=tokenize_DELAF_line(temp,0,&foo_error,0,prv_alloc);
-free(temp);
+free_cb(temp,prv_alloc);
 return result;
 }
 
@@ -731,11 +731,11 @@ for (int il=0;il<res->n_semantic_codes;il++) {
       }
    }
 }
-free(temp);
+free_cb(temp,prv_alloc);
 return res;
 error:
 free_dela_entry(res,prv_alloc);
-free(temp);
+free_cb(temp,prv_alloc);
 return NULL;
 }
 
