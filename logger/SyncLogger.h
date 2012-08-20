@@ -79,9 +79,13 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteMutex(SYNC_Mutex_OBJECT pMut);
 typedef void* SYNC_TLS_OBJECT;
 
 UNITEX_FUNC SYNC_TLS_OBJECT UNITEX_CALL SyncBuildTls();
+UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls);
+
 UNITEX_FUNC int UNITEX_CALL SyncTlsSetValue(SYNC_TLS_OBJECT pTls,void* pUsrPtr);
 UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls);
-UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls);
+
+// this function is to be called at thread termination to cleanup thread internal data
+UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread();
 
 #ifdef __cplusplus
 } // extern "C"

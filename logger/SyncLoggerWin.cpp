@@ -311,6 +311,14 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
     }
 }
 
+UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
+{
+#ifdef UNITEX_USING_WINRT_API
+        ThreadEmulation::TlsShutdown();
+#else
+#endif
+}
+
 #else
 
 #include <sys/time.h>
@@ -532,6 +540,9 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
     }
 }
 
+UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
+{
+}
 
 #endif
 

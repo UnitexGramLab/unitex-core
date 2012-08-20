@@ -1566,6 +1566,8 @@ typedef struct {
     int count_run_ok;
     int count_run_warning;
     int count_run_error;
+
+    int must_cleanup_tls;
 } RunLog_ThreadData;
 
 
@@ -1595,7 +1597,7 @@ int ABSTRACT_CALLBACK_UNITEX is_cancelling(void*)
 
 void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/)
 {
-    RunLog_ThreadData* p_RunLog_ThreadData =(RunLog_ThreadData*)privateDataPtr;
+    RunLog_ThreadData* p_RunLog_ThreadData = (RunLog_ThreadData*)privateDataPtr;
     const RunLog_ctx* p_RunLog_ctx = p_RunLog_ThreadData->p_RunLog_ctx;
 
 
@@ -1702,6 +1704,8 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         if (p_RunLog_ctx->cleanlog==1)
           af_remove_unlogged(resultulp);
     }
+	if (p_RunLog_ThreadData->must_cleanup_tls != 0)
+		TlsCleanupCurrentThread();
 }
 
 
@@ -1853,6 +1857,7 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     (prunLog_ThreadData+ut)->count_run_ok=0;
     (prunLog_ThreadData+ut)->count_run_error=0;
     (prunLog_ThreadData+ut)->count_run_warning=0;
+	(prunLog_ThreadData+ut)->must_cleanup_tls = (runLog_ctx.nb_thread <= 1) ? 0 : 1;
 
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
 }

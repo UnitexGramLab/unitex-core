@@ -190,5 +190,9 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
     }
 }
 
+UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
+{
+}
+
 } // namespace logger
 } // namespace unitex
