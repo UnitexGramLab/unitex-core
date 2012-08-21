@@ -1072,7 +1072,7 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
  *
  * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
  */
-void uncompress_entry(const unichar* inflected,unichar* INF_code,Ustring* result) {
+void uncompress_entry(const unichar* inflected,const unichar* INF_code,Ustring* result) {
 if (inflected[0]=='\0') {
 	fatal_error("Unexpected empty inflected form in uncompress_entry\n");
 }
