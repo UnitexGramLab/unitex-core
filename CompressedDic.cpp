@@ -69,12 +69,12 @@ if (d==NULL) {
 }
 d->bin=load_abstract_BIN_file(bin,&d->bin_size,&d->bin_free);
 if (d->bin==NULL) {
-	free(d);
+	free_cb(d,prv_alloc);
 	return NULL;
 }
 if (!read_bin_header(d)) {
 	free_abstract_BIN(d->bin,&d->bin_free);
-	free(d);
+	free_cb(d,prv_alloc);
 	return NULL;
 }
 d->inf=NULL;
@@ -82,13 +82,13 @@ if (d->type==BIN_CLASSIC) {
 	if (inf==NULL) {
 		error("NULL .inf file in new_Dictionary\n");
 		free_abstract_BIN(d->bin,&d->bin_free);
-		free(d);
+		free_cb(d,prv_alloc);
 		return NULL;
 	}
 	d->inf=load_abstract_INF_file(vec,inf,&d->inf_free);
 	if (d->inf==NULL) {
 		free_abstract_BIN(d->bin,&d->bin_free);
-		free(d);
+		free_cb(d,prv_alloc);
 		return NULL;
 	}
 }
@@ -111,13 +111,13 @@ return new_Dictionary(vec,bin,inf,prv_alloc);
 /**
  * Frees all resources associated to the given dictionary
  */
-void free_Dictionary(Dictionary* d,Abstract_allocator /* prv_alloc*/) {
+void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc) {
 if (d==NULL || is_persistent_structure(d)) return;
 if (d->bin!=NULL) free_abstract_BIN(d->bin,&d->bin_free);
 if (d->inf!=NULL) {
 	free_abstract_INF(d->inf,&d->inf_free);
 }
-free(d);
+free_cb(d,prv_alloc);
 }
 
 
