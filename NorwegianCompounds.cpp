@@ -728,10 +728,12 @@ while (l!=NULL) {
  * 'number_of_components': number of components that compose the word.
  * 'infos': global settings.
  */
+static
 void explore_state(int offset,unichar* current_component,int pos_in_current_component,
                    const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
                    const unichar* output_dela_line,struct word_decomposition_list** L,
-                   int number_of_components,struct norwegian_infos* infos,Ustring* ustr,int base) {
+                   int number_of_components,struct norwegian_infos* infos,Ustring* ustr,int base,
+                   unichar* dec_buffer,unichar* sia_code_buffer) {
 int final,n_transitions,inf_number;
 int z=save_output(ustr);
 offset=read_dictionary_state(infos->d,offset,&final,&n_transitions,&inf_number);
@@ -749,19 +751,19 @@ if (final) {
 				/* We will look at all the INF codes of the last component in order
 				 * to produce analysis */
 				while (l!=NULL) {
-					unichar dec[4096];
-					u_strcpy(dec,analysis);
-					if (dec[0]!='\0') {
+					unichar* dec_ = dec_buffer;
+					u_strcpy(dec_,analysis);
+					if (dec_[0]!='\0') {
 						/* If we have already something in the analysis (i.e. if
 						 * we have not a simple word), we insert the concatenation
 						 * mark before the entry to come */
-						u_strcat(dec," +++ ");
+						u_strcat(dec_," +++ ");
 					}
 					Ustring* entry=new_Ustring(4096);
 					/* We get the dictionary line that corresponds to the current INF code */
 					uncompress_entry(current_component,l->string,entry);
 					/* And we add it to the analysis */
-					u_strcat(dec,entry->str);
+					u_strcat(dec_,entry->str);
 					unichar new_dela_line[4096];
 					/* We copy the current output DELA line that contains
 					 * the concatenation of the previous components */
@@ -808,7 +810,7 @@ if (final) {
 						 */
 						struct word_decomposition* wd=new_word_decomposition();
 						wd->n_parts=number_of_components;
-						u_strcpy(wd->decomposition,dec);
+						u_strcpy(wd->decomposition,dec_);
 						u_strcpy(wd->dela_line,new_dela_line);
 						wd->is_a_valid_right_N=check_N_right_component(l->string);
 						wd->is_a_valid_right_A=check_A_right_component(l->string);
@@ -840,29 +842,34 @@ if (final) {
 					(current_component[pos_in_current_component-1]==current_component[pos_in_current_component-2])) {
 					/* If we have such a word, we add it to the current analysis,
 					 * putting "+++" if the current component is not the first one */
-					unichar dec[4096];
-					u_strcpy(dec,analysis);
-					if (dec[0]!='\0') {
-						u_strcat(dec," +++ ");
+					unichar* dec_ = dec_buffer;
+					u_strcpy(dec_,analysis);
+					if (dec_[0]!='\0') {
+						u_strcat(dec_," +++ ");
 					}
 					/* In order to print the component in the analysis, we arbitrary
 					 * take a valid left component among all those that are available
 					 * for the current component */
-					unichar sia_code[4096];
-					unichar line[4096];
+					unichar* multi_buffer_alloc = (unichar*)malloc(sizeof(unichar)*4096*3);
+					if (multi_buffer_alloc==NULL) {
+					  fatal_alloc_error("explore_state");
+					}
+
+					unichar* sia_code = sia_code_buffer;
+					unichar* line = multi_buffer_alloc;
 					Ustring* entry=new_Ustring(4096);
 					get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
 					uncompress_entry(current_component,sia_code,entry);
-					u_strcat(dec,entry->str);
+					u_strcat(dec_,entry->str);
 					free_Ustring(entry);
 					u_strcpy(line,output_dela_line);
 					u_strcat(line,current_component);
 					/* As we have a double letter at the end of the word,
 					 * we must remove a character */
 					line[u_strlen(line)-1]='\0';
-					unichar temp[4096];
-					unichar dec_temp[4096];
-					u_strcpy(dec_temp,dec);
+					unichar* temp = multi_buffer_alloc + 4096;
+					unichar* dec_temp = multi_buffer_alloc + 4096 + 4096;
+					u_strcpy(dec_temp,dec_);
 					/* Then, we explore the dictionary in order to analyze the
 					 * next component. We start at the root of the dictionary
 					 * (offset=4) and we go back one position in the word to analyze.
@@ -870,39 +877,40 @@ if (final) {
 					 * we try to analyze "planner". */
 					Ustring* foo=new_Ustring();
 					explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze-1,
-						dec_temp,line,L,number_of_components+1,infos,ustr,0);
+						dec_temp,line,L,number_of_components+1,infos,ustr,0,dec_buffer,sia_code_buffer);
 					free_Ustring(foo);
+					free(multi_buffer_alloc);
 				}
 				/* Now, we try to analyze the component normally, even if
 				 * it was ended by double letter, because we can have things
 				 * like "oppbrent = opp,.ADV +++ brent,brenne.V:K" */
-				unichar dec[4096];
+				unichar* dec_ = dec_buffer;
 				unichar line[4096];
-				u_strcpy(dec,analysis);
-				if (dec[0]!='\0') {
+				u_strcpy(dec_,analysis);
+				if (dec_[0]!='\0') {
 					/* We add the "+++" mark if the current component is not the first one */
-					u_strcat(dec," +++ ");
+					u_strcat(dec_," +++ ");
 				}
-				unichar sia_code[4096];
+				unichar* sia_code = sia_code_buffer;
 				Ustring* entry=new_Ustring(4096);
 				/* In order to print the component in the analysis, we arbitrary
 				 * take a valid left component among all those that are available
 				 * for the current component */
 				get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
 				uncompress_entry(current_component,sia_code,entry);
-				u_strcat(dec,entry->str);
+				u_strcat(dec_,entry->str);
 				free_Ustring(entry);
 				u_strcpy(line,output_dela_line);
 				u_strcat(line,current_component);
 				unichar temp[4096];
 				unichar dec_temp[4096];
-				u_strcpy(dec_temp,dec);
+				u_strcpy(dec_temp,dec_);
 				/* Then, we explore the dictionary in order to analyze the
 				 * next component. We start at the root of the dictionary
 				 * (offset=4). */
 				Ustring* foo=new_Ustring();
 				explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
-					dec_temp,line,L,number_of_components+1,infos,foo,0);
+					dec_temp,line,L,number_of_components+1,infos,foo,0,dec_buffer,sia_code_buffer);
 				free_Ustring(foo);
 			}
 		}
@@ -921,10 +929,26 @@ for (int i=0;i<n_transitions;i++) {
 		 * word to analyze, we follow it */
 		current_component[pos_in_current_component]=uc;
 		explore_state(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
-			analysis,output_dela_line,L,number_of_components,infos,ustr,base);
+			analysis,output_dela_line,L,number_of_components,infos,ustr,base,dec_buffer,sia_code_buffer);
 	}
 	restore_output(z,ustr);
 }
 }
 
+/**
+ * this version is externaly called, using a recyclable buffer for dec and sia_code
+ * to save stack
+ */
+void explore_state(int offset,unichar* current_component,int pos_in_current_component,
+                   const unichar* word_to_analyze,int pos_in_word_to_analyze,const unichar* analysis,
+                   const unichar* output_dela_line,struct word_decomposition_list** L,
+                   int number_of_components,struct norwegian_infos* infos,Ustring* ustr,int base) {
+  unichar dec_buffer[4096];
+  unichar sia_code_buffer[4096];
+  explore_state(offset,current_component,pos_in_current_component,
+                   word_to_analyze,pos_in_word_to_analyze,analysis,
+                   output_dela_line,L,
+                   number_of_components,infos,ustr,base,
+				   dec_buffer,sia_code_buffer);
+}
 } // namespace unitex
