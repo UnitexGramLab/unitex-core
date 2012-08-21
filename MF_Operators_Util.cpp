@@ -46,9 +46,11 @@ int i,res;
         if (u_strcmp(tmp,p_multiFlex_ctx->filter_codes[i]) == 0) res = 1;
         i++;
     }
-    if (p_multiFlex_ctx->filter_polarity) return res;
-    else return (1-res);
-    return 0; // evite warning
+
+    if (p_multiFlex_ctx->filter_polarity) 
+      return res;
+
+    return (1-res);
 }
 
 void filtrer(unichar* sortie, MultiFlex_ctx* p_multiFlex_ctx) {

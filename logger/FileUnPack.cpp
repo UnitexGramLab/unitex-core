@@ -298,9 +298,9 @@ local int strcmpcasenosensitive_internal(
         if (c1<c2)
             return -1;
         if (c1>c2)
-            return 1;
+            break;
     }
-    return 0; /* Just to make happy compilers that can't see this code is unreachable */
+    return 1; /* out of for, Just to make happy compilers that can't see this code is unreachable */
 }
 
 

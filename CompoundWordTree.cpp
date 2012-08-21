@@ -611,9 +611,10 @@ for (;;) {
       tmp=array[i];
       array[i]=array[j];
       array[j]=tmp;
-   } else return j;
+   } else 
+       break;
 }
-return 0;
+return j;
 }
 
 
@@ -663,9 +664,10 @@ for (;;) {
       tmp2=array2[i];
       array2[i]=array2[j];
       array2[j]=tmp2;
-   } else return j;
+   } else
+       break;
 }
-return 0;
+return j;
 }
 
 
