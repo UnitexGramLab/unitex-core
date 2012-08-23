@@ -323,6 +323,119 @@ EXTENSION = .exe
 
 else
 
+ifeq ($(SYSTEM), cygwin)
+
+#####################
+#####################
+##  BEGIN CYGWIN   ##
+#####################
+#####################
+
+ifeq ($(COMMANDPREFIXDEFINED),yes)
+	CC     = $(COMMANDPREFIX)g++
+	CC_GCC = $(COMMANDPREFIX)gcc
+	AR     = $(COMMANDPREFIX)ar
+else
+	CC      = g++
+	CC_GCC  = gcc
+	AR      = AR
+endif
+
+RM      = rm -f
+INSTALL = cp
+TAR_COMMAND = tar
+TAR_PARAM = xzf
+
+NAME    = unitex-src
+VERSION = $(shell date +"%Y-%m-%d")
+BUILD   = $(NAME)-$(VERSION)
+
+TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
+
+ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
+	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+endif
+
+#
+# Compiling instructions for the TRE library
+#
+INSTALL_COMMAND = make install
+
+LIBS =  -L "." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+INCS =  -I".." -I"../include_tre"
+CXXINCS =  -I".."
+CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
+CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
+
+ifeq ($(DEBUG), yes)
+CFLAGS += -g -O0 -Wl,--add-stdcall-alias
+else
+CFLAGS += -O3
+endif
+
+ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
+CFLAGS += -I$(ADDITIONAL_INCLUDE)
+endif
+
+ifneq ($(strip $(ADDITIONAL_INCLUDE2)),)
+CFLAGS += -I$(ADDITIONAL_INCLUDE2)
+endif
+
+
+ifneq ($(strip $(ADDITIONAL_CFLAG)),)
+CFLAGS += $(ADDITIONAL_CFLAG)
+endif
+
+ifneq ($(strip $(ADDITIONAL_CFLAG2)),)
+CFLAGS += $(ADDITIONAL_CFLAG2)
+endif
+
+ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
+DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
+endif
+
+LIBTRE   = libtre.a
+
+# -fPIC is not required because all code is position independent under Windows
+#ifeq ($(LIBRARY),yes)
+#CFLAGS += -fPIC
+#endif
+#ifeq ($(JNILIBRARY),yes)
+#CFLAGS += -fPIC
+#endif
+
+ifeq ($(LIBRARY),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(JNILIBRARY),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifeq ($(STATICLIB),yes)
+CFLAGS += -DUNITEX_LIBRARY
+endif
+
+ifneq ($(SVN_REVISION),)
+CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
+endif
+
+SYSLIBLOGGER = SyncLoggerPosix.o
+SYSLIBMAPPED = MappedFileHelperPosix.o DirHelperPosix.o
+SYSLIBDIRIO = UnitexLibDirPosix.o
+
+APPDIR = ../../../App
+
+OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+EXTENSION = .exe
+
+#####################
+#####################
+##  END   CYGWIN   ##
+#####################
+#####################
+
+else
 
 #####################
 #####################
@@ -433,6 +546,8 @@ EXTENSION = .exe
 ###################
 ###################
 endif
+
+endif ## CYGWIN (ifeq)
 
 endif ## MINGW (ifeq)
 
@@ -1198,14 +1313,17 @@ else
 ################################
 ################################
 
-
 ifeq ($(LIBRARY),yes)
 all: $(LIBTRE) .libunitex
 else
 ifeq ($(JNILIBRARY),yes)
 all: $(LIBTRE) .libunitexjni
 else
+ifeq ($(STATICLIB),yes)
+all: $(LIBTRE) .libunitexstatic
+else
 all: bin
+endif
 endif
 endif
 
