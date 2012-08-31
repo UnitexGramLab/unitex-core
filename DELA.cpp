@@ -127,8 +127,8 @@ return 0;
  * no error message and stores an error code in '*verbose'.
  * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
-struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,
-                                       int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
+static struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,
+                                              int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
 int i,val;
 if (line==NULL) {
