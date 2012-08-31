@@ -825,7 +825,7 @@ return n;
  * - we must add "e" to get the lemma
  * => result="3e"
  */
-void get_compressed_token(unichar* inflected,unichar* lemma,unichar* result) {
+static void get_compressed_token(unichar* inflected,unichar* lemma,unichar* result) {
 int prefix=get_longuest_prefix(inflected,lemma);
 int length_of_sfx_to_remove=u_strlen(inflected)-prefix;
 /*int lemma_length=u_strlen(lemma);*/
@@ -892,7 +892,7 @@ token[j]='\0';
  * if inflected="abcdefgh" and if we already have matched the 'b', we don't want to
  * consider letters before 'b'.
  */
-void explore_semitic_tokens(const unichar* inflected,const unichar* lemma,unichar* result,
+static void explore_semitic_tokens(const unichar* inflected,const unichar* lemma,unichar* result,
 		unichar* tmp_result,int *min_full_letters,int n_full_letters,
 		int pos_in_inflected,int pos_in_tmp_result) {
 if (*lemma=='\0') {
@@ -940,7 +940,7 @@ explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
  *          'j' appears, because there was no 'j' in 'inflected' between the
  *          'b' and the 'g'
  */
-void semitic_token_compression(const unichar* inflected,const unichar* lemma,unichar* result) {
+static void semitic_token_compression(const unichar* inflected,const unichar* lemma,unichar* result) {
 int n=-1;
 unichar tmp[1024];
 explore_semitic_tokens(inflected,lemma,result,tmp,&n,0,0,0);
