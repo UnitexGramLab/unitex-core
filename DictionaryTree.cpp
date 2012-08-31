@@ -516,16 +516,16 @@ return size;
 /**
  * Builds a quicksort partition of the given array.
  */
-static inline int partition(int start,int end,struct dictionary_node_transition** transitions) {
+static inline int partition(int end,struct dictionary_node_transition** transitions) {
 struct dictionary_node_transition* pivot;
 struct dictionary_node_transition* tmp;
-int i=start-1;
+int i=-1;
 /* Final pivot index */
 int j=end+1;
-pivot=transitions[(start+end)/2];
+pivot=transitions[(end)/2];
 for (;;) {
    do j--;
-   while ((j>(start-1))&&(compare_nodes(pivot,transitions[j]) < 0));
+   while ((j>(-1))&&(compare_nodes(pivot,transitions[j]) < 0));
    do i++;
    while ((i<end+1)&&(compare_nodes(transitions[i],pivot) < 0));
    if (i<j) {
@@ -540,15 +540,20 @@ for (;;) {
 /**
  * Sorts the given transition array, according to Dominique Revuz's criteria.
  */
-static void quicksort(int start,int end,struct dictionary_node_transition** transitions) {
+static void quicksort(int end,struct dictionary_node_transition** transitions) {
 int p;
-if (start<end) {
-   p=partition(start,end,transitions);
-   quicksort(start,p,transitions);
-   quicksort(p+1,end,transitions);
+if (end>0) {
+   p=partition(end,transitions);
+   quicksort(p,transitions);
+   quicksort(end-(p+1),transitions+p+1);
 }
 }
 
+static void quicksort(int start,int end,struct dictionary_node_transition** transitions) {
+if (start<end) {
+   quicksort(end-start,transitions+start);
+}
+}
 
 /**
  * 'transitions' is supposed to be sorted, i.e. equivalent transitions
