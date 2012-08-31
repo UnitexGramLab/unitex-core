@@ -68,6 +68,9 @@ return t;
  */
 void free_dictionary_node(struct dictionary_node* a,Abstract_allocator prv_alloc) {
 if (a==NULL) return;
+
+if (get_allocator_cb_flag(prv_alloc) & AllocatorGetFlagAutoFreePresent) return;
+
 if (a->incoming>1) {
 	/* We don't free a state that is still pointed by someone else
 	 * in order to avoid double freeing problems. */
@@ -180,8 +183,9 @@ int get_value_index_for_string_colon_string(const unichar* str1,const unichar* s
  * in the string 'inflected'. 'node' is the current node in the dictionary tree.
  * 'infos' is used to access to constant parameters.
  */
-void add_entry_to_dictionary_tree(unichar* inflected,int pos,struct dictionary_node* node,
-                                  struct info* infos,int line, Abstract_allocator prv_alloc) {
+static void add_entry_to_dictionary_tree(const unichar* inflected,int pos,struct dictionary_node* node,
+                                  struct info* infos,int /*line*/, Abstract_allocator prv_alloc) {
+for (;;) {
 if (inflected[pos]=='\0') {
    /* If we have reached the end of 'inflected', then we are in the
     * node where the INF code must be inserted */
@@ -213,9 +217,11 @@ if (t->node==NULL) {
    t->node=new_dictionary_node(prv_alloc);
    (t->node->incoming)++;
 }
-add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos,line,prv_alloc);
-}
 
+node=t->node;
+pos++;
+}
+}
 
 /**
  * This function inserts an entry in a dictionary tree. 'inflected' represents
