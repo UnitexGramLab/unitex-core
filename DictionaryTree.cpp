@@ -50,7 +50,7 @@ return a;
 /**
  * Allocates, initializes and returns a dictionary node transition.
  */
-struct dictionary_node_transition* new_dictionary_node_transition(Abstract_allocator prv_alloc) {
+static inline struct dictionary_node_transition* new_dictionary_node_transition(Abstract_allocator prv_alloc) {
 struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc_cb(sizeof(struct dictionary_node_transition),prv_alloc);
 if (t==NULL) {
 	fatal_alloc_error("new_dictionary_node_transition");
@@ -105,7 +105,7 @@ while (t!=NULL) {
  * transition is created, inserted according to the Unicode order and returned.
  * In that case, the destination dictionary node is NULL.
  */
-struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n,Abstract_allocator prv_alloc) {
+static struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n,Abstract_allocator prv_alloc) {
 struct dictionary_node_transition* tmp;
 if ((*n)->trans==NULL || c<((*n)->trans->letter)) {
    /* If we must insert at first position */
@@ -342,15 +342,21 @@ if (a==NULL || a->node==NULL) {
  */
 static inline int compare_nodes(const struct dictionary_node_transition* a,const struct dictionary_node_transition* b) {
 /* If the nodes have not the same INF codes, they are different */
-if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list==NULL) return -1;
-if (a->node->single_INF_code_list==NULL && b->node->single_INF_code_list!=NULL) return 1;
-if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list!=NULL &&
-    a->node->INF_code!=b->node->INF_code)
-   return (a->node->INF_code - b->node->INF_code);
-
+    
+    struct dictionary_node* a_node = a->node;
+    struct dictionary_node* b_node = b->node;
+    
+    if (a_node->single_INF_code_list!=b_node->single_INF_code_list) {
+        if (a_node->single_INF_code_list!=NULL && b_node->single_INF_code_list==NULL) return -1;
+        if (a_node->single_INF_code_list==NULL && b_node->single_INF_code_list!=NULL) return 1;
+        }
+    if (a_node->single_INF_code_list!=NULL && b_node->single_INF_code_list!=NULL &&
+            a_node->INF_code!=b_node->INF_code)
+            return (a_node->INF_code - b_node->INF_code);
+     
 /* Then, we compare all the outgoing transitions, two by two */
-a=a->node->trans;
-b=b->node->trans;
+a=a_node->trans;
+b=b_node->trans;
 while(a!=NULL && b!=NULL) {
    /* If the 2 current transitions are not tagged by the same
     * character, then the nodes are different */
