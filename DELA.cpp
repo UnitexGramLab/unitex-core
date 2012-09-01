@@ -1451,19 +1451,17 @@ return 0;
  * Tests if the given sequence contains an unprotected = sign
  */
 int contains_unprotected_equal_sign(const unichar* s) {
-/*if (s[0]=='=') {
-   return 1;
+for (;;) {
+	if (*(s+0)==0) return 0;
+	if (*(s+0)==1) return 1;
+	if (*(s+1)==0) return 0;
+	if (*(s+1)==1) return 1;
+	if (*(s+2)==0) return 0;
+	if (*(s+2)==1) return 1;
+	if (*(s+3)==0) return 0;
+	if (*(s+3)==1) return 1;
+	s+=4;
 }
-for (int i=1;s[i]!='\0';i++) {
-   if (s[i]=='=' && s[i-1]!='\\') {
-      return 1;
-   }
-}*/
-while (*s!='\0') {
-	if (*s==1) return 1;
-	s++;
-}
-return 0;
 }
 
 
@@ -1473,10 +1471,16 @@ return 0;
  * replaced by chars #1.
  */
 void replace_unprotected_equal_sign(unichar* s,unichar c) {
-for (int i=0;s[i]!='\0';i++) {
-   if (s[i]==1) {
-	   s[i]=c;
-   }
+for (;;) {
+	if (*(s+0)==0) return ;
+	if (*(s+0)==1) *(s+0) = c;
+	if (*(s+1)==0) return ;
+	if (*(s+1)==1) *(s+1) = c;
+	if (*(s+2)==0) return ;
+	if (*(s+2)==1) *(s+2) = c;
+	if (*(s+3)==0) return ;
+	if (*(s+3)==1) *(s+3) = c;
+	s+=4;
 }
 }
 
@@ -1487,11 +1491,29 @@ for (int i=0;s[i]!='\0';i++) {
  */
 void unprotect_equal_signs(unichar* s) {
 int j=0;
-for (int i=0;s[i]!='\0';i++) {
+int i=0;
+for (;;) {
    /* There won't be segfault since s[i+1] will be \0 at worst */
+   if (s[i]=='\0') break;
    if (s[i]=='\\' && s[i+1]=='=') {
    }
    else s[j++]=s[i];
+
+   if (s[i+1]=='\0') break;
+   if (s[i+1]=='\\' && s[i+1+1]=='=') {
+   }
+   else s[j++]=s[i+1];
+
+   if (s[i+2]=='\0') break;
+   if (s[i+2]=='\\' && s[i+2+1]=='=') {
+   }
+   else s[j++]=s[i+2];
+
+   if (s[i+3]=='\0') break;
+   if (s[i+3]=='\\' && s[i+3+1]=='=') {
+   }
+   else s[j++]=s[i+3];
+   i+=4;
 }
 s[j]='\0';
 }
