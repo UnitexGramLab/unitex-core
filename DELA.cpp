@@ -831,7 +831,7 @@ int length_of_sfx_to_remove=u_strlen(inflected)-prefix;
 /*int lemma_length=u_strlen(lemma);*/
 if (/*lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
    u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')*/
-    !u_strcmp(lemma," ") || !u_strcmp(lemma,"-")) {
+    is_str_mono_unichar_string(lemma,' ') || is_str_mono_unichar_string(lemma,'-')) {
    /* If we have 2 separators, we write the lemma one rawly in order
     * to make the INF file visible.
     * Ex: "jean-pierre,jean-pierre.N" => "0-0.N" instead of "000.N" */
@@ -967,7 +967,7 @@ if (!u_strcmp(e->inflected,e->lemma)) {
 int n_inflected=get_number_of_tokens(e->inflected);
 int n_lemma=get_number_of_tokens(e->lemma);
 if (n_inflected!=n_lemma
-		|| !u_strcmp(e->inflected," ") ||  !u_strcmp(e->inflected,"-")) {
+		|| is_str_mono_unichar_string(e->inflected,' ') ||  is_str_mono_unichar_string(e->inflected,'-')) {
    /* If the 2 strings have not the same number of tokens,
     * we rawly consider them as two big tokens. However,
     * we put the prefix "_" in order to indicate that we have

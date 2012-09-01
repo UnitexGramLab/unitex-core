@@ -255,6 +255,9 @@ unichar* u_strcpy_sized(unichar*,size_t,const unichar*);
 unichar* u_strcpy_sized(unichar*,size_t,const char*);
 unichar* u_strcat(unichar*,const unichar*);
 unichar* u_strcat(unichar*,const char*);
+
+int is_str_mono_unichar_string(const unichar*, unichar);
+#define is_str_mono_unichar_string(str,c) (((str)!=NULL) && (*(str)==(c)) && (*((str)+1)==0))
 int u_strcmp(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
 int u_strcmp_ignore_case(const unichar*, const unichar*);
