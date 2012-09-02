@@ -157,7 +157,7 @@ struct info {
  * allocated a lot of unichar (and produce stack overflow)
  */
 #define DEFAULT_TMP_GET_VALUE_INDEX_BUFFER_SIZE (0x200)
-int get_value_index_for_string_colon_string(const unichar* str1,const unichar* str2,struct string_hash* hash) {
+static int get_value_index_for_string_colon_string(const unichar* str1,const unichar* str2,struct string_hash* hash) {
    int value;
    unichar*allocated_buffer = NULL;
    unichar tmp_default[DEFAULT_TMP_GET_VALUE_INDEX_BUFFER_SIZE];
@@ -273,14 +273,14 @@ struct transition_list {
 
 static inline int compare_nodes(const struct dictionary_node_transition*,const struct dictionary_node_transition*);
 //void init_minimize_arrays(struct transition_list***,struct dictionary_node_transition***);
-void init_minimize_arrays_transition_list(struct transition_list***);
-void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition***,unsigned int nb);
-void free_minimize_arrays(struct transition_list**,struct dictionary_node_transition**);
-int sort_by_height(struct dictionary_node*,struct transition_list**,struct bit_array*,Abstract_allocator);
-struct transition_list* new_transition_list(struct dictionary_node_transition*,struct transition_list*,Abstract_allocator);
-int convert_list_to_array(unsigned int,struct transition_list**,
+static void init_minimize_arrays_transition_list(struct transition_list***);
+static void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition***,unsigned int nb);
+static void free_minimize_arrays(struct transition_list**,struct dictionary_node_transition**);
+static int sort_by_height(struct dictionary_node*,struct transition_list**,struct bit_array*,Abstract_allocator);
+static struct transition_list* new_transition_list(struct dictionary_node_transition*,struct transition_list*,Abstract_allocator);
+static int convert_list_to_array(unsigned int,struct transition_list**,
                           struct dictionary_node_transition**,unsigned int,Abstract_allocator);
-int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height);
+static int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height);
 static void quicksort(int,int,struct dictionary_node_transition**);
 static void merge(int,struct dictionary_node_transition**,Abstract_allocator);
 static inline void check_nodes(const struct dictionary_node_transition* a);
@@ -384,7 +384,7 @@ return 1;
 /**
  * We allocate and initialize 2 arrays used by the minimization.
  */
-void init_minimize_arrays_transition_list(struct transition_list** *transitions_by_height) {
+static void init_minimize_arrays_transition_list(struct transition_list** *transitions_by_height) {
 (*transitions_by_height)=(struct transition_list**)malloc(MAXIMUM_HEIGHT*sizeof(struct transition_list*));
 if (*transitions_by_height==NULL) {
    fatal_alloc_error("init_minimize_arrays");
@@ -392,7 +392,7 @@ if (*transitions_by_height==NULL) {
 memset(*transitions_by_height,0,MAXIMUM_HEIGHT*sizeof(struct transition_list*));
 }
 
-void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition** *transitions,unsigned int nb)
+static void init_minimize_arrays_dictionary_node_transition(struct dictionary_node_transition** *transitions,unsigned int nb)
 {
 (*transitions)=(dictionary_node_transition**)malloc(nb*sizeof(struct dictionary_node_transition*));
 if (*transitions==NULL) {
@@ -404,7 +404,7 @@ if (*transitions==NULL) {
 /**
  * Frees all the given transition list.
  */
-void free_transition_list(struct transition_list* l) {
+static void free_transition_list(struct transition_list* l) {
 struct transition_list* ptr;
 while (l!=NULL) {
    ptr=l;
@@ -417,7 +417,7 @@ while (l!=NULL) {
 /**
  * Frees the 2 arrays used by the minimization.
  */
-void free_minimize_arrays(struct transition_list** transitions_by_height,
+static void free_minimize_arrays(struct transition_list** transitions_by_height,
                           struct dictionary_node_transition** transitions) {
 for (int i=0;i<MAXIMUM_HEIGHT;i++) {
    free_transition_list(transitions_by_height[i]);
@@ -434,7 +434,7 @@ free(transitions);
  * they will be later in the 'minimize_tree' function.
  * The function returns the height of the given node.
  */
-int sort_by_height(struct dictionary_node* n,struct transition_list** transitions_by_height,
+static int sort_by_height(struct dictionary_node* n,struct transition_list** transitions_by_height,
 					struct bit_array* used_inf_values,Abstract_allocator prv_alloc) {
 if (n==NULL) {
    fatal_error("NULL error in sort_by_height\n");
@@ -470,7 +470,7 @@ return 1+height;
 /**
  * Allocates, initializes and returns a new transition list element.
  */
-struct transition_list* new_transition_list(struct dictionary_node_transition* transition,
+static struct transition_list* new_transition_list(struct dictionary_node_transition* transition,
                                       struct transition_list* next,Abstract_allocator prv_alloc) {
 struct transition_list* t;
 t=(struct transition_list*)malloc_cb(sizeof(struct transition_list),prv_alloc);
@@ -487,7 +487,7 @@ return t;
  * We convert the list of transitions corresponding the given height
  * into an array, in order to apply the quicksort.
  */
-int convert_list_to_array(unsigned int height,struct transition_list** transitions_by_height,
+static int convert_list_to_array(unsigned int height,struct transition_list** transitions_by_height,
                           struct dictionary_node_transition** transitions,unsigned int maximum_transition,Abstract_allocator prv_alloc) {
 unsigned int size=0;
 struct transition_list* l=transitions_by_height[height];
@@ -505,7 +505,7 @@ while (l!=NULL) {
 return size;
 }
 
-int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height)
+static int convert_list_to_array_size(unsigned int height,struct transition_list** transitions_by_height)
 {
 unsigned int size=0;
 struct transition_list* l=transitions_by_height[height];
@@ -593,7 +593,7 @@ while (i<size) {
  * This function takes a prefix and a string s. It replaces
  * pfx by the longest prefix that is common to pfx and s.
  */
-void get_longest_common_prefix(Ustring* pfx,unichar* s) {
+static void get_longest_common_prefix(Ustring* pfx,unichar* s) {
 if (s==NULL) {
 	empty(pfx);
 	return;
@@ -612,7 +612,7 @@ pfx->str[i]='\0';
  *
  * n=3 s=abcdef => def
  */
-void remove_prefix(int n,unichar* s) {
+static void remove_prefix(int n,unichar* s) {
 if (n==0) return;
 for (int i=n;s[i-1]!='\0';i++) {
 	s[i-n]=s[i];
@@ -623,7 +623,7 @@ for (int i=n;s[i-1]!='\0';i++) {
 /**
  * This function moves outputs from final nodes to transitions leading to final nodes.
  */
-void subsequential_to_normal_transducer(struct dictionary_node* root,
+static void subsequential_to_normal_transducer(struct dictionary_node* root,
 		struct dictionary_node* node,
 		struct string_hash* inf_codes,
 		int pos,unichar* z,
