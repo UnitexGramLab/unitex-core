@@ -40,7 +40,7 @@ struct bit_array* bit_array=(struct bit_array*)malloc_cb(sizeof(struct bit_array
 if (bit_array==NULL) {
 	fatal_alloc_error("new_bit_array");
 }
-if (number_of_elements<=0) {
+if (number_of_elements<0) {
    fatal_error("Invalid number of elements (%d) in new_bit_array\n",number_of_elements);
 }
 bit_array->size_in_elements=number_of_elements;
