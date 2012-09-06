@@ -81,7 +81,7 @@ if (s[i]=='\0') {
 	fatal_error("Internal error in process_match_content_in_lemmatize_mode\n");
 }
 s[i]='\0';
-i+=2;
+i+=1;
 while (1) {
 	int start=i;
 	int j=i;
