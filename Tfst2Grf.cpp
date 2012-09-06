@@ -210,7 +210,7 @@ if (start==NULL) {
    u_fclose(txt);
    return 1;
 }
-u_fprintf(start,"%d %d\n",tfst->offset_in_chars,tfst->offset_in_tokens);
+u_fprintf(start,"%d %d\n",tfst->offset_in_tokens,tfst->offset_in_chars);
 u_fclose(start);
 
 
