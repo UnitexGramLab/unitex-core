@@ -35,6 +35,7 @@
 namespace unitex {
 
 #define PRLG_DELIMITOR 0x02
+#define LEMMATIZE_DELIMITOR 0x03
 
 int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt*);
@@ -70,6 +71,34 @@ static size_t buf_map_int_pseudo_read(struct buffer_mapped* buffer,size_t size_r
     buffer->pos_next_read+=size_requested;
     return size_requested;
 }
+
+
+
+static void process_match_content_in_lemmatize_mode(unichar* s,vector_ptr* outputs) {
+int i;
+for (i=1;s[i]!='\0' && s[i]!='/';i++) {}
+if (s[i]=='\0') {
+	fatal_error("Internal error in process_match_content_in_lemmatize_mode\n");
+}
+s[i]='\0';
+i+=2;
+while (1) {
+	int start=i;
+	int j=i;
+	while (s[j]!='\0' && s[j]!=LEMMATIZE_DELIMITOR) {
+		j++;
+	}
+	int end=(s[j]=='\0');
+	s[j]='\0';
+	vector_ptr_add(outputs,u_strdup(s+start));
+	if (end) {
+		return;
+	}
+	i=j+1;
+}
+}
+
+
 
 /**
  * This function builds a concordance from a 'concord.ind' file
@@ -227,7 +256,8 @@ if (out==NULL) {
 }
 /* If we have an HTML or a GlossaNet/script concordance, we must write an HTML
  * file header. */
-if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
+if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_
+		|| options->result_mode==LEMMATIZE_) {
 	write_HTML_header(out,N_MATCHES,options);
 }
 if (options->result_mode==XML_WITH_HEADER_) {
@@ -356,7 +386,8 @@ while ((c=u_fgetc(f))!=EOF) {
 			 * procedure if we have a Thai sorted concordance. */
 			if (options->thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
-			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
+			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_
+					|| options->result_mode==SCRIPT_ || options->result_mode==LEMMATIZE_) {
             u_fprintf(out,"<tr><td nowrap>%S%HR",PRLG_tag->str,left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
@@ -374,10 +405,21 @@ while ((c=u_fgetc(f))!=EOF) {
 		 * sequence. */
 		if (options->result_mode==HTML_) {
 			u_fprintf(out,"<a href=\"%S\">%HS</a>%HS&nbsp;</td></tr>\n",indices,middle,right);
-		}
-		/* If we must produce a GlossaNet concordance, we turn the sequence
-		 * into an URL, using the given GlossaNet script. */
-		else if (options->result_mode==GLOSSANET_) {
+		} else if (options->result_mode==LEMMATIZE_) {
+			/* In lemmatize mode we must extract everything after the / */
+			vector_ptr* outputs=new_vector_ptr();
+			process_match_content_in_lemmatize_mode(middle,outputs);
+			u_fprintf(out,"<a href=\"%S\">%HS</a>",indices,middle);
+			u_fprintf(out,"<!--%d-->",outputs->nbelems);
+			for (int k=0;k<outputs->nbelems;k++) {
+				unichar* z=(unichar*)outputs->tab[k];
+				u_fprintf(out,"<!--%HS-->",z);
+			}
+			u_fprintf(out,"%HS&nbsp;</td></tr>\n",right);
+			free_vector_ptr(outputs,free);
+		} else if (options->result_mode==GLOSSANET_) {
+			/* If we must produce a GlossaNet concordance, we turn the sequence
+			 * into an URL, using the given GlossaNet script. */
 			u_fprintf(out,"<A HREF=\"%s?rec=%HS&adr=%HS",options->script,middle,href);
          u_fprintf(out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
 		}
@@ -440,7 +482,8 @@ while ((c=u_fgetc(f))!=EOF) {
 }
 /* If we have an HTML or a GlossaNet concordance, we must write some
  * HTML closing tags. */
-if ((options->result_mode==HTML_) || (options->result_mode==GLOSSANET_)) write_HTML_end(out);
+if ((options->result_mode==HTML_) || (options->result_mode==GLOSSANET_) ||
+		options->result_mode==LEMMATIZE_) write_HTML_end(out);
 if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_)){
   u_fprintf(out,"</concord>\n");
 }
@@ -781,6 +824,59 @@ while (s[i]!='\0') {
 
 
 /**
+ * In lemmatize mode, all matches are supposed to be of the following form:
+ *
+ * input/output
+ *
+ * When there are ambiguous outputs, we want to factorize them in one match as follows:
+ *
+ * inputA/output1
+ * inputA/output2
+ * inputB/output3
+ * inputB/output4
+ * inputB/output5character
+ *
+ * will be turned into:
+ *
+ * inputA/output1*output2*output3
+ * inputB/output4*output5
+ *
+ * where the * symbol stands for the character #3
+ *
+ * Note: this function does not need a struct match_list** since the head can never be removed.
+ */
+static void group_ambiguous_outputs(struct match_list* list) {
+while (list!=NULL && list->next!=NULL) {
+	if (are_ambiguous(list,list->next)) {
+		int i;
+		unichar* s=list->next->output;
+		for (i=1;s[i]!='\0' && s[i]!='/';i++) {
+			/* We must start at 1, because the input may be the "/" character */
+		}
+		if (s[i]=='\0') {
+			/* The output does not contain / */
+			fatal_error("Missing / in group_ambiguous_outputs\n");
+		}
+		s+=i+1;
+		/* +2: +1 for \0 and +1 for the delimitor */
+		int len=u_strlen(list->output);
+		list->output=(unichar*)realloc(list->output,sizeof(unichar)*(2+len+u_strlen(s)));
+		if (list->output==NULL) {
+			fatal_alloc_error("group_ambiguous_outputs");
+		}
+		list->output[len]=LEMMATIZE_DELIMITOR;
+		u_strcpy(list->output+len+1,s);
+		struct match_list* tmp=list->next;
+		list->next=list->next->next;
+		free_match_list_element(tmp);
+	} else {
+		list=list->next;
+	}
+}
+}
+
+
+/**
  * This function reads a concordance index from the file 'concordance' and produces a
  * text file that is stored in 'output'. This file contains the lines of the concordance,
  * but the columns may have been moved according to the sort mode, and the left
@@ -851,7 +947,11 @@ buffer->size=0;
 u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
-matches=load_match_list(concordance,NULL,NULL);
+OutputPolicy op;
+matches=load_match_list(concordance,&op,NULL);
+if (options->result_mode==LEMMATIZE_ && op!=MERGE_OUTPUTS) {
+	fatal_error("Invalid concordance in lemmatize mode: only MERGE concordances are allowed\n");
+}
 /* In an html concordance, we have to know the match number in the
  * concord.ind file, but we need a renumber system, since in
  * ambiguous output only mode, we have to keep trace of the original
@@ -861,6 +961,13 @@ vector_int* renumber=NULL;
 if (options->only_ambiguous) {
 	renumber=new_vector_int();
 	filter_unambiguous_outputs(&matches,renumber);
+}
+if (options->result_mode==LEMMATIZE_) {
+	/* Note that this operation makes the renumber array invalid, if any,
+	 * so we delete it to avoid any problems */
+	free_vector_int(renumber);
+	renumber=NULL;
+	group_ambiguous_outputs(matches);
 }
 /* Then we fill the buffer with the beginning of the text */
 buffer->size=(int)buf_map_int_pseudo_read(buffer,buffer->nb_item);
@@ -885,7 +992,12 @@ u_printf("Constructing concordance...\n");
 while (matches!=NULL) {
 	match_number++;
 	if (renumber==NULL) {
-		concord_ind_match_number=match_number;
+		if (options->result_mode==LEMMATIZE_) {
+			/* We dont use that information in lemmatize mode */
+			concord_ind_match_number=-1;
+		} else {
+			concord_ind_match_number=match_number;
+		}
 	} else {
 		concord_ind_match_number=renumber->tab[match_number];
 	}
@@ -972,7 +1084,16 @@ while (matches!=NULL) {
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
 	if (options->thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
-	else {match_length_in_displayable_chars=u_strlen(middle);}
+	else {
+		if (options->result_mode==LEMMATIZE_) {
+			/* In lemmatize mode, we hide the output */
+			int i;
+			for (i=1;middle[i]!='/' && middle[i]!='\0';i++) {}
+			match_length_in_displayable_chars=i;
+		} else {
+			match_length_in_displayable_chars=u_strlen(middle);
+		}
+	}
 	/* Then we can compute the right context */
 	extract_right_context(end_pos,matches->m.end_pos_in_char,right,tokens,match_length_in_displayable_chars,
                               options,buffer);

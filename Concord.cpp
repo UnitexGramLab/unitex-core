@@ -59,7 +59,9 @@ const char* usage_Concord =
         "  -r X/--right=X: the same for right context. Default=0\n"
 		"  --only_matches: this option will force empty left and right contexts. Moreover, if\n"
 		"                  used with -t/--text, Concord will not surround matches with tabulations\n"
-		"  --only_ambiguous: Only displays identical occurrences with ambiguous outputs, in text order\n"
+		"  --only_ambiguous: Only displays identical occurrences with ambiguous outputs\n"
+		"                    Note: this option forces sort to be in text order, except in combination\n"
+		"                          with option --lemmatize.\n"
         "\n"
         "Sort order options:\n"
         "  --TO: text order (default)\n"
@@ -86,6 +88,8 @@ const char* usage_Concord =
 		"                             position of the match.\n"
         "  -e/--xml: produces xml index of the concordance\n"
         "  -w/--xml-with-header: produces xml index of the concordance with header\n"
+		"  --lemmatize: produces a special HTML concordance used by the lemmatization interface\n"
+		"               in the GUI.\n"
 		"  NOTE: both -e and -w options accepts an offset file, as -u does\n"
 		"\n"
 		"  --PRLG=X,Y: produces a concordance for PRLG corpora where each line is prefixed\n"
@@ -193,6 +197,7 @@ const struct option_TS lopts_Concord[]= {
       {"right",required_argument_TS,NULL,'r'},
       {"only_ambiguous",no_argument_TS,NULL,8},
       {"only_matches",no_argument_TS,NULL,10},
+      {"lemmatize",no_argument_TS,NULL,11},
       {"TO",no_argument_TS,NULL,0},
       {"LC",no_argument_TS,NULL,1},
       {"LR",no_argument_TS,NULL,2},
@@ -292,6 +297,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
 	   break;
    }
    case 10: options->only_matches=1; break;
+   case 11: options->result_mode=LEMMATIZE_; break;
    case 'H': options->result_mode=HTML_; break;
    case 't': {
 	   options->result_mode=TEXT_;
@@ -430,11 +436,11 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ ||
    options->right_context=0;
    options->sort_mode=TEXT_ORDER;
 }
-if (options->only_ambiguous) {
+if (options->only_ambiguous && options->result_mode!=LEMMATIZE_) {
 	/* We force text order when displaying only ambiguous outputs */
 	options->sort_mode=TEXT_ORDER;
 }
-if (options->result_mode==HTML_ || options->result_mode==DIFF_) {
+if (options->result_mode==HTML_ || options->result_mode==DIFF_ || options->result_mode==LEMMATIZE_) {
 	/* We need the offset file if and only if we have to produce
 	 * an html concordance with positions in .snt file */
 	options->snt_offsets=load_snt_offsets(snt_files->snt_offsets_pos);

@@ -53,6 +53,7 @@ void free_match_list_element(struct match_list*,Abstract_allocator prv_alloc=NUL
 void free_match_list(struct match_list*,Abstract_allocator prv_alloc=NULL);
 struct match_list* load_match_list(U_FILE*,OutputPolicy*,unichar*,Abstract_allocator prv_alloc=NULL);
 void filter_unambiguous_outputs(struct match_list* *list,vector_int*);
+int are_ambiguous(struct match_list* a,struct match_list* b);
 
 } // namespace unitex
 
