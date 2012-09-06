@@ -393,7 +393,8 @@ while ((c=u_fgetc(f))!=EOF) {
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
-			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_ || options->result_mode==SCRIPT_) {
+			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_
+					|| options->result_mode==SCRIPT_ || options->result_mode==LEMMATIZE_) {
             u_fprintf(out,"<tr><td nowrap>%HS",left);
 			} else {u_fprintf(out,"%S",left);}
 		}
