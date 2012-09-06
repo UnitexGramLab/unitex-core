@@ -302,6 +302,13 @@ if (last_text_dependent_tag==NULL) {
    return;
 }
 e->start=last_text_dependent_tag->source_state_text;
+if (infos->single_tags_only &&
+	(last_text_dependent_tag->source_state_text!=first_text_dependent_tag->source_state_text
+			|| last_text_dependent_tag->dest_state_text!=first_text_dependent_tag->dest_state_text)) {
+	/* In lemmatize mode, we only allow results that match one single text tag */
+	e->m.end_pos_in_token=-1;
+	return;
+}
 e->m.start_pos_in_token=-1;
 e->m.start_pos_in_char=-1;
 e->m.start_pos_in_letter=-1;

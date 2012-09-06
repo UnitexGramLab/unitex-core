@@ -114,7 +114,8 @@ int locate_tfst(const char* text,const char* grammar,const char* alphabet,const 
                 MatchPolicy match_policy,
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,
-		          int tilde_negation_operator,vector_ptr* injected_vars,int tagging) {
+		          int tilde_negation_operator,vector_ptr* injected_vars,int tagging,
+		          int single_tags_only) {
 Tfst* tfst=open_text_automaton(vec,text);
 if (tfst==NULL) {
 	return 0;
@@ -130,6 +131,7 @@ infos.tagging=tagging;
 infos.tfst=tfst;
 infos.number_of_matches=0;
 infos.alphabet=NULL;
+infos.single_tags_only=single_tags_only;
 if (alphabet!=NULL && alphabet[0]!='\0') {
    /* We want to allow undefined alphabets (see comments above 'is_letter'
     * in Alphabet.cpp) */
