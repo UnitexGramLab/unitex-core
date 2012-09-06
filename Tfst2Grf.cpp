@@ -152,14 +152,17 @@ if (vars->optind!=argc-1) {
 char grf_name[FILENAME_MAX];
 char txt_name[FILENAME_MAX];
 char tok_name[FILENAME_MAX];
+char start_name[FILENAME_MAX];
 
 get_path(argv[vars->optind],grf_name);
 get_path(argv[vars->optind],txt_name);
 get_path(argv[vars->optind],tok_name);
+get_path(argv[vars->optind],start_name);
 if (output==NULL) {
    strcat(grf_name,"cursentence.grf");
    strcat(txt_name,"cursentence.txt");
    strcat(tok_name,"cursentence.tok");
+   strcat(start_name,"cursentence.start");
 } else {
    strcat(grf_name,output);
    strcat(grf_name,".grf");
@@ -167,6 +170,8 @@ if (output==NULL) {
    strcat(txt_name,".txt");
    strcat(tok_name,output);
    strcat(tok_name,".tok");
+   strcat(start_name,output);
+   strcat(start_name,".start");
 }
 if (fontname==NULL) {
    fontname=strdup("Times New Roman");
@@ -198,11 +203,22 @@ Tfst* tfst=open_text_automaton(&vec,argv[vars->optind]);
 load_sentence(tfst,SENTENCE);
 u_fprintf(txt,"%S\n",tfst->text);
 u_fclose(txt);
+U_FILE* start=u_fopen(&vec,start_name,U_WRITE);
+if (start==NULL) {
+   error("Cannot file %s\n",start_name);
+   u_fclose(f);
+   u_fclose(txt);
+   return 1;
+}
+u_fprintf(start,"%d %d\n",tfst->offset_in_chars,tfst->offset_in_tokens);
+u_fclose(start);
+
 
 for (int i=0;i<tfst->tokens->nbelems;i++) {
    u_fprintf(tok,"%d %d\n",tfst->tokens->tab[i],tfst->token_sizes->tab[i]);
 }
 u_fclose(tok);
+
 
 u_printf("Creating GRF...\n");
 Grf* grf=sentence_to_grf(tfst,fontname,size,is_sequence_automaton);

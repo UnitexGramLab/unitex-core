@@ -994,8 +994,10 @@ while (matches!=NULL) {
 	match_number++;
 	if (renumber==NULL) {
 		if (options->result_mode==LEMMATIZE_) {
-			/* We dont use that information in lemmatize mode */
-			concord_ind_match_number=-1;
+			/* We don't use that information in lemmatize mode, so we use instead
+			 * the index of the first token (that should also be the only one if
+			 * there is no problem) */
+			concord_ind_match_number=matches->m.start_pos_in_token;
 		} else {
 			concord_ind_match_number=match_number;
 		}
