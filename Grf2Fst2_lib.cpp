@@ -808,11 +808,11 @@ if (is_empty(fifo)) {
 }
 unichar* ptr=(unichar*)take_ptr(fifo);
 put_ptr(res,ptr);
-int last_token_was_normal=u_strcmp(ptr,"#") && u_strcmp(ptr,"@ ");
+int last_token_was_normal=u_strcmp(ptr,"#") && u_strcmp(ptr,"@ ") && u_strcmp(ptr," ");
 int current_token_is_normal;
 while (!is_empty(fifo)) {
 	ptr=(unichar*)take_ptr(fifo);
-	current_token_is_normal=u_strcmp(ptr,"#") && u_strcmp(ptr,"@ ");
+	current_token_is_normal=u_strcmp(ptr,"#") && u_strcmp(ptr,"@ ") && u_strcmp(ptr," ");
 	if (last_token_was_normal && current_token_is_normal) {
 		put_ptr(res,u_strdup("#"));
 	}
