@@ -5011,21 +5011,6 @@ unichar u_toupper (unichar c) {
   return r;
 }
 
-void u_toupper (unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-	*s=u_toupper(*s);
-	s++;
-}
-}
-
-void u_tolower (unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-	*s=u_tolower(*s);
-	s++;
-}
-}
 
 #ifdef CASE_CONVERSION_BY_TAB_LOWER
 static unichar u_tolower_switch (unichar c) {
@@ -6911,15 +6896,60 @@ unichar u_deaccentuate (unichar c) {
   return r;
 }
 
+void u_deaccentuate(unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=u_deaccentuate(*s);
+	s++;
+}
+}
+
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 unichar u_toupper (unichar c) {
 	return upperChar[c];
+}
+
+void u_toupper (unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=upperChar[*s];
+	s++;
+}
+}
+
+#else
+
+void u_toupper (unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=u_toupper(*s);
+	s++;
+}
 }
 #endif
 
 #ifdef CASE_CONVERSION_BY_TAB_LOWER
 unichar u_tolower (unichar c) {
 	return lowerChar[c];
+}
+
+
+void u_tolower (unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=lowerChar[*s];
+	s++;
+}
+}
+
+#else
+
+void u_tolower (unichar* s) {
+if (s==NULL) return;
+while (*s!='\0') {
+	*s=u_tolower(*s);
+	s++;
+}
 }
 #endif
 

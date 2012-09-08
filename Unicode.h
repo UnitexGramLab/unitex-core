@@ -345,6 +345,7 @@ int u_parse_int(const unichar * str, const unichar ** next = NULL);
 // Sebastian Nagel's functions
 void u_toupper (unichar* s);
 void u_tolower (unichar* s);
+void u_deaccentuate(unichar* s);
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
 unichar u_deaccentuate(unichar);
