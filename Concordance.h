@@ -86,6 +86,7 @@ struct conc_opt {
   /* Data extracted from the PRLG file produced by Unxmlize's --PRLG option */
   PRLG* PRLG_data;
   char only_matches;
+  char original_file_offsets;
 };
 
 struct conc_opt* new_conc_opt();

@@ -368,7 +368,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	int can_print_line=1;
 	if (options->result_mode==GLOSSANET_) {
 		unichar line[4000];
-      u_sprintf(line,"%S%S\t%S\t%S",PRLG_tag->str,left,middle,right);
+        u_sprintf(line,"%S%S\t%S\t%S",PRLG_tag->str,left,middle,right);
 		/* We test if the line was already seen */
 		if (NO_VALUE_INDEX==get_value_index(line,glossa_hash,DONT_INSERT)) {
 			can_print_line=1;
@@ -395,8 +395,8 @@ while ((c=u_fgetc(f))!=EOF) {
 			 * left context. */
 			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_
 					|| options->result_mode==SCRIPT_ || options->result_mode==LEMMATIZE_) {
-            u_fprintf(out,"<tr><td nowrap>%HS",left);
-			} else {u_fprintf(out,"%S",left);}
+            u_fprintf(out,"<tr><td nowrap>%S%HS",PRLG_tag->str,left);
+			} else {u_fprintf(out,"%S%S",PRLG_tag->str,left);}
 		}
 		/* If we must produce an HTML concordance, then we surround the
 		 * located sequence by HTML tags in order to make it an hyperlink.
@@ -1017,7 +1017,7 @@ while (matches!=NULL) {
 	   /* If we have to go backward, in the case a Locate made in "All matches mode" */
 	   for (int z=position_in_tokens-1; z>=start_pos; z--) {
          int token_size=0;
-         if (options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
+         if (options->original_file_offsets==0 || options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
             token_size=token_length[buffer->int_buffer_[buffer->skip+z]];
          }
          start_pos_char=start_pos_char-token_size;
@@ -1036,7 +1036,7 @@ while (matches!=NULL) {
 	   /* If we have to go forward */
       for (int z=position_in_tokens; z<start_pos; z++) {
          int token_size=0;
-         if (options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
+         if (options->original_file_offsets==0 || options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
             token_size=token_length[buffer->int_buffer_[buffer->skip+z]];
          }
          start_pos_char=start_pos_char+token_size;
@@ -1064,7 +1064,7 @@ while (matches!=NULL) {
 	   /* We update 'end_pos_char' in the same way */
 	   for (int z=start_pos;z<end_pos;z++) {
 	      int token_size=0;
-	      if (options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
+	      if (options->original_file_offsets==0 || options->uima_offsets==NULL || buffer->int_buffer_[buffer->skip+z]!=tokens->SENTENCE_MARKER) {
 	         token_size=token_length[buffer->int_buffer_[buffer->skip+z]];
 	      }
 	      end_pos_char=end_pos_char+token_size;
@@ -1119,7 +1119,7 @@ while (matches!=NULL) {
 	 * position */
 	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token+1,options->snt_offsets);
 	end_pos_char=end_pos_char+shift;
-	if (options->uima_offsets!=NULL) {
+	if ((options->only_matches || options->original_file_offsets) && options->uima_offsets!=NULL) {
 		/* In UIMA mode, we use the offset file to produce start and end positions
 		 * relative to the original input file, before any Unitex operation */
 		int first_token=matches->m.start_pos_in_token;
@@ -1408,6 +1408,7 @@ opt->snt_offsets=NULL;
 opt->uima_offsets=NULL;
 opt->PRLG_data=NULL;
 opt->only_matches=0;
+opt->original_file_offsets=0;
 return opt;
 }
 
