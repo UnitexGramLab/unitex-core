@@ -197,8 +197,9 @@ if (options->output[0]=='\0') {
 		strcat(options->output,"concord.txt");
 	else if ((options->result_mode==XML_) || (options->result_mode==XML_WITH_HEADER_))
 		strcat(options->output,"concord.xml");
-	else
-		strcat(options->output,"concord.html");
+	else if ((options->result_mode==LEMMATIZE_))
+		strcat(options->output,"lemmatize.html");
+	else strcat(options->output,"concord.html");
 }
 int N_MATCHES;
 
