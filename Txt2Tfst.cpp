@@ -61,7 +61,7 @@ namespace unitex {
  *
  * The function returns 1 if a sentence was read; 0 otherwise.
  */
-int read_sentence(int* buffer,int *N,int *total,U_FILE* f,int SENTENCE_MARKER) {
+int read_sentence(int* buffer,int *N,int *total,U_FILE* f,int SENTENCE_MARKER,int SPACE) {
 *total=0;
 *N=0;
 if (1!=fread(buffer,sizeof(int),1,f)) {
@@ -83,6 +83,18 @@ while (length<MAX_TOKENS_IN_SENTENCE && 1==(control=(int)fread(buffer+length,siz
 }
 if (length<MAX_TOKENS_IN_SENTENCE && control==1 && buffer[length]==SENTENCE_MARKER) {
    (*total)++;
+}
+if (control==0) {
+	/* If we have reached the end of file, we make sure that we really have a sentence
+	 * and not just only remaining spaces after the last {S} */
+	int only_spaces=1;
+	for (int i=0;i<length;i++) {
+		if (buffer[i]!=SPACE) {
+			only_spaces=0;
+			break;
+		}
+	}
+	if (only_spaces) return 0;
 }
 if (length==0) return 0;
 *N=length;
@@ -315,7 +327,7 @@ Ustring* text=new_Ustring(2048);
 struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
-while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
+while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER,tokens->SPACE)) {
    /* We compute and save the current sentence description */
    build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
