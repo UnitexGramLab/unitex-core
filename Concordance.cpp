@@ -115,6 +115,10 @@ unichar* tmp=u_strchr(s,' ');
 if (tmp!=NULL) {
 	*tmp='\0';
 }
+tmp=u_strchr(s,']');
+if (tmp!=NULL) {
+	*tmp='\0';
+}
 s++;
 while (NULL!=(tmp=u_strchr(s,'-'))) {
 	*tmp='\0';
@@ -131,13 +135,25 @@ if (tmp==NULL) {
 	u_fprintf(out,"%S\t\t",s);
 	return;
 }
-*tmp='\t';
-tmp=u_strchr(tmp+1,'.');
+*tmp='\0';
+if (s[0]=='{') {
+	struct dela_entry* e=tokenize_tag_token(s,0,NULL);
+	if (e==NULL) {
+		fatal_error("");
+	}
+	u_fprintf(out,"%S",e->inflected);
+	free_dela_entry(e);
+} else {
+	u_fprintf(out,"%S",s);
+}
+
+s=tmp+1;
+tmp=u_strchr(s,'.');
 if (tmp==NULL) {
 	fatal_error("Missing . in print_dic_info_for_csv: <%S>\n",s);
 }
 *tmp='\t';
-u_fprintf(out,"%S",s);
+u_fprintf(out,"\t%S",s);
 }
 
 
