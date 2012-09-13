@@ -101,6 +101,18 @@ const char* usage_Concord =
         "  -x/--xalign: produces an index file for XAlign display\n"
         "  -m TXT/--merge=TXT: produces a file named TXT which is the SNT file\n"
         "                      merged with the match results\n"
+		"  --export_csv: produce a tab-separated export.csv file in text order of the following format:\n"
+		"\n"
+		"                A B C D E F, where:\n"
+		"\n"
+		"                A=number of the line in the .csv file\n"
+		"                B=number of the sentence\n"
+		"                C=PRLG reference, if any\n"
+		"                D=the inflected form as found in the text\n"
+		"                E=the lemma, if any\n"
+		"                F=the codes, if any\n"
+		"                To work, this option must be invoked for special concord.ind files, that\n"
+		"                are supposed to contain every text token that is neither a {S} nor a space.\n"
         "\n"
         "  -d DIR/--directory=DIR: does not work in the same directory than <concord> but in DIR\n"
         "  -a ALPH/--alphabet=ALPH : the char order file used for sorting\n"
@@ -198,6 +210,7 @@ const struct option_TS lopts_Concord[]= {
       {"only_ambiguous",no_argument_TS,NULL,8},
       {"only_matches",no_argument_TS,NULL,10},
       {"lemmatize",no_argument_TS,NULL,11},
+      {"export_csv",no_argument_TS,NULL,12},
       {"TO",no_argument_TS,NULL,0},
       {"LC",no_argument_TS,NULL,1},
       {"LR",no_argument_TS,NULL,2},
@@ -298,6 +311,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
    }
    case 10: options->only_matches=1; break;
    case 11: options->result_mode=LEMMATIZE_; break;
+   case 12: options->result_mode=CSV_; break;
    case 'H': options->result_mode=HTML_; break;
    case 't': {
 	   options->result_mode=TEXT_;
@@ -460,6 +474,10 @@ if (PRLG[0]!='\0') {
 	if (options->PRLG_data==NULL) {
 		fatal_error("Cannot read PRLG file %s\n",PRLG);
 	}
+}
+if (options->result_mode==CSV_) {
+	options->sort_mode=TEXT_ORDER;
+	options->only_matches=1;
 }
 
 /* Once we have set all parameters, we call the function that

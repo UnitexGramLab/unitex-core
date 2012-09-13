@@ -56,6 +56,7 @@ namespace unitex {
 #define XML_WITH_HEADER_ 10
 #define DIFF_ 11
 #define LEMMATIZE_ 12
+#define CSV_ 13
 
 
 /**

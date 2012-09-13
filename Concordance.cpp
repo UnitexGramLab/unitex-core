@@ -99,6 +99,47 @@ while (1) {
 }
 
 
+static int get_sentence_number(unichar* indices) {
+int a,b,c,d;
+u_sscanf(indices,"%d%d%d%d",&a,&b,&c,&d);
+return c;
+}
+
+
+static void print_PRGL_tag_for_csv(U_FILE* out,unichar* s) {
+if (s==NULL || s[0]=='\0') return;
+if (s[0]!='[') {
+	fatal_error("Invalid PRLG tag format in print_PRGL_tag_for_csv: <%S>\n",s);
+}
+unichar* tmp=u_strchr(s,' ');
+if (tmp!=NULL) {
+	*tmp='\0';
+}
+s++;
+while (NULL!=(tmp=u_strchr(s,'-'))) {
+	*tmp='\0';
+	u_fprintf(out,"%S - ",s);
+	s=tmp+1;
+}
+u_fprintf(out,"%S",s);
+}
+
+
+static void print_dic_info_for_csv(U_FILE* out,unichar* s) {
+unichar* tmp=u_strchr(s+1,'/');
+if (tmp==NULL) {
+	u_fprintf(out,"%S\t\t",s);
+	return;
+}
+*tmp='\t';
+tmp=u_strchr(tmp+1,'.');
+if (tmp==NULL) {
+	fatal_error("Missing . in print_dic_info_for_csv: <%S>\n",s);
+}
+*tmp='\t';
+u_fprintf(out,"%S",s);
+}
+
 
 /**
  * This function builds a concordance from a 'concord.ind' file
@@ -199,6 +240,8 @@ if (options->output[0]=='\0') {
 		strcat(options->output,"concord.xml");
 	else if ((options->result_mode==LEMMATIZE_))
 		strcat(options->output,"lemmatize.html");
+	else if ((options->result_mode==CSV_))
+		strcat(options->output,"export.csv");
 	else strcat(options->output,"concord.html");
 }
 int N_MATCHES;
@@ -241,9 +284,8 @@ if (f==NULL) {
 if (options->result_mode==TEXT_ || options->result_mode==INDEX_
       || options->result_mode==XML_ || options->result_mode==XML_WITH_HEADER_
       || options->result_mode==UIMA_ || options->result_mode==AXIS_
-      || options->result_mode==DIFF_) {
-   /* If we have to produce a unicode text file, we open it
-    * as a UTF16LE one */
+      || options->result_mode==DIFF_ || options->result_mode==CSV_) {
+   /* If we have to produce a unicode text file, we open it */
    out=u_fopen(vec,options->output,U_WRITE);
 }
 else {
@@ -290,6 +332,7 @@ unichar* right=NULL;
 Ustring* PRLG_tag=new_Ustring(32);
 int j;
 int c;
+int csv_line=1;
 /* Now we process each line of the sorted raw text concordance */
 while ((c=u_fgetc(f))!=EOF) {
 	empty(PRLG_tag);
@@ -389,15 +432,17 @@ while ((c=u_fgetc(f))!=EOF) {
 			/* Now we revert and print the left context */
 			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_
 					|| options->result_mode==SCRIPT_ || options->result_mode==LEMMATIZE_) {
-            u_fprintf(out,"<tr><td nowrap>%S%HR",PRLG_tag->str,left);
+				u_fprintf(out,"<tr><td nowrap>%S%HR",PRLG_tag->str,left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
 			if (options->result_mode==HTML_ || options->result_mode==GLOSSANET_
 					|| options->result_mode==SCRIPT_ || options->result_mode==LEMMATIZE_) {
-            u_fprintf(out,"<tr><td nowrap>%S%HS",PRLG_tag->str,left);
-			} else {u_fprintf(out,"%S%S",PRLG_tag->str,left);}
+				u_fprintf(out,"<tr><td nowrap>%S%HS",PRLG_tag->str,left);
+			} else if (options->result_mode!=CSV_) {
+				u_fprintf(out,"%S%S",PRLG_tag->str,left);
+			}
 		}
 		/* If we must produce an HTML concordance, then we surround the
 		 * located sequence by HTML tags in order to make it an hyperlink.
@@ -436,6 +481,16 @@ while ((c=u_fgetc(f))!=EOF) {
 			u_fprintf(out,"%S",middle);
 			if (!options->only_matches) u_fputc('\t',out);
 			u_fprintf(out,"%S\n",right);
+		} else if (options->result_mode==CSV_) {
+			if (!u_strcmp(middle," ")) {
+				u_fprintf(out,"%d\t\t\t \t\t\n",csv_line++);
+			} else {
+				u_fprintf(out,"%d\t%d\t",csv_line++,get_sentence_number(indices));
+				print_PRGL_tag_for_csv(out,PRLG_tag->str);
+				u_fprintf(out,"\t");
+				print_dic_info_for_csv(out,middle);
+				u_fprintf(out,"\n");
+			}
 		}
 		/* If we must produce a concordance to be used by ConcorDiff*/
 		else if (options->result_mode==DIFF_) {
@@ -878,6 +933,48 @@ while (list!=NULL && list->next!=NULL) {
 }
 
 
+static void add_missing_spaces(struct match_list* *list) {
+unichar U_SPACE[2]={' ','\0'};
+while (*list!=NULL && (*list)->next!=NULL) {
+	if ((*list)->m.end_pos_in_token!=(*list)->next->m.start_pos_in_token-1) {
+		/* We insert a space here */
+		struct match_list* next=(*list)->next;
+		(*list)->next=new_match((*list)->m.end_pos_in_token+1,next->m.start_pos_in_token-1,U_SPACE,0,next,NULL);
+		list=&((*list)->next->next);
+	} else {
+		list=&((*list)->next);
+	}
+}
+}
+
+
+/**
+ * For a csv export, all ambiguous forms must be considered as untagged ones.
+ * So, as ambiguous forms are supposed to have been factorized by
+ * group_ambiguous_outputs to the format
+ *
+ * inputA/output1*output2*output3
+ *
+ * where the * symbol stands for the character #3, we just have to look for lines that
+ * contain char #3 and to replace / by \0
+ */
+static void eliminate_codes_for_ambiguous_matches(struct match_list* list) {
+while (list!=NULL) {
+	if (list->output==NULL) {
+		fatal_error("Unexpected NULL output in eliminate_codes_for_ambiguous_matches\n");
+	}
+	if (NULL!=u_strchr(list->output,LEMMATIZE_DELIMITOR)) {
+		unichar* pos=u_strchr(list->output+1,'/');
+		if (pos==NULL) {
+			fatal_error("Internal error in eliminate_codes_for_ambiguous_matches\n");
+		}
+		*pos='\0';
+	}
+	list=list->next;
+}
+}
+
+
 /**
  * This function reads a concordance index from the file 'concordance' and produces a
  * text file that is stored in 'output'. This file contains the lines of the concordance,
@@ -964,12 +1061,16 @@ if (options->only_ambiguous) {
 	renumber=new_vector_int();
 	filter_unambiguous_outputs(&matches,renumber);
 }
-if (options->result_mode==LEMMATIZE_) {
+if (options->result_mode==LEMMATIZE_ || options->result_mode==CSV_) {
 	/* Note that this operation makes the renumber array invalid, if any,
 	 * so we delete it to avoid any problems */
 	free_vector_int(renumber);
 	renumber=NULL;
 	group_ambiguous_outputs(matches);
+	if (options->result_mode==CSV_) {
+		eliminate_codes_for_ambiguous_matches(matches);
+		add_missing_spaces(&matches);
+	}
 }
 /* Then we fill the buffer with the beginning of the text */
 buffer->size=(int)buf_map_int_pseudo_read(buffer,buffer->nb_item);
