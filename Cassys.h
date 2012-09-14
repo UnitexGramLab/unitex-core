@@ -153,7 +153,7 @@ struct fifo *load_transducer(const VersatileEncodingConfig*,const char *file_lis
  * return 0 if correct
  */
 int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,
-		VersatileEncodingConfig*);
+		VersatileEncodingConfig*, char *morpho_dic);
 
 
 /**
@@ -168,7 +168,8 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
  */
 int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
                             const char*negation_operator,
-                            const VersatileEncodingConfig*);
+                            const VersatileEncodingConfig*,
+                            char *morpho_dic);
 
 
 /**

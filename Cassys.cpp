@@ -43,10 +43,11 @@ namespace unitex {
 #define CASSYS_DIRECTORY_EXTENSION "_csc"
 
 
-const char *optstring_Cassys = ":t:a:l:hk:q:g:dm:s:ir:";
+const char *optstring_Cassys = ":t:a:w:l:hk:q:g:dm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
 		{"text", required_argument_TS, NULL, 't'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
+		{"morpho",required_argument_TS,NULL,'w'},
 		{"transducers_list", required_argument_TS, NULL,'l'},
 		{"input_encoding",required_argument_TS,NULL,'k'},
 		{"output_encoding",required_argument_TS,NULL,'q'},
@@ -67,6 +68,10 @@ const char* usage_Cassys =
 		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
         "-r X/--transducer_dir=X: take tranducer on directory X (so you don't specify \n"
         "      full path for each transducer; note that X must be (back)slash terminated\n"
+		"-w DIC/--morpho=DIC: specifies that DIC is a .bin dictionary\n"
+		         "                       to use in morphological mode. Use as many\n"
+		         "                       -m XXX as there are .bin to use. You can also\n"
+				 "                       separate several .bin with semi-colons.\n"
 		"-l TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
@@ -215,6 +220,9 @@ int main_Cassys(int argc,char* const argv[]) {
 		return 0;
 	}
 
+
+	char* morpho_dic=NULL;
+
 	char transducer_list_file_name[FILENAME_MAX];
 	bool has_transducer_list = false;
 
@@ -334,6 +342,25 @@ int main_Cassys(int argc,char* const argv[]) {
             must_create_directory = 0;
 			break;
 		}
+        case 'w' : {
+        	if (vars->optarg[0] != '\0') {
+				if (morpho_dic == NULL) {
+					morpho_dic = strdup(vars->optarg);
+					if (morpho_dic == NULL) {
+						fatal_alloc_error("main_Cassys");
+					}
+				} else {
+					morpho_dic = (char*) realloc((void*) morpho_dic, strlen(
+							morpho_dic) + strlen(vars->optarg) + 2);
+					if (morpho_dic == NULL) {
+						fatal_alloc_error("main_Cassys");
+					}
+					strcat(morpho_dic, ";");
+					strcat(morpho_dic, vars->optarg);
+				}
+			}
+			break;
+        }
 		default :{
 			fatal_error("Unknown option : %c\n",val);
 			break;
@@ -360,7 +387,11 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name);
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
 
-	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name,negation_operator,&vec);
+	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name,negation_operator,&vec, morpho_dic);
+
+	if(morpho_dic != NULL){
+		free(morpho_dic);
+	}
 	free_fifo(transducer_list);
     free_OptVars(vars);
     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -375,7 +406,8 @@ int main_Cassys(int argc,char* const argv[]) {
  */
 int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
-    VersatileEncodingConfig* vec) {
+    VersatileEncodingConfig* vec,
+    char *morpho_dic) {
 
 	launch_tokenize_in_Cassys(text,alphabet,NULL,vec);
 
@@ -415,7 +447,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		// apply transducer
 		transducer *current_transducer = (transducer*)take_ptr(transducer_list);
 		fprintf(stdout,"Applying transducer %s (numbered %d)\n", current_transducer->transducer_file_name,  transducer_number);
-		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,vec);
+		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,vec,morpho_dic);
 
 		// generate concordance for this transducer
 		snt_text_files = new_snt_files(labeled_text_name);
@@ -812,7 +844,8 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
  */
 int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
     const char*negation_operator,
-    const VersatileEncodingConfig* vec){
+    const VersatileEncodingConfig* vec,
+    char *morpho_dic){
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
 
@@ -857,6 +890,12 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 
 	// look for all the occurrences
 	add_argument(invoker, "--all");
+
+	if(morpho_dic != NULL){
+		char morpho_dic_argument[FILENAME_MAX+20];
+		sprintf(morpho_dic_argument,"--morpho=%s",morpho_dic);
+		add_argument(invoker,morpho_dic_argument);
+	}
 
     if ((*negation_operator) != 0) {
         char negation_operator_argument[0x40];
