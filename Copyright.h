@@ -39,6 +39,8 @@ static unichar COPYRIGHT[256];
 #define UNITEX_MAJOR_VERSION_NUMBER 3
 #define UNITEX_MINOR_VERSION_NUMBER 0
 
+#define UNITEX_HAVE_SYNCTOOL 1
+
 static int init_copyright() {
 u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d%C version\nCopyright %C 2001-2012 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,0x3B2,0xA9,0xE9,0xE9);
 //u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d\nCopyright %C 2001-2012 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",UNITEX_MAJOR_VERSION_NUMBER,UNITEX_MINOR_VERSION_NUMBER,0xA9,0xE9,0xE9);
