@@ -46,7 +46,7 @@
 #endif
 #endif
 
-#ifdef UNITEX_USING_WINRT_API
+#if defined(UNITEX_USING_WINRT_API) && !(defined(UNITEX_PREVENT_USING_WINRT_THREADEMULATION))
 #include "ThreadEmulation.h"
 #endif
 #endif
@@ -115,6 +115,19 @@ typedef struct
     DWORD dwThreadId;
 } SYNC_THEAD_INFO;
 
+
+#if defined(UNITEX_USING_WINRT_API) && (defined(UNITEX_PREVENT_USING_WINRT_THREADEMULATION))
+UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible()
+{
+    return 0;
+}
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray)
+{
+    if (iNbThread>0)
+        (*thread_func)(*privateDataPtrArray,0);
+}
+#else
 static DWORD WINAPI SyncThreadWrkFunc(LPVOID lpv)
 {
     SYNC_THEAD_INFO* ptwi=(SYNC_THEAD_INFO*)lpv;
@@ -154,7 +167,7 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
     free(pHandle);
     free(pThreadInfoArray);
 }
-
+#endif
 /**************************/
 
 
@@ -241,6 +254,179 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteMutex(SYNC_Mutex_OBJECT pMut)
 }
 
 
+#if ((defined(__VISUALC__)) || defined(_MSC_VER)) && (!(defined(SYNC_TLC_BY_MSVC_EXTENSION))) && defined(UNITEX_USING_WINRT_API) && defined(UNITEX_PREVENT_USING_WINRT_THREADEMULATION)
+#define SYNC_TLC_BY_MSVC_EXTENSION 1
+#endif
+
+#ifdef SYNC_TLC_BY_MSVC_EXTENSION
+
+static int NbTLSSlotInMap = 0;
+static BOOL* TlsSlotMap = NULL;
+
+#ifdef CUSTOM_THEAD_VAR_PREFIX
+CUSTOM_THEAD_VAR_PREFIX void** TlsEmulationCurrentThreadSlotValues = NULL;
+CUSTOM_THEAD_VAR_PREFIX int TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
+#else
+static __declspec(thread) void** TlsEmulationCurrentThreadSlotValues = NULL;
+static __declspec(thread) int TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
+#endif
+
+typedef struct
+{
+    int slotPos;
+} SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION;
+
+
+UNITEX_FUNC SYNC_TLS_OBJECT UNITEX_CALL SyncBuildTls()
+{
+    SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION* pstoi = (SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION*)malloc(sizeof(SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION));
+
+    if (pstoi != NULL)
+    {
+		int new_slot_pos;
+        for (new_slot_pos=0;new_slot_pos<NbTLSSlotInMap;new_slot_pos++)
+		{
+			if (!(*(TlsSlotMap+new_slot_pos)))
+				break;
+		}
+
+		if (new_slot_pos==NbTLSSlotInMap)
+		{
+			BOOL* newTlsSlotMap = (BOOL*)((TlsSlotMap == NULL) ? 
+				malloc(sizeof(BOOL)*(new_slot_pos+1)) :
+			    realloc(TlsSlotMap,sizeof(BOOL)*(new_slot_pos+1)));
+			if (newTlsSlotMap == NULL)
+			{
+				free(pstoi);
+				return NULL;
+			}
+			TlsSlotMap = newTlsSlotMap;
+			NbTLSSlotInMap = new_slot_pos+1;		
+		}
+		*(TlsSlotMap+new_slot_pos) = TRUE;
+		pstoi->slotPos = new_slot_pos;
+    }
+
+    return (SYNC_TLS_OBJECT)pstoi;
+}
+
+UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
+{
+    SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION* pstoi = (SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION*)pTls;
+    if (pstoi != NULL)
+    {
+		int slotPos = pstoi->slotPos;
+		if (slotPos < NbTLSSlotInMap)
+		{
+			*(TlsSlotMap+slotPos) = FALSE;
+		}
+
+		int last_slot_used = -1;
+		for (int loop_slot=0;loop_slot<NbTLSSlotInMap;loop_slot++)
+		{
+			if (*(TlsSlotMap+loop_slot))
+				last_slot_used = TRUE;
+		}
+
+		if (last_slot_used == -1)
+		{
+			if (TlsSlotMap != NULL)
+				free(TlsSlotMap);
+			TlsSlotMap = NULL;			
+		}
+		NbTLSSlotInMap = last_slot_used+1;
+		
+        free(pstoi);
+    }
+}
+
+UNITEX_FUNC int UNITEX_CALL SyncTlsSetValue(SYNC_TLS_OBJECT pTls,void* pUsrPtr)
+{
+    SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION* pstoi = (SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION*)pTls;
+    if (pstoi == NULL)
+        return 0;
+
+	int slotPos = pstoi->slotPos;
+
+	if (pUsrPtr != NULL)
+	{
+		if (slotPos >= NbTLSSlotInMap)
+			return 0;
+		if (!(*(TlsSlotMap+slotPos)))
+			return 0;
+		if (TlsEmulationCurrentThreadNbSlotValuesAllocated <= slotPos)
+		{
+			void** newTlsEmulationCurrentThreadSlotValues = (void**) ((TlsEmulationCurrentThreadSlotValues == NULL) ?
+							malloc(sizeof(void*)*(slotPos+1)) :
+							realloc(TlsEmulationCurrentThreadSlotValues,sizeof(void*)*(slotPos+1)));
+			if (newTlsEmulationCurrentThreadSlotValues == NULL)
+				return 0;
+
+			TlsEmulationCurrentThreadSlotValues = newTlsEmulationCurrentThreadSlotValues;
+			for (int fill=TlsEmulationCurrentThreadNbSlotValuesAllocated;fill<slotPos;fill++)
+				*(TlsEmulationCurrentThreadSlotValues + fill) = (void*)NULL;
+			*(TlsEmulationCurrentThreadSlotValues + slotPos) = pUsrPtr;
+			TlsEmulationCurrentThreadNbSlotValuesAllocated = slotPos + 1;
+		}
+	}
+	else
+	{
+		if (TlsEmulationCurrentThreadNbSlotValuesAllocated > slotPos)
+		{
+			*(TlsEmulationCurrentThreadSlotValues + slotPos) = pUsrPtr;
+
+			int isOneSlotFilled=0;
+			for (int checkOneFilledLoop=0;(checkOneFilledLoop<TlsEmulationCurrentThreadNbSlotValuesAllocated) && (checkOneFilledLoop<NbTLSSlotInMap);checkOneFilledLoop++)
+			{
+				if (*(TlsSlotMap+checkOneFilledLoop))
+					if ((*(TlsEmulationCurrentThreadSlotValues + checkOneFilledLoop)) != (void*)NULL)
+					{
+						isOneSlotFilled=1;
+						break;
+					}
+			}
+
+			if (isOneSlotFilled == 0)
+			{
+				if (TlsEmulationCurrentThreadSlotValues != NULL)
+				{
+					free(TlsEmulationCurrentThreadSlotValues);
+					TlsEmulationCurrentThreadSlotValues = NULL;
+				}
+				TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
+			}
+		}
+	}
+    
+    return 1;
+}
+
+UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls)
+{
+    SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION* pstoi = (SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION*)pTls;
+    if (pstoi == NULL)
+        return NULL;
+	int slotPos = pstoi->slotPos;
+	if ((slotPos < TlsEmulationCurrentThreadNbSlotValuesAllocated) && (slotPos < NbTLSSlotInMap))
+		if (*(TlsSlotMap+slotPos))
+			return *(TlsEmulationCurrentThreadSlotValues + slotPos);
+
+    return NULL;
+}
+
+
+
+UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
+{
+	if (TlsEmulationCurrentThreadSlotValues != NULL)
+	{
+		free(TlsEmulationCurrentThreadSlotValues);
+		TlsEmulationCurrentThreadSlotValues = NULL;
+	}
+	TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
+}
+
+#else
 typedef struct
 {
     DWORD dwTls;
@@ -318,6 +504,7 @@ UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
 #else
 #endif
 }
+#endif
 
 #else
 
@@ -543,7 +730,6 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
 UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
 {
 }
-
 #endif
 
 } // namespace logger
