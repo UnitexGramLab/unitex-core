@@ -425,6 +425,8 @@
 		222FD82F15AE3E880049D6CE /* KeyWords.h in Headers */ = {isa = PBXBuildFile; fileRef = 222FD82B15AE3E880049D6CE /* KeyWords.h */; };
 		2287C97E151E081600A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C97C151E081600A820F3 /* PersistenceInterface.cpp */; };
 		2287C97F151E081600A820F3 /* PersistenceInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2287C97D151E081600A820F3 /* PersistenceInterface.h */; };
+		228B5BE11606672B006DAABF /* SyncToolPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */; };
+		228B5BE21606672B006DAABF /* SyncTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 228B5BE01606672B006DAABF /* SyncTool.h */; };
 		22C27FDA14AF6D63006A1F5D /* CharNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FA914AF6D62006A1F5D /* CharNames.h */; };
 		22C27FDB14AF6D63006A1F5D /* CompressedDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */; };
 		22C27FDC14AF6D63006A1F5D /* CompressedDic.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FAB14AF6D62006A1F5D /* CompressedDic.h */; };
@@ -901,6 +903,8 @@
 		222FD82B15AE3E880049D6CE /* KeyWords.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyWords.h; path = ../KeyWords.h; sourceTree = "<group>"; };
 		2287C97C151E081600A820F3 /* PersistenceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistenceInterface.cpp; path = ../PersistenceInterface.cpp; sourceTree = SOURCE_ROOT; };
 		2287C97D151E081600A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
+		228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SyncToolPosix.cpp; path = ../SyncToolPosix.cpp; sourceTree = "<group>"; };
+		228B5BE01606672B006DAABF /* SyncTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SyncTool.h; path = ../SyncTool.h; sourceTree = "<group>"; };
 		22C27FA914AF6D62006A1F5D /* CharNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CharNames.h; path = ../CharNames.h; sourceTree = SOURCE_ROOT; };
 		22C27FAA14AF6D62006A1F5D /* CompressedDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressedDic.cpp; path = ../CompressedDic.cpp; sourceTree = SOURCE_ROOT; };
 		22C27FAB14AF6D62006A1F5D /* CompressedDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressedDic.h; path = ../CompressedDic.h; sourceTree = SOURCE_ROOT; };
@@ -1059,6 +1063,8 @@
 		222AFD6D1411335700F74409 /* Unitex-C++ */ = {
 			isa = PBXGroup;
 			children = (
+				228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */,
+				228B5BE01606672B006DAABF /* SyncTool.h */,
 				222AAC1815BC50B3005E9A21 /* RegExFacade.cpp */,
 				222AAC1915BC50B3005E9A21 /* RegExFacade.h */,
 				222FD82815AE3E880049D6CE /* KeyWords.cpp */,
@@ -1771,6 +1777,7 @@
 				222FD82D15AE3E880049D6CE /* KeyWords_lib.h in Headers */,
 				222FD82F15AE3E880049D6CE /* KeyWords.h in Headers */,
 				222AAC1B15BC50B3005E9A21 /* RegExFacade.h in Headers */,
+				228B5BE21606672B006DAABF /* SyncTool.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2047,6 +2054,7 @@
 				222FD82C15AE3E880049D6CE /* KeyWords.cpp in Sources */,
 				222FD82E15AE3E880049D6CE /* KeyWords_lib.cpp in Sources */,
 				222AAC1A15BC50B3005E9A21 /* RegExFacade.cpp in Sources */,
+				228B5BE11606672B006DAABF /* SyncToolPosix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

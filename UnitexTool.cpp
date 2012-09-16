@@ -35,7 +35,7 @@
 #include <string.h>
 
 #include "Unicode.h"
-#include "logger/SyncLogger.h"
+#include "SyncTool.h"
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))
 #include "BuildKrMwuDic.h"
@@ -624,14 +624,14 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	pos_tools_in_arg tia_dummy;
 
 	const char* fTime=NULL;
-	logger::hTimeElapsed startTime=NULL;
+	hTimeElapsed startTime=NULL;
 	const char* firstArg=NULL;
 	if (argc>1)
 		firstArg=argv[1];
 
 	if ((firstArg!=NULL) && (strstr(firstArg,"--time=")==firstArg)) {
 		fTime=firstArg+7;
-		startTime=logger::SyncBuidTimeMarkerObject();
+		startTime=SyncBuidTimeMarkerObject();
 		argc--;
 		argv++;
 	}
@@ -716,7 +716,7 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	}
 
 	if (fTime!=NULL) {
-		double msec=(double)(logger::SyncGetMSecElapsed(startTime)/((double)1000.));
+		double msec=(double)(SyncGetMSecElapsed(startTime)/((double)1000.));
 		U_FILE* f=u_fopen(UTF8,fTime,U_WRITE);
 		if (f==NULL) {
 			fatal_error("Unable to open time file %s\n",fTime);

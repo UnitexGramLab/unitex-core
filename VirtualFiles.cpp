@@ -31,9 +31,9 @@ FILE* (*real_fopen)(const char *,const char *)=fopen;
 #include "AbstractFilePlugCallback.h"
 #include "UnusedParameter.h"
 #include "File.h"
-#include "logger/SyncLogger.h"
+#include "SyncTool.h"
 
-using namespace unitex::logger;
+using namespace unitex;
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1

@@ -34,8 +34,8 @@
 /* SyncLogger.h
 */
 
-#ifndef _SYNC_LOGGER_H
-#define _SYNC_LOGGER_H
+#ifndef _SYNC_TOOL_H
+#define _SYNC_TOOL_H
 
 #include "AbstractCallbackFuncModifier.h"
 
@@ -45,40 +45,31 @@
 #endif
 
 namespace unitex {
-#ifndef HAS_LOGGER_NAMESPACE
-#define HAS_LOGGER_NAMESPACE 1
-#endif
-
-namespace logger {
 extern "C" {
 #endif
 
+typedef void* hTimeElapsed;
 
+#define HTIME_ELASPED_TYPO_FIXED 1
 
-#define SYNC_CALLBACK_UNITEX ABSTRACT_CALLBACK_UNITEX
-typedef void (SYNC_CALLBACK_UNITEX* t_thread_func)(void* privateDataPtr,unsigned int iNbThread);
-
-UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible();
-UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray);
-
-
+UNITEX_FUNC hTimeElapsed UNITEX_CALL SyncBuidTimeMarkerObject();
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElapsed ptr);
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElapsed ptr, int destructObject);
 
 
 
-typedef void* SYNC_TLS_OBJECT;
+typedef void* SYNC_Mutex_OBJECT;
 
-UNITEX_FUNC SYNC_TLS_OBJECT UNITEX_CALL SyncBuildTls();
-UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls);
+UNITEX_FUNC SYNC_Mutex_OBJECT UNITEX_CALL SyncBuildMutex();
+UNITEX_FUNC void UNITEX_CALL SyncGetMutex(SYNC_Mutex_OBJECT pMut);
+UNITEX_FUNC void UNITEX_CALL SyncReleaseMutex(SYNC_Mutex_OBJECT pMut);
+UNITEX_FUNC void UNITEX_CALL SyncDeleteMutex(SYNC_Mutex_OBJECT pMut);
 
-UNITEX_FUNC int UNITEX_CALL SyncTlsSetValue(SYNC_TLS_OBJECT pTls,void* pUsrPtr);
-UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls);
 
-// this function is to be called at thread termination to cleanup thread internal data
-UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread();
+
 
 #ifdef __cplusplus
 } // extern "C"
-} // namespace logger
 } // namespace unitex
 #endif
 

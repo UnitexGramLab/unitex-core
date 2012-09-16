@@ -47,6 +47,7 @@
 #include "FilePackCrc32.h"
 
 #include "UniLogger.h"
+#include "SyncTool.h"
 #include "SyncLogger.h"
 #include "ReworkArg.h"
 

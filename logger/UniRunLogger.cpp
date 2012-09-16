@@ -51,6 +51,7 @@
 #include "UniLogger.h"
 #include "UniRunLogger.h"
 #include "DirHelper.h"
+#include "SyncTool.h"
 #include "SyncLogger.h"
 #include "ReworkArg.h"
 

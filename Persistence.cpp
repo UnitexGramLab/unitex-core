@@ -24,10 +24,10 @@
 #include "Persistence.h"
 #include "Error.h"
 #include "AbstractCallbackFuncModifier.h"
-#include "logger/SyncLogger.h"
+#include "SyncTool.h"
 #include "VirtualFiles.h"
 
-using namespace unitex::logger;
+
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1

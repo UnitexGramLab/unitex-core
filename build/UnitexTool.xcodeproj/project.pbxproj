@@ -202,6 +202,7 @@
 		225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86211256AB900F33C2A /* TrainingTagger.cpp */; };
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
 		2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C99C151E085700A820F3 /* PersistenceInterface.cpp */; };
+		228B5BD416066623006DAABF /* SyncToolPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228B5BD216066623006DAABF /* SyncToolPosix.cpp */; };
 		2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294EE7C11A01195003CE92B /* Untokenize.cpp */; };
 		2294F4AC122EEB30009495A8 /* LocateTrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294F4AB122EEB30009495A8 /* LocateTrace.cpp */; };
 		229851AA111A6F2000503A07 /* Fst2Check_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Check_lib.cpp */; };
@@ -420,7 +421,6 @@
 		222F78721107A48300C91CC7 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_Global.h; path = ../MF_Global.h; sourceTree = SOURCE_ROOT; };
 		222F78731107A48300C91CC7 /* MF_Global.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_Global.cpp; path = ../MF_Global.cpp; sourceTree = SOURCE_ROOT; };
 		222F78741107A48300C91CC7 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_Global.h; path = ../MF_Global.h; sourceTree = SOURCE_ROOT; };
-		222F78751107A48300C91CC7 /* MF_GlobalBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_GlobalBase.h; path = ../MF_GlobalBase.h; sourceTree = SOURCE_ROOT; };
 		222F78761107A48300C91CC7 /* MF_LangMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_LangMorpho.cpp; path = ../MF_LangMorpho.cpp; sourceTree = SOURCE_ROOT; };
 		222F78771107A48300C91CC7 /* MF_LangMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_LangMorpho.h; path = ../MF_LangMorpho.h; sourceTree = SOURCE_ROOT; };
 		222F78781107A48300C91CC7 /* MF_LangMorphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_LangMorphoBase.h; path = ../MF_LangMorphoBase.h; sourceTree = SOURCE_ROOT; };
@@ -647,6 +647,8 @@
 		225FE87911256B7B00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
 		2287C99C151E085700A820F3 /* PersistenceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistenceInterface.cpp; path = ../PersistenceInterface.cpp; sourceTree = SOURCE_ROOT; };
 		2287C99D151E085700A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
+		228B5BD216066623006DAABF /* SyncToolPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SyncToolPosix.cpp; path = ../SyncToolPosix.cpp; sourceTree = "<group>"; };
+		228B5BD316066623006DAABF /* SyncTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SyncTool.h; path = ../SyncTool.h; sourceTree = "<group>"; };
 		2294EE7B11A0118E003CE92B /* Untokenize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Untokenize.h; path = ../Untokenize.h; sourceTree = SOURCE_ROOT; };
 		2294EE7C11A01195003CE92B /* Untokenize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Untokenize.cpp; path = ../Untokenize.cpp; sourceTree = SOURCE_ROOT; };
 		2294F4AB122EEB30009495A8 /* LocateTrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocateTrace.cpp; path = ../LocateTrace.cpp; sourceTree = SOURCE_ROOT; };
@@ -707,6 +709,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				228B5BD216066623006DAABF /* SyncToolPosix.cpp */,
+				228B5BD316066623006DAABF /* SyncTool.h */,
 				222AABFC15BC507B005E9A21 /* RegExFacade.cpp */,
 				222AABFD15BC507C005E9A21 /* RegExFacade.h */,
 				222FD83115AE3E920049D6CE /* KeyWords.cpp */,
@@ -988,7 +992,6 @@
 				222F78721107A48300C91CC7 /* MF_Global.h */,
 				222F78731107A48300C91CC7 /* MF_Global.cpp */,
 				222F78741107A48300C91CC7 /* MF_Global.h */,
-				222F78751107A48300C91CC7 /* MF_GlobalBase.h */,
 				222F78761107A48300C91CC7 /* MF_LangMorpho.cpp */,
 				222F78771107A48300C91CC7 /* MF_LangMorpho.h */,
 				222F78781107A48300C91CC7 /* MF_LangMorphoBase.h */,
@@ -1459,6 +1462,7 @@
 				222FD83515AE3E920049D6CE /* KeyWords.cpp in Sources */,
 				222FD83615AE3E920049D6CE /* KeyWords_lib.cpp in Sources */,
 				222AABFE15BC507C005E9A21 /* RegExFacade.cpp in Sources */,
+				228B5BD416066623006DAABF /* SyncToolPosix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
