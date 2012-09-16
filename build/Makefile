@@ -134,7 +134,7 @@ APPDIR = ../../../App
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
 #                                 -DDEBUG_STAT
 #                                 -DBDB
-CFLAGS   = -Wall -Wno-unused-but-set-variable
+CFLAGS   = -Wall
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
