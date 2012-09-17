@@ -172,8 +172,9 @@ if (*list==NULL || (*list)->weight>=weight) return;
 struct parsing_info* tmp;
 while (*list!=NULL) {
 	tmp=*list;
-	free_parsing_info(tmp,prv_alloc_recycle, prv_alloc_vector_int);
 	(*list)=(*list)->next;
+	tmp->next=NULL;
+	free_parsing_info(tmp,prv_alloc_recycle, prv_alloc_vector_int);
 }
 }
 
