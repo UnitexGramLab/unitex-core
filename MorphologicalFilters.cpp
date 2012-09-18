@@ -63,10 +63,9 @@ if (filter_set==NULL) {
    fatal_alloc_error("new_FilterSet");
 }
 if (filters->size>0) {
-   unichar filterContent[512];
-   char filterOptions[512];
+   unichar filterContent[2048];
+   char filterOptions[2048];
    int regBasic,cflags;
-   unichar_regex warray[512*UNICHAR_REGEX_ALLOC_FACTOR];
    filter_set->size=filters->size;
    filter_set->filter=(MorphoFilter*)malloc(sizeof(MorphoFilter)*filters->size);
    if (filter_set->filter==NULL) {
@@ -105,7 +104,7 @@ if (filters->size>0) {
       if (replaceLetters==1) {
          /* If we must replace letters by the set of their case variants
           * like".+e" -> ".+[eE]" */
-         unichar temp[1024];
+         unichar temp[2048];
          replace_letter_by_letter_set(alph,temp,filterContent);
          u_strcpy(filterContent,temp);
       }
@@ -119,9 +118,14 @@ if (filters->size>0) {
          fatal_alloc_error("new_FilterSet");
       }
       /* As the TRE library manipulates unichar_regex* strings, we must convert our unichar* one */
+      unichar_regex* warray=(unichar_regex*)malloc(sizeof(unichar_regex)*(u_strlen(filter_set->filter[i].content)+1));
+      if (warray==NULL) {
+          fatal_alloc_error("new_FilterSet");
+      }
       regex_facade_strcpy(warray,filter_set->filter[i].content);
       /* Then, we build the regular expression matcher associated to our filter */
       ccode=regex_facade_regcomp(filter_set->filter[i].matcher,warray,cflags);
+      free(warray);
       if (ccode!=0) {
          error("Morphological filter '%S' : ",filter_set->filter[i].content);
          char errbuf[512];
