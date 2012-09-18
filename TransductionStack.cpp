@@ -571,6 +571,9 @@ if (capture) {
 	}
 }
 if (!process_output(output,p,stack,capture && p->debug)) {
+	if (capture) {
+		free_stack_unichar(stack);
+	}
 	return 0;
 }
 if (capture) {
