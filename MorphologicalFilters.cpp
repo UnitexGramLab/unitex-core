@@ -118,7 +118,7 @@ if (filters->size>0) {
          fatal_alloc_error("new_FilterSet");
       }
       /* As the TRE library manipulates unichar_regex* strings, we must convert our unichar* one */
-      unichar_regex* warray=(unichar_regex*)malloc(sizeof(unichar_regex)*(u_strlen(filter_set->filter[i].content)+1));
+      unichar_regex* warray=(unichar_regex*)malloc(sizeof(unichar_regex)*(u_strlen(filter_set->filter[i].content)+1)*UNICHAR_REGEX_ALLOC_FACTOR);
       if (warray==NULL) {
           fatal_alloc_error("new_FilterSet");
       }
