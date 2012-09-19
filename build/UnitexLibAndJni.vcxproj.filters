@@ -705,6 +705,9 @@
     <ClCompile Include="..\KeyWords.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="..\SyncToolWin.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -1410,6 +1413,12 @@
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\KeyWords_lib.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SyncTool.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>

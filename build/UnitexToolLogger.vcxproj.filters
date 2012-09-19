@@ -140,6 +140,10 @@
     <ClInclude Include="..\KeyWords.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\SyncTool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RegExFacade.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -514,9 +518,6 @@
     <ClCompile Include="..\Reg2Grf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\RegExFacade.cpp">
-      <Filter>Unitex-C++</Filter>
-    </ClCompile>
     <ClCompile Include="..\RegularExpressions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -806,6 +807,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\KeyWords.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SyncToolWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RegExFacade.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
