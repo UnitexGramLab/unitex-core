@@ -238,6 +238,10 @@ OutputPolicy extract_cassys_transducer_policy(const char *line);
 
 
 
+char *extract_cassys_disabled(const char *line);
+
+
+
 /**
  * \brief Creates the directory \path
  *

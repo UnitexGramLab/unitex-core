@@ -184,6 +184,7 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
     int i=1;
 	while (cassys_fgets(line,1024,file_transducer_list) != NULL){
 		char *transducer_file_name;
+		char *enabled_policy;
 		OutputPolicy transducer_policy;	
 
 		remove_cassys_comments(line);
@@ -192,9 +193,9 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
 
 		transducer_policy = extract_cassys_transducer_policy(line);
+		enabled_policy = extract_cassys_disabled(line);
 
-
-		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS) {
+		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS && strcmp("",enabled_policy)==0) {
 			res=add_transducer_linked_list_new_name(res,transducer_file_name);
             set_last_transducer_linked_list_mode(res,transducer_policy);
 		}
@@ -204,7 +205,13 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 			} else if (transducer_policy == IGNORE_OUTPUTS) {
 				fprintf(stdout, "Line %d : Transducer policy not recognized\n",i);
 			}
+			if(strcmp("Disabled",enabled_policy)!=0){
+				fprintf(stdout, "Line %d : Could not recognize whether transducer is enabled\n",i);
+			} else {
+				fprintf(stdout,"transducer %s is Disabled\n",transducer_file_name);
+			}
 		}
+		free(enabled_policy);
         free(transducer_file_name);
 		i++;
 	}
@@ -1040,6 +1047,50 @@ char* extract_cassys_transducer_name(const char *line){
 	transducer_name[i-j]='\0';
 
 	return transducer_name;
+}
+
+char *extract_cassys_disabled(const char *line){
+	char *enabled_policy;
+
+	int i = 0;
+	// filename
+	while (line[i] != '"' && line[i] != '\0') {
+		i++;
+	}
+	i++;
+	while (line[i] != '"' && line[i] != '\0') {
+		i++;
+	}
+	i++;
+	while (isspace(line[i])) {
+		i++;
+	}
+
+	// merge or replace policy
+	while (isalpha(line[i])) {
+		i++;
+	}
+	while (isspace(line[i])) {
+		i++;
+	}
+
+	int j=0;
+	char option_name[FILENAME_MAX];
+	while(isalpha(line[i])){
+		option_name[j]=line[i];
+		i++;j++;
+	}
+	option_name[j]='\0';
+
+	enabled_policy = (char *)malloc(sizeof(char)*strlen(option_name)+1);
+	if (enabled_policy == NULL) {
+		fatal_alloc_error("extract_cassys_disabled memory allocation\n");
+		exit(1);
+	}
+	strcpy(enabled_policy,option_name);
+
+	return enabled_policy;
+
 }
 
 
