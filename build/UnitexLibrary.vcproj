@@ -705,6 +705,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\KeyWords.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\KeyWords.h"
+				>
+			</File>
+			<File
+				RelativePath="..\KeyWords_lib.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\KeyWords_lib.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Korean.cpp"
 				>
 			</File>
@@ -893,6 +909,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\OutputTransductionVariables.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Overlap.cpp"
 				>
 			</File>
@@ -917,6 +937,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PersistenceInterface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PersistenceInterface.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PolyLex.cpp"
 				>
 			</File>
@@ -926,6 +954,10 @@
 			</File>
 			<File
 				RelativePath="..\PRLG.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PRLG.h"
 				>
 			</File>
 			<File
@@ -942,6 +974,14 @@
 			</File>
 			<File
 				RelativePath="..\Reg2Grf.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\RegExFacade.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\RegExFacade.h"
 				>
 			</File>
 			<File
@@ -1014,6 +1054,14 @@
 			</File>
 			<File
 				RelativePath="..\SymbolAlphabet.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\SyncTool.h"
+				>
+			</File>
+			<File
+				RelativePath="..\SyncToolWin.cpp"
 				>
 			</File>
 			<File
