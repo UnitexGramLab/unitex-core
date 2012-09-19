@@ -431,6 +431,36 @@ for (int i=0;i<base_mine->diff_ops->nbelems;i++) {
 		dest->box_content=u_strdup(mine_state->box_content);
 	}
 }
+/* Box content changes in other */
+for (int i=0;i<base_other->diff_ops->nbelems;i++) {
+	DiffOp* op=(DiffOp*)base_other->diff_ops->tab[i];
+	if (op->op_type!=DIFF_BOX_CONTENT_CHANGED) continue;
+	int j;
+	DiffOp* op2=NULL;
+	/* We look for a content change on the same box in mine */
+	for (j=0;j<base_mine->diff_ops->nbelems;j++) {
+		op2=(DiffOp*)base_mine->diff_ops->tab[j];
+		if (op2->op_type!=DIFF_BOX_CONTENT_CHANGED
+				|| op2->box_base!=op->box_base) {
+			op2=NULL;
+			continue;
+		}
+		break;
+	}
+	GrfState* dest=result->states[op->box_base];
+	GrfState* other_state=other->states[op->box_dest];
+	if (op2!=NULL) {
+		GrfState* mine_state=other->states[op2->box_dest];
+		if (1==merge_box_contents(&(dest->box_content),other_state->box_content,mine_state->box_content)) {
+			*conflict=1;
+			if (f_conflict!=NULL) u_fprintf(f_conflict,"CONTENT %d %d %d\n",op->box_dest,op->box_base,op2->box_dest);
+		}
+	} else {
+		free(dest->box_content);
+		dest->box_content=u_strdup(other_state->box_content);
+	}
+}
+
 }
 
 
