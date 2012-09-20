@@ -97,14 +97,6 @@ static void permute_args(int, int, int, char * const *);
 
 /* XXX: set optreset to 1 rather than these two */
 
-/* Error messages */
-static const char recargchar[] = "option requires an argument -- %c";
-static const char recargstring[] = "option requires an argument -- %s";
-static const char ambig[] = "ambiguous option -- %.*s";
-static const char noarg[] = "option doesn't take an argument -- %.*s";
-static const char illoptchar[] = "unknown option -- %c";
-static const char illoptstring[] = "unknown option -- %s";
-
 /*
  * Compute the greatest common divisor of a and b.
  */
@@ -449,8 +441,9 @@ start:
 	}
 	if (long_options != NULL && optchar == 'W' && oli[1] == ';') {
 		/* -W long-option */
-		if (*(vars->place))			/* no space */
-			/* NOTHING */;
+		if (*(vars->place))	{		/* no space */
+			/* NOTHING */
+		}
 		else if (++(vars->optind) >= nargc) {	/* no arg */
 			(vars->place) = EMSG;
 			if (PRINT_ERROR) {
