@@ -31,7 +31,7 @@
 namespace unitex {
 
 /**
- * This enumeration describes the valid lengthes for an information
+ * This enumeration describes the valid lengths for an information
  * in a bit array.
  */
 enum length_ {
