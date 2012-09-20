@@ -49,10 +49,8 @@ int renumber_graphs_to_keep(Fst2*,int*);
 int flatten_graph(Fst2*,int,int,int,
                   SingleGraph,
                   int,int,int*,int*,int*);
-void remove_epsilon_transitions_in_flattened_graph(SingleGraph);
 void save_graphs_to_keep(Fst2*,U_FILE*,int*);
 void save_graph_to_keep(int,Fst2*,U_FILE*,int*);
-void copy_tags_into_file(Fst2*,U_FILE*);
 
 
 /**
