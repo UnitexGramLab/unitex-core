@@ -202,8 +202,9 @@ struct fst2 {
 
     /*
      * This array is used to store the graph names. We use the type unichar and
-     * not char, because this array is also used to store sentences, when the fst2
-     * represents a text automaton.
+     * not char, because this array was also used to store sentences, when the fst2
+     * used to represent a text automaton. This is deprecated now that we manipulate
+     * text automata with the Tfst type.
      */
     unichar** graph_names;
 
