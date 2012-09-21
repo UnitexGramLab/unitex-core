@@ -6928,6 +6928,21 @@ while (*s!='\0') {
 }
 }
 
+int u_toupper_ismodified (unichar* s) {
+if (s==NULL) return 0;
+int is_modified = 0;
+unichar c;
+do {
+	unichar c = *(s++);
+	unichar cu = upperChar[c];
+	if (c != cu) {
+		*(s-1) = cu;
+		is_modified = 1;
+	}
+} while(c!='\0');
+return is_modified;
+}
+
 #else
 
 void u_toupper (unichar* s) {
@@ -6936,6 +6951,21 @@ while (*s!='\0') {
 	*s=u_toupper(*s);
 	s++;
 }
+}
+
+int u_toupper_ismodified (unichar* s) {
+if (s==NULL) return 0;
+int is_modified = 0;
+unichar c = '\0';
+do {
+	unichar c = *(s++);
+	unichar cu = u_toupper(c);
+	if (c != cu) {
+		*(s-1) = cu;
+		is_modified = 1;
+	}
+} while(c!='\0');
+return is_modified;
 }
 #endif
 
@@ -6953,6 +6983,21 @@ while (*s!='\0') {
 }
 }
 
+int u_tolower_ismodified (unichar* s) {
+if (s==NULL) return 0;
+int is_modified = 0;
+unichar c;
+do {
+	unichar c = *(s++);
+	unichar cu = lowerChar[c];
+	if (c != cu) {
+		*(s-1) = cu;
+		is_modified = 1;
+	}
+} while(c!='\0');
+return is_modified;
+}
+
 #else
 
 void u_tolower (unichar* s) {
@@ -6961,6 +7006,21 @@ while (*s!='\0') {
 	*s=u_tolower(*s);
 	s++;
 }
+}
+
+int u_tolower_ismodified (unichar* s) {
+if (s==NULL) return 0;
+int is_modified = 0;
+unichar c = '\0';
+do {
+	unichar c = *(s++);
+	unichar cu = u_tolower(c);
+	if (c != cu) {
+		*(s-1) = cu;
+		is_modified = 1;
+	}
+} while(c!='\0');
+return is_modified;
 }
 #endif
 
@@ -6977,6 +7037,21 @@ while (*s!='\0') {
 }
 }
 
+int u_deaccentuate_ismodified (unichar* s) {
+if (s==NULL) return 0;
+int is_modified = 0;
+unichar c;
+do {
+	unichar c = *(s++);
+	unichar cu = deaccentuateChar[c];
+	if (c != cu) {
+		*(s-1) = cu;
+		is_modified = 1;
+	}
+} while(c!='\0');
+return is_modified;
+}
+
 #else
 
 void u_deaccentuate(unichar* s) {
@@ -6985,6 +7060,21 @@ while (*s!='\0') {
 	*s=u_deaccentuate(*s);
 	s++;
 }
+}
+
+int u_deaccentuate_ismodified (unichar* s) {
+if (s==NULL) return 0;
+int is_modified = 0;
+unichar c = '\0';
+do {
+	unichar c = *(s++);
+	unichar cu = u_deaccentuate(c);
+	if (c != cu) {
+		*(s-1) = cu;
+		is_modified = 1;
+	}
+} while(c!='\0');
+return is_modified;
 }
 #endif
 
