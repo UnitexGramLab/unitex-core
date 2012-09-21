@@ -6931,9 +6931,9 @@ while (*s!='\0') {
 int u_toupper_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
-unichar c;
+unichar c = '\0';
 do {
-	unichar c = *(s++);
+	c = *(s++);
 	unichar cu = upperChar[c];
 	if (c != cu) {
 		*(s-1) = cu;
@@ -6958,7 +6958,7 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	unichar c = *(s++);
+	c = *(s++);
 	unichar cu = u_toupper(c);
 	if (c != cu) {
 		*(s-1) = cu;
@@ -6986,9 +6986,9 @@ while (*s!='\0') {
 int u_tolower_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
-unichar c;
+unichar c = '\0';
 do {
-	unichar c = *(s++);
+	c = *(s++);
 	unichar cu = lowerChar[c];
 	if (c != cu) {
 		*(s-1) = cu;
@@ -7013,7 +7013,7 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	unichar c = *(s++);
+	c = *(s++);
 	unichar cu = u_tolower(c);
 	if (c != cu) {
 		*(s-1) = cu;
@@ -7040,9 +7040,9 @@ while (*s!='\0') {
 int u_deaccentuate_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
-unichar c;
+unichar c = '\0';
 do {
-	unichar c = *(s++);
+	c = *(s++);
 	unichar cu = deaccentuateChar[c];
 	if (c != cu) {
 		*(s-1) = cu;
@@ -7067,7 +7067,7 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	unichar c = *(s++);
+	c = *(s++);
 	unichar cu = u_deaccentuate(c);
 	if (c != cu) {
 		*(s-1) = cu;
