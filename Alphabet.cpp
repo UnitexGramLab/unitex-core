@@ -498,6 +498,11 @@ while (src[i]!='\0') {
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
 
+             if (a==NULL) {
+                /* If there is no alphabet file, we just consider the unique
+                 * uppercase variant of the letter */
+                dest[j++]=u_toupper(src[i]);
+             } else {
 			 unichar* tbrowse = NULL;
 			 int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
 			 if (i_pos_in_array_of_string != 0)
@@ -506,7 +511,7 @@ while (src[i]!='\0') {
 				 while ((*tbrowse) != '\0') {
 					 dest[j++]=*(tbrowse++);
 				 }
-             
+             }
              if (!inside_a_set) dest[j++]=']';
              i++;
           } else {
