@@ -169,8 +169,10 @@ SyncReleaseMutex(VFS_mutex);
  * is no memory enough to load the file.
  */
 static int load_file_content(VFS_INODE* inode) {
+SyncGetMutex(VFS_mutex);
 FILE* f=real_fopen(inode->name+strlen(inode->vfs->pfx),"rb");
 if (f==NULL) {
+	SyncReleaseMutex(VFS_mutex);
 	return 0;
 }
 fseek(f,0,SEEK_END);
@@ -185,6 +187,7 @@ if (inode->size!=(unsigned long)fread(inode->ptr,1,inode->size,f)) {
 	fatal_error("Error loading content of %s\n",inode->name);
 }
 fclose(f);
+SyncReleaseMutex(VFS_mutex);
 return 1;
 }
 
