@@ -406,14 +406,8 @@
     <ClCompile Include="..\Unicode.cpp" />
     <ClCompile Include="..\UnitexGetOpt.cpp" />
     <ClCompile Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.cpp" />
-    <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirPosix.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirWin.cpp" />
-    <ClCompile Include="..\UnitexLibAndJni\UnitexLibIO.cpp" />
+    <ClCompile Include="..\UnitexLibDirWin.cpp" />
+    <ClCompile Include="..\UnitexLibIO.cpp" />
     <ClCompile Include="..\UnitexRevisionInfo.cpp" />
     <ClCompile Include="..\UnitexTool.cpp" />
     <ClCompile Include="..\Untokenize.cpp" />
@@ -645,8 +639,8 @@
     <ClInclude Include="..\Unicode.h" />
     <ClInclude Include="..\UnitexGetOpt.h" />
     <ClInclude Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.h" />
-    <ClInclude Include="..\UnitexLibAndJni\UnitexLibDir.h" />
-    <ClInclude Include="..\UnitexLibAndJni\UnitexLibIO.h" />
+    <ClInclude Include="..\UnitexLibDir.h" />
+    <ClInclude Include="..\UnitexLibIO.h" />
     <ClInclude Include="..\UnitexRevisionInfo.h" />
     <ClInclude Include="..\UnitexTool.h" />
     <ClInclude Include="..\Unitex_revision.h" />

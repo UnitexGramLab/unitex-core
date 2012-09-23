@@ -1726,14 +1726,14 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
-UnitexLibDirPosix.o : ../UnitexLibAndJni/UnitexLibDirPosix.cpp
-	$(CC) -c ../UnitexLibAndJni/UnitexLibDirPosix.cpp $(OPTIONS)
+UnitexLibDirPosix.o : ./UnitexLibDirPosix.cpp
+	$(CC) -c ./UnitexLibDirPosix.cpp $(OPTIONS)
 
-UnitexLibDirWin.o : ../UnitexLibAndJni/UnitexLibDirWin.cpp
-	$(CC) -c ../UnitexLibAndJni/UnitexLibDirWin.cpp $(OPTIONS)
+UnitexLibDirWin.o : ./UnitexLibDirWin.cpp
+	$(CC) -c ./UnitexLibDirWin.cpp $(OPTIONS)
 
-UnitexLibIO.o : ../UnitexLibAndJni/UnitexLibIO.cpp
-	$(CC) -c ../UnitexLibAndJni/UnitexLibIO.cpp $(OPTIONS)
+UnitexLibIO.o : ./UnitexLibIO.cpp
+	$(CC) -c ./UnitexLibIO.cpp $(OPTIONS)
 
 fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java

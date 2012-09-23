@@ -612,15 +612,6 @@
     <ClCompile Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.cpp">
       <Filter>UnitexLibraryJni</Filter>
     </ClCompile>
-    <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirPosix.cpp">
-      <Filter>UnitexLibraryJni</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UnitexLibAndJni\UnitexLibDirWin.cpp">
-      <Filter>UnitexLibraryJni</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UnitexLibAndJni\UnitexLibIO.cpp">
-      <Filter>UnitexLibraryJni</Filter>
-    </ClCompile>
     <ClCompile Include="..\CompressedDic.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
@@ -706,6 +697,12 @@
       <Filter>Unitex-C++</Filter>
     </ClCompile>
     <ClCompile Include="..\SyncToolWin.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibDirWin.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibIO.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
   </ItemGroup>
@@ -819,12 +816,6 @@
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\UnitexLibAndJni\fr_umlv_unitex_jni_UnitexJni.h">
-      <Filter>UnitexLibraryJni</Filter>
-    </ClInclude>
-    <ClInclude Include="..\UnitexLibAndJni\UnitexLibDir.h">
-      <Filter>UnitexLibraryJni</Filter>
-    </ClInclude>
-    <ClInclude Include="..\UnitexLibAndJni\UnitexLibIO.h">
       <Filter>UnitexLibraryJni</Filter>
     </ClInclude>
     <ClInclude Include="..\AbstractAllocator.h">
@@ -1419,6 +1410,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\SyncTool.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexLibDir.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexLibIO.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>

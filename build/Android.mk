@@ -48,8 +48,8 @@ LOCAL_CFLAGS := -D_NOT_UNDER_WINDOWS -DHAVE_CONFIG_H -DUNITEX_LIBRARY -DUNITEX_L
 
 LOCAL_SRC_FILES := \
 Unitex-C++/UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp \
-Unitex-C++/UnitexLibAndJni/UnitexLibDirPosix.cpp \
-Unitex-C++/UnitexLibAndJni/UnitexLibIO.cpp \
+Unitex-C++/UnitexLibDirPosix.cpp \
+Unitex-C++/UnitexLibIO.cpp \
 Unitex-C++/SyncToolPosix.cpp \
 Unitex-C++/CompressedDic.cpp Unitex-C++/DebugMode.cpp Unitex-C++/GrfBeauty.cpp Unitex-C++/GrfDiff.cpp \
 Unitex-C++/GrfDiff3.cpp Unitex-C++/GrfSvn_lib.cpp Unitex-C++/GrfTest.cpp \

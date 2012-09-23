@@ -141,6 +141,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\RegExFacade.h" />
+    <ClInclude Include="..\UnitexLibDir.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnitexLibIO.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -804,6 +810,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\RegExFacade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibDirWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnitexLibIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
