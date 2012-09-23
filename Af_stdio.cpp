@@ -59,21 +59,7 @@ struct List_AbstractFileSpace* p_abstract_file_space_list=NULL;
 
 
 
-static void FillFuncArrayExtensibleFromFuncArray(t_fileio_func_array_extensible *func_array_extensible_res,
-	                                                       const t_fileio_func_array* func_array) 
-{
-    memset(func_array_extensible_res,0,sizeof(t_fileio_func_array_extensible));
-	memcpy(&(func_array_extensible_res->fnc_is_filename_object),&(func_array->fnc_is_filename_object),sizeof(t_fileio_func_array));
-	func_array_extensible_res->size_func_array = sizeof(t_fileio_func_array_extensible);
-}
 
-static void FillFuncArrayExtensibleFromFuncArrayEx(t_fileio_func_array_extensible *func_array_extensible_res,
-	                                                       const t_fileio_func_array_ex* func_array_ex) 
-{
-    memset(func_array_extensible_res,0,sizeof(t_fileio_func_array_extensible));
-	memcpy(&(func_array_extensible_res->fnc_is_filename_object),&(func_array_ex->fnc_is_filename_object),sizeof(t_fileio_func_array_ex));
-	func_array_extensible_res->size_func_array = sizeof(t_fileio_func_array_extensible);
-}
 
 static void FillFuncArrayExtensibleFromFuncArrayExtensible(t_fileio_func_array_extensible *func_array_extensible_res,
 	                                                       const t_fileio_func_array_extensible* func_array_extensible_src) 
@@ -144,33 +130,7 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceExtensible(const t_fileio_fun
 	return 0;
 }
 
-UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
-{	
-    t_fileio_func_array_extensible func_array_extensible;
-	FillFuncArrayExtensibleFromFuncArray(&func_array_extensible,func_array);
-    return AddAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
-}
 
-UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array_ex,void* privateSpacePtr)
-{
-    t_fileio_func_array_extensible func_array_extensible;
-	FillFuncArrayExtensibleFromFuncArrayEx(&func_array_extensible,func_array_ex);
-    return AddAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
-}
-
-UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
-{
-    t_fileio_func_array_extensible func_array_extensible;
-	FillFuncArrayExtensibleFromFuncArray(&func_array_extensible,func_array);
-    return RemoveAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
-}
-
-UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array_ex,void* privateSpacePtr)
-{
-    t_fileio_func_array_extensible func_array_extensible;
-	FillFuncArrayExtensibleFromFuncArrayEx(&func_array_extensible,func_array_ex);
-    return RemoveAbstractFileSpaceExtensible(&func_array_extensible,privateSpacePtr);
-}
 
 UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled()
 {

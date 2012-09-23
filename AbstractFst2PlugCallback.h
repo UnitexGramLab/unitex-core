@@ -33,8 +33,10 @@
 #ifndef _ABSTRACT_FST2_CALLBACK_INCLUDED
 #define _ABSTRACT_FST2_CALLBACK_INCLUDED 1
 
+
 #include "AbstractCallbackFuncModifier.h"
 
+#define IS_FST2_FUNC_ARRAY_EXTENSIBLE 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,6 +66,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_fst2)(Fst2* fst2,str
 
 typedef struct
 {
+	size_t size_func_array;
     t_fnc_is_filename_Fst2Space_object fnc_is_filename_object;
 
     t_fnc_Init_Fst2Space fnc_Init_Fst2Space;

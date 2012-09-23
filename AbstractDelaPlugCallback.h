@@ -61,6 +61,8 @@ The dictionary space manager must use load_INF_file and free_INF_codes to load
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+#define IS_DELA_FUNC_ARRAY_EXTENSIBLE 1
+
 //namespace unitex {
 extern "C" {
 #endif
@@ -119,6 +121,8 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_BIN)(unsigned char* 
 
 typedef struct
 {
+	size_t size_func_array;
+
     t_fnc_is_filename_DelaSpace_object fnc_is_filename_object;
 
     t_fnc_Init_DelaSpace fnc_Init_DelaSpace;

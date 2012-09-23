@@ -45,6 +45,9 @@
 
 //namespace unitex {
 
+#define IS_ASTRACT_ALLOCATOR_EXTENSIBLE 1
+
+
 struct tag_abstract_allocator;
 struct tag_abstract_allocator_info_public_with_allocator;
 
@@ -65,6 +68,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_delete_abstract_allocator)(struct 
 
 typedef struct tag_abstract_allocator_info_public_with_allocator
 {
+	size_t size_abstract_allocator_info_size;
     fnc_alloc_t fnc_alloc;
     fnc_realloc_t fnc_realloc;
     fnc_free_t fnc_free;
@@ -76,6 +80,7 @@ typedef struct tag_abstract_allocator_info_public_with_allocator
 
 typedef struct tag_abstract_allocator
 {
+	size_t size_abstract_allocator;
     abstract_allocator_info_public_with_allocator pub;
 
     /* only for delete */

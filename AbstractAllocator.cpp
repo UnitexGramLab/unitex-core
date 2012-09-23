@@ -162,6 +162,7 @@ Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocato
         return NULL;
     }
 
+	aas->size_abstract_allocator = sizeof(abstract_allocator);
     aas->fnc_delete_abstract_allocator = p_func_array->fnc_delete_abstract_allocator;
     aas->privateAllocatorSpacePtr = privateAllocatorSpacePtr;
     aas->creation_flag = creation_flagAllocator;
