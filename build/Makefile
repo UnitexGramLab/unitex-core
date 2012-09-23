@@ -1087,11 +1087,12 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
                   GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
                   Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
-                  KeyWords.o KeyWords_lib.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                  KeyWords.o KeyWords_lib.o \
+                  RegExFacade.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
-                  FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o $(SYSLIBSYNCTOOL) \
+                  FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o \
                   UnitexTool.o UnitexRevisionInfo.o Seq2Grf.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
@@ -1122,7 +1123,8 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
                   GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
                   SpellChecking.o Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
-                  KeyWords.o KeyWords_lib.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBLOGGER)
+                  KeyWords.o KeyWords_lib.o \
+                  RegExFacade.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
@@ -1725,15 +1727,6 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
-
-UnitexLibDirPosix.o : ./UnitexLibDirPosix.cpp
-	$(CC) -c ./UnitexLibDirPosix.cpp $(OPTIONS)
-
-UnitexLibDirWin.o : ./UnitexLibDirWin.cpp
-	$(CC) -c ./UnitexLibDirWin.cpp $(OPTIONS)
-
-UnitexLibIO.o : ./UnitexLibIO.cpp
-	$(CC) -c ./UnitexLibIO.cpp $(OPTIONS)
 
 fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
