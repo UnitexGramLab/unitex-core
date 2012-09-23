@@ -1405,7 +1405,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                     unichar c;
                     c = (((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)]) ;
                     if (c==0) {
-                    	fatal_error("Corrupted text file containing null characters\n");
+                    	fatal_error("Corrupted UTF16 text file containing null characters\n");
                     }
                     if (!(((c==0x0d) && (treat_CR_as_LF == 0))))
                     {
@@ -1471,7 +1471,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                     c = (((unichar)tab_in[(i)])) ;
                     
                     if (c==0) {
-                    	fatal_error("Corrupted text file containing null characters\n");
+                    	fatal_error("Corrupted ASCII text file containing null characters\n");
                     }
 
                     if (!(((c==0x0d) && (treat_CR_as_LF == 0))))
@@ -1566,7 +1566,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                           }
 
                           if (c==0) {
-                          	fatal_error("Corrupted text file containing null characters\n");
+                          	fatal_error("Corrupted UTF8 text file containing null characters\n");
                           }
 
                     if (!((c==0x0d) && (treat_CR_as_LF == 0)))
