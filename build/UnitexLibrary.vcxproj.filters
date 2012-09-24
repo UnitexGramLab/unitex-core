@@ -147,6 +147,15 @@
     <ClInclude Include="..\UnitexLibIO.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\TfstTag.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfTest.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GrfTest_lib.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -816,6 +825,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\UnitexLibIO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TfstTag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

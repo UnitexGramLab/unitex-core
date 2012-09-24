@@ -117,6 +117,10 @@
 #include "GrfDiff3.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_GRFTEST))) || defined(TOOL_GRFTEST))
+#include "GrfTest.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
 #include "ImplodeTfst.h"
 #endif
@@ -187,6 +191,10 @@
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2GRF))) || defined(TOOL_TFST2GRF))
 #include "Tfst2Grf.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFSTTAG))) || defined(TOOL_TFSTTAG))
+#include "TfstTag.h"
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2UNAMBIG))) || defined(TOOL_TFST2UNAMBIG))
@@ -333,6 +341,10 @@ const struct utility_item utility_array[]=
 	{ "GrfDiff3", 8, &main_GrfDiff3, usage_GrfDiff3, optstring_GrfDiff3, lopts_GrfDiff3 } ,
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_GRFTEST))) || defined(TOOL_GRFTEST))
+	{ "GrfTest", 7, &main_GrfTest, usage_GrfTest, optstring_GrfTest, lopts_GrfTest } ,
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_IMPLODETFST))) || defined(TOOL_IMPLODETFST))
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
@@ -403,6 +415,10 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2GRF))) || defined(TOOL_TFST2GRF))
 	{ "Tfst2Grf", 8, &main_Tfst2Grf, usage_Tfst2Grf, optstring_Tfst2Grf, lopts_Tfst2Grf } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFSTTAG))) || defined(TOOL_TFSTTAG))
+	{ "TfstTag", 7, &main_TfstTag, usage_TfstTag, optstring_TfstTag, lopts_TfstTag } ,
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_TFST2UNAMBIG))) || defined(TOOL_TFST2UNAMBIG))

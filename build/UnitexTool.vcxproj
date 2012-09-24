@@ -287,6 +287,8 @@
     <ClInclude Include="..\Arabic.h" />
     <ClInclude Include="..\DirHelper.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
+    <ClInclude Include="..\GrfTest.h" />
+    <ClInclude Include="..\GrfTest_lib.h" />
     <ClInclude Include="..\KeyWords.h" />
     <ClInclude Include="..\KeyWords_lib.h" />
     <ClInclude Include="..\LocateCache.h" />
@@ -299,6 +301,7 @@
     <ClInclude Include="..\SyncTool.h" />
     <ClInclude Include="..\Tagger.h" />
     <ClInclude Include="..\TaggingProcess.h" />
+    <ClInclude Include="..\TfstTag.h" />
     <ClInclude Include="..\TrainingProcess.h" />
     <ClInclude Include="..\TrainingTagger.h" />
     <ClInclude Include="..\TransductionVariables.h" />
@@ -382,6 +385,8 @@
     <ClCompile Include="..\GrfDiff.cpp" />
     <ClCompile Include="..\GrfDiff3.cpp" />
     <ClCompile Include="..\GrfSvn_lib.cpp" />
+    <ClCompile Include="..\GrfTest.cpp" />
+    <ClCompile Include="..\GrfTest_lib.cpp" />
     <ClCompile Include="..\Grf_lib.cpp" />
     <ClCompile Include="..\Keyboard.cpp" />
     <ClCompile Include="..\KeyWords.cpp" />
@@ -398,6 +403,7 @@
     <ClCompile Include="..\SpellCheck.cpp" />
     <ClCompile Include="..\SpellChecking.cpp" />
     <ClCompile Include="..\SyncToolWin.cpp" />
+    <ClCompile Include="..\TfstTag.cpp" />
     <ClCompile Include="..\UnitexGetOpt.cpp" />
     <ClCompile Include="..\Grf2Fst2.cpp" />
     <ClCompile Include="..\Grf2Fst2_lib.cpp" />

@@ -685,6 +685,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\GrfTest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfTest.h"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfTest_lib.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GrfTest_lib.h"
+				>
+			</File>
+			<File
 				RelativePath="..\HashTable.cpp"
 				>
 			</File>
@@ -1154,6 +1170,14 @@
 			</File>
 			<File
 				RelativePath="..\TfstStats.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TfstTag.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TfstTag.h"
 				>
 			</File>
 			<File

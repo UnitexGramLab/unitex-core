@@ -52,8 +52,9 @@ Unitex-C++/UnitexLibDirPosix.cpp \
 Unitex-C++/UnitexLibIO.cpp \
 Unitex-C++/SyncToolPosix.cpp \
 Unitex-C++/CompressedDic.cpp Unitex-C++/DebugMode.cpp Unitex-C++/GrfBeauty.cpp Unitex-C++/GrfDiff.cpp \
-Unitex-C++/GrfDiff3.cpp Unitex-C++/GrfSvn_lib.cpp Unitex-C++/GrfTest.cpp \
-Unitex-C++/GrfTest_lib.cpp Unitex-C++/Grf_lib.cpp Unitex-C++/Keyboard.cpp Unitex-C++/LoadInf.cpp \
+Unitex-C++/GrfDiff3.cpp Unitex-C++/GrfSvn_lib.cpp \
+Unitex-C++/GrfTest.cpp Unitex-C++/GrfTest_lib.cpp Unitex-C++/TfstTag.cpp \
+Unitex-C++/Grf_lib.cpp Unitex-C++/Keyboard.cpp Unitex-C++/LoadInf.cpp \
 Unitex-C++/Offsets.cpp Unitex-C++/Overlap.cpp Unitex-C++/Persistence.cpp Unitex-C++/PersistenceInterface.cpp \
 Unitex-C++/Seq2Grf.cpp Unitex-C++/SpellCheck.cpp Unitex-C++/SpellChecking.cpp \
 Unitex-C++/UnitexRevisionInfo.cpp Unitex-C++/Unxmlize.cpp Unitex-C++/VersionInfo.cpp \
