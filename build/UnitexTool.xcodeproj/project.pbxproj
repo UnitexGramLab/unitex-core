@@ -201,6 +201,8 @@
 		225FE86511256AB900F33C2A /* TaggingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86011256AB900F33C2A /* TaggingProcess.cpp */; };
 		225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86211256AB900F33C2A /* TrainingTagger.cpp */; };
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
+		2263A285160FDBCF00675831 /* UnitexLibDirPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2263A282160FDBCF00675831 /* UnitexLibDirPosix.cpp */; };
+		2263A286160FDBCF00675831 /* UnitexLibIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2263A283160FDBCF00675831 /* UnitexLibIO.cpp */; };
 		2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C99C151E085700A820F3 /* PersistenceInterface.cpp */; };
 		228B5BD416066623006DAABF /* SyncToolPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228B5BD216066623006DAABF /* SyncToolPosix.cpp */; };
 		2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2294EE7C11A01195003CE92B /* Untokenize.cpp */; };
@@ -645,6 +647,10 @@
 		225FE86311256AB900F33C2A /* TrainingTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingTagger.h; path = ../TrainingTagger.h; sourceTree = SOURCE_ROOT; };
 		225FE87811256B7B00F33C2A /* TrainingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingProcess.cpp; path = ../TrainingProcess.cpp; sourceTree = SOURCE_ROOT; };
 		225FE87911256B7B00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
+		2263A281160FDBCF00675831 /* UnitexLibDir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexLibDir.h; path = ../UnitexLibDir.h; sourceTree = "<group>"; };
+		2263A282160FDBCF00675831 /* UnitexLibDirPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibDirPosix.cpp; path = ../UnitexLibDirPosix.cpp; sourceTree = "<group>"; };
+		2263A283160FDBCF00675831 /* UnitexLibIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibIO.cpp; path = ../UnitexLibIO.cpp; sourceTree = "<group>"; };
+		2263A284160FDBCF00675831 /* UnitexLibIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexLibIO.h; path = ../UnitexLibIO.h; sourceTree = "<group>"; };
 		2287C99C151E085700A820F3 /* PersistenceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistenceInterface.cpp; path = ../PersistenceInterface.cpp; sourceTree = SOURCE_ROOT; };
 		2287C99D151E085700A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
 		228B5BD216066623006DAABF /* SyncToolPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SyncToolPosix.cpp; path = ../SyncToolPosix.cpp; sourceTree = "<group>"; };
@@ -709,6 +715,10 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2263A281160FDBCF00675831 /* UnitexLibDir.h */,
+				2263A282160FDBCF00675831 /* UnitexLibDirPosix.cpp */,
+				2263A283160FDBCF00675831 /* UnitexLibIO.cpp */,
+				2263A284160FDBCF00675831 /* UnitexLibIO.h */,
 				228B5BD216066623006DAABF /* SyncToolPosix.cpp */,
 				228B5BD316066623006DAABF /* SyncTool.h */,
 				222AABFC15BC507B005E9A21 /* RegExFacade.cpp */,
@@ -1463,6 +1473,8 @@
 				222FD83615AE3E920049D6CE /* KeyWords_lib.cpp in Sources */,
 				222AABFE15BC507C005E9A21 /* RegExFacade.cpp in Sources */,
 				228B5BD416066623006DAABF /* SyncToolPosix.cpp in Sources */,
+				2263A285160FDBCF00675831 /* UnitexLibDirPosix.cpp in Sources */,
+				2263A286160FDBCF00675831 /* UnitexLibIO.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
