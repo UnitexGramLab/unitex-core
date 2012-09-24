@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Unicode.h"
+#include "File.h"
 #include "Alphabet.h"
 #include "Copyright.h"
 #include "Error.h"
@@ -220,25 +221,25 @@ char concord[FILENAME_MAX];
 char fst2[FILENAME_MAX];
 char offsets_in[FILENAME_MAX];
 char offsets_out[FILENAME_MAX];
-sprintf(fake_stdout,"%s/stdout",working_dir);
+sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);
 /* tmp file, so we can force the encoding */
 U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
 if (U_STDOUT==NULL) {
 	fatal_error("Cannot create file %s\n",fake_stdout);
 }
-sprintf(txt,"%s/grf_unit_test.txt",working_dir);
-sprintf(snt,"%s/grf_unit_test_snt",working_dir);
-sprintf(ind,"%s/grf_unit_test_snt/concord.ind",working_dir);
-sprintf(concord,"%s/grf_unit_test_snt/concord.txt",working_dir);
+sprintf(txt,"%s%sgrf_unit_test.txt",working_dir,PATH_SEPARATOR_STRING);
+sprintf(snt,"%s%sgrf_unit_test_snt",working_dir,PATH_SEPARATOR_STRING);
+sprintf(ind,"%s%sgrf_unit_test_snt%sconcord.ind",working_dir,PATH_SEPARATOR_STRING,PATH_SEPARATOR_STRING);
+sprintf(concord,"%s%sgrf_unit_test_snt%sconcord.txt",working_dir,PATH_SEPARATOR_STRING,PATH_SEPARATOR_STRING);
 mkDirPortable(snt);
-sprintf(snt,"%s/grf_unit_test.snt",working_dir);
-sprintf(fst2,"%s/test.fst2",working_dir);
+sprintf(snt,"%s%sgrf_unit_test.snt",working_dir,PATH_SEPARATOR_STRING);
+sprintf(fst2,"%s%stest.fst2",working_dir,PATH_SEPARATOR_STRING);
 /* We prepare all the invokers */
 int n_offsets;
 n_offsets=0;
 /* Normalize */
 add_argument(invoker_Normalize,txt);
-sprintf(offsets_out,"%s/offsets%d.txt",working_dir,n_offsets);
+sprintf(offsets_out,"%s%soffsets%d.txt",working_dir,PATH_SEPARATOR_STRING,n_offsets);
 add_long_option(invoker_Normalize,"output_offsets",offsets_out);
 n_offsets++;
 /* Tokenize */
@@ -250,9 +251,9 @@ if (alphabet[0]!='\0') {
 if (char_by_char) {
 	add_argument(invoker_Tokenize,"-c");
 }
-sprintf(offsets_in,"%s/offsets%d.txt",working_dir,n_offsets-1);
+sprintf(offsets_in,"%s%soffsets%d.txt",working_dir,PATH_SEPARATOR_STRING,n_offsets-1);
 add_long_option(invoker_Tokenize,"input_offsets",offsets_in);
-sprintf(offsets_out,"%s/offsets%d.txt",working_dir,n_offsets);
+sprintf(offsets_out,"%s%soffsets%d.txt",working_dir,PATH_SEPARATOR_STRING,n_offsets);
 add_long_option(invoker_Tokenize,"output_offsets",offsets_out);
 n_offsets++;
 /* Dico */
