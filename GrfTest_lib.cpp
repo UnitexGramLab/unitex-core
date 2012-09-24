@@ -168,7 +168,7 @@ return res;
  * or NULL if none was found. If some errors are found, error
  * messages are printed to f_error.
  */
-vector_ptr* get_grf_unit_tests(Grf* grf,char* grf_name,U_FILE* f_error) {
+vector_ptr* get_grf_unit_tests(Grf* grf,const char* grf_name,U_FILE* f_error) {
 if (grf==NULL) {
 	fatal_alloc_error("Unexpected NULL grf in get_grf_unit_tests\n");
 }
@@ -206,7 +206,7 @@ return tests;
  * results stored in the given concord.txt file. Returns 1 if ok;
  * otherwise, returns 0 and prints an error message to f_error.
  */
-int check_test_results(GrfUnitTest* t,char* concord,char* grf,U_FILE* f_error) {
+int check_test_results(GrfUnitTest* t,const char* concord,const char* grf,U_FILE* f_error) {
 U_FILE* f=u_fopen(UTF16_LE,concord,U_READ);
 if (f==NULL) {
 	u_fprintf(f_error,"Error for graph %s:\nCannot open concordance file %s\n",grf,concord);

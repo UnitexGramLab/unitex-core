@@ -47,8 +47,8 @@ typedef struct {
 
 GrfUnitTest* new_GrfUnitTest();
 void free_GrfUnitTest(GrfUnitTest* test);
-vector_ptr* get_grf_unit_tests(Grf* grf,char* grf_name,U_FILE* f_error);
-int check_test_results(GrfUnitTest* t,char* concord,char* grf,U_FILE* f_error);
+vector_ptr* get_grf_unit_tests(Grf* grf,const char* grf_name,U_FILE* f_error);
+int check_test_results(GrfUnitTest* t,const char* concord,const char* grf,U_FILE* f_error);
 
 } // namespace unitex
 

@@ -1163,7 +1163,7 @@ char *cassys_fgets(char *line, int n, U_FILE *u) {
 
 
 
-int make_directory(char *path){
+int make_directory(const char *path){
 	return mkDirPortable(path);
 }
 
