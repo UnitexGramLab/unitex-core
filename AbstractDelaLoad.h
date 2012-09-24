@@ -40,7 +40,7 @@
 //#define HAS_UNITEX_NAMESPACE 1
 //#endif
 
-//namespace unitex {
+ //namespace unitex {
 using namespace unitex;
 
 struct INF_free_info
