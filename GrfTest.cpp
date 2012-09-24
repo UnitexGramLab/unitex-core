@@ -387,7 +387,10 @@ for (int i=0;i<n;i++) {
 	free((void*)lopts_GrfTest[i].name);
 }
 free(lopts_GrfTest);
-u_fclose(U_STDOUT);
+if (backup_stdout != U_STDOUT) {
+  u_fclose(U_STDOUT);
+  U_STDOUT = backup_stdout;
+}
 if (f_output!=U_STDERR) u_fclose(f_output);
 free_ProgramInvoker(invoker_Normalize);
 free_ProgramInvoker(invoker_Tokenize);
