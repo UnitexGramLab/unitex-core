@@ -497,7 +497,6 @@ while (src[i]!='\0') {
              ++i;
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
-
              if (a==NULL) {
                 /* If there is no alphabet file, we just consider the unique
                  * uppercase variant of the letter */
@@ -538,6 +537,21 @@ while (src[i]!='\0') {
           if (is_lower(src[i],a)) {
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
+             if (inside_a_set && src[i+1]=='-') {
+            	 /* Special case:
+            	  * if we had [a-d], we don't want to turn it into
+            	  * [aA-dD], but rather into [a-dA-D]. In such a case,
+            	  * we just use u_toupper
+            	  */
+            	 i=i+2;
+            	 dest[j++]='-';
+            	 dest[j++]=src[i++];
+            	 dest[j++]=u_toupper(dest[i-3]);
+            	 dest[j++]='-';
+            	 dest[j++]=u_toupper(src[i-1]);
+            	 continue;
+             }
+
              if (a==NULL) {
                 /* If there is no alphabet file, we just consider the unique
                  * uppercase variant of the letter */
