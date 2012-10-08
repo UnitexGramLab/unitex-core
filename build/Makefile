@@ -555,11 +555,17 @@ endif ## CYGWIN (ifeq)
 
 endif ## MINGW (ifeq)
 
+# Cassys set of object files. 
+CASSYS_FILE_OBJS = Cassys.o Cassys_tokens.o Cassys_xml_output.o Cassys_external_program.o Cassys_transducer.o Cassys_io.o \
+					Cassys_lexical_tags.o Cassys_concord.o
+
+
 ##################################
 ##################################
 ##  OBJECTS NEEDED BY PROGRAMS  ##
 ##################################
 ##################################
+
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
@@ -574,13 +580,13 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o 
                      $(SYSLIBSYNCTOOL)
 
 CASSYS		= Cassys
-CASSYS_OBJS	= Main_Cassys.o Cassys.o IOBuffer.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
+CASSYS_OBJS	= Main_Cassys.o  $(CASSYS_FILE_OBJS) IOBuffer.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
 			FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o\
 			String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o\
 			BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o\
 			Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
 			DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
-			Tagset.o Tokenize.o HashTable.o Cassys_tokens.o OutputTransductionVariables.o LocateCache.o \
+			Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
 			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o \
 			DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
@@ -1060,7 +1066,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   UnitexTool.o UnitexRevisionInfo.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
-                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
+                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o \
+                  $(CASSYS_FILE_OBJS) CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
@@ -1096,7 +1103,8 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   UnitexTool.o UnitexRevisionInfo.o Seq2Grf.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
-                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o Cassys.o Cassys_tokens.o CheckDic.o \
+                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildKrMwuDic.o BuildTextAutomaton.o\
+                  $(CASSYS_FILE_OBJS) CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
                   DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
@@ -1137,7 +1145,16 @@ UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o $(UNITEXLIB_IO_OBJS)
 TEST      = Test
 TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
 
-
+CASSYS_TEST = Cassys_test
+CASSYS_TEST_OBJS = Cassys_main_test.o Cassys_test.o $(CASSYS_FILE_OBJS) IOBuffer.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
+			FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o\
+			String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o\
+			BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o\
+			Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
+			DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
+			Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
+			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o \
+			DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) 
 ################################
 ################################
 ##  PROGRAM AND OBJECT LISTS  ##
@@ -1160,7 +1177,7 @@ OBJS = $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS)
 
 else
 
-PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
+PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CASSYS_TEST) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) $(FST2CHECK) \
 		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
 		$(MZREPAIRULP) $(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
@@ -1172,7 +1189,7 @@ PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDI
 PROGS += $(TEST)
 
 
-OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
+OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CASSYS_TEST_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
         $(DICO_OBJS) $(ELAG_OBJS)\
 		$(ELAGCOMP_OBJS) $(EVAMB_OBJS) \
 		$(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2CHECK_OBJS) \
@@ -1527,6 +1544,11 @@ clean: clean-all-but-tre
 #################################
 #################################
 endif
+endif
+
+ifeq ($(DEBUG), yes)
+$(BIN_DIR)$(CASSYS_TEST)$(EXTENSION): $(CASSYS_TEST_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
 endif
 
 $(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)

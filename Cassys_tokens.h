@@ -28,6 +28,7 @@
 #define CASSYS_TOKENS_H_
 
 #include "List_ustring.h"
+#include "Text_tokens.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -63,6 +64,24 @@ typedef struct cassys_tokens_list{
 	struct cassys_tokens_list *output;
 }cassys_tokens_list;
 
+
+/**
+ * \brief Constructs the text representation in the cassys_tokens_list
+ *
+ * \param[in] token_txt_name name of the file containing the tokens of the text
+ * \param[in] text_cod_name name of the containing the sequence of token representing the text
+ * \param[out] tokens structure containing the token present in the text
+ *
+ * Each element of the cassys_tokens_list token field is pointing on a element of tokens.
+ */
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig*,const char *token_text_name, const char * text_cod_name, struct text_tokens **tokens);
+
+cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list,
+		 int transducer_id, const char *alphabet, const VersatileEncodingConfig*);
+
+void free_cassys_tokens_list(cassys_tokens_list *l);
+
+
 /**
  * @brief returns the next elements of a list cassys_token_list
  *
@@ -80,7 +99,7 @@ cassys_tokens_list *new_list(list_ustring *u, int transducer_id);
 cassys_tokens_list *new_element(unichar *u, int transducer_id);
 cassys_tokens_list *add_output(cassys_tokens_list *list,
 cassys_tokens_list *output, int transducer_id,int number_of_tokens_replaced, int number_of_output_tokens);
-void free_cassys_tokens_list(cassys_tokens_list *l);
+
 void display_text(cassys_tokens_list *l, int transducer_id);
 cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id);
 

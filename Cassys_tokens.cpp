@@ -25,12 +25,135 @@
  */
 
 #include "Cassys_tokens.h"
+#include "Cassys.h"
+#include "Cassys_concord.h"
+#include "Cassys_lexical_tags.h"
+#include "Snt.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
+
+
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens){
+
+	*tokens = load_text_tokens(vec,tokens_text_name);
+
+	U_FILE *f = u_fopen(BINARY, text_cod_name,U_READ);
+	if( f == NULL){
+		fatal_error("Cannot open file %s\n",text_cod_name);
+		exit(1);
+	}
+
+	cassys_tokens_list *list = NULL;
+	cassys_tokens_list *temp = list;
+
+	int token_id;
+	int char_read = (int)fread(&token_id,sizeof(int),1,f);
+	while(char_read ==1){
+		if(list==NULL){
+			list = new_element((*tokens)->token[token_id],0);
+			temp = list;
+		}
+		else {
+			temp ->next_token = new_element((*tokens)->token[token_id],0);
+			temp = temp -> next_token;
+		}
+
+		char_read = (int)fread(&token_id,sizeof(int),1,f);
+	}
+	u_fclose(f);
+
+	return list;
+}
+
+
+
+/**
+ *
+ */
+cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *list,
+		 int transducer_id, const char *alphabet_name, const VersatileEncodingConfig* vec) {
+
+	locate_pos *prev_l=NULL;
+	Alphabet *alphabet = load_alphabet(vec,alphabet_name);
+
+	struct snt_files *snt_text_files = new_snt_files(text);
+
+	struct fifo *stage_concord = read_concord_file(snt_text_files->concord_ind,vec);
+
+	// performance enhancement
+	cassys_tokens_list *current_list_position = list;
+	long current_token_position = 0;
+
+	while (!is_empty(stage_concord)) {
+
+		locate_pos *l=(locate_pos*)take_ptr(stage_concord);
+		if(prev_l!=NULL){ // manage the fact that when writing a text merging the concord.ind,
+			// and when there is more than one pattern beginning at the same position in the text,
+			// the behavior of concord.exe is to take the first of those patterns.
+			// when we create the concordance of a cascade, it is needed to chose the same path (the first)
+			// as in concord.exe
+			if(prev_l->token_start_offset==l->token_start_offset){
+				while(prev_l!=NULL && l!=NULL && prev_l->token_start_offset==l->token_start_offset){
+					free(prev_l->label);
+					free(prev_l);
+					prev_l=l;
+					if(!is_empty(stage_concord))
+						l=(locate_pos*)take_ptr(stage_concord);
+					else l=NULL;
+				}
+			}
+			else {
+				free(prev_l->label);
+				free(prev_l);
+				prev_l=NULL;
+			}
+		}
+		if(l!=NULL){
+			struct list_ustring *new_sentence_lu = cassys_tokenize_word_by_word(l->label, alphabet);
+			cassys_tokens_list *new_sentence_ctl =
+				new_list(new_sentence_lu, transducer_id);
+
+			// performance enhancement :
+			// Since matches are sorted, we begin the search from the last known position in the list.
+			// We have to substract from the text position the current token position.
+			cassys_tokens_list *list_position = get_element_at(current_list_position, transducer_id - 1,
+				l->token_start_offset - current_token_position);
+			int replaced_sentence_length = l->token_end_offset - l->token_start_offset+1;
+			int new_sentence_length = length(new_sentence_lu);
+
+			add_output(list_position, new_sentence_ctl, transducer_id,
+				replaced_sentence_length, new_sentence_length-1);
+
+			// performance enhancement
+			current_list_position = list_position;
+			current_token_position = l-> token_start_offset;
+			prev_l=l;
+			free_list_ustring(new_sentence_lu);
+		}
+		if(l!=NULL && is_empty(stage_concord)){
+			free(l->label);
+			free(l);
+		}
+	}
+	free_fifo(stage_concord);
+	free_snt_files(snt_text_files);
+    free_alphabet(alphabet);
+
+	return list;
+}
+
+
+
+
+
+
+
+
+
 
 cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id){
 	if(list->next_token == NULL){
