@@ -45,8 +45,8 @@
 #include "Alphabet.h"
 
 #include "Cassys_tokens.h"
-#include "Cassys_external_program.h"
 #include "Cassys_transducer.h"
+#include "Cassys_external_program.h"
 #include "Cassys_io.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
