@@ -348,7 +348,10 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		add_replaced_text(labeled_text_name,tokens_list,transducer_number,alphabet,vec);
 
 		// add protection character in braces when needed
-		protect_special_characters(labeled_text_name,vec);
+		//protect_special_characters(labeled_text_name,vec);
+		protect_text(labeled_text_name, vec);
+
+		fprintf(stdout, "Protected special character\n");
 
 		transducer_number++;
 
@@ -360,13 +363,12 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		       free(labeled_text_name);
 
 	}
-    if ((in_place != 0))
-		    free(labeled_text_name);
+
 
 	free_snt_files(snt_text_files);
 
 	construct_cascade_concord(tokens_list,text,transducer_number,vec);
-
+	construct_xml_concord(text,vec);
 
 	struct snt_files *snt_files = new_snt_files(text);
 
@@ -383,32 +385,14 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
 	sprintf(result_file_name_path,"%s", result_file_name);
 	copy_file(result_file_name_path, last_resulting_text_path);
-	//copy_file(result_file_name,text);
-	//launch_concord_in_Cassys(result_file_name,snt_files->concord_ind,alphabet,vec);
+
+	if ((in_place != 0))
+			    free(labeled_text_name);
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);
 	free_text_tokens(tokens);
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-void display_list_ustring(const struct list_ustring *l){
-	u_printf("list_ustring = ");
-	while(l!=NULL){
-		u_printf("%S",l->string);
-		l=l->next;
-	}
-	u_printf("\n");
-}
-
-
 
 } // namespace unitex

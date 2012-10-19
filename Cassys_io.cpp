@@ -26,8 +26,11 @@
  */
 
 #include "Cassys_io.h"
+#include "Cassys_lexical_tags.h"
+
 #include "File.h"
 #include "Snt.h"
+#include "Unicode.h"
 
 #include "DirHelper.h"
 
@@ -194,6 +197,79 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 	strcpy(labeled_text_name, new_labeled_text_name);
 	return labeled_text_name;
 }
+
+
+
+
+void protect_text(const char *fileName, const VersatileEncodingConfig* vec){
+
+	U_FILE *file_reader = u_fopen(vec, fileName, U_READ);
+	if(file_reader == NULL){
+		fatal_error("u_fopen");
+	}
+
+	unichar *text = read_file(file_reader);
+
+	unichar *protected_text = protect_lexical_tag(text, false);
+
+	free(text);
+	u_fclose(file_reader);
+
+	U_FILE *file_write = u_fopen(vec, fileName, U_WRITE);
+	if(file_write == NULL){
+		fatal_error("u_fopen");
+	}
+
+	int written = u_fwrite(protected_text, u_strlen(protected_text),file_write);
+	if(written != (int)u_strlen(protected_text)){
+		fatal_error("u_fwrite");
+	}
+
+	u_fclose(file_write);
+	free(protected_text);
+
+}
+
+
+
+unichar* read_file(U_FILE *f){
+
+	unichar *text = NULL;
+
+	text = (unichar *)malloc(sizeof(unichar));
+	if(text==NULL){
+		fatal_alloc_error("malloc");
+	}
+	text[0]='\0';
+
+	int total_read = 0;
+	int read;
+	do {
+		unichar buffer[4095+1];
+		int i;
+		for(i=0;i<4095+1;i++){
+			buffer[i]='\0';
+		}
+
+		int ok=1;
+
+		read = u_fread(buffer,4095,f,&ok);
+
+		total_read+= u_strlen(buffer);
+		text = (unichar *)realloc(text,sizeof(unichar)*(total_read+1));
+		if(text==NULL){
+				fatal_alloc_error("realloc");
+		}
+		u_strcat(text,buffer);
+
+	} while (read == 4095);
+
+	text[total_read]='\0';
+
+	return text;
+
+}
+
 
 
 

@@ -26,6 +26,7 @@
  */
 
 #include "Cassys_concord.h"
+#include "Cassys_xml_output.h"
 
 #include "FIFO.h"
 #include "Snt.h"
@@ -216,6 +217,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 
 	}
 
+	free_list_ustring(sentence);
 
 	u_fclose(concord_desc_file);
 	free(snt_file);
@@ -224,6 +226,17 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 
 
 
+void construct_xml_concord(const char *text_name, VersatileEncodingConfig* vec){
+
+	fprintf(stdout,"Building xml concord\n");
+
+	struct snt_files *snt_file = new_snt_files(text_name);
+
+	xmlizeConcordFile(snt_file->concord_ind, vec);
+
+
+	free(snt_file);
+}
 
 
 }

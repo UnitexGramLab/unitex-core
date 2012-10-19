@@ -28,6 +28,8 @@
 #ifndef CASSYS_XML_OUTPUT_H_
 #define CASSYS_XML_OUTPUT_H_
 
+#include "Cassys_lexical_tags.h"
+
 #include "FileEncoding.h"
 #include "Unicode.h"
 #include "StringParsing.h"
@@ -45,6 +47,30 @@ namespace unitex {
 
 const unichar P_CASSYS_PROTECTED_CHARS[] ={'\\',',','.',':','+',0};
 
+const unichar LEM_OPENING[] = {'<','l','e','m','>',0};
+const unichar LEM_CLOSING[] = {'<','\\','l','e','m','>',0};
+
+const unichar FORM_OPENING[] = {'<','f','o','r','m','>',0};
+const unichar FORM_CLOSING[] = {'<','\\','f','o','r','m','>',0};
+
+const unichar CODE_OPENING[] = {'<','c','o','d','e','>',0};
+const unichar CODE_CLOSING[] = {'<','\\','c','o','d','e','>',0};
+
+const unichar INFLECTION_OPENING[] = {'<','i','n','f','l','e','c','t','>',0};
+const unichar INFLECTION_CLOSING[] = {'<','\\','i','n','f','l','e','c','t','>',0};
+
+const unichar LEXICAL_OPENING[] = {'<','c','s','c','>',0};
+const unichar LEXICAL_CLOSING[] = {'<','\\','c','s','c','>',0};
+
+
+void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodingConfig *vec);
+unichar* xmlizeConcordLine(unichar *line);
+
+unichar* xmlize(unichar *lexical_token);
+unichar* xmlize(struct cassys_pattern *cp);
+
+unichar *xmlize_element(const unichar *text, const unichar *opening_xml, const unichar *closing_xml);
+unichar *xmlize_element(list_ustring *u, const unichar *opening_xml, const unichar *closing_xml);
 }
 
 

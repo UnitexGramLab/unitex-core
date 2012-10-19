@@ -39,11 +39,20 @@
 
 namespace unitex {
 
+
+struct cassys_pattern {
+	unichar *form;
+	unichar *lem;
+	list_ustring *code;
+	list_ustring *inflection;
+};
+
+
 /**
  * \brief Returns the list of tokens contained in text.
  *
- * This function is different from tokenize_word_by_word in the treatment of braces. With this function, content
- * of braces, including the opening and losing braces, is a token.
+ * This function is different from tokenize_word_by_word in the treatment of braces.
+ * With this function, content of braces, including the opening and losing braces, is a token.
  *
  * \param[in] text the text to be tokenized
  * \param[in] alphabet the alphabet of the text
@@ -79,8 +88,26 @@ unichar *protect_lem_in_braced_string(const unichar *s);
 /**
  * \brief Returns all the characters encountered
  */
-unichar *get_braced_string(U_FILE *u);
+unichar *get_braced_string( unichar *string, int *position);
 
+
+struct cassys_pattern* load_cassys_pattern(unichar *string);
+
+bool is_lexical_token(unichar *token);
+
+int begin_of_lexical_tag(const unichar *text);
+int end_of_lexical_tag(const unichar *text);
+
+list_ustring *cassys_tokenize(const unichar* text);
+
+unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
+		bool to_protect) ;
+unichar *unprotect_lexical_tag(const unichar *text);
+
+unichar *protect_lexical_tag(unichar *text, bool b);
+
+int get_form_lemma_separator_position(unichar *text);
+void free_cassys_pattern(cassys_pattern *cp);
 }
 
 

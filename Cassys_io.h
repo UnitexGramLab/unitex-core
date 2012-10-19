@@ -95,6 +95,11 @@ int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const
 int copy_directory_snt_content(const char *dest, const char *src);
 
 
+/**
+ * copy the content of the file with stream f and return this content.
+ */
+unichar* read_file(U_FILE *f);
+void protect_text(const char *fileName, const VersatileEncodingConfig* vec);
 }
 
 #endif /* CASSYS_IO_H_ */
