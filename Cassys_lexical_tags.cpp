@@ -68,9 +68,6 @@ unichar *protect_lexical_tag(unichar *text, bool is_substring = false) {
 
 			s = cassys_pattern_2_lexical_tag(cp, is_substring);
 
-
-
-
 			size += u_strlen(s);
 			result = (unichar*)realloc(result, sizeof(unichar)*(size+1));
 			if(result==NULL){
@@ -328,6 +325,11 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 	position+= u_strlen(cp->form);
 
 	if(cp->lem == NULL){
+		if (to_protect) {
+				result[position++] = '\\';
+			}
+			result[position++] = '}';
+			result[position++] = '\0';
 		return result;
 	}
 
