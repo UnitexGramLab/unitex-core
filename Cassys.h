@@ -48,6 +48,7 @@
 #include "Cassys_transducer.h"
 #include "Cassys_external_program.h"
 #include "Cassys_io.h"
+#include "Cassys_concord.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
