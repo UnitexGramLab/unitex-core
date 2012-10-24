@@ -39,7 +39,7 @@ namespace unitex {
 
 
 
-unichar *protect_lexical_tag(unichar *text, bool is_substring = false) {
+unichar *protect_lexical_tag(const unichar *text, bool is_substring = false) {
 	unichar *result = NULL;
 
 	list_ustring *tokens = cassys_tokenize(text);
