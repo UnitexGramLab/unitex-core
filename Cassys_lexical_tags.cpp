@@ -19,7 +19,7 @@
  *
  */
 /*
- * Cassys_tags.cpp
+ * Cassys_lexical_tags.cpp
  *
  *  Created on: 8 oct. 2012
  *      Author: David Nott, Nathalie Friburger (nathalie.friburger@univ-tours.fr)
@@ -60,13 +60,16 @@ unichar *protect_lexical_tag(unichar *text, bool is_substring = false) {
 
 			unichar *protected_s = protect_lexical_tag( cp->form, true);
 			free(cp->form);
+
 			cp->form=(unichar*)malloc(sizeof(unichar)*(u_strlen(protected_s)+1));
 			if(cp->form == NULL){
 				fatal_alloc_error("malloc");
 			}
 			u_strcpy(cp->form, protected_s);
+			free(protected_s);
 
 			s = cassys_pattern_2_lexical_tag(cp, is_substring);
+			free_cassys_pattern(cp);
 
 			size += u_strlen(s);
 			result = (unichar*)realloc(result, sizeof(unichar)*(size+1));
@@ -74,9 +77,9 @@ unichar *protect_lexical_tag(unichar *text, bool is_substring = false) {
 				fatal_alloc_error("malloc");
 			}
 			u_strcat(result,s);
-			free(protected_s);
 			free(s);
-			free_cassys_pattern(cp);
+
+
 		} else {
 			size += + u_strlen(ite->string);
 			result = (unichar*) realloc(result, sizeof(unichar) * (size+1));
@@ -274,8 +277,8 @@ unichar *unprotect_lexical_tag(const unichar *text){
 }
 
 /**
- * Return a string lexical tage format of the cassys pattern. If to_protect is set to true,
- * all special characters ('{','}',':','.',',') are protected with '\'
+ * Return a string lexical tag format of the cassys pattern. If to_protect is set to true,
+ * all special characters ('{','}',':','.',',') are protected with '\'.
  */
 unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 		bool to_protect) {
@@ -297,7 +300,7 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 		ite = ite->next;
 	}
 
-	result_size += u_strlen(cp->form) +2; // size of string + a separator char
+	result_size += u_strlen(cp->form)*2 +2; // size of string  * 2 + a separator char
 
 	if(cp->lem != NULL){
 		result_size += u_strlen(cp->lem) +2;
@@ -321,8 +324,11 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 	}
 	result[position++]='{';
 
-	u_strcat(result, cp->form);
-	position+= u_strlen(cp->form);
+	unichar *protected_form = protect_form(cp->form);
+	u_strcat(result, protected_form);
+	position+= u_strlen(protected_form);
+	free(protected_form);
+
 
 	if(cp->lem == NULL){
 		if (to_protect) {
@@ -390,6 +396,68 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 	return result;
 }
 
+
+
+unichar *protect_form(unichar *string){
+	int i;
+
+	int size = u_strlen(string);
+	int number_of_special_character = 0;
+	for(i=0; i<size; i++){
+		if(string[i]==',' || string[i]==':' || string[i]=='.'){
+			number_of_special_character++;
+		}
+		if (string[i] == '\\' ) {
+			if(string[i+1]=='\0'){
+				fatal_error("Unexpected end of string\n");
+			}
+			i++;
+			if(string[i] == ',' || string[i]==':' || string[i] == '.' || string[i]=='\\' || string[i]=='{' || string[i]=='}'){
+
+			} else {
+				number_of_special_character++;
+			}
+		}
+
+	}
+
+	unichar *result = (unichar*)malloc(sizeof(unichar)*(size+number_of_special_character+1));
+	if(result==NULL){
+		fatal_alloc_error("malloc");
+	}
+	for(i=0; i<size+number_of_special_character;i++){
+		result[i]='\0';
+	}
+
+	int j=0;
+	for (i = 0; i < size; i++) {
+		if (string[i] == ',' || string[i] == ':' || string[i] == '.') {
+			result[i+j]='\\';
+			j++;
+			result[i+j]=string[i];
+			continue;
+		}
+		if (string[i] == '\\') {
+			result[i+j]='\\';
+			if (string[i + 1] == '\0') {
+				fatal_error("Unexpected end of string\n");
+			}
+			i++;
+			if (string[i]==',' || string[i]==':' || string[i]=='.' || string[i]=='\\' || string[i]=='{' || string[i]=='}') {
+				result[i+j] = string[i];
+			} else {
+				result[i+j]='\\';
+				j++;
+				result[i+j]=string[i];
+			}
+			continue;
+		}
+		result[i+j]=string[i];
+
+	}
+	result[i+j]='\0';
+	return result;
+}
 
 
 struct cassys_pattern* load_cassys_pattern(unichar *string){

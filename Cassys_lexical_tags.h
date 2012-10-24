@@ -105,6 +105,7 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 unichar *unprotect_lexical_tag(const unichar *text);
 
 unichar *protect_lexical_tag(unichar *text, bool b);
+unichar *protect_form(unichar *string);
 
 int get_form_lemma_separator_position(unichar *text);
 void free_cassys_pattern(cassys_pattern *cp);
