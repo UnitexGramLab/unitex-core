@@ -566,57 +566,6 @@ struct cassys_pattern* load_cassys_pattern(unichar *string){
 }
 
 
-void protect_special_characters(const char *text, const VersatileEncodingConfig* vec){
-
-	U_FILE *source;
-	U_FILE *destination;
-
-	char temp_name_file[FILENAME_MAX];
-	char path[FILENAME_MAX];
-	get_path(text,path);
-	sprintf(temp_name_file,"%stemp",path);
-
-
-	source = u_fopen(vec,text,U_READ);
-	if( source == NULL){
-		fatal_error("Cannot open file %s\n",text);
-		exit(1);
-	}
-
-	fprintf(stdout,"pre File source loaded\n");
-
-	unichar *source_text = read_file(source);
-
-	fprintf(stdout,"File source loaded\n");
-
-	destination = u_fopen(vec,temp_name_file,U_WRITE);
-	if( destination == NULL){
-		fatal_error("Cannot open file %s\n",temp_name_file);
-		exit(1);
-	}
-
-	int position = 0;
-	while(source_text[position] != '\0'){
-
-		if(source_text[position]=='{'){
-
-			unichar *bracket_string = get_braced_string(source_text, &position);
-			unichar *protected_bracket_string = protect_braced_string(bracket_string);
-			u_fprintf(destination,"%S",protected_bracket_string);
-			free(bracket_string);
-			free(protected_bracket_string);
-		}
-
-		position++;
-	}
-
-	u_fclose(source);
-	u_fclose(destination);
-
-	copy_file(text,temp_name_file);
-
-	// should delete the 'temp' file
-}
 
 
 
@@ -624,189 +573,10 @@ void protect_special_characters(const char *text, const VersatileEncodingConfig*
 
 
 
-unichar *protect_lem_in_braced_string(const unichar *s){
-	int length = u_strlen(s);
-	//u_printf("%S = length = %d\n", s,length);
-	int i;
-	// find the lemm/label separator
-	for (i = length-1; i >= 0; i--) {
-
-		if (s[i] == '.') {
-			break;
-		}
-	}
-
-	if (i < 0) {
-		fatal_error("protect_text error : no dots in string %S", s);
-	}
-
-
-	// nothing to do, just copy the lem
-	unichar *result = (unichar*)malloc(sizeof(unichar)*(length+1));
-	if(result == NULL){
-		fatal_alloc_error("protect_lem_in_braced_string");
-		exit(1);
-	}
-	i++;
-	int j=0;
-	while(i<length){
-		result[j]=s[i];
-		i++;j++;
-	}
-	result[j]='\0';
-	return result;
-}
 
 
 
 
-
-unichar *get_braced_string( unichar *string, int *position){
-
-	//u_printf("get_braced string = ");
-	int brace_level = 0; // already one brace opened
-
-	int origin_position = *position;
-
-	bool protected_char = false;
-	while (string[*position] != EOF) {
-		if (protected_char) {
-			protected_char = false;
-		} else {
-			if (string[*position] == '\\') {
-				protected_char = true;
-			} else {
-				if (string[*position] == '}') {
-					if (brace_level == 0) {
-						break;
-					}
-					else {
-						brace_level--;
-					}
-				}
-				if(string[*position] =='{'){
-					brace_level++;
-				}
-
-			}
-		}
-		*position = *position +1;
-	}
-
-	//u_printf("\n");
-
-
-	if(string[*position] == '\0'){
-		fatal_error("Unexpected end of file");
-	}
-
-	unichar *result;
-	int length = *position - origin_position;
-	result = (unichar*)malloc(sizeof(unichar)*(length+1));
-	if(result == NULL){
-		fatal_alloc_error("get_braced_string");
-		exit(1);
-	}
-
-	for (int i = 0; i < length; ++i) {
-		result[i]= string[*position + i];
-	}
-	result[length]='\0';
-
-	return result;
-}
-
-
-unichar *protect_braced_string(const unichar *s){
-	unichar *result;
-	unichar *stop_sentence;
-
-	stop_sentence = (unichar*) malloc(sizeof(unichar) * (1 + 1));
-	if (stop_sentence == NULL) {
-		fatal_alloc_error("protect_braced_string");
-		exit(1);
-	}
-	u_sprintf(stop_sentence, "S");
-
-	if (u_strcmp(stop_sentence, s) == 0) {
-		return stop_sentence;
-
-	} else {
-		unichar* text = protect_text_in_braced_string(s);
-		unichar* lem = protect_lem_in_braced_string(s);
-
-		//u_printf("text / lem = %S --- %S\n",text, lem);
-
-		int length_t = u_strlen(text);
-		int length_l = u_strlen(lem);
-
-		result = (unichar*) malloc(sizeof(unichar) * (length_t + length_l + 2
-				+ 1));
-		if (result == NULL) {
-			fatal_alloc_error("protect_braced_string");
-			exit(1);
-		}
-
-		u_sprintf(result, "%S,.%S", text, lem);
-
-		free(lem);
-		free(text);
-		free(stop_sentence);
-	}
-	return result;
-}
-
-
-unichar *protect_text_in_braced_string(const unichar *s){
-	int length = u_strlen(s);
-	int i;
-	// find the lemm/label separator
-	for(i=length-1; i>=0; i--){
-		if(s[i]=='.'){
-			break;
-		}
-	}
-
-	if(i<0){
-		fatal_error("protect_text error : no dots in string %s",s);
-	}
-
-	i--;
-	if(s[i] != ','){
-		fatal_error("protect_text error : no comma in string %s",s);
-	}
-
-
-	unichar *result;
-	// Alloc twice the memory of s to be sure to have enough space for escape chars.
-	result = (unichar*)malloc(sizeof(unichar)*(length*2+1));
-	if(result == NULL){
-		fatal_alloc_error("protect_text_in_braced_string");
-		exit(1);
-	}
-
-	// j for s and k for result
-	int j,k;
-	for(j=0,k=0; j<i; k++,j++){
-		if(s[j] == '\\'){
-			result[k]=s[j];
-			j++;k++;
-			result[k]=s[j];
-			continue;
-		}
-
-		if(s[j] == '{'|| s[j] == '}' || s[j] == '+' || s[j] == ',' || s[j] == '.' || s[j] == ':'){
-			result[k] = '\\';
-			k++;
-			result[k] = s[j];
-			continue;
-		}
-		result[k] = s[j];
-	}
-	result[k]='\0';
-	return result;
-
-}
 
 bool is_lexical_token(unichar *token){
 
@@ -872,10 +642,7 @@ list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* a
 					if(!opened_bracket){
 						token_found = true;
 						braced_token[--j]='\0';
-						//u_printf("protect string : \n");
-						unichar *protected_braced_string = protect_braced_string(braced_token);
-						u_sprintf(token,"{%S}",protected_braced_string);
-						free(protected_braced_string);
+						u_sprintf(token,"{%S}",braced_token);
 						j=u_strlen(token);
 					}
 				}

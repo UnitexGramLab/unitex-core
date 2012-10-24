@@ -60,35 +60,7 @@ struct cassys_pattern {
 list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* alphabet);
 
 
-/**
- * \brief Adds protection character in braces before
- *
- * \param[in/out] text file name of the text to be protected
- */
-void protect_special_characters(const char *text, const VersatileEncodingConfig*);
 
-/**
- * \brief Adds protection characters in the text zone.
- */
-unichar *protect_text_in_braced_string(const unichar *s);
-
-/**
- * \brief Adds protection character in a string contained in braces.
- *
- * The string s is supposed to be given without the external braces.
- */
-unichar *protect_braced_string(const unichar *s);
-
-/**
- * \brief Adds protection characters in the lem zone. (currently does nothing)
- */
-unichar *protect_lem_in_braced_string(const unichar *s);
-
-
-/**
- * \brief Returns all the characters encountered
- */
-unichar *get_braced_string( unichar *string, int *position);
 
 
 struct cassys_pattern* load_cassys_pattern(unichar *string);
