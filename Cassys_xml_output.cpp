@@ -93,7 +93,7 @@ void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodi
 
 
 
-unichar* xmlizeConcordLine(unichar *line){
+unichar* xmlizeConcordLine(const unichar *line){
 
 	list_ustring *lu = cassys_tokenize(line);
 

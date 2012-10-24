@@ -64,7 +64,7 @@ const unichar LEXICAL_CLOSING[] = {'<','\\','c','s','c','>',0};
 
 
 void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodingConfig *vec);
-unichar* xmlizeConcordLine(unichar *line);
+unichar* xmlizeConcordLine(const unichar *line);
 
 unichar* xmlize(unichar *lexical_token);
 unichar* xmlize(struct cassys_pattern *cp);
