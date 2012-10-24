@@ -278,7 +278,7 @@ unichar *unprotect_lexical_tag(const unichar *text){
 
 /**
  * Return a string lexical tag format of the cassys pattern. If to_protect is set to true,
- * all special characters ('{','}',':','.',',') are protected with '\'.
+ * all special characters ('{','}',':','.',',') are protected with '\'. The form element is always protected.
  */
 unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 		bool to_protect) {
@@ -300,7 +300,7 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 		ite = ite->next;
 	}
 
-	result_size += u_strlen(cp->form)*2 +2; // size of string  * 2 + a separator char
+	result_size += u_strlen(cp->form)*2 +2; // size of string  * 2 + a separator char. Multiply by to protect the form element
 
 	if(cp->lem != NULL){
 		result_size += u_strlen(cp->lem) +2;
