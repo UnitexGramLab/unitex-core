@@ -64,14 +64,8 @@ void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodi
 	while (!is_empty(stage_concord)) {
 
 		locate_pos *l=(locate_pos*)take_ptr(stage_concord);
-		unichar *line = (unichar *)malloc(sizeof(unichar)*(u_strlen(l->label)+1));
-		if(line==NULL){
-			fatal_alloc_error("malloc");
-		}
-		line[0]='\0';
-		u_strcpy(line,l->label);
 
-		unichar *xml_line = xmlizeConcordLine(line);
+		unichar *xml_line = xmlizeConcordLine(l->label);
 
 		u_fprintf(concord_xml_desc,"%ld.%ld.%ld %ld.%ld.%ld %S\n",
 				l->token_start_offset,
@@ -83,7 +77,6 @@ void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodi
 				xml_line);
 
 		free(xml_line);
-		free(line);
 		free(l->label);
 		free(l);
 	}
