@@ -75,6 +75,37 @@ struct fifo *read_concord_file(const char *concord_file_name, const VersatileEnc
 }
 
 
+void protect_lexical_tag_in_concord(const char *concord_file_name, const VersatileEncodingConfig *vec) {
+
+	struct fifo *stage_concord = read_concord_file(concord_file_name, vec);
+
+	U_FILE *concord_xml_desc = u_fopen(vec, concord_file_name, U_WRITE);
+	if (concord_xml_desc == NULL) {
+		fatal_error("Cannot open file %s\n", concord_file_name);
+		exit(1);
+	}
+	u_fprintf(concord_xml_desc, "#M\n");
+
+	while (!is_empty(stage_concord)) {
+
+		locate_pos *l = (locate_pos*) take_ptr(stage_concord);
+
+		unichar *protected_line = protect_lexical_tag(l->label, false);
+
+		u_fprintf(concord_xml_desc, "%ld.%ld.%ld %ld.%ld.%ld %S\n",
+				l->token_start_offset, l->character_start_offset,
+				l->logical_start_offset, l->token_end_offset,
+				l->character_end_offset, l->logical_end_offset, protected_line);
+
+		free(protected_line);
+		free(l->label);
+		free(l);
+	}
+	u_fclose(concord_xml_desc);
+	free_fifo(stage_concord);
+}
+
+
 
 /**
  * \brief Reads an line of a concord.ind file.
@@ -237,6 +268,9 @@ void construct_xml_concord(const char *text_name, VersatileEncodingConfig* vec){
 
 	free(snt_file);
 }
+
+
+
 
 
 }

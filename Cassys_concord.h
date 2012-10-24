@@ -104,6 +104,7 @@ locate_pos *read_concord_line(const unichar *line);
  */
 void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, int number_of_transducer,
     VersatileEncodingConfig*);
+void protect_lexical_tag_in_concord(const char *concord_file_name, const VersatileEncodingConfig *vec);
 
 void construct_xml_concord(const char *text_name, VersatileEncodingConfig* vec);
 }
