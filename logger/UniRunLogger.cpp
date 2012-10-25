@@ -419,8 +419,8 @@ int do_extracting_currentfile_memory(
 
     if (err!=UNZ_OK)
     {
+    	free(*ptr);
         *ptr = NULL;
-        free(*ptr);
         *size_file = 0;
     }
     else
