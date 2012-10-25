@@ -339,7 +339,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 		fprintf(stdout,"Applying transducer %s (numbered %d)\n", current_transducer->transducer_file_name,  transducer_number);
 		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,vec,morpho_dic);
 
-
+		// add protection character in lexical tags when needed
 		snt_text_files = new_snt_files(labeled_text_name);
 		protect_lexical_tag_in_concord(snt_text_files->concord_ind, vec);
 
@@ -349,12 +349,6 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 		//
 		add_replaced_text(labeled_text_name,tokens_list,transducer_number,alphabet,vec);
-
-		// add protection character in braces when needed
-		//protect_special_characters(labeled_text_name,vec);
-		//protect_text(labeled_text_name, vec);
-
-		fprintf(stdout, "Protected special character\n");
 
 		transducer_number++;
 
@@ -388,6 +382,10 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
 	sprintf(result_file_name_path,"%s", result_file_name);
 	copy_file(result_file_name_path, last_resulting_text_path);
+
+
+	launch_concord_in_Cassys(result_file_name_path, snt_files->concord_ind, alphabet, vec);
+
 
 	if ((in_place != 0))
 			    free(labeled_text_name);
