@@ -110,12 +110,16 @@ list_ustring *cassys_tokenize(const unichar* text) {
 	enum {TEXT_MODE, LEXICAL_TAG_MODE};
 
 	int mode = TEXT_MODE;
-	if(text[0] == '{'){
-		mode = LEXICAL_TAG_MODE;
-	}
+//	if(text[0] == '{'){
+//		mode = LEXICAL_TAG_MODE;
+//	}
 
 	while(text[position]!='\0'){
 		int offset=0;
+
+		if (text[position] == '{') {
+			mode = LEXICAL_TAG_MODE;
+		}
 
 		last_position = position;
 		if(mode==TEXT_MODE){
@@ -244,6 +248,7 @@ unichar *unprotect_lexical_tag(const unichar *text){
 		fatal_error("lexical tag should begin with {\n");
 	}
 
+	int brace_depth =0;
 
 	i=0;
 	int j=0;
@@ -262,9 +267,18 @@ unichar *unprotect_lexical_tag(const unichar *text){
 
 		result[j++] = text[i];
 
+		if(text[i]=='{'){
+			brace_depth++;
+		}
+
 		if(text[i]=='}'){
+			brace_depth--;;
+		}
+
+		if(brace_depth==0){
 			break;
 		}
+
 	}
 
 
