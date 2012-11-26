@@ -37,6 +37,17 @@
 
 namespace unitex {
 
+void display_lu(struct list_ustring *l){
+	struct list_ustring *u;
+
+	u_printf("begin\n");
+	for(u=l; u!=NULL; u=u->next){
+		u_printf("%S\n",u->string);
+	}
+	u_printf("\n");
+}
+
+
 /**
  * \brief Reads a 'concord.ind' file and returns a fifo list of all matches found and their replacement
  *
@@ -75,7 +86,29 @@ struct fifo *read_concord_file(const char *concord_file_name, const VersatileEnc
 }
 
 
-void protect_lexical_tag_in_concord(const char *concord_file_name, const VersatileEncodingConfig *vec) {
+
+int count_concordance(const char *concord_file_name, const VersatileEncodingConfig* vec){
+
+	struct fifo *stage_concord = read_concord_file(concord_file_name, vec);
+
+	int number_of_concordance = 0;
+	while (!is_empty(stage_concord)) {
+
+		locate_pos *l = (locate_pos*) take_ptr(stage_concord);
+		free(l->label);
+		free(l);
+
+		number_of_concordance ++;
+	}
+	free_fifo(stage_concord);
+
+	return number_of_concordance;
+}
+
+
+
+
+void protect_lexical_tag_in_concord(const char *concord_file_name, const OutputPolicy op, const VersatileEncodingConfig *vec) {
 
 	struct fifo *stage_concord = read_concord_file(concord_file_name, vec);
 
@@ -84,7 +117,20 @@ void protect_lexical_tag_in_concord(const char *concord_file_name, const Versati
 		fatal_error("Cannot open file %s\n", concord_file_name);
 		exit(1);
 	}
-	u_fprintf(concord_xml_desc, "#M\n");
+	switch (op) {
+		case MERGE_OUTPUTS: {
+			u_fprintf(concord_xml_desc, "#M\n");
+			break;
+		}
+		case REPLACE_OUTPUTS: {
+			u_fprintf(concord_xml_desc, "#R\n");
+			break;
+		}
+		default:
+			fatal_error("Only Replace and merge output are currently allowed with transducers\n");
+			break;
+	}
+
 
 	while (!is_empty(stage_concord)) {
 
@@ -218,6 +264,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 				u_fprintf(concord_desc_file, "%d.0.0 %d.%d.0 ",start_position,end_position,last_token_length);
 				while(iterator != NULL){
 					u_fprintf(concord_desc_file,"%S",iterator->string);
+					//u_printf("ccc iter = %S\n",iterator->string);
 					//u_fprintf(concord_desc_file,"concord.ind : %S %S %S\n",iterator->string, previous_pos_in_original_text->token, current_pos_in_original_text->token);
 					iterator = iterator -> next;
 				}
@@ -244,6 +291,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 			output = output -> next_token;
 			output = get_output(output, number_of_transducer);
 			output_detected = true;
+			//display_lu(sentence);
 		}
 
 	}

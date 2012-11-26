@@ -31,7 +31,7 @@
 #include "Unicode.h"
 #include "FileEncoding.h"
 #include "Cassys_tokens.h"
-
+#include "LocateConstants.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -85,6 +85,8 @@ typedef struct locate_pos{
  */
 struct fifo *read_concord_file(const char *concord_file_name, const VersatileEncodingConfig*);
 
+int count_concordance(const char *concord_file_name, const VersatileEncodingConfig* vec);
+
 /**
  * \brief Reads a line of the 'concord.ind' file and and returns the content in a struct locate_pos
  *
@@ -106,8 +108,13 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
     VersatileEncodingConfig*);
 void protect_lexical_tag_in_concord(const char *concord_file_name, const VersatileEncodingConfig *vec);
 
+void protect_lexical_tag_in_concord(const char *concord_file_name, const OutputPolicy op, const VersatileEncodingConfig *vec);
+
 void construct_xml_concord(const char *text_name, VersatileEncodingConfig* vec);
+
 }
+
+
 
 
 #endif /* CASSYS_CONCORD_H_ */

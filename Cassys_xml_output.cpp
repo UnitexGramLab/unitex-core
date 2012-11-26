@@ -65,6 +65,8 @@ void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodi
 
 		locate_pos *l=(locate_pos*)take_ptr(stage_concord);
 
+		//u_printf("string = %S\n",l->label);
+
 		unichar *xml_line = xmlizeConcordLine(l->label);
 
 		u_fprintf(concord_xml_desc,"%ld.%ld.%ld %ld.%ld.%ld %S\n",
@@ -99,6 +101,7 @@ unichar* xmlizeConcordLine(const unichar *line){
 
 	for(list_ustring *ite = lu; ite!=NULL; ite=ite->next){
 		if(is_lexical_token(ite->string)){
+
 			unichar *unprotected = unprotect_lexical_tag(ite->string);
 
 			unichar *xml_string = xmlize(unprotected);
@@ -117,9 +120,7 @@ unichar* xmlizeConcordLine(const unichar *line){
 		}
 
 	}
-
 	free_list_ustring(lu);
-
 	return result;
 
 }
@@ -182,7 +183,7 @@ unichar *xmlize_element(const unichar *text, const unichar *opening_xml, const u
 
 int size = 0;
 
-if(text[0]!='\0') {
+if(text != NULL && text[0]!='\0') {
 	size = u_strlen(opening_xml)+u_strlen(closing_xml)+ u_strlen(text);
 }
 
@@ -192,7 +193,7 @@ if(result==NULL) {
 }
 result[0]='\0';
 
-if(text[0]!='\0') {
+if(text != NULL && text[0]!='\0') {
 	u_strcat(result, opening_xml);
 	u_strcat(result, text);
 	u_strcat(result, closing_xml);

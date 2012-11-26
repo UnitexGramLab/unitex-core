@@ -105,7 +105,7 @@ int initialize_working_directory(const char *text,int must_create_directory){
     }
 
 	char text_in_wd[FILENAME_MAX];
-	sprintf(text_in_wd, "%s%s_0%s",working_directory,canonical_name,extension );
+	sprintf(text_in_wd, "%s%s_0_0%s",working_directory,canonical_name,extension );
 	copy_file(text_in_wd,text);
 
 	char snt_dir_text_in_wd[FILENAME_MAX];
@@ -122,7 +122,16 @@ int initialize_working_directory(const char *text,int must_create_directory){
 }
 
 
-char* create_labeled_files_and_directory(const char *text, int next_transducer_label,int must_create_directory,int must_copy_file) {
+//char* create_labeled_files_and_directory(const char *text, int next_transducer_label,int must_create_directory,int must_copy_file) {
+char* create_labeled_files_and_directory(
+		const char *text,
+		int previous_transducer_label,
+		int next_transducer_label,
+		int previous_iteration,
+		int next_iteration,
+		int must_create_directory,
+		int must_copy_file) {
+
 	char path[FILENAME_MAX];
 	get_path(text, path);
 
@@ -138,12 +147,12 @@ char* create_labeled_files_and_directory(const char *text, int next_transducer_l
 
 	// copy the text label i- to i
 	char old_labeled_text_name[FILENAME_MAX];
-	sprintf(old_labeled_text_name, "%s%s_%d%s", working_directory,
-			canonical_text_name, next_transducer_label - 1, extension);
+	sprintf(old_labeled_text_name, "%s%s_%d_%d%s", working_directory,
+			canonical_text_name, previous_transducer_label, previous_iteration, extension);
 
 	char new_labeled_text_name[FILENAME_MAX];
-	sprintf(new_labeled_text_name, "%s%s_%d%s", working_directory,
-			canonical_text_name, next_transducer_label, extension);
+	sprintf(new_labeled_text_name, "%s%s_%d_%d%s", working_directory,
+			canonical_text_name, next_transducer_label, next_iteration, extension);
 
 	char new_labeled_snt_directory[FILENAME_MAX];
 	get_snt_path(new_labeled_text_name, new_labeled_snt_directory);

@@ -77,10 +77,14 @@ int initialize_working_directory(const char *text,int must_create_directory);
  * \param[in] text
  * \param[in] next_transducer_label
  */
-char* create_labeled_files_and_directory(const char *text, int next_transducer_label, int must_create_directory, int must_copy_file);
-
-
-
+char* create_labeled_files_and_directory(
+		const char *text,
+		int previous_transducer_label,
+		int next_transducer_label,
+		int previous_iteration,
+		int next_iteration,
+		int must_create_directory,
+		int must_copy_file) ;
 
 
 int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory);

@@ -37,6 +37,58 @@
 namespace unitex {
 
 
+void cassys_tokens_2_graph(cassys_tokens_list *c, const VersatileEncodingConfig* vec){
+
+	U_FILE *dot_desc_file = u_fopen(ASCII, "/users/dnott/Bureau/graph/text.dot", U_WRITE);
+	if (dot_desc_file == NULL) {
+		fatal_error("Cannot open file \n");
+		exit(1);
+	}
+
+	u_fprintf(dot_desc_file,"digraph text {\n");
+	cassys_tokens_2_graph_subgraph(c,dot_desc_file);
+
+	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file);
+
+	u_fprintf(dot_desc_file, "\tNULL[label=\"EOF\"]\n");
+	u_fprintf(dot_desc_file,"}\n");
+
+	u_fclose(dot_desc_file);
+}
+
+
+void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u){
+
+	cassys_tokens_list *i;
+	for(i=c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
+		if(i->output != NULL) {
+			cassys_tokens_2_graph_subgraph(i->output,u);
+			cassys_tokens_2_graph_walk_for_subgraph(i->output, u);
+			u_fprintf(u, "\t_%p -> _%p\n", i, i->output);
+		}
+	}
+}
+
+void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
+
+	static int cluster_number = 0;
+	cassys_tokens_list *i;
+	u_fprintf(u, "\tsubgraph cluster%d {\n", cluster_number);
+	u_fprintf(u, "\tlabel = \"transducer = %d\"\n", c->transducer_id);
+	for (i = c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
+		u_fprintf(u, "\t\t_%p[label=\"%S(%d)\"]\n", i, i->token,i->transducer_id);
+		if (i->next_token != NULL) {
+			u_fprintf(u, "\t\t_%p -> _%p\n", i, i->next_token);
+		} else {
+			u_fprintf(u, "\t\t_%p -> NULL\n", i);
+		}
+	}
+	u_fprintf(u,"\t}\n");
+	cluster_number++;
+}
+
+
+
 cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens){
 
 	*tokens = load_text_tokens(vec,tokens_text_name);
@@ -122,6 +174,7 @@ cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *lis
 			// We have to substract from the text position the current token position.
 			cassys_tokens_list *list_position = get_element_at(current_list_position, transducer_id - 1,
 				l->token_start_offset - current_token_position);
+
 			int replaced_sentence_length = l->token_end_offset - l->token_start_offset+1;
 			int new_sentence_length = length(new_sentence_lu);
 
@@ -196,8 +249,15 @@ cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id){
 cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, int position){
 	int current_position = 0;
 	cassys_tokens_list *temp = list;
+
     if (temp==NULL)
         return NULL;
+
+    while (temp -> output != NULL && temp -> output -> transducer_id
+			<= transducer_id) {
+		temp = temp -> output;
+	}
+
  	while(current_position < position){
         if(temp->next_token != NULL)
         {
@@ -227,9 +287,14 @@ cassys_tokens_list *add_output(cassys_tokens_list *list,
 		return NULL;
 	}
 
-    	list ->output = output;
-
-	cassys_tokens_list *replacement_end = get_element_at(list, transducer_id, number_of_tokens_replaced);
+    list ->output = output;
+   // u_printf("looking for replacement end\n");
+	cassys_tokens_list *replacement_end = get_element_at(list, transducer_id-1, number_of_tokens_replaced);
+//	if(replacement_end!=NULL){
+//		u_printf("replacement end = %S\n", replacement_end->token);
+//	} else {
+//		u_printf("replacement end = NULL\n", replacement_end);
+//	}
 	cassys_tokens_list *output_end =NULL;
 	if(list->output!=NULL)
 		output_end = get_element_at(list->output, list->output->transducer_id, number_of_output_tokens);

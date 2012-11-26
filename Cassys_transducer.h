@@ -43,6 +43,8 @@
 
 namespace unitex {
 
+#define INFINITY -1
+
 /**
   * Structure storing the list of transducer
   */
@@ -50,6 +52,7 @@ struct transducer_name_and_mode_linked_list
 {
     char* transducer_filename;
     OutputPolicy transducer_mode;
+    int repeat_mode;
     struct transducer_name_and_mode_linked_list* next;
 };
 
@@ -60,12 +63,18 @@ struct transducer_name_and_mode_linked_list
 typedef struct transducer{
 	char *transducer_file_name;
 	OutputPolicy output_policy;
+	int repeat_mode;
 }transducer;
 
 
 struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(
+			struct transducer_name_and_mode_linked_list *current_list,
+			const char*filename);
+
+struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(
 		struct transducer_name_and_mode_linked_list *current_list,
-		const char*filename);
+		const char*filename,
+		int repeat_mode);
 
 void set_last_transducer_linked_list_mode(
 		struct transducer_name_and_mode_linked_list *current_list,
@@ -131,8 +140,10 @@ OutputPolicy extract_cassys_transducer_policy(const char *line);
 
 char *extract_cassys_disabled(const char *line);
 
+int extract_cassys_tranducer_star(const char *line);
 
 
+int is_debug_mode(transducer *t, const VersatileEncodingConfig* vec);
 
 }
 

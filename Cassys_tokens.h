@@ -65,6 +65,10 @@ typedef struct cassys_tokens_list{
 }cassys_tokens_list;
 
 
+void cassys_tokens_2_graph(cassys_tokens_list *c, const VersatileEncodingConfig* vec);
+void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u);
+void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u);
+
 /**
  * \brief Constructs the text representation in the cassys_tokens_list
  *

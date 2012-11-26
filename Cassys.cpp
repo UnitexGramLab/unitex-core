@@ -315,50 +315,77 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     char *labeled_text_name = NULL;
     char last_labeled_text_name[FILENAME_MAX];
 
-    if ((in_place != 0))
+    if ((in_place != 0)){
 	   labeled_text_name = create_labeled_files_and_directory(text,
-		    transducer_number*0, must_create_directory,0);
+		    0,0,0,0, must_create_directory,0);
+    }
+
+    int previous_transducer_number = 0;
+    int previous_iteration = 0;
+	while (!is_empty(transducer_list)) {
+		int iteration;
+		transducer *current_transducer =
+				(transducer*) take_ptr(transducer_list);
+
+		if(is_debug_mode(current_transducer, vec) == true){
+			fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
+		}
+
+		for (iteration = 0; iteration < current_transducer->repeat_mode; iteration++) {
+
+			if (in_place == 0) {
+				labeled_text_name = create_labeled_files_and_directory(text, previous_transducer_number,
+						transducer_number, previous_iteration, iteration, must_create_directory, 1);
+			}
+			previous_transducer_number = transducer_number;
+			previous_iteration = iteration;
 
 
-	while(!is_empty(transducer_list)){
+			launch_tokenize_in_Cassys(labeled_text_name, alphabet,
+					snt_text_files->tokens_txt, vec);
+			free_snt_files(snt_text_files);
 
-        if (in_place == 0)
-		    labeled_text_name = create_labeled_files_and_directory(text,
-				    transducer_number, must_create_directory,1);
-        /*
-        else
-        {
-            labeled_text_name = strdup(text);
-        }*/
+			// apply transducer
 
-		launch_tokenize_in_Cassys(labeled_text_name,alphabet,snt_text_files->tokens_txt,vec);
-		free_snt_files(snt_text_files);
+			fprintf(stdout, "Applying transducer %s (numbered %d)\n",
+					current_transducer->transducer_file_name, transducer_number);
+			launch_locate_in_Cassys(labeled_text_name, current_transducer,
+					alphabet, negation_operator, vec, morpho_dic);
 
-		// apply transducer
-		transducer *current_transducer = (transducer*)take_ptr(transducer_list);
-		fprintf(stdout,"Applying transducer %s (numbered %d)\n", current_transducer->transducer_file_name,  transducer_number);
-		launch_locate_in_Cassys(labeled_text_name, current_transducer, alphabet, negation_operator,vec,morpho_dic);
+			// add protection character in lexical tags when needed
+			snt_text_files = new_snt_files(labeled_text_name);
+			protect_lexical_tag_in_concord(snt_text_files->concord_ind, current_transducer->output_policy, vec);
+			// generate concordance for this transducer
+			launch_concord_in_Cassys(labeled_text_name,
+					snt_text_files -> concord_ind, alphabet, vec);
 
-		// add protection character in lexical tags when needed
-		snt_text_files = new_snt_files(labeled_text_name);
-		protect_lexical_tag_in_concord(snt_text_files->concord_ind, vec);
+			//
+			add_replaced_text(labeled_text_name, tokens_list,
+					transducer_number, alphabet, vec);
 
-		// generate concordance for this transducer
-		launch_concord_in_Cassys(labeled_text_name,
-				snt_text_files -> concord_ind, alphabet,vec);
+			sprintf(last_labeled_text_name, "%s", labeled_text_name);
 
-		//
-		add_replaced_text(labeled_text_name,tokens_list,transducer_number,alphabet,vec);
+			if (in_place == 0) {
+				free(labeled_text_name);
+			}
 
-		transducer_number++;
+			if (count_concordance(snt_text_files->concord_ind, vec) == 0) {
+				break;
+			} else {
+				u_printf("transducer %d iteration %d --> %d concordances\n",
+						transducer_number,
+						iteration,
+						count_concordance(snt_text_files->concord_ind, vec));
+				//u_printf("Displaying sparse matrix\n");
+				//display_text(tokens_list, transducer_number);
+			}
+		}
+
 
 		free(current_transducer -> transducer_file_name);
 		free(current_transducer);
 
-		sprintf(last_labeled_text_name, "%s", labeled_text_name);
-        if (in_place == 0)
-		       free(labeled_text_name);
-
+		transducer_number++;
 	}
 
 
@@ -389,6 +416,8 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	if ((in_place != 0))
 			    free(labeled_text_name);
+
+	//cassys_tokens_2_graph(tokens_list,vec);
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);

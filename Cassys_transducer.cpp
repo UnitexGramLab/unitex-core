@@ -38,7 +38,10 @@ namespace unitex {
  * Adds the transducer 'fileName' to the linked list of transducer 'current_list'. The mode of the transductor is assumed to be by
  * 'set_last_transducer_linked_list_mode' function
  */
-struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(struct transducer_name_and_mode_linked_list *current_list,const char*filename)
+struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(
+			struct transducer_name_and_mode_linked_list *current_list,
+			const char*filename,
+			int repeat_mode)
 {
     struct transducer_name_and_mode_linked_list* new_item=(struct transducer_name_and_mode_linked_list*)malloc(sizeof(struct transducer_name_and_mode_linked_list));
     if (new_item==NULL) {
@@ -48,6 +51,7 @@ struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name
 
     new_item->transducer_filename = strdup(filename);
     new_item->transducer_mode=IGNORE_OUTPUTS;
+    new_item->repeat_mode=repeat_mode;
     new_item->next=NULL;
     if (new_item->transducer_filename==NULL) {
 		fatal_alloc_error("add_transducer_linked_list_new_name");
@@ -65,6 +69,13 @@ struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name
     return current_list;
 }
 
+
+struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(
+			struct transducer_name_and_mode_linked_list *current_list,
+			const char*filename)
+{
+	return add_transducer_linked_list_new_name(current_list, filename, 1);
+}
 
 void set_last_transducer_linked_list_mode(struct transducer_name_and_mode_linked_list *current_list,OutputPolicy mode)
 {
@@ -128,6 +139,8 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 	while (cassys_fgets(line,1024,file_transducer_list) != NULL){
 		char *transducer_file_name;
 		char *enabled_policy;
+		int repeat_policy;
+
 		OutputPolicy transducer_policy;
 
 		remove_cassys_comments(line);
@@ -137,9 +150,10 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 
 		transducer_policy = extract_cassys_transducer_policy(line);
 		enabled_policy = extract_cassys_disabled(line);
+		repeat_policy = extract_cassys_tranducer_star(line);
 
-		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS && strcmp("",enabled_policy)==0) {
-			res=add_transducer_linked_list_new_name(res,transducer_file_name);
+		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS && (strcmp("",enabled_policy)==0 || strcmp("Enabled",enabled_policy)==0)) {
+			res=add_transducer_linked_list_new_name(res,transducer_file_name, repeat_policy);
             set_last_transducer_linked_list_mode(res,transducer_policy);
 		}
 		else {
@@ -171,11 +185,13 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 		char *transducer_file_name;
 		OutputPolicy transducer_policy;
 		transducer *t;
+		int repeat_policy;
 
         transducer_file_name = list->transducer_filename;
 		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
 
         transducer_policy = list->transducer_mode;
+        repeat_policy = list->repeat_mode;
 
 		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS) {
 			//fprintf(stdout,"transducer to be loaded\n");
@@ -199,7 +215,7 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 			strcat(t->transducer_file_name, transducer_file_name);
 
 			t->output_policy = transducer_policy;
-
+			t->repeat_mode = repeat_policy;
 
 			struct any value;
 			value._ptr = t;
@@ -299,6 +315,47 @@ char* extract_cassys_transducer_name(const char *line){
 	return transducer_name;
 }
 
+
+int extract_cassys_tranducer_star(const char *line) {
+
+	int i = 0;
+	// filename
+	while (line[i] != '"' && line[i] != '\0') {
+		i++;
+	}
+	i++;
+	while (line[i] != '"' && line[i] != '\0') {
+		i++;
+	}
+	i++;
+	while (isspace(line[i])) {
+		i++;
+	}
+
+	// merge or replace policy
+	while (isalpha(line[i])) {
+		i++;
+	}
+	while (isspace(line[i])) {
+		i++;
+	}
+
+	// disabled or enabled
+	while (isalpha(line[i])) {
+		i++;
+	}
+	while (isspace(line[i])) {
+		i++;
+	}
+
+	if(line[i]=='*'){
+		return INFINITY;
+	}
+
+	return 1;
+
+}
+
 char *extract_cassys_disabled(const char *line){
 	char *enabled_policy;
 
@@ -380,6 +437,26 @@ OutputPolicy extract_cassys_transducer_policy(const char *line) {
 	return IGNORE_OUTPUTS;
 }
 
+int is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
+
+	U_FILE *graph_file;
+	graph_file = u_fopen(vec, t->transducer_file_name, U_READ);
+	if (graph_file == NULL) {
+		fatal_error("Cannot open file %s\n", t->transducer_file_name);
+		exit(1);
+	}
+
+	unichar c = u_fgetc(graph_file);
+
+	u_fclose(graph_file);
+
+	if(c=='d'){
+		return true;
+	} else {
+		return false;
+	}
+
+}
 
 }
 
