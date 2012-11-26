@@ -322,8 +322,9 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
     int previous_transducer_number = 0;
     int previous_iteration = 0;
+    int iteration;
 	while (!is_empty(transducer_list)) {
-		int iteration;
+
 		transducer *current_transducer =
 				(transducer*) take_ptr(transducer_list);
 
@@ -331,14 +332,13 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 			fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
 		}
 
-		for (iteration = 0; iteration < current_transducer->repeat_mode; iteration++) {
+		for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
 
 			if (in_place == 0) {
 				labeled_text_name = create_labeled_files_and_directory(text, previous_transducer_number,
 						transducer_number, previous_iteration, iteration, must_create_directory, 1);
 			}
-			previous_transducer_number = transducer_number;
-			previous_iteration = iteration;
+
 
 
 			launch_tokenize_in_Cassys(labeled_text_name, alphabet,
@@ -360,8 +360,11 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 					snt_text_files -> concord_ind, alphabet, vec);
 
 			//
-			add_replaced_text(labeled_text_name, tokens_list,
-					transducer_number, alphabet, vec);
+			add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
+					transducer_number, iteration, alphabet, vec);
+
+			previous_transducer_number = transducer_number;
+			previous_iteration = iteration;
 
 			sprintf(last_labeled_text_name, "%s", labeled_text_name);
 
@@ -391,7 +394,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	free_snt_files(snt_text_files);
 
-	construct_cascade_concord(tokens_list,text,transducer_number,vec);
+	construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
 	construct_xml_concord(text,vec);
 
 	struct snt_files *snt_files = new_snt_files(text);
@@ -417,7 +420,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	if ((in_place != 0))
 			    free(labeled_text_name);
 
-	//cassys_tokens_2_graph(tokens_list,vec);
+	cassys_tokens_2_graph(tokens_list,vec);
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);

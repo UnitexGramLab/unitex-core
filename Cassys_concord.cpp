@@ -208,7 +208,8 @@ locate_pos *read_concord_line(const unichar *line) {
 
 
 
-void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, int number_of_transducer,
+void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
+		int number_of_transducer, int iteration,
     VersatileEncodingConfig* vec){
 
 	fprintf(stdout, "Construct cascade concord\n");
@@ -231,7 +232,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 
 	cassys_tokens_list *current_pos_in_original_text = list;
 
-	cassys_tokens_list *output=get_output(list, number_of_transducer);
+	cassys_tokens_list *output=get_output(list, number_of_transducer, iteration);
 	struct list_ustring *sentence = NULL;
 	bool output_detected = false;
 	long token_position=0;
@@ -271,7 +272,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 				u_fprintf(concord_desc_file,"\n");
 
 				current_pos_in_original_text = current_pos_in_original_text -> next_token;
-				output = get_output(current_pos_in_original_text, number_of_transducer);
+				output = get_output(current_pos_in_original_text, number_of_transducer, iteration);
 				token_position++;
 
 				free_list_ustring(sentence);
@@ -280,7 +281,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 				output_detected = false;
 			} else {
 				current_pos_in_original_text = current_pos_in_original_text -> next_token;
-				output = get_output(current_pos_in_original_text,number_of_transducer);
+				output = get_output(current_pos_in_original_text,number_of_transducer, iteration);
 				token_position++;
 			}
 		}
@@ -289,7 +290,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name, 
 
 			sentence = insert_at_end_of_list(output->token, sentence);
 			output = output -> next_token;
-			output = get_output(output, number_of_transducer);
+			output = get_output(output, number_of_transducer, iteration);
 			output_detected = true;
 			//display_lu(sentence);
 		}

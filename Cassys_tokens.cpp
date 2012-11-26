@@ -74,7 +74,7 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
 	static int cluster_number = 0;
 	cassys_tokens_list *i;
 	u_fprintf(u, "\tsubgraph cluster%d {\n", cluster_number);
-	u_fprintf(u, "\tlabel = \"transducer = %d\"\n", c->transducer_id);
+	u_fprintf(u, "\tlabel = \"transducer = %d_%d\"\n", c->transducer_id, c->iteration);
 	for (i = c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
 		u_fprintf(u, "\t\t_%p[label=\"%S(%d)\"]\n", i, i->token,i->transducer_id);
 		if (i->next_token != NULL) {
@@ -106,11 +106,11 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const ch
 	int char_read = (int)fread(&token_id,sizeof(int),1,f);
 	while(char_read ==1){
 		if(list==NULL){
-			list = new_element((*tokens)->token[token_id],0);
+			list = new_element((*tokens)->token[token_id],0,0);
 			temp = list;
 		}
 		else {
-			temp ->next_token = new_element((*tokens)->token[token_id],0);
+			temp ->next_token = new_element((*tokens)->token[token_id],0,0);
 			temp = temp -> next_token;
 		}
 
@@ -126,8 +126,12 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const ch
 /**
  *
  */
-cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *list,
-		 int transducer_id, const char *alphabet_name, const VersatileEncodingConfig* vec) {
+cassys_tokens_list *add_replaced_text(
+			const char *text, cassys_tokens_list *list,
+			int previous_transducer, int previous_iteration,
+			int transducer_id, int iteration,
+			const char *alphabet_name,
+			const VersatileEncodingConfig* vec) {
 
 	locate_pos *prev_l=NULL;
 	Alphabet *alphabet = load_alphabet(vec,alphabet_name);
@@ -167,18 +171,18 @@ cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *lis
 		if(l!=NULL){
 			struct list_ustring *new_sentence_lu = cassys_tokenize_word_by_word(l->label, alphabet);
 			cassys_tokens_list *new_sentence_ctl =
-				new_list(new_sentence_lu, transducer_id);
+				new_list(new_sentence_lu, transducer_id, iteration);
 
 			// performance enhancement :
 			// Since matches are sorted, we begin the search from the last known position in the list.
 			// We have to substract from the text position the current token position.
-			cassys_tokens_list *list_position = get_element_at(current_list_position, transducer_id - 1,
+			cassys_tokens_list *list_position = get_element_at(current_list_position, previous_transducer, previous_iteration,
 				l->token_start_offset - current_token_position);
 
 			int replaced_sentence_length = l->token_end_offset - l->token_start_offset+1;
 			int new_sentence_length = length(new_sentence_lu);
 
-			add_output(list_position, new_sentence_ctl, transducer_id,
+			add_output(list_position, new_sentence_ctl, previous_transducer, previous_iteration, transducer_id, iteration,
 				replaced_sentence_length, new_sentence_length-1);
 
 			// performance enhancement
@@ -206,22 +210,20 @@ cassys_tokens_list *add_replaced_text( const char *text, cassys_tokens_list *lis
 
 
 
-
-
-cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id){
+cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id, int iteration){
 	if(list->next_token == NULL){
 		return NULL;
 	}
 
 	cassys_tokens_list *temp = list->next_token;
-	temp = get_output(temp,transducer_id);
+	temp = get_output(temp,transducer_id, iteration);
 
 	return temp;
 }
 
 
-unichar *next_token(cassys_tokens_list *list, int transducer_id){
-	cassys_tokens_list *temp = next_element(list,transducer_id);
+unichar *next_token(cassys_tokens_list *list, int transducer_id, int iteration){
+	cassys_tokens_list *temp = next_element(list,transducer_id, iteration);
 
 	if(temp == NULL){
 		return NULL;
@@ -230,7 +232,7 @@ unichar *next_token(cassys_tokens_list *list, int transducer_id){
 }
 
 
-cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id){
+cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id, int iteration){
 	cassys_tokens_list *temp = list;
 
 	if(list == NULL){
@@ -238,7 +240,7 @@ cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id){
 	}
 
 	while (temp -> output != NULL && temp -> output -> transducer_id
-			<= transducer_id) {
+			<= transducer_id && temp->output->iteration <= iteration) {
 		temp = temp -> output;
 	}
 
@@ -246,7 +248,7 @@ cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id){
 }
 
 
-cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, int position){
+cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, int iteration, int position){
 	int current_position = 0;
 	cassys_tokens_list *temp = list;
 
@@ -254,7 +256,7 @@ cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, 
         return NULL;
 
     while (temp -> output != NULL && temp -> output -> transducer_id
-			<= transducer_id) {
+			<= transducer_id && temp->output->iteration <= iteration) {
 		temp = temp -> output;
 	}
 
@@ -264,7 +266,7 @@ cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, 
             temp=temp->next_token;
 
 	        while (temp -> output != NULL && temp -> output -> transducer_id
-			        <= transducer_id) {
+			        <= transducer_id && temp->output->iteration <= iteration) {
 	            temp = temp -> output;
 	        }
         }
@@ -281,23 +283,18 @@ cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, 
 
 
 cassys_tokens_list *add_output(cassys_tokens_list *list,
-		cassys_tokens_list *output, int transducer_id,
+		cassys_tokens_list *output, int previous_transducer, int previous_iteration,
+		int transducer_id, int iteration,
 		int number_of_tokens_replaced, int number_of_output_tokens) {
 	if (list == NULL) {
 		return NULL;
 	}
 
     list ->output = output;
-   // u_printf("looking for replacement end\n");
-	cassys_tokens_list *replacement_end = get_element_at(list, transducer_id-1, number_of_tokens_replaced);
-//	if(replacement_end!=NULL){
-//		u_printf("replacement end = %S\n", replacement_end->token);
-//	} else {
-//		u_printf("replacement end = NULL\n", replacement_end);
-//	}
+	cassys_tokens_list *replacement_end = get_element_at(list, previous_transducer, previous_iteration, number_of_tokens_replaced);
 	cassys_tokens_list *output_end =NULL;
 	if(list->output!=NULL)
-		output_end = get_element_at(list->output, list->output->transducer_id, number_of_output_tokens);
+		output_end = get_element_at(list->output, list->output->transducer_id, list->output->iteration, number_of_output_tokens);
 	if (output_end == NULL) {
 		return NULL;
 	}
@@ -308,21 +305,22 @@ cassys_tokens_list *add_output(cassys_tokens_list *list,
 }
 
 
-cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id){
+cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration){
 	cassys_tokens_list *head = NULL;
 
 
 	if(l_u!=NULL){
-		head = new_element(l_u -> string, transducer_id);
+		head = new_element(l_u -> string, transducer_id, iteration);
 		l_u=l_u->next;
 	}
+
 
 	cassys_tokens_list *current = head;
 
 	while(l_u!=NULL){
 		// free ajout� pour lib�rer next_token : verifier son utilit� !
 		free(current->next_token);
-		current -> next_token = new_element(l_u -> string, transducer_id);
+		current -> next_token = new_element(l_u -> string, transducer_id, iteration);
 
 
 		current = current ->next_token;
@@ -334,7 +332,7 @@ cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id){
 	return head;
 }
 
-cassys_tokens_list *new_element( unichar *u, int transducer_id){
+cassys_tokens_list *new_element( unichar *u, int transducer_id, int iteration){
 
 	cassys_tokens_list *l = (cassys_tokens_list*)malloc(sizeof(cassys_tokens_list)*1);
 	if(l == NULL){
@@ -343,6 +341,7 @@ cassys_tokens_list *new_element( unichar *u, int transducer_id){
 	}
 
 	l->transducer_id = transducer_id;
+	l->iteration = iteration;
 	l->output = NULL;
 	l->next_token = NULL;
 	l->token=u_strdup(u);
@@ -362,11 +361,11 @@ void free_cassys_tokens_list(cassys_tokens_list *l){
 	}
 }
 
-void display_text(cassys_tokens_list *l, int transducer_id){
+void display_text(cassys_tokens_list *l, int transducer_id, int iteration){
 	u_printf("cassys_token_list = ");
 	while(l!=NULL){
 		u_printf("%S",l->token);
-		l=next_element(l,transducer_id);
+		l=next_element(l,transducer_id, iteration);
 	}
 	u_printf("\n");
 }
