@@ -420,7 +420,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	if ((in_place != 0))
 			    free(labeled_text_name);
 
-	cassys_tokens_2_graph(tokens_list,vec);
+	//cassys_tokens_2_graph(tokens_list,vec);
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);
