@@ -417,10 +417,14 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 	launch_concord_in_Cassys(result_file_name_path, snt_files->concord_ind, alphabet, vec);
 
 
+	char graph_file_name[FILENAME_MAX];
+	sprintf(graph_file_name,"%s.dot", text_name_without_extension);
+	cassys_tokens_2_graph(tokens_list,graph_file_name);
+
 	if ((in_place != 0))
 			    free(labeled_text_name);
 
-	//cassys_tokens_2_graph(tokens_list,vec);
+
 
     free_cassys_tokens_list(tokens_list);
 	free_snt_files(snt_files);

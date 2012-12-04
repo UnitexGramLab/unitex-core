@@ -70,10 +70,6 @@ typedef struct cassys_tokens_list{
 }cassys_tokens_list;
 
 
-void cassys_tokens_2_graph(cassys_tokens_list *c, const VersatileEncodingConfig* vec);
-void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u);
-void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u);
-
 /**
  * \brief Constructs the text representation in the cassys_tokens_list
  *
@@ -111,6 +107,14 @@ cassys_tokens_list *output, int previous_transducer, int previous_iteration, int
 
 void display_text(cassys_tokens_list *l, int transducer_id);
 cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id, int iteration);
+
+void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName);
+void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u);
+void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, cassys_tokens_list *predecessor);
+unichar *protect_from_record(const unichar *u);
+unichar *protect_quote(const unichar *u);
+unichar *unprotect_lexical_tags(unichar *u);
+void cassys_tokens_2_graph_same_ranked(cassys_tokens_list *c, U_FILE *u);
 
 } // namespace unitex
 

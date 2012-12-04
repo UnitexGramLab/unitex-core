@@ -36,36 +36,53 @@
 
 namespace unitex {
 
+void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName){
 
-void cassys_tokens_2_graph(cassys_tokens_list *c, const VersatileEncodingConfig* vec){
-
-	U_FILE *dot_desc_file = u_fopen(ASCII, "/users/dnott/Bureau/graph/text.dot", U_WRITE);
+	U_FILE *dot_desc_file = u_fopen(ASCII, fileName, U_WRITE);
 	if (dot_desc_file == NULL) {
 		fatal_error("Cannot open file \n");
 		exit(1);
 	}
 
 	u_fprintf(dot_desc_file,"digraph text {\n");
+	//u_fprintf(dot_desc_file,"\trankdir=\"LR\"");   //pour changer l'orientation, decommenter
+	u_fprintf(dot_desc_file,"\tbgcolor=lightblue1\n");
+	u_fprintf(dot_desc_file,"node [color=lightblue2, style=filled]\n");
+
+	//u_fprintf(dot_desc_file,"\tbgcolor=antiqueblue\n");
 	cassys_tokens_2_graph_subgraph(c,dot_desc_file);
 
-	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file);
+	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file, NULL);
 
-	u_fprintf(dot_desc_file, "\tNULL[label=\"EOF\"]\n");
+	u_fprintf(dot_desc_file, "\tNULL[label=\"END\" shape=Mdiamond]\n");
 	u_fprintf(dot_desc_file,"}\n");
 
 	u_fclose(dot_desc_file);
 }
 
-
-void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u){
+void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, cassys_tokens_list *predecessor){
 
 	cassys_tokens_list *i;
+	cassys_tokens_list *p = predecessor;
+
 	for(i=c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
+
 		if(i->output != NULL) {
 			cassys_tokens_2_graph_subgraph(i->output,u);
-			cassys_tokens_2_graph_walk_for_subgraph(i->output, u);
-			u_fprintf(u, "\t_%p -> _%p\n", i, i->output);
+			cassys_tokens_2_graph_walk_for_subgraph(i->output, u, p);
+
+			if(p!=NULL){
+				u_fprintf(u, "\t_%p -> _%p\n", p, i->output);
+			} else {
+				u_fprintf(u, "\tstart -> _%p\n", i->output);
+			}
+
+			u_fprintf(u, "\t_%p -> _%p [style=invis]\n", i, i->output);
+
+
 		}
+
+		p = i;
 	}
 }
 
@@ -74,9 +91,62 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
 	static int cluster_number = 0;
 	cassys_tokens_list *i;
 	u_fprintf(u, "\tsubgraph cluster%d {\n", cluster_number);
-	u_fprintf(u, "\tlabel = \"transducer = %d_%d\"\n", c->transducer_id, c->iteration);
+	u_fprintf(u,"\tbgcolor=cornflowerblue\n");
+	u_fprintf(u, "\tlabel = \"transducer %d_%d\"\n", c->transducer_id, c->iteration);
+
+	if(c->transducer_id==0){
+		u_fprintf(u,"\tstart[shape=Mdiamond]\n");
+		if(c!=NULL){
+			u_fprintf(u,"\tstart -> _%p\n",c);
+		}
+	}
+
 	for (i = c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
-		u_fprintf(u, "\t\t_%p[label=\"%S(%d)\"]\n", i, i->token,i->transducer_id);
+
+		if(is_lexical_token(i->token)){
+
+			cassys_pattern *cp = load_cassys_pattern(i->token);
+			unichar *unprotected_form = unprotect_lexical_tags(cp->form);
+			unichar *form = protect_from_record(unprotected_form);
+
+			//u_fprintf(u, "\t\t_%p[label=\"%S\" shape=record ]\n",i,form);
+
+			u_fprintf(u, "\t\t_%p[fillcolor=steelblue1 label=\"",i);
+			u_fprintf(u,"{ %S",form);
+			u_fprintf(u,"| ");
+			if(cp->lem!=NULL && cp->lem[0]!='\0'){
+				unichar *lem = protect_from_record(cp->lem);
+				u_fprintf(u," %S \\n",lem);
+				free(lem);
+			}
+			u_fprintf(u,"| ");
+			if(cp->code!=NULL){
+				list_ustring *lu=cp->code;
+				while(lu!=NULL){
+					u_fprintf(u," %S \\n",lu->string);
+					lu=lu->next;
+				}
+			}
+			u_fprintf(u,"| ");
+			if (cp->inflection != NULL) {
+				list_ustring *lu = cp->inflection;
+				while (lu != NULL) {
+					u_fprintf(u, " %S \\n", lu->string);
+					lu = lu->next;
+				}
+			}
+			u_fprintf(u, "}\" shape=Mrecord ]\n");
+
+			free(unprotected_form);
+			free(form);
+			free_cassys_pattern(cp);
+		} else {
+			unichar *label = protect_quote(i->token);
+			u_fprintf(u, "\t\t_%p[fillcolor=steelblue label=\"%S\"]\n", i, label);
+			free(label);
+		}
+
+
 		if (i->next_token != NULL) {
 			u_fprintf(u, "\t\t_%p -> _%p\n", i, i->next_token);
 		} else {
@@ -87,6 +157,78 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
 	cluster_number++;
 }
 
+
+
+
+unichar *protect_from_record(const unichar *u){
+
+	int size = u_strlen(u);
+	unichar *r=(unichar *)malloc(sizeof(unichar)*size*2+1);
+	if(r == NULL){
+		fatal_alloc_error("malloc");
+	}
+
+	int i,j;
+	for(i=0, j=0; i<=size; i++){
+		if(u[i]=='"' || u[i]=='<' || u[i]=='>' || u[i]=='{'||u[i]=='}'||u[i]=='|'){
+			r[i+j]='\\';
+			j++;
+		}
+		r[i+j]=u[i];
+	}
+
+	return r;
+}
+
+
+unichar *protect_quote(const unichar *u){
+
+	int size = u_strlen(u);
+	unichar *r=(unichar *)malloc(sizeof(unichar)*(size*2+1));
+	if(r == NULL){
+		fatal_alloc_error("malloc");
+	}
+
+	int i,j;
+	for(i=0, j=0; i<=size; i++){
+		if(u[i]=='"'){
+			r[i+j]='\\';
+			j++;
+		}
+		r[i+j]=u[i];
+	}
+
+	return r;
+}
+
+
+unichar *unprotect_lexical_tags(unichar *u){
+
+	int size = u_strlen(u);
+
+	unichar *result=(unichar *)malloc(sizeof(unichar)*(size+1));
+	if (result == NULL) {
+		fatal_alloc_error("malloc");
+	}
+	int i, j;
+	for(i=0;i<=size;i++){
+		result[i]='\0';
+	}
+
+
+
+	for (i = 0, j = 0; i <= size; i++) {
+		if (u[i] == '\\') {
+			if(u[i+1]=='.'|| u[i+1]=='+'|| u[i+1]==':' || u[i+1]=='{' ||  u[i+1]=='}'|| u[i+1]=='\\'){
+				j++;
+				continue;
+			}
+		}
+		result[i-j] = u[i];
+	}
+
+	return result;
+}
 
 
 cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens){
