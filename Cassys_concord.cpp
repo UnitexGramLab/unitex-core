@@ -237,8 +237,12 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 	bool output_detected = false;
 	long token_position=0;
 
-	while(current_pos_in_original_text != NULL && output != NULL){
-		if(output -> transducer_id == 0){
+	while(current_pos_in_original_text != NULL){
+		if (output == NULL) {
+			u_printf("output = NULL\n");
+		}
+
+		if(output == NULL || output -> transducer_id == 0){
 			if(output_detected){
 				int start_position = token_position;
 				int last_token_length = 0;
@@ -259,7 +263,6 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 				while(iterator -> next != NULL){
 					iterator = iterator -> next;
 				}
-				//display_list_ustring(iterator);
 
 				iterator = sentence;
 				u_fprintf(concord_desc_file, "%d.0.0 %d.%d.0 ",start_position,end_position,last_token_length);
@@ -271,15 +274,25 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 				}
 				u_fprintf(concord_desc_file,"\n");
 
+				free_list_ustring(sentence);
+				sentence = NULL;
+
+				if(current_pos_in_original_text==NULL){
+					break;
+				}
+
 				current_pos_in_original_text = current_pos_in_original_text -> next_token;
 				output = get_output(current_pos_in_original_text, number_of_transducer, iteration);
 				token_position++;
 
-				free_list_ustring(sentence);
-				sentence = NULL;
+
 
 				output_detected = false;
 			} else {
+				if (current_pos_in_original_text == NULL) {
+					break;
+				}
+
 				current_pos_in_original_text = current_pos_in_original_text -> next_token;
 				output = get_output(current_pos_in_original_text,number_of_transducer, iteration);
 				token_position++;
