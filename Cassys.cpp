@@ -363,6 +363,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 			add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
 					transducer_number, iteration, alphabet, vec);
 
+
 			previous_transducer_number = transducer_number;
 			previous_iteration = iteration;
 
@@ -375,10 +376,17 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 			if (count_concordance(snt_text_files->concord_ind, vec) == 0) {
 				break;
 			} else {
-				u_printf("transducer %d iteration %d --> %d concordances\n",
+				u_printf("transducer %s\n %d iteration %d --> %d concordances\n",
+						current_transducer->transducer_file_name,
 						transducer_number,
 						iteration,
 						count_concordance(snt_text_files->concord_ind, vec));
+//				char graph_file_name_n[FILENAME_MAX];
+//					sprintf(graph_file_name_n,"%s.dot", last_labeled_text_name);
+//					u_printf("writing graph = %s\n",graph_file_name_n);
+//					cassys_tokens_2_graph(tokens_list,graph_file_name_n);
+
+
 				//u_printf("Displaying sparse matrix\n");
 				//display_text(tokens_list, transducer_number);
 			}

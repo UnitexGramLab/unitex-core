@@ -105,7 +105,7 @@ cassys_tokens_list *new_element(unichar *u, int transducer_id, int iteration);
 cassys_tokens_list *add_output(cassys_tokens_list *list,
 cassys_tokens_list *output, int previous_transducer, int previous_iteration, int transducer_id, int iteration, int number_of_tokens_replaced, int number_of_output_tokens);
 
-void display_text(cassys_tokens_list *l, int transducer_id);
+void display_text(cassys_tokens_list *l, int transducer_id, int iteration);
 cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id, int iteration);
 
 void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName);

@@ -285,10 +285,10 @@ cassys_tokens_list *add_replaced_text(
 	// performance enhancement
 	cassys_tokens_list *current_list_position = list;
 	long current_token_position = 0;
-
 	while (!is_empty(stage_concord)) {
 
 		locate_pos *l=(locate_pos*)take_ptr(stage_concord);
+
 		if(prev_l!=NULL){ // manage the fact that when writing a text merging the concord.ind,
 			// and when there is more than one pattern beginning at the same position in the text,
 			// the behavior of concord.exe is to take the first of those patterns.
@@ -381,8 +381,8 @@ cassys_tokens_list *get_output(cassys_tokens_list *list, int transducer_id, int 
 		return NULL;
 	}
 
-	while (temp -> output != NULL && temp -> output -> transducer_id
-			<= transducer_id && temp->output->iteration <= iteration) {
+	while (temp -> output != NULL && ((temp -> output -> transducer_id
+			== transducer_id && temp->output->iteration <= iteration)|| temp -> output -> transducer_id< transducer_id)) {
 		temp = temp -> output;
 	}
 
@@ -397,8 +397,8 @@ cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, 
     if (temp==NULL)
         return NULL;
 
-    while (temp -> output != NULL && temp -> output -> transducer_id
-			<= transducer_id && temp->output->iteration <= iteration) {
+    while (temp -> output != NULL && ((temp -> output -> transducer_id
+			== transducer_id && temp->output->iteration <= iteration)|| temp -> output -> transducer_id< transducer_id)) {
 		temp = temp -> output;
 	}
 
@@ -407,8 +407,8 @@ cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, 
         {
             temp=temp->next_token;
 
-	        while (temp -> output != NULL && temp -> output -> transducer_id
-			        <= transducer_id && temp->output->iteration <= iteration) {
+	        while (temp -> output != NULL && ((temp -> output -> transducer_id
+			        == transducer_id && temp->output->iteration <= iteration)|| temp -> output -> transducer_id< transducer_id)) {
 	            temp = temp -> output;
 	        }
         }
