@@ -512,6 +512,66 @@ void display_text(cassys_tokens_list *l, int transducer_id, int iteration){
 	u_printf("\n");
 }
 
+bool u_isspace(unichar *u){
+	if ( u[0] == ' ' || u[0] == '\t' || u[0] == 0x0d|| u[0] == 0x0a) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+
+cassys_tokens_list* cassys_trim(cassys_tokens_list *l ,unichar *string_before, unichar *string_next){
+
+	cassys_tokens_list *last = NULL;
+	// We deal with successive spaces in the new concordance
+	for(cassys_tokens_list *ite_base = l; ite_base !=NULL; ite_base=ite_base->next_token){
+		if (u_isspace(ite_base->token)) {
+
+			cassys_tokens_list *ite_space = ite_base->next_token;
+			while( ite_space !=NULL ){
+				if (u_isspace(ite_space->token)) {
+					// suppress the node in the graph
+					ite_base -> next_token = ite_space->next_token;
+
+					cassys_tokens_list *to_be_freed = ite_space;
+					ite_space=ite_space->next_token;
+					free(to_be_freed->token);
+					free(to_be_freed);
+				} else {
+					// not a space character
+					break;
+				}
+			}
+		}
+
+		// We remind the last token of the list to trim it with string_next
+		if(ite_base->next_token==NULL){
+			last = ite_base;
+		}
+	}
+
+	if(string_before !=NULL){
+		if(u_isspace(string_before)&& u_isspace(l->token)){
+			cassys_tokens_list *to_be_freed = l;
+			l=l->next_token;
+			free(to_be_freed->token);
+			free(to_be_freed);
+		}
+	}
+	if(string_next !=NULL){
+		if(u_isspace(string_next)&& u_isspace(last->token)){
+			free(last->token);
+			free(last);
+			last=NULL;
+		}
+	}
+
+	return l;
+}
+
+
 } // namespace unitex
 
 
