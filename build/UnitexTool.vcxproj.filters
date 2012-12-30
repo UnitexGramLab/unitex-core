@@ -124,6 +124,24 @@
     <ClInclude Include="..\TfstTag.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_concord.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_external_program.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_io.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_transducer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_xml_output.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -766,6 +784,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\TfstTag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_external_program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_transducer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_xml_output.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_concord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

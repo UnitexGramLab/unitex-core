@@ -705,6 +705,24 @@
     <ClCompile Include="..\UnitexLibIO.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_external_program.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_io.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_transducer.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_xml_output.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_concord.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -1419,6 +1437,27 @@
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\UnitexLibIO.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_external_program.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_io.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_transducer.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_xml_output.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_concord.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>

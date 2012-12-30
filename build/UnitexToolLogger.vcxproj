@@ -322,6 +322,12 @@
     <ClInclude Include="..\UserCancelling.h" />
     <ClInclude Include="..\UserCancellingPlugCallback.h" />
     <ClInclude Include="..\VariableUtils.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_concord.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_external_program.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_io.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_transducer.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_xml_output.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractAllocator.cpp" />
@@ -581,6 +587,12 @@
     <ClCompile Include="..\logger\UniLogger.cpp" />
     <ClCompile Include="..\logger\UniLoggerAutoInstall.cpp" />
     <ClCompile Include="..\logger\UniRunLogger.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_concord.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_external_program.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_io.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_transducer.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_xml_output.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

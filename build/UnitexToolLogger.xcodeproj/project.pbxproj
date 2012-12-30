@@ -172,6 +172,12 @@
 		222F7C6D1107A68E00C91CC7 /* XMLizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F7B981107A68E00C91CC7 /* XMLizer.cpp */; };
 		222FD81F15AE3E5C0049D6CE /* KeyWords.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222FD81B15AE3E5C0049D6CE /* KeyWords.cpp */; };
 		222FD82015AE3E5C0049D6CE /* KeyWords_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222FD81D15AE3E5C0049D6CE /* KeyWords_lib.cpp */; };
+		2232E1D8169101B300C56E5A /* Cassys_concord.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1CB169101B300C56E5A /* Cassys_concord.cpp */; };
+		2232E1D9169101B300C56E5A /* Cassys_external_program.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1CD169101B300C56E5A /* Cassys_external_program.cpp */; };
+		2232E1DA169101B300C56E5A /* Cassys_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1CF169101B300C56E5A /* Cassys_io.cpp */; };
+		2232E1DB169101B300C56E5A /* Cassys_lexical_tags.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1D1169101B300C56E5A /* Cassys_lexical_tags.cpp */; };
+		2232E1DD169101B300C56E5A /* Cassys_transducer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1D4169101B300C56E5A /* Cassys_transducer.cpp */; };
+		2232E1DE169101B300C56E5A /* Cassys_xml_output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1D6169101B300C56E5A /* Cassys_xml_output.cpp */; };
 		2237A5B411D68EFA00D247CF /* OutputTransductionVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */; };
 		2237A6C111D8492500D247CF /* BuildKrMwuDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */; };
 		2237A6DE11D951CB00D247CF /* TfstStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6DC11D951CB00D247CF /* TfstStats.cpp */; };
@@ -455,7 +461,6 @@
 		222F7B0C1107A68E00C91CC7 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_Global.h; path = ../MF_Global.h; sourceTree = SOURCE_ROOT; };
 		222F7B0D1107A68E00C91CC7 /* MF_Global.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_Global.cpp; path = ../MF_Global.cpp; sourceTree = SOURCE_ROOT; };
 		222F7B0E1107A68E00C91CC7 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_Global.h; path = ../MF_Global.h; sourceTree = SOURCE_ROOT; };
-		222F7B0F1107A68E00C91CC7 /* MF_GlobalBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_GlobalBase.h; path = ../MF_GlobalBase.h; sourceTree = SOURCE_ROOT; };
 		222F7B101107A68E00C91CC7 /* MF_LangMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MF_LangMorpho.cpp; path = ../MF_LangMorpho.cpp; sourceTree = SOURCE_ROOT; };
 		222F7B111107A68E00C91CC7 /* MF_LangMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_LangMorpho.h; path = ../MF_LangMorpho.h; sourceTree = SOURCE_ROOT; };
 		222F7B121107A68E00C91CC7 /* MF_LangMorphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MF_LangMorphoBase.h; path = ../MF_LangMorphoBase.h; sourceTree = SOURCE_ROOT; };
@@ -597,6 +602,18 @@
 		222FD81C15AE3E5C0049D6CE /* KeyWords_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyWords_lib.h; path = ../KeyWords_lib.h; sourceTree = "<group>"; };
 		222FD81D15AE3E5C0049D6CE /* KeyWords_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyWords_lib.cpp; path = ../KeyWords_lib.cpp; sourceTree = "<group>"; };
 		222FD81E15AE3E5C0049D6CE /* KeyWords.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyWords.h; path = ../KeyWords.h; sourceTree = "<group>"; };
+		2232E1CB169101B300C56E5A /* Cassys_concord.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_concord.cpp; path = ../Cassys_concord.cpp; sourceTree = "<group>"; };
+		2232E1CC169101B300C56E5A /* Cassys_concord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_concord.h; path = ../Cassys_concord.h; sourceTree = "<group>"; };
+		2232E1CD169101B300C56E5A /* Cassys_external_program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_external_program.cpp; path = ../Cassys_external_program.cpp; sourceTree = "<group>"; };
+		2232E1CE169101B300C56E5A /* Cassys_external_program.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_external_program.h; path = ../Cassys_external_program.h; sourceTree = "<group>"; };
+		2232E1CF169101B300C56E5A /* Cassys_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_io.cpp; path = ../Cassys_io.cpp; sourceTree = "<group>"; };
+		2232E1D0169101B300C56E5A /* Cassys_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_io.h; path = ../Cassys_io.h; sourceTree = "<group>"; };
+		2232E1D1169101B300C56E5A /* Cassys_lexical_tags.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_lexical_tags.cpp; path = ../Cassys_lexical_tags.cpp; sourceTree = "<group>"; };
+		2232E1D2169101B300C56E5A /* Cassys_lexical_tags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_lexical_tags.h; path = ../Cassys_lexical_tags.h; sourceTree = "<group>"; };
+		2232E1D4169101B300C56E5A /* Cassys_transducer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_transducer.cpp; path = ../Cassys_transducer.cpp; sourceTree = "<group>"; };
+		2232E1D5169101B300C56E5A /* Cassys_transducer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_transducer.h; path = ../Cassys_transducer.h; sourceTree = "<group>"; };
+		2232E1D6169101B300C56E5A /* Cassys_xml_output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_xml_output.cpp; path = ../Cassys_xml_output.cpp; sourceTree = "<group>"; };
+		2232E1D7169101B300C56E5A /* Cassys_xml_output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_xml_output.h; path = ../Cassys_xml_output.h; sourceTree = "<group>"; };
 		2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OutputTransductionVariables.cpp; path = ../OutputTransductionVariables.cpp; sourceTree = SOURCE_ROOT; };
 		2237A5B311D68EFA00D247CF /* OutputTransductionVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OutputTransductionVariables.h; path = ../OutputTransductionVariables.h; sourceTree = SOURCE_ROOT; };
 		2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BuildKrMwuDic.cpp; path = ../BuildKrMwuDic.cpp; sourceTree = SOURCE_ROOT; };
@@ -746,6 +763,18 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2232E1CB169101B300C56E5A /* Cassys_concord.cpp */,
+				2232E1CC169101B300C56E5A /* Cassys_concord.h */,
+				2232E1CD169101B300C56E5A /* Cassys_external_program.cpp */,
+				2232E1CE169101B300C56E5A /* Cassys_external_program.h */,
+				2232E1CF169101B300C56E5A /* Cassys_io.cpp */,
+				2232E1D0169101B300C56E5A /* Cassys_io.h */,
+				2232E1D1169101B300C56E5A /* Cassys_lexical_tags.cpp */,
+				2232E1D2169101B300C56E5A /* Cassys_lexical_tags.h */,
+				2232E1D4169101B300C56E5A /* Cassys_transducer.cpp */,
+				2232E1D5169101B300C56E5A /* Cassys_transducer.h */,
+				2232E1D6169101B300C56E5A /* Cassys_xml_output.cpp */,
+				2232E1D7169101B300C56E5A /* Cassys_xml_output.h */,
 				2263A27A160FDBBC00675831 /* UnitexLibDir.h */,
 				2263A27B160FDBBC00675831 /* UnitexLibDirPosix.cpp */,
 				2263A27C160FDBBC00675831 /* UnitexLibIO.cpp */,
@@ -1033,7 +1062,6 @@
 				222F7B0C1107A68E00C91CC7 /* MF_Global.h */,
 				222F7B0D1107A68E00C91CC7 /* MF_Global.cpp */,
 				222F7B0E1107A68E00C91CC7 /* MF_Global.h */,
-				222F7B0F1107A68E00C91CC7 /* MF_GlobalBase.h */,
 				222F7B101107A68E00C91CC7 /* MF_LangMorpho.cpp */,
 				222F7B111107A68E00C91CC7 /* MF_LangMorpho.h */,
 				222F7B121107A68E00C91CC7 /* MF_LangMorphoBase.h */,
@@ -1536,6 +1564,12 @@
 				228B5BE9160668B2006DAABF /* SyncToolPosix.cpp in Sources */,
 				2263A27E160FDBBC00675831 /* UnitexLibDirPosix.cpp in Sources */,
 				2263A27F160FDBBC00675831 /* UnitexLibIO.cpp in Sources */,
+				2232E1D8169101B300C56E5A /* Cassys_concord.cpp in Sources */,
+				2232E1D9169101B300C56E5A /* Cassys_external_program.cpp in Sources */,
+				2232E1DA169101B300C56E5A /* Cassys_io.cpp in Sources */,
+				2232E1DB169101B300C56E5A /* Cassys_lexical_tags.cpp in Sources */,
+				2232E1DD169101B300C56E5A /* Cassys_transducer.cpp in Sources */,
+				2232E1DE169101B300C56E5A /* Cassys_xml_output.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

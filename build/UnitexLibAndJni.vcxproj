@@ -419,6 +419,12 @@
     <ClCompile Include="..\VirtualFiles.cpp" />
     <ClCompile Include="..\Xml.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_concord.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_external_program.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_io.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_transducer.cpp" />
+    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_xml_output.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbstractAllocator.h" />
@@ -656,6 +662,12 @@
     <ClInclude Include="..\VirtualFiles.h" />
     <ClInclude Include="..\Xml.h" />
     <ClInclude Include="..\XMLizer.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_concord.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_external_program.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_io.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_transducer.h" />
+    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_xml_output.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
