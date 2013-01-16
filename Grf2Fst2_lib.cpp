@@ -970,6 +970,9 @@ if (!u_strcmp(s,"SET")
 		|| !u_strcmp(s,"CODE.GRAM")
 		|| !u_strcmp(s,"CODE.SEM")
 		|| !u_strcmp(s,"CODE.FLEX")
+		|| !u_strcmp(s,"TO_LOWER")
+		|| !u_strcmp(s,"TO_UPPER")
+		|| !u_strcmp(s,"TO_FIRSTUPPER")
 		|| u_starts_with(s,"CODE.ATTR=")) {
 	/* Valid sequence */
 	return;

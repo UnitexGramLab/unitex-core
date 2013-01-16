@@ -270,7 +270,330 @@ for (;;) {
         	                                  * so we consider it to be equivalent to backtrack */
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
         	 }
-         } else if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
+         }
+
+
+
+         else if (!u_strcmp(field,"TO_LOWER")) {
+             /* Case of a variable like $a$ that can be either a normal one or an output one */
+             struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
+             if (v==NULL) {
+           	  /* Not a normal one ? Maybe an output one */
+           	  Ustring* output=get_output_variable(p->output_variables,name);
+           	  if (output==NULL) {
+           		  switch (p->variable_error_policy) {
+       				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
+       				  case IGNORE_VARIABLE_ERRORS: continue;
+       				  case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+           		  }
+           	  }
+           	  unichar* tmp = u_strdup(output->str);
+           	  u_tolower(tmp);
+           	  push_output_string(stack,tmp);
+           	  free(tmp);
+              } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+              } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+              } else if (v->start_in_tokens>v->end_in_tokens
+        				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+
+
+        		 /* begin of GV fix */
+        		 /* this fix is against a crash I found when (v->start_in_tokens+p->current_origin == p->buffer_size)
+        		    and v->start_in_tokens==v->end_in_tokens
+        			here we known that v->start_in_tokens <= v->end_in_tokens
+        			*/
+
+              } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
+                 if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {
+                   error("Output warning: end variable position after end of text for variable $%S$\n",name);
+                   /*error("start=%d  end=%d   origin=%d   buffer size=%d\n",v->start_in_tokens,v->end_in_tokens,p->current_origin,p->buffer_size);
+                   for (int i=p->current_origin;i<p->buffer_size;i++) {
+                	   error("%S",p->tokens->value[p->buffer[i]]);
+                   }
+                   error("\n");*/
+        		 }
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+
+        		 /* end of GV fix */
+
+
+              } else {
+            	  /* If the normal variable definition is correct */
+            	  /* Case 1: start and end in the same token*/
+            	  if (v->start_in_tokens==v->end_in_tokens-1) {
+            		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+            		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+            		  for (int k=v->start_in_chars;k<=last;k++) {
+            			  push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+            		  }
+            	  } else if (v->start_in_tokens==v->end_in_tokens) {
+            		  /* If the variable is empty, do nothing */
+            	  } else {
+            		  /* Case 2: first we deal with first token */
+            		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+            		  unichar* tmp = u_strdup(tok+v->start_in_chars);
+            		  u_tolower(tmp);
+            		  push_input_string(stack,tmp,p->protect_dic_chars);
+            		  free(tmp);
+            		  /* Then we copy all tokens until the last one */
+                	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
+                		  unichar* tmp = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
+                		  u_tolower(tmp);
+                		  push_input_string(stack,tmp,p->protect_dic_chars);
+                		  free(tmp);
+                	  }
+
+                	  /* Finally, we copy the last token */
+
+                	  if ((v->end_in_tokens-1+p->current_origin) < 0) {
+                		  error("v->end_in_tokens-1+p->current_origin is below 0\n");
+                		  error("start=%d  end=%d\n",v->start_in_tokens,v->end_in_tokens);
+                	  }
+                	  else {
+                		  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+                		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+                		  for (int k=0;k<=last;k++) {
+                		    push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+                	  	}
+                	  }
+            	  }
+              }
+         }
+         else if (!u_strcmp(field,"TO_UPPER")) {
+             /* Case of a variable like $a$ that can be either a normal one or an output one */
+             struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
+             if (v==NULL) {
+           	  /* Not a normal one ? Maybe an output one */
+           	  Ustring* output=get_output_variable(p->output_variables,name);
+           	  if (output==NULL) {
+           		  switch (p->variable_error_policy) {
+       				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
+       				  case IGNORE_VARIABLE_ERRORS: continue;
+       				  case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+           		  }
+           	  }
+           	  unichar* tmp = u_strdup(output->str);
+           	  u_toupper(tmp);
+           	  push_output_string(stack,tmp);
+           	  free(tmp);
+              } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+              } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+              } else if (v->start_in_tokens>v->end_in_tokens
+        				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+
+
+        		 /* begin of GV fix */
+        		 /* this fix is against a crash I found when (v->start_in_tokens+p->current_origin == p->buffer_size)
+        		    and v->start_in_tokens==v->end_in_tokens
+        			here we known that v->start_in_tokens <= v->end_in_tokens
+        			*/
+
+              } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
+                 if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {
+                   error("Output warning: end variable position after end of text for variable $%S$\n",name);
+                   /*error("start=%d  end=%d   origin=%d   buffer size=%d\n",v->start_in_tokens,v->end_in_tokens,p->current_origin,p->buffer_size);
+                   for (int i=p->current_origin;i<p->buffer_size;i++) {
+                	   error("%S",p->tokens->value[p->buffer[i]]);
+                   }
+                   error("\n");*/
+        		 }
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+
+        		 /* end of GV fix */
+
+
+              } else {
+            	  /* If the normal variable definition is correct */
+            	  /* Case 1: start and end in the same token*/
+            	  if (v->start_in_tokens==v->end_in_tokens-1) {
+            		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+            		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+            		  for (int k=v->start_in_chars;k<=last;k++) {
+            			  push_input_char(stack,u_toupper(tok[k]),p->protect_dic_chars);
+            		  }
+            	  } else if (v->start_in_tokens==v->end_in_tokens) {
+            		  /* If the variable is empty, do nothing */
+            	  } else {
+            		  /* Case 2: first we deal with first token */
+            		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+            		  unichar* tmp = u_strdup(tok+v->start_in_chars);
+            		  u_toupper(tmp);
+            		  push_input_string(stack,tmp,p->protect_dic_chars);
+            		  free(tmp);
+            		  /* Then we copy all tokens until the last one */
+                	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
+                		  unichar *tmp = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
+                		  u_toupper(tmp);
+                		  push_input_string(stack,tmp,p->protect_dic_chars);
+                		  free(tmp);
+                	  }
+
+                	  /* Finally, we copy the last token */
+
+                	  if ((v->end_in_tokens-1+p->current_origin) < 0) {
+                		  error("v->end_in_tokens-1+p->current_origin is below 0\n");
+                		  error("start=%d  end=%d\n",v->start_in_tokens,v->end_in_tokens);
+                	  }
+                	  else {
+                		  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+                		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+                		  for (int k=0;k<=last;k++) {
+                		    push_input_char(stack,u_toupper(tok[k]),p->protect_dic_chars);
+                	  	}
+                	  }
+            	  }
+              }
+         }
+         else if (!u_strcmp(field,"TO_FIRSTUPPER")) {
+             /* Case of a variable like $a$ that can be either a normal one or an output one */
+             struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
+             if (v==NULL) {
+           	  /* Not a normal one ? Maybe an output one */
+           	  Ustring* output=get_output_variable(p->output_variables,name);
+           	  if (output==NULL) {
+           		  switch (p->variable_error_policy) {
+       				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
+       				  case IGNORE_VARIABLE_ERRORS: continue;
+       				  case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+           		  }
+           	  }
+           	  unichar* tmp = u_strdup(output->str);
+           	  push_output_char(stack,u_toupper(tmp[0]));
+           	  u_tolower(tmp);
+           	  push_output_string(stack,tmp+1);
+           	  free(tmp);
+              } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+              } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+              } else if (v->start_in_tokens>v->end_in_tokens
+        				  || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+
+
+        		 /* begin of GV fix */
+        		 /* this fix is against a crash I found when (v->start_in_tokens+p->current_origin == p->buffer_size)
+        		    and v->start_in_tokens==v->end_in_tokens
+        			here we known that v->start_in_tokens <= v->end_in_tokens
+        			*/
+
+              } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
+                 if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {
+                   error("Output warning: end variable position after end of text for variable $%S$\n",name);
+                   /*error("start=%d  end=%d   origin=%d   buffer size=%d\n",v->start_in_tokens,v->end_in_tokens,p->current_origin,p->buffer_size);
+                   for (int i=p->current_origin;i<p->buffer_size;i++) {
+                	   error("%S",p->tokens->value[p->buffer[i]]);
+                   }
+                   error("\n");*/
+        		 }
+                 switch (p->variable_error_policy) {
+                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
+                    case IGNORE_VARIABLE_ERRORS: continue;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                 }
+
+        		 /* end of GV fix */
+
+
+              } else {
+            	  /* If the normal variable definition is correct */
+            	  /* Case 1: start and end in the same token*/
+            	  if (v->start_in_tokens==v->end_in_tokens-1) {
+            		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+            		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+            		  push_input_char(stack,u_toupper(tok[v->start_in_chars]),p->protect_dic_chars);
+            		  for (int k=v->start_in_chars+1;k<=last;k++) {
+            			  push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+            		  }
+            	  } else if (v->start_in_tokens==v->end_in_tokens) {
+            		  /* If the variable is empty, do nothing */
+            	  } else {
+            		  /* Case 2: first we deal with first token */
+            		  unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+            		  unichar* tmp = u_strdup(tok+v->start_in_chars);
+            		  push_input_char(stack,u_toupper(tmp[0]),p->protect_dic_chars);
+            		  u_tolower(tmp);
+            		  push_input_string(stack,tmp+1,p->protect_dic_chars);
+            		  free(tmp);
+            		  /* Then we copy all tokens until the last one */
+                	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
+                		  unichar* tmp = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
+                		  u_tolower(tmp);
+                		  push_input_string(stack,tmp,p->protect_dic_chars);
+                		  free(tmp);
+                	  }
+
+                	  /* Finally, we copy the last token */
+
+                	  if ((v->end_in_tokens-1+p->current_origin) < 0) {
+                		  error("v->end_in_tokens-1+p->current_origin is below 0\n");
+                		  error("start=%d  end=%d\n",v->start_in_tokens,v->end_in_tokens);
+                	  }
+                	  else {
+                		  tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+                		  int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+                		  for (int k=0;k<=last;k++) {
+                		    push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+                	  	}
+                	  }
+            	  }
+              }
+         }
+
+
+
+
+         else if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
             /* If we have $a.SET$, we must go on only if the variable a is set, no
              * matter if it is a normal or a dictionary variable */
             struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
