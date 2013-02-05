@@ -144,7 +144,7 @@ if (alph[0]!='\0') {
 		fatal_error("Cannot load alphabet file %s\n",alph);
 	}
 }
-if (vars->optind==argc-1 || vars->optind==argc-2) {
+if (vars->optind==argc || vars->optind==argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }

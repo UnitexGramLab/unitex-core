@@ -1108,10 +1108,10 @@ void scan_graph(
 							position++;
 						}
 						if (contenu[position] == '\0' && position != 0
-								&& !(is_letter(contenu[position - 1],
+								&& (!(is_letter(contenu[position - 1],
 										p->alphabet) && is_letter(
 										p->buffer[pos2 + p->current_origin],
-										p->alphabet))) {
+										p->alphabet)) || p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION)) {
 							// we proceed only if we have exactly read the contenu sequence
 							// in both modes MERGE and REPLACE, we process the transduction if any
 							old_nb_insert = backup(p->current_insertions);
