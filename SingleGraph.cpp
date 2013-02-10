@@ -393,6 +393,13 @@ free(*src);
  */
 void compute_reverse_transitions(SingleGraph graph) {
 int n_states=graph->number_of_states;
+/* First, we clean the existing reverse transitions, if any */
+for (int i=0;i<n_states;i++) {
+   if (graph->states[i]!=NULL) {
+      free_Transition_list(graph->states[i]->reverted_incoming_transitions);
+      graph->states[i]->reverted_incoming_transitions=NULL;
+   }
+}
 for (int i=0;i<n_states;i++) {
    if (graph->states[i]!=NULL) {
       Transition* t=graph->states[i]->outgoing_transitions;

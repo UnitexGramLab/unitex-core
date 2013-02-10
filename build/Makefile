@@ -575,7 +575,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o 
                      Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o\
                      MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o MF_Global.o \
-                     MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o \
+                     MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o List_pointer.o\
                      CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)\
                      $(SYSLIBSYNCTOOL)
 
@@ -719,7 +719,8 @@ FST2CHECK_OBJS = Main_Fst2Check.o Fst2Check.o Fst2Check_lib.o IOBuffer.o Af_stdi
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o\
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
-                Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                Persistence.o SingleGraph.o BitArray.o FIFO.o HashTable.o List_pointer.o\
+                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -732,7 +733,7 @@ FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Af_stdio.o ActivityLogger.
 
 FST2TXT      = Fst2Txt
 FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o \
-               Unicode.o AbstractAllocator.o Fst2.o\
+               Unicode.o AbstractAllocator.o Fst2.o SingleGraph.o FIFO.o\
                AbstractFst2Load.o Alphabet.o ParsingInfo.o\
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
@@ -740,7 +741,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o \
 	           Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o\
 	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
-	           Offsets.o Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
+	           Offsets.o Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o List_pointer.o\
 	           Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 GRF2FST2      = Grf2Fst2
@@ -750,7 +751,7 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o Acti
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
-                ProgramInvoker.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
+                ProgramInvoker.o AbstractDelaLoad.o CompressedDic.o LoadInf.o List_pointer.o \
                 DebugMode.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 GRFDIFF      = GrfDiff
@@ -834,7 +835,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityL
 
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o \
-                 MF_FormMorpho.o MF_LangMorpho.o\
+                 MF_FormMorpho.o MF_LangMorpho.o List_pointer.o\
                  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
                  Fst2.o AbstractFst2Load.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Error.o IOBuffer.o File.o DELA.o StringParsing.o List_ustring.o\
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
@@ -869,7 +870,7 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o Activi
                    Unicode.o AbstractAllocator.o String_hash.o AbstractFst2Load.o Fst2.o\
                    File.o Alphabet.o Error.o StringParsing.o\
                    Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
-                   Transitions.o DELA.o\
+                   Transitions.o DELA.o List_pointer.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                    UnitexGetOpt.o Tfst.o TfstStats.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
                    HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o AbstractDelaLoad.o \
@@ -1031,10 +1032,10 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
-	           UnitexGetOpt.o DicVariables.o TransductionStack.o \
+	           UnitexGetOpt.o DicVariables.o TransductionStack.o SingleGraph.o FIFO.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o\
-	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
-	           Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o \
+	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o List_pointer.o \
+	           Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o BitArray.o \
 	           Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 

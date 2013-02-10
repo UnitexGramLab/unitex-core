@@ -23,6 +23,9 @@
 #include "Error.h"
 #include "BitMasks.h"
 #include "Transitions.h"
+#include "SingleGraph.h"
+#include "List_int.h"
+#include "List_pointer.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -36,657 +39,703 @@ namespace unitex {
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-static int look_for_recursion(int,struct list_int*,Fst2*,int*,U_FILE*);
 
+typedef enum {CHK_MATCHES_E,CHK_DOES_NOT_MATCH_E,CHK_DONT_KNOW} E_MATCHING_STATUS;
 
-#define NO_LEFT_RECURSION 1
-#define LEFT_RECURSION 0
-
-#define TMP_LOOP_MARK 8
-#define VISITED_MARK 16
-
-#define UNCONDITIONAL_E_MATCH 32
-#define CONDITIONAL_E_MATCH 64
-#define DOES_NOT_MATCH_E 128
-
-#define E_IS_MATCHED 1
-#define E_IS_NOT_MATCHED 2
-#define DOES_NOT_KNOW_IF_E_IS_MATCHED 3
+typedef struct {
+	Fst2* fst2;
+	E_MATCHING_STATUS* graphs_matching_E;
+	SingleGraph* condition_graphs;
+} GrfCheckInfo;
 
 
 /**
- * To determine if a graph can match the empty word <E>, we must check if
- * there is an empty path from its initial state to a final state. However,
- * such a path can be made of calls to subgraphs that match <E>. So, we use
- * conditions to represents these dependencies. Conditions are associated to
- * each state in the form of a list of condition. Each list corresponds to a
- * path from this state to a final state. It contains the numbers of the subgraphs
- * that are in the path. For instance, if we have the following case:
- * 
- * state s --------.....-------> graph 45 -------......-------> graph 12 ----> FINAL STATE
- *            |
- *            |
- *            |----------.....--------> graph 27 --------.....------> FINAL STATE
- *
- * the state s will have two conditions:
- * - condition 1: {45, 12}
- * - condition 2: {27}
- */
-struct condition_list {
-  struct list_int* condition;
-  struct condition_list* next;
-};
-typedef struct condition_list* ConditionList;
-
-
-/**
- * Frees all the memory associated to the given condition list.
- */
-static void free_ConditionList(ConditionList l) {
-ConditionList tmp;
-while (l!=NULL) {
-   free_list_int(l->condition);
-   tmp=l;
-   l=l->next;
-   free(tmp);
-}
-}
-
-
-/**
- * Returns a copy of the given condition list.
- */
-static ConditionList clone_ConditionList(ConditionList l) {
-ConditionList retList=NULL;
-ConditionList* toWrite=&retList;
-
-while (l!=NULL) {
-  ConditionList tmp;
-  tmp=(ConditionList)malloc(sizeof(struct condition_list));
-  if (tmp==NULL) {
-    fatal_alloc_error("clone_ConditionList");
-  }
-  tmp->condition=clone(l->condition);
-  tmp->next=NULL;
-  *toWrite=tmp;
-  toWrite=&(tmp->next);
-  l=l->next;
-}
-return retList;
-}
-
-
-/**
- * Inserts the graph number 'n' in the given condition list.
- */
-static void insert_graph_in_conditions(int n,ConditionList* l) {
-ConditionList tmp;
-if (*l==NULL) {
-   /* If the condition list is empty, we create one */
-   tmp=(ConditionList)malloc(sizeof(struct condition_list));
-   if (tmp==NULL) {
-      fatal_alloc_error("insert_graph_in_conditions");
-   }
-   tmp->next=NULL;
-   tmp->condition=new_list_int(n);
-   *l=tmp;
-   return;
-}
-/* Otherwise, we insert the graph number in all the conditions of the list */
-tmp=*l;
-while (tmp!=NULL) {
-   tmp->condition=sorted_insert(n,tmp->condition);
-   tmp=tmp->next;
-}
-}
-
-
-/**
- * Appends the condition list 'd' to the condition list 'c'.
- */
-static void merge_condition_lists(ConditionList *c,ConditionList d) {
-ConditionList tmp;
-if (*c==NULL) {
-   *c=d;
-   return;
-}
-if ((*c)->next==NULL) {
-   (*c)->next=d;
-   return;
-}
-tmp=*c;
-while (tmp->next!=NULL) tmp=tmp->next;
-tmp->next=d;
-}
-
-
-
-/**
- * Takes a fst2 tag and puts its control byte to 1 if it can
- * match the empty word <E>.
- * 
- * WARNING: <E> problem detection does not take contexts into account!
- */
-static void check_epsilon_tag(Fst2Tag e) {
-if (!u_strcmp(e->input,"<E>")) e->control=1;
-else if (e->input[0]=='$' && e->input[1]!='\0') {
-   /* If we have a variable mark */
-   e->control=1;
-}
-else e->control=0;
-}
-
-
-/**
- * Prints the graph call sequence that leads to the graph #n.
- */
-static void print_reversed_list(const struct list_int* l,int n,unichar**  graph_names,U_FILE* ferr) {
-if (l->n==n) {
-   error("ERROR: %S",graph_names[l->n]);
-   if (ferr != NULL)
-       u_fprintf(ferr,"ERROR: %S",graph_names[l->n]);
-   return;
-}
-print_reversed_list(l->next,n,graph_names,ferr);
-error(" calls %S that",graph_names[l->n]);
-if (ferr != NULL)
-  u_fprintf(ferr," calls %S that",graph_names[l->n]);
-}
-
-
-/**
- * Returns 1 if we can match <E> from the current state, with or without
- * conditions; 0 otherwise.
- */
-static int graph_matches_E(int initial_state,int current_state,const Fst2State* states,Fst2Tag* tags,
-                      int current_graph,unichar** graph_names,
-                      ConditionList conditions_for_states[],
-                      ConditionList *graph_conditions) {
-Transition* l;
-Fst2State s;
-int ret_value=0;
-int ret;
-*graph_conditions=NULL;
-s=states[current_state];
-if (is_final_state(s)) {
-   /* If we are arrived in a final state, then the graph matches <E> */
-   set_bit_mask(&(s->control),UNCONDITIONAL_E_MATCH);
-   return 1;
-}
-if (is_bit_mask_set(s->control,TMP_LOOP_MARK)) {
-   /* If we have a loop, we do nothing, because they will be
-    * dealt with later. */
-   return 0;
-}
-if (is_bit_mask_set(s->control,VISITED_MARK)) {
-   /* If we are in state that has already been visited */
-   if (is_bit_mask_set(s->control,UNCONDITIONAL_E_MATCH)) {
-      /* If this state can match <E> without conditions, then we have finished */
-      return 1;
-   }
-   if (is_bit_mask_set(s->control,CONDITIONAL_E_MATCH)) {
-      /* If this state can match <E> with conditions, then we have finished, but
-       * we copy the necessary conditions in 'graph_conditions'. */
-      *graph_conditions=clone_ConditionList(conditions_for_states[current_state-initial_state]);
-      return 1;
-   }
-   /* If the state has been visited and if it does not match <E>, then we return OK */
-   return 0;
-}
-set_bit_mask(&(s->control),VISITED_MARK);
-set_bit_mask(&(s->control),TMP_LOOP_MARK);
-l=s->transitions;
-/* We look all the outgoing transitions */
-while (l!=NULL) {
-   if (l->tag_number<0) {
-      /* If we have a subgraph, we test if it matches <E> */
-      *graph_conditions=NULL;
-      ret=graph_matches_E(initial_state,l->state_number,states,tags,current_graph,graph_names,conditions_for_states,graph_conditions);
-      if (ret==1) {
-         /* If the subgraph matches <E>, we say that the current state matches
-          * <E>, modulo the conditions to be verified */
-         set_bit_mask(&(s->control),CONDITIONAL_E_MATCH);
-         /* We insert the new condition in first position... */
-         insert_graph_in_conditions(-(l->tag_number),graph_conditions);
-         /* ...and we merge the new conditions with the existing ones for this state */
-         merge_condition_lists(&conditions_for_states[current_state-initial_state],*graph_conditions);
-         *graph_conditions=NULL;
-      }
-      ret_value=ret_value|ret;
-   }
-   else if (tags[l->tag_number]->control&1) {
-      /* If we have an <E> transition, we explore the rest of the graph from it */
-      *graph_conditions=NULL;
-      ret=graph_matches_E(initial_state,l->state_number,states,tags,current_graph,graph_names,conditions_for_states,graph_conditions);
-      if (ret==1) {
-         /* If we can match <E> from the <E>-transition's destination state, then
-          * we can match it from the current state. */
-         if (*graph_conditions==NULL) {
-            /* If there is no condition */
-            set_bit_mask(&(s->control),UNCONDITIONAL_E_MATCH);
-         }
-         else {
-            /* Otherwise, we add the condition to the existing ones */
-            set_bit_mask(&(s->control),CONDITIONAL_E_MATCH);
-            merge_condition_lists(&conditions_for_states[current_state-initial_state],*graph_conditions);
-            *graph_conditions=NULL;
-         }
-      }
-      ret_value=ret_value|ret;
-   }
-   l=l->next;
-}
-unset_bit_mask(&(s->control),TMP_LOOP_MARK);
-*graph_conditions=clone_ConditionList(conditions_for_states[current_state-initial_state]);
-return ret_value;
-}
-
-
-/**
- * This function takes a condition, i.e. a list of graph numbers. Then, it
- * tests if all the corresponding graphs match <E>. In that case, it sets
- * '*matches_E' to E_IS_MATCHED.
- */
-static struct list_int* resolve_simple_condition(struct list_int* c,Fst2State* states,
-                                    int* initial_states,int *modification,
-                                    int *matches_E) {
-struct list_int* tmp;
-*matches_E=E_IS_MATCHED;
-if (c==NULL) return NULL;
-/* First, we try to solve the rest of the condition */
-tmp=resolve_simple_condition(c->next,states,initial_states,modification,matches_E);
-if ((*matches_E)==E_IS_NOT_MATCHED) {
-   /* If at least one element of the rest of the condition does not
-    * matches <E>, we can delete the current element (the rest has
-    * already been freed). */
-   free(c);
-   (*modification)++;
-   return NULL;
-}
-if ((*matches_E)==E_IS_MATCHED) {
-   /* If all the elements of the rest of the condition match <E> */
-   c->next=tmp;
-   if (is_bit_mask_set(states[initial_states[c->n]]->control,UNCONDITIONAL_E_MATCH)) {
-      /* If the current one also matches <E>, then we can return */
-      return c;
-   }
-   if (is_bit_mask_set(states[initial_states[c->n]]->control,CONDITIONAL_E_MATCH) && 
-       !is_bit_mask_set(states[initial_states[c->n]]->control,DOES_NOT_MATCH_E)) {
-      /* If we don't know if the current element matches <E> or not */
-      *matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
-      return c;
-   }
-   /* If the current element does not match <E>, we can free the rest of the condition */
-   free_list_int(c);
-   *matches_E=E_IS_NOT_MATCHED;
-   (*modification)++;
-   return NULL;
-}
-/* If we don't know if the rest of the condition match <E> */
-c->next=tmp;
-if (is_bit_mask_set(states[initial_states[c->n]]->control,UNCONDITIONAL_E_MATCH)) {
-   /* If the current element matches <E>, we still cannot decide */
-   *matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
-   return c;
-}
-if (is_bit_mask_set(states[initial_states[c->n]]->control,DOES_NOT_MATCH_E)) {
-   /* If the current element does not matches <E>, the condition is not verified */
-   free_list_int(c);
-   *matches_E=E_IS_NOT_MATCHED;
-   (*modification)++;
-   return NULL;
-}
-/* If we still don't know, we do nothing */
-*matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
-return c;
-}
-
-
-/**
- * This function takes a condition list and checks if at least of the
- * conditions is verified, i.e. there is at least one path to match <E>.
- * It returns the modified condition list. If there is at least one modification,
- * then '*modification' is set to 1. See 'resolve_simple_condition' for
- * the values to be taken by '*matches_E'.
- */
-static void resolve_condition_list(ConditionList *l,Fst2State* states,
-                               int* initial_states,int *modification,int *matches_E,U_FILE*ferr)
-{
-while ((*l)!=NULL) {
-if ((*l)->condition==NULL) {
-   error("NULL internal error in resolve_condition_list\n");
-   if (ferr != NULL)
-     u_fprintf(ferr,"NULL internal error in resolve_condition_list\n");
-   return;
-}
-(*l)->condition=resolve_simple_condition((*l)->condition,states,initial_states,modification,matches_E);
-if (*matches_E==E_IS_MATCHED) {
-   /* If condition is verified, then the graph matches <E>, so we return */
-   return ;
-}
-if ((*l)->condition==NULL) {
-   /* If we have removed the whole condition, we delete it and we
-    * clean the rest of the condition list. */
-   ConditionList tmp=(*l);
-   *l=tmp->next;
-   free(tmp);
-}
-else
-/* Otherwise, we clean the rest of the condition list. */
-{
-	l=&((*l)->next);
-}
-}
-}
-
-
-/**
- * This function tries to resolve the conditions of the graph #n.
- * It returns 1 if at least one condition was resolved.
- */
-static int resolve_conditions_for_one_graph(int n,ConditionList* conditions,
-                                     Fst2State* states,int* initial_states,U_FILE*ferr) {
-int modification=0;
-int matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
-if (conditions[n]==NULL) {
-   error("NULL internal error in resolve_conditions_for_one_graph for graph %d\n",n);
-   if (ferr != NULL)
-     u_fprintf(ferr,"NULL internal error in resolve_conditions_for_one_graph for graph %d\n",n);
-   return modification;
-}
-resolve_condition_list(&(conditions[n]),states,initial_states,&modification,&matches_E,ferr);
-if (matches_E==E_IS_MATCHED) {
-   /* If at least one condition was verified */
-   set_bit_mask(&(states[initial_states[n]]->control),UNCONDITIONAL_E_MATCH);
-   /* We can free the conditions */
-   free_ConditionList(conditions[n]);
-   conditions[n]=NULL;
-   return 1;
-}
-if (conditions[n]==NULL) {
-   /* If the graph has no more condition, then we mark it as unable to match <E> */
-   set_bit_mask(&(states[initial_states[n]]->control),DOES_NOT_MATCH_E);
-   free_ConditionList(conditions[n]);
-   conditions[n]=NULL;
-   return 1;
-}
-return modification;
-}
-
-
-/**
- * This function looks for each graph if it can resolve a condition.
- * 
- * It returns a non zero value if some conditions have been resolved, 
- * even just one; 0 otherwise.
- */
-static int resolve_conditions(ConditionList* conditions,int n_graphs,
-                       Fst2State* states,int* initial_states,U_FILE*ferr) {
-int modification=0;
-for (int i=1;i<n_graphs+1;i++) {
-   if (!is_bit_mask_set(states[initial_states[i]]->control,
-                        UNCONDITIONAL_E_MATCH|DOES_NOT_MATCH_E)) {
-      /* If we don't already know the status of the current graph */
-      if (!is_bit_mask_set(states[initial_states[i]]->control,CONDITIONAL_E_MATCH)) {
-         /* If there is no conditionnal match, then we say that it does
-          * not match <E> */
-         set_bit_mask(&(states[initial_states[i]]->control),DOES_NOT_MATCH_E);
-         modification++;
-      } else {
-         /* Otherwise, we try to solve the conditions of the graph */
-         modification=modification+resolve_conditions_for_one_graph(i,conditions,states,initial_states,ferr);
-      }
-   }
-}
-return modification;
-}
-
-
-/**
- * Cleans the control bytes of the fst2's states. If 'graphs_matching_E'
- * is not null, graphs_matching_E[i] is set to 1 if the graph #i matches <E>;
+ * Returns 1 if the given tag number corresponds to a $[ or $![ tag;
  * 0 otherwise.
  */
-static void clean_controls(Fst2* fst2,int* graphs_matching_E) {
-int i;
-if (graphs_matching_E!=NULL) {
-   for (i=1;i<fst2->number_of_graphs+1;i++) {
-      if (is_bit_mask_set(fst2->states[fst2->initial_states[i]]->control,UNCONDITIONAL_E_MATCH))
-         graphs_matching_E[i]=1;
-      else graphs_matching_E[i]=0;
-   }
+static int is_right_context_beginning(Fst2* fst2,int n) {
+Fst2Tag tag=fst2->tags[n];
+return tag->type==BEGIN_POSITIVE_CONTEXT_TAG || tag->type==BEGIN_NEGATIVE_CONTEXT_TAG;
 }
-int ALL_MASKS=CONDITIONAL_E_MATCH|UNCONDITIONAL_E_MATCH|DOES_NOT_MATCH_E|TMP_LOOP_MARK|VISITED_MARK;
-for (i=0;i<fst2->number_of_states;i++) {
-   unset_bit_mask(&(fst2->states[i]->control),(unsigned char)ALL_MASKS);
+
+
+/**
+ * Returns the number of the state that is pointed by the $] transition that
+ * closes the current context or -1 if not found.
+ * Note that nested contexts are taken into account.
+ */
+static int get_end_of_context(Fst2* fst2,int state) {
+int res;
+for (Transition* t=fst2->states[state]->transitions;t!=NULL;t=t->next) {
+	if (t->tag_number<=0) {
+		/* If we have a graph call or a E transition, we look after it */
+		res=get_end_of_context(fst2,t->state_number);
+		if (res!=-1) {
+			return res;
+		}
+		continue;
+	}
+	Fst2Tag tag=fst2->tags[t->tag_number];
+	if (tag->type==END_CONTEXT_TAG) {
+		/* We found it! */
+		return t->state_number;
+	}
+	if (tag->type==BEGIN_POSITIVE_CONTEXT_TAG || tag->type==BEGIN_NEGATIVE_CONTEXT_TAG) {
+		/* If we have a nested context, we deal with it */
+		int end=get_end_of_context(fst2,t->state_number);
+		if (end==-1) {
+			/* No end for this nested context ? There is nothing more to be done
+			 * with this transition */
+			continue;
+		} else {
+			/* Now, we can continue to explore from the end of the nested context */
+			res=get_end_of_context(fst2,end);
+			if (res!=-1) {
+				return res;
+			}
+			continue;
+		}
+	}
+	/* If we have a normal transition, we explore it */
+	res=get_end_of_context(fst2,t->state_number);
+	if (res!=-1) {
+		return res;
+	}
+	continue;
+}
+return -1;
+}
+
+
+/**
+ * Returns 1 if the given tag does not match anything in the text.
+ *
+ */
+static int matches_E(Fst2* fst2,int tag_number) {
+if (tag_number<0) {
+	return 0;
+}
+if (tag_number==0) {
+	return 1;
+}
+Fst2Tag tag=fst2->tags[tag_number];
+switch (tag->type) {
+/* WARNING: this is important not to use a default clause here!
+ *          By enumerating all values instead, we make sure that there will
+ *          be a compiler warning if one day a new value is added to the enum tag_type
+ *          that is not taken into account here.
+ */
+case UNDEFINED_TAG: // used at initialization of a tag
+case META_TAG:      // <MOT>, <MIN>, etc.
+case PATTERN_TAG:   // <be.V>
+case PATTERN_NUMBER_TAG: // used when patterns have been numbered
+case TOKEN_LIST_TAG: break;  // used when the tag matches a list of tokens. This will
+/* The following matches E */
+case BEGIN_VAR_TAG: // $a(
+case END_VAR_TAG:   // $a)
+case BEGIN_OUTPUT_VAR_TAG: // $|a(
+case END_OUTPUT_VAR_TAG:   // $|a)
+case BEGIN_POSITIVE_CONTEXT_TAG: // $[
+case BEGIN_NEGATIVE_CONTEXT_TAG: // $![
+case END_CONTEXT_TAG:            // $]
+case LEFT_CONTEXT_TAG:           // $*
+case BEGIN_MORPHO_TAG: // $<
+case END_MORPHO_TAG:    // $>
+case TEXT_START_TAG: // {^}
+case TEXT_END_TAG: return 1;   // {$}
+}
+/* Finally, we test if we have a <E> transition with an output */
+if (!u_strcmp(tag->input,"<E>")) {
+	return 1;
+}
+return 0;
+}
+
+
+static void clean_condition_graph(SingleGraph g) {
+remove_epsilon_transitions(g,0);
+trim(g,NULL);
+if (g->number_of_states!=0) {
+	determinize(g);
+}
+/* And we print the resulting graph */
+/*save_fst2_subgraph(U_STDERR,g,graph,NULL);
+if (graph==1) {
+	for (int i=0;i<fst2->number_of_tags;i++) {
+		error("%d: %S",i,fst2->tags[i]->input);
+		if (fst2->tags[i]->output!=NULL && fst2->tags[i]->output[0]!='\0') {
+			error("/%S",fst2->tags[i]->output);
+		}
+		error("\n");
+}
+}*/
+}
+
+
+/**
+ * Deals with the given transition, for full simplification,
+ * i.e. for E-matching detection.
+ */
+static void deal_with_transition_v1(Fst2* fst2,Transition* t,SingleGraphState dst,int initial_state) {
+if (t->tag_number<=0) {
+	/* For graphs and <E> we keep the transition as is, except for
+	 * the state number that we have to adjust */
+	add_outgoing_transition(dst,t->tag_number,t->state_number-initial_state);
+} else if (is_right_context_beginning(fst2,t->tag_number)) {
+	/* Right contexts are a special case: we skip the whole context by
+	 * using an E transition that points to the end of the context
+	 */
+	int dst_state=get_end_of_context(fst2,t->state_number);
+	if (dst_state!=-1) {
+		add_outgoing_transition(dst,0,dst_state-initial_state);
+	} else {
+		/* If we cannot reach the end of the context, then this transition cannot
+		 * match anything anyway, so we can just ignore it */
+	}
+} else if (matches_E(fst2,t->tag_number)) {
+	/* Tags like $*, variable tags, etc. can be considered
+	 * like E transitions, but they must be kept, because they
+	 * could be involved into an infinite E loop. However, we also have to
+	 * add a real E transition, so that the final state can be reached by the
+	 * regular E removal algorithm. */
+	add_outgoing_transition(dst,0,t->state_number-initial_state);
+	add_outgoing_transition(dst,t->tag_number,t->state_number-initial_state);
+} else {
+	/* If we have a transition does actually match something in the text, we just
+	 * ignore it */
 }
 }
 
 
 /**
- * Returns 1 if the given state has already been visited; 0 otherwise.
+ * Deals with the given transition, for light simplification, i.e. for
+ * E loop/left recursion detection.
  */
-static int look_for_E_loop_in_state(int state_number,Fst2* fst2,int* graphs_matching_E) {
-Transition* l;
-Fst2State e=fst2->states[state_number];
-if (is_bit_mask_set(e->control,TMP_LOOP_MARK)) {
-   /* If we have already visited this state */
-   unset_bit_mask(&(e->control),TMP_LOOP_MARK);
-   return 1;
+static void deal_with_transition_v2(Fst2* fst2,Transition* t,SingleGraphState dst,int initial_state) {
+/* We always add the original transition */
+add_outgoing_transition(dst,t->tag_number,t->state_number-initial_state);
+if (t->tag_number>0 && is_right_context_beginning(fst2,t->tag_number)) {
+	/* Right contexts are a special case: we allow to skip the whole context by
+	 * adding an E transition that points to the end of the context
+	 */
+	int dst_state=get_end_of_context(fst2,t->state_number);
+	if (dst_state!=-1) {
+		add_outgoing_transition(dst,0,dst_state-initial_state);
+	} else {
+		/* If we cannot reach the end of the context, then this transition cannot
+		 * match anything anyway, so we can just ignore it */
+	}
 }
-set_bit_mask(&(e->control),TMP_LOOP_MARK);
-l=e->transitions;
-while (l!=NULL) {
-   if (l->tag_number<0) {
-      /* If we have a graph call */
-      if (graphs_matching_E[-l->tag_number]) {
-         /* And if we can cross it because it matches <E> */
-         if (look_for_E_loop_in_state(l->state_number,fst2,graphs_matching_E)) {
-            /* And if we have reached the current state via an <E> loop */
-            unset_bit_mask(&(e->control),TMP_LOOP_MARK);
-            return 1;
-         }
-      }
-   }
-   else if (fst2->tags[l->tag_number]->control==1) {
-      /* If we have a tag that can match <E> */
-      if (look_for_E_loop_in_state(l->state_number,fst2,graphs_matching_E)) {
-         /* And if we have reached the current state via an <E> loop */
-         unset_bit_mask(&(e->control),TMP_LOOP_MARK);
-         return 1;
-      }
-   }
-  l=l->next;
 }
-unset_bit_mask(&(e->control),TMP_LOOP_MARK);
+
+/**
+ * We create a copy of the given graph using the following rules if full_simplification is not null:
+ * - <E> transitions and graph calls are kept
+ * - all right contexts are ignored, replaced by an epsilon transition
+ * - all tags that don't match anything in the text (like $* $< and $>) are kept,
+ *   because they can be involved into a E loop. We also add a real E transition.
+ * - all other transitions that matches something from the text are removed
+ *
+ * As a consequence, the resulting graph is only made of real E transitions,
+ * pseudo-E transitions, and graph calls and we can use it as follows:
+ * - if no final state is accessible, it means that the graph cannot match E
+ * - if the initial state is final, it means that the graph match E
+ * - otherwise, we don't know yet
+ *
+ *
+ * If full_simplification is null, we have to create a condition graph suitable for
+ * E loop and left recursion detection. For that purpose, we keep the graph as is,
+ * with only one modification: adding an E transition to skip right contexts. But still,
+ * we keep the context, because we also have to look at it for E loops and left recursions.
+ *
+ */
+static SingleGraph create_condition_graph(Fst2* fst2,int graph,int full_simplification) {
+SingleGraph g=new_SingleGraph(INT_TAGS);
+int initial_state=fst2->initial_states[graph];
+int n_states=fst2->number_of_states_per_graphs[graph];
+for (int i=initial_state;i<initial_state+n_states;i++) {
+	SingleGraphState dst=add_state(g);
+	Fst2State src=fst2->states[i];
+	if (is_initial_state(src)) {
+		set_initial_state(dst);
+	}
+	if (is_final_state(src)) {
+		set_final_state(dst);
+	}
+	Transition* t=src->transitions;
+	while (t!=NULL) {
+		if (full_simplification) {
+			deal_with_transition_v1(fst2,t,dst,initial_state);
+		} else {
+			deal_with_transition_v2(fst2,t,dst,initial_state);
+		}
+		t=t->next;
+	}
+}
+clean_condition_graph(g);
+return g;
+}
+
+
+static E_MATCHING_STATUS get_status(SingleGraph g) {
+if (g->number_of_states==0) {
+	return CHK_DOES_NOT_MATCH_E;
+}
+int i=get_initial_state(g);
+if (i<0) {
+	fatal_error("Internal error in get_status: invalid negative initial state %d\n",i);
+}
+SingleGraphState s=g->states[i];
+if (is_final_state(s)) {
+	/* If the initial state is final, it means that we can reach it without matching
+	 * anything in the text */
+	return CHK_MATCHES_E;
+}
+return CHK_DONT_KNOW;
+}
+
+
+/**
+ * We initialize the structure that we will need to look for graphs
+ * that matches E, E loops and left recursions.
+ */
+static GrfCheckInfo* new_GrfCheckInfo(Fst2* fst2) {
+GrfCheckInfo* res=(GrfCheckInfo*)malloc(sizeof(GrfCheckInfo));
+if (res==NULL) {
+	fatal_alloc_error("new_GrfCheckInfo");
+}
+res->fst2=fst2;
+res->graphs_matching_E=(E_MATCHING_STATUS*)malloc(sizeof(E_MATCHING_STATUS)*(fst2->number_of_graphs+1));
+if (res->graphs_matching_E==NULL) {
+	fatal_alloc_error("new_GrfCheckInfo");
+}
+res->condition_graphs=(SingleGraph*)calloc(fst2->number_of_graphs+1,sizeof(SingleGraph));
+if (res->condition_graphs==NULL) {
+	fatal_alloc_error("new_GrfCheckInfo");
+}
+for (int i=1;i<fst2->number_of_graphs+1;i++) {
+	SingleGraph g=create_condition_graph(fst2,i,1);
+	res->condition_graphs[i]=g;
+	res->graphs_matching_E[i]=get_status(g);
+}
+return res;
+}
+
+
+/**
+ * Note that we don't free the fst2 field, since we did not create it.
+ */
+static void free_GrfCheckInfo(GrfCheckInfo* info) {
+if (info==NULL) {
+	return;
+}
+free(info->graphs_matching_E);
+if (info->condition_graphs!=NULL) {
+	for (int i=1;i<info->fst2->number_of_graphs+1;i++) {
+		free_SingleGraph(info->condition_graphs[i],NULL);
+	}
+	free(info->condition_graphs);
+}
+free(info);
+}
+
+
+/**
+ * We will update the given graph with the given updated graph for which we
+ * have now reliable information. We make sure that the graph is clean after that
+ * (E removal+trim+determinization).
+ */
+static void resolve_conditions(GrfCheckInfo* chk,int graph,struct list_int* updated_graphs) {
+SingleGraph g=chk->condition_graphs[graph];
+for (int i=0;i<g->number_of_states;i++) {
+	SingleGraphState state=g->states[i];
+	Transition** t=&(state->outgoing_transitions);
+	while ((*t)!=NULL) {
+		if ((*t)->tag_number<0) {
+			if (is_in_list(-(*t)->tag_number,updated_graphs)) {
+				/* We only look at graphs that have been updated */
+				E_MATCHING_STATUS status=chk->graphs_matching_E[-(*t)->tag_number];
+				switch(status) {
+					case CHK_DONT_KNOW: fatal_error("Unexpected CHK_DONT_KNOW value in resolve_conditions\n"); break;
+					case CHK_MATCHES_E: {
+						/* The graph matches E, we can add an E transition */
+						Transition* new_E_transition=new_Transition(0,(*t)->state_number,(*t)->next);
+						(*t)->next=new_E_transition;
+						t=&(new_E_transition->next);
+						break;
+					}
+					case CHK_DOES_NOT_MATCH_E: {
+						/* We have to remove this transition */
+						Transition* next=(*t)->next;
+						free_Transition(*t);
+						(*t)=next;
+						break;
+					}
+				}
+				continue;
+			}
+		}
+		/* Not a transition we are concerned about */
+		t=&((*t)->next);
+	}
+}
+clean_condition_graph(g);
+}
+
+
+/**
+ * Returns 1 if there is something more to do after this call or 0 if:
+ * - no new information was found
+ * - the main graph matches E
+ */
+static int resolve_all_conditions(GrfCheckInfo* chk,struct list_int* *list,int *unknown) {
+*unknown=0;
+struct list_int* new_list=NULL;
+for (int i=1;i<chk->fst2->number_of_graphs+1;i++) {
+	if (chk->graphs_matching_E[i]==CHK_DONT_KNOW) {
+		/* We only need to look at the graphs we are not sure about yet */
+		resolve_conditions(chk,i,*list);
+		chk->graphs_matching_E[i]=get_status(chk->condition_graphs[i]);
+		if (chk->graphs_matching_E[i]!=CHK_DONT_KNOW) {
+			/* If we have found an answer, we note that graph #i must be
+			 * looked at on the next loop */
+			new_list=new_list_int(i,new_list);
+		} else {
+			/* The graph is still unknown */
+			(*unknown)++;
+		}
+	}
+}
+/* Now we can use the new list */
+free_list_int(*list);
+*list=new_list;
+if (chk->graphs_matching_E[1]==CHK_MATCHES_E) {
+	error("Main graph matches epsilon!\n");
+	return 0;
+}
+return ((*list)!=NULL && (*unknown)!=0);
+}
+
+
+
+static void rebuild_condition_graphs(GrfCheckInfo* chk) {
+for (int i=1;i<chk->fst2->number_of_graphs+1;i++) {
+	free_SingleGraph(chk->condition_graphs[i],NULL);
+	chk->condition_graphs[i]=create_condition_graph(chk->fst2,i,0);
+}
+}
+
+
+static int transition_can_match_E(int tag_number,GrfCheckInfo* chk) {
+if (tag_number==0) {
+	return 1;
+}
+if (tag_number<0) {
+	return chk->graphs_matching_E[-tag_number]==CHK_MATCHES_E;
+}
+return matches_E(chk->fst2,tag_number);
+}
+
+
+/**
+ * By convention, if stop is >=0 it represents a state number, and if <0, it represents
+ * a graph call. We use it as a stop condition.
+ */
+static void print_reversed_list(struct list_pointer* list,Fst2* fst2,int stop,int depth) {
+if (list==NULL) {
+	return;
+}
+Transition* t=(Transition*)list->pointer;
+if (depth!=0) {
+	if ((stop>=0 && t->state_number==stop) || (stop<0 && t->tag_number==stop)) {
+		return;
+	}
+}
+print_reversed_list(list->next,fst2,stop,depth+1);
+if (t->tag_number<0) {
+	error("   :%S",fst2->graph_names[-t->tag_number]);
+} else {
+	error("   %S",fst2->tags[t->tag_number]->input);
+	if (fst2->tags[t->tag_number]->output!=NULL && fst2->tags[t->tag_number]->output[0]!='\0') {
+		error("/%S",fst2->tags[t->tag_number]->output);
+	}
+}
+error("\n");
+}
+
+
+/**
+ * Looks for a loop. To do that, we only follow transitions that can match E.
+ * Every time we follow such a transition, we add it to the 'transitions' list.
+ * This list is used to print the E loop if we find any. The function returns
+ * 1 if a loop is found; 0 otherwise.
+ */
+static int find_an_E_loop(int* mark,int current_state,int graph,GrfCheckInfo* chk,
+		struct list_pointer* transitions) {
+if (mark[current_state]==1) {
+	/* The state has been visited, nothing to do */
+	return 0;
+}
+if (mark[current_state]==2) {
+	/* The state is being visited, we have a loop */
+	error("E loop in graph %S, made of the following tags:\n",chk->fst2->graph_names[graph]);
+	print_reversed_list(transitions,chk->fst2,current_state,0);
+	return 1;
+}
+/* We start visiting the state */
+mark[current_state]=2;
+SingleGraphState s=chk->condition_graphs[graph]->states[current_state];
+Transition* t=s->outgoing_transitions;
+while (t!=NULL) {
+	if (transition_can_match_E(t->tag_number,chk)) {
+		struct list_pointer* new_head=new_list_pointer(t,transitions);
+		int res=find_an_E_loop(mark,t->state_number,graph,chk,new_head);
+		new_head->next=NULL;
+		free_list_pointer(new_head);
+		if (res==1) {
+			return 1;
+		}
+	}
+	t=t->next;
+}
+/* The state has been fully visited */
+mark[current_state]=1;
 return 0;
 }
 
 
 /**
- * Returns 1 and prints an error message if an <E> loop is found the graph #n;
- * returns 0 otherwise.
+ * Returns 0 if no E loop is found. Otherwise, prints a message that
+ * describes the loop and returns 1.
  */
-static int look_for_E_loops(int n,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
-int first_state=fst2->initial_states[n];
-for (int i=0;i<fst2->number_of_states_per_graphs[n];i++) {
-   if (look_for_E_loop_in_state(first_state+i,fst2,graphs_matching_E)) {
-      error("ERROR: <E> loop in the graph %S\n",fst2->graph_names[n]);
-      if (ferr != NULL)
-        u_fprintf(ferr,"ERROR: <E> loop in the graph %S\n",fst2->graph_names[n]);
-      return 1;
-   }
+static int is_E_loop(GrfCheckInfo* chk,int graph) {
+SingleGraph g=chk->condition_graphs[graph];
+/* 0 means that the state has not been visited at all
+ * 1 means that the state has already been fully visited
+ * 2 means that the state is being visited now, so finding such
+ *   a state means that there is an E loop
+ */
+int* mark=(int*)calloc(g->number_of_states,sizeof(int));
+int loop=0;
+for (int i=0;loop==0 && i<g->number_of_states;i++) {
+	if (mark[i]==1) {
+		/* No need to examine twice a state */
+		continue;
+	}
+	if (find_an_E_loop(mark,i,graph,chk,NULL)) {
+		loop=1;
+	}
+	mark[i]=1;
 }
+free(mark);
+return loop;
+}
+
+
+/**
+ * Tests all graphs for E loops, and returns 1 if there is any. In such a case,
+ * a message is printed on the error output stream for every graph containing such
+ * a loop. Note that 'rebuild_condition_graphs' must have been invoked before,
+ * to ensure that the condition graphs are adequate.
+ */
+static int is_any_E_loop(GrfCheckInfo* chk) {
+int loop=0;
+for (int i=1;i<chk->fst2->number_of_graphs+1;i++) {
+	if (is_E_loop(chk,i)) {
+		loop=1;
+	}
+}
+return loop;
+}
+
+
+
+static int is_left_recursion(GrfCheckInfo* chk,int graph,int* mark_graph,struct list_pointer* transitions);
+
+static int find_a_left_recursion(int* mark_graph,int* mark_state,int current_state,int graph,
+									GrfCheckInfo* chk,struct list_pointer* transitions) {
+if (mark_state[current_state]==1) {
+	/* The state has been visited, nothing to do */
+	return 0;
+}
+if (mark_state[current_state]==2) {
+	/* The state is being visited, we have a loop, but it should have been detected before */
+	error("E loop in graph %S, made of the following tags:\n",chk->fst2->graph_names[graph]);
+	print_reversed_list(transitions,chk->fst2,current_state,0);
+	return 1;
+}
+/* We start visiting the state */
+mark_state[current_state]=2;
+SingleGraphState s=chk->condition_graphs[graph]->states[current_state];
+Transition* t=s->outgoing_transitions;
+while (t!=NULL) {
+	if (t->tag_number<0) {
+		/* As we look for left recursions, we always test recursively
+		 * graph calls, regardless the fact that they may match E
+		 */
+		struct list_pointer* new_head=new_list_pointer(t,transitions);
+		int res=is_left_recursion(chk,-(t->tag_number),mark_graph,new_head);
+		new_head->next=NULL;
+		free_list_pointer(new_head);
+		if (res==1) {
+			return 1;
+		}
+	}
+	if (transition_can_match_E(t->tag_number,chk)) {
+		struct list_pointer* new_head=new_list_pointer(t,transitions);
+		int res=find_a_left_recursion(mark_graph,mark_state,t->state_number,graph,chk,new_head);
+		new_head->next=NULL;
+		free_list_pointer(new_head);
+		if (res==1) {
+			return 1;
+		}
+	}
+	t=t->next;
+}
+/* The state has been fully visited */
+mark_state[current_state]=1;
 return 0;
 }
 
 
 /**
- * Explores the transitions that outgo from the given state.
- * Returns 1 if a recursion is found; 0 otherwise.
+ * Returns 0 if no left recursion is found. Otherwise, prints a message that
+ * describes the loop and returns 1.
  */
-int explore_state(int state_number,struct list_int* l,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
-Fst2State s=fst2->states[state_number];
-int ret=0;
-if (s==NULL) return 0;
-if (is_bit_mask_set(s->control,TMP_LOOP_MARK|VISITED_MARK)) {
-   /* If this state has already been processed */
-   return 0;
+static int is_left_recursion(GrfCheckInfo* chk,int graph,int* mark_graph,struct list_pointer* transitions) {
+if (mark_graph[graph]==1) {
+	/* The graph has already been tested for left recursions */
+	return 0;
 }
-set_bit_mask(&(s->control),TMP_LOOP_MARK|VISITED_MARK);
-Transition* list=s->transitions;
-while (list!=NULL) {
-   if (list->tag_number<0) {
-      /* If we have a subgraph call */
-      if (look_for_recursion(-(list->tag_number),l,fst2,graphs_matching_E,ferr)) {
-         /* If there is a recursion */
-         return 1;
-      }
-      if (graphs_matching_E[-list->tag_number] && explore_state(list->state_number,l,fst2,graphs_matching_E,ferr)) {
-         /* If the graph matches <E> */
-         return 1;
-      }
-   } else if (fst2->tags[list->tag_number]->control==1) {
-      /* If we have a transition that can match <E> */
-      if (explore_state(list->state_number,l,fst2,graphs_matching_E,ferr)) {
-         return 1;
-      }
-   }
-   list=list->next;
+if (mark_graph[graph]==2) {
+	/* We found a left recursion */
+	error("Left recursion found in graph %S, made of the following tags:\n",chk->fst2->graph_names[graph]);
+	print_reversed_list(transitions,chk->fst2,-graph,0);
+	return 1;
 }
-unset_bit_mask(&(s->control),TMP_LOOP_MARK);
-return ret;
+
+mark_graph[graph]=2;
+SingleGraph g=chk->condition_graphs[graph];
+/* 0 means that the state has not been visited at all
+ * 1 means that the state has already been fully visited
+ * 2 means that the state is being visited now, so finding such
+ *   a state means that there is an E loop
+ */
+int* mark_state=(int*)calloc(g->number_of_states,sizeof(int));
+int recursion=0;
+int initial_state=get_initial_state(g);
+if (initial_state==-2) {
+	fatal_error("Internal error: several initial states in graph %S\n",chk->fst2->graph_names[graph]);
+}
+if (initial_state==-1) {
+	/* If the graph could not be loaded, we just ignore */
+	mark_graph[graph]=1;
+	return 0;
+}
+if (find_a_left_recursion(mark_graph,mark_state,initial_state,graph,chk,transitions)) {
+	recursion=1;
+}
+free(mark_state);
+mark_graph[graph]=1;
+return recursion;
 }
 
 
 /**
- * Returns 1 and prints an error message if a recursion is found in graph #n;
- * returns 0 otherwise.
+ * Tests all graphs for left recursion, and returns 1 if there is any. In such a case,
+ * a message is printed on the error output stream for every graph call sequence
+ * leading to such a recursion. Note that 'rebuild_condition_graphs' must have been invoked before,
+ * to ensure that the condition graphs are adequate.
  */
-static int look_for_recursion(int n,struct list_int* l,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
-if (is_in_list(n,l)) {
-   /* If we find a graph that has already been visited */
-   print_reversed_list(l,n,fst2->graph_names,ferr);
-   error(" recalls the graph %S\n",fst2->graph_names[n]);
-   if (ferr != NULL)
-      u_fprintf(ferr," recalls the graph %S\n",fst2->graph_names[n]);
-   return 1;
+static int is_any_left_recursion(GrfCheckInfo* chk) {
+int recursion=0;
+int* mark_graph=(int*)calloc(chk->fst2->number_of_graphs+1,sizeof(int));
+
+for (int i=1;recursion==0 && i<chk->fst2->number_of_graphs+1;i++) {
+	if (mark_graph[i]==0) {
+		/* No need to look a graph twice */
+		if (is_left_recursion(chk,i,mark_graph,NULL)) {
+			recursion=1;
+		}
+	}
 }
-l=new_list_int(n,l);
-int ret=explore_state(fst2->initial_states[n],l,fst2,graphs_matching_E,ferr);
-delete_head(&l);
-return ret;
+return recursion;
 }
 
 
 /**
- * Returns 1 if the given .fst2 is OK to be used by the Locate program; 0 otherwise. 
+ * Returns 1 if the given .fst2 is OK to be used by the Locate program; 0 otherwise.
  * Conditions are:
- * 
+ *
  * 1) no left recursion
  * 2) no loop that can recognize the empty word (<E> with an output or subgraph
  *    that can match the empty word).
  */
 int OK_for_Locate_write_error(const VersatileEncodingConfig* vec,const char* name,char no_empty_graph_warning,U_FILE* ferr) {
-ConditionList* conditions;
-ConditionList* conditions_for_state;
-int i,j;
-int ERROR=0;
+int RESULT=1;
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(vec,name,1,&fst2_free);
 if (fst2==NULL) {
 	fatal_error("Cannot load graph %s\n",name);
 }
-u_printf("Recursion detection started\n");
-int* graphs_matching_E=(int*)malloc(sizeof(int)*(fst2->number_of_graphs+1));
-conditions=(ConditionList*)malloc(sizeof(ConditionList)*(fst2->number_of_graphs+1));
-if (graphs_matching_E==NULL || conditions==NULL) {
-   fatal_alloc_error("OK_for_Locate");
+u_printf("Creating condition sets...\n");
+GrfCheckInfo* chk=new_GrfCheckInfo(fst2);
+/* Now, we look for a fix point in the condition graphs */
+struct list_int* list=NULL;
+/* To do that, we start by creating a list of all the graphs we are sure about */
+int unknown=0;
+for (int i=1;i<fst2->number_of_graphs+1;i++) {
+	if (chk->graphs_matching_E[i]!=CHK_DONT_KNOW) {
+		list=new_list_int(i,list);
+	} else {
+		unknown++;
+	}
 }
-for (i=0;i<fst2->number_of_graphs+1;i++) {
-   graphs_matching_E[i]=0;
-   conditions[i]=NULL;
-}
-/* First, we look for tags that match the empty word <E> */
-for (i=0;i<fst2->number_of_tags;i++) {
-   check_epsilon_tag(fst2->tags[i]);
-}
-/* Then, we look for graphs that match <E> with or without conditions */
-for (i=1;i<=fst2->number_of_graphs;i++) {
-   conditions_for_state=(ConditionList*)malloc(sizeof(ConditionList)*fst2->number_of_states_per_graphs[i]);
-   if (conditions_for_state==NULL) {
-      fatal_alloc_error("OK_for_Locate");
-   }
-   for (j=0;j<fst2->number_of_states_per_graphs[i];j++) {
-      conditions_for_state[j]=NULL;
-   }
-   graphs_matching_E[i]=graph_matches_E(fst2->initial_states[i],fst2->initial_states[i],
-  								      fst2->states,fst2->tags,i,fst2->graph_names,
-  								      conditions_for_state,&conditions[i]);
-   /* If any, we remove the temp conditions */                        
-   if (conditions[i]!=NULL) free_ConditionList(conditions[i]);
-   /* And we way that the conditions for the current graph are its initial
-    * state's ones. */
-   conditions[i]=conditions_for_state[0];
-   /* Then we perform cleaning */
-   conditions_for_state[0]=NULL;
-   for (j=1;j<fst2->number_of_states_per_graphs[i];j++) {
-      free_ConditionList(conditions_for_state[j]);
-   }
-   free(conditions_for_state); 
-}
-/* Then, we use all our condition lists to determine which graphs match <E>.
- * We iterate until we find a fixed point. If some conditions remain non null
- * after this loop, it means that there are <E> dependencies between graphs
- * and this case will be dealt with later. */
-u_printf("Resolving <E> conditions\n");
-while (resolve_conditions(conditions,fst2->number_of_graphs,
-							fst2->states,fst2->initial_states,ferr)) {}
-if (is_bit_mask_set(fst2->states[fst2->initial_states[1]]->control,UNCONDITIONAL_E_MATCH)) {
-   /* If the main graph matches <E> */
-   if (!no_empty_graph_warning) {
+/* While there is something to do for E matching */
+error("Checking empty word matching...\n");
+while (resolve_all_conditions(chk,&list,&unknown)) {}
+if (chk->graphs_matching_E[1]==CHK_MATCHES_E) {
+	if (!no_empty_graph_warning) {
        error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
-       if (ferr != NULL)
-         u_fprintf(ferr,"ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
-       ERROR=1;
-   }
+       if (ferr!=NULL) {
+    	   u_fprintf(ferr,"ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+	   }
+	}
+	goto evil_goto;
 }
-if (!ERROR) {
-   for (i=1;i<fst2->number_of_graphs+1;i++) {
-      if (is_bit_mask_set(fst2->states[fst2->initial_states[i]]->control,UNCONDITIONAL_E_MATCH)) {
-         /* If the graph matches <E> */
-         if (!no_empty_graph_warning) {
-             error("WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
-             if (ferr != NULL)
-                u_fprintf(ferr,"WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
-         }
-      }
-   }
+if (!no_empty_graph_warning) {
+	for (int i=2;i<fst2->number_of_graphs+1;i++) {
+		if (chk->graphs_matching_E[i]==CHK_MATCHES_E) {
+			error("WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
+			if (ferr!=NULL) {
+				u_fprintf(ferr,"WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
+			}
+		}
+	}
 }
-clean_controls(fst2,graphs_matching_E);
-if (!ERROR) {
-   u_printf("Looking for <E> loops\n");
-   for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
-      ERROR=look_for_E_loops(i,fst2,graphs_matching_E,ferr);
-   }
+/* Now, we look for E loops and left recursions. And to do that, we need a new version
+ * of the condition graphs, because a graph that does not match E would have been emptied.
+ * And obviously, we can not deduce anything from an empty graph. */
+rebuild_condition_graphs(chk);
+error("Checking E loops...\n");
+if (is_any_E_loop(chk)) {
+	/* Error messages have already been printed */
+	goto evil_goto;
 }
-clean_controls(fst2,NULL);
-if (!ERROR) {
-   u_printf("Looking for infinite recursions\n");
-   for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
-      ERROR=look_for_recursion(i,NULL,fst2,graphs_matching_E,ferr);
-   }
+error("Checking left recursions...\n");
+if (is_any_left_recursion(chk)) {
+	/* Error messages have already been printed */
+	goto evil_goto;
 }
-for (i=1;i<fst2->number_of_graphs+1;i++) {
-   free_ConditionList(conditions[i]);
-}
+evil_goto:
+/* There may be something unused in the list that we need to free */
+free_list_int(list);
+free_GrfCheckInfo(chk);
 free_abstract_Fst2(fst2,&fst2_free);
-u_printf("Recursion detection completed\n");
-free(conditions);
-free(graphs_matching_E);
-if (ERROR) return LEFT_RECURSION;
-return NO_LEFT_RECURSION;
+return RESULT;
 }
+
+
 
 
 int OK_for_Locate(const VersatileEncodingConfig* vec,const char* name,char no_empty_graph_warning) {
