@@ -59,17 +59,26 @@ return tag->type==BEGIN_POSITIVE_CONTEXT_TAG || tag->type==BEGIN_NEGATIVE_CONTEX
 }
 
 
+static int get_end_of_context(Fst2* fst2,int state);
+
 /**
  * Returns the number of the state that is pointed by the $] transition that
  * closes the current context or -1 if not found.
  * Note that nested contexts are taken into account.
+ * 'visited_states' is used to avoid exploring loops, which would lead to
+ * a stack overflow.
  */
-static int get_end_of_context(Fst2* fst2,int state) {
+static int get_end_of_context__(Fst2* fst2,int state,struct list_int* *visited_states) {
 int res;
+if (is_in_list(state,*visited_states)) {
+	/* No need to visit twice a state */
+	return -1;
+}
+(*visited_states)=new_list_int(state,*visited_states);
 for (Transition* t=fst2->states[state]->transitions;t!=NULL;t=t->next) {
 	if (t->tag_number<=0) {
 		/* If we have a graph call or a E transition, we look after it */
-		res=get_end_of_context(fst2,t->state_number);
+		res=get_end_of_context__(fst2,t->state_number,visited_states);
 		if (res!=-1) {
 			return res;
 		}
@@ -89,7 +98,7 @@ for (Transition* t=fst2->states[state]->transitions;t!=NULL;t=t->next) {
 			continue;
 		} else {
 			/* Now, we can continue to explore from the end of the nested context */
-			res=get_end_of_context(fst2,end);
+			res=get_end_of_context__(fst2,end,visited_states);
 			if (res!=-1) {
 				return res;
 			}
@@ -97,13 +106,26 @@ for (Transition* t=fst2->states[state]->transitions;t!=NULL;t=t->next) {
 		}
 	}
 	/* If we have a normal transition, we explore it */
-	res=get_end_of_context(fst2,t->state_number);
+	res=get_end_of_context__(fst2,t->state_number,visited_states);
 	if (res!=-1) {
 		return res;
 	}
 	continue;
 }
 return -1;
+}
+
+
+/**
+ * Returns the number of the state that is pointed by the $] transition that
+ * closes the current context or -1 if not found.
+ * Note that nested contexts are taken into account.
+ */
+static int get_end_of_context(Fst2* fst2,int state) {
+struct list_int* visited_states=NULL;
+int res=get_end_of_context__(fst2,state,&visited_states);
+free_list_int(visited_states);
+return res;
 }
 
 
@@ -693,7 +715,7 @@ for (int i=1;i<fst2->number_of_graphs+1;i++) {
 	}
 }
 /* While there is something to do for E matching */
-error("Checking empty word matching...\n");
+u_printf("Checking empty word matching...\n");
 while (resolve_all_conditions(chk,&list,&unknown)) {}
 if (chk->graphs_matching_E[1]==CHK_MATCHES_E) {
 	if (!no_empty_graph_warning) {
@@ -718,12 +740,12 @@ if (!no_empty_graph_warning) {
  * of the condition graphs, because a graph that does not match E would have been emptied.
  * And obviously, we can not deduce anything from an empty graph. */
 rebuild_condition_graphs(chk);
-error("Checking E loops...\n");
+u_printf("Checking E loops...\n");
 if (is_any_E_loop(chk)) {
 	/* Error messages have already been printed */
 	goto evil_goto;
 }
-error("Checking left recursions...\n");
+u_printf("Checking left recursions...\n");
 if (is_any_left_recursion(chk)) {
 	/* Error messages have already been printed */
 	goto evil_goto;
