@@ -37,6 +37,7 @@ namespace unitex {
 
 
 int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters);
+int compare_variables_substr(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters);
 Ustring* get_variable_content(unichar* name,struct locate_parameters* p);
 Ustring* get_output_variable_content(unichar* name,struct locate_parameters* p);
 Ustring* get_dic_variable_content(unichar* name,struct locate_parameters* p);

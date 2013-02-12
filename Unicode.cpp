@@ -3559,6 +3559,32 @@ return !u_strcmp(s+(l1-l2),suffix);
 }
 
 
+
+int u_substr(const unichar *str, const unichar *target) {
+  if (!*target) return 0;
+  unichar *p1 = (unichar*)str, *p2 = (unichar*)target;
+  unichar *p1Adv = (unichar*)str;
+  while (*++p2)
+    p1Adv++;
+  while (*p1Adv) {
+	  unichar *p1Begin = p1;
+    p2 = (unichar*)target;
+    while (*p1 && *p2 && *p1 == *p2) {
+      p1++;
+      p2++;
+    }
+    if (!*p2)
+      return 1;
+    p1 = p1Begin + 1;
+    p1Adv++;
+  }
+  return 0;
+}
+
+
+
+
+
 /**
  * Converts the unichar* src into a char* dest.
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.

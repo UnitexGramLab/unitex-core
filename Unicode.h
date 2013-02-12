@@ -281,6 +281,7 @@ int u_starts_with(const unichar*,const unichar*);
 int u_starts_with(const unichar*,const char*);
 int u_ends_with(const unichar*,const unichar*);
 int u_ends_with(const unichar*,const char*);
+int u_substr(const unichar*,const unichar*);
 
 
 unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc);

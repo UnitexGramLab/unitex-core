@@ -270,8 +270,35 @@ for (;;) {
         	                                  * so we consider it to be equivalent to backtrack */
         	    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
         	 }
-         }
-
+         } else if (u_starts_with(field,"SUBSTR.")) {
+        	 int n=compare_variables_substr(name,field+7,p,0); // strlen("UNEQUALcC=") == 10
+        	 if (n==VAR_CMP_EQUAL) continue;
+        	 if (n==VAR_CMP_DIFF) {
+        		 stack->stack_pointer=old_stack_pointer;
+        		 return 0;
+        	 }
+        	 /* n==VAR_CMP_ERROR means an error while accessing variables */
+        	 switch (p->variable_error_policy) {
+        	    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
+        	    case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
+											  * so we consider it to be equivalent to backtrack */
+     	        case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+        	 }
+         } else if (u_starts_with(field,"NOT_SUBSTR.")) {
+        	 int n=compare_variables_substr(name,field+11,p,0); // strlen("UNEQUALcC=") == 10
+        	 if (n==VAR_CMP_DIFF) continue;
+        	 if (n==VAR_CMP_EQUAL) {
+        		 stack->stack_pointer=old_stack_pointer;
+        		 return 0;
+        	 }
+        	 /* n==VAR_CMP_ERROR means an error while accessing variables */
+        	 switch (p->variable_error_policy) {
+				case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
+				case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
+											  * so we consider it to be equivalent to backtrack */
+				case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+     	 }
+      }
 
 
          else if (!u_strcmp(field,"TO_LOWER")) {

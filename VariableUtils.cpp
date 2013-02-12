@@ -121,4 +121,23 @@ if (ret==0) {
 return VAR_CMP_DIFF;
 }
 
+int compare_variables_substr(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters) {
+Ustring* v1=get_var_content(var1,p);
+if (!v1) {
+	return VAR_CMP_ERROR;
+}
+Ustring* v2=get_var_content(var2,p);
+if (!v2) {
+	free_Ustring(v1);
+	return VAR_CMP_ERROR;
+}
+int ret=u_substr(v1->str,v2->str);
+free_Ustring(v1);
+free_Ustring(v2);
+if (ret != 0) {
+	return VAR_CMP_EQUAL;
+}
+return VAR_CMP_DIFF;
+}
+
 } // namespace unitex

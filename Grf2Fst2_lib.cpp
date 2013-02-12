@@ -926,6 +926,8 @@ s++;
 if (u_starts_with(s,"EQUAL=")
 		|| u_starts_with(s,"EQUALcC=")
 		|| u_starts_with(s,"UNEQUAL=")
+		|| u_starts_with(s,"SUBSTR.")
+		|| u_starts_with(s,"NOT_SUBSTR.")
 		|| u_starts_with(s,"UNEQUALcC=")) {
 	while ((*s)!='=') s++;
 	s++;
