@@ -3562,14 +3562,16 @@ return !u_strcmp(s+(l1-l2),suffix);
 
 int u_substr(const unichar *str, const unichar *target) {
   if (!*target) return 0;
-  unichar *p1 = (unichar*)str, *p2 = (unichar*)target;
-  unichar *p1Adv = (unichar*)str;
-  while (*++p2)
+  const unichar *p1 = str;
+  const unichar *p2 = target;
+  const unichar *p1Adv = str;
+  while (*(++p2)) {
     p1Adv++;
+  }
   while (*p1Adv) {
-	  unichar *p1Begin = p1;
-    p2 = (unichar*)target;
-    while (*p1 && *p2 && *p1 == *p2) {
+    const unichar *p1Begin = p1;
+    p2 = target;
+    while ((*p1) && (*p2) && ((*p1) == (*p2))) {
       p1++;
       p2++;
     }
