@@ -549,13 +549,42 @@ if (u_ends_with(dest,".grf")) {
 }
 }
 
+
+/**
+ * Returns 1 iff the given string if non empty and only made of spaces; 0 otherwise.
+ * As a side effect, if 1 is returned, *pos is modified to point to the final '\0'.
+ */
+static int only_spaces(unichar* input,int *pos) {
+if (*pos!=0 || input[0]=='\0') {
+	return 0;
+}
+int f=0;
+while (input[f]==' ') {
+	f++;
+}
+if (input[f]!='\0') {
+	return 0;
+}
+*pos=f;
+return 1;
+}
+
+
 /**
  * Takes the given input and tries to read a token from '*pos'.
  * Returns 1 if a '+' was found after the token that has been read; 0 otherwise.
+ *
+ * Note that there is a special case if 1) we have a line only made of spaces and
+ * 2) we are not in strict tokenization mode. In such case, we translate the full line
+ * to a <E> to avoid raising an empty token error.
  */
 int process_box_line_token(unichar* input,int *pos,
                            struct fifo* tokens,
                            int n,struct compilation_info* infos) {
+if (only_spaces(input,pos)) {
+	put_ptr(tokens,u_strdup("<E>"));
+	return 0;
+}
 if (input[*pos]=='\0') {
    fatal_error("Empty string in process_box_line_token\n");
 }
