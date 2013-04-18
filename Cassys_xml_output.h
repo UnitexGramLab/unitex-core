@@ -48,19 +48,19 @@ namespace unitex {
 const unichar P_CASSYS_PROTECTED_CHARS[] ={'\\',',','.',':','+',0};
 
 const unichar LEM_OPENING[] = {'<','l','e','m','>',0};
-const unichar LEM_CLOSING[] = {'<','\\','l','e','m','>',0};
+const unichar LEM_CLOSING[] = {'<','/','l','e','m','>',0};
 
 const unichar FORM_OPENING[] = {'<','f','o','r','m','>',0};
-const unichar FORM_CLOSING[] = {'<','\\','f','o','r','m','>',0};
+const unichar FORM_CLOSING[] = {'<','/','f','o','r','m','>',0};
 
 const unichar CODE_OPENING[] = {'<','c','o','d','e','>',0};
-const unichar CODE_CLOSING[] = {'<','\\','c','o','d','e','>',0};
+const unichar CODE_CLOSING[] = {'<','/','c','o','d','e','>',0};
 
 const unichar INFLECTION_OPENING[] = {'<','i','n','f','l','e','c','t','>',0};
-const unichar INFLECTION_CLOSING[] = {'<','\\','i','n','f','l','e','c','t','>',0};
+const unichar INFLECTION_CLOSING[] = {'<','/','i','n','f','l','e','c','t','>',0};
 
 const unichar LEXICAL_OPENING[] = {'<','c','s','c','>',0};
-const unichar LEXICAL_CLOSING[] = {'<','\\','c','s','c','>',0};
+const unichar LEXICAL_CLOSING[] = {'<','/','c','s','c','>',0};
 
 
 void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodingConfig *vec);
