@@ -40,5 +40,6 @@ int main(int argc,char* argv[]) {
  * the graphical interface */
 setBufferMode();
 
-return main_Cassys_test(argc,argv);
+//return main_Cassys_test(argc,argv);
+return main_Cassys(argc,argv);
 }
