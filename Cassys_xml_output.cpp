@@ -48,9 +48,6 @@ void xmlizeConcordFile(const char *concordBracketFileName, const VersatileEncodi
 //	remove_extension(concordBracketFileName, concordXmlFileName);
 //	strcat(concordXmlFileName,".xml");
 
-
-
-
 	struct fifo *stage_concord = read_concord_file(concordBracketFileName, vec);
 
 
