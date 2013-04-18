@@ -402,33 +402,42 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	free_snt_files(snt_text_files);
 
+	// create the concord file with XML
 	construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
-	// construct_xml_concord doit être appelé si on veut voir la concordance au format XML
-	//construct_xml_concord(text,vec);
+	// construct_xml_concord must be applied to create the xmlized concordance
+	construct_xml_concord(text,vec);
 
 	struct snt_files *snt_files = new_snt_files(text);
 
 	char result_file_name_XML[FILENAME_MAX];
-	char result_file_name_raw[FILENAME_MAX];
 	char text_name_without_extension[FILENAME_MAX];
 	remove_extension(text,text_name_without_extension);
 	sprintf(result_file_name_XML,"%s_csc.txt",text_name_without_extension);
-	sprintf(result_file_name_raw,"%s_csc.raw",text_name_without_extension);
 
-	// make a copy of the last resulting text of the cascade in the file named text.csc (in the same directory than text.snt)
+	// make a copy of the last resulting text of the cascade in the file named _csc.txt
+	// this result his in XML form
 	char path[FILENAME_MAX];
 	get_path(text,path);
 	char last_resulting_text_path[FILENAME_MAX];
 	char result_file_name_path_XML[FILENAME_MAX];
-	char result_file_name_path_raw[FILENAME_MAX];
 	sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
 	sprintf(result_file_name_path_XML,"%s", result_file_name_XML);
-	sprintf(result_file_name_path_raw,"%s", result_file_name_raw);
 	copy_file(result_file_name_path_XML, last_resulting_text_path);
+
+	// create the text file including XMLized concordance
+	launch_concord_in_Cassys(result_file_name_path_XML, snt_files->concord_ind, alphabet, vec);
+
+	// make a copy of the last resulting text of the cascade in the file named _csc.raw
+	char result_file_name_raw[FILENAME_MAX];
+	sprintf(result_file_name_raw,"%s_csc.raw",text_name_without_extension);
+	char result_file_name_path_raw[FILENAME_MAX];
+	sprintf(result_file_name_path_raw,"%s", result_file_name_raw);
 	copy_file(result_file_name_path_raw, last_resulting_text_path);
 
-
-	launch_concord_in_Cassys(result_file_name_path_XML, snt_files->concord_ind, alphabet, vec);
+	// relaunch the construction of the concord file without XML
+	construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
+	// relaunch the construction of the text file without XML
+	launch_concord_in_Cassys(result_file_name_path_raw, snt_files->concord_ind, alphabet, vec);
 
 	char graph_file_name[FILENAME_MAX];
 	sprintf(graph_file_name,"%s.dot", text_name_without_extension);
