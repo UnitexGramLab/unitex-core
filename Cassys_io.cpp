@@ -254,24 +254,22 @@ unichar* read_file(U_FILE *f){
 	int total_read = 0;
 	int read;
 	do {
-		unichar buffer[4095+1];
+		unichar buffer[4096+1];
 		int i;
-		for(i=0;i<4095+1;i++){
-			buffer[i]='\0';
-		}
+		memset(buffer,0,sizeof(unichar)*(4096+1));
 
 		int ok=1;
 
-		read = u_fread(buffer,4095,f,&ok);
+		read = u_fread(buffer,4096,f,&ok);
 
-		total_read+= u_strlen(buffer);
+		total_read += u_strlen(buffer);
 		text = (unichar *)realloc(text,sizeof(unichar)*(total_read+1));
 		if(text==NULL){
 				fatal_alloc_error("realloc");
 		}
 		u_strcat(text,buffer);
 
-	} while (read == 4095);
+	} while (read == 4096);
 
 	text[total_read]='\0';
 
