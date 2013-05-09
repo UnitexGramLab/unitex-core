@@ -287,7 +287,7 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
     /* Final merge (file + central directory) */
     af_fclose_unlogged(fpOutCD);
     if (err == Z_OK) {
-      fpOutCD = af_fopen(fileOutTmp, "rb");
+      fpOutCD = af_fopen_unlogged(fileOutTmp, "rb");
       if (fpOutCD != NULL) {
         int nRead;
         char buffer[8192];
