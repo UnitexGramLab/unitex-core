@@ -272,7 +272,7 @@ unichar *unprotect_lexical_tag(const unichar *text){
 		}
 
 		if(text[i]=='}'){
-			brace_depth--;;
+			brace_depth--;
 		}
 
 		if(brace_depth==0){
@@ -292,7 +292,7 @@ unichar *unprotect_lexical_tag(const unichar *text){
 
 /**
  * Return a string lexical tag format of the cassys pattern. If to_protect is set to true,
- * all special characters ('{','}',':','.',',') are protected with '\'. The form element is always protected.
+ * all special characters ('+','{','}',':','.',',') are protected with '\'. The form element is always protected.
  */
 unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 		bool to_protect) {
@@ -396,8 +396,6 @@ unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
 				position += u_strlen(ite->string);
 				ite = ite->next;
 			}
-
-
 		}
 	}
 
@@ -418,7 +416,7 @@ unichar *protect_form(unichar *string){
 	int size = u_strlen(string);
 	int number_of_special_character = 0;
 	for(i=0; i<size; i++){
-		if(string[i]==',' || string[i]==':' || string[i]=='.'){
+		if(string[i]==',' || string[i]==':' || string[i]=='.' || string[i]=='+'){
 			number_of_special_character++;
 		}
 		if (string[i] == '\\' ) {
@@ -426,7 +424,7 @@ unichar *protect_form(unichar *string){
 				fatal_error("Unexpected end of string\n");
 			}
 			i++;
-			if(string[i] == ',' || string[i]==':' || string[i] == '.' || string[i]=='\\' || string[i]=='{' || string[i]=='}'){
+			if(string[i] == ',' || string[i]==':' || string[i] == '.' || string[i]=='+' || string[i]=='\\' || string[i]=='{' || string[i]=='}'){
 
 			} else {
 				number_of_special_character++;
@@ -445,7 +443,7 @@ unichar *protect_form(unichar *string){
 
 	int j=0;
 	for (i = 0; i < size; i++) {
-		if (string[i] == ',' || string[i] == ':' || string[i] == '.') {
+		if (string[i] == ',' || string[i] == ':' || string[i] == '.' || string[i]=='+') {
 			result[i+j]='\\';
 			j++;
 			result[i+j]=string[i];
@@ -457,7 +455,7 @@ unichar *protect_form(unichar *string){
 				fatal_error("Unexpected end of string\n");
 			}
 			i++;
-			if (string[i]==',' || string[i]==':' || string[i]=='.' || string[i]=='\\' || string[i]=='{' || string[i]=='}') {
+			if (string[i]==',' || string[i]==':' || string[i]=='.' || string[i]=='+' || string[i]=='\\' || string[i]=='{' || string[i]=='}') {
 				result[i+j] = string[i];
 			} else {
 				result[i+j]='\\';
