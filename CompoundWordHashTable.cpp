@@ -79,7 +79,7 @@ while (hash_table->size < size)
 //hash_table->hash_blocks_GV=(struct tct_hash_block**)malloc(size*sizeof(struct tct_hash_block*));
 hash_table->hash_blocks=(struct tct_hash_block*)malloc(get_tct_hash_block_item_size_array(size));
 hash_table->token_array_standard_base_memory_nb_item_for_each_block=tct_hash_block_size;
-hash_table->token_array_base_memory_alloc=(int*)malloc(sizeof(int*)*tct_hash_block_size*size);
+hash_table->token_array_base_memory_alloc=(int*)malloc(sizeof(int)*tct_hash_block_size*size);
 if (hash_table->hash_blocks==NULL) {
    fatal_alloc_error("new_tct_hash");
 }

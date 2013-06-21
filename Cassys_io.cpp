@@ -255,7 +255,6 @@ unichar* read_file(U_FILE *f){
 	int read;
 	do {
 		unichar buffer[4096+1];
-		int i;
 		memset(buffer,0,sizeof(unichar)*(4096+1));
 
 		int ok=1;

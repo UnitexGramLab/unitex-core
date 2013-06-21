@@ -903,7 +903,8 @@ int af_fclose(ABSTRACTFILE* stream)
     int ret;
     Call_logger_fnc_before_af_fclose(stream);
     ret = af_fclose_unlogged(stream);
-    Call_logger_fnc_after_af_fclose(stream, ret);
+    // stream is now free
+    Call_logger_fnc_after_af_fclose(NULL, ret);
     return ret;
 }
 

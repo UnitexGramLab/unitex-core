@@ -1846,7 +1846,7 @@ if (runLog_ctx.quiet==1)
 RunLog_ThreadData* prunLog_ThreadData;
 
 prunLog_ThreadData = (RunLog_ThreadData*)malloc(sizeof(RunLog_ThreadData)*(runLog_ctx.nb_thread+1));
-void** ptrptr = (void**)malloc(sizeof(void**)*(runLog_ctx.nb_thread+1));
+void** ptrptr = (void**)malloc(sizeof(void*)*(runLog_ctx.nb_thread+1));
 
 int ut;
 for (ut=0;ut<runLog_ctx.nb_thread;ut++) {

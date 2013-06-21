@@ -228,7 +228,10 @@ int AddFileInFileToReadArray(struct ExecutionLogging* pEL,const char*fn)
     Frif.FileName=fnCopy;
     unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileReading);
     if (ExpandArrayExpanding(pEL->pAE_FileReading,nbItem+1)==0)
+    {
+        free(fnCopy);
         return 0;
+    }
     *(struct FileReadingInfoItem*)(GetItemPtrArrayExpanding(pEL->pAE_FileReading,nbItem))=Frif;
     return 1;
 }
@@ -279,7 +282,10 @@ int AddFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn)
     Frif.size = 0;
     unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileToWrite);
     if (ExpandArrayExpanding(pEL->pAE_FileToWrite,nbItem+1)==0)
+    {
+        free(fnCopy);
         return 0;
+    }
     *(struct FileToWriteInfoItem*)(GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,nbItem))=Frif;
     return 1;
 }
