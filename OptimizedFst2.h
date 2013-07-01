@@ -38,6 +38,29 @@
 namespace unitex {
 
 /**
+ * This library builds optimized versions of fst2 by grouping
+ * different types of transitions together. The main points here are:
+ *
+ * 1) Test the input only once if you have same input with different outputs.
+ *    Note that this practice should be discouraged anyway.
+ *
+ * 2) Replaces all transitions containing a pattern with a lemma by the
+ *    comprehensive list of tokens that can match it, including case variants.
+ *
+ * 3) Discard lexical transitions that cannot match any token in the text.
+ *
+ * Note that steps 2 & 3 can be done safely even if the morphological mode is used,
+ * because for that mode, the original fst2 states are used, unmodified.
+ *
+ * After step 3 is complete, some optimized states may have no outgoing transition
+ * at all. We remove recursively all transitions to such states. If the optimized graph
+ * becomes then empty, we also remove from all optimized states all transitions tagged
+ * by this graph call, which can also lead to useless states with no outgoing transitions.
+ * The process is repeated until there is no more removal.
+ */
+
+
+/**
  * This structure defines a list of graph calls. For each call, we have the
  * graph number and the original fst2 transition with the original tag number
  * and the destination state.

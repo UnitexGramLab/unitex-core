@@ -780,6 +780,9 @@ if (finality) {
 /**
  * This function returns 0 if the given state is not final and a non-zero value
  * if the state is final.
+ *
+ * NOTE: if this implementation changes, you also have to modify the is_final_state_function
+ *       in OptimizedFst2.cpp
  */
 int is_final_state(Fst2State e) {
 if (e==NULL) {

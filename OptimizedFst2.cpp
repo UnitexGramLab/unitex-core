@@ -539,8 +539,281 @@ while (ptr!=NULL) {
    optimize_transition(v,output,fst2,ptr,new_state,tags,prv_alloc);
    ptr=ptr->next;
 }
-token_list_2_token_array(new_state,prv_alloc);
 return new_state;
+}
+
+
+/**
+ * This function must be updated if the implementation of 'is_final_state' changes
+ * in Fst2.cpp
+ */
+static int is_final_state(OptimizedFst2State e) {
+if (e==NULL) {
+   fatal_error("NULL error in is_final_state\n");
+}
+return e->control&1;
+}
+
+
+/**
+ * Returns 1 if the state is not final and has no outgoing transition; 0 otherwise.
+ */
+static int is_useless_state(OptimizedFst2State s) {
+return !is_final_state(s)
+		&& s->graph_calls==NULL
+		&& s->metas==NULL
+		&& s->patterns==NULL
+		&& s->compound_patterns==NULL
+		&& s->number_of_tokens==0
+		&& s->input_variable_starts==NULL
+		&& s->input_variable_ends==NULL
+		&& s->output_variable_starts==NULL
+		&& s->output_variable_ends==NULL
+		&& (s->contexts==NULL || (s->contexts->non_NULL_positive_transitions==0 && s->contexts->size_negative==0 && s->contexts->end_mark==NULL));
+}
+
+
+/**
+ * Returns a positive value if the given graph is not useless, i.e.
+ * its initial state is final and/or it has transitions; 0 otherwise.
+ */
+static int empty_graph(int graph,OptimizedFst2State* optimized_states,Fst2* fst2) {
+OptimizedFst2State initial=optimized_states[fst2->initial_states[graph]];
+return is_useless_state(initial);
+}
+
+
+/**
+ * Removes the useless graph calls, i.e. calls to an empty graph or calls
+ * to a state that has no outgoing transitions.
+ */
+static int remove_useless_graph_calls(struct opt_graph_call* *l,OptimizedFst2State* optimized_states,Fst2* fst2,
+		Abstract_allocator prv_alloc) {
+int removed=0;
+struct opt_graph_call* *tmp=l;
+while ((*tmp)!=NULL) {
+	if (empty_graph((*tmp)->graph_number,optimized_states,fst2)
+			|| is_useless_state(optimized_states[(*tmp)->transition->state_number])) {
+		/* We remove the graph call */
+		removed=1;
+		struct opt_graph_call* current=(*tmp);
+		(*tmp)=current->next;
+		current->next=NULL;
+		free_opt_graph_call(current,prv_alloc);
+	} else {
+		tmp=&((*tmp)->next);
+	}
+}
+return removed;
+}
+
+
+/**
+ * Removes the useless metas, i.e. metas to a state that has no outgoing transitions.
+ */
+static int remove_useless_metas(struct opt_meta* *l,OptimizedFst2State* optimized_states,
+		Abstract_allocator prv_alloc) {
+int removed=0;
+struct opt_meta* *tmp=l;
+while ((*tmp)!=NULL) {
+	if (is_useless_state(optimized_states[(*tmp)->transition->state_number])) {
+		/* We remove the meta */
+		removed=1;
+		struct opt_meta* current=(*tmp);
+		(*tmp)=current->next;
+		current->next=NULL;
+		free_opt_meta(current,prv_alloc);
+	} else {
+		tmp=&((*tmp)->next);
+	}
+}
+return removed;
+}
+
+
+/**
+ * Removes the useless patterns, i.e. patterns to a state that has no outgoing transitions.
+ */
+static int remove_useless_patterns(struct opt_pattern* *l,OptimizedFst2State* optimized_states,
+		Abstract_allocator prv_alloc) {
+int removed=0;
+struct opt_pattern* *tmp=l;
+while ((*tmp)!=NULL) {
+	if (is_useless_state(optimized_states[(*tmp)->transition->state_number])) {
+		/* We remove the pattern */
+		removed=1;
+		struct opt_pattern* current=(*tmp);
+		(*tmp)=current->next;
+		current->next=NULL;
+		free_opt_pattern(current,prv_alloc);
+	} else {
+		tmp=&((*tmp)->next);
+	}
+}
+return removed;
+}
+
+
+/**
+ * Removes the useless variables, i.e. variables to a state that has no outgoing transitions.
+ */
+static int remove_useless_variables(struct opt_variable* *l,OptimizedFst2State* optimized_states,
+		Abstract_allocator prv_alloc) {
+int removed=0;
+struct opt_variable* *tmp=l;
+while ((*tmp)!=NULL) {
+	if (is_useless_state(optimized_states[(*tmp)->transition->state_number])) {
+		/* We remove the variable */
+		removed=1;
+		struct opt_variable* current=(*tmp);
+		(*tmp)=current->next;
+		current->next=NULL;
+		free_opt_variable(current,prv_alloc);
+	} else {
+		tmp=&((*tmp)->next);
+	}
+}
+return removed;
+}
+
+
+/**
+ * Removes the useless contexts, i.e. contexts to a state that has no outgoing transitions.
+ */
+static int remove_useless_contexts(struct opt_contexts* c,OptimizedFst2State* optimized_states,
+		Abstract_allocator prv_alloc) {
+if (c==NULL) return 0;
+int removed=0;
+/* We filter the positive contexts */
+for (int i=0;i<c->size_positive;i+=2) {
+	/* We have two transitions to consider: the one outgoing from the context mark, and
+	 * the one pointing to the state after the end context mark. If either of those transitions
+	 * points to a useless states, we can remove both.
+	 */
+	if (c->positive_mark[i]==NULL || c->positive_mark[i+1]==NULL) {
+		continue;
+	}
+	int dest1=c->positive_mark[i]->state_number;
+	int dest2=c->positive_mark[i+1]->state_number;
+	if (is_useless_state(optimized_states[dest1]) || is_useless_state(optimized_states[dest2])) {
+		free_Transition_list(c->positive_mark[i],prv_alloc);
+		free_Transition_list(c->positive_mark[i+1],prv_alloc);
+		c->positive_mark[i]=NULL;
+		c->positive_mark[i+1]=NULL;
+		c->non_NULL_positive_transitions-=2;
+		removed=1;
+	}
+}
+/* We don't filter the negative contexts, because inside a negative context,
+ * a failure to match is significant. So, if we have a token 'foo' that cannot
+ * match, we must not try to trim the graph too much by removing the
+ * negative context mark or even modify its outgoing transitions.
+ */
+
+/* Finally, we filter the end context mark, if any */
+if (c->end_mark!=NULL) {
+	int dest=c->end_mark->state_number;
+	if (is_useless_state(optimized_states[dest])) {
+		free_Transition_list(c->end_mark);
+		c->end_mark=NULL;
+		removed=1;
+	}
+}
+return removed;
+}
+
+
+/**
+ * We return a copy of the list, without the transitions that pointed
+ * to a useless state.
+ */
+static Transition* filter_transitions(Transition* l,OptimizedFst2State* optimized_states,Abstract_allocator prv_alloc) {
+if (l==NULL) return NULL;
+l->next=filter_transitions(l->next,optimized_states,prv_alloc);
+if (is_useless_state(optimized_states[l->state_number])) {
+	Transition* tmp=l->next;
+	l->next=NULL;
+	free_Transition_list(l,prv_alloc);
+	return tmp;
+}
+return l;
+}
+
+
+/**
+ * Removes the useless tokens, i.e. tokens to a state that has no outgoing transitions.
+ */
+static int remove_useless_tokens(OptimizedFst2State state,OptimizedFst2State* optimized_states,
+		Abstract_allocator prv_alloc) {
+int removed=0;
+struct opt_token* *tmp=&(state->token_list);
+while ((*tmp)!=NULL) {
+	/* For each token, we have to filter its whole transition list */
+	(*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
+	if ((*tmp)->transition==NULL) {
+		/* We remove the token if all its transitions have been removed */
+		removed=1;
+		state->number_of_tokens--;
+		struct opt_token* current=(*tmp);
+		(*tmp)=current->next;
+		current->next=NULL;
+		free_opt_token(current,prv_alloc);
+	} else {
+		tmp=&((*tmp)->next);
+	}
+}
+return removed;
+}
+
+
+/**
+ * Removes the useless transitions from s. Returns 0 if no transition was removed, a positive value
+ * otherwise.
+ */
+static int remove_useless_transitions(OptimizedFst2State s,OptimizedFst2State* optimized_states,Fst2* fst2,
+		Abstract_allocator prv_alloc) {
+return remove_useless_graph_calls(&(s->graph_calls),optimized_states,fst2,prv_alloc)
+		+ remove_useless_metas(&(s->metas),optimized_states,prv_alloc)
+		+ remove_useless_patterns(&(s->patterns),optimized_states,prv_alloc)
+		+ remove_useless_patterns(&(s->compound_patterns),optimized_states,prv_alloc)
+		+ remove_useless_variables(&(s->input_variable_starts),optimized_states,prv_alloc)
+		+ remove_useless_variables(&(s->input_variable_ends),optimized_states,prv_alloc)
+        + remove_useless_variables(&(s->output_variable_starts),optimized_states,prv_alloc)
+        + remove_useless_variables(&(s->output_variable_ends),optimized_states,prv_alloc)
+        + remove_useless_contexts(s->contexts,optimized_states,prv_alloc)
+        + remove_useless_tokens(s,optimized_states,prv_alloc);
+}
+
+
+/**
+ * This function removes all useless transitions from the given graph. A useless
+ * transitions is a transition to a state that has no transition.
+ * Returns 1 the graph becomes empty; 0 otherwise.
+ */
+static int remove_useless_lexical_transitions(Fst2* fst2,int graph,OptimizedFst2State* optimized_states,
+							Abstract_allocator prv_alloc) {
+int initial=fst2->initial_states[graph];
+int last=initial+fst2->number_of_states_per_graphs[graph]-1;
+int cleaning_to_do=1;
+if (empty_graph(graph,optimized_states,fst2)) {
+	/* If the graph is already empty, there is nothing to report */
+	return 0;
+}
+while (cleaning_to_do) {
+	cleaning_to_do=0;
+	for (int i=initial;i<=last;i++) {
+		OptimizedFst2State s=optimized_states[i];
+		int removed=remove_useless_transitions(s,optimized_states,fst2,prv_alloc);
+		if (removed && !cleaning_to_do) {
+			/* This state may now be useless */
+			if (is_useless_state(s)) {
+				/* If this is the case, we will have another round to do on this graph */
+				cleaning_to_do=1;
+			}
+		}
+	}
+}
+return empty_graph(graph,optimized_states,fst2);
 }
 
 
@@ -555,6 +828,17 @@ if (optimized_states==NULL) {
 }
 for (int i=0;i<fst2->number_of_states;i++) {
    optimized_states[i]=optimize_state(v,output,fst2,fst2->states[i],fst2->tags,prv_alloc);
+}
+int n_graphs_emptied;
+do {
+	n_graphs_emptied=0;
+	for (int i=1;i<=fst2->number_of_graphs;i++) {
+		n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
+	}
+} while (n_graphs_emptied!=0);
+/* Finally, we convert token lists to sorted array suitable for binary search */
+for (int i=0;i<fst2->number_of_states;i++) {
+	token_list_2_token_array(optimized_states[i],prv_alloc);
 }
 return optimized_states;
 }
