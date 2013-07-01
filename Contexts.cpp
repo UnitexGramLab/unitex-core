@@ -109,6 +109,7 @@ c->positive_mark=NULL;
 c->size_positive=0;
 c->negative_mark=NULL;
 c->size_negative=0;
+c->non_NULL_positive_transitions=0;
 c->end_mark=NULL;
 return c;
 }
@@ -145,13 +146,14 @@ if (*contexts==NULL) {
    (*contexts)=new_opt_contexts(prv_alloc);
 }
 /* This test is deprecated and not to be ever used again. It stays
- * here as a comment to remind future coders no to use it
+ * here as a comment to remind future coders not to use it
 if ((*contexts)->positive_mark!=NULL) {
    fatal_error("Duplicate positive context mark\n");
 }*/
 int n=(*contexts)->size_positive;
 size_t old_size_realloc=(*contexts)->size_positive*sizeof(Transition*);
 (*contexts)->size_positive=(*contexts)->size_positive+2;
+(*contexts)->non_NULL_positive_transitions=(*contexts)->size_positive;
 size_t new_size_realloc=(*contexts)->size_positive*sizeof(Transition*);
 (*contexts)->positive_mark=(Transition**)realloc_cb((*contexts)->positive_mark,old_size_realloc,new_size_realloc,prv_alloc);
 if ((*contexts)->positive_mark==NULL) {

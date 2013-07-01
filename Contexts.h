@@ -52,6 +52,13 @@ struct opt_contexts {
    /* The same as for positive context marks */
    Transition** negative_mark;
    int size_negative;
+
+   /* The number of non NULL cells in the positive context array. This value may be different
+    * from size_positive in case some transitions were nulled
+    * for optimization reasons. Note that negative contexts must not be optimized (see
+    * comment above 'remove_useless_contexts' in 'OptimizedFst2.cpp'). */
+   int non_NULL_positive_transitions;
+
    Transition* end_mark;
 };
 
