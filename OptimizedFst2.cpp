@@ -733,7 +733,7 @@ for (int i=0;i<c->size_positive;i+=2) {
 if (c->end_mark!=NULL) {
 	int dest=c->end_mark->state_number;
 	if (is_useless_state(optimized_states[dest])) {
-		free_Transition_list(c->end_mark);
+		free_Transition_list(c->end_mark,prv_alloc);
 		c->end_mark=NULL;
 		removed=1;
 	}
