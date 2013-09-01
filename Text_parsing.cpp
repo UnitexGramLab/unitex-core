@@ -1380,6 +1380,10 @@ while (output_variable_list != NULL) {
 		for (int n_ctxt = 0; n_ctxt < contexts->size_positive; n_ctxt = n_ctxt
 				+ 2) {
 			t2 = contexts->positive_mark[n_ctxt];
+			if (t2==NULL) {
+				/* The optimization may have nulled transitions in this array */
+				continue;
+			}
 			/* We look for a positive context from the current position */
 			struct list_context* c = new_list_context(0, ctx);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
