@@ -25,8 +25,11 @@
  *      Author: David Nott, Nathalie Friburger (nathalie.friburger@univ-tours.fr)
  */
 
-#include "Cassys_transducer.h"
+
 #include <ctype.h>
+#include "Cassys.h"
+#include "Cassys_transducer.h"
+
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1

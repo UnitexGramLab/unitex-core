@@ -35,7 +35,6 @@
 #include "LocateConstants.h"
 #include "FileEncoding.h"
 #include "Error.h"
-#include "Cassys.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1

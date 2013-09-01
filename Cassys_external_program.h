@@ -29,7 +29,6 @@
 #define CASSYS_EXTERNAL_PROGRAM_H_
 
 
-#include "Cassys.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1

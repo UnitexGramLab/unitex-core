@@ -25,6 +25,7 @@
  *      Author: David Nott, Nathalie Friburger (nathalie.friburger@univ-tours.fr)
  */
 
+#include "Cassys.h"
 #include "Cassys_io.h"
 #include "Cassys_lexical_tags.h"
 
