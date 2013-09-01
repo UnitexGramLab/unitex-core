@@ -82,7 +82,7 @@ if (s[i]=='\0') {
 }
 s[i]='\0';
 i+=1;
-while (1) {
+for (;;) {
 	int start=i;
 	int j=i;
 	while (s[j]!='\0' && s[j]!=LEMMATIZE_DELIMITOR) {
