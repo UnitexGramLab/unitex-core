@@ -143,7 +143,7 @@ char *extract_cassys_disabled(const char *line);
 int extract_cassys_tranducer_star(const char *line);
 
 
-int is_debug_mode(transducer *t, const VersatileEncodingConfig* vec);
+bool is_debug_mode(transducer *t, const VersatileEncodingConfig* vec);
 
 }
 

@@ -437,7 +437,7 @@ OutputPolicy extract_cassys_transducer_policy(const char *line) {
 	return IGNORE_OUTPUTS;
 }
 
-int is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
+bool is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
 
 	U_FILE *graph_file;
 	graph_file = u_fopen(vec, t->transducer_file_name, U_READ);
@@ -446,7 +446,7 @@ int is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
 		exit(1);
 	}
 
-	unichar c = u_fgetc(graph_file);
+	unichar c = (unichar)u_fgetc(graph_file);
 
 	u_fclose(graph_file);
 

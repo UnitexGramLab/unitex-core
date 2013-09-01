@@ -322,7 +322,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
     int previous_transducer_number = 0;
     int previous_iteration = 0;
-    int iteration;
+    int iteration = 0;
 	while (!is_empty(transducer_list)) {
 
 		transducer *current_transducer =
