@@ -383,10 +383,10 @@ for (;;) {
             		  free(tmp);
             		  /* Then we copy all tokens until the last one */
                 	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
-                		  unichar* tmp = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
-                		  u_tolower(tmp);
-                		  push_input_string(stack,tmp,p->protect_dic_chars);
-                		  free(tmp);
+                		  unichar* tmp2 = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
+                		  u_tolower(tmp2);
+                		  push_input_string(stack,tmp2,p->protect_dic_chars);
+                		  free(tmp2);
                 	  }
 
                 	  /* Finally, we copy the last token */
@@ -487,10 +487,10 @@ for (;;) {
             		  free(tmp);
             		  /* Then we copy all tokens until the last one */
                 	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
-                		  unichar *tmp = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
-                		  u_toupper(tmp);
-                		  push_input_string(stack,tmp,p->protect_dic_chars);
-                		  free(tmp);
+                		  unichar *tmp2 = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
+                		  u_toupper(tmp2);
+                		  push_input_string(stack,tmp2,p->protect_dic_chars);
+                		  free(tmp2);
                 	  }
 
                 	  /* Finally, we copy the last token */
@@ -594,10 +594,10 @@ for (;;) {
             		  free(tmp);
             		  /* Then we copy all tokens until the last one */
                 	  for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
-                		  unichar* tmp = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
-                		  u_tolower(tmp);
-                		  push_input_string(stack,tmp,p->protect_dic_chars);
-                		  free(tmp);
+                		  unichar* tmp2 = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
+                		  u_tolower(tmp2);
+                		  push_input_string(stack,tmp2,p->protect_dic_chars);
+                		  free(tmp2);
                 	  }
 
                 	  /* Finally, we copy the last token */
