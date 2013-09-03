@@ -19,6 +19,10 @@
  *
  */
 
+/* AGGRESSIVE_OPTIMIZATION enable optimization from build 3420 to 3435, which have compatibility problems */
+// #define AGGRESSIVE_OPTIMIZATION
+
+
 #include "List_int.h"
 #include "LocatePattern.h"
 #include "OptimizedFst2.h"
@@ -539,9 +543,17 @@ while (ptr!=NULL) {
    optimize_transition(v,output,fst2,ptr,new_state,tags,prv_alloc);
    ptr=ptr->next;
 }
+
+#ifdef AGGRESSIVE_OPTIMIZATION
+#else // AGGRESSIVE_OPTIMIZATION
+token_list_2_token_array(new_state,prv_alloc);
+#endif // AGGRESSIVE_OPTIMIZATION
+
 return new_state;
 }
 
+
+#ifdef AGGRESSIVE_OPTIMIZATION
 
 /**
  * This function must be updated if the implementation of 'is_final_state' changes
@@ -818,6 +830,7 @@ while (cleaning_to_do) {
 return empty_graph(graph,optimized_states,fst2);
 }
 
+#endif // AGGRESSIVE_OPTIMIZATION
 
 /**
  * This function takes a fst2 and returns an array containing the corresponding
@@ -831,6 +844,8 @@ if (optimized_states==NULL) {
 for (int i=0;i<fst2->number_of_states;i++) {
    optimized_states[i]=optimize_state(v,output,fst2,fst2->states[i],fst2->tags,prv_alloc);
 }
+
+#ifdef AGGRESSIVE_OPTIMIZATION
 int n_graphs_emptied;
 do {
 	n_graphs_emptied=0;
@@ -842,6 +857,8 @@ do {
 for (int i=0;i<fst2->number_of_states;i++) {
 	token_list_2_token_array(optimized_states[i],prv_alloc);
 }
+#endif // AGGRESSIVE_OPTIMIZATION
+
 return optimized_states;
 }
 
