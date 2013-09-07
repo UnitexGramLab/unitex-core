@@ -557,6 +557,14 @@ int get_writing_encoding_text(char* text_encoding,size_t size_text_buffer,Encodi
     {
         case UTF16_LE : result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom"; break;
         case BIG_ENDIAN_UTF16 : result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom"; break;
+		case PLATFORM_DEPENDENT_UTF16 :
+			{
+				if (is_platform_little_endian())
+					result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom";
+				else
+					result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom";
+				break;
+			}
         case UTF8 : result = (bom == 1) ? "utf8-bom" : "utf8-no-bom"; break;
         case ASCII : result = "ascii"; break;
     }
@@ -986,6 +994,8 @@ switch(encoding) {
    case UTF16_LE: return u_fgetc_UTF16LE_raw(f);
    case BIG_ENDIAN_UTF16: return u_fgetc_UTF16BE_raw(f);
    case UTF8: return u_fgetc_UTF8_raw(f);
+   case PLATFORM_DEPENDENT_UTF16: return is_platform_little_endian() ? 
+                             u_fgetc_UTF16LE_raw(f) : u_fgetc_UTF16BE_raw(f);
    case ASCII: {
 	   unsigned char c;
 	   if (af_fread(&c,1,1,f)==1)
@@ -1044,7 +1054,9 @@ if (c==0x0D) {
       /* If there is no 0x0A after 0x0D, we put back the character */
       switch(encoding) {
          case UTF16_LE:
-         case BIG_ENDIAN_UTF16: {
+         case BIG_ENDIAN_UTF16:
+         case PLATFORM_DEPENDENT_UTF16:
+         {
             u_ungetc_raw(encoding,(unichar)c,f);
             break;
          }
@@ -1179,6 +1191,7 @@ int u_fputc_raw(Encoding encoding,unichar c,ABSTRACTFILE* f) {
 switch(encoding) {
    case UTF16_LE: return u_fputc_UTF16LE_raw(c,f);
    case BIG_ENDIAN_UTF16: return u_fputc_UTF16BE_raw(c,f);
+   case PLATFORM_DEPENDENT_UTF16: return is_platform_little_endian() ? u_fputc_UTF16LE_raw(c,f) : u_fputc_UTF16BE_raw(c,f);
    case UTF8: return u_fputc_UTF8_raw(c,f);
    case ASCII: return (af_fwrite(&c,1,1,f) == 1);
 }
@@ -1272,6 +1285,8 @@ int u_ungetc_raw(Encoding encoding,unichar c,ABSTRACTFILE *f) {
 switch(encoding) {
    case UTF16_LE: return u_ungetc_UTF16LE_raw(f);
    case BIG_ENDIAN_UTF16: return u_ungetc_UTF16BE_raw(f);
+   case PLATFORM_DEPENDENT_UTF16: return is_platform_little_endian() ?
+                                     u_ungetc_UTF16LE_raw(f) : u_ungetc_UTF16BE_raw(f);
    case UTF8: return u_ungetc_UTF8_raw(c,f);
    case ASCII: return af_ungetc(c,f);
 }
@@ -1794,13 +1809,29 @@ int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pB
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    break;
                }
-
+			   
            case BIG_ENDIAN_UTF16:
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                    break;
                }
+
+           case PLATFORM_DEPENDENT_UTF16:
+               {
+				   if (is_platform_little_endian())
+				   {
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+				   }
+				   else
+				   {
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+				   }
+                   break;
+               }
+
            case BINARY:
            {
         	   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c);
@@ -1876,6 +1907,21 @@ int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pB
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                   break;
+               }
+
+           case PLATFORM_DEPENDENT_UTF16:
+               {
+				   if (is_platform_little_endian())
+				   {
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+				   }
+				   else
+				   {
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+                     pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+				   }
                    break;
                }
 
