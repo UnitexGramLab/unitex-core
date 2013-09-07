@@ -37,6 +37,8 @@ typedef enum {
    BIG_ENDIAN_UTF16,
    UTF8,
    ASCII,
+   /* utf-16-platform option to create a file in native platform ordering byte */
+   PLATFORM_DEPENDENT_UTF16,
    BINARY=ASCII
 } Encoding;
 

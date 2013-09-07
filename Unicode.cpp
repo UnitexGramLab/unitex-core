@@ -371,6 +371,18 @@ const struct write_encoding_item write_encoding_item_list[] =
     { "utf16le", 7, UTF16_LE, 2 },
     { "utf16le-no-bom", 14, UTF16_LE, 0 },
     { "utf16le-bom", 11, UTF16_LE, 1 },
+	
+    { "utf-16-platform", 15, PLATFORM_DEPENDENT_UTF16, 2 },
+    { "utf-16-platform-no-bom", 22, PLATFORM_DEPENDENT_UTF16, 0 },
+    { "utf-16-platform-bom", 19, PLATFORM_DEPENDENT_UTF16, 1 },
+
+    { "utf16-platform", 14, PLATFORM_DEPENDENT_UTF16, 2 },
+    { "utf16-platform-no-bom", 21, PLATFORM_DEPENDENT_UTF16, 0 },
+    { "utf16-platform-bom", 18, PLATFORM_DEPENDENT_UTF16, 1 },
+
+    { "utf16platform", 13, PLATFORM_DEPENDENT_UTF16, 2 },
+    { "utf16platform-no-bom", 20, PLATFORM_DEPENDENT_UTF16, 0 },
+    { "utf16platform-bom", 17, PLATFORM_DEPENDENT_UTF16, 1 },
 
     { "little-endian", 13, UTF16_LE, 2 },
     { "little-endian-no-bom", 20, UTF16_LE, 0 },
@@ -498,6 +510,33 @@ int get_reading_encoding_text(char* text_encoding,size_t size_text_buffer,int ma
     return 1;
 }
 
+
+#if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
+     defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \
+     defined(_M_X64) || defined(_M_X86) || defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
+	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
+	 defined(__LITTLE_ENDIAN__) \
+           ) && (!(defined(INTEL_X86_LIKE_LITTLE_ENDIAN))))
+#define INTEL_X86_LIKE_LITTLE_ENDIAN 1
+#endif
+
+#ifdef INTEL_X86_LIKE_LITTLE_ENDIAN
+static bool is_platform_little_endian()
+{
+// printf("INTEL_X86_LIKE_LITTLE_ENDIAN is,");
+	return true;
+}
+#else
+static bool is_platform_little_endian()
+{
+const jchar i=1;
+const char *c=(const char*)&i;
+bool little_endian = ((*c) != 0);
+// printf("is_little_endian = %s\n",little_endian ? "y":"n");
+return little_endian;
+}
+#endif
+
 int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char* encoding_text)
 {
     char* lower_encoding_text=strdup_lower_case(encoding_text);
@@ -510,6 +549,8 @@ int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char
             {
                 *p_bom = write_encoding_item_list[i].bom;
                 *p_encoding = write_encoding_item_list[i].encoding;
+				if ((*p_encoding) == PLATFORM_DEPENDENT_UTF16)
+					*p_encoding = is_platform_little_endian() ? UTF16_LE : BIG_ENDIAN_UTF16;
                 free(lower_encoding_text);
                 return 1;
             }
