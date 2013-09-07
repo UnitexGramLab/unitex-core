@@ -511,31 +511,17 @@ int get_reading_encoding_text(char* text_encoding,size_t size_text_buffer,int ma
 }
 
 
-#if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
-     defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \
-     defined(_M_X64) || defined(_M_X86) || defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
-	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
-	 defined(__LITTLE_ENDIAN__) \
-           ) && (!(defined(INTEL_X86_LIKE_LITTLE_ENDIAN))))
-#define INTEL_X86_LIKE_LITTLE_ENDIAN 1
-#endif
 
-#ifdef INTEL_X86_LIKE_LITTLE_ENDIAN
+
 static bool is_platform_little_endian()
 {
-// printf("INTEL_X86_LIKE_LITTLE_ENDIAN is,");
-	return true;
-}
-#else
-static bool is_platform_little_endian()
-{
-const jchar i=1;
+const unichar i=1;
 const char *c=(const char*)&i;
 bool little_endian = ((*c) != 0);
-// printf("is_little_endian = %s\n",little_endian ? "y":"n");
+
 return little_endian;
 }
-#endif
+
 
 int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char* encoding_text)
 {
