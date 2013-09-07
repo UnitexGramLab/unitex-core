@@ -182,8 +182,13 @@ struct locate_parameters {
    /* The compound word tree*/
    struct DLC_tree_info* DLC_tree;
 
-   /* Array containing optimized states equivalent to the original fst2 ones */
+   /* Array containing optimized states equivalent to the original fst2 ones,
+    * with all useless transitions removed */
    OptimizedFst2State* optimized_states;
+   /* Differs from the previous because no transition is removed. It is used
+    * in morphological mode. See comment in function 'remove_useless_metas'.
+    */
+   OptimizedFst2State* optimized_states_morpho;
 
    /* The original fst2 */
    Fst2* fst2;

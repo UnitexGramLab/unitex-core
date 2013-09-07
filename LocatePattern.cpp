@@ -68,6 +68,7 @@ p->filter_match_index=NULL;
 #endif
 p->DLC_tree=NULL;
 p->optimized_states=NULL;
+p->optimized_states_morpho=NULL;
 p->fst2=NULL;
 p->tokens=NULL;
 p->current_origin=-1;
@@ -442,7 +443,8 @@ locate_recycle_abstract_allocator=create_abstract_allocator("locate_pattern_recy
                                  get_prefered_allocator_item_size_for_nb_variable(nb_input_variable));
 
 u_printf("Optimizing fst2...\n");
-p->optimized_states=build_optimized_fst2_states(p->input_variables,p->output_variables,p->fst2,locate_abstract_allocator);
+p->optimized_states=build_optimized_fst2_states(p->input_variables,p->output_variables,p->fst2,0,locate_abstract_allocator);
+p->optimized_states_morpho=build_optimized_fst2_states(p->input_variables,p->output_variables,p->fst2,1,locate_abstract_allocator);
 if (is_korean) {
 	p->korean=new Korean(p->alphabet);
 	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
@@ -474,6 +476,7 @@ int free_abstract_allocator_item=(get_allocator_cb_flag(locate_abstract_allocato
 
 if (free_abstract_allocator_item) {
   free_optimized_states(p->optimized_states,p->fst2->number_of_states,locate_abstract_allocator);
+  free_optimized_states(p->optimized_states_morpho,p->fst2->number_of_states,locate_abstract_allocator);
 }
 free_stack_unichar(p->stack);
 /** Too long to free the DLC tree if it is big

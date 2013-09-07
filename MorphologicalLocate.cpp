@@ -297,7 +297,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	(p->counting_step.count_cancel_trying)--;
 
 
-	OptimizedFst2State current_state = p->optimized_states[current_state_index];
+	OptimizedFst2State current_state = p->optimized_states_morpho[current_state_index];
 	Fst2State current_state_old = p->fst2->states[current_state_index];
 	int token;
 	Transition* t;
@@ -1360,6 +1360,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 
 			p->weight=L->weight;
+			/* Here, we actually use the optimized_states array and not the
+			 * optimized_states_morpho one, because we are outside the morphological mode
+			 */
 			locate(/*graph_depth, */p->optimized_states[L->state_number],
 					L->pos_in_tokens, matches, n_matches, ctx, p);
             /*

@@ -20,7 +20,7 @@
  */
 
 /* AGGRESSIVE_OPTIMIZATION enable optimization from build 3420 to 3435, which have compatibility problems */
-// #define AGGRESSIVE_OPTIMIZATION
+#define AGGRESSIVE_OPTIMIZATION
 
 
 #include "List_int.h"
@@ -644,9 +644,23 @@ static int remove_useless_metas(struct opt_meta* *l,OptimizedFst2State* optimize
 int removed=0;
 struct opt_meta* *tmp=l;
 while ((*tmp)!=NULL) {
+	if ((*tmp)->meta==META_BEGIN_MORPHO) {
+		/* We must not remove the $< meta, even if there is no outgoing transition. The reason
+		 * is that the optimization may remove transitions inside the morphological mode zone
+		 * in the graph, and that we should ignore it when entering the morphological mode
+		 * using the original unoptimized fst2. For instance, if we want to match the word
+		 * "prefix" with:
+		 *
+		 *  $<  -->  "pre"  -->  "fix"  -->  $>
+		 *
+		 * the graph would be erroneousnly emptied if the text does not contain both "pre" and
+		 * "fix" as tokens.
+		 */
+		tmp=&((*tmp)->next);
+		continue;
+	}
 	(*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
 	if ((*tmp)->transition==NULL) {
-		/* We remove the meta */
 		removed=1;
 		struct opt_meta* current=(*tmp);
 		(*tmp)=current->next;
@@ -836,7 +850,8 @@ return empty_graph(graph,optimized_states,fst2);
  * This function takes a fst2 and returns an array containing the corresponding
  * optimized states.
  */
-OptimizedFst2State* build_optimized_fst2_states(Variables* v,OutputVariables* output,Fst2* fst2,Abstract_allocator prv_alloc) {
+OptimizedFst2State* build_optimized_fst2_states(Variables* v,OutputVariables* output,Fst2* fst2,
+		int morphological_mode_compliant,Abstract_allocator prv_alloc) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc_cb(fst2->number_of_states*sizeof(OptimizedFst2State),prv_alloc);
 if (optimized_states==NULL) {
    fatal_alloc_error("build_optimized_fst2_states");
@@ -846,14 +861,15 @@ for (int i=0;i<fst2->number_of_states;i++) {
 }
 
 #ifdef AGGRESSIVE_OPTIMIZATION
-int n_graphs_emptied;
-do {
-	n_graphs_emptied=0;
-	for (int i=1;i<=fst2->number_of_graphs;i++) {
-		n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
-	}
-} while (n_graphs_emptied!=0);
-/* Finally, we convert token lists to sorted array suitable for binary search */
+if (!morphological_mode_compliant) {
+	int n_graphs_emptied;
+	do {
+		n_graphs_emptied=0;
+		for (int i=1;i<=fst2->number_of_graphs;i++) {
+			n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
+		}
+	} while (n_graphs_emptied!=0);
+}/* Finally, we convert token lists to sorted array suitable for binary search */
 for (int i=0;i<fst2->number_of_states;i++) {
 	token_list_2_token_array(optimized_states[i],prv_alloc);
 }

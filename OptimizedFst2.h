@@ -121,6 +121,7 @@ struct opt_variable {
  * the original fst2 state are grouped here by kind.
  */
 struct optimizedFst2State {
+  int original_fst2_state;
   unsigned char control;
   struct opt_graph_call* graph_calls;
   struct opt_meta* metas;
@@ -140,7 +141,7 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,Abstract_allocator);
+OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,int,Abstract_allocator);
 void free_optimized_states(OptimizedFst2State*,int,Abstract_allocator);
 
 } // namespace unitex
