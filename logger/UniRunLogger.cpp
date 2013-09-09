@@ -259,6 +259,31 @@ char* get_filename_withoutpath_portion(char* fn)
     return filename_withoutpath;
 }
 
+
+void cleanup_filename_inzip_minivfs(char* fn)
+{
+	if (fn == NULL)
+		return;
+	for (;;)
+	{
+		if ((*fn)=='\0')
+			return;
+		
+		
+		//if ((*fn) == '$')
+		if ((*fn) != '\0')
+			if ((*(fn+1)) == ':')
+			{
+				size_t len_after = strlen(fn+2);
+				for (size_t i=0;i<len_after;i++)
+					*(fn+i) = * (fn+i+2);
+				*(fn+len_after) = '\0';
+				continue;
+			}
+		fn++;
+	}
+}
+
 int do_extracting_currentfile(
     unzFile uf,
     char* write_filename,
@@ -279,6 +304,7 @@ int do_extracting_currentfile(
     unz_file_info file_info;
     //uLong ratio=0;
     err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+	cleanup_filename_inzip_minivfs(filename_inzip);
 
     filename_touse = (write_filename != NULL) ? write_filename : filename_inzip;
 
@@ -786,6 +812,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                   char filename_inzip[256];
                   unz_file_info file_info;
                   err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+				  cleanup_filename_inzip_minivfs(filename_inzip);
 
                   if ((strcmp(filename_inzip,"test_info/command_line.txt")==0))
                   {
@@ -817,6 +844,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
 					  char filename_inzip[256];
 					  unz_file_info file_info;
 					  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+					  cleanup_filename_inzip_minivfs(filename_inzip);
 
 					  if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
 					  {
@@ -889,6 +917,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
           char filename_inzip[256];
           unz_file_info file_info;
           err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+		  cleanup_filename_inzip_minivfs(filename_inzip);
 
           if (memcmp(filename_inzip,"src/",4)==0)
           {
@@ -951,6 +980,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
 			  char filename_inzip[256];
 			  unz_file_info file_info;
 			  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+			  cleanup_filename_inzip_minivfs(filename_inzip);
 
 
 			  if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
@@ -1041,7 +1071,8 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                   int is_bin = ((strcmp(ext3,".bin")==0) || (strcmp(ext3,".BIN")==0) || (strcmp(ext3,".Bin")==0));
                   int is_bin2 = ((strcmp(ext4,".bin2")==0) || (strcmp(ext4,".BIN2")==0) || (strcmp(ext4,".Bin2")==0));
                   int is_fst2 = ((strcmp(ext4,".fst2")==0) || (strcmp(ext4,".FST2")==0) || (strcmp(ext4,".Fst2")==0));
-                  if (is_bin || is_bin2 || is_fst2)
+                  int is_txt = (strcmp(ext3,".txt")==0);
+                  if (is_bin || is_bin2 || is_fst2 || is_txt)
                   {
                       ABSTRACTFILE* tryOpen = af_fopen(portionFileName,"rb");
                       if (tryOpen != NULL)
@@ -1140,6 +1171,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                   char filename_inzip[256];
                   unz_file_info file_info;
                   err2 = unzGetCurrentFileInfo(ufNewLog,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+				  cleanup_filename_inzip_minivfs(filename_inzip);
 
                   if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
                   {

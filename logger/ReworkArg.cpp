@@ -66,6 +66,19 @@ unsigned int get_filename_withoutpath_position(const char*filename)
             if (c_after != '\0')
                 ret=curpos+1;
         }
+		else
+			if (c=='$')
+				if (*(filename+1)==':')
+				{
+					char c_after=*(filename+2);
+					if (c_after != '\0')
+					{
+						curpos++;
+						ret=curpos+1;
+						filename++;
+					}
+				}
+
         filename++;
         curpos++;
     }
@@ -78,8 +91,27 @@ const char* get_filename_to_copy(const char*filename,int skip_star)
     const char* filenamecpy=filename;
 
     if (skip_star != 0)
-        while (((*filenamecpy)== '*') || ((*(filenamecpy))== '#') || ((*(filenamecpy))== '+'))
-            filenamecpy++;
+	{
+		for (;;)
+		{
+			int stop = 1;
+			if (((*filenamecpy)== '*') || ((*(filenamecpy))== '#') || ((*(filenamecpy))== '+'))
+			{
+				filenamecpy ++;
+				stop = 0;
+			}
+
+			if ((*filenamecpy) == '$')
+				if ((*(filenamecpy+1)) == ':')
+				{
+					filenamecpy += 2;
+					stop = 0;
+				}
+
+			if (stop == 1)
+				break;
+		}
+	}
 
     if (((*filenamecpy)== '\\') && ((*(filenamecpy+1))== '\\'))
     {
@@ -206,8 +238,26 @@ const char* GetFileNameRemovePrefixIfFound(const char* filename,const char*porti
 
 const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy)
 {
-    while (((*filenamecpy) == '*') || ((*filenamecpy)== '#') || ((*filenamecpy)== '+'))
-        filenamecpy++;
+ 	for (;;)
+		{
+			int stop = 1;
+			if (((*filenamecpy)== '*') || ((*(filenamecpy))== '#') || ((*(filenamecpy))== '+'))
+			{
+				filenamecpy ++;
+				stop = 0;
+			}
+
+			if ((*filenamecpy) == '$')
+				if ((*(filenamecpy+1)) == ':')
+				{
+					filenamecpy += 2;
+					stop = 0;
+				}
+
+			if (stop == 1)
+				break;
+		}
+
 
     if (((*filenamecpy)== '\\') && ((*(filenamecpy+1))== '\\'))
     {
