@@ -1076,7 +1076,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                   int is_bin = ((strcmp(ext3,".bin")==0) || (strcmp(ext3,".BIN")==0) || (strcmp(ext3,".Bin")==0));
                   int is_bin2 = ((strcmp(ext4,".bin2")==0) || (strcmp(ext4,".BIN2")==0) || (strcmp(ext4,".Bin2")==0));
                   int is_fst2 = ((strcmp(ext4,".fst2")==0) || (strcmp(ext4,".FST2")==0) || (strcmp(ext4,".Fst2")==0));
-                  int is_txt = (strcmp(ext3,".txt")==0);
+                  int is_txt =  ((strcmp(ext3,".txt")==0) || (strcmp(ext3,".TXT")==0) || (strcmp(ext3,".Txt")==0));;
                   if (is_bin || is_bin2 || is_fst2 || is_txt)
                   {
                       ABSTRACTFILE* tryOpen = af_fopen(portionFileName,"rb");
