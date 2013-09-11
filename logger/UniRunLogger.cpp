@@ -779,9 +779,10 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
         if ((*LocationUnfoundVirtualRessource)=='\0')
             LocationUnfoundVirtualRessource=NULL;
 
+    size_t len_LocationUnfoundVirtualRessource = 0;
     if (LocationUnfoundVirtualRessource != NULL)
     {
-        size_t len_LocationUnfoundVirtualRessource = strlen(LocationUnfoundVirtualRessource);
+        len_LocationUnfoundVirtualRessource = strlen(LocationUnfoundVirtualRessource);
         if (len_LocationUnfoundVirtualRessource>0)
             if (((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '/') && 
                 ((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '\\'))
@@ -1025,7 +1026,9 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
       char* buf_arg = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) + 0x100);
       char** argv_log = (char**)malloc(sizeof(char*) * (nb_max_arg_for_allocwide+2+1));
 
-      char* buf_arg_reworked = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) + 0x100);
+      char* buf_arg_reworked = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) + 
+		                                     size_command_line + (nb_max_arg_for_allocwide * len_LocationUnfoundVirtualRessource + 4) +
+		                                     0x100);
       const char** argv_log_reworked = (const char**)malloc(sizeof(char*) * (nb_max_arg_for_allocwide+2+1));
 
       char *walk_arg = command_line_buf;
@@ -1058,6 +1061,8 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
           const char* portionFileNameFromParam=NULL;
           reworkCommandLineAddPrefix(next_buf_arg_reworked,*(argv_log+walk),
                FileRunPath,&portionFileName,&portionFileNameFromParam);
+          size_t posFileNameInArg = portionFileName - next_buf_arg_reworked;
+
           *(argv_log_reworked+walk+1) = next_buf_arg_reworked;
           next_buf_arg_reworked += strlen(next_buf_arg_reworked) + 1;
           //u_printf("%d\n'%s'\n'%s'\n\n",walk,*(argv_log+walk),*(argv_log_reworked+walk+1));
@@ -1088,28 +1093,43 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                           if (is_filename_in_abstract_file_space(portionFileName) == 0)
                             mkdir_recursive(portionFileName,0,pdlfc);
 
-                          if ((af_copy_unlogged(filename_on_location_res,portionFileName) == 0) && (list_file_fromarg_todel != NULL))
+                          // if iCopyResFile == 0, change argument instead copy resource
+                          int iCopyResFile = 1;
+                          if (iCopyResFile)
                           {
-                              ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
-                                  strdup(portionFileName);
-                              list_file_fromarg_todel->iNbFile++;
-                          }
+							  if ((af_copy_unlogged(filename_on_location_res,portionFileName) == 0) && (list_file_fromarg_todel != NULL))
+							  {
+								  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
+									  strdup(portionFileName);
+								  list_file_fromarg_todel->iNbFile++;
+							  }
 
-                          if (is_bin)
-                          {
-                              char portionFileNameInf[256];
-                              strcpy(portionFileNameInf,portionFileName);
-                              strcpy(filename_on_location_res+strlen(filename_on_location_res)-4,".inf");
-                              strcpy(portionFileNameInf+strlen(portionFileNameInf)-4,".inf");
-                              af_copy_unlogged(filename_on_location_res,portionFileNameInf);
+							  if (is_bin)
+							  {
+								  char portionFileNameInf[256];
+								  strcpy(portionFileNameInf,portionFileName);
+								  strcpy(filename_on_location_res+strlen(filename_on_location_res)-4,".inf");
+								  strcpy(portionFileNameInf+strlen(portionFileNameInf)-4,".inf");
+								  af_copy_unlogged(filename_on_location_res,portionFileNameInf);
 
-                              if ((af_copy_unlogged(filename_on_location_res,portionFileNameInf) == 0) && (list_file_fromarg_todel != NULL))
-                              {
-                                  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
-                                      strdup(portionFileNameInf);
-                                  list_file_fromarg_todel->iNbFile++;
-                              }
+								  if ((af_copy_unlogged(filename_on_location_res,portionFileNameInf) == 0) && (list_file_fromarg_todel != NULL))
+								  {
+									  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
+										  strdup(portionFileNameInf);
+									  list_file_fromarg_todel->iNbFile++;
+								  }
+							  }
                           }
+						  else
+						  {
+							  // build in next_buf_arg_reworked
+							  
+							  strcpy(next_buf_arg_reworked,*(argv_log_reworked+walk+1));
+							  strcpy(next_buf_arg_reworked+posFileNameInArg,filename_on_location_res);
+
+							  *(argv_log_reworked+walk+1) = next_buf_arg_reworked;
+							  next_buf_arg_reworked += strlen(next_buf_arg_reworked) + 1;
+						  }
                       }
                   }
               }
