@@ -101,7 +101,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_Duplicat
              input_file = vars->optarg; 
              do_move=1; 
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free_OptVars(vars); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_DuplicateFile[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -148,6 +148,7 @@ else {
     result=af_remove(output_file);
 }
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
+free_OptVars(vars);
 return result;
 }
 
