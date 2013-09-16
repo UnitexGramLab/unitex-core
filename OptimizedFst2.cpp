@@ -38,6 +38,63 @@
 
 namespace unitex {
 
+
+/**
+ * This function looks for morphological mode ends in the given fst2.
+ */
+static void look_for_closing_morphological_mode(Fst2* fst2,int state,Transition** list,
+                                   struct bit_array* marker,int nesting_level,Abstract_allocator prv_alloc) {
+if (get_value(marker,state)) {
+   /* Nothing to do if this state has already been visited */
+   return;
+}
+/* Otherwise, we mark the state */
+set_value(marker,state,1);
+/* And we look all its outgoing transitions */
+Transition* ptr=fst2->states[state]->transitions;
+while (ptr!=NULL) {
+   if (ptr->tag_number>=0) {
+      /* If we have a tag, we check if it is a context mark */
+      Fst2Tag tag=fst2->tags[ptr->tag_number];
+      switch (tag->type) {
+         /* If we have a morphological mode end mark */
+         case END_MORPHO_TAG: {
+        	 add_transition_if_not_present(list,ptr->tag_number,ptr->state_number,prv_alloc);
+        	 break;
+         }
+         /* If we an another type of transition, we follow it */
+         default: look_for_closing_morphological_mode(fst2,ptr->state_number,list,marker,nesting_level,prv_alloc);
+      }
+   }
+   else {
+      /* If we have a graph call, we follow it */
+	   look_for_closing_morphological_mode(fst2,ptr->state_number,list,marker,nesting_level,prv_alloc);
+   }
+   ptr=ptr->next;
+}
+}
+
+
+/**
+ * This function explores the given fst2 from the given state and looks for
+ * transition tagged by the closing context mark "$>". Such transitions are added to
+ * the given list. We don't have to care about nested $< and $> tags, because
+ * this is forbidden by Locate.
+ */
+static void get_reachable_closing_morphological_mode(Fst2* fst2,int state,Transition** list,Abstract_allocator prv_alloc) {
+/* we declare a bit array in order to mark states that have already been visited.
+ * Note that we could use a bit array with a smaller length, since the only states
+ * that will be explored are in the same subgraph that the one containing the
+ * given start state. */
+struct bit_array* marker=new_bit_array(fst2->number_of_states,ONE_BIT,prv_alloc);
+(*list)=NULL;
+look_for_closing_morphological_mode(fst2,state,list,marker,0,prv_alloc);
+free_bit_array(marker,prv_alloc);
+}
+
+
+
+
 /**
  * Allocates, initializes and returns a new optimized graph call.
  */
@@ -251,6 +308,7 @@ m->meta=meta;
 m->negation=(char)negation;
 m->transition=NULL;
 m->next=NULL;
+m->morphological_mode_ends=NULL;
 return m;
 }
 
@@ -262,6 +320,7 @@ void free_opt_meta(struct opt_meta* list,Abstract_allocator prv_alloc) {
 struct opt_meta* tmp;
 while (list!=NULL) {
    free_Transition_list(list->transition,prv_alloc);
+   free_Transition_list(list->morphological_mode_ends,prv_alloc);
    tmp=list;
    list=list->next;
    free_cb(tmp,prv_alloc);
@@ -272,7 +331,7 @@ while (list!=NULL) {
 /**
  * This function adds the given meta to the given meta list.
  */
-void add_meta(enum meta_symbol meta,Transition* transition,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
+struct opt_meta* add_meta(enum meta_symbol meta,Transition* transition,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
 struct opt_meta* ptr=*meta_list;
 /* We look for a meta with the same properties */
 while (ptr!=NULL && !(ptr->meta==meta && ptr->negation==negation)) {
@@ -286,6 +345,7 @@ if (ptr==NULL) {
 }
 /* Then, we add the transition to the meta */
 add_transition_if_not_present(&(ptr->transition),transition->tag_number,transition->state_number,prv_alloc);
+return ptr;
 }
 
 
@@ -426,7 +486,11 @@ switch (tag->type) {
    case BEGIN_NEGATIVE_CONTEXT_TAG: add_negative_context(fst2,state,transition,prv_alloc); return;
    case END_CONTEXT_TAG: add_end_context(state,transition,prv_alloc); return;
    case LEFT_CONTEXT_TAG: add_meta(META_LEFT_CONTEXT,transition,&(state->metas),0,prv_alloc); return;
-   case BEGIN_MORPHO_TAG: add_meta(META_BEGIN_MORPHO,transition,&(state->metas),0,prv_alloc); return;
+   case BEGIN_MORPHO_TAG: {
+	   struct opt_meta* new_meta=add_meta(META_BEGIN_MORPHO,transition,&(state->metas),0,prv_alloc);
+	   get_reachable_closing_morphological_mode(fst2,transition->state_number,&(new_meta->morphological_mode_ends),prv_alloc);
+	   return;
+   }
    case END_MORPHO_TAG: add_meta(META_END_MORPHO,transition,&(state->metas),0,prv_alloc); return;
    case TEXT_START_TAG: add_meta(META_TEXT_START,transition,&(state->metas),0,prv_alloc); return;
    case TEXT_END_TAG: add_meta(META_TEXT_END,transition,&(state->metas),0,prv_alloc); return;
@@ -652,6 +716,22 @@ return l;
 
 
 /**
+ * Returns 1 if all the optimized states pointed by the given transitions have no transition;
+ * 0 otherwise.
+ */
+static int can_safely_remove_morphological_mode_start(Transition* morphological_mode_ends,OptimizedFst2State* optimized_states) {
+while (morphological_mode_ends!=NULL) {
+	OptimizedFst2State dest=optimized_states[morphological_mode_ends->state_number];
+	if (!is_useless_state(dest)) {
+		return 0;
+	}
+	morphological_mode_ends=morphological_mode_ends->next;
+}
+return 1;
+}
+
+
+/**
  * Removes the useless metas, i.e. metas to a state that has no outgoing transitions.
  */
 static int remove_useless_metas(struct opt_meta* *l,struct opt_meta* *removed_metas,OptimizedFst2State* optimized_states,
@@ -659,7 +739,8 @@ static int remove_useless_metas(struct opt_meta* *l,struct opt_meta* *removed_me
 int removed=0;
 struct opt_meta* *tmp=l;
 while ((*tmp)!=NULL) {
-	if ((*tmp)->meta==META_BEGIN_MORPHO) {
+	if ((*tmp)->meta==META_BEGIN_MORPHO &&
+			!can_safely_remove_morphological_mode_start((*tmp)->morphological_mode_ends,optimized_states)) {
 		/* We must not remove the $< meta, even if there is no outgoing transition. The reason
 		 * is that the optimization may remove transitions inside the morphological mode zone
 		 * in the graph, and that we should ignore it when entering the morphological mode
@@ -670,6 +751,9 @@ while ((*tmp)!=NULL) {
 		 *
 		 * the graph would be erroneousnly emptied if the text does not contain both "pre" and
 		 * "fix" as tokens.
+		 *
+		 * The only case where we can safely remove a $< meta is when all the matching $> metas
+		 * have themselves no outgoing transitions anymore.
 		 */
 		tmp=&((*tmp)->next);
 		continue;

@@ -82,6 +82,10 @@ struct opt_meta {
   char negation;
   Transition* transition;
   struct opt_meta* next;
+  /* This extra field is only relevant for the $< tag. It is
+   * used to know where the matching $> tags are.
+   */
+  Transition* morphological_mode_ends;
 };
 
 
