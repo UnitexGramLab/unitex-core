@@ -213,7 +213,12 @@ while (j < new_offsets->nbelems) {
 	/* Default case: A_AFTER_B */
 	save_offsets(f, y.old_start + shift_A, y.old_end + shift_A
 			+ B_includes_A_shift, y.new_start, y.new_end);
-	shift_A+=B_includes_A_shift;
+	/* The following line was introduced as a bug fix in r2771, but
+	 * it caused several problems. Since commenting it out solve
+	 * all those issues, let's do. If someone steps again on the bug
+	 * that this line was fixing, we will check this out again.
+	 */
+	//shift_A+=B_includes_A_shift;
 	B_includes_A_shift = 0;
 	shift_B = y.new_end - y.old_end;
 }
