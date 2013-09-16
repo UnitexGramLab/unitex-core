@@ -297,7 +297,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	(p->counting_step.count_cancel_trying)--;
 
 
-	OptimizedFst2State current_state = p->optimized_states_morpho[current_state_index];
+	OptimizedFst2State current_state = p->optimized_states[current_state_index];
 	Fst2State current_state_old = p->fst2->states[current_state_index];
 	int token;
 	Transition* t;
@@ -389,7 +389,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * SUBGRAPHS
 	 */
-	struct opt_graph_call* graph_call_list = current_state->graph_calls;
+	struct opt_graph_call* tmp[]={current_state->graph_calls,current_state->removed_graph_calls};
+	for (int i=0;i<2;i++) {
+	struct opt_graph_call* graph_call_list=tmp[i];
 	if (graph_call_list != NULL) {
 		/* If there are subgraphs, we process them */
 		int old_StackBase = p->stack_base;
@@ -522,7 +524,10 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					p->backup_memory_reserve = reserve_previous;
 				}
 			}
+	}
 	} /* End of processing subgraphs */
+
+
 
 	/* This variable will be used to store the results provided by <DIC>. It
 	 * is useful to cache the exploration of the morphological dictionaries,
@@ -535,7 +540,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * METAS
 	 */
-	struct opt_meta* meta_list = current_state->metas;
+	struct opt_meta* tmp2[]={current_state->metas,current_state->removed_metas};
+	for (int i=0;i<2;i++) {
+	struct opt_meta* meta_list=tmp2[i];
 	while (meta_list != NULL) {
 		/* We process all the meta of the list */
 		t = meta_list->transition;
@@ -902,11 +909,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		}
 		meta_list = meta_list->next;
 	}
+	} /* End of meta processing */
 
 	/**
 	 * OUTPUT VARIABLE STARTS
 	 */
-	struct opt_variable* variable_list = current_state->output_variable_starts;
+	struct opt_variable* tmp3[]={current_state->output_variable_starts,current_state->removed_output_variable_starts};
+	for (int i=0;i<2;i++) {
+	struct opt_variable* variable_list=tmp3[i];
 	while (variable_list != NULL) {
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -917,12 +927,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		p->stack->stack_pointer = stack_top;
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
+	}
 	}
 
 	/**
 	 * OUTPUT VARIABLE ENDS
 	 */
-	variable_list = current_state->output_variable_ends;
+	struct opt_variable* tmp4[]={current_state->output_variable_ends,current_state->removed_output_variable_ends};
+	for (int i=0;i<2;i++) {
+	struct opt_variable* variable_list=tmp4[i];
 	while (variable_list != NULL) {
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -934,11 +947,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
 	}
+	}
 
 	/**
 	 * VARIABLE STARTS
 	 */
-	variable_list = current_state->input_variable_starts;
+	struct opt_variable* tmp5[]={current_state->input_variable_starts,current_state->removed_input_variable_starts};
+	for (int i=0;i<2;i++) {
+	struct opt_variable* variable_list=tmp5[i];
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token = get_variable_start(p->input_variables,
@@ -967,12 +983,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		}
 		variable_list = variable_list->next;
 	}
+	}
 
 	/**
 	 * VARIABLE ENDS
 	 */
+	struct opt_variable* tmp6[]={current_state->input_variable_ends,current_state->removed_input_variable_ends};
+	for (int i=0;i<2;i++) {
+	struct opt_variable* variable_list=tmp6[i];
 	variable_list = current_state->input_variable_ends;
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
@@ -1008,8 +1027,8 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		}
 		variable_list = variable_list->next;
 	}
+	}
 
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 	if (token == -1 || token == p->STOP) {
 		/* We can't match anything if we are at the end of the buffer or if
@@ -1361,7 +1380,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			p->weight=L->weight;
 			/* Here, we actually use the optimized_states array and not the
-			 * optimized_states_morpho one, because we are outside the morphological mode
+			 * because we are outside the morphological mode
 			 */
 			locate(/*graph_depth, */p->optimized_states[L->state_number],
 					L->pos_in_tokens, matches, n_matches, ctx, p);

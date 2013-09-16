@@ -133,6 +133,18 @@ struct optimizedFst2State {
   struct opt_variable* output_variable_starts;
   struct opt_variable* output_variable_ends;
   struct opt_contexts* contexts;
+  /* The following structure will contain all the
+   * transitions removed by the optimization, because
+   * all those removed transitions will be needed by
+   * the morphological mode
+   */
+  struct opt_graph_call* removed_graph_calls;
+  struct opt_meta* removed_metas;
+  struct opt_variable* removed_input_variable_starts;
+  struct opt_variable* removed_input_variable_ends;
+  struct opt_variable* removed_output_variable_starts;
+  struct opt_variable* removed_output_variable_ends;
+
   int* tokens;
   int number_of_tokens;
   Transition** token_transitions;
@@ -141,7 +153,7 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,int,Abstract_allocator);
+OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,Abstract_allocator);
 void free_optimized_states(OptimizedFst2State*,int,Abstract_allocator);
 
 } // namespace unitex

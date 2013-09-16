@@ -498,6 +498,12 @@ state->input_variable_ends=NULL;
 state->output_variable_starts=NULL;
 state->output_variable_ends=NULL;
 state->contexts=NULL;
+state->removed_graph_calls=NULL;
+state->removed_metas=NULL;
+state->removed_input_variable_starts=NULL;
+state->removed_input_variable_ends=NULL;
+state->removed_output_variable_starts=NULL;
+state->removed_output_variable_ends=NULL;
 return state;
 }
 
@@ -524,6 +530,12 @@ if (state->token_transitions!=NULL) {
    }
    free_cb(state->token_transitions,prv_alloc);
 }
+free_opt_graph_call(state->removed_graph_calls,prv_alloc);
+free_opt_meta(state->removed_metas,prv_alloc);
+free_opt_variable(state->removed_input_variable_starts,prv_alloc);
+free_opt_variable(state->removed_input_variable_ends,prv_alloc);
+free_opt_variable(state->removed_output_variable_starts,prv_alloc);
+free_opt_variable(state->removed_output_variable_ends,prv_alloc);
 free_cb(state,prv_alloc);
 }
 
@@ -599,7 +611,8 @@ return is_useless_state(initial);
  * Removes the useless graph calls, i.e. calls to an empty graph or calls
  * to a state that has no outgoing transitions.
  */
-static int remove_useless_graph_calls(struct opt_graph_call* *l,OptimizedFst2State* optimized_states,Fst2* fst2,
+static int remove_useless_graph_calls(struct opt_graph_call* *l,struct opt_graph_call* *removed_graph_calls,
+		OptimizedFst2State* optimized_states,Fst2* fst2,
 		Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_graph_call* *tmp=l;
@@ -610,8 +623,10 @@ while ((*tmp)!=NULL) {
 		removed=1;
 		struct opt_graph_call* current=(*tmp);
 		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_graph_call(current,prv_alloc);
+		/* We move this transition to the removed ones list */
+		current->next=*removed_graph_calls;
+		*removed_graph_calls=current;
+		//free_opt_graph_call(current,prv_alloc);
 	} else {
 		tmp=&((*tmp)->next);
 	}
@@ -639,7 +654,7 @@ return l;
 /**
  * Removes the useless metas, i.e. metas to a state that has no outgoing transitions.
  */
-static int remove_useless_metas(struct opt_meta* *l,OptimizedFst2State* optimized_states,
+static int remove_useless_metas(struct opt_meta* *l,struct opt_meta* *removed_metas,OptimizedFst2State* optimized_states,
 		Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_meta* *tmp=l;
@@ -664,8 +679,9 @@ while ((*tmp)!=NULL) {
 		removed=1;
 		struct opt_meta* current=(*tmp);
 		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_meta(current,prv_alloc);
+		current->next=*removed_metas;
+		*removed_metas=current;
+		//free_opt_meta(current,prv_alloc);
 	} else {
 		tmp=&((*tmp)->next);
 	}
@@ -701,7 +717,8 @@ return removed;
 /**
  * Removes the useless variables, i.e. variables to a state that has no outgoing transitions.
  */
-static int remove_useless_variables(struct opt_variable* *l,OptimizedFst2State* optimized_states,
+static int remove_useless_variables(struct opt_variable* *l,struct opt_variable* *removed_variables,
+		OptimizedFst2State* optimized_states,
 		Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_variable* *tmp=l;
@@ -712,8 +729,9 @@ while ((*tmp)!=NULL) {
 		removed=1;
 		struct opt_variable* current=(*tmp);
 		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_variable(current,prv_alloc);
+		current->next=*removed_variables;
+		*removed_variables=current;
+		//free_opt_variable(current,prv_alloc);
 	} else {
 		tmp=&((*tmp)->next);
 	}
@@ -800,14 +818,14 @@ return removed;
  */
 static int remove_useless_transitions(OptimizedFst2State s,OptimizedFst2State* optimized_states,Fst2* fst2,
 		Abstract_allocator prv_alloc) {
-return remove_useless_graph_calls(&(s->graph_calls),optimized_states,fst2,prv_alloc)
-		+ remove_useless_metas(&(s->metas),optimized_states,prv_alloc)
+return remove_useless_graph_calls(&(s->graph_calls),&(s->removed_graph_calls),optimized_states,fst2,prv_alloc)
+		+ remove_useless_metas(&(s->metas),&(s->removed_metas),optimized_states,prv_alloc)
 		+ remove_useless_patterns(&(s->patterns),optimized_states,prv_alloc)
 		+ remove_useless_patterns(&(s->compound_patterns),optimized_states,prv_alloc)
-		+ remove_useless_variables(&(s->input_variable_starts),optimized_states,prv_alloc)
-		+ remove_useless_variables(&(s->input_variable_ends),optimized_states,prv_alloc)
-        + remove_useless_variables(&(s->output_variable_starts),optimized_states,prv_alloc)
-        + remove_useless_variables(&(s->output_variable_ends),optimized_states,prv_alloc)
+		+ remove_useless_variables(&(s->input_variable_starts),&(s->removed_input_variable_starts),optimized_states,prv_alloc)
+		+ remove_useless_variables(&(s->input_variable_ends),&(s->removed_input_variable_ends),optimized_states,prv_alloc)
+        + remove_useless_variables(&(s->output_variable_starts),&(s->removed_output_variable_starts),optimized_states,prv_alloc)
+        + remove_useless_variables(&(s->output_variable_ends),&(s->removed_output_variable_ends),optimized_states,prv_alloc)
         + remove_useless_contexts(s->contexts,optimized_states,prv_alloc)
         + remove_useless_tokens(s,optimized_states,prv_alloc);
 }
@@ -851,7 +869,7 @@ return empty_graph(graph,optimized_states,fst2);
  * optimized states.
  */
 OptimizedFst2State* build_optimized_fst2_states(Variables* v,OutputVariables* output,Fst2* fst2,
-		int morphological_mode_compliant,Abstract_allocator prv_alloc) {
+		Abstract_allocator prv_alloc) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc_cb(fst2->number_of_states*sizeof(OptimizedFst2State),prv_alloc);
 if (optimized_states==NULL) {
    fatal_alloc_error("build_optimized_fst2_states");
@@ -861,15 +879,14 @@ for (int i=0;i<fst2->number_of_states;i++) {
 }
 
 #ifdef AGGRESSIVE_OPTIMIZATION
-if (!morphological_mode_compliant) {
-	int n_graphs_emptied;
-	do {
-		n_graphs_emptied=0;
-		for (int i=1;i<=fst2->number_of_graphs;i++) {
-			n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
-		}
-	} while (n_graphs_emptied!=0);
-}/* Finally, we convert token lists to sorted array suitable for binary search */
+int n_graphs_emptied;
+do {
+	n_graphs_emptied=0;
+	for (int i=1;i<=fst2->number_of_graphs;i++) {
+		n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
+	}
+} while (n_graphs_emptied!=0);
+/* Finally, we convert token lists to sorted array suitable for binary search */
 for (int i=0;i<fst2->number_of_states;i++) {
 	token_list_2_token_array(optimized_states[i],prv_alloc);
 }
