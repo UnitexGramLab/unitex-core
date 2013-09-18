@@ -991,7 +991,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	struct opt_variable* tmp6[]={current_state->input_variable_ends,current_state->removed_input_variable_ends};
 	for (int i=0;i<2;i++) {
 	struct opt_variable* variable_list=tmp6[i];
-	variable_list = current_state->input_variable_ends;
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
