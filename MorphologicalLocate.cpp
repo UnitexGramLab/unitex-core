@@ -389,7 +389,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * SUBGRAPHS
 	 */
-	struct opt_graph_call* graph_call_list=current_state->removed_graph_calls;
+	struct opt_graph_call* graph_call_list=current_state->unoptimized_graph_calls;
 	if (graph_call_list != NULL) {
 		/* If there are subgraphs, we process them */
 		int old_StackBase = p->stack_base;
@@ -537,7 +537,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * METAS
 	 */
-	struct opt_meta* meta_list=current_state->removed_metas;
+	struct opt_meta* meta_list=current_state->unoptimized_metas;
 	while (meta_list != NULL) {
 		/* We process all the meta of the list */
 		t = meta_list->transition;
@@ -911,7 +911,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * OUTPUT VARIABLE STARTS
 	 */
-	struct opt_variable* variable_list=current_state->removed_output_variable_starts;
+	struct opt_variable* variable_list=current_state->unoptimized_output_variable_starts;
 	while (variable_list != NULL) {
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -927,7 +927,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * OUTPUT VARIABLE ENDS
 	 */
-	variable_list=current_state->removed_output_variable_ends;
+	variable_list=current_state->unoptimized_output_variable_ends;
 	while (variable_list != NULL) {
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -943,7 +943,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * VARIABLE STARTS
 	 */
-	variable_list=current_state->removed_input_variable_starts;
+	variable_list=current_state->unoptimized_input_variable_starts;
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token = get_variable_start(p->input_variables,
@@ -976,7 +976,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * VARIABLE ENDS
 	 */
-	variable_list=current_state->removed_input_variable_ends;
+	variable_list=current_state->unoptimized_input_variable_ends;
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
