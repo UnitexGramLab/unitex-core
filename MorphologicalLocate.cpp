@@ -389,9 +389,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * SUBGRAPHS
 	 */
-	struct opt_graph_call* tmp[]={current_state->graph_calls,current_state->removed_graph_calls};
-	for (int i=0;i<2;i++) {
-	struct opt_graph_call* graph_call_list=tmp[i];
+	struct opt_graph_call* graph_call_list=current_state->removed_graph_calls;
 	if (graph_call_list != NULL) {
 		/* If there are subgraphs, we process them */
 		int old_StackBase = p->stack_base;
@@ -524,7 +522,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					p->backup_memory_reserve = reserve_previous;
 				}
 			}
-	}
 	} /* End of processing subgraphs */
 
 
@@ -540,14 +537,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	/**
 	 * METAS
 	 */
-	struct opt_meta* tmp2[]={current_state->metas,current_state->removed_metas};
-	for (int i=0;i<2;i++) {
-	struct opt_meta* meta_list=tmp2[i];
+	struct opt_meta* meta_list=current_state->removed_metas;
 	while (meta_list != NULL) {
 		/* We process all the meta of the list */
 		t = meta_list->transition;
 		int match_one_letter;
 		while (t != NULL) {
+			if (t->tag_number==203 && t->state_number==4000) {
+				//error("Looking at tag 203 for i=%d\n",i);
+			}
 			match_one_letter = 0;
 			switch (meta_list->meta) {
 
@@ -908,15 +906,12 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			next: t = t->next;
 		}
 		meta_list = meta_list->next;
-	}
 	} /* End of meta processing */
 
 	/**
 	 * OUTPUT VARIABLE STARTS
 	 */
-	struct opt_variable* tmp3[]={current_state->output_variable_starts,current_state->removed_output_variable_starts};
-	for (int i=0;i<2;i++) {
-	struct opt_variable* variable_list=tmp3[i];
+	struct opt_variable* variable_list=current_state->removed_output_variable_starts;
 	while (variable_list != NULL) {
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -927,15 +922,12 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		p->stack->stack_pointer = stack_top;
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
-	}
 	}
 
 	/**
 	 * OUTPUT VARIABLE ENDS
 	 */
-	struct opt_variable* tmp4[]={current_state->output_variable_ends,current_state->removed_output_variable_ends};
-	for (int i=0;i<2;i++) {
-	struct opt_variable* variable_list=tmp4[i];
+	variable_list=current_state->removed_output_variable_ends;
 	while (variable_list != NULL) {
 		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
@@ -947,14 +939,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
 	}
-	}
 
 	/**
 	 * VARIABLE STARTS
 	 */
-	struct opt_variable* tmp5[]={current_state->input_variable_starts,current_state->removed_input_variable_starts};
-	for (int i=0;i<2;i++) {
-	struct opt_variable* variable_list=tmp5[i];
+	variable_list=current_state->removed_input_variable_starts;
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token = get_variable_start(p->input_variables,
@@ -983,14 +972,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		}
 		variable_list = variable_list->next;
 	}
-	}
 
 	/**
 	 * VARIABLE ENDS
 	 */
-	struct opt_variable* tmp6[]={current_state->input_variable_ends,current_state->removed_input_variable_ends};
-	for (int i=0;i<2;i++) {
-	struct opt_variable* variable_list=tmp6[i];
+	variable_list=current_state->removed_input_variable_ends;
 	while (variable_list != NULL) {
 		inc_dirty(p->backup_memory_reserve);
 		int old_in_token =
@@ -1025,7 +1011,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			dec_dirty(p->backup_memory_reserve);
 		}
 		variable_list = variable_list->next;
-	}
 	}
 
 

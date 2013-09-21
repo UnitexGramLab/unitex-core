@@ -138,16 +138,16 @@ struct optimizedFst2State {
   struct opt_variable* output_variable_ends;
   struct opt_contexts* contexts;
   /* The following structure will contain all the
-   * transitions removed by the optimization, because
-   * all those removed transitions will be needed by
+   * transitions as they were before the optimization, because
+   * all those transitions will be needed by
    * the morphological mode
    */
-  struct opt_graph_call* removed_graph_calls;
-  struct opt_meta* removed_metas;
-  struct opt_variable* removed_input_variable_starts;
-  struct opt_variable* removed_input_variable_ends;
-  struct opt_variable* removed_output_variable_starts;
-  struct opt_variable* removed_output_variable_ends;
+  struct opt_graph_call* unoptimized_graph_calls;
+  struct opt_meta* unoptimized_metas;
+  struct opt_variable* unoptimized_input_variable_starts;
+  struct opt_variable* unoptimized_input_variable_ends;
+  struct opt_variable* unoptimized_output_variable_starts;
+  struct opt_variable* unoptimized_output_variable_ends;
 
   int* tokens;
   int number_of_tokens;
