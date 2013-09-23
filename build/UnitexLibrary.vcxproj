@@ -216,12 +216,12 @@
     <ClInclude Include="..\UserCancelling.h" />
     <ClInclude Include="..\UserCancellingPlugCallback.h" />
     <ClInclude Include="..\VariableUtils.h" />
-    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_concord.h" />
-    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_external_program.h" />
-    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_io.h" />
-    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.h" />
-    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_transducer.h" />
-    <ClInclude Include="F:\unitex\Unitex-C++\Cassys_xml_output.h" />
+    <ClInclude Include="..\Cassys_concord.h" />
+    <ClInclude Include="..\Cassys_external_program.h" />
+    <ClInclude Include="..\Cassys_io.h" />
+    <ClInclude Include="..\Cassys_lexical_tags.h" />
+    <ClInclude Include="..\Cassys_transducer.h" />
+    <ClInclude Include="..\Cassys_xml_output.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractAllocator.cpp" />
@@ -463,12 +463,12 @@
     <ClCompile Include="..\tre-0.8.0\lib\tre-parse.c" />
     <ClCompile Include="..\tre-0.8.0\lib\tre-stack.c" />
     <ClCompile Include="..\tre-0.8.0\lib\xmalloc.c" />
-    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_concord.cpp" />
-    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_external_program.cpp" />
-    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_io.cpp" />
-    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_lexical_tags.cpp" />
-    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_transducer.cpp" />
-    <ClCompile Include="F:\unitex\Unitex-C++\Cassys_xml_output.cpp" />
+    <ClCompile Include="..\Cassys_concord.cpp" />
+    <ClCompile Include="..\Cassys_external_program.cpp" />
+    <ClCompile Include="..\Cassys_io.cpp" />
+    <ClCompile Include="..\Cassys_lexical_tags.cpp" />
+    <ClCompile Include="..\Cassys_transducer.cpp" />
+    <ClCompile Include="..\Cassys_xml_output.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
