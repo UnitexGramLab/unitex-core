@@ -1460,5 +1460,8 @@
     <ClInclude Include="..\Cassys_concord.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
