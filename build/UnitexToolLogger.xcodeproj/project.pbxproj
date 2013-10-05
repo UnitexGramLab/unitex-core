@@ -235,6 +235,10 @@
 		22C290A214AF6DAE006A1F5D /* VirtualFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C28D1814AF6DAE006A1F5D /* VirtualFiles.cpp */; };
 		22C781531297481D00EDC8D5 /* VariableUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C781511297481D00EDC8D5 /* VariableUtils.cpp */; };
 		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
+		22F5F1931800BAC8002F0040 /* PackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F18B1800BAC8002F0040 /* PackFile.cpp */; };
+		22F5F1941800BAC8002F0040 /* PackFileTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F18D1800BAC8002F0040 /* PackFileTool.cpp */; };
+		22F5F1951800BAC8002F0040 /* UnpackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F18F1800BAC8002F0040 /* UnpackFile.cpp */; };
+		22F5F1961800BAC8002F0040 /* UnpackFileTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F1911800BAC8002F0040 /* UnpackFileTool.cpp */; };
 		22FE473F117A22860011D758 /* LocateCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22FE473D117A22860011D758 /* LocateCache.cpp */; };
 /* End PBXBuildFile section */
 
@@ -734,6 +738,14 @@
 		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocator.h; path = ../AbstractAllocator.h; sourceTree = SOURCE_ROOT; };
 		22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocatorPlugCallback.h; path = ../AbstractAllocatorPlugCallback.h; sourceTree = SOURCE_ROOT; };
+		22F5F18B1800BAC8002F0040 /* PackFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFile.cpp; path = ../logger/PackFile.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F18C1800BAC8002F0040 /* PackFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFile.h; path = ../logger/PackFile.h; sourceTree = SOURCE_ROOT; };
+		22F5F18D1800BAC8002F0040 /* PackFileTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFileTool.cpp; path = ../logger/PackFileTool.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F18E1800BAC8002F0040 /* PackFileTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFileTool.h; path = ../logger/PackFileTool.h; sourceTree = SOURCE_ROOT; };
+		22F5F18F1800BAC8002F0040 /* UnpackFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnpackFile.cpp; path = ../logger/UnpackFile.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F1901800BAC8002F0040 /* UnpackFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnpackFile.h; path = ../logger/UnpackFile.h; sourceTree = SOURCE_ROOT; };
+		22F5F1911800BAC8002F0040 /* UnpackFileTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnpackFileTool.cpp; path = ../logger/UnpackFileTool.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F1921800BAC8002F0040 /* UnpackFileTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnpackFileTool.h; path = ../logger/UnpackFileTool.h; sourceTree = SOURCE_ROOT; };
 		22FE473D117A22860011D758 /* LocateCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocateCache.cpp; path = ../LocateCache.cpp; sourceTree = SOURCE_ROOT; };
 		22FE473E117A22860011D758 /* LocateCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocateCache.h; path = ../LocateCache.h; sourceTree = SOURCE_ROOT; };
 		8DD76F6C0486A84900D96B5E /* UnitexToolLogger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitexToolLogger; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1217,6 +1229,14 @@
 		222F7C9B1107A83D00C91CC7 /* logger */ = {
 			isa = PBXGroup;
 			children = (
+				22F5F18B1800BAC8002F0040 /* PackFile.cpp */,
+				22F5F18C1800BAC8002F0040 /* PackFile.h */,
+				22F5F18D1800BAC8002F0040 /* PackFileTool.cpp */,
+				22F5F18E1800BAC8002F0040 /* PackFileTool.h */,
+				22F5F18F1800BAC8002F0040 /* UnpackFile.cpp */,
+				22F5F1901800BAC8002F0040 /* UnpackFile.h */,
+				22F5F1911800BAC8002F0040 /* UnpackFileTool.cpp */,
+				22F5F1921800BAC8002F0040 /* UnpackFileTool.h */,
 				222F79F21107A64C00C91CC7 /* FilePack.cpp */,
 				222F79F31107A64C00C91CC7 /* FilePack.h */,
 				222F79F41107A64C00C91CC7 /* FilePackCrc32.cpp */,
@@ -1570,6 +1590,10 @@
 				2232E1DB169101B300C56E5A /* Cassys_lexical_tags.cpp in Sources */,
 				2232E1DD169101B300C56E5A /* Cassys_transducer.cpp in Sources */,
 				2232E1DE169101B300C56E5A /* Cassys_xml_output.cpp in Sources */,
+				22F5F1931800BAC8002F0040 /* PackFile.cpp in Sources */,
+				22F5F1941800BAC8002F0040 /* PackFileTool.cpp in Sources */,
+				22F5F1951800BAC8002F0040 /* UnpackFile.cpp in Sources */,
+				22F5F1961800BAC8002F0040 /* UnpackFileTool.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

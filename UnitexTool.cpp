@@ -234,6 +234,15 @@
 #endif
 
 
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+#include "PackFile.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+#include "UnpackFile.h"
+#endif
+#endif
 
 #include "Copyright.h"
 
@@ -457,6 +466,16 @@ const struct utility_item utility_array[]=
 	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,
 #endif
 
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+	{ "PackFile", 8, &main_PackFile, usage_PackFile, optstring_PackFile, lopts_PackFile } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+	{ "UnpackFile", 10, &main_UnpackFile, usage_UnpackFile, optstring_UnpackFile, lopts_UnpackFile } ,
+#endif
+
+#endif
 	{ "", 0, NULL, NULL, NULL, NULL} 
 };
 

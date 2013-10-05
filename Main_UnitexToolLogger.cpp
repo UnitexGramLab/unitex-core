@@ -45,6 +45,9 @@
 
 #include "logger/MzRepairUlp.h"
 
+#include "logger/UnpackFile.h"
+#include "logger/PackFile.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -101,11 +104,26 @@ if (argc>3) {
 }
 
 if ((argc-skip_arg)>1) {
+    if (strcmp(argv[1+skip_arg],"UnpackFile")==0)
+    {
+        done = 1;
+        ret = main_UnpackFile(argc-(skip_arg+1),argv+skip_arg+1);
+    }
+
+ 
+    if (strcmp(argv[1+skip_arg],"PackFile")==0)
+    {
+        done = 1;
+        ret = main_PackFile(argc-(skip_arg+1),argv+skip_arg+1);
+    }
+
+ 
     if (strcmp(argv[1+skip_arg],"MzRepairUlp")==0)
     {
         done = 1;
         ret = main_MzRepairUlp(argc-(skip_arg+1),argv+skip_arg+1);
     }
+
 
     if (strcmp(argv[1+skip_arg],"RunLog")==0)
     {

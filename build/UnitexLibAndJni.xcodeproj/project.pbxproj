@@ -489,6 +489,14 @@
 		22C2800914AF6D63006A1F5D /* Xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD814AF6D63006A1F5D /* Xml.cpp */; };
 		22C2800A14AF6D63006A1F5D /* Xml.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD914AF6D63006A1F5D /* Xml.h */; };
 		22F11A06151E84310084A2C6 /* Unitex_revision.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F11A05151E84310084A2C6 /* Unitex_revision.h */; };
+		22F5F19F1800BAFE002F0040 /* PackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F1971800BAFE002F0040 /* PackFile.cpp */; };
+		22F5F1A01800BAFE002F0040 /* PackFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F5F1981800BAFE002F0040 /* PackFile.h */; };
+		22F5F1A11800BAFE002F0040 /* PackFileTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F1991800BAFE002F0040 /* PackFileTool.cpp */; };
+		22F5F1A21800BAFE002F0040 /* PackFileTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F5F19A1800BAFE002F0040 /* PackFileTool.h */; };
+		22F5F1A31800BAFE002F0040 /* UnpackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F19B1800BAFE002F0040 /* UnpackFile.cpp */; };
+		22F5F1A41800BAFE002F0040 /* UnpackFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F5F19C1800BAFE002F0040 /* UnpackFile.h */; };
+		22F5F1A51800BAFE002F0040 /* UnpackFileTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F19D1800BAFE002F0040 /* UnpackFileTool.cpp */; };
+		22F5F1A61800BAFE002F0040 /* UnpackFileTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F5F19E1800BAFE002F0040 /* UnpackFileTool.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -979,6 +987,14 @@
 		22C27FD814AF6D63006A1F5D /* Xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Xml.cpp; path = ../Xml.cpp; sourceTree = SOURCE_ROOT; };
 		22C27FD914AF6D63006A1F5D /* Xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Xml.h; path = ../Xml.h; sourceTree = SOURCE_ROOT; };
 		22F11A05151E84310084A2C6 /* Unitex_revision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Unitex_revision.h; path = ../Unitex_revision.h; sourceTree = SOURCE_ROOT; };
+		22F5F1971800BAFE002F0040 /* PackFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFile.cpp; path = ../logger/PackFile.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F1981800BAFE002F0040 /* PackFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFile.h; path = ../logger/PackFile.h; sourceTree = SOURCE_ROOT; };
+		22F5F1991800BAFE002F0040 /* PackFileTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFileTool.cpp; path = ../logger/PackFileTool.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F19A1800BAFE002F0040 /* PackFileTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFileTool.h; path = ../logger/PackFileTool.h; sourceTree = SOURCE_ROOT; };
+		22F5F19B1800BAFE002F0040 /* UnpackFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnpackFile.cpp; path = ../logger/UnpackFile.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F19C1800BAFE002F0040 /* UnpackFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnpackFile.h; path = ../logger/UnpackFile.h; sourceTree = SOURCE_ROOT; };
+		22F5F19D1800BAFE002F0040 /* UnpackFileTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnpackFileTool.cpp; path = ../logger/UnpackFileTool.cpp; sourceTree = SOURCE_ROOT; };
+		22F5F19E1800BAFE002F0040 /* UnpackFileTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnpackFileTool.h; path = ../logger/UnpackFileTool.h; sourceTree = SOURCE_ROOT; };
 		D2AAC09D05546B4700DB518D /* libUnitexLibAndJni.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libUnitexLibAndJni.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -1528,6 +1544,14 @@
 		222AFD921411336600F74409 /* logger */ = {
 			isa = PBXGroup;
 			children = (
+				22F5F1971800BAFE002F0040 /* PackFile.cpp */,
+				22F5F1981800BAFE002F0040 /* PackFile.h */,
+				22F5F1991800BAFE002F0040 /* PackFileTool.cpp */,
+				22F5F19A1800BAFE002F0040 /* PackFileTool.h */,
+				22F5F19B1800BAFE002F0040 /* UnpackFile.cpp */,
+				22F5F19C1800BAFE002F0040 /* UnpackFile.h */,
+				22F5F19D1800BAFE002F0040 /* UnpackFileTool.cpp */,
+				22F5F19E1800BAFE002F0040 /* UnpackFileTool.h */,
 				222AFD931411336600F74409 /* FilePack.cpp */,
 				222AFD941411336600F74409 /* FilePack.h */,
 				222AFD951411336600F74409 /* FilePackCrc32.cpp */,
@@ -1820,6 +1844,10 @@
 				2232E2051691020800C56E5A /* Cassys_lexical_tags.h in Headers */,
 				2232E2071691020800C56E5A /* Cassys_transducer.h in Headers */,
 				2232E2091691020800C56E5A /* Cassys_xml_output.h in Headers */,
+				22F5F1A01800BAFE002F0040 /* PackFile.h in Headers */,
+				22F5F1A21800BAFE002F0040 /* PackFileTool.h in Headers */,
+				22F5F1A41800BAFE002F0040 /* UnpackFile.h in Headers */,
+				22F5F1A61800BAFE002F0040 /* UnpackFileTool.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2103,6 +2131,10 @@
 				2232E2041691020800C56E5A /* Cassys_lexical_tags.cpp in Sources */,
 				2232E2061691020800C56E5A /* Cassys_transducer.cpp in Sources */,
 				2232E2081691020800C56E5A /* Cassys_xml_output.cpp in Sources */,
+				22F5F19F1800BAFE002F0040 /* PackFile.cpp in Sources */,
+				22F5F1A11800BAFE002F0040 /* PackFileTool.cpp in Sources */,
+				22F5F1A31800BAFE002F0040 /* UnpackFile.cpp in Sources */,
+				22F5F1A51800BAFE002F0040 /* UnpackFileTool.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

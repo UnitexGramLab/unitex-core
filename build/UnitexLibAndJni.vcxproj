@@ -292,6 +292,8 @@
     <ClCompile Include="..\logger\FileUnPack.cpp" />
     <ClCompile Include="..\logger\MzRepairUlp.cpp" />
     <ClCompile Include="..\logger\MzToolsUlp.cpp" />
+    <ClCompile Include="..\logger\PackFile.cpp" />
+    <ClCompile Include="..\logger\PackFileTool.cpp" />
     <ClCompile Include="..\logger\ReworkArg.cpp" />
     <ClCompile Include="..\logger\SyncLoggerDummy.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -309,6 +311,8 @@
     <ClCompile Include="..\logger\UniLogger.cpp" />
     <ClCompile Include="..\logger\UniLoggerAutoInstall.cpp" />
     <ClCompile Include="..\logger\UniRunLogger.cpp" />
+    <ClCompile Include="..\logger\UnpackFile.cpp" />
+    <ClCompile Include="..\logger\UnpackFileTool.cpp" />
     <ClCompile Include="..\MappedFileHelperWin.cpp" />
     <ClCompile Include="..\Match.cpp" />
     <ClCompile Include="..\MF_DicoMorpho.cpp" />
@@ -549,10 +553,14 @@
     <ClInclude Include="..\logger\FileUnPack.h" />
     <ClInclude Include="..\logger\MzRepairUlp.h" />
     <ClInclude Include="..\logger\MzToolsUlp.h" />
+    <ClInclude Include="..\logger\PackFile.h" />
+    <ClInclude Include="..\logger\PackFileTool.h" />
     <ClInclude Include="..\logger\ReworkArg.h" />
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\logger\UnpackFile.h" />
+    <ClInclude Include="..\logger\UnpackFileTool.h" />
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\Match.h" />
     <ClInclude Include="..\MetaSymbols.h" />

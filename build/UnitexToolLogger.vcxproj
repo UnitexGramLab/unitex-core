@@ -296,6 +296,10 @@
     <ClInclude Include="..\LocateTracePlugCallback.h" />
     <ClInclude Include="..\logger\MzRepairUlp.h" />
     <ClInclude Include="..\logger\MzToolsUlp.h" />
+    <ClInclude Include="..\logger\PackFile.h" />
+    <ClInclude Include="..\logger\PackFileTool.h" />
+    <ClInclude Include="..\logger\UnpackFile.h" />
+    <ClInclude Include="..\logger\UnpackFileTool.h" />
     <ClInclude Include="..\MappedFileHelper.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
     <ClInclude Include="..\PersistenceInterface.h" />
@@ -409,6 +413,10 @@
     <ClCompile Include="..\KeyWords.cpp" />
     <ClCompile Include="..\KeyWords_lib.cpp" />
     <ClCompile Include="..\LoadInf.cpp" />
+    <ClCompile Include="..\logger\PackFile.cpp" />
+    <ClCompile Include="..\logger\PackFileTool.cpp" />
+    <ClCompile Include="..\logger\UnpackFile.cpp" />
+    <ClCompile Include="..\logger\UnpackFileTool.cpp" />
     <ClCompile Include="..\Offsets.cpp" />
     <ClCompile Include="..\Overlap.cpp" />
     <ClCompile Include="..\Persistence.cpp" />

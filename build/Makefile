@@ -1100,6 +1100,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
 
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
+                  UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o \
                   FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o \
                   UnitexTool.o UnitexRevisionInfo.o Seq2Grf.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
