@@ -1721,6 +1721,18 @@ FilePackCrc32.o: ../logger/FilePackCrc32.cpp
 FilePackIo.o: ../logger/FilePackIo.cpp
 	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
 
+PackFile.o: ../logger/PackFile.cpp
+	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+
+PackFileTool.o: ../logger/PackFileTool.cpp
+	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+
+UnpackFile.o: ../logger/UnpackFile.cpp
+	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+
+UnpackFileTool.o: ../logger/UnpackFileTool.cpp
+	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+
 MzToolsUlp.o: ../logger/MzToolsUlp.cpp
 	$(CC) -c ../logger/MzToolsUlp.cpp $(OPTIONS)
 
