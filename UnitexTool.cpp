@@ -236,11 +236,11 @@
 
 #ifdef UNITEXTOOL_TOOL_FROM_LOGGER
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
-#include "PackFile.h"
+#include "logger/PackFile.h"
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
-#include "UnpackFile.h"
+#include "logger/UnpackFile.h"
 #endif
 #endif
 
@@ -257,6 +257,12 @@
 #endif
 
 namespace unitex {
+
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#ifdef HAS_LOGGER_NAMESPACE
+using namespace logger;
+#endif
+#endif
 
 struct utility_item {
 	const char* name;
