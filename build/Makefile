@@ -165,16 +165,19 @@ endif
 ifeq ($(LIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
+DEFFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 endif
 
 ifeq ($(JNILIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
+DEFFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 endif
 
 ifeq ($(STATICLIB),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
+DEFFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 endif
 
 ifneq ($(SVN_REVISION),)
@@ -1141,11 +1144,13 @@ UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJ
 
 UNITEXLIB_IO_OBJS = UnitexLibIO.o $(SYSLIBDIRIO)
 
-UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o $(UNITEXLIB_IO_OBJS)
+UNITEXLIB_PACK_OBJS = UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o FilePack.o FileUnPack.o FilePackCrc32.o FilePackIo.o
+
+UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS)
 
 
 TEST      = Test
-TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
+TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) VirtualFiles.o
 
 ################################
 ################################
@@ -1155,9 +1160,9 @@ TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
 
 ifeq ($(UNITEXTOOLLOGGERONLY), yes)
 
-
 PROGS = $(UNITEXTOOL_LOGGER)
 OBJS = $(UNITEXTOOL_LOGGER_OBJS)
+DEFFLAGS += -DUNITEXTOOL_TOOL_FROM_LOGGER
 
 else
 
@@ -1292,10 +1297,10 @@ install: bin
 
 
 clean: $(CLEAN-LIBTRE)
-	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) *~ Main_*.o
+	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_OBJS) *~ Main_*.o
 
 clean-all-but-tre:
-	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) *~ Main_*.o
+	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_OBJS) *~ Main_*.o
 
 dist: clean
 	if test -d $(BUILD); then rm -rf $(BUILD); fi
@@ -1722,16 +1727,16 @@ FilePackIo.o: ../logger/FilePackIo.cpp
 	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
 
 PackFile.o: ../logger/PackFile.cpp
-	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+	$(CC) -c ../logger/PackFile.cpp $(OPTIONS)
 
 PackFileTool.o: ../logger/PackFileTool.cpp
-	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+	$(CC) -c ../logger/PackFileTool.cpp $(OPTIONS)
 
 UnpackFile.o: ../logger/UnpackFile.cpp
-	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+	$(CC) -c ../logger/UnpackFile.cpp $(OPTIONS)
 
 UnpackFileTool.o: ../logger/UnpackFileTool.cpp
-	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+	$(CC) -c ../logger/UnpackFileTool.cpp $(OPTIONS)
 
 MzToolsUlp.o: ../logger/MzToolsUlp.cpp
 	$(CC) -c ../logger/MzToolsUlp.cpp $(OPTIONS)
@@ -1771,17 +1776,17 @@ endif
 no_o_files:
 	rm -f *.o
 
-.libunitex: no_o_files $(OBJS) Test_lib.o
+.libunitex: no_o_files $(OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) Test_lib.o VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS)
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
-.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(OBJS) VirtualFiles.o
+.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
@@ -1791,17 +1796,17 @@ else
 no_o_files:
 	rm -f *.o
 
-.libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
+.libunitex: no_o_files $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(LIBTRE) $(OBJS) Test_lib.o VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(LIBTRE) $(OBJS)
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(LIBTRE) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
-.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(OBJS) VirtualFiles.o
+.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
