@@ -1178,7 +1178,7 @@ UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o
 
 
 TEST      = Test
-TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) $(UNITEXLIB_IO_OBJS) VirtualFiles.o
+TEST_OBJS = Main_Test.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS) VirtualFiles.o
 
 ################################
 ################################
