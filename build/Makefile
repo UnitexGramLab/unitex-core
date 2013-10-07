@@ -1247,7 +1247,9 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
 		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)\
-		$(SEQ2GRF_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS) $(TFSTTAG_OBJS)
+		$(SEQ2GRF_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS) $(TFSTTAG_OBJS) \
+		\
+		$(UNITEXLIB_IO_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1829,17 +1831,17 @@ endif
 no_o_files:
 	rm -f *.o
 
-.libunitex: no_o_files $(OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) Test_lib.o VirtualFiles.o
+.libunitex: no_o_files $(OBJS) Test_lib.o VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
-.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
+.libunitexstatic: $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
@@ -1849,7 +1851,7 @@ else
 no_o_files:
 	rm -f *.o
 
-.libunitex: no_o_files $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(LIBTRE) $(OBJS) Test_lib.o VirtualFiles.o
+.libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o VirtualFiles.o
 	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
