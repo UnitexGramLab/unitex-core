@@ -52,7 +52,7 @@ namespace unitex {
 
 namespace logger {
 */
-extern "C" {
+//extern "C" {
 #endif
 
 /* */
@@ -65,7 +65,7 @@ int main_PackFile(int argc,char* const argv[]);
 
 
 #ifdef __cplusplus
-} // extern "C"
+//} // extern "C"
 //} // namespace logger
 } // namespace unitex
 #endif
