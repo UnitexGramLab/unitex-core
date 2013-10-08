@@ -45,11 +45,13 @@
 #endif
 
 namespace unitex {
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
 namespace logger {
+*/
 extern "C" {
 #endif
 
@@ -64,7 +66,7 @@ int main_PackFile(int argc,char* const argv[]);
 
 #ifdef __cplusplus
 } // extern "C"
-} // namespace logger
+//} // namespace logger
 } // namespace unitex
 #endif
 

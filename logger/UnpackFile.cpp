@@ -25,12 +25,17 @@
 #endif
 
 namespace unitex {
+
+#ifdef HAS_LOGGER_NAMESPACE
+using namespace ::unitex::logger;
+#endif
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
 namespace logger {
-
+*/
 
 extern const char* optstring_UnpackFile;
 extern const struct option_TS lopts_UnpackFile[];
@@ -165,7 +170,7 @@ return retValue;
 
 
 } // namespace unitex
-} // namespace logger
+//} // namespace logger
 
 #endif
 

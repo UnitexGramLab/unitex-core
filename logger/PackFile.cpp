@@ -22,11 +22,18 @@
 #endif
 
 namespace unitex {
+
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
 namespace logger {
+*/
+
+#ifdef HAS_LOGGER_NAMESPACE
+using namespace ::unitex::logger;
+#endif
 
 extern const char* optstring_PackFile;
 extern const struct option_TS lopts_PackFile[];
@@ -165,6 +172,5 @@ else
 }
 
 } // namespace unitex
-} // namespace logger
 
 #endif
