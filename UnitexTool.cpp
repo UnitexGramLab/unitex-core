@@ -775,15 +775,28 @@ int UnitexTool_several(int argc,char* const argv[],int* p_number_done)
 	return UnitexTool_several_info(argc,argv,p_number_done,NULL);
 }
 
-int main_UnitexTool(int argc,char* const argv[])
+int main_UnitexTool_C_internal(int argc,char* const argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
 
-int main_UnitexTool_C(int argc,char* const argv[])
+int main_UnitexTool_internal(int argc,char* const argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
+
+UNITEX_FUNC int UNITEX_CALL main_UnitexTool(int argc,char* const argv[])
+{
+	return UnitexTool_several_info(argc,argv,NULL,NULL);
+}
+
+UNITEX_FUNC int UNITEX_CALL main_UnitexTool_C(int argc,char* const argv[])
+{
+	return UnitexTool_several_info(argc,argv,NULL,NULL);
+}
+
+
+
 
 
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia)

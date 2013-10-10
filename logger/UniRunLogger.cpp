@@ -1163,7 +1163,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
       if (pTimeElapsed != NULL)
         htm = SyncBuidTimeMarkerObject();
       /* calling the tool to rerun */
-      int ret_tool = main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
+      int ret_tool = main_UnitexTool_C_internal(argc_log+1,(char**)argv_log_reworked);
       if (htm != NULL)
           *pTimeElapsed = SyncGetMSecElapsed(htm);
 

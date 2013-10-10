@@ -72,7 +72,6 @@ struct pos_tools_in_arg {
 
 int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
 int UnitexTool_several(int argc,char* const argv[],int* p_number_done);
-int main_UnitexTool(int argc,char* const argv[]);
 
 
 typedef int mainFunc(int argc,char* const argv[]) ;
@@ -83,7 +82,12 @@ int GetToolInfo_byname(const char* toolname,mainFunc** pfunc,const char** usage,
 int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
 
-int main_UnitexTool_C(int argc,char* const argv[]);
+int main_UnitexTool_C_internal(int argc,char* const argv[]);
+int main_UnitexTool_internal(int argc,char* const argv[]);
+
+UNITEX_FUNC int UNITEX_CALL main_UnitexTool(int argc,char* const argv[]);
+UNITEX_FUNC int UNITEX_CALL main_UnitexTool_C(int argc,char* const argv[]);
+
 
 
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
