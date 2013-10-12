@@ -161,6 +161,10 @@
 #include "Reg2Grf.h"
 #endif
 
+#if (((!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
+#include "SelectOutput.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SEQ2GRF))) || defined(TOOL_SEQ2GRF))
 #include "Seq2Grf.h"
 #endif
@@ -404,6 +408,10 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_REG2GRF))) || defined(TOOL_REG2GRF))
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
+#endif
+
+#if (((!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
+	{ "SelectOutput", 12, &main_SelectOutput, usage_SelectOutput, optstring_SelectOutput, lopts_SelectOutput } ,
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SEQ2GRF))) || defined(TOOL_SEQ2GRF))
@@ -775,28 +783,15 @@ int UnitexTool_several(int argc,char* const argv[],int* p_number_done)
 	return UnitexTool_several_info(argc,argv,p_number_done,NULL);
 }
 
-int main_UnitexTool_C_internal(int argc,char* const argv[])
+int main_UnitexTool(int argc,char* const argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
 
-int main_UnitexTool_internal(int argc,char* const argv[])
+int main_UnitexTool_C(int argc,char* const argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
-
-UNITEX_FUNC int UNITEX_CALL main_UnitexTool(int argc,char* const argv[])
-{
-	return UnitexTool_several_info(argc,argv,NULL,NULL);
-}
-
-UNITEX_FUNC int UNITEX_CALL main_UnitexTool_C(int argc,char* const argv[])
-{
-	return UnitexTool_several_info(argc,argv,NULL,NULL);
-}
-
-
-
 
 
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia)

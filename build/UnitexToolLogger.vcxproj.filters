@@ -189,6 +189,9 @@
     <ClInclude Include="..\logger\PackFile.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
+    <ClInclude Include="..\SelectOutput.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -898,6 +901,9 @@
     </ClCompile>
     <ClCompile Include="..\logger\PackFileTool.cpp">
       <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SelectOutput.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -354,6 +354,7 @@
     <ClCompile Include="..\RegExFacade.cpp" />
     <ClCompile Include="..\RegularExpressions.cpp" />
     <ClCompile Include="..\RussianCompounds.cpp" />
+    <ClCompile Include="..\SelectOutput.cpp" />
     <ClCompile Include="..\Sentence2Grf.cpp" />
     <ClCompile Include="..\Seq2Grf.cpp" />
     <ClCompile Include="..\SingleGraph.cpp" />
@@ -609,6 +610,7 @@
     <ClInclude Include="..\RegExFacade.h" />
     <ClInclude Include="..\RegularExpressions.h" />
     <ClInclude Include="..\RussianCompounds.h" />
+    <ClInclude Include="..\SelectOutput.h" />
     <ClInclude Include="..\Sentence2Grf.h" />
     <ClInclude Include="..\Seq2Grf.h" />
     <ClInclude Include="..\SingleGraph.h" />

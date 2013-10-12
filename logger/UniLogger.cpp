@@ -754,14 +754,11 @@ int ComputeFileCrc(const char* filename,unsigned int*size_done,unsigned long*crc
 
     buf = (char*)malloc(size_buf);
     ABSTRACTFILE*fin;
-    int err;
     size_t size_read;
 
     fin = af_fopen_unlogged(filename,"rb");
     if (fin==NULL)
     {
-        err=ZIP_ERRNO;
-        
         free(buf);
         return 0;
     }

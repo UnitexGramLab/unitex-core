@@ -735,6 +735,9 @@
     <ClCompile Include="..\logger\PackFileTool.cpp">
       <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
+    <ClCompile Include="..\SelectOutput.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -1489,6 +1492,12 @@
     </ClInclude>
     <ClInclude Include="..\logger\PackFile.h">
       <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SelectOutput.h">
+      <Filter>Unitex-C++</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

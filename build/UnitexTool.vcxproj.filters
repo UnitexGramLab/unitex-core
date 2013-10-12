@@ -142,6 +142,9 @@
     <ClInclude Include="..\Cassys_xml_output.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\SelectOutput.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -802,6 +805,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Cassys_concord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SelectOutput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
