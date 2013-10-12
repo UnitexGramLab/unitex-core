@@ -37,10 +37,12 @@
 namespace unitex {
 
 const char* usage_SelectOutput =
-         "Usage: SelectOutput\n"
+         "Usage: SelectOutput [OPTIONS]\n"
          "\n"
-         "\n";
-
+         "OPTIONS:\n"
+		 "  -o [on/off]/--output=[on/off]: enable (on) or disable (off) standard output\n"
+		 "  -e [on/off]/--error=[on/off]: enable (on) or disable (off) error output\n"
+		 "\n";
 
 
 static void usage() {
