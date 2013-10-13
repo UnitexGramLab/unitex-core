@@ -346,12 +346,19 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-char staticSntDir[FILENAME_MAX];
-char tokens_txt[FILENAME_MAX];
-char text_cod[FILENAME_MAX];
-char dlf[FILENAME_MAX];
-char dlc[FILENAME_MAX];
-char err[FILENAME_MAX];
+
+size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
+char* buffer_filename = (char*)malloc(step_filename_buffer * 6);
+if (buffer_filename == NULL)
+{
+	fatal_alloc_error("main_Locate");
+}
+char* staticSntDir = (buffer_filename + (step_filename_buffer * 0));
+char* tokens_txt = (buffer_filename + (step_filename_buffer * 1));
+char* text_cod = (buffer_filename + (step_filename_buffer * 2));
+char* dlf = (buffer_filename + (step_filename_buffer * 3));
+char* dlc = (buffer_filename + (step_filename_buffer * 4));
+char* err = (buffer_filename + (step_filename_buffer * 5));
 
 get_snt_path(text,staticSntDir);
 if (dynamicSntDir[0]=='\0') {
@@ -384,6 +391,7 @@ if (morpho_dic!=NULL) {
 }
 free_vector_ptr(injected_vars,free);
 free_OptVars(vars);
+free(buffer_filename);
 return (!OK);
 }
 

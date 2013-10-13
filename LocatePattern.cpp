@@ -195,6 +195,14 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
 U_FILE* out;
 U_FILE* info;
 struct locate_parameters* p=new_locate_parameters();
+
+size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
+char* buffer_filename = (char*)malloc(step_filename_buffer * 3);
+if (buffer_filename == NULL)
+{
+	fatal_alloc_error("locate_pattern");
+}
+
 p->text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
 p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
 long text_size=(long)af_get_mapfile_size(p->text_cod)/sizeof(int);
@@ -218,8 +226,8 @@ p->protect_dic_chars=protect_dic_chars;
 p->max_count_call = max_count_call;
 p->max_count_call_warning = max_count_call_warning;
 p->token_filename = tokens;
-char concord[FILENAME_MAX];
-char concord_info[FILENAME_MAX];
+char* concord = (buffer_filename + (step_filename_buffer * 0));
+char* concord_info = (buffer_filename + (step_filename_buffer * 1));
 
 strcpy(concord,dynamicDir);
 strcat(concord,"concord.ind");
@@ -227,7 +235,7 @@ strcat(concord,"concord.ind");
 strcpy(concord_info,dynamicDir);
 strcat(concord_info,"concord.n");
 
-char morpho_bin[FILENAME_MAX];
+char* morpho_bin = (buffer_filename + (step_filename_buffer * 2));
 strcpy(morpho_bin,dynamicDir);
 strcat(morpho_bin,"morpho.bin");
 if (arabic_rules!=NULL && arabic_rules[0]!='\0') {
@@ -241,6 +249,7 @@ if (out==NULL) {
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    u_fclose(out);
+   free(buffer_filename);
    return 0;
 }
 info=u_fopen(vec,concord_info,U_WRITE);
@@ -258,6 +267,7 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
       free_locate_parameters(p);
       if (info!=NULL) u_fclose(info);
       u_fclose(out);
+      free(buffer_filename);
       return 0;
    }
 }
@@ -275,6 +285,7 @@ if (is_cancelling_requested() != 0) {
        free_locate_parameters(p);
        if (info!=NULL) u_fclose(info);
        u_fclose(out);
+       free(buffer_filename);
 	   return 0;
 	}
 
@@ -291,6 +302,7 @@ if (fst2load==NULL) {
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
+   free(buffer_filename);
    return 0;
 }
 if (fst2load->debug) {
@@ -331,6 +343,7 @@ if (is_cancelling_requested() != 0) {
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
+   free(buffer_filename);
    return 0;
 }
 	
@@ -349,6 +362,7 @@ if (p->filters==NULL) {
    af_close_mapfile(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
+   free(buffer_filename);
    return 0;
 }
 #endif
@@ -367,6 +381,7 @@ if (p->tokens==NULL) {
    af_close_mapfile(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
+   free(buffer_filename);
    return 0;
 }
 Abstract_allocator locate_work_abstract_allocator = locate_abstract_allocator;
@@ -390,6 +405,7 @@ if (p->filter_match_index==NULL) {
    af_close_mapfile(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
+   free(buffer_filename);
    return 0;
 }
 #endif
@@ -524,6 +540,7 @@ free(p->morpho_dic_bin_free);
 free_DLC_tree(p->DLC_tree);
 #endif
 free_locate_parameters(p);
+free(buffer_filename);
 u_printf("Done.\n");
 return 1;
 }

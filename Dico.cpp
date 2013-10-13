@@ -230,10 +230,24 @@ if (argc==1) {
 
 int ret=0;
 int val,index=-1;
-char alph[FILENAME_MAX]="";
-char text[FILENAME_MAX]="";
-char arabic_rules[FILENAME_MAX]="";
-char raw_output[FILENAME_MAX]="";
+
+size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
+char* buffer_filename = (char*)malloc(step_filename_buffer * 6);
+if (buffer_filename == NULL)
+{
+	fatal_alloc_error("main_Dico");
+}
+
+
+char* alph = (buffer_filename + (step_filename_buffer * 0));
+char* text = (buffer_filename + (step_filename_buffer * 1));
+char* arabic_rules = (buffer_filename + (step_filename_buffer * 2));
+char* raw_output = (buffer_filename + (step_filename_buffer * 3));
+*alph = '\0';
+*text = '\0';
+*arabic_rules = '\0';
+*raw_output = '\0';
+
 char negation_operator[0x20]="";
 char* morpho_dic=NULL;
 int is_korean=0;
@@ -283,7 +297,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
              break;
    case 'K': is_korean=1;
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free(buffer_filename); return 0;
    case 'u': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty arabic rule configuration file name\n");
              }
@@ -332,6 +346,7 @@ if (alph[0]!='\0') {
    alphabet=load_alphabet(&vec,alph,is_korean);
    if (alphabet==NULL) {
       error("Cannot open alphabet file %s\n",alph);
+      free(buffer_filename);
       return 1;
    }
 }
@@ -352,6 +367,7 @@ if (f_raw_output!=NULL) {
 	if (f_raw_output!=U_STDOUT) u_fclose(f_raw_output);
 	free_alphabet(alphabet);
 	free_OptVars(vars);
+	free(buffer_filename);
 	return ret_applic;
 }
 
@@ -381,6 +397,7 @@ tokens=load_text_tokens(&vec,snt_files->tokens_txt);
 if (tokens==NULL) {
    free_alphabet(alphabet);
    error("Cannot open token file %s\n",snt_files->tokens_txt);
+   free(buffer_filename);
    return 1;
 }
 /* We try opening the text.cod file for binary reading */
@@ -389,6 +406,7 @@ if (text_cod==NULL) {
    free_alphabet(alphabet);
    free_text_tokens(tokens);
    error("Cannot open coded text file %s\n",snt_files->text_cod);
+   free(buffer_filename);
    return 1;
 }
 u_fclose(text_cod);
@@ -403,12 +421,12 @@ for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries
     * in their order on the command line */
    for (int i=vars->optind;i<argc;i++) {
-      char tmp[FILENAME_MAX];
+      char* tmp = (buffer_filename + (step_filename_buffer * 4));
       remove_extension(argv[i],tmp);
       char priority_mark=tmp[strlen(tmp)-1];
       if ((priority==1 && priority_mark=='-') ||  (priority==2 && priority_mark!='-' && priority_mark!='+') ||  (priority==3 && priority_mark=='+')) {
          /* If we must must process a dictionary, we check its type */
-         char tmp2[FILENAME_MAX];
+         char* tmp2 = (buffer_filename + (step_filename_buffer * 5));
          get_extension(argv[i],tmp2);
          if (!strcmp(tmp2,".bin") || !strcmp(tmp2,".bin2"))    {
             /*
@@ -538,6 +556,7 @@ free_dico_application(info);
 free_snt_files(snt_files);
 if (morpho_dic!=NULL) free(morpho_dic);
 free_OptVars(vars);
+free(buffer_filename);
 return ret;
 }
 

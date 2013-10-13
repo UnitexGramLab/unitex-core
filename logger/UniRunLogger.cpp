@@ -1650,6 +1650,11 @@ int ABSTRACT_CALLBACK_UNITEX is_cancelling(void*)
 
 void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/)
 {
+    char* buffer_filename = (char*)malloc(0x200*3);
+    if (buffer_filename == NULL)
+    {
+        fatal_alloc_error("DoWork");
+    }
     RunLog_ThreadData* p_RunLog_ThreadData = (RunLog_ThreadData*)privateDataPtr;
     const RunLog_ctx* p_RunLog_ctx = p_RunLog_ThreadData->p_RunLog_ctx;
 
@@ -1667,10 +1672,9 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         srand ( (unsigned int)(time(NULL) + p_RunLog_ThreadData->num_thread) );
     for (i=0;i<nb_iteration;i++)
     {
-        char runulp[0x200];
-        char resultulp[0x200];
-        char rundir[0x200];
-
+        char* runulp = buffer_filename + (0x200 * 0);
+        char* resultulp = buffer_filename + (0x200 * 1);
+        char* rundir = buffer_filename + (0x200 * 2);
 
         strcpy(runulp,p_RunLog_ctx->runulp);
         strcpy(rundir,p_RunLog_ctx->rundir);
@@ -1759,6 +1763,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
     }
 	if (p_RunLog_ThreadData->must_cleanup_tls != 0)
 		TlsCleanupCurrentThread();
+    free(buffer_filename);
 }
 
 
@@ -1773,66 +1778,66 @@ if (argc==1) {
    return 0;
 }
 
-RunLog_ctx runLog_ctx;
-runLog_ctx.resultulp[0]='\0';
-runLog_ctx.rundir[0]='\0';
-runLog_ctx.summaryfile[0]='\0';
-runLog_ctx.summary_error_file[0]='\0';
-runLog_ctx.select_tool[0]='\0';
-runLog_ctx.LocationUnfoundVirtualRessource[0]='\0';
-runLog_ctx.quiet=2;
-runLog_ctx.clean=1;
-runLog_ctx.cleanlog=2;
-runLog_ctx.nb_thread=1;
-runLog_ctx.increment=0;
-runLog_ctx.random=0;
-runLog_ctx.benchmark=1;
-runLog_ctx.junk_summary=0;
-runLog_ctx.run_before_break=-1;
+RunLog_ctx* runLog_ctx = (RunLog_ctx*)malloc(sizeof(RunLog_ctx));
+runLog_ctx->resultulp[0]='\0';
+runLog_ctx->rundir[0]='\0';
+runLog_ctx->summaryfile[0]='\0';
+runLog_ctx->summary_error_file[0]='\0';
+runLog_ctx->select_tool[0]='\0';
+runLog_ctx->LocationUnfoundVirtualRessource[0]='\0';
+runLog_ctx->quiet=2;
+runLog_ctx->clean=1;
+runLog_ctx->cleanlog=2;
+runLog_ctx->nb_thread=1;
+runLog_ctx->increment=0;
+runLog_ctx->random=0;
+runLog_ctx->benchmark=1;
+runLog_ctx->junk_summary=0;
+runLog_ctx->run_before_break=-1;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,vars))) {
    switch(val) {
-   case 'c': runLog_ctx.clean=1; break;
-   case 'p': runLog_ctx.clean=0; break;
-   case 'n': runLog_ctx.cleanlog=1; break;
-   case 'l': runLog_ctx.cleanlog=0; break;
-   case 'm': runLog_ctx.quiet=1; break;
-   case 'j': runLog_ctx.junk_summary=1; break;
-   case 'v': runLog_ctx.quiet=0; break;
-   case 'b': runLog_ctx.benchmark=0; break;
+   case 'c': runLog_ctx->clean=1; break;
+   case 'p': runLog_ctx->clean=0; break;
+   case 'n': runLog_ctx->cleanlog=1; break;
+   case 'l': runLog_ctx->cleanlog=0; break;
+   case 'm': runLog_ctx->quiet=1; break;
+   case 'j': runLog_ctx->junk_summary=1; break;
+   case 'v': runLog_ctx->quiet=0; break;
+   case 'b': runLog_ctx->benchmark=0; break;
    case 'a': 
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of random execution\n");
              }
              
-             runLog_ctx.random=atol(vars->optarg);
+             runLog_ctx->random=atol(vars->optarg);
              break;
    case 'i': 
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of increment\n");
              }
-             runLog_ctx.increment=atol(vars->optarg);
+             runLog_ctx->increment=atol(vars->optarg);
              break;
    case 't': 
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of thread\n");
              }
-             runLog_ctx.nb_thread=atoi(vars->optarg);
+             runLog_ctx->nb_thread=atoi(vars->optarg);
              break;
    case 'f': 
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of test before break\n");
              }
-             runLog_ctx.run_before_break=atoi(vars->optarg);
+             runLog_ctx->run_before_break=atoi(vars->optarg);
              break;
-   case 'r': strcpy(runLog_ctx.resultulp,vars->optarg); break;
-   case 'd': strcpy(runLog_ctx.rundir,vars->optarg); break;
-   case 's': strcpy(runLog_ctx.summaryfile,vars->optarg); break;
-   case 'e': strcpy(runLog_ctx.summary_error_file,vars->optarg); break;
-   case 'o': strcpy(runLog_ctx.select_tool,vars->optarg); break;
-   case 'u': strcpy(runLog_ctx.LocationUnfoundVirtualRessource,vars->optarg); break;
+   case 'r': strcpy(runLog_ctx->resultulp,vars->optarg); break;
+   case 'd': strcpy(runLog_ctx->rundir,vars->optarg); break;
+   case 's': strcpy(runLog_ctx->summaryfile,vars->optarg); break;
+   case 'e': strcpy(runLog_ctx->summary_error_file,vars->optarg); break;
+   case 'o': strcpy(runLog_ctx->select_tool,vars->optarg); break;
+   case 'u': strcpy(runLog_ctx->LocationUnfoundVirtualRessource,vars->optarg); break;
    }
    index=-1;
 }
@@ -1840,46 +1845,48 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
 if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free_OptVars(vars);
+   free(runLog_ctx);
    return 1;
 }
 
-if (runLog_ctx.nb_thread == 0)
-  runLog_ctx.nb_thread = 1;
+if (runLog_ctx->nb_thread == 0)
+  runLog_ctx->nb_thread = 1;
 
-if (runLog_ctx.nb_thread > 1)
+if (runLog_ctx->nb_thread > 1)
   if (IsSeveralThreadsPossible() == 0)
-      runLog_ctx.nb_thread = 1;
+      runLog_ctx->nb_thread = 1;
 
-if (runLog_ctx.quiet==2)
-  runLog_ctx.quiet = (runLog_ctx.nb_thread == 1) ? 0 : 1;
+if (runLog_ctx->quiet==2)
+  runLog_ctx->quiet = (runLog_ctx->nb_thread == 1) ? 0 : 1;
 
 
-runLog_ctx.runulp=argv[vars->optind];
-if (runLog_ctx.runulp == NULL)
-  runLog_ctx.runulp="";
-if (runLog_ctx.runulp[0]=='\0') {
+runLog_ctx->runulp=argv[vars->optind];
+if (runLog_ctx->runulp == NULL)
+  runLog_ctx->runulp="";
+if (runLog_ctx->runulp[0]=='\0') {
    error("Invalid arguments: rerun with --help\n");
    free_OptVars(vars);
+   free(runLog_ctx);
    return 1;
 }
 
-if (runLog_ctx.rundir[0]==0) {
-    strcpy(runLog_ctx.rundir,runLog_ctx.runulp);
-    strcat(runLog_ctx.rundir,"_tmpdir");
+if (runLog_ctx->rundir[0]==0) {
+    strcpy(runLog_ctx->rundir,runLog_ctx->runulp);
+    strcat(runLog_ctx->rundir,"_tmpdir");
 }
 
-if (runLog_ctx.resultulp[0]=='\0') {
-    if (runLog_ctx.cleanlog==2)
-        runLog_ctx.cleanlog=1;
-    strcpy(runLog_ctx.resultulp,runLog_ctx.runulp);
-    strcat(runLog_ctx.resultulp,".rerun.ulp");
+if (runLog_ctx->resultulp[0]=='\0') {
+    if (runLog_ctx->cleanlog==2)
+        runLog_ctx->cleanlog=1;
+    strcpy(runLog_ctx->resultulp,runLog_ctx->runulp);
+    strcat(runLog_ctx->resultulp,".rerun.ulp");
 }
-if (runLog_ctx.cleanlog==2)
-   runLog_ctx.cleanlog=0;
+if (runLog_ctx->cleanlog==2)
+   runLog_ctx->cleanlog=0;
 
 
-InstallLoggerForRunner InstallLoggerForRunnerSingleton((runLog_ctx.cleanlog==1) ? 0:1);
-runLog_ctx.pInstallLoggerForRunnerSingleton=&InstallLoggerForRunnerSingleton;
+InstallLoggerForRunner InstallLoggerForRunnerSingleton((runLog_ctx->cleanlog==1) ? 0:1);
+runLog_ctx->pInstallLoggerForRunnerSingleton=&InstallLoggerForRunnerSingleton;
 
 int trash_out=0;
 int trash_err=0;
@@ -1887,7 +1894,7 @@ t_fnc_stdOutWrite fnc_out=NULL;
 t_fnc_stdOutWrite fnc_err=NULL;
 void* private_out=NULL;
 void* private_err=NULL;
-if (runLog_ctx.quiet==1)
+if (runLog_ctx->quiet==1)
 {
     GetStdWriteCB(stdwrite_kind_out, &trash_out, &fnc_out,&private_out);
     GetStdWriteCB(stdwrite_kind_err, &trash_err, &fnc_err,&private_err);
@@ -1897,12 +1904,12 @@ if (runLog_ctx.quiet==1)
 
 RunLog_ThreadData* prunLog_ThreadData;
 
-prunLog_ThreadData = (RunLog_ThreadData*)malloc(sizeof(RunLog_ThreadData)*(runLog_ctx.nb_thread+1));
-void** ptrptr = (void**)malloc(sizeof(void*)*(runLog_ctx.nb_thread+1));
+prunLog_ThreadData = (RunLog_ThreadData*)malloc(sizeof(RunLog_ThreadData)*(runLog_ctx->nb_thread+1));
+void** ptrptr = (void**)malloc(sizeof(void*)*(runLog_ctx->nb_thread+1));
 
 int ut;
-for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
-    (prunLog_ThreadData+ut)->p_RunLog_ctx = &runLog_ctx;
+for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
+    (prunLog_ThreadData+ut)->p_RunLog_ctx = runLog_ctx;
     (prunLog_ThreadData+ut)->summary = NULL;
     (prunLog_ThreadData+ut)->summary_error = NULL;
     (prunLog_ThreadData+ut)->num_thread = ut;
@@ -1910,15 +1917,15 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     (prunLog_ThreadData+ut)->count_run_ok=0;
     (prunLog_ThreadData+ut)->count_run_error=0;
     (prunLog_ThreadData+ut)->count_run_warning=0;
-	(prunLog_ThreadData+ut)->must_cleanup_tls = (runLog_ctx.nb_thread <= 1) ? 0 : 1;
+	(prunLog_ThreadData+ut)->must_cleanup_tls = (runLog_ctx->nb_thread <= 1) ? 0 : 1;
 
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
 }
 
-if (runLog_ctx.nb_thread>1)
-  runLog_ctx.run_before_break=-1;
+if (runLog_ctx->nb_thread>1)
+  runLog_ctx->run_before_break=-1;
 
-if (runLog_ctx.run_before_break!=-1)
+if (runLog_ctx->run_before_break!=-1)
 {
     t_user_cancelling_func_array user_cancelling_func_array;
     user_cancelling_func_array.size_struct = sizeof(user_cancelling_func_array);
@@ -1928,27 +1935,27 @@ if (runLog_ctx.run_before_break!=-1)
     AddUserCancellingInfo(&user_cancelling_func_array,NULL);
 }
 
-if (runLog_ctx.nb_thread <= 1)
+if (runLog_ctx->nb_thread <= 1)
    DoWork(*ptrptr,0);
 else
-   SyncDoRunThreads(runLog_ctx.nb_thread,DoWork,ptrptr);
+   SyncDoRunThreads(runLog_ctx->nb_thread,DoWork,ptrptr);
 
-if (runLog_ctx.quiet==1)
+if (runLog_ctx->quiet==1)
 {
     SetStdWriteCB(stdwrite_kind_out, trash_out, fnc_out, private_out);
     SetStdWriteCB(stdwrite_kind_err, trash_err, fnc_err, private_err);
 }
 
-for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
+for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
 
     if ((prunLog_ThreadData+ut)->summary!=NULL)
     {
-        if (runLog_ctx.quiet == 0)
+        if (runLog_ctx->quiet == 0)
           fwrite((prunLog_ThreadData+ut)->summary,strlen((prunLog_ThreadData+ut)->summary),1,U_STDOUT);
 
-        if ((*(runLog_ctx.summaryfile)) != '\0')
+        if ((*(runLog_ctx->summaryfile)) != '\0')
         {
-            ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summaryfile,"ab");
+            ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx->summaryfile,"ab");
             if (afw != NULL)
             {
                 af_fwrite((prunLog_ThreadData+ut)->summary,strlen((prunLog_ThreadData+ut)->summary),1,afw);
@@ -1961,12 +1968,12 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
 
     if ((prunLog_ThreadData+ut) -> summary_error != NULL)
     {
-        if (runLog_ctx.quiet == 0)
+        if (runLog_ctx->quiet == 0)
           fwrite((prunLog_ThreadData+ut)->summary_error,strlen((prunLog_ThreadData+ut)->summary_error),1,U_STDERR);
 
-        if ((*(runLog_ctx.summary_error_file)) != '\0')
+        if ((*(runLog_ctx->summary_error_file)) != '\0')
         {
-            ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summary_error_file,"ab");
+            ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx->summary_error_file,"ab");
             if (afw != NULL)
             {
                 af_fwrite((prunLog_ThreadData+ut)->summary_error,strlen((prunLog_ThreadData+ut)->summary_error),1,afw);
@@ -1979,9 +1986,9 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
 }
 
 u_printf("\n");
-for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
+for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
     u_printf("final resume");
-    if (runLog_ctx.nb_thread>1)
+    if (runLog_ctx->nb_thread>1)
         u_printf(" for thread %u",ut);
     u_printf(": %u good run, %u warning compare, %u error compare\n",
         (prunLog_ThreadData+ut)->count_run_ok,(prunLog_ThreadData+ut)->count_run_warning,
@@ -1991,6 +1998,7 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
 free(prunLog_ThreadData);
 free(ptrptr);
 free_OptVars(vars);
+free(runLog_ctx);
 return 0;
 }
 

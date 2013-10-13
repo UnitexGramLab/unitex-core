@@ -134,10 +134,20 @@ if (argc==1) {
    return 0;
 }
 
-char alphabet[FILENAME_MAX]="";
-char token_file[FILENAME_MAX]="";
-char in_offsets[FILENAME_MAX]="";
-char out_offsets[FILENAME_MAX]="";
+size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
+char* buffer_filename = (char*)malloc(step_filename_buffer * 8);
+if (buffer_filename == NULL)
+{
+	fatal_alloc_error("main_Tokenize");
+}
+char* alphabet = (buffer_filename + (step_filename_buffer * 0));
+char* token_file = (buffer_filename + (step_filename_buffer * 1));
+char* in_offsets = (buffer_filename + (step_filename_buffer * 2));
+char* out_offsets = (buffer_filename + (step_filename_buffer * 3));
+*alphabet = '\0';
+*token_file = '\0';
+*in_offsets = '\0';
+*out_offsets = '\0';
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
@@ -177,7 +187,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&ind
              }
              strcpy(out_offsets,vars->optarg);
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free(buffer_filename); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Tokenize[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -196,10 +206,16 @@ U_FILE* output;
 U_FILE* enter;
 U_FILE* f_out_offsets=NULL;
 vector_offset* v_in_offsets=NULL;
-char tokens_txt[FILENAME_MAX];
-char text_cod[FILENAME_MAX];
-char enter_pos[FILENAME_MAX];
-char snt_offsets_pos[FILENAME_MAX];
+
+char* tokens_txt = (buffer_filename + (step_filename_buffer * 4));
+char* text_cod = (buffer_filename + (step_filename_buffer * 5));
+char* enter_pos = (buffer_filename + (step_filename_buffer * 6));
+char* snt_offsets_pos = (buffer_filename + (step_filename_buffer * 7));
+*tokens_txt = '\0';
+*text_cod = '\0';
+*enter_pos = '\0';
+*snt_offsets_pos = '\0';
+
 Alphabet* alph=NULL;
 
 get_snt_path(argv[vars->optind],text_cod);
@@ -219,6 +235,7 @@ if (alphabet[0]!='\0') {
    if (alph==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
       u_fclose(text);
+      free(buffer_filename);
       return 1;
    }
 }
@@ -229,6 +246,7 @@ if (out==NULL) {
    if (alph!=NULL) {
       free_alphabet(alph);
    }
+   free(buffer_filename); 
    return 1;
 }
 enter=u_fopen(BINARY,enter_pos,U_WRITE);
@@ -239,6 +257,7 @@ if (enter==NULL) {
    if (alph!=NULL) {
       free_alphabet(alph);
    }
+   free(buffer_filename); 
    return 1;
 }
 if (out_offsets[0]!='\0') {
@@ -284,6 +303,7 @@ if (output==NULL) {
    free_vector_int(n_occur);
    free_vector_int(n_enter_pos);
    free_vector_int(snt_offsets);
+   free(buffer_filename); 
    return 1;
 }
 u_fprintf(output,"0000000000\n");
@@ -349,6 +369,7 @@ free_alphabet(alph);
 u_fclose(f_out_offsets);
 free_vector_offset(v_in_offsets);
 free_OptVars(vars);
+free(buffer_filename); 
 return 0;
 }
 //---------------------------------------------------------------------------
@@ -492,7 +513,6 @@ int tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          int *DIGITS_TOTAL,U_FILE* f_out_offsets,vector_offset* v_in_offsets,
                          int char_by_char) {
 int c;
-unichar s[MAX_TAG_LENGTH];
 int n;
 char ENTER;
 int COUNT=0;
@@ -503,6 +523,10 @@ int current_pos;
 int snt_offsets_shift=0;
 int offset_index=0;
 int result=0; // 0 = no error
+unichar * s = (unichar*)malloc(sizeof(unichar)*MAX_TAG_LENGTH);
+if (s == NULL) {
+  fatal_alloc_error("tokenization");
+}
 while (c!=EOF) {
 	current_pos=COUNT;
    COUNT++;
@@ -615,6 +639,7 @@ for (n=0;n<tokens->nbelems;n++) {
 if (result!=0) {
    u_printf("Unsucessfull.\n");
 }
+free(s);
 return result;
 }
 

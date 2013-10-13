@@ -157,10 +157,19 @@ int FLIP=0;
 BinType bin_type=BIN_CLASSIC;
 int new_style_bin=1;
 int semitic=0;
-char bin[DIC_WORD_SIZE]="";
-char inf[DIC_WORD_SIZE]="";
+
+size_t step_filename_buffer = ((((DIC_WORD_SIZE*sizeof(unichar)) / 0x10) + 1) * 0x10);
+char* buffer_filename = (char*)malloc(step_filename_buffer * 5);
+if (buffer_filename == NULL)
+{
+	fatal_alloc_error("locate_pattern");
+}
+char* bin = (buffer_filename + (step_filename_buffer * 0));
+char* inf = (buffer_filename + (step_filename_buffer * 1));
+*bin = '\0';
+*inf = '\0';
 VersatileEncodingConfig vec=VEC_DEFAULT;
-bin[0]='\0';
+
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&index,vars))) {
@@ -170,7 +179,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    case 1: new_style_bin=0; bin_type=BIN_CLASSIC; break;
    case 2: new_style_bin=1; bin_type=BIN_CLASSIC; break;
    case 3: new_style_bin=1; bin_type=BIN_BIN2; break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free(buffer_filename); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
    case 'o': if (vars->optarg[0]=='\0') {
@@ -197,6 +206,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
 
 if (vars->optind==argc) {
    error("Invalid arguments: rerun with --help\n");
+   free(buffer_filename);
    return 1;
 }
 
@@ -241,7 +251,8 @@ if (bin_type==BIN_CLASSIC) {
 }
 root=new_dictionary_node(compress_abstract_allocator);
 INF_codes=new_string_hash();
-unichar tmp[DIC_WORD_SIZE];
+unichar* tmp = (unichar*)(buffer_filename + (step_filename_buffer * 2));
+*tmp = '\0';
 /* We read until there is no more lines in the .dic file */
 Ustring* s=new_Ustring(DIC_WORD_SIZE);
 int line=0; /* Current line number */
@@ -301,8 +312,8 @@ for (;vars->optind!=argc;(vars->optind)++) {
 					if (inflected==NULL || lemma==NULL) {
 						fatal_alloc_error("main_Compress");
 					}
-					unichar inf_tmp[DIC_WORD_SIZE];
-					unichar lem_tmp[DIC_WORD_SIZE];
+					unichar* inf_tmp = (unichar*)(buffer_filename + (step_filename_buffer * 3));
+					unichar* lem_tmp = (unichar*)(buffer_filename + (step_filename_buffer * 4));
 					u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
 					u_strcpy_sized(lem_tmp,DIC_WORD_SIZE,entry->lemma);
 					/* We replace the unprotected = signs by spaces */
@@ -438,6 +449,7 @@ close_abstract_allocator(compress_abstract_allocator);
 close_abstract_allocator(compress_tokenize_abstract_allocator);
 compress_abstract_allocator=NULL;
 #endif
+free(buffer_filename);
 return 0;
 }
 
