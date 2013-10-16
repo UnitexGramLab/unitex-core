@@ -161,7 +161,7 @@
 #include "Reg2Grf.h"
 #endif
 
-#if (((!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
 #include "SelectOutput.h"
 #endif
 
@@ -410,7 +410,7 @@ const struct utility_item utility_array[]=
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
 #endif
 
-#if (((!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
 	{ "SelectOutput", 12, &main_SelectOutput, usage_SelectOutput, optstring_SelectOutput, lopts_SelectOutput } ,
 #endif
 
