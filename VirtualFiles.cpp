@@ -150,6 +150,9 @@ if (list!=inode) {
 	return list;
 }
 VFS_INODE* next=list->next;
+if (inode->ptr!=NULL) {
+	free(inode->ptr);
+}
 free(inode->name);
 free(inode);
 return next;

@@ -241,6 +241,7 @@ void protect_text(const char *fileName, const VersatileEncodingConfig* vec){
 }
 
 
+#define READ_FILE_BUFFER_SIZE 65536
 
 unichar* read_file(U_FILE *f){
 
@@ -255,12 +256,12 @@ unichar* read_file(U_FILE *f){
 	int total_read = 0;
 	int read;
 	do {
-		unichar buffer[4096+1];
-		memset(buffer,0,sizeof(unichar)*(4096+1));
+		unichar buffer[READ_FILE_BUFFER_SIZE+1];
+		memset(buffer,0,sizeof(unichar)*(READ_FILE_BUFFER_SIZE+1));
 
 		int ok=1;
 
-		read = u_fread(buffer,4096,f,&ok);
+		read = u_fread(buffer,READ_FILE_BUFFER_SIZE,f,&ok);
 
 		total_read += u_strlen(buffer);
 		text = (unichar *)realloc(text,sizeof(unichar)*(total_read+1));
@@ -269,7 +270,7 @@ unichar* read_file(U_FILE *f){
 		}
 		u_strcat(text,buffer);
 
-	} while (read == 4096);
+	} while (read == READ_FILE_BUFFER_SIZE);
 
 	text[total_read]='\0';
 
