@@ -53,17 +53,7 @@ typedef struct {
    unsigned int len;
 } Ustring;
 
-
-#define START_SIZE_USTRING 0x10
-
-static inline unsigned int accurate_rounded_size(unsigned int size,unsigned int start_size = START_SIZE_USTRING)
-{
-	unsigned int ret_size = start_size;
-	while (ret_size < size)
-		ret_size *= 2;
-	return ret_size;
-}
-
+    
 void resize(Ustring* ustr,unsigned int size);
 
 Ustring* new_Ustring(const unichar*);
@@ -96,7 +86,8 @@ int readline_keep_CR(Ustring*,U_FILE*);
 int readline(Ustring*,U_FILE*);
 unichar* readline_safe(U_FILE* f);
 
-
+    
+void u_strcpy(Ustring* ustr,const unichar* str,unsigned int length);
 
 /* Inline implementations */
 
@@ -157,26 +148,17 @@ u_strcat(ustr,(char*)str,(int)strlen(str));
  * Copies 'src' content in to the given Ustring, whose previous content
  * is lost.
  */
-static inline void u_strcpy(Ustring* dest,const unichar* src) {
+    
+static inline void u_strcpy(Ustring* dest,const unichar* str) {
 if (dest==NULL) {
    fatal_error("NULL Ustring error in u_strcpy\n");
 }
-empty(dest);
-if ((src!=NULL) && (src[0]=='\0')) {
-  unsigned int len_src = u_strlen(src);
-  unsigned int accurate_buffer_size = accurate_rounded_size(len_src+1,dest->size);
-  if (dest->size < accurate_buffer_size) {
-     resize(dest,accurate_buffer_size);
-  }
-  dest->len=len_src;
 
-  unichar c;
-  unichar *dest_str = dest->str;
-  do {
-     c=*src++;
-     *(dest_str++)=c;
-  } while (c!='\0');
-} else {
+if ((str!=NULL) && (str[0]!='\0')) {
+  u_strcpy(dest,str,(int)u_strlen(str));
+}
+else
+{
   dest->str[0]=0;
   dest->len=0;
 }

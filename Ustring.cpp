@@ -43,21 +43,15 @@ if (str==NULL) {
    str=U_EMPTY;
 }
 res->len=u_strlen(str);
-res->size=accurate_rounded_size(res->len+1);
+// minor buffer enlarging
+res->size=((res->len+1) | 0x0f) + 1;
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
 }
-
-
-unichar c;
-const unichar* src=str;
-unichar *dest_str = res->str;
-do {
-   c=*src++;
-   *(dest_str++)=c;
-} while (c!='\0');
-
+for (unsigned int i=0;i<res->size;i++) {
+   res->str[i]=str[i];
+}
 return res;
 }
 
@@ -79,8 +73,12 @@ Ustring* res=(Ustring*)malloc(sizeof(Ustring));
 if (res==NULL) {
    fatal_alloc_error("new_Ustring");
 }
+if (size<=0) {
+   size=1;
+}
 res->len=0;
-res->size=accurate_rounded_size(size);
+// minor buffer enlarging
+res->size=(size | 0x0f) + 1;
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
@@ -210,6 +208,25 @@ ustr->str[newlen]='\0';
 ustr->len=newlen;
 }
 
+
+void u_strcpy(Ustring* ustr,const unichar* str,unsigned int length) {
+  unsigned int newlen=length;
+  if (ustr->size<newlen+1) {
+    /* If necessary, we enlarge the internal buffer */
+    unsigned int n=ustr->size;
+    if (n==0) n=1;
+    while (n<=newlen+1) {
+      n=n*2;
+    }
+    resize(ustr,n);
+    }
+    for (unsigned int i=0;i<length;i++) {
+       ustr->str[i]=str[i];
+  }
+    
+  ustr->str[newlen] = 0;
+  ustr->len=newlen;
+}
 
 /**
  * This function performs a safe read line from the given file.
