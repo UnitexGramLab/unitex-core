@@ -179,10 +179,100 @@ for (int i=0;i<l;i++) {
 		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);
 	}
 }
-int pos=l;
+const unichar* walk_backup = backup+l;
 for (int i=0;i<l;i++) {
-	u_strcpy(v->variables[i],backup+pos);
-	pos=pos+v->variables[i]->len+1;
+
+	unichar c;
+	c = *(walk_backup);
+	v->variables[i]->str[0] = c;
+	if (c == '\0') goto size0;
+		
+	c = *(walk_backup+1);
+	v->variables[i]->str[1] = c;
+	if (c == '\0') goto size1;
+
+	c = *(walk_backup+2);
+	v->variables[i]->str[2] = c;
+	if (c == '\0') goto size2;
+
+	c = *(walk_backup+3);
+	v->variables[i]->str[3] = c;
+	if (c == '\0') goto size3;
+	
+	c = *(walk_backup+4);
+	v->variables[i]->str[4] = c;
+	if (c == '\0') goto size4;
+
+	c = *(walk_backup+5);
+	v->variables[i]->str[5] = c;
+	if (c == '\0') goto size5;
+	
+	c = *(walk_backup+6);
+	v->variables[i]->str[6] = c;
+	if (c == '\0') goto size6;
+
+	c = *(walk_backup+7);
+	v->variables[i]->str[7] = c;
+	if (c == '\0') goto size7;
+
+	walk_backup += 8;
+	{
+	  unsigned int pos_in_string = 8;
+	  for (;;)
+	  {
+		  if (v->variables[i]->size == pos_in_string)
+			  resize(v->variables[i],v->variables[i]->size*2);
+		  c = *(walk_backup+pos_in_string);
+		  walk_backup++;
+		  v->variables[i]->str[pos_in_string] = c;
+		  if (c == '\0')
+			  break;
+		  pos_in_string++;
+	  }
+
+	v->variables[i]->len = pos_in_string;
+	}
+	continue;
+	
+	size0:
+	  walk_backup++;
+	  v->variables[i]->len = 0 ;
+	  continue;
+
+	size1:
+	  walk_backup+=2;
+	  v->variables[i]->len = 1 ;
+	  continue;
+	  
+	size2:
+	  walk_backup+=3;
+	  v->variables[i]->len = 2 ;
+	  continue;
+
+	size3:
+	  walk_backup+=4;
+	  v->variables[i]->len = 3 ;
+	  continue;
+
+	size4:
+	  walk_backup+=5;
+	  v->variables[i]->len = 4 ;
+	  continue;
+
+	size5:
+	  walk_backup+=6;
+	  v->variables[i]->len = 5 ;
+	  continue;
+
+	size6:
+	  walk_backup+=7;
+	  v->variables[i]->len = 6 ;
+	  continue;
+
+	size7:
+	  walk_backup+=8;
+	  v->variables[i]->len = 7 ;
+	  continue;
 }
 }
 
