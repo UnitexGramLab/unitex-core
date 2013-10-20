@@ -162,22 +162,24 @@ if (dest==NULL) {
    fatal_error("NULL Ustring error in u_strcpy\n");
 }
 empty(dest);
-if (src==NULL || src[0]=='\0') return;
-unsigned int len_src = u_strlen(src);
-unsigned int accurate_buffer_size = accurate_rounded_size(len_src+1,dest->size);
-if (dest->size < accurate_buffer_size) {
-	resize(dest,accurate_buffer_size);
+if ((src!=NULL) && (src[0]=='\0')) {
+  unsigned int len_src = u_strlen(src);
+  unsigned int accurate_buffer_size = accurate_rounded_size(len_src+1,dest->size);
+  if (dest->size < accurate_buffer_size) {
+     resize(dest,accurate_buffer_size);
+  }
+  dest->len=len_src;
+
+  unichar c;
+  unichar *dest_str = dest->str;
+  do {
+     c=*src++;
+     *(dest_str++)=c;
+  } while (c!='\0');
+} else {
+  dest->str[0]=0;
+  dest->len=0;
 }
-dest->len=len_src;
-memcpy(dest->str,src,(len_src+1)*sizeof(unichar));
-
-unichar c;
-unichar *dest_str = dest->str;
-do {
-   c=*src++;
-   *(dest_str++)=c;
-} while (c!='\0');
-
 }
 
 
