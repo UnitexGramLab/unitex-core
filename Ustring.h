@@ -54,6 +54,17 @@ typedef struct {
 } Ustring;
 
 
+#define START_SIZE_USTRING 0x10
+
+static inline unsigned int accurate_rounded_size(unsigned int size,unsigned int start_size = START_SIZE_USTRING)
+{
+	unsigned int ret_size = start_size;
+	while (ret_size < size)
+		ret_size *= 2;
+	return ret_size;
+}
+
+void resize(Ustring* ustr,unsigned int size);
 
 Ustring* new_Ustring(const unichar*);
 Ustring* new_Ustring();
@@ -151,7 +162,14 @@ if (dest==NULL) {
    fatal_error("NULL Ustring error in u_strcpy\n");
 }
 empty(dest);
-u_strcat(dest,src);
+if (src==NULL || src[0]=='\0') return;
+unsigned int len_src = u_strlen(src);
+unsigned int accurate_buffer_size = accurate_rounded_size(len_src+1,dest->size);
+if (dest->size < accurate_buffer_size) {
+	resize(dest,accurate_buffer_size);
+}
+dest->len=len_src;
+memcpy(dest->str,src,(len_src+1)*sizeof(unichar));
 }
 
 

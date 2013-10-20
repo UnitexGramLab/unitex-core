@@ -43,14 +43,12 @@ if (str==NULL) {
    str=U_EMPTY;
 }
 res->len=u_strlen(str);
-res->size=res->len+1;
+res->size=accurate_rounded_size(res->len+1);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
 }
-for (unsigned int i=0;i<res->size;i++) {
-   res->str[i]=str[i];
-}
+memcpy(res->str,str,(res->len+1)*sizeof(unichar));
 return res;
 }
 
@@ -72,11 +70,8 @@ Ustring* res=(Ustring*)malloc(sizeof(Ustring));
 if (res==NULL) {
    fatal_alloc_error("new_Ustring");
 }
-if (size<=0) {
-   size=1;
-}
 res->len=0;
-res->size=size;
+res->size=accurate_rounded_size(size);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
@@ -100,7 +95,7 @@ free(ustr);
  * Resizes th internal buffer of the given Ustring to the given size.
  * The buffer size is never decreased. Note that you cannot set a size<1.
  */
-static void resize(Ustring* ustr,unsigned int size) {
+void resize(Ustring* ustr,unsigned int size) {
 if (size<1) {
    size=1;
 }
