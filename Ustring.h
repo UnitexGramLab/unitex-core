@@ -170,6 +170,14 @@ if (dest->size < accurate_buffer_size) {
 }
 dest->len=len_src;
 memcpy(dest->str,src,(len_src+1)*sizeof(unichar));
+
+unichar c;
+unichar *dest_str = dest->str;
+do {
+   c=*src++;
+   *(dest_str++)=c;
+} while (c!='\0');
+
 }
 
 

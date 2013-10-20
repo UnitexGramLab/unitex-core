@@ -48,7 +48,16 @@ res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
 }
-memcpy(res->str,str,(res->len+1)*sizeof(unichar));
+
+
+unichar c;
+const unichar* src=str;
+unichar *dest_str = res->str;
+do {
+   c=*src++;
+   *(dest_str++)=c;
+} while (c!='\0');
+
 return res;
 }
 
