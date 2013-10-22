@@ -112,6 +112,11 @@ typedef abstract_allocator* Abstract_allocator;
 
 
 #define AllocatorCleanPresent                   0x000010
+
+
+#define AllocatorTipGrowingOftenRecycledObject  0x000020
+
+
 /*
  create_abstract_allocator is used when an function need an allocator
  creator is a string with the name of caller

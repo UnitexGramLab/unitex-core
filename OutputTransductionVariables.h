@@ -72,8 +72,8 @@ static inline int capture_mode(OutputVariables* v) {
 return v->pending!=NULL;
 }
 
-unichar* create_output_variable_backup(OutputVariables*);
-void free_output_variable_backup(unichar*);
+unichar* create_output_variable_backup(OutputVariables*,Abstract_allocator);
+void free_output_variable_backup(unichar*,Abstract_allocator);
 void install_output_variable_backup(OutputVariables*,const unichar*);
 
 void set_output_variable_pending(OutputVariables* var,int index);

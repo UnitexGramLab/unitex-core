@@ -82,7 +82,7 @@ struct parsing_info* new_parsing_info(int pos_in_tokens,int pos_in_chars,int sta
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_int_jamo,
                                       vector_int* insertions,int weight,
-                                      Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+                                      Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int,Abstract_allocator prv_alloc_backup_growing_recycle) {
 struct parsing_info* info;
 unsigned char*buf;
 buf=(unsigned char*)malloc_cb(get_prefered_allocator_item_size_for_variable(v),prv_alloc_recycle);
@@ -115,7 +115,7 @@ update_parsing_info_stack(info,stack);
 //info->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
 //info->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
 init_variable_backup(info->input_variable_backup,v);
-info->output_variable_backup=create_output_variable_backup(output_var);
+info->output_variable_backup=create_output_variable_backup(output_var,prv_alloc_backup_growing_recycle);
 info->variable_backup_size=0;
 if (v!=NULL)
   if (v->variable_index!=NULL)
@@ -140,7 +140,7 @@ return info;
 /**
  * Frees the whole memory associated to the given information list.
  */
-void free_parsing_info(struct parsing_info* list,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+void free_parsing_info(struct parsing_info* list,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int,Abstract_allocator prv_alloc_backup_growing_recycle) {
 struct parsing_info* tmp;
 while (list!=NULL) {
    tmp=list->next;
@@ -150,7 +150,7 @@ while (list!=NULL) {
    if (list->stack_must_be_free) {
        free(list->stack);
    }
-   free_output_variable_backup(list->output_variable_backup);
+   free_output_variable_backup(list->output_variable_backup,prv_alloc_backup_growing_recycle);
    clear_dic_variable_list(&(list->dic_variable_backup));
    free_dela_entry(list->dic_entry);
    /* No free on list->jamo because it was only a pointer on the global jamo tag array */
@@ -167,14 +167,14 @@ while (list!=NULL) {
  * have the same weight.
  */
 static void filter_lesser_weights(int weight,struct parsing_info* *list,
-									Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+									Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int,Abstract_allocator prv_alloc_backup_growing_recycle) {
 if (*list==NULL || (*list)->weight>=weight) return;
 struct parsing_info* tmp;
 while (*list!=NULL) {
 	tmp=*list;
 	(*list)=(*list)->next;
 	tmp->next=NULL;
-	free_parsing_info(tmp,prv_alloc_recycle, prv_alloc_vector_int);
+	free_parsing_info(tmp,prv_alloc_recycle, prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 }
 }
 
@@ -188,11 +188,11 @@ struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct 
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
                                       vector_int* insertions,
-                                      int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
-filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
+                                      int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int,Abstract_allocator prv_alloc_backup_growing_recycle) {
+filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
-                                        weight,prv_alloc_recycle,prv_alloc_vector_int);
+                                        weight,prv_alloc_recycle,prv_alloc_vector_int, prv_alloc_backup_growing_recycle);
 if (list->pos_in_tokens==pos
 	&& list->pos_in_chars==pos_in_token
 	&& list->state_number==state
@@ -218,8 +218,8 @@ if (list->pos_in_tokens==pos
       list->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
       list->variable_backup_size=v_variable_index_size;
    }
-   free_output_variable_backup(list->output_variable_backup);
-   list->output_variable_backup=create_output_variable_backup(output_var);
+   free_output_variable_backup(list->output_variable_backup,prv_alloc_backup_growing_recycle);
+   list->output_variable_backup=create_output_variable_backup(output_var,prv_alloc_backup_growing_recycle);
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
    if (list->dic_entry!=NULL) {
@@ -239,7 +239,7 @@ if (list->pos_in_tokens==pos
    return list;
 }
 list->next=insert_if_absent(pos,pos_in_token,state,list->next,stack_pointer,stack,v,output_var,v2,
-                            left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle,prv_alloc_vector_int);
+                            left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 return list;
 }
 
@@ -253,11 +253,11 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          int left_ctx_shift,int left_ctx_base,
                                          unichar* jamo,int pos_in_jamo,
                                          vector_int* insertions,
-                                         int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
-	filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
+                                         int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int,Abstract_allocator prv_alloc_backup_growing_recycle) {
+	filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
-                                        weight,prv_alloc_recycle,prv_alloc_vector_int);
+                                        weight,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 if ((list->pos_in_tokens==pos) /* If the length is the same... */
     && (list->pos_in_chars==pos_in_token)
     && (list->state_number==state)
@@ -285,8 +285,8 @@ if ((list->pos_in_tokens==pos) /* If the length is the same... */
       list->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
       list->variable_backup_size=v_variable_index_size;
    }
-   free_output_variable_backup(list->output_variable_backup);
-   list->output_variable_backup=create_output_variable_backup(output_var);
+   free_output_variable_backup(list->output_variable_backup,prv_alloc_backup_growing_recycle);
+   list->output_variable_backup=create_output_variable_backup(output_var,prv_alloc_backup_growing_recycle);
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
    if (list->dic_entry!=NULL) {
@@ -302,7 +302,7 @@ if ((list->pos_in_tokens==pos) /* If the length is the same... */
 }
 /* Otherwise, we look in the rest of the list */
 list->next=insert_if_different(pos,pos_in_token,state,list->next,stack_pointer,stack,v,output_var,v2,
-                               left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle,prv_alloc_vector_int);
+                               left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 return list;
 }
 
@@ -314,9 +314,9 @@ return list;
  */
 struct parsing_info* insert_morphological_match(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
-                                                Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+                                                Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int,Abstract_allocator prv_alloc_backup_growing_recycle) {
 if (list==NULL) return new_parsing_info(pos_in_tokens,pos_in_chars,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
-		jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle,prv_alloc_vector_int);
+		jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 if (list->pos_in_tokens==pos_in_tokens && list->pos_in_chars==pos_in_chars && list->state_number==state
     && list->dic_entry==dic_entry
     && list->jamo==jamo /* See comment in insert_if_absent*/
@@ -326,7 +326,7 @@ if (list->pos_in_tokens==pos_in_tokens && list->pos_in_chars==pos_in_chars && li
      * (i.e. dic_entry==NULL) */
    return list;
 }
-list->next=insert_morphological_match(pos_in_tokens,pos_in_chars,state,list->next,dic_entry,jamo,pos_in_jamo,prv_alloc_recycle,prv_alloc_vector_int);
+list->next=insert_morphological_match(pos_in_tokens,pos_in_chars,state,list->next,dic_entry,jamo,pos_in_jamo,prv_alloc_recycle,prv_alloc_vector_int,prv_alloc_backup_growing_recycle);
 return list;
 }
 

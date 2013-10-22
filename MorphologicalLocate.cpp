@@ -357,13 +357,13 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars, -1,
 							(*matches), p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
 			}
 		}
@@ -421,7 +421,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 					p->backup_memory_reserve);
 			}
 			if (p->nb_output_variables != 0) {
-				output_variable_backup=create_output_variable_backup(p->output_variables);
+				output_variable_backup=create_output_variable_backup(p->output_variables,p->prv_alloc_backup_growing_recycle);
 			}
 		}
 		do {
@@ -488,7 +488,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						L = L->next;
 					} while (L != NULL);
 					/* We free all subgraph matches */
-					free_parsing_info(L_first, p->prv_alloc_recycle, p->prv_alloc);
+					free_parsing_info(L_first, p->prv_alloc_recycle, p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
 				t = t->next;
 			} /* end of while (t!=NULL) */
@@ -499,7 +499,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
 		if (p->nb_output_variables != 0) {
 			install_output_variable_backup(p->output_variables,output_variable_backup);
-			free_output_variable_backup(output_variable_backup);
+			free_output_variable_backup(output_variable_backup,p->prv_alloc_backup_growing_recycle);
 		}
 		/* We restore the original dic variables */
 		p->dic_variables=dic_variables_backup;
@@ -819,14 +819,14 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos_in_tokens, pos_in_chars,
 							t->state_number, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
-							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc);
+							pos_in_jamo, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
 				break;
 
@@ -1270,7 +1270,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		trans = trans->next;
 	}
     p->explore_depth -- ;
-    free_parsing_info(DIC_consultation, p->prv_alloc_recycle, p->prv_alloc);
+    free_parsing_info(DIC_consultation, p->prv_alloc_recycle, p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 }
 
 /**
@@ -1312,7 +1312,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		/* For better performance when ignoring outputs */
 		var_backup = create_variable_backup(p->input_variables,p->prv_alloc_recycle);
 		if (p->nb_output_variables != 0) {
-			output_variable_backup=create_output_variable_backup(p->output_variables);
+			output_variable_backup=create_output_variable_backup(p->output_variables,p->prv_alloc_backup_growing_recycle);
 		}
 	}
 	struct parsing_info* L = NULL;
@@ -1405,7 +1405,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			}
 			L = L->next;
 		} while (L != NULL);
-		free_parsing_info(L_first,p->prv_alloc_recycle, p->prv_alloc); /* free all morphological matches */
+		free_parsing_info(L_first,p->prv_alloc_recycle, p->prv_alloc,p->prv_alloc_backup_growing_recycle); /* free all morphological matches */
 	}
 	/* Finally, we have to restore the stack and other backup stuff */
 	p->weight=old_weight;
@@ -1416,7 +1416,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		free_variable_backup(var_backup,p->prv_alloc_recycle);
 		if (p->nb_output_variables != 0) {
 			install_output_variable_backup(p->output_variables,output_variable_backup);
-			free_output_variable_backup(output_variable_backup);
+			free_output_variable_backup(output_variable_backup,p->prv_alloc_backup_growing_recycle);
 		}
 	}
 	if (ctx == NULL) {
@@ -1451,7 +1451,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			/* If any word will do with no entry saving */
 			(*matches) = insert_morphological_match(pos_offset,
 					pos_in_current_token, -1, (*matches), NULL, jamo,
-					pos_in_jamo, p->prv_alloc_recycle,p->prv_alloc);
+					pos_in_jamo, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 		} else {
 			/* If we have to check the pattern */
 			struct list_ustring* tmp = d->inf->codes[inf_number];
@@ -1469,7 +1469,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					(*matches) = insert_morphological_match(pos_offset,
 							pos_in_current_token, -1, (*matches),
 							save_dic_entry ? dela_entry : NULL, jamo,
-							pos_in_jamo, p->prv_alloc_recycle,p->prv_alloc);
+							pos_in_jamo, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
 				free_dela_entry(dela_entry);
 				tmp = tmp->next;
@@ -1661,7 +1661,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 		if (pattern == NULL && !save_dic_entry) {
 			/* If any word will do with no entry saving */
 			(*matches) = insert_morphological_match(pos_offset,
-					pos_in_current_token, -1, (*matches), NULL, NULL, 0, p->prv_alloc_recycle,p->prv_alloc);
+					pos_in_current_token, -1, (*matches), NULL, NULL, 0, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 		} else {
 			/* If we have to check the pattern */
 			struct list_ustring* tmp = d->inf->codes[inf_number];
@@ -1678,7 +1678,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					//error("et ca matche!\n");
 					(*matches) = insert_morphological_match(pos_offset,
 							pos_in_current_token, -1, (*matches),
-							save_dic_entry ? dela_entry : NULL, NULL, 0, p->prv_alloc_recycle,p->prv_alloc);
+							save_dic_entry ? dela_entry : NULL, NULL, 0, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
 				free_dela_entry(dela_entry);
 				tmp = tmp->next;

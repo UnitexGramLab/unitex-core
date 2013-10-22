@@ -516,7 +516,7 @@ void scan_graph(
 				struct parsing_info* la_tmp = *match_list;
 				*match_list = (*match_list)->next;
 				la_tmp->next = NULL; // to don't free the next item
-				free_parsing_info(la_tmp, prv_alloc_recycle, NULL);
+				free_parsing_info(la_tmp, prv_alloc_recycle, NULL, NULL);
 			}
 		}
 		return;
@@ -539,7 +539,7 @@ void scan_graph(
 			(*match_list) = insert_if_absent(pos, -1, -1, (*match_list),
 					p->stack->stack_pointer + 1, p->stack->stack, p->variables,
 					NULL, NULL, -1, -1, NULL, -1, p->current_insertions,-1,
-					prv_alloc_recycle,NULL);
+					prv_alloc_recycle,NULL,NULL);
 		}
 	}
 
@@ -657,7 +657,7 @@ void scan_graph(
 				struct parsing_info* l_tmp = liste;
 				liste = liste->next;
 				l_tmp->next = NULL; // in order not to free the next item
-				free_parsing_info(l_tmp, prv_alloc_recycle, NULL);
+				free_parsing_info(l_tmp, prv_alloc_recycle, NULL,NULL);
 			}
 			u_strcpy(p->stack->stack, pile_old);
 			p->current_insertions = old_insertions;
