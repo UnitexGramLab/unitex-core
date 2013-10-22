@@ -57,6 +57,7 @@ typedef struct {
     * 'is_pending' is an array indicating by 1 or 0 if a variable is pending or not */
    OutputVarList* pending;
    char* is_pending;
+   size_t is_pending_array_size_int_size_rounded;
 } OutputVariables;
 
 

@@ -31,6 +31,9 @@ namespace unitex {
 static void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
 static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
 
+    
+#define my_around_align_ispending_array(x)  ((((x)+0x0f)/0x10)*0x10)
+#define my_around_align_int_size_ispending_array(x)  ((((x)+sizeof(unsigned int)-1)/sizeof(unsigned int))*sizeof(unsigned int))
 
 /**
  * Allocates and returns a structure representing the variables
@@ -61,7 +64,8 @@ for (int i=0;i<l;i++) {
    v->variables[i]=new_Ustring();
 }
 v->pending=NULL;
-v->is_pending=(char*)calloc(l,sizeof(char));
+v->is_pending=(char*)calloc(my_around_align_ispending_array(l),sizeof(char));
+v->is_pending_array_size_int_size_rounded=my_around_align_int_size_ispending_array(l*sizeof(char));
 if (v->is_pending==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
@@ -129,16 +133,16 @@ if (l==0) return NULL;
 int size=0;
 for (int i=0;i<l;i++) {
 	/* +2 = +1 for the \0 and +1 to indicate if the variable is pending or not */
-	size=size+v->variables[i]->len+2;
+	size=size+v->variables[i]->len+1;
 }
-unichar* backup=(unichar*)malloc_cb(size*sizeof(unichar),prv_alloc);
+unichar* backup=(unichar*)malloc_cb(v->is_pending_array_size_int_size_rounded+(size*sizeof(unichar)),prv_alloc);
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
 }
-for (int i=0;i<l;i++) {
-	backup[i]=v->is_pending[i];
+for (int i=0;i<(v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int);i++) {
+	*(((unsigned int*)backup)+i)=*(((unsigned int*)(v->is_pending))+i);
 }
-int pos=l;
+int pos=(v->is_pending_array_size_int_size_rounded)/sizeof(unichar);
 for (int i=0;i<l;i++) {
 	u_strcpy(backup+pos,v->variables[i]->str);
 	pos=pos+v->variables[i]->len;
@@ -172,14 +176,15 @@ while (v->pending!=NULL) {
 }
 /* Then we add all pending variables of the backup */
 int l=v->variable_index->size;
+
 for (int i=0;i<l;i++) {
-	v->is_pending[i]=(backup[i]?1:0);
-	if (backup[i]) {
+	v->is_pending[i]=(((char*)backup)[i]);
+	if (((char*)backup)[i]) {
 		/* We also add pending variables to the 'pending' list */
 		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);
 	}
 }
-const unichar* walk_backup = backup+l;
+const unichar* walk_backup = backup+(v->is_pending_array_size_int_size_rounded/sizeof(unichar));
 for (int i=0;i<l;i++) {
 
 	unichar c;
