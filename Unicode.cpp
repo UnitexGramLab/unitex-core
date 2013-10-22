@@ -2896,6 +2896,7 @@ return (i-1);
 /**
  * Unicode version of strcpy.
  */
+/*
 unichar* u_strcpy(unichar* dest,const unichar* src) {
 unichar *s = dest; // backup pointer to start of destination string
 register unichar c;
@@ -2904,7 +2905,60 @@ do {
    *dest++=c;
 } while (c!='\0');
 return s;
+}*/
+    
+unichar* u_strcpy(unichar* dst,const unichar* src)
+{
+    unichar *s = dst; // backup pointer to start of destination string
+
+    for (;;)
+    {
+        unichar c0 = *src;
+        *dst = c0;
+        if (c0 == '\0')
+            break;
+        
+        unichar c1 = *(src+1);
+        *(dst+1) = c1;
+        if (c1 == '\0')
+            break;
+        
+        unichar c2 = *(src+2);
+        *(dst+2) = c2;
+        if (c2 == '\0')
+            break;
+        
+        unichar c3 = *(src+3);
+        *(dst+3) = c3;
+        if (c3 == '\0')
+            break;
+        
+        unichar c4 = *(src+4);
+        *(dst+4) = c4;
+        if (c4 == '\0')
+            break;
+        
+        unichar c5 = *(src+5);
+        *(dst+5) = c5;
+        if (c5 == '\0')
+            break;
+        
+        unichar c6 = *(src+6);
+        *(dst+6) = c6;
+        if (c6 == '\0')
+            break;
+        
+        unichar c7 = *(src+7);
+        *(dst+7) = c7;
+        if (c7 == '\0')
+            break;
+        
+        src += 8;
+        dst += 8;
+    }
+    return s;
 }
+
 
 
 /**
@@ -2928,7 +2982,7 @@ return s;
 
 
 /**
- * unicode version of a secure strcpy : like u_strncpy, but add 0 at end of string 
+ * unicode version of a secure strcpy : like u_strncpy, but add 0 at end of string
  * if truncate
  * do not full pad buffer with 0, just add one 0 to terminate string
  * typical usage :
