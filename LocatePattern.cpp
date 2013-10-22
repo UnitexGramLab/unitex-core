@@ -463,6 +463,11 @@ locate_recycle_backup_abstract_allocator=create_abstract_allocator("locate_patte
                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
                                  0);
 
+Abstract_allocator locate_recycle_locate_trace_info_allocator=NULL;
+locate_recycle_locate_trace_info_allocator=create_abstract_allocator("locate_pattern_recycle_locate_trace_info",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipOftenRecycledObject,
+                                 sizeof(locate_trace_info));
+
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->input_variables,p->output_variables,p->fst2,locate_abstract_allocator);
 if (is_korean) {
@@ -475,6 +480,7 @@ u_printf("Working...\n");
 p->prv_alloc=locate_work_abstract_allocator;
 p->prv_alloc_recycle=locate_recycle_abstract_allocator;
 p->prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
+p->prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
 launch_locate(out,text_size,info,p);
 if (allow_trace!=0) {
    close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
@@ -510,6 +516,7 @@ if (free_abstract_allocator_item) {
 close_abstract_allocator(locate_abstract_allocator);
 close_abstract_allocator(locate_recycle_abstract_allocator);
 close_abstract_allocator(locate_recycle_backup_abstract_allocator);
+close_abstract_allocator(locate_recycle_locate_trace_info_allocator);
 locate_recycle_abstract_allocator=locate_abstract_allocator=locate_recycle_backup_abstract_allocator=NULL;
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */

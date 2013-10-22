@@ -112,6 +112,7 @@ struct locate_parameters {
    Abstract_allocator prv_alloc;
    Abstract_allocator prv_alloc_recycle;
    Abstract_allocator prv_alloc_backup_growing_recycle;
+   Abstract_allocator prv_alloc_trace_info_allocator;
 
    int graph_depth;
    int explore_depth;

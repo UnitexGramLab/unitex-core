@@ -429,7 +429,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		{
 			if ((p->fnc_locate_trace_step != NULL)) {
 				locate_trace_info* lti;
-				lti = (locate_trace_info*)malloc(sizeof(locate_trace_info));				
+				lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->prv_alloc_trace_info_allocator);
 				if (lti==NULL) {
 					fatal_alloc_error("locate");
 				}
@@ -454,7 +454,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				lti->pos_in_jamo=0;
 
 				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-				free(lti);
+				free_cb(lti,p->prv_alloc_trace_info_allocator);
 			}
 
 			if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
