@@ -781,18 +781,23 @@ return removed;
  * We return a copy of the list, without the transitions that pointed
  * to a useless state.
  */
+
 static Transition* filter_transitions(Transition* l,OptimizedFst2State* optimized_states,Abstract_allocator prv_alloc) {
-if (l==NULL) return NULL;
-l->next=filter_transitions(l->next,optimized_states,prv_alloc);
-if (is_useless_state(optimized_states[l->state_number])) {
-	Transition* tmp=l->next;
-	l->next=NULL;
-	free_Transition_list(l,prv_alloc);
-	return tmp;
+Transition** ptrToCurrent = &l;
+while ((*ptrToCurrent)!=NULL)
+{
+  if (is_useless_state(optimized_states[(*ptrToCurrent)->state_number])) {
+    Transition* transition_to_free = *ptrToCurrent;
+    *ptrToCurrent=transition_to_free->next;
+    transition_to_free->next=NULL;
+    free_Transition_list(transition_to_free,prv_alloc);
+  }
+  else {
+    ptrToCurrent = &((*ptrToCurrent)->next);
+  }
 }
 return l;
 }
-
 
 /**
  * Returns 1 if all the optimized states pointed by the given transitions have no transition;
