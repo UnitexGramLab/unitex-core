@@ -747,7 +747,7 @@ return !(s->control&1)
  * Returns a positive value if the given graph is not useless, i.e.
  * its initial state is final and/or it has transitions; 0 otherwise.
  */
-static int empty_graph(int graph,OptimizedFst2State* optimized_states,Fst2* fst2) {
+static inline int empty_graph(int graph,OptimizedFst2State* optimized_states,Fst2* fst2) {
 OptimizedFst2State initial=optimized_states[fst2->initial_states[graph]];
 return is_useless_state(initial);
 }
