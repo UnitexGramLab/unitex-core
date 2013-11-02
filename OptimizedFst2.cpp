@@ -98,7 +98,7 @@ free_bit_array(marker,prv_alloc);
 /**
  * Allocates, initializes and returns a new optimized graph call.
  */
-struct opt_graph_call* new_opt_graph_call(int graph_number,Abstract_allocator prv_alloc) {
+static struct opt_graph_call* new_opt_graph_call(int graph_number,Abstract_allocator prv_alloc) {
 struct opt_graph_call* g;
 g=(struct opt_graph_call*)malloc_cb(sizeof(struct opt_graph_call),prv_alloc);
 if (g==NULL) {
@@ -114,7 +114,7 @@ return g;
 /**
  * Frees the whole memory associate to the given graph call list.
  */
-void free_opt_graph_call(struct opt_graph_call* list,Abstract_allocator prv_alloc) {
+static void free_opt_graph_call(struct opt_graph_call* list,Abstract_allocator prv_alloc) {
 struct opt_graph_call* tmp;
 while (list!=NULL) {
    free_Transition_list(list->transition,prv_alloc);
@@ -128,7 +128,7 @@ while (list!=NULL) {
 /**
  * This function adds the given graph call to given graph call list.
  */
-void add_graph_call(Transition* transition,struct opt_graph_call** graph_calls,Abstract_allocator prv_alloc) {
+static void add_graph_call(Transition* transition,struct opt_graph_call** graph_calls,Abstract_allocator prv_alloc) {
 int graph_number=-(transition->tag_number);
 struct opt_graph_call* ptr=*graph_calls;
 /* We look for a graph call for the same graph number */
@@ -166,7 +166,7 @@ return p;
 /**
  * Frees the whole memory associated to the given optimized pattern list.
  */
-void free_opt_pattern(struct opt_pattern* list,Abstract_allocator prv_alloc) {
+static void free_opt_pattern(struct opt_pattern* list,Abstract_allocator prv_alloc) {
 struct opt_pattern* tmp;
 while (list!=NULL) {
    free_Transition_list(list->transition,prv_alloc);
@@ -180,7 +180,7 @@ while (list!=NULL) {
 /**
  * This function adds the given pattern number to the given pattern list.
  */
-void add_pattern(int pattern_number,Transition* transition,struct opt_pattern** pattern_list,int negation,Abstract_allocator prv_alloc) {
+static void add_pattern(int pattern_number,Transition* transition,struct opt_pattern** pattern_list,int negation,Abstract_allocator prv_alloc) {
 struct opt_pattern* ptr=*pattern_list;
 /* We look for a pattern with the same properties */
 while (ptr!=NULL && !(ptr->pattern_number==pattern_number && ptr->negation==negation)) {
@@ -200,7 +200,7 @@ add_transition_if_not_present(&(ptr->transition),transition->tag_number,transiti
 /**
  * Allocates, initializes and returns a new optimized token.
  */
-struct opt_token* new_opt_token(int token_number,Abstract_allocator prv_alloc) {
+static struct opt_token* new_opt_token(int token_number,Abstract_allocator prv_alloc) {
 struct opt_token* t;
 t=(struct opt_token*)malloc_cb(sizeof(struct opt_token),prv_alloc);
 if (t==NULL) {
@@ -216,7 +216,7 @@ return t;
 /**
  * Frees all the memory associated to the given token list.
  */
-void free_opt_token(struct opt_token* list,Abstract_allocator prv_alloc) {
+static void free_opt_token(struct opt_token* list,Abstract_allocator prv_alloc) {
 struct opt_token* tmp;
 while (list!=NULL) {
    free_Transition_list(list->transition,prv_alloc);
@@ -235,7 +235,7 @@ while (list!=NULL) {
  * list will be supposed to be sorted at the time of converting it into an array
  * in 'token_list_2_token_array'.
  */
-void add_token(int token_number,Transition* transition,struct opt_token** token_list,
+static void add_token(int token_number,Transition* transition,struct opt_token** token_list,
                int *number_of_tokens,Abstract_allocator prv_alloc) {
 struct opt_token* ptr;
 if (*token_list==NULL) {
@@ -286,7 +286,7 @@ add_transition_if_not_present(&(ptr->next->transition),transition->tag_number,tr
  * 'list' that contains all the tokens matched by an optimized state.
  * '*number_of_tokens' is updated.
  */
-void add_token_list(struct list_int* token_list,Transition* transition,
+static void add_token_list(struct list_int* token_list,Transition* transition,
                     struct opt_token** list,int *number_of_tokens,Abstract_allocator prv_alloc) {
 while (token_list!=NULL) {
    add_token(token_list->n,transition,list,number_of_tokens,prv_alloc);
@@ -298,7 +298,7 @@ while (token_list!=NULL) {
 /**
  * Allocates, initializes and returns a new optimized meta.
  */
-struct opt_meta* new_opt_meta(enum meta_symbol meta,int negation,Abstract_allocator prv_alloc) {
+static struct opt_meta* new_opt_meta(enum meta_symbol meta,int negation,Abstract_allocator prv_alloc) {
 struct opt_meta* m;
 m=(struct opt_meta*)malloc_cb(sizeof(struct opt_meta),prv_alloc);
 if (m==NULL) {
@@ -316,7 +316,7 @@ return m;
 /**
  * Frees all the memory associated to the given meta list.
  */
-void free_opt_meta(struct opt_meta* list,Abstract_allocator prv_alloc) {
+static void free_opt_meta(struct opt_meta* list,Abstract_allocator prv_alloc) {
 struct opt_meta* tmp;
 while (list!=NULL) {
    free_Transition_list(list->transition,prv_alloc);
@@ -331,7 +331,7 @@ while (list!=NULL) {
 /**
  * This function adds the given meta to the given meta list.
  */
-struct opt_meta* add_meta(enum meta_symbol meta,Transition* transition,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
+static struct opt_meta* add_meta(enum meta_symbol meta,Transition* transition,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
 struct opt_meta* ptr=*meta_list;
 /* We look for a meta with the same properties */
 while (ptr!=NULL && !(ptr->meta==meta && ptr->negation==negation)) {
@@ -361,7 +361,7 @@ error("\n");
  * The difference with 'add_meta' is that instead of copying a single transition's values,
  * we reuse a whole transition list.
  */
-struct opt_meta* add_transition_list_to_meta__(enum meta_symbol meta,Transition* transitions,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
+static struct opt_meta* add_transition_list_to_meta__(enum meta_symbol meta,Transition* transitions,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
 struct opt_meta* ptr=*meta_list;
 /* We look for a meta with the same properties */
 while (ptr!=NULL && !(ptr->meta==meta && ptr->negation==negation)) {
@@ -397,7 +397,7 @@ return ptr;
 /**
  * Allocates, initializes and returns a new optimized variable.
  */
-struct opt_variable* new_opt_variable(int variable_number,Transition* transition,
+static struct opt_variable* new_opt_variable(int variable_number,Transition* transition,
 										Abstract_allocator prv_alloc) {
 struct opt_variable* v;
 v=(struct opt_variable*)malloc_cb(sizeof(struct opt_variable),prv_alloc);
@@ -415,7 +415,7 @@ return v;
 /**
  * Frees all the memory associated to the given variable list.
  */
-void free_opt_variable(struct opt_variable* list,Abstract_allocator prv_alloc) {
+static void free_opt_variable(struct opt_variable* list,Abstract_allocator prv_alloc) {
 struct opt_variable* tmp;
 while (list!=NULL) {
    free_Transition_list(list->transition,prv_alloc);
@@ -431,7 +431,7 @@ while (list!=NULL) {
  * No tests is done to check if there is already a transition with the
  * given variable, because it cannot happen if the grammar is deterministic.
  */
-void add_input_variable(Variables* var,unichar* variable,Transition* transition,
+static void add_input_variable(Variables* var,unichar* variable,Transition* transition,
 		struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
 int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition,prv_alloc);
@@ -460,7 +460,7 @@ v->next=(*variable_list);
  * 'reacheable_states_from_positive_context'. If there is no reachable context
  * end mark, the function emit an error message and ignores this "$[" transition.
  */
-void add_positive_context(Fst2* fst2,OptimizedFst2State state,Transition* transition,Abstract_allocator prv_alloc) {
+static void add_positive_context(Fst2* fst2,OptimizedFst2State state,Transition* transition,Abstract_allocator prv_alloc) {
 add_positive_context(fst2,&(state->contexts),transition,prv_alloc);
 }
 
@@ -471,7 +471,7 @@ add_positive_context(fst2,&(state->contexts),transition,prv_alloc);
  * 'reacheable_states_from_negative_context'. If there is no reachable context
  * end mark, the function emit an error message and ignores this "$![" transition.
  */
-void add_negative_context(Fst2* fst2,OptimizedFst2State state,Transition* transition,Abstract_allocator prv_alloc) {
+static void add_negative_context(Fst2* fst2,OptimizedFst2State state,Transition* transition,Abstract_allocator prv_alloc) {
 add_negative_context(fst2,&(state->contexts),transition,prv_alloc);
 }
 
@@ -481,7 +481,7 @@ add_negative_context(fst2,&(state->contexts),transition,prv_alloc);
  * there is already one, because it would mean that the fst2 is not
  * deterministic.
  */
-void add_end_context(OptimizedFst2State state,Transition* transition,Abstract_allocator prv_alloc) {
+static void add_end_context(OptimizedFst2State state,Transition* transition,Abstract_allocator prv_alloc) {
 if (state->contexts==NULL) {
    state->contexts=new_opt_contexts(prv_alloc);
 }
@@ -495,7 +495,7 @@ state->contexts->end_mark=new_Transition(transition->tag_number,transition->stat
 /**
  * This function optimizes the given transition.
  */
-void optimize_transition(Variables* v,OutputVariables* output,Fst2* fst2,Transition* transition,
+static void optimize_transition(Variables* v,OutputVariables* output,Fst2* fst2,Transition* transition,
 						OptimizedFst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (transition->tag_number<0) {
    /* If the transition is a graph call */
@@ -583,7 +583,7 @@ switch (tag->type) {
  * to be sorted, the array will be sorted. The function frees the token
  * list.
  */
-void token_list_2_token_array(OptimizedFst2State state,Abstract_allocator prv_alloc) {
+static void token_list_2_token_array(OptimizedFst2State state,Abstract_allocator prv_alloc) {
 int i;
 struct opt_token* l;
 struct opt_token* tmp;
@@ -621,7 +621,7 @@ state->token_list=NULL;
 /**
  * Allocates, initializes and returns a new optimized state.
  */
-OptimizedFst2State new_optimized_state(Abstract_allocator prv_alloc) {
+static OptimizedFst2State new_optimized_state(Abstract_allocator prv_alloc) {
 OptimizedFst2State state=(OptimizedFst2State)malloc_cb(sizeof(struct optimizedFst2State),prv_alloc);
 if (state==NULL) {
    fatal_alloc_error("new_optimized_state");
@@ -653,7 +653,7 @@ return state;
 /**
  * Frees the whole memory associated to the given optimized state.
  */
-void free_optimized_state(OptimizedFst2State state,Abstract_allocator prv_alloc) {
+static void free_optimized_state(OptimizedFst2State state,Abstract_allocator prv_alloc) {
 if (state==NULL) return;
 free_opt_graph_call(state->graph_calls,prv_alloc);
 free_opt_meta(state->metas,prv_alloc);
@@ -687,7 +687,7 @@ free_cb(state,prv_alloc);
  * and returns an equivalent optimized state, or NULL if the given state
  * was NULL.
  */
-OptimizedFst2State optimize_state(Variables* v,OutputVariables* output,Fst2* fst2,Fst2State state,
+static OptimizedFst2State optimize_state(Variables* v,OutputVariables* output,Fst2* fst2,Fst2State state,
 									Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state(prv_alloc);
