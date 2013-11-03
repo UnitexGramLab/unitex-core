@@ -45,19 +45,18 @@ void initialize_hash_blocks(struct tct_hash* hash_table,int block_size) {
 struct tct_hash_block* block;
 int size=hash_table->size;
 
+if (hash_table->hash_blocks==NULL) {
+  fatal_alloc_error("initialize_hash_blocks");
+}
+   
+if (hash_table->token_array_base_memory_alloc==NULL) {
+  fatal_alloc_error("initialize_hash_blocks");
+}
 
 for (int i=0;i<size;i++) {
-   //block=(struct tct_hash_block*)malloc(sizeof(struct tct_hash_block));
    block=(hash_table->hash_blocks+i);
-   if (block==NULL) {
-      fatal_alloc_error("initialize_hash_blocks");
-   }
    block->size=block_size;
-   block->token_array=(hash_table->token_array_base_memory_alloc)+ (i*hash_table->token_array_standard_base_memory_nb_item_for_each_block);
-               //(int*)malloc(block_size*sizeof(int));
-   if (block->token_array==NULL) {
-      fatal_alloc_error("initialize_hash_blocks");
-   }
+   block->token_array=(hash_table->token_array_base_memory_alloc) + (i*hash_table->token_array_standard_base_memory_nb_item_for_each_block);
    block->length=0;   
 }
 }
@@ -76,7 +75,7 @@ if (hash_table==NULL) {
 hash_table->size = 1;
 while (hash_table->size < size)
 	hash_table->size *= 2;
-//hash_table->hash_blocks_GV=(struct tct_hash_block**)malloc(size*sizeof(struct tct_hash_block*));
+
 hash_table->hash_blocks=(struct tct_hash_block*)malloc(get_tct_hash_block_item_size_array(size));
 hash_table->token_array_standard_base_memory_nb_item_for_each_block=tct_hash_block_size;
 hash_table->token_array_base_memory_alloc=(int*)malloc(sizeof(int)*tct_hash_block_size*size);
