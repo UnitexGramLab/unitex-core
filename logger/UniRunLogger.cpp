@@ -731,12 +731,13 @@ void do_convert_command_line_synth_to_std(
 
 
 
-int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+
+int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
                                         const char* SelectTool,
                                         int clean_file,
                                         InstallLoggerForRunner &InstallLoggerForRunnerSingleton,
                                         //int real_content_in_log,
-                                        const char*LocationUnfoundVirtualRessource,
+                                        const char*LocationUnfoundVirtualRessource,int iCopyResFileAlway,
                                         char** summaryInfo,
                                         char** summaryInfoErrorOnly,
                                         int benchmark,
@@ -1094,7 +1095,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                             mkdir_recursive(portionFileName,0,pdlfc);
 
                           // if iCopyResFile == 0, change argument instead copy resource
-                          int iCopyResFile = 1;
+                          int iCopyResFile = (iCopyResFileAlway != 0) ? 1 : ((is_bin ||is_bin2 || is_fst2) ? 0 : 1);
                           if (iCopyResFile)
                           {
 							  if ((af_copy_unlogged(filename_on_location_res,portionFileName) == 0) && (list_file_fromarg_todel != NULL))
@@ -1347,7 +1348,30 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
     return 0;
 }
 
-
+int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+                                        const char* SelectTool,
+                                        int clean_file,
+                                        InstallLoggerForRunner &InstallLoggerForRunnerSingleton,
+                                        //int real_content_in_log,
+                                        const char*LocationUnfoundVirtualRessource,
+                                        char** summaryInfo,
+                                        char** summaryInfoErrorOnly,
+                                        int benchmark,
+                                        int *pReturn,unsigned int*pTimeElapsed,
+                                        Exec_status* p_exec_status)
+{
+	return RunLogParamInstallLoggerClassEx(LogNameRead,FileRunPath,LogNameWrite,
+                                        SelectTool,
+                                        clean_file,
+                                        InstallLoggerForRunnerSingleton,
+                                        //int real_content_in_log,
+                                        LocationUnfoundVirtualRessource,1,
+                                        summaryInfo,
+                                        summaryInfoErrorOnly,
+                                        benchmark,
+                                        pReturn,pTimeElapsed,
+                                        p_exec_status);
+}
 
 UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
                                         const char* SelectTool,
@@ -1361,11 +1385,11 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                                         Exec_status* p_exec_status)
 {
     InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
-    return RunLogParamInstallLoggerClass(LogNameRead,FileRunPath,LogNameWrite,
+    return RunLogParamInstallLoggerClassEx(LogNameRead,FileRunPath,LogNameWrite,
                                         SelectTool,
                                         clean_file,
                                         InstallLoggerForRunnerSingleton,
-                                        LocationUnfoundVirtualRessource,
+                                        LocationUnfoundVirtualRessource,1,
                                         summaryInfo,
                                         summaryInfoErrorOnly,
                                         benchmark,
@@ -1379,7 +1403,11 @@ UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPa
     char*summary=NULL;
     char*summaryError=NULL;
     InstallLoggerForRunner InstallLoggerForRunnerSingleton(1);
-    int ret= RunLogParamInstallLoggerClass(LogNameRead,FileRunPath,LogNameWrite,NULL,1,InstallLoggerForRunnerSingleton,NULL,&summary,&summaryError,1,NULL,NULL,NULL);
+    int ret= RunLogParamInstallLoggerClassEx(LogNameRead,FileRunPath,LogNameWrite,
+                                             NULL,1,InstallLoggerForRunnerSingleton,
+                                             NULL,1,
+                                             &summary,&summaryError,1,
+                                             NULL,NULL,NULL);
     if (summary!=NULL)
     {
         u_printf("%s",summary);
@@ -1554,6 +1582,7 @@ const char* usage_RunLog =
          "  -f N/--break-after=N: user cancel after N run (with one thread only)\n"
          "  -u PATH/--unfound-location==PATH: take dictionnary and FST2 from PATH if\n"
          "               not found on the logfile\n"
+         "  -w/--no-copy-always-unfound-resource: don't copy always unfound resource\n"
          "\n"
          "rerun a log.\n";
 
@@ -1562,7 +1591,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:u:bf:";
+const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lna:o:u:bf:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1580,6 +1609,7 @@ const struct option_TS lopts_RunLog[]= {
       {"random",required_argument_TS,NULL,'a'},
       {"tool",required_argument_TS,NULL,'o'},
       {"unfound-location",required_argument_TS,NULL,'u'},
+      {"no-copy-always-unfound-resource",no_argument_TS,NULL,'w'},
       {"no-benchmark",no_argument_TS,NULL,'b'},
       {"break-after",required_argument_TS,NULL,'f'},
       {"junk-summary",no_argument_TS,NULL,'j'},
@@ -1595,6 +1625,8 @@ typedef struct {
     char select_tool[0x200];
     char LocationUnfoundVirtualRessource[0x200];
     const char* runulp;
+
+    int iCopyResFileAlway;
 
     int quiet;
     int clean;
@@ -1709,10 +1741,10 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         }
 
         
-        RunLogParamInstallLoggerClass(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
+        RunLogParamInstallLoggerClassEx(runulp,rundir,resultulp, p_RunLog_ctx->select_tool,
                               p_RunLog_ctx->clean,
                               *p_RunLog_ctx->pInstallLoggerForRunnerSingleton,
-                              p_RunLog_ctx->LocationUnfoundVirtualRessource,
+                              p_RunLog_ctx->LocationUnfoundVirtualRessource,p_RunLog_ctx->iCopyResFileAlway,
 
                               (p_RunLog_ctx->junk_summary == 0) ? (&(p_RunLog_ThreadData->summary)) : NULL,
                               (p_RunLog_ctx->junk_summary == 0) ? (&(p_RunLog_ThreadData->summary_error)) : NULL,
@@ -1785,6 +1817,7 @@ runLog_ctx->summaryfile[0]='\0';
 runLog_ctx->summary_error_file[0]='\0';
 runLog_ctx->select_tool[0]='\0';
 runLog_ctx->LocationUnfoundVirtualRessource[0]='\0';
+runLog_ctx->iCopyResFileAlway=1;
 runLog_ctx->quiet=2;
 runLog_ctx->clean=1;
 runLog_ctx->cleanlog=2;
@@ -1807,6 +1840,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
    case 'j': runLog_ctx->junk_summary=1; break;
    case 'v': runLog_ctx->quiet=0; break;
    case 'b': runLog_ctx->benchmark=0; break;
+   case 'w': runLog_ctx->iCopyResFileAlway=0; break;
    case 'a': 
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of random execution\n");
