@@ -142,7 +142,7 @@ if (backup==NULL) {
 for (size_t i = 0; i<(size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int)); i++) {
 	*(((unsigned int*)backup)+i)=*(((unsigned int*)(v->is_pending))+i);
 }
-int pos=(v->is_pending_array_size_int_size_rounded)/sizeof(unichar);
+size_t pos=(v->is_pending_array_size_int_size_rounded)/sizeof(unichar);
 for (int i=0;i<l;i++) {
 	//u_strcpy(backup+pos,v->variables[i]->str);
     
