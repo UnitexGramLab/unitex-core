@@ -307,8 +307,8 @@ for (;vars->optind!=argc;(vars->optind)++) {
 					 * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
 					 *                        pomme-de-terre,pomme-de-terre.N
 					 */
-					unichar* inflected=u_strdup(entry->inflected);
-					unichar* lemma=u_strdup(entry->lemma);
+					unichar* inflected=u_strdup(entry->inflected,compress_tokenize_abstract_allocator);
+					unichar* lemma=u_strdup(entry->lemma,compress_tokenize_abstract_allocator);
 					if (inflected==NULL || lemma==NULL) {
 						fatal_alloc_error("main_Compress");
 					}
@@ -326,8 +326,8 @@ for (;vars->optind!=argc;(vars->optind)++) {
 					u_strcpy(entry->inflected,inf_tmp);
 					u_strcpy(entry->lemma,lem_tmp);
 					/* We replace the unprotected = signs by minus */
-					free(entry->inflected); entry->inflected=inflected;
-					free(entry->lemma); entry->lemma=lemma;
+					free_cb(entry->inflected,compress_tokenize_abstract_allocator); entry->inflected=inflected;
+					free_cb(entry->lemma,compress_tokenize_abstract_allocator); entry->lemma=lemma;
 					replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
 					replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
 					get_compressed_line(entry,tmp,semitic);
