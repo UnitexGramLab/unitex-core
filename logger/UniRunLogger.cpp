@@ -1398,6 +1398,31 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 }
 
 
+UNITEX_FUNC int UNITEX_CALL RunLogParamEx(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+                                          const char* SelectTool,
+                                          int clean_file,
+                                          int real_content_in_log,
+                                          const char* LocationUnfoundVirtualRessource,int iCopyResFileAlway,
+                                          char** summaryInfo,
+                                          char** summaryInfoErrorOnly,
+                                          int benchmark,
+                                          int *pReturn,unsigned int*pTimeElapsed,
+                                          Exec_status* p_exec_status)
+{
+    InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
+    return RunLogParamInstallLoggerClassEx(LogNameRead,FileRunPath,LogNameWrite,
+                                        SelectTool,
+                                        clean_file,
+                                        InstallLoggerForRunnerSingleton,
+                                        LocationUnfoundVirtualRessource,iCopyResFileAlway,
+                                        summaryInfo,
+                                        summaryInfoErrorOnly,
+                                        benchmark,
+                                        pReturn,pTimeElapsed,
+                                        p_exec_status);
+}
+
+
 UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
 {
     char*summary=NULL;
