@@ -257,7 +257,7 @@ while (!(list1==NULL && list2==NULL)) {
       case B_INCLUDES_A: {
          /* list1 is included in list2:
           * abcd,abcdef */
-         print_diff_matches(output,f1,f2,RED,list1->output,list2->output);
+    	 print_diff_matches(output,f1,f2,RED,list1->output,list2->output);
          list1=list1->next;
          list2=list2->next;
          break;
@@ -337,17 +337,15 @@ indices[i]='\0';
 
 
 /**
- * This function inserts the nth first chars of src at the beginning of
- * dst whose content is shifted to the right.
+ * Copies src into fst, and then appends the nth first chars of middle.
  */
-static void adjust(unichar* src,unichar* dst,int n) {
-int l=u_strlen(dst);
-for (int i=l+1;i>=0;i--) {
-	dst[i+n]=dst[i];
-}
+static void adjust(unichar* src,unichar* dst,unichar* middle,int n) {
+u_strcpy(dst,src);
+int pos=u_strlen(dst);
 for (int i=0;i<n;i++) {
-	dst[i]=src[i];
+	dst[pos++]=middle[i];
 }
+dst[pos]='\0';
 }
 
 /**
@@ -379,9 +377,9 @@ if (!strcmp(color,RED)) {
 	u_sscanf(indices1,"%d",&pos1);
 	u_sscanf(indices2,"%d",&pos2);
 	if (pos1<pos2) {
-		adjust(left1,left2,pos2-pos1);
+		adjust(left1,left2,middle1,pos2-pos1);
 	} else if (pos1>pos2) {
-		adjust(left2,left1,pos1-pos2);
+		adjust(left2,left1,middle2,pos1-pos2);
 	} /*  Nothing to adjust if pos1==pos2 */
 }
 /* We print the line from the first file, if needed */
