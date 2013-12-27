@@ -686,7 +686,6 @@ for(int i=0;i<automaton->number_of_states;i++){
 			 * calculate probabilities in a separate process */
 			compute_best_probability(d,alphabet,matrix,index_matrix,1,0);
 		}
-		int initial = 1;
 		for(Transition* transI=state->reverted_incoming_transitions;transI!=NULL;transI=transI->next){
 			TfstTag* tagI = (TfstTag*)input_tfst->tags->tab[transI->tag_number];
 			unichar* content = compound_to_simple(tagI->content);
@@ -695,7 +694,6 @@ for(int i=0;i<automaton->number_of_states;i++){
 			free(content);
 			int cover_span = same_positions(&tagI->m,&tag->m);
 			compute_best_probability(d,alphabet,matrix,index_matrix,indexI,cover_span);
-			initial = 0;
 		}
 		index_matrix++;
 	}

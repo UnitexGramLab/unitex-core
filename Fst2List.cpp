@@ -1953,7 +1953,6 @@ int main_Fst2List(int argc, char* const argv[]) {
 
 	char *ofilename = 0;
 	int iargIndex = 1;
-	int i;
 
 	unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
 	int changeStrToIdx;
@@ -2090,7 +2089,6 @@ int main_Fst2List(int argc, char* const argv[]) {
 			usage();
 			return 1;
 		case 's': {
-			i = 0;
 			char cc = argv[iargIndex][2];
 			iargIndex++;
 			wp = argv[iargIndex];
