@@ -48,6 +48,7 @@ int isDictionaryNeedInf(const unsigned char* binData, size_t binSize)
 	}
 	Dictionary d;
 	d.bin=binData;
+	d.bin_size=(long)binSize;
 	if (!read_bin_header(&d)) {
 		return 0;
 	}
