@@ -509,11 +509,9 @@ static int convert_list_to_array_size(unsigned int height,struct transition_list
 {
 unsigned int size=0;
 struct transition_list* l=transitions_by_height[height];
-struct transition_list* ptr;
 
 while (l!=NULL) {   
    size++;
-   ptr=l;
    l=l->next;
 }
 return size;

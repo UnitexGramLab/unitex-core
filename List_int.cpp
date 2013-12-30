@@ -220,10 +220,8 @@ return a;
  * is returned. 'b' is not modified.
  */
 struct list_int* sorted_merge(struct list_int* a,struct list_int* b,Abstract_allocator prv_alloc) {
-struct list_int* tmp;
 while (b!=NULL) {
    a=sorted_insert(b->n,a,prv_alloc);
-   tmp=b;
    b=b->next;
 }
 return a;
