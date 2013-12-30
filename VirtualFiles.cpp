@@ -404,7 +404,7 @@ while (inode!=NULL) {
 	inode=inode->next;
 }
 n++;
-char** names=(char**)malloc(n*sizeof(char**));
+char** names=(char**)malloc(n*sizeof(char*));
 if (names==NULL) {
 	fatal_alloc_error("VFS_ls");
 }

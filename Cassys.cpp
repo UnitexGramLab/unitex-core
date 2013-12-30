@@ -141,7 +141,10 @@ int main_Cassys(int argc,char* const argv[]) {
 		switch (val) {
 		case 'h': usage(); 
                   free_OptVars(vars);
-                  free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg); 
+                  free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                  if (morpho_dic != NULL) {
+                     free(morpho_dic);
+                  }
                   return 0;
 		case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");

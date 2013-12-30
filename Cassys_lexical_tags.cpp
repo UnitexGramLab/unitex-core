@@ -688,7 +688,7 @@ int get_form_lemma_separator_position(unichar *text){
 
 	int size = u_strlen(text);
 
-	int i=size;
+	int i;
 	int brace_level = 0;
 	for(i=size-1; i>0; i--){
 
