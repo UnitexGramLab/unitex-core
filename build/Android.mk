@@ -1,7 +1,7 @@
 #
 # Unitex
 #
-# Copyright (C) 2001-2013 Universite Paris-Est Marne-la-Vallee <unitex@univ-mlv.fr>
+# Copyright (C) 2001-2014 Universite Paris-Est Marne-la-Vallee <unitex@univ-mlv.fr>
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
