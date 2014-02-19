@@ -86,7 +86,7 @@ int inflect(char* DLC, char* DLCF,
 	//If a line is empty the file is not necessarily finished.
 	//If the last entry has no newline, we should not skip this entry
 	struct dela_entry* DELAS_entry;
-	int semitic;
+	int semitic = 0;
 	int current_line=0;
 	while (l != EOF) {
 	    current_line++;
@@ -108,6 +108,8 @@ int inflect(char* DLC, char* DLCF,
 			get_inflection_code(DELAS_entry->semantic_codes[0],
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
+			// Fix bug#8 - "Inflection with Semitic Mode is not working anymore"
+			p_multiFlex_ctx->semitic  = semitic;      
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
 			if (DELAS_entry->n_filter_codes != 0) {
 
