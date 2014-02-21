@@ -726,8 +726,6 @@ int composition_rule_matches_entry (const struct pattern* rule,
   int ok = 1;
   // "ok = 0;"  may be replaced by "return 0;"
   int flex_code_already_matched = 1;
-  unichar tmp[MAX_DICT_LINE_LENGTH];
-  tmp[0] = '\0';
 #if DDEBUG > 1
     u_strcat(tmp, "   trying ");
 #endif
