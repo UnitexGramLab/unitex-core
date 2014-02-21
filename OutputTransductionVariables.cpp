@@ -139,7 +139,8 @@ unichar* backup=(unichar*)malloc_cb(v->is_pending_array_size_int_size_rounded+(s
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
 }
-for (size_t i = 0; i<(size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int)); i++) {
+size_t limit = (size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int));
+for (size_t i = 0; i<limit; i++) {
 	*(((unsigned int*)backup)+i)=*(((unsigned int*)(v->is_pending))+i);
 }
 size_t pos=(v->is_pending_array_size_int_size_rounded)/sizeof(unichar);
