@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2013 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2014 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,9 @@ namespace unitex {
 static void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
 static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
 
+    
+#define my_around_align_ispending_array(x)  ((((x)+0x0f)/0x10)*0x10)
+#define my_around_align_int_size_ispending_array(x)  ((((x)+sizeof(unsigned int)-1)/sizeof(unsigned int))*sizeof(unsigned int))
 
 /**
  * Allocates and returns a structure representing the variables
@@ -61,7 +64,8 @@ for (int i=0;i<l;i++) {
    v->variables[i]=new_Ustring();
 }
 v->pending=NULL;
-v->is_pending=(char*)calloc(l,sizeof(char));
+v->is_pending=(char*)calloc(my_around_align_ispending_array(l*sizeof(char)),1);
+v->is_pending_array_size_int_size_rounded=my_around_align_int_size_ispending_array(l*sizeof(char));
 if (v->is_pending==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
@@ -129,18 +133,69 @@ if (l==0) return NULL;
 int size=0;
 for (int i=0;i<l;i++) {
 	/* +2 = +1 for the \0 and +1 to indicate if the variable is pending or not */
-	size=size+v->variables[i]->len+2;
+	size=size+v->variables[i]->len+1;
 }
-unichar* backup=(unichar*)malloc(size*sizeof(unichar));
+unichar* backup=(unichar*)malloc_cb(v->is_pending_array_size_int_size_rounded+(size*sizeof(unichar)),prv_alloc);
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
 }
-for (int i=0;i<l;i++) {
-	backup[i]=v->is_pending[i];
+for (size_t i = 0; i<(size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int)); i++) {
+	*(((unsigned int*)backup)+i)=*(((unsigned int*)(v->is_pending))+i);
 }
-int pos=l;
+size_t pos=(v->is_pending_array_size_int_size_rounded)/sizeof(unichar);
 for (int i=0;i<l;i++) {
-	u_strcpy(backup+pos,v->variables[i]->str);
+	//u_strcpy(backup+pos,v->variables[i]->str);
+    
+    {
+        const unichar * src = v->variables[i]->str;
+        unichar * dst = backup + pos;
+        for (;;)
+        {
+            unichar c0 = *src;
+            *dst = c0;
+            if (c0 == '\0')
+                break;
+            
+            unichar c1 = *(src+1);
+            *(dst+1) = c1;
+            if (c1 == '\0')
+                break;
+            
+            unichar c2 = *(src+2);
+            *(dst+2) = c2;
+            if (c2 == '\0')
+                break;
+            
+            unichar c3 = *(src+3);
+            *(dst+3) = c3;
+            if (c3 == '\0')
+                break;
+            
+            unichar c4 = *(src+4);
+            *(dst+4) = c4;
+            if (c4 == '\0')
+                break;
+            
+            unichar c5 = *(src+5);
+            *(dst+5) = c5;
+            if (c5 == '\0')
+                break;
+            
+            unichar c6 = *(src+6);
+            *(dst+6) = c6;
+            if (c6 == '\0')
+                break;
+            
+            unichar c7 = *(src+7);
+            *(dst+7) = c7;
+            if (c7 == '\0')
+                break;
+            
+            src += 8;
+            dst += 8;
+        }
+    }
+    
 	pos=pos+v->variables[i]->len;
 	*(backup+pos)='\0';
 	pos++;
@@ -153,7 +208,7 @@ return backup;
  * Frees the given variable backup.
  */
 void free_output_variable_backup(unichar* backup,Abstract_allocator prv_alloc) {
-if (backup!=NULL) free(backup);
+if (backup!=NULL) free_cb(backup,prv_alloc);
 }
 
 
@@ -172,17 +227,108 @@ while (v->pending!=NULL) {
 }
 /* Then we add all pending variables of the backup */
 int l=v->variable_index->size;
+
 for (int i=0;i<l;i++) {
-	v->is_pending[i]=(backup[i]?1:0);
-	if (backup[i]) {
+	v->is_pending[i]=(((char*)backup)[i]);
+	if (((char*)backup)[i]) {
 		/* We also add pending variables to the 'pending' list */
 		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);
 	}
 }
-int pos=l;
+const unichar* walk_backup = backup+(v->is_pending_array_size_int_size_rounded/sizeof(unichar));
 for (int i=0;i<l;i++) {
-	u_strcpy(v->variables[i],backup+pos);
-	pos=pos+v->variables[i]->len+1;
+
+	unichar c;
+	c = *(walk_backup);
+	v->variables[i]->str[0] = c;
+	if (c == '\0') goto size0;
+		
+	c = *(walk_backup+1);
+	v->variables[i]->str[1] = c;
+	if (c == '\0') goto size1;
+
+	c = *(walk_backup+2);
+	v->variables[i]->str[2] = c;
+	if (c == '\0') goto size2;
+
+	c = *(walk_backup+3);
+	v->variables[i]->str[3] = c;
+	if (c == '\0') goto size3;
+	
+	c = *(walk_backup+4);
+	v->variables[i]->str[4] = c;
+	if (c == '\0') goto size4;
+
+	c = *(walk_backup+5);
+	v->variables[i]->str[5] = c;
+	if (c == '\0') goto size5;
+	
+	c = *(walk_backup+6);
+	v->variables[i]->str[6] = c;
+	if (c == '\0') goto size6;
+
+	c = *(walk_backup+7);
+	v->variables[i]->str[7] = c;
+	if (c == '\0') goto size7;
+
+	walk_backup += 8;
+	{
+	  unsigned int pos_in_string = 8;
+	  for (;;)
+	  {
+		  if (v->variables[i]->size == pos_in_string)
+			  resize(v->variables[i],v->variables[i]->size*2);
+		  c = *walk_backup;
+		  walk_backup ++;
+		  v->variables[i]->str[pos_in_string] = c;
+		  if (c == '\0')
+			  break;
+		  pos_in_string ++;
+	  }
+
+	v->variables[i]->len = pos_in_string;
+	}
+	continue;
+	
+	size0:
+	  walk_backup++;
+	  v->variables[i]->len = 0 ;
+	  continue;
+
+	size1:
+	  walk_backup+=2;
+	  v->variables[i]->len = 1 ;
+	  continue;
+	  
+	size2:
+	  walk_backup+=3;
+	  v->variables[i]->len = 2 ;
+	  continue;
+
+	size3:
+	  walk_backup+=4;
+	  v->variables[i]->len = 3 ;
+	  continue;
+
+	size4:
+	  walk_backup+=5;
+	  v->variables[i]->len = 4 ;
+	  continue;
+
+	size5:
+	  walk_backup+=6;
+	  v->variables[i]->len = 5 ;
+	  continue;
+
+	size6:
+	  walk_backup+=7;
+	  v->variables[i]->len = 6 ;
+	  continue;
+
+	size7:
+	  walk_backup+=8;
+	  v->variables[i]->len = 7 ;
+	  continue;
 }
 }
 
