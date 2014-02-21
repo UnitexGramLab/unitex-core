@@ -122,7 +122,7 @@ return v->variables[n];
  * the variable values. The array starts with a subarray of size 'n'
  * (n=number of variables) with for each variable 1 if it is pending and 0 otherwise.
  */
-unichar* create_output_variable_backup(OutputVariables* v) {
+unichar* create_output_variable_backup(OutputVariables* v,Abstract_allocator prv_alloc) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
 if (l==0) return NULL;
@@ -152,7 +152,7 @@ return backup;
 /**
  * Frees the given variable backup.
  */
-void free_output_variable_backup(unichar* backup) {
+void free_output_variable_backup(unichar* backup,Abstract_allocator prv_alloc) {
 if (backup!=NULL) free(backup);
 }
 
