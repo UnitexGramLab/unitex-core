@@ -615,7 +615,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		/* If there are subgraphs, we process them */
 
 		int* save_previous_ptr_var = NULL;
-		int* var_backup = NULL;
 		//int create_new_reserve_done = 0;
         variable_backup_memory_reserve* reserve_previous = NULL;
 
@@ -634,7 +633,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				//create_new_reserve_done = 1;
 			}
 
-			var_backup = create_variable_backup_using_reserve(p->input_variables,
+			create_variable_backup_using_reserve(p->input_variables,
 					p->backup_memory_reserve);
 			dic_variables_backup = p->dic_variables;
 			if (p->nb_output_variables != 0) {
