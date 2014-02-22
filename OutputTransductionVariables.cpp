@@ -272,22 +272,24 @@ for (int i=0;i<l;i++) {
 	v->variables[i]->str[7] = c;
 	if (c == '\0') goto size7;
 
-	walk_backup += 8;
 	{
 	  unsigned int pos_in_string = 8;
+	  unsigned int v_size = v->variables[i]->size;
 	  for (;;)
 	  {
-		  if (v->variables[i]->size == pos_in_string)
-			  resize(v->variables[i],v->variables[i]->size*2);
-		  c = *walk_backup;
-		  walk_backup ++;
+		  if (v_size == pos_in_string)
+		  {
+			  resize(v->variables[i], v_size * 2);
+			  v_size = v->variables[i]->size;
+		  }
+		  c = *(walk_backup + pos_in_string);
 		  v->variables[i]->str[pos_in_string] = c;
 		  if (c == '\0')
 			  break;
 		  pos_in_string ++;
-	  }
-
-	v->variables[i]->len = pos_in_string;
+	  } 
+	  v->variables[i]->len = pos_in_string;
+	  walk_backup += pos_in_string + 1;
 	}
 	continue;
 	
