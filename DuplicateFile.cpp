@@ -135,6 +135,7 @@ int result;
 if (input_file != NULL) {
     if (do_move == 0) {
         u_printf("copy file %s to %s\n",input_file,output_file);
+        /* af_copy return 0 if success, -1 with reading problem, 1 writing problem */
         result=af_copy(input_file,output_file);
     }
     else

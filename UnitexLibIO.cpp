@@ -161,6 +161,7 @@ UNITEX_FUNC int UNITEX_CALL RenameUnitexFile(const char*oldName,const char*newNa
 
 /**
  * copy a file
+ * af_copy return 0 if success, -1 with reading problem, 1 writing problem
  */
 UNITEX_FUNC int UNITEX_CALL CopyUnitexFile(const char*srcName,const char*dstName)
 {

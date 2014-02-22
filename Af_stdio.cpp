@@ -802,15 +802,14 @@ int af_remove_unlogged(const char * Filename)
 
 
 #define BUFFER_IO_SIZE (0x8000)
+/* af_copy_unlogged return 0 if success, -1 with reading problem, 1 writing problem */
 int af_copy_unlogged(const char* srcFile, const char* dstFile)
 {
     ABSTRACTFILE* vfRead;
     ABSTRACTFILE* vfWrite;
-    long size_to_do = 0;    
-    int iSuccessCopyingRet=0;		
+    long size_to_do = 0;
     char *szBuffer = NULL;
     int buffer_size = 0;
-
 
     vfRead = af_fopen(srcFile,"rb");
     if (vfRead == NULL)
@@ -827,6 +826,11 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
 			return -1;
 		}
 	}
+	else
+	{
+        af_fclose(vfRead);
+        return -1;
+	}
 
     vfWrite = af_fopen(dstFile,"wb");
     if (vfWrite == NULL)
@@ -839,7 +843,12 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
     af_setsizereservation(vfWrite, size_to_do);
 
     if (af_fseek(vfRead, 0, SEEK_SET) != 0)
-        iSuccessCopyingRet = 1;
+	{
+        af_fclose(vfWrite);        
+        af_fclose(vfRead);
+        free(szBuffer);
+        return -1;
+	}
 
     int ret_in_error = -1;
 
