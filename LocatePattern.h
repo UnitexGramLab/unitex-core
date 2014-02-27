@@ -113,15 +113,18 @@ struct locate_parameters {
    Abstract_allocator prv_alloc_recycle;
    Abstract_allocator prv_alloc_backup_growing_recycle;
    Abstract_allocator prv_alloc_trace_info_allocator;
-
-   int graph_depth;
-   int explore_depth;
+   Abstract_allocator prv_alloc_context;
 
 
    
    /* The transduction variables of the fst2 */
    Variables* input_variables;
    OutputVariables* output_variables;
+
+   
+   int graph_depth;
+   int explore_depth;
+
    int nb_output_variables;
 
    /* This field is used to remember where the current stack base is for

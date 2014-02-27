@@ -104,7 +104,7 @@ void clean_tfst_match_list(struct tfst_match*,struct tfst_match*);
 
 void add_tfst_match(struct locate_tfst_infos*,struct tfst_match*);
 void save_tfst_matches(struct locate_tfst_infos*);
-struct tfst_match* new_debug_tfst_match(unichar* output,struct tfst_match* next);
+struct tfst_match* new_debug_tfst_match(const unichar* output,struct tfst_match* next);
 
 } // namespace unitex
 

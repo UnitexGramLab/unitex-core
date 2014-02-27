@@ -44,7 +44,7 @@ namespace unitex {
 /**
  * Allocates, initializes and returns a new debug tfst_match.
  */
-struct tfst_match* new_debug_tfst_match(unichar* output,struct tfst_match* next) {
+struct tfst_match* new_debug_tfst_match(const unichar* output,struct tfst_match* next) {
 struct tfst_match* match=(struct tfst_match*)malloc(sizeof(struct tfst_match));
 if (match==NULL) {
    fatal_alloc_error("new_debug_tfst_match");

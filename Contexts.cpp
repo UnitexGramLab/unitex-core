@@ -243,8 +243,8 @@ return contexts;
 /**
  * Creates a new context list element.
  */
-struct list_context* new_list_context(int n,struct list_context* next) {
-struct list_context* l=(struct list_context*)malloc(sizeof(struct list_context));
+struct list_context* new_list_context(int n,struct list_context* next,Abstract_allocator prv_alloc) {
+struct list_context* l=(struct list_context*)malloc_cb(sizeof(struct list_context),prv_alloc);
 if (l==NULL) {
 	fatal_alloc_error("new_list_context");
 }
@@ -256,12 +256,25 @@ return l;
 
 
 /**
+ * Set a context output.
+ */
+void set_list_context_output(struct list_context* l, const unichar* output)
+{
+  if (l->output != NULL) {
+    free(l->output);
+  }
+  
+  l->output = u_strdup(output);
+}
+
+
+/**
  * Frees the memory associated only to the given cell, not the whole list.
  */
-void free_list_context(struct list_context* l) {
+void free_list_context(struct list_context* l,Abstract_allocator prv_alloc) {
 if (l==NULL) return;
 free(l->output);
-free(l);
+free_cb(l,prv_alloc);
 }
 
 } // namespace unitex

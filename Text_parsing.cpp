@@ -1384,7 +1384,7 @@ while (output_variable_list != NULL) {
 				continue;
 			}
 			/* We look for a positive context from the current position */
-			struct list_context* c = new_list_context(0, ctx);
+			struct list_context* c = new_list_context(0, ctx, p->prv_alloc_context);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
 			p->weight=old_weight1;
@@ -1420,13 +1420,13 @@ while (output_variable_list != NULL) {
 					free(backup);
 				}
 			}
-			free_list_context(c);
+			free_list_context(c, p->prv_alloc_context);
 		}
 		for (int n_ctxt = 0; n_ctxt < contexts->size_negative; n_ctxt = n_ctxt
 				+ 2) {
 			t2 = contexts->negative_mark[n_ctxt];
 			/* We look for a negative context from the current position */
-			struct list_context* c = new_list_context(0, ctx);
+			struct list_context* c = new_list_context(0, ctx, p->prv_alloc_context);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
 			p->weight=old_weight1;
@@ -1446,7 +1446,7 @@ while (output_variable_list != NULL) {
 				}
 			}
 			/* We just want to free the cell we created */
-			free_list_context(c);
+			free_list_context(c, p->prv_alloc_context);
 		}
 		if ((t2 = contexts->end_mark) != NULL) {
 			/* If we have a closing context mark */
@@ -1463,7 +1463,7 @@ while (output_variable_list != NULL) {
 			ctx->n = 1;
 			if (ctx->output==NULL) {
 				p->stack->stack[p->stack->stack_pointer+1]='\0';
-				ctx->output=u_strdup(p->stack->stack);
+				set_list_context_output(ctx,p->stack->stack);
 			}
 			p->explore_depth -- ;
 			return;

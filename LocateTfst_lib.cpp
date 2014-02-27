@@ -715,7 +715,7 @@ while (grammar_transition!=NULL) {
       ctx->n=1;
       if (infos->debug && ctx->output==NULL) {
     	  Ustring* output=get_debug_output_in_context(match_element_list,infos);
-    	  ctx->output=u_strdup(output->str);
+    	  set_list_context_output(ctx,output->str);
     	  free_Ustring(output);
       }
       return;

@@ -62,7 +62,6 @@ struct opt_contexts {
    Transition* end_mark;
 };
 
-
 struct list_context {
 	int n;
 	unichar* output;
@@ -76,8 +75,9 @@ void add_positive_context(Fst2*,struct opt_contexts**,Transition*,Abstract_alloc
 void add_negative_context(Fst2*,struct opt_contexts**,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct opt_contexts** compute_contexts(Fst2*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-struct list_context* new_list_context(int n,struct list_context* next);
-void free_list_context(struct list_context* l);
+struct list_context* new_list_context(int n,struct list_context* next,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void set_list_context_output(struct list_context* l, const unichar* output);
+void free_list_context(struct list_context* l,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 } // namespace unitex
 

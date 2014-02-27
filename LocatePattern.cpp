@@ -457,9 +457,14 @@ locate_recycle_abstract_allocator=create_abstract_allocator("locate_pattern_recy
                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipOftenRecycledObject,
                                  get_prefered_allocator_item_size_for_nb_variable(nb_input_variable));
     
-    
+
 Abstract_allocator locate_recycle_backup_abstract_allocator=NULL;
 locate_recycle_backup_abstract_allocator=create_abstract_allocator("locate_pattern_growing_recycle",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                 0);
+
+Abstract_allocator locate_recycle_context_abstract_allocator=NULL;
+locate_recycle_context_abstract_allocator=create_abstract_allocator("locate_pattern_growing_recycle",
                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
                                  0);
 
@@ -481,6 +486,7 @@ p->prv_alloc=locate_work_abstract_allocator;
 p->prv_alloc_recycle=locate_recycle_abstract_allocator;
 p->prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
 p->prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
+p->prv_alloc_context=locate_recycle_context_abstract_allocator;
 launch_locate(out,text_size,info,p);
 if (allow_trace!=0) {
    close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
@@ -517,7 +523,9 @@ close_abstract_allocator(locate_abstract_allocator);
 close_abstract_allocator(locate_recycle_abstract_allocator);
 close_abstract_allocator(locate_recycle_backup_abstract_allocator);
 close_abstract_allocator(locate_recycle_locate_trace_info_allocator);
-locate_recycle_abstract_allocator=locate_abstract_allocator=locate_recycle_backup_abstract_allocator=NULL;
+close_abstract_allocator(locate_recycle_context_abstract_allocator);
+locate_recycle_abstract_allocator=locate_abstract_allocator=NULL;
+locate_recycle_backup_abstract_allocator=locate_recycle_context_abstract_allocator=NULL;
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);
