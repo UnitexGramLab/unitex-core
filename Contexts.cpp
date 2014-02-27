@@ -250,31 +250,47 @@ if (l==NULL) {
 }
 l->n=n;
 l->output=NULL;
+l->output_allocated=NULL;
 l->next=next;
 return l;
 }
 
 
-/**
- * Set a context output.
- */
 void set_list_context_output(struct list_context* l, const unichar* output)
 {
-  if (l->output != NULL) {
-    free(l->output);
-  }
-  
-  l->output = u_strdup(output);
-}
+	if (l->output_allocated == NULL)
+	{
+		unsigned int len = u_strlen(output);
+		
+		if (len < (INTERNAL_OUTPUT_BUFFER_SIZE))
+		{
+			l->output = l->internal_output_buffer;
+			memcpy(l->internal_output_buffer, output, sizeof(unichar) * (len+1));
+			return ;
+		}
+		else
+		{
+			l->output = l->output_allocated = (unichar*)malloc(sizeof(unichar) * (len+1));
+			memcpy(l->output, output, sizeof(unichar) * (len+1));
+			return;
+		}
+	}
 
+	free(l->output_allocated);
+	l->output_allocated = NULL;
+	set_list_context_output(l, output);
+}
 
 /**
  * Frees the memory associated only to the given cell, not the whole list.
  */
 void free_list_context(struct list_context* l,Abstract_allocator prv_alloc) {
 if (l==NULL) return;
-free(l->output);
+if (l->output_allocated!=NULL) {
+    free(l->output_allocated);
+}
 free_cb(l,prv_alloc);
 }
+
 
 } // namespace unitex

@@ -62,10 +62,14 @@ struct opt_contexts {
    Transition* end_mark;
 };
 
+#define INTERNAL_OUTPUT_BUFFER_SIZE 0x20
 struct list_context {
 	int n;
+	unichar* output_allocated;
 	unichar* output;
 	struct list_context* next;
+
+	unichar internal_output_buffer[INTERNAL_OUTPUT_BUFFER_SIZE];
 };
 
 void get_reachable_closing_context_marks(Fst2*,int,Transition**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
