@@ -785,6 +785,12 @@ int lines=0;
 char name[FILENAME_MAX];
 remove_path(dic_name,name);
 Ustring* line=new_Ustring(DIC_LINE_SIZE);
+
+Abstract_allocator load_dic_recycle_abstract_allocator=NULL;
+load_dic_recycle_abstract_allocator=create_abstract_allocator("load_dic_for_locate",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                 0);
+
 while (EOF!=readline(line,f)) {
    lines++;
    if (lines%10000==0) {
@@ -795,7 +801,7 @@ while (EOF!=readline(line,f)) {
        *       lines, but we test them, just in the case */
       continue;
    }
-   struct dela_entry* entry=tokenize_DELAF_line(line->str,1);
+   struct dela_entry* entry=tokenize_DELAF_line(line->str,1,load_dic_recycle_abstract_allocator);
    if (entry==NULL) {
       /* This case should never happen */
       error("Invalid dictionary line in load_dic_for_locate\n");
@@ -859,8 +865,10 @@ while (EOF!=readline(line,f)) {
          free_list_pointer(list);
       }
    }
-   free_dela_entry(entry);
+   free_dela_entry(entry,load_dic_recycle_abstract_allocator);
 }
+
+close_abstract_allocator(load_dic_recycle_abstract_allocator);
 free_Ustring(line);
 if (lines>10000) {
    u_printf("\n");

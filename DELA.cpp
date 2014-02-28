@@ -1233,21 +1233,28 @@ if (f==NULL) return;
 int i;
 struct dela_entry* entry;
 Ustring* line=new_Ustring(DIC_LINE_SIZE);
+    
+Abstract_allocator extract_semantic_codes_abstract_allocator=NULL;
+extract_semantic_codes_abstract_allocator=create_abstract_allocator("extract_semantic_codes",
+                                                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                                                  0);
+    
 while (EOF!=readline(line,f)) {
    /* NOTE: DLF and DLC files are not supposed to contain comment
     *       lines, but we test them, just in the case */
    if (line->str[0]!='/') {
-      entry=tokenize_DELAF_line(line->str,1);
+      entry=tokenize_DELAF_line(line->str,1,extract_semantic_codes_abstract_allocator);
       if (entry!=NULL) {
          for (i=0;i<entry->n_semantic_codes;i++) {
             get_value_index(entry->semantic_codes[i],hash);
          }
-         free_dela_entry(entry);
+         free_dela_entry(entry,extract_semantic_codes_abstract_allocator);
       }
    }
 }
 free_Ustring(line);
 u_fclose(f);
+close_abstract_allocator(extract_semantic_codes_abstract_allocator);
 return;
 }
 
