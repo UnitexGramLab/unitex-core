@@ -135,18 +135,20 @@ for (int i=0;i<l;i++) {
 	/* +2 = +1 for the \0 and +1 to indicate if the variable is pending or not */
 	size=size+v->variables[i]->len+1;
 }
-unichar* backup=(unichar*)malloc_cb(v->is_pending_array_size_int_size_rounded+(size*sizeof(unichar)),prv_alloc);
+unichar* backup=(unichar*)malloc_cb(sizeof(int)+v->is_pending_array_size_int_size_rounded+(size*sizeof(unichar)),prv_alloc);
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
 }
+
+unsigned int i_has_pending = 0;
 size_t limit = (size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int));
 for (size_t i = 0; i<limit; i++) {
-	*(((unsigned int*)backup)+i)=*(((unsigned int*)(v->is_pending))+i);
+	*(((unsigned int*)backup)+1+i) = *(((unsigned int*)(v->is_pending))+i);
+	i_has_pending |= *(((unsigned int*)(v->is_pending))+i);
 }
-size_t pos=(v->is_pending_array_size_int_size_rounded)/sizeof(unichar);
-for (int i=0;i<l;i++) {
-	//u_strcpy(backup+pos,v->variables[i]->str);
-    
+size_t pos=((v->is_pending_array_size_int_size_rounded)+sizeof(int))/sizeof(unichar);
+size_t original_pos=pos;
+for (int i=0;i<l;i++) {    
     {
         const unichar * src = v->variables[i]->str;
         unichar * dst = backup + pos;
@@ -201,6 +203,8 @@ for (int i=0;i<l;i++) {
 	*(backup+pos)='\0';
 	pos++;
 }
+
+*backup = ((pos != (original_pos+l)) || (i_has_pending != 0));
 return backup;
 }
 
@@ -229,14 +233,31 @@ while (v->pending!=NULL) {
 /* Then we add all pending variables of the backup */
 int l=v->variable_index->size;
 
+
+// first int of backup is set to 0 if we have full empty backup
+if ((*backup)==0) {
+	size_t limit = (size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int));
+	for (size_t i = 0; i < limit; i++) {
+		*(((unsigned int*)(v->is_pending))+i) = 0;
+	}
+
+	for (int i = 0; i < l; i++) {
+	    v->variables[i]->str[0] = 0;
+	    v->variables[i]->len = 0 ;
+	}
+	return;
+}
+
+
 for (int i=0;i<l;i++) {
-	v->is_pending[i]=(((char*)backup)[i]);
-	if (((char*)backup)[i]) {
+	v->is_pending[i]=((((char*)backup)+sizeof(int))[i]);
+	if (v->is_pending[i]) {
 		/* We also add pending variables to the 'pending' list */
 		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);
 	}
 }
-const unichar* walk_backup = backup+(v->is_pending_array_size_int_size_rounded/sizeof(unichar));
+
+const unichar* walk_backup = backup+((v->is_pending_array_size_int_size_rounded+sizeof(int))/sizeof(unichar));
 for (int i=0;i<l;i++) {
 
 	unichar c;
