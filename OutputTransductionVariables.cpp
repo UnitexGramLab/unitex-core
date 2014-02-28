@@ -28,8 +28,8 @@
 
 namespace unitex {
 
-static void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
-static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
+static inline void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
+static inline void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
 
     
 #define my_around_align_ispending_array(x)  ((((x)+0x0f)/0x10)*0x10)
@@ -360,7 +360,7 @@ for (int i=0;i<l;i++) {
 /**
  * Adds the given Ustring pointer to the list, with no duplicates.
  */
-static void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s) {
+static inline void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s) {
 while (*list != NULL) {
 	if ((*list)->var==s) {
 		/* The pointer is already in the list */
@@ -377,7 +377,7 @@ while (*list != NULL) {
 /**
  * Removes the given Ustring pointer from the list.
  */
-static void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s) {
+static inline void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s) {
 while (*list != NULL) {
 	if ((*list)->var==s) {
 		/* We have found the pointer to be removed */
