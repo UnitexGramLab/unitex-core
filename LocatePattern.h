@@ -115,7 +115,7 @@ struct locate_parameters {
    Abstract_allocator prv_alloc_trace_info_allocator;
    Abstract_allocator prv_alloc_context;
 
-
+   Abstract_allocator prv_alloc_recycle_morphlogical_content_buffer;
    
    /* The transduction variables of the fst2 */
    Variables* input_variables;

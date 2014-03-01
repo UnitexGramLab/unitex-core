@@ -1299,7 +1299,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 ) {
 	int old_weight=p->weight;
     p->explore_depth ++ ;
-	unichar* content_buffer = (unichar*) malloc(sizeof(unichar) * 4096);
+	unichar* content_buffer = (unichar*) malloc_cb(sizeof(unichar) * 4096, p->prv_alloc_recycle_morphlogical_content_buffer);
 	if (content_buffer == NULL) {
 		fatal_alloc_error("enter_morphological_mode");
 	}
@@ -1426,7 +1426,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			clear_dic_variable_list(&dic_variable_backup);
 		}
 	}
-	free(content_buffer);
+	free_cb(content_buffer, p->prv_alloc_recycle_morphlogical_content_buffer);
 	p->explore_depth -- ;
 }
 
@@ -1443,6 +1443,8 @@ static void explore_dic_in_morpho_mode_standard(struct locate_parameters* p,
 int final,n_transitions,inf_number;
 int z=save_output(ustr);
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
+
+
 	if (final) {
 		//error("\narriba!\n\n\n");
 		/* If this node is final, we get the INF line number */
@@ -1454,13 +1456,21 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					pos_in_jamo, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 		} else {
 			/* If we have to check the pattern */
+
+			
+			Abstract_allocator explore_dic_in_morpho_mode_standard_abstract_allocator=NULL;
+			explore_dic_in_morpho_mode_standard_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_standard",
+                                                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                                                  0);
+
+
 			struct list_ustring* tmp = d->inf->codes[inf_number];
 			while (tmp != NULL) {
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
 				uncompress_entry(inflected, tmp->string, line_buffer);
 				//error("\non decompresse la ligne _%S_\n",line_buffer->str);
-				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str);
+				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str, explore_dic_in_morpho_mode_standard_abstract_allocator);
 				if (dela_entry != NULL
 						&& (pattern == NULL
 								|| is_entry_compatible_with_pattern(dela_entry,
@@ -1471,9 +1481,10 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 							save_dic_entry ? dela_entry : NULL, jamo,
 							pos_in_jamo, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
-				free_dela_entry(dela_entry);
+				free_dela_entry(dela_entry, explore_dic_in_morpho_mode_standard_abstract_allocator);
 				tmp = tmp->next;
 			}
+			close_abstract_allocator(explore_dic_in_morpho_mode_standard_abstract_allocator);
 		}
 		base=ustr->len;
 	}
@@ -1664,13 +1675,20 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 					pos_in_current_token, -1, (*matches), NULL, NULL, 0, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 		} else {
 			/* If we have to check the pattern */
+
+			Abstract_allocator explore_dic_in_morpho_mode_arabic_abstract_allocator=NULL;
+			explore_dic_in_morpho_mode_arabic_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_arabic",
+                                                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                                                  0);
+
 			struct list_ustring* tmp = d->inf->codes[inf_number];
 			while (tmp != NULL) {
 				/* For each compressed code of the INF line, we save the corresponding
 				 * DELAF line in 'info->dlc' */
 				uncompress_entry(inflected, tmp->string, line_buffer);
 				//error("on a decompresse la ligne %S\n",line);
-				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str);
+
+				struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str, explore_dic_in_morpho_mode_arabic_abstract_allocator);
 				if (dela_entry != NULL
 						&& (pattern == NULL
 								|| is_entry_compatible_with_pattern(dela_entry,
@@ -1680,9 +1698,10 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 							pos_in_current_token, -1, (*matches),
 							save_dic_entry ? dela_entry : NULL, NULL, 0, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
 				}
-				free_dela_entry(dela_entry);
+				free_dela_entry(dela_entry, explore_dic_in_morpho_mode_arabic_abstract_allocator);
 				tmp = tmp->next;
 			}
+			close_abstract_allocator(explore_dic_in_morpho_mode_arabic_abstract_allocator);
 		}
 		base=ustr->len;
 	}

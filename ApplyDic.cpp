@@ -816,6 +816,12 @@ if (f==NULL) {
 }
 struct match_list* l=load_match_list(f,NULL,NULL);
 u_fclose(f);
+
+
+Abstract_allocator merge_dic_locate_results_abstract_allocator=NULL;
+merge_dic_locate_results_abstract_allocator=create_abstract_allocator("merge_dic_locate_results",
+                                                        AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                                        0);
 while (l!=NULL) {
    if (l->output!=NULL && l->output[0]=='/') {
 	   /* If we have a tag sequence to be used at the time of
@@ -839,7 +845,7 @@ while (l!=NULL) {
 	   continue;
    }
    /* We test if the match is a valid dictionary entry */
-   struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
+   struct dela_entry* entry=tokenize_DELAF_line(l->output, 1, merge_dic_locate_results_abstract_allocator);
    if (entry!=NULL) {
       /* If the entry is valid */
       if (is_sequence_of_letters(entry->inflected,info->alphabet)) {
@@ -888,7 +894,7 @@ while (l!=NULL) {
          }
       }
       /* Finally, we free the entry */
-      free_dela_entry(entry);
+      free_dela_entry(entry, merge_dic_locate_results_abstract_allocator);
    }
    /* If the match is not a valid entry, an error message has already
     * been produced by tokenize_DELAF_line, so there is nothing to do. */
@@ -896,6 +902,7 @@ while (l!=NULL) {
    free_match_list_element(l);
    l=tmp;
 }
+close_abstract_allocator(merge_dic_locate_results_abstract_allocator);
 return 1;
 }
 

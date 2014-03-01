@@ -119,6 +119,7 @@ p->match_cache_last=NULL;
 p->match_cache=NULL;
 p->prv_alloc=NULL;
 p->prv_alloc_recycle=NULL;
+p->prv_alloc_recycle_morphlogical_content_buffer=NULL;
 p->token_error_ctx.last_length=0;
 p->token_error_ctx.last_start=0;
 p->token_error_ctx.n_errors=0;
@@ -456,7 +457,13 @@ Abstract_allocator locate_recycle_abstract_allocator=NULL;
 locate_recycle_abstract_allocator=create_abstract_allocator("locate_pattern_recycle",
                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipOftenRecycledObject,
                                  get_prefered_allocator_item_size_for_nb_variable(nb_input_variable));
-    
+
+
+Abstract_allocator morphlogical_content_buffer_recycle_abstract_allocator=NULL;
+morphlogical_content_buffer_recycle_abstract_allocator=create_abstract_allocator("morphlogical_content_buffer_recycle",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                 0);
+
 
 Abstract_allocator locate_recycle_backup_abstract_allocator=NULL;
 locate_recycle_backup_abstract_allocator=create_abstract_allocator("locate_pattern_growing_recycle",
@@ -484,6 +491,7 @@ p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 u_printf("Working...\n");
 p->prv_alloc=locate_work_abstract_allocator;
 p->prv_alloc_recycle=locate_recycle_abstract_allocator;
+p->prv_alloc_recycle_morphlogical_content_buffer=morphlogical_content_buffer_recycle_abstract_allocator;
 p->prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
 p->prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
 p->prv_alloc_context=locate_recycle_context_abstract_allocator;
@@ -524,8 +532,10 @@ close_abstract_allocator(locate_recycle_abstract_allocator);
 close_abstract_allocator(locate_recycle_backup_abstract_allocator);
 close_abstract_allocator(locate_recycle_locate_trace_info_allocator);
 close_abstract_allocator(locate_recycle_context_abstract_allocator);
+close_abstract_allocator(morphlogical_content_buffer_recycle_abstract_allocator);
 locate_recycle_abstract_allocator=locate_abstract_allocator=NULL;
 locate_recycle_backup_abstract_allocator=locate_recycle_context_abstract_allocator=NULL;
+morphlogical_content_buffer_recycle_abstract_allocator=NULL;
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);
