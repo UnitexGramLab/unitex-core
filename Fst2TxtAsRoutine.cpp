@@ -59,19 +59,30 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		return 1;
 	}
 
-	p->fst2 = load_abstract_fst2(&(p->vec), p->fst_file, 1, NULL);
-	if (p->fst2 == NULL) {
+	struct FST2_free_info fst2load_free;
+	Fst2* fst2load = load_abstract_fst2(&(p->vec), p->fst_file, 1, &fst2load_free);
+	if (fst2load == NULL) {
 		error("Cannot load grammar %s\n", p->fst_file);
 		u_fclose(p->f_input);
 		u_fclose(p->f_output);
 		return 1;
 	}
-	if (p->fst2->debug) {
+	if (fst2load->debug) {
 		error("Cannot use debug fst2 %s\n", p->fst_file);
 		u_fclose(p->f_input);
 		u_fclose(p->f_output);
+		free_abstract_Fst2(fst2load,&fst2load_free);
 		return 1;
 	}
+
+
+    p->fst2txt_abstract_allocator=create_abstract_allocator("fst2txt_fst2",AllocatorCreationFlagAutoFreePrefered);
+
+
+    p->fst2=new_Fst2_clone(fst2load,p->fst2txt_abstract_allocator);
+    free_abstract_Fst2(fst2load,&fst2load_free);
+
+
 	OK_for_Fst2Txt(p->fst2);
 
 	if (p->alphabet_file != NULL && p->alphabet_file[0] != '\0') {
@@ -115,6 +126,7 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	p->f_input = NULL;
 	p->f_output = NULL;
 	p->fst2 = NULL;
+	p->fst2txt_abstract_allocator = NULL;
 	p->alphabet = NULL;
 	p->text_file = NULL;
 	p->temp_file = NULL;
@@ -157,14 +169,14 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 	free(p->fst_file);
 	free(p->alphabet_file);
 	for (int i = 0; i < p->n_token_trees; i++) {
-		free_fst2txt_token_tree(p->token_tree[i]);
+		free_fst2txt_token_tree(p->token_tree[i],p->fst2txt_abstract_allocator);
 	}
 	if (p->token_tree != NULL) {
-		free(p->token_tree);
+		free_cb(p->token_tree, p->fst2txt_abstract_allocator);
 	}
 	free_Variables(p->variables);
 	free_buffer(p->text_buffer);
-	free_abstract_Fst2(p->fst2, NULL);
+	free_Fst2(p->fst2, p->fst2txt_abstract_allocator);
 	free_alphabet(p->alphabet);
 	free_stack_unichar(p->stack);
 	free_vector_offset(p->v_in_offsets);
@@ -172,6 +184,7 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 	free_vector_int(p->insertions);
 	free_vector_int(p->current_insertions);
 	u_fclose(p->f_out_offsets);
+	close_abstract_allocator(p->fst2txt_abstract_allocator);
 	free(p);
 }
 
@@ -280,8 +293,8 @@ void parse_text(struct fst2txt_parameters* p) {
 	u_printf("Block %d", n_blocks);
 	int within_tag = 0;
 	if (p->output_policy == MERGE_OUTPUTS /* && p->f_out_offsets!=NULL*/) {
-		p->insertions = new_vector_int();
-		p->current_insertions = new_vector_int();
+		p->insertions = new_vector_int(4096);
+		p->current_insertions = new_vector_int(4096);
 	}
 	p->v_out_offsets = new_vector_offset();
 	/* The following test used to be a <, but now it's a <= because of the {$} tag
@@ -589,14 +602,14 @@ void scan_graph(
 				// in both modes MERGE and REPLACE, we process the output if any
 				int SOMMET2 = p->stack->stack_pointer;
 				Transition* RES = get_matching_tags(token, p->token_tree[e],
-						p->alphabet);
+						p->alphabet,p->fst2txt_abstract_allocator);
 				Transition* TMP;
 				unichar* mot_token_new_recurse_buffer = NULL;
 				if (RES != NULL) {
 					// we allocate a new mot_token_buffer for the scan_graph recursion because we need preserve current
 					// token=mot_token_buffer
-					mot_token_new_recurse_buffer = (unichar*) malloc(
-							MOT_BUFFER_TOKEN_SIZE * sizeof(unichar));
+					mot_token_new_recurse_buffer = (unichar*) malloc_cb(
+							MOT_BUFFER_TOKEN_SIZE * sizeof(unichar),p->fst2txt_abstract_allocator);
 					if (mot_token_new_recurse_buffer == NULL) {
 						fatal_alloc_error("scan_graph");
 					}
@@ -620,10 +633,10 @@ void scan_graph(
 					restore(p->current_insertions, old_nb_insert);
 					TMP = RES;
 					RES = RES->next;
-					free(TMP);
+					free_cb(TMP,p->fst2txt_abstract_allocator);
 				}
 				if (mot_token_new_recurse_buffer != NULL) {
-					free(mot_token_new_recurse_buffer);
+					free_cb(mot_token_new_recurse_buffer,p->fst2txt_abstract_allocator);
 				}
 			}
 		}
@@ -1215,8 +1228,8 @@ Transition* add_tag_to_token_tree(struct fst2txt_token_tree* tree,
 	}
 	Transition* tmp = add_tag_to_token_tree(tree, trans->next, p);
 	add_tag(p->fst2->tags[trans->tag_number]->input, trans->tag_number,
-			trans->state_number, tree);
-	free(trans);
+			trans->state_number, tree, p->fst2txt_abstract_allocator);
+	free_cb(trans,p->fst2txt_abstract_allocator);
 	return tmp;
 }
 
@@ -1228,13 +1241,13 @@ Transition* add_tag_to_token_tree(struct fst2txt_token_tree* tree,
  */
 void build_state_token_trees(struct fst2txt_parameters* p) {
 	p->n_token_trees = p->fst2->number_of_states;
-	p->token_tree = (struct fst2txt_token_tree**) malloc(p->n_token_trees
-			* sizeof(struct fst2txt_token_tree*));
+	p->token_tree = (struct fst2txt_token_tree**) malloc_cb(p->n_token_trees
+			* sizeof(struct fst2txt_token_tree*),p->fst2txt_abstract_allocator);
 	if (p->token_tree == NULL) {
 		fatal_alloc_error("build_state_token_trees\n");
 	}
 	for (int i = 0; i < p->n_token_trees; i++) {
-		p->token_tree[i] = new_fst2txt_token_tree();
+		p->token_tree[i] = new_fst2txt_token_tree(p->fst2txt_abstract_allocator);
 		p->fst2->states[i]->transitions = add_tag_to_token_tree(
 				p->token_tree[i], p->fst2->states[i]->transitions, p);
 	}

@@ -49,11 +49,11 @@ struct fst2txt_token_tree {
 
 
 
-struct fst2txt_token_tree* new_fst2txt_token_tree();
-void free_fst2txt_token_tree(struct fst2txt_token_tree*);
+struct fst2txt_token_tree* new_fst2txt_token_tree(Abstract_allocator);
+void free_fst2txt_token_tree(struct fst2txt_token_tree*, Abstract_allocator);
 
-void add_tag(unichar*,int,int,struct fst2txt_token_tree*);
-Transition* get_matching_tags(unichar*,struct fst2txt_token_tree*,Alphabet*);
+void add_tag(unichar*,int,int,struct fst2txt_token_tree*, Abstract_allocator);
+Transition* get_matching_tags(unichar*,struct fst2txt_token_tree*,Alphabet*, Abstract_allocator);
 
 } // namespace unitex
 
