@@ -83,7 +83,7 @@ const unichar P_COMMA_DOT_EQUAL_BACKSLASH[] = { ',', '.', '=', '\\', 0 };
  *          result = "E=mc\2"
  */
 
-static unichar* local_u_strchr(const unichar* s,unichar c) {
+static inline unichar* local_u_strchr(const unichar* s,unichar c) {
 if (s==NULL) return NULL;
 while ((*s)) {
    if (*s==c) {
