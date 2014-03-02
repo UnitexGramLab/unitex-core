@@ -146,9 +146,23 @@ for (size_t i = 0; i<limit; i++) {
 	*(((unsigned int*)backup)+1+i) = *(((unsigned int*)(v->is_pending))+i);
 	i_has_pending |= *(((unsigned int*)(v->is_pending))+i);
 }
+    
+if (i_has_pending == 0)
+{
+    int i;
+    for (i = 0; i < l; i++) {
+        if (v->variables[i]->len != 0)
+            break;
+    }
+    if (i == l)
+    {
+        *backup = 0;
+        return backup;
+    }
+}
+
 size_t pos=((v->is_pending_array_size_int_size_rounded)+sizeof(int))/sizeof(unichar);
-size_t original_pos=pos;
-for (int i=0;i<l;i++) {    
+for (int i=0;i<l;i++) {
     {
         const unichar * src = v->variables[i]->str;
         unichar * dst = backup + pos;
@@ -204,7 +218,7 @@ for (int i=0;i<l;i++) {
 	pos++;
 }
 
-*backup = ((pos != (original_pos+l)) || (i_has_pending != 0));
+*backup = 1;
 return backup;
 }
 
