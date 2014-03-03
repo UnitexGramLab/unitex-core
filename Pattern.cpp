@@ -230,7 +230,7 @@ else if (s[pos]=='.' && s[pos+1]=='\0') {
    }
    /* If we are in the case <be.>, we know that we have a lemma pattern */
    p->type=LEMMA_PATTERN;
-   p->lemma=u_strdup(tmp);
+   p->lemma=u_strdup(tmp,prv_alloc);
    return p;
 }
 /* If are in the <be.V> or <.V> case */
