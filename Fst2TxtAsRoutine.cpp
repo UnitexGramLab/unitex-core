@@ -193,9 +193,8 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 ////////////////////////////////////////////////////////////////////////
 
 
-void scan_graph(int, int, int, int, struct parsing_info**, unichar*,
-				struct fst2txt_parameters*,
-				Abstract_allocator prv_alloc_recycle = NULL);
+static void scan_graph(int, int, int, int, struct parsing_info**, unichar*,
+				struct fst2txt_parameters*);
 
 int write_transduction();
 
@@ -502,13 +501,12 @@ static inline int at_text_start(struct fst2txt_parameters* p, int pos) {
 			|| (p->current_origin == 1 && p->buffer[0] == ' '));
 }
 
-void scan_graph(
+static void scan_graph(
 		int n_graph, // number of current graph
 		int e, // number of current state
 		int pos, //
 		int depth, struct parsing_info** match_list,
-		unichar* word_token_buffer, struct fst2txt_parameters* p,
-		Abstract_allocator prv_alloc_recycle) {
+		unichar* word_token_buffer, struct fst2txt_parameters* p) {
 	Fst2State current_state = p->fst2->states[e];
 	int old_nb_insert;
 	if (depth > MAX_DEPTH) {
@@ -529,7 +527,7 @@ void scan_graph(
 				struct parsing_info* la_tmp = *match_list;
 				*match_list = (*match_list)->next;
 				la_tmp->next = NULL; // to don't free the next item
-				free_parsing_info(la_tmp, prv_alloc_recycle, NULL, NULL);
+				free_parsing_info(la_tmp, p->fst2txt_abstract_allocator, NULL, NULL);
 			}
 		}
 		return;
@@ -552,7 +550,7 @@ void scan_graph(
 			(*match_list) = insert_if_absent(pos, -1, -1, (*match_list),
 					p->stack->stack_pointer + 1, p->stack->stack, p->variables,
 					NULL, NULL, -1, -1, NULL, -1, p->current_insertions,-1,
-					prv_alloc_recycle,NULL,NULL);
+					p->fst2txt_abstract_allocator,p->fst2txt_abstract_allocator,NULL);
 		}
 	}
 
@@ -670,7 +668,7 @@ void scan_graph(
 				struct parsing_info* l_tmp = liste;
 				liste = liste->next;
 				l_tmp->next = NULL; // in order not to free the next item
-				free_parsing_info(l_tmp, prv_alloc_recycle, NULL,NULL);
+				free_parsing_info(l_tmp, p->fst2txt_abstract_allocator, NULL,NULL);
 			}
 			u_strcpy(p->stack->stack, pile_old);
 			p->current_insertions = old_insertions;
