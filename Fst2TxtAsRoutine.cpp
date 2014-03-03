@@ -181,8 +181,8 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 	free_stack_unichar(p->stack);
 	free_vector_offset(p->v_in_offsets);
 	free_vector_offset(p->v_out_offsets);
-	free_vector_int(p->insertions);
-	free_vector_int(p->current_insertions);
+	free_vector_int(p->insertions, p->fst2txt_abstract_allocator);
+	free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
 	u_fclose(p->f_out_offsets);
 	close_abstract_allocator(p->fst2txt_abstract_allocator);
 	free(p);
@@ -272,13 +272,13 @@ void emit_output(struct fst2txt_parameters* p, unichar* s, int pos) {
 			}
 			/* If there is a need to compute offsets, we store the position of the insertion */
 			vector_int_add(p->current_insertions, p->CR_shift + CR_shift + pos
-					+ p->current_origin + p->absolute_offset);
+					+ p->current_origin + p->absolute_offset, p->fst2txt_abstract_allocator);
 			vector_int_add(p->current_insertions, p->CR_shift + CR_shift + pos
-					+ p->current_origin + p->absolute_offset);
+					+ p->current_origin + p->absolute_offset, p->fst2txt_abstract_allocator);
 			vector_int_add(p->current_insertions, CR_shift + pos
-					+ p->new_absolute_origin+output_shift);
+					+ p->new_absolute_origin+output_shift, p->fst2txt_abstract_allocator);
 			vector_int_add(p->current_insertions, CR_shift + pos
-					+ p->new_absolute_origin + u_strlen(s)+output_shift);
+					+ p->new_absolute_origin + u_strlen(s)+output_shift, p->fst2txt_abstract_allocator);
 		}
 		push_output_string(p, s);
 	}
@@ -293,8 +293,8 @@ void parse_text(struct fst2txt_parameters* p) {
 	u_printf("Block %d", n_blocks);
 	int within_tag = 0;
 	if (p->output_policy == MERGE_OUTPUTS /* && p->f_out_offsets!=NULL*/) {
-		p->insertions = new_vector_int(4096);
-		p->current_insertions = new_vector_int(4096);
+		p->insertions = new_vector_int(2048, p->fst2txt_abstract_allocator);
+		p->current_insertions = new_vector_int(2048, p->fst2txt_abstract_allocator);
 	}
 	p->v_out_offsets = new_vector_offset();
 	/* The following test used to be a <, but now it's a <= because of the {$} tag
@@ -546,7 +546,7 @@ void scan_graph(
 				// and if the recognized input is longer than the current one, it replaces it
 				u_strcpy(p->output, p->stack->stack);
 				p->input_length = (pos);
-				vector_int_copy(p->insertions, p->current_insertions);
+				vector_int_copy(p->insertions, p->current_insertions, p->fst2txt_abstract_allocator);
 			}
 		} else { // in a subgraph
 			(*match_list) = insert_if_absent(pos, -1, -1, (*match_list),
@@ -653,11 +653,11 @@ void scan_graph(
 			unichar* pile_old;
 			p->stack->stack[p->stack->stack_pointer + 1] = '\0';
 			pile_old = u_strdup(p->stack->stack);
-			vector_int* old_insertions = vector_int_dup(p->current_insertions);
+			vector_int* old_insertions = vector_int_dup(p->current_insertions, p->fst2txt_abstract_allocator);
 			scan_graph((((unsigned) n_etiq) - 1),
 					p->fst2->initial_states[-n_etiq], pos, depth, &liste,
 					word_token_buffer, p);
-			free_vector_int(p->current_insertions);
+			free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
 			p->current_insertions = NULL;
 			while (liste != NULL) {
 				p->stack->stack_pointer = liste->stack_pointer - 1;
@@ -666,7 +666,7 @@ void scan_graph(
 				liste->insertions = NULL;
 				scan_graph(n_graph, t->state_number, liste->pos_in_tokens, depth,
 						match_list, word_token_buffer, p);
-				free_vector_int(p->current_insertions);
+				free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
 				struct parsing_info* l_tmp = liste;
 				liste = liste->next;
 				l_tmp->next = NULL; // in order not to free the next item
