@@ -63,8 +63,8 @@ typedef struct {
 
 OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
 void free_OutputVariables(OutputVariables*);
-Ustring* get_output_variable(OutputVariables*,unichar*);
-int same_output_variables(unichar* output_variable_backup,OutputVariables* v);
+Ustring* get_output_variable(OutputVariables*,const unichar*);
+int same_output_variables(const unichar* output_variable_backup,OutputVariables* v);
 
 /**
  * Returns 1 if there are some pending variables; 0 otherwise.
