@@ -171,18 +171,25 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 	for (int i = 0; i < p->n_token_trees; i++) {
 		free_fst2txt_token_tree(p->token_tree[i],p->fst2txt_abstract_allocator);
 	}
+
+	int free_abstract_allocator_item = (get_allocator_cb_flag(p->fst2txt_abstract_allocator) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+
 	if (p->token_tree != NULL) {
 		free_cb(p->token_tree, p->fst2txt_abstract_allocator);
 	}
+
 	free_Variables(p->variables);
 	free_buffer(p->text_buffer);
-	free_Fst2(p->fst2, p->fst2txt_abstract_allocator);
+
 	free_alphabet(p->alphabet);
 	free_stack_unichar(p->stack);
 	free_vector_offset(p->v_in_offsets);
 	free_vector_offset(p->v_out_offsets);
-	free_vector_int(p->insertions, p->fst2txt_abstract_allocator);
-	free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
+	if (free_abstract_allocator_item) {
+		free_Fst2(p->fst2, p->fst2txt_abstract_allocator);
+		free_vector_int(p->insertions, p->fst2txt_abstract_allocator);
+		free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
+	}
 	u_fclose(p->f_out_offsets);
 	close_abstract_allocator(p->fst2txt_abstract_allocator);
 	free(p);
