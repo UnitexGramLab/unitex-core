@@ -1604,6 +1604,7 @@ const char* usage_RunLog =
          "  -i N/--increment=N: increment filename <ulp> by 0 to N\n"
          "  -t N/--thread=N: create N thread\n"
          "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
+         "  -g N/--loop=N: perform the whole task N time\n"
          "  -f N/--break-after=N: user cancel after N run (with one thread only)\n"
          "  -u PATH/--unfound-location==PATH: take dictionnary and FST2 from PATH if\n"
          "               not found on the logfile\n"
@@ -1616,7 +1617,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lna:o:u:bf:";
+const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lna:o:u:bf:g:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1638,6 +1639,7 @@ const struct option_TS lopts_RunLog[]= {
       {"no-benchmark",no_argument_TS,NULL,'b'},
       {"break-after",required_argument_TS,NULL,'f'},
       {"junk-summary",no_argument_TS,NULL,'j'},
+      {"loop",required_argument_TS,NULL,'g'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1853,6 +1855,7 @@ runLog_ctx->benchmark=1;
 runLog_ctx->junk_summary=0;
 runLog_ctx->run_before_break=-1;
 
+int nbloop=1;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,vars))) {
@@ -1872,6 +1875,13 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
              }
              
              runLog_ctx->random=atol(vars->optarg);
+             break;
+   case 'g': 
+             if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a number of whole task perform \n");
+             }
+             
+             nbloop=(int)atol(vars->optarg);
              break;
    case 'i': 
              if (vars->optarg[0]=='\0') {
@@ -1943,7 +1953,10 @@ if (runLog_ctx->resultulp[0]=='\0') {
 if (runLog_ctx->cleanlog==2)
    runLog_ctx->cleanlog=0;
 
+hTimeElapsed htmAll = SyncBuidTimeMarkerObject();
 
+for (int countloop = 0; countloop < nbloop; countloop++)
+{
 InstallLoggerForRunner InstallLoggerForRunnerSingleton((runLog_ctx->cleanlog==1) ? 0:1);
 runLog_ctx->pInstallLoggerForRunnerSingleton=&InstallLoggerForRunnerSingleton;
 
@@ -1994,10 +2007,14 @@ if (runLog_ctx->run_before_break!=-1)
     AddUserCancellingInfo(&user_cancelling_func_array,NULL);
 }
 
+hTimeElapsed htmWork = SyncBuidTimeMarkerObject();
+
 if (runLog_ctx->nb_thread <= 1)
    DoWork(*ptrptr,0);
 else
    SyncDoRunThreads(runLog_ctx->nb_thread,DoWork,ptrptr);
+
+unsigned int timeElapsedWork = SyncGetMSecElapsed(htmWork);
 
 if (runLog_ctx->quiet==1)
 {
@@ -2049,13 +2066,25 @@ for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
     u_printf("final resume");
     if (runLog_ctx->nb_thread>1)
         u_printf(" for thread %u",ut);
-    u_printf(": %u good run, %u warning compare, %u error compare\n",
+    u_printf(": %u good run, %u warning compare, %u error compare",
         (prunLog_ThreadData+ut)->count_run_ok,(prunLog_ThreadData+ut)->count_run_warning,
         (prunLog_ThreadData+ut)->count_run_error);
+    if (runLog_ctx->nb_thread>1)
+        u_printf("\n");
+	else
+		u_printf(", ");
 }
+u_printf("%u msec\n",timeElapsedWork);
 
 free(prunLog_ThreadData);
 free(ptrptr);
+}
+
+unsigned int timeElapsedAll = SyncGetMSecElapsed(htmAll);
+if (nbloop>1) {
+	u_printf("time for running %d loop : %u msec (average %u msec by step)\n",nbloop,timeElapsedAll,(unsigned int)(timeElapsedAll/nbloop));
+}
+
 free_OptVars(vars);
 free(runLog_ctx);
 return 0;
