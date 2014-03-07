@@ -75,7 +75,7 @@ BOOL DeleteDirectoryW(const WCHAR* sPath) {
     WCHAR FileName[MAX_PATH+0x200];
     
     StringCchCopyW(DirPath,MAX_PATH+0x200,sPath);
-    StringCchCat(DirPath,MAX_PATH+0x200,L"\\*");    // searching all files
+    StringCchCatW(DirPath,MAX_PATH+0x200,L"\\*");    // searching all files
     
     StringCchCopyW(FileName,MAX_PATH+0x200,sPath);
     StringCchCatW(FileName,MAX_PATH+0x200,L"\\");
@@ -108,7 +108,7 @@ BOOL DeleteDirectoryW(const WCHAR* sPath) {
                     return FALSE; 
                 }                 
                 //strcpy(FileName,DirPath);
-				StringCchCopy(FileName,MAX_PATH+0x200,DirPath);
+				StringCchCopyW(FileName,MAX_PATH+0x200,DirPath);
             }
         }
         else {
