@@ -162,7 +162,7 @@ size_t step_filename_buffer = ((((DIC_WORD_SIZE*sizeof(unichar)) / 0x10) + 1) * 
 char* buffer_filename = (char*)malloc(step_filename_buffer * 5);
 if (buffer_filename == NULL)
 {
-	fatal_alloc_error("locate_pattern");
+	fatal_alloc_error("main_Compress");
 }
 char* bin = (buffer_filename + (step_filename_buffer * 0));
 char* inf = (buffer_filename + (step_filename_buffer * 1));
