@@ -351,6 +351,32 @@ struct locate_parameters {
    /* -1   means no weight applied
     * >=0  value to be used to compare matches within a same graph */
    int weight;
+
+
+
+/* #define STACK_MAX 1000 The maximal size of recursive calls of the
+                          function parcourir_opt =~ the maximal number
+                          of tokens to be recognized in one match */
+   int stack_max;   
+
+
+/* #define MAX_MATCHES_AT_TOKEN_POS 400 The maximal number of matches
+                                        starting from one token : this
+                                        value is critical in the case
+                                        of bad designed grammars */
+   int max_matches_at_token_pos;
+
+/* MAX_MATCHES_PER_SUBGRAPH 200
+ * Arbitrary value used as a limit. It is similar to 'MAX_MATCHES_AT_TOKEN_POS',
+ * but it concerns each subgraph. */
+   int max_matches_per_subgraph;
+
+
+
+/* MAX_ERRORS 50   Maximal number of errors before exiting:
+                          needed to avoid overflow of error buffers in Java GUI */
+   int max_errors;
+
 };
 
 

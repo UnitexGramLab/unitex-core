@@ -138,6 +138,12 @@ p->is_in_trace_state = 0;
 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 p->debug=0;
 p->weight=-1;
+
+p->stack_max=STACK_MAX;
+p->max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;
+p->max_matches_per_subgraph=MAX_MATCHES_PER_SUBGRAPH;
+p->max_errors=MAX_ERRORS;
+
 return p;
 }
 
@@ -801,6 +807,13 @@ load_dic_recycle_abstract_allocator=create_abstract_allocator("load_dic_for_loca
                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
                                  0);
 
+
+Abstract_allocator load_dic_list_int_recycle_abstract_allocator=NULL;
+load_dic_list_int_recycle_abstract_allocator=create_abstract_allocator("load_dic_for_locate_list_int",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                 0);
+
+
 while (EOF!=readline(line,f)) {
    lines++;
    if (lines%10000==0) {
@@ -823,7 +836,7 @@ while (EOF!=readline(line,f)) {
    add_inflected_form_for_lemma(entry->inflected,entry->lemma,root);
    /* We get the list of all tokens that can be matched by the inflected form of this
     * this entry, with regards to case variations (see the "extended" example above). */
-   struct list_int* ptr=get_token_list_for_sequence(entry->inflected,alphabet,tokens);
+   struct list_int* ptr=get_token_list_for_sequence(entry->inflected,alphabet,tokens,load_dic_list_int_recycle_abstract_allocator);
    /* We save the list pointer to free it later */
    struct list_int* ptr_copy=ptr;
    /* Here, we will deal with all simple words */
@@ -853,7 +866,7 @@ while (EOF!=readline(line,f)) {
       ptr=ptr->next;
    }
    /* Finally, we free the token list */
-   free_list_int(ptr_copy);
+   free_list_int(ptr_copy,load_dic_list_int_recycle_abstract_allocator);
    if (!is_a_simple_word(entry->inflected,parameters->tokenization_policy,alphabet)) {
       /* If the inflected form is a compound word */
 	  if (is_DIC_pattern || is_CDIC_pattern) {
@@ -879,6 +892,7 @@ while (EOF!=readline(line,f)) {
 }
 
 close_abstract_allocator(load_dic_recycle_abstract_allocator);
+close_abstract_allocator(load_dic_list_int_recycle_abstract_allocator);
 free_Ustring(line);
 if (lines>10000) {
    u_printf("\n");

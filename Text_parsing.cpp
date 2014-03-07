@@ -334,7 +334,7 @@ void error_at_token_pos(const char* message, int start, int length,
 	error(" graph name: [%S:%d:%d]\n", p->fst2->graph_names[current_state->graph_number],
 		current_state->pos_transition_in_fst2,current_state->pos_transition_in_graph);
 	(p->token_error_ctx.n_errors)++;
-	if (!p->debug && p->token_error_ctx.n_errors >= MAX_ERRORS) {
+	if (!p->debug && p->token_error_ctx.n_errors >= p->max_errors) {
 		/* In debug mode, we don't stop on such a problem */
 		fatal_error("Too many errors, giving up!\n");
 	}
@@ -503,7 +503,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 */
 
 
-	if ((p->explore_depth) > STACK_MAX) {
+	if ((p->explore_depth) > p->stack_max) {
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
@@ -512,7 +512,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		return;
 	}
 	if ((p->token_error_ctx.n_matches_at_token_pos__morphological_locate)
-			> MAX_MATCHES_AT_TOKEN_POS) {
+			> p->max_matches_at_token_pos) {
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
@@ -550,7 +550,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			}
 		} else {
 			/* If we are in a subgraph */
-			if (*n_matches >= MAX_MATCHES_PER_SUBGRAPH) {
+			if (*n_matches >= p->max_matches_per_subgraph) {
 				/* If there are too much matches, we suspect an error in the grammar
 				 * like an infinite recursion */
 				error_at_token_pos(

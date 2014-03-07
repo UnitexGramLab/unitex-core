@@ -313,7 +313,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
 	}*/
 
-	if (p->explore_depth > STACK_MAX) {
+	if (p->explore_depth > p->stack_max) {
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
@@ -322,7 +322,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		return;
 	}
 	if ((p->token_error_ctx.n_matches_at_token_pos__morphological_locate)
-			> MAX_MATCHES_AT_TOKEN_POS) {
+			> p->max_matches_at_token_pos) {
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
@@ -339,7 +339,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 			fatal_error("Unexpected end of graph in morphological mode!\n");
 		} else {
 			/* If we are in a subgraph */
-			if (n_matches == MAX_MATCHES_PER_SUBGRAPH) {
+			if (n_matches == p->max_matches_per_subgraph) {
 				/* If there are too much matches, we suspect an error in the grammar
 				 * like an infinite recursion */
 				error_at_token_pos(
