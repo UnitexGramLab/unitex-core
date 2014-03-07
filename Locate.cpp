@@ -127,7 +127,7 @@ const char* usage_Locate =
          "                         max exploration step at half of default value.\n"
          "  --lesser_tolerant: set max matches per subgraph, max matches per token and\n"
          "                         max exploration step at a fifth of default value.\n"
-         "  --very_lesser_tolerant: set max matches per subgraph, max matches per token and\n"
+         "  --least_tolerant: set max matches per subgraph, max matches per token and\n"
          "                         max exploration step at a tenth of default value.\n"
          "\n"
          "  -h/--help: this help\n"
@@ -186,7 +186,7 @@ const struct option_TS lopts_Locate[]= {
       {"max_matches_at_token_pos",required_argument_TS,NULL,'P'},
       {"less_tolerant",no_argument_TS,NULL,'H'},
       {"lesser_tolerant",no_argument_TS,NULL,'Q'},
-      {"very_lesser_tolerant",no_argument_TS,NULL,'N'},
+      {"least_tolerant",no_argument_TS,NULL,'N'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
