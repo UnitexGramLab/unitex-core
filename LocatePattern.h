@@ -383,7 +383,9 @@ struct locate_parameters {
 int locate_pattern(const char*,const char*,const char*,const char*,const char*,const char*,const char*,
                    MatchPolicy,OutputPolicy, const VersatileEncodingConfig*,const char*,TokenizationPolicy,
                    SpacePolicy,int,const char*,AmbiguousOutputPolicy,
-                   VariableErrorPolicy,int,int,int,int,char*,int,int,int,vector_ptr*);
+                   VariableErrorPolicy,int,int,int,int,
+                   int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
+                   char*,int,int,int,vector_ptr*);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(const unichar*,const Alphabet*,struct string_hash*,TokenizationPolicy);

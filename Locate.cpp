@@ -53,6 +53,10 @@
 
 namespace unitex {
 
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
+
 const char* usage_Locate =
          "Usage: Locate [OPTIONS] <fst2>\n"
          "\n"
@@ -111,11 +115,22 @@ const char* usage_Locate =
          "  -Y/--ignore_variable_errors: acts as if the variable has an empty content (default)\n"
          "  -Z/--backtrack_on_variable_errors: stop exploring the current path of the grammar\n"
          "\n"
-		 "Variable injection:\n"
-		 "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y. Note that\n"
-		 "                         Y must be ASCII\n"
-		 "\n"
-		 "  -h/--help: this help\n"
+         "Variable injection:\n"
+         "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y. Note that\n"
+         "                         Y must be ASCII\n"
+         "\n"
+         "  --stack_max=N: set max exploration step to save stack (default: " STRINGIZE(STACK_MAX) ")\n"
+         "  --max_errors=N: set max number of error to display before exit (default: " STRINGIZE(MAX_ERRORS) ")\n"
+         "  --max_matches_per_subgraph=N: set max matches per subgraph (default: " STRINGIZE(MAX_MATCHES_PER_SUBGRAPH) ")\n"
+         "  --max_matches_at_token_pos=N: set max matches per token (default: " STRINGIZE(MAX_MATCHES_AT_TOKEN_POS) ")\n"
+         "  --less_tolerant: set max matches per subgraph, max matches per token and\n"
+         "                         max exploration step at half of default value.\n"
+         "  --lesser_tolerant: set max matches per subgraph, max matches per token and\n"
+         "                         max exploration step at a fifth of default value.\n"
+         "  --very_lesser_tolerant: set max matches per subgraph, max matches per token and\n"
+         "                         max exploration step at a tenth of default value.\n"
+         "\n"
+         "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text, and saves the matching sequence index in a\n"
          "file named \"concord.ind\" stored in the text directory. A result info file\n"
@@ -132,7 +147,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:$:@:C:P:HQN";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -165,6 +180,13 @@ const struct option_TS lopts_Locate[]= {
       {"dont_use_locate_cache",no_argument_TS,NULL,'e'},
       {"dont_allow_trace",no_argument_TS,NULL,'T'},
       {"variable",required_argument_TS,NULL,'v'},
+      {"stack_max",required_argument_TS,NULL,'$'},
+      {"max_errors",required_argument_TS,NULL,'@'},
+      {"max_matches_per_subgraph",required_argument_TS,NULL,'C'},
+      {"max_matches_at_token_pos",required_argument_TS,NULL,'P'},
+      {"less_tolerant",no_argument_TS,NULL,'H'},
+      {"lesser_tolerant",no_argument_TS,NULL,'Q'},
+      {"very_lesser_tolerant",no_argument_TS,NULL,'N'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -196,6 +218,10 @@ int protect_dic_chars=0;
 int is_korean=0;
 int max_count_call=0;
 int max_count_call_warning=0;
+int stack_max=0;
+int max_matches_at_token_pos=0;
+int max_matches_per_subgraph=0;
+int max_errors=0;
 int tilde_negation_operator=1;
 int useLocateCache=1;
 int selected_negation_operator=0;
@@ -282,6 +308,44 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
                         /* foo is used to check that the search limit is not like "45gjh" */
                         fatal_error("Invalid stop count argument: %s\n",vars->optarg);
                     }
+             }
+             break;
+   case '$': if (1!=sscanf(vars->optarg,"%d%c",&stack_max,&foo) || stack_max<=0) {
+                /* foo is used to check that the param is not like "45gjh" */
+                fatal_error("Invalid argument: %s\n",vars->optarg);
+             }
+             break;
+   case '@': if (1!=sscanf(vars->optarg,"%d%c",&max_errors,&foo) || max_errors<=0) {
+                /* foo is used to check that the param is not like "45gjh" */
+                fatal_error("Invalid argument: %s\n",vars->optarg);
+             }
+             break;
+   case 'C': if (1!=sscanf(vars->optarg,"%d%c",&max_matches_per_subgraph,&foo) || max_matches_per_subgraph<=0) {
+                /* foo is used to check that the param is not like "45gjh" */
+                fatal_error("Invalid argument: %s\n",vars->optarg);
+             }
+             break;
+   case 'P': if (1!=sscanf(vars->optarg,"%d%c",&max_matches_at_token_pos,&foo) || max_matches_at_token_pos<=0) {
+                /* foo is used to check that the param is not like "45gjh" */
+                fatal_error("Invalid argument: %s\n",vars->optarg);
+             }
+             break;
+   case 'H': {
+                stack_max = STACK_MAX / 2;
+				max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 2;
+				max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 2;
+             }
+             break;
+   case 'Q': {
+                stack_max = STACK_MAX / 5;
+				max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 5;
+				max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 5;
+             }
+             break;
+   case 'N': {
+                stack_max = STACK_MAX / 10;
+				max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 10;
+				max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 10;
              }
              break;
    case 'd': if (vars->optarg[0]=='\0') {
@@ -384,7 +448,9 @@ int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,ma
                &vec,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
-               max_count_call,max_count_call_warning,arabic_rules,tilde_negation_operator,
+               max_count_call,max_count_call_warning,
+               stack_max, max_matches_at_token_pos, max_matches_per_subgraph, max_errors,
+               arabic_rules,tilde_negation_operator,
                useLocateCache,allow_trace,injected_vars);
 if (morpho_dic!=NULL) {
    free(morpho_dic);

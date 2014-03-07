@@ -196,12 +196,29 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning,
+                   int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
                    char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,
                    vector_ptr* injected_vars) {
 
 U_FILE* out;
 U_FILE* info;
 struct locate_parameters* p=new_locate_parameters();
+
+if (stack_max>0) {
+	p->stack_max = stack_max;
+}
+
+if (max_matches_at_token_pos>0) {
+	p->max_matches_at_token_pos = max_matches_at_token_pos;
+}
+
+if (max_matches_per_subgraph>0) {
+	p->max_matches_per_subgraph = max_matches_per_subgraph;
+}
+
+if (max_errors>0) {
+	p->max_errors = max_errors;
+}
 
 size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
 char* buffer_filename = (char*)malloc(step_filename_buffer * 3);
