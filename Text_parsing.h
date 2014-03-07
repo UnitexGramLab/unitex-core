@@ -59,7 +59,7 @@ namespace unitex {
 /* we try to known if user request cancel each COUNT_CANCEL_TRYING_INIT_CONST locate */
 #define COUNT_CANCEL_TRYING_INIT_CONST (1024)
 
-void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p);
+void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,const struct optimizedFst2State*);
 void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
 void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
 

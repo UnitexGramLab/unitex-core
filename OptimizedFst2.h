@@ -152,6 +152,10 @@ struct optimizedFst2State {
   int* tokens;
   int number_of_tokens;
   Transition** token_transitions;
+
+  int graph_number;
+  int pos_transition_in_graph;
+  int pos_transition_in_fst2;
 };
 
 typedef struct optimizedFst2State* OptimizedFst2State;

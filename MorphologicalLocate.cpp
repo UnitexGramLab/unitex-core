@@ -317,7 +317,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
-				pos_in_tokens, p);
+				pos_in_tokens, p, current_state);
 		p->explore_depth -- ;
 		return;
 	}
@@ -326,7 +326,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
-				p->current_origin, pos_in_tokens, p);
+				p->current_origin, pos_in_tokens, p, current_state);
 		p->explore_depth -- ;
 		return;
 	}
@@ -344,7 +344,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				 * like an infinite recursion */
 				error_at_token_pos(
 						"\nMaximal number of matches per subgraph reached!",
-						p->current_origin, pos_in_tokens, p);
+						p->current_origin, pos_in_tokens, p, current_state);
 				p->explore_depth -- ;
 				return;
 			} else {

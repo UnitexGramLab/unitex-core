@@ -306,7 +306,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
  *  exit the programm by calling "fatal_error".
  */
 void error_at_token_pos(const char* message, int start, int length,
-		struct locate_parameters* p) {
+		struct locate_parameters* p, const struct optimizedFst2State* current_state) {
 	//static int n_errors;
 	//static int last_start=-1;
 	//static int last_length;
@@ -331,7 +331,8 @@ void error_at_token_pos(const char* message, int start, int length,
 	if (i < (start + length)) {
 		error(" ...");
 	}
-	error("\n");
+	error(" graph name: [%S:%d:%d]\n", p->fst2->graph_names[current_state->graph_number],
+		current_state->pos_transition_in_fst2,current_state->pos_transition_in_graph);
 	(p->token_error_ctx.n_errors)++;
 	if (!p->debug && p->token_error_ctx.n_errors >= MAX_ERRORS) {
 		/* In debug mode, we don't stop on such a problem */
@@ -506,7 +507,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		/* If there are too much recursive calls */
 		error_at_token_pos("\nMaximal stack size reached!\n"
 			"(There may be longer matches not recognized!)", p->current_origin,
-				pos, p);
+			pos, p, current_state);
 		p->explore_depth -- ;
 		return;
 	}
@@ -515,7 +516,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		/* If there are too much matches from the current origin in the text */
 		error_at_token_pos(
 				"\nToo many (ambiguous) matches starting from one position in text!",
-				p->current_origin, pos, p);
+				p->current_origin, pos, p, current_state);
 		p->explore_depth -- ;
 		return;
 	}
@@ -553,8 +554,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				/* If there are too much matches, we suspect an error in the grammar
 				 * like an infinite recursion */
 				error_at_token_pos(
-						"\nMaximal number of matches per subgraph reached!",
-						p->current_origin, pos, p);
+						"\nMaximal number of matches per subgraph reached!!",
+						p->current_origin, pos, p, current_state);
 				p->explore_depth -- ;
 				return;
 			} else {

@@ -1038,8 +1038,21 @@ OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc_cb(fst2->number
 if (optimized_states==NULL) {
    fatal_alloc_error("build_optimized_fst2_states");
 }
+
+int num_current_graph=1;
+int pos_in_current_graph=0;
 for (int i=0;i<fst2->number_of_states;i++) {
    optimized_states[i]=optimize_state(v,output,fst2,fst2->states[i],fst2->tags,prv_alloc);
+
+   optimized_states[i]->graph_number=num_current_graph;
+   optimized_states[i]->pos_transition_in_fst2=i;
+   optimized_states[i]->pos_transition_in_graph=pos_in_current_graph++;
+
+   if (pos_in_current_graph >= *((fst2->number_of_states_per_graphs)+num_current_graph))
+   {
+	   num_current_graph++;
+	   pos_in_current_graph=0;
+   }
 }
 
 #ifdef AGGRESSIVE_OPTIMIZATION
