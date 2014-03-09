@@ -50,14 +50,19 @@ UNITEX_FUNC int UNITEX_CALL IsLocateTraceInfoInstalled();
 
 namespace unitex {
 int is_locate_trace_installed = 0;
-t_locate_trace_func_array cur_locate_trace_func_array ;
+t_locate_trace_func_array_ex cur_locate_trace_func_array ;
 void* privatePtrGlobal=NULL;
 
-void open_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step * p_fnc_locate_trace_step,void** p_private_param_locate_trace)
+void open_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step * p_fnc_locate_trace_step,void** p_private_param_locate_trace,char* const params[])
 {
     if (is_locate_trace_installed != 0)
     {
-        *p_private_param_locate_trace = (*(cur_locate_trace_func_array.fnc_open_locate_trace))(privatePtrGlobal,p);
+		if (cur_locate_trace_func_array.fnc_open_locate_trace != NULL) {
+			*p_private_param_locate_trace = (*(cur_locate_trace_func_array.fnc_open_locate_trace))(privatePtrGlobal,p);
+		}
+		else {
+			*p_private_param_locate_trace = (*(cur_locate_trace_func_array.fnc_open_locate_trace_ex))(privatePtrGlobal,p,params);
+		}
         *p_fnc_locate_trace_step = cur_locate_trace_func_array.fnc_locate_trace_step;
     }
 }
@@ -77,7 +82,10 @@ void close_locate_trace(struct locate_parameters* p,t_fnc_locate_trace_step /*fn
 UNITEX_FUNC int UNITEX_CALL SetLocateTraceInfo(const t_locate_trace_func_array* func_array,void* privatePtrGlobalSet)
 {
     is_locate_trace_installed = 1;
-    cur_locate_trace_func_array = *func_array;
+	memset(&cur_locate_trace_func_array,0,sizeof(t_locate_trace_func_array_ex));
+	size_t size_struct = sizeof(t_locate_trace_func_array_ex);
+	size_t size_struct_param = func_array->size_struct;
+	memcpy(&cur_locate_trace_func_array,func_array,(size_struct < size_struct_param) ? size_struct : size_struct_param);    
     privatePtrGlobal = privatePtrGlobalSet;
     return 1;
 }

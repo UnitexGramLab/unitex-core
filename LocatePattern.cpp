@@ -197,7 +197,7 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning,
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
-                   char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,
+                   char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,char* const trace_params[],
                    vector_ptr* injected_vars) {
 
 U_FILE* out;
@@ -435,7 +435,7 @@ if (p->filter_match_index==NULL) {
 #endif
 
 if (allow_trace!=0) {
-   open_locate_trace(p,&p->fnc_locate_trace_step,&p->private_param_locate_trace);
+   open_locate_trace(p,&p->fnc_locate_trace_step,&p->private_param_locate_trace,trace_params);
 }
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");

@@ -147,7 +147,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:$:@:C:P:HQN";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:$:@:C:P:HQN+:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -187,9 +187,52 @@ const struct option_TS lopts_Locate[]= {
       {"less_tolerant",no_argument_TS,NULL,'H'},
       {"lesser_tolerant",no_argument_TS,NULL,'Q'},
       {"least_tolerant",no_argument_TS,NULL,'N'},
+      {"trace_option",required_argument_TS,NULL,'+'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+char** new_locate_trace_param()
+{
+	char** empty_list_param_trace = (char**)malloc(sizeof(char*));
+	if (empty_list_param_trace == NULL) {
+		fatal_alloc_error("new_locate_trace_param");
+	}
+	*empty_list_param_trace = NULL;
+	return empty_list_param_trace;
+}
+
+char** add_locate_trace_param(char** list_param_trace, const char* add_param)
+{
+	size_t i = 0;
+	while ((*(list_param_trace + i)) != NULL)
+		i++;
+
+	char** new_list_param_trace = (char**)realloc(list_param_trace,sizeof(char*)*(i+2));
+	if (new_list_param_trace == NULL) {
+		fatal_alloc_error("add_locate_trace_param");
+	}
+
+	*(new_list_param_trace + i) = strdup(add_param);
+	if ((*(new_list_param_trace + i)) == NULL) {
+		fatal_alloc_error("add_locate_trace_param");
+	}
+
+	*(new_list_param_trace + i + 1) = NULL;
+
+	return new_list_param_trace;
+}
+
+void free_locate_trace_param(char** list_param_trace)
+{
+	size_t i = 0;
+	while ((*(list_param_trace + i)) != NULL)
+	{
+		free(*(list_param_trace + i));
+		i++;
+	}
+	free(list_param_trace);
+}
 
 
 /*
@@ -226,6 +269,7 @@ int tilde_negation_operator=1;
 int useLocateCache=1;
 int selected_negation_operator=0;
 int allow_trace=1;
+char** list_param_trace=new_locate_trace_param();
 char foo;
 vector_ptr* injected_vars=new_vector_ptr();
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -362,7 +406,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'p': protect_dic_chars=1; break;
    case 'K': is_korean=1;
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage();
+             free_locate_trace_param(list_param_trace);
+             free_vector_ptr(injected_vars,free);
+             free_OptVars(vars);
+             return 0;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -377,6 +425,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
                 fatal_error("You must specify a non empty arabic rule configuration file name\n");
              }
              strcpy(arabic_rules,vars->optarg);
+             break;
+   case '+': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty trace option\n");
+             }
+             list_param_trace=add_locate_trace_param(list_param_trace,vars->optarg);
              break;
    case 'v': {
 	   unichar* key=u_strdup(vars->optarg);
@@ -451,13 +504,14 @@ int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,ma
                max_count_call,max_count_call_warning,
                stack_max, max_matches_at_token_pos, max_matches_per_subgraph, max_errors,
                arabic_rules,tilde_negation_operator,
-               useLocateCache,allow_trace,injected_vars);
+               useLocateCache,allow_trace,list_param_trace,injected_vars);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
 free_vector_ptr(injected_vars,free);
 free_OptVars(vars);
 free(buffer_filename);
+free_locate_trace_param(list_param_trace);
 return (!OK);
 }
 

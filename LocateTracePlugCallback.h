@@ -45,6 +45,8 @@ extern "C" {
 typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_open_locate_trace)(void* privatePtrGlobal,struct locate_parameters* p);
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_close_locate_trace)(void* open_value,void* privatePtrGlobal,struct locate_parameters* p);
 
+
+typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_open_locate_trace_ex)(void* privatePtrGlobal,struct locate_parameters* p,char* const trace_params[]);
 typedef struct
 {
     unsigned int size_struct;
@@ -54,6 +56,19 @@ typedef struct
 
     t_fnc_locate_trace_step fnc_locate_trace_step;
 } t_locate_trace_func_array;
+
+
+typedef struct
+{
+    unsigned int size_struct;
+
+    t_fnc_open_locate_trace fnc_open_locate_trace;
+    t_fnc_close_locate_trace fnc_close_locate_trace;
+
+    t_fnc_locate_trace_step fnc_locate_trace_step;
+
+    t_fnc_open_locate_trace_ex fnc_open_locate_trace_ex;
+} t_locate_trace_func_array_ex;
 
 /* these functions respectively add and remove user cancelling.
   you can add several with the same func_array callback set, but with different privateCancelPtr
