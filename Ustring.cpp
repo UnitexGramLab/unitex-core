@@ -49,7 +49,7 @@ res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
 }
-for (unsigned int i=0;i<res->size;i++) {
+for (unsigned int i=0;i<((res->len)+1);i++) {
    res->str[i]=str[i];
 }
 return res;
