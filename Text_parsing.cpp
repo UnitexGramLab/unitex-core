@@ -445,7 +445,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				lti->pos_in_chars=0;
 
 				lti->matches=matches;
-				lti->n_matches=*n_matches;
+				lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
 				lti->ctx=ctx;
 				lti->p=p;
 
