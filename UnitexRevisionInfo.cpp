@@ -43,7 +43,22 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+
 namespace unitex {
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
+
+#if defined(UNITEX_REVISION) && defined(UNITEX_MAJOR_VERSION_NUMBER) && defined (UNITEX_MINOR_VERSION_NUMBER)
+const char* UnitexRevisionConstant = "Unitex revision " STRINGIZE(UNITEX_REVISION) ", Unitex version " STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." STRINGIZE(UNITEX_MINOR_VERSION_NUMBER);
+#else
+#if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined (UNITEX_MINOR_VERSION_NUMBER)
+const char* UnitexRevisionConstant = "Unitex version "STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." STRINGIZE(UNITEX_MINOR_VERSION_NUMBER);
+#else
+const char* UnitexRevisionConstant = "Unitex version unknown";
+#endif
+#endif
+
 
 int get_unitex_revision()
 {
@@ -88,6 +103,10 @@ unsigned int unitexMinorVersion = 1;
 
 UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number)
 {
+	// to prevent optimizer discard UnitexRevisionConstant
+	unichar dummyUnichar[0x100];
+	u_sprintf(dummyUnichar,"%s",UnitexRevisionConstant);
+
 	get_unitex_version(major_version_number, minor_version_number);
 }
 

@@ -527,7 +527,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			 * looking for a context, it's an error because every
 			 * opened context must be closed before the end of the graph. */
 			fatal_error("ERROR: unclosed context in graph \"%S\"\n",
-					p->fst2->graph_names[(p->graph_depth) + 1]);
+					p->fst2->graph_names[current_state->graph_number]);
 		}
 		/* In we are in the top level graph, we have a match */
 		if ((p->graph_depth) == 0) {
@@ -1455,7 +1455,7 @@ while (output_variable_list != NULL) {
 				/* If there was no current opened context, it's an error */
 				error(
 						"ERROR: unexpected closing context mark in graph \"%S\"\n",
-						p->fst2->graph_names[(p->graph_depth) + 1]);
+						p->fst2->graph_names[current_state->graph_number]);
 				p->explore_depth -- ;
 				return;
 			}
