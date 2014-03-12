@@ -377,6 +377,8 @@ struct locate_parameters {
                           needed to avoid overflow of error buffers in Java GUI */
    int max_errors;
 
+
+   int graph_depth_backup_nested;
 };
 
 

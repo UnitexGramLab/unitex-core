@@ -138,6 +138,7 @@ p->is_in_trace_state = 0;
 p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 p->debug=0;
 p->weight=-1;
+p->graph_depth_backup_nested=0;
 
 p->stack_max=STACK_MAX;
 p->max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;

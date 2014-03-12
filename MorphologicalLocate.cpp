@@ -1326,9 +1326,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
     int backup_graph_depth = p->graph_depth;
     p->graph_depth = 0;
+    p->graph_depth_backup_nested ++;
 	morphological_locate(/*0,*/ state, pos, 0, &L, 0, NULL, p,
 			(p->jamo_tags != NULL) ? p->jamo_tags[current_token] : NULL, 0,
 			content_buffer);
+    p->graph_depth_backup_nested --;
     p->graph_depth = backup_graph_depth;
 
 	clear_dic_variable_list(&(p->dic_variables));
