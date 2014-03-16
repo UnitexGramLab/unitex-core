@@ -522,7 +522,8 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 	u_strcpy(p_SU_buf->tag, t->input);
 	if (u_strcmp(p_SU_buf->tag, "<E>")) {
 		/* If the tag is not <E>, we process it */
-	   unichar foo;
+	   unichar foo        = '\0';
+	   unichar tag_symbol = '\0';
 	   int val;
 
 	   if (u_starts_with(p_SU_buf->tag,"<R=")) {
@@ -544,10 +545,15 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 		   shift_stack_left2(p_SU_buf->stack,val);
 		   pos_inflected=pos_inflected-val;
 	   } else if (/*semitic &&*/ !u_strcmp(p_SU_buf->tag,"<LEMMA>")) {
-		   for (int e=0;lemma[e]!='\0';e++) {
+		   // <LEMMA> tag copies the whole lemma into the inflection stack
+	     for (int e=0;lemma[e]!='\0';e++) {
 		         p_SU_buf->stack[pos_inflected++] = lemma[e];
-		   }
-	   } else if (p_multiFlex_ctx->semitic && 1==u_sscanf(p_SU_buf->tag,"<%d>%C",&val,&foo)) {
+		   }  
+	   } // In the semitic mode, deal with tags as <n> or <n.LEMMA>  
+	     else if (p_multiFlex_ctx->semitic && 
+	              2==u_sscanf(p_SU_buf->tag,"<%d%CLEMMA>%C", 
+	                          &val, &tag_symbol ,&foo)   && 
+	             (tag_symbol == '>' || tag_symbol == '.')) {
          /* If we are in semitic mode, we must handle tags like <12> like references
           * to letters in the lemma. We must deal this way with values >9, because
           * the graph compiler would split "12" in "1" and "2" */
@@ -558,7 +564,13 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
             free(p_SU_buf);
             return 0;
          }
-         p_SU_buf->stack[pos_inflected++] = lemma[val];
+	      if (tag_symbol == '>') { // tag == <n>
+	        p_SU_buf->stack[pos_inflected++] = lemma[val];
+	      } else {                 // tag_symbol == '.', tag == <n.LEMMA>
+          for (int e = val; lemma[e] != '\0'; e++) {
+            p_SU_buf->stack[pos_inflected++] = lemma[e];
+          }	        
+	      }
 	   }
 	   /* Otherwise, we deal with the tag in the normal way */
 	   else for (int pos_tag = 0; p_SU_buf->tag[pos_tag] != '\0';) {
