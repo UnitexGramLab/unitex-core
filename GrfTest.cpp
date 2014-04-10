@@ -147,7 +147,8 @@ ProgramInvoker* invoker_Dico=new_ProgramInvoker(main_Dico,"Dico");
 ProgramInvoker* invoker_Grf2Fst2=new_ProgramInvoker(main_Grf2Fst2,"Grf2Fst2");
 ProgramInvoker* invoker_Locate=new_ProgramInvoker(main_Locate,"Locate");
 ProgramInvoker* invoker_Concord=new_ProgramInvoker(main_Concord,"Concord");
-char dic_list[FILENAME_MAX]="";
+char* dic_list = (char*)malloc(2);
+*dic_list = '\0';
 char alphabet[FILENAME_MAX]="";
 char working_dir[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
@@ -160,9 +161,9 @@ struct OptVars* vars=new_OptVars();
 VersatileEncodingConfig vec=VEC_DEFAULT;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index,vars))) {
    switch(val) {
-   case 'h': usage(); return 0;
+   case 'h': usage(); free(dic_list); return 0;
    case 'o': strcpy(output,vars->optarg); break;
-   case 'd': strcpy(dic_list,vars->optarg); break;
+   case 'd': free(dic_list); dic_list = (char*)malloc(strlen(vars->optarg)+1); strcpy(dic_list,vars->optarg); break;
    case 'a': strcpy(alphabet,vars->optarg); break;
    case 'w': strcpy(working_dir,vars->optarg); break;
    case 'c': char_by_char=1; break;
@@ -400,6 +401,7 @@ free_ProgramInvoker(invoker_Grf2Fst2);
 free_ProgramInvoker(invoker_Locate);
 free_ProgramInvoker(invoker_Concord);
 free_OptVars(vars);
+free(dic_list);
 return ret;
 }
 
