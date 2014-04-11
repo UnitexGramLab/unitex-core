@@ -52,7 +52,7 @@ namespace unitex {
 #define PFX_GRF2FST2 "G:"
 #define PFX_LOCATE "L:"
 
-const char* optstring_GrfTest=":ho:d:a:w:ck:q:";
+const char* optstring_GrfTest=":ho:d:a:w:ck:q:s:";
 
 const char* usage_GrfTest =
          "Usage: GrfTest [OPTIONS] <grf_1> [<grf_2> <grf_3> ...]\n"
@@ -61,6 +61,7 @@ const char* usage_GrfTest =
          "\n"
          "OPTIONS:\n"
 		 "  -o OUT: file where to report errors (default=stderr)\n"
+		 "  -s STDOUT: file where to report stdout\n"
 		 "  -d DIC: the list of dictionaries to be applied by Dico, separated\n"
 		 "             with semi-colons\n"
 		 "  -a ALPH: alphabet file to use for all programs\n"
@@ -147,11 +148,12 @@ ProgramInvoker* invoker_Dico=new_ProgramInvoker(main_Dico,"Dico");
 ProgramInvoker* invoker_Grf2Fst2=new_ProgramInvoker(main_Grf2Fst2,"Grf2Fst2");
 ProgramInvoker* invoker_Locate=new_ProgramInvoker(main_Locate,"Locate");
 ProgramInvoker* invoker_Concord=new_ProgramInvoker(main_Concord,"Concord");
-char* dic_list = (char*)malloc(2);
+char* dic_list = (char*)malloc(1);
 *dic_list = '\0';
 char alphabet[FILENAME_MAX]="";
 char working_dir[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
+char fake_stdout[FILENAME_MAX]="";
 U_FILE* f_output=U_STDERR;
 U_FILE* backup_stdout=U_STDOUT;
 int char_by_char=0;
@@ -163,6 +165,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index
    switch(val) {
    case 'h': usage(); free(dic_list); return 0;
    case 'o': strcpy(output,vars->optarg); break;
+   case 's': strcpy(fake_stdout,vars->optarg); break;
    case 'd': free(dic_list); dic_list = (char*)malloc(strlen(vars->optarg)+1); strcpy(dic_list,vars->optarg); break;
    case 'a': strcpy(alphabet,vars->optarg); break;
    case 'w': strcpy(working_dir,vars->optarg); break;
@@ -214,7 +217,6 @@ if (output[0]!='\0') {
 		fatal_error("Cannot open output file %s\n",output);
 	}
 }
-char fake_stdout[FILENAME_MAX];
 char txt[FILENAME_MAX];
 char snt[FILENAME_MAX];
 char ind[FILENAME_MAX];
@@ -222,11 +224,13 @@ char concord[FILENAME_MAX];
 char fst2[FILENAME_MAX];
 char offsets_in[FILENAME_MAX];
 char offsets_out[FILENAME_MAX];
-sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);
+if (fake_stdout[0]=='\0') {
+  sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);
+}
 /* tmp file, so we can force the encoding */
 U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
 if (U_STDOUT==NULL) {
-	fatal_error("Cannot create file %s\n",fake_stdout);
+	fatal_error("Cannot create file %s for stdout redirect\n",fake_stdout);
 }
 sprintf(txt,"%s%sgrf_unit_test.txt",working_dir,PATH_SEPARATOR_STRING);
 sprintf(snt,"%s%sgrf_unit_test_snt",working_dir,PATH_SEPARATOR_STRING);
