@@ -52,7 +52,7 @@ namespace unitex {
 #define PFX_GRF2FST2 "G:"
 #define PFX_LOCATE "L:"
 
-const char* optstring_GrfTest=":ho:d:a:w:ck:q:s:";
+const char* optstring_GrfTest=":ho:d:a:w:ck:q:s:r:";
 
 const char* usage_GrfTest =
          "Usage: GrfTest [OPTIONS] <grf_1> [<grf_2> <grf_3> ...]\n"
@@ -62,6 +62,7 @@ const char* usage_GrfTest =
          "OPTIONS:\n"
 		 "  -o OUT: file where to report errors (default=stderr)\n"
 		 "  -s STDOUT: file where to report stdout\n"
+		 "  -r resume_filename: file where to report success or fail\n"
 		 "  -d DIC: the list of dictionaries to be applied by Dico, separated\n"
 		 "             with semi-colons\n"
 		 "  -a ALPH: alphabet file to use for all programs\n"
@@ -154,8 +155,10 @@ char alphabet[FILENAME_MAX]="";
 char working_dir[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char fake_stdout[FILENAME_MAX]="";
+char resume_out_filename[FILENAME_MAX]="";
 U_FILE* f_output=U_STDERR;
 U_FILE* backup_stdout=U_STDOUT;
+U_FILE* resume_out=NULL;
 int char_by_char=0;
 int val,index=-1;
 int ret=0;
@@ -165,8 +168,20 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index
    switch(val) {
    case 'h': usage(); free(dic_list); return 0;
    case 'o': strcpy(output,vars->optarg); break;
+   case 'r': strcpy(resume_out_filename,vars->optarg); break;
    case 's': strcpy(fake_stdout,vars->optarg); break;
-   case 'd': free(dic_list); dic_list = (char*)malloc(strlen(vars->optarg)+1); strcpy(dic_list,vars->optarg); break;
+   case 'd': {
+                size_t len_new_string = strlen(dic_list) + strlen(vars->optarg) + 2;
+                dic_list = (char*)realloc(dic_list, len_new_string);
+                if (dic_list==NULL) {
+                  fatal_alloc_error("main_GrfTest");
+                }
+                if ((*dic_list) != '\0') {
+					strcat(dic_list, ";");
+                }
+                strcat(dic_list, vars->optarg);
+                break;
+             }
    case 'a': strcpy(alphabet,vars->optarg); break;
    case 'w': strcpy(working_dir,vars->optarg); break;
    case 'c': char_by_char=1; break;
@@ -226,9 +241,15 @@ char offsets_in[FILENAME_MAX];
 char offsets_out[FILENAME_MAX];
 if (fake_stdout[0]=='\0') {
   sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);
+  /* tmp file, so we can force the encoding */
+  U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
 }
-/* tmp file, so we can force the encoding */
-U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
+else {
+  U_STDOUT=u_fopen(&vec,fake_stdout,U_WRITE);
+}
+if (resume_out_filename[0]!='\0') {
+	resume_out=u_fopen(&vec,resume_out_filename,U_WRITE);
+}
 if (U_STDOUT==NULL) {
 	fatal_error("Cannot create file %s for stdout redirect\n",fake_stdout);
 }
@@ -311,7 +332,7 @@ U_FILE* f;
 char line[4096];
 
 for (int i=vars->optind;i<argc;i++) {
-	u_fprintf(backup_stdout,"Testing graph %s\n",argv[i]);
+	u_fprintf((resume_out != NULL) ? resume_out : backup_stdout,"Testing graph %s\n",argv[i]);
 	Grf* grf=load_Grf(&vec,argv[i]);
 	if (grf==NULL) {
 		error("Cannot load graph %s\n",argv[i]);
@@ -386,13 +407,16 @@ for (int i=vars->optind;i<argc;i++) {
 }
 
 end:
-u_fprintf(backup_stdout,"Completed: %s\n",(ret==0)?"success":"some tests failed");
+u_fprintf((resume_out != NULL) ? resume_out : backup_stdout,"Completed: %s\n",(ret==0)?"success":"some tests failed");
 /* As we made malloc to construct the option array, we have some free to do */
 int n=get_n_options(lopts_GrfTest);
 for (int i=0;i<n;i++) {
 	free((void*)lopts_GrfTest[i].name);
 }
 free(lopts_GrfTest);
+if (resume_out != NULL) {
+	u_fclose(resume_out);
+}
 if (backup_stdout != U_STDOUT) {
   u_fclose(U_STDOUT);
   U_STDOUT = backup_stdout;
