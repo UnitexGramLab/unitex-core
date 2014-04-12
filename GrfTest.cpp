@@ -52,7 +52,7 @@ namespace unitex {
 #define PFX_GRF2FST2 "G:"
 #define PFX_LOCATE "L:"
 
-const char* optstring_GrfTest=":ho:d:a:w:ck:q:s:r:";
+const char* optstring_GrfTest=":ho:d:a:w:ck:q:s:r:n";
 
 const char* usage_GrfTest =
          "Usage: GrfTest [OPTIONS] <grf_1> [<grf_2> <grf_3> ...]\n"
@@ -61,6 +61,7 @@ const char* usage_GrfTest =
          "\n"
          "OPTIONS:\n"
 		 "  -o OUT: file where to report errors (default=stderr)\n"
+		 "  -n: do not redirect stdout when running test\n"
 		 "  -s STDOUT: file where to report stdout\n"
 		 "  -r resume_filename: file where to report success or fail\n"
 		 "  -d DIC: the list of dictionaries to be applied by Dico, separated\n"
@@ -162,11 +163,13 @@ U_FILE* resume_out=NULL;
 int char_by_char=0;
 int val,index=-1;
 int ret=0;
+int alter_stdout=1;
 struct OptVars* vars=new_OptVars();
 VersatileEncodingConfig vec=VEC_DEFAULT;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfTest,lopts_GrfTest,&index,vars))) {
    switch(val) {
    case 'h': usage(); free(dic_list); return 0;
+   case 'n': alter_stdout=0; break;
    case 'o': strcpy(output,vars->optarg); break;
    case 'r': strcpy(resume_out_filename,vars->optarg); break;
    case 's': strcpy(fake_stdout,vars->optarg); break;
@@ -239,19 +242,24 @@ char concord[FILENAME_MAX];
 char fst2[FILENAME_MAX];
 char offsets_in[FILENAME_MAX];
 char offsets_out[FILENAME_MAX];
-if (fake_stdout[0]=='\0') {
-  sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);
-  /* tmp file, so we can force the encoding */
-  U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
+if (alter_stdout==1) {
+  if (fake_stdout[0]=='\0') {
+    sprintf(fake_stdout,"%s%sstdout",working_dir,PATH_SEPARATOR_STRING);
+    /* tmp file, so we can force the encoding */
+    U_STDOUT=u_fopen(UTF8,fake_stdout,U_WRITE);
+  }
+  else {
+    U_STDOUT=u_fopen(&vec,fake_stdout,U_WRITE);
+  }
 }
-else {
-  U_STDOUT=u_fopen(&vec,fake_stdout,U_WRITE);
+if ((alter_stdout==1) && (U_STDOUT==NULL)) {
+	fatal_error("Cannot create file %s for stdout redirect\n",fake_stdout);
 }
 if (resume_out_filename[0]!='\0') {
 	resume_out=u_fopen(&vec,resume_out_filename,U_WRITE);
-}
-if (U_STDOUT==NULL) {
-	fatal_error("Cannot create file %s for stdout redirect\n",fake_stdout);
+	if (resume_out==NULL) {
+	   fatal_error("Cannot create file %s for resume file\n",resume_out_filename);
+    }
 }
 sprintf(txt,"%s%sgrf_unit_test.txt",working_dir,PATH_SEPARATOR_STRING);
 sprintf(snt,"%s%sgrf_unit_test_snt",working_dir,PATH_SEPARATOR_STRING);
@@ -417,7 +425,7 @@ free(lopts_GrfTest);
 if (resume_out != NULL) {
 	u_fclose(resume_out);
 }
-if (backup_stdout != U_STDOUT) {
+if ((alter_stdout==1) && (backup_stdout != U_STDOUT)) {
   u_fclose(U_STDOUT);
   U_STDOUT = backup_stdout;
 }
