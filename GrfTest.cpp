@@ -338,7 +338,13 @@ add_long_option(invoker_Concord,"uima",offsets_out);
 U_FILE* f;
 
 for (int i=vars->optind;i<argc;i++) {
-	u_fprintf((resume_out != NULL) ? resume_out : backup_stdout,"Testing graph %s\n",argv[i]);
+	const char* graphname_display=argv[i];
+	if (resume_out!= NULL) {
+		for (size_t loop=0;loop<strlen(argv[i]);loop++)
+			if (((argv[i])[loop]=='\\') || ((argv[i])[loop]=='/')) graphname_display=(argv[i])+loop+1;
+	}
+	u_fprintf((resume_out != NULL) ? resume_out : backup_stdout,"Testing graph: %s\n",graphname_display);
+
 	Grf* grf=load_Grf(&vec,argv[i]);
 	if (grf==NULL) {
 		error("Cannot load graph %s\n",argv[i]);
