@@ -337,8 +337,6 @@ add_long_option(invoker_Concord,"uima",offsets_out);
 /* Now we process the grf files */
 U_FILE* f;
 
-char line[4096];
-
 for (int i=vars->optind;i<argc;i++) {
 	u_fprintf((resume_out != NULL) ? resume_out : backup_stdout,"Testing graph %s\n",argv[i]);
 	Grf* grf=load_Grf(&vec,argv[i]);
@@ -370,17 +368,20 @@ for (int i=vars->optind;i<argc;i++) {
 		u_fprintf(f,"%S",t->text);
 		u_fclose(f);
 		if (invoke(invoker_Normalize)) {
-			build_command_line(invoker_Normalize,line);
+			char* line=build_command_line_alloc(invoker_Normalize);
 			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+			free_command_line_alloc(line);
 		}
 		if (invoke(invoker_Tokenize)) {
-			build_command_line(invoker_Tokenize,line);
+			char* line=build_command_line_alloc(invoker_Tokenize);
 			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+			free_command_line_alloc(line);
 		}
 		if (invoker_Dico!=NULL) {
 			if (invoke(invoker_Dico)) {
-				build_command_line(invoker_Dico,line);
+				char* line=build_command_line_alloc(invoker_Dico);
 				fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+				free_command_line_alloc(line);
 			}
 		}
 		/* We have to adjust Locate parameters for the current test */
@@ -397,15 +398,17 @@ for (int i=vars->optind;i<argc;i++) {
 		default: fatal_error("Internal error: invalid match policy in unit test\n");
 		}
 		if (invoke(invoker_Locate)) {
-			build_command_line(invoker_Locate,line);
+			char* line=build_command_line_alloc(invoker_Locate);
 			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+			free_command_line_alloc(line);
 		}
 		/* And we clean Locate parameters for the next test */
 		remove_last_argument(invoker_Locate);
 		remove_last_argument(invoker_Locate);
 		if (invoke(invoker_Concord)) {
-			build_command_line(invoker_Concord,line);
+			char* line=build_command_line_alloc(invoker_Concord);
 			fatal_error("The following command has failed for graph %s:\n%s\n",argv[i],line);
+			free_command_line_alloc(line);
 		}
 		if (!check_test_results(t,concord,argv[i],f_output)) ret=1;
 	}

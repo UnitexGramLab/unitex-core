@@ -91,12 +91,13 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 		add_argument(invoker,token_argument);
 	}
 
-	char line_command[4096];
-	build_command_line(invoker, line_command);
+	char* line_command = build_command_line_alloc(invoker);
 	fprintf(stdout, "%s\n", line_command);
 
 	int result = invoke(invoker);
+	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
+
 	return result;
 }
 
@@ -180,12 +181,13 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
         add_argument(invoker,negation_operator_argument);
     }
 
-	char line_command[4096];
-	build_command_line(invoker,line_command);
-	fprintf(stdout, "%s\n",line_command);
+	char* line_command = build_command_line_alloc(invoker);
+	fprintf(stdout, "%s\n", line_command);
 
 	int result = invoke(invoker);
+	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
+
 	return result;
 }
 
@@ -277,12 +279,13 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	char alphabet_argument[FILENAME_MAX+11];
 	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
 
-	char line_command[4096];
-	build_command_line(invoker, line_command);
+	char* line_command = build_command_line_alloc(invoker);
 	fprintf(stdout, "%s\n", line_command);
 
 	int result = invoke(invoker);
+	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
+
 	return result;
 }
 
