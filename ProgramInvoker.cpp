@@ -146,27 +146,6 @@ free(argv);
 return ret;
 }
 
-#if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_APP)
-#if WINAPI_FAMILY==WINAPI_FAMILY_APP
-#ifndef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
-#define PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION 1
-#endif
-#endif
-#endif
-
-/**
- * Invoke the main function.
- */
-#ifdef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
-#else
-int invoke_as_new_process(ProgramInvoker* invoker) {
-char line[4096];
-build_command_line(invoker,line);
-int ret=system(line);
-
-return ret;
-}
-#endif
 
 /**
  * Builds and returns a command line ready to be used with a 'system' call.
@@ -179,13 +158,54 @@ const char* protection="";
 #else
 const char* protection="\"";
 #endif
-sprintf(line,"%s\"%s\"",protection,(char*)(invoker->args->tab[0]));
+sprintf(line,"%s\"%s\"",protection,(const char*)(invoker->args->tab[0]));
+for (int i=1;i<invoker->args->nbelems;i++) {
+   strcat(line," \"");
+   strcat(line,(const char*)(invoker->args->tab[i]));
+   strcat(line,"\"");
+}
+strcat(line,protection);
+}
+
+
+/**
+ * Builds and returns a command line ready to be used with a 'system' call, alloc a memory buffer.
+ */
+char* build_command_line_alloc(ProgramInvoker* invoker) {
+/* If we are under Windows, we have to surround the whole command line with an
+ * additional pair of double quotes */
+#ifdef _NOT_UNDER_WINDOWS
+const char* protection="";
+#else
+const char* protection="\"";
+#endif
+
+size_t totalize_size=2;
+for (int count_for_totalize=0;count_for_totalize<invoker->args->nbelems;count_for_totalize++) {
+  totalize_size+=strlen((const char*)(invoker->args->tab[count_for_totalize]))+4;
+}
+
+char* line=(char*)malloc(totalize_size);
+if (line==NULL) {
+   fatal_alloc_error("build_command_line_alloc");
+}
+
+sprintf(line,"%s\"%s\"",protection,(const char*)(invoker->args->tab[0]));
 for (int i=1;i<invoker->args->nbelems;i++) {
    strcat(line," \"");
    strcat(line,(char*)(invoker->args->tab[i]));
    strcat(line,"\"");
 }
 strcat(line,protection);
+return line;
+}
+
+
+/**
+ * free a command line allocated memory buffer.
+ */
+void free_command_line_alloc(char* line) {
+	free(line);
 }
 
 

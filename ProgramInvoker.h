@@ -50,8 +50,9 @@ void add_argument(ProgramInvoker* invoker,const char* arg);
 void add_long_option(ProgramInvoker* invoker,const char* opt_name,const char* opt_value);
 void remove_last_argument(ProgramInvoker* invoker);
 int invoke(ProgramInvoker* invoker);
-int invoke_as_new_process(ProgramInvoker* invoker);
 void build_command_line(ProgramInvoker* invoker,char* line);
+char* build_command_line_alloc(ProgramInvoker* invoker);
+void free_command_line_alloc(char* line);
 int exec_unitex_command(MAIN_FUNCTION f,const char* name,...);
 
 } // namespace unitex
