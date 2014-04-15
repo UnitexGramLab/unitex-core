@@ -21,6 +21,7 @@
 
 #include "VariableUtils.h"
 #include "Ustring.h"
+#include "UnusedParameter.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -122,6 +123,7 @@ return VAR_CMP_DIFF;
 }
 
 int compare_variables_substr(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters) {
+DISCARD_UNUSED_PARAMETER(case_matters)
 Ustring* v1=get_var_content(var1,p);
 if (!v1) {
 	return VAR_CMP_ERROR;
