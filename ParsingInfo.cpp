@@ -120,7 +120,7 @@ info->variable_backup_size=0;
 if (v!=NULL)
   if (v->variable_index!=NULL)
       info->variable_backup_size=v->variable_index->size;
-info->dic_entry=clone_dela_entry(dic_entry);
+info->dic_entry=clone_dela_entry(dic_entry,prv_alloc_backup_growing_recycle);
 info->dic_variable_backup=clone_dic_variable_list(v2);
 info->left_ctx_shift=left_ctx_shift;
 info->left_ctx_base=left_ctx_base;
@@ -152,7 +152,7 @@ while (list!=NULL) {
    }
    free_output_variable_backup(list->output_variable_backup,prv_alloc_backup_growing_recycle);
    clear_dic_variable_list(&(list->dic_variable_backup));
-   free_dela_entry(list->dic_entry);
+   free_dela_entry(list->dic_entry, prv_alloc_backup_growing_recycle);
    /* No free on list->jamo because it was only a pointer on the global jamo tag array */
    free_vector_int(list->insertions,prv_alloc_vector_int);
    free_cb(list,prv_alloc_recycle);
