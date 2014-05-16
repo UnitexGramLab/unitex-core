@@ -1,0 +1,490 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|X64">
+      <Configuration>Debug</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|X64">
+      <Configuration>Release</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{408B2E68-262A-2660-1144-C52F0ED76F6F}</ProjectGuid>
+    <RootNamespace>UnitexLibrary</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120_xp</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\x86\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">$(SolutionDir)\x64\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\x86\$(ProjectName)\$(Configuration)\tmp\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">$(SolutionDir)\x64\$(ProjectName)\$(Configuration)\tmp\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\x86\$(ProjectName)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">$(SolutionDir)\x64\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\x86\$(ProjectName)\$(Configuration)\tmp\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">$(SolutionDir)\x64\$(ProjectName)\$(Configuration)\tmp\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|X64'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|X64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|X64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|X64'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNITEXLIBRARY_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>wsock32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UNITEXLIBRARY_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libcpmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UNITEXLIBRARY_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UNITEXLIBRARY_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libcpmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AbstractCallbackFuncModifier.h" />
+    <ClInclude Include="..\AbstractDelaLoad.h" />
+    <ClInclude Include="..\AbstractDelaPlugCallback.h" />
+    <ClInclude Include="..\AbstractFilePlugCallback.h" />
+    <ClInclude Include="..\AbstractFst2Load.h" />
+    <ClInclude Include="..\AbstractFst2PlugCallback.h" />
+    <ClInclude Include="..\ActivityLogger.h" />
+    <ClInclude Include="..\ActivityLoggerPlugCallback.h" />
+    <ClInclude Include="..\Af_stdio.h" />
+    <ClInclude Include="..\Arabic.h" />
+    <ClInclude Include="..\DirHelper.h" />
+    <ClInclude Include="..\GrfTest.h" />
+    <ClInclude Include="..\GrfTest_lib.h" />
+    <ClInclude Include="..\KeyWords.h" />
+    <ClInclude Include="..\KeyWords_lib.h" />
+    <ClInclude Include="..\LocateTrace.h" />
+    <ClInclude Include="..\LocateTracePlugCallback.h" />
+    <ClInclude Include="..\logger\MzRepairUlp.h" />
+    <ClInclude Include="..\logger\MzToolsUlp.h" />
+    <ClInclude Include="..\logger\PackFile.h" />
+    <ClInclude Include="..\logger\PackFileTool.h" />
+    <ClInclude Include="..\logger\UnpackFile.h" />
+    <ClInclude Include="..\logger\UnpackFileTool.h" />
+    <ClInclude Include="..\MappedFileHelper.h" />
+    <ClInclude Include="..\CompoundWordHashTable.h" />
+    <ClInclude Include="..\LocateCache.h" />
+    <ClInclude Include="..\OutputTransductionVariables.h" />
+    <ClInclude Include="..\PRLG.h" />
+    <ClInclude Include="..\RegExFacade.h" />
+    <ClInclude Include="..\SelectOutput.h" />
+    <ClInclude Include="..\SyncTool.h" />
+    <ClInclude Include="..\Tagger.h" />
+    <ClInclude Include="..\TaggingProcess.h" />
+    <ClInclude Include="..\TfstTag.h" />
+    <ClInclude Include="..\TrainingProcess.h" />
+    <ClInclude Include="..\TrainingTagger.h" />
+    <ClInclude Include="..\TransductionVariables.h" />
+    <ClInclude Include="..\logger\FilePack.h" />
+    <ClInclude Include="..\logger\FilePackCrc32.h" />
+    <ClInclude Include="..\logger\FilePackIo.h" />
+    <ClInclude Include="..\logger\FileUnPack.h" />
+    <ClInclude Include="..\logger\ReworkArg.h" />
+    <ClInclude Include="..\logger\SyncLogger.h" />
+    <ClInclude Include="..\logger\UniLogger.h" />
+    <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\UnitexLibDir.h" />
+    <ClInclude Include="..\UnitexLibIO.h" />
+    <ClInclude Include="..\Untokenize.h" />
+    <ClInclude Include="..\UserCancelling.h" />
+    <ClInclude Include="..\UserCancellingPlugCallback.h" />
+    <ClInclude Include="..\VariableUtils.h" />
+    <ClInclude Include="..\Cassys_concord.h" />
+    <ClInclude Include="..\Cassys_external_program.h" />
+    <ClInclude Include="..\Cassys_io.h" />
+    <ClInclude Include="..\Cassys_lexical_tags.h" />
+    <ClInclude Include="..\Cassys_transducer.h" />
+    <ClInclude Include="..\Cassys_xml_output.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AbstractAllocator.cpp" />
+    <ClCompile Include="..\AbstractDelaLoad.cpp" />
+    <ClCompile Include="..\AbstractFst2Load.cpp" />
+    <ClCompile Include="..\ActivityLogger.cpp" />
+    <ClCompile Include="..\Af_stdio.cpp" />
+    <ClCompile Include="..\Alphabet.cpp" />
+    <ClCompile Include="..\ApplyDic.cpp" />
+    <ClCompile Include="..\Arabic.cpp" />
+    <ClCompile Include="..\AsciiSearchTree.cpp" />
+    <ClCompile Include="..\AutComplementation.cpp" />
+    <ClCompile Include="..\AutConcat.cpp" />
+    <ClCompile Include="..\AutDeterminization.cpp" />
+    <ClCompile Include="..\AutIntersection.cpp" />
+    <ClCompile Include="..\AutMinimization.cpp" />
+    <ClCompile Include="..\AutomatonDictionary2Bin.cpp" />
+    <ClCompile Include="..\BitArray.cpp" />
+    <ClCompile Include="..\BitMasks.cpp" />
+    <ClCompile Include="..\Buffer.cpp" />
+    <ClCompile Include="..\BuildKrMwuDic.cpp" />
+    <ClCompile Include="..\BuildTextAutomaton.cpp" />
+    <ClCompile Include="..\Cassys.cpp" />
+    <ClCompile Include="..\Cassys_tokens.cpp" />
+    <ClCompile Include="..\CheckDic.cpp" />
+    <ClCompile Include="..\CodePages.cpp" />
+    <ClCompile Include="..\CompoundWordHashTable.cpp" />
+    <ClCompile Include="..\CompoundWordTree.cpp" />
+    <ClCompile Include="..\Compress.cpp" />
+    <ClCompile Include="..\CompressedDic.cpp" />
+    <ClCompile Include="..\Concord.cpp" />
+    <ClCompile Include="..\Concordance.cpp" />
+    <ClCompile Include="..\ConcorDiff.cpp" />
+    <ClCompile Include="..\Contexts.cpp" />
+    <ClCompile Include="..\Convert.cpp" />
+    <ClCompile Include="..\DebugMode.cpp" />
+    <ClCompile Include="..\DELA.cpp" />
+    <ClCompile Include="..\DELA_tree.cpp" />
+    <ClCompile Include="..\Dico.cpp" />
+    <ClCompile Include="..\DictionaryTree.cpp" />
+    <ClCompile Include="..\DicVariables.cpp" />
+    <ClCompile Include="..\Diff.cpp" />
+    <ClCompile Include="..\DirHelperWin.cpp" />
+    <ClCompile Include="..\DuplicateFile.cpp" />
+    <ClCompile Include="..\DutchCompounds.cpp" />
+    <ClCompile Include="..\Elag.cpp" />
+    <ClCompile Include="..\ElagComp.cpp" />
+    <ClCompile Include="..\ElagDebug.cpp" />
+    <ClCompile Include="..\ElagFstFilesIO.cpp" />
+    <ClCompile Include="..\ElagFunctions.cpp" />
+    <ClCompile Include="..\ElagRulesCompilation.cpp" />
+    <ClCompile Include="..\ElagStateSet.cpp" />
+    <ClCompile Include="..\Error.cpp" />
+    <ClCompile Include="..\Evamb.cpp" />
+    <ClCompile Include="..\Extract.cpp" />
+    <ClCompile Include="..\ExtractUnits.cpp" />
+    <ClCompile Include="..\FIFO.cpp" />
+    <ClCompile Include="..\File.cpp" />
+    <ClCompile Include="..\Flatten.cpp" />
+    <ClCompile Include="..\FlattenFst2.cpp" />
+    <ClCompile Include="..\Fst2.cpp" />
+    <ClCompile Include="..\Fst2Automaton.cpp" />
+    <ClCompile Include="..\Fst2Check.cpp" />
+    <ClCompile Include="..\Fst2Check_lib.cpp" />
+    <ClCompile Include="..\Fst2List.cpp" />
+    <ClCompile Include="..\Fst2Txt.cpp" />
+    <ClCompile Include="..\Fst2Txt_TokenTree.cpp" />
+    <ClCompile Include="..\Fst2TxtAsRoutine.cpp" />
+    <ClCompile Include="..\GeneralDerivation.cpp" />
+    <ClCompile Include="..\GermanCompounds.cpp" />
+    <ClCompile Include="..\GrfBeauty.cpp" />
+    <ClCompile Include="..\GrfDiff.cpp" />
+    <ClCompile Include="..\GrfDiff3.cpp" />
+    <ClCompile Include="..\GrfSvn_lib.cpp" />
+    <ClCompile Include="..\GrfTest.cpp" />
+    <ClCompile Include="..\GrfTest_lib.cpp" />
+    <ClCompile Include="..\Grf_lib.cpp" />
+    <ClCompile Include="..\Keyboard.cpp" />
+    <ClCompile Include="..\KeyWords.cpp" />
+    <ClCompile Include="..\KeyWords_lib.cpp" />
+    <ClCompile Include="..\LoadInf.cpp" />
+    <ClCompile Include="..\logger\PackFile.cpp" />
+    <ClCompile Include="..\logger\PackFileTool.cpp" />
+    <ClCompile Include="..\logger\UnpackFile.cpp" />
+    <ClCompile Include="..\logger\UnpackFileTool.cpp" />
+    <ClCompile Include="..\Offsets.cpp" />
+    <ClCompile Include="..\Overlap.cpp" />
+    <ClCompile Include="..\Persistence.cpp" />
+    <ClCompile Include="..\PersistenceInterface.cpp" />
+    <ClCompile Include="..\PRLG.cpp" />
+    <ClCompile Include="..\RegExFacade.cpp" />
+    <ClCompile Include="..\SelectOutput.cpp" />
+    <ClCompile Include="..\Seq2Grf.cpp" />
+    <ClCompile Include="..\SpellCheck.cpp" />
+    <ClCompile Include="..\SpellChecking.cpp" />
+    <ClCompile Include="..\SyncToolWin.cpp" />
+    <ClCompile Include="..\TfstTag.cpp" />
+    <ClCompile Include="..\UnitexGetOpt.cpp" />
+    <ClCompile Include="..\Grf2Fst2.cpp" />
+    <ClCompile Include="..\Grf2Fst2_lib.cpp" />
+    <ClCompile Include="..\HashTable.cpp" />
+    <ClCompile Include="..\HTMLCharacters.cpp" />
+    <ClCompile Include="..\ImplodeTfst.cpp" />
+    <ClCompile Include="..\IOBuffer.cpp" />
+    <ClCompile Include="..\Korean.cpp" />
+    <ClCompile Include="..\KrMwuDic.cpp" />
+    <ClCompile Include="..\LanguageDefinition.cpp" />
+    <ClCompile Include="..\LemmaTree.cpp" />
+    <ClCompile Include="..\LinearAutomaton2Txt.cpp" />
+    <ClCompile Include="..\List_int.cpp" />
+    <ClCompile Include="..\List_pointer.cpp" />
+    <ClCompile Include="..\List_ustring.cpp" />
+    <ClCompile Include="..\Locate.cpp" />
+    <ClCompile Include="..\LocateCache.cpp" />
+    <ClCompile Include="..\LocateFst2Tags.cpp" />
+    <ClCompile Include="..\LocateMatches.cpp" />
+    <ClCompile Include="..\LocatePattern.cpp" />
+    <ClCompile Include="..\LocateTfst.cpp" />
+    <ClCompile Include="..\LocateTfst_lib.cpp" />
+    <ClCompile Include="..\LocateTfstMatches.cpp" />
+    <ClCompile Include="..\LocateTrace.cpp" />
+    <ClCompile Include="..\logger\MzRepairUlp.cpp" />
+    <ClCompile Include="..\logger\MzToolsUlp.cpp" />
+    <ClCompile Include="..\MappedFileHelperWin.cpp" />
+    <ClCompile Include="..\Match.cpp" />
+    <ClCompile Include="..\MF_DicoMorpho.cpp" />
+    <ClCompile Include="..\MF_DLC_inflect.cpp" />
+    <ClCompile Include="..\MF_FormMorpho.cpp" />
+    <ClCompile Include="..\MF_Global.cpp" />
+    <ClCompile Include="..\MF_LangMorpho.cpp" />
+    <ClCompile Include="..\MF_MU_graph.cpp" />
+    <ClCompile Include="..\MF_MU_morpho.cpp" />
+    <ClCompile Include="..\MF_Operators_Util.cpp" />
+    <ClCompile Include="..\MF_SU_morpho.cpp" />
+    <ClCompile Include="..\MF_Unif.cpp" />
+    <ClCompile Include="..\MF_Util.cpp" />
+    <ClCompile Include="..\MorphologicalFilters.cpp" />
+    <ClCompile Include="..\MorphologicalLocate.cpp" />
+    <ClCompile Include="..\MultiFlex.cpp" />
+    <ClCompile Include="..\NewLineShifts.cpp" />
+    <ClCompile Include="..\NormalizationFst2.cpp" />
+    <ClCompile Include="..\Normalize.cpp" />
+    <ClCompile Include="..\NormalizeAsRoutine.cpp" />
+    <ClCompile Include="..\NorwegianCompounds.cpp" />
+    <ClCompile Include="..\OptimizedFst2.cpp" />
+    <ClCompile Include="..\OptimizedTfstTagMatching.cpp" />
+    <ClCompile Include="..\OutputTransductionVariables.cpp" />
+    <ClCompile Include="..\ParsingInfo.cpp" />
+    <ClCompile Include="..\Pattern.cpp" />
+    <ClCompile Include="..\PatternTree.cpp" />
+    <ClCompile Include="..\PolyLex.cpp" />
+    <ClCompile Include="..\PortugueseNormalization.cpp" />
+    <ClCompile Include="..\ProgramInvoker.cpp" />
+    <ClCompile Include="..\RebuildTfst.cpp" />
+    <ClCompile Include="..\Reconstrucao.cpp" />
+    <ClCompile Include="..\Reg2Grf.cpp" />
+    <ClCompile Include="..\RegularExpressions.cpp" />
+    <ClCompile Include="..\RussianCompounds.cpp" />
+    <ClCompile Include="..\Sentence2Grf.cpp" />
+    <ClCompile Include="..\SingleGraph.cpp" />
+    <ClCompile Include="..\Snt.cpp" />
+    <ClCompile Include="..\SortTxt.cpp" />
+    <ClCompile Include="..\Stack_int.cpp" />
+    <ClCompile Include="..\Stack_pointer.cpp" />
+    <ClCompile Include="..\Stack_unichar.cpp" />
+    <ClCompile Include="..\Stats.cpp" />
+    <ClCompile Include="..\String_hash.cpp" />
+    <ClCompile Include="..\StringParsing.cpp" />
+    <ClCompile Include="..\Symbol.cpp" />
+    <ClCompile Include="..\Symbol_op.cpp" />
+    <ClCompile Include="..\SymbolAlphabet.cpp" />
+    <ClCompile Include="..\Table2Grf.cpp" />
+    <ClCompile Include="..\Tagger.cpp" />
+    <ClCompile Include="..\TaggingProcess.cpp" />
+    <ClCompile Include="..\Tagset.cpp" />
+    <ClCompile Include="..\TagsetNormTfst.cpp" />
+    <ClCompile Include="..\TEI2Txt.cpp" />
+    <ClCompile Include="..\Test_lib.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|X64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Text_parsing.cpp" />
+    <ClCompile Include="..\Text_tokens.cpp" />
+    <ClCompile Include="..\Tfst.cpp" />
+    <ClCompile Include="..\Tfst2Grf.cpp" />
+    <ClCompile Include="..\Tfst2Unambig.cpp" />
+    <ClCompile Include="..\TfstStats.cpp" />
+    <ClCompile Include="..\Thai.cpp" />
+    <ClCompile Include="..\Tokenization.cpp" />
+    <ClCompile Include="..\Tokenize.cpp" />
+    <ClCompile Include="..\TrainingProcess.cpp" />
+    <ClCompile Include="..\TrainingTagger.cpp" />
+    <ClCompile Include="..\TransductionStack.cpp" />
+    <ClCompile Include="..\TransductionStackTfst.cpp" />
+    <ClCompile Include="..\TransductionVariables.cpp" />
+    <ClCompile Include="..\Transitions.cpp" />
+    <ClCompile Include="..\Txt2Tfst.cpp" />
+    <ClCompile Include="..\Uncompress.cpp" />
+    <ClCompile Include="..\Unicode.cpp" />
+    <ClCompile Include="..\UnitexLibDirWin.cpp" />
+    <ClCompile Include="..\UnitexLibIO.cpp" />
+    <ClCompile Include="..\UnitexRevisionInfo.cpp" />
+    <ClCompile Include="..\UnitexTool.cpp" />
+    <ClCompile Include="..\Untokenize.cpp" />
+    <ClCompile Include="..\Unxmlize.cpp" />
+    <ClCompile Include="..\UserCancelling.cpp" />
+    <ClCompile Include="..\Ustring.cpp" />
+    <ClCompile Include="..\VariableUtils.cpp" />
+    <ClCompile Include="..\VersionInfo.cpp" />
+    <ClCompile Include="..\VirtualFiles.cpp" />
+    <ClCompile Include="..\Xml.cpp" />
+    <ClCompile Include="..\XMLizer.cpp" />
+    <ClCompile Include="..\logger\FilePack.cpp" />
+    <ClCompile Include="..\logger\FilePackCrc32.cpp" />
+    <ClCompile Include="..\logger\FilePackIo.cpp" />
+    <ClCompile Include="..\logger\FileUnPack.cpp" />
+    <ClCompile Include="..\logger\ReworkArg.cpp" />
+    <ClCompile Include="..\logger\SyncLoggerDummy.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|X64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\logger\SyncLoggerPosix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|X64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\logger\SyncLoggerWin.cpp" />
+    <ClCompile Include="..\logger\UniLogger.cpp" />
+    <ClCompile Include="..\logger\UniRunLogger.cpp" />
+    <ClCompile Include="..\tre-0.8.0\lib\regcomp.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\regerror.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\regexec.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-ast.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-compile.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-match-approx.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-match-backtrack.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-match-parallel.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-mem.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-parse.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\tre-stack.c" />
+    <ClCompile Include="..\tre-0.8.0\lib\xmalloc.c" />
+    <ClCompile Include="..\Cassys_concord.cpp" />
+    <ClCompile Include="..\Cassys_external_program.cpp" />
+    <ClCompile Include="..\Cassys_io.cpp" />
+    <ClCompile Include="..\Cassys_lexical_tags.cpp" />
+    <ClCompile Include="..\Cassys_transducer.cpp" />
+    <ClCompile Include="..\Cassys_xml_output.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
