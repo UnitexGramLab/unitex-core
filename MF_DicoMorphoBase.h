@@ -71,11 +71,17 @@ typedef struct {
 
 ////////////////////////////////////////////
 //A list of equivalences between class names in a dictionary (e.g. "N") and a language class (e.g. noun).
+
+
+#ifdef REMINDER_WARNING
 #ifdef __GNUC__
 #warning Later this table should be replaced by an external file scanned at each initialisation.
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
 #pragma message("warning : Later this table should be replaced by an external file scanned at each initialisation.")
 #endif
+#endif
+
+
 typedef struct {
   unichar dico_class[MAX_CLASS_NAME];   //morphological class as it appears in a dictionary (e.g. "N")
   l_class_T* cl;                       //language class

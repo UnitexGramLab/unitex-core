@@ -361,26 +361,28 @@ error("\n");
  * The difference with 'add_meta' is that instead of copying a single transition's values,
  * we reuse a whole transition list.
  */
+// this (now unused) function is commened to avoid warning
+/*
 static struct opt_meta* add_transition_list_to_meta__(enum meta_symbol meta,Transition* transitions,struct opt_meta** meta_list,int negation,Abstract_allocator prv_alloc) {
 struct opt_meta* ptr=*meta_list;
-/* We look for a meta with the same properties */
+// We look for a meta with the same properties
 while (ptr!=NULL && !(ptr->meta==meta && ptr->negation==negation)) {
    ptr=ptr->next;
 }
 if (ptr==NULL) {
-   /* If we have found none, we create one */
+   // If we have found none, we create one
    ptr=new_opt_meta(meta,negation,prv_alloc);
    ptr->next=*meta_list;
    *meta_list=ptr;
 }
 error("LIST BEFORE: ");
 foo(ptr->transition);
-/* Then, we add the transitions to the meta */
+// Then, we add the transitions to the meta
 if (ptr->transition==NULL) {
-	/* No transition yet ? Easy! */
+	// No transition yet ? Easy!
 	ptr->transition=transitions;
 } else {
-	/* We look for the last element */
+	// We look for the last element
 	Transition* tmp=ptr->transition;
 	while (tmp->next!=NULL) {
 		tmp=tmp->next;
@@ -391,6 +393,7 @@ error("LIST AFTER: ");
 foo(ptr->transition);
 return ptr;
 }
+*/
 
 
 
@@ -713,12 +716,15 @@ return new_state;
  * This function must be updated if the implementation of 'is_final_state' changes
  * in Fst2.cpp
  */
+// this (now unused) function is commened to avoid warning
+/*
 static int is_final_state(OptimizedFst2State e) {
 if (e==NULL) {
    fatal_error("NULL error in is_final_state\n");
 }
 return e->control&1;
 }
+*/
 
 
 /**

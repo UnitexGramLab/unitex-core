@@ -296,17 +296,22 @@ free_ReverseTransitions(reverse_transitions);
  * - both a and b are letters
  * - one is a letter, the other is a digit
  */
+// this (now unused) function is commened to avoid warning
+/*
 static int need_a_space(unichar a,unichar b,Alphabet* alph) {
 if (is_letter(a,alph)) {
 	return is_letter(b,alph) || u_is_digit(b);
 }
 return u_is_digit(a) && is_letter(b,alph);
 }
+*/
 
 
 /**
  * Returns 1 if the given grf box contains more than one line; 0 otherwise.
  */
+// this (now unused) function is commened to avoid warning
+/*
 static int just_one_line(GrfState* s) {
 vector_ptr* v=tokenize_box_content(s->box_content);
 if (v==NULL) return 0;
@@ -314,6 +319,7 @@ int ret=v->nbelems==1;
 free_vector_ptr(v,free);
 return ret;
 }
+*/
 
 
 /**
@@ -321,11 +327,13 @@ return ret;
  * a only points to b and b is only pointed by a. If such boxes are found,
  * they are merged by concatenating their contents, separated with a space.
  */
+// this (now unused) function is commened to avoid warning
+/*
 static void merge_box_pair(Grf* grf,Alphabet* alph) {
 ReverseTransitions* reverse_transitions=compute_reverse_transitions(grf);
 int merge;
 do {
-	/* We have to loop, since a merge may introduce new possibilities */
+	// We have to loop, since a merge may introduce new possibilities
 	merge=0;
 	for (int i=2;i<grf->n_states-1;i++) {
 		GrfState* a=grf->states[i];
@@ -342,9 +350,9 @@ do {
 			if (reverse_transitions->t[j]->nbelems!=1 || reverse_transitions->t[j]->tab[0]!=i) continue;
 			if (!just_one_line(a) || !just_one_line(b)) continue;
 			merge=1;
-			/* Remember that the contents are double quoted, so we want
-			 * to have "abc" + "def" => "abc def"
-			 */
+			// Remember that the contents are double quoted, so we want
+			// to have "abc" + "def" => "abc def"
+			//
 			int size_a=u_strlen(a->box_content);
 			a->box_content=(unichar*)realloc(a->box_content,sizeof(unichar)*(size_a+u_strlen(b->box_content)));
 			if (a->box_content==NULL) {
@@ -356,8 +364,8 @@ do {
 				size_a--;
 			}
 			u_strcpy(a->box_content+size_a,b->box_content+1);
-			/* Now we have to remove a->b (done by isolate_state)
-			 * and give b's outgoing transitions to a */
+			// Now we have to remove a->b (done by isolate_state)
+			// and give b's outgoing transitions to a
 			for (int k=0;k<b->transitions->nbelems;k++) {
 				vector_int_add_if_absent(a->transitions,b->transitions->tab[k]);
 				vector_int_add_if_absent(reverse_transitions->t[b->transitions->tab[k]],i);
@@ -369,6 +377,7 @@ do {
 } while (merge);
 free_ReverseTransitions(reverse_transitions);
 }
+*/
 
 
 

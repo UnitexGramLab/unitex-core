@@ -123,11 +123,16 @@ int inflect(char* DLC, char* DLCF,
 			}
 			else err = SU_inflect(p_multiFlex_ctx,DELAS_entry->lemma, inflection_code,&forms);
 
+
+#ifdef REMINDER_WARNING
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
 #pragma message("warning : mettre toutes les entrees sur une meme ligne")
 #endif
+#endif
+
+
 			/* Then, we print its inflected forms to the output */
 			for (int i = 0; i < forms.no_forms; i++) {
 			   unichar foo[1024];   
