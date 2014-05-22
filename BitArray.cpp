@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "BitArray.h"
 #include "Error.h"
 
@@ -50,13 +51,11 @@ switch(info_length) {
    case FOUR_BITS: bit_array->divider=2; break;
 };
 bit_array->size_in_bytes=(number_of_elements/bit_array->divider)+1;
-bit_array->array=(unsigned char*)malloc_cb(sizeof(unsigned char)*bit_array->size_in_bytes,prv_alloc);
+bit_array->array=(unsigned char*)malloc_cb(sizeof(unsigned char)*(bit_array->size_in_bytes),prv_alloc);
 if (bit_array->array==NULL) {
 	fatal_alloc_error("new_bit_array");
 }
-for (int i=0;i<bit_array->size_in_bytes;i++) {
-   bit_array->array[i]=0;
-}
+memset(bit_array->array,0,sizeof(unsigned char)*(bit_array->size_in_bytes));
 bit_array->info_length=info_length;
 return bit_array;
 }
