@@ -107,4 +107,33 @@
 #endif
 
 
+// about RESTRICT
+// see http://cellperformance.beyond3d.com/articles/2006/05/demystifying-the-restrict-keyword.html
+// see https://gcc.gnu.org/onlinedocs/gcc-4.9.0/gcc/Restricted-Pointers.html
+// see http://msdn.microsoft.com/en-us/library/5ft82fed.aspx
+// see http://msdn.microsoft.com/en-us/library/5ft82fed(v=vs.80).aspx
+
+#ifndef RESTRICT
+#ifdef _MSC_VER
+#if _MSC_VER >= 1500
+#define RESTRICT __restrict
 #endif
+#endif
+#endif
+
+#ifndef RESTRICT
+#ifdef __GNUC__
+#if __GNUC__ >= 3
+#define RESTRICT __restrict__
+#endif
+#endif
+#endif
+
+
+#ifndef RESTRICT
+#define RESTRICT
+#endif
+
+
+#endif
+

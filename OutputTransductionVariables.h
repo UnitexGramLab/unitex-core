@@ -22,6 +22,8 @@
 #ifndef OutputTransductionVariablesH
 #define OutputTransductionVariablesH
 
+
+#include "AbstractCallbackFuncModifier.h"
 #include "Unicode.h"
 #include "String_hash.h"
 #include "List_ustring.h"
@@ -73,9 +75,9 @@ static inline int capture_mode(OutputVariables* v) {
 return v->pending!=NULL;
 }
 
-unichar* create_output_variable_backup(OutputVariables*,Abstract_allocator);
+unichar* create_output_variable_backup(OutputVariables* RESTRICT,Abstract_allocator);
 void free_output_variable_backup(unichar*,Abstract_allocator);
-void install_output_variable_backup(OutputVariables*,const unichar*);
+void install_output_variable_backup(OutputVariables* RESTRICT,const unichar* RESTRICT);
 
 void set_output_variable_pending(OutputVariables* var,int index);
 void unset_output_variable_pending(OutputVariables* var,int index);

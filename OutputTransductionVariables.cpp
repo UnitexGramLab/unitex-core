@@ -19,6 +19,7 @@
  *
  */
 
+
 #include "OutputTransductionVariables.h"
 #include "Error.h"
 
@@ -126,7 +127,7 @@ return v->variables[n];
  * the variable values. The array starts with a subarray of size 'n'
  * (n=number of variables) with for each variable 1 if it is pending and 0 otherwise.
  */
-unichar* create_output_variable_backup(OutputVariables* v,Abstract_allocator prv_alloc) {
+unichar* create_output_variable_backup(OutputVariables* RESTRICT v,Abstract_allocator prv_alloc) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
 if (l==0) return NULL;
@@ -236,7 +237,7 @@ if (backup!=NULL) free_cb(backup,prv_alloc);
 /**
  * Sets the variables with the values of the given backup.
  */
-void install_output_variable_backup(OutputVariables* v,const unichar* backup) {
+void install_output_variable_backup(OutputVariables* RESTRICT v,const unichar* RESTRICT backup) {
 if (backup==NULL) return;
 /* First, we free the previous pending list */
 OutputVarList* tmp;
