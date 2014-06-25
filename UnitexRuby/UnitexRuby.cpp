@@ -36,6 +36,7 @@
 #include "ruby/encoding.h"
 #endif
 
+#include "UnitexRuby.h"
 
 
 #include <stdio.h>
@@ -797,6 +798,75 @@ VALUE method_getFileList(VALUE self, VALUE foldername)
 }
 
 
+
+
+struct UnitexRubyInitializer {
+	t_unitex_ruby_initializer_func_array func_array;
+	void* privateSpacePtr;
+} ;
+
+
+struct List_UnitexRubyInitializer {
+	UnitexRubyInitializer uri;
+	List_UnitexRubyInitializer* next;
+} ;
+
+
+
+struct List_UnitexRubyInitializer* p_unitex_ruby_initializer_space_list = NULL;
+
+
+UNITEX_FUNC int UNITEX_CALL AddUnitexRubyInitializer(const t_unitex_ruby_initializer_func_array* func_array_param,void* privateSpacePtr)
+{
+	struct List_UnitexRubyInitializer* new_item;
+	new_item = (struct List_UnitexRubyInitializer*)malloc(sizeof(struct List_UnitexRubyInitializer));
+	if (new_item == NULL)
+      return 0;
+    new_item->uri.func_array.size_func_array = func_array_param->size_func_array;
+    new_item->uri.func_array.fnc_unitex_ruby_initializer = func_array_param->fnc_unitex_ruby_initializer;
+    new_item->uri.privateSpacePtr = privateSpacePtr;
+    
+	new_item->next = NULL;
+    
+	if (p_unitex_ruby_initializer_space_list == NULL)
+      p_unitex_ruby_initializer_space_list = new_item;
+	else {
+		struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
+		while ((tmp->next) != NULL)
+          tmp = tmp->next;
+		tmp->next = new_item;
+	}
+    
+	return 1;
+}
+
+UNITEX_FUNC int UNITEX_CALL RemoveUnitexRubyInitializer(const t_unitex_ruby_initializer_func_array* func_array_param,void* privateSpacePtr)
+{
+	struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
+	struct List_UnitexRubyInitializer* tmp_previous = NULL;
+    
+	while (tmp != NULL)
+	{
+        if ((tmp->uri.func_array.fnc_unitex_ruby_initializer == func_array_param->fnc_unitex_ruby_initializer) &&
+            (tmp->uri.privateSpacePtr == privateSpacePtr))
+		{
+			if (tmp_previous == NULL)
+              p_unitex_ruby_initializer_space_list = tmp->next;
+			else
+              tmp_previous->next = tmp->next;
+            
+			free(tmp);
+			return 1;
+		}
+		tmp_previous = tmp;
+		tmp = tmp->next;
+	}
+
+	return 0;
+}
+
+
+
 typedef VALUE (*t_r_method)(ANYARGS);
 
 // Prototype for the initialization method - Ruby calls this, not you
@@ -842,5 +912,14 @@ extern "C" UNITEX_FUNC void Init_unitexruby()
 	rb_define_method(UnitexRuby, "getUniqueString", (t_r_method) &method_getUniqueString, 0);
 
 #endif
+    
+	struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
+    
+	while (tmp != NULL)
+	{
+        (tmp->uri.func_array.fnc_unitex_ruby_initializer)(UnitexRuby, tmp->uri.privateSpacePtr);
+		tmp = tmp->next;
+	}
+
 }
 
