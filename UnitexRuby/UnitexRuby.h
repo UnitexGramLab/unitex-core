@@ -29,6 +29,9 @@
  *
  */
 
+
+#ifdef UNITEX_RUBY_EXTENSION
+
 // Include the Ruby headers and goodies
 
 
@@ -60,3 +63,4 @@ UNITEX_FUNC void Init_unitexruby();
 }
 #endif
 
+#endif

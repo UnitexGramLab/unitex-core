@@ -29,6 +29,9 @@
  *
  */
 
+
+#ifdef UNITEX_RUBY_EXTENSION
+
 // Include the Ruby headers and goodies
 #include "ruby.h"
 
@@ -923,3 +926,4 @@ extern "C" UNITEX_FUNC void Init_unitexruby()
 
 }
 
+#endif
