@@ -49,14 +49,14 @@ namespace unitex {
 
 
 
-void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
-void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
-void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
-int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
+static void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
+static void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
+static void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
+static int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
 		vector_int*,vector_int*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
-void save_new_line_positions(U_FILE*,vector_int*);
-void load_token_file(char* filename, const VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
+static void save_new_line_positions(U_FILE*,vector_int*);
+static void load_token_file(char* filename, const VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
 void write_number_of_tokens(const VersatileEncodingConfig* vec,const char* name,int n) {
   U_FILE* f;
@@ -313,11 +313,11 @@ int TOKENS_TOTAL=0;
 int WORDS_TOTAL=0;
 int DIGITS_TOTAL=0;
 u_printf("Tokenizing text...\n");
-tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
-		   snt_offsets,
-			&SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL,f_out_offsets,
-		   v_in_offsets,(mode!=NORMAL));
-u_printf("\nDone.\n");
+int result_tokenization = tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
+                          snt_offsets,
+                          &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL,f_out_offsets,
+                          v_in_offsets,(mode!=NORMAL));
+u_printf((result_tokenization == 0) ? "\nDone.\n" : "\nGRAVE Tokenization error.\n");
 save_new_line_positions(enter,n_enter_pos);
 if (!save_snt_offsets(snt_offsets,snt_offsets_pos)) {
 	fatal_error("Cannot save snt offsets in file %s\n",snt_offsets_pos);
@@ -370,7 +370,7 @@ u_fclose(f_out_offsets);
 free_vector_offset(v_in_offsets);
 free_OptVars(vars);
 free(buffer_filename); 
-return 0;
+return result_tokenization;
 }
 //---------------------------------------------------------------------------
 
@@ -379,7 +379,7 @@ return 0;
  * Returns the number of the given token, inserting it if needed in the
  * data structures. Its number of occurrences is also updated.
  */
-int get_token_number(unichar* s,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+static int get_token_number(unichar* s,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
 int ret;
 struct any* value=get_value(hashtable,s,HT_INSERT_IF_NEEDED,&ret);
 if (ret==HT_KEY_ADDED) {
@@ -398,7 +398,7 @@ return n;
 /**
  * Loads an existing token file.
  */
-void load_token_file(char* filename, const VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+static void load_token_file(char* filename, const VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
 U_FILE* f=u_fopen(vec,filename,U_READ);
 if (f==NULL) {
    fatal_error("Cannot open token file %s\n",filename);
@@ -417,14 +417,14 @@ u_fclose(f);
 }
 
 
-static void save(U_FILE* f,unichar* s,int n,int start,int end) {
+static void save(U_FILE* f,const unichar* s,int n,int start,int end) {
 (void)s;
 u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 //error("%d %d %d <%S>\n",n,start,end,s);
 }
 
 
-int save_token_offset(U_FILE* f,unichar* s,int n,int start,int end,vector_offset* v,int *index,
+static int save_token_offset(U_FILE* f,const unichar* s,int n,int start,int end,const vector_offset* v, int *index,
 		int *shift) {
 if (f==NULL) return 0;
 for (;;) {
@@ -440,7 +440,8 @@ case A_BEFORE_B: {
 	error("A_BEFORE_B: ");
 	error("shift=%d  token=<%S> start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",
 			*shift,s,start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
-	fatal_error("Unexpected A_BEFORE_B in save_token_offset\n");
+	error("Unexpected A_BEFORE_B in save_token_offset\n");
+	return 1;
 }
 case A_AFTER_B: {
 	//error("A_AFTER_B:\n");
@@ -504,7 +505,7 @@ case B_INCLUDES_A: {
 }
 
 
-int tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
+static int tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
                          /* snt_offsets is used to note shifts induced by separator normalization */
@@ -527,8 +528,8 @@ unichar * s = (unichar*)malloc(sizeof(unichar)*MAX_TAG_LENGTH);
 if (s == NULL) {
   fatal_alloc_error("tokenization");
 }
-while (c!=EOF) {
-	current_pos=COUNT;
+while ((c!=EOF) && (result == 0)) {
+   current_pos=COUNT;
    COUNT++;
    if ((COUNT/(1024*512))!=current_megabyte) {
       current_megabyte++;
@@ -645,7 +646,7 @@ return result;
 
 
 
-int partition_pour_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
+static int partition_pour_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 int pivot;
 int tmp;
 unichar* tmp_char;
@@ -671,7 +672,7 @@ for (;;) {
 
 
 
-void quicksort_by_frequence(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
+static void quicksort_by_frequence(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
 if (first<last) {
   p=partition_pour_quicksort_by_frequence(first,last,tokens,n_occur);
@@ -682,7 +683,7 @@ if (first<last) {
 
 
 
-int partition_pour_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
+static int partition_pour_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 unichar* pivot;
 unichar* tmp;
 int tmp_int;
@@ -708,7 +709,7 @@ for (;;) {
 
 
 
-void quicksort_by_alph_order(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
+static void quicksort_by_alph_order(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
 if (first<last) {
   p=partition_pour_quicksort_by_alph_order(first,last,tokens,n_occur);
@@ -720,7 +721,7 @@ if (first<last) {
 
 
 
-void sort_and_save_by_frequence(U_FILE *f,vector_ptr* tokens,vector_int* n_occur) {
+static void sort_and_save_by_frequence(U_FILE *f,vector_ptr* tokens,vector_int* n_occur) {
 quicksort_by_frequence(0,tokens->nbelems - 1,tokens,n_occur);
 for (int i=0;i<tokens->nbelems;i++) {
    u_fprintf(f,"%d\t%S\n",n_occur->tab[i],tokens->tab[i]);
@@ -729,7 +730,7 @@ for (int i=0;i<tokens->nbelems;i++) {
 
 
 
-void sort_and_save_by_alph_order(U_FILE *f,vector_ptr* tokens,vector_int* n_occur) {
+static void sort_and_save_by_alph_order(U_FILE *f,vector_ptr* tokens,vector_int* n_occur) {
 quicksort_by_alph_order(0,tokens->nbelems - 1,tokens,n_occur);
 for (int i=0;i<tokens->nbelems;i++) {
    u_fprintf(f,"%S\t%d\n",tokens->tab[i],n_occur->tab[i]);
@@ -738,7 +739,7 @@ for (int i=0;i<tokens->nbelems;i++) {
 
 
 
-void compute_statistics(U_FILE *f,vector_ptr* tokens,Alphabet* alph,
+static void compute_statistics(U_FILE *f,vector_ptr* tokens,Alphabet* alph,
 		                int SENTENCES,int TOKENS_TOTAL,int WORDS_TOTAL,int DIGITS_TOTAL) {
 int DIFFERENT_DIGITS=0;
 int DIFFERENT_WORDS=0;
@@ -756,7 +757,7 @@ u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%
 
 
 
-void save_new_line_positions(U_FILE* f,vector_int* n_enter_pos) {
+static void save_new_line_positions(U_FILE* f,vector_int* n_enter_pos) {
 fwrite(n_enter_pos->tab,sizeof(int),n_enter_pos->nbelems,f);
 }
 
