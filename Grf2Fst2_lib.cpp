@@ -1408,11 +1408,19 @@ if (graph->states[0]==NULL) {
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n],full_name);
    free_SingleGraph(graph,NULL);
    if (n!=1 && infos->no_empty_graph_warning) return 1;
+   unichar* emptied_graph_name = u_strdup(infos->graph_names->value[n]);
+   unsigned int emptied_graph_name_size = u_strlen(emptied_graph_name);
+   for (unsigned int loop = 0; loop < emptied_graph_name_size; loop++) {
+     if (*(emptied_graph_name + loop) == 2)
+       *(emptied_graph_name + loop) = 0;
+   }
    if (n==1) {
-      error("ERROR: Main graph %S.grf has been emptied\n",infos->graph_names->value[n]);
+      error("ERROR: Main graph %S.grf has been emptied\n", emptied_graph_name);
+      free(emptied_graph_name);
       return 0;
    }
-   error("WARNING: graph %S.grf has been emptied\n",infos->graph_names->value[n]);
+   error("WARNING: graph %S.grf has been emptied\n", emptied_graph_name);
+   free(emptied_graph_name);
    return 1;
 }
 /* Now, we minimize the automaton assuming that reversed transitions are still there */
