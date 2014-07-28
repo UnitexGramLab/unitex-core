@@ -622,7 +622,12 @@ for (int i=0;i<g->n_states;i++) {
 for (int i=0;i<g->n_states;i++) {
 	GrfState* s=g->states[i];
 	for (int j=0;j<s->transitions->nbelems;j++) {
-		vector_int_add(reverse->t[s->transitions->tab[j]],i);
+		if ((s->transitions->tab[j] < 0) || (s->transitions->tab[j] >= reverse->n)) {
+		  error("Invalid GRF file : invalid transition number %d\n", s->transitions->tab[j]);
+		} else
+		{
+		  vector_int_add(reverse->t[s->transitions->tab[j]],i);
+		}
 	}
 }
 return reverse;
