@@ -523,7 +523,10 @@ static void scan_graph(
 			"Recognized more than %i tokens starting from:\n"
 			"  ", n_graph, MAX_DEPTH);
 		for (int i = 0; i < 60; i++) {
-			error("%S", p->buffer[p->current_origin + i]);
+			unichar str_display[2];
+			str_display[0]=p->buffer[p->current_origin + i];
+			str_display[1]=0;
+			error("%S", str_display);
 		}
 		error("\nSkipping match at this position, trying from next token!\n");
 		p->output[0] = '\0'; // clear output
