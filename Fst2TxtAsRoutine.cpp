@@ -522,11 +522,10 @@ static void scan_graph(
 			"Maximal stack size reached in graph %i!\n"
 			"Recognized more than %i tokens starting from:\n"
 			"  ", n_graph, MAX_DEPTH);
-		for (int i = 0; i < 60; i++) {
-			unichar str_display[2];
-			str_display[0]=p->buffer[p->current_origin + i];
-			str_display[1]=0;
-			error("%S", str_display);
+		int nb_max_char_display_error = (p->text_buffer->size >= p->current_origin) ? (p->text_buffer->size - p->current_origin) : 0;
+		nb_max_char_display_error = (nb_max_char_display_error > 60) ? 60 : nb_max_char_display_error;
+		for (int i = 0; i < nb_max_char_display_error; i++) {
+			error("%C", p->buffer[p->current_origin + i]);
 		}
 		error("\nSkipping match at this position, trying from next token!\n");
 		p->output[0] = '\0'; // clear output
