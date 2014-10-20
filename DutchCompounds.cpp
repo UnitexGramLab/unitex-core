@@ -591,6 +591,7 @@ if (final) {
 					wdl->next=(*L);
 					(*L)=wdl;
 				}
+				free_dela_entry(tmp_entry);
 				/* We go on with the next INF code of the last component */
 				l=l->next;
 			}
