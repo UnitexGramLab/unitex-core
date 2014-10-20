@@ -3183,6 +3183,205 @@ if ((a!=NULL) && (b!=NULL)) {
 
 
 /**
+ * u_strcpy_optional_buffer (and u_strcat_optional_buffer - free_string_optional_buffer)
+ *  are used to use a small unichar array in stack to store string, by copy then append
+ *  if the small buffer in stack is smaller, we allocate a buffer in heap
+ * u_strcpy_optional_buffer and u_strcat_optional_buffer return the used unichar* buffer
+ *
+ */
+unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
+	unichar**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
+{
+	size_t add_string_len = u_strlen(add_string);
+	size_t buffer_size_needed = add_string_len + 1;
+	if (len != NULL)
+		*len = add_string_len;
+
+	if ((*allocated_buffer) == NULL)
+	{
+		if ((add_string_len + 1) < original_buffer_size)
+		{
+			memcpy(original_buffer, add_string, (add_string_len + 1) * sizeof(unichar));
+			return original_buffer;
+		}
+		else
+		{
+			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+			if ((*allocated_buffer) == NULL) {
+				fatal_alloc_error("u_strcpy_optional_buffer");
+			}
+
+			memcpy((*allocated_buffer), add_string, (add_string_len + 1) * sizeof(unichar));
+			return *allocated_buffer;
+		}
+	}
+	else
+	{
+		free_cb(*allocated_buffer, prv_alloc);
+
+		*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+		if ((*allocated_buffer) == NULL) {
+			fatal_alloc_error("u_strcpy_optional_buffer");
+		}
+
+		memcpy((*allocated_buffer), add_string, (add_string_len + 1) * sizeof(unichar));
+		return *allocated_buffer;
+	}
+}
+
+
+/*
+ * strcpy a const char* string
+ */
+
+unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
+	unichar**allocated_buffer, const char* add_string, size_t* len, Abstract_allocator prv_alloc)
+{
+	size_t add_string_len = strlen(add_string);
+	size_t buffer_size_needed = add_string_len + 1;
+	if (len != NULL)
+		*len = add_string_len;
+
+	if ((*allocated_buffer) == NULL)
+	{
+		if ((add_string_len + 1) < original_buffer_size)
+		{
+			u_strcpy(original_buffer, add_string);
+			return original_buffer;
+		}
+		else
+		{
+			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+			if ((*allocated_buffer) == NULL) {
+				fatal_alloc_error("u_strcpy_optional_buffer");
+			}
+
+			u_strcpy((*allocated_buffer), add_string);
+			return *allocated_buffer;
+		}
+	}
+	else
+	{
+		free_cb(*allocated_buffer, prv_alloc);
+
+		*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+		if ((*allocated_buffer) == NULL) {
+			fatal_alloc_error("u_strcpy_optional_buffer");
+		}
+
+		u_strcpy((*allocated_buffer), add_string);
+		return *allocated_buffer;
+	}
+}
+
+
+/**
+ * append a string in the same way
+ */
+unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
+	unichar**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
+{
+	const unichar* current_buffer = ((*allocated_buffer) != NULL) ? (*allocated_buffer) : original_buffer;
+	size_t current_string_len = u_strlen(current_buffer);
+	size_t add_string_len = u_strlen(add_string);
+	size_t buffer_size_needed = current_string_len + add_string_len + 1;
+	if (len != NULL)
+		*len = current_string_len + add_string_len;
+
+	if ((*allocated_buffer) == NULL)
+	{
+		if ((current_string_len + add_string_len + 1) < original_buffer_size)
+		{
+			memcpy(original_buffer + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
+			return original_buffer;
+		}
+		else
+		{
+			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+			if ((*allocated_buffer) == NULL) {
+				fatal_alloc_error("u_strcat_optional_buffer");
+			}
+
+			memcpy((*allocated_buffer), original_buffer, current_string_len * sizeof(unichar));
+			memcpy((*allocated_buffer) + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
+			return *allocated_buffer;
+		}
+	}
+	else
+	{
+		*allocated_buffer = (unichar*)realloc_cb((*allocated_buffer),
+			(current_string_len + 1) * sizeof(unichar),
+			buffer_size_needed * sizeof(unichar), prv_alloc);
+		if ((*allocated_buffer) == NULL) {
+			fatal_alloc_error("u_strcat_optional_buffer");
+		}
+
+		memcpy((*allocated_buffer) + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
+		return *allocated_buffer;
+	}
+}
+
+
+/**
+* append a string in the same way
+*/
+unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
+	unichar**allocated_buffer, const char* add_string, size_t* len, Abstract_allocator prv_alloc)
+{
+	const unichar* current_buffer = ((*allocated_buffer) != NULL) ? (*allocated_buffer) : original_buffer;
+	size_t current_string_len = u_strlen(current_buffer);
+	size_t add_string_len = strlen(add_string);
+	size_t buffer_size_needed = current_string_len + add_string_len + 1;
+	if (len != NULL)
+		*len = current_string_len + add_string_len;
+
+	if ((*allocated_buffer) == NULL)
+	{
+		if ((current_string_len + add_string_len + 1) < original_buffer_size)
+		{
+			u_strcpy(original_buffer + current_string_len, add_string);
+			return original_buffer;
+		}
+		else
+		{
+			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+			if ((*allocated_buffer) == NULL) {
+				fatal_alloc_error("u_strcat_optional_buffer");
+			}
+
+			memcpy((*allocated_buffer), original_buffer, current_string_len * sizeof(unichar));
+			u_strcpy((*allocated_buffer) + current_string_len, add_string);
+			return *allocated_buffer;
+		}
+	}
+	else
+	{
+		*allocated_buffer = (unichar*)realloc_cb((*allocated_buffer),
+			(current_string_len + 1) * sizeof(unichar),
+			buffer_size_needed * sizeof(unichar), prv_alloc);
+		if ((*allocated_buffer) == NULL) {
+			fatal_alloc_error("u_strcat_optional_buffer");
+		}
+
+		u_strcpy((*allocated_buffer) + current_string_len, add_string);
+		return *allocated_buffer;
+	}
+}
+
+
+/**
+ * free the buffer allocated by u_strcpy_optional_buffer / u_strcat_optional_buffer if needed
+ */int count_free_opt_buf = 0; int count_free_opt_buf_real = 0;
+void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator prv_alloc)
+{
+	if ((*allocated_buffer) != NULL) {
+		free_cb(*allocated_buffer, prv_alloc);
+		*allocated_buffer = NULL;
+	}
+}
+
+
+/**
  * Unicode version of strcmp that tolerates NULL strings.
  */
 int u_strcmp(const unichar* a,const char* b) {
