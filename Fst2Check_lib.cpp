@@ -652,6 +652,7 @@ if (initial_state==-2) {
 if (initial_state==-1) {
 	/* If the graph could not be loaded, we just ignore */
 	mark_graph[graph]=1;
+	free(mark_state);
 	return 0;
 }
 if (find_a_left_recursion(mark_graph,mark_state,initial_state,graph,chk,transitions)) {
