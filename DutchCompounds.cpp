@@ -70,8 +70,8 @@ namespace unitex {
 
 	struct word_decomposition {
 		int n_parts;
-		unichar decomposition[4096];
-		unichar dela_line[4096];
+		const unichar* decomposition;
+		const unichar* dela_line;
 	};
 
 
@@ -447,15 +447,28 @@ namespace unitex {
 	* Allocates, initializes and returns a word decomposition structure.
 	*/
 	static struct word_decomposition* new_word_decomposition_dutch(int n_parts, const unichar* decomposition, const unichar* dela_line) {
+
+		#define AroundSizeBorder(x) (((x + 0xf) / 0x10) * 0x10)
+
+		unsigned int len_decomposition_string_in_bytes = (u_strlen(decomposition) + 1) * sizeof(unichar);
+		unsigned int len_dela_line_in_bytes = (u_strlen(dela_line) + 1) * sizeof(unichar);
+		size_t pos_decomposition = sizeof(struct word_decomposition);
+		size_t pos_dela_line = sizeof(struct word_decomposition) + AroundSizeBorder(len_decomposition_string_in_bytes);
+		size_t size_allocation = pos_dela_line + AroundSizeBorder(len_dela_line_in_bytes);
 		struct word_decomposition* tmp;
-		tmp = (struct word_decomposition*)malloc(sizeof(struct word_decomposition));
+		tmp = (struct word_decomposition*)malloc(size_allocation);
 		if (tmp == NULL) {
 			fatal_alloc_error("new_word_decomposition_dutch");
 		}
-		tmp->n_parts = n_parts;
 
-		u_strcpy(tmp->decomposition, decomposition);
-		u_strcpy(tmp->dela_line, dela_line);
+		unichar* buffer_decomposition = (unichar*)(((unsigned char*)tmp) + pos_decomposition);
+		unichar* buffer_dela_line = (unichar*)(((unsigned char*)tmp) + pos_dela_line);
+		u_strcpy(buffer_decomposition, decomposition);
+		u_strcpy(buffer_dela_line, dela_line);
+
+		tmp->n_parts = n_parts;
+		tmp->decomposition = buffer_decomposition;
+		tmp->dela_line = buffer_dela_line;
 
 		return tmp;
 	}
