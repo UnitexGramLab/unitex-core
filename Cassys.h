@@ -80,7 +80,7 @@ int main_Cassys(int argc,char* const argv[]);
  * return 0 if correct
  */
 int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,
-		VersatileEncodingConfig*, char *morpho_dic);
+	VersatileEncodingConfig*, const char *morpho_dic, int realignPtrToBase);
 
 
 

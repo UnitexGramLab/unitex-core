@@ -37,7 +37,7 @@
 
 namespace unitex {
 
-void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName){
+void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName, int realignPtrToBase){
 
 	U_FILE *dot_desc_file = u_fopen(ASCII, fileName, U_WRITE);
 	if (dot_desc_file == NULL) {
@@ -51,9 +51,9 @@ void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName){
 	u_fprintf(dot_desc_file,"node [color=lightblue2, style=filled]\n");
 
 	//u_fprintf(dot_desc_file,"\tbgcolor=antiqueblue\n");
-	cassys_tokens_2_graph_subgraph(c,dot_desc_file);
+	cassys_tokens_2_graph_subgraph(c, dot_desc_file, realignPtrToBase);
 
-	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file, NULL);
+	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file, NULL, realignPtrToBase);
 
 	u_fprintf(dot_desc_file, "\tNULL[label=\"END\" shape=Mdiamond]\n");
 	u_fprintf(dot_desc_file,"}\n");
@@ -61,25 +61,41 @@ void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName){
 	u_fclose(dot_desc_file);
 }
 
-void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, cassys_tokens_list *predecessor){
+void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, cassys_tokens_list *predecessor, int realignPtrToBase){
 
 	cassys_tokens_list *i;
 	cassys_tokens_list *p = predecessor;
+	unsigned int count = 0;
 
 	for(i=c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
 
 		if(i->output != NULL) {
-			cassys_tokens_2_graph_subgraph(i->output,u);
-			cassys_tokens_2_graph_walk_for_subgraph(i->output, u, p);
+			cassys_tokens_2_graph_subgraph(i->output, u, realignPtrToBase);
+			cassys_tokens_2_graph_walk_for_subgraph(i->output, u, p, realignPtrToBase);
 
-			if(p!=NULL){
-				u_fprintf(u, "\t_%p -> _%p\n", p, i->output);
-			} else {
-				u_fprintf(u, "\tstart -> _%p\n", i->output);
+
+			if (realignPtrToBase == 0) {
+				if (p != NULL){
+					u_fprintf(u, "\t_%p -> _%p\n", p, i->output);
+				}
+				else {
+					u_fprintf(u, "\tstart -> _%p\n", i->output);
+				}
+
+				u_fprintf(u, "\t_%p -> _%p [style=invis]\n", i, i->output);
 			}
+			else
+			{
+				if (p != NULL){
+					u_fprintf(u, "\t_%08x -> _%08x\n", (unsigned int)0, 0);
+				}
+				else {
+					u_fprintf(u, "\tstart -> _%08x\n", 0);
+				}
 
-			u_fprintf(u, "\t_%p -> _%p [style=invis]\n", i, i->output);
-
+				u_fprintf(u, "\t_%08x -> _%08x [style=invis]\n", (unsigned int)(count++), 0);
+			}
+		
 
 		}
 
@@ -87,10 +103,11 @@ void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, c
 	}
 }
 
-void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
+void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u, int realignPtrToBase){
 
 	static int cluster_number = 0;
 	cassys_tokens_list *i;
+	unsigned int count = 0;
 	u_fprintf(u, "\tsubgraph cluster%d {\n", cluster_number);
 	u_fprintf(u,"\tbgcolor=cornflowerblue\n");
 	u_fprintf(u, "\tlabel = \"transducer %d_%d\"\n", c->transducer_id, c->iteration);
@@ -98,7 +115,12 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
 	if(c->transducer_id==0){
 		u_fprintf(u,"\tstart[shape=Mdiamond]\n");
 		if(c!=NULL){
-			u_fprintf(u,"\tstart -> _%p\n",c);
+			if (realignPtrToBase == 0) {
+				u_fprintf(u, "\tstart -> _%p\n", c);
+			}
+			else {
+				u_fprintf(u, "\tstart -> _%08x\n", 0);
+			}
 		}
 	}
 
@@ -143,15 +165,32 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u){
 			free_cassys_pattern(cp);
 		} else {
 			unichar *label = protect_quote(i->token);
-			u_fprintf(u, "\t\t_%p[fillcolor=steelblue label=\"%S\"]\n", i, label);
+
+			if (realignPtrToBase == 0) {
+				u_fprintf(u, "\t\t_%p[fillcolor=steelblue label=\"%S\"]\n", i, label);
+			}
+			else {
+				u_fprintf(u, "\t\t_%08x[fillcolor=steelblue label=\"%S\"]\n", (unsigned int)(count++), label);
+			}
 			free(label);
 		}
 
+		if (realignPtrToBase == 0) {
+			if (i->next_token != NULL) {
+				u_fprintf(u, "\t\t_%p -> _%p\n", i, i->next_token);
+			}
+			else {
+				u_fprintf(u, "\t\t_%p -> NULL\n", i);
+			}
+		}
+		else {
 
-		if (i->next_token != NULL) {
-			u_fprintf(u, "\t\t_%p -> _%p\n", i, i->next_token);
-		} else {
-			u_fprintf(u, "\t\t_%p -> NULL\n", i);
+			if (i->next_token != NULL) {
+				u_fprintf(u, "\t\t_%08x -> _%08x\n", (unsigned int)(count++), 0);
+			}
+			else {
+				u_fprintf(u, "\t\t_%08x -> NULL\n", (unsigned int)(count++));
+			}
 		}
 	}
 	u_fprintf(u,"\t}\n");

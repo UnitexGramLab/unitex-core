@@ -46,7 +46,7 @@ namespace unitex {
 
 
 
-const char *optstring_Cassys = ":t:a:w:l:hk:q:g:dm:s:ir:";
+const char *optstring_Cassys = ":t:a:w:l:hk:q:g:dnm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
 		{"text", required_argument_TS, NULL, 't'},
 		{"alphabet", required_argument_TS, NULL, 'a'},
@@ -61,6 +61,7 @@ const struct option_TS lopts_Cassys[] = {
 		{"transducer_file",required_argument_TS,NULL,'s'},
         {"transducer_dir",required_argument_TS,NULL,'r'},
         {"in_place", no_argument_TS,NULL,'i'},
+		{"realign_token_graph", no_argument_TS, NULL, 'n' },
 		{"help", no_argument_TS,NULL,'h'}
 };
 
@@ -69,7 +70,7 @@ const char* usage_Cassys =
 		"\n"
 		"OPTION :\n"
 		"-a ALPH/--alphabet=ALPH: the language alphabet file\n"
-        "-r X/--transducer_dir=X: take tranducer on directory X (so you don't specify \n"
+        "-r X/--transducer_dir=X: take transducer on directory X (so you don't specify \n"
         "      full path for each transducer; note that X must be (back)slash terminated\n"
 		"-w DIC/--morpho=DIC: specifies that DIC is a .bin dictionary\n"
 		         "                       to use in morphological mode. Use as many\n"
@@ -80,6 +81,7 @@ const char* usage_Cassys =
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
 		"-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
 		"-i/--in_place mean uses the same csc/snt directories for each transducer\n"
+		"-n/--realign_token_graph mean the .dot file will not depends to pointer allocation to be deterministic\n"
 		"-d/--no_create_directory mean the all snt/csc directories already exist and don't need to be created\n"
 		"  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
 		"  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
@@ -127,7 +129,7 @@ int main_Cassys(int argc,char* const argv[]) {
     VersatileEncodingConfig vec=VEC_DEFAULT;
     int must_create_directory = 1;
     int in_place = 0;
-
+	int realignPtrToBase = 0;
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
 	// decode the command line
@@ -231,6 +233,10 @@ int main_Cassys(int argc,char* const argv[]) {
             in_place = 1;
 			break;
 		}
+        case 'n': {
+			realignPtrToBase = 1;
+			break;
+		}
         case 'd': {
             must_create_directory = 0;
 			break;
@@ -280,7 +286,7 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name);
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
 
-	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name,negation_operator,&vec, morpho_dic);
+	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name, negation_operator, &vec, morpho_dic, realignPtrToBase);
 
 	if(morpho_dic != NULL){
 		free(morpho_dic);
@@ -300,7 +306,7 @@ int main_Cassys(int argc,char* const argv[]) {
 int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
-    char *morpho_dic) {
+	const char *morpho_dic, int realignPtrToBase) {
 
 	launch_tokenize_in_Cassys(text,alphabet,NULL,vec);
 
@@ -387,7 +393,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 //				char graph_file_name_n[FILENAME_MAX];
 //					sprintf(graph_file_name_n,"%s.dot", last_labeled_text_name);
 //					u_printf("writing graph = %s\n",graph_file_name_n);
-//					cassys_tokens_2_graph(tokens_list,graph_file_name_n);
+//					cassys_tokens_2_graph(tokens_list,graph_file_name_n, realignPtrToBase);
 
 
 				//u_printf("Displaying sparse matrix\n");
@@ -444,7 +450,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
 	char graph_file_name[FILENAME_MAX];
 	sprintf(graph_file_name,"%s.dot", text_name_without_extension);
-	cassys_tokens_2_graph(tokens_list,graph_file_name);
+	cassys_tokens_2_graph(tokens_list, graph_file_name, realignPtrToBase);
 
 	if ((in_place != 0))
 			    free(labeled_text_name);

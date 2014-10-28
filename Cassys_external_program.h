@@ -51,7 +51,7 @@ int launch_locate_in_Cassys(const char *text_name,
 							const char* alphabet_name,
                             const char*negation_operator,
                             const VersatileEncodingConfig*,
-                            char *morpho_dic);
+                            const char *morpho_dic);
 
 
 
