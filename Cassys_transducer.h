@@ -87,7 +87,7 @@ void free_transducer_name_and_mode_linked_list(
 		struct transducer_name_and_mode_linked_list *list);
 
 struct transducer_name_and_mode_linked_list *load_transducer_list_file(
-		const char *transducer_list_name);
+		const char *transducer_list_name, int translate_path_separator_to_native);
 
 struct fifo *load_transducer_from_linked_list(
 		const struct transducer_name_and_mode_linked_list *list,

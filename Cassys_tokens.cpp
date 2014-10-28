@@ -37,7 +37,7 @@
 
 namespace unitex {
 
-void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName, int realignPtrToBase){
+void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName, int realign_token_graph_pointer){
 
 	U_FILE *dot_desc_file = u_fopen(ASCII, fileName, U_WRITE);
 	if (dot_desc_file == NULL) {
@@ -51,9 +51,9 @@ void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName, int reali
 	u_fprintf(dot_desc_file,"node [color=lightblue2, style=filled]\n");
 
 	//u_fprintf(dot_desc_file,"\tbgcolor=antiqueblue\n");
-	cassys_tokens_2_graph_subgraph(c, dot_desc_file, realignPtrToBase);
+	cassys_tokens_2_graph_subgraph(c, dot_desc_file, realign_token_graph_pointer);
 
-	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file, NULL, realignPtrToBase);
+	cassys_tokens_2_graph_walk_for_subgraph(c, dot_desc_file, NULL, realign_token_graph_pointer);
 
 	u_fprintf(dot_desc_file, "\tNULL[label=\"END\" shape=Mdiamond]\n");
 	u_fprintf(dot_desc_file,"}\n");
@@ -61,7 +61,7 @@ void cassys_tokens_2_graph(cassys_tokens_list *c,const char *fileName, int reali
 	u_fclose(dot_desc_file);
 }
 
-void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, cassys_tokens_list *predecessor, int realignPtrToBase){
+void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, cassys_tokens_list *predecessor, int realign_token_graph_pointer){
 
 	cassys_tokens_list *i;
 	cassys_tokens_list *p = predecessor;
@@ -70,11 +70,11 @@ void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, c
 	for(i=c; i != NULL && i->transducer_id == c->transducer_id; i = i->next_token) {
 
 		if(i->output != NULL) {
-			cassys_tokens_2_graph_subgraph(i->output, u, realignPtrToBase);
-			cassys_tokens_2_graph_walk_for_subgraph(i->output, u, p, realignPtrToBase);
+			cassys_tokens_2_graph_subgraph(i->output, u, realign_token_graph_pointer);
+			cassys_tokens_2_graph_walk_for_subgraph(i->output, u, p, realign_token_graph_pointer);
 
 
-			if (realignPtrToBase == 0) {
+			if (realign_token_graph_pointer == 0) {
 				if (p != NULL){
 					u_fprintf(u, "\t_%p -> _%p\n", p, i->output);
 				}
@@ -103,7 +103,7 @@ void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, c
 	}
 }
 
-void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u, int realignPtrToBase){
+void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u, int realign_token_graph_pointer){
 
 	static int cluster_number = 0;
 	cassys_tokens_list *i;
@@ -115,7 +115,7 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u, int realig
 	if(c->transducer_id==0){
 		u_fprintf(u,"\tstart[shape=Mdiamond]\n");
 		if(c!=NULL){
-			if (realignPtrToBase == 0) {
+			if (realign_token_graph_pointer == 0) {
 				u_fprintf(u, "\tstart -> _%p\n", c);
 			}
 			else {
@@ -166,7 +166,7 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u, int realig
 		} else {
 			unichar *label = protect_quote(i->token);
 
-			if (realignPtrToBase == 0) {
+			if (realign_token_graph_pointer == 0) {
 				u_fprintf(u, "\t\t_%p[fillcolor=steelblue label=\"%S\"]\n", i, label);
 			}
 			else {
@@ -175,7 +175,7 @@ void cassys_tokens_2_graph_subgraph(cassys_tokens_list *c, U_FILE *u, int realig
 			free(label);
 		}
 
-		if (realignPtrToBase == 0) {
+		if (realign_token_graph_pointer == 0) {
 			if (i->next_token != NULL) {
 				u_fprintf(u, "\t\t_%p -> _%p\n", i, i->next_token);
 			}

@@ -27,6 +27,7 @@
 
 
 #include <ctype.h>
+#include "File.h"
 #include "Cassys.h"
 #include "Cassys_transducer.h"
 
@@ -125,8 +126,18 @@ void free_transducer_name_and_mode_linked_list(struct transducer_name_and_mode_l
 }
 
 
-
-struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name) {
+void translate_path_separator_to_native_in_filename(char* filename) {
+	char * walk = filename;
+	while ((*walk) != '0') {
+		char c = *walk;
+		if ((c == '\\') || (c == '/')) {
+			*walk = PATH_SEPARATOR_CHAR;
+		}
+		walk++;
+	}
+}
+ 
+struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name, int translate_path_separator_to_native) {
 
 	U_FILE *file_transducer_list;
     struct transducer_name_and_mode_linked_list * res=NULL;
@@ -149,6 +160,11 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 		remove_cassys_comments(line);
 
 		transducer_file_name = extract_cassys_transducer_name(line);
+		if ((translate_path_separator_to_native != 0) && (transducer_file_name != NULL)) {
+			translate_path_separator_to_native_in_filename(transducer_file_name);
+
+		}
+
 		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
 
 		transducer_policy = extract_cassys_transducer_policy(line);
