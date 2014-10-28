@@ -83,7 +83,7 @@ const char* usage_Cassys =
         "-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
         "-i/--in_place mean uses the same csc/snt directories for each transducer\n"
         "-n/--realign_token_graph_pointer mean the .dot file will not depends to pointer allocation to be deterministic\n"
-        "-v/--translate_path_separator_to_native rplace path separator in csc by native separator for portable csc file\n"
+        "-v/--translate_path_separator_to_native replace path separator in csc by native separator for portable csc file\n"
         "-d/--no_create_directory mean the all snt/csc directories already exist and don't need to be created\n"
         "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
         "  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"

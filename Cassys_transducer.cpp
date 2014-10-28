@@ -196,6 +196,19 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 	return res;
 }
 
+/**  if a filename must be concatenated, we must remove the absolute prefix on filename to concat
+  *  (by example, replace 'c:\folder\sub\file' by 'folder\sub\file')
+  */
+static const char*skip_absolute_prefix(const char* filename) {
+	// if Windows filename begin with 'c:', we skip two char
+	if ((*(filename)) != '\0')
+		if ((*(filename + 1)) == ':')
+			filename += 2;
+	if (((*filename) == '\\') | ((*filename) == '/'))
+		filename++;
+	return filename;
+}
+
 struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list,const char* transducer_filename_prefix){
 	struct fifo *transducer_fifo = new_fifo();
 
@@ -231,7 +244,9 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
             t->transducer_file_name[0] = '\0';
             if (transducer_filename_prefix != NULL)
                 strcpy(t->transducer_file_name, transducer_filename_prefix);
-			strcat(t->transducer_file_name, transducer_file_name);
+
+			const char* transducer_file_name_to_add = (transducer_filename_prefix_len > 0) ? skip_absolute_prefix(transducer_file_name) : transducer_file_name;
+			strcat(t->transducer_file_name, transducer_file_name_to_add);
 
 			t->output_policy = transducer_policy;
 			t->repeat_mode = repeat_policy;
