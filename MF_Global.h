@@ -61,7 +61,15 @@ struct transition {
     struct transition* suivant;
 };
 
-
+// To configure the graph recompilation policy (fst already exists)
+typedef enum {
+  // Recompile only if the fst is out of date
+  ONLY_OUT_OF_DATE, 
+  // Force .grf recompilation even if fst exists
+  ALWAYS_RECOMPILE,
+  // Never recompile .grf files
+  NEVER_RECOMPILE, 
+} GraphRecompilationPolicy;
 
 typedef struct {
 
@@ -101,6 +109,8 @@ VersatileEncodingConfig* vec;
 
 Korean* korean;
 
+GraphRecompilationPolicy graph_recompilation_policy;
+
 int semitic;
 
 char* pkgdir;
@@ -122,7 +132,8 @@ unichar** filter_codes;
 MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
 								const char* equivalencesTxt,
 								VersatileEncodingConfig* vec,Korean* koran,
-								const char* pkgdir,const char* named_repositories);
+								const char* pkgdir,const char* named_repositories,
+								GraphRecompilationPolicy graph_recompilation_policy);
 void free_MultiFlex_ctx(MultiFlex_ctx* ctx);
 
 int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex);

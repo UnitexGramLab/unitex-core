@@ -52,6 +52,13 @@ const char* usage_BuildKrMwuDic =
         "                          required to produce morphological variants of roots\n"
         "  -a ALPH/--alphabet=ALPH: specifies the alphabet file to use\n"
         "  -b BIN/--binary=BIN: binary simple word dictionary\n"
+        "\n"
+        " Graph recompilation options:\n"
+        "  -f/--always-recompile-graphs:        forces graph recompiling even if the fst is up to date\n"
+        "  -n/--never-recompile-graphs:         avoids graph recompiling even if the fst is not up to date\n"
+        "  -t/--only-recompile-outdated-graphs: only recompiling when the fst is not up to date (default)\n"
+        "\n"
+        "  -h/--help: display this help and exit\n"
         "\n";
 
 
@@ -62,13 +69,16 @@ u_printf(usage_BuildKrMwuDic);
 
 
 
-const char* optstring_BuildKrMwuDic="o:d:a:b:hk:q:";
+const char* optstring_BuildKrMwuDic="o:d:a:b:hfntk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"directory",required_argument_TS,NULL,'d'},
       {"alphabet",required_argument_TS,NULL,'a'},
-      {"binary",required_argument_TS,NULL,'b'},
+      {"binary",required_argument_TS,NULL,'b'},      
       {"help",no_argument_TS,NULL,'h'},
+      {"always-recompile-graphs",no_argument_TS,NULL,'f'},
+      {"never-recompile-graphs",no_argument_TS,NULL,'n'},
+      {"only-recompile-outdated-graphs",no_argument_TS,NULL,'t'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
@@ -91,8 +101,14 @@ char inflection_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char dic_bin[FILENAME_MAX]="";
 char dic_inf[FILENAME_MAX]="";
+
+// default policy is to compile only out of date graphs
+GraphRecompilationPolicy graph_recompilation_policy = ONLY_OUT_OF_DATE;
+
 VersatileEncodingConfig vec=VEC_DEFAULT;
+
 struct OptVars* vars=new_OptVars();
+
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrMwuDic,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
@@ -118,6 +134,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrM
              strcat(dic_inf,".inf");
              break;
    case 'h': usage(); return 0;
+   case 'f': graph_recompilation_policy = ALWAYS_RECOMPILE; break;
+   case 'n': graph_recompilation_policy = NEVER_RECOMPILE;  break;
+   case 't': graph_recompilation_policy = ONLY_OUT_OF_DATE; break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_BuildKrMwuDic[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -165,7 +184,16 @@ if (alph==NULL) {
    fatal_error("Cannot open alphabet file %s\n",alphabet);
 }
 Korean* korean=new Korean(alph);
-MultiFlex_ctx* multiFlex_ctx=new_MultiFlex_ctx(inflection_dir,NULL,NULL,&vec,korean,NULL,NULL);
+
+MultiFlex_ctx* multiFlex_ctx=new_MultiFlex_ctx(inflection_dir,
+                                               NULL,
+                                               NULL,
+                                               &vec,
+                                               korean,
+                                               NULL,
+                                               NULL,
+                                               graph_recompilation_policy);
+
 Dictionary* d=new_Dictionary(&vec,dic_bin,dic_inf);
 
 create_mwu_dictionary(delas,grf,multiFlex_ctx,d);

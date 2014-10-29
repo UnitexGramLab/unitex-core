@@ -51,7 +51,8 @@ int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,int pos,struct node* n);
 MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
 								const char* equivalencesTxt,
 								VersatileEncodingConfig* vec,Korean* korean,
-								const char* pkgdir,const char* named_repositories) {
+								const char* pkgdir,const char* named_repositories, 
+								GraphRecompilationPolicy graph_recompilation_policy) {
 MultiFlex_ctx* ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
 if (ctx==NULL) {
    fatal_alloc_error("new_MultiFlex_ctx");
@@ -77,6 +78,7 @@ if (ctx->config_files_status!=CONFIG_FILES_ERROR
 	   error("d_init_morpho_equiv error\n");
 	   ctx->config_files_status=CONFIG_FILES_ERROR;
 }
+ctx->graph_recompilation_policy = graph_recompilation_policy;
 ctx->semitic=0;
 ctx->pkgdir=NULL;
 if (pkgdir!=NULL) {
@@ -202,23 +204,47 @@ return tmp;
 
 
 /**
- * Returns 1 if grf exists and is more recent than fst2; 0 otherwise.
+ * Returns 0 if  
+ *  -  The .grf or the .fst2 uses an installed abstract filespace; or
+ *  -  The .grf file does not exists; or    
+ *  -  GraphRecompilationPolicy is NEVER_RECOMPILE
+ * Returns 1 if 
+ *  - fst2 file does not exists; or
+ *  - GraphRecompilationPolicy is :
+ *      ALWAYS_RECOMPILE or
+ *      ONLY_OUT_OF_DATE and the .grf exists and is more recent than the .fst2    
  */
-int must_compile_grf(char* grf,char* fst2) {
-if (!fexists(grf)) {
-   /* No .grf? We fail */
-   return 0;
-}
-if (!fexists(fst2)) {
-   /* A grf and no .fst2? Let's compile the .grf! */
-   return 1;
-}
-if ((is_filename_in_abstract_file_space(fst2) != 0) || (is_filename_in_abstract_file_space(grf) != 0)) {
-    /* abstract ? no compare, no recompile*/
-    return 0;
-}
- /* There are both .grf and .fst2? Let's see which file is older */
-return (get_file_date(grf)>=get_file_date(fst2));
+int must_compile_grf(char* grf,char* fst2, GraphRecompilationPolicy graph_recompilation_policy) {
+  // if the fst2 or the grf uses an installed abstract filespace, 
+  // there is nothing to compile
+  if ((is_filename_in_abstract_file_space(fst2) != 0) || 
+      (is_filename_in_abstract_file_space(grf)  != 0)) {
+      /* abstract ? no compare, no recompile*/
+      return 0;
+  }
+  
+  // if .grf does not exits, there is nothing to compile
+  if (!fexists(grf)) {
+     /* No .grf? We fail */
+     return 0;
+  }
+
+  // if .fst2 does not exits, we should compile the .grf
+  if (!fexists(fst2)) {
+     /* A grf and no .fst2? Let's compile the .grf! */
+     return 1;
+  }
+  
+  // There are both .grf and .fst2 files, use the GraphRecompilationPolicy
+  switch(graph_recompilation_policy) {
+    case ALWAYS_RECOMPILE : return 1;
+    case ONLY_OUT_OF_DATE : return (get_file_date(grf) >= get_file_date(fst2));
+    //   NEVER_RECOMPILE
+    default               : return 0;
+  }  
+  
+  // return 0 otherwise
+  return 0;
 }
 
 
@@ -243,9 +269,9 @@ if (flex[pos]=='\0') {
         char grf[FILENAME_MAX];
         new_file(p_multiFlex_ctx->inflection_directory,flex,grf);
         strcat(grf,".grf");
-        if (must_compile_grf(grf,s)) {
-           /* If there is no .fst2 file, of a one than is older than the
-            * corresponding .grf, we try to compile it */
+        if (must_compile_grf(grf,s,p_multiFlex_ctx->graph_recompilation_policy)) {
+           /* Following the GraphRecompilationPolicy, if there is no .fst2 file, 
+            * of a one than is older than the corresponding .grf, we try to compile it */
            pseudo_main_Grf2Fst2(p_multiFlex_ctx->vec,grf,1,NULL,1,0,p_multiFlex_ctx->pkgdir,
         		   p_multiFlex_ctx->named_repositories,0);
         }
