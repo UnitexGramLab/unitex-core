@@ -212,7 +212,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 		int number_of_transducer, int iteration,
     VersatileEncodingConfig* vec){
 
-	fprintf(stdout, "Construct cascade concord\n");
+	u_printf("Construct cascade concord\n");
 
 	struct snt_files *snt_file = new_snt_files(text_name);
 
@@ -222,7 +222,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 		exit(1);
 	}
 
-	fprintf(stdout, "Concord File %s successfully opened\n",snt_file->concord_ind);
+	u_printf("Concord File %s successfully opened\n",snt_file->concord_ind);
 
 	if (list == NULL) {
 		fatal_error("empty text");
@@ -321,7 +321,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 
 void construct_xml_concord(const char *text_name, VersatileEncodingConfig* vec){
 
-	fprintf(stdout,"Building xml concord\n");
+	u_printf("Building xml concord\n");
 
 	struct snt_files *snt_file = new_snt_files(text_name);
 

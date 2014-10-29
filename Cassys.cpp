@@ -325,7 +325,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     struct text_tokens *tokens = NULL;
     cassys_tokens_list *tokens_list = cassys_load_text(vec,snt_text_files->tokens_txt, snt_text_files->text_cod,&tokens);
 
-    fprintf(stdout,"CasSys Cascade begins\n");
+    u_printf("CasSys Cascade begins\n");
 
     int transducer_number = 1;
     char *labeled_text_name = NULL;
@@ -363,7 +363,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
             // apply transducer
 
-            fprintf(stdout, "Applying transducer %s (numbered %d)\n",
+            u_printf("Applying transducer %s (numbered %d)\n",
                     current_transducer->transducer_file_name, transducer_number);
             launch_locate_in_Cassys(labeled_text_name, current_transducer,
                     alphabet, negation_operator, vec, morpho_dic);

@@ -165,7 +165,7 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 
 		}
 
-		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
+		//u_printf("transducer name read =%s\n",transducer_file_name);
 
 		transducer_policy = extract_cassys_transducer_policy(line);
 		enabled_policy = extract_cassys_disabled(line);
@@ -177,14 +177,14 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 		}
 		else {
 			if (transducer_file_name == NULL) {
-				fprintf(stdout, "Line %d : Empty line\n",i);
+				u_printf("Line %d : Empty line\n",i);
 			} else if (transducer_policy == IGNORE_OUTPUTS) {
-				fprintf(stdout, "Line %d : Transducer policy not recognized\n",i);
+				u_printf("Line %d : Transducer policy not recognized\n",i);
 			}
 			if(strcmp("Disabled",enabled_policy)!=0){
-				fprintf(stdout, "Line %d : Could not recognize whether transducer is enabled\n",i);
+				u_printf("Line %d : Could not recognize whether transducer is enabled\n",i);
 			} else {
-				fprintf(stdout,"transducer %s is Disabled\n",transducer_file_name);
+				u_printf("transducer %s is Disabled\n",transducer_file_name);
 			}
 		}
 		free(enabled_policy);
@@ -220,13 +220,13 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 		int repeat_policy;
 
         transducer_file_name = list->transducer_filename;
-		//fprintf(stdout, "transducer name read =%s\n",transducer_file_name);
+		//u_printf("transducer name read =%s\n",transducer_file_name);
 
         transducer_policy = list->transducer_mode;
         repeat_policy = list->repeat_mode;
 
 		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS) {
-			//fprintf(stdout,"transducer to be loaded\n");
+			//u_printf("transducer to be loaded\n");
 			t = (transducer*) malloc(sizeof(transducer) * 1);
 			if (t == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
@@ -255,15 +255,15 @@ struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_m
 			value._ptr = t;
 			put_any(transducer_fifo,value);
 			if (!is_empty(transducer_fifo)) {
-				fprintf(stdout, "transducer %s successfully loaded\n",
+				u_printf("transducer %s successfully loaded\n",
 						t->transducer_file_name);
 			}
 		}
 		else {
 			if (transducer_file_name == NULL) {
-				fprintf(stdout, "Transducer %d : Empty filename\n",i);
+				u_printf("Transducer %d : Empty filename\n",i);
 			} else if (transducer_policy == IGNORE_OUTPUTS) {
-				fprintf(stdout, "Transducer %d : Transducer mode not recognized\n",i);
+				u_printf("Transducer %d : Transducer mode not recognized\n",i);
 			}
 		}
 		i++;
@@ -311,7 +311,7 @@ char *cassys_fgets(char *line, int n, U_FILE *u) {
 		i++;
 	}
 	line[i] = '\0';
-	//fprintf(stdout, "fgets result =%s\n",line);
+	//u_printf("fgets result =%s\n",line);
 	return line;
 }
 
@@ -458,7 +458,7 @@ OutputPolicy extract_cassys_transducer_policy(const char *line) {
 
 	option_name[j]='\0';
 
-	//fprintf(stdout,"extract option =%s\n",option_name);
+	//u_printf("extract option =%s\n",option_name);
 
 	if (strcmp(option_name, "M") == 0 || strcmp(option_name, "MERGE") == 0 || strcmp(
 			option_name, "Merge") == 0) {

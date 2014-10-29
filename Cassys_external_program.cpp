@@ -53,7 +53,7 @@ namespace unitex {
 int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,
     VersatileEncodingConfig* vec){
 
-	fprintf(stdout,"Launch tokenize in Cassys \n");
+	u_printf("Launch tokenize in Cassys \n");
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
 
     char tmp[FILENAME_MAX];
@@ -92,7 +92,7 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 	}
 
 	char* line_command = build_command_line_alloc(invoker);
-	fprintf(stdout, "%s\n", line_command);
+	u_printf("%s\n", line_command);
 
 	int result = invoke(invoker);
 	free_command_line_alloc(line_command);
@@ -182,7 +182,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
     }
 
 	char* line_command = build_command_line_alloc(invoker);
-	fprintf(stdout, "%s\n", line_command);
+	u_printf("%s\n", line_command);
 
 	int result = invoke(invoker);
 	free_command_line_alloc(line_command);
@@ -280,7 +280,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
 
 	char* line_command = build_command_line_alloc(invoker);
-	fprintf(stdout, "%s\n", line_command);
+	u_printf("%s\n", line_command);
 
 	int result = invoke(invoker);
 	free_command_line_alloc(line_command);
