@@ -2020,7 +2020,7 @@ while (*format) {
 
          case 'H':
          case 'U': {
-            int (*XXXize)(unichar*,unichar*);
+            int (*XXXize)(const unichar*,unichar*);
             if (*format=='H') {
             	XXXize=htmlize;
             } else {
@@ -2248,7 +2248,7 @@ while (*format) {
 
          case 'H':
          case 'U': {
-            int (*XXXize)(unichar*,unichar*);
+            int (*XXXize)(const unichar*,unichar*);
             if (*format=='H') {
             	XXXize=htmlize;
             } else {
@@ -3948,7 +3948,7 @@ if (l>0 && s[l-1]=='\n') {
  * Note that 'dst' is supposed to be large enough.
  * The function returns the length of 'dst'.
  */
-int URLize(unichar* src,unichar* dst) {
+int URLize(const unichar* src,unichar* dst) {
 if (src==NULL) {
    fatal_error("NULL error in URLize\n");
 }
@@ -3977,7 +3977,7 @@ return pos;
  * Note that 'dst' is supposed to be large enough.
  * The function returns the length of 'dst'.
  */
-int htmlize(unichar* src,unichar* dst) {
+int htmlize(const unichar* src,unichar* dst) {
 if (src==NULL) {
    fatal_error("NULL error in htmlize\n");
 }
@@ -4023,7 +4023,7 @@ return pos;
 /**
  * Copies the mirror of 'src' into 'dst'. Returns the length of the strings.
  */
-int mirror(unichar* src,unichar* dst) {
+int mirror(const unichar* src,unichar* dst) {
 if (src==NULL) {
    fatal_error("NULL error in mirror\n");
 }

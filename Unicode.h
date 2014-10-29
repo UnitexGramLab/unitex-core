@@ -300,9 +300,9 @@ unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);
 
 void u_to_char(char*,unichar*);
 void u_chomp_new_line(unichar*);
-int URLize(unichar*,unichar*);
-int htmlize(unichar*,unichar*);
-int mirror(unichar*,unichar*);
+int URLize(const unichar*,unichar*);
+int htmlize(const unichar*,unichar*);
+int mirror(const unichar*,unichar*);
 int mirror(unichar*);
 int get_longuest_prefix(unichar*,unichar*);
 unsigned int hash_unichar(unichar*);
