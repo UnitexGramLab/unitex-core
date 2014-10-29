@@ -128,7 +128,7 @@ void free_transducer_name_and_mode_linked_list(struct transducer_name_and_mode_l
 
 void translate_path_separator_to_native_in_filename(char* filename) {
 	char * walk = filename;
-	while ((*walk) != '0') {
+	while ((*walk) != '\0') {
 		char c = *walk;
 		if ((c == '\\') || (c == '/')) {
 			*walk = PATH_SEPARATOR_CHAR;
