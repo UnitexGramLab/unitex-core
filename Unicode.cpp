@@ -3939,6 +3939,59 @@ if (l>0 && s[l-1]=='\n') {
 }
 }
 
+/**
+ * @brief JSON-escapes a unichar string
+ * 
+ * JSON-escapes a source string before copy it into destination 
+ * this function conforms with "The application/json Media Type 
+ * for JavaScript Object Notation (JSON)" RFC 4627. 
+ * 
+ * @param[in]  source unichar string to be escaped
+ * @param[out] destination unichar array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+int JSONize(const unichar* source,unichar* destination) {
+  if (!source) {
+     fatal_error("NULL error in JSONize\n");
+  }  
+ 
+  const unichar* it = source;
+  int pos = 0;
+
+// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
+// into a destination unichar buffer, then it increments the pos variable by 
+// the length of the literal. In this case the length is computed at compile 
+// time       
+#define U_STRCPY_LITERAL(destination, pos, literal) \
+        u_strcpy(&*(destination+pos),literal);      \
+        pos+=sizeof(literal)-1  
+  // loop till the end of string
+  while (*it != '\0') {
+    switch(*it) {
+      case '"':  U_STRCPY_LITERAL(destination,pos,"\\\"");    break;
+      case '/':  U_STRCPY_LITERAL(destination,pos,"\\/");     break;
+      case '\\': U_STRCPY_LITERAL(destination,pos,"\\\\");    break;
+      case '\b': U_STRCPY_LITERAL(destination,pos,"\\b");     break;
+      case '\f': U_STRCPY_LITERAL(destination,pos,"\\f");     break;
+      case '\n': U_STRCPY_LITERAL(destination,pos,"\\n");     break;
+      case '\r': U_STRCPY_LITERAL(destination,pos,"\\r");     break;
+      case '\t': U_STRCPY_LITERAL(destination,pos,"\\t");     break;
+      case '&':  U_STRCPY_LITERAL(destination,pos,"\\u0026"); break;
+      case '<':  U_STRCPY_LITERAL(destination,pos,"\\u003C"); break;
+      case '>':  U_STRCPY_LITERAL(destination,pos,"\\u003E"); break; 
+      default :  destination[pos++] = *it;
+    }
+    // advance the character pointer
+    ++it;
+  }
+// undefines U_STRCPY_LITERAL macro right before we use them   
+#undef U_STRCPY_LITERAL     
+  // indicate the end of the string
+  destination[pos] = '\0';
+  
+  // return the length of the destination string
+  return pos;
+}
 
 /**
  * Puts a copy of 'src' into 'dst', replacing:
