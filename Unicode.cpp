@@ -3940,6 +3940,85 @@ if (l>0 && s[l-1]=='\n') {
 }
 
 /**
+ * @brief  Converts all non-ASCII Unicode characters to Unicode escape-sequences
+ * 
+ * Gets the numeric Unicode code point of each character between U+0080 (128)
+ * and U+FFFF (65535) and escape it using its 4-digit hexadecimal value 
+ * prefixed with \u. Resulting escape sequences are in the form \u[a-f0-9]{4}
+ * e.g. "Fran\u00e7ais" for "Français" 
+ * 
+ * @remark 
+ *      Notice that unichar is for now a 16-bits type and pairs of surrogate  
+ *      code points are not handled by Unitex. If this changes in the future, 
+ *      this function should be updated.  
+ * 
+ * @see http://tools.ietf.org/html/rfc5137
+ * @see http://billposer.org/Software/ListOfRepresentations.html 
+ * 
+ * @param[in] source unichar string to be escaped
+ * @param[out] destination array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+template <typename T>
+int u_escape(const unichar* source, T* destination) {
+  if (!source) {
+     fatal_error("NULL error in ASCIIize\n");
+  }   
+  
+  const unichar* it = source;
+  int pos = 0;
+  
+  // loop till the end of string
+  while (*it != '\0') { 
+    // ASCII characters are lower than 0x7f and will not be escaped
+    if(*it <= 0x7F) {                            
+      destination[pos++] = *it;
+    } 
+    // 2-bytes unicode codepoints 
+    else if (*it  >= 0x80  && *it <= 0xFFFF) {
+      // Parse code point hex nibbles 
+      // e.g. for U+2764
+      //   -----------------------------------------------------------------
+      //   |       2       |       7       |       6       |       4       |
+      //   -----------------------------------------------------------------
+      //   |   nibble_2h   |   nibble_2l   |   nibble_1h   |    nibble_1l  |
+      //   -----------------------------------------------------------------
+      // 16              12               8               4
+      T nibble_1l =  *it        & 0x0F;
+      T nibble_1h = (*it >> 4)  & 0x0F;
+      T nibble_2l = (*it >> 8)  & 0x0F;
+      T nibble_2h = (*it >> 12) & 0x0F;
+      
+      // Build the escape sequence as \u[a-f0-9]{4} 
+      // e.g. \u2764
+      destination[pos++] = '\\';
+      destination[pos++] = 'u';
+      destination[pos++] = nibble_2h + (nibble_2h < 0x0A ? '0' : 'W');
+      destination[pos++] = nibble_2l + (nibble_2l < 0x0A ? '0' : 'W');
+      destination[pos++] = nibble_1h + (nibble_1h < 0x0A ? '0' : 'W');
+      destination[pos++] = nibble_1l + (nibble_1l < 0x0A ? '0' : 'W');
+    }
+    
+    // advance the character pointer
+    ++it;
+  }  
+  
+  // indicate the end of the string
+  destination[pos] = '\0';
+  
+  // return the length of the destination string
+  return pos;
+}
+
+// Converts all non-ASCII Unicode characters to Unicode escape-sequences
+// destination is a unichar buffer 
+template int u_escape(const unichar* source, unichar* destination);
+
+// Converts all non-ASCII Unicode characters to Unicode escape-sequences
+// destination is a char buffer
+template int u_escape(const unichar* source, char* destination);
+
+/**
  * @brief JSON-escapes a unichar string
  * 
  * JSON-escapes a source string before copy it into destination 

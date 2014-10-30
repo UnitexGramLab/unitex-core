@@ -298,6 +298,9 @@ unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const char* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);
 
+template <typename T> 
+int u_escape(const unichar* source, T* destination);
+
 void u_to_char(char*,unichar*);
 void u_chomp_new_line(unichar*);
 int JSONize(const unichar* source,unichar* destination);
