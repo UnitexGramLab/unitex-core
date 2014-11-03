@@ -454,7 +454,6 @@ namespace unitex {
 		adp->correct_word[0] = '\0';
 
 		Ustring* ustr = new_Ustring();
-		long nb_word_decomposition_list_possible = MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE;
 		adp->nb_word_decomposition_list_possible = MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE;
 		explore_state_dutch(infos->d->initial_state_offset, adp->correct_word, 0, word, 0, adp->decomposition, adp->dela_line, &l, adp, 1, infos, ustr, 0);
 		free_Ustring(ustr);
