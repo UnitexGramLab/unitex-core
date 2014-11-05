@@ -3972,7 +3972,7 @@ int u_escape(const unichar* source, T* destination) {
   while (*it != '\0') { 
     // ASCII characters are lower than 0x7f and will not be escaped
     if(*it <= 0x7F) {                            
-      destination[pos++] = *it;
+      destination[pos++] = (T)*it;
     } 
     // 2-bytes unicode codepoints 
     else if (*it  >= 0x80  && *it <= 0xFFFF) {
