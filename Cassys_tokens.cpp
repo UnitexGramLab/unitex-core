@@ -370,13 +370,18 @@ cassys_tokens_list *add_replaced_text(
 			// performance enhancement
 			current_list_position = list_position;
 			current_token_position = l-> token_start_offset;
+
+			if (prev_l != NULL){ 
+				free(prev_l->label); 
+				free(prev_l);
+			}
 			prev_l=l;
 			free_list_ustring(new_sentence_lu);
 		}
-		if(l!=NULL && is_empty(stage_concord)){
-			free(l->label);
-			free(l);
-		}
+	}
+	if (prev_l != NULL){
+		free(prev_l->label); 
+		free(prev_l);
 	}
 	free_fifo(stage_concord);
 	free_snt_files(snt_text_files);
@@ -384,9 +389,6 @@ cassys_tokens_list *add_replaced_text(
 
 	return list;
 }
-
-
-
 
 
 
