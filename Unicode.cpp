@@ -797,12 +797,31 @@ U_FILE* u_fopen_existing_versatile_encoding(int MASK_ENCODING_COMPATIBILITY,cons
     return u_fopen_internal(UTF16_LE,1,name,MODE,MASK_ENCODING_COMPATIBILITY);
 }
 
-/*
+/**
  * Same function, dedicated for file that NOT already exist, without parameter used only for file creation
  * MODE must be U_WRITE
  */
 U_FILE* u_fopen_creating_versatile_encoding(Encoding encoding,int write_bom,const char* name,OpenMode MODE) {
     return u_fopen_internal(encoding,write_bom,name,MODE,USE_ENCODING_VALUE);
+}
+
+
+/**
+ * Before writing a file, predict the planned size in bytes of file for optimization. 
+ */
+void u_fsetsizereservation_by_bytes(U_FILE*f, long size_planned)
+{
+  af_setsizereservation(f->f, size_planned);
+}
+
+
+/**
+* Before writing a file, predict the planned size in chars (unicode) of file for optimization.
+*/
+void u_fsetsizereservation_by_chars(U_FILE*f, long size_planned)
+{
+  int expected_size_for_a_char = ((f->enc == UTF16_LE) || (f->enc == BIG_ENDIAN_UTF16)) ? 2 : 1;
+  u_fsetsizereservation_by_bytes(f, size_planned * expected_size_for_a_char);
 }
 
 
@@ -1752,6 +1771,189 @@ while (line[length-1]=='\\') {
    length=length+pos;
 }
 return length;
+}
+
+
+
+
+
+
+/**
+ * get a lot of unichar from file, only limited by size and end of file
+ */
+int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFILE* f)
+{
+#define BUFFER_IN_CACHE_SIZE_FGET_CHAR (0x100)
+
+ unsigned char tab_in[BUFFER_IN_CACHE_SIZE_FGET_CHAR];
+
+ switch (encoding) {
+	case UTF16_LE:
+	case BIG_ENDIAN_UTF16:
+	{
+		int hibytepos = (encoding == UTF16_LE) ? 1 : 0;
+
+		int size_to_do = size;
+		int size_done = 0;
+		for (;;)
+		{
+			if (size_to_do == 0)
+				return size_done;
+			int try_size = size_to_do;
+			if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2))
+				try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2);
+			size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size * 2, f);
+			if (read_bytes_in_file <= 0)
+			{
+				if (size_done > 0)
+					return size_done;
+				else
+					return (int)read_bytes_in_file;
+			}
+			if (read_bytes_in_file > 0)
+			{
+				int nb_unichar_read = (int)read_bytes_in_file / 2;
+				for (int i = 0; i < nb_unichar_read; i++) {
+
+					unichar c = (((unichar)tab_in[(i * 2) + hibytepos]) << 8) | (tab_in[(i * 2) + (1 - hibytepos)]);
+
+					*(buffer + size_done + i) = c;
+				
+				}
+				size_done += nb_unichar_read;
+				size_to_do -= nb_unichar_read;
+
+			}
+		}
+	}
+
+	
+	case UTF8:
+	{
+
+
+		size_t pos_already_read_in_disk = 0;
+		int pos_in_unichar_line = 0;
+
+		for (;;)
+		{
+			size_t size_to_read_binary = BUFFER_IN_CACHE_SIZE_FGET_CHAR - pos_already_read_in_disk;
+
+			size_t read_binary_in_file = 0;
+			if (size_to_read_binary>0)
+				read_binary_in_file = af_fread(&tab_in[pos_already_read_in_disk], 1, (size_t)size_to_read_binary, f);
+			if (read_binary_in_file <= 0)
+			{
+				if (pos_in_unichar_line == 0)
+					return EOF;
+				else
+				{
+					return pos_in_unichar_line;
+				}
+			}
+			read_binary_in_file += pos_already_read_in_disk;
+
+			if (read_binary_in_file > 0)
+			{
+				int i;
+				pos_already_read_in_disk = 0;
+				for (i = 0; i<(int)read_binary_in_file;)
+				{
+					unichar c;
+					unsigned char ch = tab_in[i];
+					int nbbyte = GetUtf8Size(ch);
+
+					if (i + nbbyte >(int)read_binary_in_file)
+					{
+						pos_already_read_in_disk = read_binary_in_file - i;
+						int j;
+						for (j = 0; j<(int)pos_already_read_in_disk; j++)
+							tab_in[j] = tab_in[i + j];
+						break;
+					}
+
+					c = ((unichar)ch) & GetUtf8Mask(ch);
+					int nbbyte_loop = nbbyte;
+
+					if (nbbyte_loop>0) {
+						int i_in_char = 0;
+						for (;;)
+						{
+							nbbyte_loop--;
+							if (nbbyte_loop == 0)
+								break;
+							i_in_char++;
+							c = (c << 6) | ((tab_in[i + i_in_char]) & 0x3F);
+						}
+					}
+
+					if (c == 0) {
+						fatal_error("Corrupted UTF8 text file containing null characters\n");
+					}
+					 
+
+
+					if (  (pos_in_unichar_line == (size - 1)))
+					{
+						af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
+							
+						return pos_in_unichar_line;
+					}
+
+					buffer[pos_in_unichar_line++] = c;
+					 
+					i += nbbyte;
+				}
+			}
+		}
+	}
+
+
+	default:
+	case ASCII:
+	{
+		int size_to_do = size;
+		int size_done = 0;
+		for (;;)
+		{
+			if (size_to_do == 0)
+				return size_done;
+			int try_size = size_to_do;
+			if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR))
+				try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR);
+			size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size, f);
+			if (read_bytes_in_file < 0)
+			{
+				if (size_done > 0)
+					return size_done;
+				else
+					return (int)read_bytes_in_file;
+			}
+
+			if (read_bytes_in_file > 0)
+			{
+				int nb_unichar_read = (int)read_bytes_in_file;
+				for (int i = 0; i < nb_unichar_read; i++) {
+
+					unichar c = (unichar)tab_in[i];
+
+					*(buffer + size_done + i) = c;
+				}
+				size_done += nb_unichar_read;
+				size_to_do -= nb_unichar_read;
+			}
+		}
+	}
+ }
+}
+
+
+/**
+ * get a lot of unichar from file, only limited by size and end of file
+ */
+int u_fget_unichars_raw(unichar* buffer, int size, U_FILE* f)
+{
+	return u_fget_unichars_raw(f->enc, buffer, size, f->f);
 }
 
 

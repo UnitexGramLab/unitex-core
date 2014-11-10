@@ -197,6 +197,8 @@ int u_fscanf(U_FILE*,const char*,...);
 U_FILE* u_fopen(Encoding,const char*,OpenMode);
 U_FILE* u_fopen(const VersatileEncodingConfig* cfg,const char*,OpenMode);
 
+void u_fsetsizereservation_by_bytes(U_FILE*, long size_planned);
+void u_fsetsizereservation_by_chars(U_FILE*, long size_planned);
 
 int u_fclose(U_FILE*);
 int u_fempty(Encoding,int,const char*);
@@ -234,6 +236,9 @@ int u_fgets(unichar*,U_FILE*);
 int u_fgets(unichar*,int,U_FILE*);
 int u_fgets_limit2(unichar*,int,U_FILE*);
 int u_fgets2(unichar*,U_FILE*);
+
+int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFILE* f);
+int u_fget_unichars_raw(unichar* buffer, int size, U_FILE* f);
 
 int u_fprintf(U_FILE*,const char*,...);
 int u_vfprintf(U_FILE*,const char*,va_list);
