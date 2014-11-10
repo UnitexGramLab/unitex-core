@@ -1803,7 +1803,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 			if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2))
 				try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2);
 			size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size * 2, f);
-			if (read_bytes_in_file <= 0)
+			if ((read_bytes_in_file <= 0) || (read_bytes_in_file == EOF))
 			{
 				if (size_done > 0)
 					return size_done;
@@ -1842,7 +1842,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 			size_t read_binary_in_file = 0;
 			if (size_to_read_binary>0)
 				read_binary_in_file = af_fread(&tab_in[pos_already_read_in_disk], 1, (size_t)size_to_read_binary, f);
-			if (read_binary_in_file <= 0)
+			if ((read_binary_in_file <= 0) || (read_binary_in_file == EOF))
 			{
 				if (pos_in_unichar_line == 0)
 					return EOF;
@@ -1893,7 +1893,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 					 
 
 
-					if (  (pos_in_unichar_line == (size - 1)))
+					if (pos_in_unichar_line == (size - 1))
 					{
 						af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
 							
@@ -1922,7 +1922,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 			if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR))
 				try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR);
 			size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size, f);
-			if (read_bytes_in_file < 0)
+			if ((read_bytes_in_file <= 0) || (read_bytes_in_file == EOF))
 			{
 				if (size_done > 0)
 					return size_done;

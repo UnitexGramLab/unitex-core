@@ -505,7 +505,48 @@ case B_INCLUDES_A: {
 }
 
 
-static int tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
+#define TOKENIZE_WRITE_BUFFER_SIZE 0x80
+static void fast_fwrite_raw_flush(U_FILE* f, unsigned char*out_buffer, unsigned int* pos_out_buffer)
+{
+	if ((*pos_out_buffer) > 0)
+		fwrite(out_buffer, 4, *pos_out_buffer, f);
+	*pos_out_buffer = 0;
+}
+
+static inline void fast_fwrite_raw(U_FILE* f, int n, unsigned char*out_buffer, unsigned int* pos_out_buffer, unsigned int size_out_buffer)
+{
+	if ((*pos_out_buffer) == size_out_buffer) {
+		fast_fwrite_raw_flush(f, out_buffer, pos_out_buffer);
+	}
+	*((int*)(out_buffer + ((*pos_out_buffer) * 4))) = n;
+	(*pos_out_buffer)++;
+}
+
+#define TOKENIZE_GET_BUFFER_SIZE 0x80
+
+static inline int fast_u_fgetc_raw(U_FILE* f, unichar*buffer,unsigned int* pos_in_buffer, unsigned int* filled_in_buffer)
+{
+	for (;;)
+	{
+		if ((*pos_in_buffer) < (*filled_in_buffer))
+		{
+			int c = (int)*(buffer + (*pos_in_buffer));
+			(*pos_in_buffer)++;
+			return c;
+		}
+
+		*filled_in_buffer = 0;
+		*pos_in_buffer = 0;
+		int res = u_fget_unichars_raw(buffer, TOKENIZE_GET_BUFFER_SIZE, f);
+		if (res == 0)
+			return EOF;
+		if (res < 0)
+			return res;
+		*filled_in_buffer = res;
+	}
+}
+
+static int tokenization(U_FILE* f_read,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
                          /* snt_offsets is used to note shifts induced by separator normalization */
@@ -519,7 +560,12 @@ char ENTER;
 int COUNT=0;
 int current_megabyte=0;
 int shift=0;
-c=u_fgetc_raw(f);
+unichar read_buffer[TOKENIZE_GET_BUFFER_SIZE];
+unsigned char write_buffer[(TOKENIZE_WRITE_BUFFER_SIZE * 4) + 0x10];
+unsigned int pos_in_buffer = 0;
+unsigned int filled_in_buffer = 0;
+unsigned int pos_out_buffer = 0;
+c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
 int current_pos;
 int snt_offsets_shift=0;
 int offset_index=0;
@@ -540,7 +586,7 @@ while ((c!=EOF) && (result == 0)) {
       ENTER=0;
       if (c==0x0d || c==0x0a) ENTER=1;
       // if the char is a separator, we jump all the separators
-      while ((c=u_fgetc_raw(f))==' ' || c==0x0d || c==0x0a || c=='\t') {
+	  while ((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) == ' ' || c == 0x0d || c == 0x0a || c == '\t') {
         if (c==0x0d || c==0x0a) ENTER=1;
         COUNT++;
       }
@@ -558,13 +604,13 @@ while ((c!=EOF) && (result == 0)) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
       }
       (*TOKENS_TOTAL)++;
-      fwrite(&n,4,1,coded_text);
+	  fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
    }
    else if (c=='{') {
      s[0]='{';
      int z=1;
      bool protected_char = false; // Cassys add
-     while (z < (MAX_TAG_LENGTH - 1) && (((c = u_fgetc_raw(f)) != '}' && c
+	 while (z < (MAX_TAG_LENGTH - 1) && (((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) != '}' && c
 					!= '{' && c != '\n') || protected_char)) {
 			protected_char = false; // Cassys add
 			if (c == '\\') { // Cassys add
@@ -598,8 +644,8 @@ while ((c!=EOF) && (result == 0)) {
      COUNT++;
      result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
      (*TOKENS_TOTAL)++;
-     fwrite(&n,4,1,coded_text);
-     c=u_fgetc_raw(f);
+	 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
+	 c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
    }
    else {
       s[0]=(unichar)c;
@@ -612,11 +658,11 @@ while ((c!=EOF) && (result == 0)) {
         		 &shift);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
-         fwrite(&n,4,1,coded_text);
-         c=u_fgetc_raw(f);
+		 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
+		 c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
       }
       else {
-         while ((n<(MAX_TAG_LENGTH-1)) && EOF!=(c=u_fgetc_raw(f)) && is_letter((unichar)c,alph)) {
+		  while ((n<(MAX_TAG_LENGTH - 1)) && EOF != (c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) && is_letter((unichar)c, alph)) {
            s[n++]=(unichar)c;
            COUNT++;
          }
@@ -630,10 +676,11 @@ while ((c!=EOF) && (result == 0)) {
         		 &shift);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
-         fwrite(&n,4,1,coded_text);
+		 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
       }
    }
 }
+fast_fwrite_raw_flush(coded_text, write_buffer, &pos_out_buffer);
 for (n=0;n<tokens->nbelems;n++) {
    u_fprintf(output,"%S\n",tokens->tab[n]);
 }
