@@ -369,10 +369,10 @@ cassys_tokens_list *add_replaced_text(
 
 			// performance enhancement
 			current_list_position = list_position;
-			current_token_position = l-> token_start_offset;
+			current_token_position = l->token_start_offset;
 
-			if (prev_l != NULL){ 
-				free(prev_l->label); 
+			if (prev_l != NULL){
+				free(prev_l->label);
 				free(prev_l);
 			}
 			prev_l=l;
@@ -380,12 +380,12 @@ cassys_tokens_list *add_replaced_text(
 		}
 	}
 	if (prev_l != NULL){
-		free(prev_l->label); 
+		free(prev_l->label);
 		free(prev_l);
 	}
 	free_fifo(stage_concord);
 	free_snt_files(snt_text_files);
-    free_alphabet(alphabet);
+	free_alphabet(alphabet);
 
 	return list;
 }
@@ -406,7 +406,7 @@ cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id, in
 }
 
 
-unichar *next_token(cassys_tokens_list *list, int transducer_id, int iteration){
+const unichar *next_token(cassys_tokens_list *list, int transducer_id, int iteration){
 	cassys_tokens_list *temp = next_element(list,transducer_id, iteration);
 
 	if(temp == NULL){
@@ -527,13 +527,15 @@ cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration
 
 cassys_tokens_allocation_tool *build_cassys_tokens_allocation_tool()
 {
-	cassys_tokens_allocation_tool *tool = (cassys_tokens_allocation_tool*)malloc(sizeof(cassys_tokens_allocation_tool));
-	if (tool == NULL){
+	cassys_tokens_allocation_tool *allocation_tool = (cassys_tokens_allocation_tool*)malloc(sizeof(cassys_tokens_allocation_tool));
+	if (allocation_tool == NULL){
 		fatal_alloc_error("build_cassys_tokens_allocation_tool");
 		exit(1);
 	}
-	tool->first_item = NULL;
-	return tool;
+	allocation_tool->first_item = NULL;
+	allocation_tool->allocator_tokens_list = create_abstract_allocator("build_cassys_tokens_allocation_tool", AllocatorCreationFlagAutoFreePrefered);
+	allocation_tool->must_free_tokens_list = (get_allocator_cb_flag(allocation_tool->allocator_tokens_list) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+	return allocation_tool;
 }
 
 
@@ -543,11 +545,13 @@ void free_cassys_tokens_allocation_tool(cassys_tokens_allocation_tool * allocati
 	while (item != NULL)
 	{
 		struct cassys_tokens_allocation_tool_item* next_item = item->next;
-		free(item->tokens_list_item->token);
-		free(item->tokens_list_item);
+		free_cb(item->tokens_list_item->token, allocation_tool->allocator_tokens_list);
+		free_cb(item->tokens_list_item, allocation_tool->allocator_tokens_list);
 		free(item);
 		item = next_item;
 	}
+
+	close_abstract_allocator(allocation_tool->allocator_tokens_list);
 	free(allocation_tool);
 }
 
@@ -556,26 +560,28 @@ void free_cassys_tokens_allocation_tool(cassys_tokens_allocation_tool * allocati
 
 cassys_tokens_list *new_element( unichar *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool){
 
-	cassys_tokens_list *l = (cassys_tokens_list*)malloc(sizeof(cassys_tokens_list)*1);
+	cassys_tokens_list *l = (cassys_tokens_list*)malloc_cb(sizeof(cassys_tokens_list) * 1, allocation_tool->allocator_tokens_list);
 	if(l == NULL){
 		fatal_alloc_error("new_element");
 		exit(1);
 	}
-	cassys_tokens_allocation_tool_item* allocation_item = (cassys_tokens_allocation_tool_item*)malloc(sizeof(cassys_tokens_allocation_tool_item));
-	if (allocation_item == NULL){
-		fatal_alloc_error("new_element");
-		exit(1);
-	}
+	if (allocation_tool->must_free_tokens_list) {
+		cassys_tokens_allocation_tool_item* allocation_item = (cassys_tokens_allocation_tool_item*)malloc(sizeof(cassys_tokens_allocation_tool_item));
+		if (allocation_item == NULL){
+			fatal_alloc_error("new_element");
+			exit(1);
+		}
 
-	allocation_item->tokens_list_item = l;
-	allocation_item->next = allocation_tool->first_item;
-	allocation_tool->first_item = allocation_item;
+		allocation_item->tokens_list_item = l;
+		allocation_item->next = allocation_tool->first_item;
+		allocation_tool->first_item = allocation_item;
+	}
 
 	l->transducer_id = transducer_id;
 	l->iteration = iteration;
 	l->output = NULL;
 	l->next_token = NULL;
-	l->token=u_strdup(u);
+	l->token=u_strdup(u, allocation_tool->allocator_tokens_list);
 	return l;
 }
 /*
@@ -601,7 +607,7 @@ void display_text(cassys_tokens_list *l, int transducer_id, int iteration){
 	u_printf("\n");
 }
 
-bool u_isspace(unichar *u){
+bool u_isspace(const unichar *u){
 	if ( u[0] == ' ' || u[0] == '\t' || u[0] == 0x0d|| u[0] == 0x0a) {
 		return true;
 	}
@@ -611,7 +617,7 @@ bool u_isspace(unichar *u){
 }
 
 
-cassys_tokens_list* cassys_trim(cassys_tokens_list *l ,unichar *string_before, unichar *string_next){
+cassys_tokens_list* cassys_trim(cassys_tokens_list *l, unichar *string_before, unichar *string_next, cassys_tokens_allocation_tool * allocation_tool){
 
 	cassys_tokens_list *last = NULL;
 	// We deal with successive spaces in the new concordance
@@ -626,8 +632,8 @@ cassys_tokens_list* cassys_trim(cassys_tokens_list *l ,unichar *string_before, u
 
 					cassys_tokens_list *to_be_freed = ite_space;
 					ite_space=ite_space->next_token;
-					free(to_be_freed->token);
-					free(to_be_freed);
+					free_cb(to_be_freed->token, allocation_tool->allocator_tokens_list);
+					free_cb(to_be_freed, allocation_tool->allocator_tokens_list);
 				} else {
 					// not a space character
 					break;
@@ -645,14 +651,14 @@ cassys_tokens_list* cassys_trim(cassys_tokens_list *l ,unichar *string_before, u
 		if(u_isspace(string_before)&& u_isspace(l->token)){
 			cassys_tokens_list *to_be_freed = l;
 			l=l->next_token;
-			free(to_be_freed->token);
-			free(to_be_freed);
+			free_cb(to_be_freed->token, allocation_tool->allocator_tokens_list);
+			free_cb(to_be_freed, allocation_tool->allocator_tokens_list);
 		}
 	}
 	if(string_next !=NULL){
 		if(u_isspace(string_next)&& u_isspace(last->token)){
-			free(last->token);
-			free(last);
+			free_cb(last->token, allocation_tool->allocator_tokens_list);
+			free_cb(last, allocation_tool->allocator_tokens_list);
 			last=NULL;
 		}
 	}
@@ -662,7 +668,4 @@ cassys_tokens_list* cassys_trim(cassys_tokens_list *l ,unichar *string_before, u
 
 
 } // namespace unitex
-
-
-
 

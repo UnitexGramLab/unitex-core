@@ -83,6 +83,8 @@ typedef struct cassys_tokens_allocation_tool_item{
 
 typedef struct cassys_tokens_allocation_tool{
 	struct cassys_tokens_allocation_tool_item* first_item;
+	Abstract_allocator allocator_tokens_list;
+	int must_free_tokens_list;
 } cassys_tokens_allocation_tool;
 
 /**
@@ -127,7 +129,7 @@ cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list
  */
 cassys_tokens_list *next_element(cassys_tokens_list *list, int transducer_id, int iteration);
 
-unichar *next_token(cassys_tokens_list *list, int transducer_id, int iteration);
+const unichar *next_token(cassys_tokens_list *list, int transducer_id, int iteration);
 
 cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, int iteration, int position);
 cassys_tokens_list *new_list(list_ustring *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool);

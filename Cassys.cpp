@@ -46,7 +46,7 @@ namespace unitex {
 
 
 
-const char *optstring_Cassys = ":t:a:w:l:hk:q:g:dvnm:s:ir:";
+const char *optstring_Cassys = ":t:a:w:l:hk:q:g:dvuNnm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
         {"text", required_argument_TS, NULL, 't'},
         {"alphabet", required_argument_TS, NULL, 'a'},
@@ -61,6 +61,8 @@ const struct option_TS lopts_Cassys[] = {
         {"transducer_file",required_argument_TS,NULL,'s'},
         {"transducer_dir",required_argument_TS,NULL,'r'},
         {"in_place", no_argument_TS,NULL,'i'},
+        {"dump_token_graph", no_argument_TS, NULL, 'u' },
+        {"no_dump_token_graph", no_argument_TS, NULL, 'N' },
         {"realign_token_graph_pointer", no_argument_TS, NULL, 'n' },
         {"translate_path_separator_to_native", no_argument_TS, NULL, 'v' },
         {"help", no_argument_TS,NULL,'h'}
@@ -82,7 +84,9 @@ const char* usage_Cassys =
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
         "-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
         "-i/--in_place mean uses the same csc/snt directories for each transducer\n"
-        "-n/--realign_token_graph_pointer mean the .dot file will not depends to pointer allocation to be deterministic\n"
+        "-u/--dump_token_graph create a .dot file with graph dump infos\n"
+        "-N/--no_dump_token_graph create a .dot file with graph dump infos\n"
+        "-n/--realign_token_graph_pointer create a.dot file will not depends to pointer allocation to be deterministic\n"
         "-v/--translate_path_separator_to_native replace path separator in csc by native separator for portable csc file\n"
         "-d/--no_create_directory mean the all snt/csc directories already exist and don't need to be created\n"
         "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
@@ -133,6 +137,7 @@ int main_Cassys(int argc,char* const argv[]) {
     int in_place = 0;
     int realign_token_graph_pointer = 0;
     int translate_path_separator_to_native = 0;
+    int dump_graph = 1; // By default, build a .dot file. Can be changed
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
     // decode the command line
@@ -236,8 +241,16 @@ int main_Cassys(int argc,char* const argv[]) {
             in_place = 1;
             break;
         }
+        case 'u': {
+            dump_graph = 1;
+            break;
+        }
+        case 'N': {
+            dump_graph = 0;
+            break;
+        }
         case 'n': {
-            realign_token_graph_pointer = 1;
+            realign_token_graph_pointer = dump_graph = 1;
             break;
         }
         case 'v': {
@@ -293,7 +306,7 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name, translate_path_separator_to_native);
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
 
-    cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name, negation_operator, &vec, morpho_dic, realign_token_graph_pointer);
+	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name, negation_operator, &vec, morpho_dic, dump_graph, realign_token_graph_pointer);
 
     if(morpho_dic != NULL){
         free(morpho_dic);
@@ -313,7 +326,7 @@ int main_Cassys(int argc,char* const argv[]) {
 int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
-    const char *morpho_dic, int realign_token_graph_pointer) {
+    const char *morpho_dic, int dump_graph, int realign_token_graph_pointer) {
 
 	cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
@@ -457,9 +470,12 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     // relaunch the construction of the text file without XML
     launch_concord_in_Cassys(result_file_name_path_raw, snt_files->concord_ind, alphabet, vec);
 
-    char graph_file_name[FILENAME_MAX];
-    sprintf(graph_file_name,"%s.dot", text_name_without_extension);
-    cassys_tokens_2_graph(tokens_list, graph_file_name, realign_token_graph_pointer);
+    if (dump_graph)
+    {
+        char graph_file_name[FILENAME_MAX];
+        sprintf(graph_file_name, "%s.dot", text_name_without_extension);
+        cassys_tokens_2_graph(tokens_list, graph_file_name, realign_token_graph_pointer);
+    }
 
     if (in_place != 0)
       free(labeled_text_name);
