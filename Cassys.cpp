@@ -315,6 +315,8 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     VersatileEncodingConfig* vec,
     const char *morpho_dic, int realign_token_graph_pointer) {
 
+	cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
+
     launch_tokenize_in_Cassys(text,alphabet,NULL,vec);
 
     //if (in_place == 0)
@@ -323,7 +325,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     struct snt_files *snt_text_files = new_snt_files(text);
 
     struct text_tokens *tokens = NULL;
-    cassys_tokens_list *tokens_list = cassys_load_text(vec,snt_text_files->tokens_txt, snt_text_files->text_cod,&tokens);
+    cassys_tokens_list *tokens_list = cassys_load_text(vec,snt_text_files->tokens_txt, snt_text_files->text_cod,&tokens, tokens_allocation_tool);
 
     u_printf("CasSys Cascade begins\n");
 
@@ -331,7 +333,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     char *labeled_text_name = NULL;
     char last_labeled_text_name[FILENAME_MAX];
 
-    if ((in_place != 0)){
+    if (in_place != 0){
        labeled_text_name = create_labeled_files_and_directory(text,
             0,0,0,0, must_create_directory,0);
     }
@@ -377,7 +379,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
             //
             add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
-                    transducer_number, iteration, alphabet, vec);
+                    transducer_number, iteration, alphabet, vec, tokens_allocation_tool);
 
 
             previous_transducer_number = transducer_number;
@@ -459,14 +461,14 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
     sprintf(graph_file_name,"%s.dot", text_name_without_extension);
     cassys_tokens_2_graph(tokens_list, graph_file_name, realign_token_graph_pointer);
 
-    if ((in_place != 0))
-                free(labeled_text_name);
+    if (in_place != 0)
+      free(labeled_text_name);
 
 
-
-    free_cassys_tokens_list(tokens_list);
+    //free_cassys_tokens_list(tokens_list);
     free_snt_files(snt_files);
     free_text_tokens(tokens);
+	free_cassys_tokens_allocation_tool(tokens_allocation_tool);
     return 0;
 }
 

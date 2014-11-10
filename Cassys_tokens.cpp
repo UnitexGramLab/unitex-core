@@ -271,7 +271,7 @@ unichar *unprotect_lexical_tags(unichar *u){
 }
 
 
-cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens){
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens, cassys_tokens_allocation_tool * allocation_tool){
 
 	*tokens = load_text_tokens(vec,tokens_text_name);
 
@@ -288,11 +288,11 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec,const ch
 	int char_read = (int)fread(&token_id,sizeof(int),1,f);
 	while(char_read ==1){
 		if(list==NULL){
-			list = new_element((*tokens)->token[token_id],0,0);
+			list = new_element((*tokens)->token[token_id],0,0,allocation_tool);
 			temp = list;
 		}
 		else {
-			temp ->next_token = new_element((*tokens)->token[token_id],0,0);
+			temp ->next_token = new_element((*tokens)->token[token_id],0,0,allocation_tool);
 			temp = temp -> next_token;
 		}
 
@@ -313,7 +313,7 @@ cassys_tokens_list *add_replaced_text(
 			int previous_transducer, int previous_iteration,
 			int transducer_id, int iteration,
 			const char *alphabet_name,
-			const VersatileEncodingConfig* vec) {
+			const VersatileEncodingConfig* vec, cassys_tokens_allocation_tool * allocation_tool) {
 
 	locate_pos *prev_l=NULL;
 	Alphabet *alphabet = load_alphabet(vec,alphabet_name);
@@ -353,7 +353,7 @@ cassys_tokens_list *add_replaced_text(
 		if(l!=NULL){
 			struct list_ustring *new_sentence_lu = cassys_tokenize_word_by_word(l->label, alphabet);
 			cassys_tokens_list *new_sentence_ctl =
-				new_list(new_sentence_lu, transducer_id, iteration);
+				new_list(new_sentence_lu, transducer_id, iteration, allocation_tool);
 
 			// performance enhancement :
 			// Since matches are sorted, we begin the search from the last known position in the list.
@@ -492,12 +492,12 @@ cassys_tokens_list *add_output(cassys_tokens_list *list,
 }
 
 
-cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration){
+cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool){
 	cassys_tokens_list *head = NULL;
 
 
 	if(l_u!=NULL){
-		head = new_element(l_u -> string, transducer_id, iteration);
+		head = new_element(l_u -> string, transducer_id, iteration, allocation_tool);
 		l_u=l_u->next;
 	}
 
@@ -507,7 +507,7 @@ cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration
 	while(l_u!=NULL){
 		// free ajout� pour lib�rer next_token : verifier son utilit� !
 		free(current->next_token);
-		current -> next_token = new_element(l_u -> string, transducer_id, iteration);
+		current -> next_token = new_element(l_u -> string, transducer_id, iteration, allocation_tool);
 
 
 		current = current ->next_token;
@@ -519,13 +519,55 @@ cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration
 	return head;
 }
 
-cassys_tokens_list *new_element( unichar *u, int transducer_id, int iteration){
+
+
+
+
+cassys_tokens_allocation_tool *build_cassys_tokens_allocation_tool()
+{
+	cassys_tokens_allocation_tool *tool = (cassys_tokens_allocation_tool*)malloc(sizeof(cassys_tokens_allocation_tool));
+	if (tool == NULL){
+		fatal_alloc_error("build_cassys_tokens_allocation_tool");
+		exit(1);
+	}
+	tool->first_item = NULL;
+	return tool;
+}
+
+
+void free_cassys_tokens_allocation_tool(cassys_tokens_allocation_tool * allocation_tool)
+{
+	struct cassys_tokens_allocation_tool_item* item = allocation_tool->first_item;
+	while (item != NULL)
+	{
+		struct cassys_tokens_allocation_tool_item* next_item = item->next;
+		free(item->tokens_list_item->token);
+		free(item->tokens_list_item);
+		free(item);
+		item = next_item;
+	}
+	free(allocation_tool);
+}
+
+
+
+
+cassys_tokens_list *new_element( unichar *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool){
 
 	cassys_tokens_list *l = (cassys_tokens_list*)malloc(sizeof(cassys_tokens_list)*1);
 	if(l == NULL){
 		fatal_alloc_error("new_element");
 		exit(1);
 	}
+	cassys_tokens_allocation_tool_item* allocation_item = (cassys_tokens_allocation_tool_item*)malloc(sizeof(cassys_tokens_allocation_tool_item));
+	if (allocation_item == NULL){
+		fatal_alloc_error("new_element");
+		exit(1);
+	}
+
+	allocation_item->tokens_list_item = l;
+	allocation_item->next = allocation_tool->first_item;
+	allocation_tool->first_item = allocation_item;
 
 	l->transducer_id = transducer_id;
 	l->iteration = iteration;
@@ -534,7 +576,7 @@ cassys_tokens_list *new_element( unichar *u, int transducer_id, int iteration){
 	l->token=u_strdup(u);
 	return l;
 }
-
+/*
 void free_cassys_tokens_list(cassys_tokens_list *l){
 	while(l!=NULL){
         cassys_tokens_list *l_next_token=NULL;
@@ -546,7 +588,7 @@ void free_cassys_tokens_list(cassys_tokens_list *l){
 		free(l);
         l=l_next_token;
 	}
-}
+}*/
 
 void display_text(cassys_tokens_list *l, int transducer_id, int iteration){
 	u_printf("cassys_token_list = ");
