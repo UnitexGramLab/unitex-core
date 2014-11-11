@@ -273,32 +273,37 @@ unichar *unprotect_lexical_tags(unichar *u){
 
 cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens, cassys_tokens_allocation_tool * allocation_tool){
 
-	*tokens = load_text_tokens(vec,tokens_text_name);
+	*tokens = load_text_tokens(vec, tokens_text_name);
 
-	U_FILE *f = u_fopen(BINARY, text_cod_name,U_READ);
-	if( f == NULL){
-		fatal_error("Cannot open file %s\n",text_cod_name);
+	ABSTRACTMAPFILE* map_text_cod = af_open_mapfile(text_cod_name, MAPFILE_OPTION_READ, 0);
+
+	if (map_text_cod == NULL){
+		fatal_error("Cannot open file %s\n", text_cod_name);
 		exit(1);
 	}
+	const int* text_cod_buf = (const int*)af_get_mapfile_pointer(map_text_cod);
+	unsigned int text_cod_size_nb_int = (unsigned int)(af_get_mapfile_size(map_text_cod) / sizeof(int));
+
+
 
 	cassys_tokens_list *list = NULL;
 	cassys_tokens_list *temp = list;
 
-	int token_id;
-	int char_read = (int)fread(&token_id,sizeof(int),1,f);
-	while(char_read ==1){
-		if(list==NULL){
-			list = new_element((*tokens)->token[token_id],0,0,allocation_tool);
+
+	for (unsigned int i = 0; i<text_cod_size_nb_int; i++) {
+		int token_id = *(text_cod_buf + i);
+		if (list == NULL){
+			list = new_element((*tokens)->token[token_id], 0, 0, allocation_tool);
 			temp = list;
 		}
 		else {
-			temp ->next_token = new_element((*tokens)->token[token_id],0,0,allocation_tool);
-			temp = temp -> next_token;
+			temp->next_token = new_element((*tokens)->token[token_id], 0, 0, allocation_tool);
+			temp = temp->next_token;
 		}
-
-		char_read = (int)fread(&token_id,sizeof(int),1,f);
 	}
-	u_fclose(f);
+
+	af_release_mapfile_pointer(map_text_cod, text_cod_buf);
+	af_close_mapfile(map_text_cod);
 
 	return list;
 }
