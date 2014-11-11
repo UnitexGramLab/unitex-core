@@ -522,7 +522,7 @@ static inline void fast_fwrite_raw(U_FILE* f, int n, unsigned char*out_buffer, u
 	(*pos_out_buffer)++;
 }
 
-#define TOKENIZE_GET_BUFFER_SIZE 0x80
+#define TOKENIZE_GET_BUFFER_SIZE 0x200
 
 static inline int fast_u_fgetc_raw(U_FILE* f, unichar*buffer,unsigned int* pos_in_buffer, unsigned int* filled_in_buffer)
 {

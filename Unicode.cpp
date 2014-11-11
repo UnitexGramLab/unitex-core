@@ -3690,7 +3690,51 @@ if ((a!=NULL) && (b!=NULL)) {
  * Returns 1 if a is the same as b; 0 otherwise.
  */
 int u_equal(const unichar* a, const unichar* b) {
-return !u_strcmp(a,b);
+	if ((a != NULL) && (b != NULL)) {
+		const unichar *a_p = a;
+		const unichar *b_p = b;
+		unichar a_c;
+		unichar b_c;
+
+		for (;;) {
+			a_c = (unichar)*(a_p);
+			b_c = (unichar)*(b_p);
+			if (a_c == '\0')
+				return (b_c == '\0') ? 1 : 0;
+			if (a_c - b_c != 0)
+				return 0;
+
+			a_c = (unichar)*(a_p + 1);
+			b_c = (unichar)*(b_p + 1);
+			if (a_c == '\0')
+				return (b_c == '\0') ? 1 : 0;
+			if (a_c - b_c != 0)
+				return 0;
+
+			a_c = (unichar)*(a_p + 2);
+			b_c = (unichar)*(b_p + 2);
+			if (a_c == '\0')
+				return (b_c == '\0') ? 1 : 0;
+			if (a_c - b_c != 0)
+				return 0;
+
+			a_c = (unichar)*(a_p + 3);
+			b_c = (unichar)*(b_p + 3);
+			a_p += 4;
+			b_p += 4;
+			if (a_c == '\0')
+				return (b_c == '\0') ? 1 : 0;
+			if (a_c - b_c != 0)
+				return 0;
+		};
+	}
+	else {
+		if (a == NULL) {
+			if (b == NULL) return 1;
+			return 0;
+		}
+		return 0;
+	}
 }
 
 
