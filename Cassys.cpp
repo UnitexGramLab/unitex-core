@@ -137,7 +137,7 @@ int main_Cassys(int argc,char* const argv[]) {
     int in_place = 0;
     int realign_token_graph_pointer = 0;
     int translate_path_separator_to_native = 0;
-    int dump_graph = 1; // By default, build a .dot file. Can be changed
+    int dump_graph = 0; // By default, don't build a .dot file.
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
     // decode the command line
