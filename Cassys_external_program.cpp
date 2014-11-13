@@ -221,10 +221,17 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 
 	// verify the braces in concordance
 			U_FILE *concord;
-			unichar line[4096];
+			unichar* line ;
+			int size_buffer_line = 4096;
 			int brace_level;
 			int i;
 			int l;
+
+			line = (unichar*)malloc((size_buffer_line + 1) * sizeof(unichar));
+			if (line == NULL){
+				fatal_alloc_error("launch_concord_in_Cassys");
+				exit(1);
+			}
 
 			//concord = u_fopen_exis(mask_encoding_compatibility_input, index_file,U_READ);
 			concord = u_fopen(vec, index_file, U_READ);
@@ -233,8 +240,23 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 				exit(1);
 			}
 			while(!u_feof(concord)){
-				u_fgets(line, concord);
-				brace_level=0;
+				int nb_read;
+				unsigned int pos = 0;
+				for (;;)
+				{
+					int read_possible = size_buffer_line - pos;
+					nb_read = u_fgets_limit2(line + pos, (int)read_possible, concord);
+					if (nb_read != (read_possible - 1))
+						break;
+					pos += nb_read;
+					size_buffer_line *= 2;
+					line = (unichar*)realloc(line,(size_buffer_line + 1) * sizeof(unichar));
+					if (line == NULL){
+						fatal_alloc_error("launch_concord_in_Cassys");
+						exit(1);
+					}
+				}
+				brace_level = 0;
 				i=0;
 				l=u_strlen(line);
 				while(i<l) {
@@ -286,6 +308,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
 
+	free(line);
 	return result;
 }
 
