@@ -114,8 +114,9 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 			create_variable_backup_memory_reserve(p->input_variables,1);
     p->backup_memory_reserve = backup_reserve;
 	int current_token;
-	while (p->current_origin < p->buffer_size && p->number_of_matches
-			!= p->search_limit) {
+	while (p->current_origin < p->buffer_size &&
+			p->buffer[p->current_origin] < p->tokens->size &&
+			p->number_of_matches != p->search_limit) {
 		if (unite != 0) {
 			n_read = p->current_origin % unite;
 			if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY)) {
