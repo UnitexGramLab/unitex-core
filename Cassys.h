@@ -79,7 +79,8 @@ int main_Cassys(int argc,char* const argv[]);
  *
  * return 0 if correct
  */
-int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char*negation_operator,const char *alphabet,
+int cascade(const char* text, int in_place, int must_create_directory, int must_do_cleanup, const char* tmp_work_dir,
+	fifo* transducer_list, const char*negation_operator,const char *alphabet,
 	VersatileEncodingConfig*, const char *morpho_dic, int dump_graph, int realign_token_graph_pointer);
 
 

@@ -68,7 +68,21 @@ int make_directory(const char *path);
 int initialize_working_directory(const char *text,int must_create_directory);
 
 
+/**
+  * cleanup a working directory
+  */
+void cleanup_work_directory_content(char*);
 
+
+/**
+ * get the cascade work directory for a corpus
+ */
+void get_csc_path(const char* filename, char* result);
+
+/**
+ * get the first cascade work directory for a corpus
+ */
+void get_csc_wd_path(const char* filename, char* result);
 
 /**
  * \brief

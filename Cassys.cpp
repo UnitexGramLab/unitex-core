@@ -46,7 +46,7 @@ namespace unitex {
 
 
 
-const char *optstring_Cassys = ":t:a:w:l:hk:q:g:dvuNnm:s:ir:";
+const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNnm:s:ir:";
 const struct option_TS lopts_Cassys[] = {
         {"text", required_argument_TS, NULL, 't'},
         {"alphabet", required_argument_TS, NULL, 'a'},
@@ -65,6 +65,8 @@ const struct option_TS lopts_Cassys[] = {
         {"no_dump_token_graph", no_argument_TS, NULL, 'N' },
         {"realign_token_graph_pointer", no_argument_TS, NULL, 'n' },
         {"translate_path_separator_to_native", no_argument_TS, NULL, 'v' },
+        {"working_dir", required_argument_TS, NULL, 'p' },
+        {"cleanup_working_files", no_argument_TS, NULL, 'b' },
         {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -84,6 +86,8 @@ const char* usage_Cassys =
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
         "-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
         "-i/--in_place mean uses the same csc/snt directories for each transducer\n"
+        "-p X/--working_dir=X: uses directory X for intermediate working file\n"
+        "-b/--cleanup_working_files: remove intermediate working file after usage\n"
         "-u/--dump_token_graph create a .dot file with graph dump infos\n"
         "-N/--no_dump_token_graph create a .dot file with graph dump infos\n"
         "-n/--realign_token_graph_pointer create a.dot file will not depends to pointer allocation to be deterministic\n"
@@ -129,10 +133,12 @@ int main_Cassys(int argc,char* const argv[]) {
 
     char alphabet_file_name[FILENAME_MAX];
     char transducer_filename_prefix[FILENAME_MAX];
+    char* tmp_work_dir = NULL;
     bool has_alphabet = false;
     char negation_operator[0x20];
 
     VersatileEncodingConfig vec=VEC_DEFAULT;
+    int must_do_cleanup = 0;
     int must_create_directory = 1;
     int in_place = 0;
     int realign_token_graph_pointer = 0;
@@ -154,6 +160,9 @@ int main_Cassys(int argc,char* const argv[]) {
                   free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
                   if (morpho_dic != NULL) {
                      free(morpho_dic);
+                  }
+                  if (tmp_work_dir != NULL) {
+                      free(tmp_work_dir);
                   }
                   return 0;
         case 'k': if (vars->optarg[0]=='\0') {
@@ -257,8 +266,25 @@ int main_Cassys(int argc,char* const argv[]) {
             translate_path_separator_to_native = 1;
             break;
         }
+        case 'b': {
+            must_do_cleanup = 1;
+            break;
+        }
         case 'd': {
             must_create_directory = 0;
+            break;
+        }
+        case 'p' : {
+            if (vars->optarg[0] != '\0') {
+                   if (tmp_work_dir != NULL) {
+                      free(tmp_work_dir);
+                   }
+                   tmp_work_dir = strdup(vars->optarg);
+                    if (tmp_work_dir == NULL) {
+                        fatal_alloc_error("main_Cassys");
+                    }
+                
+            }
             break;
         }
         case 'w' : {
@@ -306,8 +332,13 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name, translate_path_separator_to_native);
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
 
-	cascade(text_file_name, in_place, must_create_directory, transducer_list, alphabet_file_name, negation_operator, &vec, morpho_dic, dump_graph, realign_token_graph_pointer);
+    cascade(text_file_name, in_place, must_create_directory, must_do_cleanup, tmp_work_dir,
+        transducer_list, alphabet_file_name, negation_operator, 
+        &vec, morpho_dic, dump_graph, realign_token_graph_pointer);
 
+    if (tmp_work_dir != NULL){
+        free(tmp_work_dir);
+    }
     if(morpho_dic != NULL){
         free(morpho_dic);
     }
@@ -323,12 +354,77 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(const char* text, int in_place, int must_create_directory, fifo* transducer_list, const char *alphabet,
+int cascade(const char* original_text, int in_place, int must_create_directory,  int must_do_cleanup, const char* tmp_work_dir,
+    fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
     const char *morpho_dic, int dump_graph, int realign_token_graph_pointer) {
 
 	cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
+
+
+	if (must_do_cleanup) {
+		in_place = 1;
+	}
+	const char* text = original_text;
+	char * build_text = NULL;
+	char * build_work_text_snt_path = NULL;
+	char * build_work_text_csc_path = NULL;
+	char * build_work_text_csc_work_path = NULL;
+	size_t len_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
+
+	if ((len_work_dir > 0) || (must_do_cleanup != 0)) {
+		size_t len_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
+
+			build_work_text_snt_path = (char*)malloc(len_work_dir + (strlen(original_text) * 2) + 0x40);
+			if (build_work_text_snt_path == NULL) {
+				fatal_alloc_error("load_transducer_from_linked_list");
+				exit(1);
+			}
+
+			build_work_text_csc_path = (char*)malloc(len_work_dir + (strlen(original_text) * 2) + 0x40);
+			if (build_work_text_csc_path == NULL) {
+				fatal_alloc_error("load_transducer_from_linked_list");
+				exit(1);
+			}
+
+			build_work_text_csc_work_path = (char*)malloc(len_work_dir + (strlen(original_text) * 2) + 0x40);
+			if (build_work_text_csc_work_path == NULL) {
+				fatal_alloc_error("load_transducer_from_linked_list");
+				exit(1);
+			}
+
+			if (len_work_dir > 0) {
+				build_text = (char*)malloc(len_work_dir + strlen(original_text) + 0x10);
+				if (build_text == NULL) {
+					fatal_alloc_error("load_transducer_from_linked_list");
+					exit(1);
+				}
+
+				strcpy(build_text, (len_work_dir > 0) ? tmp_work_dir : original_text);
+				char latest_char = *(tmp_work_dir + strlen(tmp_work_dir) - 1);
+				if ((latest_char != '\\') && (latest_char != '/')) {
+					strcat(build_text, PATH_SEPARATOR_STRING);
+				}
+				remove_path(original_text, build_text + strlen(build_text));
+				text = build_text;
+				copy_file(text, original_text);
+			}
+			
+			get_snt_path(text, build_work_text_snt_path);
+			
+			
+			get_csc_wd_path(text, build_work_text_csc_path);
+			get_snt_path(build_work_text_csc_path, build_work_text_csc_work_path);
+
+
+			get_csc_path(text, build_work_text_csc_path);
+			
+			if (len_work_dir > 0) {
+				make_directory(build_work_text_snt_path);
+				//make_directory(build_work_text_csc_path);
+			}
+		}
 
     launch_tokenize_in_Cassys(text,alphabet,NULL,vec);
 
@@ -442,7 +538,7 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
 
     char result_file_name_XML[FILENAME_MAX];
     char text_name_without_extension[FILENAME_MAX];
-    remove_extension(text,text_name_without_extension);
+    remove_extension(original_text,text_name_without_extension);
     sprintf(result_file_name_XML,"%s_csc.txt",text_name_without_extension);
 
     // make a copy of the last resulting text of the cascade in the file named _csc.txt
@@ -477,14 +573,38 @@ int cascade(const char* text, int in_place, int must_create_directory, fifo* tra
         cassys_tokens_2_graph(tokens_list, graph_file_name, realign_token_graph_pointer);
     }
 
-    if (in_place != 0)
-      free(labeled_text_name);
-
 
     //free_cassys_tokens_list(tokens_list);
     free_snt_files(snt_files);
     free_text_tokens(tokens);
 	free_cassys_tokens_allocation_tool(tokens_allocation_tool);
+
+
+	if (must_do_cleanup != 0) {
+		if (build_text != NULL) {
+			af_remove(build_text);
+		}
+		af_remove(labeled_text_name);
+		cleanup_work_directory_content(build_work_text_snt_path);
+		cleanup_work_directory_content(build_work_text_csc_work_path);	
+		cleanup_work_directory_content(build_work_text_csc_path);
+	}
+
+    if (in_place != 0)
+      free(labeled_text_name);
+
+	if (build_text != NULL)
+		free(build_text);
+
+	if (build_work_text_snt_path != NULL)
+		free(build_work_text_snt_path);
+
+	if (build_work_text_csc_path != NULL)
+		free(build_work_text_csc_path);
+
+	if (build_work_text_csc_work_path != NULL)
+		free(build_work_text_csc_work_path);
+
     return 0;
 }
 

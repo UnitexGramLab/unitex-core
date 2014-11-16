@@ -62,7 +62,38 @@ int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const
     return (ret_copy == 0);
 }
 
+static void remove_file_in_path(char* path, const char* filename, int mandatory)
+{
+	if (!path)
+		return;
+	char * end_path = path + strlen(path);
+	strcpy(end_path, filename);
+	if (mandatory || fexists(path))
+		af_remove(path);
+	*end_path = '\0';
+}
 
+void cleanup_work_directory_content(char* path)
+{
+	if (path == NULL)
+		return;
+	remove_file_in_path(path, "concord.ind", 0);
+	remove_file_in_path(path, "concord.n", 0);
+	remove_file_in_path(path, "concord.txt", 0);
+	remove_file_in_path(path, "dlc", 0);
+	remove_file_in_path(path, "dlf", 0);
+	remove_file_in_path(path, "enter.pos", 1);
+	remove_file_in_path(path, "err", 0);
+	remove_file_in_path(path, "stat_dic.n", 0);
+	remove_file_in_path(path, "stats.n", 0);
+	remove_file_in_path(path, "tags.ind", 0);
+	remove_file_in_path(path, "text.cod", 1);
+	remove_file_in_path(path, "tok_by_alph.txt", 0);
+	remove_file_in_path(path, "tok_by_freq.txt", 0);
+	remove_file_in_path(path, "tokens.txt", 1);
+	remove_file_in_path(path, "snt_offsets.pos", 0);
+	rmDirPortable(path);
+}
 
 int copy_directory_snt_content(const char*dest_snt_dir,const char*src_snd_dir)
 {
@@ -87,6 +118,31 @@ int copy_directory_snt_content(const char*dest_snt_dir,const char*src_snd_dir)
 }
 
 
+void get_csc_path(const char* filename, char* result) {
+
+	get_path(filename, result);
+	remove_path_and_extension(filename, result + strlen(result));
+	
+	strcat(result, CASSYS_DIRECTORY_EXTENSION);
+
+	strcat(result, PATH_SEPARATOR_STRING);
+}
+
+void get_csc_wd_path(const char* filename, char* result) {
+	char canonical_name[FILENAME_MAX];
+	remove_path_and_extension(filename, canonical_name);
+
+	char extension[FILENAME_MAX];
+	get_extension(filename, extension);
+
+	get_path(filename, result);
+	remove_path_and_extension(filename, result + strlen(result));
+	
+	strcat(result, CASSYS_DIRECTORY_EXTENSION);
+
+	strcat(result, PATH_SEPARATOR_STRING);
+	sprintf(result+strlen(result), "%s_0_0%s",canonical_name,extension);
+}
 
 int initialize_working_directory(const char *text,int must_create_directory){
 	char path[FILENAME_MAX];
