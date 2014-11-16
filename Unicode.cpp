@@ -247,6 +247,12 @@ return u_fgets_limit2(f->enc,s,size,f->f);
 }
 
 
+int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_size, ABSTRACTFILE* f, int treat_CR_as_LF);
+int u_fgets_dynamic_buffer(unichar** line, size_t* buffer_size, U_FILE* f, int treat_CR_as_LF) {
+return u_fgets_dynamic_buffer(f->enc, line, buffer_size, f->f, treat_CR_as_LF);
+}
+
+
 /**
  * Skips a line. Returns 0 if end of file has been reached; 1 otherwise.
  */
@@ -1670,6 +1676,52 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 
 
 /**
+ * u_fgets_dynamic_buffer read a line and store it on a growing buffer
+ *
+ * before reading line, just do
+ *   unichar* line = NULL;
+ *   size_t size_buffer_line = 0;
+ *   int len_read; while ((len_read=u_fgets_dynamic_buffer(&line, &size_buffer_line,f)) != EOF) { work on line }
+ *    or 
+ *   while (u_fgets_dynamic_buffer(&line, &size_buffer_line,f) != EOF) { work on line }
+ *   and at end, at same time than u_close(f)
+ *   if (line != NULL) free(line);
+ */
+#define START_SIZE_DYNAMIC_BUFFER 4// 1024
+int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_size, ABSTRACTFILE* f, int treat_CR_as_LF)
+{
+	if (((*line) == NULL) || ((*buffer_size) == 0))
+	{
+		*buffer_size += START_SIZE_DYNAMIC_BUFFER;
+		*line = (unichar*)malloc(sizeof(unichar) * ((*buffer_size) + 1));
+
+		if ((*line) == NULL){
+			fatal_alloc_error("u_fgets_dynamic_buffer");
+		}
+	}
+
+	**line = 0;
+	int pos = 0;
+	for (;;)
+	{
+		int read_possible = (int)(*buffer_size) - pos;
+		int nb_read = u_fgets_buffered(encoding, (*line)+pos, 2, (int)read_possible, f, treat_CR_as_LF);
+		if (nb_read == EOF)
+			return (pos == 0) ? EOF : pos;
+		pos += nb_read;
+		*((*line) + pos) = 0;
+		if (nb_read != (read_possible - 1))
+			return pos;
+		(*buffer_size) *= 2;
+		*line = (unichar*)realloc(*line, sizeof(unichar) * ((*buffer_size) + 1));
+		if ((*line) == NULL){
+			fatal_alloc_error("u_fgets_dynamic_buffer");
+		}
+	}
+}
+
+
+/**
  * Reads from the file 'f' until it finds the end of line '\n' or
  * the end of file. The characters read are written in 'line'. The
  * function returns EOF if the current position in the file is at the
@@ -1727,6 +1779,9 @@ return u_fgets_buffered(encoding,line,1,size,f,1);
 int u_fgets_limit2(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
 	return u_fgets_buffered(encoding,line,2,size,f,0);
 }
+
+
+
 
 
 /**

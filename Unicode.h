@@ -164,6 +164,7 @@ int u_fgets(unichar*,int,U_FILE*);
 int u_fgets_limit2(unichar*,int,U_FILE*);
 int u_fgets2(unichar*,U_FILE*);
 int u_fgets_treat_cr_as_lf(unichar* s,int size,U_FILE* f);
+int u_fgets_dynamic_buffer(unichar** line, size_t* buffer_size, U_FILE* f, int treat_CR_as_LF = 0);
 
 int u_printf(const char*,...);
 int u_fprintf(U_FILE*,const char*,...);

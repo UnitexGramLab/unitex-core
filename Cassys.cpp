@@ -56,7 +56,6 @@ const struct option_TS lopts_Cassys[] = {
         {"output_encoding",required_argument_TS,NULL,'q'},
         {"no_create_directory",no_argument_TS,NULL,'d'},
         {"negation_operator",required_argument_TS,NULL,'g'},
-
         {"transducer_policy",required_argument_TS,NULL,'m'},
         {"transducer_file",required_argument_TS,NULL,'s'},
         {"transducer_dir",required_argument_TS,NULL,'r'},
@@ -422,7 +421,6 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 			
 			if (len_work_dir > 0) {
 				make_directory(build_work_text_snt_path);
-				//make_directory(build_work_text_csc_path);
 			}
 		}
 
