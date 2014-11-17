@@ -221,8 +221,8 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 
 	// verify the braces in concordance
 			U_FILE *concord;
-			unichar* line ;
-			int size_buffer_line = 4096;
+			unichar* line = NULL;
+			size_t size_buffer_line = 0;
 			int brace_level;
 			int i;
 			int l;
@@ -239,23 +239,9 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 				fatal_error("Cannot open file %s\n",index_file);
 				exit(1);
 			}
-			while(!u_feof(concord)){
-				int nb_read;
-				unsigned int pos = 0;
-				for (;;)
-				{
-					int read_possible = size_buffer_line - pos;
-					nb_read = u_fgets_limit2(line + pos, (int)read_possible, concord);
-					if (nb_read != (read_possible - 1))
-						break;
-					pos += nb_read;
-					size_buffer_line *= 2;
-					line = (unichar*)realloc(line,(size_buffer_line + 1) * sizeof(unichar));
-					if (line == NULL){
-						fatal_alloc_error("launch_concord_in_Cassys");
-						exit(1);
-					}
-				}
+			while (u_fgets_dynamic_buffer(&line, &size_buffer_line, concord) != EOF) {
+				
+
 				brace_level = 0;
 				i=0;
 				l=u_strlen(line);
@@ -307,8 +293,9 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	int result = invoke(invoker);
 	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
-
-	free(line);
+	if (line != NULL) {
+		free(line);
+	}
 	return result;
 }
 

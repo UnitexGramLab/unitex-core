@@ -57,7 +57,8 @@ void display_lu(struct list_ustring *l){
  * stored in a locate_pos structure
  */
 struct fifo *read_concord_file(const char *concord_file_name, const VersatileEncodingConfig* vec){
-	unichar line[4096];
+	unichar* line = NULL;
+	size_t size_buffer_line = 0;
 
 	struct fifo *f = new_fifo();
 
@@ -68,19 +69,17 @@ struct fifo *read_concord_file(const char *concord_file_name, const VersatileEnc
 		exit(1);
 	}
 
-	if(u_fgets(line,4096,concord_desc_file)==EOF){
+	if (u_fgets_dynamic_buffer(&line, &size_buffer_line, concord_desc_file) == EOF){
 		fatal_error("Malformed concordance file %s",concord_file_name);
 	}
 
-	while(u_fgets(line,4096,concord_desc_file)!=EOF){
-
-		// we don't want the end of line char
-		line[u_strlen(line)-1]='\0';
+	while (u_fgets_dynamic_buffer(&line, &size_buffer_line, concord_desc_file) != EOF){
 		locate_pos *l = read_concord_line(line);
 		put_ptr(f,l);
-
 	}
-
+	if (line != NULL) {
+		free(line);
+	}
 	u_fclose(concord_desc_file);
 	return f;
 }

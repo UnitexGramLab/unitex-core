@@ -1687,7 +1687,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
  *   and at end, at same time than u_close(f)
  *   if (line != NULL) free(line);
  */
-#define START_SIZE_DYNAMIC_BUFFER 4// 1024
+#define START_SIZE_DYNAMIC_BUFFER 512
 int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_size, ABSTRACTFILE* f, int treat_CR_as_LF)
 {
 	if (((*line) == NULL) || ((*buffer_size) == 0))
