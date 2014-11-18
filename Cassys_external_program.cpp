@@ -227,13 +227,6 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 			int i;
 			int l;
 
-			line = (unichar*)malloc((size_buffer_line + 1) * sizeof(unichar));
-			if (line == NULL){
-				fatal_alloc_error("launch_concord_in_Cassys");
-				exit(1);
-			}
-
-			//concord = u_fopen_exis(mask_encoding_compatibility_input, index_file,U_READ);
 			concord = u_fopen(vec, index_file, U_READ);
 			if( concord == NULL){
 				fatal_error("Cannot open file %s\n",index_file);
