@@ -3628,7 +3628,7 @@ unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buf
 
 /**
  * free the buffer allocated by u_strcpy_optional_buffer / u_strcat_optional_buffer if needed
- */int count_free_opt_buf = 0; int count_free_opt_buf_real = 0;
+ */
 void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator prv_alloc)
 {
 	if ((*allocated_buffer) != NULL) {

@@ -900,7 +900,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 									pos2 + p->current_origin,
 									end_of_compound + p->current_origin);
 							OK = string_match_filter(p->filters, sequence,
-									filter_number, p->recyclable_wchart_buffer);
+								filter_number, p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 						}
 #endif
 						if (OK) {
@@ -985,7 +985,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 								pos2 + p->current_origin,
 								end_of_compound + p->current_origin);
 						OK = string_match_filter(p->filters, sequence,
-								filter_number, p->recyclable_wchart_buffer);
+							filter_number, p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 					}
 #endif
 					if (OK) {
@@ -1155,7 +1155,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							start + p->current_origin,
 							end-1 + p->current_origin);
 					OK = string_match_filter(p->filters, sequence,
-							filter_number, p->recyclable_wchart_buffer);
+						filter_number, p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 					if (!OK) {
 						start=-1;
 						break;
@@ -1505,7 +1505,7 @@ while (output_variable_list != NULL) {
 							pos2 + p->current_origin,
 							end_of_compound + p->current_origin);
 					OK = string_match_filter(p->filters, sequence,
-							filter_number, p->recyclable_wchart_buffer);
+						filter_number, p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 				}
 #endif
 				if (OK) {
@@ -1565,7 +1565,7 @@ while (output_variable_list != NULL) {
 							pos2 + p->current_origin,
 							end_of_compound + p->current_origin);
 					OK = string_match_filter(p->filters, sequence,
-							filter_number, p->recyclable_wchart_buffer);
+							filter_number, p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER);
 				}
 #endif
 				if (OK) {

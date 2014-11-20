@@ -91,11 +91,85 @@ while (--n > 0);
 return s;
 }
 
+#define START_SIZE_DYNAMIC_BUFFER_REGEX 1024
+void w_strcpy(unichar_regex** target,size_t *buffer_size,const unichar* source) {
+int i=0;
+unsigned int len = u_strlen(source);
+if (len + 1 >= (int)(*buffer_size)) {
+	if ((*buffer_size) < START_SIZE_DYNAMIC_BUFFER_REGEX) {
+		*buffer_size = START_SIZE_DYNAMIC_BUFFER_REGEX;
+	}
+	while (len + 1 >= (int)(*buffer_size)) {
+		(*buffer_size) *= 2;
+	}
+
+	*target = (unichar_regex*)(((*target) == NULL) ? malloc((*buffer_size) * sizeof(unichar_regex) * UNICHAR_REGEX_ALLOC_FACTOR)
+		                      : realloc((*target), (*buffer_size) * sizeof(unichar_regex) * UNICHAR_REGEX_ALLOC_FACTOR));
+	if (target==NULL) {
+		fatal_alloc_error("w_strcpy");
+	}
+}
+while (((*target)[i]=(unichar_regex)source[i])!= L'\0') i++;
+}
+
+
+
 
 void w_strcpy(unichar_regex* target,const unichar* source) {
 int i=0;
 while ((target[i]=(unichar_regex)source[i])!= L'\0') i++;
 }
+
+
+
+unichar_regex* w_strcpy_optional_buffer(unichar_regex * original_buffer, size_t original_buffer_size,
+	unichar_regex**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
+{
+	size_t add_string_len = u_strlen(add_string);
+	size_t buffer_size_needed = add_string_len + 1;
+	if (len != NULL)
+		*len = add_string_len;
+
+	if ((*allocated_buffer) == NULL)
+	{
+		if ((add_string_len + 1) < original_buffer_size)
+		{
+			w_strcpy(original_buffer, add_string);
+			return original_buffer;
+		}
+		else
+		{
+			*allocated_buffer = (unichar_regex*)malloc_cb(buffer_size_needed * sizeof(unichar_regex) * UNICHAR_REGEX_ALLOC_FACTOR, prv_alloc);
+			if ((*allocated_buffer) == NULL) {
+				fatal_alloc_error("u_strcpy_optional_buffer");
+			}
+
+			w_strcpy((*allocated_buffer), add_string);
+			return *allocated_buffer;
+		}
+	}
+	else
+	{
+		free_cb(*allocated_buffer, prv_alloc);
+
+		*allocated_buffer = (unichar_regex*)malloc_cb(buffer_size_needed * sizeof(unichar_regex) * UNICHAR_REGEX_ALLOC_FACTOR, prv_alloc);
+		if ((*allocated_buffer) == NULL) {
+			fatal_alloc_error("u_strcpy_optional_buffer");
+		}
+
+		w_strcpy((*allocated_buffer), add_string);
+		return *allocated_buffer;
+	}
+}
+
+void free_wstring_optional_buffer(unichar_regex** allocated_buffer, Abstract_allocator prv_alloc)
+{
+	if ((*allocated_buffer) != NULL) {
+		free_cb(*allocated_buffer, prv_alloc);
+		*allocated_buffer = NULL;
+	}
+}
+
 
 } // namespace unitex
 

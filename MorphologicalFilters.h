@@ -96,7 +96,7 @@ FilterMatchIndex* new_FilterMatchIndex(FilterSet*,struct string_hash*);
 void free_FilterMatchIndex(FilterMatchIndex*);
 
 int string_match_filter(const FilterSet*,const unichar*,int);
-int string_match_filter(const FilterSet*,const unichar*,int,unichar_regex*);
+int string_match_filter(const FilterSet*,const unichar*,int,unichar_regex*,size_t);
 int token_match_filter(FilterMatchIndex*,int,int);
 
 

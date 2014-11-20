@@ -48,6 +48,9 @@ size_t regex_facade_regerror(int errcode, const regex_facade_regex_t *preg, char
 void regex_facade_regfree(regex_facade_regex_t *preg);
 int regex_facade_regexec(const regex_facade_regex_t *preg, const unichar_regex *string,
 	 size_t nmatch, regex_regmatch_t pmatch[], int eflags);
+
+
+
 #endif
 
 #ifdef __cplusplus
@@ -60,6 +63,13 @@ int regex_facade_regexec(const regex_facade_regex_t *preg, const unichar_regex *
 #endif
 
 namespace unitex {
+
+/* function for translate string */
+void w_strcpy(unichar_regex* target, const unichar* source);
+void w_strcpy(unichar_regex** target, size_t *buffer_size, const unichar* source);
+unichar_regex* w_strcpy_optional_buffer(unichar_regex * original_buffer, size_t original_buffer_size,
+	unichar_regex**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc);
+void free_wstring_optional_buffer(unichar_regex** allocated_buffer, Abstract_allocator prv_alloc);
 
 unichar_regex* regex_facade_strcpy(unichar_regex* dest,const unichar* src);
 unichar_regex* regex_facade_strncpy(unichar_regex *dest,const unichar *src,unsigned int n);

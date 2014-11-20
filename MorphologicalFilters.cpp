@@ -34,10 +34,9 @@ namespace unitex {
 #define HASH_FILTERS_DIM 1024
 
 
-void free_FilterSet(FilterSet*,int);
-void w_extract_inflected(const unichar*,unichar_regex*);
-void split_filter(const unichar*,unichar*,char*);
-void w_strcpy(unichar_regex*,const unichar*);
+static void free_FilterSet(FilterSet*,int);
+static void w_extract_inflected(const unichar* tag_token, unichar_regex** inflected, size_t *buffer_size);
+static void split_filter(const unichar*,unichar*,char*);
 
 
 /**
@@ -152,7 +151,7 @@ return filter_set;
  * 'n' filters are freed. This function should only be used when an
  * error occurs during the construction of a filter set.
  */
-void free_FilterSet(FilterSet* filters,int n) {
+static void free_FilterSet(FilterSet* filters,int n) {
 if (filters==NULL) return;
 if (filters->filter==NULL) {
    free(filters);
@@ -186,7 +185,8 @@ free_FilterSet(filters,filters->size);
  */
 FilterMatchIndex* new_FilterMatchIndex(FilterSet* filters,struct string_hash* tokens) {
 int i,k;
-unichar_regex inflected[2048*UNICHAR_REGEX_ALLOC_FACTOR];
+unichar_regex *inflected=NULL;
+size_t inflected_buffer_size = 0;
 unichar* current_token;
 FilterMatchIndex* index=(FilterMatchIndex*)malloc(sizeof(FilterMatchIndex));
 if (index==NULL) {
@@ -208,10 +208,10 @@ if (filters->size>0) {
       if (current_token[0]=='{' && u_strcmp(current_token,"{S}")
           && u_strcmp(current_token,"{STOP}")) {
          /* If we have a tag token like "{today,.ADV}", we extract its inflected form */
-         w_extract_inflected(current_token,inflected);
+         w_extract_inflected(current_token,&inflected,&inflected_buffer_size);
       } else {
          /* Otherwise, we just convert the unichar* token into a unichar_regex* string */
-         w_strcpy(inflected,current_token);
+         w_strcpy(&inflected, &inflected_buffer_size, current_token);
       }
       for (k=0;k<filters->size;k++) {
          if (regex_facade_regexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
@@ -229,6 +229,9 @@ if (filters->size>0) {
    /* If there is no filter */
    index->size=0;
    index->matching_tokens=NULL;
+}
+if (inflected != NULL) {
+  free(inflected);
 }
 return index;
 }
@@ -251,9 +254,12 @@ free(index);
  * Returns 1 if the given string matches the given filter.
  * with a user provided buffer
  */
-int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number,unichar_regex* tmp) {
-w_strcpy(tmp,s);
-return !regex_facade_regexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+int string_match_filter(const FilterSet* filters, const unichar* s, int filter_number, unichar_regex* original_temp, size_t size_temp) {
+unichar_regex* allocated_temp = NULL; const unichar_regex* temp;
+temp = w_strcpy_optional_buffer(original_temp, size_temp, &allocated_temp, s, NULL, NULL);
+int ret_value = !regex_facade_regexec(filters->filter[filter_number].matcher,temp,0,NULL,0);
+free_wstring_optional_buffer(&allocated_temp, NULL);
+return ret_value;
 }
 
 
@@ -261,9 +267,12 @@ return !regex_facade_regexec(filters->filter[filter_number].matcher,tmp,0,NULL,0
  * Returns 1 if the given string matches the given filter.
  */
 int string_match_filter(const FilterSet* filters,const unichar* s,int filter_number) {
-unichar_regex tmp[2048*UNICHAR_REGEX_ALLOC_FACTOR];
-w_strcpy(tmp,s);
-return !regex_facade_regexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+#define STRING_MATCH_STRING_BUFFER_SIZE 8
+unichar_regex original_temp[STRING_MATCH_STRING_BUFFER_SIZE]; unichar_regex* allocated_temp = NULL; const unichar_regex* temp;
+temp = w_strcpy_optional_buffer(original_temp, STRING_MATCH_STRING_BUFFER_SIZE, &allocated_temp, s, NULL, NULL);
+int ret_value = !regex_facade_regexec(filters->filter[filter_number].matcher,temp,0,NULL,0);
+free_wstring_optional_buffer(&allocated_temp, NULL);
+return ret_value;
 }
 
 
@@ -287,12 +296,12 @@ return get_value(index->matching_tokens[filter_number],token);
  * This function extracts the inflected form of the given tag token and
  * stores it in the given unichar_regex* string.
  */
-void w_extract_inflected(const unichar* tag_token,unichar_regex* inflected) {
+static void w_extract_inflected(const unichar* tag_token,unichar_regex** inflected, size_t *buffer_size) {
 struct dela_entry* entry=tokenize_tag_token(tag_token,1);
 if (entry==NULL) {
    fatal_error("Invalid tag token in w_extract_inflected\n");
 }
-w_strcpy(inflected,entry->inflected);
+w_strcpy(inflected, buffer_size, entry->inflected);
 free_dela_entry(entry);
 }
 
@@ -300,7 +309,7 @@ free_dela_entry(entry);
 /**
  * Splits a filter like "<<able$>>_f_" into its content "able$" and its options "f".
  */
-void split_filter(const unichar* filter_all,unichar* filter_content,char* filter_options) {
+static void split_filter(const unichar* filter_all,unichar* filter_content,char* filter_options) {
 int i=2;
 int j=0;
 while (filter_all[i]!='\0' && (filter_all[i]!='>' || filter_all[i+1]!='>')) {

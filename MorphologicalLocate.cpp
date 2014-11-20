@@ -637,7 +637,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						int morpho_filter_OK = (filter_number == -1
 								|| string_match_filter(p->filters, content1,
 										filter_number,
-										p->recyclable_wchart_buffer));
+										p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
 						if (!morpho_filter_OK) {
 							p->stack->stack_pointer = stack_top;
 							L2 = L2->next;
@@ -779,7 +779,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				int filter_number = p->tags[t->tag_number]->filter_number;
 				int morpho_filter_OK = (filter_number == -1
 						|| string_match_filter(p->filters, one_letter,
-								filter_number, p->recyclable_wchart_buffer));
+								filter_number, p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
 				if (morpho_filter_OK) {
 					match_one_letter = 1;
 				}
@@ -1197,7 +1197,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 						int morpho_filter_OK = (filter_number == -1
 								|| string_match_filter(p->filters, content2,
 										filter_number,
-										p->recyclable_wchart_buffer));
+										p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
 						if (!morpho_filter_OK) {
 							p->stack->stack_pointer = stack_top;
 							L = L->next;
