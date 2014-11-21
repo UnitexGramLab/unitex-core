@@ -47,11 +47,12 @@ namespace unitex {
  * \param file name of the alphabet of the target text
  */
 int launch_locate_in_Cassys(const char *text_name,
-							const struct transducer *transducer,
-							const char* alphabet_name,
+                            const struct transducer *transducer,
+                            const char* alphabet_name,
                             const char*negation_operator,
                             const VersatileEncodingConfig*,
-                            const char *morpho_dic);
+                            const char *morpho_dic,
+                            vector_ptr* additional_args);
 
 
 
@@ -66,9 +67,10 @@ int launch_locate_in_Cassys(const char *text_name,
  * \param alphabet_name name of the file containing the alphabet of the text
  */
 int launch_concord_in_Cassys(const char *text_name,
-							const char* index_file,
-							const char *alphabet_name,
-							VersatileEncodingConfig*);
+                            const char* index_file,
+                            const char *alphabet_name,
+                            VersatileEncodingConfig*,
+                            vector_ptr* additional_args);
 
 
 
@@ -89,9 +91,10 @@ int launch_concord_in_Cassys(const char *text_name,
  *
  */
 int launch_tokenize_in_Cassys(const char *text_name,
-							const char *alphabet_name,
-							const char *token_txt_name,
-							VersatileEncodingConfig*);
+                            const char *alphabet_name,
+                            const char *token_txt_name,
+                            VersatileEncodingConfig*,
+                            vector_ptr* additional_args);
 
 }
 #endif /* CASSYS_EXTERNAL_PROGRAM_H_ */

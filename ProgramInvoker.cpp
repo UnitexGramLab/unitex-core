@@ -193,7 +193,7 @@ if (line==NULL) {
 sprintf(line,"%s\"%s\"",protection,(const char*)(invoker->args->tab[0]));
 for (int i=1;i<invoker->args->nbelems;i++) {
    strcat(line," \"");
-   strcat(line,(char*)(invoker->args->tab[i]));
+   strcat(line,(const char*)(invoker->args->tab[i]));
    strcat(line,"\"");
 }
 strcat(line,protection);

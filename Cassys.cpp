@@ -46,7 +46,7 @@ namespace unitex {
 
 
 
-const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNnm:s:ir:";
+const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNnm:s:ir:T:L:C:";
 const struct option_TS lopts_Cassys[] = {
         {"text", required_argument_TS, NULL, 't'},
         {"alphabet", required_argument_TS, NULL, 'a'},
@@ -66,6 +66,9 @@ const struct option_TS lopts_Cassys[] = {
         {"translate_path_separator_to_native", no_argument_TS, NULL, 'v' },
         {"working_dir", required_argument_TS, NULL, 'p' },
         {"cleanup_working_files", no_argument_TS, NULL, 'b' },
+        {"tokenize_argument", required_argument_TS, NULL, 'T' },
+        {"locate_argument", required_argument_TS, NULL, 'L' },
+        {"concord_argument", required_argument_TS, NULL, 'C' },
         {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -145,6 +148,14 @@ int main_Cassys(int argc,char* const argv[]) {
     int dump_graph = 0; // By default, don't build a .dot file.
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
+    vector_ptr * tokenize_additional_args = new_vector_ptr();
+    vector_ptr * locate_additional_args = new_vector_ptr();
+    vector_ptr * concord_additional_args = new_vector_ptr();
+
+    if (locate_additional_args == NULL) {
+        fatal_alloc_error("main_Cassys");
+    }
+
     // decode the command line
     int val;
     int index = 1;
@@ -163,6 +174,9 @@ int main_Cassys(int argc,char* const argv[]) {
                   if (tmp_work_dir != NULL) {
                       free(tmp_work_dir);
                   }
+                  free_vector_ptr(tokenize_additional_args, free);
+                  free_vector_ptr(locate_additional_args, free);
+                  free_vector_ptr(concord_additional_args, free);
                   return 0;
         case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -304,7 +318,37 @@ int main_Cassys(int argc,char* const argv[]) {
                 }
             }
             break;
-        }
+		}
+		case 'T': {
+			if (vars->optarg[0] != '\0') {
+				char * locate_arg = strdup(vars->optarg);
+				if (locate_arg == NULL) {
+					fatal_alloc_error("main_Cassys");
+				}
+				vector_ptr_add(tokenize_additional_args, locate_arg);
+			}
+			break;
+		}
+		case 'L': {
+			if (vars->optarg[0] != '\0') {
+				char * locate_arg = strdup(vars->optarg);
+				if (locate_arg == NULL) {
+					fatal_alloc_error("main_Cassys");
+				}
+				vector_ptr_add(locate_additional_args, locate_arg);
+			}
+			break;
+		}
+		case 'C': {
+			if (vars->optarg[0] != '\0') {
+				char * locate_arg = strdup(vars->optarg);
+				if (locate_arg == NULL) {
+					fatal_alloc_error("main_Cassys");
+				}
+				vector_ptr_add(concord_additional_args, locate_arg);
+			}
+			break;
+		}
         default :{
             fatal_error("Unknown option : %c\n",val);
             break;
@@ -333,7 +377,9 @@ int main_Cassys(int argc,char* const argv[]) {
 
     cascade(text_file_name, in_place, must_create_directory, must_do_cleanup, tmp_work_dir,
         transducer_list, alphabet_file_name, negation_operator, 
-        &vec, morpho_dic, dump_graph, realign_token_graph_pointer);
+        &vec, morpho_dic, 
+        tokenize_additional_args, locate_additional_args, concord_additional_args,
+        dump_graph, realign_token_graph_pointer);
 
     if (tmp_work_dir != NULL){
         free(tmp_work_dir);
@@ -344,6 +390,9 @@ int main_Cassys(int argc,char* const argv[]) {
     free_fifo(transducer_list);
     free_OptVars(vars);
     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+    free_vector_ptr(tokenize_additional_args, free);
+    free_vector_ptr(locate_additional_args, free);
+    free_vector_ptr(concord_additional_args, free);
     return 0;
 }
 
@@ -357,7 +406,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
-    const char *morpho_dic, int dump_graph, int realign_token_graph_pointer) {
+    const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
+    int dump_graph, int realign_token_graph_pointer) {
+
 
 	cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
@@ -424,7 +475,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 			}
 		}
 
-    launch_tokenize_in_Cassys(text,alphabet,NULL,vec);
+    launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args);
 
     //if (in_place == 0)
         initialize_working_directory(text, must_create_directory);
@@ -467,7 +518,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
 
             launch_tokenize_in_Cassys(labeled_text_name, alphabet,
-                    snt_text_files->tokens_txt, vec);
+                    snt_text_files->tokens_txt,vec,tokenize_args);
             free_snt_files(snt_text_files);
 
             // apply transducer
@@ -475,14 +526,14 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             u_printf("Applying transducer %s (numbered %d)\n",
                     current_transducer->transducer_file_name, transducer_number);
             launch_locate_in_Cassys(labeled_text_name, current_transducer,
-                    alphabet, negation_operator, vec, morpho_dic);
+                    alphabet, negation_operator, vec, morpho_dic, locate_args);
 
             // add protection character in lexical tags when needed
             snt_text_files = new_snt_files(labeled_text_name);
             protect_lexical_tag_in_concord(snt_text_files->concord_ind, current_transducer->output_policy, vec);
             // generate concordance for this transducer
             launch_concord_in_Cassys(labeled_text_name,
-                    snt_text_files -> concord_ind, alphabet, vec);
+                    snt_text_files -> concord_ind, alphabet, vec,concord_args);
 
             //
             add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
@@ -550,7 +601,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(result_file_name_path_XML, last_resulting_text_path);
 
     // create the text file including XMLized concordance
-    launch_concord_in_Cassys(result_file_name_path_XML, snt_files->concord_ind, alphabet, vec);
+    launch_concord_in_Cassys(result_file_name_path_XML, snt_files->concord_ind, alphabet, vec,concord_args);
 
     // make a copy of the last resulting text of the cascade in the file named _csc.raw
     char result_file_name_raw[FILENAME_MAX];
@@ -562,7 +613,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     // relaunch the construction of the concord file without XML
     construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
     // relaunch the construction of the text file without XML
-    launch_concord_in_Cassys(result_file_name_path_raw, snt_files->concord_ind, alphabet, vec);
+    launch_concord_in_Cassys(result_file_name_path_raw, snt_files->concord_ind, alphabet, vec,concord_args);
 
     if (dump_graph)
     {

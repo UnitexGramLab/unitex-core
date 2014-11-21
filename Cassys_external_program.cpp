@@ -51,7 +51,8 @@ namespace unitex {
  *
  */
 int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,
-    VersatileEncodingConfig* vec){
+    VersatileEncodingConfig* vec,
+    vector_ptr* additional_args){
 
 	u_printf("Launch tokenize in Cassys \n");
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
@@ -91,6 +92,11 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 		add_argument(invoker,token_argument);
 	}
 
+
+	for (int i = 0; i<((additional_args == NULL) ? 0 : (additional_args->nbelems)); i++) {
+		add_argument(invoker, (const char*)additional_args->tab[i]);
+	}
+
 	char* line_command = build_command_line_alloc(invoker);
 	u_printf("%s\n", line_command);
 
@@ -123,7 +129,8 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 int launch_locate_in_Cassys(const char *text_name, const transducer *transducer, const char* alphabet_name,
     const char*negation_operator,
     const VersatileEncodingConfig* vec,
-    const char *morpho_dic){
+    const char *morpho_dic,
+    vector_ptr* additional_args){
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
 
@@ -181,6 +188,11 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
         add_argument(invoker,negation_operator_argument);
     }
 
+
+	for (int i = 0; i<((additional_args == NULL) ? 0 : (additional_args->nbelems)); i++) {
+		add_argument(invoker, (const char*)additional_args->tab[i]);
+	}
+
 	char* line_command = build_command_line_alloc(invoker);
 	u_printf("%s\n", line_command);
 
@@ -216,7 +228,8 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
  *
  */
 int launch_concord_in_Cassys(const char *text_name, const char *index_file, const char *alphabet_name,
-    VersatileEncodingConfig* vec){
+	VersatileEncodingConfig* vec,
+	vector_ptr* additional_args){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
 
 	// verify the braces in concordance
@@ -279,6 +292,11 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 
 	char alphabet_argument[FILENAME_MAX+11];
 	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
+
+
+	for (int i = 0; i<((additional_args == NULL) ? 0 : (additional_args->nbelems)); i++) {
+		add_argument(invoker, (const char*)additional_args->tab[i]);
+	}
 
 	char* line_command = build_command_line_alloc(invoker);
 	u_printf("%s\n", line_command);
