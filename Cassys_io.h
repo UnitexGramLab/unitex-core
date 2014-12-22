@@ -51,21 +51,29 @@ int make_directory(const char *path);
 
 
 /**
- * \brief Creates the cassys working directory and copies the target \b text and the associated \b snt directory
- * into the working directory with number label
- *
- * The working directory is the canonical name of the the target \b text file with suffix \b _csc. A numbered suffix
- * is also added to the copied \b text and to the associated \snt directory.
- *
- * If the \b text is \b foo.snt and the associated \b snt directory is \b foo_snt/, the function will create the
- * following files and directories :
- * - directory \b foo_csc/
- * - file \b foo_csc/foo_0.snt (copy of \b foo.snt)
- * - directory \b foo_csc/foo_0.snt/ (copy of \b foo_snt/ ant its content)
+ * \brief Creates the cassys working directory needed before call tokenize
  *
  * @param[in] text the target text file
  */
-int initialize_working_directory(const char *text,int must_create_directory);
+int initialize_working_directory_before_tokenize(const char *text,int must_create_directory);
+
+
+/**
+* \brief Creates the cassys working directory and copies the target \b text and the associated \b snt directory
+* into the working directory with number label
+*
+* The working directory is the canonical name of the the target \b text file with suffix \b _csc. A numbered suffix
+* is also added to the copied \b text and to the associated \snt directory.
+*
+* If the \b text is \b foo.snt and the associated \b snt directory is \b foo_snt/, the function will create the
+* following files and directories :
+* - directory \b foo_csc/
+* - file \b foo_csc/foo_0.snt (copy of \b foo.snt)
+* - directory \b foo_csc/foo_0.snt/ (copy of \b foo_snt/ ant its content)
+*
+* @param[in] text the target text file
+*/
+int initialize_working_directory(const char *text, int must_create_directory);
 
 
 /**

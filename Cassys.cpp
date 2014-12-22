@@ -478,6 +478,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 			}
 		}
 
+	initialize_working_directory_before_tokenize(text, must_create_directory);
     launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args);
 
     //if (in_place == 0)

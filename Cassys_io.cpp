@@ -144,6 +144,17 @@ void get_csc_wd_path(const char* filename, char* result) {
 	sprintf(result+strlen(result), "%s_0_0%s",canonical_name,extension);
 }
 
+int initialize_working_directory_before_tokenize(const char*text, int must_create_directory)
+{
+	char snt_dir[FILENAME_MAX];
+	get_snt_path(text, snt_dir);
+	if (must_create_directory != 0) {
+		make_directory(snt_dir);
+	}
+
+	return 0;
+}
+
 int initialize_working_directory(const char *text,int must_create_directory){
 	char path[FILENAME_MAX];
 	get_path(text,path);
