@@ -234,17 +234,19 @@ int must_compile_grf(char* grf,char* fst2, GraphRecompilationPolicy graph_recomp
      /* A grf and no .fst2? Let's compile the .grf! */
      return 1;
   }
-  
+
+
   // There are both .grf and .fst2 files, use the GraphRecompilationPolicy
+  int recompilation_status = 0;
   switch(graph_recompilation_policy) {
-    case ALWAYS_RECOMPILE : return 1;
-    case ONLY_OUT_OF_DATE : return (get_file_date(grf) >= get_file_date(fst2));
+    case ALWAYS_RECOMPILE : recompilation_status = 1; break;
+    case ONLY_OUT_OF_DATE : recompilation_status = (get_file_date(grf) >= get_file_date(fst2)); break;
     //   NEVER_RECOMPILE
-    default               : return 0;
+    default               : break;
   }  
   
   // return 0 otherwise
-  return 0;
+  return recompilation_status;
 }
 
 
