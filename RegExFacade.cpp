@@ -95,11 +95,11 @@ return s;
 void w_strcpy(unichar_regex** target,size_t *buffer_size,const unichar* source) {
 int i=0;
 unsigned int len = u_strlen(source);
-if (len + 1 >= (int)(*buffer_size)) {
+if (((int)(len + 1)) >= (int)(*buffer_size)) {
 	if ((*buffer_size) < START_SIZE_DYNAMIC_BUFFER_REGEX) {
 		*buffer_size = START_SIZE_DYNAMIC_BUFFER_REGEX;
 	}
-	while (len + 1 >= (int)(*buffer_size)) {
+	while (((int)(len + 1)) >= (int)(*buffer_size)) {
 		(*buffer_size) *= 2;
 	}
 

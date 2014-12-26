@@ -820,16 +820,16 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
 	}
 	/* Then, we go the next state */
 
-	int retour_state = 1;
+	//int retour_state = 1;
 	if (retour) {
 		if (LIST == NULL) {//error("Explore state 2\n");
-			retour_state = SU_explore_state(p_multiFlex_ctx,p_SU_buf->stack,
+			/*retour_state = */SU_explore_state(p_multiFlex_ctx,p_SU_buf->stack,
 					pos_inflected, lemma, p_SU_buf->out, a,
 					T->state_number, desired_features, forms,
 					flag_var, var_name, var_in_use,
 					local_semantic_codes);
 		} else {//error("Explore state recursion 2\n");
-			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,p_SU_buf->stack,
+			/*retour_state = */SU_explore_state_recursion(p_multiFlex_ctx,p_SU_buf->stack,
 					pos_inflected, lemma, p_SU_buf->out, a,
 					T->state_number, LIST, desired_features, forms,
 					flag_var, var_name, var_in_use,

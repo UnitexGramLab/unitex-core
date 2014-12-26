@@ -1161,10 +1161,10 @@ if (input[*pos_input]=='\0') {
 }
 int old_pos_input=*pos_input;
 int old_pos_output=*pos_output;
-int result,ret,initial_consonant,vowel,final_consonant;
+int ret, initial_consonant, vowel, final_consonant;
 unichar hcj;
 if (input[*pos_input]==KR_SYLLABLE_BOUND) {
-	result=0;
+
 	initial_consonant=11;
 	vowel=0;
 	final_consonant=0;
