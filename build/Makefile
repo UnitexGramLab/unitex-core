@@ -30,6 +30,10 @@
 #    make TRE_DIRECT_LINK=yes
 # compile the TRE source file directly from this makefile. This can be useful to compile
 # Unitex library on Linux 64 bits with more accurate compile option control
+#    make TRE_DIRECT_COMPILE=yes
+# compile the TRE source file directly from this makefile, without creating library.
+# This can be useful to compile Unitex library more accurate compile option control
+# and less conflict with visibility options
 #
 #    you can mix somes parameters
 #
@@ -118,6 +122,15 @@ INSTALL_COMMAND = make install
 TRE_SRC = tre-0.8.0
 TRE_TGZ = ../tre-0.8.0.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
+
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+TRE_LINK_LIB =
+else
+TRE_LINK_LIB = -ltre
+endif
+
+
+
 INSTALL_COMMAND = make install
 
 SYSLIBSYNCTOOL = SyncToolPosix.o
@@ -197,7 +210,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
+LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread
 
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -254,7 +267,7 @@ endif
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS =  -L "." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
@@ -288,6 +301,12 @@ DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
 LIBTRE   = libtre.a
+
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+LIBTRE   = .libtre-done
+else
+LIBTRE   = libtre.a
+endif
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -379,7 +398,7 @@ endif
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS =  -L "." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I".." -I"../include_tre"
 CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
@@ -412,7 +431,12 @@ ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
 DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+LIBTRE   = .libtre-done
+else
 LIBTRE   = libtre.a
+endif
+
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -507,7 +531,7 @@ endif
 #
 # USING TRE STATIC LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
@@ -539,7 +563,12 @@ ifneq ($(strip $(ADDITIONAL_DEFFLAGS)),)
 DEFFLAGS += $(ADDITIONAL_DEFFLAGS)
 endif
 
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+LIBTRE   = .libtre-done
+else
 LIBTRE   = libtre.a
+endif
+
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
@@ -597,6 +626,14 @@ CASSYS_FILE_OBJS = Cassys.o Cassys_tokens.o Cassys_xml_output.o Cassys_external_
 ##################################
 ##################################
 
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+TRE_OBJS = regcomp.o regerror.o regexec.o tre-ast.o tre-compile.o tre-match-approx.o tre-match-backtrack.o tre-match-parallel.o \
+           tre-mem.o tre-parse.o tre-stack.o xmalloc.o
+
+else
+TRE_OBJS =
+endif
+
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
@@ -618,7 +655,7 @@ CASSYS_OBJS	= Main_Cassys.o  $(CASSYS_FILE_OBJS) IOBuffer.o Error.o UnitexGetOpt
 			Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
 			DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
 			Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
-			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o \
+			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o $(TRE_OBJS) \
 			DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
@@ -647,7 +684,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
 				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o Persistence.o PRLG.o \
+				LoadInf.o Offsets.o Overlap.o RegExFacade.o $(TRE_OBJS) DebugMode.o Persistence.o PRLG.o \
 				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 CONCORDIFF      = ConcorDiff
@@ -662,7 +699,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
 				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o Persistence.o PRLG.o \
+				LoadInf.o Offsets.o Overlap.o RegExFacade.o $(TRE_OBJS) DebugMode.o Persistence.o PRLG.o \
 				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 CONVERT      = Convert
@@ -683,7 +720,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             AutomatonDictionary2Bin.o HashTable.o LocateCache.o Arabic.o \
             OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
             DebugMode.o LoadInf.o Persistence.o BuildTextAutomaton.o Tfst.o SingleGraph.o \
-            FIFO.o TfstStats.o RegExFacade.o \
+            FIFO.o TfstStats.o RegExFacade.o $(TRE_OBJS) \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 ELAG      = Elag
@@ -730,7 +767,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o LocateTrace.o
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
 	           ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
-	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o \
+	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_OBJS) \
 	           DebugMode.o LoadInf.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 FLATTEN      = Flatten
@@ -816,7 +853,7 @@ GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Af_stdio.o 
 			List_pointer.o LocateTrace.o PatternTree.o LocateFst2Tags.o \
 			CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o\
 			Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
-			NewLineShifts.o Persistence.o PRLG.o BuildTextAutomaton.o RegExFacade.o \
+			NewLineShifts.o Persistence.o PRLG.o BuildTextAutomaton.o RegExFacade.o $(TRE_OBJS) \
 			$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 IMPLODETFST      = ImplodeTfst
@@ -848,7 +885,7 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unic
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
               ProgramInvoker.o Korean.o HashTable.o LocateCache.o Arabic.o \
-              OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o \
+              OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_OBJS) \
               LoadInf.o DebugMode.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 LOCATETFST      = LocateTfst
@@ -861,7 +898,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityL
                   OptimizedTfstTagMatching.o List_pointer.o\
                   TransductionVariables.o TransductionStackTfst.o Contexts.o \
                   OutputTransductionVariables.o DicVariables.o TfstStats.o AbstractDelaLoad.o \
-                  CompressedDic.o LoadInf.o DebugMode.o Persistence.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                  CompressedDic.o LoadInf.o DebugMode.o Persistence.o RegExFacade.o $(TRE_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
 MULTIFLEX      = MultiFlex
@@ -923,7 +960,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-               DebugMode.o LoadInf.o Grf_lib.o Persistence.o RegExFacade.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+               DebugMode.o LoadInf.o Grf_lib.o Persistence.o RegExFacade.o $(TRE_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -1127,7 +1164,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
                   Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o \
-                  RegExFacade.o SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                  RegExFacade.o $(TRE_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
@@ -1165,7 +1202,7 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
                   SpellChecking.o Keyboard.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o \
-                  RegExFacade.o SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
+                  RegExFacade.o $(TRE_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
@@ -1304,6 +1341,16 @@ $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
+
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+.libtre-done: $(TRE_SRC)
+	@echo "Configure TRE..."
+	chmod +x $(TRE_SRC)/configure
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static
+	touch .libtre-done
+
+else
+
 ifeq ($(TRE_DIRECT_LINK), yes)
 
 ifneq ($(strip $(TRE_GCC_CFLAGS)),)
@@ -1346,6 +1393,9 @@ else
 	cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
 	touch .libtre-done
 endif
+
+endif
+
 
 clean-libtre:
 	rm -rf libtre
@@ -1408,6 +1458,19 @@ endif
 endif
 endif
 
+
+
+TRE_SRC = tre-0.8.0
+TRE_TGZ = ../tre-0.8.0.tar.gz
+
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+TRE_LIB =
+.libtre-done: $(TRE_SRC)
+	@echo "unpacking TRE library ......"
+	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
+	@echo > .libtre-done
+
+else
 
 
 TRE_LIB = libtre.a
@@ -1494,25 +1557,18 @@ $(TRE_LIB): $(TRE_TGZ)
 	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
 	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
 	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
 	$(AR) -r libtre.a $(TRE_OBJS)
 	
 endif
+endif
 
 
-TRE_SRC = tre-0.8.0
-TRE_TGZ = ../tre-0.8.0.tar.gz
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+TRE_LINK_LIB =
+else
+TRE_LINK_LIB = -ltre
+endif
+
 
 
 ifeq ($(SYSTEM),windows)
@@ -1540,7 +1596,7 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
-LIBS   = -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1583,7 +1639,7 @@ LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
-LIBS   = -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
+LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -1820,6 +1876,55 @@ SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
+
+ifeq ($(TRE_DIRECT_COMPILE), yes)
+
+
+ifneq ($(strip $(TRE_GCC_OPTIONS)),)
+TRE_DIRECT_COMPILE_OPTIONS = $(TRE_GCC_OPTIONS) -DHAVE_CONFIG_H=1
+else
+TRE_DIRECT_COMPILE_OPTIONS = $(OPTIONS) -DHAVE_CONFIG_H=1
+endif
+
+
+regcomp.o : $(TRE_SRC)/lib/regcomp.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+regerror.o : $(TRE_SRC)/lib/regerror.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+regexec.o : $(TRE_SRC)/lib/regexec.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-ast.o : $(TRE_SRC)/lib/tre-ast.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-compile.o : $(TRE_SRC)/lib/tre-compile.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-match-approx.o : $(TRE_SRC)/lib/tre-match-approx.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-match-backtrack.o : $(TRE_SRC)/lib/tre-match-backtrack.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-match-parallel.o : $(TRE_SRC)/lib/tre-match-parallel.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-mem.o : $(TRE_SRC)/lib/tre-mem.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-parse.o : $(TRE_SRC)/lib/tre-parse.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+tre-stack.o : $(TRE_SRC)/lib/tre-stack.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+xmalloc.o : $(TRE_SRC)/lib/xmalloc.c
+	$(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_DIRECT_COMPILE_OPTIONS)
+
+endif
+
 fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
 	javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
@@ -1859,12 +1964,12 @@ no_o_files:
 
 .libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o VirtualFiles.o
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(LIBTRE) $(OBJS) VirtualFiles.o
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." -ltre $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 .libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
