@@ -143,33 +143,9 @@ error("\n");
 /**
  * Turns a standard Jamo letter sequence into a Hangul syllable sequence.
  *
- * for debug only: returns 1 if old and new versions of Jamo->Hangul conversions
- *                 provide the same results; 0 otherwise.
  */
-int convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean) {
-unichar t[1024];
-/* We make a copy without empty initial consonants, if any */
-int j=0;
-for (int i=0;src[i]!='\0';i++) {
-   if (src[i]==SJ_IC_IEUNG) {
-      if (i>0 && src[i-1]==KR_SYLLABLE_BOUND) {
-         if (src[i+1]==KR_SYLLABLE_BOUND) {
-            t[j++]=src[i];
-         }
-      } else {
-         t[j++]=src[i];
-      }
-   } else {
-      t[j++]=src[i];
-   }
-
-   /*if (src[i]!=SJ_IC_IEUNG || (i>0 && src[i-1]!=KR_SYLLABLE_BOUND)) {
-      t[j++]=src[i];
-   }*/
-}
-t[j]='\0';
+void convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean) {
 korean->Jamos_to_Hangul(src,dest);
-return 1;
 }
 
 

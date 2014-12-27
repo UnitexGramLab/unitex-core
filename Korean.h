@@ -276,7 +276,7 @@ private:
 };
 
 int single_HGJ_to_Jamos(unichar c,unichar* dest,Korean* korean);
-int convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean);
+void convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean);
 void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean,int only_syllables);
 int get_length_in_jamo(unichar hangul,Korean* korean);
 
