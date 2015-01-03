@@ -418,8 +418,8 @@ static const unichar ETIQ_PRE_LN5[] = { '<', 'P', 'R', 'E', '>', 0 };
 static const unichar ETIQ_PNC_LN5[] = { '<', 'P', 'N', 'C', '>', 0 };
 static const unichar ETIQ_L_LN3[] = { '<', 'L', '>', 0 };
 static const unichar ETIQ_CIRC_LN3[] = { '<', '^', '>', 0 };
-static const unichar ETIQ_DIESE_LN1[] = { '#', 0 };
-static const unichar ETIQ_SPACE_LN1[] = { ' ', 0 };
+// static const unichar ETIQ_DIESE_LN1[] = { '#', 0 };
+// static const unichar ETIQ_SPACE_LN1[] = { ' ', 0 };
 
 /*
  * give the len of possible match
