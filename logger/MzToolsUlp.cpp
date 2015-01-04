@@ -179,28 +179,28 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
 
         /* Central directory entry */
         {
-          char header[46];
+          char central_header[46];
           const char* comment = "";
           int comsize = (int) strlen(comment);
-          WRITE_32(header, 0x02014b50);
-          WRITE_16(header + 4, version);
-          WRITE_16(header + 6, version);
-          WRITE_16(header + 8, gpflag);
-          WRITE_16(header + 10, method);
-          WRITE_16(header + 12, filetime);
-          WRITE_16(header + 14, filedate);
-          WRITE_32(header + 16, crc);
-          WRITE_32(header + 20, cpsize);
-          WRITE_32(header + 24, uncpsize);
-          WRITE_16(header + 28, fnsize);
-          WRITE_16(header + 30, extsize);
-          WRITE_16(header + 32, comsize);
-          WRITE_16(header + 34, 0);     /* disk # */
-          WRITE_16(header + 36, 0);     /* int attrb */
-          WRITE_32(header + 38, 0);     /* ext attrb */
-          WRITE_32(header + 42, currentOffset);
+          WRITE_32(central_header, 0x02014b50);
+          WRITE_16(central_header + 4, version);
+          WRITE_16(central_header + 6, version);
+          WRITE_16(central_header + 8, gpflag);
+          WRITE_16(central_header + 10, method);
+          WRITE_16(central_header + 12, filetime);
+          WRITE_16(central_header + 14, filedate);
+          WRITE_32(central_header + 16, crc);
+          WRITE_32(central_header + 20, cpsize);
+          WRITE_32(central_header + 24, uncpsize);
+          WRITE_16(central_header + 28, fnsize);
+          WRITE_16(central_header + 30, extsize);
+          WRITE_16(central_header + 32, comsize);
+          WRITE_16(central_header + 34, 0);     /* disk # */
+          WRITE_16(central_header + 36, 0);     /* int attrb */
+          WRITE_32(central_header + 38, 0);     /* ext attrb */
+          WRITE_32(central_header + 42, currentOffset);
           /* Header */
-          if (af_fwrite(header, 1, 46, fpOutCD) == 46) {
+          if (af_fwrite(central_header, 1, 46, fpOutCD) == 46) {
             offsetCD += 46;
 
             /* Filename */
@@ -254,23 +254,23 @@ int ulpRepair(const char*file, const char*fileOut, const char*fileOutTmp, uLong*
     /* Final central directory  */
     {
       int entriesZip = entries;
-      char header[22];
+      char final_header[22];
       const char* comment = ""; // "ZIP File recovered by zlib/minizip/mztools";
       int comsize = (int) strlen(comment);
       if (entriesZip > 0xffff) {
         entriesZip = 0xffff;
       }
-      WRITE_32(header, 0x06054b50);
-      WRITE_16(header + 4, 0);    /* disk # */
-      WRITE_16(header + 6, 0);    /* disk # */
-      WRITE_16(header + 8, entriesZip);   /* hack */
-      WRITE_16(header + 10, entriesZip);  /* hack */
-      WRITE_32(header + 12, offsetCD);    /* size of CD */
-      WRITE_32(header + 16, offset);      /* offset to CD */
-      WRITE_16(header + 20, comsize);     /* comment */
+      WRITE_32(final_header, 0x06054b50);
+      WRITE_16(final_header + 4, 0);    /* disk # */
+      WRITE_16(final_header + 6, 0);    /* disk # */
+      WRITE_16(final_header + 8, entriesZip);   /* hack */
+      WRITE_16(final_header + 10, entriesZip);  /* hack */
+      WRITE_32(final_header + 12, offsetCD);    /* size of CD */
+      WRITE_32(final_header + 16, offset);      /* offset to CD */
+      WRITE_16(final_header + 20, comsize);     /* comment */
 
       /* Header */
-      if (af_fwrite(header, 1, 22, fpOutCD) == 22) {
+      if (af_fwrite(final_header, 1, 22, fpOutCD) == 22) {
 
         /* Comment field */
         if (comsize > 0) {

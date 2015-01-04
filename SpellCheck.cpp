@@ -388,10 +388,10 @@ if (mode=='s') {
 	if (config.input_op!='D') {
 		get_snt_path(snt,output);
 		strcat(output,"dlf.n");
-		U_FILE* f=u_fopen(&vec,output,U_WRITE);
-		if (f!=NULL) {
-			u_fprintf(f,"%d",config.n_output_lines);
-			u_fclose(f);
+		U_FILE* fw=u_fopen(&vec,output,U_WRITE);
+		if (fw!=NULL) {
+			u_fprintf(fw,"%d",config.n_output_lines);
+			u_fclose(fw);
 		}
 	}
 }

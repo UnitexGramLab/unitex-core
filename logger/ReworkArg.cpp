@@ -162,7 +162,7 @@ int SearchPossiblePosFileNameInArg(const char*arg)
 
                 if ((*(arg+j)) == '=')
                 {
-                    return j+1;
+                    return (int)(j+1);
                 }
 
                 j++;
@@ -201,7 +201,7 @@ void CopyReworkedArgRemoving(char* dst,const char* arg,const char*portion_ignore
         size_t len_arg = strlen(arg);
         size_t len_ignore = strlen(portion_ignore_pathname);
         int NeedSkip = 0;
-        if (PossiblePos + len_ignore <= len_arg)
+        if (((size_t)PossiblePos) + len_ignore <= len_arg)
             NeedSkip = memcmp(arg+PossiblePos,portion_ignore_pathname,len_ignore) == 0;
         if (NeedSkip == 0)
             strcpy(dst,arg);
@@ -316,7 +316,7 @@ void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunP
         (((*(FileAddRunPath + len_FileAddRunPath - 1)) == '\\') || ((*(FileAddRunPath + len_FileAddRunPath - 1)) == '/')) ? 
             0 : 1;
 
-        memcpy(dest,arg,PossiblePos);
+        memcpy(dest,arg,(size_t)PossiblePos);
         memcpy(dest+PossiblePos,FileAddRunPath,len_FileAddRunPath);
         if (iAddSeparator != 0)
             *(dest+PossiblePos+len_FileAddRunPath) = PATH_SEPARATOR_CHAR;

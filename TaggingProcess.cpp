@@ -460,12 +460,12 @@ double compute_partial_probability_compounds(Dictionary* d,const Alphabet* alpha
 		if(word == NULL){
 			if(u_strlen(inflected)-old_value != 0){
 				word = inflected+old_value;
-				unichar* new_tag_code = (unichar*)malloc(sizeof(unichar)*(u_strlen(tag_code)+3));
-				unichar* tmp = u_strcpy_sized(new_tag_code,u_strlen(tag_code)+1,tag_code);
-				u_strcat(tmp,"+I\0");
-				score += compute_emit_probability(d,alphabet,new_tag_code,word);
-				score += compute_transition_probability(d,alphabet,ancestor,predecessor,new_tag_code);
-				free(new_tag_code);
+				unichar* new_tag_code_2 = (unichar*)malloc(sizeof(unichar)*(u_strlen(tag_code)+3));
+				unichar* tmp_2 = u_strcpy_sized(new_tag_code_2,u_strlen(tag_code)+1,tag_code);
+				u_strcat(tmp_2,"+I\0");
+				score += compute_emit_probability(d,alphabet,new_tag_code_2,word);
+				score += compute_transition_probability(d,alphabet,ancestor,predecessor,new_tag_code_2);
+				free(new_tag_code_2);
 			}
 			if(nb_words>=2){
 				free(ancestor);
@@ -688,10 +688,10 @@ for(int i=0;i<automaton->number_of_states;i++){
 		}
 		for(Transition* transI=state->reverted_incoming_transitions;transI!=NULL;transI=transI->next){
 			TfstTag* tagI = (TfstTag*)input_tfst->tags->tab[transI->tag_number];
-			unichar* content = compound_to_simple(tagI->content);
-			int indexI = search_matrix_predecessor(matrix,content,index_matrix-1,
+			unichar* content_2 = compound_to_simple(tagI->content);
+			int indexI = search_matrix_predecessor(matrix,content_2,index_matrix-1,
 						 transI->tag_number,transI->state_number);
-			free(content);
+			free(content_2);
 			int cover_span = same_positions(&tagI->m,&tag->m);
 			compute_best_probability(d,alphabet,matrix,index_matrix,indexI,cover_span);
 		}

@@ -341,7 +341,7 @@ local int ziplocal_putValue (
         }
       }
 
-    if (ZWRITE(*pzlib_filefunc_def,filestream,buf,nbByte)!=(uLong)nbByte)
+    if (ZWRITE(*pzlib_filefunc_def,filestream,buf,(uLong)nbByte)!=(uLong)nbByte)
         return ZIP_ERRNO;
     else
         return ZIP_OK;
@@ -510,7 +510,7 @@ local uLong ziplocal_SearchCentralDir(
         return 0;
 
 
-    uSizeFile = ZTELL(*pzlib_filefunc_def,filestream);
+    uSizeFile = (uLong)ZTELL(*pzlib_filefunc_def,filestream);
 
     if (uMaxBack>uSizeFile)
         uMaxBack = uSizeFile;
@@ -542,7 +542,7 @@ local uLong ziplocal_SearchCentralDir(
             if (((*(buf+i))==0x50) && ((*(buf+i+1))==0x4b) &&
                 ((*(buf+i+2))==0x05) && ((*(buf+i+3))==0x06))
             {
-                uPosFound = uReadPos+i;
+                uPosFound = uReadPos+(uLong)i;
                 break;
             }
 
@@ -580,7 +580,7 @@ extern zipFile ZEXPORT zipOpen2 (
 
     if (ziinit.filestream == NULL)
         return NULL;
-    ziinit.begin_pos = ZTELL(ziinit.z_filefunc,ziinit.filestream);
+    ziinit.begin_pos = (uLong)ZTELL(ziinit.z_filefunc,ziinit.filestream);
     ziinit.in_opened_file_inzip = 0;
     ziinit.ci.stream_initialised = 0;
     ziinit.number_entry = 0;
@@ -771,10 +771,13 @@ extern int ZEXPORT zipOpenNewFileInZip3 (
     uInt i;
     int err = ZIP_OK;
 
+    /* code to prevent warning */
     (void)windowBits;
     (void)memLevel;
     (void)strategy;
     (void)crcForCrypting;
+    
+    strlen(zip_copyright);
 
 
 #    ifdef NOCRYPT
@@ -837,7 +840,7 @@ extern int ZEXPORT zipOpenNewFileInZip3 (
     zi->ci.stream_initialised = 0;
     zi->ci.pos_in_buffered_data = 0;
     zi->ci.raw = raw;
-    zi->ci.pos_local_header = ZTELL(zi->z_filefunc,zi->filestream) ;
+    zi->ci.pos_local_header = (uLong)ZTELL(zi->z_filefunc,zi->filestream) ;
     zi->ci.size_centralheader = SIZECENTRALHEADER + size_filename +
                                       size_extrafield_global + size_comment;
     zi->ci.central_header = (char*)ALLOC((uInt)zi->ci.size_centralheader);
@@ -1185,7 +1188,7 @@ extern int ZEXPORT zipCloseFileInZipRaw (
             err = ziplocal_putValue(&zi->z_filefunc,zi->filestream,uncompressed_size,4);
 
         if (ZSEEK(zi->z_filefunc,zi->filestream,
-                  cur_pos_inzip,ZLIB_FILEFUNC_SEEK_SET)!=0)
+                  (uLong)cur_pos_inzip,ZLIB_FILEFUNC_SEEK_SET)!=0)
             err = ZIP_ERRNO;
     }
 
@@ -1229,7 +1232,7 @@ extern int ZEXPORT zipClose (
     else
         size_global_comment = (uInt)strlen(global_comment);
 
-    centraldir_pos_inzip = ZTELL(zi->z_filefunc,zi->filestream);
+    centraldir_pos_inzip = (uLong)ZTELL(zi->z_filefunc,zi->filestream);
     if (err==ZIP_OK)
     {
         linkedlist_datablock_internal* ldi = zi->central_dir.first_block ;

@@ -294,8 +294,8 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
 
 
-	for (int i = 0; i<((additional_args == NULL) ? 0 : (additional_args->nbelems)); i++) {
-		add_argument(invoker, (const char*)additional_args->tab[i]);
+	for (int arg = 0; arg<((additional_args == NULL) ? 0 : (additional_args->nbelems)); arg++) {
+		add_argument(invoker, (const char*)additional_args->tab[arg]);
 	}
 
 	char* line_command = build_command_line_alloc(invoker);

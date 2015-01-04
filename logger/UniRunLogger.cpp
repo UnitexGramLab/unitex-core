@@ -377,7 +377,7 @@ int do_extracting_currentfile(
                     break;
                 }
                 if (err>0)
-                    if (af_fwrite(buf,err,1,fout)!=1)
+                    if (af_fwrite(buf,(size_t)err,1,fout)!=1)
                     {
                         err=UNZ_ERRNO;
                         break;
@@ -719,7 +719,7 @@ void do_convert_command_line_synth_to_std(
 	  *(cur_dest++)=*(lpSrc++);
     }
   *(cur_dest)=0;
-  *size_file_converted = cur_dest - dest;
+  *size_file_converted = (size_t)(cur_dest - dest);
 
   sprintf(begin,"%010d\n%010d\n",0,iNbArg);
   memcpy(dest,begin,strlen(begin));
@@ -942,7 +942,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
                   ((list_file_in->p_ListFile_entry) + nb_listfile_in) -> crc = file_info.crc;
                   ((list_file_in->p_ListFile_entry) + nb_listfile_in) -> size = file_info.uncompressed_size;
                   nb_listfile_in++;
-                  list_file_in->iNbFile = nb_listfile_in;
+                  list_file_in->iNbFile = (unsigned int)nb_listfile_in;
               }
           }
 
@@ -1022,7 +1022,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
 	  }
 
       //size_t walk_arglist;
-      int nb_max_arg_for_allocwide = get_max_nb_line_in_file(command_line_buf,size_command_line);
+      int nb_max_arg_for_allocwide = (int)get_max_nb_line_in_file(command_line_buf,size_command_line);
 
       char* buf_arg = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) + 0x100);
       char** argv_log = (char**)malloc(sizeof(char*) * (nb_max_arg_for_allocwide+2+1));

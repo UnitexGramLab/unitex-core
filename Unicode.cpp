@@ -1470,7 +1470,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                  for (i=0;i<(int)read_utf16_in_file;i++)
                  {
                     unichar c;
-                    c = (((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)]) ;
+                    c = (unichar)((((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)])) ;
                     if (c==0) {
                     	fatal_error("Corrupted UTF16 text file containing null characters\n");
                     }
@@ -1628,7 +1628,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                                    if (nbbyte_loop==0)
                                        break;
                                    i_in_char++;
-                                   c = (c<<6) | ( (tab_in[i+i_in_char]) & 0x3F);
+                                   c = (unichar)((c<<6) | ( (tab_in[i+i_in_char]) & 0x3F));
                               }
                           }
 
@@ -1870,7 +1870,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 				int nb_unichar_read = (int)read_bytes_in_file / 2;
 				for (int i = 0; i < nb_unichar_read; i++) {
 
-					unichar c = (((unichar)tab_in[(i * 2) + hibytepos]) << 8) | (tab_in[(i * 2) + (1 - hibytepos)]);
+					unichar c = (unichar)((((unichar)tab_in[(i * 2) + hibytepos]) << 8) | (tab_in[(i * 2) + (1 - hibytepos)]));
 
 					*(buffer + size_done + i) = c;
 				
@@ -1938,7 +1938,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 							if (nbbyte_loop == 0)
 								break;
 							i_in_char++;
-							c = (c << 6) | ((tab_in[i + i_in_char]) & 0x3F);
+							c = (unichar)((c << 6) | ((tab_in[i + i_in_char]) & 0x3F));
 						}
 					}
 

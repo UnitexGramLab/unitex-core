@@ -529,10 +529,10 @@ free_ReverseTransitions(reverse);
 /* Now we can remove transitions */
 for (int i=0;i<grf->n_states;i++) {
 	vector_int* transitions=grf->states[i]->transitions;
-	for (int i=transitions->nbelems-1;i>=0;i--) {
-		int dest=transitions->tab[i];
+	for (int j=transitions->nbelems-1;j>=0;j--) {
+		int dest=transitions->tab[j];
 		if (!mark[dest]) {
-			to_restore(t,i,dest);
+			to_restore(t,j,dest);
 			vector_int_remove(transitions,dest);
 		}
 	}

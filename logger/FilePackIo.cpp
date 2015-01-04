@@ -221,7 +221,7 @@ long ZCALLBACK afseek_file_func (
     default: return -1;
     }
     ret = 0;
-    af_fseek((ABSTRACTFILE *)stream, offset, fseek_origin);
+    af_fseek((ABSTRACTFILE *)stream, (long)offset, fseek_origin);
     return ret;
 }
 

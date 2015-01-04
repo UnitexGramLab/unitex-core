@@ -311,17 +311,17 @@ while (s[i]!='\0') {
         	 } else if (u_starts_with(field,"CODE.ATTR=")) {
         		 unichar* attr_name=field+10;
         		 int attr_len=u_strlen(attr_name);
-        		 int i;
-        		 for (i=0;i<entry->n_semantic_codes;i++) {
-        		    if (u_starts_with(entry->semantic_codes[i],attr_name)) {
-        		       if (entry->semantic_codes[i][attr_len]!='='
-        		          || entry->semantic_codes[i][attr_len+1]=='\0') {
+        		 int j;
+        		 for (j=0;j<entry->n_semantic_codes;j++) {
+        		    if (u_starts_with(entry->semantic_codes[j],attr_name)) {
+        		       if (entry->semantic_codes[j][attr_len]!='='
+        		          || entry->semantic_codes[j][attr_len+1]=='\0') {
         		          continue;
         		       }
-        		       push_output_string_tfst(stack,entry->semantic_codes[i]+attr_len+1);
+        		       push_output_string_tfst(stack,entry->semantic_codes[j]+attr_len+1);
         		    }
         		 }
-        		 if (i==entry->n_semantic_codes) {
+        		 if (j==entry->n_semantic_codes) {
         		    /* If the attribute was not found, it's an error case */
         		    switch (p->variable_error_policy) {
         		       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name);

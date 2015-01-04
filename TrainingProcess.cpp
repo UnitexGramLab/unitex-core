@@ -431,8 +431,8 @@ else {
 			if(u_strchr(newline,'_') != NULL && newline[0] != '_'){
 				corpus_entry** entries = extract_simple_words(entry);
 				free_corpus_entry(entry);
-				for(int i=0;entries[i]!=NULL;i++){
-					push_corpus_entry(entries[i],context);
+				for(int j=0;entries[j]!=NULL;j++){
+					push_corpus_entry(entries[j],context);
 					add_statistics(context,rforms_table,iforms_table);
 				}
 				free(entries);

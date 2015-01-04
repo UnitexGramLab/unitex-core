@@ -1200,7 +1200,7 @@ ReverseTransitions* reverse=compute_reverse_transitions(grf);
 int n=grf->n_states;
 for (int i=2;i<n;i++) {
 	GrfState* s=grf->states[i];
-	int m=1,n=1;
+	int m=1,n_=1;
 	vector_ptr* lines=tokenize_box_content(s->box_content);
 	unichar* last=(unichar*)lines->tab[lines->nbelems-1];
 	if (last[0]=='/') {
@@ -1216,8 +1216,8 @@ for (int i=2;i<n;i++) {
 				 * our business here */
 				unichar old=last[pos+1];
 				last[pos+1]='\0';
-				int ok=test_range(last+1,&m,&n);
-				if (!ok || (m==0 && n==0) || (n!=-1 && n<m)) {
+				int ok=test_range(last+1,&m,&n_);
+				if (!ok || (m==0 && n_==0) || (n_!=-1 && n_<m)) {
 					fatal_error("Invalid range expression: %S\n",last+1);
 				}
 				/* If we have a valid range, we first test if the box has a
@@ -1235,7 +1235,7 @@ for (int i=2;i<n;i++) {
 				s->box_content[j-1]='"';
 				s->box_content[j]='\0';
 				/* Now we can actually duplicate the box */
-				do_box_range_expansion(grf,reverse,i,m,n);
+				do_box_range_expansion(grf,reverse,i,m,n_);
 			}
 		}
 	}

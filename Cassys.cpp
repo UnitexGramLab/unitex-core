@@ -427,34 +427,34 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 	size_t len_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
 
 	if ((len_work_dir > 0) || (must_do_cleanup != 0)) {
-		size_t len_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
+		size_t len_tmp_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
 
-			build_work_text_snt_path = (char*)malloc(len_work_dir + (strlen(original_text) * 2) + 0x40);
+			build_work_text_snt_path = (char*)malloc(len_tmp_work_dir + (strlen(original_text) * 2) + 0x40);
 			if (build_work_text_snt_path == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
-			build_work_text_csc_path = (char*)malloc(len_work_dir + (strlen(original_text) * 2) + 0x40);
+			build_work_text_csc_path = (char*)malloc(len_tmp_work_dir + (strlen(original_text) * 2) + 0x40);
 			if (build_work_text_csc_path == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
-			build_work_text_csc_work_path = (char*)malloc(len_work_dir + (strlen(original_text) * 2) + 0x40);
+			build_work_text_csc_work_path = (char*)malloc(len_tmp_work_dir + (strlen(original_text) * 2) + 0x40);
 			if (build_work_text_csc_work_path == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
-			if (len_work_dir > 0) {
-				build_text = (char*)malloc(len_work_dir + strlen(original_text) + 0x10);
+			if (len_tmp_work_dir > 0) {
+				build_text = (char*)malloc(len_tmp_work_dir + strlen(original_text) + 0x10);
 				if (build_text == NULL) {
 					fatal_alloc_error("load_transducer_from_linked_list");
 					exit(1);
 				}
 
-				strcpy(build_text, (len_work_dir > 0) ? tmp_work_dir : original_text);
+				strcpy(build_text, (len_tmp_work_dir > 0) ? tmp_work_dir : original_text);
 				char latest_char = *(tmp_work_dir + strlen(tmp_work_dir) - 1);
 				if ((latest_char != '\\') && (latest_char != '/')) {
 					strcat(build_text, PATH_SEPARATOR_STRING);
@@ -473,7 +473,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
 			get_csc_path(text, build_work_text_csc_path);
 			
-			if (len_work_dir > 0) {
+			if (len_tmp_work_dir > 0) {
 				make_directory(build_work_text_snt_path);
 			}
 		}
