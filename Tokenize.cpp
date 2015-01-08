@@ -546,6 +546,32 @@ static inline int fast_u_fgetc_raw(U_FILE* f, unichar*buffer,unsigned int* pos_i
 	}
 }
 
+static void enlarge_token_buffer_as_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed)
+{
+	if (size_needed <= (*buffer_size))
+		return;
+
+	size_t buffer_new_size = *buffer_size;
+	while (size_needed > buffer_new_size)
+		buffer_new_size *= 2;
+
+	unichar* new_token_buffer = (unichar*)realloc((void*)*token_buffer, buffer_new_size*sizeof(unichar));
+	if (new_token_buffer == NULL) {
+		fatal_alloc_error("enlarge_token_buffer_as_needed");
+	}
+	*token_buffer = new_token_buffer;
+	*buffer_size = buffer_new_size;
+}
+
+static inline void enlarge_token_buffer_if_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed)
+{
+	if (size_needed <= (*buffer_size))
+		return;
+	enlarge_token_buffer_as_needed(token_buffer, buffer_size, size_needed);
+}
+
+#define TOKENIZE_ORIGINAL_TOKEN_BUFFER_SIZE 0x400
+
 static int tokenization(U_FILE* f_read,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
@@ -570,8 +596,9 @@ int current_pos;
 int snt_offsets_shift=0;
 int offset_index=0;
 int result=0; // 0 = no error
-unichar * s = (unichar*)malloc(sizeof(unichar)*MAX_TAG_LENGTH);
-if (s == NULL) {
+size_t token_buffer_size = TOKENIZE_ORIGINAL_TOKEN_BUFFER_SIZE;
+unichar * token_buffer = (unichar*)malloc(sizeof(unichar)*token_buffer_size);
+if (token_buffer == NULL) {
   fatal_alloc_error("tokenization");
 }
 while ((c!=EOF) && (result == 0)) {
@@ -590,15 +617,15 @@ while ((c!=EOF) && (result == 0)) {
         if (c==0x0d || c==0x0a) ENTER=1;
         COUNT++;
       }
-      s[0]=' ';
-      s[1]='\0';
-      n=get_token_number(s,tokens,hashtable,n_occur);
+      token_buffer[0]=' ';
+      token_buffer[1]='\0';
+      n=get_token_number(token_buffer,tokens,hashtable,n_occur);
       if (COUNT-current_pos!=1) {
     	  /* If there is a shift with the .snt file */
     	  add_snt_offsets(snt_offsets,*TOKENS_TOTAL,snt_offsets_shift,snt_offsets_shift+(COUNT-current_pos-1));
     	  snt_offsets_shift+=(COUNT-current_pos-1);
       }
-      result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+      result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
       /* If there is a \n, we note it */
       if (ENTER==1) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
@@ -607,54 +634,57 @@ while ((c!=EOF) && (result == 0)) {
 	  fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
    }
    else if (c=='{') {
-     s[0]='{';
+     token_buffer[0]='{';
      int z=1;
      bool protected_char = false; // Cassys add
-	 while (z < (MAX_TAG_LENGTH - 1) && (((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) != '}' && c
+	 while ((((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) != '}' && c
 					!= '{' && c != '\n') || protected_char)) {
 			protected_char = false; // Cassys add
 			if (c == '\\') { // Cassys add
 				protected_char = true; // Cassys add
 			} // Cassys add
-			s[z++] = (unichar) c;
+			enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z+2);
+			token_buffer[z++] = (unichar) c;
 			COUNT++;
 	}
 
-     if (z==(MAX_TAG_LENGTH-1) || c!='}') {
+     if (c!='}') {
         // if the tag has no ending }
-        s[z]='\0';
-        fatal_error("Error: a tag without ending } has been found:\n%S\n",s);
+        enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z + 1);
+        token_buffer[z]='\0';
+        fatal_error("Error: a tag without ending } has been found:\n%S\n",token_buffer);
      }
      if (c=='\n') {
         // if the tag contains a return
         fatal_error("Error: a tag containing a new-line sequence has been found\n");
      }
-     s[z]='}';
-     s[z+1]='\0';
-     if (!u_strcmp(s,"{S}")) {
+     enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z + 2);
+     token_buffer[z]='}';
+     token_buffer[z+1]='\0';
+     if (!u_strcmp(token_buffer,"{S}")) {
         // if we have found a sentence delimiter
         (*SENTENCES)++;
      } else {
-        if (u_strcmp(s,"{STOP}") && !check_tag_token(s,1)) {
+        if (u_strcmp(token_buffer,"{STOP}") && !check_tag_token(token_buffer,1)) {
            // if a tag is incorrect, we exit
            fatal_error("The text contains an invalid tag. Unitex cannot process it.");
         }
      }
-     n=get_token_number(s,tokens,hashtable,n_occur);
+     n=get_token_number(token_buffer,tokens,hashtable,n_occur);
      COUNT++;
-     result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
+     result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
      (*TOKENS_TOTAL)++;
 	 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
 	 c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
    }
    else {
-      s[0]=(unichar)c;
+      token_buffer[0]=(unichar)c;
       n=1;
-      if (!is_letter(s[0],alph) || char_by_char) {
-         s[1]='\0';
-         if (is_letter(s[0],alph)) (*WORDS_TOTAL)++;
-         n=get_token_number(s,tokens,hashtable,n_occur);
-         result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
+      if (!is_letter(token_buffer[0],alph) || char_by_char) {
+         token_buffer[1]='\0';
+         if (is_letter(token_buffer[0],alph)) (*WORDS_TOTAL)++;
+         n=get_token_number(token_buffer,tokens,hashtable,n_occur);
+         result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,
         		 &shift);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
@@ -662,17 +692,15 @@ while ((c!=EOF) && (result == 0)) {
 		 c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
       }
       else {
-		  while ((n<(MAX_TAG_LENGTH - 1)) && EOF != (c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) && is_letter((unichar)c, alph)) {
-           s[n++]=(unichar)c;
+		  while (EOF != (c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) && is_letter((unichar)c, alph)) {
+           enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, n + 2);
+           token_buffer[n++]=(unichar)c;
            COUNT++;
          }
-         if (n==(MAX_TAG_LENGTH-1)) {
-        	 s[n]='\0';
-            error("Token too long at position %d:\n<%S>\n",COUNT,s);
-         }
-         s[n]='\0';
-         n=get_token_number(s,tokens,hashtable,n_occur);
-         result=save_token_offset(f_out_offsets,s,n,current_pos,COUNT,v_in_offsets,&offset_index,
+         enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, n + 1);
+         token_buffer[n]='\0';
+         n=get_token_number(token_buffer,tokens,hashtable,n_occur);
+         result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,
         		 &shift);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
@@ -687,7 +715,7 @@ for (n=0;n<tokens->nbelems;n++) {
 if (result!=0) {
    u_printf("Unsucessfull.\n");
 }
-free(s);
+free(token_buffer);
 return result;
 }
 

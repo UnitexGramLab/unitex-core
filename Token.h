@@ -22,7 +22,6 @@
 #ifndef TokenH
 #define TokenH
 
-#define MAX_TAG_LENGTH 4000
 
 #endif
 

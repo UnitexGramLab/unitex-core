@@ -152,7 +152,7 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 
 	struct OUTBUF OutBuf;
 	OutBuf.pos = 0;
-	Ustring* tmp=new_Ustring(MAX_TAG_LENGTH);
+	Ustring* tmp = new_Ustring(MAX_EXPECTED_TAG_LENGTH);
 	//struct buffer* buffer=new_buffer_for_file(UNICHAR_BUFFER,input);
 
 	long save_pos = ftell(input);

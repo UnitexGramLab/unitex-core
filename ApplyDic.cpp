@@ -41,7 +41,7 @@ namespace unitex {
 /* This margin is used for compound words: when we are at less
  * than 'MARGIN_BEFORE_BUFFER_END' from the end of the buffer, we will
  * refill it, unless we are at the end of the input file. */
-#define MARGIN_BEFORE_BUFFER_END 200
+//#define MARGIN_BEFORE_BUFFER_END 200
 
 
 void free_word_struct(struct word_struct*);
