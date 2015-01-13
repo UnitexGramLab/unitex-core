@@ -169,6 +169,29 @@ strcat(line,protection);
 
 
 /**
+ * arg_need_protection return 1 if argument need quote protection
+ */
+static int arg_need_protection(const char* arg)
+{
+	for (;;)
+	{
+		char c = *(arg++);
+		if (c == '\0')
+			return 0;
+		if ((c == '-') || (c == ',') || (c == '/') || (c == '_'))
+			continue;
+		if ((c >= 'A') && (c <= 'Z'))
+			continue;
+		if ((c >= 'a') && (c <= 'z'))
+			continue;
+		if ((c >= '0') && (c <= '9'))
+			continue;
+		return 1;
+	}
+}
+
+
+/**
  * Builds and returns a command line ready to be used with a 'system' call, alloc a memory buffer.
  */
 char* build_command_line_alloc(ProgramInvoker* invoker) {
@@ -192,9 +215,11 @@ if (line==NULL) {
 
 sprintf(line,"%s\"%s\"",protection,(const char*)(invoker->args->tab[0]));
 for (int i=1;i<invoker->args->nbelems;i++) {
-   strcat(line," \"");
-   strcat(line,(const char*)(invoker->args->tab[i]));
-   strcat(line,"\"");
+   const char* cur_arg = (const char*)(invoker->args->tab[i]);
+   int cur_arg_need_protection = arg_need_protection(cur_arg);
+   strcat(line, cur_arg_need_protection ? " \"" : " ");
+   strcat(line, cur_arg);
+   strcat(line, cur_arg_need_protection ? "\"" : "");
 }
 strcat(line,protection);
 return line;
