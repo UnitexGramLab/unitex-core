@@ -1,0 +1,13 @@
+prefix=/usr/local
+exec_prefix=${prefix}/bin
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: unitex
+Description: Open source, cross-platform and multilingual text corpus processing suite library
+URL: http://unitexgramlab.org
+Version: 3.1.0
+
+Cflags: -I${includedir}/unitex
+Libs: -L${libdir} -lunitex
+Libs.private: -L${libdir} -ltre
