@@ -500,6 +500,12 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             0,0,0,0, must_create_directory,0);
     }
 
+    if (is_empty(transducer_list)) {
+    	 labeled_text_name = create_labeled_files_and_directory(text,
+    			 0,0,0,0, must_create_directory,0);
+    	 sprintf(last_labeled_text_name, "%s", labeled_text_name);
+    }
+
     int previous_transducer_number = 0;
     int previous_iteration = 0;
     int iteration = 0;
