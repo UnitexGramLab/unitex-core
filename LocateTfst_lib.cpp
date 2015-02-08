@@ -983,7 +983,7 @@ if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='
       if (my_entry!=NULL) free_dela_entry(my_entry);
       return PARTIAL_MATCH_STATUS;
    }
-   /* If we have consumed all the tfst tag, but not all th fst2 one, it's a partial match */
+   /* If we have consumed all the tfst tag, but not all the fst2 one, it's a partial match */
    (*pos_pending_fst2_tag)=k;
    (*pos_pending_tfst_tag)=-1;
    //error("YY partial match #2 between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
@@ -995,16 +995,27 @@ struct dela_entry* grammar_entry=NULL;
 struct dela_entry* text_entry=NULL;
 /**************************************************
  * We want to match a token like "le" */
+
+int pos_in_tfst_input = (*pos_pending_tfst_tag)!=-1 ? (*pos_pending_tfst_tag) : 0;
+if (pos_in_tfst_input!=0 && text_tag->content[0]=='{') {
+	   /* pos_in_tfst_input contains a value that is relative to the whole tag like {toto,tutu.XXX},
+	    * so we have to substract 1 to start on the inflected form
+	    */
+	   pos_in_tfst_input--;
+}
+
+
+error("ici, pos=%d => '%S'\n",pos_in_tfst_input,text_tag->content+pos_in_tfst_input);
 if (is_letter(grammar_tag->input[0],infos->alphabet)) {
    if (is_letter(text_tag->content[0],infos->alphabet)) {
       /* text= "toto" */
       if (grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK) {
          /* If we must respect case */
-         if (!u_strcmp(grammar_tag->input,text_tag->content)) {return OK_MATCH_STATUS;}
+         if (!u_strcmp(grammar_tag->input,text_tag->content+pos_in_tfst_input)) {return OK_MATCH_STATUS;}
          else {return NO_MATCH_STATUS;}
       } else {
          /* If case does not matter */
-         if (is_equal_or_uppercase(grammar_tag->input,text_tag->content,infos->alphabet)) {return OK_MATCH_STATUS;}
+         if (is_equal_or_uppercase(grammar_tag->input,text_tag->content+pos_in_tfst_input,infos->alphabet)) {return OK_MATCH_STATUS;}
          else {return NO_MATCH_STATUS;}
       }
    } else if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
@@ -1015,14 +1026,14 @@ if (is_letter(grammar_tag->input[0],infos->alphabet)) {
 	  }
 	  if (grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK) {
          /* If we must respect case */
-		 if (!u_strcmp(grammar_tag->input,text_entry->inflected)) {
+		 if (!u_strcmp(grammar_tag->input,text_entry->inflected+pos_in_tfst_input)) {
 			 goto ok_match;
 		 } else {
 			 goto no_match;
 		 }
       } else {
          /* If case does not matter */
-    	 if (is_equal_or_uppercase(grammar_tag->input,text_entry->inflected,infos->alphabet)) {
+    	 if (is_equal_or_uppercase(grammar_tag->input,text_entry->inflected+pos_in_tfst_input,infos->alphabet)) {
     		 goto ok_match;
     	 } else {
     		 goto no_match;
@@ -1041,7 +1052,7 @@ if (grammar_tag->input[0]=='{' && u_strcmp(grammar_tag->input,"{S}")) {
    }
    grammar_entry=tokenize_tag_token(grammar_tag->input,1);
    text_entry=tokenize_tag_token(text_tag->content,1);
-   if (!is_equal_or_uppercase(grammar_entry->inflected,text_entry->inflected,infos->alphabet)) {
+   if (!is_equal_or_uppercase(grammar_entry->inflected,text_entry->inflected+pos_in_tfst_input,infos->alphabet)) {
       /* We allow case variations on the inflected form :
        * if there is "{tutu,toto.XXX}" in the grammar, we want it
        * to match "{Tutu,toto.XXX}" in the text automaton */
@@ -1073,7 +1084,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
        * BUT, it matches only if we are not already inside a tfst tag in order
        * to avoid that a grammar like "pr <MOT>" could match tags like
        * {préciser,.V:W} */
-      if ((is_letter(text_tag->content[0],infos->alphabet) || text_entry!=NULL)
+      if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) || text_entry!=NULL)
     		  && !((*pos_pending_tfst_tag)>0)) {
          goto ok_match;
       }
@@ -1081,7 +1092,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    }
    if (!u_strcmp(grammar_tag->input,"<!MOT>")) {
       /* <!MOT> matches the opposite of <MOT> */
-      if (!is_letter(text_tag->content[0],infos->alphabet)
+      if (!is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet)
           && text_entry==NULL) {
     	  goto ok_match;
       }
@@ -1090,8 +1101,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<MIN>")) {
       /* <MIN> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * only made of lower case letters */
-      if (is_sequence_of_lowercase_letters(text_tag->content,infos->alphabet) ||
-          (text_entry!=NULL && is_sequence_of_lowercase_letters(text_entry->inflected,infos->alphabet))) {
+      if (is_sequence_of_lowercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet) ||
+          (text_entry!=NULL && is_sequence_of_lowercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -1099,8 +1110,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<!MIN>")) {
       /* <!MIN> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that is not only made of lower case letters */
-      if ((is_letter(text_tag->content[0],infos->alphabet) && !is_sequence_of_lowercase_letters(text_tag->content,infos->alphabet))
-          || (text_entry!=NULL && !is_sequence_of_lowercase_letters(text_entry->inflected,infos->alphabet))) {
+      if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) && !is_sequence_of_lowercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet))
+          || (text_entry!=NULL && !is_sequence_of_lowercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -1108,8 +1119,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<MAJ>")) {
       /* <MAJ> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * only made of upper case letters */
-      if (is_sequence_of_uppercase_letters(text_tag->content,infos->alphabet) ||
-          (text_entry!=NULL && is_sequence_of_uppercase_letters(text_entry->inflected,infos->alphabet))) {
+      if (is_sequence_of_uppercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet) ||
+          (text_entry!=NULL && is_sequence_of_uppercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -1117,8 +1128,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<!MAJ>")) {
       /* <!MAJ> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that is not only made of upper case letters */
-      if ((is_letter(text_tag->content[0],infos->alphabet) && !is_sequence_of_uppercase_letters(text_tag->content,infos->alphabet))
-          || (text_entry!=NULL && !is_sequence_of_uppercase_letters(text_entry->inflected,infos->alphabet))) {
+      if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) && !is_sequence_of_uppercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet))
+          || (text_entry!=NULL && !is_sequence_of_uppercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -1126,8 +1137,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<PRE>")) {
       /* <PRE> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * that begins by an upper case letter */
-      if (is_upper(text_tag->content[0],infos->alphabet) ||
-          (text_entry!=NULL && is_upper(text_entry->inflected[0],infos->alphabet))) {
+      if (is_upper(text_tag->content[pos_in_tfst_input],infos->alphabet) ||
+          (text_entry!=NULL && is_upper(text_entry->inflected[pos_in_tfst_input],infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -1135,8 +1146,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<!PRE>")) {
       /* <!PRE> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * that does not begin by an upper case letter */
-      if ((is_letter(text_tag->content[0],infos->alphabet) && !is_upper(text_tag->content[0],infos->alphabet)) ||
-          (text_entry!=NULL && is_letter(text_entry->inflected[0],infos->alphabet) && !is_upper(text_entry->inflected[0],infos->alphabet))) {
+      if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) && !is_upper(text_tag->content[pos_in_tfst_input],infos->alphabet)) ||
+          (text_entry!=NULL && is_letter(text_entry->inflected[pos_in_tfst_input],infos->alphabet) && !is_upper(text_entry->inflected[pos_in_tfst_input],infos->alphabet))) {
          /* We test is_letter+!is_upper instead of is_lower in order to handle
           * cases where there is no difference between lower and upper case letters
           * (for instance Thai) */
@@ -1164,7 +1175,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       goto no_match;
    }
    if (!u_strcmp(grammar_tag->input,"<!DIC>")) {
-      /* <DIC> matches any sequence of letters that is not a tag like {tutu,toto.XXX} */
+      /* <!DIC> matches any sequence of letters that is not a tag like {tutu,toto.XXX} */
       if (is_letter(text_tag->content[0],infos->alphabet)) {
          goto ok_match;
       }
