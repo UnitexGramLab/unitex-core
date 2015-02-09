@@ -1005,7 +1005,7 @@ if (pos_in_tfst_input!=0 && text_tag->content[0]=='{') {
 }
 
 
-error("ici, pos=%d => '%S'\n",pos_in_tfst_input,text_tag->content+pos_in_tfst_input);
+
 if (is_letter(grammar_tag->input[0],infos->alphabet)) {
    if (is_letter(text_tag->content[0],infos->alphabet)) {
       /* text= "toto" */
