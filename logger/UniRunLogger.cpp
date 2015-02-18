@@ -84,7 +84,7 @@ private:
 };
 
 
-InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log) : 
+InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log) :
    ule(ule_default_init),init_done(0)
 {
 
@@ -130,7 +130,7 @@ struct dir_list_for_clean_item {
     struct dir_list_for_clean_item *next;
 };
 
-struct dir_list_for_clean {    
+struct dir_list_for_clean {
     struct dir_list_for_clean_item *first;
 } ;
 
@@ -180,7 +180,7 @@ int add_dir_in_log_for_clean(struct dir_list_for_clean* pdlfc,const char*dirname
 
         pdlfci->next = pdlfc->first;
         pdlfc->first = pdlfci;
-    
+
         return 1;
     }
 }
@@ -262,26 +262,26 @@ char* get_filename_withoutpath_portion(char* fn)
 
 void cleanup_filename_inzip_minivfs(char* fn)
 {
-	if (fn == NULL)
-		return;
-	for (;;)
-	{
-		if ((*fn)=='\0')
-			return;
-		
-		
-		//if ((*fn) == '$')
-		if ((*fn) != '\0')
-			if ((*(fn+1)) == ':')
-			{
-				size_t len_after = strlen(fn+2);
-				for (size_t i=0;i<len_after;i++)
-					*(fn+i) = * (fn+i+2);
-				*(fn+len_after) = '\0';
-				continue;
-			}
-		fn++;
-	}
+    if (fn == NULL)
+        return;
+    for (;;)
+    {
+        if ((*fn)=='\0')
+            return;
+
+
+        //if ((*fn) == '$')
+        if ((*fn) != '\0')
+            if ((*(fn+1)) == ':')
+            {
+                size_t len_after = strlen(fn+2);
+                for (size_t i=0;i<len_after;i++)
+                    *(fn+i) = * (fn+i+2);
+                *(fn+len_after) = '\0';
+                continue;
+            }
+        fn++;
+    }
 }
 
 int do_extracting_currentfile(
@@ -304,7 +304,7 @@ int do_extracting_currentfile(
     unz_file_info file_info;
     //uLong ratio=0;
     err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
-	cleanup_filename_inzip_minivfs(filename_inzip);
+    cleanup_filename_inzip_minivfs(filename_inzip);
 
     filename_touse = (write_filename != NULL) ? write_filename : filename_inzip;
 
@@ -445,7 +445,7 @@ int do_extracting_currentfile_memory(
 
     if (err!=UNZ_OK)
     {
-    	free(*ptr);
+        free(*ptr);
         *ptr = NULL;
         *size_file = 0;
     }
@@ -515,7 +515,7 @@ struct ListFile {
 
 struct ListFile* AllocListFile(unsigned int iNbAlloc)
 {
-    struct ListFile_entry * p_ListFile_entry = 
+    struct ListFile_entry * p_ListFile_entry =
         (struct ListFile_entry *)malloc(sizeof(struct ListFile_entry)*(iNbAlloc+1));
     if (p_ListFile_entry == NULL)
         return NULL;
@@ -568,7 +568,7 @@ struct ListFile* ReadListFile(char* content,size_t list_out)
         name[0] = 0;
 
         sscanf(curLine,"%lu\t%lx",&lSize,&lCrc);
-        
+
         const char* browse_cur_line = curLine;
         int count_tab=0;
         while ((*browse_cur_line)!=0)
@@ -584,7 +584,7 @@ struct ListFile* ReadListFile(char* content,size_t list_out)
             }
             browse_cur_line++;
         }
-        
+
         if (name[0] != 0)
         {
             ((p_ListFile->p_ListFile_entry) + (p_ListFile->iNbFile)) -> crc = lCrc;
@@ -668,15 +668,15 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
 
 static int is_space_or_equivalent(char c)
 {
-	if ((c==' ') || (c=='\t') || (c=='\r') || (c=='\n'))
-		return 1;
-	return 0;
+    if ((c==' ') || (c=='\t') || (c=='\r') || (c=='\n'))
+        return 1;
+    return 0;
 }
 
 
 void do_convert_command_line_synth_to_std(
     const char*file_synth,
-	size_t size_synth,
+    size_t size_synth,
     char** ptr_converted,
     size_t *size_file_converted)
 {
@@ -696,7 +696,7 @@ void do_convert_command_line_synth_to_std(
       lpSrc++;
 
   if (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
-	  iNbArg++;
+      iNbArg++;
 
   while (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
     {
@@ -711,12 +711,12 @@ void do_convert_command_line_synth_to_std(
           while ((is_space_or_equivalent(*lpSrc) != 0) && (lpSrc<lpSrcLimit))
               lpSrc++;
           if (((*lpSrc) == '\0') || (lpSrc==lpSrcLimit))
-			  break;
-		  *(cur_dest++)='\n';
-		  iNbArg++;
+              break;
+          *(cur_dest++)='\n';
+          iNbArg++;
       }
 
-	  *(cur_dest++)=*(lpSrc++);
+      *(cur_dest++)=*(lpSrc++);
     }
   *(cur_dest)=0;
   *size_file_converted = (size_t)(cur_dest - dest);
@@ -765,7 +765,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
     struct dir_list_for_clean* pdlfc = NULL;
     Exec_status exec_status = EXEC_NOTRUN;
 
-    
+
 
     if (FileRunPath==NULL)
         FileRunPath="";
@@ -785,7 +785,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
     {
         len_LocationUnfoundVirtualRessource = strlen(LocationUnfoundVirtualRessource);
         if (len_LocationUnfoundVirtualRessource>0)
-            if (((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '/') && 
+            if (((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '/') &&
                 ((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '\\'))
                 need_add_dir_sep_unfoud_virtual_resource=1;
     }
@@ -798,10 +798,10 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
             *p_exec_status = exec_status;
         return -1;
     }
-    
+
     unz_global_info gi1;
     int err;
-    
+
     err = unzGetGlobalInfo (uf,&gi1);
     if (err==UNZ_OK)
     {
@@ -814,7 +814,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
                   char filename_inzip[256];
                   unz_file_info file_info;
                   err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
-				  cleanup_filename_inzip_minivfs(filename_inzip);
+                  cleanup_filename_inzip_minivfs(filename_inzip);
 
                   if ((strcmp(filename_inzip,"test_info/command_line.txt")==0))
                   {
@@ -837,48 +837,48 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
 
               unzGoToFirstFile(uf);
 
-			  if (command_line_buf == NULL)
-			  {
+              if (command_line_buf == NULL)
+              {
 
 
-				  for (i1=0;i1<gi1.number_entry;i1++)
-				  {
-					  char filename_inzip[256];
-					  unz_file_info file_info;
-					  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
-					  cleanup_filename_inzip_minivfs(filename_inzip);
+                  for (i1=0;i1<gi1.number_entry;i1++)
+                  {
+                      char filename_inzip[256];
+                      unz_file_info file_info;
+                      err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+                      cleanup_filename_inzip_minivfs(filename_inzip);
 
-					  if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
-					  {
-						  
-						  char* command_line_synth_buf = NULL;
-						  size_t size_command_line_synth = 0;
-						  char** p_command_line_synth_buf = &command_line_synth_buf;
-						  do_extracting_currentfile_memory(uf,(void**)p_command_line_synth_buf,&size_command_line_synth,NULL);
-						  if (command_line_synth_buf != NULL)
-						  {
-							  char** p_command_line_buf = &command_line_buf;
-							  do_convert_command_line_synth_to_std(command_line_synth_buf,size_command_line_synth,(char**)p_command_line_buf,&size_command_line);
-							  free(command_line_synth_buf);
-						  }
-						  break;
-					  }
+                      if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
+                      {
+
+                          char* command_line_synth_buf = NULL;
+                          size_t size_command_line_synth = 0;
+                          char** p_command_line_synth_buf = &command_line_synth_buf;
+                          do_extracting_currentfile_memory(uf,(void**)p_command_line_synth_buf,&size_command_line_synth,NULL);
+                          if (command_line_synth_buf != NULL)
+                          {
+                              char** p_command_line_buf = &command_line_buf;
+                              do_convert_command_line_synth_to_std(command_line_synth_buf,size_command_line_synth,(char**)p_command_line_buf,&size_command_line);
+                              free(command_line_synth_buf);
+                          }
+                          break;
+                      }
 
 
-					  if ((i1+1)<gi1.number_entry)
-						{
-							err = unzGoToNextFile(uf);
-							if (err!=UNZ_OK)
-							{
-								error("error %d with zipfile in unzGoToNextFile\n",err);
-								break;
-							}
-						}
-				  }
+                      if ((i1+1)<gi1.number_entry)
+                        {
+                            err = unzGoToNextFile(uf);
+                            if (err!=UNZ_OK)
+                            {
+                                error("error %d with zipfile in unzGoToNextFile\n",err);
+                                break;
+                            }
+                        }
+                  }
 
-				  unzGoToFirstFile(uf);
+                  unzGoToFirstFile(uf);
 
-			  }
+              }
 
               if (command_line_buf != NULL)
               {
@@ -919,7 +919,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
           char filename_inzip[256];
           unz_file_info file_info;
           err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
-		  cleanup_filename_inzip_minivfs(filename_inzip);
+          cleanup_filename_inzip_minivfs(filename_inzip);
 
           if (memcmp(filename_inzip,"src/",4)==0)
           {
@@ -972,54 +972,54 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
             }
       }
 
-	  if (command_line_buf == NULL)
-	  {
-		  unzGoToFirstFile(uf);
+      if (command_line_buf == NULL)
+      {
+          unzGoToFirstFile(uf);
 
 
-		  for (i2=0;i2<gi1.number_entry;i2++)
-		  {
-			  char filename_inzip[256];
-			  unz_file_info file_info;
-			  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
-			  cleanup_filename_inzip_minivfs(filename_inzip);
+          for (i2=0;i2<gi1.number_entry;i2++)
+          {
+              char filename_inzip[256];
+              unz_file_info file_info;
+              err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+              cleanup_filename_inzip_minivfs(filename_inzip);
 
 
-			  if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
-				{
-						  
-					char* command_line_synth_buf = NULL;
-					size_t size_command_line_synth = 0;
-					char** p_command_line_synth_buf = &command_line_synth_buf;
-					do_extracting_currentfile_memory(uf,(void**)p_command_line_synth_buf,&size_command_line_synth,NULL);
-					if (command_line_synth_buf != NULL)
-					{
-						char** p_command_line_buf = &command_line_buf;
-						do_convert_command_line_synth_to_std(command_line_synth_buf,size_command_line_synth,(char**)p_command_line_buf,&size_command_line);
-						free(command_line_synth_buf);
-					}
-					break;
-				}
+              if ((strcmp(filename_inzip,"test_info/command_line_synth.txt")==0))
+                {
+
+                    char* command_line_synth_buf = NULL;
+                    size_t size_command_line_synth = 0;
+                    char** p_command_line_synth_buf = &command_line_synth_buf;
+                    do_extracting_currentfile_memory(uf,(void**)p_command_line_synth_buf,&size_command_line_synth,NULL);
+                    if (command_line_synth_buf != NULL)
+                    {
+                        char** p_command_line_buf = &command_line_buf;
+                        do_convert_command_line_synth_to_std(command_line_synth_buf,size_command_line_synth,(char**)p_command_line_buf,&size_command_line);
+                        free(command_line_synth_buf);
+                    }
+                    break;
+                }
 
 
-			  if ((strcmp(filename_inzip,"test_info/command_line.txt")==0) &&
-				  (command_line_buf == NULL))
-			  {
-				  char** p_command_line_buf = &command_line_buf;
-				  do_extracting_currentfile_memory(uf,(void**)p_command_line_buf,&size_command_line,NULL);
-			  }
+              if ((strcmp(filename_inzip,"test_info/command_line.txt")==0) &&
+                  (command_line_buf == NULL))
+              {
+                  char** p_command_line_buf = &command_line_buf;
+                  do_extracting_currentfile_memory(uf,(void**)p_command_line_buf,&size_command_line,NULL);
+              }
 
-			  if ((i2+1)<gi1.number_entry)
-				{
-					err = unzGoToNextFile(uf);
-					if (err!=UNZ_OK)
-					{
-						error("error %d with zipfile in unzGoToNextFile\n",err);
-						break;
-					}
-				}
-		  }
-	  }
+              if ((i2+1)<gi1.number_entry)
+                {
+                    err = unzGoToNextFile(uf);
+                    if (err!=UNZ_OK)
+                    {
+                        error("error %d with zipfile in unzGoToNextFile\n",err);
+                        break;
+                    }
+                }
+          }
+      }
 
       //size_t walk_arglist;
       int nb_max_arg_for_allocwide = (int)get_max_nb_line_in_file(command_line_buf,size_command_line);
@@ -1027,9 +1027,9 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
       char* buf_arg = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) + 0x100);
       char** argv_log = (char**)malloc(sizeof(char*) * (nb_max_arg_for_allocwide+2+1));
 
-      char* buf_arg_reworked = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) + 
-		                                     size_command_line + (nb_max_arg_for_allocwide * len_LocationUnfoundVirtualRessource + 4) +
-		                                     0x100);
+      char* buf_arg_reworked = (char*)malloc(size_command_line + (nb_max_arg_for_allocwide * len_RunPath) +
+                                             size_command_line + (nb_max_arg_for_allocwide * len_LocationUnfoundVirtualRessource + 4) +
+                                             0x100);
       const char** argv_log_reworked = (const char**)malloc(sizeof(char*) * (nb_max_arg_for_allocwide+2+1));
 
       char *walk_arg = command_line_buf;
@@ -1076,9 +1076,11 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
                   const char* ext4 = portionFileNameFromParam + len_portionFileNameFromParam-5;
                   int is_bin = ((strcmp(ext3,".bin")==0) || (strcmp(ext3,".BIN")==0) || (strcmp(ext3,".Bin")==0));
                   int is_bin2 = ((strcmp(ext4,".bin2")==0) || (strcmp(ext4,".BIN2")==0) || (strcmp(ext4,".Bin2")==0));
+                  int is_dic = ((strcmp(ext3,".dic")==0) || (strcmp(ext3,".DIC")==0) || (strcmp(ext3,".Dic")==0));
                   int is_fst2 = ((strcmp(ext4,".fst2")==0) || (strcmp(ext4,".FST2")==0) || (strcmp(ext4,".Fst2")==0));
-                  int is_txt =  ((strcmp(ext3,".txt")==0) || (strcmp(ext3,".TXT")==0) || (strcmp(ext3,".Txt")==0));;
-                  if (is_bin || is_bin2 || is_fst2 || is_txt)
+                  int is_grf =  ((strcmp(ext3,".grf")==0) || (strcmp(ext3,".GRF")==0) || (strcmp(ext3,".Grf")==0));
+                  int is_txt =  ((strcmp(ext3,".txt")==0) || (strcmp(ext3,".TXT")==0) || (strcmp(ext3,".Txt")==0));
+                  if (is_bin || is_bin2 || is_grf || is_dic || is_fst2 || is_txt)
                   {
                       ABSTRACTFILE* tryOpen = af_fopen(portionFileName,"rb");
                       if (tryOpen != NULL)
@@ -1095,42 +1097,53 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
                             mkdir_recursive(portionFileName,0,pdlfc);
 
                           // if iCopyResFile == 0, change argument instead copy resource
-                          int iCopyResFile = (iCopyResFileAlway != 0) ? 1 : ((is_bin ||is_bin2 || is_fst2) ? 0 : 1);
+                          // for bin/bin2/dic/fst2
+                          int iCopyResFile = (iCopyResFileAlway != 0) ? 1 : 0;
+                          // txt file are always copied, to avoid risk overwrite data on original location
+                          if (is_txt)
+                          {
+                              iCopyResFile = 1;
+                          }
+                          // grf file are never copied do don't loose dependency grf
+                          if (is_grf)
+                          {
+                              iCopyResFile = 0;
+                          }
                           if (iCopyResFile)
                           {
-							  if ((af_copy_unlogged(filename_on_location_res,portionFileName) == 0) && (list_file_fromarg_todel != NULL))
-							  {
-								  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
-									  strdup(portionFileName);
-								  list_file_fromarg_todel->iNbFile++;
-							  }
+                              if ((af_copy_unlogged(filename_on_location_res,portionFileName) == 0) && (list_file_fromarg_todel != NULL))
+                              {
+                                  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename =
+                                      strdup(portionFileName);
+                                  list_file_fromarg_todel->iNbFile++;
+                              }
 
-							  if (is_bin)
-							  {
-								  char portionFileNameInf[256];
-								  strcpy(portionFileNameInf,portionFileName);
-								  strcpy(filename_on_location_res+strlen(filename_on_location_res)-4,".inf");
-								  strcpy(portionFileNameInf+strlen(portionFileNameInf)-4,".inf");
-								  af_copy_unlogged(filename_on_location_res,portionFileNameInf);
+                              if (is_bin)
+                              {
+                                  char portionFileNameInf[256];
+                                  strcpy(portionFileNameInf,portionFileName);
+                                  strcpy(filename_on_location_res+strlen(filename_on_location_res)-4,".inf");
+                                  strcpy(portionFileNameInf+strlen(portionFileNameInf)-4,".inf");
+                                  af_copy_unlogged(filename_on_location_res,portionFileNameInf);
 
-								  if ((af_copy_unlogged(filename_on_location_res,portionFileNameInf) == 0) && (list_file_fromarg_todel != NULL))
-								  {
-									  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
-										  strdup(portionFileNameInf);
-									  list_file_fromarg_todel->iNbFile++;
-								  }
-							  }
+                                  if ((af_copy_unlogged(filename_on_location_res,portionFileNameInf) == 0) && (list_file_fromarg_todel != NULL))
+                                  {
+                                      ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename =
+                                          strdup(portionFileNameInf);
+                                      list_file_fromarg_todel->iNbFile++;
+                                  }
+                              }
                           }
-						  else
-						  {
-							  // build in next_buf_arg_reworked
-							  
-							  strcpy(next_buf_arg_reworked,*(argv_log_reworked+walk+1));
-							  strcpy(next_buf_arg_reworked+posFileNameInArg,filename_on_location_res);
+                          else
+                          {
+                              // build in next_buf_arg_reworked
 
-							  *(argv_log_reworked+walk+1) = next_buf_arg_reworked;
-							  next_buf_arg_reworked += strlen(next_buf_arg_reworked) + 1;
-						  }
+                              strcpy(next_buf_arg_reworked,*(argv_log_reworked+walk+1));
+                              strcpy(next_buf_arg_reworked+posFileNameInArg,filename_on_location_res);
+
+                              *(argv_log_reworked+walk+1) = next_buf_arg_reworked;
+                              next_buf_arg_reworked += strlen(next_buf_arg_reworked) + 1;
+                          }
                       }
                   }
               }
@@ -1142,8 +1155,8 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
       unzClose(uf);
       /* we have done extracting */
 
-      //char *buf_reworked=malloc(size_command_line + 
-      
+      //char *buf_reworked=malloc(size_command_line +
+
       if (LogNameWrite != NULL)
           InstallLoggerForRunnerSingleton.SelectNextLogName(LogNameWrite,FileRunPath);
 
@@ -1170,7 +1183,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
 
       if (pReturn != NULL)
           *pReturn = ret_tool;
-      
+
 
       if (LogNameWrite!=NULL)
       {
@@ -1181,7 +1194,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
             uLong i;
             unz_global_info gi2;
             int err2;
-            
+
             err2 = unzGetGlobalInfo (ufNewLog,&gi2);
             if (err2==UNZ_OK)
             {
@@ -1192,7 +1205,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
                   char filename_inzip[256];
                   unz_file_info file_info;
                   err2 = unzGetCurrentFileInfo(ufNewLog,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
-				  cleanup_filename_inzip_minivfs(filename_inzip);
+                  cleanup_filename_inzip_minivfs(filename_inzip);
 
                   if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
                   {
@@ -1217,7 +1230,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
         }
       }
 
-      
+
       if ((clean_file != 0) && (list_file_out_newlog != NULL))
       {
           unsigned int i,j;
@@ -1297,7 +1310,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
                   AddMsgToSummaryBuf(msgThis,summaryInfo);
                   AddMsgToSummaryBuf(msgThis,summaryInfoErrorOnly);
               }
-              
+
           }
 
           {
@@ -1322,7 +1335,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,const char* FileRunP
       free(argv_log);
 
       free(buf_arg_reworked);
-      free(argv_log_reworked);      
+      free(argv_log_reworked);
 
 
       if (command_line_buf != NULL)
@@ -1360,7 +1373,7 @@ int RunLogParamInstallLoggerClass(const char* LogNameRead,const char* FileRunPat
                                         int *pReturn,unsigned int*pTimeElapsed,
                                         Exec_status* p_exec_status)
 {
-	return RunLogParamInstallLoggerClassEx(LogNameRead,FileRunPath,LogNameWrite,
+    return RunLogParamInstallLoggerClassEx(LogNameRead,FileRunPath,LogNameWrite,
                                         SelectTool,
                                         clean_file,
                                         InstallLoggerForRunnerSingleton,
@@ -1664,7 +1677,7 @@ typedef struct {
     int benchmark;
     int run_before_break;
     int junk_summary;
-    
+
     InstallLoggerForRunner * pInstallLoggerForRunnerSingleton;
 } RunLog_ctx;
 
@@ -1689,7 +1702,7 @@ typedef struct {
 } RunLog_CancelCount;
 
 static RunLog_CancelCount runLog_CancelCount_Global;
-RunLog_CancelCount* GetRunLog_CancelCount() 
+RunLog_CancelCount* GetRunLog_CancelCount()
 {
     return &runLog_CancelCount_Global;
 }
@@ -1740,10 +1753,10 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         strcpy(resultulp,p_RunLog_ctx->resultulp);
 
         if ((p_RunLog_ctx->increment>0) || (p_RunLog_ctx->random>0))
-        {            
+        {
             unsigned long inc_this = i;
             if (p_RunLog_ctx->random != 0)
-            { 
+            {
                 unsigned int j;
                 inc_this = 0;
                 for (j=0;j<17;j++)
@@ -1767,7 +1780,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
             pRunLog_CancelCount -> run_before_break_count = 0;
         }
 
-        
+
         RunLogParamInstallLoggerClassEx(runulp,rundir,resultulp, p_RunLog_ctx->select_tool,
                               p_RunLog_ctx->clean,
                               *p_RunLog_ctx->pInstallLoggerForRunnerSingleton,
@@ -1796,7 +1809,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         if (exec_status == EXEC_COMPARE_WARNING)
             p_RunLog_ThreadData->count_run_warning++;
 
-        
+
         if (disp_resume != 0)
         {
             char resume[0x400];
@@ -1816,12 +1829,12 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
                 p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,time_elapsed,exec_string);
             puts(resume);
         }
-        
+
         if (p_RunLog_ctx->cleanlog==1)
           af_remove_unlogged(resultulp);
     }
-	if (p_RunLog_ThreadData->must_cleanup_tls != 0)
-		TlsCleanupCurrentThread();
+    if (p_RunLog_ThreadData->must_cleanup_tls != 0)
+        TlsCleanupCurrentThread();
     free(buffer_filename);
 }
 
@@ -1869,33 +1882,33 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
    case 'v': runLog_ctx->quiet=0; break;
    case 'b': runLog_ctx->benchmark=0; break;
    case 'w': runLog_ctx->iCopyResFileAlway=0; break;
-   case 'a': 
+   case 'a':
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of random execution\n");
              }
-             
+
              runLog_ctx->random=atol(vars->optarg);
              break;
-   case 'g': 
+   case 'g':
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of whole task perform \n");
              }
-             
+
              nbloop=(int)atol(vars->optarg);
              break;
-   case 'i': 
+   case 'i':
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of increment\n");
              }
              runLog_ctx->increment=atol(vars->optarg);
              break;
-   case 't': 
+   case 't':
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of thread\n");
              }
              runLog_ctx->nb_thread=atoi(vars->optarg);
              break;
-   case 'f': 
+   case 'f':
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of test before break\n");
              }
@@ -1989,7 +2002,7 @@ for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
     (prunLog_ThreadData+ut)->count_run_ok=0;
     (prunLog_ThreadData+ut)->count_run_error=0;
     (prunLog_ThreadData+ut)->count_run_warning=0;
-	(prunLog_ThreadData+ut)->must_cleanup_tls = (runLog_ctx->nb_thread <= 1) ? 0 : 1;
+    (prunLog_ThreadData+ut)->must_cleanup_tls = (runLog_ctx->nb_thread <= 1) ? 0 : 1;
 
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
 }
@@ -2071,8 +2084,8 @@ for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
         (prunLog_ThreadData+ut)->count_run_error);
     if (runLog_ctx->nb_thread>1)
         u_printf("\n");
-	else
-		u_printf(", ");
+    else
+        u_printf(", ");
 }
 u_printf("%u msec\n",timeElapsedWork);
 
@@ -2082,7 +2095,7 @@ free(ptrptr);
 
 unsigned int timeElapsedAll = SyncGetMSecElapsed(htmAll);
 if (nbloop>1) {
-	u_printf("time for running %d loop : %u msec (average %u msec by step)\n",nbloop,timeElapsedAll,(unsigned int)(timeElapsedAll/nbloop));
+    u_printf("time for running %d loop : %u msec (average %u msec by step)\n",nbloop,timeElapsedAll,(unsigned int)(timeElapsedAll/nbloop));
 }
 
 free_OptVars(vars);
