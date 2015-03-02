@@ -81,6 +81,7 @@ extern const unichar P_COLON_SLASH[] ;
 extern const unichar P_CLOSING_ROUND_BRACKET[] ;
 extern const unichar P_COMMA_DOT[] ;
 extern const unichar P_PLUS_COLON_SLASH_BACKSLASH[] ;
+extern const unichar P_PLUS_COMMA_COLON_SLASH_BACKSLASH[] ;
 extern const unichar P_COLON_SLASH_BACKSLASH[] ;
 extern const unichar P_COMMA_DOT_BACKSLASH_DIGITS[] ;
 extern const unichar P_DOT_PLUS_SLASH_BACKSLASH[] ;

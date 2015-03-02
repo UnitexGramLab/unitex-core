@@ -772,11 +772,11 @@ void get_codes(const struct dela_entry* e,unichar* codes) {
 int i,l;
 /* First, we add the grammatical and semantic code */
 codes[0]='.';
-escape(e->semantic_codes[0],&(codes[1]),P_PLUS_COLON_SLASH_BACKSLASH);
+escape(e->semantic_codes[0],&(codes[1]),P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
 for (i=1;i<e->n_semantic_codes;i++) {
    l=u_strlen(codes);
    codes[l]='+';
-   escape(e->semantic_codes[i],&(codes[l+1]),P_PLUS_COLON_SLASH_BACKSLASH);
+   escape(e->semantic_codes[i],&(codes[l+1]),P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
 }
 /* Then we add the inflectional codes */
 for (i=0;i<e->n_inflectional_codes;i++) {
@@ -1820,10 +1820,10 @@ escape(e->inflected,s,P_COMMA);
 u_strcat(s,",");
 escape(e->lemma,s,P_DOT);
 u_strcat(s,".");
-escape(e->semantic_codes[0],s,P_PLUS_COLON_SLASH_BACKSLASH);
+escape(e->semantic_codes[0],s,P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
 for (int i=1;i<e->n_semantic_codes;i++) {
 	u_strcat(s,"+");
-	escape(e->semantic_codes[i],s,P_PLUS_COLON_SLASH_BACKSLASH);
+	escape(e->semantic_codes[i],s,P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
 }
 for (int i=0;i<e->n_inflectional_codes;i++) {
 	u_strcat(s,":");
