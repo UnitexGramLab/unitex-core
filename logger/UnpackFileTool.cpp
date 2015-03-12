@@ -121,7 +121,7 @@ char** buildOpenedPackArchiveListFile(unzFile uf)
 		*(globalList + i) = NULL;
 
 	
-	for (i=0;i<=gi.number_entry;i++)
+	for (i=0;i<gi.number_entry;i++)
 	{
 		
         char filename_inzip[256] ;
