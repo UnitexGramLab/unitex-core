@@ -52,6 +52,8 @@ const char* usage_UnpackFile =
 		 "  -j/--junk: remove filepath from filename inside archive\n"
 		 "  -p/--pathseparator: transform path separator to current platform standard\n"
 		 "  -l/--list: just list content of archive\n"
+		 "  -n/--only_filename: just list filename for -l/--list\n"
+		 "  -o/--output: output filename for -l/--list\n"
          "  -m/--quiet: do not emit message when running\n"
          "  -v/--verbose: emit message when running\n"
          "\n";
@@ -62,7 +64,7 @@ u_printf(usage_UnpackFile);
 }
 
 
-const char* optstring_UnpackFile=":hd:f:jpmlk:q:";
+const char* optstring_UnpackFile=":hd:f:jpmlk:q:o:n";
 const struct option_TS lopts_UnpackFile[]={
    {"extractdir", required_argument_TS, NULL, 'd'},
    {"selectfile", required_argument_TS, NULL, 'f'},
@@ -70,6 +72,8 @@ const struct option_TS lopts_UnpackFile[]={
    {"pathseparator",no_argument_TS,NULL,'p'},
    {"quiet",no_argument_TS,NULL,'m'},
    {"list",no_argument_TS,NULL,'l'},
+   {"only_filename",no_argument_TS,NULL,'n'},
+   {"output", required_argument_TS, NULL,'o'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
@@ -84,7 +88,8 @@ if (argc==1) {
    return 0;
 }
 char outputDir[FILENAME_MAX+0x20]="";
-char selectFile[FILENAME_MAX+0x20]="";
+char selectFile[FILENAME_MAX + 0x20] = "";
+char outputList[FILENAME_MAX + 0x20] = "";
 
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -94,6 +99,7 @@ int quiet=0;
 int list=0;
 int junk_path_in_pack_archive=0;
 int transform_path_separator=0;
+int list_only_filename=0;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_UnpackFile,lopts_UnpackFile,&index,vars))) {
    switch(val) {
@@ -101,7 +107,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_UnpackFile,lopts_UnpackFile,
    case 'm': quiet=1; break;
    case 'l': list=1; break;
    case 'j': junk_path_in_pack_archive=1; break;
-   case 'p': transform_path_separator=1; break;
+   case 'p': transform_path_separator = 1; break;
+   case 'n': list_only_filename = 1; break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty selected file\n");
              }
@@ -111,6 +118,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_UnpackFile,lopts_UnpackFile,
                 fatal_error("You must specify a non empty output prefix\n");
              }
              strcpy(outputDir,vars->optarg);
+             break;
+   case 'o': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output list filename\n");
+             }
+             strcpy(outputList, vars->optarg);
              break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -150,7 +162,7 @@ if ((*ulpFile)=='\0') {
 
 int retValue = 0;
 if (list != 0)
-	retValue = do_list_file_in_pack_archive(ulpFile);
+	retValue = do_list_file_in_pack_archive_to_file(ulpFile,outputList,list_only_filename);
 else
 {
 	if (selectFile[0] != '\0')
