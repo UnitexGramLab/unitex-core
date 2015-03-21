@@ -928,7 +928,7 @@ void print_string_token_list_with_count(U_FILE* outfile,vector_int* list, text_t
 		{
 			u_fprintf(outfile, "\t");
 		}
-		u_fprintf(outfile,"%S", tokens->token[list->tab[i]]);
+		u_fputs(tokens->token[list->tab[i]],outfile);
 		if (i == descriptor->rightStartsAt - 1)
 		{
 			u_fprintf(outfile, "\t");

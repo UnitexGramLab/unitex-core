@@ -108,7 +108,7 @@ for (int sentence=1;sentence<=tfst->N;sentence++) {
             return sentence;
          }
          TfstTag* tag=(TfstTag*)(tfst->tags->tab[l->tag_number]);
-         u_fprintf(f,"%S",tag->content);
+		 u_fputs(tag->content,f);
          state=tfst->automaton->states[l->state_number];
          l=state->outgoing_transitions;
          if (l!=NULL) insert_separators(f,tag,(TfstTag*)(tfst->tags->tab[l->tag_number]));

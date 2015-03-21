@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2014 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,7 @@ while (buffer->pos < buffer->nb_item) {
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
       for (size_t i=0;i<buffer->size_current_item;i++) {
-         u_fprintf(result,"%S",tokens->token[buffer->int_buffer_[buffer->pos+i]]);
+		  u_fputs(tokens->token[buffer->int_buffer_[buffer->pos+i]],result);
       }
       u_fprintf(result,"\n");
    }

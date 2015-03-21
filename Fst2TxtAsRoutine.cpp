@@ -371,7 +371,7 @@ void parse_text(struct fst2txt_parameters* p) {
 				vector_offset_add(p->v_out_offsets, a, b, c, d);
 			}
 		}
-		u_fprintf(p->f_output, "%S", p->output);
+		u_fputs(p->output,p->f_output);
 		p->new_absolute_origin = p->new_absolute_origin + u_strlen(p->output);
 		if (p->input_length == 0) {
 			// if no input was read, we go on

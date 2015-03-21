@@ -253,7 +253,7 @@ u_fprintf(out,"-------------------------------------------------------------\n")
 unichar comment[2000];
 for (i=0;i<semantic_codes->size;i++) {
 	/* We print the code, followed if necessary by a warning */
-	u_fprintf(out,"%S",semantic_codes->value[i]);
+	u_fputs(semantic_codes->value[i],out);
 	if (warning_on_code(semantic_codes->value[i],comment,space_warnings)) {
 		u_fprintf(out," %S",comment);
 	}
@@ -270,7 +270,7 @@ u_fprintf(out,"-----------------------------------------------------\n");
 
 
 for (i=0;i<inflectional_codes->size;i++) {
-	u_fprintf(out,"%S",inflectional_codes->value[i]);
+	u_fputs(inflectional_codes->value[i],out);
 	if (warning_on_code(inflectional_codes->value[i],comment,space_warnings)) {
 		u_fprintf(out," %S",comment);
 	}

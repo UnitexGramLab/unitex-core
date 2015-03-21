@@ -371,7 +371,7 @@ for (int i=vars->optind;i<argc;i++) {
 		if (f==NULL) {
 			fatal_error("Cannot create file %s\n",txt);
 		}
-		u_fprintf(f,"%S",t->text);
+		u_fputs(t->text,f);
 		u_fclose(f);
 		if (invoke(invoker_Normalize)) {
 			char* line=build_command_line_alloc(invoker_Normalize);

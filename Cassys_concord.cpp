@@ -266,7 +266,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 				iterator = sentence;
 				u_fprintf(concord_desc_file, "%d.0.0 %d.%d.0 ",start_position,end_position,last_token_length);
 				while(iterator != NULL){
-					u_fprintf(concord_desc_file,"%S",iterator->string);
+					u_fputs(iterator->string,concord_desc_file);
 					//u_printf("ccc iter = %S\n",iterator->string);
 					//u_fprintf(concord_desc_file,"concord.ind : %S %S %S\n",iterator->string, previous_pos_in_original_text->token, current_pos_in_original_text->token);
 					iterator = iterator -> next;

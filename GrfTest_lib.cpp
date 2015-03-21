@@ -185,7 +185,7 @@ for (int i=2;i<grf->n_states;i++) {
 			u_fprintf(f_error,"Error in graph %s:\n",grf_name);
 			first=0;
 		}
-		u_fprintf(f_error,"%S",msg->str);
+		u_fputs(msg->str,f_error);
 	}
 	if (test!=NULL) {
 		vector_ptr_add(tests,test);

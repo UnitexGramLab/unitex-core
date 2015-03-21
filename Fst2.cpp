@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2014 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -314,11 +314,11 @@ else {
    u_fprintf(f,"%%");
 }
 /* We print the content (label) of the tag */
-u_fprintf(f,"%S",tag->input);
+u_fputs(tag->input,f);
 /* If any, we add the morphological filter: <A><<^pre>> */
 if (tag->morphological_filter!=NULL &&
    tag->morphological_filter[0]!='\0') {
-   u_fprintf(f,"%S",tag->morphological_filter);
+	u_fputs(tag->morphological_filter,f);
 }
 /* If any, we add the output */
 if (tag->output!=NULL) {

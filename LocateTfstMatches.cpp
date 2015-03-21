@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2014 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -832,7 +832,7 @@ if (l->output!=NULL) {
 	if (p->debug) {
 		save_real_output_from_debug(f,p->output_policy,l->output);
 	}
-	u_fprintf(f,"%S",l->output);
+	u_fputs(l->output,f);
 }
 u_fprintf(f,"\n");
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {

@@ -736,7 +736,7 @@ public:
 			}
 			EOUTLINE[EOutCnt] = 0;
 			SOUTLINE[SOutCnt] = 0;
-			u_fprintf(foutput, "%S", EOUTLINE);
+			u_fputs(EOUTLINE, foutput);
 			if ((automateMode == TRANMODE) && SOutCnt) {
 				u_fprintf(foutput, "%S%S", saveSep, SOUTLINE);
 			}
