@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2014 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -170,11 +170,26 @@ return list;
 }
 
 
+static inline void free_hash_list_only_key(struct hash_list* list, void(*free_key)(void*)) {
+while (list != NULL) {
+  struct hash_list* tmp = list;
+  list = list->next;
+  if (free_key != NULL) {
+    /* If we have pointer elements, we must free them */
+    free_key(tmp->ptr_key);
+  }
+}
+}
+
 /**
  * Frees a list of elements.
  */
-void free_hash_list(struct hash_list* list,void (*free_key)(void*),void (*free_ptr_value)(void*),
+static inline void free_hash_list(struct hash_list* list,void (*free_key)(void*),void (*free_ptr_value)(void*),
 			int free_hash_list_struct,struct hash_table* h) {
+if ((free_ptr_value == NULL) && (!free_hash_list_struct)) {
+   free_hash_list_only_key(list, free_key);
+   return;
+}
 while (list!=NULL) {
    struct hash_list* tmp=list;
    list=list->next;
