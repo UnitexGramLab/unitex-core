@@ -2042,7 +2042,7 @@ int u_fget_unichars_raw(unichar* buffer, int size, U_FILE* f)
 
 /* Now : Gilles Vollant code for write unicode string "one call"
 */
-#define BUFFER_OUT_CACHE_SIZE (0x4/*80*/)
+#define BUFFER_OUT_CACHE_SIZE (0x80)
 typedef struct
 {
     unsigned char tabOut[BUFFER_OUT_CACHE_SIZE+4];

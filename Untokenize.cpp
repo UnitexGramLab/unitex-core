@@ -257,7 +257,7 @@ for (size_t i=0;i<nb_item;i++) {
             u_fprintf(text,"\n", tok->token[*(buf+i)]);
         }
         else {
-            u_fprintf(text,"%S", tok->token[*(buf+i)]);
+			u_fputs(tok->token[*(buf+i)], text);
         }
     }
 }

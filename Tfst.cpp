@@ -451,14 +451,14 @@ u_fprintf(out_tfst,"f\n");
 if (tags!=NULL) {
    /* If there is a tag array, we use it */
    for (int i=0;i<n_tags;i++) {
-      u_fprintf(out_tfst,"%S",tags[i]);
+	   u_fputs(tags[i],out_tfst);
    }
 } else {
    for (int i=0;i<tfst->tags->nbelems;i++) {
       TfstTag* t=(TfstTag*)(tfst->tags->tab[i]);
       unichar tmp[4096];
       TfstTag_to_string(t,tmp);
-      u_fprintf(out_tfst,"%S",tmp);
+      u_fputs(tmp,out_tfst);
    }
 }
 u_fprintf(out_tfst,"f\n");

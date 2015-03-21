@@ -733,7 +733,7 @@ void explore_node(struct sort_tree_node* n, struct sort_infos* inf,
 					/* So, we have a dic entry. Was there a previous one ? */
 					if (*last==NULL || *last==(struct dela_entry*)-1) {
 						/* No ? So we print the line, and the current entry becomes *last */
-						u_fprintf(inf->f_out, "%S",couple->s);
+						u_fputs(couple->s, inf->f_out);
 						*last=entry;
 					} else {
 						/* Yes ? We must compare if the codes are compatible */

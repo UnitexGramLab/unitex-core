@@ -125,7 +125,7 @@ while (NULL!=(tmp=u_strchr(s,'-'))) {
 	u_fprintf(out,"%S - ",s);
 	s=tmp+1;
 }
-u_fprintf(out,"%S",s);
+u_fputs(s,out);
 }
 
 
@@ -141,10 +141,10 @@ if (s[0]=='{') {
 	if (e==NULL) {
 		fatal_error("");
 	}
-	u_fprintf(out,"%S",e->inflected);
+	u_fputs(e->inflected,out);
 	free_dela_entry(e);
 } else {
-	u_fprintf(out,"%S",s);
+	u_fputs(s,out);
 }
 
 s=tmp+1;
@@ -494,7 +494,7 @@ while ((c=u_fgetc(f))!=EOF) {
 		/* If we must produce a text concordance */
 		else if (options->result_mode==TEXT_) {
 			if (!options->only_matches) u_fputc('\t',out);
-			u_fprintf(out,"%S",middle);
+			u_fputs(middle,out);
 			if (!options->only_matches) u_fputc('\t',out);
 			u_fprintf(out,"%S\n",right);
 		} else if (options->result_mode==CSV_) {
@@ -1278,7 +1278,7 @@ while (matches!=NULL) {
 			case RIGHT_CENTER: u_fprintf(output,"%S\t%S\t%R",right,middle,left);	break;
 		}
 		/* And we add the position information */
-		if(expected_result!=XALIGN_) u_fprintf(output,"%S",positions);
+		if(expected_result!=XALIGN_) u_fputs(positions,output);
 		/* And the GlossaNet URL if needed */
 		if (expected_result==GLOSSANET_) {
 			u_fprintf(output,"\t%S",href);
@@ -1338,8 +1338,7 @@ while (pos_in_enter_pos < n_enter_char) {
 }
 /* The token to print is not a new line, so we print it and return */
 const unichar* token_to_write=tokens->token[buffer->int_buffer_[buffer->skip + offset_in_buffer]];
-//u_fputs(token_to_write,output);
-u_fprintf(output,"%S", token_to_write);
+u_fputs(token_to_write,output);
 return pos_in_enter_pos;
 }
 
@@ -1460,7 +1459,7 @@ while (matches!=NULL) {
 		   u_fprintf(output,"%C",first_token[i]);
 		}
 		if (matches->output!=NULL) {
-			u_fprintf(output,"%S",matches->output);
+			u_fputs(matches->output,output);
 		}
 		zz=matches->m.end_pos_in_token-current_global_position_in_token;
 		unichar* last_token=tokens->token[buffer->int_buffer_[buffer->skip+zz]];
