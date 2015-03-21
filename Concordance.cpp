@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2014 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1337,7 +1337,9 @@ while (pos_in_enter_pos < n_enter_char) {
 	}
 }
 /* The token to print is not a new line, so we print it and return */
-u_fprintf(output,"%S",tokens->token[buffer->int_buffer_[buffer->skip+offset_in_buffer]]);
+const unichar* token_to_write=tokens->token[buffer->int_buffer_[buffer->skip + offset_in_buffer]];
+//u_fputs(token_to_write,output);
+u_fprintf(output,"%S", token_to_write);
 return pos_in_enter_pos;
 }
 

@@ -156,8 +156,11 @@ int u_fputc_UTF8(unichar,ABSTRACTFILE*);
 int u_fputc(unichar,U_FILE*);
 int u_ungetc(unichar,U_FILE*);
 
-int u_fwrite_raw(unichar*,int,U_FILE*);
-int u_fwrite(unichar*,int,U_FILE*);
+int u_fwrite_raw(const unichar*,int,U_FILE*);
+int u_fwrite(const unichar*,int,U_FILE*);
+
+void u_fputs_raw(const unichar*, U_FILE*);
+void u_fputs(const unichar*, U_FILE*);
 
 int u_fgets(unichar*,U_FILE*);
 int u_fgets(unichar*,int,U_FILE*);
@@ -230,8 +233,8 @@ int u_ungetc_UTF8_raw(unichar,ABSTRACTFILE*);
 int u_ungetc_raw(unichar,U_FILE*);
 int u_ungetc(unichar,U_FILE*);
 
-int u_fwrite_raw(unichar*,int,U_FILE*);
-int u_fwrite(unichar*,int,U_FILE*);
+int u_fwrite_raw(const unichar*,int,U_FILE*);
+int u_fwrite(const unichar*,int,U_FILE*);
 
 int u_fgets(unichar*,U_FILE*);
 int u_fgets(unichar*,int,U_FILE*);

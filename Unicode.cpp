@@ -211,15 +211,30 @@ int u_ungetc(unichar c,U_FILE* f) {
 return u_ungetc(f->enc,c,f->f);
 }
 
-int u_fwrite_raw(Encoding,unichar*,int,ABSTRACTFILE*);
-int u_fwrite_raw(unichar* t,int N,U_FILE* f) {
+int u_fwrite_raw(Encoding,const unichar*,int,ABSTRACTFILE*);
+int u_fwrite_raw(const unichar* t,int N,U_FILE* f) {
 return u_fwrite_raw(f->enc,t,N,f->f);
 }
 
-int u_fwrite(Encoding,unichar*,int,ABSTRACTFILE*);
-int u_fwrite(unichar* t,int N,U_FILE* f) {
+int u_fwrite(Encoding,const unichar*,int,ABSTRACTFILE*);
+int u_fwrite(const unichar* t,int N,U_FILE* f) {
 return u_fwrite(f->enc,t,N,f->f);
 }
+
+static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF);
+
+void u_fputs_raw(Encoding, const unichar*, ABSTRACTFILE*);
+void u_fputs_raw(const unichar* t, U_FILE* f) {
+	//fwriteString(f, t, 0);
+	u_fputs_raw(f->enc, t, f->f);
+}
+
+void u_fputs(Encoding, const unichar*, ABSTRACTFILE*);
+void u_fputs(const unichar* t, U_FILE* f) {
+	fwriteString(f, t, 1);
+	//u_fputs(f->enc, t, f->f);
+}
+
 
 int u_fgets(Encoding,unichar*,ABSTRACTFILE*);
 int u_fgets(unichar* s,U_FILE* f) {
@@ -1342,7 +1357,7 @@ return u_ungetc_raw(encoding,c,f);
  * Writes N characters from t. Returns the number of characters written.
  * It does not write '\r\n' for '\n'.
  */
-int u_fwrite_raw(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f) {
+int u_fwrite_raw(Encoding encoding,const unichar* t,int N,ABSTRACTFILE* f) {
 for (int i=0;i<N;i++) {
    if (!u_fputc_raw(encoding,t[i],f)) return i;
 }
@@ -1354,7 +1369,7 @@ return N;
  * Writes N characters from t. Returns the number of characters written.
  * It writes '\r\n' for '\n'.
  */
-int u_fwrite(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f) {
+int u_fwrite(Encoding encoding,const unichar* t,int N,ABSTRACTFILE* f) {
 for (int i=0;i<N;i++) {
    if (!u_fputc(encoding,t[i],f)) return i;
 }
@@ -1362,11 +1377,24 @@ return N;
 }
 
 
+
+void u_fputs_raw(Encoding encoding, const unichar* s, ABSTRACTFILE* f) {
+	int i = 0;
+	while (s[i] != '\0')
+		u_fputc_raw(encoding, (unichar)((unsigned char)s[i++]), f);
+}
+
+void u_fputs(Encoding encoding, const unichar* s, ABSTRACTFILE* f) {
+	int i = 0;
+	while (s[i] != '\0')
+		u_fputc(encoding, (unichar)((unsigned char)s[i++]), f);
+}
+
 /**
  * Prints a char string into a file. Characters are promoted to unicode
  * and encoded according to the given encoding.
  */
-void u_fprints_char(Encoding encoding,char* s,ABSTRACTFILE* f) {
+void u_fprints_char(Encoding encoding,const char* s,ABSTRACTFILE* f) {
 int i=0;
 while (s[i]!='\0')
    u_fputc(encoding,(unichar)((unsigned char)s[i++]),f);
@@ -2014,19 +2042,19 @@ int u_fget_unichars_raw(unichar* buffer, int size, U_FILE* f)
 
 /* Now : Gilles Vollant code for write unicode string "one call"
 */
-#define BUFFER_OUT_CACHE_SIZE (0x80)
+#define BUFFER_OUT_CACHE_SIZE (0x4/*80*/)
 typedef struct
 {
     unsigned char tabOut[BUFFER_OUT_CACHE_SIZE+4];
     int iPosInTabOut;
 } Buffer_Out;
 
-void ClearBufferOut(Buffer_Out* pBufOut)
+static inline void ClearBufferOut(Buffer_Out* pBufOut)
 {
     pBufOut->iPosInTabOut=0;
 }
 
-int FlushBufferOut(Buffer_Out* pBufOut,ABSTRACTFILE* f)
+static inline int FlushBufferOut(Buffer_Out* pBufOut,ABSTRACTFILE* f)
 {
     size_t write_done_res ;
     size_t to_be_written;
@@ -2039,7 +2067,7 @@ int FlushBufferOut(Buffer_Out* pBufOut,ABSTRACTFILE* f)
 }
 
 
-int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
+int BuildEncodedOutForUnicharString(Encoding encoding,const unichar *pc,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
 {
     while ((*pc)!=0)
     {
@@ -2222,6 +2250,24 @@ int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pB
 */
     return 1;
 }
+
+
+static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF)
+{
+	Encoding encoding = f->enc;
+	Buffer_Out BufOut;
+	ClearBufferOut(&BufOut);
+
+	if (us != NULL) {
+		BuildEncodedOutForUnicharString(encoding, us, &BufOut, convLFtoCRLF, f->f);
+		FlushBufferOut(&BufOut, f->f);
+	}
+	else {
+		BuildEncodedOutForCharString(encoding, "(null)", &BufOut, convLFtoCRLF, f->f);
+		FlushBufferOut(&BufOut, f->f);
+	}
+}
+
 
 /**
  * Unicode version of fprintf. It supports all the printf format options.
