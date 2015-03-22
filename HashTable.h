@@ -99,8 +99,10 @@ struct hash_table {
 
 
 struct hash_table* new_hash_table(int,float,HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
+struct hash_table* new_hash_table(int,HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
 struct hash_table* new_hash_table(HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
 struct hash_table* new_hash_table(int,float);
+struct hash_table* new_hash_table(int);
 struct hash_table* new_hash_table();
 void free_hash_table(struct hash_table*);
 void clear_hash_table(struct hash_table*);

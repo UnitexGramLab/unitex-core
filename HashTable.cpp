@@ -57,12 +57,12 @@ if (h==NULL) {
 }
 set_hash_capacity(h,capacity);
 h->ratio=ratio;
-h->table=(struct hash_list**)malloc(capacity*sizeof(struct hash_list*));
+h->table=(struct hash_list**)malloc(((size_t)(h->capacity))*sizeof(struct hash_list*));
 if (h->table==NULL) {
    fatal_alloc_error("new_hash_table");
 }
 /* We don't forget to initialize the table */
-for (int i=0;i<capacity;i++) {
+for (int i=0;i<(int)(h->capacity);i++) {
    h->table[i]=NULL;
 }
 if (hash==NULL) {
@@ -91,6 +91,17 @@ return h;
  * Allocates, initializes and return a new hash table for pointer elements with
  * default ratio and capacity.
  */
+struct hash_table* new_hash_table(int capacity,HASH_FUNCTION hash,EQUAL_FUNCTION equal,
+                                  FREE_FUNCTION free_key,FREE_FUNCTION free_ptr_value,
+                                  KEYCOPY_FUNCTION keycopy) {
+return new_hash_table(capacity,DEFAULT_RATIO,hash,equal,free_key,free_ptr_value,keycopy);
+}
+
+
+/**
+ * Allocates, initializes and return a new hash table for pointer elements with
+ * default ratio and capacity.
+ */
 struct hash_table* new_hash_table(HASH_FUNCTION hash,EQUAL_FUNCTION equal,
                                   FREE_FUNCTION free_key,FREE_FUNCTION free_ptr_value,
                                   KEYCOPY_FUNCTION keycopy) {
@@ -111,12 +122,12 @@ if (h==NULL) {
 }
 set_hash_capacity(h,capacity);
 h->ratio=ratio;
-h->table=(struct hash_list**)malloc(capacity*sizeof(struct hash_list*));
+h->table=(struct hash_list**)malloc(((size_t)(h->capacity))*sizeof(struct hash_list*));
 if (h->table==NULL) {
    fatal_alloc_error("new_hash_table");
 }
 /* We don't forget to initialize the table */
-for (int i=0;i<capacity;i++) {
+for (int i=0;i<(int)(h->capacity);i++) {
    h->table[i]=NULL;
 }
 h->hash=NULL;
@@ -135,9 +146,19 @@ return h;
  * Allocates, initializes and return a new hash table for integer elements,
  * with default capacity and ratio.
  */
+struct hash_table* new_hash_table(int capacity) {
+return new_hash_table(capacity,DEFAULT_RATIO);
+}
+
+
+/**
+ * Allocates, initializes and return a new hash table for integer elements,
+ * with default capacity and ratio.
+ */
 struct hash_table* new_hash_table() {
 return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO);
 }
+
 
 /**
  * Allocates, initializes and returns a new hash_list with an integer key.
@@ -185,7 +206,7 @@ while (list != NULL) {
  * Frees a list of elements.
  */
 static inline void free_hash_list(struct hash_list* list,void (*free_key)(void*),void (*free_ptr_value)(void*),
-			int free_hash_list_struct,struct hash_table* h) {
+                                  int free_hash_list_struct,struct hash_table* h) {
 if ((free_ptr_value == NULL) && (!free_hash_list_struct)) {
    free_hash_list_only_key(list, free_key);
    return;
@@ -322,7 +343,7 @@ return NULL;
  * Note that it is the responsability of the caller to initialize
  * properly this value.
  */
-struct any* insert_key(struct hash_table* h,void* key) {
+static struct any* insert_key(struct hash_table* h,void* key) {
 if (h->number_of_elements>=(h->ratio*h->capacity)) {
    /* If necessary, we resize the hash table */
    resize(h);
@@ -404,7 +425,7 @@ return NULL;
  * Note that it is the responsability of the caller to initialize
  * properly this value.
  */
-struct any* insert_key(struct hash_table* h,int key) {
+static struct any* insert_key(struct hash_table* h,int key) {
 if (h->number_of_elements>=(h->ratio*h->capacity)) {
    /* If necessary, we resize the hash table */
    resize(h);
