@@ -678,7 +678,7 @@ if (current_line%10==0) {
 u_fprintf(f,"%S\n",g->header);
 u_fprintf(f,"%d\n",res->n_states);
 for (i=0;i<res->n_states;i++) {
-  u_fputs(res->tab[i]->content,f);
+  u_fprintf(f,"\"%S",res->tab[i]->content);
   u_fprintf(f,"\" %d %d %d",res->tab[i]->x,res->tab[i]->y,res->tab[i]->n_trans);
   for (j=0;j<res->tab[i]->n_trans;j++) {
      u_fprintf(f," %d",res->tab[i]->trans[j]);
