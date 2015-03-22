@@ -253,9 +253,11 @@ free(h);
 void clear_hash_table(struct hash_table* h) {
 if (h==NULL) return;
 int free_hash_list_struct=(get_allocator_cb_flag(h->allocator_hash_list) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+
 if ((h->table!=NULL) && (h->free_ptr_value==NULL) && (h->free_key==NULL) && (!free_hash_list_struct)) {
-   return;
+   memset(h->table, 0, sizeof(struct hash_list*)*h->capacity);
 }
+else
 if (h->table!=NULL) {
    /* This case should always happen, but we never know... */
    for (unsigned int i=0;i<h->capacity;i++) {
