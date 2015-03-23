@@ -294,6 +294,8 @@
     <ClInclude Include="..\LocateCache.h" />
     <ClInclude Include="..\LocateTrace.h" />
     <ClInclude Include="..\LocateTracePlugCallback.h" />
+    <ClInclude Include="..\logger\InstallLingRessourcePackage.h" />
+    <ClInclude Include="..\logger\LingRessourcePackage.h" />
     <ClInclude Include="..\logger\MzRepairUlp.h" />
     <ClInclude Include="..\logger\MzToolsUlp.h" />
     <ClInclude Include="..\logger\PackFile.h" />
@@ -414,6 +416,8 @@
     <ClCompile Include="..\KeyWords.cpp" />
     <ClCompile Include="..\KeyWords_lib.cpp" />
     <ClCompile Include="..\LoadInf.cpp" />
+    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp" />
+    <ClCompile Include="..\logger\LingRessourcePackage.cpp" />
     <ClCompile Include="..\logger\PackFile.cpp" />
     <ClCompile Include="..\logger\PackFileTool.cpp" />
     <ClCompile Include="..\logger\UnpackFile.cpp" />

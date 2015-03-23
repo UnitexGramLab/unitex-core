@@ -1169,6 +1169,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
                   UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o \
+				  LingRessourcePackage.o InstallLingRessourcePackage.o \
                   FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o \
                   UnitexTool.o UnitexRevisionInfo.o Seq2Grf.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
@@ -1209,7 +1210,8 @@ UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJ
 
 UNITEXLIB_IO_OBJS = UnitexLibIO.o $(SYSLIBDIRIO)
 
-UNITEXLIB_PACK_OBJS = UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o FilePack.o FileUnPack.o FilePackCrc32.o FilePackIo.o
+UNITEXLIB_PACK_OBJS = UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o FilePack.o FileUnPack.o FilePackCrc32.o FilePackIo.o \
+                  LingRessourcePackage.o InstallLingRessourcePackage.o
 
 UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o
 
@@ -1854,6 +1856,12 @@ UnpackFile.o: ../logger/UnpackFile.cpp
 
 UnpackFileTool.o: ../logger/UnpackFileTool.cpp
 	$(CC) -c ../logger/UnpackFileTool.cpp $(OPTIONS)
+	
+InstallLingRessourcePackage.o: ../logger/InstallLingRessourcePackage.cpp
+	$(CC) -c ../logger/InstallLingRessourcePackage.cpp $(OPTIONS)
+	
+LingRessourcePackage.o: ../logger/LingRessourcePackage.cpp
+	$(CC) -c ../logger/LingRessourcePackage.cpp $(OPTIONS)
 
 MzToolsUlp.o: ../logger/MzToolsUlp.cpp
 	$(CC) -c ../logger/MzToolsUlp.cpp $(OPTIONS)

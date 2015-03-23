@@ -738,6 +738,12 @@
     <ClCompile Include="..\SelectOutput.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\LingRessourcePackage.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -1498,6 +1504,12 @@
     </ClInclude>
     <ClInclude Include="..\SelectOutput.h">
       <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\InstallLingRessourcePackage.h">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\LingRessourcePackage.h">
+      <Filter>Unitex-C++\logger</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

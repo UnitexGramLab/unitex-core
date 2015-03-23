@@ -192,6 +192,12 @@
     <ClInclude Include="..\SelectOutput.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\logger\InstallLingRessourcePackage.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\LingRessourcePackage.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -904,6 +910,12 @@
     </ClCompile>
     <ClCompile Include="..\SelectOutput.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp">
+      <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\LingRessourcePackage.cpp">
+      <Filter>Source Files\logger</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
