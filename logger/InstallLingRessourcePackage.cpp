@@ -65,12 +65,31 @@ namespace unitex {
 
 
         const char* usage_InstallLingRessourcePackage =
-            "Usage : InstallLingRessourcePackage [OPTIONS] <LingResourcePackageFile>\n"
+            "Usage : InstallLingRessourcePackage [OPTIONS]\n"
             "\n"
-            "  <LingResourcePackageFile>: a file\n"
+            "Install resource from linguisting resource package:\n"
+            "    InstallLingRessourcePackage -p <LingRessourcePackageFileName> -x <LocationPrefix>\n"
+            "  Optionals arguments:\n"
+            "         [-f filename_all_files.txt] [-a filename_list_alphabet.txt]"
+            "         [-g filename_list_graph.txt] [-d filename_list_dictionary.txt]\n"
+            "         [-F] [-A] [-G] [-D]\n"
+            "  -f, -a, -g ,-d create text file with list of resource\n"
+            "  -F, -A, -G ,-D prevent install files, or persist alphabet, graph and dictionary\n"
             "\n"
-            "OPTIONS:\n"
-
+            "\n"
+            "Uninstall resource from linguisting resource package:\n"
+            "    InstallLingRessourcePackage -p <LingRessourcePackageFileName> -x <LocationPrefix>\n"
+            "  Optionals arguments:\n"
+            "         [-F] [-A] [-G] [-D]\n"
+            "  <LingRessourcePackageFileName> and <LocationPrefix> must have been used on installing\n"
+            "  -F, -A, -G ,-D prevent uninstall files, or unpersist alphabet, graph and dictionary\n"
+            "\n"
+            "Uninstall resource from file with list of resource:\n"
+            "    InstallLingRessourcePackage -u\n"
+            "         [-f filename_all_files.txt] [-a filename_list_alphabet.txt]"
+            "         [-g filename_list_graph.txt] [-d filename_list_dictionary.txt]\n"
+            "   File must have been created on installing\n"
+            "   List File are not removed (you can uses DuplicateFile -d)\n"
             "\n";
 
         static void usage() {
@@ -94,7 +113,7 @@ namespace unitex {
             { "no_persist_graph", no_argument_TS, NULL, 'G' },
             { "no_persist_dictionary", no_argument_TS, NULL, 'D' },
             { "no_persist_alphabet", no_argument_TS, NULL, 'A' },
-			{ "verbose", no_argument_TS, NULL, 'v' },
+            { "verbose", no_argument_TS, NULL, 'v' },
             { "uninstall", no_argument_TS, NULL, 'u' },
             { "prefix", required_argument_TS, NULL, 'x' },
             { "package", required_argument_TS, NULL, 'p' },
@@ -123,7 +142,7 @@ namespace unitex {
             int persist_graph = 1;
             int persist_dictionary = 1;
             int persist_alphabet = 1;
-			int verbose = 0;
+            int verbose = 0;
             int transform_path_separator = -1;
             //int persistence_alphabet = 0;
             struct OptVars* vars = new_OptVars();
@@ -179,7 +198,7 @@ namespace unitex {
                           strcpy(ListAlphabet_FileName, vars->optarg);
                           break;
 
-				case 'v': verbose = 1; break;
+                case 'v': verbose = 1; break;
 
                 case 'F': persist_file = 0; break;
                 case 'G': persist_graph = 0; break;
@@ -237,8 +256,8 @@ namespace unitex {
                     fatal_error("You cannot disable a persistence and provide list filename.\n");
                 }
 
-				if (verbose)
-					u_printf("Install resource from package %s to prefix %s\n", Package_FileName, Prefix_Name);
+                if (verbose)
+                    u_printf("Install resource from package %s to prefix %s\n", Package_FileName, Prefix_Name);
 
                 char** list_installed_file = NULL;
                 char** list_installed_graph = NULL;
@@ -295,42 +314,42 @@ namespace unitex {
             }
             else // uninstall
             {
-				if (verbose)
-					u_printf("Uninstall resource\n");
+                if (verbose)
+                    u_printf("Uninstall resource\n");
 
-				if ((*Package_FileName) != '\0')
-				{
+                if ((*Package_FileName) != '\0')
+                {
 
-					int result_uninstall =
-						uninstall_ling_resource_package(Package_FileName, Prefix_Name,
-						transform_path_separator,
-						persist_file, persist_graph, persist_dictionary, persist_alphabet);	if (!result_uninstall)
-					{
-						error("error on uninstalling resource from package %s on prefix\n", Package_FileName, Prefix_Name);
-						success = 0;
-					}
-				}
-				else // uninstall by list
-				{
-					char** list_installed_file = read_list_files_from_file(ListFile_FileName);;
-					char** list_installed_graph = read_list_files_from_file(ListGraph_FileName);
-					char** list_installed_dictionary = read_list_files_from_file(ListDico_FileName);
-					char** list_installed_alphabet = read_list_files_from_file(ListAlphabet_FileName);
-					 
-					int result_uninstall = uninstall_ling_resource_package_by_list(list_installed_file,
-						list_installed_graph, list_installed_dictionary, list_installed_alphabet);
+                    int result_uninstall =
+                        uninstall_ling_resource_package(Package_FileName, Prefix_Name,
+                        transform_path_separator,
+                        persist_file, persist_graph, persist_dictionary, persist_alphabet); if (!result_uninstall)
+                    {
+                        error("error on uninstalling resource from package %s on prefix\n", Package_FileName, Prefix_Name);
+                        success = 0;
+                    }
+                }
+                else // uninstall by list
+                {
+                    char** list_installed_file = read_list_files_from_file(ListFile_FileName);;
+                    char** list_installed_graph = read_list_files_from_file(ListGraph_FileName);
+                    char** list_installed_dictionary = read_list_files_from_file(ListDico_FileName);
+                    char** list_installed_alphabet = read_list_files_from_file(ListAlphabet_FileName);
 
-					if (!result_uninstall)
-					{
-						error("error on uninstalling resource\n");
-						success = 0;
-					}
+                    int result_uninstall = uninstall_ling_resource_package_by_list(list_installed_file,
+                        list_installed_graph, list_installed_dictionary, list_installed_alphabet);
 
-					free_list_files_from_file(list_installed_file);
-					free_list_files_from_file(list_installed_graph);
-					free_list_files_from_file(list_installed_dictionary);
-					free_list_files_from_file(list_installed_alphabet);
-				}
+                    if (!result_uninstall)
+                    {
+                        error("error on uninstalling resource\n");
+                        success = 0;
+                    }
+
+                    free_list_files_from_file(list_installed_file);
+                    free_list_files_from_file(list_installed_graph);
+                    free_list_files_from_file(list_installed_dictionary);
+                    free_list_files_from_file(list_installed_alphabet);
+                }
             }
 
             return success ? 0 : 1;

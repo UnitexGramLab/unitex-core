@@ -254,6 +254,10 @@
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_MZREPAIR_ULP))) || defined(NO_TOOL_MZREPAIR_ULP))
 #include "logger/MzRepairUlp.h"
 #endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
+#include "logger/UniRunLogger.h"
+#endif
 #endif
 
 #include "Copyright.h"
@@ -428,6 +432,12 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_REG2GRF))) || defined(TOOL_REG2GRF))
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
+#endif
+
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
+	{ "RunLog", 6, &main_RunLog, usage_RunLog, optstring_RunLog, lopts_RunLog },
+#endif
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))

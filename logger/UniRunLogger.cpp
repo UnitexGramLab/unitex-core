@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -1621,7 +1621,8 @@ const char* usage_RunLog =
          "  -f N/--break-after=N: user cancel after N run (with one thread only)\n"
          "  -u PATH/--unfound-location==PATH: take dictionnary and FST2 from PATH if\n"
          "               not found on the logfile\n"
-         "  -w/--no-copy-always-unfound-resource: don't copy always unfound resource\n"
+         "  -w/--no-copy-always-unfound-resource: don't copy always unfound resource, but\n"
+         "           uses from original location. Useful with InstallLingRessourcePackage\n"
          "\n"
          "rerun a log.\n";
 

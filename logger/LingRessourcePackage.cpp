@@ -90,12 +90,12 @@ UNITEX_FUNC int UNITEX_CALL ExtractFilesFromUnitexArchiveZZ(
 
 static int is_filename_end_directory_separator(const char* filename)
 {
-	if (filename == NULL)
-		return 0;
-	if ((*filename) == '\0')
-		return 0;
-	char c = *(filename + strlen(filename) - 1);
-	return ((c == '/') || (c == '\\')) ? 1 : 0;
+    if (filename == NULL)
+        return 0;
+    if ((*filename) == '\0')
+        return 0;
+    char c = *(filename + strlen(filename) - 1);
+    return ((c == '/') || (c == '\\')) ? 1 : 0;
 }
 
 
@@ -149,7 +149,7 @@ int is_filename_alphabet(const char* filename)
 
 
 int install_ling_resource_package(const char* package_name, const char* prefix_destination,
-	int transform_path_separator,
+    int transform_path_separator,
     int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet,
     char*** file_list,
     char*** persist_graph_list, char*** persist_dictionary_list, char*** persist_alphabet_list)
@@ -252,7 +252,7 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
         const char* curFileNameInPackage = *(fileListArchive + i);
         strcpy(full_filename, prefix_destination);
         strcpy(full_filename + len_prefix, curFileNameInPackage);
-		transform_fileName_separator(full_filename + len_prefix, transform_path_separator);
+        transform_fileName_separator(full_filename + len_prefix, transform_path_separator);
 
         if (files_persisted_list)
         {
@@ -261,8 +261,8 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
                 fatal_alloc_error("install_ling_resource_package");
             }
             strcpy(dup_persisted_filename, full_filename);
-			*(files_persisted_list + i) = dup_persisted_filename;
-			*(files_persisted_list + i + 1) = NULL;
+            *(files_persisted_list + i) = dup_persisted_filename;
+            *(files_persisted_list + i + 1) = NULL;
         }
 
         if (persist_graph && is_filename_graph(full_filename))
@@ -476,10 +476,10 @@ int uninstall_ling_resource_package(const char* package_name, const char* prefix
             transform_fileName_separator(full_filename + len_prefix, folder_separator_transformation);
 
             if (af_remove(full_filename) != 0)
-				if (!is_filename_end_directory_separator(full_filename))
-				{
-					error("error in remove file %s\n", full_filename);
-				}
+                if (!is_filename_end_directory_separator(full_filename))
+                {
+                    error("error in remove file %s\n", full_filename);
+                }
         }
     }
 
@@ -538,13 +538,13 @@ int uninstall_ling_resource_package_by_list(char** file_list,
         int i = 0;
         while (*(file_list + i) != NULL)
         {
-			const char* remove_filename = *(persist_alphabet_list + i);
+            const char* remove_filename = *(file_list + i);
             if (af_remove(remove_filename) != 0)
-				if (!is_filename_end_directory_separator(remove_filename))
-				{
-					error("error in remove file %s\n", remove_filename);
-					result = 0;
-				}
+                if (!is_filename_end_directory_separator(remove_filename))
+                {
+                    error("error in remove file %s\n", remove_filename);
+                    result = 0;
+                }
             i++;
         }
     }
@@ -564,8 +564,8 @@ UNITEX_FUNC int UNITEX_CALL UninstallLingResourcePackagByList(char** file_list,
 static unsigned int count_list(char** archiveListFile)
 {
     unsigned int i = 0;
-	if (archiveListFile == NULL)
-		return 0;
+    if (archiveListFile == NULL)
+        return 0;
 
     while ((*(archiveListFile + i)) != NULL)
     {
@@ -578,8 +578,8 @@ static unsigned int count_list(char** archiveListFile)
 static void free_list(char** archiveListFile)
 {
     unsigned int i = 0;
-	if (archiveListFile == NULL)
-		return;
+    if (archiveListFile == NULL)
+        return;
 
     while ((*(archiveListFile + i)) != NULL)
     {
@@ -687,11 +687,11 @@ static void resize_char_multiarray(int nb_entry_needed, int* nb_entry, char***ar
 
 char** read_list_files_from_file(const char* filein_name)
 {
-	if (filein_name == NULL)
-		return NULL;
+    if (filein_name == NULL)
+        return NULL;
 
-	if ((*filein_name) == '\0')
-		return NULL;
+    if ((*filein_name) == '\0')
+        return NULL;
 
     ABSTRACTMAPFILE* af_map_text = af_open_mapfile(filein_name, MAPFILE_OPTION_READ, 0);
     const char* ptr = (const char*)af_get_mapfile_pointer(af_map_text);
@@ -752,7 +752,7 @@ char** read_list_files_from_file(const char* filein_name)
     af_release_mapfile_pointer(af_map_text, ptr);
     af_close_mapfile (af_map_text);
 
-	return list;
+    return list;
 }
 
 
