@@ -48,6 +48,8 @@
 #include "logger/UnpackFile.h"
 #include "logger/PackFile.h"
 
+#include "logger/InstallLingRessourcePackage.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -55,6 +57,8 @@ using namespace unitex;
 using namespace unitex::logger;
 
 const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\n"
+                                "or \n"
+                                "Usage: UnitexToolLogger InstallLingRessourcePackage [OPTIONS]\n"
                                 "or \n"
                                 "Usage: UnitexToolLogger MzRepairUlp [OPTIONS] <ulpfile>\n"
                                 "or \n"
@@ -118,6 +122,12 @@ if ((argc-skip_arg)>1) {
     }
 
  
+    if (strcmp(argv[1+skip_arg],"InstallLingRessourcePackage")==0)
+    {
+        done = 1;
+        ret = main_InstallLingRessourcePackage(argc - (skip_arg + 1), argv + skip_arg + 1);
+    }
+
     if (strcmp(argv[1+skip_arg],"MzRepairUlp")==0)
     {
         done = 1;

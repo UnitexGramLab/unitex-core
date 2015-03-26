@@ -78,6 +78,9 @@ static void DisplaySize(U_FILE* f,uLong n, int size_char)
 void freeFileInPackArchiveListFile(char** archiveListFile)
 {
     unsigned int i=0;
+    if (archiveListFile == NULL)
+        return ;
+
     while ((*(archiveListFile + i)) != NULL)
     {
         free(*(archiveListFile + i));
@@ -88,6 +91,11 @@ void freeFileInPackArchiveListFile(char** archiveListFile)
 
 unsigned int countFileInPackArchiveListFile(char** archiveListFile)
 {
+    if (archiveListFile == NULL)
+    {
+        return 0;
+    }
+
     unsigned int i=0;
     while ((*(archiveListFile + i)) != NULL)
     {
@@ -96,7 +104,41 @@ unsigned int countFileInPackArchiveListFile(char** archiveListFile)
     return i;
 }
 
-char** buildOpenedPackArchiveListFile(unzFile uf)
+
+void transform_fileName_separator(char *filename, int transform_path_separator)
+{
+    char cSeparator;
+    if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED)
+        return;
+
+    if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX)
+        cSeparator = '/';
+    else
+    if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS)
+        cSeparator = '\\';
+    else
+        cSeparator = PATH_SEPARATOR_CHAR;
+
+    char* fBrowse = filename;
+    while ((*fBrowse) != '\0')
+    {
+        if (((*fBrowse) == '/') && (cSeparator != '/'))
+            *fBrowse = cSeparator;
+
+        if (((*fBrowse) == '\\') && (cSeparator != '\\'))
+            *fBrowse = cSeparator;
+
+        fBrowse++;
+    }
+}
+
+
+UNITEX_FUNC void UNITEX_CALL TransformFileNameSeparator(char *filename, int transform_path_separator)
+{
+    return transform_fileName_separator(filename, transform_path_separator);
+}
+
+static char** buildOpenedPackArchiveListFile(unzFile uf, int transform_path_separator)
 {
     uLong i;
     unz_global_info gi;
@@ -120,11 +162,9 @@ char** buildOpenedPackArchiveListFile(unzFile uf)
     for (i=0;i<=gi.number_entry;i++)
         *(globalList + i) = NULL;
 
-
     for (i=0;i<gi.number_entry;i++)
     {
-
-        char filename_inzip[256] ;
+        char filename_inzip[0x200] ;
         char* filename_inzip_duplicated = NULL;
         unz_file_info file_info;
 
@@ -135,7 +175,10 @@ char** buildOpenedPackArchiveListFile(unzFile uf)
         {
             filename_inzip_duplicated = (char*)malloc(strlen(filename_inzip)+1);
             if (filename_inzip_duplicated != NULL)
-                strcpy(filename_inzip_duplicated,filename_inzip);
+            {
+                strcpy(filename_inzip_duplicated, filename_inzip);
+                transform_fileName_separator(filename_inzip_duplicated, transform_path_separator);
+            }
         }
 
         if (filename_inzip_duplicated == NULL)
@@ -145,7 +188,6 @@ char** buildOpenedPackArchiveListFile(unzFile uf)
         }
 
         *(globalList + i) = filename_inzip_duplicated;
-
 
         if ((i+1)<gi.number_entry)
         {
@@ -160,6 +202,7 @@ char** buildOpenedPackArchiveListFile(unzFile uf)
 
     return globalList;
 }
+
 
 static int do_list_from_opened_pack_archive(unzFile uf, U_FILE * fileout, int filename_only)
 {
@@ -190,7 +233,7 @@ static int do_list_from_opened_pack_archive(unzFile uf, U_FILE * fileout, int fi
 
     for (i=0;i<gi.number_entry;i++)
     {
-        char filename_inzip[256];
+        char filename_inzip[0x200];
         unz_file_info file_info;
         uLong ratio=0;
         const char *string_method;
@@ -265,13 +308,13 @@ static void removeNoPathPortionInFileName(char* fn)
 
 #define UNPACK_WRITEBUFFERSIZE (65536)
 
-int do_extract_from_opened_pack_archive_currentfile(
+static int do_extract_from_opened_pack_archive_currentfile(
     unzFile uf,
     const int* popt_extract_without_path,
     const char* prefix_extracting_name,
     int transform_path_separator, int quiet)
 {
-    char filename_inzip[256];
+    char filename_inzip[0x200];
     char* filename_withoutpath;
     char* p;
     int err=UNZ_OK;
@@ -308,9 +351,24 @@ int do_extract_from_opened_pack_archive_currentfile(
     {
         if ((*popt_extract_without_path)==0)
         {
-            if (quiet == 0)
-                u_printf("creating directory: %s\n",filename_inzip);
-            mkDirPortable(filename_inzip);
+            {
+                size_t len_prefix = strlen(prefix_extracting_name);
+                size_t len_directory_in_zip = strlen(filename_inzip);
+                size_t total_len = len_prefix + len_directory_in_zip;
+                char* provis_dir_name = NULL;
+                if (len_directory_in_zip > 0)
+                    provis_dir_name = (char*)malloc(total_len + 2);
+                if (provis_dir_name)
+                {
+                    strcpy(provis_dir_name, prefix_extracting_name);
+                    strcpy(provis_dir_name + len_prefix, filename_inzip);
+                    transform_fileName_separator(provis_dir_name + len_prefix, transform_path_separator);
+                    if (quiet == 0)
+                        u_printf("creating directory: %s\n", provis_dir_name);
+                    mkDirPortable(provis_dir_name);
+                    free(provis_dir_name);
+                }
+            }
         }
     }
     else
@@ -340,20 +398,14 @@ int do_extract_from_opened_pack_archive_currentfile(
 
             if (prefix_extracting_name != NULL)
                 {
-                    size_t total_len = strlen(prefix_extracting_name)+strlen(write_filename);
+                    size_t len_prefix = strlen(prefix_extracting_name);
+                    size_t total_len = len_prefix + strlen(write_filename);
                     provis_concat_name = (char*)malloc(total_len+2);
                     if (provis_concat_name != NULL)
                     {
                         strcpy(provis_concat_name,prefix_extracting_name);
                         strcat(provis_concat_name,write_filename);
-
-                        if (transform_path_separator != 0)
-                            for (size_t pos=0; pos<total_len; pos++)
-                            {
-                                char c = *(provis_concat_name+pos);
-                                if ((c=='\\') || (c=='/'))
-                                    *(provis_concat_name+pos) = PATH_SEPARATOR_CHAR;
-                            }
+                        transform_fileName_separator(provis_concat_name + len_prefix, transform_path_separator);
                     }
                 }
 
@@ -384,9 +436,8 @@ int do_extract_from_opened_pack_archive_currentfile(
                     previousPathCreated = newPathOnlyPortion;
                 }
             }
+
             fout=af_fopen(useFileName,"wb");
-
-
 
             if (quiet == 0)
                 u_printf("extracting %s to %s...",filename_inzip,useFileName);
@@ -609,14 +660,21 @@ UNITEX_FUNC int UNITEX_CALL WriteListFileInPackArchiveToFile(const char* packFil
     return do_list_file_in_pack_archive_to_file_with_encoding(packFileName, filename_out, UTF8, filename_only);
 }
 
+
 char** createFileInPackArchiveListFile(const char* packFileName)
+{
+    return createFileInPackArchiveListFileWithTransformPathSeparator(packFileName, 0);
+}
+
+
+char** createFileInPackArchiveListFileWithTransformPathSeparator(const char* packFileName, int transform_path_separator)
 {
         unzFile uf = unzOpen(packFileName);
 
         if (uf == NULL)
             return NULL;
 
-        char** archiveListFile = buildOpenedPackArchiveListFile(uf);
+        char** archiveListFile = buildOpenedPackArchiveListFile(uf, transform_path_separator);
         int retClose = unzClose(uf);
         if ((archiveListFile != NULL) && (retClose != UNZ_OK))
         {
@@ -668,6 +726,12 @@ int do_extract_from_pack_archive(
 UNITEX_FUNC char** UNITEX_CALL GetListOfFileInUnitexArchive(const char* packFileName)
 {
     return createFileInPackArchiveListFile(packFileName);
+}
+
+
+UNITEX_FUNC char** UNITEX_CALL GetListOfFileInUnitexArchiveWithTransformPathSeparator(const char* packFileName, int transform_path_separator)
+{
+    return createFileInPackArchiveListFileWithTransformPathSeparator(packFileName, transform_path_separator);
 }
 
 UNITEX_FUNC unsigned int UNITEX_CALL GetFilesNumberInListOfFileInUnitexArchive(char** archiveListFile)

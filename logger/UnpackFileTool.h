@@ -24,7 +24,20 @@ extern "C" {
 
 
 
+#define UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED (0)
+#define UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM   (1)
+#define UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX       (2)
+#define UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS    (3)
+
+
+void transform_fileName_separator(char *filename, int transform_path_separator);
+
+UNITEX_FUNC void UNITEX_CALL TransformFileNameSeparator(char *filename, int transform_path_separator);
+
+
 char** createFileInPackArchiveListFile(const char* packFileName);
+
+char** createFileInPackArchiveListFileWithTransformPathSeparator(const char* packFileName, int transform_path_separator);
 
 void freeFileInPackArchiveListFile(char** archiveListFile);
 
@@ -53,6 +66,8 @@ int do_extract_from_pack_archive(
 
 
 UNITEX_FUNC char** UNITEX_CALL GetListOfFileInUnitexArchive(const char* packFileName);
+
+UNITEX_FUNC char** UNITEX_CALL GetListOfFileInUnitexArchiveWithTransformPathSeparator(const char* packFileName, int transform_path_separator);
 
 UNITEX_FUNC unsigned int UNITEX_CALL GetFilesNumberInListOfFileInUnitexArchive(char** archiveListFile);
 

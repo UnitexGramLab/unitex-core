@@ -185,9 +185,3 @@ return retValue;
 //} // namespace logger
 
 #endif
-
-
-
-
-
-

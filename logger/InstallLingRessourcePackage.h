@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -31,5 +31,48 @@
 
 
 
-/* 
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
+
+#ifndef _INSTALL_LING_RESOURCE_PACKAGE_LOGGER_H_INCLUDED
+#define _INSTALL_LING_RESOURCE_PACKAGE_LOGGER_H_INCLUDED 1
+
+#include "UnitexGetOpt.h"
+
+
+#ifdef __cplusplus
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+namespace unitex {
+#ifndef HAS_LOGGER_NAMESPACE
+#define HAS_LOGGER_NAMESPACE 1
+#endif
+
+    namespace logger {
+        extern "C" {
+#endif
+
+            /* */
+
+            extern const char* optstring_InstallLingRessourcePackage;
+            extern const struct option_TS lopts_InstallLingRessourcePackage[];
+            extern const char* usage_InstallLingRessourcePackage;
+
+            int main_InstallLingRessourcePackage(int argc, char* const argv[]);
+
+
+#ifdef __cplusplus
+        } // extern "C"
+    } // namespace logger
+} // namespace unitex
+#endif
+
+#endif
+
+#endif
+
+
+
+/*
 */

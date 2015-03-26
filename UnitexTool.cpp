@@ -246,6 +246,14 @@
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
 #include "logger/UnpackFile.h"
 #endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE))
+#include "logger/InstallLingRessourcePackage.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_MZREPAIR_ULP))) || defined(NO_TOOL_MZREPAIR_ULP))
+#include "logger/MzRepairUlp.h"
+#endif
 #endif
 
 #include "Copyright.h"
@@ -368,6 +376,12 @@ const struct utility_item utility_array[]=
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
 
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE))
+	{ "InstallLingRessourcePackage", 27, &main_InstallLingRessourcePackage, usage_InstallLingRessourcePackage, optstring_InstallLingRessourcePackage, lopts_InstallLingRessourcePackage },
+#endif
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!defined(NO_TOOL_KEYWORDS))) || defined(TOOL_KEYWORDS))
 	{ "KeyWords", 8, &main_KeyWords, usage_KeyWords, optstring_KeyWords, lopts_KeyWords } ,
 #endif
@@ -382,6 +396,12 @@ const struct utility_item utility_array[]=
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_MULTIFLEX))) || defined(TOOL_MULTIFLEX))
 	{ "MultiFlex", 9, &main_MultiFlex, usage_MultiFlex, optstring_MultiFlex, lopts_MultiFlex } ,
+#endif
+
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_MZREPAIR_ULP))) || defined(NO_TOOL_MZREPAIR_ULP))
+	{ "MzRepairUlp", 11, &main_MzRepairUlp, usage_MzRepairUlp, optstring_MzRepairUlp, lopts_MzRepairUlp },
+#endif
 #endif
 
 #if (((!defined(NO_TOOL_NORMALIZE))) || defined(TOOL_NORMALIZE))
@@ -495,7 +515,7 @@ const struct utility_item utility_array[]=
 	{ "", 0, NULL, NULL, NULL, NULL} 
 };
 
-const struct utility_item* found_utility(const char* search)
+static const struct utility_item* found_utility(const char* search)
 {
 	int len_search = (int)strlen(search);
 	int i=0;
