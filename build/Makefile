@@ -48,7 +48,7 @@
 #
 #
 #  UNITEX AS A JNI:
-#  
+#
 #  To produce a JNI, you need to have a JDK installed and must provide
 #  additional include paths. Those paths correspond to the locations
 #  of jni.h and jni_md.h
@@ -60,7 +60,7 @@
 # create the Jni and Library lib libUnitexLibAndJni.so under Windows with MinGW32 (fix the path, of course)
 #
 #  If you want to have access to the SVN revision number from the JNI or LIBRARY, you may
-#  provide this number with the extra option SVN_REVISION=xxx or 
+#  provide this number with the extra option SVN_REVISION=xxx or
 #  by overwriting the file Unitex_revision.h with "#define UNITEX_REVISION xxx" inside
 #-----------------------------------
 #
@@ -369,13 +369,13 @@ ifeq ($(SYSTEM), cygwin)
 #####################
 
 ifeq ($(COMMANDPREFIXDEFINED),yes)
-	CC     = $(COMMANDPREFIX)g++
-	CC_GCC = $(COMMANDPREFIX)gcc
-	AR     = $(COMMANDPREFIX)ar
+    CC     = $(COMMANDPREFIX)g++
+    CC_GCC = $(COMMANDPREFIX)gcc
+    AR     = $(COMMANDPREFIX)ar
 else
-	CC      = g++
-	CC_GCC  = gcc
-	AR      = AR
+    CC      = g++
+    CC_GCC  = gcc
+    AR      = AR
 endif
 
 RM      = rm -f
@@ -390,7 +390,7 @@ BUILD   = $(NAME)-$(VERSION)
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
-	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+    TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
 endif
 
 #
@@ -599,7 +599,7 @@ endif
 
 ifneq ($(SVN_REVISION),)
 CFLAGS += -DSVN_REVISION=$(SVN_REVISION)
-endif 
+endif
 
 OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
@@ -615,9 +615,9 @@ endif ## CYGWIN (ifeq)
 
 endif ## MINGW (ifeq)
 
-# Cassys set of object files. 
+# Cassys set of object files.
 CASSYS_FILE_OBJS = Cassys.o Cassys_tokens.o Cassys_xml_output.o Cassys_external_program.o Cassys_transducer.o Cassys_io.o \
-					Cassys_lexical_tags.o Cassys_concord.o
+                    Cassys_lexical_tags.o Cassys_concord.o
 
 
 ##################################
@@ -637,8 +637,8 @@ endif
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
-					 Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o\
-					 Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o Fst2.o\
+                     Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o\
+                     Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o Fst2.o\
                      Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o\
                      Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o\
@@ -647,65 +647,65 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o 
                      CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)\
                      $(SYSLIBSYNCTOOL)
 
-CASSYS		= Cassys
-CASSYS_OBJS	= Main_Cassys.o  $(CASSYS_FILE_OBJS) IOBuffer.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
-			FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o\
-			String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o\
-			BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o\
-			Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
-			DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
-			Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
-			Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o $(TRE_LINK_OBJS) \
-			DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+CASSYS      = Cassys
+CASSYS_OBJS = Main_Cassys.o  $(CASSYS_FILE_OBJS) IOBuffer.o Error.o UnitexGetOpt.o Unicode.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o\
+            FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o\
+            String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o\
+            BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o\
+            Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
+            DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
+            Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
+            Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o $(TRE_LINK_OBJS) \
+            DebugMode.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o\
-				List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o \
-				LoadInf.o Ustring.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o \
+                LoadInf.o Ustring.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o DELA.o DictionaryTree.o Alphabet.o\
-				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
-				List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
-				BitArray.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
-				Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
+                List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
+                BitArray.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
+                Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o\
-				List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
-				Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o \
-				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
-				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o \
-				AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o Error.o SortTxt.o\
-				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
-				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
-				Stack_unichar.o Transitions.o DicVariables.o\
-				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
-				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
-				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o RegExFacade.o $(TRE_LINK_OBJS) DebugMode.o Persistence.o PRLG.o \
-				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
+                Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o \
+                TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
+                CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o \
+                AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o Error.o SortTxt.o\
+                Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
+                List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
+                Stack_unichar.o Transitions.o DicVariables.o\
+                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
+                ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
+                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+                LoadInf.o Offsets.o Overlap.o RegExFacade.o $(TRE_LINK_OBJS) DebugMode.o Persistence.o PRLG.o \
+                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o\
-				Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
-				Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
-				CompoundWordTree.o MorphologicalFilters.o\
-				DELA.o List_ustring.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o\
-				Error.o SortTxt.o\
-				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
-				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
-				ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
-				Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-				LoadInf.o Offsets.o Overlap.o RegExFacade.o $(TRE_LINK_OBJS) DebugMode.o Persistence.o PRLG.o \
-				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
+                Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
+                CompoundWordTree.o MorphologicalFilters.o\
+                DELA.o List_ustring.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o\
+                Error.o SortTxt.o\
+                Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
+                PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
+                ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o\
+                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
+                LoadInf.o Offsets.o Overlap.o RegExFacade.o $(TRE_LINK_OBJS) DebugMode.o Persistence.o PRLG.o \
+                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o CodePages.o Error.o\
-				HTMLCharacters.o AsciiSearchTree.o UnitexGetOpt.o Arabic.o String_hash.o StringParsing.o\
-				Ustring.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                HTMLCharacters.o AsciiSearchTree.o UnitexGetOpt.o Arabic.o String_hash.o StringParsing.o\
+                Ustring.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 DICO      = Dico
 DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
@@ -727,7 +727,7 @@ ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o AutConcat.o Fst2Automaton.o \
             Symbol.o String_hash.o Tagset.o Ustring.o \
-   		    ElagStateSet.o SymbolAlphabet.o Symbol_op.o Error.o LanguageDefinition.o\
+            ElagStateSet.o SymbolAlphabet.o Symbol_op.o Error.o LanguageDefinition.o\
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
             BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o UnitexGetOpt.o Tfst.o \
@@ -739,11 +739,11 @@ ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Af_stdio.o ActivityLogger.
                 ElagFstFilesIO.o String_hash.o\
                 Symbol.o Ustring.o AutDeterminization.o AutIntersection.o\
                 ElagStateSet.o Symbol_op.o LanguageDefinition.o Tagset.o \
-	            AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o\
-	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
-	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
-	            Transitions.o ElagDebug.o UnitexGetOpt.o Tfst.o TfstStats.o AbstractDelaLoad.o \
-	            CompressedDic.o LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o\
+                Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
+                SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
+                Transitions.o ElagDebug.o UnitexGetOpt.o Tfst.o TfstStats.o AbstractDelaLoad.o \
+                CompressedDic.o LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 EVAMB      = Evamb
 EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
@@ -762,13 +762,13 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o LocateTrace.o
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o AbstractDelaLoad.o AbstractFst2Load.o\
                Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o\
-	           MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o\
-	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
-	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
-	           ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
-	           Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_LINK_OBJS) \
-	           DebugMode.o LoadInf.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+               MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o\
+               LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
+               Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o\
+               ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
+               Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_LINK_OBJS) \
+               DebugMode.o LoadInf.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Af_stdio.o ActivityLogger.o \
@@ -806,11 +806,11 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
-	           Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o\
-	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o\
-	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
-	           Offsets.o Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o List_pointer.o\
-	           Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+               Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o\
+               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o\
+               Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
+               Offsets.o Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o List_pointer.o\
+               Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o ActivityLogger.o \
@@ -824,37 +824,37 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o Acti
 
 GRFDIFF      = GrfDiff
 GRFDIFF_OBJS = Main_GrfDiff.o GrfDiff.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
-			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
-			StringParsing.o AbstractAllocator.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
+            StringParsing.o AbstractAllocator.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 GRFDIFF3      = GrfDiff3
 GRFDIFF3_OBJS = Main_GrfDiff3.o GrfDiff3.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
-			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
-			StringParsing.o AbstractAllocator.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o String_hash.o \
+            StringParsing.o AbstractAllocator.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 GRFTEST      = GrfTest
 GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Af_stdio.o ActivityLogger.o\
-			GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o File.o \
-			Overlap.o NormalizeAsRoutine.o String_hash.o StringParsing.o AbstractAllocator.o\
-			DELA.o Alphabet.o CompressedDic.o LoadInf.o List_ustring.o \
-			AbstractDelaLoad.o ProgramInvoker.o Fst2Txt.o Fst2TxtAsRoutine.o \
-			Fst2Txt_TokenTree.o Transitions.o Symbol.o LanguageDefinition.o \
-			Tagset.o List_int.o TransductionStack.o Stack_unichar.o VariableUtils.o \
-			TransductionVariables.o OutputTransductionVariables.o \
-			DicVariables.o Korean.o HashTable.o ParsingInfo.o SingleGraph.o \
-			BitArray.o FIFO.o BitMasks.o Buffer.o Fst2Automaton.o ElagFstFilesIO.o\
-			Tfst.o TfstStats.o Fst2.o Pattern.o AbstractFst2Load.o \
-			Tokenize.o Dico.o Snt.o Text_tokens.o ApplyDic.o Match.o \
-			CompoundWordHashTable.o Tokenization.o LocateMatches.o \
-			SortTxt.o Thai.o Compress.o DictionaryTree.o \
-			AutomatonDictionary2Bin.o LocatePattern.o Locate.o \
-			Text_parsing.o DebugMode.o LocateCache.o UserCancelling.o \
-			MorphologicalFilters.o Contexts.o MorphologicalLocate.o Arabic.o \
-			List_pointer.o LocateTrace.o PatternTree.o LocateFst2Tags.o \
-			CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o\
-			Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
-			NewLineShifts.o Persistence.o PRLG.o BuildTextAutomaton.o RegExFacade.o $(TRE_LINK_OBJS) \
-			$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+            GrfSvn_lib.o Grf_lib.o Ustring.o UnitexGetOpt.o Normalize.o Offsets.o File.o \
+            Overlap.o NormalizeAsRoutine.o String_hash.o StringParsing.o AbstractAllocator.o\
+            DELA.o Alphabet.o CompressedDic.o LoadInf.o List_ustring.o \
+            AbstractDelaLoad.o ProgramInvoker.o Fst2Txt.o Fst2TxtAsRoutine.o \
+            Fst2Txt_TokenTree.o Transitions.o Symbol.o LanguageDefinition.o \
+            Tagset.o List_int.o TransductionStack.o Stack_unichar.o VariableUtils.o \
+            TransductionVariables.o OutputTransductionVariables.o \
+            DicVariables.o Korean.o HashTable.o ParsingInfo.o SingleGraph.o \
+            BitArray.o FIFO.o BitMasks.o Buffer.o Fst2Automaton.o ElagFstFilesIO.o\
+            Tfst.o TfstStats.o Fst2.o Pattern.o AbstractFst2Load.o \
+            Tokenize.o Dico.o Snt.o Text_tokens.o ApplyDic.o Match.o \
+            CompoundWordHashTable.o Tokenization.o LocateMatches.o \
+            SortTxt.o Thai.o Compress.o DictionaryTree.o \
+            AutomatonDictionary2Bin.o LocatePattern.o Locate.o \
+            Text_parsing.o DebugMode.o LocateCache.o UserCancelling.o \
+            MorphologicalFilters.o Contexts.o MorphologicalLocate.o Arabic.o \
+            List_pointer.o LocateTrace.o PatternTree.o LocateFst2Tags.o \
+            CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o\
+            Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
+            NewLineShifts.o Persistence.o PRLG.o BuildTextAutomaton.o RegExFacade.o $(TRE_LINK_OBJS) \
+            $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 IMPLODETFST      = ImplodeTfst
 IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -867,7 +867,7 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o Activi
 
 KEYWORDS      = KeyWords
 KEYWORDS_OBJS = Main_KeyWords.o KeyWords.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
-			AbstractAllocator.o Alphabet.o StringParsing.o DELA.o File.o UnitexGetOpt.o \
+            AbstractAllocator.o Alphabet.o StringParsing.o DELA.o File.o UnitexGetOpt.o \
             Persistence.o Error.o String_hash.o Ustring.o List_ustring.o \
             CompressedDic.o AbstractDelaLoad.o LoadInf.o KeyWords_lib.o Tokenization.o \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
@@ -913,25 +913,25 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  Arabic.o AbstractDelaLoad.o CompressedDic.o LoadInf.o MF_Global.o\
                  DebugMode.o Grf_lib.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
-MZREPAIRULP   = MzRepairUlp
+MZREPAIRULP      = MzRepairUlp
 MZREPAIRULP_OBJS = Main_MzRepairUlp.o MzToolsUlp.o MzRepairUlp.o UnitexGetOpt.o \
                    Error.o Unicode.o Af_stdio.o ActivityLogger.o IOBuffer.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED)
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
-				AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o\
-				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
-				UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
-				Offsets.o Overlap.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o\
+                Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
+                UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
+                Offsets.o Overlap.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Af_stdio.o ActivityLogger.o \
                 Unicode.o AbstractAllocator.o Alphabet.o DELA.o AbstractDelaLoad.o \
                 List_ustring.o String_hash.o\
-				NorwegianCompounds.o GermanCompounds.o File.o\
-				RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o\
-				DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o Ustring.o \
-				Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                NorwegianCompounds.o GermanCompounds.o File.o\
+                RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o\
+                DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o Ustring.o \
+                Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 REBUILDTFST      = RebuildTfst
 REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -951,7 +951,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                IOBuffer.o TransductionStack.o Pattern.o \
                Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Alphabet.o \
                LocateMatches.o Match.o File.o NormalizationFst2.o\
-	           PortugueseNormalization.o TransductionVariables.o \
+               PortugueseNormalization.o TransductionVariables.o \
                Text_parsing.o UserCancelling.o MorphologicalLocate.o String_hash.o \
                LocatePattern.o LocateTrace.o Text_tokens.o List_int.o\
                Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
@@ -1008,24 +1008,24 @@ TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Af_stdio.o ActivityLogg
 
 TAGGER      = Tagger
 TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o\
-			  Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o\
-			  Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
-			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
-			  File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o\
-			  AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o\
-			  SymbolAlphabet.o ElagStateSet.o Symbol_op.o AbstractDelaLoad.o CompressedDic.o \
-			  LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+              Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o\
+              Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
+              String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
+              File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o\
+              AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o\
+              SymbolAlphabet.o ElagStateSet.o Symbol_op.o AbstractDelaLoad.o CompressedDic.o \
+              LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 TAGSETNORMTFST = TagsetNormTfst
 TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Af_stdio.o \
                     ActivityLogger.o Unicode.o AbstractAllocator.o ElagFstFilesIO.o Ustring.o \
-					String_hash.o Symbol.o LanguageDefinition.o Tagset.o\
-					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
-					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o\
-					BitMasks.o FIFO.o Transitions.o\
-					Symbol_op.o Fst2Automaton.o UnitexGetOpt.o Tfst.o TfstStats.o \
-					Match.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Persistence.o \
-					$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                    String_hash.o Symbol.o LanguageDefinition.o Tagset.o\
+                    Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
+                    List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o\
+                    BitMasks.o FIFO.o Transitions.o\
+                    Symbol_op.o Fst2Automaton.o UnitexGetOpt.o Tfst.o TfstStats.o \
+                    Match.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Persistence.o \
+                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 TEI2TXT      = TEI2Txt
 TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -1066,24 +1066,24 @@ TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Af_stdio.o ActivityLogger.o \
                 Unicode.o AbstractAllocator.o Alphabet.o String_hash.o\
-				File.o DELA.o AbstractDelaLoad.o List_ustring.o HashTable.o Error.o \
-				StringParsing.o UnitexGetOpt.o \
-				Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o Persistence.o \
-				$(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+                File.o DELA.o AbstractDelaLoad.o List_ustring.o HashTable.o Error.o \
+                StringParsing.o UnitexGetOpt.o \
+                Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o Persistence.o \
+                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 TRAININGTAGGER      = TrainingTagger
 TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o IOBuffer.o\
-			  Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o\
-			  Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o\
-			  Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
-			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
-			  File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o\
-			  DictionaryTree.o AutomatonDictionary2Bin.o AbstractDelaLoad.o CompressedDic.o \
-			  LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+              Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o\
+              Tfst.o TfstStats.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o UnitexGetOpt.o\
+              Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
+              String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
+              File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o\
+              DictionaryTree.o AutomatonDictionary2Bin.o AbstractDelaLoad.o CompressedDic.o \
+              LoadInf.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 TXT2TFST      = Txt2Tfst
 TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Af_stdio.o\
-				ActivityLogger.o Unicode.o AbstractAllocator.o DELA_tree.o\
+                ActivityLogger.o Unicode.o AbstractAllocator.o DELA_tree.o\
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o AbstractFst2Load.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
@@ -1092,7 +1092,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o \
                 CompressedDic.o LoadInf.o Offsets.o Overlap.o DebugMode.o Grf_lib.o \
                 Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
-                
+
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o \
@@ -1100,11 +1100,11 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
-	           UnitexGetOpt.o DicVariables.o TransductionStack.o SingleGraph.o FIFO.o\
-	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o\
-	           Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o List_pointer.o \
-	           Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o BitArray.o \
-	           Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
+               UnitexGetOpt.o DicVariables.o TransductionStack.o SingleGraph.o FIFO.o\
+               Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o\
+               Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o List_pointer.o \
+               Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o BitArray.o \
+               Persistence.o Fst2Check_lib.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
 
 UNCOMPRESS       = Uncompress
@@ -1169,7 +1169,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
 
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
                   UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o \
-				  LingRessourcePackage.o InstallLingRessourcePackage.o \
+                  LingRessourcePackage.o InstallLingRessourcePackage.o \
                   FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o \
                   UnitexTool.o UnitexRevisionInfo.o Seq2Grf.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
@@ -1210,8 +1210,9 @@ UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJ
 
 UNITEXLIB_IO_OBJS = UnitexLibIO.o $(SYSLIBDIRIO)
 
-UNITEXLIB_PACK_OBJS = UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o FilePack.o FileUnPack.o FilePackCrc32.o FilePackIo.o \
-                  LingRessourcePackage.o InstallLingRessourcePackage.o
+UNITEXLIB_PACK_RUNLOG_OBJS = UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o FilePack.o FileUnPack.o FilePackCrc32.o FilePackIo.o \
+                  LingRessourcePackage.o InstallLingRessourcePackage.o \
+                  ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o \
 
 UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o
 
@@ -1263,36 +1264,36 @@ OBJS = $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS)
 else
 
 PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
-		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) $(FST2CHECK) \
-		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
-		$(MZREPAIRULP) $(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
-		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
-		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
-		$(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
-		$(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST) $(SPELLCHECK) $(TFSTTAG) $(KEYWORDS)
+        $(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) $(FST2CHECK) \
+        $(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
+        $(MZREPAIRULP) $(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
+        $(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
+        $(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
+        $(UNCOMPRESS) $(UNTOKENIZE) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(UNXMLIZE) $(TEST)\
+        $(GRFDIFF) $(GRFDIFF3) $(SEQ2GRF) $(GRFTEST) $(SPELLCHECK) $(TFSTTAG) $(KEYWORDS)
 
 PROGS += $(TEST)
 
 
 OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
         $(DICO_OBJS) $(ELAG_OBJS)\
-		$(ELAGCOMP_OBJS) $(EVAMB_OBJS) \
-		$(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2CHECK_OBJS) \
-		$(FST2LIST_OBJS) $(FST2TXT_OBJS) $(GRF2FST2_OBJS) $(IMPLODETFST_OBJS) \
-		$(LOCATE_OBJS) \
-		$(MULTIFLEX_OBJS) $(MZREPAIRULP_OBJS) $(NORMALIZE_OBJS) $(POLYLEX_OBJS) $(REBUILDTFST_OBJS) \
-		$(RECONSTRUCAO_OBJS) $(REG2GRF_OBJS) $(SORTTXT_OBJS) $(STATS_OBJS) $(TABLE2GRF_OBJS)\
-		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
-		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
-		$(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
-		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)\
-		$(SEQ2GRF_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS) $(TFSTTAG_OBJS) \
-		\
-		$(UNITEXLIB_IO_OBJS)
+        $(ELAGCOMP_OBJS) $(EVAMB_OBJS) \
+        $(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2CHECK_OBJS) \
+        $(FST2LIST_OBJS) $(FST2TXT_OBJS) $(GRF2FST2_OBJS) $(IMPLODETFST_OBJS) \
+        $(LOCATE_OBJS) \
+        $(MULTIFLEX_OBJS) $(MZREPAIRULP_OBJS) $(NORMALIZE_OBJS) $(POLYLEX_OBJS) $(REBUILDTFST_OBJS) \
+        $(RECONSTRUCAO_OBJS) $(REG2GRF_OBJS) $(SORTTXT_OBJS) $(STATS_OBJS) $(TABLE2GRF_OBJS)\
+        $(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
+        $(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
+        $(UNCOMPRESS_OBJS) $(UNTOKENIZE_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
+        $(TAGGER_OBJS) $(TRAININGTAGGER_OBJS) $(UNXMLIZE_OBJS) $(GRFDIFF_OBJS) $(GRFDIFF3_OBJS)\
+        $(SEQ2GRF_OBJS) $(GRFTEST_OBJS) $(SPELLCHECK_OBJS) $(TFSTTAG_OBJS) \
+        \
+        $(UNITEXLIB_IO_OBJS)
 
-		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
-		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
-		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(KEYWORDS_OBJS)
+        #$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
+        #$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
+        #$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(KEYWORDS_OBJS)
 
 
 endif
@@ -1332,24 +1333,24 @@ endif
 endif
 
 bin: $(LIBTRE) $(BINARIES)
-	@echo
-	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
-	@echo
+    @echo
+    @echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
+    @echo
 
 %.o: ../%.cpp
-	$(CC) -c $(CFLAGS) $<
+    $(CC) -c $(CFLAGS) $<
 
 $(TRE_SRC): $(TRE_TGZ)
-	@echo "unpacking TRE library ..."
-	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
+    @echo "unpacking TRE library ..."
+    $(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
-	@echo "Configure TRE..."
-	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static
-	touch .libtre-done
+    @echo "Configure TRE..."
+    chmod +x $(TRE_SRC)/configure
+    cd $(TRE_SRC) && ./configure --disable-shared --enable-static
+    touch .libtre-done
 
 else
 
@@ -1367,67 +1368,67 @@ TRE_GCC_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
 endif
 
 .libtre-done: $(TRE_SRC)
-	@echo "Making TRE library ..."
-	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static
-	mkdir -p libtre/lib libtre/include libtre/obj
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-stack.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-parse.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_GCC_OPTIONS) -o libtre/obj/regexec.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_GCC_OPTIONS) -o libtre/obj/xmalloc.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-parallel.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-approx.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-ast.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_GCC_OPTIONS) -o libtre/obj/regcomp.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_GCC_OPTIONS) -o libtre/obj/regerror.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-compile.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-backtrack.o
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-mem.o
-	cd libtre/obj && ar rcs ../lib/libtre.a *.o
-	touch .libtre-done
+    @echo "Making TRE library ..."
+    chmod +x $(TRE_SRC)/configure
+    cd $(TRE_SRC) && ./configure --disable-shared --enable-static
+    mkdir -p libtre/lib libtre/include libtre/obj
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-stack.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-parse.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_GCC_OPTIONS) -o libtre/obj/regexec.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_GCC_OPTIONS) -o libtre/obj/xmalloc.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-parallel.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-approx.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-ast.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_GCC_OPTIONS) -o libtre/obj/regcomp.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_GCC_OPTIONS) -o libtre/obj/regerror.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-compile.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-backtrack.o
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-mem.o
+    cd libtre/obj && ar rcs ../lib/libtre.a *.o
+    touch .libtre-done
 else
 .libtre-done: $(TRE_SRC)
-	@echo "Making TRE library ..."
-	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static && make
-	mkdir -p libtre/lib libtre/include
-	cd $(TRE_SRC)/lib && ar rcs libtre.a *.o
-	cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
-	touch .libtre-done
+    @echo "Making TRE library ..."
+    chmod +x $(TRE_SRC)/configure
+    cd $(TRE_SRC) && ./configure --disable-shared --enable-static && make
+    mkdir -p libtre/lib libtre/include
+    cd $(TRE_SRC)/lib && ar rcs libtre.a *.o
+    cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
+    touch .libtre-done
 endif
 
 endif
 
 
 clean-libtre:
-	rm -rf libtre
-	rm -rf $(TRE_SRC)
-	rm -f .libtre-done
+    rm -rf libtre
+    rm -rf $(TRE_SRC)
+    rm -f .libtre-done
 
 
 install: bin
-	$(INSTALL) $(BINARIES) $(APPDIR)
+    $(INSTALL) $(BINARIES) $(APPDIR)
 
 
 clean: $(CLEAN-LIBTRE)
-	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_OBJS) *~ Main_*.o
+    rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 clean-all-but-tre:
-	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_OBJS) *~ Main_*.o
+    rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 dist: clean
-	if test -d $(BUILD); then rm -rf $(BUILD); fi
-	mkdir $(BUILD)
-	cp -a $(shell find . -mindepth 1 -maxdepth 1 -name $(BUILD) -prune -o -print) $(BUILD)
-	tar cf - $(BUILD)  | gzip > ../$(BUILD).tar.gz
-	rm -rf $(BUILD)
+    if test -d $(BUILD); then rm -rf $(BUILD); fi
+    mkdir $(BUILD)
+    cp -a $(shell find . -mindepth 1 -maxdepth 1 -name $(BUILD) -prune -o -print) $(BUILD)
+    tar cf - $(BUILD)  | gzip > ../$(BUILD).tar.gz
+    rm -rf $(BUILD)
 
 zip: clean
-	if test -d $(BUILD); then rm -rf $(BUILD); fi
-	mkdir $(BUILD)
-	cp -a $(shell find . -mindepth 1 -maxdepth 1 -name $(BUILD) -prune -o -print) $(BUILD)
-	zip -r -q ../$(BUILD).zip $(BUILD)
-	rm -rf $(BUILD)
+    if test -d $(BUILD); then rm -rf $(BUILD); fi
+    mkdir $(BUILD)
+    cp -a $(shell find . -mindepth 1 -maxdepth 1 -name $(BUILD) -prune -o -print) $(BUILD)
+    zip -r -q ../$(BUILD).zip $(BUILD)
+    rm -rf $(BUILD)
 
 remake: clean all
 
@@ -1468,9 +1469,9 @@ TRE_TGZ = ../tre-0.8.0.tar.gz
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
 .libtre-done: $(TRE_SRC)
-	@echo "unpacking TRE library ......"
-	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
-	@echo > .libtre-done
+    @echo "unpacking TRE library ......"
+    $(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
+    @echo > .libtre-done
 
 else
 
@@ -1499,68 +1500,68 @@ tre-0.8.0/lib/regerror.c: $(TRE_SRC)
 tre-0.8.0/lib/tre-compile.c: $(TRE_SRC)
 
 TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-match-approx.o tre-ast.o \
-	regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
+    regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
 
 tre-stack.o: tre-0.8.0/lib/tre-stack.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
 
 tre-parse.o: tre-0.8.0/lib/tre-parse.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
 
 regexec.o: tre-0.8.0/lib/regexec.c
-	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
 
 xmalloc.o: tre-0.8.0/lib/xmalloc.c
-	$(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
 
 tre-match-parallel.o: tre-0.8.0/lib/tre-match-parallel.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
 
 tre-match-approx.o: tre-0.8.0/lib/tre-match-approx.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
 
 tre-ast.o: tre-0.8.0/lib/tre-ast.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
 
 regcomp.o: tre-0.8.0/lib/regcomp.c
-	$(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
 
 regerror.o: tre-0.8.0/lib/regerror.c
-	$(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
 
 tre-compile.o: tre-0.8.0/lib/tre-compile.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
 
 tre-match-backtrack.o: tre-0.8.0/lib/tre-match-backtrack.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
 
 tre-mem.o: tre-0.8.0/lib/tre-mem.c
-	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
 
 $(TRE_LIB): $(TRE_SRC) $(TRE_OBJS)
-	AR -r libtre.a $(TRE_OBJS)
+    AR -r libtre.a $(TRE_OBJS)
 
 else
 TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-match-approx.o tre-ast.o \
-	regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
+    regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
 
 $(TRE_LIB): $(TRE_TGZ)
-	@echo "unpacking TRE library......"
-	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
-	$(AR) -r libtre.a $(TRE_OBJS)
-	
+    @echo "unpacking TRE library......"
+    $(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
+    $(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
+    $(AR) -r libtre.a $(TRE_OBJS)
+
 endif
 endif
 
@@ -1583,32 +1584,32 @@ ifeq ($(SYSTEM),windows)
 
 
 bin: $(LIBTRE) $(BINARIES)
-	@echo ----------------------------------------------------------------------------
-	@echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
+    @echo ----------------------------------------------------------------------------
+    @echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
 
 
 TRE_TEMP = $(TRE_SRC)/TEMP
 
 $(TRE_SRC): $(TRE_TGZ)
-	@echo "unpacking TRE library...."
-	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
+    @echo "unpacking TRE library...."
+    $(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
 
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
-	@echo "Making TRE library..."
+    @echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
 LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
-	$(CC) -c $(CFLAGS) $<
+    $(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
-	rm -f *.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
+    rm -f *.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
 
 clean: clean-all-but-tre
-	rm -rf tre-0.8.0
-	rm -rf libtre.a
+    rm -rf tre-0.8.0
+    rm -rf libtre.a
 
 
 ##########################
@@ -1625,33 +1626,33 @@ else
 #############################
 
 bin: $(LIBTRE) $(BINARIES)
-	@echo
-	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
-	@echo
+    @echo
+    @echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
+    @echo
 
 
 TRE_TEMP = $(TRE_SRC)/TEMP
 
 $(TRE_SRC): $(TRE_TGZ)
-	@echo "Unpacking TRE library...."
-	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
+    @echo "Unpacking TRE library...."
+    $(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
 
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
-	@echo "Making TRE library..."
+    @echo "Making TRE library..."
 
 CLEAN-LIBTRE   =
 LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 
 %.o: ../%.cpp
-	$(CC) -c $(CFLAGS) $<
+    $(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
-	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
+    rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
 
 clean: clean-all-but-tre
-	rm -rf tre-0.8.0
-	rm -rf libtre.a
+    rm -rf tre-0.8.0
+    rm -rf libtre.a
 
 
 #################################
@@ -1664,225 +1665,225 @@ endif
 
 ifeq ($(DEBUG), yes)
 $(BIN_DIR)$(CASSYS_TEST)$(EXTENSION): $(CASSYS_TEST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 endif
 
 $(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(BUILDKRMWUDIC)$(EXTENSION): $(BUILDKRMWUDIC_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CASSYS)$(EXTENSION): $(CASSYS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CONCORD)$(EXTENSION): $(CONCORD_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CONCORDIFF)$(EXTENSION): $(CONCORDIFF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CONVERT)$(EXTENSION): $(CONVERT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(DICO)$(EXTENSION): $(DICO_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(ELAG)$(EXTENSION): $(ELAG_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(ELAGCOMP)$(EXTENSION): $(ELAGCOMP_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EVAMB)$(EXTENSION): $(EVAMB_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FLATTEN)$(EXTENSION): $(FLATTEN_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2CHECK)$(EXTENSION): $(FST2CHECK_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRF2FST2)$(EXTENSION): $(GRF2FST2_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFDIFF)$(EXTENSION): $(GRFDIFF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFDIFF3)$(EXTENSION): $(GRFDIFF3_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRFTEST)$(EXTENSION): $(GRFTEST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(KEYWORDS)$(EXTENSION): $(KEYWORDS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(LOCATETFST)$(EXTENSION): $(LOCATETFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(MULTIFLEX)$(EXTENSION): $(MULTIFLEX_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(MZREPAIRULP)$(EXTENSION): $(MZREPAIRULP_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(NORMALIZE)$(EXTENSION): $(NORMALIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(POLYLEX)$(EXTENSION): $(POLYLEX_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(REBUILDTFST)$(EXTENSION): $(REBUILDTFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(RECONSTRUCAO)$(EXTENSION): $(RECONSTRUCAO_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(REG2GRF)$(EXTENSION): $(REG2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SEQ2GRF)$(EXTENSION): $(SEQ2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(SPELLCHECK)$(EXTENSION): $(SPELLCHECK_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(STATS)$(EXTENSION): $(STATS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TABLE2GRF)$(EXTENSION): $(TABLE2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TAGGER)$(EXTENSION): $(TAGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TAGSETNORMTFST)$(EXTENSION): $(TAGSETNORMTFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TEI2TXT)$(EXTENSION): $(TEI2TXT_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TFST2GRF)$(EXTENSION): $(TFST2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TFSTTAG)$(EXTENSION): $(TFSTTAG_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TFST2UNAMBIG)$(EXTENSION): $(TFST2UNAMBIG_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TOKENIZE)$(EXTENSION): $(TOKENIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TRAININGTAGGER)$(EXTENSION): $(TRAININGTAGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNCOMPRESS)$(EXTENSION): $(UNCOMPRESS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNTOKENIZE)$(EXTENSION): $(UNTOKENIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNXMLIZE)$(EXTENSION): $(UNXMLIZE_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+    $(CC) -o $@ $+ $(OPTIONS)
 
 #
 # Compilation instructions for Logger
 #
 
 FileUnPack.o: ../logger/FileUnPack.cpp
-	$(CC) -c ../logger/FileUnPack.cpp $(OPTIONS)
+    $(CC) -c ../logger/FileUnPack.cpp $(OPTIONS)
 
 ReworkArg.o: ../logger/ReworkArg.cpp
-	$(CC) -c ../logger/ReworkArg.cpp $(OPTIONS)
+    $(CC) -c ../logger/ReworkArg.cpp $(OPTIONS)
 
 UniRunLogger.o: ../logger/UniRunLogger.cpp
-	$(CC) -c ../logger/UniRunLogger.cpp $(OPTIONS)
+    $(CC) -c ../logger/UniRunLogger.cpp $(OPTIONS)
 
 FilePack.o: ../logger/FilePack.cpp
-	$(CC) -c ../logger/FilePack.cpp $(OPTIONS)
+    $(CC) -c ../logger/FilePack.cpp $(OPTIONS)
 
 FilePackCrc32.o: ../logger/FilePackCrc32.cpp
-	$(CC) -c ../logger/FilePackCrc32.cpp $(OPTIONS)
+    $(CC) -c ../logger/FilePackCrc32.cpp $(OPTIONS)
 
 FilePackIo.o: ../logger/FilePackIo.cpp
-	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
+    $(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
 
 PackFile.o: ../logger/PackFile.cpp
-	$(CC) -c ../logger/PackFile.cpp $(OPTIONS)
+    $(CC) -c ../logger/PackFile.cpp $(OPTIONS)
 
 PackFileTool.o: ../logger/PackFileTool.cpp
-	$(CC) -c ../logger/PackFileTool.cpp $(OPTIONS)
+    $(CC) -c ../logger/PackFileTool.cpp $(OPTIONS)
 
 UnpackFile.o: ../logger/UnpackFile.cpp
-	$(CC) -c ../logger/UnpackFile.cpp $(OPTIONS)
+    $(CC) -c ../logger/UnpackFile.cpp $(OPTIONS)
 
 UnpackFileTool.o: ../logger/UnpackFileTool.cpp
-	$(CC) -c ../logger/UnpackFileTool.cpp $(OPTIONS)
-	
+    $(CC) -c ../logger/UnpackFileTool.cpp $(OPTIONS)
+
 InstallLingRessourcePackage.o: ../logger/InstallLingRessourcePackage.cpp
-	$(CC) -c ../logger/InstallLingRessourcePackage.cpp $(OPTIONS)
-	
+    $(CC) -c ../logger/InstallLingRessourcePackage.cpp $(OPTIONS)
+
 LingRessourcePackage.o: ../logger/LingRessourcePackage.cpp
-	$(CC) -c ../logger/LingRessourcePackage.cpp $(OPTIONS)
+    $(CC) -c ../logger/LingRessourcePackage.cpp $(OPTIONS)
 
 MzToolsUlp.o: ../logger/MzToolsUlp.cpp
-	$(CC) -c ../logger/MzToolsUlp.cpp $(OPTIONS)
+    $(CC) -c ../logger/MzToolsUlp.cpp $(OPTIONS)
 
 MzRepairUlp.o: ../logger/MzRepairUlp.cpp
-	$(CC) -c ../logger/MzRepairUlp.cpp $(OPTIONS)
+    $(CC) -c ../logger/MzRepairUlp.cpp $(OPTIONS)
 
 UniLogger.o: ../logger/UniLogger.cpp
-	$(CC) -c ../logger/UniLogger.cpp $(OPTIONS)
-	
+    $(CC) -c ../logger/UniLogger.cpp $(OPTIONS)
+
 SyncLoggerWin.o: ../logger/SyncLoggerWin.cpp
-	$(CC) -c ../logger/SyncLoggerWin.cpp $(OPTIONS)
+    $(CC) -c ../logger/SyncLoggerWin.cpp $(OPTIONS)
 
 SyncLoggerPosix.o: ../logger/SyncLoggerPosix.cpp
-	$(CC) -c ../logger/SyncLoggerPosix.cpp $(OPTIONS)
+    $(CC) -c ../logger/SyncLoggerPosix.cpp $(OPTIONS)
 
 SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
-	$(CC) -c ../logger/SyncLoggerDummy.cpp $(OPTIONS)
+    $(CC) -c ../logger/SyncLoggerDummy.cpp $(OPTIONS)
 
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
-	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
+    $(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
@@ -1896,48 +1897,48 @@ endif
 
 
 regcomp.o : $(TRE_SRC)/lib/regcomp.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/regcomp.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 regerror.o : $(TRE_SRC)/lib/regerror.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/regerror.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 regexec.o : $(TRE_SRC)/lib/regexec.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/regexec.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-ast.o : $(TRE_SRC)/lib/tre-ast.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-ast.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-compile.o : $(TRE_SRC)/lib/tre-compile.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-match-approx.o : $(TRE_SRC)/lib/tre-match-approx.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-match-approx.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-match-backtrack.o : $(TRE_SRC)/lib/tre-match-backtrack.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-match-parallel.o : $(TRE_SRC)/lib/tre-match-parallel.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-match-parallel.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-mem.o : $(TRE_SRC)/lib/tre-mem.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-parse.o : $(TRE_SRC)/lib/tre-parse.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 tre-stack.o : $(TRE_SRC)/lib/tre-stack.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 xmalloc.o : $(TRE_SRC)/lib/xmalloc.c
-	$(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_DIRECT_COMPILE_OPTIONS)
+    $(CC_GCC) -c $(TRE_SRC)/lib/xmalloc.c $(TRE_DIRECT_COMPILE_OPTIONS)
 
 endif
 
 fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp\
                                        ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
-	javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
-	javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.h fr.umlv.unitex.jni.UnitexJni
-	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c $(OPTIONS) -I"../logger"
+    javac ../UnitexLibAndJni/fr/umlv/unitex/jni/UnitexJni.java
+    javah -classpath ../UnitexLibAndJni -o ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.h fr.umlv.unitex.jni.UnitexJni
+    $(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c $(OPTIONS) -I"../logger"
 
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
@@ -1948,41 +1949,41 @@ DYLIBEXT = dylib
 endif
 
 no_o_files:
-	rm -f *.o
+    rm -f *.o
 
 .libunitex: no_o_files $(OBJS) Test_lib.o VirtualFiles.o
-	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
-	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
+    rm -f Main_*.o
+    $(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
+    $(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS) VirtualFiles.o
-	rm -f Main_*.o
-	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
-	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+    rm -f Main_*.o
+    $(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
+    jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 .libunitexstatic: $(OBJS) VirtualFiles.o
-	rm -f Main_*.o
-	$(AR) rcs ../bin/libunitex.a *.o
-	touch .libunitexstatic
+    rm -f Main_*.o
+    $(AR) rcs ../bin/libunitex.a *.o
+    touch .libunitexstatic
 else
 
 # Compiling Unitex as a library under Windows
 no_o_files:
-	rm -f *.o
+    rm -f *.o
 
 .libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o VirtualFiles.o
-	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
-	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
+    rm -f Main_*.o
+    $(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
+    $(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(LIBTRE) $(OBJS) VirtualFiles.o
-	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
-	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) VirtualFiles.o
+    rm -f Main_*.o
+    $(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
+    jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
-.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_OBJS) $(OBJS) VirtualFiles.o
-	rm -f Main_*.o
-	$(AR) rcs ../bin/libunitex.a *.o
-	touch .libunitexstatic
+.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(OBJS) VirtualFiles.o
+    rm -f Main_*.o
+    $(AR) rcs ../bin/libunitex.a *.o
+    touch .libunitexstatic
 
 endif
