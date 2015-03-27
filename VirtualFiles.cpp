@@ -208,6 +208,9 @@ case OPEN_CREATE_MF: error("open CREATE: %s\n",name); break;
 VFS_INODE* inode=get_inode(vfs,name);
 int inode_created=0;
 if (inode==NULL) {
+	if (TypeOpen == OPEN_READ_MF) {
+		return NULL;
+	}
 	inode=create_inode(vfs,name,TypeOpen);
 	inode_created=1;
 }
