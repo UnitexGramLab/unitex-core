@@ -71,7 +71,7 @@ typedef struct {
 } VFS_FILE;
 
 
-static SYNC_Mutex_OBJECT VFS_mutex=SyncBuildMutex();
+static SYNC_Mutex_OBJECT VFS_mutex=NULL;
 
 
 /**
@@ -448,31 +448,50 @@ void ABSTRACT_CALLBACK_UNITEX my_memFile_releaseList(char**list,void* /*privateS
  * Initialization of the virtual file system
  */
 
-void init_virtual_files() {
-t_fileio_func_array_extensible my_VFS;
+static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * my_VFS) {
+	memset(my_VFS, 0, sizeof(t_fileio_func_array_extensible));
+	my_VFS->size_func_array = sizeof(t_fileio_func_array_extensible);
+	my_VFS->fnc_is_filename_object = my_fnc_is_filename_object;
+	my_VFS->fnc_Init_FileSpace = NULL;
+	my_VFS->fnc_Uninit_FileSpace = NULL;
+	my_VFS->fnc_memOpenLowLevel = my_fnc_memOpenLowLevel;
+	my_VFS->fnc_memLowLevelWrite = my_fnc_memLowLevelWrite;
+	my_VFS->fnc_memLowLevelRead = my_fnc_memLowLevelRead;
+	my_VFS->fnc_memLowLevelSeek = my_fnc_memLowLevelSeek;
+	my_VFS->fnc_memLowLevelGetSize = my_fnc_memLowLevelGetSize;
+	my_VFS->fnc_memLowLevelTell = my_fnc_memLowLevelTell;
+	my_VFS->fnc_memLowLevelClose = my_fnc_memLowLevelClose;
+	my_VFS->fnc_memLowLevelSetSizeReservation = NULL;
+	my_VFS->fnc_memFileRemove = my_fnc_memFileRemove;
+	my_VFS->fnc_memFileRename = my_fnc_memFileRename;
+	my_VFS->fnc_memFile_getList = my_memFile_getList;
+	my_VFS->fnc_memFile_releaseList = my_memFile_releaseList;
 
-memset(&my_VFS,0,sizeof(t_fileio_func_array_extensible));
-my_VFS.size_func_array = sizeof(t_fileio_func_array_extensible);
-my_VFS.fnc_is_filename_object=my_fnc_is_filename_object;
-my_VFS.fnc_Init_FileSpace=NULL;
-my_VFS.fnc_Uninit_FileSpace=NULL;
-my_VFS.fnc_memOpenLowLevel=my_fnc_memOpenLowLevel;
-my_VFS.fnc_memLowLevelWrite=my_fnc_memLowLevelWrite;
-my_VFS.fnc_memLowLevelRead=my_fnc_memLowLevelRead;
-my_VFS.fnc_memLowLevelSeek=my_fnc_memLowLevelSeek;
-my_VFS.fnc_memLowLevelGetSize=my_fnc_memLowLevelGetSize;
-my_VFS.fnc_memLowLevelTell=my_fnc_memLowLevelTell;
-my_VFS.fnc_memLowLevelClose=my_fnc_memLowLevelClose;
-my_VFS.fnc_memLowLevelSetSizeReservation=NULL;
-my_VFS.fnc_memFileRemove=my_fnc_memFileRemove;
-my_VFS.fnc_memFileRename=my_fnc_memFileRename;
-my_VFS.fnc_memFile_getList=my_memFile_getList;
-my_VFS.fnc_memFile_releaseList=my_memFile_releaseList;
-
-if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
-	fatal_error("Cannot create virtual file system\n");}
+	VFS_mutex = SyncBuildMutex();
 }
 
+void init_virtual_files() {
+t_fileio_func_array_extensible my_VFS;
+fill_fileio_func_array_extensible(&my_VFS);
+
+if (VFS_mutex != NULL) {
+	SyncReleaseMutex(VFS_mutex);
+	VFS_mutex = NULL;
+}
+
+if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
+	fatal_error("Cannot create virtual file system\n");
+}
+}
+
+void uninit_virtual_files() {
+	t_fileio_func_array_extensible my_VFS;
+	fill_fileio_func_array_extensible(&my_VFS);
+
+	if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
+		fatal_error("Cannot uninstall virtual file system\n");
+	}
+}
 
 /**
  * Returns the length in bytes of the given virtual file,
@@ -549,12 +568,27 @@ while (VFS_id.list!=NULL) {
 }
 }
 
-static int init() {
-init_virtual_files();
-return 0;
+
+
+class InitVirtualFiles
+{
+public:
+	InitVirtualFiles();
+	~InitVirtualFiles();
+private:
+};
+
+InitVirtualFiles::InitVirtualFiles()
+{
+	init_virtual_files();
 }
 
-static int foo=init();
+InitVirtualFiles::~InitVirtualFiles()
+{
+	uninit_virtual_files();
+}
+
+InitVirtualFiles InitVirtualFilesInstance;
 
 } // namespace virtualfile
 } // namespace unitex
