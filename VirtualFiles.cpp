@@ -467,13 +467,16 @@ static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * m
 	my_VFS->fnc_memFile_getList = my_memFile_getList;
 	my_VFS->fnc_memFile_releaseList = my_memFile_releaseList;
 
-	VFS_mutex = SyncBuildMutex();
+	
 }
 
 void init_virtual_files() {
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
+if (VFS_mutex == NULL) {
+	VFS_mutex = SyncBuildMutex();
+}
 
 if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
 	fatal_error("Cannot create virtual file system\n");
