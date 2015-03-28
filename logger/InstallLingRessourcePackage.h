@@ -45,26 +45,27 @@
 #endif
 
 namespace unitex {
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
     namespace logger {
-        extern "C" {
+*/
+//        extern "C" {
 #endif
 
-            /* */
 
-            extern const char* optstring_InstallLingRessourcePackage;
-            extern const struct option_TS lopts_InstallLingRessourcePackage[];
-            extern const char* usage_InstallLingRessourcePackage;
+    extern const char* optstring_InstallLingRessourcePackage;
+    extern const struct option_TS lopts_InstallLingRessourcePackage[];
+    extern const char* usage_InstallLingRessourcePackage;
 
-            int main_InstallLingRessourcePackage(int argc, char* const argv[]);
+    int main_InstallLingRessourcePackage(int argc, char* const argv[]);
 
 
 #ifdef __cplusplus
-        } // extern "C"
-    } // namespace logger
+//        } // extern "C"
+//    } // namespace logger
 } // namespace unitex
 #endif
 
@@ -72,7 +73,3 @@ namespace unitex {
 
 #endif
 
-
-
-/*
-*/

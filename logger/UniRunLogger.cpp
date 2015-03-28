@@ -65,11 +65,15 @@
 #endif
 
 namespace unitex {
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
 namespace logger {
+*/
+using namespace ::unitex::logger;
+
 
 class InstallLoggerForRunner
 {
@@ -2124,7 +2128,7 @@ UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* const argv[])
     return main_RunLog(argc,argv);
 }
 
-} // namespace logger
+//} // namespace logger
 } // namespace unitex
 
 #endif

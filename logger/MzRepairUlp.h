@@ -45,12 +45,14 @@
 #endif
 
 namespace unitex {
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
 namespace logger {
-extern "C" {
+*/
+//extern "C" {
 #endif
 
 /* */
@@ -59,12 +61,22 @@ extern const char* optstring_MzRepairUlp;
 extern const struct option_TS lopts_MzRepairUlp[];
 extern const char* usage_MzRepairUlp;
 
-int main_MzRepairUlp(int argc,char* const argv[]);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int main_MzRepairUlp(int argc,char* const argv[]);
 
 #ifdef __cplusplus
 } // extern "C"
-} // namespace logger
+#endif
+
+
+
+#ifdef __cplusplus
+//} // extern "C"
+//} // namespace logger
 } // namespace unitex
 #endif
 

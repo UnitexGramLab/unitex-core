@@ -46,15 +46,23 @@
 #endif
 
 namespace unitex {
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
 namespace logger {
-extern "C" {
+*/
+//extern "C" {
 #endif
 
 /* */
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
     EXEC_NOTRUN,
@@ -94,6 +102,10 @@ UNITEX_FUNC int UNITEX_CALL GetRunLogInfo(mainFunc** pfunc,const char** usage,co
 UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* const argv[]);
 
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 extern const char* optstring_RunLog;
 extern const struct option_TS lopts_RunLog[];
 extern const char* usage_RunLog;
@@ -102,8 +114,8 @@ int main_RunLog(int argc,char* const argv[]);
 
 
 #ifdef __cplusplus
-} // extern "C"
-} // namespace logger
+//} // extern "C"
+//} // namespace logger
 } // namespace unitex
 #endif
 

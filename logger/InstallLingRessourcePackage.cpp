@@ -52,12 +52,16 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+
 namespace unitex {
+/*
 #ifndef HAS_LOGGER_NAMESPACE
 #define HAS_LOGGER_NAMESPACE 1
 #endif
 
     namespace logger {
+*/
+using namespace ::unitex::logger;
 
         extern const char* optstring_InstallLingRessourcePackage;
         extern const struct option_TS lopts_InstallLingRessourcePackage[];
@@ -355,7 +359,7 @@ namespace unitex {
             return success ? 0 : 1;
         }
 
-    } // namespace unitex
-} // namespace logger
+//    } // namespace logger
+} // namespace unitex
 
 #endif
