@@ -61,7 +61,12 @@ namespace unitex {
 
     namespace logger {
 */
-using namespace ::unitex::logger;
+
+
+#ifdef HAS_LOGGER_NAMESPACE
+	using namespace ::unitex::logger;
+#endif
+
 
         extern const char* optstring_InstallLingRessourcePackage;
         extern const struct option_TS lopts_InstallLingRessourcePackage[];
@@ -94,7 +99,16 @@ using namespace ::unitex::logger;
             "         [-g filename_list_graph.txt] [-d filename_list_dictionary.txt]\n"
             "   File must have been created on installing\n"
             "   List File are not removed (you can uses DuplicateFile -d)\n"
-            "\n";
+            "\n"
+			"\n"
+			"  LingRessourcePackageFileName is a full pathname to a linguistic resource package file\n"
+			"      which is an uncompressed zip-like file collection.n"
+			"    This file can be create with with zip (using -0 -X options) or PackFile in Unitex\n"
+			"    Without -G, files ending with .fst2 will be persisted as graph\n"
+			"    Without -D, files ending with .bin (with an associated .inf) or .bin2 will be persisted as dict.\n"
+			"    Without -A, files ending with Alphabet.txt will be persisted as alphabet.\n"
+			""
+			;
 
         static void usage() {
             u_printf("%S", COPYRIGHT);
