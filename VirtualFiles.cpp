@@ -485,7 +485,7 @@ t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
 if (VFS_mutex != NULL) {
-	SyncReleaseMutex(VFS_mutex);
+	SyncDeleteMutex(VFS_mutex);
 	VFS_mutex = NULL;
 }
 	if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
