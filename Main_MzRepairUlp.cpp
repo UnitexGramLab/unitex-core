@@ -36,7 +36,10 @@
 #include "logger/MzRepairUlp.h"
 
 using namespace unitex;
-using namespace unitex::logger;
+
+#ifdef HAS_LOGGER_NAMESPACE
+	using namespace ::unitex::logger;
+#endif
 
 int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
