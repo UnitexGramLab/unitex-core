@@ -474,10 +474,6 @@ void init_virtual_files() {
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
-if (VFS_mutex != NULL) {
-	SyncReleaseMutex(VFS_mutex);
-	VFS_mutex = NULL;
-}
 
 if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
 	fatal_error("Cannot create virtual file system\n");
@@ -485,9 +481,13 @@ if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
 }
 
 void uninit_virtual_files() {
-	t_fileio_func_array_extensible my_VFS;
-	fill_fileio_func_array_extensible(&my_VFS);
+t_fileio_func_array_extensible my_VFS;
+fill_fileio_func_array_extensible(&my_VFS);
 
+if (VFS_mutex != NULL) {
+	SyncReleaseMutex(VFS_mutex);
+	VFS_mutex = NULL;
+}
 	if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
 		fatal_error("Cannot uninstall virtual file system\n");
 	}
