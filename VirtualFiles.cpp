@@ -487,13 +487,14 @@ void uninit_virtual_files() {
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
+if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
+	fatal_error("Cannot uninstall virtual file system\n");
+}
+
 if (VFS_mutex != NULL) {
 	SyncDeleteMutex(VFS_mutex);
 	VFS_mutex = NULL;
 }
-	if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
-		fatal_error("Cannot uninstall virtual file system\n");
-	}
 }
 
 /**

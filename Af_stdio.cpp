@@ -59,8 +59,6 @@ struct List_AbstractFileSpace* p_abstract_file_space_list=NULL;
 
 
 
-
-
 static void FillFuncArrayExtensibleFromFuncArrayExtensible(t_fileio_func_array_extensible *func_array_extensible_res,
 	                                                       const t_fileio_func_array_extensible* func_array_extensible_src) 
 {
@@ -88,10 +86,18 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceExtensible(const t_fileio_func_a
 	if (p_abstract_file_space_list == NULL)
 		p_abstract_file_space_list = new_item;
 	else {
-		struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;
-		while ((tmp->next) != NULL)
-			tmp = tmp->next;
-		tmp->next = new_item;
+		// give priority to optimized filesystem with fnc_memLowLevelSetSizeReservation function
+		int put_at_first = (func_array_extensible_param->fnc_memLowLevelSetSizeReservation) ? 1 : 0;
+		if (put_at_first) {
+			new_item->next = p_abstract_file_space_list;
+			p_abstract_file_space_list = new_item;
+		}
+		else {
+			struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;
+			while ((tmp->next) != NULL)
+				tmp = tmp->next;
+			tmp->next = new_item;
+		}
 	}
 
 	if ((new_item->afs.func_array.fnc_Init_FileSpace) != NULL)
@@ -99,6 +105,7 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceExtensible(const t_fileio_func_a
 
 	return 1;
 }
+
 
 UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceExtensible(const t_fileio_func_array_extensible* func_array_extensible_param,void* privateSpacePtr)
 {
@@ -129,7 +136,6 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceExtensible(const t_fileio_fun
 	}
 	return 0;
 }
-
 
 
 UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled()
