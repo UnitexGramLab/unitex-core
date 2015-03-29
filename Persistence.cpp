@@ -42,20 +42,39 @@ typedef struct PS_ {
 } PersistentStructure;
 
 
+class PersistenceMutexContainer
+{
+public:
+	PersistenceMutexContainer();
+	~PersistenceMutexContainer();
+	inline SYNC_Mutex_OBJECT getMutex() { return mutex; }
+private:
+	SYNC_Mutex_OBJECT mutex ;
+};
+
+PersistenceMutexContainer::PersistenceMutexContainer() :
+  mutex(SyncBuildMutex())
+{
+}
+
+PersistenceMutexContainer::~PersistenceMutexContainer()
+{
+	SyncReleaseMutex(mutex);
+	mutex = NULL;
+}
+
+static PersistenceMutexContainer PersistenceMutexContainerInstance;
+
 static PersistentStructure* list=NULL;
-#ifdef UNITEX_LIBRARY
-static SYNC_Mutex_OBJECT mutex=SyncBuildMutex();
-#else
-static SYNC_Mutex_OBJECT mutex=NULL;
-#endif
+
+#define Persistence_Mutex (PersistenceMutexContainerInstance.getMutex())
 
 /**
  * Returns the persistent pointer associated to the given file name,
  * if any; NULL otherwise.
  */
 void* get_persistent_structure(const char* filename) {
-if (mutex==NULL) return NULL;
-SyncGetMutex(mutex);
+SyncGetMutex(Persistence_Mutex);
 if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
 	filename=filename+strlen(VIRTUAL_FILE_PFX);
 }
@@ -68,13 +87,13 @@ while (tmp!=NULL) {
 	}
 	tmp=tmp->next;
 }
-SyncReleaseMutex(mutex);
+SyncReleaseMutex(Persistence_Mutex);
 return res;
 }
 
 
 static PersistentStructure* remove_filename(PersistentStructure* l,const char* filename) {
-if (mutex==NULL || l==NULL) return NULL;
+if (l==NULL) return NULL;
 if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
 	filename=filename+strlen(VIRTUAL_FILE_PFX);
 }
@@ -94,14 +113,13 @@ return l;
  * If ptr is NULL, then the pointer is removed from the list.
  */
 void set_persistent_structure(const char* filename,void* ptr) {
-if (mutex==NULL) return;
-SyncGetMutex(mutex);
+SyncGetMutex(Persistence_Mutex);
 if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
 	filename=filename+strlen(VIRTUAL_FILE_PFX);
 }
 if (ptr==NULL) {
 	list=remove_filename(list,filename);
-	SyncReleaseMutex(mutex);
+	SyncReleaseMutex(Persistence_Mutex);
 	return;
 }
 PersistentStructure* tmp=(PersistentStructure*)malloc(sizeof(PersistentStructure));
@@ -115,15 +133,14 @@ if (tmp->name==NULL) {
 tmp->ptr=ptr;
 tmp->next=list;
 list=tmp;
-SyncReleaseMutex(mutex);
+SyncReleaseMutex(Persistence_Mutex);
 }
 
 /**
  * Returns 1 if the given pointer is a persistent one; 0 otherwise.
  */
 int is_persistent_structure(void* ptr) {
-if (mutex==NULL) return 0;
-SyncGetMutex(mutex);
+SyncGetMutex(Persistence_Mutex);
 int res=0;
 PersistentStructure* tmp=list;
 while (tmp!=NULL) {
@@ -133,8 +150,11 @@ while (tmp!=NULL) {
 	}
 	tmp=tmp->next;
 }
-SyncReleaseMutex(mutex);
+SyncReleaseMutex(Persistence_Mutex);
 return res;
 }
+
+
+
 
 } // namespace unitex

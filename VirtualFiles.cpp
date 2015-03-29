@@ -42,9 +42,13 @@ using namespace unitex;
 namespace unitex {
 namespace virtualfile {
 
+
+static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * my_VFS);
+
+
 /**
- * Description of a VFS inode.
- */
+* Description of a VFS inode.
+*/
 typedef struct VFS_INODE_ {
 	struct VFS* vfs;
 	char* name;
@@ -53,7 +57,7 @@ typedef struct VFS_INODE_ {
 	unsigned long capacity;
 	int open_in_write_mode;
 	/* How many open pointers have we on this inode ?
-	 * If we don't know, we can't make remove operation safely */
+	* If we don't know, we can't make remove operation safely */
 	int n_open;
 	int to_remove;
 
@@ -62,8 +66,8 @@ typedef struct VFS_INODE_ {
 
 
 /**
- * Description of a file pointer returned by our open.
- */
+* Description of a file pointer returned by our open.
+*/
 typedef struct {
 	VFS_INODE* inode;
 	TYPEOPEN_MF open_type;
@@ -71,19 +75,60 @@ typedef struct {
 } VFS_FILE;
 
 
-static SYNC_Mutex_OBJECT VFS_mutex=NULL;
-
-
 /**
- * Description of the VFS space
- */
+* Description of the VFS space
+*/
 struct VFS {
 	const char* pfx;
 	int default_block_size;
 	VFS_INODE* list;
 };
 
-static struct VFS VFS_id={VIRTUAL_FILE_PFX,4096,NULL};
+
+static struct VFS VFS_id = { VIRTUAL_FILE_PFX, 4096, NULL };
+
+
+
+class InitVirtualFiles
+{
+public:
+	InitVirtualFiles();
+	~InitVirtualFiles();
+	inline SYNC_Mutex_OBJECT getMutex() { return mutex; };
+private:
+	SYNC_Mutex_OBJECT mutex;
+};
+
+InitVirtualFiles::InitVirtualFiles()
+	: mutex(SyncBuildMutex())
+{
+t_fileio_func_array_extensible my_VFS;
+fill_fileio_func_array_extensible(&my_VFS);
+
+if (!AddAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
+	fatal_error("Cannot create virtual file system\n");
+}
+}
+
+InitVirtualFiles::~InitVirtualFiles()
+{
+t_fileio_func_array_extensible my_VFS;
+fill_fileio_func_array_extensible(&my_VFS);
+
+if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
+	fatal_error("Cannot uninstall virtual file system\n");
+}
+
+if (mutex != NULL) {
+	SyncDeleteMutex(mutex);
+	mutex = NULL;
+}
+}
+
+static InitVirtualFiles InitVirtualFilesInstance;
+
+
+#define VFS_mutex (InitVirtualFilesInstance.getMutex())
 
 
 /**
@@ -466,35 +511,6 @@ static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * m
 	my_VFS->fnc_memFileRename = my_fnc_memFileRename;
 	my_VFS->fnc_memFile_getList = my_memFile_getList;
 	my_VFS->fnc_memFile_releaseList = my_memFile_releaseList;
-
-	
-}
-
-void init_virtual_files() {
-t_fileio_func_array_extensible my_VFS;
-fill_fileio_func_array_extensible(&my_VFS);
-
-if (VFS_mutex == NULL) {
-	VFS_mutex = SyncBuildMutex();
-}
-
-if (!AddAbstractFileSpaceExtensible(&my_VFS,&VFS_id)) {
-	fatal_error("Cannot create virtual file system\n");
-}
-}
-
-void uninit_virtual_files() {
-t_fileio_func_array_extensible my_VFS;
-fill_fileio_func_array_extensible(&my_VFS);
-
-if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
-	fatal_error("Cannot uninstall virtual file system\n");
-}
-
-if (VFS_mutex != NULL) {
-	SyncDeleteMutex(VFS_mutex);
-	VFS_mutex = NULL;
-}
 }
 
 /**
@@ -574,25 +590,6 @@ while (VFS_id.list!=NULL) {
 
 
 
-class InitVirtualFiles
-{
-public:
-	InitVirtualFiles();
-	~InitVirtualFiles();
-private:
-};
-
-InitVirtualFiles::InitVirtualFiles()
-{
-	init_virtual_files();
-}
-
-InitVirtualFiles::~InitVirtualFiles()
-{
-	uninit_virtual_files();
-}
-
-InitVirtualFiles InitVirtualFilesInstance;
 
 } // namespace virtualfile
 } // namespace unitex
