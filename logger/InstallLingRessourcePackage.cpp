@@ -64,7 +64,7 @@ namespace unitex {
 
 
 #ifdef HAS_LOGGER_NAMESPACE
-	using namespace ::unitex::logger;
+    using namespace ::unitex::logger;
 #endif
 
 
@@ -100,15 +100,15 @@ namespace unitex {
             "   File must have been created on installing\n"
             "   List File are not removed (you can uses DuplicateFile -d)\n"
             "\n"
-			"\n"
-			"  LingRessourcePackageFileName is a full pathname to a linguistic resource package file\n"
-			"      which is an uncompressed zip-like file collection.n"
-			"    This file can be create with with zip (using -0 -X options) or PackFile in Unitex\n"
-			"    Without -G, files ending with .fst2 will be persisted as graph\n"
-			"    Without -D, files ending with .bin (with an associated .inf) or .bin2 will be persisted as dict.\n"
-			"    Without -A, files ending with Alphabet.txt will be persisted as alphabet.\n"
-			""
-			;
+            "\n"
+            "  LingRessourcePackageFileName is a full pathname to a linguistic resource package file\n"
+            "      which is an uncompressed zip-like file collection.n"
+            "    This file can be create with with zip (using -0 -X options) or PackFile in Unitex\n"
+            "    Without -G, files ending with .fst2 will be persisted as graph\n"
+            "    Without -D, files ending with .bin (with an associated .inf) or .bin2 will be persisted as dict.\n"
+            "    Without -A, files ending with Alphabet.txt will be persisted as alphabet.\n"
+            ""
+            ;
 
         static void usage() {
             u_printf("%S", COPYRIGHT);
@@ -239,6 +239,7 @@ namespace unitex {
             if (vars->optind != argc - 1) {
                 fatal_error("Invalid arguments: rerun with --help\n");
             }*/
+            free_OptVars(vars);
 
             if (transform_path_separator == -1)
             {
@@ -333,7 +334,7 @@ namespace unitex {
             else // uninstall
             {
                 if (verbose)
-                    u_printf("Uninstall resource\n");
+                    u_printf("Uninstall resource from package %s to prefix %s\n", Package_FileName, Prefix_Name);
 
                 if ((*Package_FileName) != '\0')
                 {
@@ -341,7 +342,8 @@ namespace unitex {
                     int result_uninstall =
                         uninstall_ling_resource_package(Package_FileName, Prefix_Name,
                         transform_path_separator,
-                        persist_file, persist_graph, persist_dictionary, persist_alphabet); if (!result_uninstall)
+                        persist_file, persist_graph, persist_dictionary, persist_alphabet);
+                    if (!result_uninstall)
                     {
                         error("error on uninstalling resource from package %s on prefix\n", Package_FileName, Prefix_Name);
                         success = 0;
@@ -349,6 +351,9 @@ namespace unitex {
                 }
                 else // uninstall by list
                 {
+                    if (verbose)
+                        u_printf("Uninstall resource from lists file\n");
+
                     char** list_installed_file = read_list_files_from_file(ListFile_FileName);;
                     char** list_installed_graph = read_list_files_from_file(ListGraph_FileName);
                     char** list_installed_dictionary = read_list_files_from_file(ListDico_FileName);
