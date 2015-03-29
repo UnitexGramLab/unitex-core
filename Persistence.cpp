@@ -59,7 +59,7 @@ PersistenceMutexContainer::PersistenceMutexContainer() :
 
 PersistenceMutexContainer::~PersistenceMutexContainer()
 {
-	SyncReleaseMutex(mutex);
+	SyncDeleteMutex(mutex);
 	mutex = NULL;
 }
 
