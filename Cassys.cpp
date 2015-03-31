@@ -138,17 +138,24 @@ int main_Cassys(int argc,char* const argv[]) {
 
     char alphabet_file_name[FILENAME_MAX];
     char transducer_filename_prefix[FILENAME_MAX];
-    char* tmp_work_dir = NULL;
     bool has_alphabet = false;
     char negation_operator[0x20];
 
     VersatileEncodingConfig vec=VEC_DEFAULT;
-    int must_do_cleanup = 0;
     int must_create_directory = 1;
     int in_place = 0;
     int realign_token_graph_pointer = 0;
     int translate_path_separator_to_native = 0;
     int dump_graph = 0; // By default, don't build a .dot file.
+
+#ifdef CASSYS_DEFAULT_WORK_DIR
+    int must_do_temp_cleanup = 1;
+    char* temp_work_dir = strdup(CASSYS_DEFAULT_WORK_DIR);
+#else
+    int must_do_temp_cleanup = 0;
+    char* temp_work_dir = NULL;
+#endif
+
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
     vector_ptr * tokenize_additional_args = new_vector_ptr();
@@ -174,8 +181,8 @@ int main_Cassys(int argc,char* const argv[]) {
                   if (morpho_dic != NULL) {
                      free(morpho_dic);
                   }
-                  if (tmp_work_dir != NULL) {
-                      free(tmp_work_dir);
+                  if (temp_work_dir != NULL) {
+                      free(temp_work_dir);
                   }
                   free_vector_ptr(tokenize_additional_args, free);
                   free_vector_ptr(locate_additional_args, free);
@@ -283,7 +290,7 @@ int main_Cassys(int argc,char* const argv[]) {
             break;
         }
         case 'b': {
-            must_do_cleanup = 1;
+            must_do_temp_cleanup = 1;
             break;
         }
         case 'd': {
@@ -292,11 +299,11 @@ int main_Cassys(int argc,char* const argv[]) {
         }
         case 'p' : {
             if (vars->optarg[0] != '\0') {
-                   if (tmp_work_dir != NULL) {
-                      free(tmp_work_dir);
+                   if (temp_work_dir != NULL) {
+                      free(temp_work_dir);
                    }
-                   tmp_work_dir = strdup(vars->optarg);
-                    if (tmp_work_dir == NULL) {
+                   temp_work_dir = strdup(vars->optarg);
+                    if (temp_work_dir == NULL) {
                         fatal_alloc_error("main_Cassys");
                     }
                 
@@ -378,14 +385,14 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name, translate_path_separator_to_native);
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
 
-    cascade(text_file_name, in_place, must_create_directory, must_do_cleanup, tmp_work_dir,
+    cascade(text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
         transducer_list, alphabet_file_name, negation_operator, 
         &vec, morpho_dic, 
         tokenize_additional_args, locate_additional_args, concord_additional_args,
         dump_graph, realign_token_graph_pointer);
 
-    if (tmp_work_dir != NULL){
-        free(tmp_work_dir);
+    if (temp_work_dir != NULL){
+        free(temp_work_dir);
     }
     if(morpho_dic != NULL){
         free(morpho_dic);
@@ -405,7 +412,7 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  *
  */
-int cascade(const char* original_text, int in_place, int must_create_directory,  int must_do_cleanup, const char* tmp_work_dir,
+int cascade(const char* original_text, int in_place, int must_create_directory,  int must_do_temp_cleanup, const char* temp_work_dir,
     fifo* transducer_list, const char *alphabet,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
@@ -416,7 +423,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 	cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
 
-	if (must_do_cleanup) {
+	if (must_do_temp_cleanup) {
 		in_place = 1;
 	}
 	const char* text = original_text;
@@ -424,38 +431,38 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 	char * build_work_text_snt_path = NULL;
 	char * build_work_text_csc_path = NULL;
 	char * build_work_text_csc_work_path = NULL;
-	size_t len_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
+	size_t len_work_dir = (temp_work_dir == NULL) ? 0 : strlen(temp_work_dir);
 
-	if ((len_work_dir > 0) || (must_do_cleanup != 0)) {
-		size_t len_tmp_work_dir = (tmp_work_dir == NULL) ? 0 : strlen(tmp_work_dir);
+	if ((len_work_dir > 0) || (must_do_temp_cleanup != 0)) {
+		size_t len_temp_work_dir = (temp_work_dir == NULL) ? 0 : strlen(temp_work_dir);
 
-			build_work_text_snt_path = (char*)malloc(len_tmp_work_dir + (strlen(original_text) * 2) + 0x40);
+			build_work_text_snt_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
 			if (build_work_text_snt_path == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
-			build_work_text_csc_path = (char*)malloc(len_tmp_work_dir + (strlen(original_text) * 2) + 0x40);
+			build_work_text_csc_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
 			if (build_work_text_csc_path == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
-			build_work_text_csc_work_path = (char*)malloc(len_tmp_work_dir + (strlen(original_text) * 2) + 0x40);
+			build_work_text_csc_work_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
 			if (build_work_text_csc_work_path == NULL) {
 				fatal_alloc_error("load_transducer_from_linked_list");
 				exit(1);
 			}
 
-			if (len_tmp_work_dir > 0) {
-				build_text = (char*)malloc(len_tmp_work_dir + strlen(original_text) + 0x10);
+			if (len_temp_work_dir > 0) {
+				build_text = (char*)malloc(len_temp_work_dir + strlen(original_text) + 0x10);
 				if (build_text == NULL) {
 					fatal_alloc_error("load_transducer_from_linked_list");
 					exit(1);
 				}
 
-				strcpy(build_text, (len_tmp_work_dir > 0) ? tmp_work_dir : original_text);
-				char latest_char = *(tmp_work_dir + strlen(tmp_work_dir) - 1);
+				strcpy(build_text, (len_temp_work_dir > 0) ? temp_work_dir : original_text);
+				char latest_char = *(temp_work_dir + strlen(temp_work_dir) - 1);
 				if ((latest_char != '\\') && (latest_char != '/')) {
 					strcat(build_text, PATH_SEPARATOR_STRING);
 				}
@@ -473,7 +480,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
 			get_csc_path(text, build_work_text_csc_path);
 			
-			if (len_tmp_work_dir > 0) {
+			if (len_temp_work_dir > 0) {
 				make_directory(build_work_text_snt_path);
 			}
 		}
@@ -639,7 +646,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 	free_cassys_tokens_allocation_tool(tokens_allocation_tool);
 
 
-	if (must_do_cleanup != 0) {
+	if (must_do_temp_cleanup != 0) {
 		if (build_text != NULL) {
 			af_remove(build_text);
 		}
