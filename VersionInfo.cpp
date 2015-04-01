@@ -102,7 +102,7 @@ static void fill_compiler_info(unichar* s) {
 
 #elif defined(__GNUC__) || defined(__GNUG__)
 
-    #ifdef (__MINGW32__)
+    #if defined(__MINGW32__)
     #define compiler_name "MinGW32 GCC"
     #elif defined(__MINGW64__)
     #define compiler_name "MinGW64 GCC"
