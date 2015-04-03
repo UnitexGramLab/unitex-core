@@ -107,6 +107,10 @@ namespace unitex {
             "    Without -G, files ending with .fst2 will be persisted as graph\n"
             "    Without -D, files ending with .bin (with an associated .inf) or .bin2 will be persisted as dict.\n"
             "    Without -A, files ending with Alphabet.txt will be persisted as alphabet.\n"
+            "\n"
+            "other options:"
+            "  -n/--no_translate_path_separator: do not translate separator in filename from pack\n"
+            "  -t/--translate_path_separator_to_native: translate separator in filename from pack to current platform\n"
             ""
             ;
 
@@ -116,7 +120,7 @@ namespace unitex {
         }
 
 
-        const char* optstring_InstallLingRessourcePackage = ":vuFGDAf:g:d:a:hx:p:k:q:";
+        const char* optstring_InstallLingRessourcePackage = ":vtnuFGDAf:g:d:a:hx:p:k:q:";
         const struct option_TS lopts_InstallLingRessourcePackage[] = {
             { "input_encoding", required_argument_TS, NULL, 'k' },
             { "output_encoding", required_argument_TS, NULL, 'q' },
@@ -135,6 +139,8 @@ namespace unitex {
             { "uninstall", no_argument_TS, NULL, 'u' },
             { "prefix", required_argument_TS, NULL, 'x' },
             { "package", required_argument_TS, NULL, 'p' },
+            { "no_translate_path_separator", no_argument_TS, NULL, 'n' },
+            { "translate_path_separator_to_native", no_argument_TS, NULL, 't' },
             { NULL, no_argument_TS, NULL, 0 }
         };
 
@@ -167,6 +173,10 @@ namespace unitex {
             while (EOF != (val = getopt_long_TS(argc, argv, optstring_InstallLingRessourcePackage, lopts_InstallLingRessourcePackage, &index, vars))) {
                 switch (val) {
 
+
+                case 't': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM; break;
+
+                case 'n': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED; break;
 
                 case 'k': if (vars->optarg[0] == '\0') {
                               fatal_error("Empty input_encoding argument\n");
