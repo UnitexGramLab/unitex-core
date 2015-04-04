@@ -76,7 +76,9 @@
 # If you want to generate a static library, yse:
 # make STATICLIB=yes
 # => creates libunitex.a
-
+#
+# you can add parameters to ./configure when build TRE with
+# TRE_CONFIGURE_OPTION (by example for cross compiling) 
 
 
 
@@ -106,8 +108,9 @@ ifeq ($(SYSTEM),linux-like)
 ###################
 ###################
 CC      = g++
-CC_GCC   = gcc
-#CC      = gcc -x c
+CC_GCC  = gcc
+AR      = ar
+#CC     = gcc -x c
 RM      = rm -f
 INSTALL = cp
 NAME    = unitex-src
@@ -1347,9 +1350,9 @@ $(TRE_SRC): $(TRE_TGZ)
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
-	@echo "Configure TRE..."
+	@echo "Configure TRE for direct build..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION)
 	touch .libtre-done
 else
 
@@ -1369,7 +1372,7 @@ endif
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library ..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION)
 	mkdir -p libtre/lib libtre/include libtre/obj
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-stack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-stack.o
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-parse.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-parse.o
@@ -1383,15 +1386,15 @@ endif
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-compile.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-compile.o
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-match-backtrack.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-match-backtrack.o
 	$(CC_GCC) -c $(TRE_SRC)/lib/tre-mem.c $(TRE_GCC_OPTIONS) -o libtre/obj/tre-mem.o
-	cd libtre/obj && ar rcs ../lib/libtre.a *.o
+	cd libtre/obj && $(AR) rcs ../lib/libtre.a *.o
 	touch .libtre-done
 else
 .libtre-done: $(TRE_SRC)
-	@echo "Making TRE library ..."
+	@echo "Making TRE library using TRE makefile ..."
 	chmod +x $(TRE_SRC)/configure
-	cd $(TRE_SRC) && ./configure --disable-shared --enable-static && make
+	cd $(TRE_SRC) && ./configure --disable-shared --enable-static $(TRE_CONFIGURE_OPTION) && make
 	mkdir -p libtre/lib libtre/include
-	cd $(TRE_SRC)/lib && ar rcs libtre.a *.o
+	cd $(TRE_SRC)/lib && $(AR) rcs libtre.a *.o
 	cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
 	touch .libtre-done
 endif
