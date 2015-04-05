@@ -459,9 +459,33 @@
 			<File
 				RelativePath="..\Cassys.cpp"
 				>
+			</File>   
+			<File
+				RelativePath="..\Cassys_concord.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_external_program.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_io.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_lexical_tags.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\Cassys_tokens.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_transducer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_xml_output.cpp"
 				>
 			</File>
 			<File
@@ -1348,6 +1372,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\logger\UnpackFileTool.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\logger\FileUnPack.h"
 					>
 				</File>
@@ -1469,6 +1497,38 @@
 				</File>
 				<File
 					RelativePath="..\logger\UniRunLogger.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\LingRessourcePackage.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\LingRessourcePackage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\InstallLingRessourcePackage.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\InstallLingRessourcePackage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\RunTools.h"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\RunTools.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\UniRunScript.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\logger\UniRunScript.h"
 					>
 				</File>
 			</Filter>

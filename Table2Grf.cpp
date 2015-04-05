@@ -524,7 +524,7 @@ dest[pos_in_dest]='\0';
 
 
 
-int co_accessibility(struct reference_graph* g,int e) {
+static int co_accessibility(struct reference_graph* g,int e) {
 int i;
 if (g->tab[e]->mark) return 1;
 if (g->tab[e]->content[0]=='\0') return 0;
@@ -542,11 +542,11 @@ return 1;
 
 
 
-int clean_graph(struct reference_graph *G) {
+static int clean_graph(struct reference_graph *G) {
 int i,n_states,current_state,j;
 int *t;
 
-if (G->tab[0]->content==NULL) {
+if ((G->tab[0])==NULL) {
    fatal_error("Internal error in clean_graph: NULL for initial state content\n");
 }
 if (G->tab[0]->content[0]=='\0') {

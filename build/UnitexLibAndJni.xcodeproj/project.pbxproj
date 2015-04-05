@@ -439,6 +439,10 @@
 		2287C97F151E081600A820F3 /* PersistenceInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2287C97D151E081600A820F3 /* PersistenceInterface.h */; };
 		228B5BE11606672B006DAABF /* SyncToolPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */; };
 		228B5BE21606672B006DAABF /* SyncTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 228B5BE01606672B006DAABF /* SyncTool.h */; };
+		228BA8D31AD130BD0080BB31 /* RunTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228BA8CF1AD130BD0080BB31 /* RunTools.cpp */; };
+		228BA8D41AD130BD0080BB31 /* RunTools.h in Headers */ = {isa = PBXBuildFile; fileRef = 228BA8D01AD130BD0080BB31 /* RunTools.h */; };
+		228BA8D51AD130BD0080BB31 /* UniRunScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228BA8D11AD130BD0080BB31 /* UniRunScript.cpp */; };
+		228BA8D61AD130BD0080BB31 /* UniRunScript.h in Headers */ = {isa = PBXBuildFile; fileRef = 228BA8D21AD130BD0080BB31 /* UniRunScript.h */; };
 		22942C9E18097E7100057308 /* SelectOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22942C9C18097E7100057308 /* SelectOutput.cpp */; };
 		22942C9F18097E7100057308 /* SelectOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 22942C9D18097E7100057308 /* SelectOutput.h */; };
 		22C27FDA14AF6D63006A1F5D /* CharNames.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FA914AF6D62006A1F5D /* CharNames.h */; };
@@ -943,6 +947,10 @@
 		2287C97D151E081600A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
 		228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SyncToolPosix.cpp; path = ../SyncToolPosix.cpp; sourceTree = "<group>"; };
 		228B5BE01606672B006DAABF /* SyncTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SyncTool.h; path = ../SyncTool.h; sourceTree = "<group>"; };
+		228BA8CF1AD130BD0080BB31 /* RunTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RunTools.cpp; path = ../logger/RunTools.cpp; sourceTree = "<group>"; };
+		228BA8D01AD130BD0080BB31 /* RunTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RunTools.h; path = ../logger/RunTools.h; sourceTree = "<group>"; };
+		228BA8D11AD130BD0080BB31 /* UniRunScript.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UniRunScript.cpp; path = ../logger/UniRunScript.cpp; sourceTree = "<group>"; };
+		228BA8D21AD130BD0080BB31 /* UniRunScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UniRunScript.h; path = ../logger/UniRunScript.h; sourceTree = "<group>"; };
 		22942C9C18097E7100057308 /* SelectOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SelectOutput.cpp; path = ../SelectOutput.cpp; sourceTree = SOURCE_ROOT; };
 		22942C9D18097E7100057308 /* SelectOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SelectOutput.h; path = ../SelectOutput.h; sourceTree = SOURCE_ROOT; };
 		22C27FA914AF6D62006A1F5D /* CharNames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CharNames.h; path = ../CharNames.h; sourceTree = SOURCE_ROOT; };
@@ -1560,6 +1568,10 @@
 			children = (
 				22E56CA81AC0BD390049E174 /* InstallLingRessourcePackage.cpp */,
 				22E56CA91AC0BD390049E174 /* InstallLingRessourcePackage.h */,
+				228BA8CF1AD130BD0080BB31 /* RunTools.cpp */,
+				228BA8D01AD130BD0080BB31 /* RunTools.h */,
+				228BA8D11AD130BD0080BB31 /* UniRunScript.cpp */,
+				228BA8D21AD130BD0080BB31 /* UniRunScript.h */,
 				22E56CAA1AC0BD390049E174 /* LingRessourcePackage.cpp */,
 				22E56CAB1AC0BD390049E174 /* LingRessourcePackage.h */,
 				22F5F1971800BAFE002F0040 /* PackFile.cpp */,
@@ -1636,6 +1648,7 @@
 				222AFF1F1411336600F74409 /* MzToolsUlp.h in Headers */,
 				222AFF211411336600F74409 /* ReworkArg.h in Headers */,
 				222AFF221411336600F74409 /* SyncLogger.h in Headers */,
+				228BA8D41AD130BD0080BB31 /* RunTools.h in Headers */,
 				222AFF251411336600F74409 /* UniLogger.h in Headers */,
 				222AFF281411336600F74409 /* UniRunLogger.h in Headers */,
 				222AFF291411336600F74409 /* AbstractCallbackFuncModifier.h in Headers */,
@@ -1688,6 +1701,7 @@
 				222AFF821411336600F74409 /* ElagFunctions.h in Headers */,
 				222AFF841411336600F74409 /* ElagRulesCompilation.h in Headers */,
 				222AFF861411336600F74409 /* ElagStateSet.h in Headers */,
+				228BA8D61AD130BD0080BB31 /* UniRunScript.h in Headers */,
 				222AFF881411336600F74409 /* Error.h in Headers */,
 				222AFF8A1411336600F74409 /* Evamb.h in Headers */,
 				222AFF8C1411336600F74409 /* Extract.h in Headers */,
@@ -2001,6 +2015,7 @@
 				222AFF911411336600F74409 /* File.cpp in Sources */,
 				222AFF941411336600F74409 /* Flatten.cpp in Sources */,
 				222AFF961411336600F74409 /* FlattenFst2.cpp in Sources */,
+				228BA8D51AD130BD0080BB31 /* UniRunScript.cpp in Sources */,
 				222AFF981411336600F74409 /* Fst2.cpp in Sources */,
 				222AFF9A1411336600F74409 /* Fst2Automaton.cpp in Sources */,
 				222AFF9C1411336600F74409 /* Fst2Check.cpp in Sources */,
@@ -2019,6 +2034,7 @@
 				222AFFB61411336600F74409 /* IOBuffer.cpp in Sources */,
 				222AFFB81411336600F74409 /* Korean.cpp in Sources */,
 				222AFFBA1411336600F74409 /* KrMwuDic.cpp in Sources */,
+				228BA8D31AD130BD0080BB31 /* RunTools.cpp in Sources */,
 				222AFFBC1411336600F74409 /* LanguageDefinition.cpp in Sources */,
 				222AFFBE1411336600F74409 /* LemmaTree.cpp in Sources */,
 				222AFFC01411336600F74409 /* LinearAutomaton2Txt.cpp in Sources */,

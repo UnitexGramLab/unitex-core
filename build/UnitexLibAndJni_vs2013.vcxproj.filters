@@ -66,6 +66,12 @@
     <ClCompile Include="..\logger\UniRunLogger.cpp">
       <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
+    <ClCompile Include="..\logger\RunTools.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\UniRunScript.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
     <ClCompile Include="..\tre-0.8.0\lib\regcomp.c">
       <Filter>Unitex-C++\TreLib</Filter>
     </ClCompile>
@@ -775,6 +781,12 @@
     </ClInclude>
     <ClInclude Include="..\logger\UniRunLogger.h">
       <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\RunTools.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\UniRunScript.h">
+      <Filter>Source Files\logger</Filter>
     </ClInclude>
     <ClInclude Include="..\AbstractCallbackFuncModifier.h">
       <Filter>Unitex-C++</Filter>

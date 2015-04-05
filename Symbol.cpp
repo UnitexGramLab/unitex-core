@@ -924,6 +924,8 @@ void symbols_dump(const symbol_t * s) {
 /**
  * This function checks whether the given string is a valid DELAF tag token or not.
  */
+// this function is commented because it is unused
+/*
 static inline int check_text_label(unichar* label) {
 if (label==NULL) {
    error("NULL error in check_text_label\n");
@@ -934,12 +936,12 @@ if (label[0]=='\0') {
    return -1;
 }
 if (label[0]=='{' && label[1]!='\0') {
-   /* If we have something that looks like a tag token of the form {__,__.__} */
+   // If we have something that looks like a tag token of the form {__,__.__}
    return (check_tag_token(label,1)==1)?0:-1;
 }
 return 0;
 }
-
+*/
 
 /**
  * Loads a tag that is DELAF entry of the form {form,canonic.POS[+traits]*[:flex]*}.

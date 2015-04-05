@@ -627,8 +627,32 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Cassys_concord.cpp"
+			>
+			</File>
+			<File
+				RelativePath="..\Cassys_external_program.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_io.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_lexical_tags.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Cassys_tokens.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\Cassys_transducer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Cassys_xml_output.cpp"
+			>
 			</File>
 			<File
 				RelativePath="..\CheckDic.cpp"

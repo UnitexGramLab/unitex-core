@@ -77,6 +77,12 @@
     <ClInclude Include="..\logger\UniRunLogger.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
+    <ClInclude Include="..\logger\RunTools.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\UniRunScript.h">
+      <Filter>Source Files\logger</Filter>
+    </ClInclude>
     <ClInclude Include="..\TransductionVariables.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -469,6 +475,12 @@
     </ClCompile>
     <ClCompile Include="..\logger\UniRunLogger.cpp">
       <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\RunTools.cpp">
+      <Filter>Unitex-C++\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\UniRunScript.cpp">
+      <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
     <ClCompile Include="..\Match.cpp">
       <Filter>Source Files</Filter>

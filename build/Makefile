@@ -1173,7 +1173,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
 UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
                   UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o \
                   LingRessourcePackage.o InstallLingRessourcePackage.o \
-                  FileUnPack.o ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o \
+                  FileUnPack.o ReworkArg.o UniRunLogger.o RunTools.o UniRunScript.o MzToolsUlp.o MzRepairUlp.o \
                   UnitexTool.o UnitexRevisionInfo.o Seq2Grf.o \
                   AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
@@ -1215,7 +1215,7 @@ UNITEXLIB_IO_OBJS = UnitexLibIO.o $(SYSLIBDIRIO)
 
 UNITEXLIB_PACK_RUNLOG_OBJS = UnpackFile.o UnpackFileTool.o PackFile.o PackFileTool.o FilePack.o FileUnPack.o FilePackCrc32.o FilePackIo.o \
                   LingRessourcePackage.o InstallLingRessourcePackage.o \
-                  ReworkArg.o UniRunLogger.o MzToolsUlp.o MzRepairUlp.o
+                  ReworkArg.o UniRunLogger.o RunTools.o UniRunScript.o MzToolsUlp.o MzRepairUlp.o
 
 UNITEX_JNI_OBJS = fr_umlv_unitex_jni_UnitexJni.o
 
@@ -1838,6 +1838,12 @@ ReworkArg.o: ../logger/ReworkArg.cpp
 
 UniRunLogger.o: ../logger/UniRunLogger.cpp
 	$(CC) -c ../logger/UniRunLogger.cpp $(OPTIONS)
+
+RunTools.o: ../logger/RunTools.cpp
+	$(CC) -c ../logger/RunTools.cpp $(OPTIONS)
+
+UniRunScript.o: ../logger/UniRunScript.cpp
+	$(CC) -c ../logger/UniRunScript.cpp $(OPTIONS)
 
 FilePack.o: ../logger/FilePack.cpp
 	$(CC) -c ../logger/FilePack.cpp $(OPTIONS)

@@ -275,7 +275,8 @@ if (tag_number==-1) {
 symbol_t* res=new_symbol_POS(a->POS,tag_number);
 int i;
 for (i=0;i<b->nb_features;i++) {
-   switch (a->feature[i]) {
+   // signed char cast prevent warning when compile with android ndk
+   switch ((signed char)(a->feature[i])) {
       case UNSPECIFIED: res->feature[i]=b->feature[i]; break;
 
       case LOCKED:

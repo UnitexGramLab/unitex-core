@@ -317,6 +317,8 @@
     <ClCompile Include="..\logger\UniLogger.cpp" />
     <ClCompile Include="..\logger\UniLoggerAutoInstall.cpp" />
     <ClCompile Include="..\logger\UniRunLogger.cpp" />
+    <ClCompile Include="..\logger\UniRunScript.cpp" />
+    <ClCompile Include="..\logger\RunTools.cpp" />
     <ClCompile Include="..\logger\UnpackFile.cpp" />
     <ClCompile Include="..\logger\UnpackFileTool.cpp" />
     <ClCompile Include="..\MappedFileHelperWin.cpp" />
@@ -568,6 +570,8 @@
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\logger\UniRunScript.h" />
+    <ClInclude Include="..\logger\RunTools.h" />
     <ClInclude Include="..\logger\UnpackFile.h" />
     <ClInclude Include="..\logger\UnpackFileTool.h" />
     <ClInclude Include="..\MappedFileHelper.h" />

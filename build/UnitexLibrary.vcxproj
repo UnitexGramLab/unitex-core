@@ -187,8 +187,6 @@
     <ClInclude Include="..\KeyWords_lib.h" />
     <ClInclude Include="..\LocateTrace.h" />
     <ClInclude Include="..\LocateTracePlugCallback.h" />
-    <ClInclude Include="..\logger\InstallLingRessourcePackage.h" />
-    <ClInclude Include="..\logger\LingRessourcePackage.h" />
     <ClInclude Include="..\logger\MzRepairUlp.h" />
     <ClInclude Include="..\logger\MzToolsUlp.h" />
     <ClInclude Include="..\logger\PackFile.h" />
@@ -217,6 +215,10 @@
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\logger\InstallLingRessourcePackage.h" />
+    <ClInclude Include="..\logger\LingRessourcePackage.h" />
+    <ClInclude Include="..\logger\UniRunScript.h" />
+    <ClInclude Include="..\logger\RunTools.h" />
     <ClInclude Include="..\UnitexLibDir.h" />
     <ClInclude Include="..\UnitexLibIO.h" />
     <ClInclude Include="..\Untokenize.h" />
@@ -310,8 +312,6 @@
     <ClCompile Include="..\KeyWords.cpp" />
     <ClCompile Include="..\KeyWords_lib.cpp" />
     <ClCompile Include="..\LoadInf.cpp" />
-    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp" />
-    <ClCompile Include="..\logger\LingRessourcePackage.cpp" />
     <ClCompile Include="..\logger\PackFile.cpp" />
     <ClCompile Include="..\logger\PackFileTool.cpp" />
     <ClCompile Include="..\logger\UnpackFile.cpp" />
@@ -465,6 +465,10 @@
     <ClCompile Include="..\logger\SyncLoggerWin.cpp" />
     <ClCompile Include="..\logger\UniLogger.cpp" />
     <ClCompile Include="..\logger\UniRunLogger.cpp" />
+    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp" />
+    <ClCompile Include="..\logger\LingRessourcePackage.cpp" />
+    <ClCompile Include="..\logger\UniRunScript.cpp" />
+    <ClCompile Include="..\logger\RunTools.cpp" />
     <ClCompile Include="..\tre-0.8.0\lib\regcomp.c" />
     <ClCompile Include="..\tre-0.8.0\lib\regerror.c" />
     <ClCompile Include="..\tre-0.8.0\lib\regexec.c" />
