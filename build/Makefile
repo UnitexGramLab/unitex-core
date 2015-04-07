@@ -11,12 +11,19 @@
 #
 #
 #
-#
 # The special command
 #
 #    make SYSTEM=mingw32
 #
 # can be used to generate Windows executables under Linux, using the mingw32 tools.
+#
+# By installing OSXCROSS from https://github.com/tpoechtrager/osxcross
+#  An Intel MacOSX binary can be created on Linux system
+#   make SYSTEM=osxcross
+#
+#   or make SYSTEM=osxcross 64BITS=no
+#
+#  the <OSXCROSS>/target/bin directory must be added in PATH
 #
 # The option
 #    make UNITEX_RELEASE_MEMORY_AT_EXIT=yes
@@ -87,28 +94,87 @@
 ################################
 ################################
 
+ifeq ($(SYSTEM),linux)
+LINUX_LIKE = yes
+endif
+
+ifeq ($(SYSTEM),linux-like)
+LINUX_LIKE = yes
+endif
+
+ifeq ($(SYSTEM),osxcross)
+LINUX_LIKE = yes
+ifneq ($(64BITS),yes)
+ifneq ($(64BITS),no)
+64BITS = yes
+endif
+endif
+
+TRE_DIRECT_COMPILE = yes
+LDFLAGS += -lstdc++
+
+ifeq ($(64BITS),yes)
+
+COMPILER_DEFINED = yes
+ifeq ($(COMMANDPREFIXDEFINED),yes)
+CC     = $(COMMANDPREFIX)o64-clang++
+CXX    = $(COMMANDPREFIX)o64-clang++
+CC_GCC = $(COMMANDPREFIX)o64-clang
+else
+CC     = o64-clang++
+CXX    = o64-clang++
+CC_GCC = o64-clang
+endif
+
+TRE_CONFIGURE_OPTION='--host=x86_64-apple-darwinXX'
+
+else
+
+ifeq ($(COMMANDPREFIXDEFINED),yes)
+CC     = $(COMMANDPREFIX)o32-clang++
+CXX    = $(COMMANDPREFIX)o32-clang++
+CC_GCC = $(COMMANDPREFIX)o32-clang
+else
+CC     = o32-clang++
+CXX    = o32-clang++
+CC_GCC = o32-clang
+endif
+
+TRE_CONFIGURE_OPTION='--host=i386-apple-darwinXX'
+
+endif
+endif
+
 UNAME = $(shell uname -s)
 
 SYSTEM = linux-like
+LINUX_LIKE = yes
 64BITS = no
 
 ifeq ($(UNAME),Darwin)
 SYSTEM = linux-like
+LINUX_LIKE = yes
+ifneq ($(64BITS),no)
 64BITS = yes
+endif
 endif
 
 OBJ_DIR = build/
 BIN_DIR = ../bin/
 
 
-ifeq ($(SYSTEM),linux-like)
+ifeq ($(LINUX_LIKE),yes)
 ###################
 ###################
 ##  BEGIN LINUX  ##
 ###################
 ###################
+
+ifneq ($(COMPILER_DEFINED),yes)
 CC      = g++
 CC_GCC  = gcc
+endif
+
 AR      = ar
 #CC     = gcc -x c
 RM      = rm -f
@@ -1314,7 +1380,7 @@ BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 ###########################
 ###########################
 
-ifeq ($(SYSTEM),linux-like)
+ifeq ($(LINUX_LIKE),yes)
 #####################
 #####################
 ##  LINUX TARGETS  ##
@@ -1949,10 +2015,14 @@ fr_umlv_unitex_jni_UnitexJni.o : ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni
 	$(CC) ../UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp -c $(OPTIONS) -I"../logger"
 
 # Compiling Unitex as a library under Linux-like systems
-ifeq ($(SYSTEM),linux-like)
+ifeq ($(LINUX_LIKE),yes)
 
 DYLIBEXT = so
 ifeq ($(UNAME),Darwin)
+DYLIBEXT = dylib
+endif
+
+ifeq ($(SYSTEM),osxcross)
 DYLIBEXT = dylib
 endif
 
