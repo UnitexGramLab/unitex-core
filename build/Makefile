@@ -113,9 +113,11 @@ endif
 TRE_DIRECT_COMPILE = yes
 LDFLAGS += -lstdc++
 
-ifeq ($(64BITS),yes)
 
 COMPILER_DEFINED = yes
+
+
+ifeq ($(64BITS),yes)
 ifeq ($(COMMANDPREFIXDEFINED),yes)
 CC     = $(COMMANDPREFIX)o64-clang++
 CXX    = $(COMMANDPREFIX)o64-clang++
