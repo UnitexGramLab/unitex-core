@@ -94,6 +94,10 @@
 ################################
 ################################
 
+
+# default value for SYSTEM is linux-like
+SYSTEM = linux-like
+
 ifeq ($(SYSTEM),linux)
 LINUX_LIKE = yes
 endif
@@ -103,13 +107,35 @@ LINUX_LIKE = yes
 endif
 
 ifeq ($(SYSTEM),osxcross)
+TARGET_OSX = yes
 LINUX_LIKE = yes
+endif
+
+ifeq ($(UNAME),Darwin)
+TARGET_OSX = yes
+LINUX_LIKE = yes
+endif
+
+# 64 bits is default for OSX
+ifeq ($(TARGET_OSX),yes)
 ifneq ($(64BITS),yes)
 ifneq ($(64BITS),no)
 64BITS = yes
 endif
 endif
+endif
 
+
+ifneq ($(TARGET_OSX),yes)
+ifneq ($(64BITS),yes)
+ifneq ($(64BITS),no)
+64BITS = no
+endif
+endif
+endif
+
+
+ifeq ($(SYSTEM),osxcross)
 TRE_DIRECT_COMPILE = yes
 LDFLAGS += -lstdc++
 
@@ -149,8 +175,8 @@ endif
 
 UNAME = $(shell uname -s)
 
-SYSTEM = linux-like
-LINUX_LIKE = yes
+# SYSTEM = linux-like
+# LINUX_LIKE = yes
 64BITS = no
 
 ifeq ($(UNAME),Darwin)
