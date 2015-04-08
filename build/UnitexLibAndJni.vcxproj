@@ -290,8 +290,8 @@
     <ClCompile Include="..\logger\FilePackCrc32.cpp" />
     <ClCompile Include="..\logger\FilePackIo.cpp" />
     <ClCompile Include="..\logger\FileUnPack.cpp" />
-    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp" />
-    <ClCompile Include="..\logger\LingRessourcePackage.cpp" />
+    <ClCompile Include="..\logger\InstallLingResourcePackage.cpp" />
+    <ClCompile Include="..\logger\LingResourcePackage.cpp" />
     <ClCompile Include="..\logger\MzRepairUlp.cpp" />
     <ClCompile Include="..\logger\MzToolsUlp.cpp" />
     <ClCompile Include="..\logger\PackFile.cpp" />
@@ -556,8 +556,8 @@
     <ClInclude Include="..\logger\FilePackCrc32.h" />
     <ClInclude Include="..\logger\FilePackIo.h" />
     <ClInclude Include="..\logger\FileUnPack.h" />
-    <ClInclude Include="..\logger\InstallLingRessourcePackage.h" />
-    <ClInclude Include="..\logger\LingRessourcePackage.h" />
+    <ClInclude Include="..\logger\InstallLingResourcePackage.h" />
+    <ClInclude Include="..\logger\LingResourcePackage.h" />
     <ClInclude Include="..\logger\MzRepairUlp.h" />
     <ClInclude Include="..\logger\MzToolsUlp.h" />
     <ClInclude Include="..\logger\PackFile.h" />

@@ -34,7 +34,7 @@
 /*
 */
 
-/* LingRessourcePackage.cpp */
+/* LingResourcePackage.cpp */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +53,7 @@
 #include "UnpackFile.h"
 
 #include "UnpackFileTool.h"
-#include "LingRessourcePackage.h"
+#include "LingResourcePackage.h"
 #include "PersistenceInterface.h"
 
 #ifndef NO_UNITEX_LOGGER

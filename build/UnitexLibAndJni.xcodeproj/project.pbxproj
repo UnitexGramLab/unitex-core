@@ -494,10 +494,10 @@
 		22C2800814AF6D63006A1F5D /* VirtualFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD714AF6D63006A1F5D /* VirtualFiles.h */; };
 		22C2800914AF6D63006A1F5D /* Xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22C27FD814AF6D63006A1F5D /* Xml.cpp */; };
 		22C2800A14AF6D63006A1F5D /* Xml.h in Headers */ = {isa = PBXBuildFile; fileRef = 22C27FD914AF6D63006A1F5D /* Xml.h */; };
-		22E56CAC1AC0BD390049E174 /* InstallLingRessourcePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22E56CA81AC0BD390049E174 /* InstallLingRessourcePackage.cpp */; };
-		22E56CAD1AC0BD390049E174 /* InstallLingRessourcePackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E56CA91AC0BD390049E174 /* InstallLingRessourcePackage.h */; };
-		22E56CAE1AC0BD390049E174 /* LingRessourcePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22E56CAA1AC0BD390049E174 /* LingRessourcePackage.cpp */; };
-		22E56CAF1AC0BD390049E174 /* LingRessourcePackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E56CAB1AC0BD390049E174 /* LingRessourcePackage.h */; };
+		22E56CAC1AC0BD390049E174 /* InstallLingResourcePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22E56CA81AC0BD390049E174 /* InstallLingResourcePackage.cpp */; };
+		22E56CAD1AC0BD390049E174 /* InstallLingResourcePackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E56CA91AC0BD390049E174 /* InstallLingResourcePackage.h */; };
+		22E56CAE1AC0BD390049E174 /* LingResourcePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22E56CAA1AC0BD390049E174 /* LingResourcePackage.cpp */; };
+		22E56CAF1AC0BD390049E174 /* LingResourcePackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 22E56CAB1AC0BD390049E174 /* LingResourcePackage.h */; };
 		22F11A06151E84310084A2C6 /* Unitex_revision.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F11A05151E84310084A2C6 /* Unitex_revision.h */; };
 		22F5F19F1800BAFE002F0040 /* PackFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F5F1971800BAFE002F0040 /* PackFile.cpp */; };
 		22F5F1A01800BAFE002F0040 /* PackFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F5F1981800BAFE002F0040 /* PackFile.h */; };
@@ -1002,10 +1002,10 @@
 		22C27FD714AF6D63006A1F5D /* VirtualFiles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VirtualFiles.h; path = ../VirtualFiles.h; sourceTree = SOURCE_ROOT; };
 		22C27FD814AF6D63006A1F5D /* Xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Xml.cpp; path = ../Xml.cpp; sourceTree = SOURCE_ROOT; };
 		22C27FD914AF6D63006A1F5D /* Xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Xml.h; path = ../Xml.h; sourceTree = SOURCE_ROOT; };
-		22E56CA81AC0BD390049E174 /* InstallLingRessourcePackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InstallLingRessourcePackage.cpp; path = ../logger/InstallLingRessourcePackage.cpp; sourceTree = "<group>"; };
-		22E56CA91AC0BD390049E174 /* InstallLingRessourcePackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InstallLingRessourcePackage.h; path = ../logger/InstallLingRessourcePackage.h; sourceTree = "<group>"; };
-		22E56CAA1AC0BD390049E174 /* LingRessourcePackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LingRessourcePackage.cpp; path = ../logger/LingRessourcePackage.cpp; sourceTree = "<group>"; };
-		22E56CAB1AC0BD390049E174 /* LingRessourcePackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LingRessourcePackage.h; path = ../logger/LingRessourcePackage.h; sourceTree = "<group>"; };
+		22E56CA81AC0BD390049E174 /* InstallLingResourcePackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InstallLingResourcePackage.cpp; path = ../logger/InstallLingResourcePackage.cpp; sourceTree = "<group>"; };
+		22E56CA91AC0BD390049E174 /* InstallLingResourcePackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InstallLingResourcePackage.h; path = ../logger/InstallLingResourcePackage.h; sourceTree = "<group>"; };
+		22E56CAA1AC0BD390049E174 /* LingResourcePackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LingResourcePackage.cpp; path = ../logger/LingResourcePackage.cpp; sourceTree = "<group>"; };
+		22E56CAB1AC0BD390049E174 /* LingResourcePackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LingResourcePackage.h; path = ../logger/LingResourcePackage.h; sourceTree = "<group>"; };
 		22F11A05151E84310084A2C6 /* Unitex_revision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Unitex_revision.h; path = ../Unitex_revision.h; sourceTree = SOURCE_ROOT; };
 		22F5F1971800BAFE002F0040 /* PackFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PackFile.cpp; path = ../logger/PackFile.cpp; sourceTree = SOURCE_ROOT; };
 		22F5F1981800BAFE002F0040 /* PackFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PackFile.h; path = ../logger/PackFile.h; sourceTree = SOURCE_ROOT; };
@@ -1566,14 +1566,14 @@
 		222AFD921411336600F74409 /* logger */ = {
 			isa = PBXGroup;
 			children = (
-				22E56CA81AC0BD390049E174 /* InstallLingRessourcePackage.cpp */,
-				22E56CA91AC0BD390049E174 /* InstallLingRessourcePackage.h */,
+				22E56CA81AC0BD390049E174 /* InstallLingResourcePackage.cpp */,
+				22E56CA91AC0BD390049E174 /* InstallLingResourcePackage.h */,
 				228BA8CF1AD130BD0080BB31 /* RunTools.cpp */,
 				228BA8D01AD130BD0080BB31 /* RunTools.h */,
 				228BA8D11AD130BD0080BB31 /* UniRunScript.cpp */,
 				228BA8D21AD130BD0080BB31 /* UniRunScript.h */,
-				22E56CAA1AC0BD390049E174 /* LingRessourcePackage.cpp */,
-				22E56CAB1AC0BD390049E174 /* LingRessourcePackage.h */,
+				22E56CAA1AC0BD390049E174 /* LingResourcePackage.cpp */,
+				22E56CAB1AC0BD390049E174 /* LingResourcePackage.h */,
 				22F5F1971800BAFE002F0040 /* PackFile.cpp */,
 				22F5F1981800BAFE002F0040 /* PackFile.h */,
 				22F5F1991800BAFE002F0040 /* PackFileTool.cpp */,
@@ -1706,7 +1706,7 @@
 				222AFF8A1411336600F74409 /* Evamb.h in Headers */,
 				222AFF8C1411336600F74409 /* Extract.h in Headers */,
 				222AFF8E1411336600F74409 /* ExtractUnits.h in Headers */,
-				22E56CAF1AC0BD390049E174 /* LingRessourcePackage.h in Headers */,
+				22E56CAF1AC0BD390049E174 /* LingResourcePackage.h in Headers */,
 				222AFF901411336600F74409 /* FIFO.h in Headers */,
 				222AFF921411336600F74409 /* File.h in Headers */,
 				222AFF931411336600F74409 /* FileEncoding.h in Headers */,
@@ -1754,7 +1754,7 @@
 				222AFFE41411336600F74409 /* MF_Global.h in Headers */,
 				222AFFE61411336600F74409 /* MF_Global.h in Headers */,
 				222AFFE71411336600F74409 /* MF_GlobalBase.h in Headers */,
-				22E56CAD1AC0BD390049E174 /* InstallLingRessourcePackage.h in Headers */,
+				22E56CAD1AC0BD390049E174 /* InstallLingResourcePackage.h in Headers */,
 				222AFFE91411336600F74409 /* MF_LangMorpho.h in Headers */,
 				222AFFEA1411336600F74409 /* MF_LangMorphoBase.h in Headers */,
 				222AFFEC1411336600F74409 /* MF_MU_graph.h in Headers */,
@@ -2084,7 +2084,7 @@
 				222A00201411336600F74409 /* RegularExpressions.cpp in Sources */,
 				222A00221411336600F74409 /* RussianCompounds.cpp in Sources */,
 				222A00241411336600F74409 /* Sentence2Grf.cpp in Sources */,
-				22E56CAC1AC0BD390049E174 /* InstallLingRessourcePackage.cpp in Sources */,
+				22E56CAC1AC0BD390049E174 /* InstallLingResourcePackage.cpp in Sources */,
 				222A00261411336600F74409 /* SingleGraph.cpp in Sources */,
 				222A00281411336600F74409 /* Snt.cpp in Sources */,
 				222A002A1411336600F74409 /* SortTxt.cpp in Sources */,
@@ -2110,7 +2110,7 @@
 				222A00531411336600F74409 /* Tokenization.cpp in Sources */,
 				222A00551411336600F74409 /* Tokenize.cpp in Sources */,
 				222A00571411336600F74409 /* TransductionStack.cpp in Sources */,
-				22E56CAE1AC0BD390049E174 /* LingRessourcePackage.cpp in Sources */,
+				22E56CAE1AC0BD390049E174 /* LingResourcePackage.cpp in Sources */,
 				222A00591411336600F74409 /* TransductionStackTfst.cpp in Sources */,
 				222A005B1411336600F74409 /* TransductionVariables.cpp in Sources */,
 				222A005D1411336600F74409 /* Transitions.cpp in Sources */,

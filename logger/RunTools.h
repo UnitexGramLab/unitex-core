@@ -30,6 +30,52 @@
 
 
 
+#ifndef NO_UNITEX_LOGGER
 
-/* 
-*/
+
+
+#ifndef _RUN_TOOLS_H
+#define _RUN_TOOLS_H 1
+
+#include "AbstractCallbackFuncModifier.h"
+
+#ifdef __cplusplus
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+namespace unitex {
+#ifndef HAS_LOGGER_NAMESPACE
+#define HAS_LOGGER_NAMESPACE 1
+#endif
+
+	namespace logger {
+		//extern "C" {
+#endif
+
+			void do_convert_command_line_synth_to_std(
+				const char*file_synth,
+				size_t size_synth,
+				char** ptr_converted,
+				size_t *size_file_converted);
+
+			char** do_convert_command_line_synth_to_std_arg(const char*cmd_line_synth,
+				size_t size_cmd_line_synth, int* param_argc);
+
+			void free_std_arg_converted(char** ptr);
+
+
+#ifdef __cplusplus
+		//} // extern "C"
+	} // namespace logger
+} // namespace unitex
+#endif
+
+
+
+
+
+
+#endif
+
+#endif

@@ -1500,19 +1500,19 @@
 					>
 				</File>
 				<File
-					RelativePath="..\logger\LingRessourcePackage.h"
+					RelativePath="..\logger\LingResourcePackage.h"
 					>
 				</File>
 				<File
-					RelativePath="..\logger\LingRessourcePackage.cpp"
+					RelativePath="..\logger\LingResourcePackage.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\logger\InstallLingRessourcePackage.h"
+					RelativePath="..\logger\InstallLingResourcePackage.h"
 					>
 				</File>
 				<File
-					RelativePath="..\logger\InstallLingRessourcePackage.cpp"
+					RelativePath="..\logger\InstallLingResourcePackage.cpp"
 					>
 				</File>
 				<File

@@ -73,8 +73,8 @@ Unitex-C++/build/tre-0.8.0/lib/tre-mem.c \
 Unitex-C++/build/tre-0.8.0/lib/tre-parse.c \
 Unitex-C++/build/tre-0.8.0/lib/tre-stack.c \
 Unitex-C++/build/tre-0.8.0/lib/xmalloc.c \
-Unitex-C++/logger/InstallLingRessourcePackage.cpp \
-Unitex-C++/logger/LingRessourcePackage.cpp \
+Unitex-C++/logger/InstallLingResourcePackage.cpp \
+Unitex-C++/logger/LingResourcePackage.cpp \
 Unitex-C++/logger/MzRepairUlp.cpp \
 Unitex-C++/logger/MzToolsUlp.cpp \
 Unitex-C++/logger/FilePack.cpp \

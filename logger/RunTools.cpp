@@ -28,8 +28,151 @@
  *
  */
 
+#ifndef NO_UNITEX_LOGGER
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+
+#include "Error.h"
+#include "RunTools.h"
+
+
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+namespace unitex {
+#ifndef HAS_LOGGER_NAMESPACE
+#define HAS_LOGGER_NAMESPACE 1
+#endif
+
+namespace logger {
+
+static int is_space_or_equivalent(char c)
+{
+	if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n'))
+		return 1;
+	return 0;
+}
 
 
 
-/* 
-*/
+void do_convert_command_line_synth_to_splitted(
+	const char*file_synth,
+	size_t size_synth,
+	char** ptr_converted,
+	size_t *size_file_converted,
+	char cEndArg, int firsts_line_contain_count,
+	int* p_nb_args)
+{
+	char* dest = (char*)malloc((size_synth * 2) + 0x100);
+	char begin[0x40];
+	if (firsts_line_contain_count)
+	{
+		sprintf(begin, "%010d\n%010d\n", 0, 0);
+	}
+	else
+	{
+		begin[0] = '\0';
+	}
+	strcpy(dest, begin);
+	char *cur_dest = dest + strlen(dest);
+
+	const char* lpSrc = file_synth;
+	const char* lpSrcLimit = file_synth + size_synth;
+	int isInQuote = 0;
+	int iNbArg = 0;
+
+
+	while (is_space_or_equivalent(*lpSrc) != 0)
+		lpSrc++;
+
+	if (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
+		iNbArg++;
+
+	while (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
+	{
+		while ((*lpSrc) == '"')
+		{
+			isInQuote = !isInQuote;
+			lpSrc++;
+		}
+
+		if ((is_space_or_equivalent(*lpSrc) != 0) && (!isInQuote))
+		{
+			while ((is_space_or_equivalent(*lpSrc) != 0) && (lpSrc<lpSrcLimit))
+				lpSrc++;
+			if (((*lpSrc) == '\0') || (lpSrc == lpSrcLimit))
+				break;
+			*(cur_dest++) = cEndArg;
+			iNbArg++;
+		}
+
+		*(cur_dest++) = *(lpSrc++);
+	}
+	*(cur_dest) = '\0';
+	*size_file_converted = (size_t)(cur_dest - dest);
+
+	if (firsts_line_contain_count)
+	{
+		sprintf(begin, "%010d\n%010d\n", 0, iNbArg);
+	}
+	if (p_nb_args != NULL)
+		*p_nb_args = iNbArg;
+	memcpy(dest, begin, strlen(begin));
+	*ptr_converted = dest;
+}
+
+
+void do_convert_command_line_synth_to_std(
+	const char*file_synth,
+	size_t size_synth,
+	char** ptr_converted,
+	size_t *size_file_converted
+	)
+{
+	do_convert_command_line_synth_to_splitted(file_synth, size_synth, ptr_converted, size_file_converted, '\n', 1,NULL);
+}
+
+
+char** do_convert_command_line_synth_to_std_arg(const char*cmd_line_synth,
+	size_t size_cmd_line_synth, int* param_argc)
+{
+	char* ptr_converted = NULL;
+	size_t size_file_converted = 0;
+	int iNbArgs = 0;
+	do_convert_command_line_synth_to_splitted(cmd_line_synth, size_cmd_line_synth, &ptr_converted, &size_file_converted, '\0',0, &iNbArgs);
+
+	size_t size_needed_ptr_list = sizeof(char*) * (iNbArgs + 3);
+
+	const char* firstArg = "UnitexTool";
+	size_t len_first_arg = strlen(firstArg);
+	char** converted_list = (char**)malloc(size_needed_ptr_list + len_first_arg + 1 + size_file_converted + 1);
+	char* command_text = ((char*)converted_list) + size_needed_ptr_list;
+	strcpy(command_text, firstArg);
+	memcpy(command_text + len_first_arg + 1, ptr_converted, size_file_converted + 1);
+	free(ptr_converted);
+	
+	char * walk = command_text;
+	for (int i = 0; i < (iNbArgs+1); i++)
+	{
+		*(converted_list + i) = walk;
+		walk += strlen(walk) + 1;
+	}
+	*(converted_list + iNbArgs + 2) = NULL;
+	*param_argc = iNbArgs + 1;
+	return converted_list;
+}
+
+void free_std_arg_converted(char** ptr)
+{
+	free(ptr);
+}
+
+} // namespace logger
+} // namespace unitex
+
+#endif

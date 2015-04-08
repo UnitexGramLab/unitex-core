@@ -248,7 +248,7 @@
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE))
-#include "logger/InstallLingRessourcePackage.h"
+#include "logger/InstallLingResourcePackage.h"
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_MZREPAIR_ULP))) || defined(NO_TOOL_MZREPAIR_ULP))
@@ -257,6 +257,10 @@
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
 #include "logger/UniRunLogger.h"
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
+#include "logger/UniRunScript.h"
 #endif
 #endif
 
@@ -382,7 +386,7 @@ const struct utility_item utility_array[]=
 
 #ifdef UNITEXTOOL_TOOL_FROM_LOGGER
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE))
-	{ "InstallLingRessourcePackage", 27, &main_InstallLingRessourcePackage, usage_InstallLingRessourcePackage, optstring_InstallLingRessourcePackage, lopts_InstallLingRessourcePackage },
+	{ "InstallLingResourcePackage", 26, &main_InstallLingResourcePackage, usage_InstallLingResourcePackage, optstring_InstallLingResourcePackage, lopts_InstallLingResourcePackage },
 #endif
 #endif
 
@@ -437,6 +441,13 @@ const struct utility_item utility_array[]=
 #ifdef UNITEXTOOL_TOOL_FROM_LOGGER
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
 	{ "RunLog", 6, &main_RunLog, usage_RunLog, optstring_RunLog, lopts_RunLog },
+#endif
+#endif
+
+
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
+	{ "RunScript", 9, &main_UniRunScript, usage_UniRunScript, optstring_UniRunScript, lopts_UniRunScript },
 #endif
 #endif
 

@@ -744,10 +744,10 @@
     <ClCompile Include="..\SelectOutput.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
-    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp">
+    <ClCompile Include="..\logger\InstallLingResourcePackage.cpp">
       <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
-    <ClCompile Include="..\logger\LingRessourcePackage.cpp">
+    <ClCompile Include="..\logger\LingResourcePackage.cpp">
       <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1520,10 +1520,10 @@
     <ClInclude Include="..\MF_Global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\logger\InstallLingRessourcePackage.h">
+    <ClInclude Include="..\logger\InstallLingResourcePackage.h">
       <Filter>Unitex-C++\logger</Filter>
     </ClInclude>
-    <ClInclude Include="..\logger\LingRessourcePackage.h">
+    <ClInclude Include="..\logger\LingResourcePackage.h">
       <Filter>Unitex-C++\logger</Filter>
     </ClInclude>
   </ItemGroup>

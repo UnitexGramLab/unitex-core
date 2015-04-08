@@ -53,12 +53,15 @@
 #include "DirHelper.h"
 #include "SyncTool.h"
 #include "SyncLogger.h"
+
+#include "RunTools.h"
 #include "ReworkArg.h"
 
 #include "Error.h"
 
 #include "AbstractFilePlugCallback.h"
 #include "UserCancellingPlugCallback.h"
+#include "RunTools.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -125,7 +128,6 @@ InstallLoggerForRunner::~InstallLoggerForRunner()
     }
 }
 
-//InstallLoggerForRunner InstallLoggerForRunnerSingleton;
 
 /****************************************************************************************/
 
@@ -669,67 +671,6 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
   else
       return 0;
 }
-
-static int is_space_or_equivalent(char c)
-{
-    if ((c==' ') || (c=='\t') || (c=='\r') || (c=='\n'))
-        return 1;
-    return 0;
-}
-
-
-void do_convert_command_line_synth_to_std(
-    const char*file_synth,
-    size_t size_synth,
-    char** ptr_converted,
-    size_t *size_file_converted)
-{
-  char* dest = (char*)malloc((size_synth*2) + 0x100);
-  char begin[0x40];
-  sprintf(begin,"%010d\n%010d\n",0,0);
-  strcpy(dest,begin);
-  char *cur_dest = dest+strlen(dest);
-
-  const char* lpSrc=file_synth;
-  const char* lpSrcLimit=file_synth+size_synth;
-  int isInQuote=0;
-  int iNbArg=0;
-
-
-  while (is_space_or_equivalent(*lpSrc) != 0)
-      lpSrc++;
-
-  if (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
-      iNbArg++;
-
-  while (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
-    {
-      while ((*lpSrc) == '"')
-        {
-          isInQuote = !isInQuote;
-          lpSrc++;
-        }
-
-      if ((is_space_or_equivalent(*lpSrc) != 0) && (!isInQuote))
-      {
-          while ((is_space_or_equivalent(*lpSrc) != 0) && (lpSrc<lpSrcLimit))
-              lpSrc++;
-          if (((*lpSrc) == '\0') || (lpSrc==lpSrcLimit))
-              break;
-          *(cur_dest++)='\n';
-          iNbArg++;
-      }
-
-      *(cur_dest++)=*(lpSrc++);
-    }
-  *(cur_dest)=0;
-  *size_file_converted = (size_t)(cur_dest - dest);
-
-  sprintf(begin,"%010d\n%010d\n",0,iNbArg);
-  memcpy(dest,begin,strlen(begin));
-  *ptr_converted = dest;
-}
-
 
 
 
@@ -1626,7 +1567,7 @@ const char* usage_RunLog =
          "  -u PATH/--unfound-location==PATH: take dictionnary and FST2 from PATH if\n"
          "               not found on the logfile\n"
          "  -w/--no-copy-always-unfound-resource: don't copy always unfound resource, but\n"
-         "           uses from original location. Useful with InstallLingRessourcePackage\n"
+         "           uses from original location. Useful with InstallLingResourcePackage\n"
          "\n"
          "rerun a log.\n";
 

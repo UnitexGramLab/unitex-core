@@ -215,8 +215,8 @@
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
-    <ClInclude Include="..\logger\InstallLingRessourcePackage.h" />
-    <ClInclude Include="..\logger\LingRessourcePackage.h" />
+    <ClInclude Include="..\logger\InstallLingResourcePackage.h" />
+    <ClInclude Include="..\logger\LingResourcePackage.h" />
     <ClInclude Include="..\logger\UniRunScript.h" />
     <ClInclude Include="..\logger\RunTools.h" />
     <ClInclude Include="..\UnitexLibDir.h" />
@@ -465,8 +465,8 @@
     <ClCompile Include="..\logger\SyncLoggerWin.cpp" />
     <ClCompile Include="..\logger\UniLogger.cpp" />
     <ClCompile Include="..\logger\UniRunLogger.cpp" />
-    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp" />
-    <ClCompile Include="..\logger\LingRessourcePackage.cpp" />
+    <ClCompile Include="..\logger\InstallLingResourcePackage.cpp" />
+    <ClCompile Include="..\logger\LingResourcePackage.cpp" />
     <ClCompile Include="..\logger\UniRunScript.cpp" />
     <ClCompile Include="..\logger\RunTools.cpp" />
     <ClCompile Include="..\tre-0.8.0\lib\regcomp.c" />

@@ -31,5 +31,56 @@
 
 
 
-/* 
-*/
+
+
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
+
+#ifndef _UNI_RUN_SCRIPT_H_INCLUDED
+#define _UNI_RUN_SCRIPT_H_INCLUDED 1
+
+#include "UnitexGetOpt.h"
+
+
+#ifdef __cplusplus
+#ifndef HAS_UNITEX_NAMESPACE
+#define HAS_UNITEX_NAMESPACE 1
+#endif
+
+namespace unitex {
+
+#endif
+
+
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+		// function export api
+
+
+#ifdef __cplusplus
+	} // extern "C"
+#endif
+
+
+
+
+	extern const char* optstring_UniRunScript;
+	extern const struct option_TS lopts_UniRunScript[];
+	extern const char* usage_UniRunScript;
+
+	int main_UniRunScript(int argc, char* const argv[]);
+
+
+#ifdef __cplusplus
+	//        } // extern "C"
+	//    } // namespace logger
+} // namespace unitex
+#endif
+
+#endif
+
+#endif
+
+

@@ -195,10 +195,10 @@
     <ClInclude Include="..\SelectOutput.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\logger\InstallLingRessourcePackage.h">
+    <ClInclude Include="..\logger\InstallLingResourcePackage.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
-    <ClInclude Include="..\logger\LingRessourcePackage.h">
+    <ClInclude Include="..\logger\LingResourcePackage.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
   </ItemGroup>
@@ -914,10 +914,10 @@
     <ClCompile Include="..\SelectOutput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\logger\InstallLingRessourcePackage.cpp">
+    <ClCompile Include="..\logger\InstallLingResourcePackage.cpp">
       <Filter>Source Files\logger</Filter>
     </ClCompile>
-    <ClCompile Include="..\logger\LingRessourcePackage.cpp">
+    <ClCompile Include="..\logger\LingResourcePackage.cpp">
       <Filter>Source Files\logger</Filter>
     </ClCompile>
   </ItemGroup>

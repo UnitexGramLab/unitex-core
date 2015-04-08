@@ -56,11 +56,11 @@ namespace unitex {
 #endif
 
 
-    extern const char* optstring_InstallLingRessourcePackage;
-    extern const struct option_TS lopts_InstallLingRessourcePackage[];
-    extern const char* usage_InstallLingRessourcePackage;
+    extern const char* optstring_InstallLingResourcePackage;
+    extern const struct option_TS lopts_InstallLingResourcePackage[];
+    extern const char* usage_InstallLingResourcePackage;
 
-    int main_InstallLingRessourcePackage(int argc, char* const argv[]);
+    int main_InstallLingResourcePackage(int argc, char* const argv[]);
 
 
 #ifdef __cplusplus

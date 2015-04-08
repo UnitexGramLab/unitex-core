@@ -38,11 +38,11 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "UnitexGetOpt.h"
-
+#include "File.h"
 #include "FilePackType.h"
 #include "UnpackFileTool.h"
-#include "LingRessourcePackage.h"
-#include "InstallLingRessourcePackage.h"
+#include "LingResourcePackage.h"
+#include "InstallLingResourcePackage.h"
 
 
 
@@ -68,16 +68,16 @@ namespace unitex {
 #endif
 
 
-        extern const char* optstring_InstallLingRessourcePackage;
-        extern const struct option_TS lopts_InstallLingRessourcePackage[];
-        extern const char* usage_InstallLingRessourcePackage;
+        extern const char* optstring_InstallLingResourcePackage;
+        extern const struct option_TS lopts_InstallLingResourcePackage[];
+        extern const char* usage_InstallLingResourcePackage;
 
 
-        const char* usage_InstallLingRessourcePackage =
-            "Usage : InstallLingRessourcePackage [OPTIONS]\n"
+        const char* usage_InstallLingResourcePackage =
+            "Usage : InstallLingResourcePackage [OPTIONS]\n"
             "\n"
             "Install resource from linguisting resource package:\n"
-            "    InstallLingRessourcePackage -p <LingRessourcePackageFileName> -x <LocationPrefix>\n"
+            "    InstallLingResourcePackage -p <LingResourcePackageFileName> -x <LocationPrefix>\n"
             "  Optionals arguments:\n"
             "         [-f filename_all_files.txt] [-a filename_list_alphabet.txt]"
             "         [-g filename_list_graph.txt] [-d filename_list_dictionary.txt]\n"
@@ -87,21 +87,21 @@ namespace unitex {
             "\n"
             "\n"
             "Uninstall resource from linguisting resource package:\n"
-            "    InstallLingRessourcePackage -p <LingRessourcePackageFileName> -x <LocationPrefix>\n"
+            "    InstallLingResourcePackage -p <LingResourcePackageFileName> -x <LocationPrefix>\n"
             "  Optionals arguments:\n"
             "         [-F] [-A] [-G] [-D]\n"
-            "  <LingRessourcePackageFileName> and <LocationPrefix> must have been used on installing\n"
+            "  <LingResourcePackageFileName> and <LocationPrefix> must have been used on installing\n"
             "  -F, -A, -G ,-D prevent uninstall files, or unpersist alphabet, graph and dictionary\n"
             "\n"
             "Uninstall resource from file with list of resource:\n"
-            "    InstallLingRessourcePackage -u\n"
+            "    InstallLingResourcePackage -u\n"
             "         [-f filename_all_files.txt] [-a filename_list_alphabet.txt]"
             "         [-g filename_list_graph.txt] [-d filename_list_dictionary.txt]\n"
             "   File must have been created on installing\n"
             "   List File are not removed (you can uses DuplicateFile -d)\n"
             "\n"
             "\n"
-            "  LingRessourcePackageFileName is a full pathname to a linguistic resource package file\n"
+            "  LingResourcePackageFileName is a full pathname to a linguistic resource package file\n"
             "      which is an uncompressed zip-like file collection.n"
             "    This file can be create with with zip (using -0 -X options) or PackFile in Unitex\n"
             "    Without -G, files ending with .fst2 will be persisted as graph\n"
@@ -116,12 +116,12 @@ namespace unitex {
 
         static void usage() {
             u_printf("%S", COPYRIGHT);
-            u_printf(usage_InstallLingRessourcePackage);
+            u_printf(usage_InstallLingResourcePackage);
         }
 
 
-        const char* optstring_InstallLingRessourcePackage = ":vtnuFGDAf:g:d:a:hx:p:k:q:";
-        const struct option_TS lopts_InstallLingRessourcePackage[] = {
+        const char* optstring_InstallLingResourcePackage = ":vtnwluFGDAf:g:d:a:hx:p:k:q:";
+        const struct option_TS lopts_InstallLingResourcePackage[] = {
             { "input_encoding", required_argument_TS, NULL, 'k' },
             { "output_encoding", required_argument_TS, NULL, 'q' },
             { "help", no_argument_TS, NULL, 'h' },
@@ -140,11 +140,13 @@ namespace unitex {
             { "prefix", required_argument_TS, NULL, 'x' },
             { "package", required_argument_TS, NULL, 'p' },
             { "no_translate_path_separator", no_argument_TS, NULL, 'n' },
-            { "translate_path_separator_to_native", no_argument_TS, NULL, 't' },
+			{ "translate_path_separator_to_native", no_argument_TS, NULL, 't' },
+			{ "translate_path_separator_to_unix", no_argument_TS, NULL, 'l' },
+			{ "translate_path_separator_to_windows", no_argument_TS, NULL, 'w' },
             { NULL, no_argument_TS, NULL, 0 }
         };
 
-        int main_InstallLingRessourcePackage(int argc, char* const argv[])
+        int main_InstallLingResourcePackage(int argc, char* const argv[])
         {
 
             if (argc == 1) {
@@ -170,13 +172,17 @@ namespace unitex {
             int transform_path_separator = -1;
             //int persistence_alphabet = 0;
             struct OptVars* vars = new_OptVars();
-            while (EOF != (val = getopt_long_TS(argc, argv, optstring_InstallLingRessourcePackage, lopts_InstallLingRessourcePackage, &index, vars))) {
+            while (EOF != (val = getopt_long_TS(argc, argv, optstring_InstallLingResourcePackage, lopts_InstallLingResourcePackage, &index, vars))) {
                 switch (val) {
 
 
                 case 't': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM; break;
 
-                case 'n': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED; break;
+				case 'n': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED; break;
+
+				case 'l': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX; break;
+
+				case 'w': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS; break;
 
                 case 'k': if (vars->optarg[0] == '\0') {
                               fatal_error("Empty input_encoding argument\n");
@@ -238,7 +244,7 @@ namespace unitex {
 
                 case 'h': usage(); return 0;
                 case ':': if (index == -1) fatal_error("Missing argument for option -%c\n", vars->optopt);
-                          else fatal_error("Missing argument for option --%s\n", lopts_InstallLingRessourcePackage[index].name);
+                          else fatal_error("Missing argument for option --%s\n", lopts_InstallLingResourcePackage[index].name);
                 case '?': if (index == -1) fatal_error("Invalid option -%c\n", vars->optopt);
                           else fatal_error("Invalid option --%s\n", vars->optarg);
                           break;
@@ -253,6 +259,7 @@ namespace unitex {
 
             if (transform_path_separator == -1)
             {
+				/*
                 if (strchr(Prefix_Name, '/') != NULL)
                 {
                     transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX;
@@ -263,10 +270,28 @@ namespace unitex {
                     transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS;
                 }
                 else
+					*/
                 {
-                    transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED;
+                    transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM;
+
+					transform_fileName_separator(Prefix_Name, transform_path_separator);
                 }
             }
+
+			if ((*Prefix_Name) != '\0')
+			{
+				char cEndPrefix = Prefix_Name[strlen(Prefix_Name) - 1];
+				if ((cEndPrefix != '/') && (cEndPrefix != '\\'))
+				{
+					if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX)
+						strcat(Prefix_Name, "/");
+					else
+					if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS)
+						strcat(Prefix_Name, "\\");
+					else
+						strcat(Prefix_Name, PATH_SEPARATOR_STRING);
+				}
+			}
 
             int success = 1;
 

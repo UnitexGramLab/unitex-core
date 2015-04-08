@@ -28,7 +28,7 @@
  *
  */
 
-/* LingRessourcePackage.h */
+/* LingResourcePackage.h */
 
 
 #ifndef NO_UNITEX_LOGGER
