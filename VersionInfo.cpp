@@ -260,7 +260,7 @@ else {
 
 
 if (!check_tre_in_unitex()) {
-    u_sprintf(DisplayText + u_strlen(DisplayText,"tre is not functionnal\n")
+    u_sprintf(DisplayText + u_strlen(DisplayText),"tre is not functionnal\n");
     error("tre is not functionnal\n");
 }
 
