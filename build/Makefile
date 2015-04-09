@@ -2065,10 +2065,11 @@ no_o_files:
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS)
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS) Test_lib.o
 	$(RM) Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lUnitexJni -o ../bin/Test_lib
 
 .libunitexstatic: $(OBJS)
 	$(RM) Main_*.o
@@ -2085,7 +2086,7 @@ no_o_files:
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS)
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) Test_lib.o
 	-$(RM) Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class

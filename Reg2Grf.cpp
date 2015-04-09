@@ -128,7 +128,7 @@ if (exp==NULL) {
    fatal_error("Empty file %s\n",argv[vars->optind]);
 }
 u_fclose(f);
-if (grf_name[0] != '\0') {
+if (grf_name[0] == '\0') {
   get_path(argv[vars->optind],grf_name);
   strcat(grf_name,"regexp.grf");
 }
