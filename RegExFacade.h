@@ -49,7 +49,7 @@ void regex_facade_regfree(regex_facade_regex_t *preg);
 int regex_facade_regexec(const regex_facade_regex_t *preg, const unichar_regex *string,
 	 size_t nmatch, regex_regmatch_t pmatch[], int eflags);
 
-int check_tre_in_unitex();
+int check_regex_lib_in_unitex();
 
 // these commented function can be useful if we want export regex features in library
 /*
@@ -61,7 +61,7 @@ UNITEX_FUNC int UNITEX_CALL RegexFacadeRegexec(const regex_facade_regex_t *preg,
 	size_t nmatch, regex_regmatch_t pmatch[], int eflags);
 */
 
-UNITEX_FUNC int UNITEX_CALL CheckTreInUnitex();
+UNITEX_FUNC int UNITEX_CALL CheckRegexLibInUnitex();
 
 #endif
 

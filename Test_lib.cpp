@@ -62,26 +62,26 @@ if (argc>1) {
     return UnitexTool_public_run(argc-1,argv+1,NULL,NULL);
   }
   if (strcmp(argv[1], "{") == 0) {
-	  return UnitexTool_public_run(argc, argv, NULL, NULL);
+      return UnitexTool_public_run(argc, argv, NULL, NULL);
   }
 }
 
-const char* argv_VersionInfo[] = { "UnitexTool", "VersionInfo", "-r", "-p", "-m", NULL };
-UnitexTool_public_run(5, (char**)argv_VersionInfo, NULL, NULL);
+const char* argv_VersionInfo[] = { "UnitexTool", "VersionInfo", "-p", "-m", NULL };
+UnitexTool_public_run(4, (char**)argv_VersionInfo, NULL, NULL);
 
 /* These lines are just here to test if the TRE library was correctly linked. */
-if (check_tre_in_unitex()) {
-	puts("tre is functionnal");
+if (CheckRegexLibInUnitex()) {
+    puts("Regex Library is functionnal.");
 } else {
-	puts("tre is NOT functionnal");
+    puts("Regex Library is NOT functionnal.");
 }
 
 
 const char* name="biniou";
 const char* content = "a+(b.c)";
 // write UTF8 file with BOM
-if (WriteUnitexFile(name, "\xEF\xBB\xBF", 3, content, strlen(content)) != 0) {
-	puts("cannot create test file");
+if (WriteUnitexFile(name, NULL, 0, content, strlen(content)) != 0) {
+    puts("cannot create test file");
 }
 
 
@@ -100,11 +100,11 @@ size_t size_file = 0;
 GetUnitexFileReadBuffer(grf, &umf, &buffer, &size_file);
 
 if (umf != NULL) {
-	for (size_t i = 0; i < size_file; i++) {
-		int c = *(((unsigned char*)buffer) + i);
-		putchar(c);
-	}
-	CloseUnitexFileReadBuffer(umf, buffer, size_file);
+    for (size_t i = 0; i < size_file; i++) {
+        int c = *(((unsigned char*)buffer) + i);
+        putchar(c);
+    }
+    CloseUnitexFileReadBuffer(umf, buffer, size_file);
 }
 
 RemoveUnitexFile(name);

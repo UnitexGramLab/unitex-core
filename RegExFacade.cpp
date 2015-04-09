@@ -283,14 +283,14 @@ static int internal_check_unitex()
 } // namespace unitex
 
 using namespace unitex;
-int check_tre_in_unitex()
+int check_regex_lib_in_unitex()
 {
 	return internal_check_unitex();
 }
 
-UNITEX_FUNC int UNITEX_CALL CheckTreInUnitex()
+UNITEX_FUNC int UNITEX_CALL CheckRegexLibInUnitex()
 {
-	return check_tre_in_unitex();
+	return check_regex_lib_in_unitex();
 }
 
 #endif

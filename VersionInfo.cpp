@@ -259,9 +259,9 @@ else {
 }
 
 
-if (!check_tre_in_unitex()) {
-    u_sprintf(DisplayText + u_strlen(DisplayText),"tre is not functionnal\n");
-    error("tre is not functionnal\n");
+if (!check_regex_lib_in_unitex()) {
+    u_sprintf(DisplayText + u_strlen(DisplayText),"Regex Library is not functionnal\n");
+    error("Regex Library is not functionnal\n");
 }
 
 if (do_platform_info) {
