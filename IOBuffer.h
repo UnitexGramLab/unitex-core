@@ -26,11 +26,25 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+#include "AbstractCallbackFuncModifier.h"
+
 namespace unitex {
 
 void setBufferMode();
 
 } // namespace unitex
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+UNITEX_FUNC void UNITEX_CALL SetUnitexBufferMode();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

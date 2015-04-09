@@ -20,6 +20,7 @@
  */
 
 #include <stdio.h>
+#include "IOBuffer.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -38,4 +39,13 @@ setvbuf(stdin,NULL,_IONBF,0);
 setvbuf(stdout,NULL,_IONBF,0);
 }
 
+
+
 } // namespace unitex
+
+using namespace unitex;
+
+UNITEX_FUNC void UNITEX_CALL SetUnitexBufferMode()
+{
+	setBufferMode();
+}

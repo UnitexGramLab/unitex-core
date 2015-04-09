@@ -32,6 +32,7 @@
 #include "logger/UniLogger.h"
 #include "logger/UniRunLogger.h"
 #include "UnitexLibIO.h"
+#include "IOBuffer.h"
 
 #ifdef HAS_UNITEX_NAMESPACE
 using namespace unitex;
@@ -52,7 +53,7 @@ int testlib_main(int argc,char *argv[])
 int main(int argc,char *argv[])
 #endif
 {
-setBufferMode();
+SetUnitexBufferMode();
 if (argc>1) {
   if (strcmp(argv[1],"RunLog")==0) {
     return RunLog_run_main(argc-1,argv+1);
