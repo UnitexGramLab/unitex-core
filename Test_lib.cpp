@@ -26,11 +26,12 @@
 #include "Reg2Grf.h"
 #include "Locate.h"
 #include "ProgramInvoker.h"
-#include "tre.h"
+#include "RegExFacade.h"
 #include "UnusedParameter.h"
 #include "UnitexTool.h"
 #include "logger/UniLogger.h"
 #include "logger/UniRunLogger.h"
+#include "UnitexLibIO.h"
 
 #ifdef HAS_UNITEX_NAMESPACE
 using namespace unitex;
@@ -44,7 +45,13 @@ using namespace logger;
  * This program is an example of compilation using the unitex library (unitex.dll/libunitex.so).
  * It prints the .grf file corresponding to "a+(b.c)".
  */
-int main(int argc,char *argv[]) {
+
+#ifdef TESTLIB_MAIN_AS_TESTLIB
+int testlib_main(int argc,char *argv[])
+#else
+int main(int argc,char *argv[])
+#endif
+{
 setBufferMode();
 if (argc>1) {
   if (strcmp(argv[1],"RunLog")==0) {
@@ -53,42 +60,54 @@ if (argc>1) {
   if (strcmp(argv[1],"UnitexTool")==0) {
     return UnitexTool_public_run(argc-1,argv+1,NULL,NULL);
   }
+  if (strcmp(argv[1], "{") == 0) {
+	  return UnitexTool_public_run(argc, argv, NULL, NULL);
+  }
 }
 
-const char* name="biniou";
-U_FILE* f=u_fopen(UTF16_LE,"biniou",U_WRITE);
-if (f==NULL) {
-   fatal_error("Cannot open %s\n",name);
-}
-u_fprintf(f,"a+(b.c)");
-u_fclose(f);
-const char* grf="regexp.grf";
-ProgramInvoker* invoker=new_ProgramInvoker(main_Reg2Grf,"main_Reg2Grf");
-add_argument(invoker,name);
-int ret=invoke(invoker);
-free_ProgramInvoker(invoker);
-u_printf("Reg2Grf exit code: %d\n\n",ret);
-
-f=u_fopen(UTF16_LE,grf,U_READ);
-int c;
-while ((c=u_fgetc(f))!=-1) {
-   u_printf("%C",c);
-}
-u_fclose(f);
-af_remove(name);
-af_remove(grf);
+const char* argv_VersionInfo[] = { "UnitexTool", "VersionInfo", "-r", "-p", "-m", NULL };
+UnitexTool_public_run(5, (char**)argv_VersionInfo, NULL, NULL);
 
 /* These lines are just here to test if the TRE library was correctly linked. */
-#ifdef TRE_WCHAR_TYPE_DEFINED
-tre_wchar_t warray[512];
-#else
-wchar_t warray[512];
-#endif
-regex_t matcher;
-tre_regwcomp(&matcher,warray,REG_NOSUB);
-return 0;
+if (check_tre_in_unitex()) {
+	puts("tre is functionnal");
+} else {
+	puts("tre is NOT functionnal");
+}
+
+
+const char* name="biniou";
+const char* content = "a+(b.c)";
+// write UTF8 file with BOM
+if (WriteUnitexFile(name, "\xEF\xBB\xBF", 3, content, strlen(content)) != 0) {
+	puts("cannot create test file");
 }
 
 
 
+const char* argv_Reg2Grf[] = { "UnitexTool", "Reg2Grf", name, "-q","UTF8_NO_BOM",NULL };
+int reg_grf = UnitexTool_public_run(5, (char**)argv_Reg2Grf, NULL, NULL);
 
+const char* grf="regexp.grf";
+char message[0x100];
+sprintf(message, "Reg2Grf exit code: %d\n\n", reg_grf);
+puts(message);
+
+UNITEXFILEMAPPED* umf = NULL;
+const void* buffer = NULL;
+size_t size_file = 0;
+GetUnitexFileReadBuffer(grf, &umf, &buffer, &size_file);
+
+if (umf != NULL) {
+	for (size_t i = 0; i < size_file; i++) {
+		int c = *(((unsigned char*)buffer) + i);
+		putchar(c);
+	}
+	CloseUnitexFileReadBuffer(umf, buffer, size_file);
+}
+
+RemoveUnitexFile(name);
+RemoveUnitexFile(grf);
+
+return 0;
+}

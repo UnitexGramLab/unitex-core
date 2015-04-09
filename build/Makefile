@@ -111,9 +111,18 @@ TARGET_OSX = yes
 LINUX_LIKE = yes
 endif
 
+
+
+# SYSTEM = linux-like
+# LINUX_LIKE = yes
+
+
+ifeq ($(SYSTEM),linux-like)
+UNAME = $(shell uname -s)
 ifeq ($(UNAME),Darwin)
 TARGET_OSX = yes
 LINUX_LIKE = yes
+endif
 endif
 
 # 64 bits is default for OSX
@@ -173,19 +182,10 @@ TRE_CONFIGURE_OPTION='--host=i386-apple-darwinXX'
 endif
 endif
 
-UNAME = $(shell uname -s)
 
-# SYSTEM = linux-like
-# LINUX_LIKE = yes
-64BITS = no
 
-ifeq ($(UNAME),Darwin)
-SYSTEM = linux-like
-LINUX_LIKE = yes
-ifneq ($(64BITS),no)
-64BITS = yes
-endif
-endif
+
+
 
 OBJ_DIR = build/
 BIN_DIR = ../bin/
@@ -206,6 +206,7 @@ endif
 AR      = ar
 #CC     = gcc -x c
 RM      = rm -f
+RMR     = rm -rf
 INSTALL = cp
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
@@ -345,6 +346,7 @@ AR     = i386-mingw32msvc-ar
 endif
 
 RM      = rm -f
+RMR     = rm -rf
 INSTALL = cp
 TAR_COMMAND = tar
 TAR_PARAM = xzf
@@ -476,6 +478,7 @@ else
 endif
 
 RM      = rm -f
+RMR     = rm -rf
 INSTALL = cp
 TAR_COMMAND = tar
 TAR_PARAM = xzf
@@ -1497,9 +1500,9 @@ endif
 
 
 clean-libtre:
-	rm -rf libtre
-	rm -rf $(TRE_SRC)
-	rm -f .libtre-done
+	$(RMR) libtre
+	$(RMR) $(TRE_SRC)
+	$(RM) .libtre-done
 
 
 install: bin
@@ -1507,24 +1510,24 @@ install: bin
 
 
 clean: $(CLEAN-LIBTRE)
-	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
+	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 clean-all-but-tre:
-	rm -f $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
+	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 dist: clean
-	if test -d $(BUILD); then rm -rf $(BUILD); fi
+	if test -d $(BUILD); then $(RMR) $(BUILD); fi
 	mkdir $(BUILD)
 	cp -a $(shell find . -mindepth 1 -maxdepth 1 -name $(BUILD) -prune -o -print) $(BUILD)
 	tar cf - $(BUILD)  | gzip > ../$(BUILD).tar.gz
-	rm -rf $(BUILD)
+	$(RMR) $(BUILD)
 
 zip: clean
-	if test -d $(BUILD); then rm -rf $(BUILD); fi
+	if test -d $(BUILD); then $(RMR) $(BUILD); fi
 	mkdir $(BUILD)
 	cp -a $(shell find . -mindepth 1 -maxdepth 1 -name $(BUILD) -prune -o -print) $(BUILD)
 	zip -r -q ../$(BUILD).zip $(BUILD)
-	rm -rf $(BUILD)
+	$(RMR) $(BUILD)
 
 remake: clean all
 
@@ -1701,11 +1704,11 @@ LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 	$(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
-	rm -f *.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
+	$(RM) *.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
 
 clean: clean-all-but-tre
-	rm -rf tre-0.8.0
-	rm -rf libtre.a
+	$(RMR) tre-0.8.0
+	$(RMR) libtre.a
 
 
 ##########################
@@ -1744,11 +1747,11 @@ LIBS   = -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2)
 	$(CC) -c $(CFLAGS) $<
 
 clean-all-but-tre:
-	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
+	$(RM) $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
 
 clean: clean-all-but-tre
-	rm -rf tre-0.8.0
-	rm -rf libtre.a
+	$(RMR) tre-0.8.0
+	$(RMR) libtre.a
 
 
 #################################
@@ -2055,40 +2058,41 @@ DYLIBEXT = dylib
 endif
 
 no_o_files:
-	rm -f *.o
+	$(RM) *.o
 
 .libunitex: no_o_files $(OBJS) Test_lib.o
-	rm -f Main_*.o
+	$(RM) Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS)
-	rm -f Main_*.o
+	$(RM) Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 
 .libunitexstatic: $(OBJS)
-	rm -f Main_*.o
+	$(RM) Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
 else
 
 # Compiling Unitex as a library under Windows
 no_o_files:
-	rm -f *.o
+	$(RM) -f *.o
 
 .libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
-	rm -f Main_*.o
+	$(RM) Main_*.o	
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
-	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
+	$(CC) Test_lib.o $(OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS)
-	rm -f Main_*.o
+	-$(RM) Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
+	$(CC) Test_lib.o $(OPTIONS) ../bin/UnitexJni.dll -o ../bin/Test_lib.exe
 
 .libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(OBJS)
-	rm -f Main_*.o
+	$(RM) Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic
 

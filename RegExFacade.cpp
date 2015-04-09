@@ -25,6 +25,32 @@
  
 #include "RegExFacade.h"
 
+
+/*
+UNITEX_FUNC int UNITEX_CALL RegexFacadeRegcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags)
+{
+	return regex_facade_regcomp(preg, regex, cflags);
+}
+
+UNITEX_FUNC size_t UNITEX_CALL RegexFacadeRegerror(int errcode, const regex_facade_regex_t *preg, char *errbuf,
+	size_t errbuf_size)
+{
+	return regex_facade_regerror(errcode, preg, errbuf, errbuf_size);
+}
+
+UNITEX_FUNC void UNITEX_CALL RegexFacadeRegfree(regex_facade_regex_t *preg)
+{
+	regex_facade_regfree(preg);
+}
+
+UNITEX_FUNC int UNITEX_CALL RegexFacadeRegexec(const regex_facade_regex_t *preg, const unichar_regex *string,
+	size_t nmatch, regex_regmatch_t pmatch[], int eflags)
+{
+	return regex_facade_regexec(preg, string,nmatch, pmatch, eflags);
+}
+*/
+
+
 #ifdef TRE_WCHAR
 
 int regex_facade_regcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags)
@@ -171,6 +197,100 @@ void free_wstring_optional_buffer(unichar_regex** allocated_buffer, Abstract_all
 }
 
 
+static int test_tre_reg(const unichar* ureg, const unichar*usrch, int is_match_expecteded)
+{
+	regex_t matcher;
+
+
+	unichar_regex* warray = (unichar_regex*)malloc(0x20 + (sizeof(unichar_regex)*((u_strlen(ureg) + 1) * UNICHAR_REGEX_ALLOC_FACTOR)));
+	if (warray == NULL) {
+		fatal_alloc_error("test_tre");
+	}
+	regex_facade_strcpy(warray, ureg);
+
+	int ccode = regex_facade_regcomp(&matcher, warray, REG_NOSUB);
+	if (ccode != 0)
+	{
+		error("cannot compile in regcomp\n");
+		return 0;
+	}
+
+	unichar_regex* wusrch = (unichar_regex*)malloc(0x20 + (sizeof(unichar_regex)*((u_strlen(usrch) + 1)  * UNICHAR_REGEX_ALLOC_FACTOR)));
+	if (wusrch == NULL) {
+		fatal_alloc_error("test_tre");
+	}
+	regex_facade_strcpy(wusrch, usrch);
+
+
+	int ret_regexec = regex_facade_regexec(&matcher, wusrch, 0, NULL, 0);
+	int okay = (is_match_expecteded == (!ret_regexec));
+	if (!okay) {
+		error("unexpected result of %S on %S : %d - %d\n", ureg, usrch, ret_regexec, ccode);
+	}
+
+	regex_facade_regfree(&matcher);
+
+	free(wusrch);
+	free(warray);
+	return okay;
+}
+
+
+static int internal_check_unitex()
+{
+	unichar ureg[0x200];
+	unichar usrch[0x200];
+
+	u_strcpy(ureg, "^Th[iI]s");
+	u_strcpy(usrch, "This is a test");
+	if (!test_tre_reg(ureg, usrch, 1)) {
+		return 0;
+	}
+
+	u_strcpy(ureg, "^Th[iI]s");
+	u_strcpy(usrch, "ThIs is a test");
+	if (!test_tre_reg(ureg, usrch, 1)) {
+		return 0;
+	}
+
+	u_strcpy(ureg, "^Th[iI]s");
+	u_strcpy(usrch, "ThAs is a test");
+	if (!test_tre_reg(ureg, usrch, 0)) {
+		return 0;
+	}
+
+	const unichar regUnicode[] = { 'T', '[', 0x1ce, 'a', ']', 'u', '\0' };
+	const unichar strUnicode0[] = { 'T', 0x2ce, 'u', '\0' };
+	const unichar strUnicode1[] = { 'T', 0x1ce, 'u', '\0' };
+	const unichar strUnicode2[] = { 'T', 0x1e1, 'u', '\0' };
+	const unichar strUnicode3[] = { 'T', 'a', 'u', '\0' };
+	const unichar strUnicode4[] = { 'T', 'u', '\0' };
+
+
+	if ((!test_tre_reg(regUnicode, strUnicode0, 0)) ||
+		(!test_tre_reg(regUnicode, strUnicode1, 1)) ||
+		(!test_tre_reg(regUnicode, strUnicode2, 0)) ||
+		(!test_tre_reg(regUnicode, strUnicode3, 1)) ||
+		(!test_tre_reg(regUnicode, strUnicode4, 0)))
+	{
+		error("tre does not wotk correctly\n");
+		return 0;
+	}
+	return 1;
+}
+
+
 } // namespace unitex
+
+using namespace unitex;
+int check_tre_in_unitex()
+{
+	return internal_check_unitex();
+}
+
+UNITEX_FUNC int UNITEX_CALL CheckTreInUnitex()
+{
+	return check_tre_in_unitex();
+}
 
 #endif

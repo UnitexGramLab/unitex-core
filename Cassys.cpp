@@ -148,9 +148,17 @@ int main_Cassys(int argc,char* const argv[]) {
     int translate_path_separator_to_native = 0;
     int dump_graph = 0; // By default, don't build a .dot file.
 
-#ifdef CASSYS_DEFAULT_WORK_DIR
+// define CASSYS_DEFAULT_TEMP_WORK_DIR with a default location (probably in virtual system file) to
+//  build a version of k6 which uses this temp location and perform cleanup
+#ifdef CASSYS_DEFAULT_TEMP_WORK_DIR
+#define CASSYS_STRINGIZE(x) #x
+#define CASSYS_STRINGIZE2(x) CASSYS_STRINGIZE(x)
+#define CASSYS_DEFAULT_TEMP_WORK_DIR_AS_STRING CASSYS_STRINGIZE2(CASSYS_DEFAULT_TEMP_WORK_DIR)
+#endif
+
+#ifdef CASSYS_DEFAULT_TEMP_WORK_DIR_AS_STRING
     int must_do_temp_cleanup = 1;
-    char* temp_work_dir = strdup(CASSYS_DEFAULT_WORK_DIR);
+    char* temp_work_dir = strdup(CASSYS_DEFAULT_TEMP_WORK_DIR_AS_STRING);
 #else
     int must_do_temp_cleanup = 0;
     char* temp_work_dir = NULL;

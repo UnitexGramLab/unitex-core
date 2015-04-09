@@ -44,13 +44,14 @@ const char* usage_Reg2Grf =
          "  <txt>: unicode text file where the regular expression is stored.\n"
          "         We must use a file, because we cannot give Unicode\n"
          "         parameters on a command line.\n"
+		 "  -o X/--output=X: output filename .grf file (optional)\n"
          "\n"
          "OPTIONS:\n"
          "  -h/--help: this help\n"
          "\n"
          "Converts the regular expression into a graph named \"regexp.grf\"\n"
-         "and stored in the same directory that <file>. You can use the following\n"
-         "operators:\n"
+		 "and stored in the same directory that <file> (or specified with -o).\n"
+		 "You can use the following operators:\n"
          " A+B          matches either the expression A or B\n"
          " A.B or A B   matches the concatenation of A and B\n"
          " A*           matches 0 more more times the expression A\n"
@@ -66,8 +67,9 @@ u_printf(usage_Reg2Grf);
 }
 
 
-const char* optstring_Reg2Grf=":hk:q:";
+const char* optstring_Reg2Grf=":ho:k:q:";
 const struct option_TS lopts_Reg2Grf[]= {
+      {"output", required_argument_TS, NULL,'o'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -82,8 +84,9 @@ if (argc==1) {
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
-int val,index=-1;
-struct OptVars* vars=new_OptVars();
+char grf_name[FILENAME_MAX]="";
+int val, index = -1;
+struct OptVars* vars = new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index,vars))) {
    switch(val) {
    case 'k': if (vars->optarg[0]=='\0') {
@@ -96,6 +99,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
+   case 'o': if (vars->optarg[0] == '\0') {
+                fatal_error("You must specify a non empty output filename\n");
+             }
+			 strcpy(grf_name, vars->optarg);
+			 break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Reg2Grf[index].name);
@@ -120,9 +128,10 @@ if (exp==NULL) {
    fatal_error("Empty file %s\n",argv[vars->optind]);
 }
 u_fclose(f);
-char grf_name[FILENAME_MAX];
-get_path(argv[vars->optind],grf_name);
-strcat(grf_name,"regexp.grf");
+if (grf_name[0] != '\0') {
+  get_path(argv[vars->optind],grf_name);
+  strcat(grf_name,"regexp.grf");
+}
 if (!reg2grf(exp,grf_name,&vec)) {
 	free(exp);
    return 1;

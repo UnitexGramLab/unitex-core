@@ -36,6 +36,7 @@
 #include "Error.h"
 #include "Copyright.h"
 #include "VersionInfo.h"
+#include "RegExFacade.h"
 #include "UnitexRevisionInfo.h"
 #include "UnitexGetOpt.h"
 
@@ -255,6 +256,12 @@ else {
         u_sprintf(DisplayText,"%S\nUnitex Version: %u.%u\nUnitex SVN revision: %d\n",
                 COPYRIGHT,unitexMajorVersion,unitexMinorVersion,revision);
     }
+}
+
+
+if (!check_tre_in_unitex()) {
+    u_sprintf(DisplayText + u_strlen(DisplayText,"tre is not functionnal\n")
+    error("tre is not functionnal\n");
 }
 
 if (do_platform_info) {
