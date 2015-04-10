@@ -95,7 +95,7 @@ void do_convert_command_line_synth_to_splitted(
 
 	while (((*lpSrc) != '\0') && (lpSrc<lpSrcLimit))
 	{
-		while ((*lpSrc) == '"')
+		while (((*lpSrc) == '"') && (lpSrc<lpSrcLimit))
 		{
 			isInQuote = !isInQuote;
 			lpSrc++;
@@ -109,6 +109,12 @@ void do_convert_command_line_synth_to_splitted(
 				break;
 			*(cur_dest++) = cEndArg;
 			iNbArg++;
+		}
+
+		while (((*lpSrc) == '"') && (lpSrc<lpSrcLimit))
+		{
+			isInQuote = !isInQuote;
+			lpSrc++;
 		}
 
 		*(cur_dest++) = *(lpSrc++);
@@ -135,6 +141,7 @@ void do_convert_command_line_synth_to_std(
 	)
 {
 	do_convert_command_line_synth_to_splitted(file_synth, size_synth, ptr_converted, size_file_converted, '\n', 1,NULL);
+	 printf("%s\n", *ptr_converted);
 }
 
 
