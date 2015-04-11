@@ -694,6 +694,7 @@ static int CallToolLogged(mainFunc* fnc,int argc,char* const argv[])
     return ret;
 }
 
+
 int main_UnitexTool_single(int argc,char* const argv[]) {
 const struct utility_item* utility_called = NULL;
 if (argc>1)
@@ -704,6 +705,23 @@ if (utility_called==NULL) {
 }
 
 return CallToolLogged(utility_called->fnc,argc-1,((char**)argv)+1);
+}
+
+
+// Unitex internal command to call a tool without logging
+void run_command_direct(int argc, char* const argv[], int* p_command_found, int* p_return_value) {
+const struct utility_item* utility_called = NULL;
+if (argc>1)
+	utility_called = found_utility(argv[0]);
+if (utility_called == NULL)	{
+  *p_command_found = 0;
+  *p_return_value = -1;
+}
+else {
+  *p_command_found = 1;
+  mainFunc* fnc = utility_called->fnc;
+  *p_return_value = (*fnc)(argc, argv);
+}
 }
 
 

@@ -85,6 +85,8 @@ int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,co
 int main_UnitexTool_C_internal(int argc,char* const argv[]);
 int main_UnitexTool_internal(int argc,char* const argv[]);
 
+void run_command_direct(int argc, char* const argv[], int* p_command_found, int* p_return_value);
+
 UNITEX_FUNC int UNITEX_CALL main_UnitexTool(int argc,char* const argv[]);
 UNITEX_FUNC int UNITEX_CALL main_UnitexTool_C(int argc,char* const argv[]);
 

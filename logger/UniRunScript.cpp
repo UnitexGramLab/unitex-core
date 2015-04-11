@@ -257,13 +257,22 @@ int run_scriptfile(const VersatileEncodingConfig* vec, const char*scriptFileName
 			int argc = 0;
 			char** argv = do_convert_command_line_synth_to_std_arg(curLine, strlen(curLine), &argc);
 
-			if (verbose)
-				u_printf("Running: %s\n", curLine);
-			int ret_tool = main_UnitexTool_C_internal(argc, (char**)argv);
+			if (argc > 1)
+			{
+				if (verbose)
+					u_printf("Running: %s\n", curLine);
 
-			if (verbose)
-				u_printf("Running result: %d\n\n", ret_tool);
+				//int ret_tool = main_UnitexTool_C_internal(argc, (char**)argv);
+				int ret_tool = 0;
+				int command_found = -1;
+				run_command_direct(argc-1, argv+1, &command_found, &ret_tool);
 
+				if (verbose && (!command_found))
+					u_printf("Command %s not found\n", argv[0]);
+
+				if (verbose)
+					u_printf("Running result: %d\n\n", ret_tool);
+			}
 
 			free_std_arg_converted(argv);
 		}
@@ -318,14 +327,24 @@ int main_UniRunScript(int argc, char* const argv[])
 	VersatileEncodingConfig vec = VEC_DEFAULT;
 	int val, index = -1;
 	struct OptVars* vars = new_OptVars();
-	int nb_user_variable = 0;
-	char** users_variables = (char**)malloc(sizeof(char*) * 2);
+	int nb_user_variable = 1;
+	char** users_variables = (char**)malloc((sizeof(char*) * 2) * 2);
 	if (users_variables == NULL)
 	{
 		fatal_alloc_error("main_RunScript");
 	}
-	*users_variables = *(users_variables + 1) = NULL;
+	*(users_variables) = strdup("UNIQUE_VALUE");
+	// speca needed : (0x10+1) with margin
+	*(users_variables+1) = (char*)malloc(0x20);
+	if (((*users_variables) == NULL) || ((*(users_variables+1)) == NULL))
+	{
+		fatal_alloc_error("main_RunScript");
+	}
 
+	fillUniqueStringForPointer((const void*)&verbose, *(users_variables + 1));
+
+	*(users_variables+2) = *(users_variables + 3) = NULL;
+	
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_UniRunScript, lopts_UniRunScript, &index, vars))) {
 		switch (val) {
 

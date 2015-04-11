@@ -64,6 +64,7 @@ namespace unitex {
 
 			void free_std_arg_converted(char** ptr);
 
+			void fillUniqueStringForPointer(const void* uniquePtr, char* unique_string);
 
 #ifdef __cplusplus
 		//} // extern "C"

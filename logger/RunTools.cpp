@@ -141,7 +141,6 @@ void do_convert_command_line_synth_to_std(
 	)
 {
 	do_convert_command_line_synth_to_splitted(file_synth, size_synth, ptr_converted, size_file_converted, '\n', 1,NULL);
-	 printf("%s\n", *ptr_converted);
 }
 
 
@@ -177,6 +176,21 @@ char** do_convert_command_line_synth_to_std_arg(const char*cmd_line_synth,
 void free_std_arg_converted(char** ptr)
 {
 	free(ptr);
+}
+
+
+/**
+ * This function build a string, be sure this string is always different for two differents value of uniquePr
+ * and compile without warning on 32 & 64 bits
+ */
+void fillUniqueStringForPointer(const void* uniquePtr, char* string)
+{
+	size_t value_for_pointer = (size_t)uniquePtr;
+	size_t shift16 = (value_for_pointer >> 16);
+	size_t shift32 = (shift16 >> 16);
+	size_t low = (value_for_pointer & ((size_t)0xffffffff));
+	sprintf(string, "%08lx", (unsigned long)shift32);
+	sprintf(string+strlen(string), "%08lx", (unsigned long)low);
 }
 
 } // namespace logger
