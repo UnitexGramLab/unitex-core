@@ -134,7 +134,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_UnpackFile,lopts_UnpackFile,
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free_OptVars(vars); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_UnpackFile[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -176,6 +176,7 @@ if (retValue != UNZ_OK)
 	error("error in processing %s",ulpFile);
 }
 
+free_OptVars(vars);
 return retValue;
 }
 

@@ -389,7 +389,7 @@ int main_UniRunScript(int argc, char* const argv[])
 		}
 				  decode_writing_encoding_parameter(&vec.encoding_output, &vec.bom_output, vars->optarg);
 				  break;
-		case 'h': usage(); return 0;
+		case 'h': usage(); free_OptVars(vars); return 0;
 		case ':': if (index == -1) fatal_error("Missing argument for option -%c\n", vars->optopt);
 				  else fatal_error("Missing argument for option --%s\n", lopts_UniRunScript[index].name);
 		case '?': if (index == -1) fatal_error("Invalid option -%c\n", vars->optopt);
@@ -411,6 +411,7 @@ int main_UniRunScript(int argc, char* const argv[])
 		free(*(users_variables + i));
 
 	free(users_variables);
+	free_OptVars(vars);
 	return retvalue;
 }
 
