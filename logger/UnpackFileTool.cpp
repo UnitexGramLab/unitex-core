@@ -469,6 +469,7 @@ static int do_extract_from_opened_pack_archive_currentfile(
 
         if (fout!=NULL)
         {
+            af_setsizereservation(fout, (long)file_info.uncompressed_size);
             do
             {
                 err = unzReadCurrentFile(uf,buf,size_buf);

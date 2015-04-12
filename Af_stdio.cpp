@@ -39,7 +39,9 @@
 #include "AbstractFilePlugCallback.h"
 #include "Af_stdio.h"
 #include "MappedFileHelper.h"
+#include "UnitexLibDir.h"
 #include "ActivityLogger.h"
+
 
 using namespace unitex;
 
@@ -903,6 +905,95 @@ int af_rename_unlogged(const char * OldFilename, const char * NewFilename)
 		return af_remove(OldFilename);
 	}
 }
+
+
+static int af_remove_folder_recursive_unlogged(const char* foldername)
+{
+	size_t len_folder = strlen(foldername);
+	char**list = af_get_list_file(foldername);
+	int ret=-1;
+	if (list != NULL) {
+
+		unsigned int iter_file = 0;
+		while ((*(list + iter_file)) != NULL)
+		{
+			const char* subfile = (*(list + iter_file));
+			if (strlen(subfile) > len_folder) {
+				if (af_remove_folder_recursive_unlogged(subfile) == 0)
+					ret=0;
+			}
+			if (af_remove_unlogged(subfile)==0)
+				ret=0;
+			iter_file++;
+		}
+		af_release_list_file(foldername, list);
+	}
+	return ret;
+}
+
+
+int af_remove_folder_unlogged(const char*folderName)
+{
+	if (is_filename_in_abstract_file_space(folderName) == 0)
+		return RemoveFileSystemFolder(folderName);
+	else
+	{
+		char*folderNameStar = (char*)malloc(strlen(folderName) + 4);
+		if (folderNameStar == NULL)
+			return -1;
+		strcpy(folderNameStar, folderName);
+		strcat(folderNameStar, "*");
+		int retValue1 = af_remove_unlogged(folderNameStar);
+		free(folderNameStar);
+		int retValue2 = af_remove_folder_recursive_unlogged(folderName);
+		return ((retValue1==0) || (retValue2==0)) ? 0 : -1;
+	}
+}
+
+
+static int af_remove_folder_recursive(const char* foldername)
+{
+	size_t len_folder = strlen(foldername);
+	char**list = af_get_list_file(foldername);
+	int ret = -1;
+	if (list != NULL) {
+
+		unsigned int iter_file = 0;
+		while ((*(list + iter_file)) != NULL)
+		{
+			const char* subfile = (*(list + iter_file));
+			if (strlen(subfile) > len_folder) {
+				if (af_remove_folder_recursive(subfile) == 0)
+					ret = 0;
+			}
+			if (af_remove(subfile) == 0)
+				ret = 0;
+			iter_file++;
+		}
+		af_release_list_file(foldername, list);
+	}
+	return ret;
+}
+
+
+int af_remove_folder(const char*folderName)
+{
+	if (is_filename_in_abstract_file_space(folderName) == 0)
+		return RemoveFileSystemFolder(folderName);
+	else
+	{
+		char*folderNameStar = (char*)malloc(strlen(folderName) + 4);
+		if (folderNameStar == NULL)
+			return -1;
+		strcpy(folderNameStar, folderName);
+		strcat(folderNameStar, "*");
+		int retValue1 = af_remove(folderNameStar);
+		free(folderNameStar);
+		int retValue2 = af_remove_folder_recursive(folderName);
+		return ((retValue1 == 0) || (retValue2 == 0)) ? 0 : -1;
+	}
+}
+
 
 ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
 {

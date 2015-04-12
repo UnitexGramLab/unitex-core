@@ -107,6 +107,9 @@ int af_rename_unlogged(const char * OldFilename, const char * NewFilename);
 int af_remove(const char * Filename);
 int af_remove_unlogged(const char * Filename);
 
+int af_remove_folder(const char*folderName);
+int af_remove_folder_unlogged(const char*folderName);
+
 int af_copy(const char* srcFile, const char* dstFile);
 int af_copy_unlogged(const char* srcFile, const char* dstFile);
 

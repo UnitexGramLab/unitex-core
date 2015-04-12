@@ -52,6 +52,7 @@ const char* usage_DuplicateFile =
          "-i INFILE/--input=INFILE: path to input file to read and copy\n"
          "-m INFILE/--move=INFILE: path to input file to move (rename)\n"
          "-d/--delete: to just delete the outfile\n"
+         "-r/--recursive-delete: to just delete the outfile folder\n"
          "\n";
 
 
@@ -61,9 +62,10 @@ u_printf(usage_DuplicateFile);
 }
 
 
-const char* optstring_DuplicateFile=":di:m:k:q:";
+const char* optstring_DuplicateFile=":rdi:m:k:q:";
 const struct option_TS lopts_DuplicateFile[]= {
       {"delete",no_argument_TS,NULL,'d'},
+      {"recursive-delete",no_argument_TS,NULL,'r'},
       {"move",required_argument_TS,NULL,'m'},
       {"input",required_argument_TS,NULL,'i'},
       {"input_encoding",required_argument_TS,NULL,'k'},
@@ -83,13 +85,15 @@ if (argc==1) {
 const char *input_file = NULL;
 const char *output_file = NULL;
 int do_delete=0;
+int do_recursive_delete=0;
 int do_move=0;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_DuplicateFile,&index,vars))) {
    switch(val) {
-   case 'd': do_delete=1; break;
+   case 'd': do_delete = 1; break;
+   case 'r': do_delete = do_recursive_delete = 1; break;
    case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input argument\n");
              }
@@ -137,16 +141,20 @@ if (input_file != NULL) {
         u_printf("copy file %s to %s\n",input_file,output_file);
         /* af_copy return 0 if success, -1 with reading problem, 1 writing problem */
         result=af_copy(input_file,output_file);
-    }
-    else
-    {
+    } else {
         u_printf("move file %s to %s\n",input_file,output_file);
         result=af_rename(input_file,output_file);
     }
 }
 else {
-    u_printf("remove file %s\n",output_file);
-    result=af_remove(output_file);
+    if (do_recursive_delete == 0) {
+        u_printf("remove file %s\n",output_file);
+        result=af_remove(output_file);
+    } else {
+        u_printf("remove folder %s\n", output_file);
+        af_remove_folder(output_file);
+        result=0;
+    }
 }
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
 free_OptVars(vars);

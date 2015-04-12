@@ -191,6 +191,7 @@ UNITEX_FUNC int UNITEX_CALL CreateUnitexFolder(const char*folderName)
     return af_create_folder_unlogged(folderName);
 }
 
+
 /**
  * Check if a path is present in abstract file space.
  * is_filename_in_abstract_file_space return 
@@ -202,22 +203,6 @@ UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path)
     return is_filename_in_abstract_file_space(path);
 }
 
-int af_remove_folder_unlogged(const char*folderName)
-{
-    if (is_filename_in_abstract_file_space(folderName)==0)
-            return RemoveFileSystemFolder(folderName);
-    else
-    {
-        char*folderNameStar=(char*)malloc(strlen(folderName)+4);
-        if (folderNameStar == NULL)
-            return -1;
-        strcpy(folderNameStar,folderName);
-        strcat(folderNameStar,"*");
-        int retValue =  af_remove_unlogged(folderNameStar);
-        free(folderNameStar);
-        return retValue;
-    }
-}
 
 /**
  * remove a folder and the folder content
