@@ -744,8 +744,10 @@ char** af_get_list_file(const char*name)
         if (pafs->func_array.fnc_memFile_getList != NULL) {
 			char** all_files = (*(pafs->func_array.fnc_memFile_getList))(pafs->privateSpacePtr);
 			size_t nb_files = 0;
-			while (all_files[nb_files] != NULL) {
-				nb_files++;
+			if (all_files != NULL) {
+				while (all_files[nb_files] != NULL) {
+					nb_files++;
+				}
 			}
 			char* keep = (char*)malloc((nb_files + 1) * sizeof(char));
 			size_t nb_files_to_keep = 0;
@@ -770,7 +772,7 @@ char** af_get_list_file(const char*name)
 			files[nb_files_to_keep] = NULL;
 			free(keep);			
 
-			if (pafs->func_array.fnc_memFile_releaseList != NULL) {
+			if ((pafs->func_array.fnc_memFile_releaseList != NULL) && (all_files!=NULL)) {
 				(*(pafs->func_array.fnc_memFile_releaseList))(all_files,pafs->privateSpacePtr);
 			}
 
@@ -993,6 +995,7 @@ int af_remove_folder(const char*folderName)
 		return ((retValue1 == 0) || (retValue2 == 0)) ? 0 : -1;
 	}
 }
+
 
 
 ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
