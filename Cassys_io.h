@@ -46,7 +46,7 @@ namespace unitex {
  *
  * @todo Windows version
  */
-int make_directory(const char *path);
+int make_cassys_directory(const char *path);
 
 
 
@@ -108,7 +108,7 @@ char* create_labeled_files_and_directory(
 		int must_copy_file) ;
 
 
-int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory);
+//int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory);
 
 /**
  * \brief Copies the content of a snt directory \b src in the directory \b dest
@@ -117,7 +117,7 @@ int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const
  * @param dest the destination directory
  *
  */
-int copy_directory_snt_content(const char *dest, const char *src);
+int copy_directory_snt_content(const char *dest, const char *src, int contain_mandatory_files);
 
 
 /**

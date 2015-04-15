@@ -24,6 +24,7 @@
  *  Authors: David Nott, Nathalie Friburger (nathalie.friburger@univ-tours.fr)
  */
 
+
 #include "Text_tokens.h"
 #include "Cassys.h"
 #include <ctype.h>
@@ -475,11 +476,23 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 					strcat(build_text, PATH_SEPARATOR_STRING);
 				}
 				remove_path(original_text, build_text + strlen(build_text));
+
+
+				char * build_original_text_snt_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
+				if (build_original_text_snt_path == NULL) {
+					fatal_alloc_error("load_transducer_from_linked_list");
+					exit(1);
+				}
+
+				get_snt_path(text, build_original_text_snt_path);
 				text = build_text;
+				get_snt_path(text, build_work_text_snt_path);
 				copy_file(text, original_text);
+				copy_directory_snt_content(build_work_text_snt_path, build_original_text_snt_path, 0);
+				free(build_original_text_snt_path);
+			} else {
+				get_snt_path(text, build_work_text_snt_path);
 			}
-			
-			get_snt_path(text, build_work_text_snt_path);
 			
 			
 			get_csc_wd_path(text, build_work_text_csc_path);
@@ -489,7 +502,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 			get_csc_path(text, build_work_text_csc_path);
 			
 			if (len_temp_work_dir > 0) {
-				make_directory(build_work_text_snt_path);
+				make_cassys_directory(build_work_text_snt_path);
 			}
 		}
 

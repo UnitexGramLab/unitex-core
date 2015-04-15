@@ -43,12 +43,12 @@ namespace unitex {
 
 
 
-int make_directory(const char *path){
+int make_cassys_directory(const char *path){
 	return mkDirPortable(path);
 }
 
 
-int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory)
+static int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory)
 {
     char fullname_src[1024];
     char fullname_dest[1024];
@@ -95,7 +95,9 @@ void cleanup_work_directory_content(char* path)
 	rmDirPortable(path);
 }
 
-int copy_directory_snt_content(const char*dest_snt_dir,const char*src_snd_dir)
+
+// if contain_mandatory_files != 0, return error if enter.pos, text.cod and tokens.txt have copy error
+int copy_directory_snt_content(const char*dest_snt_dir, const char*src_snd_dir, int contain_mandatory_files)
 {
     int result=1;
 
@@ -104,15 +106,15 @@ int copy_directory_snt_content(const char*dest_snt_dir,const char*src_snd_dir)
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"concord.txt",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlc",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"dlf",0);
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"enter.pos",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"enter.pos",contain_mandatory_files);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"err",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"stat_dic.n",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"stats.n",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tags.ind",0);
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"text.cod",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"text.cod",contain_mandatory_files);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tok_by_alph.txt",0);
     result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tok_by_freq.txt",0);
-    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tokens.txt",1);
+    result = result && copy_directory_snt_item(dest_snt_dir,src_snd_dir,"tokens.txt",contain_mandatory_files);
 
     return result;
 }
@@ -149,7 +151,7 @@ int initialize_working_directory_before_tokenize(const char*text, int must_creat
 	char snt_dir[FILENAME_MAX];
 	get_snt_path(text, snt_dir);
 	if (must_create_directory != 0) {
-		make_directory(snt_dir);
+		make_cassys_directory(snt_dir);
 	}
 
 	return 0;
@@ -169,7 +171,7 @@ int initialize_working_directory(const char *text,int must_create_directory){
 	sprintf(working_directory, "%s%s%s%c",path, canonical_name, CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR);
 
 	if (must_create_directory != 0) {
-        make_directory(working_directory);
+		make_cassys_directory(working_directory);
     }
 
 	char text_in_wd[FILENAME_MAX];
@@ -179,12 +181,12 @@ int initialize_working_directory(const char *text,int must_create_directory){
 	char snt_dir_text_in_wd[FILENAME_MAX];
 	get_snt_path(text_in_wd, snt_dir_text_in_wd);
     if (must_create_directory != 0) {
-        make_directory(snt_dir_text_in_wd);
+		make_cassys_directory(snt_dir_text_in_wd);
     }
 
 	char original_snt_dir[FILENAME_MAX];
 	get_snt_path(text,original_snt_dir);
-	copy_directory_snt_content(snt_dir_text_in_wd, original_snt_dir);
+	copy_directory_snt_content(snt_dir_text_in_wd, original_snt_dir,1);
 
 	return 0;
 }
@@ -225,7 +227,7 @@ char* create_labeled_files_and_directory(
 	char new_labeled_snt_directory[FILENAME_MAX];
 	get_snt_path(new_labeled_text_name, new_labeled_snt_directory);
     if (must_create_directory != 0) {
-        make_directory(new_labeled_snt_directory);
+		make_cassys_directory(new_labeled_snt_directory);
     }
 
     if (must_copy_file != 0)
