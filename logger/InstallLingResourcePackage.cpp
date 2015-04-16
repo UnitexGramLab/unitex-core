@@ -120,7 +120,7 @@ namespace unitex {
         }
 
 
-        const char* optstring_InstallLingResourcePackage = ":vtnwluFGDAf:g:d:a:hx:p:k:q:";
+        const char* optstring_InstallLingResourcePackage = ":vtnwluerFGDAf:g:d:a:hx:p:k:q:";
         const struct option_TS lopts_InstallLingResourcePackage[] = {
             { "input_encoding", required_argument_TS, NULL, 'k' },
             { "output_encoding", required_argument_TS, NULL, 'q' },
@@ -131,6 +131,8 @@ namespace unitex {
             { "list_graph", required_argument_TS, NULL, 'g' },
             { "list_dictionary", required_argument_TS, NULL, 'd' },
             { "list_alphabet", required_argument_TS, NULL, 'a' },
+            { "remove_persisted_file", no_argument_TS, NULL, 'r' },
+            { "keep_persisted_file", no_argument_TS, NULL, 'e' },
             { "no_persist_file", no_argument_TS, NULL, 'F' },
             { "no_persist_graph", no_argument_TS, NULL, 'G' },
             { "no_persist_dictionary", no_argument_TS, NULL, 'D' },
@@ -140,9 +142,9 @@ namespace unitex {
             { "prefix", required_argument_TS, NULL, 'x' },
             { "package", required_argument_TS, NULL, 'p' },
             { "no_translate_path_separator", no_argument_TS, NULL, 'n' },
-			{ "translate_path_separator_to_native", no_argument_TS, NULL, 't' },
-			{ "translate_path_separator_to_unix", no_argument_TS, NULL, 'l' },
-			{ "translate_path_separator_to_windows", no_argument_TS, NULL, 'w' },
+            { "translate_path_separator_to_native", no_argument_TS, NULL, 't' },
+            { "translate_path_separator_to_unix", no_argument_TS, NULL, 'l' },
+            { "translate_path_separator_to_windows", no_argument_TS, NULL, 'w' },
             { NULL, no_argument_TS, NULL, 0 }
         };
 
@@ -168,6 +170,7 @@ namespace unitex {
             int persist_graph = 1;
             int persist_dictionary = 1;
             int persist_alphabet = 1;
+            int keep_persisted_file = 1;
             int verbose = 0;
             int transform_path_separator = -1;
             //int persistence_alphabet = 0;
@@ -178,11 +181,11 @@ namespace unitex {
 
                 case 't': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM; break;
 
-				case 'n': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED; break;
+                case 'n': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNMODIFIED; break;
 
-				case 'l': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX; break;
+                case 'l': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX; break;
 
-				case 'w': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS; break;
+                case 'w': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS; break;
 
                 case 'k': if (vars->optarg[0] == '\0') {
                               fatal_error("Empty input_encoding argument\n");
@@ -234,6 +237,8 @@ namespace unitex {
 
                 case 'v': verbose = 1; break;
 
+                case 'e': keep_persisted_file = 1; break;
+                case 'r': keep_persisted_file = 0; break;
                 case 'F': persist_file = 0; break;
                 case 'G': persist_graph = 0; break;
                 case 'D': persist_dictionary = 0; break;
@@ -259,7 +264,7 @@ namespace unitex {
 
             if (transform_path_separator == -1)
             {
-				/*
+                /*
                 if (strchr(Prefix_Name, '/') != NULL)
                 {
                     transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX;
@@ -270,28 +275,28 @@ namespace unitex {
                     transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS;
                 }
                 else
-					*/
+                    */
                 {
                     transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM;
 
-					transform_fileName_separator(Prefix_Name, transform_path_separator);
+                    transform_fileName_separator(Prefix_Name, transform_path_separator);
                 }
             }
 
-			if ((*Prefix_Name) != '\0')
-			{
-				char cEndPrefix = Prefix_Name[strlen(Prefix_Name) - 1];
-				if ((cEndPrefix != '/') && (cEndPrefix != '\\'))
-				{
-					if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX)
-						strcat(Prefix_Name, "/");
-					else
-					if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS)
-						strcat(Prefix_Name, "\\");
-					else
-						strcat(Prefix_Name, PATH_SEPARATOR_STRING);
-				}
-			}
+            if ((*Prefix_Name) != '\0')
+            {
+                char cEndPrefix = Prefix_Name[strlen(Prefix_Name) - 1];
+                if ((cEndPrefix != '/') && (cEndPrefix != '\\'))
+                {
+                    if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_UNIX)
+                        strcat(Prefix_Name, "/");
+                    else
+                    if (transform_path_separator == UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS)
+                        strcat(Prefix_Name, "\\");
+                    else
+                        strcat(Prefix_Name, PATH_SEPARATOR_STRING);
+                }
+            }
 
             int success = 1;
 
@@ -321,7 +326,7 @@ namespace unitex {
                 int result_install =
                     install_ling_resource_package(Package_FileName, Prefix_Name,
                     transform_path_separator,
-                    persist_file, persist_graph, persist_dictionary, persist_alphabet,
+                    persist_file, persist_graph, persist_dictionary, persist_alphabet, keep_persisted_file,
                     &list_installed_file, &list_installed_graph, &list_installed_dictionary, &list_installed_alphabet);
                 if (!result_install)
                 {
@@ -377,7 +382,7 @@ namespace unitex {
                     int result_uninstall =
                         uninstall_ling_resource_package(Package_FileName, Prefix_Name,
                         transform_path_separator,
-                        persist_file, persist_graph, persist_dictionary, persist_alphabet);
+                        persist_file, persist_graph, persist_dictionary, persist_alphabet, keep_persisted_file);
                     if (!result_uninstall)
                     {
                         error("error on uninstalling resource from package %s on prefix\n", Package_FileName, Prefix_Name);

@@ -114,25 +114,7 @@ static int is_filename_graph(const char* filename)
 }
 
 
-int is_filename_dictionary(const char* filename)
-{
-    size_t len = strlen(filename);
-
-    if (len > 4)
-    {
-        const char* ext4 = filename + len - 5;
-        const char* ext3 = filename + len - 4;
-        if ((strcmp(ext3, ".bin") == 0) || (strcmp(ext3, ".BIN") == 0) || (strcmp(ext3, ".Bin") == 0))
-            return 1;
-        if ((strcmp(ext4, ".bin2") == 0) || (strcmp(ext4, ".BIN2") == 0) || (strcmp(ext4, ".Bin2") == 0))
-            return 1;
-    }
-
-    return 0;
-}
-
-
-int is_filename_alphabet(const char* filename)
+static int is_filename_alphabet(const char* filename)
 {
     size_t len = strlen(filename);
     if (len >= 12)
@@ -147,10 +129,44 @@ int is_filename_alphabet(const char* filename)
 }
 
 
+static int is_filename_dictionary(const char* filename, int consider_inf)
+{
+    size_t len = strlen(filename);
+
+    if (len > 4)
+    {
+        const char* ext4 = filename + len - 5;
+        const char* ext3 = filename + len - 4;
+        if ((strcmp(ext3, ".bin") == 0) || (strcmp(ext3, ".BIN") == 0) || (strcmp(ext3, ".Bin") == 0))
+            return 1;
+        if ((strcmp(ext4, ".bin2") == 0) || (strcmp(ext4, ".BIN2") == 0) || (strcmp(ext4, ".Bin2") == 0))
+            return 1;
+        if (consider_inf && ((strcmp(ext3, ".inf") == 0) || (strcmp(ext3, ".INF") == 0) || (strcmp(ext3, ".Inf") == 0)))
+            return 1;
+    }
+
+    return 0;
+}
+
+
+static int is_file_removable_after_persist(const char* filename, int persist_graph, int persist_dictionary, int persist_alphabet)
+{
+    if (persist_graph && (is_filename_graph(filename)))
+        return 1;
+
+    if (persist_dictionary && (is_filename_dictionary(filename,1)))
+        return 1;
+
+    if (persist_alphabet && (is_filename_alphabet(filename)))
+        return 1;
+
+    return 0;
+}
+
 
 int install_ling_resource_package(const char* package_name, const char* prefix_destination,
     int transform_path_separator,
-    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet,
+    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet, int keep_persisted_file,
     char*** file_list,
     char*** persist_graph_list, char*** persist_dictionary_list, char*** persist_alphabet_list)
 {
@@ -247,6 +263,7 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
         fatal_alloc_error("install_ling_resource_package");
     }
 
+    int count_file = 0;
     for (unsigned int i = 0; i < nb_file_archive; i++)
     {
         const char* curFileNameInPackage = *(fileListArchive + i);
@@ -254,16 +271,6 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
         strcpy(full_filename + len_prefix, curFileNameInPackage);
         transform_fileName_separator(full_filename + len_prefix, transform_path_separator);
 
-        if (files_persisted_list)
-        {
-            char* dup_persisted_filename = (char*)malloc(strlen(full_filename) + 1);
-            if (dup_persisted_filename == NULL) {
-                fatal_alloc_error("install_ling_resource_package");
-            }
-            strcpy(dup_persisted_filename, full_filename);
-            *(files_persisted_list + i) = dup_persisted_filename;
-            *(files_persisted_list + i + 1) = NULL;
-        }
 
         if (persist_graph && is_filename_graph(full_filename))
         {
@@ -296,7 +303,7 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
             }
         }
 
-        if (persist_dictionary && is_filename_dictionary(full_filename))
+        if (persist_dictionary && is_filename_dictionary(full_filename,0))
         {
             // result_load==0 error
             *buffer_persist_filename = '\0';
@@ -357,6 +364,48 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
                 nb_persisted_alphabet++;
             }
         }
+
+        int remove_current_file = 0;
+        if (!keep_persisted_file)
+            if (is_file_removable_after_persist(full_filename, persist_graph, persist_dictionary, persist_alphabet))
+                remove_current_file = 1;
+        /*
+        if (remove_current_file)
+        {
+            int resremove = af_remove(full_filename);
+            u_printf("remover result %d for %s\n", resremove, full_filename);
+        }*/
+
+        if (files_persisted_list && (!remove_current_file))
+        {
+            char* dup_persisted_filename = (char*)malloc(strlen(full_filename) + 1);
+            if (dup_persisted_filename == NULL) {
+                fatal_alloc_error("install_ling_resource_package");
+            }
+            strcpy(dup_persisted_filename, full_filename);
+            *(files_persisted_list + count_file) = dup_persisted_filename;
+            count_file++;
+            *(files_persisted_list + count_file) = NULL;
+        }
+    }
+
+    if (!keep_persisted_file)
+    {
+        for (unsigned int i_loop_delete = 0; i_loop_delete < nb_file_archive; i_loop_delete++)
+        {
+
+            const char* curFileNameInPackage = *(fileListArchive + i_loop_delete);
+            if (is_file_removable_after_persist(curFileNameInPackage, persist_graph, persist_dictionary, persist_alphabet))
+            {
+                strcpy(full_filename, prefix_destination);
+                strcpy(full_filename + len_prefix, curFileNameInPackage);
+                transform_fileName_separator(full_filename + len_prefix, transform_path_separator);
+
+                int resremove = af_remove(full_filename);
+                u_printf("remove result %d for %s\n", resremove, full_filename);
+
+            }
+        }
     }
 
     if (file_list != NULL)
@@ -390,22 +439,20 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
 
 UNITEX_FUNC int UNITEX_CALL InstallLingResourcePackage(const char* package_name, const char* prefix_destination,
     int folder_separator_transformation,
-    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet,
+    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet, int keep_persisted_file,
     char*** file_list, char*** persist_graph_list, char*** persist_dictionary_list, char*** persist_alphabet_list)
 {
     return install_ling_resource_package(package_name, prefix_destination,
         folder_separator_transformation,
-        persist_file, persist_graph, persist_dictionary, persist_alphabet,
+        persist_file, persist_graph, persist_dictionary, persist_alphabet,keep_persisted_file,
         file_list, persist_graph_list, persist_dictionary_list, persist_alphabet_list);
 }
 
 
 int uninstall_ling_resource_package(const char* package_name, const char* prefix_destination,
     int folder_separator_transformation,
-    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet)
+    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet, int kept_persisted_file)
 {
-
-
     int result = 1;
     int transform_path_separator = 0;
 
@@ -453,7 +500,7 @@ int uninstall_ling_resource_package(const char* package_name, const char* prefix
             standard_unload_persistence_fst2(full_filename);
         }
 
-        if (persist_dictionary && is_filename_dictionary(full_filename))
+        if (persist_dictionary && is_filename_dictionary(full_filename,0))
         {
             standard_unload_persistence_dictionary(full_filename);
         }
@@ -475,11 +522,19 @@ int uninstall_ling_resource_package(const char* package_name, const char* prefix
             strcpy(full_filename + len_prefix, curFileNameInPackage);
             transform_fileName_separator(full_filename + len_prefix, folder_separator_transformation);
 
-            if (af_remove(full_filename) != 0)
-                if (!is_filename_end_directory_separator(full_filename))
-                {
-                    error("error in remove file %s\n", full_filename);
-                }
+            int already_removed_current_file = 0;
+            if (!kept_persisted_file)
+                if (is_file_removable_after_persist(full_filename, persist_graph, persist_dictionary, persist_alphabet))
+                    already_removed_current_file = 1;
+
+            if (!already_removed_current_file)
+            {
+                if (af_remove(full_filename) != 0)
+                    if (!is_filename_end_directory_separator(full_filename))
+                    {
+                        error("error in remove file %s\n", full_filename);
+                    }
+            }
         }
     }
 
@@ -492,11 +547,11 @@ int uninstall_ling_resource_package(const char* package_name, const char* prefix
 
 UNITEX_FUNC int UNITEX_CALL UninstallLingResourcePackage(const char* package_name, const char* prefix_destination,
     int folder_separator_transformation,
-    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet)
+    int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet, int kept_persisted_file)
 {
     return uninstall_ling_resource_package(package_name, prefix_destination,
         folder_separator_transformation,
-        persist_file, persist_graph, persist_dictionary, persist_alphabet);
+        persist_file, persist_graph, persist_dictionary, persist_alphabet, kept_persisted_file);
 }
 
 int uninstall_ling_resource_package_by_list(char** file_list,
