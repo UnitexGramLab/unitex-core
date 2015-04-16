@@ -129,7 +129,7 @@ static int is_filename_alphabet(const char* filename)
 }
 
 
-static int is_filename_dictionary(const char* filename, int consider_inf)
+static int is_filename_dictionary_main_file(const char* filename)
 {
     size_t len = strlen(filename);
 
@@ -141,7 +141,22 @@ static int is_filename_dictionary(const char* filename, int consider_inf)
             return 1;
         if ((strcmp(ext4, ".bin2") == 0) || (strcmp(ext4, ".BIN2") == 0) || (strcmp(ext4, ".Bin2") == 0))
             return 1;
-        if (consider_inf && ((strcmp(ext3, ".inf") == 0) || (strcmp(ext3, ".INF") == 0) || (strcmp(ext3, ".Inf") == 0)))
+    }
+
+    return 0;
+}
+
+
+static int is_filename_dictionary_complement_file(const char* filename)
+{
+    size_t len = strlen(filename);
+
+    if (len > 4)
+    {
+        const char* ext3 = filename + len - 4;
+        if ((strcmp(ext3, ".inf") == 0) || (strcmp(ext3, ".INF") == 0) || (strcmp(ext3, ".Inf") == 0))
+            return 1;
+        if ((strcmp(ext3, ".inp") == 0) || (strcmp(ext3, ".INP") == 0) || (strcmp(ext3, ".Inp") == 0))
             return 1;
     }
 
@@ -149,15 +164,34 @@ static int is_filename_dictionary(const char* filename, int consider_inf)
 }
 
 
-static int is_file_removable_after_persist(const char* filename, int persist_graph, int persist_dictionary, int persist_alphabet)
+static int is_file_removable_when_persist(const char* filename, int persist_graph, int persist_dictionary, int persist_alphabet)
 {
     if (persist_graph && (is_filename_graph(filename)))
         return 1;
 
-    if (persist_dictionary && (is_filename_dictionary(filename,1)))
+    if (persist_dictionary && (is_filename_dictionary_main_file(filename)))
         return 1;
 
     if (persist_alphabet && (is_filename_alphabet(filename)))
+        return 1;
+
+    return 0;
+}
+
+static int is_file_removable_after_persist(const char* filename, int /*persist_graph*/, int persist_dictionary, int /*persist_alphabet*/)
+{
+    if (persist_dictionary && (is_filename_dictionary_complement_file(filename)))
+        return 1;
+
+    return 0;
+}
+
+static int is_file_removable_with_persist(const char* filename, int persist_graph, int persist_dictionary, int persist_alphabet)
+{
+    if (is_file_removable_when_persist(filename, persist_graph, persist_dictionary, persist_alphabet))
+        return 1;
+
+    if (is_file_removable_after_persist(filename, persist_graph, persist_dictionary, persist_alphabet))
         return 1;
 
     return 0;
@@ -303,7 +337,7 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
             }
         }
 
-        if (persist_dictionary && is_filename_dictionary(full_filename,0))
+        if (persist_dictionary && is_filename_dictionary_main_file(full_filename))
         {
             // result_load==0 error
             *buffer_persist_filename = '\0';
@@ -366,15 +400,20 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
         }
 
         int remove_current_file = 0;
+        int remove_current_file_now = 0;
         if (!keep_persisted_file)
+        {
+            if (is_file_removable_when_persist(full_filename, persist_graph, persist_dictionary, persist_alphabet))
+                remove_current_file_now = remove_current_file = 1;
             if (is_file_removable_after_persist(full_filename, persist_graph, persist_dictionary, persist_alphabet))
                 remove_current_file = 1;
-        /*
-        if (remove_current_file)
+        }
+
+        if (remove_current_file_now)
         {
-            int resremove = af_remove(full_filename);
-            u_printf("remover result %d for %s\n", resremove, full_filename);
-        }*/
+            /*int resremove = */af_remove(full_filename);
+            /*u_printf("remover result %d for %s\n", resremove, full_filename);*/
+        }
 
         if (files_persisted_list && (!remove_current_file))
         {
@@ -393,7 +432,6 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
     {
         for (unsigned int i_loop_delete = 0; i_loop_delete < nb_file_archive; i_loop_delete++)
         {
-
             const char* curFileNameInPackage = *(fileListArchive + i_loop_delete);
             if (is_file_removable_after_persist(curFileNameInPackage, persist_graph, persist_dictionary, persist_alphabet))
             {
@@ -401,8 +439,8 @@ int install_ling_resource_package(const char* package_name, const char* prefix_d
                 strcpy(full_filename + len_prefix, curFileNameInPackage);
                 transform_fileName_separator(full_filename + len_prefix, transform_path_separator);
 
-                int resremove = af_remove(full_filename);
-                u_printf("remove result %d for %s\n", resremove, full_filename);
+                /*int resremove = */af_remove(full_filename);
+                /*u_printf("remove result %d for %s (after)\n", resremove, full_filename);*/
 
             }
         }
@@ -500,7 +538,7 @@ int uninstall_ling_resource_package(const char* package_name, const char* prefix
             standard_unload_persistence_fst2(full_filename);
         }
 
-        if (persist_dictionary && is_filename_dictionary(full_filename,0))
+        if (persist_dictionary && is_filename_dictionary_main_file(full_filename))
         {
             standard_unload_persistence_dictionary(full_filename);
         }
@@ -524,7 +562,7 @@ int uninstall_ling_resource_package(const char* package_name, const char* prefix
 
             int already_removed_current_file = 0;
             if (!kept_persisted_file)
-                if (is_file_removable_after_persist(full_filename, persist_graph, persist_dictionary, persist_alphabet))
+                if (is_file_removable_with_persist(full_filename, persist_graph, persist_dictionary, persist_alphabet))
                     already_removed_current_file = 1;
 
             if (!already_removed_current_file)
