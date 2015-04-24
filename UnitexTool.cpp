@@ -536,10 +536,43 @@ const struct utility_item utility_array[]=
 	{ "", 0, NULL, NULL, NULL, NULL} 
 };
 
+
+struct utility_alias {
+	const char* name;
+	int len_name;
+	const char* real_tool_name;
+};
+
+
+// this is an array of alias for giving a second hidden name to a tool
+//  (if a tool is renamed, we can keep old name for script compatibility)
+const struct utility_alias utility_alias_array[] =
+{
+	{ NULL, 0, NULL }
+};
+
+
 static const struct utility_item* found_utility(const char* search)
 {
 	int len_search = (int)strlen(search);
-	int i=0;
+	int i;
+
+	i = 0;
+	while (utility_alias_array[i].len_name > 0)
+	{
+		if (utility_alias_array[i].len_name == len_search)
+		{
+			if (strcmp(utility_alias_array[i].name, search) == 0)
+			{
+				search = utility_alias_array[i].real_tool_name;
+				len_search = (int)strlen(search);
+				break;
+			}
+		}
+		i++;
+	}
+
+	i = 0;
 	while (utility_array[i].len_name > 0)
 	{
 		if (utility_array[i].len_name == len_search)
@@ -573,8 +606,8 @@ const struct utility_item* utility_called = &(utility_array[toolnumber]);
 	if (usage != NULL) *usage=utility_called->usage;
 	if (optstring != NULL) *optstring = utility_called->optstring;
 	if (lopts != NULL) *lopts = utility_called->lopts;
-    if (pfunc != NULL) *pfunc = utility_called->fnc;
-  return 0;
+	if (pfunc != NULL) *pfunc = utility_called->fnc;
+	return 0;
 }
 }
 
@@ -601,8 +634,8 @@ void list_unused_option_letter()
 
     i=0;
     while (utility_array[i].len_name > 0)
-	{
-		const char* optstring_browse = utility_array[i].optstring;
+    {
+        const char* optstring_browse = utility_array[i].optstring;
         if (optstring_browse!=NULL)
             while ((*optstring_browse)!=0)
             {

@@ -64,7 +64,9 @@ namespace unitex {
 
 			void free_std_arg_converted(char** ptr);
 
-			void fillUniqueStringForPointer(const void* uniquePtr, char* unique_string);
+// fill_unique_string_for_pointer needed size (zero terminal included) : (0x10+1) with margin so 0x20
+#define UNIQUE_STRING_FOR_POINTER_MAX_SIZE 0x20
+			void fill_unique_string_for_pointer(const void* uniquePtr, char* unique_string);
 
 #ifdef __cplusplus
 		//} // extern "C"

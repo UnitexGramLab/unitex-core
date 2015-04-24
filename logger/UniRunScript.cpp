@@ -81,6 +81,145 @@ namespace logger {
 using namespace ::unitex::logger;
 
 
+static char** build_empty_users_variables()
+{
+	char ** users_variables = (char**)malloc(sizeof(char*) * 2);
+	if (users_variables == NULL)
+	{
+		fatal_alloc_error("build_empty_users_variables");
+	}
+	*users_variables = *(users_variables + 1) = NULL;
+
+	return users_variables;
+}
+
+
+static void free_users_variable(char** users_variables)
+{
+	int i;
+	if (users_variables == NULL)
+	{
+		return;
+	}
+
+	i = 0;
+	while ((*(users_variables + i)) != NULL)
+	{
+		free(*(users_variables + i));
+		i++;
+	}
+	free(users_variables);
+}
+
+
+static char** clone_users_variable(char** users_variables)
+{
+	int nb_items = 0;
+	if (users_variables != NULL)
+	{
+		while ((*(users_variables + nb_items)) != NULL)
+		{
+			nb_items++;
+		}
+	}
+
+	char ** cloned_users_variable = (char**)malloc(sizeof(char*) * (nb_items + 3));
+	if (cloned_users_variable == NULL)
+	{
+		fatal_alloc_error("clone_users_variable");
+	}
+
+	for (int i = 0; i < nb_items; i++)
+	{
+		*(cloned_users_variable + i) = strdup(*(users_variables + i));
+		if ((*(cloned_users_variable + i)) == NULL)
+		{
+			fatal_alloc_error("clone_users_variable");
+		}
+	}
+	*(cloned_users_variable + nb_items) = NULL;
+	*(cloned_users_variable + nb_items + 1) = NULL;
+	*(cloned_users_variable + nb_items + 2) = NULL;
+
+	return cloned_users_variable;
+}
+
+
+
+static const char* search_value_for_variable(char** variable_list,const char* var_name, size_t len_search_variable = 0)
+{
+	if (var_name == NULL)
+		return NULL;
+	if (len_search_variable == 0)
+		len_search_variable = strlen(var_name);
+
+	int j = 0;
+
+	for (;;)
+	{
+		if (*(variable_list + j) == NULL)
+			break;
+		size_t len_var_in_list = strlen(*(variable_list + j));
+		if (len_var_in_list == len_search_variable)
+		{
+			if (len_var_in_list == len_search_variable)
+			{
+				if (memcmp(*(variable_list + j), var_name, len_var_in_list) == 0)
+				{
+					return *(variable_list + j + 1);
+				}
+			}
+		}
+		j += 2;
+	}
+	return NULL;
+}
+
+
+static char** insert_variable_and_value(char** variable_list, const char* var_name, const char* value)
+{
+	if (var_name == NULL)
+		return variable_list; 
+	if (value == NULL)
+		value = "";
+	int j = 0;
+
+	for (;;)
+	{
+		if (*(variable_list + j) == NULL)
+			break;
+		if (strcmp(*(variable_list + j), var_name) == 0)
+		{
+			free(*(variable_list + j + 1));
+			*(variable_list + j + 1) = strdup(value);
+			if ((*(variable_list + j + 1)) == NULL)
+			{
+				fatal_alloc_error("insert_variable_and_value");
+			}
+			return variable_list;
+		}
+		j += 2;
+	}
+
+	char** new_variable_list = (char**)realloc(variable_list, sizeof(char*)*(j + 4));
+	if (new_variable_list == NULL)
+	{
+		fatal_alloc_error("insert_variable_and_value");
+	}
+	*(new_variable_list + j) = strdup(var_name);
+	*(new_variable_list + j + 1) = strdup(value);
+	if (((*(new_variable_list + j)) == NULL) || ((*(new_variable_list + j + 1)) == NULL))
+	{
+		fatal_alloc_error("insert_variable_and_value");
+	}
+
+	*(new_variable_list + j + 2) = *(new_variable_list + j + 3) = NULL;
+
+	return new_variable_list;
+}
+
+
+
 static void addTextInDynamicString(char** dyn_string, size_t *pos, size_t *allocated, size_t buffer_margin, const char* add_str)
 {	
 	if (add_str == NULL)
@@ -106,7 +245,7 @@ static void addTextInDynamicString(char** dyn_string, size_t *pos, size_t *alloc
 
 
 // char** subsitution contain on even entry variable name and on odd entry variable content
-static char* substitueInLine(const char* line, char** variable_list)
+static char* substitueInLine(const char* line, char*** variable_list, int assignement_allowed)
 {
 	size_t len_line = strlen(line);
 	char* build_string = NULL;
@@ -114,6 +253,47 @@ static char* substitueInLine(const char* line, char** variable_list)
 	size_t allocated = 0;
 	// allocated build_string with at last line size
 	addTextInDynamicString(&build_string, &pos, &allocated, len_line, NULL);
+
+	if (assignement_allowed)
+	{
+		const char* browse = line;
+		const char* special_start_var_name = NULL;
+		const char* special_possible_end_var_name = NULL;
+		while (((*browse) == ' ') || ((*browse) == '\t'))
+			browse++;
+		if ((*browse) != '\0')
+		{
+			special_start_var_name = browse;
+			while (((*browse) != ' ') && ((*browse) != '\t') && ((*browse) != '\0') && ((*browse) != '='))
+				browse++;
+			special_possible_end_var_name = browse;
+			while (((*browse) == ' ') || ((*browse) == '\t'))
+				browse++;
+			if (((*browse) == '=') && (special_possible_end_var_name != special_start_var_name))
+			{
+				char* assign_var_name = (char*)malloc((special_possible_end_var_name - special_start_var_name) + 1);
+				if (assign_var_name == NULL)
+				{
+					fatal_alloc_error("substitueInLine");
+				}
+				memcpy(assign_var_name, special_start_var_name, special_possible_end_var_name - special_start_var_name);
+				*(assign_var_name + (special_possible_end_var_name - special_start_var_name)) = '\0';
+
+				browse++;
+
+				while (((*browse) == ' ') || ((*browse) == '\t'))
+					browse++;
+
+				char* assign_value = substitueInLine(browse, variable_list, 0);
+				//u_printf("assign '%s' value '%s'\n", assign_var_name, assign_value);
+				*variable_list = insert_variable_and_value(*variable_list, assign_var_name, assign_value);
+				free(assign_var_name);
+				free(assign_value);
+				return build_string;
+			}
+		}
+	}
+
 	for (size_t i = 0; i < len_line; i++)
 	{
 		char c = *(line + i);
@@ -124,22 +304,15 @@ static char* substitueInLine(const char* line, char** variable_list)
 			if (end_var != NULL)
 			{
 				size_t len_search_variable = (size_t)(end_var - (line + i + 1));
-				int j = 0;
-				for (;;)
+				
+				const char* value_variable = NULL;
+				if (len_search_variable != 0)
+					value_variable = search_value_for_variable(*variable_list, line + i + 1, len_search_variable);
+				if (value_variable != NULL)
 				{
-					if (*(variable_list + j) == NULL)
-						break;
-					size_t len_var_in_list = strlen(*(variable_list + j));
-					if (len_var_in_list == len_search_variable)
-					{
-						if (memcmp(*(variable_list + j), line + i + 1, len_var_in_list) == 0)
-						{
-							is_variable = 1;
-							addTextInDynamicString(&build_string, &pos, &allocated, len_line, *(variable_list + j + 1));
-							i = (end_var - line);
-						}
-					}
-					j += 2;
+					addTextInDynamicString(&build_string, &pos, &allocated, len_line, value_variable);
+					is_variable = 1;
+					i = (end_var - line);
 				}
 			}
 		}
@@ -156,20 +329,30 @@ static char* substitueInLine(const char* line, char** variable_list)
 }
 
 
-static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scriptFileName, char** users_variables, int transform_path_separator)
+static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scriptFileName, char** users_variables_param, int transform_path_separator)
 {
 	unichar* line = NULL;
 	size_t size_buffer_line = 0;
 
 	char ** Lines = (char**)malloc(sizeof(char*));
+	if (Lines == NULL)
+	{
+		fatal_alloc_error("ReadScriptFile");
+	}
 	*Lines = NULL;
 	int nbLines = 0;
 
+	char ** users_variables = clone_users_variable(users_variables_param);
 
 	U_FILE* dest_read_script = u_fopen(vec, scriptFileName, U_READ);
 	if (dest_read_script == NULL)
 	{
 		char* transformed_scriptFileName = strdup(scriptFileName);
+		if (transformed_scriptFileName == NULL)
+		{
+			fatal_alloc_error("ReadScriptFile");
+		}
+
 		transform_fileName_separator(transformed_scriptFileName, transform_path_separator);
 		dest_read_script = u_fopen(vec, transformed_scriptFileName, U_READ);
 		free(transformed_scriptFileName);
@@ -179,8 +362,6 @@ static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scr
 		fatal_error("Cannot open file %s\n", scriptFileName);
 		exit(1);
 	}
-
-
 
 	while (u_fgets_dynamic_buffer(&line, &size_buffer_line, dest_read_script) != EOF){
 		size_t len_line = u_strlen(line);
@@ -203,16 +384,22 @@ static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scr
 			skip ++ ;
 		}
 		char* charline = (char*)malloc((len_line - skip) + 1);
+		if (charline == NULL)
+		{
+			fatal_alloc_error("ReadScriptFile");
+		}
 		for (size_t i = 0; i < (len_line - skip); i++)
 			*(charline + i) = (char)*(line + skip + i);
 		*(charline + (len_line - skip)) = '\0';
 
-
-
-		char* reworked = substitueInLine(charline, users_variables);
+		char* reworked = substitueInLine(charline, &users_variables, 1);
 		transform_fileName_separator(reworked, transform_path_separator);
 
-		Lines = (char**)realloc(Lines, sizeof(char*) * (nbLines+2));
+		Lines = (char**)realloc(Lines, sizeof(char*) * (nbLines + 2));
+		if (Lines == NULL)
+		{
+			fatal_alloc_error("ReadScriptFile");
+		}
 		*(Lines + nbLines) = reworked;
 		*(Lines + nbLines + 1) = NULL;
 		nbLines ++ ;
@@ -222,6 +409,7 @@ static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scr
 		free(line);
 	}
 	u_fclose(dest_read_script);
+	free_users_variable(users_variables);
 	return Lines;
 }
 
@@ -313,7 +501,6 @@ const struct option_TS lopts_UniRunScript[] = {
 
 
 
-
 int main_UniRunScript(int argc, char* const argv[])
 {
 
@@ -327,23 +514,11 @@ int main_UniRunScript(int argc, char* const argv[])
 	VersatileEncodingConfig vec = VEC_DEFAULT;
 	int val, index = -1;
 	struct OptVars* vars = new_OptVars();
-	int nb_user_variable = 1;
-	char** users_variables = (char**)malloc((sizeof(char*) * 2) * 2);
-	if (users_variables == NULL)
-	{
-		fatal_alloc_error("main_RunScript");
-	}
-	*(users_variables) = strdup("UNIQUE_VALUE");
-	// speca needed : (0x10+1) with margin
-	*(users_variables+1) = (char*)malloc(0x20);
-	if (((*users_variables) == NULL) || ((*(users_variables+1)) == NULL))
-	{
-		fatal_alloc_error("main_RunScript");
-	}
 
-	fillUniqueStringForPointer((const void*)&verbose, *(users_variables + 1));
-
-	*(users_variables+2) = *(users_variables + 3) = NULL;
+	char unique_string[UNIQUE_STRING_FOR_POINTER_MAX_SIZE];
+	fill_unique_string_for_pointer((const void*)&verbose, unique_string);
+	char** users_variables = build_empty_users_variables();
+	users_variables = insert_variable_and_value(users_variables, "UNIQUE_VALUE", unique_string);
 	
 	while (EOF != (val = getopt_long_TS(argc, argv, optstring_UniRunScript, lopts_UniRunScript, &index, vars))) {
 		switch (val) {
@@ -356,24 +531,24 @@ int main_UniRunScript(int argc, char* const argv[])
 				fatal_error("You must specify a non empty variable\n");
 			}
 
-			users_variables = (char**)realloc(users_variables, (nb_user_variable + 2) * 2 * sizeof(char*));
-			char* new_var_name = strdup(vars->optarg);
+			char* rework_var_assign = strdup(vars->optarg);
+			if (rework_var_assign == NULL)
+			{
+				fatal_alloc_error("main_RunScript");
+			}
 			
-			char * pos_equal = strchr(new_var_name,'=');
-			char * new_var_content;
+			char* new_var_name = rework_var_assign;
+			
+			char * pos_equal = strchr(rework_var_assign, '=');
+			const char * new_var_content = "";
 			if (pos_equal != NULL)
 			{
-				new_var_content = strdup(pos_equal + 1);
+				new_var_content = pos_equal + 1;
 				*pos_equal = '\0';
 			}
-			else
-			{
-				new_var_content = strdup("");
-			}
-			*(users_variables + (nb_user_variable * 2)) = new_var_name;
-			*(users_variables + (nb_user_variable * 2) + 1) = new_var_content;
-			nb_user_variable++;
-			*(users_variables + (nb_user_variable * 2)) = *(users_variables + (nb_user_variable * 2) + 1) = NULL;
+
+			users_variables = insert_variable_and_value(users_variables, new_var_name, new_var_content);
+			free(rework_var_assign);
 
 			break;
 		}
@@ -407,10 +582,7 @@ int main_UniRunScript(int argc, char* const argv[])
 
 	int retvalue = run_scriptfile(&vec, scriptFile, users_variables, verbose);
 
-	for (int i = 0; i < (nb_user_variable * 2); i++)
-		free(*(users_variables + i));
-
-	free(users_variables);
+	free_users_variable(users_variables);
 	free_OptVars(vars);
 	return retvalue;
 }

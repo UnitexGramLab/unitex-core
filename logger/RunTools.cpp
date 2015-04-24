@@ -183,7 +183,7 @@ void free_std_arg_converted(char** ptr)
  * This function build a string, be sure this string is always different for two differents value of uniquePr
  * and compile without warning on 32 & 64 bits
  */
-void fillUniqueStringForPointer(const void* uniquePtr, char* string)
+void fill_unique_string_for_pointer(const void* uniquePtr, char* string)
 {
 	size_t value_for_pointer = (size_t)uniquePtr;
 	size_t shift16 = (value_for_pointer >> 16);

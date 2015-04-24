@@ -36,6 +36,7 @@
 #include "File.h"
 #include "DuplicateFile.h"
 #include "UnitexGetOpt.h"
+#include "DirHelper.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -52,6 +53,7 @@ const char* usage_DuplicateFile =
          "-i INFILE/--input=INFILE: path to input file to read and copy\n"
          "-m INFILE/--move=INFILE: path to input file to move (rename)\n"
          "-d/--delete: to just delete the outfile\n"
+         "-a/--make-dir: to create empty directory named outfile\n"
          "-r/--recursive-delete: to just delete the outfile folder\n"
          "\n";
 
@@ -62,10 +64,11 @@ u_printf(usage_DuplicateFile);
 }
 
 
-const char* optstring_DuplicateFile=":rdi:m:k:q:";
+const char* optstring_DuplicateFile=":ardi:m:k:q:";
 const struct option_TS lopts_DuplicateFile[]= {
       {"delete",no_argument_TS,NULL,'d'},
       {"recursive-delete",no_argument_TS,NULL,'r'},
+      {"make-dir", no_argument_TS, NULL,'a'},
       {"move",required_argument_TS,NULL,'m'},
       {"input",required_argument_TS,NULL,'i'},
       {"input_encoding",required_argument_TS,NULL,'k'},
@@ -87,11 +90,12 @@ const char *output_file = NULL;
 int do_delete=0;
 int do_recursive_delete=0;
 int do_move=0;
-
+int do_make_dir=0;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_DuplicateFile,&index,vars))) {
    switch(val) {
+   case 'a': do_make_dir = 1; break;
    case 'd': do_delete = 1; break;
    case 'r': do_delete = do_recursive_delete = 1; break;
    case 'i': if (vars->optarg[0]=='\0') {
@@ -124,7 +128,7 @@ if (vars->optind!=argc-1) {
 
 output_file = argv[vars->optind];
 
-if ((input_file==NULL) && (do_delete==0)) {
+if ((input_file==NULL) && (do_delete==0) && (do_make_dir==0)) {
    fatal_error("You must specify the input_file file\n");
 }
 
@@ -145,6 +149,11 @@ if (input_file != NULL) {
         u_printf("move file %s to %s\n",input_file,output_file);
         result=af_rename(input_file,output_file);
     }
+}
+else
+if (do_make_dir != 0) {
+    u_printf("make dir %s\n", output_file);
+    result = mkDirPortable(output_file);
 }
 else {
     if (do_recursive_delete == 0) {

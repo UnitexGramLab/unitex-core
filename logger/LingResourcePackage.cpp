@@ -146,7 +146,7 @@ static int is_filename_dictionary_main_file(const char* filename)
     return 0;
 }
 
-
+/*
 static int is_filename_dictionary_complement_file(const char* filename)
 {
     size_t len = strlen(filename);
@@ -156,22 +156,22 @@ static int is_filename_dictionary_complement_file(const char* filename)
         const char* ext3 = filename + len - 4;
         if ((strcmp(ext3, ".inf") == 0) || (strcmp(ext3, ".INF") == 0) || (strcmp(ext3, ".Inf") == 0))
             return 1;
-        /*
-        if ((strcmp(ext3, ".inp") == 0) || (strcmp(ext3, ".INP") == 0) || (strcmp(ext3, ".Inp") == 0))
-            return 1;
-        */
+
+        //if ((strcmp(ext3, ".inp") == 0) || (strcmp(ext3, ".INP") == 0) || (strcmp(ext3, ".Inp") == 0))
+        //    return 1;
+
     }
 
     return 0;
 }
-
+*/
 
 static int is_file_removable_when_persist(const char* filename, int persist_graph, int /*persist_dictionary*/, int persist_alphabet)
 {
     if (persist_graph && (is_filename_graph(filename)))
         return 1;
 
-    // somes persistence implementation keep pointer
+    // somes persistence implementation keep pointer, so we comment these two lines
     /*
     if (persist_dictionary && (is_filename_dictionary_main_file(filename)))
         return 1;
@@ -183,10 +183,13 @@ static int is_file_removable_when_persist(const char* filename, int persist_grap
     return 0;
 }
 
-static int is_file_removable_after_persist(const char* filename, int /*persist_graph*/, int persist_dictionary, int /*persist_alphabet*/)
+static int is_file_removable_after_persist(const char* /*filename*/, int /*persist_graph*/, int /*persist_dictionary*/, int /*persist_alphabet*/)
 {
+    // somes persistence implementation keep pointer, so we comment these two lines
+    /*
     if (persist_dictionary && (is_filename_dictionary_complement_file(filename)))
         return 1;
+    */
 
     return 0;
 }
