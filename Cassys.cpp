@@ -507,7 +507,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 		}
 
 	initialize_working_directory_before_tokenize(text, must_create_directory);
-    launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args);
+        /*Commenting out launch_tokenize_in_Cassys because the call is redundant
+         *  and throws the error "Cannot write tok_by_freq.txt" */
+    //launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args);
 
     //if (in_place == 0)
         initialize_working_directory(text, must_create_directory);
