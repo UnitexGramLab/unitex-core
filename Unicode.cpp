@@ -4322,7 +4322,7 @@ int u_escape(const unichar* source, T* destination) {
       destination[pos++] = (T)*it;
     } 
     // 2-bytes unicode codepoints 
-    else if (*it  >= 0x80  && *it <= 0xFFFF) {
+    else {
       // Parse code point hex nibbles 
       // e.g. for U+2764
       //   -----------------------------------------------------------------
