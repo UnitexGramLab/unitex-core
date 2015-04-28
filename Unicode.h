@@ -307,8 +307,13 @@ unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const char* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);
 
+
+// define NO_CPP_TEMPLATE_SUPPORT if you archeological C++ compiler don't support template
+#ifndef NO_CPP_TEMPLATE_SUPPORT
 template <typename T> 
 int u_escape(const unichar* source, T* destination);
+#endif
+
 
 void u_to_char(char*,unichar*);
 void u_chomp_new_line(unichar*);

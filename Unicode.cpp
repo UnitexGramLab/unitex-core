@@ -4286,6 +4286,8 @@ if (l>0 && s[l-1]=='\n') {
 }
 }
 
+
+#ifndef NO_CPP_TEMPLATE_SUPPORT
 /**
  * @brief  Converts all non-ASCII Unicode characters to Unicode escape-sequences
  * 
@@ -4364,6 +4366,9 @@ template int u_escape(const unichar* source, unichar* destination);
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
 // destination is a char buffer
 template int u_escape(const unichar* source, char* destination);
+
+#endif
+
 
 /**
  * @brief JSON-escapes a unichar string
