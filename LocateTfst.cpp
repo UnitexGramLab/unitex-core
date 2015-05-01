@@ -52,6 +52,7 @@ const char* usage_LocateTfst =
          "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
          "  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
 		 "  --single_tags_only: skips all results that match more than one text tag\n"
+		 "  --dont_match_word_boundaries: allows 'air'+'port' in a graph to match 'airport' in the TFST\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -124,6 +125,7 @@ const struct option_TS lopts_LocateTfst[]= {
      {"variable",required_argument_TS,NULL,'v'},
      {"tagging",no_argument_TS,NULL,1},
      {"single_tags_only",no_argument_TS,NULL,2},
+     {"dont_match_word_boundaries", no_argument_TS, NULL,3},
      {NULL,no_argument_TS,NULL,0}
 };
 
@@ -147,6 +149,7 @@ int tilde_negation_operator=1;
 int selected_negation_operator=0;
 int tagging=0;
 int single_tags_only=0;
+int match_word_boundaries=1;
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
@@ -168,7 +171,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
              strcpy(alphabet,vars->optarg);
              break;
    case 'K': is_korean=1;
-             break;
+   	   	   	  match_word_boundaries=0;
+              break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
    case 'g': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify an argument for negation operator\n");
@@ -203,6 +207,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    case 'h': usage(); return 0;
    case 1: tagging=1; break;
    case 2: single_tags_only=1; break;
+   case 3: match_word_boundaries=0; break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -249,7 +254,7 @@ strcat(output,"concord.ind");
 int OK=locate_tfst(text,grammar,alphabet,output,
                    &vec,match_policy,output_policy,
                    ambiguous_output_policy,variable_error_policy,search_limit,is_korean,
-                   tilde_negation_operator,injected,tagging,single_tags_only);
+                   tilde_negation_operator,injected,tagging,single_tags_only,match_word_boundaries);
 free_vector_ptr(injected);
 free_OptVars(vars);
 return (!OK);

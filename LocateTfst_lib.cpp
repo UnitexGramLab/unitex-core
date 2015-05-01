@@ -115,7 +115,7 @@ int locate_tfst(const char* text,const char* grammar,const char* alphabet,const 
 		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,
 		          int tilde_negation_operator,vector_ptr* injected_vars,int tagging,
-		          int single_tags_only) {
+		          int single_tags_only,int match_word_boundaries) {
 Tfst* tfst=open_text_automaton(vec,text);
 if (tfst==NULL) {
 	return 0;
@@ -132,6 +132,7 @@ infos.tfst=tfst;
 infos.number_of_matches=0;
 infos.alphabet=NULL;
 infos.single_tags_only=single_tags_only;
+infos.match_word_boundaries=match_word_boundaries;
 if (alphabet!=NULL && alphabet[0]!='\0') {
    /* We want to allow undefined alphabets (see comments above 'is_letter'
     * in Alphabet.cpp) */
@@ -510,6 +511,9 @@ if (current_pending_fst2_transition!=NULL) {
 
 /* CASE 2: if we have not finished to explore a tfst tag */
 if (current_pending_tfst_transition!=NULL) {
+	if (infos->match_word_boundaries) {
+		return;
+	}
    Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
    Transition* grammar_transition=current_state_in_grammar->transitions;
    struct tfst_match* list=NULL;

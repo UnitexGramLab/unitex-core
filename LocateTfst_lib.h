@@ -117,11 +117,12 @@ struct locate_tfst_infos {
 	int debug;
 	int tagging;
 	int single_tags_only;
+	int match_word_boundaries;
 };
 
 
 int locate_tfst(const char*,const char*,const char*,const char*, const VersatileEncodingConfig*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,
-                VariableErrorPolicy,int,int,int,vector_ptr*,int,int);
+                VariableErrorPolicy,int,int,int,vector_ptr*,int,int,int);
 
 } // namespace unitex
 
