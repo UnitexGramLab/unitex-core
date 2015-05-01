@@ -308,7 +308,7 @@ else {
 			}
 			u_fprintf(fout, "-------------------------------------------\n\n");
 		}
-		u_fprintf(fout, "%8d: %d.%d -> %d,%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
+		u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
 		DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
 		DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
 	}
