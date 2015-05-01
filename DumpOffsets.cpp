@@ -73,7 +73,7 @@ const char* usage_DumpOffsets =
 		 "UnitexToolLogger Normalize -r .\\resource\\Norm.txt .\\work\\text_file.txt --output_offsets .\\work\\text_file_offset.txt\n" \
 		 "UnitexToolLogger DumpOffsets -o .\\work\\text_file_offset.txt -n .\\work\\text_file_offset.snt -p .\\work\\dump\\dump_offsets.txt .\\work\\text_file_offset.txt\n" \
 		 "\n" \
-		 "\n"
+		 "\n" \
 		 "Usage: DumpOffsets [-m/--merge] [OPTIONS] <txt>\n"
 		 "\n"
 		 "  <txt>: a offset file to read\n"
@@ -91,13 +91,14 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hmo:n:p:k:q:";
+const char* optstring_DumpOffsets=":hfmo:n:p:k:q:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
    {"output",required_argument_TS,NULL,'p'},
    {"no_escape_sequence",required_argument_TS,NULL,'c'},
    {"merge",no_argument_TS,NULL,'m'},
+   {"full",no_argument_TS,NULL,'f'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
@@ -167,7 +168,7 @@ static void DumpSequence(U_FILE* f,const unichar* text, int textsize, int start,
 {
 	if (end <= start)
 	{
-		u_fprintf(f, "invalid sequence : end before start\n");
+		u_fprintf(f, "empty sequence : end before start\n");
 	}
 	else
 	if (end > textsize)
@@ -210,12 +211,13 @@ if (argc==1) {
 }
 
 char old_filename[FILENAME_MAX]="";
-char new_filename[FILENAME_MAX] = "";
-char output[FILENAME_MAX] = "";
-char offset_file_name[FILENAME_MAX] = "";
+char new_filename[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+char offset_file_name[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
-int escape = 1;
-int merge = 0;
+int escape=1;
+int merge=0;
+int full=0;
 int val,index=-1;
 //char foo=0;
 struct OptVars* vars=new_OptVars();
@@ -247,6 +249,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'c': escape = 0; break;
+   case 'f': full = 1; break;
    case 'm': merge = 1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -294,10 +297,17 @@ else {
 
 	U_FILE* fout = u_fopen(&vec, output, U_WRITE);
 	for (int i = 0; i < offsets->nbelems; i++) {
+		Offsets curOffset = offsets->tab[i];
 		if (i > 0) {
+			if (full) {
+				Offsets prevOffset = offsets->tab[i-1];
+				u_fprintf(fout, "===========================================\n\n");
+				u_fprintf(fout, "Common zone:\n\n");
+				DumpSequence(fout, old_text, old_size, prevOffset.old_end+1, curOffset.old_start-1, escape);
+				DumpSequence(fout, new_text, new_size, prevOffset.new_end + 1, curOffset.new_start - 1, escape);
+			}
 			u_fprintf(fout, "-------------------------------------------\n\n");
 		}
-		Offsets curOffset = offsets->tab[i];
 		u_fprintf(fout, "%8d: %d.%d -> %d,%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
 		DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
 		DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
