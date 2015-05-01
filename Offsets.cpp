@@ -187,11 +187,24 @@ while (j < new_offsets->nbelems) {
 			//error("A after B overlap entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
 			int new_shift_B = y.new_end - y.old_end;
 			//error("new shift B = %d\n",new_shift_B);
-			save_offsets(f, 
-						y.old_start + shift_A, 
-						x.old_end + shift_A + B_includes_A_shift, 
+			
+// Bugfix 2015/05/01, svn revision 3828
+// remove the + shift_B on the two last parameters of save_offsets
+// do a #define IGNORE_BUGFIX to revert and compare if needed
+#ifdef IGNORE_BUGFIX
+			save_offsets(f,
+						y.old_start + shift_A,
+						x.old_end + shift_A + B_includes_A_shift,
 						y.new_start + shift_B,
 						x.new_end + shift_B + A_includes_B_shift + new_shift_B);
+#else
+			save_offsets(f,
+						y.old_start + shift_A,
+						x.old_end + shift_A + B_includes_A_shift,
+						y.new_start,
+						x.new_end + A_includes_B_shift + new_shift_B);
+#endif
+
 			A_includes_B_shift = 0;
 			B_includes_A_shift = 0;
 			shift_B += new_shift_B;
