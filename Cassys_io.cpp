@@ -310,6 +310,10 @@ void protect_text(const char *fileName, const VersatileEncodingConfig* vec){
 }
 
 
+/**
+ * This code run well, but in really not optimized
+ */
+
 #define READ_FILE_BUFFER_SIZE 65536
 
 unichar* read_file(U_FILE *f){
@@ -344,7 +348,6 @@ unichar* read_file(U_FILE *f){
 	text[total_read]='\0';
 
 	return text;
-
 }
 
 

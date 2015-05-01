@@ -739,6 +739,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\DumpOffsets.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\DuplicateFile.cpp"
 				>
 			</File>

@@ -225,6 +225,7 @@
     <ClCompile Include="..\DicVariables.cpp" />
     <ClCompile Include="..\Diff.cpp" />
     <ClCompile Include="..\DirHelperWin.cpp" />
+    <ClCompile Include="..\DumpOffsets.cpp" />
     <ClCompile Include="..\DuplicateFile.cpp" />
     <ClCompile Include="..\DutchCompounds.cpp" />
     <ClCompile Include="..\Elag.cpp" />
@@ -488,6 +489,7 @@
     <ClInclude Include="..\DicVariables.h" />
     <ClInclude Include="..\Diff.h" />
     <ClInclude Include="..\DirHelper.h" />
+    <ClInclude Include="..\DumpOffsets.h" />
     <ClInclude Include="..\DuplicateFile.h" />
     <ClInclude Include="..\DutchCompounds.h" />
     <ClInclude Include="..\Elag.h" />

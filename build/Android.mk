@@ -135,6 +135,7 @@ Unitex-C++/DictionaryTree.cpp \
 Unitex-C++/DicVariables.cpp \
 Unitex-C++/Diff.cpp \
 Unitex-C++/DirHelperPosix.cpp \
+Unitex-C++/DumpOffsets.cpp \
 Unitex-C++/DuplicateFile.cpp \
 Unitex-C++/DutchCompounds.cpp \
 Unitex-C++/Elag.cpp \

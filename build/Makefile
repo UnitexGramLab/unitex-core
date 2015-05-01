@@ -1286,7 +1286,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
-                  Ustring.o VersionInfo.o XMLizer.o DuplicateFile.o Seq2Grf.o \
+                  Ustring.o VersionInfo.o XMLizer.o DuplicateFile.o DumpOffsets.o Seq2Grf.o \
                   Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
@@ -1325,12 +1325,12 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o \
-                  Ustring.o VersionInfo.o XMLizer.o DuplicateFile.o \
-                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o\
+                  Ustring.o VersionInfo.o XMLizer.o DuplicateFile.o DumpOffsets.o \
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Untokenize.o Tagger.o \
                   TaggingProcess.o TrainingTagger.o TrainingProcess.o LocateCache.o Arabic.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
-                  GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o\
+                  GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o \
                   SpellChecking.o Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o \
                   RegExFacade.o $(TRE_LINK_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)

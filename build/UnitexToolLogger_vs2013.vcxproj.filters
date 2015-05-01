@@ -305,6 +305,9 @@
     <ClCompile Include="..\Diff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\DumpOffsets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\DuplicateFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

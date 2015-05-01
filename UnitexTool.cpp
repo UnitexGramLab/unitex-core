@@ -69,6 +69,10 @@
 #include "Dico.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUMPOFFSETS))) || defined(TOOL_DUMPOFFSETS))
+#include "DumpOffsets.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE))
 #include "DuplicateFile.h"
 #endif
@@ -326,6 +330,10 @@ const struct utility_item utility_array[]=
 
 #if (((!defined(NO_TOOL_DICO))) || defined(TOOL_DICO))
 	{ "Dico", 4, &main_Dico, usage_Dico, optstring_Dico, lopts_Dico } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUMPOFFSETS))) || defined(TOOL_DUMPOFFSETS))
+	{ "DumpOffsets", 11, &main_DumpOffsets, usage_DumpOffsets, optstring_DumpOffsets, lopts_DumpOffsets },
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE))

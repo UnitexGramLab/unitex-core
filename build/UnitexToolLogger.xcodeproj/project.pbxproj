@@ -218,6 +218,7 @@
 		225FE443112569C500F33C2A /* TaggingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE43E112569C500F33C2A /* TaggingProcess.cpp */; };
 		225FE444112569C500F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE440112569C500F33C2A /* TrainingTagger.cpp */; };
 		225FE86E11256B6A00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */; };
+		226063B91AF3A2AC00BC2033 /* DumpOffsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 226063B71AF3A2AC00BC2033 /* DumpOffsets.cpp */; };
 		2263A27E160FDBBC00675831 /* UnitexLibDirPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2263A27B160FDBBC00675831 /* UnitexLibDirPosix.cpp */; };
 		2263A27F160FDBBC00675831 /* UnitexLibIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2263A27C160FDBBC00675831 /* UnitexLibIO.cpp */; };
 		2287C989151E084200A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C987151E084200A820F3 /* PersistenceInterface.cpp */; };
@@ -706,6 +707,8 @@
 		225FE441112569C500F33C2A /* TrainingTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingTagger.h; path = ../TrainingTagger.h; sourceTree = SOURCE_ROOT; };
 		225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingProcess.cpp; path = ../TrainingProcess.cpp; sourceTree = SOURCE_ROOT; };
 		225FE86D11256B6A00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
+		226063B71AF3A2AC00BC2033 /* DumpOffsets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DumpOffsets.cpp; path = ../DumpOffsets.cpp; sourceTree = "<group>"; };
+		226063B81AF3A2AC00BC2033 /* DumpOffsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DumpOffsets.h; path = ../DumpOffsets.h; sourceTree = "<group>"; };
 		2263A27A160FDBBC00675831 /* UnitexLibDir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexLibDir.h; path = ../UnitexLibDir.h; sourceTree = "<group>"; };
 		2263A27B160FDBBC00675831 /* UnitexLibDirPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibDirPosix.cpp; path = ../UnitexLibDirPosix.cpp; sourceTree = "<group>"; };
 		2263A27C160FDBBC00675831 /* UnitexLibIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibIO.cpp; path = ../UnitexLibIO.cpp; sourceTree = "<group>"; };
@@ -790,6 +793,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				226063B71AF3A2AC00BC2033 /* DumpOffsets.cpp */,
+				226063B81AF3A2AC00BC2033 /* DumpOffsets.h */,
 				2232E1CB169101B300C56E5A /* Cassys_concord.cpp */,
 				22942CA018097E7B00057308 /* SelectOutput.cpp */,
 				22942CA118097E7B00057308 /* SelectOutput.h */,
@@ -1515,6 +1520,7 @@
 				222F7C3C1107A68E00C91CC7 /* OptimizedFst2.cpp in Sources */,
 				222F7C3D1107A68E00C91CC7 /* OptimizedTfstTagMatching.cpp in Sources */,
 				222F7C3E1107A68E00C91CC7 /* ParsingInfo.cpp in Sources */,
+				226063B91AF3A2AC00BC2033 /* DumpOffsets.cpp in Sources */,
 				222F7C3F1107A68E00C91CC7 /* Pattern.cpp in Sources */,
 				222F7C401107A68E00C91CC7 /* PatternTree.cpp in Sources */,
 				222F7C411107A68E00C91CC7 /* PolyLex.cpp in Sources */,

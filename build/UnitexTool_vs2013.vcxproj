@@ -367,6 +367,7 @@
     <ClCompile Include="..\DicVariables.cpp" />
     <ClCompile Include="..\Diff.cpp" />
     <ClCompile Include="..\DirHelperWin.cpp" />
+    <ClCompile Include="..\DumpOffsets.cpp" />
     <ClCompile Include="..\DuplicateFile.cpp" />
     <ClCompile Include="..\DutchCompounds.cpp" />
     <ClCompile Include="..\Elag.cpp" />

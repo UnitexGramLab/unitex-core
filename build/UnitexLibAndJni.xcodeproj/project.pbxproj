@@ -435,6 +435,8 @@
 		225D3032160FCE1900D8D8BB /* UnitexLibDirPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225D302E160FCE1900D8D8BB /* UnitexLibDirPosix.cpp */; };
 		225D3033160FCE1900D8D8BB /* UnitexLibIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225D302F160FCE1900D8D8BB /* UnitexLibIO.cpp */; };
 		225D3034160FCE1900D8D8BB /* UnitexLibIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 225D3030160FCE1900D8D8BB /* UnitexLibIO.h */; };
+		226063B21AF3A27F00BC2033 /* DumpOffsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 226063B01AF3A27F00BC2033 /* DumpOffsets.cpp */; };
+		226063B31AF3A27F00BC2033 /* DumpOffsets.h in Headers */ = {isa = PBXBuildFile; fileRef = 226063B11AF3A27F00BC2033 /* DumpOffsets.h */; };
 		2287C97E151E081600A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C97C151E081600A820F3 /* PersistenceInterface.cpp */; };
 		2287C97F151E081600A820F3 /* PersistenceInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 2287C97D151E081600A820F3 /* PersistenceInterface.h */; };
 		228B5BE11606672B006DAABF /* SyncToolPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */; };
@@ -943,6 +945,8 @@
 		225D302E160FCE1900D8D8BB /* UnitexLibDirPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibDirPosix.cpp; path = ../UnitexLibDirPosix.cpp; sourceTree = "<group>"; };
 		225D302F160FCE1900D8D8BB /* UnitexLibIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibIO.cpp; path = ../UnitexLibIO.cpp; sourceTree = "<group>"; };
 		225D3030160FCE1900D8D8BB /* UnitexLibIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexLibIO.h; path = ../UnitexLibIO.h; sourceTree = "<group>"; };
+		226063B01AF3A27F00BC2033 /* DumpOffsets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DumpOffsets.cpp; path = ../DumpOffsets.cpp; sourceTree = "<group>"; };
+		226063B11AF3A27F00BC2033 /* DumpOffsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DumpOffsets.h; path = ../DumpOffsets.h; sourceTree = "<group>"; };
 		2287C97C151E081600A820F3 /* PersistenceInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistenceInterface.cpp; path = ../PersistenceInterface.cpp; sourceTree = SOURCE_ROOT; };
 		2287C97D151E081600A820F3 /* PersistenceInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistenceInterface.h; path = ../PersistenceInterface.h; sourceTree = SOURCE_ROOT; };
 		228B5BDF1606672B006DAABF /* SyncToolPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SyncToolPosix.cpp; path = ../SyncToolPosix.cpp; sourceTree = "<group>"; };
@@ -1121,6 +1125,8 @@
 			children = (
 				22942C9C18097E7100057308 /* SelectOutput.cpp */,
 				22942C9D18097E7100057308 /* SelectOutput.h */,
+				226063B01AF3A27F00BC2033 /* DumpOffsets.cpp */,
+				226063B11AF3A27F00BC2033 /* DumpOffsets.h */,
 				2232E1F21691020800C56E5A /* Cassys_concord.cpp */,
 				2232E1F31691020800C56E5A /* Cassys_concord.h */,
 				2232E1F41691020800C56E5A /* Cassys_external_program.cpp */,
@@ -1785,6 +1791,7 @@
 				222A001B1411336600F74409 /* RebuildTfst.h in Headers */,
 				222A001D1411336600F74409 /* Reconstrucao.h in Headers */,
 				222A001F1411336600F74409 /* Reg2Grf.h in Headers */,
+				226063B31AF3A27F00BC2033 /* DumpOffsets.h in Headers */,
 				222A00211411336600F74409 /* RegularExpressions.h in Headers */,
 				222A00231411336600F74409 /* RussianCompounds.h in Headers */,
 				222A00251411336600F74409 /* Sentence2Grf.h in Headers */,
@@ -2130,6 +2137,7 @@
 				222A00CC1411358600F74409 /* tre-compile.c in Sources */,
 				222A00CF1411358600F74409 /* tre-match-approx.c in Sources */,
 				222A00D01411358600F74409 /* tre-match-backtrack.c in Sources */,
+				226063B21AF3A27F00BC2033 /* DumpOffsets.cpp in Sources */,
 				222A00D11411358600F74409 /* tre-match-parallel.c in Sources */,
 				222A00D31411358600F74409 /* tre-mem.c in Sources */,
 				222A00D51411358600F74409 /* tre-parse.c in Sources */,

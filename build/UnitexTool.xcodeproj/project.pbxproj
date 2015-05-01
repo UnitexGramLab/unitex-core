@@ -207,6 +207,7 @@
 		225FE86511256AB900F33C2A /* TaggingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86011256AB900F33C2A /* TaggingProcess.cpp */; };
 		225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86211256AB900F33C2A /* TrainingTagger.cpp */; };
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
+		226063B61AF3A29500BC2033 /* DumpOffsets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 226063B41AF3A29500BC2033 /* DumpOffsets.cpp */; };
 		2263A285160FDBCF00675831 /* UnitexLibDirPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2263A282160FDBCF00675831 /* UnitexLibDirPosix.cpp */; };
 		2263A286160FDBCF00675831 /* UnitexLibIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2263A283160FDBCF00675831 /* UnitexLibIO.cpp */; };
 		2287C99E151E085700A820F3 /* PersistenceInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2287C99C151E085700A820F3 /* PersistenceInterface.cpp */; };
@@ -666,6 +667,8 @@
 		225FE86311256AB900F33C2A /* TrainingTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingTagger.h; path = ../TrainingTagger.h; sourceTree = SOURCE_ROOT; };
 		225FE87811256B7B00F33C2A /* TrainingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingProcess.cpp; path = ../TrainingProcess.cpp; sourceTree = SOURCE_ROOT; };
 		225FE87911256B7B00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
+		226063B41AF3A29500BC2033 /* DumpOffsets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DumpOffsets.cpp; path = ../DumpOffsets.cpp; sourceTree = "<group>"; };
+		226063B51AF3A29500BC2033 /* DumpOffsets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DumpOffsets.h; path = ../DumpOffsets.h; sourceTree = "<group>"; };
 		2263A281160FDBCF00675831 /* UnitexLibDir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitexLibDir.h; path = ../UnitexLibDir.h; sourceTree = "<group>"; };
 		2263A282160FDBCF00675831 /* UnitexLibDirPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibDirPosix.cpp; path = ../UnitexLibDirPosix.cpp; sourceTree = "<group>"; };
 		2263A283160FDBCF00675831 /* UnitexLibIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnitexLibIO.cpp; path = ../UnitexLibIO.cpp; sourceTree = "<group>"; };
@@ -736,6 +739,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				226063B41AF3A29500BC2033 /* DumpOffsets.cpp */,
+				226063B51AF3A29500BC2033 /* DumpOffsets.h */,
 				22942C9918097E6100057308 /* SelectOutput.cpp */,
 				22942C9A18097E6100057308 /* SelectOutput.h */,
 				2232E1DF169101E000C56E5A /* Cassys_concord.cpp */,
@@ -1273,6 +1278,8 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "UnitexTool" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
@@ -1486,6 +1493,7 @@
 				2245784913A2BC84002E0C5D /* Grf_lib.cpp in Sources */,
 				2245784A13A2BC84002E0C5D /* GrfBeauty.cpp in Sources */,
 				2245784B13A2BC84002E0C5D /* Seq2Grf.cpp in Sources */,
+				226063B61AF3A29500BC2033 /* DumpOffsets.cpp in Sources */,
 				2245784C13A2BC84002E0C5D /* GrfTest_lib.cpp in Sources */,
 				2245784D13A2BC84002E0C5D /* DebugMode.cpp in Sources */,
 				2245784E13A2BC84002E0C5D /* Offsets.cpp in Sources */,

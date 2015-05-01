@@ -228,6 +228,9 @@
     <ClCompile Include="..\DirHelperWin.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="..\DumpOffsets.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
     <ClCompile Include="..\DuplicateFile.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
@@ -984,6 +987,9 @@
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\Diff.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DumpOffsets.h">
       <Filter>Unitex-C++</Filter>
     </ClInclude>
     <ClInclude Include="..\DuplicateFile.h">
