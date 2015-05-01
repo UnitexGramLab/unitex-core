@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -62,28 +62,29 @@ const char* usage_DumpOffsets =
          "\n"
          "OPTIONS:\n"
          "  -o X/--old=X: name of old file to read\n"
-		 "  -n X/--new=X: name of new file to read\n"
+         "  -n X/--new=X: name of new file to read\n"
          "  -p X/--output=X: name of output dump file to write\n"
+         "  -f/--full: dump common text additionaly\n"
          "  -c/--no_escape_sequence: don't escape text sequence\n"
          "  -h/--help: this help\n"
          "\n"
          "DumpOffsets dump sequence offset to study them.\n"
-		 "\n" \
-		 "Example:\n" \
-		 "UnitexToolLogger Normalize -r .\\resource\\Norm.txt .\\work\\text_file.txt --output_offsets .\\work\\text_file_offset.txt\n" \
-		 "UnitexToolLogger DumpOffsets -o .\\work\\text_file_offset.txt -n .\\work\\text_file_offset.snt -p .\\work\\dump\\dump_offsets.txt .\\work\\text_file_offset.txt\n" \
-		 "\n" \
-		 "\n" \
-		 "Usage: DumpOffsets [-m/--merge] [OPTIONS] <txt>\n"
-		 "\n"
-		 "  <txt>: a offset file to read\n"
-		 "\n"
-		 "OPTIONS:\n"
-		 "  -o X/--old=X: name of old offset file to read\n"
-		 "  -p X/--output=X: name of output merged offset file to write\n"
-		 "  -h/--help: this help\n"
-		 "\n"
-		 ;
+         "\n" \
+         "Example:\n" \
+         "UnitexToolLogger Normalize -r .\\resource\\Norm.txt .\\work\\text_file.txt --output_offsets .\\work\\text_file_offset.txt\n" \
+         "UnitexToolLogger DumpOffsets -o .\\work\\text_file_offset.txt -n .\\work\\text_file_offset.snt -p .\\work\\dump\\dump_offsets.txt .\\work\\text_file_offset.txt\n" \
+         "\n" \
+         "\n" \
+         "Other Usage: DumpOffsets [-m/--merge] [OPTIONS] <txt>\n"
+         "\n"
+         "  <txt>: a offset file to read\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -o X/--old=X: name of old offset file to read\n"
+         "  -p X/--output=X: name of output merged offset file to write\n"
+         "  -h/--help: this help\n"
+         "\n"
+         ;
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
@@ -115,94 +116,129 @@ const struct option_TS lopts_DumpOffsets[]={
 */
 static unichar* read_file(U_FILE *f,int * filesize){
 
-	unichar *text = NULL;
-	*filesize = 0;
-	
-	text = (unichar *)malloc(sizeof(unichar));
-	if (text == NULL){
-		fatal_alloc_error("malloc");
-	}
-	text[0] = '\0';
+    unichar *text = NULL;
+    *filesize = 0;
 
-	int total_read = 0;
-	int read;
-	do {
-		unichar buffer[READ_FILE_BUFFER_SIZE + 1];
-		memset(buffer, 0, sizeof(unichar)*(READ_FILE_BUFFER_SIZE + 1));
+    text = (unichar *)malloc(sizeof(unichar));
+    if (text == NULL){
+        fatal_alloc_error("malloc");
+    }
+    text[0] = '\0';
 
-		for (read = 0; read < READ_FILE_BUFFER_SIZE; read++)
-		{
-			int r = u_fgetc_raw(f);
-			if (r == EOF)
-				break;
-			*(buffer + read) = (unichar)r;
-		}
-		
-		total_read += u_strlen(buffer);
-		text = (unichar *)realloc(text, sizeof(unichar)*(total_read + 1));
-		if (text == NULL){
-			fatal_alloc_error("realloc");
-		}
-		u_strcat(text, buffer);
+    int total_read = 0;
+    int read;
+    do {
+        unichar buffer[READ_FILE_BUFFER_SIZE + 1];
+        memset(buffer, 0, sizeof(unichar)*(READ_FILE_BUFFER_SIZE + 1));
 
-	} while (read == READ_FILE_BUFFER_SIZE);
+        for (read = 0; read < READ_FILE_BUFFER_SIZE; read++)
+        {
+            int r = u_fgetc_raw(f);
+            if (r == EOF)
+                break;
+            *(buffer + read) = (unichar)r;
+        }
 
-	text[total_read] = '\0';
-	*filesize = total_read;
-	return text;
+        total_read += u_strlen(buffer);
+        text = (unichar *)realloc(text, sizeof(unichar)*(total_read + 1));
+        if (text == NULL){
+            fatal_alloc_error("realloc");
+        }
+        u_strcat(text, buffer);
+
+    } while (read == READ_FILE_BUFFER_SIZE);
+
+    text[total_read] = '\0';
+    *filesize = total_read;
+    return text;
 }
 
 
 static void read_file(const VersatileEncodingConfig* cfg, const char*filename, unichar** buffer, int *filesize)
 {
-	U_FILE* f = u_fopen(cfg, filename, U_READ);
-	if (f == NULL) {
-		fatal_error("cannot read file %s", filename);
-	}
-	*buffer = read_file(f, filesize);
-	u_fclose(f);
+    U_FILE* f = u_fopen(cfg, filename, U_READ);
+    if (f == NULL) {
+        fatal_error("cannot read file %s", filename);
+    }
+    *buffer = read_file(f, filesize);
+    u_fclose(f);
 }
 
 
-static void DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, int end, int escape)
+static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, int end, int escape)
 {
-	if (end <= start)
-	{
-		u_fprintf(f, "empty sequence : end before start\n");
-	}
-	else
-	if (end > textsize)
-	{
-		u_fprintf(f, "invalid sequence : end after end of file\n");
-	}
-	else
-	{
-		u_fprintf(f, "'");
-		for (int i = start; i < end; i++) {
-			unichar c = *(text + i);
-			if (escape) {
-				if (c >= 0x20) {
-					u_fputc(c, f);
-				}
-				else {
-					switch (c)
-					{
-						case '\r' : u_fprintf(f, "\\r"); break;
-						case '\n': u_fprintf(f, "\\n"); break;
-						case '\t': u_fprintf(f, "\\t"); break;
-						default: u_fprintf(f,"\\x%02x", (unsigned int)c); break;
-					}
-				}
-
-
-			}
-			else {
-				u_fputc(c, f);
-			}
-		}
-		u_fprintf(f, "'\n");
-	}
+    if (end < start)
+    {
+        u_fprintf(f, "Invalid sequence : end before start !\n");
+        return 0;
+    }
+    else
+    if (end == start)
+    {
+        u_fprintf(f, "empty sequence\n");
+        return 0;
+    }
+    else
+    if (end > textsize)
+    {
+        u_fprintf(f, "Invalid sequence : end after end of file !\n");
+        return 0;
+    }
+    else
+    {
+        u_fprintf(f, "'");
+        for (int i = start; i < end; i++) {
+            unichar c = *(text + i);
+            if (escape) {
+                if (c >= 0x20) {
+                    u_fputc(c, f);
+                }
+                else {
+                    switch (c)
+                    {
+                        case '\r' : u_fprintf(f, "\\r"); break;
+                        case '\n': u_fprintf(f, "\\n"); break;
+                        case '\t': u_fprintf(f, "\\t"); break;
+                        default: u_fprintf(f,"\\x%02x", (unsigned int)c); break;
+                    }
+                }
+            }
+            else {
+                u_fputc(c, f);
+            }
+        }
+        u_fprintf(f, "'\n");
+    }
+    return 1;
 }
+
+
+
+static int CompareCommon(U_FILE* f,
+    const unichar*old_text, int old_size, int old_pos, int old_limit,
+    const unichar*new_text, int new_size, int new_pos, int new_limit)
+{
+    if ((old_limit < old_pos) || (new_limit < new_pos)) {
+        u_fprintf(f, "Invalid common sequence : end before start !\n");
+        return 0;
+    } else if ((old_limit > old_size) || (new_limit > new_size)) {
+        u_fprintf(f, "Invalid commonsequence : end after end of file !\n");
+        return 0;
+    } else if ((old_limit - old_pos) != (new_limit - new_pos)) {
+        u_fprintf(f, "Invalid common sequence : size mismatch !\n");
+        return 0;
+    }
+
+    for (int i = 0; i < (old_limit - old_pos); i++) {
+        if ((*(old_text + old_pos + i)) != (*(new_text + new_pos + i))) {
+            u_fprintf(f, "Difference on common sequence !\n");
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
 
 int main_DumpOffsets(int argc,char* const argv[]) {
 if (argc==1) {
@@ -269,55 +305,74 @@ if (vars->optind!=argc-1) {
 strcpy(offset_file_name, argv[vars->optind]);
 
 if (merge) {
-	vector_offset* prev_offsets = load_offsets(&vec, old_filename);
-	vector_offset* offsets = load_offsets(&vec, offset_file_name);
+    vector_offset* prev_offsets = load_offsets(&vec, old_filename);
+    vector_offset* offsets = load_offsets(&vec, offset_file_name);
 
-	U_FILE* f_output_offsets = u_fopen(&vec, output, U_WRITE);
-	if (f_output_offsets == NULL) {
-		error("Cannot create offset file %s\n", output);
-		return 1;
-	}
-	process_offsets(prev_offsets, offsets, f_output_offsets);
-	u_fclose(f_output_offsets);
-	u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+    U_FILE* f_output_offsets = u_fopen(&vec, output, U_WRITE);
+    if (f_output_offsets == NULL) {
+        error("Cannot create offset file %s\n", output);
+        return 1;
+    }
+    process_offsets(prev_offsets, offsets, f_output_offsets);
+    u_fclose(f_output_offsets);
+    u_printf("\nDumpOffsets dump done, file %s created.\n", output);
 }
 else {
-	unichar* old_text = NULL;
-	int old_size = 0;
-	read_file(&vec, old_filename, &old_text, &old_size);
+    unichar* old_text = NULL;
+    int old_size = 0;
+    read_file(&vec, old_filename, &old_text, &old_size);
 
-	unichar* new_text = NULL;
-	int new_size = 0;
-	read_file(&vec, new_filename, &new_text, &new_size);
+    unichar* new_text = NULL;
+    int new_size = 0;
+    read_file(&vec, new_filename, &new_text, &new_size);
 
-	vector_offset* offsets = load_offsets(&vec, offset_file_name);
-	if (offsets == NULL) {
-		fatal_error("cannot read file %s", offset_file_name);
-	}
+    vector_offset* offsets = load_offsets(&vec, offset_file_name);
+    if (offsets == NULL) {
+        fatal_error("cannot read file %s", offset_file_name);
+    }
 
-	U_FILE* fout = u_fopen(&vec, output, U_WRITE);
-	for (int i = 0; i < offsets->nbelems; i++) {
-		Offsets curOffset = offsets->tab[i];
-		if (i > 0) {
-			if (full) {
-				Offsets prevOffset = offsets->tab[i-1];
-				u_fprintf(fout, "===========================================\n\n");
-				u_fprintf(fout, "Common zone:\n\n");
-				DumpSequence(fout, old_text, old_size, prevOffset.old_end+1, curOffset.old_start-1, escape);
-				DumpSequence(fout, new_text, new_size, prevOffset.new_end + 1, curOffset.new_start - 1, escape);
-			}
-			u_fprintf(fout, "-------------------------------------------\n\n");
-		}
-		u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
-		DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
-		DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
-	}
+    U_FILE* fout = u_fopen(&vec, output, U_WRITE);
+    for (int i = 0; i < offsets->nbelems; i++) {
+        Offsets curOffset = offsets->tab[i];
+        Offsets prevOffset;
+        if (i > 0) {
+            prevOffset = offsets->tab[i - 1];
+        } else {
+            prevOffset.old_end = prevOffset.new_end = 0;
+        }
+        CompareCommon(fout, old_text, old_size, prevOffset.old_end, curOffset.old_start,
+                      new_text, new_size, prevOffset.new_end, curOffset.new_start);
+        if (full) {
+            u_fprintf(fout, "===========================================\n\n");
+            u_fprintf(fout, "Common zone:\n\n");
+            DumpSequence(fout, old_text, old_size, prevOffset.old_end, curOffset.old_start, escape);
+            DumpSequence(fout, new_text, new_size, prevOffset.new_end, curOffset.new_start, escape);
+        }
+        if ((i > 0) || (full)) {
+            u_fprintf(fout, "-------------------------------------------\n\n");
+        }
+        u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
+        DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
+        DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
 
-	u_fclose(fout);
-	free_vector_offset(offsets);
-	free(old_text);
-	free(new_text);
-	u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+        if ((i + 1) == offsets->nbelems) {
+            CompareCommon(fout, old_text, old_size, curOffset.old_end, old_size,
+                                new_text, new_size, curOffset.new_end, new_size);
+
+            if ((full) && ((curOffset.old_end != old_size) || (curOffset.new_end != new_size))) {
+                u_fprintf(fout, "===========================================\n\n");
+                u_fprintf(fout, "Last Common zone:\n\n");
+                DumpSequence(fout, old_text, old_size, curOffset.old_end, old_size, escape);
+                DumpSequence(fout, new_text, new_size, curOffset.new_end, new_size, escape);
+            }
+        }
+    }
+
+    u_fclose(fout);
+    free_vector_offset(offsets);
+    free(old_text);
+    free(new_text);
+    u_printf("\nDumpOffsets dump done, file %s created.\n", output);
 }
 free_OptVars(vars);
 
