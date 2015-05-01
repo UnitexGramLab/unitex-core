@@ -63,7 +63,7 @@ const char* usage_DumpOffsets =
          "OPTIONS:\n"
          "  -o X/--old=X: name of old file to read\n"
 		 "  -n X/--new=X: name of new file to read\n"
-         "  -p X/--output=X: name of output dump file o write\n"
+         "  -p X/--output=X: name of output dump file to write\n"
          "  -c/--no_escape_sequence: don't escape text sequence\n"
          "  -h/--help: this help\n"
          "\n"
@@ -73,7 +73,16 @@ const char* usage_DumpOffsets =
 		 "UnitexToolLogger Normalize -r .\\resource\\Norm.txt .\\work\\text_file.txt --output_offsets .\\work\\text_file_offset.txt\n" \
 		 "UnitexToolLogger DumpOffsets -o .\\work\\text_file_offset.txt -n .\\work\\text_file_offset.snt -p .\\work\\dump\\dump_offsets.txt .\\work\\text_file_offset.txt\n" \
 		 "\n" \
-		 ""
+		 "\n"
+		 "Usage: DumpOffsets [-m/--merge] [OPTIONS] <txt>\n"
+		 "\n"
+		 "  <txt>: a offset file to read\n"
+		 "\n"
+		 "OPTIONS:\n"
+		 "  -o X/--old=X: name of old offset file to read\n"
+		 "  -p X/--output=X: name of output merged offset file to write\n"
+		 "  -h/--help: this help\n"
+		 "\n"
 		 ;
 
 static void usage() {
@@ -82,12 +91,13 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":ho:n:p:k:q:";
+const char* optstring_DumpOffsets=":hmo:n:p:k:q:";
 const struct option_TS lopts_DumpOffsets[]={
-   {"old", required_argument_TS, NULL, 'o'},
+   {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
    {"output",required_argument_TS,NULL,'p'},
    {"no_escape_sequence",required_argument_TS,NULL,'c'},
+   {"merge",no_argument_TS,NULL,'m'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
@@ -99,8 +109,9 @@ const struct option_TS lopts_DumpOffsets[]={
 
 #define READ_FILE_BUFFER_SIZE 65536
 
-
-//
+/**
+* This code run well, but in really not optimized
+*/
 static unichar* read_file(U_FILE *f,int * filesize){
 
 	unichar *text = NULL;
@@ -204,6 +215,7 @@ char output[FILENAME_MAX] = "";
 char offset_file_name[FILENAME_MAX] = "";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int escape = 1;
+int merge = 0;
 int val,index=-1;
 //char foo=0;
 struct OptVars* vars=new_OptVars();
@@ -212,17 +224,17 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty old file name\n");
              }
-			 strcpy(old_filename, vars->optarg);
+             strcpy(old_filename, vars->optarg);
              break;
    case 'n': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty new file name\n");
              }
-			 strcpy(new_filename, vars->optarg);
+             strcpy(new_filename, vars->optarg);
              break;
    case 'p': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-			 strcpy(output, vars->optarg);
+             strcpy(output, vars->optarg);
              break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -235,6 +247,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
              break;
    case 'c': escape = 0; break;
+   case 'm': merge = 1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
@@ -252,38 +265,52 @@ if (vars->optind!=argc-1) {
 
 strcpy(offset_file_name, argv[vars->optind]);
 
+if (merge) {
+	vector_offset* prev_offsets = load_offsets(&vec, old_filename);
+	vector_offset* offsets = load_offsets(&vec, offset_file_name);
 
-unichar* old_text = NULL;
-int old_size = 0;
-read_file(&vec, old_filename, &old_text, &old_size);
-
-unichar* new_text = NULL;
-int new_size = 0;
-read_file(&vec, new_filename, &new_text, &new_size);
-u_printf("DEB size %d %d\n", old_size, new_size);
-vector_offset* offsets = load_offsets(&vec, offset_file_name);
-if (offsets == NULL) {
-	fatal_error("cannot read file %s", offset_file_name);
-}
-
-U_FILE* fout = u_fopen(&vec, output, U_WRITE);
-for (int i = 0; i < offsets->nbelems; i++) {
-	if (i > 0) {
-		u_fprintf(fout, "-------------------------------------------\n\n");
+	U_FILE* f_output_offsets = u_fopen(&vec, output, U_WRITE);
+	if (f_output_offsets == NULL) {
+		error("Cannot create offset file %s\n", output);
+		return 1;
 	}
-	Offsets curOffset = offsets->tab[i];
-	u_fprintf(fout, "%8d: %d.%d -> %d,%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
-	DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
-	DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
+	process_offsets(prev_offsets, offsets, f_output_offsets);
+	u_fclose(f_output_offsets);
+	u_printf("\nDumpOffsets dump done, file %s created.\n", output);
 }
+else {
+	unichar* old_text = NULL;
+	int old_size = 0;
+	read_file(&vec, old_filename, &old_text, &old_size);
 
-u_fclose(fout);
-free_vector_offset(offsets);
-free(old_text);
-free(new_text);
+	unichar* new_text = NULL;
+	int new_size = 0;
+	read_file(&vec, new_filename, &new_text, &new_size);
 
+	vector_offset* offsets = load_offsets(&vec, offset_file_name);
+	if (offsets == NULL) {
+		fatal_error("cannot read file %s", offset_file_name);
+	}
+
+	U_FILE* fout = u_fopen(&vec, output, U_WRITE);
+	for (int i = 0; i < offsets->nbelems; i++) {
+		if (i > 0) {
+			u_fprintf(fout, "-------------------------------------------\n\n");
+		}
+		Offsets curOffset = offsets->tab[i];
+		u_fprintf(fout, "%8d: %d.%d -> %d,%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
+		DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
+		DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
+	}
+
+	u_fclose(fout);
+	free_vector_offset(offsets);
+	free(old_text);
+	free(new_text);
+	u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+}
 free_OptVars(vars);
-u_printf("\nDumpOffsets Done.\n");
+
 return 0;
 }
 

@@ -129,8 +129,11 @@ while (j < new_offsets->nbelems) {
 		o = overlap(x.new_start, x.new_end, y.old_start, y.old_end);
 		//error("o==%s\n",N(o));
 		if (o == A_BEFORE_B) {
-			save_offsets(f, x.old_start, x.old_end, x.new_start + shift_B,
-					x.new_end + shift_B + A_includes_B_shift);
+			save_offsets(f,
+						x.old_start,
+						x.old_end,
+						x.new_start + shift_B,
+						x.new_end + shift_B + A_includes_B_shift);
 			A_includes_B_shift = 0;
 			shift_A = x.old_end - x.new_end;
 		} else {
@@ -166,9 +169,11 @@ while (j < new_offsets->nbelems) {
 			/* If A overlaps B starting before B, then we have to produce an output */
 			//error("A before B overlap entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
 			int new_shift_A = x.old_end - x.new_end;
-			save_offsets(f, x.old_start + shift_A, y.old_end + shift_A
-					+ B_includes_A_shift + new_shift_A, x.new_start
-					+ shift_B, y.new_end + shift_B + A_includes_B_shift);
+			save_offsets(f,
+						x.old_start + shift_A,
+						y.old_end + shift_A + B_includes_A_shift + new_shift_A,
+						x.new_start + shift_B,
+						y.new_end + shift_B + A_includes_B_shift);
 			A_includes_B_shift = 0;
 			B_includes_A_shift = 0;
 			shift_A += new_shift_A;
@@ -182,9 +187,11 @@ while (j < new_offsets->nbelems) {
 			//error("A after B overlap entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
 			int new_shift_B = y.new_end - y.old_end;
 			//error("new shift B = %d\n",new_shift_B);
-			save_offsets(f, y.old_start + shift_A, x.old_end + shift_A
-					+ B_includes_A_shift, y.new_start + shift_B, x.new_end
-					+ shift_B + A_includes_B_shift + new_shift_B);
+			save_offsets(f, 
+						y.old_start + shift_A, 
+						x.old_end + shift_A + B_includes_A_shift, 
+						y.new_start + shift_B,
+						x.new_end + shift_B + A_includes_B_shift + new_shift_B);
 			A_includes_B_shift = 0;
 			B_includes_A_shift = 0;
 			shift_B += new_shift_B;
@@ -196,9 +203,11 @@ while (j < new_offsets->nbelems) {
 		if (o == A_EQUALS_B) {
 			/* If A equals B starting after B, then we have to produce an output */
 			//error("A equals B entre %d;%d et %d;%d\n",x.new_start,x.new_end,y.old_start,y.old_end);
-			save_offsets(f, x.old_start + shift_A, x.old_end + shift_A
-					+ B_includes_A_shift, y.new_start + shift_B, y.new_end
-					+ shift_B + A_includes_B_shift);
+			save_offsets(f,
+						x.old_start + shift_A, 
+						x.old_end + shift_A + B_includes_A_shift,
+						y.new_start + shift_B,
+						y.new_end + shift_B + A_includes_B_shift);
 			A_includes_B_shift = 0;
 			B_includes_A_shift = 0;
 			shift_A = x.old_end - x.new_end;
@@ -211,8 +220,11 @@ while (j < new_offsets->nbelems) {
 	if (o != (Overlap) -1 && o != A_AFTER_B && i != old_offsets->nbelems)
 		fatal_error("o==%d\n", o);
 	/* Default case: A_AFTER_B */
-	save_offsets(f, y.old_start + shift_A, y.old_end + shift_A
-			+ B_includes_A_shift, y.new_start, y.new_end);
+	save_offsets(f,
+					y.old_start + shift_A,
+					y.old_end + shift_A + B_includes_A_shift,
+					y.new_start,
+					y.new_end);
 	/* The following line was introduced as a bug fix in r2771, but
 	 * it caused several problems. Since commenting it out solve
 	 * all those issues, let's do. If someone steps again on the bug
@@ -224,8 +236,11 @@ while (j < new_offsets->nbelems) {
 }
 while (i < old_offsets->nbelems) {
 	x = old_offsets->tab[i++];
-	save_offsets(f, x.old_start, x.old_end, x.new_start + shift_B,
-			x.new_end + shift_B + A_includes_B_shift);
+	save_offsets(f,
+					x.old_start,
+					x.old_end, 
+					x.new_start + shift_B,
+					x.new_end + shift_B + A_includes_B_shift);
 	A_includes_B_shift = 0;
 }
 }
