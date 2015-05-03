@@ -408,8 +408,6 @@ vector_offset* process_common_offsets(const vector_offset* first_offsets, const 
 // if you want uses old process_offsets, before the version introduced in
 // united revision 3832 May 3, 2015
 
-#define OLD_PROCESS_OFFSET // we don't activate new process_offsets
-
 #if (!defined(IGNORE_BUGFIX)) && (!defined(OLD_PROCESS_OFFSET))
 vector_offset* process_offsets(const vector_offset* first_offsets, const vector_offset* second_offsets) {
 
