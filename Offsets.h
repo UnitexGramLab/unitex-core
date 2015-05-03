@@ -122,12 +122,20 @@ return vec->nbelems-1;
 
 
 vector_offset* load_offsets(const VersatileEncodingConfig*,const char*);
-void process_offsets(vector_offset* old_offsets, vector_offset* new_offsets,
+void process_offsets(const vector_offset* old_offsets, const vector_offset* new_offsets,
 		U_FILE* f);
+vector_offset* modified_offsets_to_common(const vector_offset* offsets, int old_size, int new_size);
+vector_offset* common_offsets_to_modified(const vector_offset* offsets, int old_size, int new_size);
+vector_offset* process_common_offsets(const vector_offset* old_offsets, const vector_offset* new_offsets);
+vector_offset* process_offsets(const vector_offset* first_offsets, const vector_offset* second_offsets);
 
 int save_snt_offsets(vector_int*,const char*);
 vector_int* load_snt_offsets(const char*);
 void add_snt_offsets(vector_int*,int,int,int);
+
+
+void save_offsets(U_FILE* f, const vector_offset* offsets);
+int save_offsets(const VersatileEncodingConfig* vec, const char* filename, const vector_offset* offsets);
 
 vector_int* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
 

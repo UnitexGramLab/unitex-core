@@ -76,6 +76,7 @@ const char* usage_DumpOffsets =
          "UnitexToolLogger DumpOffsets -o .\\work\\text_file_offset.txt -n .\\work\\text_file_offset.snt -p .\\work\\dump\\dump_offsets.txt .\\work\\text_file_offset.txt\n" \
          "\n" \
          "\n" \
+         "\n" \
          "Other Usage: DumpOffsets [-m/--merge] [OPTIONS] <txt>\n"
          "\n"
          "  <txt>: a offset file to read\n"
@@ -83,8 +84,35 @@ const char* usage_DumpOffsets =
          "OPTIONS:\n"
          "  -o X/--old=X: name of old offset file to read\n"
          "  -p X/--output=X: name of output merged offset file to write\n"
-         "  -h/--help: this help\n"
-         "\n"
+         "Merge two offset file produced by two successive modification of text\n"
+         "\n" \
+         "\n" \
+         "\n" \
+         "Other Usage: DumpOffsets [-v/--convert_modified_to_common] [OPTIONS] <txt>\n" \
+         "\n" \
+         "  <txt>: a offset file to read\n" \
+         "\n" \
+         "OPTIONS:\n" \
+         "  -s N/--old_size=N: size of original file (in characters)\n" \
+         "  -S N/--new_size=N: size of modified file (in characters)\n" \
+         "  -p X/--output=X: name of output common offset file to write\n" \
+         "  -h/--help: this help\n" \
+         "Create an offset file which list offset of common string between the original and modified file. At least one size must be provided\n" \
+         "\n" \
+         "\n" \
+         "\n" \
+         "Other Usage: DumpOffsets [-V/--convert_common_to_modified] [OPTIONS] <txt>\n" \
+         "\n" \
+         "  <txt>: a offset file to read\n" \
+         "\n" \
+         "OPTIONS:\n" \
+         "  -s N/--old_size=N: size of original file (in characters)\n" \
+         "  -S N/--new_size=N: size of modified file (in characters)\n" \
+         "  -p X/--output=X: name of output common offset file to write\n" \
+         "  -h/--help: this help\n" \
+         "Create a standard modified offset file from offset of common string between the original and modified file. Both size must be provided\n" \
+         "\n" \
+         ""
          ;
 
 static void usage() {
@@ -93,13 +121,17 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hfumo:n:p:k:q:";
+const char* optstring_DumpOffsets=":hfumvVs:S:o:n:p:k:q:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
    {"output",required_argument_TS,NULL,'p'},
    {"no_escape_sequence",required_argument_TS,NULL,'c'},
    {"merge",no_argument_TS,NULL,'m'},
+   {"convert_modified_to_common",no_argument_TS,NULL,'v'},
+   {"convert_common_to_modified",no_argument_TS,NULL,'V'},
+   {"old_size",required_argument_TS,NULL,'s'},
+   {"new_size",required_argument_TS,NULL,'S'},
    {"full",no_argument_TS,NULL,'f'},
    {"quiet",no_argument_TS,NULL,'u'},
    {"input_encoding",required_argument_TS,NULL,'k'},
@@ -257,6 +289,10 @@ int escape=1;
 int merge=0;
 int full=0;
 int quiet=0;
+int convert_modified_to_common=0;
+int convert_common_to_modified=0;
+int old_size=-1;
+int new_size=-1;
 int val,index=-1;
 //char foo=0;
 struct OptVars* vars=new_OptVars();
@@ -277,6 +313,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
              }
              strcpy(output, vars->optarg);
              break;
+   case 's': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty size for old file\n");
+             }
+             old_size = atoi(vars->optarg);
+             break;
+   case 'S': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty size for new file\n");
+             }
+             new_size = atoi(vars->optarg);
+             break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -290,6 +336,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 'c': escape = 0; break;
    case 'f': full = 1; break;
    case 'm': merge = 1; break;
+   case 'v': convert_modified_to_common = 1; break;
+   case 'V': convert_common_to_modified = 1; break;
    case 'u': quiet = 1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -309,7 +357,56 @@ if (vars->optind!=argc-1) {
 strcpy(offset_file_name, argv[vars->optind]);
 free_OptVars(vars);
 
-if (merge) {
+if (convert_modified_to_common) {
+    int ret_value = 1;
+    vector_offset* modified_offset = NULL;
+    if ((old_size == -1) && (new_size == -1)) {
+        error("you must specify old or new filesize");
+    }
+    else {
+        modified_offset = load_offsets(&vec, offset_file_name);
+    }
+    if (modified_offset == NULL) {
+        error("error in reading offset file %s\n", offset_file_name);
+    } else {
+        vector_offset* common_offset = modified_offsets_to_common(modified_offset, old_size, new_size);
+        if (common_offset == NULL) {
+            error("invalid offset conversion from file %s with file size from %d to %d\n", old_size, new_size);
+        }
+        else {
+            save_offsets(&vec, output, common_offset);
+            free_vector_offset(common_offset);
+            ret_value=0;
+        }
+        free_vector_offset(modified_offset);
+    }
+    return ret_value;
+} else if (convert_common_to_modified) {
+    int ret_value = 1;
+    vector_offset* common_offset = NULL;
+    if ((old_size == -1) && (new_size == -1)) {
+        error("you must specify old and new filesize");
+    }
+    else {
+        common_offset = load_offsets(&vec, offset_file_name);
+    }
+    if (common_offset == NULL) {
+        error("error in reading offset file %s\n", offset_file_name);
+    }
+    else {
+        vector_offset* modified_offset = common_offsets_to_modified(common_offset, old_size, new_size);
+        if (modified_offset == NULL) {
+            error("invalid offset conversion from file %s with file size from %d to %d\n", old_size, new_size);
+        }
+        else {
+            save_offsets(&vec, output, modified_offset);
+            free_vector_offset(modified_offset);
+            ret_value=0;
+        }
+        free_vector_offset(common_offset);
+    }
+    return ret_value;
+} else if (merge) {
     vector_offset* prev_offsets = load_offsets(&vec, old_filename);
     vector_offset* offsets = load_offsets(&vec, offset_file_name);
 
@@ -326,15 +423,14 @@ if (merge) {
         u_printf("\nDumpOffsets dump done, file %s created.\n", output);
     }
     return 0;
-}
-else {
+} else {
     unichar* old_text = NULL;
-    int old_size = 0;
-    read_file(&vec, old_filename, &old_text, &old_size);
+    int old_read_size = 0;
+    read_file(&vec, old_filename, &old_text, &old_read_size);
 
     unichar* new_text = NULL;
-    int new_size = 0;
-    read_file(&vec, new_filename, &new_text, &new_size);
+    int new_read_size = 0;
+    read_file(&vec, new_filename, &new_text, &new_read_size);
 
     vector_offset* offsets = load_offsets(&vec, offset_file_name);
     if (offsets == NULL) {
@@ -350,37 +446,50 @@ else {
         } else {
             prevOffset.old_end = prevOffset.new_end = 0;
         }
-        if (CompareCommon(fout, old_text, old_size, prevOffset.old_end, curOffset.old_start,
-            new_text, new_size, prevOffset.new_end, curOffset.new_start)) {
+        if (CompareCommon(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start,
+            new_text, new_read_size, prevOffset.new_end, curOffset.new_start)) {
             coherency = 0;
         }
         if (full) {
             u_fprintf(fout, "===========================================\n\n");
             u_fprintf(fout, "Common zone:\n\n");
-            DumpSequence(fout, old_text, old_size, prevOffset.old_end, curOffset.old_start, escape);
-            DumpSequence(fout, new_text, new_size, prevOffset.new_end, curOffset.new_start, escape);
+            DumpSequence(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start, escape);
+            DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape);
         }
         if ((i > 0) || (full)) {
             u_fprintf(fout, "-------------------------------------------\n\n");
         }
         u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
-        if (DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape)) {
+        if (DumpSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, escape)) {
             coherency = 0;
         }
-        if (DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape)) {
+        if (DumpSequence(fout, new_text, new_read_size, curOffset.new_start, curOffset.new_end, escape)) {
             coherency = 0;
         }
 
         if ((i + 1) == offsets->nbelems) {
-            CompareCommon(fout, old_text, old_size, curOffset.old_end, old_size,
-                                new_text, new_size, curOffset.new_end, new_size);
+            CompareCommon(fout, old_text, old_read_size, curOffset.old_end, old_read_size,
+                                new_text, new_read_size, curOffset.new_end, new_read_size);
 
-            if ((full) && ((curOffset.old_end != old_size) || (curOffset.new_end != new_size))) {
+            if ((full) && ((curOffset.old_end != old_read_size) || (curOffset.new_end != new_read_size))) {
                 u_fprintf(fout, "===========================================\n\n");
                 u_fprintf(fout, "Last Common zone:\n\n");
-                DumpSequence(fout, old_text, old_size, curOffset.old_end, old_size, escape);
-                DumpSequence(fout, new_text, new_size, curOffset.new_end, new_size, escape);
+                DumpSequence(fout, old_text, old_read_size, curOffset.old_end, old_read_size, escape);
+                DumpSequence(fout, new_text, new_read_size, curOffset.new_end, new_read_size, escape);
             }
+        }
+    }
+
+    if (offsets->nbelems == 0)
+    {
+        CompareCommon(fout, old_text, old_read_size, 0, old_read_size,
+            new_text, new_read_size, 0, new_read_size);
+
+        if ((full) && ((0 != old_read_size) || (0 != new_read_size))) {
+            u_fprintf(fout, "===========================================\n\n");
+            u_fprintf(fout, "Last Common zone:\n\n");
+            DumpSequence(fout, old_text, old_read_size, 0, old_read_size, escape);
+            DumpSequence(fout, new_text, new_read_size, 0, new_read_size, escape);
         }
     }
 
