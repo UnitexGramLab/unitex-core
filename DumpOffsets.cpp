@@ -65,6 +65,7 @@ const char* usage_DumpOffsets =
          "  -n X/--new=X: name of new file to read\n"
          "  -p X/--output=X: name of output dump file to write\n"
          "  -f/--full: dump common text additionaly\n"
+         "  -q/--quiet: display no message\n"
          "  -c/--no_escape_sequence: don't escape text sequence\n"
          "  -h/--help: this help\n"
          "\n"
@@ -92,7 +93,7 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hfmo:n:p:k:q:";
+const char* optstring_DumpOffsets=":hfumo:n:p:k:q:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
@@ -100,6 +101,7 @@ const struct option_TS lopts_DumpOffsets[]={
    {"no_escape_sequence",required_argument_TS,NULL,'c'},
    {"merge",no_argument_TS,NULL,'m'},
    {"full",no_argument_TS,NULL,'f'},
+   {"quiet",no_argument_TS,NULL,'u'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
@@ -170,18 +172,18 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
     if (end < start)
     {
         u_fprintf(f, "Invalid sequence : end before start !\n");
-        return 0;
-    }
-    else
-    if (end == start)
-    {
-        u_fprintf(f, "empty sequence\n");
-        return 0;
+        return 1;
     }
     else
     if (end > textsize)
     {
         u_fprintf(f, "Invalid sequence : end after end of file !\n");
+        return 1;
+    }
+    else
+    if (end == start)
+    {
+        u_fprintf(f, "empty sequence\n");
         return 0;
     }
     else
@@ -209,7 +211,7 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
         }
         u_fprintf(f, "'\n");
     }
-    return 1;
+    return 0;
 }
 
 
@@ -220,22 +222,22 @@ static int CompareCommon(U_FILE* f,
 {
     if ((old_limit < old_pos) || (new_limit < new_pos)) {
         u_fprintf(f, "Invalid common sequence : end before start !\n");
-        return 0;
+        return 1;
     } else if ((old_limit > old_size) || (new_limit > new_size)) {
         u_fprintf(f, "Invalid commonsequence : end after end of file !\n");
-        return 0;
+        return 1;
     } else if ((old_limit - old_pos) != (new_limit - new_pos)) {
         u_fprintf(f, "Invalid common sequence : size mismatch !\n");
-        return 0;
+        return 1;
     }
 
     for (int i = 0; i < (old_limit - old_pos); i++) {
         if ((*(old_text + old_pos + i)) != (*(new_text + new_pos + i))) {
             u_fprintf(f, "Difference on common sequence !\n");
-            return 0;
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 
@@ -254,6 +256,7 @@ VersatileEncodingConfig vec=VEC_DEFAULT;
 int escape=1;
 int merge=0;
 int full=0;
+int quiet=0;
 int val,index=-1;
 //char foo=0;
 struct OptVars* vars=new_OptVars();
@@ -287,6 +290,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 'c': escape = 0; break;
    case 'f': full = 1; break;
    case 'm': merge = 1; break;
+   case 'u': quiet = 1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
@@ -303,6 +307,7 @@ if (vars->optind!=argc-1) {
 
 
 strcpy(offset_file_name, argv[vars->optind]);
+free_OptVars(vars);
 
 if (merge) {
     vector_offset* prev_offsets = load_offsets(&vec, old_filename);
@@ -311,11 +316,16 @@ if (merge) {
     U_FILE* f_output_offsets = u_fopen(&vec, output, U_WRITE);
     if (f_output_offsets == NULL) {
         error("Cannot create offset file %s\n", output);
-        return 1;
+        return 2;
     }
     process_offsets(prev_offsets, offsets, f_output_offsets);
+    free_vector_offset(prev_offsets);
+    free_vector_offset(offsets);
     u_fclose(f_output_offsets);
-    u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+    if (!quiet) {
+        u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+    }
+    return 0;
 }
 else {
     unichar* old_text = NULL;
@@ -330,7 +340,7 @@ else {
     if (offsets == NULL) {
         fatal_error("cannot read file %s", offset_file_name);
     }
-
+    int coherency = 1;
     U_FILE* fout = u_fopen(&vec, output, U_WRITE);
     for (int i = 0; i < offsets->nbelems; i++) {
         Offsets curOffset = offsets->tab[i];
@@ -340,8 +350,10 @@ else {
         } else {
             prevOffset.old_end = prevOffset.new_end = 0;
         }
-        CompareCommon(fout, old_text, old_size, prevOffset.old_end, curOffset.old_start,
-                      new_text, new_size, prevOffset.new_end, curOffset.new_start);
+        if (CompareCommon(fout, old_text, old_size, prevOffset.old_end, curOffset.old_start,
+            new_text, new_size, prevOffset.new_end, curOffset.new_start)) {
+            coherency = 0;
+        }
         if (full) {
             u_fprintf(fout, "===========================================\n\n");
             u_fprintf(fout, "Common zone:\n\n");
@@ -352,8 +364,12 @@ else {
             u_fprintf(fout, "-------------------------------------------\n\n");
         }
         u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
-        DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape);
-        DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape);
+        if (DumpSequence(fout, old_text, old_size, curOffset.old_start, curOffset.old_end, escape)) {
+            coherency = 0;
+        }
+        if (DumpSequence(fout, new_text, new_size, curOffset.new_start, curOffset.new_end, escape)) {
+            coherency = 0;
+        }
 
         if ((i + 1) == offsets->nbelems) {
             CompareCommon(fout, old_text, old_size, curOffset.old_end, old_size,
@@ -368,15 +384,19 @@ else {
         }
     }
 
-    u_fclose(fout);
     free_vector_offset(offsets);
     free(old_text);
     free(new_text);
-    u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+    u_fprintf(fout, "\n\nOffset file is %s.\n", coherency ? "coherent" : "not coherent");
+    u_fclose(fout);
+    if (!quiet) {
+        u_printf("Offset file is %s.\n", coherency ? "coherent" : "not coherent");
+        u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+    }
+    return coherency ? 0 : 1;
 }
-free_OptVars(vars);
 
-return 0;
+
 }
 
 } // namespace unitex
