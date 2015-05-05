@@ -731,4 +731,127 @@ u_fclose(f);
 return v;
 }
 
+
+
+
+static int compare_offset_translation_by_position(const void* a, const void* b) {
+	const offset_translation* translation_a = (const offset_translation*)a;
+	const offset_translation* translation_b = (const offset_translation*)b;
+	if (translation_a->position_to_translate < translation_b->position_to_translate) return -1;
+	if (translation_a->position_to_translate > translation_b->position_to_translate) return 1;
+	if (translation_a->sort_order < translation_b->sort_order) return -1;
+	if (translation_a->sort_order > translation_b->sort_order) return 1;
+	return 0;
+}
+
+
+static int compare_offset_translation_by_sort_order(const void* a, const void* b) {
+	const offset_translation* translation_a = (const offset_translation*)a;
+	const offset_translation* translation_b = (const offset_translation*)b;
+
+	if (translation_a->sort_order < translation_b->sort_order) return -1;
+	if (translation_a->sort_order > translation_b->sort_order) return 1;
+	if (translation_a->position_to_translate < translation_b->position_to_translate) return -1;
+	if (translation_a->position_to_translate > translation_b->position_to_translate) return 1;
+	return 0;
+}
+/**
+ * translate a set of offset
+ * ofs is an array of nb_translations items of type offset_translation
+ * Before calling the function, you must fill:
+ *   (ofs + #)->position_to_translate with a position (offset) to translate
+ *   (ofs + #)->sort_order=# (because array will be sorted on position_to_translate, then back to sort_order
+ */
+void translate_offset(offset_translation* ofs, int nb_translations, const vector_offset* offsets, int revert) {
+if (offsets == NULL) {
+	return;
+}
+if ((nb_translations == 0) || (ofs == NULL)) {
+	return;
+}
+int i;
+int sorted_by_position = 1;
+for (i = 1;i < nb_translations;i++) 
+	if (((ofs + i)->position_to_translate) < ((ofs + i - 1)->position_to_translate)) {
+		sorted_by_position = 0;
+		break;
+	}
+if (!sorted_by_position) {
+	qsort(ofs,nb_translations,sizeof(offset_translation), compare_offset_translation_by_position);
+}
+
+int last_position_in_offsets = revert ?
+	(offsets->tab[offsets->nbelems - 1].new_start + offsets->tab[offsets->nbelems-1].new_end) :
+	(offsets->tab[offsets->nbelems - 1].old_start + offsets->tab[offsets->nbelems-1].old_end);
+int last_position_to_translate = (ofs + nb_translations - 1)->position_to_translate;
+int minimal_filesize = offset_max(last_position_in_offsets, last_position_to_translate);
+
+
+vector_offset* common_offsets = modified_offsets_to_common(offsets, -1, minimal_filesize);
+
+int pos_common_offsets = 0;
+for (i = 0; i < nb_translations; i++) {
+	int pos_to_translate = (ofs + i)->position_to_translate;
+	for (;;) {
+		if (pos_common_offsets == common_offsets->nbelems)
+			break;
+		int end_current_common = revert ?
+			(common_offsets->tab[pos_common_offsets].new_end) :
+			(common_offsets->tab[pos_common_offsets].old_end);
+		if (end_current_common > pos_to_translate)
+			break;
+		pos_common_offsets++;
+	}
+
+	int current_common_start = -1;
+	int current_common_end = -1;
+
+	if (pos_common_offsets < common_offsets->nbelems) {
+		current_common_start = revert ?
+			(common_offsets->tab[pos_common_offsets].new_start) :
+			(common_offsets->tab[pos_common_offsets].old_start);
+		current_common_end = revert ?
+			(common_offsets->tab[pos_common_offsets].new_end) :
+			(common_offsets->tab[pos_common_offsets].old_end);
+		int translate_common_start = revert ?
+			(common_offsets->tab[pos_common_offsets].old_start) :
+			(common_offsets->tab[pos_common_offsets].new_start);
+
+		if ((pos_to_translate >= current_common_start) && (pos_to_translate < current_common_end)) {
+			(ofs + i)->translated_position = translate_common_start + (pos_to_translate - current_common_start);
+			(ofs + i)->translation_pos_in_common = 1;
+		}
+		else {
+			(ofs + i)->translated_position = translate_common_start + (current_common_end - current_common_start);
+			(ofs + i)->translation_pos_in_common = -1;
+		}
+
+
+	} else {
+		int last_pos_translated = 0;
+		if (common_offsets->nbelems > 0)
+			last_pos_translated = revert ?
+				((common_offsets->tab[common_offsets->nbelems-1].old_start) -1) :
+				((common_offsets->tab[common_offsets->nbelems-1].new_start) -1);
+		if (last_pos_translated == -1)
+			last_pos_translated = 0;
+		(ofs + i)->translated_position = last_pos_translated;
+		(ofs + i)->translation_pos_in_common = -1;
+	}
+
+}
+
+free_vector_offset(common_offsets);
+
+int sorted_by_sort_order = 1;
+for (i = 1;i < nb_translations;i++)
+	if (((ofs + i)->sort_order) < ((ofs + i - 1)->sort_order)) {
+		sorted_by_sort_order = 0;
+		break;
+	}
+if (!sorted_by_position) {
+	qsort(ofs, nb_translations, sizeof(offset_translation), compare_offset_translation_by_sort_order);
+}
+}
+
 } // namespace unitex

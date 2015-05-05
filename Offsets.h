@@ -139,6 +139,18 @@ int save_offsets(const VersatileEncodingConfig* vec, const char* filename, const
 
 vector_int* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
 
+
+
+typedef struct {
+	int position_to_translate; // in
+	int sort_order; // in
+	int translated_position; // out
+	int translation_pos_in_common; // out
+} offset_translation;
+
+void translate_offset(offset_translation* ofs, int nb_translations, const vector_offset* offsets, int revert);
+
 } // namespace unitex
+
 
 #endif

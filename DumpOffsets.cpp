@@ -112,6 +112,18 @@ const char* usage_DumpOffsets =
          "  -h/--help: this help\n" \
          "Create a standard modified offset file from offset of common string between the original and modified file. Both size must be provided\n" \
          "\n" \
+         "\n" \
+         "\n" \
+         "Other Usage: DumpOffsets -o <list_of_position_file_to_read.txt> -p <list_to_create> -T <offset_file_to_read>\n" \
+         "\n" \
+         "  <list_of_position_file_to_read.txt> is a text file with just one number (a position) at each line." \
+         "\n" \
+         "This will convert a list of position using the offset file\n" \
+         "The created file contain the converted position at each line, with a + en end of line if the character\n" \
+         "at this position is on result file, a - is it was removed.\n" \
+         "Using -t instead -T will do the reverse translation\n" \
+         "\n" \
+         "\n" \
          ""
          ;
 
@@ -121,7 +133,7 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hfumvVs:S:o:n:p:k:q:";
+const char* optstring_DumpOffsets=":hfumvVtTs:S:o:n:p:k:q:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
@@ -148,14 +160,14 @@ const struct option_TS lopts_DumpOffsets[]={
 /**
 * This code run well, but in really not optimized
 */
-static unichar* read_file(U_FILE *f,int * filesize){
+static unichar* read_text_file(U_FILE *f,int * filesize){
 
     unichar *text = NULL;
     *filesize = 0;
 
     text = (unichar *)malloc(sizeof(unichar));
     if (text == NULL){
-        fatal_alloc_error("malloc");
+        fatal_alloc_error("read_text_file");
     }
     text[0] = '\0';
 
@@ -176,7 +188,7 @@ static unichar* read_file(U_FILE *f,int * filesize){
         total_read += u_strlen(buffer);
         text = (unichar *)realloc(text, sizeof(unichar)*(total_read + 1));
         if (text == NULL){
-            fatal_alloc_error("realloc");
+            fatal_alloc_error("read_text_file");
         }
         u_strcat(text, buffer);
 
@@ -188,13 +200,13 @@ static unichar* read_file(U_FILE *f,int * filesize){
 }
 
 
-static void read_file(const VersatileEncodingConfig* cfg, const char*filename, unichar** buffer, int *filesize)
+static void read_text_file(const VersatileEncodingConfig* cfg, const char*filename, unichar** buffer, int *filesize)
 {
     U_FILE* f = u_fopen(cfg, filename, U_READ);
     if (f == NULL) {
         fatal_error("cannot read file %s", filename);
     }
-    *buffer = read_file(f, filesize);
+    *buffer = read_text_file(f, filesize);
     u_fclose(f);
 }
 
@@ -273,6 +285,40 @@ static int CompareCommon(U_FILE* f,
 }
 
 
+static void load_offset_translation(const VersatileEncodingConfig* vec, const char* name, int** pos_from_file, int * nb_position) {
+    *pos_from_file = NULL;
+    *nb_position = 0;
+    U_FILE* f = u_fopen(vec, name, U_READ);
+    if (f == NULL) return ;
+
+    int nb_allocated = 1;
+    *pos_from_file = (int*)malloc(sizeof(int) * 1);
+    if ((*pos_from_file) == NULL) {
+        fatal_alloc_error("load_offset_translation");
+    }
+
+    int a,n;
+
+    while ((n = u_fscanf(f, "%d", &a)) != EOF) {
+        if (n != 1) {
+            fatal_error("Corrupted file %s\n", name);
+        }
+        if ((*nb_position) <= nb_allocated) {
+            nb_allocated *= 2;
+            *pos_from_file = (int*)realloc(*pos_from_file,sizeof(int) * nb_allocated);
+            if ((*pos_from_file) == NULL) {
+                fatal_alloc_error("load_offset_translation");
+            }
+            *((*pos_from_file) + (*nb_position)) = a;
+            (*nb_position)++;
+
+        }
+    }
+    u_fclose(f);
+    return ;
+}
+
+
 
 int main_DumpOffsets(int argc,char* const argv[]) {
 if (argc==1) {
@@ -291,6 +337,8 @@ int full=0;
 int quiet=0;
 int convert_modified_to_common=0;
 int convert_common_to_modified=0;
+int translate_position_file=0;
+int translate_position_file_invert=0;
 int old_size=-1;
 int new_size=-1;
 int val,index=-1;
@@ -338,6 +386,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 'm': merge = 1; break;
    case 'v': convert_modified_to_common = 1; break;
    case 'V': convert_common_to_modified = 1; break;
+   case 't': translate_position_file = 1; break;
+   case 'T': translate_position_file_invert = 1; break;
    case 'u': quiet = 1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -357,7 +407,30 @@ if (vars->optind!=argc-1) {
 strcpy(offset_file_name, argv[vars->optind]);
 free_OptVars(vars);
 
-if (convert_modified_to_common) {
+if (translate_position_file || translate_position_file_invert) {
+    int* pos_from_file = NULL;
+    int nb_translations = 0;
+    load_offset_translation(&vec, old_filename, &pos_from_file, &nb_translations);
+    vector_offset* modified_offset = load_offsets(&vec, offset_file_name);
+    offset_translation* translation = (offset_translation*)malloc(sizeof(offset_translation) * (nb_translations + 1));
+    for (int i = 0;i < nb_translations;i++) {
+        (translation + i)->position_to_translate = *(pos_from_file + i);
+        (translation + i)->sort_order = i;
+    }
+    free(pos_from_file);
+    translate_offset(translation, nb_translations, modified_offset, translate_position_file_invert ? 1 : 0);
+    free_vector_offset(modified_offset);
+
+    U_FILE* f_output_translation = u_fopen(&vec, output, U_WRITE);
+    for (int i = 0;i < nb_translations;i++) {
+        u_fprintf(f_output_translation, "%d %s\n",
+            (translation + i)->translated_position,
+            ((translation + i)->translation_pos_in_common == -1) ? "-" : "+");
+    }
+    u_fclose(f_output_translation);
+    free(translation);
+    return 0;
+} else if (convert_modified_to_common) {
     int ret_value = 1;
     vector_offset* modified_offset = NULL;
     if ((old_size == -1) && (new_size == -1)) {
@@ -426,11 +499,11 @@ if (convert_modified_to_common) {
 } else {
     unichar* old_text = NULL;
     int old_read_size = 0;
-    read_file(&vec, old_filename, &old_text, &old_read_size);
+    read_text_file(&vec, old_filename, &old_text, &old_read_size);
 
     unichar* new_text = NULL;
     int new_read_size = 0;
-    read_file(&vec, new_filename, &new_text, &new_read_size);
+    read_text_file(&vec, new_filename, &new_text, &new_read_size);
 
     vector_offset* offsets = load_offsets(&vec, offset_file_name);
     if (offsets == NULL) {
