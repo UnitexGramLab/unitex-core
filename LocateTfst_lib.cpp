@@ -447,6 +447,9 @@ if (current_pending_fst2_transition!=NULL && current_pending_tfst_transition!=NU
 
 /* CASE 1: if we have not finished to explore a fst2 tag in the grammar */
 if (current_pending_fst2_transition!=NULL) {
+	if (infos->match_word_boundaries) {
+		return;
+	}
    struct tfst_match* list=NULL;
    Transition* text_transition=tfst->automaton->states[current_state_in_tfst]->outgoing_transitions;
    /* For a given tag in the grammar, we test all the transitions in the
