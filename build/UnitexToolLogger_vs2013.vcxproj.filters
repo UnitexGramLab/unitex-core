@@ -18,6 +18,12 @@
     <Filter Include="Source Files\TreLib">
       <UniqueIdentifier>{13dd42c4-dd2c-4262-a942-6ff4248567d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\yaml-0.1.6">
+      <UniqueIdentifier>{eb6d08f4-7ca4-492a-a071-9a3eb9d230d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\yaml-0.1.6\src">
+      <UniqueIdentifier>{3e1cc23c-a30e-4dd7-92ad-235002061b63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbstractCallbackFuncModifier.h">
@@ -203,6 +209,9 @@
     </ClInclude>
     <ClInclude Include="..\logger\LingResourcePackage.h">
       <Filter>Source Files\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -484,12 +493,6 @@
     </ClCompile>
     <ClCompile Include="..\logger\UniRunLogger.cpp">
       <Filter>Source Files\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="..\logger\RunTools.cpp">
-      <Filter>Unitex-C++\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="..\logger\UniRunScript.cpp">
-      <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
     <ClCompile Include="..\Main_UnitexToolLogger.cpp">
       <Filter>Source Files</Filter>
@@ -931,6 +934,36 @@
     </ClCompile>
     <ClCompile Include="..\logger\LingResourcePackage.cpp">
       <Filter>Source Files\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\UniRunScript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logger\RunTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\api.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\dumper.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\emitter.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\loader.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\parser.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\reader.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\scanner.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\writer.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

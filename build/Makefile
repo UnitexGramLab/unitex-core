@@ -220,6 +220,9 @@ INSTALL_COMMAND = make install
 TRE_SRC = tre-0.8.0
 TRE_TGZ = ../tre-0.8.0.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
+YAML_SRC = yaml-0.1.6
+YAML_TGZ = ../yaml-0.1.6.tar.gz
+YAML_TEMP = $(YAML_SRC)/TEMP
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LINK_LIB =
@@ -251,6 +254,11 @@ CFLAGS += -g -O0
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 else
 CFLAGS += -O3
+endif
+
+ifeq ($(PREVENT_LINK_YAML),yes)
+else
+DEFFLAGS += -I./$(YAML_SRC)/include
 endif
 
 ifneq ($(strip $(ADDITIONAL_INCLUDE)),)
@@ -356,9 +364,14 @@ VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
+YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
-TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+endif
+
+ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
+	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
 endif
 
 #
@@ -488,10 +501,16 @@ VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
+YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
 endif
+
+ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
+	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
+endif
+
 
 #
 # Compiling instructions for the TRE library
@@ -621,11 +640,15 @@ endif
 
 
 TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
+YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
 
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
-TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
+	TRE_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
 endif
 
+ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
+	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
+endif
 
 
 #
@@ -734,6 +757,11 @@ else
 TRE_LINK_OBJS =
 endif
 
+ifeq ($(PREVENT_LINK_YAML),yes)
+YAML_LINK_OBJS = 
+else
+YAML_LINK_OBJS = api.o writer.o loader.o reader.o parser.o scanner.o emitter.o dumper.o
+endif
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
@@ -1333,7 +1361,8 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o \
                   SpellChecking.o Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o \
-                  RegExFacade.o $(TRE_LINK_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
+                  RegExFacade.o SelectOutput.o UnitexLibIO.o $(TRE_LINK_OBJS) \
+                  $(YAML_LINK_OBJS) $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = Main_UnitexToolLogger.o $(UNITEXTOOL_LOGGER_NO_MAIN_OBJS)
@@ -1448,6 +1477,12 @@ ifeq ($(LINUX_LIKE),yes)
 #####################
 #####################
 
+YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I./$(YAML_SRC)/win32 -DYAML_DECLARE_STATIC -O3 -Wall -c -fmessage-length=0
+
+ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
+	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
+endif
+
 ifeq ($(LIBRARY),yes)
 all: $(LIBTRE) .libunitex
 else
@@ -1474,6 +1509,9 @@ $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
 	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
+$(YAML_SRC): $(YAML_TGZ)
+	@echo "unpacking YAML library ..."
+	$(TAR_COMMAND) $(TAR_PARAM) $(YAML_TGZ)
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 .libtre-done: $(TRE_SRC)
@@ -1495,6 +1533,9 @@ endif
 ifneq ($(strip $(ADDITIONAL_TRE_OPTIONS)),)
 TRE_GCC_OPTIONS += $(ADDITIONAL_TRE_OPTIONS)
 endif
+
+
+
 
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library ..."
@@ -1540,10 +1581,10 @@ install: bin
 
 
 clean: $(CLEAN-LIBTRE)
-	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
+	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 clean-all-but-tre:
-	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS)  $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
+	$(RM) $(OBJS) $(PROGS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) *~ Main_*.o
 
 dist: clean
 	if test -d $(BUILD); then $(RMR) $(BUILD); fi
@@ -1594,6 +1635,8 @@ endif
 
 TRE_SRC = tre-0.8.0
 TRE_TGZ = ../tre-0.8.0.tar.gz
+YAML_SRC = yaml-0.1.6
+YAML_TGZ = ../yaml-0.1.6.tar.gz
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
@@ -1723,6 +1766,9 @@ $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library...."
 	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
+$(YAML_SRC): $(YAML_TGZ)
+	@echo "unpacking YAML library ..."
+	$(TAR_COMMAND) $(TAR_PARAM) $(YAML_TGZ)
 
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
@@ -1766,6 +1812,9 @@ $(TRE_SRC): $(TRE_TGZ)
 	@echo "Unpacking TRE library...."
 	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
+$(YAML_SRC): $(YAML_TGZ)
+	@echo "unpacking YAML library ..."
+	$(TAR_COMMAND) $(TAR_PARAM) $(YAML_TGZ)
 
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
 	@echo "Making TRE library..."
@@ -2021,6 +2070,34 @@ UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
 
+# compilation option for yaml	
+api.o: $(YAML_SRC) yaml-0.1.6/src/api.c
+	$(CC_GCC) -c yaml-0.1.6/src/api.c $(YAML_OPTIONS)
+	
+writer.o: $(YAML_SRC) yaml-0.1.6/src/writer.c
+	$(CC_GCC) -c yaml-0.1.6/src/writer.c $(YAML_OPTIONS)
+	
+loader.o: $(YAML_SRC) yaml-0.1.6/src/loader.c
+	$(CC_GCC) -c yaml-0.1.6/src/loader.c $(YAML_OPTIONS)
+	
+reader.o: $(YAML_SRC) yaml-0.1.6/src/reader.c
+	$(CC_GCC) -c yaml-0.1.6/src/reader.c $(YAML_OPTIONS)
+	
+parser.o: $(YAML_SRC) yaml-0.1.6/src/parser.c
+	$(CC_GCC) -c yaml-0.1.6/src/parser.c $(YAML_OPTIONS)
+	
+scanner.o: $(YAML_SRC) yaml-0.1.6/src/scanner.c
+	$(CC_GCC) -c yaml-0.1.6/src/scanner.c $(YAML_OPTIONS)
+	
+emitter.o: $(YAML_SRC) yaml-0.1.6/src/emitter.c
+	$(CC_GCC) -c yaml-0.1.6/src/emitter.c $(YAML_OPTIONS)
+	
+dumper.o: $(YAML_SRC) yaml-0.1.6/src/dumper.c
+	$(CC_GCC) -c yaml-0.1.6/src/dumper.c $(YAML_OPTIONS)
+
+
+	
+	
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 
 
@@ -2116,13 +2193,13 @@ no_o_files:
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) ../bin/unitex.dll -o ../bin/Test_lib.exe
 
-.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) Test_lib.o
+.libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(LIBTRE) $(OBJS) Test_lib.o
 	-$(RM) Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols,--kill-at -L"." $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -o ../bin/UnitexJni.dll
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
 	$(CC) Test_lib.o $(OPTIONS) ../bin/UnitexJni.dll -o ../bin/Test_lib.exe
 
-.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(OBJS)
+.libunitexstatic: $(UNITEXLIB_IO_OBJS) $(YAML_LINK_OBJS) $(UNITEXLIB_PACK_RUNLOG_OBJS) $(OBJS)
 	$(RM) Main_*.o
 	$(AR) rcs ../bin/libunitex.a *.o
 	touch .libunitexstatic

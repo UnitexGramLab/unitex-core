@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F0B068C1AFD533600029933 /* api.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06401AFD533600029933 /* api.c */; };
+		1F0B068D1AFD533600029933 /* dumper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06411AFD533600029933 /* dumper.c */; };
+		1F0B068E1AFD533600029933 /* emitter.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06421AFD533600029933 /* emitter.c */; };
+		1F0B068F1AFD533600029933 /* loader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06431AFD533600029933 /* loader.c */; };
+		1F0B06901AFD533600029933 /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06461AFD533600029933 /* parser.c */; };
+		1F0B06911AFD533600029933 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06471AFD533600029933 /* reader.c */; };
+		1F0B06921AFD533600029933 /* scanner.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06481AFD533600029933 /* scanner.c */; };
+		1F0B06931AFD533600029933 /* writer.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06491AFD533600029933 /* writer.c */; };
+		1F0B06941AFD533600029933 /* yaml_private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1F0B064A1AFD533600029933 /* yaml_private.h */; };
 		222A00001411336600F74409 /* NewLineShifts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE801411336600F74409 /* NewLineShifts.cpp */; };
 		222A00011411336600F74409 /* NewLineShifts.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE811411336600F74409 /* NewLineShifts.h */; };
 		222A00021411336600F74409 /* NormalizationFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE821411336600F74409 /* NormalizationFst2.cpp */; };
@@ -512,6 +521,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1F0B06401AFD533600029933 /* api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = api.c; sourceTree = "<group>"; };
+		1F0B06411AFD533600029933 /* dumper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dumper.c; sourceTree = "<group>"; };
+		1F0B06421AFD533600029933 /* emitter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = emitter.c; sourceTree = "<group>"; };
+		1F0B06431AFD533600029933 /* loader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loader.c; sourceTree = "<group>"; };
+		1F0B06461AFD533600029933 /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
+		1F0B06471AFD533600029933 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = reader.c; sourceTree = "<group>"; };
+		1F0B06481AFD533600029933 /* scanner.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scanner.c; sourceTree = "<group>"; };
+		1F0B06491AFD533600029933 /* writer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = writer.c; sourceTree = "<group>"; };
+		1F0B064A1AFD533600029933 /* yaml_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yaml_private.h; sourceTree = "<group>"; };
 		222A00791411342B00F74409 /* fr_umlv_unitex_jni_UnitexJni.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fr_umlv_unitex_jni_UnitexJni.cpp; sourceTree = "<group>"; };
 		222A007A1411342B00F74409 /* fr_umlv_unitex_jni_UnitexJni.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fr_umlv_unitex_jni_UnitexJni.h; sourceTree = "<group>"; };
 		222A00AC1411358500F74409 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
@@ -1044,6 +1062,7 @@
 		0867D691FE84028FC02AAC07 /* UnitexJNI */ = {
 			isa = PBXGroup;
 			children = (
+				1F0B05D01AFD533500029933 /* yaml-0.1.6 */,
 				222A00AA1411358500F74409 /* tre-0.8.0 */,
 				222A00741411342B00F74409 /* UnitexLibAndJni */,
 				222AFD6D1411335700F74409 /* Unitex-C++ */,
@@ -1067,6 +1086,30 @@
 			children = (
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		1F0B05D01AFD533500029933 /* yaml-0.1.6 */ = {
+			isa = PBXGroup;
+			children = (
+				1F0B063F1AFD533600029933 /* src */,
+			);
+			path = "yaml-0.1.6";
+			sourceTree = "<group>";
+		};
+		1F0B063F1AFD533600029933 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				1F0B06401AFD533600029933 /* api.c */,
+				1F0B06411AFD533600029933 /* dumper.c */,
+				1F0B06421AFD533600029933 /* emitter.c */,
+				1F0B06431AFD533600029933 /* loader.c */,
+				1F0B06461AFD533600029933 /* parser.c */,
+				1F0B06471AFD533600029933 /* reader.c */,
+				1F0B06481AFD533600029933 /* scanner.c */,
+				1F0B06491AFD533600029933 /* writer.c */,
+				1F0B064A1AFD533600029933 /* yaml_private.h */,
+			);
+			path = src;
 			sourceTree = "<group>";
 		};
 		222A00741411342B00F74409 /* UnitexLibAndJni */ = {
@@ -1749,6 +1792,7 @@
 				222AFFD01411336600F74409 /* LocateMatches.h in Headers */,
 				222AFFD21411336600F74409 /* LocatePattern.h in Headers */,
 				222AFFD41411336600F74409 /* LocateTfst_lib.h in Headers */,
+				1F0B06941AFD533600029933 /* yaml_private.h in Headers */,
 				222AFFD61411336600F74409 /* LocateTfst.h in Headers */,
 				222AFFD81411336600F74409 /* LocateTfstMatches.h in Headers */,
 				222AFFDB1411336600F74409 /* Match.h in Headers */,
@@ -2017,6 +2061,7 @@
 				222AFF871411336600F74409 /* Error.cpp in Sources */,
 				222AFF891411336600F74409 /* Evamb.cpp in Sources */,
 				222AFF8B1411336600F74409 /* Extract.cpp in Sources */,
+				1F0B068F1AFD533600029933 /* loader.c in Sources */,
 				222AFF8D1411336600F74409 /* ExtractUnits.cpp in Sources */,
 				222AFF8F1411336600F74409 /* FIFO.cpp in Sources */,
 				222AFF911411336600F74409 /* File.cpp in Sources */,
@@ -2062,6 +2107,7 @@
 				222AFFE01411336600F74409 /* MF_DLC_inflect.cpp in Sources */,
 				222AFFE21411336600F74409 /* MF_FormMorpho.cpp in Sources */,
 				222AFFE51411336600F74409 /* MF_Global.cpp in Sources */,
+				1F0B06931AFD533600029933 /* writer.c in Sources */,
 				222AFFE81411336600F74409 /* MF_LangMorpho.cpp in Sources */,
 				222AFFEB1411336600F74409 /* MF_MU_graph.cpp in Sources */,
 				222AFFED1411336600F74409 /* MF_MU_morpho.cpp in Sources */,
@@ -2077,10 +2123,12 @@
 				222A00041411336600F74409 /* Normalize.cpp in Sources */,
 				222A00061411336600F74409 /* NormalizeAsRoutine.cpp in Sources */,
 				222A00081411336600F74409 /* NorwegianCompounds.cpp in Sources */,
+				1F0B06901AFD533600029933 /* parser.c in Sources */,
 				222A000A1411336600F74409 /* OptimizedFst2.cpp in Sources */,
 				222A000C1411336600F74409 /* OptimizedTfstTagMatching.cpp in Sources */,
 				222A000E1411336600F74409 /* ParsingInfo.cpp in Sources */,
 				222A00101411336600F74409 /* Pattern.cpp in Sources */,
+				1F0B068C1AFD533600029933 /* api.c in Sources */,
 				222A00121411336600F74409 /* PatternTree.cpp in Sources */,
 				222A00141411336600F74409 /* PolyLex.cpp in Sources */,
 				222A00161411336600F74409 /* PortugueseNormalization.cpp in Sources */,
@@ -2138,6 +2186,7 @@
 				222A00CF1411358600F74409 /* tre-match-approx.c in Sources */,
 				222A00D01411358600F74409 /* tre-match-backtrack.c in Sources */,
 				226063B21AF3A27F00BC2033 /* DumpOffsets.cpp in Sources */,
+				1F0B06911AFD533600029933 /* reader.c in Sources */,
 				222A00D11411358600F74409 /* tre-match-parallel.c in Sources */,
 				222A00D31411358600F74409 /* tre-mem.c in Sources */,
 				222A00D51411358600F74409 /* tre-parse.c in Sources */,
@@ -2165,6 +2214,7 @@
 				22C2800114AF6D63006A1F5D /* UnitexRevisionInfo.cpp in Sources */,
 				22C2800314AF6D63006A1F5D /* Unxmlize.cpp in Sources */,
 				22C2800514AF6D63006A1F5D /* VersionInfo.cpp in Sources */,
+				1F0B068E1AFD533600029933 /* emitter.c in Sources */,
 				22C2800714AF6D63006A1F5D /* VirtualFiles.cpp in Sources */,
 				22C2800914AF6D63006A1F5D /* Xml.cpp in Sources */,
 				2287C97E151E081600A820F3 /* PersistenceInterface.cpp in Sources */,
@@ -2174,12 +2224,14 @@
 				228B5BE11606672B006DAABF /* SyncToolPosix.cpp in Sources */,
 				225D3032160FCE1900D8D8BB /* UnitexLibDirPosix.cpp in Sources */,
 				225D3033160FCE1900D8D8BB /* UnitexLibIO.cpp in Sources */,
+				1F0B06921AFD533600029933 /* scanner.c in Sources */,
 				2232E1FE1691020800C56E5A /* Cassys_concord.cpp in Sources */,
 				2232E2001691020800C56E5A /* Cassys_external_program.cpp in Sources */,
 				2232E2021691020800C56E5A /* Cassys_io.cpp in Sources */,
 				2232E2041691020800C56E5A /* Cassys_lexical_tags.cpp in Sources */,
 				2232E2061691020800C56E5A /* Cassys_transducer.cpp in Sources */,
 				2232E2081691020800C56E5A /* Cassys_xml_output.cpp in Sources */,
+				1F0B068D1AFD533600029933 /* dumper.c in Sources */,
 				22F5F19F1800BAFE002F0040 /* PackFile.cpp in Sources */,
 				22F5F1A11800BAFE002F0040 /* PackFileTool.cpp in Sources */,
 				22F5F1A31800BAFE002F0040 /* UnpackFile.cpp in Sources */,
@@ -2202,6 +2254,28 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_LIBRARY=1",
+					"UNITEXTOOL_TOOL_FROM_LOGGER=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+					"UNITEX_LIBRARY_VF_IMPORT=1",
+					"YAML_VERSION_MAJOR=0",
+					"YAML_VERSION_MINOR=1",
+					"YAML_VERSION_PATCH=6",
+					"YAML_VERSION_STRING=\\\"0.1.6\\\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Headers/,
+					include_tre,
+					../include_tre,
+					"tre-0.8.0",
+					"tre-0.8.0/lib",
+					logger,
+					"yaml-0.1.6/include",
+					"yaml-0.1.6/src",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -2213,6 +2287,28 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_LIBRARY=1",
+					"UNITEXTOOL_TOOL_FROM_LOGGER=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+					"UNITEX_LIBRARY_VF_IMPORT=1",
+					"YAML_VERSION_MAJOR=0",
+					"YAML_VERSION_MINOR=1",
+					"YAML_VERSION_PATCH=6",
+					"YAML_VERSION_STRING=\\\"0.1.6\\\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Headers/,
+					include_tre,
+					../include_tre,
+					"tre-0.8.0",
+					"tre-0.8.0/lib",
+					logger,
+					"yaml-0.1.6/include",
+					"yaml-0.1.6/src",
+				);
 				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";

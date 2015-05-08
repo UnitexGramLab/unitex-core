@@ -128,8 +128,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..\yaml-0.1.6\include;..\yaml-0.1.6\src;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -154,8 +154,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..\yaml-0.1.6\include;..\yaml-0.1.6\src;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -181,8 +181,8 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..\yaml-0.1.6\include;..\yaml-0.1.6\src;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -210,8 +210,8 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..\yaml-0.1.6\include;..\yaml-0.1.6\src;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -234,8 +234,8 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..\yaml-0.1.6\include;..\yaml-0.1.6\src;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>
       </BasicRuntimeChecks>
@@ -261,8 +261,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..\yaml-0.1.6\include;..\yaml-0.1.6\src;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";snprintf=_snprintf;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -343,6 +343,7 @@
     <ClInclude Include="..\Cassys_lexical_tags.h" />
     <ClInclude Include="..\Cassys_transducer.h" />
     <ClInclude Include="..\Cassys_xml_output.h" />
+    <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractAllocator.cpp" />
@@ -618,6 +619,14 @@
     <ClCompile Include="..\Cassys_lexical_tags.cpp" />
     <ClCompile Include="..\Cassys_transducer.cpp" />
     <ClCompile Include="..\Cassys_xml_output.cpp" />
+    <ClCompile Include="..\yaml-0.1.6\src\api.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\dumper.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\emitter.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\loader.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\parser.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\reader.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\scanner.c" />
+    <ClCompile Include="..\yaml-0.1.6\src\writer.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

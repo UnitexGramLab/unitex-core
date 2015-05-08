@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F0B082A1AFD53A900029933 /* api.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07DF1AFD53A900029933 /* api.c */; };
+		1F0B082B1AFD53A900029933 /* dumper.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E01AFD53A900029933 /* dumper.c */; };
+		1F0B082C1AFD53A900029933 /* emitter.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E11AFD53A900029933 /* emitter.c */; };
+		1F0B082D1AFD53A900029933 /* loader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E21AFD53A900029933 /* loader.c */; };
+		1F0B082E1AFD53A900029933 /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E51AFD53A900029933 /* parser.c */; };
+		1F0B082F1AFD53A900029933 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E61AFD53A900029933 /* reader.c */; };
+		1F0B08301AFD53A900029933 /* scanner.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E71AFD53A900029933 /* scanner.c */; };
+		1F0B08311AFD53A900029933 /* writer.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E81AFD53A900029933 /* writer.c */; };
 		222AABFE15BC507C005E9A21 /* RegExFacade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AABFC15BC507B005E9A21 /* RegExFacade.cpp */; };
 		222F79001107A48400C91CC7 /* AbstractDelaLoad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F778B1107A48300C91CC7 /* AbstractDelaLoad.cpp */; };
 		222F79011107A48400C91CC7 /* AbstractFst2Load.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F778F1107A48300C91CC7 /* AbstractFst2Load.cpp */; };
@@ -243,6 +251,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1F0B07DF1AFD53A900029933 /* api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = api.c; sourceTree = "<group>"; };
+		1F0B07E01AFD53A900029933 /* dumper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dumper.c; sourceTree = "<group>"; };
+		1F0B07E11AFD53A900029933 /* emitter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = emitter.c; sourceTree = "<group>"; };
+		1F0B07E21AFD53A900029933 /* loader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loader.c; sourceTree = "<group>"; };
+		1F0B07E51AFD53A900029933 /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
+		1F0B07E61AFD53A900029933 /* reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = reader.c; sourceTree = "<group>"; };
+		1F0B07E71AFD53A900029933 /* scanner.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scanner.c; sourceTree = "<group>"; };
+		1F0B07E81AFD53A900029933 /* writer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = writer.c; sourceTree = "<group>"; };
+		1F0B07E91AFD53A900029933 /* yaml_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yaml_private.h; sourceTree = "<group>"; };
 		222AABFC15BC507B005E9A21 /* RegExFacade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExFacade.cpp; path = ../RegExFacade.cpp; sourceTree = SOURCE_ROOT; };
 		222AABFD15BC507C005E9A21 /* RegExFacade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExFacade.h; path = ../RegExFacade.h; sourceTree = SOURCE_ROOT; };
 		222F778A1107A48300C91CC7 /* AbstractCallbackFuncModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractCallbackFuncModifier.h; path = ../AbstractCallbackFuncModifier.h; sourceTree = SOURCE_ROOT; };
@@ -739,6 +756,7 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				1F0B076F1AFD53A800029933 /* yaml-0.1.6 */,
 				226063B41AF3A29500BC2033 /* DumpOffsets.cpp */,
 				226063B51AF3A29500BC2033 /* DumpOffsets.h */,
 				22942C9918097E6100057308 /* SelectOutput.cpp */,
@@ -1194,6 +1212,30 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		1F0B076F1AFD53A800029933 /* yaml-0.1.6 */ = {
+			isa = PBXGroup;
+			children = (
+				1F0B07DE1AFD53A900029933 /* src */,
+			);
+			path = "yaml-0.1.6";
+			sourceTree = "<group>";
+		};
+		1F0B07DE1AFD53A900029933 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				1F0B07DF1AFD53A900029933 /* api.c */,
+				1F0B07E01AFD53A900029933 /* dumper.c */,
+				1F0B07E11AFD53A900029933 /* emitter.c */,
+				1F0B07E21AFD53A900029933 /* loader.c */,
+				1F0B07E51AFD53A900029933 /* parser.c */,
+				1F0B07E61AFD53A900029933 /* reader.c */,
+				1F0B07E71AFD53A900029933 /* scanner.c */,
+				1F0B07E81AFD53A900029933 /* writer.c */,
+				1F0B07E91AFD53A900029933 /* yaml_private.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		225CCD1610DB201D003F0910 /* tre-0.8.0 */ = {
 			isa = PBXGroup;
 			children = (
@@ -1317,6 +1359,7 @@
 				225CCDF710DB201D003F0910 /* tre-stack.c in Sources */,
 				225CCDF810DB201D003F0910 /* xmalloc.c in Sources */,
 				222F79001107A48400C91CC7 /* AbstractDelaLoad.cpp in Sources */,
+				1F0B082D1AFD53A900029933 /* loader.c in Sources */,
 				222F79011107A48400C91CC7 /* AbstractFst2Load.cpp in Sources */,
 				222F79021107A48400C91CC7 /* ActivityLogger.cpp in Sources */,
 				222F79031107A48400C91CC7 /* Af_stdio.cpp in Sources */,
@@ -1328,6 +1371,7 @@
 				222F79091107A48400C91CC7 /* AutDeterminization.cpp in Sources */,
 				222F790A1107A48400C91CC7 /* AutIntersection.cpp in Sources */,
 				222F790B1107A48400C91CC7 /* AutMinimization.cpp in Sources */,
+				1F0B082A1AFD53A900029933 /* api.c in Sources */,
 				222F790C1107A48400C91CC7 /* AutomatonDictionary2Bin.cpp in Sources */,
 				222F790D1107A48400C91CC7 /* BitArray.cpp in Sources */,
 				222F790E1107A48400C91CC7 /* BitMasks.cpp in Sources */,
@@ -1380,6 +1424,7 @@
 				222F793E1107A48400C91CC7 /* Grf2Fst2.cpp in Sources */,
 				222F793F1107A48400C91CC7 /* HashTable.cpp in Sources */,
 				222F79401107A48400C91CC7 /* HTMLCharacters.cpp in Sources */,
+				1F0B082E1AFD53A900029933 /* parser.c in Sources */,
 				222F79411107A48400C91CC7 /* ImplodeTfst.cpp in Sources */,
 				222F79421107A48400C91CC7 /* IOBuffer.cpp in Sources */,
 				222F79431107A48400C91CC7 /* Korean.cpp in Sources */,
@@ -1438,6 +1483,7 @@
 				222F79A71107A48400C91CC7 /* Stack_int.cpp in Sources */,
 				222F79A81107A48400C91CC7 /* Stack_pointer.cpp in Sources */,
 				222F79A91107A48400C91CC7 /* Stack_unichar.cpp in Sources */,
+				1F0B082F1AFD53A900029933 /* reader.c in Sources */,
 				222F79AA1107A48400C91CC7 /* Stats.cpp in Sources */,
 				222F79AB1107A48400C91CC7 /* String_hash.cpp in Sources */,
 				222F79AC1107A48400C91CC7 /* StringParsing.cpp in Sources */,
@@ -1477,11 +1523,14 @@
 				22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */,
 				2294EE7D11A01195003CE92B /* Untokenize.cpp in Sources */,
 				229D935B11CB4138007BC1B4 /* Arabic.cpp in Sources */,
+				1F0B08311AFD53A900029933 /* writer.c in Sources */,
 				2237A5B111D68EEE00D247CF /* OutputTransductionVariables.cpp in Sources */,
 				2237A6BD11D8490800D247CF /* BuildKrMwuDic.cpp in Sources */,
 				2237A6FB11D9522200D247CF /* TfstStats.cpp in Sources */,
 				2237A94811E3F1AB00D247CF /* Cassys_tokens.cpp in Sources */,
+				1F0B082B1AFD53A900029933 /* dumper.c in Sources */,
 				2237A94911E3F1AB00D247CF /* Cassys.cpp in Sources */,
+				1F0B082C1AFD53A900029933 /* emitter.c in Sources */,
 				2237A97711E45BFF00D247CF /* DirHelperPosix.cpp in Sources */,
 				2294F4AC122EEB30009495A8 /* LocateTrace.cpp in Sources */,
 				22C781581297482400EDC8D5 /* VariableUtils.cpp in Sources */,
@@ -1494,6 +1543,7 @@
 				2245784A13A2BC84002E0C5D /* GrfBeauty.cpp in Sources */,
 				2245784B13A2BC84002E0C5D /* Seq2Grf.cpp in Sources */,
 				226063B61AF3A29500BC2033 /* DumpOffsets.cpp in Sources */,
+				1F0B08301AFD53A900029933 /* scanner.c in Sources */,
 				2245784C13A2BC84002E0C5D /* GrfTest_lib.cpp in Sources */,
 				2245784D13A2BC84002E0C5D /* DebugMode.cpp in Sources */,
 				2245784E13A2BC84002E0C5D /* Offsets.cpp in Sources */,
@@ -1544,6 +1594,26 @@
 					"_GLIBCXX_DEBUG=1",
 					"_GLIBCXX_DEBUG_PEDANTIC=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"UNITEX_LIBRARY=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+					"YAML_VERSION_MAJOR=0",
+					"YAML_VERSION_MINOR=1",
+					"YAML_VERSION_PATCH=6",
+					"YAML_VERSION_STRING=\\\"0.1.6\\\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					include_tre,
+					../include_tre,
+					"tre-0.8.0",
+					"tre-0.8.0/lib",
+					korean,
+					mac,
+					"yaml-0.1.6/include",
+					"yaml-0.1.6/src",
+				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1562,6 +1632,26 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"UNITEX_LIBRARY=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+					"YAML_VERSION_MAJOR=0",
+					"YAML_VERSION_MINOR=1",
+					"YAML_VERSION_PATCH=6",
+					"YAML_VERSION_STRING=\\\"0.1.6\\\"",
+				);
+				HEADER_SEARCH_PATHS = (
+					include_tre,
+					../include_tre,
+					"tre-0.8.0",
+					"tre-0.8.0/lib",
+					korean,
+					mac,
+					"yaml-0.1.6/include",
+					"yaml-0.1.6/src",
+				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

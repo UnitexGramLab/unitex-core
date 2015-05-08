@@ -25,6 +25,12 @@
     <Filter Include="Unitex-C++\TreLib">
       <UniqueIdentifier>{c67057a2-4d5f-4f67-ab56-511c39805dab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Unitex-C++\yaml-0.1.6">
+      <UniqueIdentifier>{6c9549dd-58ec-4011-ad32-e991e1e7d1be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Unitex-C++\yaml-0.1.6\src">
+      <UniqueIdentifier>{b8cd05ca-c0ce-45ff-aac0-adc7a08d4b0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\logger\MzRepairUlp.cpp">
@@ -753,6 +759,30 @@
     <ClCompile Include="..\logger\LingResourcePackage.cpp">
       <Filter>Unitex-C++\logger</Filter>
     </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\api.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\dumper.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\emitter.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\loader.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\parser.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\reader.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\scanner.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\writer.c">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\logger\MzRepairUlp.h">
@@ -784,12 +814,6 @@
     </ClInclude>
     <ClInclude Include="..\logger\UniRunLogger.h">
       <Filter>Unitex-C++\logger</Filter>
-    </ClInclude>
-    <ClInclude Include="..\logger\RunTools.h">
-      <Filter>Source Files\logger</Filter>
-    </ClInclude>
-    <ClInclude Include="..\logger\UniRunScript.h">
-      <Filter>Source Files\logger</Filter>
     </ClInclude>
     <ClInclude Include="..\AbstractCallbackFuncModifier.h">
       <Filter>Unitex-C++</Filter>
@@ -1531,6 +1555,18 @@
     </ClInclude>
     <ClInclude Include="..\logger\LingResourcePackage.h">
       <Filter>Unitex-C++\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\UniRunScript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\logger\RunTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MF_Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h">
+      <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

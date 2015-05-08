@@ -18,6 +18,12 @@
     <Filter Include="Source Files\logger">
       <UniqueIdentifier>{e0f3d3c5-894e-4809-9fbc-f23c19910412}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\yaml-0.1.6">
+      <UniqueIdentifier>{a8264af8-35fc-4149-afa9-bdb19fc7f9d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\yaml-0.1.6\src">
+      <UniqueIdentifier>{2c85855a-26ee-44c9-b87c-f149c1ad8481}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbstractCallbackFuncModifier.h">
@@ -144,6 +150,9 @@
     </ClInclude>
     <ClInclude Include="..\SelectOutput.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -812,6 +821,30 @@
     </ClCompile>
     <ClCompile Include="..\SelectOutput.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\api.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\dumper.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\emitter.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\loader.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\parser.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\reader.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\scanner.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\yaml-0.1.6\src\writer.c">
+      <Filter>Source Files\yaml-0.1.6\src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
