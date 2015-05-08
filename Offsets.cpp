@@ -849,7 +849,7 @@ for (i = 1;i < nb_translations;i++)
 		sorted_by_sort_order = 0;
 		break;
 	}
-if (!sorted_by_position) {
+if (!sorted_by_sort_order) {
 	qsort(ofs, nb_translations, sizeof(offset_translation), compare_offset_translation_by_sort_order);
 }
 }
