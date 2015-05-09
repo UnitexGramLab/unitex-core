@@ -59,7 +59,9 @@ u_fprintf(f, "%d %d %d %d\n", a, b, c, d);
 
 
 void save_offsets(U_FILE* f, const vector_offset* offsets) {
-
+if (offsets == NULL) {
+	return;
+}
 int nb_offsets_items = offsets->nbelems;
 
 for (int i = 0; i < nb_offsets_items; i++) {

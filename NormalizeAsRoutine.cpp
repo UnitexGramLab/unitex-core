@@ -282,7 +282,7 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 					int common_prefix,common_suffix;
 					int ret=get_real_replacement(buff+current_start_pos,key_length,foo,
 							&common_prefix,&common_suffix);
-					if (offsets!=NULL && ret) vector_offset_add(offsets,old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_suffix,new_start_pos+u_strlen(foo)-common_suffix);
+					if (offsets!=NULL && ret) vector_offset_add(offsets,old_start_pos+common_prefix,old_start_pos+key_length-common_suffix,new_start_pos+common_prefix,new_start_pos+u_strlen(foo)-common_suffix);
 					/* If we have a replacement rule, we must use it rawly, in case it
 					 * deals with separators. To do that, we flush the buffer first */
 					WriteOufBuf(&OutBuf, convLFtoCRLF, U_EMPTY, output, 1);
