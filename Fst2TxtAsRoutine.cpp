@@ -38,8 +38,8 @@ namespace unitex {
 #define CAPACITY_LIMIT 16384
 #define MINIMAL_SIZE_PRELOADED_TEXT (2048+1)
 
-void build_state_token_trees(struct fst2txt_parameters*);
-void parse_text(struct fst2txt_parameters*);
+static void build_state_token_trees(struct fst2txt_parameters*);
+static void parse_text(struct fst2txt_parameters*);
 
 int main_fst2txt(struct fst2txt_parameters* p) {
 	p->f_input = u_fopen(&(p->vec), p->text_file, U_READ);
@@ -291,7 +291,7 @@ void emit_output(struct fst2txt_parameters* p, unichar* s, int pos) {
 }
 
 
-void parse_text(struct fst2txt_parameters* p) {
+static void parse_text(struct fst2txt_parameters* p) {
 	fill_buffer(p->text_buffer, p->f_input);
 	int debut = p->fst2->initial_states[1];
 	p->variables = new_Variables(p->fst2->input_variables);
@@ -1247,7 +1247,7 @@ Transition* add_tag_to_token_tree(struct fst2txt_token_tree* tree,
  * speed up the exploration when there is a large number
  * of tokens in a same box of a grf.
  */
-void build_state_token_trees(struct fst2txt_parameters* p) {
+static void build_state_token_trees(struct fst2txt_parameters* p) {
 	p->n_token_trees = p->fst2->number_of_states;
 	p->token_tree = (struct fst2txt_token_tree**) malloc_cb(p->n_token_trees
 			* sizeof(struct fst2txt_token_tree*),p->fst2txt_abstract_allocator);

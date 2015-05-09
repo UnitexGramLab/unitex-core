@@ -40,7 +40,7 @@ struct OUTBUF {
 	int pos;
 };
 
-void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, const unichar* str, U_FILE *f,
+static void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, const unichar* str, U_FILE *f,
 		int flush) {
 	for (;;) {
 
@@ -61,7 +61,7 @@ void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, const unichar* str, U
 	}
 }
 
-void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, unichar c, U_FILE *f, int flush) {
+static void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, unichar c, U_FILE *f, int flush) {
 	unichar u_array[2];
 	u_array[0] = c;
 	u_array[1] = 0;
@@ -74,7 +74,7 @@ void WriteOufBuf(struct OUTBUF* pOutBuf, int convLFtoCRLF, unichar c, U_FILE *f,
  * that are common to the key and its associated value. Returns 0
  * if key and value are equals, 0 otherwise.
  */
-int get_real_replacement(const unichar* key,int key_size,unichar* value,int *pfx,int *sfx) {
+static inline int get_real_replacement(const unichar* key,int key_size,unichar* value,int *pfx,int *sfx) {
 *pfx=0;
 *sfx=0;
 while (*pfx!=key_size && key[*pfx]==value[*pfx]) (*pfx)++;
