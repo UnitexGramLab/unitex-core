@@ -292,7 +292,7 @@ static void load_offset_translation(const VersatileEncodingConfig* vec, const ch
     if (f == NULL) return ;
 
     int nb_allocated = 1;
-    *pos_from_file = (int*)malloc(sizeof(int) * 1);
+    *pos_from_file = (int*)malloc(sizeof(int) * nb_allocated);
     if ((*pos_from_file) == NULL) {
         fatal_alloc_error("load_offset_translation");
     }
@@ -303,16 +303,15 @@ static void load_offset_translation(const VersatileEncodingConfig* vec, const ch
         if (n != 1) {
             fatal_error("Corrupted file %s\n", name);
         }
-        if ((*nb_position) <= nb_allocated) {
+        if ((*nb_position) >= nb_allocated) {
             nb_allocated *= 2;
-            *pos_from_file = (int*)realloc(*pos_from_file,sizeof(int) * nb_allocated);
+            *pos_from_file = (int*)realloc(*pos_from_file, sizeof(int) * nb_allocated);
             if ((*pos_from_file) == NULL) {
                 fatal_alloc_error("load_offset_translation");
             }
-            *((*pos_from_file) + (*nb_position)) = a;
-            (*nb_position)++;
-
         }
+        *((*pos_from_file) + (*nb_position)) = a;
+        (*nb_position)++;
     }
     u_fclose(f);
     return ;
