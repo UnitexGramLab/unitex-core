@@ -852,6 +852,13 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             FIFO.o TfstStats.o RegExFacade.o \
             $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
+DUMPOFFSETS      = DumpOffsets
+DUMPOFFSETS_OBJS = Main_DumpOffsets.o DumpOffsets.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o \
+                AbstractAllocator.o File.o List_ustring.o String_hash.o \
+                Error.o StringParsing.o Buffer.o UnitexGetOpt.o Ustring.o \
+                Offsets.o Overlap.o VirtualFiles.o \
+                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+
 ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o AutConcat.o Fst2Automaton.o \
@@ -1423,7 +1430,7 @@ OBJS = $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS)
 else
 
 PROGS = $(BUILDKRMWUDIC) $(CASSYS) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
-	    $(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) $(FST2CHECK) \
+	    $(DUMPOFFSETS) $(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) $(FST2CHECK) \
 	    $(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
 	    $(MZREPAIRULP) $(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 	    $(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
@@ -1435,7 +1442,7 @@ PROGS += $(TEST)
 
 
 OBJS  = $(BUILDKRMWUDIC_OBJS) $(CASSYS_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
-	    $(DICO_OBJS) $(ELAG_OBJS)\
+	    $(DUMPOFFSETS_OBJS) $(DICO_OBJS) $(ELAG_OBJS)\
 	    $(ELAGCOMP_OBJS) $(EVAMB_OBJS) \
 	    $(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2CHECK_OBJS) \
 	    $(FST2LIST_OBJS) $(FST2TXT_OBJS) $(GRF2FST2_OBJS) $(IMPLODETFST_OBJS) \
@@ -1871,6 +1878,9 @@ $(BIN_DIR)$(CONVERT)$(EXTENSION): $(CONVERT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(DICO)$(EXTENSION): $(DICO_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(DUMPOFFSETS)$(EXTENSION): $(DUMPOFFSETS_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(ELAG)$(EXTENSION): $(ELAG_OBJS)
