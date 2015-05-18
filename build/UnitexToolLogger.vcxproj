@@ -123,7 +123,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -149,7 +149,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -176,7 +176,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -205,7 +205,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -229,7 +229,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>
       </BasicRuntimeChecks>
@@ -256,7 +256,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;..;..\korean;..\include_tre;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_NO_KOREAN_TOOL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

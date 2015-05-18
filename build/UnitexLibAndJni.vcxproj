@@ -92,7 +92,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;.\tre-0.8.0\win32;.\tre-0.8.0\lib;..;..\win32vs2010;..\include_tre;..\logger;..\UnitexLibAndJni;$(JAVA_HOME)\include;$(JAVA_HOME)\include\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -117,7 +117,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;.\tre-0.8.0\win32;.\tre-0.8.0\lib;..;..\win32vs2010;..\include_tre;..\logger;..\UnitexLibAndJni;$(JAVA_HOME)\include;$(JAVA_HOME)\include\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -141,7 +141,7 @@
       <Optimization>Full</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;.\tre-0.8.0\win32;.\tre-0.8.0\lib;..;..\win32vs2010;..\include_tre;..\logger;..\UnitexLibAndJni;$(JAVA_HOME)\include;$(JAVA_HOME)\include\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
@@ -166,7 +166,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..\tre-0.8.0\win32;..\tre-0.8.0\lib;.\tre-0.8.0\win32;.\tre-0.8.0\lib;..;..\win32vs2010;..\include_tre;..\logger;..\UnitexLibAndJni;$(JAVA_HOME)\include;$(JAVA_HOME)\include\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UnitexLibAndJni_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;HAVE_CONFIG_H;;YAML_DECLARE_STATIC;YAML_VERSION_MAJOR=0;YAML_VERSION_MINOR=1;YAML_VERSION_PATCH=6;YAML_VERSION_STRING="0.1.6";UNITEX_LIBRARY;UNITEXTOOL_TOOL_FROM_LOGGER;UNITEX_LIBRARY_CORE;UNITEX_FUNC_EXPORT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
