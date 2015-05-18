@@ -248,6 +248,16 @@ APPDIR = ../../../App
 DEFFLAGS += -D_NOT_UNDER_WINDOWS
 #                                 -DDEBUG_STAT
 #                                 -DBDB
+
+
+
+ifneq ($(strip $(YAML_GCC_CFLAGS)),)
+YAML_GCC_OPTIONS = -DHAVE_CONFIG_H=1 $(YAML_GCC_CFLAGS)
+else
+YAML_GCC_OPTIONS = -DHAVE_CONFIG_H=1 $(CFLAGS)
+endif
+
+
 CFLAGS   = -Wall
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0
@@ -373,6 +383,8 @@ endif
 ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
 endif
+
+YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
 #
 # Compiling instructions for the TRE library
@@ -511,6 +523,7 @@ ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
 endif
 
+YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
 #
 # Compiling instructions for the TRE library
@@ -650,6 +663,7 @@ ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
 endif
 
+YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
 #
 # USING TRE STATIC LIBRARY
@@ -1489,6 +1503,8 @@ YAML_OPTIONS = -DHAVE_CONFIG_H=1 -I./$(YAML_SRC)/include -I./$(YAML_SRC)/src -I.
 ifneq ($(strip $(ADDITIONAL_YAML_OPTIONS)),)
 	YAML_OPTIONS += $(ADDITIONAL_YAML_OPTIONS)
 endif
+
+YAML_OPTIONS += $(YAML_GCC_OPTIONS)
 
 ifeq ($(LIBRARY),yes)
 all: $(LIBTRE) .libunitex
