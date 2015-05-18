@@ -133,7 +133,7 @@ const unichar *next_token(cassys_tokens_list *list, int transducer_id, int itera
 
 cassys_tokens_list *get_element_at(cassys_tokens_list *list, int transducer_id, int iteration, int position);
 cassys_tokens_list *new_list(list_ustring *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool);
-cassys_tokens_list *new_element(unichar *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool);
+cassys_tokens_list *new_element(const unichar *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool);
 cassys_tokens_list *add_output(cassys_tokens_list *list,
 cassys_tokens_list *output, int previous_transducer, int previous_iteration, int transducer_id, int iteration, int number_of_tokens_replaced, int number_of_output_tokens);
 

@@ -277,6 +277,7 @@ while (list!=NULL) {
 return result;
 }
 
+
 /**
  * Allocates, initializes and returns an integer array that contains
  * the elements of the given list. '*size' is set to the size of this

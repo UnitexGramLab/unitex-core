@@ -502,12 +502,10 @@ cassys_tokens_list *add_output(cassys_tokens_list *list,
 cassys_tokens_list *new_list(list_ustring *l_u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool){
 	cassys_tokens_list *head = NULL;
 
-
 	if(l_u!=NULL){
 		head = new_element(l_u -> string, transducer_id, iteration, allocation_tool);
 		l_u=l_u->next;
 	}
-
 
 	cassys_tokens_list *current = head;
 
@@ -563,7 +561,7 @@ void free_cassys_tokens_allocation_tool(cassys_tokens_allocation_tool * allocati
 
 
 
-cassys_tokens_list *new_element( unichar *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool){
+cassys_tokens_list *new_element(const unichar *u, int transducer_id, int iteration, cassys_tokens_allocation_tool * allocation_tool){
 
 	cassys_tokens_list *l = (cassys_tokens_list*)malloc_cb(sizeof(cassys_tokens_list) * 1, allocation_tool->allocator_tokens_list);
 	if(l == NULL){
