@@ -318,6 +318,98 @@ static void load_offset_translation(const VersatileEncodingConfig* vec, const ch
 }
 
 
+int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename, const char* new_filename,
+    const char*offset_file_name, const char* output,
+    int full, int quiet, int escape)
+{
+    unichar* old_text = NULL;
+    int old_read_size = 0;
+    read_text_file(vec, old_filename, &old_text, &old_read_size);
+
+    unichar* new_text = NULL;
+    int new_read_size = 0;
+    read_text_file(vec, new_filename, &new_text, &new_read_size);
+
+    vector_offset* offsets = load_offsets(vec, offset_file_name);
+    if (offsets == NULL) {
+        fatal_error("cannot read file %s", offset_file_name);
+    }
+    int coherency = 1;
+    U_FILE* fout = u_fopen(vec, output, U_WRITE);
+    for (int i = 0; i < offsets->nbelems; i++) {
+        Offsets curOffset = offsets->tab[i];
+        Offsets prevOffset;
+        if (i > 0) {
+            prevOffset = offsets->tab[i - 1];
+        }
+        else {
+            prevOffset.old_end = prevOffset.new_end = 0;
+        }
+        if (CompareCommon(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start,
+            new_text, new_read_size, prevOffset.new_end, curOffset.new_start)) {
+            coherency = 0;
+        }
+        if (full) {
+            u_fprintf(fout, "===========================================\n\n");
+            u_fprintf(fout, "Common zone:\n\n");
+            DumpSequence(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start, escape);
+            DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape);
+        }
+        if ((i > 0) || (full)) {
+            u_fprintf(fout, "-------------------------------------------\n\n");
+        }
+        u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
+        if (DumpSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, escape)) {
+            coherency = 0;
+        }
+        if (DumpSequence(fout, new_text, new_read_size, curOffset.new_start, curOffset.new_end, escape)) {
+            coherency = 0;
+        }
+
+        if ((i + 1) == offsets->nbelems) {
+            if (CompareCommon(fout, old_text, old_read_size, curOffset.old_end, old_read_size,
+                new_text, new_read_size, curOffset.new_end, new_read_size))
+            {
+                coherency = 0;
+            }
+
+            if ((full) && ((curOffset.old_end != old_read_size) || (curOffset.new_end != new_read_size))) {
+                u_fprintf(fout, "===========================================\n\n");
+                u_fprintf(fout, "Last Common zone:\n\n");
+                DumpSequence(fout, old_text, old_read_size, curOffset.old_end, old_read_size, escape);
+                DumpSequence(fout, new_text, new_read_size, curOffset.new_end, new_read_size, escape);
+            }
+        }
+    }
+
+    if (offsets->nbelems == 0)
+    {
+        if (CompareCommon(fout, old_text, old_read_size, 0, old_read_size,
+            new_text, new_read_size, 0, new_read_size))
+        {
+            coherency = 0;
+        }
+
+        if ((full) && ((0 != old_read_size) || (0 != new_read_size))) {
+            u_fprintf(fout, "===========================================\n\n");
+            u_fprintf(fout, "Last Common zone:\n\n");
+            DumpSequence(fout, old_text, old_read_size, 0, old_read_size, escape);
+            DumpSequence(fout, new_text, new_read_size, 0, new_read_size, escape);
+        }
+    }
+
+    free_vector_offset(offsets);
+    free(old_text);
+    free(new_text);
+    u_fprintf(fout, "\n\nOffset file is %s.\n", coherency ? "coherent" : "not coherent");
+    u_fclose(fout);
+    if (!quiet) {
+        u_printf("Offset file is %s.\n", coherency ? "coherent" : "not coherent");
+        u_printf("\nDumpOffsets dump done, file %s created.\n", output);
+    }
+    return coherency ? 0 : 1;
+}
+
 
 int main_DumpOffsets(int argc,char* const argv[]) {
 if (argc==1) {
@@ -496,85 +588,8 @@ if (translate_position_file || translate_position_file_invert) {
     }
     return 0;
 } else {
-    unichar* old_text = NULL;
-    int old_read_size = 0;
-    read_text_file(&vec, old_filename, &old_text, &old_read_size);
-
-    unichar* new_text = NULL;
-    int new_read_size = 0;
-    read_text_file(&vec, new_filename, &new_text, &new_read_size);
-
-    vector_offset* offsets = load_offsets(&vec, offset_file_name);
-    if (offsets == NULL) {
-        fatal_error("cannot read file %s", offset_file_name);
-    }
-    int coherency = 1;
-    U_FILE* fout = u_fopen(&vec, output, U_WRITE);
-    for (int i = 0; i < offsets->nbelems; i++) {
-        Offsets curOffset = offsets->tab[i];
-        Offsets prevOffset;
-        if (i > 0) {
-            prevOffset = offsets->tab[i - 1];
-        } else {
-            prevOffset.old_end = prevOffset.new_end = 0;
-        }
-        if (CompareCommon(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start,
-            new_text, new_read_size, prevOffset.new_end, curOffset.new_start)) {
-            coherency = 0;
-        }
-        if (full) {
-            u_fprintf(fout, "===========================================\n\n");
-            u_fprintf(fout, "Common zone:\n\n");
-            DumpSequence(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start, escape);
-            DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape);
-        }
-        if ((i > 0) || (full)) {
-            u_fprintf(fout, "-------------------------------------------\n\n");
-        }
-        u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
-        if (DumpSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, escape)) {
-            coherency = 0;
-        }
-        if (DumpSequence(fout, new_text, new_read_size, curOffset.new_start, curOffset.new_end, escape)) {
-            coherency = 0;
-        }
-
-        if ((i + 1) == offsets->nbelems) {
-            CompareCommon(fout, old_text, old_read_size, curOffset.old_end, old_read_size,
-                                new_text, new_read_size, curOffset.new_end, new_read_size);
-
-            if ((full) && ((curOffset.old_end != old_read_size) || (curOffset.new_end != new_read_size))) {
-                u_fprintf(fout, "===========================================\n\n");
-                u_fprintf(fout, "Last Common zone:\n\n");
-                DumpSequence(fout, old_text, old_read_size, curOffset.old_end, old_read_size, escape);
-                DumpSequence(fout, new_text, new_read_size, curOffset.new_end, new_read_size, escape);
-            }
-        }
-    }
-
-    if (offsets->nbelems == 0)
-    {
-        CompareCommon(fout, old_text, old_read_size, 0, old_read_size,
-            new_text, new_read_size, 0, new_read_size);
-
-        if ((full) && ((0 != old_read_size) || (0 != new_read_size))) {
-            u_fprintf(fout, "===========================================\n\n");
-            u_fprintf(fout, "Last Common zone:\n\n");
-            DumpSequence(fout, old_text, old_read_size, 0, old_read_size, escape);
-            DumpSequence(fout, new_text, new_read_size, 0, new_read_size, escape);
-        }
-    }
-
-    free_vector_offset(offsets);
-    free(old_text);
-    free(new_text);
-    u_fprintf(fout, "\n\nOffset file is %s.\n", coherency ? "coherent" : "not coherent");
-    u_fclose(fout);
-    if (!quiet) {
-        u_printf("Offset file is %s.\n", coherency ? "coherent" : "not coherent");
-        u_printf("\nDumpOffsets dump done, file %s created.\n", output);
-    }
-    return coherency ? 0 : 1;
+    return DumpOffsetApply(&vec, old_filename, new_filename, offset_file_name, output,
+        full, quiet, escape);
 }
 
 
