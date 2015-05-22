@@ -3197,6 +3197,23 @@ return (i-1);
 
 
 /**
+* Unicode version of strlen, count the number of char after LF to CRLF conversion
+*/
+unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF) {
+	int i = 0;
+	int nbLF = 0;
+	for (;;)
+	{
+		unichar c = s[i];
+		nbLF += (c == '\n') ? 1 : 0;
+		if (c == 0)
+			return i + ((convLFtoCRLF != 0) ? nbLF : 0);
+		i++;
+	}
+}
+
+
+/**
  * Unicode version of strcpy.
  */
 /*

@@ -257,6 +257,7 @@ int u_vsscanf(unichar*,const char*,va_list);
 
 /* ------------------- String functions ------------------- */
 unsigned int u_strlen(const unichar*);
+unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
 unichar* u_strncpy(unichar *dest,const unichar *src,unsigned int n);

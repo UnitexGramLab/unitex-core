@@ -349,13 +349,18 @@ static void parse_text(struct fst2txt_parameters* p) {
 			int output_length=u_strlen(p->output);
 			int diff = 0;
 			int i,j;
-			for (i=0,j=0; i < p->input_length && j<output_length; i++,j++) {
+			
+
+			for (i=0; i < p->input_length; i++) {
 				if (p->buffer[i + p->current_origin] == '\n')
 					b++;
+			}
+			for (i=0,j=0; i < p->input_length && j<output_length; i++,j++) {
 				if (!diff && p->buffer[i + p->current_origin] != p->output[j]) {
 					diff = 1;
 				}
 			}
+
 			if (p->input_length>0 && p->output[0]=='\0') {
 				/* any input deletion must be considered */
 				diff=1;
