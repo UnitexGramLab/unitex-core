@@ -32,6 +32,30 @@ namespace unitex {
 
 
 /**
+ * calculate the buffersize for a string len
+ */
+static unsigned int buffer_size_for_len(unsigned int string_len)
+{
+    unsigned int buffer_size = 0x10;
+    while (buffer_size <= string_len)
+        buffer_size *= 2;
+    return buffer_size;
+}
+
+
+/**
+* calculate the rounded buffersize
+*/
+static unsigned int buffer_size_rounded(unsigned int give_len)
+{
+    unsigned int buffer_size = 0x10;
+    while (buffer_size < give_len)
+        buffer_size *= 2;
+    return buffer_size;
+}
+
+
+/**
  * Allocates, initializes and returns a Ustring representing the given string.
  */
 Ustring* new_Ustring(const unichar* str) {
@@ -44,7 +68,7 @@ if (str==NULL) {
 }
 res->len=u_strlen(str);
 // minor buffer enlarging
-res->size=((res->len+1) | 0x0f) + 1;
+res->size=buffer_size_for_len(res->len);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
@@ -77,8 +101,7 @@ if (size<=0) {
    size=1;
 }
 res->len=0;
-// minor buffer enlarging
-res->size=(size | 0x0f) + 1;
+res->size=buffer_size_for_len(size);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");
@@ -99,7 +122,7 @@ free(ustr);
 
 
 /**
- * Resizes th internal buffer of the given Ustring to the given size.
+ * Resizes the internal buffer of the given Ustring to the given size.
  * The buffer size is never decreased. Note that you cannot set a size<1.
  */
 void resize(Ustring* ustr,unsigned int size) {
@@ -109,7 +132,9 @@ if (size<1) {
 if (size<=ustr->size) {
    return;
 }
-ustr->str=(unichar*)realloc(ustr->str,size*sizeof(unichar));
+// minor buffer enlarging
+unsigned int buffer_size = buffer_size_rounded(size);
+ustr->str=(unichar*)realloc(ustr->str, buffer_size*sizeof(unichar));
 if (ustr->str==NULL) {
    fatal_alloc_error("resize");
 }
@@ -118,7 +143,7 @@ if (size<ustr->len) {
    ustr->len=size-1;
    ustr->str[ustr->len]='\0';
 }
-ustr->size=size;
+ustr->size=buffer_size;
 }
 
 
@@ -147,8 +172,8 @@ if (str==NULL || length==0 || str[0]=='\0') {
 unsigned int newlen=ustr->len+length;
 if (ustr->size<newlen+1) {
    /* If necessary, we enlarge the internal buffer */
-	unsigned int n=ustr->size;
-	if (n==0) n=1;
+    unsigned int n=ustr->size;
+    if (n==0) n=1;
    while (n<=newlen+1) {
       n=n*2;
    }
