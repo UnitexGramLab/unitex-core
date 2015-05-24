@@ -71,7 +71,7 @@ struct parsing_info {
 
 
    /* A copy of the output variables */
-   unichar* output_variable_backup;
+   OutputVariablesBackup* output_variable_backup;
 
 
    /* A copy of the variable ranges */

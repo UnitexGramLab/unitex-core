@@ -127,7 +127,7 @@ return v->variables[n];
  * the variable values. The array starts with a subarray of size 'n'
  * (n=number of variables) with for each variable 1 if it is pending and 0 otherwise.
  */
-unichar* create_output_variable_backup(OutputVariables* RESTRICT v,Abstract_allocator prv_alloc) {
+OutputVariablesBackup* create_output_variable_backup(OutputVariables* RESTRICT v,Abstract_allocator prv_alloc) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
 if (l==0) return NULL;
@@ -159,7 +159,7 @@ if (i_has_pending == 0)
     {
         *backup = 0;
 
-        return backup;
+        return (OutputVariablesBackup*)backup;
     }
 }
 
@@ -222,14 +222,14 @@ for (int i=0;i<l;i++) {
 
 *backup = 1;
 
-return backup;
+return (OutputVariablesBackup*)backup;
 }
 
 
 /**
  * Frees the given variable backup.
  */
-void free_output_variable_backup(unichar* backup,Abstract_allocator prv_alloc) {
+void free_output_variable_backup(OutputVariablesBackup* backup,Abstract_allocator prv_alloc) {
 if (backup!=NULL) free_cb(backup,prv_alloc);
 }
 
@@ -237,7 +237,7 @@ if (backup!=NULL) free_cb(backup,prv_alloc);
 /**
  * Sets the variables with the values of the given backup.
  */
-void install_output_variable_backup(OutputVariables* RESTRICT v,const unichar* RESTRICT backup) {
+void install_output_variable_backup(OutputVariables* RESTRICT v,const OutputVariablesBackup* RESTRICT backup) {
 if (backup==NULL) return;
 /* First, we free the previous pending list */
 OutputVarList* tmp;
@@ -252,7 +252,7 @@ int l=v->variable_index->size;
 
 
 // first int of backup is set to 0 if we have full empty backup
-if ((*backup)==0) {
+if ((*((const unichar*)backup))==0) {
 	size_t limit = (size_t)((v->is_pending_array_size_int_size_rounded) / sizeof(unsigned int));
 	for (size_t i = 0; i < limit; i++) {
 		*(((unsigned int*)(v->is_pending))+i) = 0;
@@ -274,7 +274,7 @@ for (int i=0;i<l;i++) {
 	}
 }
 
-const unichar* walk_backup = backup+((v->is_pending_array_size_int_size_rounded+sizeof(int))/sizeof(unichar));
+const unichar* walk_backup = ((const unichar*)backup)+((v->is_pending_array_size_int_size_rounded+sizeof(int))/sizeof(unichar));
 for (int i=0;i<l;i++) {
 
 	unichar c;
@@ -485,7 +485,7 @@ unset_output_variable_pending(var,get_value_index(var_name,var->variable_index,D
  * Returns 1 if the given backup correspond to the same values than the given
  * output variables; 0 otherwise.
  */
-int same_output_variables(const unichar* backup,OutputVariables* v) {
+int same_output_variables(const OutputVariablesBackup* backup,OutputVariables* v) {
 if (v==NULL) {
 	return backup==NULL;
 }
@@ -495,7 +495,7 @@ int l=v->variable_index->size;
 if (l==0) return 1;
 
 // first int of backup is set to 0 if we have full empty backup
-if ((*backup)==0) {
+if ((*((const unichar*)backup))==0) {
 	for (int i=0;i<l;i++) {
 		if (0!=v->is_pending[i]) return 0;
 	}
@@ -511,7 +511,7 @@ if ((*backup)==0) {
 for (int i=0;i<l;i++) {
 	if (((((char*)backup)+sizeof(int))[i])!=v->is_pending[i]) return 0;
 }
-const unichar* walk_backup = backup+((v->is_pending_array_size_int_size_rounded+sizeof(int))/sizeof(unichar));
+const unichar* walk_backup = ((const unichar*)backup)+((v->is_pending_array_size_int_size_rounded+sizeof(int))/sizeof(unichar));
 int pos=0;
 for (int i=0;i<l;i++) {
 	if (u_strcmp(walk_backup+pos,v->variables[i]->str)) return 0;

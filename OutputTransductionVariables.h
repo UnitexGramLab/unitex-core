@@ -66,7 +66,11 @@ typedef struct {
 OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
 void free_OutputVariables(OutputVariables*);
 Ustring* get_output_variable(OutputVariables*,const unichar*);
-int same_output_variables(const unichar* output_variable_backup,OutputVariables* v);
+typedef struct
+{
+    void *_dummy;
+} OutputVariablesBackup;
+int same_output_variables(const OutputVariablesBackup* output_variable_backup,OutputVariables* v);
 
 /**
  * Returns 1 if there are some pending variables; 0 otherwise.
@@ -75,9 +79,9 @@ static inline int capture_mode(OutputVariables* v) {
 return v->pending!=NULL;
 }
 
-unichar* create_output_variable_backup(OutputVariables* RESTRICT,Abstract_allocator);
-void free_output_variable_backup(unichar*,Abstract_allocator);
-void install_output_variable_backup(OutputVariables* RESTRICT,const unichar* RESTRICT);
+OutputVariablesBackup* create_output_variable_backup(OutputVariables* RESTRICT,Abstract_allocator);
+void free_output_variable_backup(OutputVariablesBackup*,Abstract_allocator);
+void install_output_variable_backup(OutputVariables* RESTRICT,const OutputVariablesBackup* RESTRICT);
 
 void set_output_variable_pending(OutputVariables* var,int index);
 void unset_output_variable_pending(OutputVariables* var,int index);

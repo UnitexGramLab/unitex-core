@@ -407,7 +407,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		 * memory leaks */
 		clear_dic_variable_list(&(p->dic_variables));
 
-		unichar* output_variable_backup=NULL;
+		OutputVariablesBackup* output_variable_backup=NULL;
 		if (p->output_policy!=IGNORE_OUTPUTS) {
 			if (is_enough_memory_in_reserve_for_transduction_variable_set(p->input_variables,
 					p->backup_memory_reserve) == 0) {
@@ -1304,7 +1304,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		fatal_alloc_error("enter_morphological_mode");
 	}
 	int* var_backup = NULL;
-	unichar* output_variable_backup=NULL;
+	OutputVariablesBackup* output_variable_backup=NULL;
 	int old_StackBase;
 	int stack_top = p->stack->stack_pointer;
 	old_StackBase = p->stack_base;

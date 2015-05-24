@@ -622,7 +622,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 		struct dic_variable* dic_variables_backup = NULL;
 		int old_StackBase = p->stack_base;
-		unichar* output_var_backup=NULL;
+		OutputVariablesBackup* output_var_backup=NULL;
 		int old_weight2=p->weight;
 		if (p->output_policy != IGNORE_OUTPUTS) {
 			/* For better performance when ignoring outputs */
