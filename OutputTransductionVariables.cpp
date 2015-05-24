@@ -20,7 +20,17 @@
  */
 
 
+#ifdef TYPE_PACK_MULTIBITS
+typedef TYPE_PACK_MULTIBITS uint_pack_multibits;
+typedef TYPE_PACK_MULTIBITS uint_pack_multiunichar;
+#else
 #include <stdint.h>
+typedef uint64_t uint_pack_multibits;
+typedef uint64_t uint_pack_multiunichar;
+#endif
+
+
+
 #include "OutputTransductionVariables.h"
 #include "Error.h"
 
@@ -30,15 +40,27 @@
 
 namespace unitex {
 
+
+static inline void copy_string(unichar* dest, const unichar* src, unsigned int len) {
+#ifdef COPY_STRING_USE_MEMCPY
+	memcpy(dest, src, (len + 1) * sizeof(unichar));
+#else
+	#define factor_unichar_to_pack (sizeof(uint_pack_multiunichar)/sizeof(unichar))
+
+	unsigned int size_in_byte = (len + 1)*sizeof(unichar);
+	unsigned int len_in_pack_multiunichar = (size_in_byte + sizeof(uint_pack_multiunichar) - 1) / sizeof(uint_pack_multiunichar);
+
+	for (unsigned int i = 0; i < len_in_pack_multiunichar; i++)
+	{
+		uint_pack_multiunichar mc = *(((uint_pack_multiunichar*)src) + i);
+		*(((uint_pack_multiunichar*)dest) + i) = mc;
+	}
+#endif
+}
+
 static inline void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
 static inline void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
 
-
-#ifdef TYPE_PACK_MULTIBITS
-typedef TYPE_PACK_MULTIBITS uint_pack_multibits;
-#else
-typedef uintptr_t uint_pack_multibits;
-#endif
 
 
 #define my_around_align_ispending_array(x)  ((((x)+0x0f)/0x10)*0x10)
@@ -65,28 +87,31 @@ if (injected!=NULL) {
 		get_value_index((unichar*)(injected->tab[i]),v->variable_index);
 	}
 }
-int l=v->variable_index->size;
-v->variables=(Ustring**)malloc(l*sizeof(Ustring*));
+unsigned int nb_var=v->variable_index->size;
+v->nb_var = (unsigned int)nb_var;
+v->variables=(Ustring**)malloc(nb_var*sizeof(Ustring*));
 if (v->variables==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
-for (int i=0;i<l;i++) {
+for (unsigned int i=0;i<nb_var;i++) {
    v->variables[i]=new_Ustring();
 }
 v->pending=NULL;
-v->is_pending=(char*)calloc(my_around_align_intptr_size_ispending_array(my_around_align_ispending_array(l*sizeof(char))),1);
-v->is_pending_array_size_intptr_size_rounded=my_around_align_intptr_size_ispending_array(l*sizeof(char));
-
-v->offset_pending_array = my_around_align(sizeof(int)*2,sizeof(uint_pack_multibits));
-v->offset_size_str_array = my_around_align((v->offset_pending_array) + (v->is_pending_array_size_intptr_size_rounded), sizeof(uint_pack_multibits));
-v->size_array_size_str_array = (size_t)l * sizeof(int);
-v->offset_unichars = my_around_align(v->offset_size_str_array + v->size_array_size_str_array, sizeof(uint_pack_multibits));
+v->is_pending=(char*)calloc(my_around_align_intptr_size_ispending_array(my_around_align_ispending_array(nb_var*sizeof(char))),1);
+v->is_pending_array_size_intptr_size_rounded = my_around_align_intptr_size_ispending_array(my_around_align_ispending_array(nb_var*sizeof(char))) / sizeof(uint_pack_multibits);
+// size for backup
+size_t size_header = 2 * sizeof(int);
+size_t pending_list_offset = size_header;
+size_t size_pending_list = (nb_var + 1)*sizeof(int);
+size_t size_string_index = ((nb_var + 1) * 2) * sizeof(int);
+v->string_index_offset = pending_list_offset + size_pending_list;
+v->unichars_offset = my_around_align(v->string_index_offset + size_string_index,0x10);
 
 if (v->is_pending==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
 if (p_nbvar!=NULL) {
-    *p_nbvar = l;
+    *p_nbvar = nb_var;
 }
 if (injected!=NULL) {
 	for (int i=0;i<injected->nbelems;i+=2) {
@@ -97,14 +122,7 @@ if (injected!=NULL) {
 return v;
 }
 
-int allstrvid = 0;
-int nbbkp = 0;
-int has_pending = 0;
-int nbrestore = 0;
-int nbrestoredstr = 0;
-int nbrestoredstrempty = 0;
-int nb_add_pend = 0;
-int nb_add_pend_loop = 0;
+
 /**
  * Frees the memory associated to the given variables.
  */
@@ -142,17 +160,9 @@ return v->variables[n];
 }
 
 
-/*
- *
- * new backup format:
-   int is_pending
-   int has_filled_string
-   -> at pos offset_pending_array, the array of pending
-   -> at pos offset_size_array, the array of string size
-   -> at pos offset_unichars, all the chars
- */
-
-
+#define OFFSET_NB_PENDING 0
+#define OFFSET_NB_FILLED_STRING (sizeof(int))
+#define OFFSET_PENDING_LIST (sizeof(int)*2)
 /**
  * Allocates, initializes and returns a unichar array that is a copy of
  * the variable values. The array starts with a subarray of size 'n'
@@ -160,95 +170,62 @@ return v->variables[n];
  */
 OutputVariablesBackup* create_output_variable_backup(OutputVariables* RESTRICT v,Abstract_allocator prv_alloc) {
 if (v==NULL || v->variable_index==NULL) return NULL;
-int l=v->variable_index->size;
-if (l==0) return NULL;
+unsigned int nb_var=(unsigned int)v->variable_index->size;
+
+if (nb_var==0) return NULL;
 unsigned int size_strings=0;
-for (int i=0;i<l;i++) {
-	/* +1 for the \0  */
-	size_strings += v->variables[i]->len;
+
+for (unsigned int i=0;i<nb_var;i++) {
+	unsigned int len = v->variables[i]->len;
+	size_strings += len;
 }
-OutputVariablesBackup* backup=(OutputVariablesBackup*)malloc_cb(v->offset_unichars + ((size_strings+l+1)*sizeof(unichar)),prv_alloc);
-char* limitPtr = ((char*)backup) + v->offset_unichars + ((size_strings + l + 1)*sizeof(unichar));
+OutputVariablesBackup* backup=(OutputVariablesBackup*)malloc_cb(
+	v->unichars_offset + (size_strings * sizeof(unichar)) +		
+		((nb_var+1) * ( sizeof(uint_pack_multibits)+sizeof(unichar))),prv_alloc);
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
 }
 
-unsigned int i_has_pending = 0;
-uint_pack_multibits* pending_array = (uint_pack_multibits*)(((char*)backup) + (v->offset_pending_array));
-size_t limit = (size_t)((v->is_pending_array_size_intptr_size_rounded) / sizeof(uint_pack_multibits));
-for (size_t i = 0; i<limit; i++) {
-	*(pending_array+i) = *(((uint_pack_multibits*)(v->is_pending))+i);
-	i_has_pending |= *(((uint_pack_multibits*)(v->is_pending))+i);
+unsigned int nb_pending = 0;
+unsigned int * pending_var_list = (unsigned int *)(((char*)backup) + OFFSET_PENDING_LIST);
+
+for (unsigned int i = 0; i<(unsigned int)nb_var; i++) {
+	*(pending_var_list + nb_pending) = i;
+	nb_pending+= v->is_pending[i];
 }
+*(pending_var_list + nb_pending) = nb_var;
 
-*(((int*)backup) + 0) = i_has_pending ? 1 : 0;
-*(((int*)backup) + 1) = size_strings;//? 1 : 0;
+*((unsigned int*)(((char*)backup) + OFFSET_NB_PENDING)) = nb_pending;
 
+unsigned int* string_index = (unsigned int*)(((char*)backup) + (v->string_index_offset));
  
-if ((!i_has_pending) && (!size_strings)) {
+if ((!nb_pending) && (!size_strings)) {
+	*string_index = nb_var;
+	*((unsigned int*)(((char*)backup) + OFFSET_NB_FILLED_STRING)) = 0;
 	return (OutputVariablesBackup*)backup;
 }
 
-
-unichar* backupString = (unichar*)(((char*)backup) + v->offset_unichars);
-size_t pos=0;
-for (int i=0;i<l;i++) {
+unichar* backup_string = (unichar*)(((char*)backup) + v->unichars_offset);
+unsigned int nb_string_filled = 0;
+for (unsigned int i=0;i<(unsigned int)nb_var;i++) {
     {
-        const unichar * src = v->variables[i]->str;
-        unichar * dst = backupString + pos;
-        for (;;)
-        {
-            unichar c0 = *src;
-            *dst = c0;
-            if (c0 == '\0')
-                break;
-            
-            unichar c1 = *(src+1);
-            *(dst+1) = c1;
-            if (c1 == '\0')
-                break;
-            
-            unichar c2 = *(src+2);
-            *(dst+2) = c2;
-            if (c2 == '\0')
-                break;
-            
-            unichar c3 = *(src+3);
-            *(dst+3) = c3;
-            if (c3 == '\0')
-                break;
-            
-            unichar c4 = *(src+4);
-            *(dst+4) = c4;
-            if (c4 == '\0')
-                break;
-            
-            unichar c5 = *(src+5);
-            *(dst+5) = c5;
-            if (c5 == '\0')
-                break;
-            
-            unichar c6 = *(src+6);
-            *(dst+6) = c6;
-            if (c6 == '\0')
-                break;
-            
-            unichar c7 = *(src+7);
-            *(dst+7) = c7;
-            if (c7 == '\0')
-                break;
-            
-            src += 8;
-            dst += 8;
-        }
+		unsigned int len = v->variables[i]->len;
+		if (len > 0)
+		{
+			*(string_index + (nb_string_filled * 2)) = i;
+			*(string_index + (nb_string_filled * 2) + 1) = len;
+			//memcpy(backup_string, v->variables[i]->str, sizeof(unichar)*(len + 1));
+			copy_string(backup_string, v->variables[i]->str, len);
+			backup_string += my_around_align(len + 1, sizeof(uint_pack_multibits));
+			nb_string_filled++;
+		}
     }
-    
-	pos=pos+v->variables[i]->len;
-	*(backupString+pos)='\0';
-	pos++;
 }
 
-*(backupString +pos)= 1;//why?
+*(string_index + (nb_string_filled * 2)) = nb_var;
+
+*((unsigned int*)(((char*)backup) + OFFSET_NB_FILLED_STRING)) = nb_string_filled;
+
 return (OutputVariablesBackup*)backup;
 }
 
@@ -275,144 +252,81 @@ while (v->pending!=NULL) {
 	/* We must not free tmp->var */
 	free(tmp);
 }
-/* Then we add all pending variables of the backup */
-int l=v->variable_index->size;
 
-int i_has_pending = *(((const int*)backup) + 0) ;
-int have_filled_strings = *(((const int*)backup) + 1) ;
+uint_pack_multibits* is_pending_erase = (uint_pack_multibits*)v->is_pending;
+size_t limit = v->is_pending_array_size_intptr_size_rounded;
+for (size_t i = 0; i < limit; i++) {
+	*(is_pending_erase + i) = (uint_pack_multibits)0;
+}
 
+const unsigned int * pending_var_list = (const unsigned int*)(((const char*)backup) + OFFSET_PENDING_LIST);
+const unsigned int nb_pending = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_PENDING)) ;
+const unsigned int nb_filled_strings = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_FILLED_STRING)) ;
+unsigned int nb_var = (unsigned int)v->variable_index->size;
 
 // first int of backup is set to 0 if we have full empty backup
-if ((!i_has_pending) && (!have_filled_strings)) {
-	size_t limit = (size_t)((v->is_pending_array_size_intptr_size_rounded) / sizeof(uint_pack_multibits));
-	for (size_t i = 0; i < limit; i++) {
-		*(((uint_pack_multibits*)(v->is_pending))+i) = 0;
-	}
+if ((!nb_pending) && (!nb_filled_strings)) {
 
-	for (int i = 0; i < l; i++) {
+	for (unsigned int i = 0; i < nb_var; i++) {
 	    v->variables[i]->str[0] = 0;
 	    v->variables[i]->len = 0 ;
 	}
 	return;
 }
 
-const uint_pack_multibits* pending_array = (const uint_pack_multibits*)(((const char*)backup) + (v->offset_pending_array));
-for (int i=0;i<l;i++) {
-	v->is_pending[i]=((((char*)pending_array))[i]);
-	if (v->is_pending[i]) {
-		/* We also add pending variables to the 'pending' list */
-		add_output_variable_to_pending_list(&(v->pending),v->variables[i]);	
+for (unsigned int loop_pending = 0; loop_pending < nb_pending; loop_pending++)
+{
+	unsigned int cur_pending_item = *(pending_var_list + loop_pending);
+	v->is_pending[cur_pending_item] = 1;
+	add_output_variable_to_pending_list(&(v->pending), v->variables[cur_pending_item]);
+}
+
+
+const unsigned int* string_index = (const unsigned int*)(((const char*)backup) + (v->string_index_offset));
+const unichar* backup_string = (const unichar*)(((const char*)backup) + v->unichars_offset);
+int pos_in_index = 0;
+unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
+
+unsigned int i = 0;
+for (;;) {
+	while ((i+4) < cur_item_in_index) {
+		v->variables[i]->len = 0;
+		*(v->variables[i]->str) = 0;
+		v->variables[i+1]->len = 0;
+		*(v->variables[i+1]->str) = 0;
+		v->variables[i+2]->len = 0;
+		*(v->variables[i+2]->str) = 0;
+		v->variables[i+3]->len = 0;
+		*(v->variables[i+3]->str) = 0;
+		i+=4;
 	}
-}
-
-
-const unichar* walk_backup = (const unichar*)(((const char*)backup) + v->offset_unichars);
-for (int i=0;i<l;i++) {
-
-	unichar c;
-	c = *(walk_backup);
-	v->variables[i]->str[0] = c;
-	if (c == '\0') goto size0;
-		
-	c = *(walk_backup+1);
-	v->variables[i]->str[1] = c;
-	if (c == '\0') goto size1;
-
-	c = *(walk_backup+2);
-	v->variables[i]->str[2] = c;
-	if (c == '\0') goto size2;
-
-	c = *(walk_backup+3);
-	v->variables[i]->str[3] = c;
-	if (c == '\0') goto size3;
-	
-	c = *(walk_backup+4);
-	v->variables[i]->str[4] = c;
-	if (c == '\0') goto size4;
-
-	c = *(walk_backup+5);
-	v->variables[i]->str[5] = c;
-	if (c == '\0') goto size5;
-	
-	c = *(walk_backup+6);
-	v->variables[i]->str[6] = c;
-	if (c == '\0') goto size6;
-
-	c = *(walk_backup+7);
-	v->variables[i]->str[7] = c;
-	if (c == '\0') goto size7;
-
-	{
-	  unsigned int pos_in_string = 8;
-	  unsigned int v_size = v->variables[i]->size;
-	  for (;;)
-	  {
-		  if (v_size == pos_in_string)
-		  {
-			  resize(v->variables[i], v_size * 2);
-			  v_size = v->variables[i]->size;
-		  }
-		  c = *(walk_backup + pos_in_string);
-		  v->variables[i]->str[pos_in_string] = c;
-		  if (c == '\0')
-			  break;
-		  pos_in_string ++;
-	  } 
-	  v->variables[i]->len = pos_in_string;
-	  walk_backup += pos_in_string + 1;
+	while (i < cur_item_in_index) {
+		v->variables[i]->len = 0;
+		*(v->variables[i]->str) = 0;
+		i++;
 	}
-	continue;
+	if (i == nb_var)
+		break;
+
+	Ustring * cur_ustr = v->variables[i];
+
+	int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
+	if (cur_ustr->size < (unsigned int)cur_len_in_index)
+		resize(cur_ustr, cur_len_in_index + 1);
+	cur_ustr->len = cur_len_in_index;
+	//memcpy(cur_ustr->str, backup_string, (cur_len_in_index + 1) * sizeof(unichar));
+	copy_string(cur_ustr->str, backup_string, cur_len_in_index);
+	//backup_string += cur_len_in_index + 1;
+	backup_string += my_around_align(cur_len_in_index + 1, sizeof(uint_pack_multibits));
+
+	pos_in_index++;
+	cur_item_in_index = *(string_index + (pos_in_index * 2));
 	
-	size0:
-	  walk_backup++;
-	  v->variables[i]->len = 0 ;
-	  continue;
-
-	size1:
-	  walk_backup+=2;
-	  v->variables[i]->len = 1 ;
-	  continue;
-	  
-	size2:
-	  walk_backup+=3;
-	  v->variables[i]->len = 2 ;
-	  continue;
-
-	size3:
-	  walk_backup+=4;
-	  v->variables[i]->len = 3 ;
-	  continue;
-
-	size4:
-	  walk_backup+=5;
-	  v->variables[i]->len = 4 ;
-	  continue;
-
-	size5:
-	  walk_backup+=6;
-	  v->variables[i]->len = 5 ;
-	  continue;
-
-	size6:
-	  walk_backup+=7;
-	  v->variables[i]->len = 6 ;
-	  continue;
-
-	size7:
-	  walk_backup+=8;
-	  v->variables[i]->len = 7 ;
-	  continue;
+	i++;
 }
 
-// verif
-unsigned int size_strings = 0;
-for (int i = 0;i<l;i++) {
-	/* +1 for the \0  */
-	size_strings += v->variables[i]->len;
-}
 
 }
-
 
 
 /**
@@ -424,43 +338,81 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 		return backup == NULL;
 	}
 
-	int l = v->variable_index->size;
+	unsigned int nb_var = (unsigned int)v->nb_var;
 
-	if (l == 0) return 1;
+	if (nb_var == 0) return 1;
 
-	int i_has_pending = *(((const int*)backup) + 0);
-	int have_filled_strings = *(((const int*)backup) + 1);
+
+	const unsigned int * pending_var_list_backup = (const unsigned int*)(((const char*)backup) + OFFSET_PENDING_LIST);
+	const unsigned int nb_pending_backup = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_PENDING));
+	const unsigned int nb_filled_strings_backup = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_FILLED_STRING));
+
+
 
 	// first int of backup is set to 0 if we have full empty backup
-	if ((!i_has_pending) && (!have_filled_strings)) {
-		for (int i = 0;i<l;i++) {
-			if (0 != v->is_pending[i]) return 0;
+	if ((!nb_pending_backup) && (!nb_filled_strings_backup)) {
+		for (unsigned int i = 0;i<nb_var;i++) {
+			if (0 != v->is_pending[i]) {
+				return 0;
+			}
 		}
 
-		for (int i = 0;i<l;i++) {
-			if (v->variables[i]->str[0] != '\0') return 0;
+		for (unsigned int i = 0;i<nb_var;i++) {
+			if (v->variables[i]->str[0] != '\0') {
+				return 0;
+			}
 		}
 
 		return 1;
 	}
 
 
+	unsigned int nb_pending_v = 0;
 
+	for (size_t i = 0; i<nb_var; i++) {
+		if (v->is_pending[i]) {
+			if (*(pending_var_list_backup + nb_pending_v) != i) {
+				return 0;
+			}
+			nb_pending_v++;
+		}
+	}
 
-	const uint_pack_multibits* pending_array = (const uint_pack_multibits*)(((const char*)backup) + (v->offset_pending_array));
-	size_t limit = (size_t)((v->is_pending_array_size_intptr_size_rounded) / sizeof(uint_pack_multibits));
-	for (size_t i = 0; i<limit; i++) {
-		if (*(pending_array+i) != *(((uint_pack_multibits*)(v->is_pending)) + i))
-			return 0;
+	if (*(pending_var_list_backup + nb_pending_v) != nb_var) {
+		return 0;
 	}
 
 
-	const unichar* walk_backup = (const unichar*)(((const char*)backup) + v->offset_unichars);
-	int pos = 0;
-	for (int i = 0;i<l;i++) {
-		if (u_strcmp(walk_backup + pos, v->variables[i]->str)) return 0;
-		pos = pos + v->variables[i]->len + 1;
+	const unsigned int* string_index = (const unsigned int*)(((const char*)backup) + (v->string_index_offset));
+	const unichar* backup_string = (const unichar*)(((const char*)backup) + v->unichars_offset);
+	unsigned int pos_in_index = 0;
+	unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
+	for (unsigned int i = 0; i<nb_var; i++) {
+		Ustring * cur_ustr = v->variables[i];
+		if (i == cur_item_in_index)
+		{
+			unsigned int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
+			if (cur_ustr->len != cur_len_in_index) {
+				return 0;
+			}
+			if (memcmp(cur_ustr->str, backup_string, (cur_len_in_index + 1) * sizeof(unichar)) != 0) {
+				return 0;
+			}
+			//backup_string += cur_len_in_index + 1;
+			backup_string += my_around_align(cur_len_in_index + 1, sizeof(uint_pack_multibits));
+
+			pos_in_index++;
+			cur_item_in_index = *(string_index + (pos_in_index * 2));
+		}
+		else
+		{
+			if (cur_ustr->len != 0) {
+				return 0;
+			}
+		}
 	}
+
+
 	return 1;
 }
 

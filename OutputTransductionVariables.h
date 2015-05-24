@@ -57,15 +57,16 @@ typedef struct {
    Ustring** variables;
    /* 'pending' is the list of variables for which we are currently between $|aa( and $|aa)
     * 'is_pending' is an array indicating by 1 or 0 if a variable is pending or not */
+
    OutputVarList* pending;
    char* is_pending;
 
    // somes size and pos precalculated for backup
    size_t is_pending_array_size_intptr_size_rounded;
-   size_t offset_pending_array;
-   size_t offset_size_str_array;
-   size_t size_array_size_str_array;
-   size_t offset_unichars;
+   size_t string_index_offset;
+   size_t unichars_offset;
+
+   unsigned int nb_var;
 } OutputVariables;
 
 
@@ -74,7 +75,7 @@ void free_OutputVariables(OutputVariables*);
 Ustring* get_output_variable(OutputVariables*,const unichar*);
 typedef struct
 {
-	void *_dummy;
+    void *_dummy;
 } OutputVariablesBackup;
 int same_output_variables(const OutputVariablesBackup* output_variable_backup,OutputVariables* v);
 
