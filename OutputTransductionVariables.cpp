@@ -164,12 +164,12 @@ if (injected!=NULL) {
 }
 unsigned int nb_var=v->variable_index->size;
 v->nb_var = (unsigned int)nb_var;
-v->variables=(Ustring**)malloc(nb_var*sizeof(Ustring*));
-if (v->variables==NULL) {
+v->variables_=(Ustring**)malloc(nb_var*sizeof(Ustring*));
+if (v->variables_==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
 for (unsigned int i=0;i<nb_var;i++) {
-   v->variables[i]=new_Ustring();
+   v->variables_[i]=new_Ustring();
 }
 v->pending=NULL;
 v->is_pending=(char*)calloc(my_around_align_intptr_size_ispending_array(my_around_align_ispending_array(nb_var*sizeof(char))),1);
@@ -191,10 +191,22 @@ if (p_nbvar!=NULL) {
 if (injected!=NULL) {
 	for (int i=0;i<injected->nbelems;i+=2) {
 		int index=get_value_index((unichar*)(injected->tab[i]),v->variable_index);
-		u_strcpy(v->variables[index],(unichar*)(injected->tab[i+1]));
+		u_strcpy(v->variables_[index],(unichar*)(injected->tab[i+1]));
 	}
 }
 return v;
+}
+
+
+/**
+ * replace the string of one variable
+ * uses this function instead direct switching on another source file
+ */
+Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string)
+{
+	Ustring* previous_value = v->variables_[index];
+	v->variables_[index] = new_string;
+	return previous_value;
 }
 
 
@@ -206,9 +218,9 @@ if (v==NULL) return;
 int size=v->variable_index->size;
 free_string_hash(v->variable_index);
 for (int i=0;i<size;i++) {
-	free_Ustring(v->variables[i]);
+	free_Ustring(v->variables_[i]);
 }
-free(v->variables);
+free(v->variables_);
 OutputVarList* l=v->pending;
 OutputVarList* tmp;
 while (l!=NULL) {
@@ -231,7 +243,7 @@ int n=get_value_index(name,v->variable_index,DONT_INSERT);
 if (n==-1) {
    return NULL;
 }
-return v->variables[n];
+return v->variables_[n];
 }
 
 
@@ -251,7 +263,7 @@ if (nb_var==0) return NULL;
 unsigned int size_strings=0;
 
 for (unsigned int i=0;i<nb_var;i++) {
-	unsigned int len = v->variables[i]->len;
+	unsigned int len = v->variables_[i]->len;
 	size_strings += len;
 }
 OutputVariablesBackup* backup=(OutputVariablesBackup*)malloc_cb(
@@ -284,13 +296,13 @@ unichar* backup_string = (unichar*)(((char*)backup) + v->unichars_offset);
 unsigned int nb_string_filled = 0;
 for (unsigned int i=0;i<(unsigned int)nb_var;i++) {
     {
-		unsigned int len = v->variables[i]->len;
+		unsigned int len = v->variables_[i]->len;
 		if (len > 0)
 		{
 			*(string_index + (nb_string_filled * 2)) = i;
 			*(string_index + (nb_string_filled * 2) + 1) = len;
 			//memcpy(backup_string, v->variables[i]->str, sizeof(unichar)*(len + 1));
-			copy_string(backup_string, v->variables[i]->str, len);
+			copy_string(backup_string, v->variables_[i]->str, len);
 			backup_string += my_around_align(len + 1, sizeof(uint_pack_multibits));
 			nb_string_filled++;
 		}
@@ -343,8 +355,8 @@ unsigned int nb_var = (unsigned int)v->variable_index->size;
 if ((!nb_pending) && (!nb_filled_strings)) {
 
 	for (unsigned int i = 0; i < nb_var; i++) {
-	    v->variables[i]->str[0] = 0;
-	    v->variables[i]->len = 0 ;
+	    v->variables_[i]->str[0] = 0;
+	    v->variables_[i]->len = 0 ;
 	}
 	return;
 }
@@ -353,7 +365,7 @@ for (unsigned int loop_pending = 0; loop_pending < nb_pending; loop_pending++)
 {
 	unsigned int cur_pending_item = *(pending_var_list + loop_pending);
 	v->is_pending[cur_pending_item] = 1;
-	add_output_variable_to_pending_list(&(v->pending), v->variables[cur_pending_item]);
+	add_output_variable_to_pending_list(&(v->pending), v->variables_[cur_pending_item]);
 }
 
 
@@ -365,27 +377,29 @@ unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
 unsigned int i = 0;
 for (;;) {
 	while ((i+4) < cur_item_in_index) {
-		v->variables[i]->len = 0;
-		*(v->variables[i]->str) = 0;
-		v->variables[i+1]->len = 0;
-		*(v->variables[i+1]->str) = 0;
-		v->variables[i+2]->len = 0;
-		*(v->variables[i+2]->str) = 0;
-		v->variables[i+3]->len = 0;
-		*(v->variables[i+3]->str) = 0;
+		v->variables_[i]->len = 0;
+		*(v->variables_[i]->str) = 0;
+		v->variables_[i+1]->len = 0;
+		*(v->variables_[i+1]->str) = 0;
+		v->variables_[i+2]->len = 0;
+		*(v->variables_[i+2]->str) = 0;
+		v->variables_[i+3]->len = 0;
+		*(v->variables_[i+3]->str) = 0;
 		i+=4;
 	}
 	while (i < cur_item_in_index) {
-		v->variables[i]->len = 0;
-		*(v->variables[i]->str) = 0;
+		v->variables_[i]->len = 0;
+		*(v->variables_[i]->str) = 0;
 		i++;
 	}
 	if (i == nb_var)
 		break;
 
-	Ustring * cur_ustr = v->variables[i];
+	Ustring * cur_ustr = v->variables_[i];
 
 	int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
+
+	// this test is awful, because it break optimized IPO/LTO/WPO optimization having only internal code
 	if (cur_ustr->size < (unsigned int)cur_len_in_index)
 		resize(cur_ustr, cur_len_in_index + 1);
 	cur_ustr->len = cur_len_in_index;
@@ -399,7 +413,6 @@ for (;;) {
 	
 	i++;
 }
-
 
 }
 
@@ -433,7 +446,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 		}
 
 		for (unsigned int i = 0;i<nb_var;i++) {
-			if (v->variables[i]->str[0] != '\0') {
+			if (v->variables_[i]->str[0] != '\0') {
 				return 0;
 			}
 		}
@@ -463,7 +476,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 	unsigned int pos_in_index = 0;
 	unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
 	for (unsigned int i = 0; i<nb_var; i++) {
-		Ustring * cur_ustr = v->variables[i];
+		Ustring * cur_ustr = v->variables_[i];
 		if (i == cur_item_in_index)
 		{
 			unsigned int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
@@ -569,7 +582,7 @@ while (list!=NULL) {
  */
 void set_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=1;
-add_output_variable_to_pending_list(&(var->pending),var->variables[index]);
+add_output_variable_to_pending_list(&(var->pending),var->variables_[index]);
 }
 
 
@@ -578,7 +591,7 @@ add_output_variable_to_pending_list(&(var->pending),var->variables[index]);
  */
 void unset_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=0;
-remove_output_variable_from_pending_list(&(var->pending),var->variables[index]);
+remove_output_variable_from_pending_list(&(var->pending),var->variables_[index]);
 }
 
 

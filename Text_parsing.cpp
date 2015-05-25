@@ -1273,14 +1273,15 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 struct opt_variable* output_variable_list = current_state->output_variable_starts;
 Ustring* recycle_Ustring=NULL;
 while (output_variable_list != NULL) {
-	Ustring* old_value=p->output_variables->variables[output_variable_list->variable_number];
+	
 	if (recycle_Ustring==NULL) {
 		recycle_Ustring=new_Ustring();
 	}
 	else {
 		empty(recycle_Ustring);
 	}
-	p->output_variables->variables[output_variable_list->variable_number]=recycle_Ustring;
+	Ustring* old_value=replace_output_variable_string(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
+
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	locate(/*graph_depth,*/
 			p->optimized_states[output_variable_list->transition->state_number],
@@ -1288,7 +1289,9 @@ while (output_variable_list != NULL) {
 	p->weight=old_weight1;
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	//free_Ustring(p->output_variables->variables[output_variable_list->variable_number]);
-	p->output_variables->variables[output_variable_list->variable_number]=old_value;
+
+	replace_output_variable_string(p->output_variables, output_variable_list->variable_number, old_value);
+
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;
 }

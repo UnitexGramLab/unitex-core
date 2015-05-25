@@ -54,7 +54,7 @@ typedef struct {
     * the 'variables' array */
    struct string_hash* variable_index;
    /* variables[a] gives the information associated to the variable #a */
-   Ustring** variables;
+   Ustring** variables_;
    /* 'pending' is the list of variables for which we are currently between $|aa( and $|aa)
     * 'is_pending' is an array indicating by 1 or 0 if a variable is pending or not */
 
@@ -69,6 +69,11 @@ typedef struct {
    unsigned int nb_var;
 } OutputVariables;
 
+
+/**
+ * replace the string of one variable
+ */
+Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string);
 
 OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
 void free_OutputVariables(OutputVariables*);
