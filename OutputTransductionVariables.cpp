@@ -40,7 +40,8 @@ typedef uint64_t uint_pack_multiunichar;
 
 namespace unitex {
 
-
+/*
+// unoptimized version
 static inline void copy_string(unichar* dest, const unichar* src, unsigned int len) {
 #ifdef COPY_STRING_USE_MEMCPY
 	memcpy(dest, src, (len + 1) * sizeof(unichar));
@@ -57,6 +58,80 @@ static inline void copy_string(unichar* dest, const unichar* src, unsigned int l
 	}
 #endif
 }
+*/
+
+static inline void copy_string(unichar* dest, const unichar* src, unsigned int len) {
+#ifdef COPY_STRING_USE_MEMCPY
+		memcpy(dest, src, (len + 1) * sizeof(unichar));
+#else
+#define factor_unichar_to_pack (sizeof(uint_pack_multiunichar)/sizeof(unichar))
+
+		unsigned int size_in_byte = (len + 1)*sizeof(unichar);
+		unsigned int len_in_pack_multiunichar = (size_in_byte + sizeof(uint_pack_multiunichar) - 1) / sizeof(uint_pack_multiunichar);
+
+		switch (len_in_pack_multiunichar)
+		{
+		case 0:
+			break;
+		case 1:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			break;
+
+		case 2:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			*(((uint_pack_multiunichar*)dest) + 1) = *(((uint_pack_multiunichar*)src) + 1);
+			break;
+
+		case 3:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			*(((uint_pack_multiunichar*)dest) + 1) = *(((uint_pack_multiunichar*)src) + 1);
+			*(((uint_pack_multiunichar*)dest) + 2) = *(((uint_pack_multiunichar*)src) + 2);
+			break;
+
+		case 4:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			*(((uint_pack_multiunichar*)dest) + 1) = *(((uint_pack_multiunichar*)src) + 1);
+			*(((uint_pack_multiunichar*)dest) + 2) = *(((uint_pack_multiunichar*)src) + 2);
+			*(((uint_pack_multiunichar*)dest) + 3) = *(((uint_pack_multiunichar*)src) + 3);
+			break;
+
+		case 5:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			*(((uint_pack_multiunichar*)dest) + 1) = *(((uint_pack_multiunichar*)src) + 1);
+			*(((uint_pack_multiunichar*)dest) + 2) = *(((uint_pack_multiunichar*)src) + 2);
+			*(((uint_pack_multiunichar*)dest) + 3) = *(((uint_pack_multiunichar*)src) + 3);
+			*(((uint_pack_multiunichar*)dest) + 4) = *(((uint_pack_multiunichar*)src) + 4);
+			break;
+
+		case 6:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			*(((uint_pack_multiunichar*)dest) + 1) = *(((uint_pack_multiunichar*)src) + 1);
+			*(((uint_pack_multiunichar*)dest) + 2) = *(((uint_pack_multiunichar*)src) + 2);
+			*(((uint_pack_multiunichar*)dest) + 3) = *(((uint_pack_multiunichar*)src) + 3);
+			*(((uint_pack_multiunichar*)dest) + 4) = *(((uint_pack_multiunichar*)src) + 4);
+			*(((uint_pack_multiunichar*)dest) + 5) = *(((uint_pack_multiunichar*)src) + 5);
+			break;
+
+		case 7:
+			*(((uint_pack_multiunichar*)dest) + 0) = *(((uint_pack_multiunichar*)src) + 0);
+			*(((uint_pack_multiunichar*)dest) + 1) = *(((uint_pack_multiunichar*)src) + 1);
+			*(((uint_pack_multiunichar*)dest) + 2) = *(((uint_pack_multiunichar*)src) + 2);
+			*(((uint_pack_multiunichar*)dest) + 3) = *(((uint_pack_multiunichar*)src) + 3);
+			*(((uint_pack_multiunichar*)dest) + 4) = *(((uint_pack_multiunichar*)src) + 4);
+			*(((uint_pack_multiunichar*)dest) + 5) = *(((uint_pack_multiunichar*)src) + 5);
+			*(((uint_pack_multiunichar*)dest) + 6) = *(((uint_pack_multiunichar*)src) + 6);
+			break;
+
+		default:
+			for (unsigned int i = 0; i < len_in_pack_multiunichar; i++)
+			{
+				uint_pack_multiunichar mc = *(((uint_pack_multiunichar*)src) + i);
+				*(((uint_pack_multiunichar*)dest) + i) = mc;
+			}
+		}
+#endif
+}
+
 
 static inline void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
 static inline void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
