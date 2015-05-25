@@ -201,12 +201,19 @@ return v;
 /**
  * replace the string of one variable
  * uses this function instead direct switching on another source file
+ * return the previous string of the variable
  */
 Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string)
 {
-	Ustring* previous_value = v->variables_[index];
+	Ustring* previous_string = v->variables_[index];
+
+	// when we install a backup, we can have to restore a string bigger than new_string buffer
+	//  but never bigger than previous_string buffer (because previous_string had the restored content
+	if ((previous_string->size) > (new_string->size)) {
+		resize(new_string, previous_string->size);
+	}
 	v->variables_[index] = new_string;
-	return previous_value;
+	return previous_string;
 }
 
 
@@ -399,9 +406,13 @@ for (;;) {
 
 	int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
 
+	/*
 	// this test is awful, because it break optimized IPO/LTO/WPO optimization having only internal code
+	//  we can remove it, because we restore a previous value (so buffer size is already compatible), and
+	//  when we replace with replace_output_variable_string, size became never smaller
 	if (cur_ustr->size < (unsigned int)cur_len_in_index)
 		resize(cur_ustr, cur_len_in_index + 1);
+		*/
 	cur_ustr->len = cur_len_in_index;
 	//memcpy(cur_ustr->str, backup_string, (cur_len_in_index + 1) * sizeof(unichar));
 	copy_string(cur_ustr->str, backup_string, cur_len_in_index);
