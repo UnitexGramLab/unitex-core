@@ -148,28 +148,42 @@ static inline void remove_output_variable_from_pending_list(OutputVarList* *list
  * with empty strings.
  */
 OutputVariables* new_OutputVariables(struct list_ustring* list,int* p_nbvar,vector_ptr* injected) {
-OutputVariables* v=(OutputVariables*)malloc(sizeof(OutputVariables));
+struct string_hash* variable_index = new_string_hash(DONT_USE_VALUES);
+while (list != NULL) {
+	get_value_index(list->string, variable_index);
+	list = list->next;
+}
+if (injected != NULL) {
+	for (int i = 0;i<injected->nbelems;i += 2) {
+		get_value_index((unichar*)(injected->tab[i]), variable_index);
+	}
+}
+unsigned int nb_var = variable_index->size;
+OutputVariables* v=(OutputVariables*)malloc(sizeof(OutputVariables)+(nb_var*sizeof(Ustring)));
 if (v==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
-v->variable_index=new_string_hash(DONT_USE_VALUES);
-while (list!=NULL) {
-   get_value_index(list->string,v->variable_index);
-   list=list->next;
-}
-if (injected!=NULL) {
-	for (int i=0;i<injected->nbelems;i+=2) {
-		get_value_index((unichar*)(injected->tab[i]),v->variable_index);
-	}
-}
-unsigned int nb_var=v->variable_index->size;
+v->variable_index=variable_index;
+
 v->nb_var = (unsigned int)nb_var;
-v->variables_=(Ustring**)malloc(nb_var*sizeof(Ustring*));
+//v->variables_=(Ustring**)malloc(nb_var*sizeof(Ustring*));
 if (v->variables_==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
+/*
 for (unsigned int i=0;i<nb_var;i++) {
    v->variables_[i]=new_Ustring();
+}*/
+#define START_SIZE_VARIABLE 1
+for (unsigned int i = 0;i < nb_var;i++) {
+	v->variables_[i].len=0;
+	v->variables_[i].size = START_SIZE_VARIABLE;
+	v->variables_[i].str = (unichar*)malloc(v->variables_[i].size*sizeof(unichar));
+	if (v->variables_[i].str == NULL) {
+		fatal_alloc_error("new_OutputVariables");
+	}
+	*(v->variables_[i].str)=0;
+	resize(&v->variables_[i], 1);
 }
 v->pending=NULL;
 v->is_pending=(char*)calloc(my_around_align_intptr_size_ispending_array(my_around_align_ispending_array(nb_var*sizeof(char))),1);
@@ -191,43 +205,29 @@ if (p_nbvar!=NULL) {
 if (injected!=NULL) {
 	for (int i=0;i<injected->nbelems;i+=2) {
 		int index=get_value_index((unichar*)(injected->tab[i]),v->variable_index);
-		u_strcpy(v->variables_[index],(unichar*)(injected->tab[i+1]));
+		u_strcpy(&v->variables_[index],(unichar*)(injected->tab[i+1]));
 	}
 }
 return v;
 }
 
+/**
+ * swap the string content of one variable
+ * uses this function instead direct switching on another source file
+ * the string in parameter will receive previous content (as backup)
+ */
 void swap_output_variable_content(OutputVariables*v, int index, Ustring* swap_string)
 {
 	Ustring t;
-	if ((v->variables_[index]->size) > (swap_string->size)) {
-		resize(swap_string, v->variables_[index]->size);
+	if ((v->variables_[index].size) > (swap_string->size)) {
+		resize(swap_string, v->variables_[index].size);
 	}
 
 	t = *swap_string;
-	*swap_string = *(v->variables_[index]);
-	*(v->variables_[index]) = t;
+	*swap_string = (v->variables_[index]);
+	(v->variables_[index]) = t;
 }
 
-/**
- * replace the string of one variable
- * uses this function instead direct switching on another source file
- * return the previous string of the variable
- */
-/*
-Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string)
-{
-	Ustring* previous_string = v->variables_[index];
-
-	// when we install a backup, we can have to restore a string bigger than new_string buffer
-	//  but never bigger than previous_string buffer (because previous_string had the restored content
-	if ((previous_string->size) > (new_string->size)) {
-		resize(new_string, previous_string->size);
-	}
-	v->variables_[index] = new_string;
-	return previous_string;
-}
-*/
 
 /**
  * Frees the memory associated to the given variables.
@@ -237,9 +237,8 @@ if (v==NULL) return;
 int size=v->variable_index->size;
 free_string_hash(v->variable_index);
 for (int i=0;i<size;i++) {
-	free_Ustring(v->variables_[i]);
+	free(v->variables_[i].str);
 }
-free(v->variables_);
 OutputVarList* l=v->pending;
 OutputVarList* tmp;
 while (l!=NULL) {
@@ -262,7 +261,7 @@ int n=get_value_index(name,v->variable_index,DONT_INSERT);
 if (n==-1) {
    return NULL;
 }
-return v->variables_[n];
+return &v->variables_[n];
 }
 
 
@@ -282,7 +281,7 @@ if (nb_var==0) return NULL;
 unsigned int size_strings=0;
 
 for (unsigned int i=0;i<nb_var;i++) {
-	unsigned int len = v->variables_[i]->len;
+	unsigned int len = v->variables_[i].len;
 	size_strings += len;
 }
 OutputVariablesBackup* backup=(OutputVariablesBackup*)malloc_cb(
@@ -315,13 +314,13 @@ unichar* backup_string = (unichar*)(((char*)backup) + v->unichars_offset);
 unsigned int nb_string_filled = 0;
 for (unsigned int i=0;i<(unsigned int)nb_var;i++) {
     {
-		unsigned int len = v->variables_[i]->len;
+		unsigned int len = v->variables_[i].len;
 		if (len > 0)
 		{
 			*(string_index + (nb_string_filled * 2)) = i;
 			*(string_index + (nb_string_filled * 2) + 1) = len;
 			//memcpy(backup_string, v->variables[i]->str, sizeof(unichar)*(len + 1));
-			copy_string(backup_string, v->variables_[i]->str, len);
+			copy_string(backup_string, v->variables_[i].str, len);
 			backup_string += my_around_align(len + 1, sizeof(uint_pack_multibits));
 			nb_string_filled++;
 		}
@@ -374,8 +373,8 @@ unsigned int nb_var = (unsigned int)v->variable_index->size;
 if ((!nb_pending) && (!nb_filled_strings)) {
 
 	for (unsigned int i = 0; i < nb_var; i++) {
-	    v->variables_[i]->str[0] = 0;
-	    v->variables_[i]->len = 0 ;
+	    v->variables_[i].str[0] = 0;
+	    v->variables_[i].len = 0 ;
 	}
 	return;
 }
@@ -384,7 +383,7 @@ for (unsigned int loop_pending = 0; loop_pending < nb_pending; loop_pending++)
 {
 	unsigned int cur_pending_item = *(pending_var_list + loop_pending);
 	v->is_pending[cur_pending_item] = 1;
-	add_output_variable_to_pending_list(&(v->pending), v->variables_[cur_pending_item]);
+	add_output_variable_to_pending_list(&(v->pending),&v->variables_[cur_pending_item]);
 }
 
 
@@ -396,25 +395,25 @@ unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
 unsigned int i = 0;
 for (;;) {
 	while ((i+4) < cur_item_in_index) {
-		v->variables_[i]->len = 0;
-		*(v->variables_[i]->str) = 0;
-		v->variables_[i+1]->len = 0;
-		*(v->variables_[i+1]->str) = 0;
-		v->variables_[i+2]->len = 0;
-		*(v->variables_[i+2]->str) = 0;
-		v->variables_[i+3]->len = 0;
-		*(v->variables_[i+3]->str) = 0;
+		v->variables_[i].len = 0;
+		*(v->variables_[i].str) = 0;
+		v->variables_[i+1].len = 0;
+		*(v->variables_[i+1].str) = 0;
+		v->variables_[i+2].len = 0;
+		*(v->variables_[i+2].str) = 0;
+		v->variables_[i+3].len = 0;
+		*(v->variables_[i+3].str) = 0;
 		i+=4;
 	}
 	while (i < cur_item_in_index) {
-		v->variables_[i]->len = 0;
-		*(v->variables_[i]->str) = 0;
+		v->variables_[i].len = 0;
+		*(v->variables_[i].str) = 0;
 		i++;
 	}
 	if (i == nb_var)
 		break;
 
-	Ustring * cur_ustr = v->variables_[i];
+	Ustring * cur_ustr = &(v->variables_[i]);
 
 	int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
 
@@ -469,7 +468,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 		}
 
 		for (unsigned int i = 0;i<nb_var;i++) {
-			if (v->variables_[i]->str[0] != '\0') {
+			if (v->variables_[i].str[0] != '\0') {
 				return 0;
 			}
 		}
@@ -499,7 +498,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 	unsigned int pos_in_index = 0;
 	unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
 	for (unsigned int i = 0; i<nb_var; i++) {
-		Ustring * cur_ustr = v->variables_[i];
+		Ustring * cur_ustr = &(v->variables_[i]);
 		if (i == cur_item_in_index)
 		{
 			unsigned int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
@@ -605,7 +604,7 @@ while (list!=NULL) {
  */
 void set_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=1;
-add_output_variable_to_pending_list(&(var->pending),var->variables_[index]);
+add_output_variable_to_pending_list(&(var->pending),&(var->variables_[index]));
 }
 
 
@@ -614,7 +613,7 @@ add_output_variable_to_pending_list(&(var->pending),var->variables_[index]);
  */
 void unset_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=0;
-remove_output_variable_from_pending_list(&(var->pending),var->variables_[index]);
+remove_output_variable_from_pending_list(&(var->pending),&(var->variables_[index]));
 }
 
 

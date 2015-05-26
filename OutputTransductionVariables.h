@@ -53,8 +53,6 @@ typedef struct {
    /* For a given variable A, this array gives an index a to be used in
     * the 'variables' array */
    struct string_hash* variable_index;
-   /* variables[a] gives the information associated to the variable #a */
-   Ustring** variables_;
    /* 'pending' is the list of variables for which we are currently between $|aa( and $|aa)
     * 'is_pending' is an array indicating by 1 or 0 if a variable is pending or not */
 
@@ -67,14 +65,14 @@ typedef struct {
    size_t unichars_offset;
 
    unsigned int nb_var;
+   /* variables[a] gives the information associated to the variable #a */
+   Ustring variables_[1];
 } OutputVariables;
 
 
 /**
- * replace the string of one variable
+ * swap the string of one variable with another string
  */
-Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string);
-
 void swap_output_variable_content(OutputVariables*v, int index, Ustring* swap_string);
 
 OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
