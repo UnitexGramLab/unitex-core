@@ -78,7 +78,7 @@ while (*list!=NULL) {
 /**
  * Sets the given dic variable, inserting it in the variable list if absent.
  */
-void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list,int must_clone) {
+void set_dic_variable(const unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list,int must_clone) {
 while (*list!=NULL) {
    if (!u_strcmp((*list)->name,name)) {
       /* If we have found the variable we were looking for */
@@ -102,7 +102,7 @@ while (*list!=NULL) {
  * Returns the struct dela_entry* associated to the given dic variable name, 
  * or NULL if not found.
  */
-struct dela_entry* get_dic_variable(unichar* name,struct dic_variable* list) {
+struct dela_entry* get_dic_variable(const unichar* name,struct dic_variable* list) {
 while (list!=NULL) {
    if (!u_strcmp(list->name,name)) {
       /* If we have found the variable we were looking for */

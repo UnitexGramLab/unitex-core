@@ -36,12 +36,15 @@ namespace unitex {
 #define VAR_CMP_EQUAL 1
 
 
-int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters);
-int compare_variables_substr(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters);
-Ustring* get_variable_content(unichar* name,struct locate_parameters* p);
-Ustring* get_output_variable_content(unichar* name,struct locate_parameters* p);
-Ustring* get_dic_variable_content(unichar* name,struct locate_parameters* p);
+int compare_variables(const unichar* var1,const unichar* var2,struct locate_parameters* p,int case_matters);
+int compare_variables_substr(const unichar* var1,const unichar* var2,struct locate_parameters* p,int case_matters);
+Ustring* get_variable_content(const unichar* name,struct locate_parameters* p);
+Ustring* get_output_variable_content_Ustring(const unichar* name,struct locate_parameters* p);
+Ustring* get_dic_variable_content_Ustring(const unichar* name,struct locate_parameters* p);
 
+// unichar* returned by get_dic_variable_content_str and get_output_variable_content_str don't need be free
+unichar* get_dic_variable_content_str(const unichar* name, struct locate_parameters* p);
+unichar* get_output_variable_content_str(const unichar* name, struct locate_parameters* p);
 } // namespace unitex
 
 #endif

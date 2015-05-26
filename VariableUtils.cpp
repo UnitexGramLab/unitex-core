@@ -29,7 +29,7 @@
 
 namespace unitex {
 
-Ustring* get_variable_content(unichar* name,struct locate_parameters* p) {
+Ustring* get_variable_content(const unichar* name,struct locate_parameters* p) {
 struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
 if (v==NULL || v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
     || v->start_in_tokens>v->end_in_tokens
@@ -63,19 +63,32 @@ return res;
 }
 
 
-Ustring* get_output_variable_content(unichar* name,struct locate_parameters* p) {
+Ustring* get_output_variable_content_Ustring(const unichar* name,struct locate_parameters* p) {
 const Ustring* res=get_output_variable(p->output_variables,name);
 if (res==NULL) return NULL;
 return new_Ustring(res->str);
 }
 
 
-Ustring* get_dic_variable_content(unichar* name,struct locate_parameters* p) {
+unichar* get_output_variable_content_str(const unichar* name, struct locate_parameters* p) {
+	const Ustring* res = get_output_variable(p->output_variables, name);
+	if (res == NULL) return NULL;
+	return res->str;
+}
+
+
+Ustring* get_dic_variable_content_Ustring(const unichar* name,struct locate_parameters* p) {
 struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
 if (entry==NULL) return NULL;
 return new_Ustring(entry->inflected);
 }
 
+
+unichar* get_dic_variable_content_str(const unichar* name, struct locate_parameters* p) {
+	struct dela_entry* entry = get_dic_variable(name, p->dic_variables);
+	if (entry == NULL) return NULL;
+	return entry->inflected;
+}
 
 /**
  * Returns the content associated to the given variable name. If
@@ -88,9 +101,26 @@ if (name[0]=='#') {
 }
 Ustring* res=get_variable_content(name,p);
 if (res!=NULL) return res;
-res=get_output_variable_content(name,p);
+res=get_output_variable_content_Ustring(name,p);
 if (res!=NULL) return res;
-return get_dic_variable_content(name,p);
+return get_dic_variable_content_Ustring(name,p);
+}
+
+
+unichar* get_var_content_str(const unichar* name, struct locate_parameters* p, int*free_needed) {
+	*free_needed = 0;
+	if (name[0] == '#') {
+		/* The user asked for a constant string */
+		return (unichar*)name + 1;
+	}
+	Ustring* res = get_variable_content(name, p);
+	if (res != NULL) {
+		*free_needed = 1;
+		return free_Ustring_get_str(res);
+	}
+	unichar* str = get_output_variable_content_str(name, p);
+	if (str != NULL) return str;
+	return get_dic_variable_content_str(name, p);
 }
 
 
@@ -103,43 +133,49 @@ return get_dic_variable_content(name,p);
  * Note 2: you can compare a variable to a constant string. To do that, the string
  *         must start with #
  */
-int compare_variables(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters) {
-Ustring* v1=get_var_content(var1,p);
+int compare_variables(const unichar* var1,const unichar* var2,struct locate_parameters* p,int case_matters) {
+int free_v1;
+unichar* v1=get_var_content_str(var1,p,&free_v1);
 if (!v1) {
 	return VAR_CMP_ERROR;
 }
-Ustring* v2=get_var_content(var2,p);
+int free_v2;
+unichar* v2=get_var_content_str(var2,p,&free_v2);
 if (!v2) {
-	free_Ustring(v1);
+	if (free_v1) free(v1);
 	return VAR_CMP_ERROR;
 }
-int ret=case_matters?u_strcmp(v1->str,v2->str):u_strcmp_ignore_case(v1->str,v2->str);
-free_Ustring(v1);
-free_Ustring(v2);
+int ret=case_matters?u_strcmp(v1,v2):u_strcmp_ignore_case(v1,v2);
+if (free_v1) free(v1);
+if (free_v2) free(v2);
 if (ret==0) {
 	return VAR_CMP_EQUAL;
 }
 return VAR_CMP_DIFF;
 }
 
-int compare_variables_substr(unichar* var1,unichar* var2,struct locate_parameters* p,int case_matters) {
+
+int compare_variables_substr(const unichar* var1,const unichar* var2,struct locate_parameters* p,int case_matters) {
 DISCARD_UNUSED_PARAMETER(case_matters)
-Ustring* v1=get_var_content(var1,p);
+int free_v1;
+unichar* v1 = get_var_content_str(var1, p, &free_v1);
 if (!v1) {
 	return VAR_CMP_ERROR;
 }
-Ustring* v2=get_var_content(var2,p);
+int free_v2;
+unichar* v2 = get_var_content_str(var2, p, &free_v2);
 if (!v2) {
-	free_Ustring(v1);
+	if (free_v1) free(v1);
 	return VAR_CMP_ERROR;
 }
-int ret=u_substr(v1->str,v2->str);
-free_Ustring(v1);
-free_Ustring(v2);
+int ret=u_substr(v1,v2);
+if (free_v1) free(v1);
+if (free_v2) free(v2);
 if (ret != 0) {
 	return VAR_CMP_EQUAL;
 }
 return VAR_CMP_DIFF;
 }
+
 
 } // namespace unitex

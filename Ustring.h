@@ -60,6 +60,7 @@ Ustring* new_Ustring(const unichar*);
 Ustring* new_Ustring();
 Ustring* new_Ustring(unsigned int);
 void free_Ustring(Ustring * ustr);
+static inline unichar* free_Ustring_get_str(Ustring*s);
 
 static inline void empty(Ustring * ustr);
 void truncate(Ustring* ustr,unsigned int length);
@@ -117,6 +118,14 @@ u_strcat(ustr,str,u_strlen(str));
 
 static inline int u_strlen(Ustring* s) {
 return s->len;
+}
+
+
+static inline unichar* free_Ustring_get_str(Ustring*s)
+{
+	unichar*str = s->str;
+	free(s);
+	return str;
 }
 
 
