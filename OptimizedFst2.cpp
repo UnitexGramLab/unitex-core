@@ -731,10 +731,8 @@ return e->control&1;
  * Returns 1 if the state is not final and has no outgoing transition; 0 otherwise.
  */
 static inline int is_useless_state(OptimizedFst2State s) {
-if (s==NULL) {
-   fatal_error("NULL error in is_useless_state\n");
-}
-    
+fatal_assert(s==NULL,"NULL error in is_useless_state\n");
+
 return !(s->control&1)
 		&& s->graph_calls==NULL
 		&& s->metas==NULL

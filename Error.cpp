@@ -74,6 +74,23 @@ fatal_error(DEFAULT_ERROR_CODE);
 
 
 /**
+* If assert_condition is not 0, prints the given message and
+* exits the program with the default exit code.
+*/
+#ifndef IGNORE_FATAL_ASSERT
+void fatal_assert(int assert_condition, const char* format, ...) {
+if (assert_condition) {
+	va_list list;
+	va_start(list, format);
+	u_vfprintf(U_STDERR, format, list);
+	va_end(list);
+	fatal_error(DEFAULT_ERROR_CODE);
+}
+}
+#endif
+
+
+/**
  * Prints the given message on the error stream.
  */
 void error(const char* format,...) {

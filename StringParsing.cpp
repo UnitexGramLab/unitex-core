@@ -63,7 +63,7 @@ const unichar P_BACKSLASH_EQUAL[] = { '\\', '=', 0 };
 const unichar P_BACKSLASH[] = { '\\', 0 };
 const unichar P_COMMA_DOT_EQUAL_BACKSLASH[] = { ',', '.', '=', '\\', 0 };
 
-
+const unichar STRING_EMPTY[] = { 0 };
 /**
  * Parses the string 's' from the position '*ptr' until it finds '\0' 
  * or a character that is in 'stop_chars'.
@@ -84,21 +84,26 @@ const unichar P_COMMA_DOT_EQUAL_BACKSLASH[] = { ',', '.', '=', '\\', 0 };
  *          result = "E=mc\2"
  */
 
-static inline unichar* local_u_strchr(const unichar* s,unichar c) {
-if (s==NULL) return NULL;
-while ((*s)) {
-   if (*s==c) {
-     return (unichar*)s;
-   }
-   s++;
+static inline int string_contains_unichar(const unichar* s,unichar c) {
+for (;;) {
+	if ((*(s)) == c) return 1;
+	if ((*(s)) == 0) return 0;
+	if ((*(s + 1)) == c) return 1;
+	if ((*(s + 1)) == 0) return 0;
+	if ((*(s + 2)) == c) return 1;
+	if ((*(s + 2)) == 0) return 0;
+	if ((*(s + 3)) == c) return 1;
+	if ((*(s + 3)) == 0) return 0;
+	s += 4;
 }
-
-return NULL;
 }
 
 
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
+stop_chars = (stop_chars == NULL) ? STRING_EMPTY : stop_chars;
+forbidden_chars = (forbidden_chars == NULL) ? STRING_EMPTY : forbidden_chars;
+chars_to_keep_protected = (chars_to_keep_protected == NULL) ? STRING_EMPTY : chars_to_keep_protected;
 int j=0;
 result[0]='\0';
 if (s[*ptr]=='\0') return P_EOS;
@@ -110,7 +115,7 @@ while (s[*ptr]!='\0') {
          result[j]='\0';
          return P_BACKSLASH_AT_END;
       }
-      if (chars_to_keep_protected==NULL || local_u_strchr(chars_to_keep_protected,s[(*ptr)+1])) {
+      if (chars_to_keep_protected==NULL || string_contains_unichar(chars_to_keep_protected,s[(*ptr)+1])) {
          /* If the character must keep its backslash */
          result[j++]=PROTECTION_CHAR;
       }
@@ -118,12 +123,12 @@ while (s[*ptr]!='\0') {
       (*ptr)=(*ptr)+2;
    } else {
       /* If we have an unprotected character */
-      if (local_u_strchr(stop_chars,s[*ptr])) {
+      if (string_contains_unichar(stop_chars,s[*ptr])) {
          /* If it is a stop char, we have finished */
          result[j]='\0';
          return P_OK;
       }
-      if (local_u_strchr(forbidden_chars,s[*ptr])) {
+      if (string_contains_unichar(forbidden_chars,s[*ptr])) {
          /* If it is a forbidden char, it's an error */
          result[j]='\0';
          return P_FORBIDDEN_CHAR;
@@ -193,6 +198,9 @@ return value;
  */
 int parse_string(const unichar* s,int *ptr,Ustring* result,const unichar* stop_chars,
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
+stop_chars = (stop_chars == NULL) ? STRING_EMPTY : stop_chars;
+forbidden_chars = (forbidden_chars == NULL) ? STRING_EMPTY : forbidden_chars;
+chars_to_keep_protected = (chars_to_keep_protected == NULL) ? STRING_EMPTY : chars_to_keep_protected;
 if (s[*ptr]=='\0') return P_EOS;
 while (s[*ptr]!='\0') {
    if (s[*ptr]==PROTECTION_CHAR) {
@@ -201,7 +209,7 @@ while (s[*ptr]!='\0') {
          /* It must not appear at the end of the string */
          return P_BACKSLASH_AT_END;
       }
-      if (chars_to_keep_protected==NULL || local_u_strchr(chars_to_keep_protected,s[(*ptr)+1])) {
+      if (chars_to_keep_protected==NULL || string_contains_unichar(chars_to_keep_protected,s[(*ptr)+1])) {
          /* If the character must keep its backslash */
          u_strcat(result,PROTECTION_CHAR);
       }
@@ -209,11 +217,11 @@ while (s[*ptr]!='\0') {
       (*ptr)=(*ptr)+2;
    } else {
       /* If we have an unprotected character */
-      if (local_u_strchr(stop_chars,s[*ptr])) {
+      if (string_contains_unichar(stop_chars,s[*ptr])) {
          /* If it is a stop char, we have finished */
          return P_OK;
       }
-      if (local_u_strchr(forbidden_chars,s[*ptr])) {
+      if (string_contains_unichar(forbidden_chars,s[*ptr])) {
          /* If it is a forbidden char, it's an error */
          return P_FORBIDDEN_CHAR;
       }
@@ -289,9 +297,10 @@ return value;
  * 
  */
 int escape(const unichar* s,unichar* result,const unichar* chars_to_escape) {
+chars_to_escape = (chars_to_escape == NULL) ? STRING_EMPTY : chars_to_escape;
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
-   if (local_u_strchr(chars_to_escape,s[i])) {
+   if (string_contains_unichar(chars_to_escape,s[i])) {
       result[j++]=PROTECTION_CHAR;
    } else if (s[i]==PROTECTION_CHAR) {
       i++;
@@ -310,9 +319,10 @@ return j;
  * its previous content.
  */
 int escape(const unichar* s,Ustring* result,const unichar* chars_to_escape) {
+chars_to_escape = (chars_to_escape == NULL) ? STRING_EMPTY : chars_to_escape;
 int n=result->len;
 for (int i=0;s[i]!='\0';i++) {
-   if (local_u_strchr(chars_to_escape,s[i])) {
+   if (string_contains_unichar(chars_to_escape,s[i])) {
       u_strcat(result,PROTECTION_CHAR);
       u_strcat(result,s[i]);
    } else if (s[i]==PROTECTION_CHAR) {
@@ -333,13 +343,14 @@ return result->len-n;
  * The function returns the length of the resulting string.
  */
 int unprotect(const unichar* s,unichar* result,const unichar* chars_to_unprotect) {
+chars_to_unprotect = (chars_to_unprotect == NULL) ? STRING_EMPTY : chars_to_unprotect;
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
 	if (s[i]==PROTECTION_CHAR) {
 		if (s[i+1]=='\0') {
 			fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
 		}
-		if (!local_u_strchr(chars_to_unprotect,s[i+1])) {
+		if (!string_contains_unichar(chars_to_unprotect,s[i+1])) {
 			result[j++]=PROTECTION_CHAR;
 		}
 		result[j++]=s[i+1];
@@ -359,13 +370,14 @@ return j;
  * The function returns the length of the resulting string.
  */
 int unprotect(const unichar* s,Ustring* result,const unichar* chars_to_unprotect) {
+chars_to_unprotect = (chars_to_unprotect == NULL) ? STRING_EMPTY : chars_to_unprotect;
 int n=result->len;
 for (int i=0;s[i]!='\0';i++) {
 	if (s[i]==PROTECTION_CHAR) {
 		if (s[i+1]=='\0') {
 			fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
 		}
-		if (!local_u_strchr(chars_to_unprotect,s[i+1])) {
+		if (!string_contains_unichar(chars_to_unprotect,s[i+1])) {
 			u_strcat(result,PROTECTION_CHAR);
 		}
 		u_strcat(result,s[i+1]);

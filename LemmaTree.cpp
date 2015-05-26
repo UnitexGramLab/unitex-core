@@ -156,15 +156,13 @@ else add_inflected_form_for_lemma(lemma,pos,dest_node,inflected);
  * associated to the given lemma. 'root' is the tree that contains the lemma.
  */
 void add_inflected_form_for_lemma(unichar* inflected,unichar* lemma,struct lemma_node* root) {
-if (inflected==NULL || lemma==NULL) {
-   fatal_error("NULL error in add_inflected_form_for_lemma\n");
-}
-if (inflected[0]=='\0') {
-   fatal_error("Empty inflected form in add_inflected_form_for_lemma\n");
-}
-if (lemma[0]=='\0') {
-   fatal_error("Empty lemma in add_inflected_form_for_lemma\n");
-}
+
+fatal_assert(inflected==NULL || lemma==NULL,"NULL error in add_inflected_form_for_lemma\n");
+
+fatal_assert(inflected[0]=='\0',"Empty inflected form in add_inflected_form_for_lemma\n");
+
+fatal_assert(lemma[0]=='\0',"Empty lemma in add_inflected_form_for_lemma\n");
+
 add_inflected_form_for_lemma(lemma,0,root,inflected);
 }
 

@@ -35,6 +35,14 @@ void error(const char*,...);
 void debug(const char*,...);
 void set_debug(char);
 
+#ifdef IGNORE_FATAL_ASSERT
+static inline void fatal_assert(int, const char*,...) {
+}
+#else
+void fatal_assert(int condition, const char*, ...);
+#endif
+
+
 } // namespace unitex
 
 #endif
