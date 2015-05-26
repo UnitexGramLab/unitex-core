@@ -64,7 +64,7 @@ return res;
 
 
 Ustring* get_output_variable_content(unichar* name,struct locate_parameters* p) {
-Ustring* res=get_output_variable(p->output_variables,name);
+const Ustring* res=get_output_variable(p->output_variables,name);
 if (res==NULL) return NULL;
 return new_Ustring(res->str);
 }

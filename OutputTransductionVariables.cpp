@@ -197,12 +197,24 @@ if (injected!=NULL) {
 return v;
 }
 
+void swap_output_variable_content(OutputVariables*v, int index, Ustring* swap_string)
+{
+	Ustring t;
+	if ((v->variables_[index]->size) > (swap_string->size)) {
+		resize(swap_string, v->variables_[index]->size);
+	}
+
+	t = *swap_string;
+	*swap_string = *(v->variables_[index]);
+	*(v->variables_[index]) = t;
+}
 
 /**
  * replace the string of one variable
  * uses this function instead direct switching on another source file
  * return the previous string of the variable
  */
+/*
 Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string)
 {
 	Ustring* previous_string = v->variables_[index];
@@ -215,7 +227,7 @@ Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* n
 	v->variables_[index] = new_string;
 	return previous_string;
 }
-
+*/
 
 /**
  * Frees the memory associated to the given variables.
@@ -245,7 +257,7 @@ free(v);
  * Returns a pointer on the Ustring associated the variable whose name is 'name',
  * or NULL if the variable in not in the given variable set.
  */
-Ustring* get_output_variable(OutputVariables* v,const unichar* name) {
+const Ustring* get_output_variable(OutputVariables* v,const unichar* name) {
 int n=get_value_index(name,v->variable_index,DONT_INSERT);
 if (n==-1) {
    return NULL;

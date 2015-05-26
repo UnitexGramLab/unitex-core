@@ -232,7 +232,7 @@ while (s[i]!='\0') {
             }
             /* If we arrive here, the variable was not a normal one, so we
              * try to match an output one */
-            Ustring* output=get_output_variable(p->output_variables,name);
+            const Ustring* output=get_output_variable(p->output_variables,name);
             if (output==NULL) {
             	/* We do nothing, since this output variable may not exist */
             } else {
@@ -357,7 +357,7 @@ while (s[i]!='\0') {
       struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
       if (v==NULL) {
        	  /* Not a normal one ? Maybe an output one */
-       	  Ustring* output=get_output_variable(p->output_variables,name);
+       	  const Ustring* output=get_output_variable(p->output_variables,name);
        	  if (output==NULL) {
        		  switch (p->variable_error_policy) {
    				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);

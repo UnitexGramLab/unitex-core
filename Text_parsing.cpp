@@ -1280,7 +1280,7 @@ while (output_variable_list != NULL) {
 	else {
 		empty(recycle_Ustring);
 	}
-	Ustring* old_value=replace_output_variable_string(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
+	swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
 
 	set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
 	locate(/*graph_depth,*/
@@ -1288,9 +1288,8 @@ while (output_variable_list != NULL) {
 			pos, matches, n_matches, ctx, p);
 	p->weight=old_weight1;
 	unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-	//free_Ustring(p->output_variables->variables[output_variable_list->variable_number]);
 
-	replace_output_variable_string(p->output_variables, output_variable_list->variable_number, old_value);
+	swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
 
 	p->stack->stack_pointer = stack_top;
 	output_variable_list=output_variable_list->next;

@@ -75,9 +75,11 @@ typedef struct {
  */
 Ustring* replace_output_variable_string(OutputVariables*v, int index, Ustring* new_string);
 
+void swap_output_variable_content(OutputVariables*v, int index, Ustring* swap_string);
+
 OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
 void free_OutputVariables(OutputVariables*);
-Ustring* get_output_variable(OutputVariables*,const unichar*);
+const Ustring* get_output_variable(OutputVariables*,const unichar*);
 typedef struct
 {
     void *_dummy;

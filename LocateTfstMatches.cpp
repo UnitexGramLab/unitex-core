@@ -596,13 +596,17 @@ while (text_tags!=NULL) {
           /* If we an output variable start $|a( */
           int var_index=get_value_index(fst2_tag->variable,infos->output_variables->variable_index);
 
-          Ustring* old_value = replace_output_variable_string(infos->output_variables, var_index, new_Ustring());
+		  Ustring* old_value = new_Ustring();
+		  swap_output_variable_content(infos->output_variables, var_index, old_value);
+		  // now old_value contain the backup
 
           set_output_variable_pending(infos->output_variables,fst2_tag->variable);
           explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
           unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
 
-          free_Ustring(replace_output_variable_string(infos->output_variables, var_index, old_value));
+		  // restore the good content from backup
+		  swap_output_variable_content(infos->output_variables, var_index, old_value);
+		  free_Ustring(old_value);
 
           goto restore_dic_variable;
       } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
