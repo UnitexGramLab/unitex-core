@@ -850,8 +850,20 @@ write_fst2_tags(f,fst2);
 u_fclose(f);
 }
 
-int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int *p_tilde_negation_operator) {
 
+/**
+ * If you don't uses the -g XX/-negation_operator=XX in Locate and LocateTfst
+ * when LOAD_UNITEX_GRAPH_COMPATIBILITY_MODE and a file unitex_graph_compatibilty_mode.txt
+ * exists and contain "negation_operator=minus", the graph negation operator is minus
+ *  (to be compatible with old Unitex graph)
+ * if LOAD_UNITEX_GRAPH_COMPATIBILITY_MODE is not defined or if file don't exist or
+ * don't have this content, graph negation operator is tilde
+ *
+ * LOAD_UNITEX_GRAPH_COMPATIBILITY_MODE is optional for performance issues on opening file
+ * 
+ */
+int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int *p_tilde_negation_operator) {
+#ifdef LOAD_UNITEX_GRAPH_COMPATIBILITY_MODE
     U_FILE *fin = u_fopen(vec,"unitex_graph_compatibilty_mode.txt",U_READ);
     if (fin == NULL)
         return 0;
@@ -872,6 +884,9 @@ int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int 
     }
 
     return 1;
+#else
+	return 0;
+#endif
 }
 
 
