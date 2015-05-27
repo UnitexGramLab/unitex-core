@@ -103,7 +103,6 @@ int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_c
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
 stop_chars = (stop_chars == NULL) ? STRING_EMPTY : stop_chars;
 forbidden_chars = (forbidden_chars == NULL) ? STRING_EMPTY : forbidden_chars;
-chars_to_keep_protected = (chars_to_keep_protected == NULL) ? STRING_EMPTY : chars_to_keep_protected;
 int j=0;
 result[0]='\0';
 if (s[*ptr]=='\0') return P_EOS;
@@ -200,7 +199,6 @@ int parse_string(const unichar* s,int *ptr,Ustring* result,const unichar* stop_c
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
 stop_chars = (stop_chars == NULL) ? STRING_EMPTY : stop_chars;
 forbidden_chars = (forbidden_chars == NULL) ? STRING_EMPTY : forbidden_chars;
-chars_to_keep_protected = (chars_to_keep_protected == NULL) ? STRING_EMPTY : chars_to_keep_protected;
 if (s[*ptr]=='\0') return P_EOS;
 while (s[*ptr]!='\0') {
    if (s[*ptr]==PROTECTION_CHAR) {
