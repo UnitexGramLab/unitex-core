@@ -24,6 +24,7 @@
 #include "LocateConstants.h"
 #include "BitMasks.h"
 #include "Persistence.h"
+#include "UnusedParameter.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -885,7 +886,9 @@ int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int 
 
     return 1;
 #else
-	return 0;
+    DISCARD_UNUSED_PARAMETER(vec)
+    DISCARD_UNUSED_PARAMETER(p_tilde_negation_operator)
+    return 0;
 #endif
 }
 

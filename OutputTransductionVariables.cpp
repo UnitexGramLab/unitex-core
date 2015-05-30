@@ -19,6 +19,7 @@
  *
  */
 
+// if you don't have stdint.h, define TYPE_PACK_MULTIBITS to unsigned int 64 bits
 
 #ifdef TYPE_PACK_MULTIBITS
 typedef TYPE_PACK_MULTIBITS uint_pack_multibits;
@@ -29,7 +30,7 @@ typedef uint64_t uint_pack_multibits;
 typedef uint64_t uint_pack_multiunichar;
 #endif
 
-
+#define ALIGN_BACKUP_STRING sizeof(uint_pack_multibits)
 
 #include "OutputTransductionVariables.h"
 #include "Error.h"
@@ -40,6 +41,11 @@ typedef uint64_t uint_pack_multiunichar;
 
 namespace unitex {
 
+
+static inline uint_pack_multibits get_uint_pack_multibits_zero()
+{
+	return (uint_pack_multibits)0;
+}
 /*
 // unoptimized version
 static inline void copy_string(unichar* dest, const unichar* src, unsigned int len) {
@@ -142,6 +148,7 @@ static inline void remove_output_variable_from_pending_list(OutputVarList* *list
 #define my_around_align(x,sz)  ((((x)+((sz)-1))/(sz))*(sz))
 #define my_around_align_intptr_size_ispending_array(x)  ((((x)+sizeof(uint_pack_multibits)-1)/sizeof(uint_pack_multibits))*sizeof(uint_pack_multibits))
 
+#define STEP_UNROLL_FREE_VARIABLE 8
 /**
  * Allocates and returns a structure representing the variables
  * whose names are in 'list'. The variable values are initialized
@@ -159,7 +166,7 @@ if (injected != NULL) {
 	}
 }
 unsigned int nb_var = variable_index->size;
-OutputVariables* v=(OutputVariables*)malloc(sizeof(OutputVariables)+(nb_var*sizeof(Ustring)));
+OutputVariables* v=(OutputVariables*)malloc(sizeof(OutputVariables)+((nb_var + STEP_UNROLL_FREE_VARIABLE)*sizeof(Ustring)));
 if (v==NULL) {
    fatal_alloc_error("new_OutputVariables");
 }
@@ -175,7 +182,7 @@ for (unsigned int i=0;i<nb_var;i++) {
    v->variables_[i]=new_Ustring();
 }*/
 #define START_SIZE_VARIABLE 1
-for (unsigned int i = 0;i < nb_var;i++) {
+for (unsigned int i = 0; i < my_around_align(nb_var, STEP_UNROLL_FREE_VARIABLE); i++) {
 	v->variables_[i].len=0;
 	v->variables_[i].size = START_SIZE_VARIABLE;
 	v->variables_[i].str = (unichar*)malloc(v->variables_[i].size*sizeof(unichar));
@@ -234,9 +241,9 @@ void swap_output_variable_content(OutputVariables*v, int index, Ustring* swap_st
  */
 void free_OutputVariables(OutputVariables* v) {
 if (v==NULL) return;
-int size=v->variable_index->size;
+int nb_var=v->variable_index->size;
 free_string_hash(v->variable_index);
-for (int i=0;i<size;i++) {
+for (unsigned int i = 0; i < my_around_align((unsigned int)nb_var, STEP_UNROLL_FREE_VARIABLE); i++) {
 	free(v->variables_[i].str);
 }
 OutputVarList* l=v->pending;
@@ -359,23 +366,36 @@ while (v->pending!=NULL) {
 }
 
 uint_pack_multibits* is_pending_erase = (uint_pack_multibits*)v->is_pending;
-size_t limit = v->is_pending_array_size_intptr_size_rounded;
-for (size_t i = 0; i < limit; i++) {
-	*(is_pending_erase + i) = (uint_pack_multibits)0;
-}
+
 
 const unsigned int * pending_var_list = (const unsigned int*)(((const char*)backup) + OFFSET_PENDING_LIST);
 const unsigned int nb_pending = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_PENDING)) ;
 const unsigned int nb_filled_strings = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_FILLED_STRING)) ;
 unsigned int nb_var = (unsigned int)v->variable_index->size;
 
+
+for (unsigned int i = 0; i < nb_var; i+=STEP_UNROLL_FREE_VARIABLE) {
+	v->variables_[i].str[0] = 0;
+	v->variables_[i].len = 0;
+	v->variables_[i+1].str[0] = 0;
+	v->variables_[i+1].len = 0;
+	v->variables_[i+2].str[0] = 0;
+	v->variables_[i+2].len = 0;
+	v->variables_[i+3].str[0] = 0;
+	v->variables_[i+3].len = 0;
+	v->variables_[i+4].str[0] = 0;
+	v->variables_[i+4].len = 0;
+	v->variables_[i+5].str[0] = 0;
+	v->variables_[i+5].len = 0;
+	v->variables_[i+6].str[0] = 0;
+	v->variables_[i+6].len = 0;
+	v->variables_[i+7].str[0] = 0;
+	v->variables_[i+7].len = 0;
+	*(is_pending_erase + (i/8)) = get_uint_pack_multibits_zero();
+}
+
 // first int of backup is set to 0 if we have full empty backup
 if ((!nb_pending) && (!nb_filled_strings)) {
-
-	for (unsigned int i = 0; i < nb_var; i++) {
-	    v->variables_[i].str[0] = 0;
-	    v->variables_[i].len = 0 ;
-	}
 	return;
 }
 
@@ -390,32 +410,16 @@ for (unsigned int loop_pending = 0; loop_pending < nb_pending; loop_pending++)
 const unsigned int* string_index = (const unsigned int*)(((const char*)backup) + (v->string_index_offset));
 const unichar* backup_string = (const unichar*)(((const char*)backup) + v->unichars_offset);
 int pos_in_index = 0;
-unsigned int cur_item_in_index = *(string_index + (pos_in_index * 2));
 
-unsigned int i = 0;
 for (;;) {
-	while ((i+4) < cur_item_in_index) {
-		v->variables_[i].len = 0;
-		*(v->variables_[i].str) = 0;
-		v->variables_[i+1].len = 0;
-		*(v->variables_[i+1].str) = 0;
-		v->variables_[i+2].len = 0;
-		*(v->variables_[i+2].str) = 0;
-		v->variables_[i+3].len = 0;
-		*(v->variables_[i+3].str) = 0;
-		i+=4;
-	}
-	while (i < cur_item_in_index) {
-		v->variables_[i].len = 0;
-		*(v->variables_[i].str) = 0;
-		i++;
-	}
-	if (i == nb_var)
+	unsigned int cur_item_in_index = *(string_index + pos_in_index);
+	
+	if (cur_item_in_index == nb_var)
 		break;
 
-	Ustring * cur_ustr = &(v->variables_[i]);
+	Ustring * cur_ustr = &(v->variables_[cur_item_in_index]);
 
-	int cur_len_in_index = *(string_index + (pos_in_index * 2) + 1);
+	int cur_len_in_index = *(string_index + pos_in_index + 1);
 
 	/*
 	// this test is awful, because it break optimized IPO/LTO/WPO optimization having only internal code
@@ -428,12 +432,9 @@ for (;;) {
 	//memcpy(cur_ustr->str, backup_string, (cur_len_in_index + 1) * sizeof(unichar));
 	copy_string(cur_ustr->str, backup_string, cur_len_in_index);
 	//backup_string += cur_len_in_index + 1;
-	backup_string += my_around_align(cur_len_in_index + 1, sizeof(uint_pack_multibits));
+	backup_string += my_around_align(cur_len_in_index + 1, ALIGN_BACKUP_STRING);
 
-	pos_in_index++;
-	cur_item_in_index = *(string_index + (pos_in_index * 2));
-	
-	i++;
+	pos_in_index+=2;
 }
 
 }
@@ -509,7 +510,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 				return 0;
 			}
 			//backup_string += cur_len_in_index + 1;
-			backup_string += my_around_align(cur_len_in_index + 1, sizeof(uint_pack_multibits));
+			backup_string += my_around_align(cur_len_in_index + 1, ALIGN_BACKUP_STRING);
 
 			pos_in_index++;
 			cur_item_in_index = *(string_index + (pos_in_index * 2));
