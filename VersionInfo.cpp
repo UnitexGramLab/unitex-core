@@ -58,6 +58,8 @@ const char* usage_VersionInfo =
          "  -r/--revision: display only SVN revision number (if available)\n"
          "  -p/--platform: platform info\n"
          "  -m/--compiler: compiler used to build unitex info\n"
+         "  -j/--json: revision and version on json string\n"
+         "  -x/--xml: revision and version on xml string\n"
          "  -h/--help: this help\n"
          "\n";
 
@@ -68,13 +70,15 @@ u_printf(usage_VersionInfo);
 }
 
 
-const char* optstring_VersionInfo=":hmcrvpo:k:q:";
+const char* optstring_VersionInfo=":hmcrvpjxo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
       {"copyright",no_argument_TS,NULL,'c'},
       {"version",no_argument_TS,NULL,'v'},
       {"revision",no_argument_TS,NULL,'r'},
       {"platform",no_argument_TS,NULL,'p'},
       {"compiler",no_argument_TS,NULL,'m'},
+      {"xml",no_argument_TS,NULL,'x'},
+      {"json",no_argument_TS,NULL,'j'},
       {"output",required_argument_TS,NULL,'o'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -185,6 +189,8 @@ int do_revision_only=0;
 int do_copyright_only=0;
 int do_platform_info=0;
 int do_compiler_info=0;
+int do_xml_info=0;
+int do_json_info=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -195,6 +201,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInf
    case 'v': do_version_only=1; break;
    case 'p': do_platform_info = 1; break;
    case 'm': do_compiler_info = 1; break;
+   case 'j': do_json_info = 1; break;
+   case 'x': do_xml_info = 1; break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output argument\n");
              }
@@ -238,7 +246,15 @@ unsigned int unitexMinorVersion = 0;
 get_unitex_version(&unitexMajorVersion, &unitexMinorVersion);
 
 DisplayText[0] = 0;
-if (do_copyright_only) {
+if (do_json_info) {
+    char buf[0x200]="";
+    get_unitex_version_revision_json_string(buf, sizeof(buf));
+    u_sprintf(DisplayText,"%s", buf);
+} else if (do_xml_info) {
+    char buf[0x200]="";
+    get_unitex_version_revision_xml_string(buf, sizeof(buf));
+    u_sprintf(DisplayText,"%s", buf);
+} else if (do_copyright_only) {
     u_sprintf(DisplayText,"%S",COPYRIGHT);
 }
 else if (do_revision_only) {

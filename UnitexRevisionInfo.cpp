@@ -75,6 +75,7 @@ UNITEX_FUNC int UNITEX_CALL GetUnitexRevision()
 	return get_unitex_revision();
 }
 
+
 void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number)
 {
 // macro UNITEX_MAJOR_VERSION_NUMBER and UNITEX_MINOR_VERSION_NUMBER were introduced
@@ -101,10 +102,62 @@ unsigned int unitexMinorVersion = 1;
 }
 
 
+size_t get_unitex_version_revision_xml_string(char* string, size_t buflen)
+{
+#ifdef SVN_REVISION
+	const char* xmlStringRevision = "\0<UnitexRevision>" STRINGIZE(SVN_REVISION) "</UnitexRevision>\0";
+#else
+	const char* xmlStringRevision = "\0<UnitexVersionInfo>xxxx</UnitexVersionInfo>\0";
+#endif
+
+#if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined(UNITEX_MINOR_VERSION_NUMBER)
+	const char* xmlStringVersion = "\0<UnitexMajorVersion>"  STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "</UnitexMajorVersion>"
+		"<UnitexMinorVersion>"  STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "</UnitexMinorVersion>\0";
+#else
+	const char* xmlStringVersion = "\0<UnitexMajorVersion>x</UnitexMajorVersion>"
+		"<UnitexMinorVersion>x</UnitexMinorVersion>\0";
+#endif
+
+	const char* usableXmlStringRevision = xmlStringRevision + 1;
+	const char* usableXmlStringVersion = xmlStringVersion + 1;
+	size_t len = strlen(usableXmlStringRevision)+strlen(usableXmlStringVersion)+(2*strlen("\n"));
+	if (buflen > len) {
+		strcpy(string, usableXmlStringVersion);
+		strcat(string, "\n");
+		strcat(string, usableXmlStringRevision);
+		strcat(string, "\n");
+	}
+
+	return len + 1;
+}
+
+
+size_t get_unitex_version_revision_json_string(char* string, size_t buflen)
+{
+#if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined(UNITEX_MINOR_VERSION_NUMBER) && defined (SVN_REVISION)
+	const char* jsonString = "\0{\"UnitexMajorVersion\":" STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER)
+		",\"UnitexMinorVersion\":" STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) ",\"UnitexRevision\":" STRINGIZE(SVN_REVISION) "}";
+#else
+	const char* jsonString = "\0{\"UnitexMajorVersion\":-1,\"UnitexMinorVersion\":-1,\"UnitexRevision\":-1}";
+#endif
+
+	const char* usableStringRevision = jsonString + 1;
+
+	size_t len = strlen(usableStringRevision);
+	if (buflen > len) {
+		strcpy(string, usableStringRevision);
+	}
+
+	return len + 1;
+}
+
+
 UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number)
 {
 	// to prevent optimizer discard UnitexRevisionConstant
 	unichar dummyUnichar[0x100];
+	char bufXml[0x200];
+	get_unitex_version_revision_xml_string(bufXml, sizeof(bufXml));
 	u_sprintf(dummyUnichar,"%s",UnitexRevisionConstant);
 
 	get_unitex_version(major_version_number, minor_version_number);
