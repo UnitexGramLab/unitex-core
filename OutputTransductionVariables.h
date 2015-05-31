@@ -57,6 +57,7 @@ typedef struct {
     * 'is_pending' is an array indicating by 1 or 0 if a variable is pending or not */
 
    OutputVarList* pending;
+   OutputVarList* recycle_allocation;
    char* is_pending;
 
    // somes size and pos precalculated for backup
@@ -64,7 +65,7 @@ typedef struct {
    size_t string_index_offset;
    size_t unichars_offset;
 
-   unsigned int nb_var;
+   size_t nb_var;
    /* variables[a] gives the information associated to the variable #a */
    Ustring variables_[1];
 } OutputVariables;

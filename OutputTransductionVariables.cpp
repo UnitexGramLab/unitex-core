@@ -19,8 +19,25 @@
  *
  */
 
-// if you don't have stdint.h, define TYPE_PACK_MULTIBITS to unsigned int 64 bits
+// if you don't have stdint.h, define TYPE_PACK_MULTIBITS with type unsigned int 64 bits
+// if you don't have unsigned int 64 bits, define TYPE_PACK_MULTIBITS_STRUCT
 
+#ifdef TYPE_PACK_MULTIBITS_STRUCT
+typedef struct
+{
+	unsigned char c[8];
+} pack_8_bytes;
+typedef pack_8_bytes uint_pack_multibits;
+typedef pack_8_bytes uint_pack_multiunichar;
+
+static inline uint_pack_multibits get_uint_pack_multibits_zero()
+{
+	uint_pack_multibits p;
+	p.c[0] = p.c[1] = p.c[2] = p.c[3] = p.c[4] = p.c[5] = p.c[6] = p.c[7] = 0;
+	return p;
+}
+
+#else
 #ifdef TYPE_PACK_MULTIBITS
 typedef TYPE_PACK_MULTIBITS uint_pack_multibits;
 typedef TYPE_PACK_MULTIBITS uint_pack_multiunichar;
@@ -28,6 +45,12 @@ typedef TYPE_PACK_MULTIBITS uint_pack_multiunichar;
 #include <stdint.h>
 typedef uint64_t uint_pack_multibits;
 typedef uint64_t uint_pack_multiunichar;
+#endif
+
+static inline uint_pack_multibits get_uint_pack_multibits_zero()
+{
+	return (uint_pack_multibits)0;
+}
 #endif
 
 #define ALIGN_BACKUP_STRING sizeof(uint_pack_multibits)
@@ -42,10 +65,7 @@ typedef uint64_t uint_pack_multiunichar;
 namespace unitex {
 
 
-static inline uint_pack_multibits get_uint_pack_multibits_zero()
-{
-	return (uint_pack_multibits)0;
-}
+
 /*
 // unoptimized version
 static inline void copy_string(unichar* dest, const unichar* src, unsigned int len) {
@@ -139,8 +159,9 @@ static inline void copy_string(unichar* dest, const unichar* src, unsigned int l
 }
 
 
-static inline void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s);
-static inline void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s);
+static inline void add_output_variable_to_pending_list(OutputVariables*v, OutputVarList* *list,Ustring* s);
+static inline void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list, Ustring* s);
+static inline void remove_output_variable_from_pending_list(OutputVariables*v, OutputVarList* *list,Ustring* s);
 
 
 
@@ -149,6 +170,7 @@ static inline void remove_output_variable_from_pending_list(OutputVarList* *list
 #define my_around_align_intptr_size_ispending_array(x)  ((((x)+sizeof(uint_pack_multibits)-1)/sizeof(uint_pack_multibits))*sizeof(uint_pack_multibits))
 
 #define STEP_UNROLL_FREE_VARIABLE 8
+
 /**
  * Allocates and returns a structure representing the variables
  * whose names are in 'list'. The variable values are initialized
@@ -172,7 +194,7 @@ if (v==NULL) {
 }
 v->variable_index=variable_index;
 
-v->nb_var = (unsigned int)nb_var;
+v->nb_var = (size_t)nb_var;
 //v->variables_=(Ustring**)malloc(nb_var*sizeof(Ustring*));
 if (v->variables_==NULL) {
    fatal_alloc_error("new_OutputVariables");
@@ -215,8 +237,53 @@ if (injected!=NULL) {
 		u_strcpy(&v->variables_[index],(unichar*)(injected->tab[i+1]));
 	}
 }
+
+v->recycle_allocation = NULL;
 return v;
 }
+
+
+/**
+ * alloc_OutputVarList_from_recycle_reserve replace malloc(sizeof(OutputVarList))
+ * by maintain a collection of already allocated structure to do less malloc/free
+ */
+static inline OutputVarList* alloc_OutputVarList_from_recycle_reserve(OutputVariables*v)
+{
+	OutputVarList* item = v->recycle_allocation;
+	if (item != NULL) {
+		v->recycle_allocation = item->next;
+	} else {
+		item = (OutputVarList*)malloc(sizeof(OutputVarList));
+		if (item == NULL) {
+			fatal_alloc_error("alloc_OutputVarList_from_recycle_reserve");
+		}
+	}
+
+	return item;
+}
+
+
+/**
+ * same function than alloc_OutputVarList_from_recycle_reserve, but used when restore a previous existing list
+ *  we are sure alloc_OutputVarList_from_recycle_reserve will no do malloc
+ */
+static inline OutputVarList* alloc_OutputVarList_from_recycle_reserve_no_alloc_needed(OutputVariables*v)
+{
+	OutputVarList* item = v->recycle_allocation;
+	v->recycle_allocation = item->next;
+	return item;
+}
+
+
+/**
+ * free an unused OutputVarList and add it on the recycling collection list
+ */
+static inline void free_OutputVarList_from_recycle_reserve(OutputVariables*v, OutputVarList* item)
+{
+	item->next = v->recycle_allocation;
+	v->recycle_allocation = item;
+}
+
 
 /**
  * swap the string content of one variable
@@ -252,7 +319,14 @@ while (l!=NULL) {
 	tmp=l;
 	l=l->next;
 	/* Don't free l->var, since it has been freed by free_Ustring above */
-	free(tmp);
+	free_OutputVarList_from_recycle_reserve(v,tmp);
+}
+// freeing the recycle collection of OutputVarList allocated structure
+OutputVarList* tmp_recyling = v->recycle_allocation;
+while (tmp_recyling != NULL) {
+	OutputVarList* tmp_recyling_next = tmp_recyling->next;
+	free(tmp_recyling);
+	tmp_recyling = tmp_recyling_next;
 }
 free(v->is_pending);
 free(v);
@@ -282,7 +356,7 @@ return &v->variables_[n];
  */
 OutputVariablesBackup* create_output_variable_backup(OutputVariables* RESTRICT v,Abstract_allocator prv_alloc) {
 if (v==NULL || v->variable_index==NULL) return NULL;
-unsigned int nb_var=(unsigned int)v->variable_index->size;
+unsigned int nb_var=(unsigned int)v->nb_var;
 
 if (nb_var==0) return NULL;
 unsigned int size_strings=0;
@@ -362,7 +436,7 @@ while (v->pending!=NULL) {
 	tmp=v->pending;
 	v->pending=v->pending->next;
 	/* We must not free tmp->var */
-	free(tmp);
+	free_OutputVarList_from_recycle_reserve(v,tmp);
 }
 
 uint_pack_multibits* is_pending_erase = (uint_pack_multibits*)v->is_pending;
@@ -371,7 +445,7 @@ uint_pack_multibits* is_pending_erase = (uint_pack_multibits*)v->is_pending;
 const unsigned int * pending_var_list = (const unsigned int*)(((const char*)backup) + OFFSET_PENDING_LIST);
 const unsigned int nb_pending = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_PENDING)) ;
 const unsigned int nb_filled_strings = *((const unsigned int*)(((const char*)backup) + OFFSET_NB_FILLED_STRING)) ;
-unsigned int nb_var = (unsigned int)v->variable_index->size;
+unsigned int nb_var = (unsigned int)v->nb_var;
 
 
 for (unsigned int i = 0; i < nb_var; i+=STEP_UNROLL_FREE_VARIABLE) {
@@ -403,7 +477,7 @@ for (unsigned int loop_pending = 0; loop_pending < nb_pending; loop_pending++)
 {
 	unsigned int cur_pending_item = *(pending_var_list + loop_pending);
 	v->is_pending[cur_pending_item] = 1;
-	add_output_variable_to_pending_list(&(v->pending),&v->variables_[cur_pending_item]);
+	add_output_variable_to_pending_list(v,&(v->pending),&v->variables_[cur_pending_item]);
 }
 
 
@@ -433,17 +507,17 @@ for (;;) {
 	copy_string(cur_ustr->str, backup_string, cur_len_in_index);
 	//backup_string += cur_len_in_index + 1;
 	backup_string += my_around_align(cur_len_in_index + 1, ALIGN_BACKUP_STRING);
-
 	pos_in_index+=2;
 }
-
 }
 
 
 /**
-* Returns 1 if the given backup correspond to the same values than the given
-* output variables; 0 otherwise.
-*/
+ * Returns 1 if the given backup correspond to the same values than the given
+ * output variables; 0 otherwise.
+ * This function is far less optimized than create_output_variable_backup and
+ * install_output_variable_backup because less used.
+ */
 int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* v) {
 	if (v == NULL) {
 		return backup == NULL;
@@ -477,9 +551,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 		return 1;
 	}
 
-
 	unsigned int nb_pending_v = 0;
-
 	for (size_t i = 0; i<nb_var; i++) {
 		if (v->is_pending[i]) {
 			if (*(pending_var_list_backup + nb_pending_v) != i) {
@@ -492,7 +564,6 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 	if (*(pending_var_list_backup + nb_pending_v) != nb_var) {
 		return 0;
 	}
-
 
 	const unsigned int* string_index = (const unsigned int*)(((const char*)backup) + (v->string_index_offset));
 	const unichar* backup_string = (const unichar*)(((const char*)backup) + v->unichars_offset);
@@ -523,7 +594,6 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 		}
 	}
 
-
 	return 1;
 }
 
@@ -531,7 +601,7 @@ int same_output_variables(const OutputVariablesBackup* backup, OutputVariables* 
 /**
  * Adds the given Ustring pointer to the list, with no duplicates.
  */
-static inline void add_output_variable_to_pending_list(OutputVarList* *list,Ustring* s) {
+static inline void add_output_variable_to_pending_list(OutputVariables*v, OutputVarList* *list,Ustring* s) {
 while (*list != NULL) {
 	if ((*list)->var==s) {
 		/* The pointer is already in the list */
@@ -539,7 +609,26 @@ while (*list != NULL) {
 	}
 	list=&((*list)->next);
 }
-(*list)=(OutputVarList*)malloc(sizeof(OutputVarList));
+(*list)=(OutputVarList*)alloc_OutputVarList_from_recycle_reserve(v);
+(*list)->var=s;
+(*list)->next=NULL;
+}
+
+
+/**
+ * Adds the given Ustring pointer to the list, with no duplicates.
+ * same function than add_output_variable_to_pending_list, but as we restore a previous existing list
+ * we are sure alloc_OutputVarList_from_recycle_reserve will no do malloc
+ */
+static inline void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list,Ustring* s) {
+while (*list != NULL) {
+	if ((*list)->var==s) {
+		/* The pointer is already in the list */
+		return;
+	}
+	list=&((*list)->next);
+}
+(*list)=(OutputVarList*)alloc_OutputVarList_from_recycle_reserve_no_alloc_needed(v);
 (*list)->var=s;
 (*list)->next=NULL;
 }
@@ -548,13 +637,13 @@ while (*list != NULL) {
 /**
  * Removes the given Ustring pointer from the list.
  */
-static inline void remove_output_variable_from_pending_list(OutputVarList* *list,Ustring* s) {
+static inline void remove_output_variable_from_pending_list(OutputVariables*v, OutputVarList* *list,Ustring* s) {
 while (*list != NULL) {
 	if ((*list)->var==s) {
 		/* We have found the pointer to be removed */
 		OutputVarList* tmp=(*list);
 		(*list)=(*list)->next;
-		free(tmp);
+		free_OutputVarList_from_recycle_reserve(v,tmp);
 		return;
 	}
 	list=&((*list)->next);
@@ -605,7 +694,7 @@ while (list!=NULL) {
  */
 void set_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=1;
-add_output_variable_to_pending_list(&(var->pending),&(var->variables_[index]));
+add_output_variable_to_pending_list(var,&(var->pending),&(var->variables_[index]));
 }
 
 
@@ -614,7 +703,7 @@ add_output_variable_to_pending_list(&(var->pending),&(var->variables_[index]));
  */
 void unset_output_variable_pending(OutputVariables* var,int index) {
 var->is_pending[index]=0;
-remove_output_variable_from_pending_list(&(var->pending),&(var->variables_[index]));
+remove_output_variable_from_pending_list(var,&(var->pending),&(var->variables_[index]));
 }
 
 
