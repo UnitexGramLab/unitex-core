@@ -46,7 +46,7 @@ const char* usage_SelectOutput =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_SelectOutput);
 }
 

@@ -63,7 +63,7 @@ const char* usage_BuildKrMwuDic =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_BuildKrMwuDic);
 }
 

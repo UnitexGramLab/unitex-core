@@ -63,7 +63,7 @@ const char* usage_PackFile =
          "\n";
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_PackFile);
 }
 

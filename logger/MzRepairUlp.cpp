@@ -48,7 +48,7 @@ const char* usage_MzRepairUlp =
          "\n";
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_MzRepairUlp);
 }
 

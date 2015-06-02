@@ -689,7 +689,7 @@ void unitex_tool_usage(int several, int display_copyright)
 {
 	int i=0;
     if (display_copyright != 0)
-	  u_printf("%S",COPYRIGHT);
+	  display_copyright_notice();
 	u_printf(usage_UnitexTool_prefix);
 	while (utility_array[i].len_name > 0)
 	{

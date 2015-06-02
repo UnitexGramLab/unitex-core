@@ -2032,6 +2032,63 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 
 
 /**
+ *
+ */
+size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_t * p_size_this_string_written,
+	const unsigned char*src, size_t buf_size)
+{
+	unichar*write_content_walk_buf = dest;
+	const unsigned char*src_walk = src;
+	size_t size_this_string_written = 0;
+	size_t nb_utf8_bytes = 0;
+	for (;;)
+	{
+		if ((src_walk == NULL) || (buf_size == 0))
+			return 0;
+		unsigned char ch = *(src_walk++);
+		buf_size--;
+		nb_utf8_bytes++;
+
+		unichar c;
+
+		if ((ch & 0x80) == 0)
+		{
+			c = ch;
+		}
+		else
+		{
+			c = ch & GetUtf8Mask(ch);
+			int nbbyte = GetUtf8Size(ch);
+			if (((int)buf_size) + 1 < nbbyte)
+				return 0;
+
+			for (;;)
+			{
+				nbbyte--;
+				if (nbbyte == 0)
+					break;
+
+				c = (c << 6) | ((*(src_walk++)) & 0x3F);
+				buf_size--;
+				nb_utf8_bytes++;
+			}
+		}
+
+		if ((write_content_walk_buf != NULL) && (size_this_string_written<nb_unichar_alloc_walk))
+			*(write_content_walk_buf + size_this_string_written) = c;
+		size_this_string_written++;
+
+		if (c == 0)
+		{
+			if (p_size_this_string_written != NULL)
+				*p_size_this_string_written = size_this_string_written;
+			return nb_utf8_bytes;
+		}
+	}
+}
+
+
+/**
  * get a lot of unichar from file, only limited by size and end of file
  */
 int u_fget_unichars_raw(unichar* buffer, int size, U_FILE* f)

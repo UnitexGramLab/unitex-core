@@ -56,7 +56,7 @@ const char* usage_GrfDiff3 =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_GrfDiff3);
 }
 

@@ -73,7 +73,7 @@ const char* usage_Untokenize =
          "These files are located in the XXX_snt directory where XXX is <txt> without its extension.\n";
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Untokenize);
 }
 

@@ -60,7 +60,7 @@ const char* usage_ImplodeTfst =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_ImplodeTfst);
 }
 

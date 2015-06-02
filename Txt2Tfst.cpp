@@ -127,7 +127,7 @@ const char* usage_Txt2Tfst =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Txt2Tfst);
 }
 

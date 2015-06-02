@@ -76,13 +76,13 @@ const char* usage_SpellCheck =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_SpellCheck);
 }
 
 
 static void usage_scores() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(
 		"Usage: SpellCheck [OPTIONS] <dic1> [<dic2> <dic3> ...]\n"
 		"\n"

@@ -53,7 +53,7 @@ const char* usage_Uncompress =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Uncompress);
 }
 

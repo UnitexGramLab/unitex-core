@@ -308,6 +308,8 @@ unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const char* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);
 
+size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_t * p_size_this_string_written,
+	const unsigned char*src, size_t buf_size);
 
 // define NO_CPP_TEMPLATE_SUPPORT if you archeological C++ compiler don't support template
 #ifndef NO_CPP_TEMPLATE_SUPPORT

@@ -65,7 +65,7 @@ const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\
                                 "Usage: UnitexToolLogger { CreateLog [OPTIONS] } <Utility> [OPTIONS]\n"
                                 "or \n";
 static void disp_usage_RunLog_mini() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_RunLog_mini);
 }
 

@@ -1573,7 +1573,7 @@ const char* usage_RunLog =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_RunLog);
 }
 const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lna:o:u:bf:g:";

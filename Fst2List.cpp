@@ -64,7 +64,7 @@ const char
 					" -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n";
 
 static void usage() {
-	u_printf("%S", COPYRIGHT);
+	display_copyright_notice();
 	u_printf(usage_Fst2List);
 }
 

@@ -74,7 +74,7 @@ const char* usage_XMLizer =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_XMLizer);
 }
 

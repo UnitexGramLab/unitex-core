@@ -108,7 +108,7 @@ const char* usage_Tokenize =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Tokenize);
 }
 

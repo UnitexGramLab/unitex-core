@@ -66,7 +66,7 @@ const char* usage_Reconstrucao =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Reconstrucao);
 }
 

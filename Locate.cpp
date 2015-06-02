@@ -138,7 +138,7 @@ const char* usage_Locate =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Locate);
 #ifndef REGEX_FACADE_ENGINE
    error("\nWARNING: on this system, morphological filters will not be taken into account,\n");

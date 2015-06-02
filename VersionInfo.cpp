@@ -65,7 +65,7 @@ const char* usage_VersionInfo =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_VersionInfo);
 }
 
@@ -255,7 +255,7 @@ if (do_json_info) {
     get_unitex_version_revision_xml_string(buf, sizeof(buf));
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_copyright_only) {
-    u_sprintf(DisplayText,"%S",COPYRIGHT);
+	get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
 }
 else if (do_revision_only) {
     u_sprintf(DisplayText,"%d",revision);
@@ -265,12 +265,14 @@ else if (do_version_only) {
 }
 else {
     if (revision == -1) {
-        u_sprintf(DisplayText,"%S\nUnitex Version: %u.%u\n",
-                COPYRIGHT,unitexMajorVersion,unitexMinorVersion);
+		get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+        u_sprintf(DisplayText+u_strlen(DisplayText),"\nUnitex Version: %u.%u\n",
+                unitexMajorVersion,unitexMinorVersion);
     }
     else {
-        u_sprintf(DisplayText,"%S\nUnitex Version: %u.%u\nUnitex SVN revision: %d\n",
-                COPYRIGHT,unitexMajorVersion,unitexMinorVersion,revision);
+		get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+        u_sprintf(DisplayText+u_strlen(DisplayText),"\nUnitex Version: %u.%u\nUnitex SVN revision: %d\n",
+                unitexMajorVersion,unitexMinorVersion,revision);
     }
 }
 

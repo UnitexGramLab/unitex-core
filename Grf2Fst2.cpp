@@ -76,7 +76,7 @@ const char* usage_Grf2Fst2 =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Grf2Fst2);
 }
 

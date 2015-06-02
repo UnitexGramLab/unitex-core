@@ -229,7 +229,7 @@ const char
 					"By default, the sort is done according the Unicode char order, removing duplicates.\n";
 
 static void usage() {
-	u_printf("%S", COPYRIGHT);
+	display_copyright_notice();
 	u_printf(usage_SortTxt);
 }
 

@@ -61,7 +61,7 @@ const char* usage_Fst2Txt =
 
 
 static void usage() {
-u_printf("%S",COPYRIGHT);
+display_copyright_notice();
 u_printf(usage_Fst2Txt);
 }
 
