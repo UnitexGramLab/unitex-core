@@ -34,10 +34,12 @@ namespace unitex {
  * This is the copyright string that must be displayed by any
  * Unitex program when called with no parameter.
  */
-
+//static unichar COPYRIGHT[256];
 
 #define UNITEX_MAJOR_VERSION_NUMBER 3
 #define UNITEX_MINOR_VERSION_NUMBER 1
+
+#define UNITEX_IS_BETA
 
 #define UNITEX_HAVE_SYNCTOOL 1
 
@@ -51,32 +53,29 @@ u_sprintf(COPYRIGHT,"This program is part of Unitex %d.%d%C version\nCopyright %
 return 0;
 }*/
 
+#ifdef UNITEX_IS_BETA
 #define BETA_UTF8 "\xce\xb2" // unicode 03be
+#else
+#define BETA_UTF8 "" // unicode 03be
+#endif
+
+
 #define COPYRIGHT_UTF8 "\xc2\xa9" // unicode a9
-#define E_ACUTE "\xc3\xa9" // unicode e9
-
-static inline const char* get_copyright_utf8()
-{
-	return
-		"This program is part of Unitex " STRINGIZE_COPYRIGHT(UNITEX_MAJOR_VERSION_NUMBER) "." STRINGIZE_COPYRIGHT(UNITEX_MINOR_VERSION_NUMBER) BETA_UTF8 " version\n"
-		"Copyright " COPYRIGHT_UTF8 " 2001-2015 Universit" E_ACUTE " Paris-Est Marne-la-Vall" E_ACUTE "e\nContact: <unitex@univ-mlv.fr>\n\n";
-}
+#define E_ACUTE_UTF8 "\xc3\xa9" // unicode e9
 
 
-static inline void display_copyright_notice() 
-{
-	unichar str[0x400];
-	convert_utf8_to_unichar(str, 0x3ff, NULL, (const unsigned char*)get_copyright_utf8(), strlen(get_copyright_utf8())+1);
+#define COPYRIGHT_NOTICE \
+	"This program is part of Unitex " STRINGIZE_COPYRIGHT(UNITEX_MAJOR_VERSION_NUMBER) "." STRINGIZE_COPYRIGHT(UNITEX_MINOR_VERSION_NUMBER) BETA_UTF8 " version\n" \
+	"Copyright " COPYRIGHT_UTF8 " 2001-2015 Universit" E_ACUTE_UTF8 " Paris-Est Marne-la-Vall" E_ACUTE_UTF8 "e\nContact: <unitex@univ-mlv.fr>\n\n"
 
-	u_printf("%S", str);
-}
+#define	SIZE_COPYRIGHT_NOTICE_BUFFER 0x400
 
 
-static inline void get_copyright_notice(unichar*dest, size_t nb_unichar_alloc_walk)
-{
-	convert_utf8_to_unichar(dest, nb_unichar_alloc_walk, NULL, (const unsigned char*)get_copyright_utf8(), strlen(get_copyright_utf8())+1);
-}
+const char* get_copyright_utf8();
 
+void display_copyright_notice();
+
+void get_copyright_notice(unichar* dest_buffer, size_t size_unichar_dest_buffer);
 
 
 } // namespace unitex

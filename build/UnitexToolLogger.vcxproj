@@ -372,6 +372,7 @@
     <ClCompile Include="..\ConcorDiff.cpp" />
     <ClCompile Include="..\Contexts.cpp" />
     <ClCompile Include="..\Convert.cpp" />
+    <ClCompile Include="..\Copyright.cpp" />
     <ClCompile Include="..\DebugMode.cpp" />
     <ClCompile Include="..\DELA.cpp" />
     <ClCompile Include="..\DELA_tree.cpp" />

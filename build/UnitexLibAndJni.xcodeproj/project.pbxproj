@@ -16,6 +16,7 @@
 		1F0B06921AFD533600029933 /* scanner.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06481AFD533600029933 /* scanner.c */; };
 		1F0B06931AFD533600029933 /* writer.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B06491AFD533600029933 /* writer.c */; };
 		1F0B06941AFD533600029933 /* yaml_private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1F0B064A1AFD533600029933 /* yaml_private.h */; };
+		1FD11E7C1B1ED4DB00DEF448 /* Copyright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FD11E7B1B1ED4DB00DEF448 /* Copyright.cpp */; };
 		222A00001411336600F74409 /* NewLineShifts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE801411336600F74409 /* NewLineShifts.cpp */; };
 		222A00011411336600F74409 /* NewLineShifts.h in Headers */ = {isa = PBXBuildFile; fileRef = 222AFE811411336600F74409 /* NewLineShifts.h */; };
 		222A00021411336600F74409 /* NormalizationFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AFE821411336600F74409 /* NormalizationFst2.cpp */; };
@@ -530,6 +531,7 @@
 		1F0B06481AFD533600029933 /* scanner.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scanner.c; sourceTree = "<group>"; };
 		1F0B06491AFD533600029933 /* writer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = writer.c; sourceTree = "<group>"; };
 		1F0B064A1AFD533600029933 /* yaml_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yaml_private.h; sourceTree = "<group>"; };
+		1FD11E7B1B1ED4DB00DEF448 /* Copyright.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Copyright.cpp; path = ../Copyright.cpp; sourceTree = "<group>"; };
 		222A00791411342B00F74409 /* fr_umlv_unitex_jni_UnitexJni.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fr_umlv_unitex_jni_UnitexJni.cpp; sourceTree = "<group>"; };
 		222A007A1411342B00F74409 /* fr_umlv_unitex_jni_UnitexJni.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fr_umlv_unitex_jni_UnitexJni.h; sourceTree = "<group>"; };
 		222A00AC1411358500F74409 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
@@ -1166,6 +1168,7 @@
 		222AFD6D1411335700F74409 /* Unitex-C++ */ = {
 			isa = PBXGroup;
 			children = (
+				1FD11E7B1B1ED4DB00DEF448 /* Copyright.cpp */,
 				22942C9C18097E7100057308 /* SelectOutput.cpp */,
 				22942C9D18097E7100057308 /* SelectOutput.h */,
 				226063B01AF3A27F00BC2033 /* DumpOffsets.cpp */,
@@ -2223,6 +2226,7 @@
 				222AAC1A15BC50B3005E9A21 /* RegExFacade.cpp in Sources */,
 				228B5BE11606672B006DAABF /* SyncToolPosix.cpp in Sources */,
 				225D3032160FCE1900D8D8BB /* UnitexLibDirPosix.cpp in Sources */,
+				1FD11E7C1B1ED4DB00DEF448 /* Copyright.cpp in Sources */,
 				225D3033160FCE1900D8D8BB /* UnitexLibIO.cpp in Sources */,
 				1F0B06921AFD533600029933 /* scanner.c in Sources */,
 				2232E1FE1691020800C56E5A /* Cassys_concord.cpp in Sources */,

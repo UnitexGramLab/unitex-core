@@ -15,6 +15,7 @@
 		1F0B082F1AFD53A900029933 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E61AFD53A900029933 /* reader.c */; };
 		1F0B08301AFD53A900029933 /* scanner.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E71AFD53A900029933 /* scanner.c */; };
 		1F0B08311AFD53A900029933 /* writer.c in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B07E81AFD53A900029933 /* writer.c */; };
+		1FD11E7A1B1ED4BB00DEF448 /* Copyright.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FD11E791B1ED4BB00DEF448 /* Copyright.cpp */; };
 		222AABFE15BC507C005E9A21 /* RegExFacade.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222AABFC15BC507B005E9A21 /* RegExFacade.cpp */; };
 		222F79001107A48400C91CC7 /* AbstractDelaLoad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F778B1107A48300C91CC7 /* AbstractDelaLoad.cpp */; };
 		222F79011107A48400C91CC7 /* AbstractFst2Load.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F778F1107A48300C91CC7 /* AbstractFst2Load.cpp */; };
@@ -260,6 +261,7 @@
 		1F0B07E71AFD53A900029933 /* scanner.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scanner.c; sourceTree = "<group>"; };
 		1F0B07E81AFD53A900029933 /* writer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = writer.c; sourceTree = "<group>"; };
 		1F0B07E91AFD53A900029933 /* yaml_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yaml_private.h; sourceTree = "<group>"; };
+		1FD11E791B1ED4BB00DEF448 /* Copyright.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Copyright.cpp; path = ../Copyright.cpp; sourceTree = "<group>"; };
 		222AABFC15BC507B005E9A21 /* RegExFacade.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExFacade.cpp; path = ../RegExFacade.cpp; sourceTree = SOURCE_ROOT; };
 		222AABFD15BC507C005E9A21 /* RegExFacade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExFacade.h; path = ../RegExFacade.h; sourceTree = SOURCE_ROOT; };
 		222F778A1107A48300C91CC7 /* AbstractCallbackFuncModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractCallbackFuncModifier.h; path = ../AbstractCallbackFuncModifier.h; sourceTree = SOURCE_ROOT; };
@@ -793,6 +795,7 @@
 				22C284C014AF6D8B006A1F5D /* PRLG.cpp */,
 				22C284C114AF6D8B006A1F5D /* PRLG.h */,
 				22C284C214AF6D8B006A1F5D /* TfstTag.cpp */,
+				1FD11E791B1ED4BB00DEF448 /* Copyright.cpp */,
 				22C284C314AF6D8B006A1F5D /* TfstTag.h */,
 				22C284C414AF6D8B006A1F5D /* Unitex_revision.h */,
 				22C284C514AF6D8B006A1F5D /* UnitexRevisionInfo.cpp */,
@@ -1441,6 +1444,7 @@
 				222F794E1107A48400C91CC7 /* LocatePattern.cpp in Sources */,
 				222F794F1107A48400C91CC7 /* LocateTfst_lib.cpp in Sources */,
 				222F79501107A48400C91CC7 /* LocateTfst.cpp in Sources */,
+				1FD11E7A1B1ED4BB00DEF448 /* Copyright.cpp in Sources */,
 				222F79511107A48400C91CC7 /* LocateTfstMatches.cpp in Sources */,
 				222F797F1107A48400C91CC7 /* Main_UnitexTool.cpp in Sources */,
 				222F79821107A48400C91CC7 /* Match.cpp in Sources */,

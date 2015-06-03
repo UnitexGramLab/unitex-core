@@ -703,6 +703,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Copyright.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\DebugMode.cpp"
 				>
 			</File>

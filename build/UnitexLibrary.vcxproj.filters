@@ -797,6 +797,9 @@
     <ClCompile Include="..\CompressedDic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Copyright.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\DebugMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
