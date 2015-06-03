@@ -42,7 +42,8 @@ const char
 				"Usage:\n"
 					"Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
 					" fname : name of the input file name with extension \".fst2\"\r\n"
-					" -o outFile : if this option not exist, save paths at \"file\"lst.txt\r\n"
+					" -S : write path on standard output\r\n"
+					" -o outFile : if this option and -S not exist, save paths at \"file\"lst.txt\r\n"
 					" -[a/t] s/m : mode de automata or transducteur, s=single initial, m = multi-inital\r\n"
 					"              by default \"-a s\"\r\n"
 					" -l line#  :  max number of line to save[decimal].\r\n"
@@ -102,6 +103,7 @@ static unichar *uascToNum(unichar *uasc, int *val);
 #define DIS_LINE_LIMIT_MAX	4096
 
 #define MAX_CHANGE_SYMBOL_SIZE 32
+#define MAGIC_OUT_STDOUT "<WRITE_U_STDOUT>"
 
 static int changeStrToVal(int &changeStrToIdx,
 		unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE], char *src) {
@@ -327,6 +329,13 @@ public:
 	//
 	//    identify sub calls with transition and call id
 	//
+
+	void CloseOutput() {
+		if ((foutput != NULL) && (foutput != U_STDOUT)) {
+			u_fclose(foutput);
+		}
+		foutput = NULL;
+	}
 
 	struct callStackMapSt {
 		Transition* tran;
@@ -1215,7 +1224,12 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 		strcat(tmpchar, "autolst");
 		makeOfileName(ofNameTmp, tmpchar, ".txt");
 
-		foutput = u_fopen(&vec, ofNameTmp, U_WRITE);
+		if (strcmp(ofnameOnly,MAGIC_OUT_STDOUT)==0) {
+			foutput = U_STDOUT;
+		} else {
+			foutput = u_fopen(&vec, ofNameTmp, U_WRITE);
+		}
+
 		if (!foutput) {
 			fatal_error("Cannot open file %s\n", ofNameTmp);
 		}
@@ -1227,12 +1241,12 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 			//			printf("[%d th automata %s]\n",i,getUtoChar(a->nom_graphe[i]));
 
 			if (exploirerSubAuto(i) != 0) {
-				u_fclose(foutput);
+				CloseOutput();
 				return 1;
 			}
 
 			if (prOutCycleAtNode(i, 0) != 0) {
-				u_fclose(foutput);
+				CloseOutput();
 				return 1;
 			}
 			u_fprintf(
@@ -1244,11 +1258,11 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 
 		if (recursiveMode == SYMBOL) {
 			if (prOutCycle() != 0) {
-				u_fclose(foutput);
+				CloseOutput();
 				return 1;
 			}
 		}
-		u_fclose(foutput);
+		CloseOutput();
 
 		break;
 	}
@@ -1261,7 +1275,14 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 			exploirerSubAuto(1); // mark loop path start nodes
 			prSubGrapheCycle();
 			makeOfileName(ofNameTmp, 0, 0);
-			foutput = u_fopen(&vec, ofNameTmp, U_WRITE);
+
+			if (strcmp(ofnameOnly, MAGIC_OUT_STDOUT) == 0) {
+				foutput = U_STDOUT;
+			}
+			else {
+				foutput = u_fopen(&vec, ofNameTmp, U_WRITE);
+			}
+
 			if (!foutput) {
 				fatal_error("Cannot open file %s\n", ofNameTmp);
 			}
@@ -1286,11 +1307,11 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 			}
 			if (recursiveMode == SYMBOL) {
 				if (prOutCycle() != 0) {
-					u_fclose(foutput);
+					CloseOutput();
 					return 1;
 				}
 			}
-			u_fclose(foutput);
+			CloseOutput();
 		}
 			break;
 		case MULTI: // the first graph have only noms of the initials graphs
@@ -1330,7 +1351,14 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 				remove_path(ofNameTmp, ttpchar);
 				u_fprintf(listFile, "%s\r\n", ttpchar);
 
-				foutput = u_fopen(&vec, ofNameTmp, U_WRITE);
+
+				if (strcmp(ofnameOnly, MAGIC_OUT_STDOUT) == 0) {
+					foutput = U_STDOUT;
+				}
+				else {
+					foutput = u_fopen(&vec, ofNameTmp, U_WRITE);
+				}
+
 				if (!foutput) {
 					fatal_error("Cannot open file %s\n", ofNameTmp);
 				}
@@ -1344,7 +1372,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 
 				if (recursiveMode == SYMBOL) {
 					if (prOutCycle() != 0) {
-						u_fclose(foutput);
+						CloseOutput();
 						return 1;
 					}
 				}
@@ -1369,7 +1397,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 					}
 				}
 
-				u_fclose(foutput);
+				CloseOutput();
 			}
 			u_fclose(listFile);
 		}
@@ -1981,6 +2009,10 @@ int main_Fst2List(int argc, char* const argv[]) {
 				usage();
 				return 1;
 			}
+			break;
+		case 'S':
+			ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
+			strcpy(ofilename, MAGIC_OUT_STDOUT);
 			break;
 		case 'o':
 			iargIndex++;
