@@ -218,10 +218,10 @@ TAR_PARAM = xzf
 
 INSTALL_COMMAND = make install
 TRE_SRC = tre-0.8.0
-TRE_TGZ = ../tre-0.8.0.tar.gz
+TRE_TGZ = ../vendor/tre-0.8.0.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 YAML_SRC = yaml-0.1.6
-YAML_TGZ = ../yaml-0.1.6.tar.gz
+YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
 YAML_TEMP = $(YAML_SRC)/TEMP
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
@@ -1657,9 +1657,9 @@ endif
 
 
 TRE_SRC = tre-0.8.0
-TRE_TGZ = ../tre-0.8.0.tar.gz
+TRE_TGZ = ../vendor/tre-0.8.0.tar.gz
 YAML_SRC = yaml-0.1.6
-YAML_TGZ = ../yaml-0.1.6.tar.gz
+YAML_TGZ = ../vendor/yaml-0.1.6.tar.gz
 
 ifeq ($(TRE_DIRECT_COMPILE), yes)
 TRE_LIB =
