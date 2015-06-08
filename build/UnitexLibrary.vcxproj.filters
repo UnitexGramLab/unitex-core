@@ -905,6 +905,9 @@
     <ClCompile Include="..\Cassys_external_program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\logger\UniLoggerAutoInstall.cpp">
+      <Filter>Source Files\logger</Filter>
+    </ClCompile>
     <ClCompile Include="..\logger\UnpackFile.cpp">
       <Filter>Source Files\logger</Filter>
     </ClCompile>

@@ -31,6 +31,7 @@
 #include "UnitexTool.h"
 #include "logger/UniLogger.h"
 #include "logger/UniRunLogger.h"
+#include "logger/UniLoggerAutoInstall.h"
 #include "UnitexLibIO.h"
 #include "IOBuffer.h"
 
@@ -54,15 +55,60 @@ int main(int argc,char *argv[])
 #endif
 {
 SetUnitexBufferMode();
+
+INSTALLLOGGER pInstallLogger = NULL;
+
+if (argc>3) {
+	int skip_arg = argc;
+	if ((strcmp(argv[1], "{") == 0) && (strcmp(argv[2], "CreateLog") == 0))
+	{
+		for (int i = 2;i<argc;i++) {
+			if (strcmp(argv[i], "}") == 0) {
+				skip_arg = i;
+				break;
+			}
+		}
+	}
+
+	if (skip_arg == 0) {
+		pInstallLogger = BuildLogger();
+	}
+	else {
+		pInstallLogger = BuildLoggerFromArgs(skip_arg - 2, argv + 2);
+	}
+	argc -= skip_arg;
+	argv += skip_arg;
+}
+
+
 if (argc>1) {
   if (strcmp(argv[1],"RunLog")==0) {
-    return RunLog_run_main(argc-1,argv+1);
+    int ret_value = RunLog_run_main(argc-1,argv+1);
+	if (pInstallLogger != NULL) {
+		RemoveLoggerFromParamFile(pInstallLogger);
+	}
+	return ret_value;
   }
   if (strcmp(argv[1],"UnitexTool")==0) {
-    return UnitexTool_public_run(argc-1,argv+1,NULL,NULL);
+	int ret_value = UnitexTool_public_run(argc-1,argv+1,NULL,NULL);
+	if (pInstallLogger != NULL) {
+		RemoveLoggerFromParamFile(pInstallLogger);
+	}
+	return ret_value;
   }
   if (strcmp(argv[1], "{") == 0) {
-      return UnitexTool_public_run(argc, argv, NULL, NULL);
+	int ret_value = UnitexTool_public_run(argc, argv, NULL, NULL);
+	if (pInstallLogger != NULL) {
+		RemoveLoggerFromParamFile(pInstallLogger);
+	}
+	return ret_value;
+  }
+  if (UnitexTool_public_GetToolInfo_byname(argv[1], NULL, NULL, NULL, NULL) != -1) {
+	int ret_value = UnitexTool_public_run(argc, argv, NULL, NULL);
+	if (pInstallLogger != NULL) {
+		RemoveLoggerFromParamFile(pInstallLogger);
+	}
+	return ret_value;
   }
 }
 
@@ -110,5 +156,8 @@ if (umf != NULL) {
 RemoveUnitexFile(name);
 RemoveUnitexFile(grf);
 
+if (pInstallLogger != NULL) {
+	RemoveLoggerFromParamFile(pInstallLogger);
+}
 return 0;
 }

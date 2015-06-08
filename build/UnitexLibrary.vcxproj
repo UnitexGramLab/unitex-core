@@ -316,6 +316,7 @@
     <ClCompile Include="..\LoadInf.cpp" />
     <ClCompile Include="..\logger\PackFile.cpp" />
     <ClCompile Include="..\logger\PackFileTool.cpp" />
+    <ClCompile Include="..\logger\UniLoggerAutoInstall.cpp" />
     <ClCompile Include="..\logger\UnpackFile.cpp" />
     <ClCompile Include="..\logger\UnpackFileTool.cpp" />
     <ClCompile Include="..\Offsets.cpp" />

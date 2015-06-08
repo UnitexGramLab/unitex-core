@@ -310,12 +310,44 @@ InstallLogger::~InstallLogger()
     }
 }
 
-#ifdef UNITEX_LOGGER_AUTOINSTALL_AUTOINSTANCE
-InstallLogger InstallLoggerInstance;
-#endif
 
 } // namespace logger
 } // namespace unitex
+
+using namespace unitex;
+using namespace logger;
+
+UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLogger()
+{
+	InstallLogger* pInstallLogger = new InstallLogger();
+	return (INSTALLLOGGER)pInstallLogger;
+}
+
+UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromArgs(int argc, char* const argv[])
+{
+	InstallLogger* pInstallLogger = new InstallLogger(argc,argv);
+	return (INSTALLLOGGER)pInstallLogger;
+}
+
+UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromParamFile(const char* paramFileName)
+{
+	InstallLogger* pInstallLogger = new InstallLogger(paramFileName);
+	return (INSTALLLOGGER)pInstallLogger;
+}
+
+UNITEX_FUNC void UNITEX_CALL RemoveLoggerFromParamFile(INSTALLLOGGER logger)
+{
+	InstallLogger* pInstallLogger = (InstallLogger*)logger;
+	if (pInstallLogger != NULL) {
+		delete (pInstallLogger);
+	}
+}
+
+
+
+#ifdef UNITEX_LOGGER_AUTOINSTALL_AUTOINSTANCE
+InstallLogger InstallLoggerInstance;
+#endif
 
 #endif
 

@@ -64,4 +64,28 @@ private:
 } // namespace logger
 } // namespace unitex
 
+
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+	struct _INSTALL_LOGGER {
+		void* dummy;
+	};
+	typedef struct _INSTALL_LOGGER* INSTALLLOGGER;
+
+	UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLogger();
+	UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromArgs(int argc, char* const argv[]);
+	UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromParamFile(const char* paramFileName);
+	UNITEX_FUNC void UNITEX_CALL RemoveLoggerFromParamFile(INSTALLLOGGER);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
 #endif
