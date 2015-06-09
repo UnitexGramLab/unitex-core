@@ -42,7 +42,7 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
 void compute_token_length(int*,struct text_tokens*);
 
 void create_modified_text_file(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
-		char*,int,int*);
+		char*,int,int*,vector_int*,const char*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
@@ -225,7 +225,7 @@ if (options->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
 	create_modified_text_file(vec,concordance,text,tokens,
-			options->output,n_enter_char,enter_pos);
+			options->output,n_enter_char,enter_pos,options->uima_offsets,options->output_offsets);
 	free(token_length);
 	return;
 }
@@ -1314,8 +1314,8 @@ return number_of_matches;
  * 'pos_in_enter_pos' is the current position in this array. The function
  * returns the updated current position in the 'pos_in_enter_pos' array.
  */
-int fprint_token(U_FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
-				int current_global_position,int n_enter_char,int* enter_pos,
+static int fprint_token(U_FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
+				int current_global_position,int n_enter_char,int* enter_pos, int* len_written,
 				int pos_in_enter_pos,struct buffer_mapped* buffer) {
 /* We look for the new line that is closer (but after) to the token to print */
 while (pos_in_enter_pos < n_enter_char) {
@@ -1333,12 +1333,18 @@ while (pos_in_enter_pos < n_enter_char) {
 		/* The token to print is a new line, so we print it and return */
 		pos_in_enter_pos++;
 		u_fputc((unichar)'\n',output);
+		if (len_written != NULL) {
+			(*len_written) += 1+1;
+		}
 		return pos_in_enter_pos;
 	}
 }
 /* The token to print is not a new line, so we print it and return */
 const unichar* token_to_write=tokens->token[buffer->int_buffer_[buffer->skip + offset_in_buffer]];
 u_fputs(token_to_write,output);
+if (len_written != NULL) {
+	(*len_written) += (int)u_strlen(token_to_write);
+}
 return pos_in_enter_pos;
 }
 
@@ -1351,8 +1357,8 @@ return pos_in_enter_pos;
  *
  * The function also makes sure that the last token #match_end has been loaded into the buffer.
  */
-int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
-								int current_global_position,U_FILE* output,
+static int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
+								int current_global_position,U_FILE* output,int* len_written,
 								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 								struct buffer_mapped* buffer,int *pos_int_char) {
 buf_map_int_pseudo_seek(buffer,current_global_position);
@@ -1366,7 +1372,7 @@ if (buffer->size>0) {
 int last_pos_to_be_written=buffer->size-(match_end+1-match_start);
 for (int i=0;i<last_pos_to_be_written;i++) {
 	pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
-									n_enter_char,enter_pos,pos_in_enter_pos,
+									n_enter_char,enter_pos,len_written,pos_in_enter_pos,
 									buffer);
 }
 return pos_in_enter_pos;
@@ -1377,8 +1383,8 @@ return pos_in_enter_pos;
  * This function saves all the text from the token n� 'current_global_position' to
  * the end.
  */
-int move_to_end_of_text_with_writing(ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
-									int current_global_position,U_FILE* output,
+static int move_to_end_of_text_with_writing(ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
+									int current_global_position,U_FILE* output,int* len_written,
 									int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 									struct buffer_mapped* buffer) {
 //long int address=current_global_position*sizeof(int);
@@ -1388,7 +1394,7 @@ buf_map_int_pseudo_seek(buffer,current_global_position);
 while (0!=(buffer->size = (int)buf_map_int_pseudo_read(buffer,buffer->nb_item))) {
 	for (long address=0;address<buffer->size;address++) {
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
-										n_enter_char,enter_pos,pos_in_enter_pos,buffer);
+										n_enter_char,enter_pos,len_written,pos_in_enter_pos,buffer);
 	}
    current_global_position = current_global_position+(int)buffer->nb_item;
 }
@@ -1408,18 +1414,22 @@ return pos_in_enter_pos;
  */
 void create_modified_text_file(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
                                struct text_tokens* tokens,char* output_name,
-                               int n_enter_char,int* enter_pos) {
+                               int n_enter_char,int* enter_pos,vector_int* uima_offsets,const char* offset_file_name) {
 U_FILE* output=u_fopen(vec,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
 	af_close_mapfile(text);
 	fatal_error("Cannot write file %s\n",output_name);
 }
+U_FILE* f_offsets=NULL;
+if ((uima_offsets!=NULL) && (offset_file_name!=NULL) && ((*offset_file_name)!='\0')) {
+	f_offsets=u_fopen(vec, offset_file_name, U_WRITE);
+}
 struct match_list* matches;
 struct match_list* matches_tmp;
 int current_global_position_in_token=0;
 int current_global_position_in_char=0;
-
+int pos_in_output=0;
 /* We allocate a buffer to read the tokens of the text */
 //struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,text);
 struct buffer_mapped* buffer=(struct buffer_mapped*)malloc(sizeof(struct buffer_mapped));
@@ -1429,7 +1439,7 @@ buffer->nb_item=af_get_mapfile_size(buffer->amf)/sizeof(int);
 buffer->skip=0;
 buffer->pos_next_read=0;
 buffer->size=0;
-
+int pos_in_original=0;
 /* We load the match list */
 matches=load_match_list(concordance,NULL,NULL);
 int pos_in_enter_pos=0;
@@ -1449,39 +1459,62 @@ while (matches!=NULL) {
 		/* There, we are sure that we have a valid match to process */
 		pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
 													current_global_position_in_token,output,
+													f_offsets ? (&pos_in_output) : NULL,
 													n_enter_char,enter_pos,pos_in_enter_pos,
 													buffer,&current_global_position_in_char);
 		/* Now, we are sure that the buffer contains all we want */
 		/* If the match doesn't start at the beginning of the token, we add the prefix */
 		int zz=matches->m.start_pos_in_token-current_global_position_in_token;
-		unichar* first_token=tokens->token[buffer->int_buffer_[buffer->skip+zz]];
+		size_t pos_token_original_before_match=buffer->skip+zz;
+		unichar* first_token=tokens->token[buffer->int_buffer_[pos_token_original_before_match]];
+		if ((uima_offsets != NULL) && ((matches->m.start_pos_in_token*2) < uima_offsets->nbelems)) {
+			pos_in_original = uima_offsets->tab[matches->m.start_pos_in_token*2];
+		}
 		for (int i=current_global_position_in_char;i<matches->m.start_pos_in_char;i++) {
 		   u_fprintf(output,"%C",first_token[i]);
+		   pos_in_output++;
+		   pos_in_original++;
 		}
+		int pos_in_output_before_match=pos_in_output;
 		if (matches->output!=NULL) {
 			u_fputs(matches->output,output);
+			pos_in_output+=(int)u_strlen(matches->output);
 		}
 		zz=matches->m.end_pos_in_token-current_global_position_in_token;
-		unichar* last_token=tokens->token[buffer->int_buffer_[buffer->skip+zz]];
+		size_t pos_token_original_after_match = buffer->skip + zz;
+		unichar* last_token=tokens->token[buffer->int_buffer_[pos_token_original_after_match]];
+		int pos_end_in_original=0;
+		if ((uima_offsets != NULL) && ((matches->m.end_pos_in_token * 2) < uima_offsets->nbelems)) {
+			pos_end_in_original = uima_offsets->tab[matches->m.end_pos_in_token * 2];
+			pos_end_in_original += matches->m.end_pos_in_char;
+		}
+
+		if (f_offsets) {
+			u_fprintf(f_offsets,"%d %d %d %d\n", pos_in_original, pos_end_in_original + 1, pos_in_output_before_match, pos_in_output);
+		}
+
 		if (last_token[matches->m.end_pos_in_char+1]=='\0') {
 		   /* If we have completely consumed the last token of the match */
 		   current_global_position_in_token=matches->m.end_pos_in_token+1;
 		   current_global_position_in_char=0;
 		} else {
 		   current_global_position_in_token=matches->m.end_pos_in_token;
-	      current_global_position_in_char=matches->m.end_pos_in_char+1;
+		   current_global_position_in_char=matches->m.end_pos_in_char+1;
 		}
 		/* If it was the last match or if the next match starts on another token,
 		 * we dump the end of the current token, if any */
+		int nb_char_from_last_token=0;
 		if (current_global_position_in_char!=0 &&
 		      (matches->next==NULL || matches->next->m.start_pos_in_token!=current_global_position_in_token)) {
 		   for (int i=current_global_position_in_char;last_token[i]!='\0';i++) {
 		      u_fprintf(output,"%C",last_token[i]);
+			  nb_char_from_last_token++;
 		   }
 		   /* We update the position in tokens so that 'move_to_end_of_text_with_writing'
 		    * will work fine */
 		   current_global_position_in_token++;
 		}
+		pos_in_output+=nb_char_from_last_token;
 
 		/* We skip to the next match of the list */
 		matches_tmp=matches;
@@ -1492,10 +1525,14 @@ while (matches!=NULL) {
 /* Finally, we don't forget to dump all the text that may remain after the
  * last match. */
 move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,
+								f_offsets ? (&pos_in_output) : NULL,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
 free(buffer);
 u_fclose(output);
+if (f_offsets) {
+	u_fclose(f_offsets);
+}
 u_printf("Done.\n");
 }
 
@@ -1528,6 +1565,7 @@ opt->uima_offsets=NULL;
 opt->PRLG_data=NULL;
 opt->only_matches=0;
 opt->original_file_offsets=0;
+opt->output_offsets[0]='\0';
 return opt;
 }
 

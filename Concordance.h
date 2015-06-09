@@ -88,6 +88,7 @@ struct conc_opt {
   PRLG* PRLG_data;
   char only_matches;
   char original_file_offsets;
+  char output_offsets[FILENAME_MAX];
 };
 
 struct conc_opt* new_conc_opt();
