@@ -797,6 +797,7 @@ CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o U
             Fst2.o MorphologicalFilters.o LocateFst2Tags.o TransductionVariables.o OptimizedFst2.o Text_parsing.o List_ustring.o ParsingInfo.o\
             DicVariables.o TransductionStack.o MorphologicalLocate.o Pattern.o Contexts.o Transitions.o Symbol.o Ustring.o LanguageDefinition.o\
             Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
+	    Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o Grf_lib.o Fst2Check_lib.o \
             Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o $(TRE_LINK_OBJS) \
             DebugMode.o VirtualFiles.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
