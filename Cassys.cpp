@@ -121,6 +121,384 @@ display_copyright_notice();
 u_printf(usage_Cassys);
 }
 
+struct grfInfo {
+    int entity_loc;
+    int annotation_loc;
+    char *entity_format;
+    char **ignore;
+    int ignore_count;
+    char **accept;
+    int accept_count;
+    unichar *annotation;
+    unichar *entities;
+    int entity_count;
+};
+
+int is_template_graph(char *transducer) {
+    int ret_value = 0;
+    char graph_path[FILENAME_MAX];
+    strcpy(graph_path,transducer);
+    char *path_token = strtok(graph_path,PATH_SEPARATOR_STRING);
+    char *template_name = NULL;
+    while(path_token) {
+	template_name = path_token;
+	path_token = strtok (NULL,PATH_SEPARATOR_STRING);
+    }
+    if(path_token != NULL)
+	free(path_token);
+    if(template_name != NULL && strlen(template_name) > 1 && template_name[0] == '@')
+	ret_value = 1;
+    if(template_name != NULL)
+	free(template_name);
+
+    return ret_value;
+}
+
+unichar** load_file_in_memory(char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
+    int num_lines = 0;
+    unichar **grf_lines = NULL;
+    unichar *line = NULL;
+    size_t size_buffer_line = 0;
+    U_FILE *grf_file = u_fopen(vec,tmp_file,U_READ);
+
+    if(grf_file != NULL) {
+	while(u_fgets_dynamic_buffer(&line, &size_buffer_line, grf_file) != EOF) {
+	    grf_lines = (unichar**) realloc(grf_lines, (num_lines+1) * sizeof(unichar*));
+	    grf_lines[num_lines] = (unichar*) malloc(sizeof(unichar) * (u_strlen(line) + 1));
+	    u_strcpy(grf_lines[num_lines],line);
+	    num_lines++;
+	}
+	if(line != NULL)
+	    free(line);
+	u_fclose(grf_file);
+    }
+    *total_lines = num_lines;
+    return grf_lines;
+}
+
+grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc, unichar **start_line, int **locations) {
+    int start = -1;
+    int num_info = 0;
+    struct grfInfo *infos = NULL;
+    if(lines != NULL) {
+	int num_lines = 0;
+	while(num_lines < total_lines && lines[num_lines] != NULL) {
+	    size_t num_char = u_strlen(lines[num_lines]);
+	    if(num_char == 1 && lines[num_lines][0] == '#') {
+		start = num_lines;
+	    }
+	    else if(num_lines == start + 2) {
+		*loc = num_lines;
+		*start_line = (unichar*) malloc(sizeof(unichar) * (num_char + 1));
+		u_strcpy(*start_line,lines[num_lines]);
+	    }
+	    else if(num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
+		infos = (grfInfo*) realloc(infos, (num_info + 1) * sizeof(grfInfo));
+		infos[num_info].entity_format = (char*) malloc(sizeof(char) * (num_char + 2));
+		infos[num_info].entity_format[0] = '"';
+		infos[num_info].entity_format[1] = '%';
+		infos[num_info].entity_format[2] = 'S';
+		infos[num_info].entity_loc = num_lines - (*loc);
+		infos[num_info].annotation_loc = 0;
+		infos[num_info].entity_count = 0;
+		infos[num_info].entities = NULL;
+		int spaces = 0;
+		for(size_t i = 2; i < num_char; i++) {
+		    infos[num_info].entity_format[i + 1] = (char) lines[num_lines][i];
+		    if(spaces == 4 && lines[num_lines][i] > 47 && lines[num_lines][i] < 58) { //is digit
+			infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
+		    }
+		    if(lines[num_lines][i] == ' ')
+			spaces++;
+		}
+		num_info++;
+	    }
+	    else {
+		for(int i = 0; i < num_info; i++) {
+		    if(num_lines == infos[i].annotation_loc + *loc) {
+			int n = u_strlen(lines[num_lines]);
+			int j,k;
+			int division = -1;
+			int annot_end = -1;
+			int ignore_cnt = 0;
+			infos[i].ignore = NULL;
+			infos[i].accept = NULL;
+			int is_accept = 0;
+			for(j = 0; j < n; j++) {
+			    if(lines[num_lines][j] == '/') {
+				division = j;
+			    }
+			    else if(lines[num_lines][j] == '"') {
+				annot_end = j;
+			    }
+			}
+			char *temp_annot = (char*) malloc(sizeof(char) * (division - 1));
+			for(k = 1; k < division; k++)
+			    temp_annot[k - 1] = (char) lines[num_lines][k];
+			temp_annot[k - 1] = '\0';
+
+			if(strcmp(temp_annot,"<E>") != 0) {
+			    char *ignore_token = strtok(temp_annot,"~");
+			    char *ignore = NULL;
+			    while(ignore_token) {
+				ignore = ignore_token;
+				if(strcmp(ignore,temp_annot) == 0) {
+				    is_accept = 1;
+				    break;
+				}
+				ignore_token = strtok(NULL,"~");
+				infos[i].ignore = (char**) realloc(infos[i].ignore, sizeof(char*) * (ignore_cnt + 1));
+				infos[i].ignore[ignore_cnt] =  (char*) malloc(sizeof(char) * (strlen(ignore) + 1));
+				strcpy(infos[i].ignore[ignore_cnt],ignore);
+				ignore_cnt++;
+			    }
+			    if(is_accept && infos[i].ignore == NULL) {
+				int accept_cnt = 0;
+				int prev = 0;
+				for(k = 0; k < division; k++) {
+				    if(k > 0 && temp_annot[k] == '+' && temp_annot[k - 1] != '\\') {
+					infos[i].accept = (char**) realloc(infos[i].accept, sizeof(char*) * (accept_cnt + 1));
+					infos[i].accept[accept_cnt] = (char*)malloc(sizeof(char) * (k - prev + 1));
+					n = 0;
+					for(j = prev; j < k; j++)
+					    if(temp_annot[j] != '\\') {
+						infos[i].accept[accept_cnt][n++] = temp_annot[j];
+					    }
+					infos[i].accept[accept_cnt][n] = '\0';
+					prev = k;
+					accept_cnt++;
+				    }
+				}
+				infos[i].accept = (char**) realloc(infos[i].accept, sizeof(char*) * (accept_cnt + 1));
+				infos[i].accept[accept_cnt] = (char*)malloc(sizeof(char) * (k - prev + 1));
+				n = 0;
+				for(j = prev; j < k; j++)
+				    if(temp_annot[j] != '\\') {
+					infos[i].accept[accept_cnt][n++] = temp_annot[j];
+				    }
+				infos[i].accept[accept_cnt][n] = '\0';
+				accept_cnt++;
+				infos[i].accept_count = accept_cnt;
+			    }
+			    if(ignore != NULL)
+				free(ignore);
+			    if(ignore_token != NULL)
+				free(ignore_token);
+			}
+			infos[i].ignore_count = ignore_cnt;
+			infos[i].annotation = (unichar*) malloc(sizeof(unichar) * (annot_end - division));
+				
+			for(k = 0, j = division + 1; j < annot_end; k++, j++)
+			    infos[i].annotation[k] = lines[num_lines][j];
+			infos[i].annotation[k] = '\0';
+		    }
+		}
+	    }
+	    num_lines++;
+	}
+    }
+    *num_annot = num_info;
+    return infos;
+}
+
+unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int num, int *updates, grfInfo *infos) {
+    unichar **entity_string = NULL;
+    entity_string = (unichar**) malloc(sizeof(unichar*) * num);
+    for(int i = 0; i < num; i++)
+	entity_string[i] = NULL;
+    U_FILE *dico = u_fopen(vec, token_list, U_READ);
+    if(dico != NULL && infos != NULL) {
+	int num_entity[num];
+	for(int i = 0; i < num; i++)
+	    num_entity[i] = 0;
+	unichar *line = NULL;
+	size_t size_buffer_line = 0;
+	while(u_fgets_dynamic_buffer(&line, &size_buffer_line, dico) != EOF) {
+	    for(int k = 0; k < num; k++) {
+		if (line != NULL && line[0] == '{' && u_strlen(line) > u_strlen(infos[k].annotation)) {
+		    int j = 0;
+		    while(line[j] != '\0') {
+			int i = 0;
+			while(line[j] != '\0' && line[j] != infos[k].annotation[i])
+			    j++;
+			while(line[j] != '\0' && infos[k].annotation[i] != '\0' && line[j] == infos[k].annotation[i]) {
+			    i++;
+			    j++;
+			}
+			if(infos[k].annotation[i] == '\0') {
+			    int line_len = u_strlen(line);
+			    int start,end,annot_start;
+			    int annot = -1;
+			    unichar *prev_char = NULL;
+			    unichar *entity_whole = NULL;
+			    for(int x = 0; x < line_len; x++) {
+				if(line[x] == '{') {
+				    start = x+1;
+				    if (x > 0) {
+					prev_char = (unichar*) malloc(sizeof(unichar) * 2);
+					prev_char[0] = line[x - 1];
+					if(line[x - 1] == '\\')
+					    prev_char[0] = line[x - 2];
+					prev_char[1] = '\0';
+				    }
+				}
+				else if(line[x] == ',') {
+				    annot = 0;
+				    end = x;
+				}
+				else if(annot == 0 && line[x] == '.') {
+				    annot = -1;
+				    annot_start = x + 1;
+				}
+				else if(line[x] != '\\') {
+				    annot = -1;
+				    if(line[x] == '}' && start > 0) {
+					int matches = 0;
+					char *annot = (char*) malloc(sizeof(char) * (x - annot_start));
+					int z = 0;
+					for(int y = annot_start; y < x; y++)
+					    if(line[y] != '\\') {
+						annot[z++] = (char) line[y];
+					    }
+					annot[z] = '\0';
+					if(infos[k].ignore != NULL) {
+					    for(int m = 0; m < infos[k].ignore_count; m++)
+						if(strncmp(annot,infos[k].ignore[m],strlen(infos[k].ignore[m])) == 0) {
+						    matches = 1;
+						    break;
+						}
+					}
+					if(infos[k].accept != NULL) {
+					    matches = 1;
+					    for(int m = 0; m < infos[k].accept_count; m++)
+						if(strncmp(annot,infos[k].accept[m],strlen(infos[k].accept[m])) == 0) {
+						    matches = 0;
+						    break;
+						}
+					}
+					if(matches == 0) {
+					    unichar *entity = NULL;
+					    entity = (unichar*) malloc(sizeof(unichar) * (end - start));
+					    z = 0;
+					    for(int y = start; y < end; y++)
+						if(line[y] != '\\')
+						    entity[z++] = line[y];
+					    entity[z] = '\0';
+					    int entity_len = z + 1;
+					    if(entity_whole == NULL) {
+						entity_whole = (unichar*) malloc(sizeof(unichar) * entity_len);
+						u_strcpy(entity_whole,entity);
+					    }
+					    else {
+						int current_len = u_strlen(entity_whole);
+						entity_whole =  (unichar*) realloc(entity_whole,sizeof(unichar) * (current_len + entity_len + 2));
+						u_strcat(entity_whole,prev_char);
+						u_strcat(entity_whole,entity);
+					    }
+
+					    if(entity != NULL)
+						free(entity);
+					}
+					if(annot != NULL)
+					    free(annot);
+					start = -1;
+				    }
+				}
+			    }
+			    if(entity_whole != NULL) {
+				int entity_len = u_strlen(entity_whole);
+				if(infos[k].entity_count == 0) {
+				    infos[k].entities = (unichar*) malloc(sizeof(unichar) * entity_len);
+				    u_strcpy(infos[k].entities,entity_whole);
+				    infos[k].entity_count++;
+				    *updates = *updates + 1;
+				}
+				else {
+				    int current_len = u_strlen(infos[k].entities);
+				    infos[k].entities = (unichar*) realloc(infos[k].entities, sizeof(unichar) * (current_len + entity_len + 2));
+				    infos[k].entities[current_len] = '+';
+				    for(int a = current_len + 1, b = 0; a < current_len + entity_len + 2; a++)
+					infos[k].entities[a] = entity_whole[b++];
+				    infos[k].entities[current_len + entity_len + 1] = '\0';
+				}
+				free(entity_whole);
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	if(line !=NULL)
+	    free(line);
+	u_fclose(dico);
+    }
+    return entity_string;
+}
+
+int update_tmp_graph(char *transducer, VersatileEncodingConfig *vec, unichar **lines, int total_lines, unichar *start, int start_loc, int num_entities, int num_info, grfInfo *infos, int mode) {
+    int status = 0;
+    U_FILE *graph_file = u_fopen(vec,transducer,U_WRITE);
+    if (graph_file !=NULL) {
+	if(lines != NULL) {
+	    int num_lines = 0;
+	    int updates = 0;
+	    while(num_lines < total_lines && lines[num_lines] !=NULL) {
+		size_t num_char = u_strlen(lines[num_lines]);
+		if(mode && num_lines == start_loc) {
+		    int spaces = 0;
+		    for(int i = 0; start[i] !='\0'; i++) {
+			u_fprintf(graph_file,"%C",start[i]);
+			if(start[i] == ' ')
+			    spaces++;
+			if(spaces == 3)
+			    break;
+		    }   
+		    u_fprintf(graph_file,"%d ",num_entities);
+		    for(int i = 0; i < num_info; i++) {
+			if(infos[i].entity_count > 0)
+			    u_fprintf(graph_file,"%d ",infos[i].entity_loc);
+		    }
+		    u_fprintf(graph_file,"\n");
+		}
+		else if(mode && num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
+		    int loc = num_lines - start_loc;
+		    for(int i = 0; i < num_info; i++) {
+			if(infos[i].entity_loc == loc) {
+			    u_fprintf(graph_file,infos[i].entity_format, infos[i].entities);
+			    u_fprintf(graph_file,"\n");
+			}
+		    }
+		    updates++;
+		}
+		else if(mode) {
+		    int loc = num_lines - start_loc;
+		    int found = 0;
+		    for(int i = 0; i < num_info; i++) {
+			if(infos[i].annotation_loc == loc) {
+			    u_fprintf(graph_file, "\"<E>");
+			    int j = 0;
+			    while(lines[num_lines][j] != '\0' && lines[num_lines][j] != '/')
+				j++;
+			    for(; j<u_strlen(lines[num_lines]); j++)
+				u_fprintf(graph_file,"%C",lines[num_lines][j]);
+			    u_fprintf(graph_file,"\n");
+			    found++;
+			}
+		    }   
+		    if(found == 0)
+			u_fprintf(graph_file,"%S\n",lines[num_lines]);
+		}	
+		else
+		    u_fprintf(graph_file,"%S\n",lines[num_lines]);
+		num_lines++;
+	    }
+	}
+	u_fclose(graph_file);
+	status = 1;
+    }
+    return status;
+}
+
 
 int main_Cassys(int argc,char* const argv[]) {
     if (argc==1) {
@@ -548,6 +926,8 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
         }
 
+	int is_template_grf = is_template_graph(current_transducer->transducer_file_name);
+
         for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
 
             if (in_place == 0) {
@@ -560,7 +940,34 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             launch_tokenize_in_Cassys(labeled_text_name, alphabet,
                     snt_text_files->tokens_txt,vec,tokenize_args);
             free_snt_files(snt_text_files);
+	    int entity = 0;	
+	    if(is_template_grf) {
+		int *entity_loc = NULL;
+		int num_annots = 0;
+		unichar *start_node_line = NULL;
+		int start_node_loc = -1;
+		int total_lines = 0;
+		char orig_grf[FILENAME_MAX];
+		char template_name_without_extension[FILENAME_MAX];
+		int num_entities = 0;
+		struct grfInfo *grf_infos = NULL;
 
+		remove_extension(current_transducer->transducer_file_name, template_name_without_extension);
+		sprintf(orig_grf, "%s.grf", template_name_without_extension);
+
+		unichar **grf_lines = load_file_in_memory(orig_grf, vec, &total_lines);
+		grf_infos = extract_info(grf_lines,&num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
+
+		if(num_annots > 0) {
+		    extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+		    if(update_tmp_graph(orig_grf, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
+			if(num_entities > 0)
+			    launch_grf2fst2_in_Cassys(orig_grf, alphabet, vec, concord_args);
+			entity = num_entities;
+		    }
+		    update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
+		}
+	    }	
             // apply transducer
 
             u_printf("Applying transducer %s (numbered %d)\n",

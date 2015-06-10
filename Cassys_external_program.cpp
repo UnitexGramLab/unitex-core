@@ -25,6 +25,7 @@
  *      Author: David Nott, Nathalie Friburger (nathalie.friburger@univ-tours.fr)
  */
 
+#include "Grf2Fst2.h"
 #include "Cassys.h"
 #include "Cassys_external_program.h"
 
@@ -204,15 +205,52 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 }
 
 
+/**
+ * \brief Calls the Grf2fst2 program in Cassys
+ *
+ * Grf2fst2 is called with target graph (text_name) and option
+ * --alphabet=alphabet_name
+ *
+ *  For more information about Grf2fst2, see the unitex manuak.
+ *
+ *  \param [in] text_name the name of the graph
+ *  \param [in] alphabet the name of the alphabet
+ *
+ */
 
+int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, vector_ptr *additional_args) {
+    ProgramInvoker *invoker = new_ProgramInvoker(main_Grf2Fst2, "main_Grf2Fst2");
 
+    char tmp[FILENAME_MAX];
+	{
+	    tmp[0] = 0;
+	    get_reading_encoding_text(tmp, sizeof(tmp) - 1, vec->mask_encoding_compatibility_input);
+	    if(tmp[0] != '\0') {
+		add_argument(invoker,"-k");
+		add_argument(invoker,tmp);
+	    }
+	    tmp[0] = 0;
+	    get_writing_encoding_text(tmp, sizeof(tmp) - 1, vec->encoding_output, vec->bom_output);
+	    if(tmp[0] != '\0') {
+		add_argument(invoker,"-q");
+		add_argument(invoker,tmp);
+	    }
+	}
 
+	add_argument(invoker,text_name);
+	add_argument(invoker,"-y");
+	char alphabet_argument[FILENAME_MAX + 11];
+	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
+	add_argument(invoker,alphabet_argument);
 
+	char *line_command = build_command_line_alloc(invoker);
+	u_printf("%s\n",line_command);
 
-
-
-
-
+	int result = invoke(invoker);
+	free_ProgramInvoker(invoker);
+	free_command_line_alloc(line_command);
+	return result;
+}
 
 /**
  * \brief Calls the Concord program in Cassys

@@ -96,5 +96,20 @@ int launch_tokenize_in_Cassys(const char *text_name,
                             VersatileEncodingConfig*,
                             vector_ptr* additional_args);
 
+/**
+ * \brief Calls the Grf2fst2 program in Cassys
+ *
+ * Grf2fst2 is called with target graph (text_name) and option
+ * --alphabet=alphabet_name
+ *
+ * For more information about Grf2fst2, see the unitex manuak.
+ *
+ * \param [in] text_name the name of the graph
+ * \param [in] alphabet the name of the alphabet
+ *
+ */
+
+int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig*, vector_ptr* additional_args);
+
 }
 #endif /* CASSYS_EXTERNAL_PROGRAM_H_ */
