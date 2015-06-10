@@ -967,31 +967,32 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 		    }
 		    update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
 		}
-	    }	
-            // apply transducer
+	    }
+	    if(is_template_grf !=1 || entity > 0) {	    
+            // apply transducer only if the graph is not generic or when the generic graph has been updated
 
-            u_printf("Applying transducer %s (numbered %d)\n",
+		u_printf("Applying transducer %s (numbered %d)\n",
                     current_transducer->transducer_file_name, transducer_number);
-            launch_locate_in_Cassys(labeled_text_name, current_transducer,
+		launch_locate_in_Cassys(labeled_text_name, current_transducer,
                     alphabet, negation_operator, vec, morpho_dic, locate_args);
 
             // add protection character in lexical tags when needed
-            snt_text_files = new_snt_files(labeled_text_name);
-            protect_lexical_tag_in_concord(snt_text_files->concord_ind, current_transducer->output_policy, vec);
+		snt_text_files = new_snt_files(labeled_text_name);
+		protect_lexical_tag_in_concord(snt_text_files->concord_ind, current_transducer->output_policy, vec);
             // generate concordance for this transducer
-            launch_concord_in_Cassys(labeled_text_name,
+		launch_concord_in_Cassys(labeled_text_name,
                     snt_text_files -> concord_ind, alphabet, vec,concord_args);
 
             //
-            add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
+		add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
                     transducer_number, iteration, alphabet, vec, tokens_allocation_tool);
 
 
-            previous_transducer_number = transducer_number;
-            previous_iteration = iteration;
+		previous_transducer_number = transducer_number;
+		previous_iteration = iteration;
 
-            sprintf(last_labeled_text_name, "%s", labeled_text_name);
-
+		sprintf(last_labeled_text_name, "%s", labeled_text_name);
+	    }
             if (in_place == 0) {
                 free(labeled_text_name);
             }
