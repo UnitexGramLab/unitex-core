@@ -303,7 +303,7 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
 	entity_string[i] = NULL;
     U_FILE *dico = u_fopen(vec, token_list, U_READ);
     if(dico != NULL && infos != NULL) {
-	int num_entity[num];
+	int * num_entity = (int*)malloc(sizeof(int)*(num+1));
 	for(int i = 0; i < num; i++)
 	    num_entity[i] = 0;
 	unichar *line = NULL;
@@ -426,6 +426,7 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
 	if(line !=NULL)
 	    free(line);
 	u_fclose(dico);
+	free(num_entity);
     }
     return entity_string;
 }
@@ -474,7 +475,7 @@ int update_tmp_graph(char *transducer, VersatileEncodingConfig *vec, unichar **l
 			    int j = 0;
 			    while(lines[num_lines][j] != '\0' && lines[num_lines][j] != '/')
 				j++;
-			    for(; j<u_strlen(lines[num_lines]); j++)
+			    for(; j<(int)u_strlen(lines[num_lines]); j++)
 				u_fprintf(graph_file,"%C",lines[num_lines][j]);
 			    u_fprintf(graph_file,"\n");
 			    found++;
