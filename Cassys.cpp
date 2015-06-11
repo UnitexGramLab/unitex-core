@@ -136,20 +136,15 @@ struct grfInfo {
 
 int is_template_graph(char *transducer) {
     int ret_value = 0;
-    char graph_path[FILENAME_MAX];
-    strcpy(graph_path,transducer);
-    char *path_token = strtok(graph_path,PATH_SEPARATOR_STRING);
-    char *template_name = NULL;
-    while(path_token) {
-	template_name = path_token;
-	path_token = strtok (NULL,PATH_SEPARATOR_STRING);
-    }
-    if(path_token != NULL)
-	free(path_token);
-    if(template_name != NULL && strlen(template_name) > 1 && template_name[0] == '@')
+    int pos = -1;
+    for(int i = strlen(transducer) - 1; i >= 0; i--)
+	if(transducer[i] == PATH_SEPARATOR_CHAR) {
+	    pos = i;
+	    break;
+	}
+
+    if(pos >= 0 && transducer[pos+1] == '@')
 	ret_value = 1;
-    if(template_name != NULL)
-	free(template_name);
 
     return ret_value;
 }
@@ -232,7 +227,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 				annot_end = j;
 			    }
 			}
-			char *temp_annot = (char*) malloc(sizeof(char) * (division - 1));
+			char *temp_annot = (char*) malloc(sizeof(char) * division);
 			for(k = 1; k < division; k++)
 			    temp_annot[k - 1] = (char) lines[num_lines][k];
 			temp_annot[k - 1] = '\0';
