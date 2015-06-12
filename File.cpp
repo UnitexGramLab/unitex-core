@@ -127,6 +127,19 @@ for (int i=l+1;filename[i]!='\0';i++) {
 result[k]='\0';
 }
 
+/**
+ * Takes a file name and return pointer without its path
+ */
+const char* filename_without_path(const char* filename) {
+int l=(int)strlen(filename)-1;
+while (l>=0 && filename[l]!='/' && filename[l]!='\\') {
+   l--;
+}
+if (l<0) {
+   return filename;
+}
+return filename + l + 1;
+}
 
 /**
  * Takes a file name and copies it without its path and extension, if

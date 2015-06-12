@@ -58,6 +58,7 @@ void remove_extension(char*);
 void remove_extension(const char*,char*);
 void get_path(const char*,char*);
 void get_snt_path(const char*,char*);
+const char* filename_without_path(const char* filename);
 void remove_path(const char*,char*);
 void remove_path_and_extension(const char*,char*);
 void replace_path_separator_by_colon(char*);
