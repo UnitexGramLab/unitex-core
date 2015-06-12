@@ -264,12 +264,14 @@ static inline OutputVarList* alloc_OutputVarList_from_recycle_reserve(OutputVari
  * same function than alloc_OutputVarList_from_recycle_reserve, but used when restore a previous existing list
  *  we are sure alloc_OutputVarList_from_recycle_reserve will no do malloc
  */
+/*
 static inline OutputVarList* alloc_OutputVarList_from_recycle_reserve_no_alloc_needed(OutputVariables*v)
 {
 	OutputVarList* item = v->recycle_allocation;
 	v->recycle_allocation = item->next;
 	return item;
 }
+*/
 
 
 /**
