@@ -196,9 +196,6 @@ v->variable_index=variable_index;
 
 v->nb_var = (size_t)nb_var;
 //v->variables_=(Ustring**)malloc(nb_var*sizeof(Ustring*));
-if (v->variables_==NULL) {
-   fatal_alloc_error("new_OutputVariables");
-}
 /*
 for (unsigned int i=0;i<nb_var;i++) {
    v->variables_[i]=new_Ustring();
@@ -620,7 +617,8 @@ while (*list != NULL) {
  * same function than add_output_variable_to_pending_list, but as we restore a previous existing list
  * we are sure alloc_OutputVarList_from_recycle_reserve will no do malloc
  */
-static inline void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list,Ustring* s) {
+// currently unused
+/*static inline */void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list,Ustring* s) {
 while (*list != NULL) {
 	if ((*list)->var==s) {
 		/* The pointer is already in the list */
