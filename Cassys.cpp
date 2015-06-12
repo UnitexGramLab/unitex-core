@@ -392,7 +392,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                     annot = -1;
                     if(line[x] == '}' && start > 0) {
                     int matches = 0;
-                    unichar *annot_ = (unichar*) malloc(sizeof(unichar) * (x - annot_start));
+                    unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
                     int z = 0;
                     for(int y = annot_start; y < x; y++)
                         if(line[y] != '\\') {
@@ -416,7 +416,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                     }
                     if(matches == 0) {
                         unichar *entity = NULL;
-                        entity = (unichar*) malloc(sizeof(unichar) * (end - start));
+                        entity = (unichar*) malloc(sizeof(unichar) * ((end - start)+1));
                         z = 0;
                         for(int y = start; y < end; y++)
                         if(line[y] != '\\')
@@ -424,7 +424,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                         entity[z] = '\0';
                         int entity_len = z + 1;
                         if(entity_whole == NULL) {
-                        entity_whole = (unichar*) malloc(sizeof(unichar) * entity_len);
+                        entity_whole = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
                         u_strcpy(entity_whole,entity);
                         }
                         else {
@@ -446,7 +446,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                 if(entity_whole != NULL) {
                 int entity_len = u_strlen(entity_whole);
                 if(infos[k].entity_count == 0) {
-                    infos[k].entities = (unichar*) malloc(sizeof(unichar) * entity_len);
+                    infos[k].entities = (unichar*) malloc(sizeof(unichar) * (entity_len)+1);
                     u_strcpy(infos[k].entities,entity_whole);
                     infos[k].entity_count++;
                     *updates = *updates + 1;
