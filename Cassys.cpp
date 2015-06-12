@@ -190,6 +190,16 @@ void free_grf_info(grfInfo *infos, int num) {
     for (int i = 0;i < num;i++) {
         free(infos[i].entity_format);
         free(infos[i].annotation);
+		if (infos[i].entities!=NULL) free(infos[i].entities);
+
+		if (infos[i].ignore) {
+			unichar** walk = infos[i].ignore;
+			while ((*walk) != NULL) {
+				free(*walk);
+				walk++;
+			}
+			free(infos[i].ignore);
+		}
 
         if (infos[i].accept) {
             unichar** walk = infos[i].accept;
@@ -226,6 +236,9 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
             }
             else if (num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
                 infos = (grfInfo*)realloc(infos, (num_info + 1) * sizeof(grfInfo));
+				infos[num_info].accept = NULL;
+				infos[num_info].ignore = NULL;
+				infos[num_info].annotation = NULL;
                 infos[num_info].entity_format = (unichar*)malloc(sizeof(unichar) * (num_char + 2));
                 infos[num_info].entity_format[0] = '"';
                 infos[num_info].entity_format[1] = '%';
@@ -283,10 +296,11 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                                     break;
                                 }
                                 ignore_token = u_strtok_r(NULL, DELIMITER, &saveptr);
-                                infos[i].ignore = (unichar**)realloc(infos[i].ignore, sizeof(unichar*) * (ignore_cnt + 1));
+                                infos[i].ignore = (unichar**)realloc(infos[i].ignore, sizeof(unichar*) * (ignore_cnt + 2));
                                 infos[i].ignore[ignore_cnt] = (unichar*)malloc(sizeof(unichar) * (u_strlen(ignore) + 1));
                                 u_strcpy(infos[i].ignore[ignore_cnt], ignore);
                                 ignore_cnt++;
+								infos[i].ignore[ignore_cnt] = NULL;
                             }
                             if (is_accept && infos[i].ignore == NULL) {
                                 int accept_cnt = 0;
@@ -373,6 +387,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                 if(line[x] == '{') {
                     start = x+1;
                     if (x > 0) {
+                    if (prev_char!=NULL) free(prev_char);
                     prev_char = (unichar*) malloc(sizeof(unichar) * 2);
                     prev_char[0] = line[x - 1];
                     if(line[x - 1] == '\\')
