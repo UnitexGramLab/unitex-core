@@ -159,10 +159,11 @@ unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec
 
     if(grf_file != NULL) {
     while(u_fgets_dynamic_buffer(&line, &size_buffer_line, grf_file) != EOF) {
-        grf_lines = (unichar**) realloc(grf_lines, (num_lines+1) * sizeof(unichar*));
+        grf_lines = (unichar**) realloc(grf_lines, (num_lines+2) * sizeof(unichar*));
         grf_lines[num_lines] = (unichar*) malloc(sizeof(unichar) * (u_strlen(line) + 1));
         u_strcpy(grf_lines[num_lines],line);
         num_lines++;
+		grf_lines[num_lines] = NULL;
     }
     if(line != NULL)
         free(line);
@@ -172,25 +173,33 @@ unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec
     return grf_lines;
 }
 
-/*
 
-struct grfInfo {
-int entity_loc;
-int annotation_loc;
-unichar *entity_format;
-unichar **ignore;
-int ignore_count;
-unichar **accept;
-int accept_count;
-unichar *annotation;
-unichar *entities;
-int entity_count;
-};*/
+void free_file_in_memory(unichar** grf_lines)
+{
+	if (grf_lines == NULL) return;
+	unichar** walk = grf_lines;
+	while ((*walk) != NULL) {
+		free(*walk);
+		walk++;
+	}
+	free(grf_lines);
+}
+
+
 void free_grf_info(grfInfo *infos, int num) {
 	for (int i = 0;i < num;i++) {
 		free(infos[i].entity_format);
 		free(infos[i].annotation);
-		free(infos[i].accept);
+		
+		if (infos[i].accept) {
+			unichar** walk = infos[i].accept;
+			while ((*walk) != NULL) {
+				free(*walk);
+				walk++;
+			}
+			free(infos[i].accept);
+		}
+		
 	}
 
 	free(infos);
@@ -280,8 +289,9 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 int prev = 0;
                 for(k = 0; k < division; k++) {
                     if(k > 0 && temp_annot[k] == '+' && temp_annot[k - 1] != '\\') {
-                    infos[i].accept = (unichar**) realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 1));
+                    infos[i].accept = (unichar**) realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 2));
                     infos[i].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
+					infos[i].accept[accept_cnt+1] = NULL;
                     n = 0;
                     for(j = prev; j < k; j++)
                         if(temp_annot[j] != '\\') {
@@ -292,8 +302,9 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                     accept_cnt++;
                     }
                 }
-                infos[i].accept = (unichar**) realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 1));
+                infos[i].accept = (unichar**) realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 2));
                 infos[i].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
+				infos[i].accept[accept_cnt + 1] = NULL;
                 n = 0;
                 for(j = prev; j < k; j++)
                     if(temp_annot[j] != '\\') {
@@ -465,12 +476,10 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
 
 static void print_entity_param(U_FILE* out, unichar* format, const unichar*param)
 {
-    int len_format = (int)u_strlen(format);
-    int pos_insert_string = -1;
+    int len_format = (int)u_strlen(format);    
     int i;
     for (i = 0; (i + 1) < len_format; i++) {
-        if (((*(format + i)) == '%') && ((*(format + i + 1)) == 'S')) {
-            pos_insert_string = i;
+        if (((*(format + i)) == '%') && ((*(format + i + 1)) == 'S')) {            
             break;
         }
     }
@@ -485,6 +494,8 @@ static void print_entity_param(U_FILE* out, unichar* format, const unichar*param
     u_fprintf(out, "%S", param);
     u_fprintf(out, "%S", format+2);
 }
+
+
 
 
 int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unichar **lines, int total_lines, unichar *start, int start_loc, int num_entities, int num_info, grfInfo *infos, int mode) {
@@ -1024,6 +1035,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                     }
                     update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
                 }
+				free_file_in_memory(grf_lines);
 				free_grf_info(grf_infos, num_annots);
             }
 
