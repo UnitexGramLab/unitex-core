@@ -172,6 +172,30 @@ unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec
     return grf_lines;
 }
 
+/*
+
+struct grfInfo {
+int entity_loc;
+int annotation_loc;
+unichar *entity_format;
+unichar **ignore;
+int ignore_count;
+unichar **accept;
+int accept_count;
+unichar *annotation;
+unichar *entities;
+int entity_count;
+};*/
+void free_grf_info(grfInfo *infos, int num) {
+	for (int i = 0;i < num;i++) {
+		free(infos[i].entity_format);
+		free(infos[i].annotation);
+		free(infos[i].accept);
+	}
+
+	free(infos);
+}
+
 grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc, unichar **start_line, int **locations) {
     DISCARD_UNUSED_PARAMETER(locations)
     int start = -1;
@@ -186,7 +210,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
         }
         else if(num_lines == start + 2) {
         *loc = num_lines;
-        *start_line = (unichar*) malloc(sizeof(unichar) * (num_char + 1));
+        *start_line = (unichar*) malloc(sizeof(unichar) * (num_char + 2));
         u_strcpy(*start_line,lines[num_lines]);
         }
         else if(num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
@@ -200,13 +224,13 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
         infos[num_info].entity_count = 0;
         infos[num_info].entities = NULL;
         int spaces = 0;
-        for(size_t i = 2; i < num_char; i++) {
+        for(size_t i = 2; i <= num_char; i++) {
             infos[num_info].entity_format[i + 1] = (unichar) lines[num_lines][i];
             if(spaces == 4 && lines[num_lines][i] > 47 && lines[num_lines][i] < 58) { //is digit
-            infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
+                infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
             }
             if(lines[num_lines][i] == ' ')
-            spaces++;
+                spaces++;
         }
         num_info++;
         }
@@ -284,6 +308,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 //if(ignore_token != NULL)
                 //free(ignore_token);
             }
+			//free(temp_annot);
             infos[i].ignore_count = ignore_cnt;
             infos[i].annotation = (unichar*) malloc(sizeof(unichar) * (annot_end - division));
 
@@ -304,7 +329,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
     unichar **entity_string = NULL;
     entity_string = (unichar**) malloc(sizeof(unichar*) * num);
     for(int i = 0; i < num; i++)
-    entity_string[i] = NULL;
+        entity_string[i] = NULL;
     U_FILE *dico = u_fopen(vec, token_list, U_READ);
     if(dico != NULL && infos != NULL) {
     int * num_entity = (int*)malloc(sizeof(int)*(num+1));
@@ -990,7 +1015,8 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
 
                 if (num_annots > 0) {
-                    extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+					unichar**entity_string = extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+					free(entity_string);
                     if (update_tmp_graph(orig_grf, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
                         if (num_entities > 0)
                             launch_grf2fst2_in_Cassys(orig_grf, alphabet, vec, concord_args);
@@ -998,6 +1024,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                     }
                     update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
                 }
+				free_grf_info(grf_infos, num_annots);
             }
 
             if (is_template_grf != 1 || entity > 0) {
