@@ -1007,6 +1007,8 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 snt_text_files->tokens_txt, vec, tokenize_args);
 
             int entity = 0;
+			char* updated_grf_file_name = NULL;
+			char* updated_fst2_file_name = NULL;
             if (is_template_grf) {
                 int *entity_loc = NULL;
                 int num_annots = 0;
@@ -1023,16 +1025,30 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                 unichar **grf_lines = load_file_in_memory(orig_grf, vec, &total_lines);
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
-
+				
                 if (num_annots > 0) {
                     unichar**entity_string = extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
                     free(entity_string);
-                    if (update_tmp_graph(orig_grf, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
-                        if (num_entities > 0)
-                            launch_grf2fst2_in_Cassys(orig_grf, alphabet, vec, concord_args);
-                        entity = num_entities;
+
+					updated_grf_file_name = create_updated_graph_filename(text,
+							in_place ? 0 : transducer_number,
+							in_place ? 0 : iteration,
+							filename_without_path(template_name_without_extension), ".grf");
+
+                    if (update_tmp_graph(updated_grf_file_name, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
+						if (num_entities > 0) {
+							launch_grf2fst2_in_Cassys(updated_grf_file_name, alphabet, vec, concord_args);
+
+							updated_fst2_file_name = create_updated_graph_filename(text,
+								in_place ? 0 : transducer_number,
+								in_place ? 0 : iteration,
+								filename_without_path(template_name_without_extension), ".fst2");
+							
+							entity = num_entities;
+						}
+                        
                     }
-                    update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
+                    //update_tmp_graph(orig_grf, vec, grf_lines, total_lines, NULL, -1, -1, -1, NULL, 0);
                 }
                 free_file_in_memory(grf_lines);
                 free_grf_info(grf_infos, num_annots);
@@ -1044,8 +1060,18 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                 u_printf("Applying transducer %s (numbered %d)\n",
                     current_transducer->transducer_file_name, transducer_number);
+				char* backup_transducer_filename = NULL;
+
+				if (updated_fst2_file_name != NULL) {
+					backup_transducer_filename = current_transducer->transducer_file_name;
+					current_transducer->transducer_file_name = updated_fst2_file_name;
+				}
+
                 launch_locate_in_Cassys(labeled_text_name, current_transducer,
                     alphabet, negation_operator, vec, morpho_dic, locate_args);
+
+				if (backup_transducer_filename != NULL)
+					current_transducer->transducer_file_name = backup_transducer_filename;
 
                 // add protection character in lexical tags when needed
                 //u_printf("labeled_text_name = %s *******\n", labeled_text_name);
@@ -1066,6 +1092,19 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                 sprintf(last_labeled_text_name, "%s", labeled_text_name);
             }
+
+
+			if (updated_grf_file_name) {
+				if (must_do_temp_cleanup)
+					af_remove(updated_grf_file_name);
+				free(updated_grf_file_name);
+			}
+
+			if (updated_fst2_file_name) {
+				if (must_do_temp_cleanup)
+					af_remove(updated_fst2_file_name);
+				free(updated_fst2_file_name);
+			}
 
 
             if (count_concordance(snt_text_files->concord_ind, vec) == 0) {
