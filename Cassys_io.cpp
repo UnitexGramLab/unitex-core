@@ -278,7 +278,40 @@ char* create_labeled_files_and_directory(
 }
 
 
+char* create_updated_graph_filename(const char *text,
+	int next_transducer_label,
+	int next_iteration,
+	const char* graph_name,
+	const char* ext)
+{
+	char name[FILENAME_MAX];
 
+
+	char path[FILENAME_MAX];
+	get_path(text, path);
+
+	char canonical_text_name[FILENAME_MAX];
+	remove_path_and_extension(text, canonical_text_name);
+
+	char working[FILENAME_MAX];
+	sprintf(working, "%s%s%s%c%s_%d_%d_snt%c", path, canonical_text_name,
+		CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR, 
+		canonical_text_name, next_transducer_label, next_iteration, PATH_SEPARATOR_CHAR);
+
+
+
+	strcat(working, graph_name);
+	strcat(working, ext);
+
+
+	char* full_graph_name = (char*)malloc(sizeof(char)*(strlen(working) + 1));
+	if (graph_name == NULL) {
+		fatal_alloc_error("create_updated_graph_filename");
+		exit(1);
+	}
+	strcpy(full_graph_name, working);
+	return full_graph_name;
+}
 
 void protect_text(const char *fileName, const VersatileEncodingConfig* vec){
 

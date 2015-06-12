@@ -120,6 +120,14 @@ char* create_labeled_files_and_directory(
 int copy_directory_snt_content(const char *dest, const char *src, int contain_mandatory_files);
 
 
+
+
+char* create_updated_graph_filename(const char *text,
+	int next_transducer_label,
+	int next_iteration,
+	const char* graph_name,
+	const char* ext);
+
 /**
  * copy the content of the file with stream f and return this content.
  */
