@@ -42,7 +42,7 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
 void compute_token_length(int*,struct text_tokens*);
 
 void create_modified_text_file(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
-		char*,int,int*,vector_int*,const char*);
+		char*,int,int*, vector_uima_offset*,const char*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
@@ -1242,15 +1242,15 @@ while (matches!=NULL) {
 		 * relative to the original input file, before any Unitex operation */
 		int first_token=matches->m.start_pos_in_token;
 		int last_token=matches->m.end_pos_in_token;
-		start_pos_char=options->uima_offsets->tab[first_token*2];
-		end_pos_char=options->uima_offsets->tab[last_token*2+1];
+		start_pos_char=uima_offset_token_start_pos(options->uima_offsets,first_token);
+		end_pos_char=uima_offset_token_end_pos(options->uima_offsets,last_token);
 	}
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,concord_ind_match_number);
 	const unichar* closest_tag=NULL;
 	if (options->PRLG_data!=NULL) {
 		int first_token=matches->m.start_pos_in_token;
-		int offset_in_original_file=options->uima_offsets->tab[first_token*2];
+		int offset_in_original_file=uima_offset_token_start_pos(options->uima_offsets,first_token);
 		closest_tag=get_closest_PRLG_tag(options->PRLG_data,offset_in_original_file);
 	}
 	u_sprintf(positions_from_eos,"%d\t%d\t%d",current_sentence,start_from_eos,end_from_eos);
@@ -1414,7 +1414,7 @@ return pos_in_enter_pos;
  */
 void create_modified_text_file(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
                                struct text_tokens* tokens,char* output_name,
-                               int n_enter_char,int* enter_pos,vector_int* uima_offsets,const char* offset_file_name) {
+                               int n_enter_char,int* enter_pos, vector_uima_offset* uima_offsets,const char* offset_file_name) {
 U_FILE* output=u_fopen(vec,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
@@ -1467,8 +1467,8 @@ while (matches!=NULL) {
 		int zz=matches->m.start_pos_in_token-current_global_position_in_token;
 		size_t pos_token_original_before_match=buffer->skip+zz;
 		unichar* first_token=tokens->token[buffer->int_buffer_[pos_token_original_before_match]];
-		if ((uima_offsets != NULL) && ((matches->m.start_pos_in_token*2) < uima_offsets->nbelems)) {
-			pos_in_original = uima_offsets->tab[matches->m.start_pos_in_token*2];
+		if ((uima_offsets != NULL) && (matches->m.start_pos_in_token < uima_offset_tokens_count(uima_offsets))) {
+			pos_in_original = uima_offset_token_start_pos(uima_offsets,matches->m.start_pos_in_token);
 		}
 		for (int i=current_global_position_in_char;i<matches->m.start_pos_in_char;i++) {
 		   u_fprintf(output,"%C",first_token[i]);
@@ -1484,8 +1484,8 @@ while (matches!=NULL) {
 		size_t pos_token_original_after_match = buffer->skip + zz;
 		unichar* last_token=tokens->token[buffer->int_buffer_[pos_token_original_after_match]];
 		int pos_end_in_original=0;
-		if ((uima_offsets != NULL) && ((matches->m.end_pos_in_token * 2) < uima_offsets->nbelems)) {
-			pos_end_in_original = uima_offsets->tab[matches->m.end_pos_in_token * 2];
+		if ((uima_offsets != NULL) && (matches->m.end_pos_in_token < uima_offset_tokens_count(uima_offsets))) {
+			pos_end_in_original = uima_offset_token_start_pos(uima_offsets,matches->m.end_pos_in_token);
 			pos_end_in_original += matches->m.end_pos_in_char;
 		}
 
@@ -1579,7 +1579,7 @@ if (opt->fontname!=NULL) free(opt->fontname);
 if (opt->script!=NULL) free(opt->script);
 if (opt->sort_alphabet!=NULL) free(opt->sort_alphabet);
 free_vector_int(opt->snt_offsets);
-free_vector_int(opt->uima_offsets);
+free_uima_offsets(opt->uima_offsets);
 free_PRLG(opt->PRLG_data);
 free(opt);
 }

@@ -714,7 +714,7 @@ vector_int_add(snt_offsets,shift_after);
  * Reads the start and end positions of each token stored in the file
  * produced by Tokenize's --output_offsets option.
  */
-vector_int* load_uima_offsets(const VersatileEncodingConfig* vec,const char* name) {
+vector_uima_offset* load_uima_offsets(const VersatileEncodingConfig* vec,const char* name) {
 U_FILE* f;
 f=u_fopen(vec,name,U_READ);
 if (f==NULL) {
@@ -730,7 +730,7 @@ while (EOF!=readline(line,f)) {
 }
 free_Ustring(line);
 u_fclose(f);
-return v;
+return (vector_uima_offset*)v;
 }
 
 

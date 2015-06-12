@@ -137,10 +137,25 @@ void add_snt_offsets(vector_int*,int,int,int);
 void save_offsets(U_FILE* f, const vector_offset* offsets);
 int save_offsets(const VersatileEncodingConfig* vec, const char* filename, const vector_offset* offsets);
 
-vector_int* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
+// these function prevent direct access to vector_int componenent of vector_uima_offset
+typedef vector_int vector_uima_offset;
+vector_uima_offset* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
 
+inline int uima_offset_token_start_pos(const vector_uima_offset* v,int token) {
+	return ((const vector_int*) v)->tab[token * 2];
+}
 
+inline int uima_offset_token_end_pos(const vector_uima_offset* v, int token) {
+	return ((const vector_int*) v)->tab[(token * 2)+1];
+}
 
+inline int uima_offset_tokens_count(const vector_uima_offset* v) {
+	return (((const vector_int*)v)->nbelems) / 2;
+}
+
+inline void free_uima_offsets(vector_uima_offset* v) {
+	free_vector_int((vector_int*)v);
+}
 typedef struct {
 	int position_to_translate; // in
 	int sort_order; // in

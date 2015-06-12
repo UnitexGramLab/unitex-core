@@ -341,10 +341,24 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
              }
              break;
    case 'i': options->result_mode=INDEX_; break;
-   case 'u': options->result_mode=UIMA_; if (vars->optarg!=NULL) strcpy(offset_file,vars->optarg);
-   	   	   	   options->original_file_offsets=1; break;
-   case 'e': options->result_mode=XML_; if (vars->optarg!=NULL) strcpy(offset_file,vars->optarg); break;
-   case 'w': options->result_mode=XML_WITH_HEADER_; if (vars->optarg!=NULL) strcpy(offset_file,vars->optarg); break;
+   case 'u': options->result_mode=UIMA_;
+             if (vars->optarg!=NULL) {
+                strcpy(offset_file,vars->optarg);
+             }
+             options->original_file_offsets=1;
+             break;
+   case 'e': options->result_mode=XML_;
+             if (vars->optarg!=NULL) {
+                strcpy(offset_file, vars->optarg);
+                options->original_file_offsets=1;
+             }
+             break;
+   case 'w': options->result_mode=XML_WITH_HEADER_; 
+             if (vars->optarg!=NULL) {
+                strcpy(offset_file, vars->optarg);
+                options->original_file_offsets = 1;
+             }
+             break;
    case '@': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_offsets argument\n");
              }
