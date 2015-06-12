@@ -284,9 +284,6 @@ char* create_updated_graph_filename(const char *text,
 	const char* graph_name,
 	const char* ext)
 {
-	char name[FILENAME_MAX];
-
-
 	char path[FILENAME_MAX];
 	get_path(text, path);
 

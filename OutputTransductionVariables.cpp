@@ -160,7 +160,7 @@ static inline void copy_string(unichar* dest, const unichar* src, unsigned int l
 
 
 static inline void add_output_variable_to_pending_list(OutputVariables*v, OutputVarList* *list,Ustring* s);
-static inline void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list, Ustring* s);
+//static inline void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list, Ustring* s);
 static inline void remove_output_variable_from_pending_list(OutputVariables*v, OutputVarList* *list,Ustring* s);
 
 
@@ -618,10 +618,11 @@ while (*list != NULL) {
  * we are sure alloc_OutputVarList_from_recycle_reserve will no do malloc
  */
 // currently unused
-/*static inline */void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list,Ustring* s) {
+/*
+static inline void add_output_variable_to_pending_list_no_alloc_needed(OutputVariables*v, OutputVarList* *list,Ustring* s) {
 while (*list != NULL) {
 	if ((*list)->var==s) {
-		/* The pointer is already in the list */
+		// The pointer is already in the list
 		return;
 	}
 	list=&((*list)->next);
@@ -630,6 +631,7 @@ while (*list != NULL) {
 (*list)->var=s;
 (*list)->next=NULL;
 }
+*/
 
 
 /**
