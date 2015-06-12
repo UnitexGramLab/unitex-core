@@ -37,6 +37,7 @@
 
 #include "Cassys_lexical_tags.h"
 #include "Cassys_concord.h"
+#include "UnusedParameter.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -124,20 +125,20 @@ u_printf(usage_Cassys);
 struct grfInfo {
     int entity_loc;
     int annotation_loc;
-    char *entity_format;
-    char **ignore;
+    unichar *entity_format;
+    unichar **ignore;
     int ignore_count;
-    char **accept;
+    unichar **accept;
     int accept_count;
     unichar *annotation;
     unichar *entities;
     int entity_count;
 };
 
-int is_template_graph(char *transducer) {
+int is_template_graph(const char *transducer) {
     int ret_value = 0;
     int pos = -1;
-    for(int i = strlen(transducer) - 1; i >= 0; i--)
+    for(int i = (int)strlen(transducer) - 1; i >= 0; i--)
 	if(transducer[i] == PATH_SEPARATOR_CHAR) {
 	    pos = i;
 	    break;
@@ -149,7 +150,7 @@ int is_template_graph(char *transducer) {
     return ret_value;
 }
 
-unichar** load_file_in_memory(char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
+unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
     int num_lines = 0;
     unichar **grf_lines = NULL;
     unichar *line = NULL;
@@ -172,6 +173,7 @@ unichar** load_file_in_memory(char* tmp_file, VersatileEncodingConfig *vec, int 
 }
 
 grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc, unichar **start_line, int **locations) {
+	DISCARD_UNUSED_PARAMETER(locations)
     int start = -1;
     int num_info = 0;
     struct grfInfo *infos = NULL;
@@ -189,7 +191,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 	    }
 	    else if(num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
 		infos = (grfInfo*) realloc(infos, (num_info + 1) * sizeof(grfInfo));
-		infos[num_info].entity_format = (char*) malloc(sizeof(char) * (num_char + 2));
+		infos[num_info].entity_format = (unichar*) malloc(sizeof(unichar) * (num_char + 2));
 		infos[num_info].entity_format[0] = '"';
 		infos[num_info].entity_format[1] = '%';
 		infos[num_info].entity_format[2] = 'S';
@@ -199,7 +201,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 		infos[num_info].entities = NULL;
 		int spaces = 0;
 		for(size_t i = 2; i < num_char; i++) {
-		    infos[num_info].entity_format[i + 1] = (char) lines[num_lines][i];
+		    infos[num_info].entity_format[i + 1] = (unichar) lines[num_lines][i];
 		    if(spaces == 4 && lines[num_lines][i] > 47 && lines[num_lines][i] < 58) { //is digit
 			infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
 		    }
@@ -227,24 +229,26 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 				annot_end = j;
 			    }
 			}
-			char *temp_annot = (char*) malloc(sizeof(char) * division);
+			unichar *temp_annot = (unichar*) malloc(sizeof(unichar) * division);
 			for(k = 1; k < division; k++)
-			    temp_annot[k - 1] = (char) lines[num_lines][k];
+			    temp_annot[k - 1] = lines[num_lines][k];
 			temp_annot[k - 1] = '\0';
 
-			if(strcmp(temp_annot,"<E>") != 0) {
-			    char *ignore_token = strtok(temp_annot,"~");
-			    char *ignore = NULL;
+			if(u_strcmp(temp_annot,"<E>") != 0) {
+				unichar *saveptr = NULL;
+				const unichar DELIMITER[] = { '~', 0 };
+				unichar *ignore_token = u_strtok_r(temp_annot, DELIMITER, &saveptr);
+			    unichar *ignore = NULL;
 			    while(ignore_token) {
 				ignore = ignore_token;
-				if(strcmp(ignore,temp_annot) == 0) {
+				if(u_strcmp(ignore,temp_annot) == 0) {
 				    is_accept = 1;
 				    break;
 				}
-				ignore_token = strtok(NULL,"~");
-				infos[i].ignore = (char**) realloc(infos[i].ignore, sizeof(char*) * (ignore_cnt + 1));
-				infos[i].ignore[ignore_cnt] =  (char*) malloc(sizeof(char) * (strlen(ignore) + 1));
-				strcpy(infos[i].ignore[ignore_cnt],ignore);
+				ignore_token = u_strtok_r(NULL, DELIMITER, &saveptr);
+				infos[i].ignore = (unichar**) realloc(infos[i].ignore, sizeof(unichar*) * (ignore_cnt + 1));
+				infos[i].ignore[ignore_cnt] =  (unichar*) malloc(sizeof(unichar) * (u_strlen(ignore) + 1));
+				u_strcpy(infos[i].ignore[ignore_cnt],ignore);
 				ignore_cnt++;
 			    }
 			    if(is_accept && infos[i].ignore == NULL) {
@@ -252,8 +256,8 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 				int prev = 0;
 				for(k = 0; k < division; k++) {
 				    if(k > 0 && temp_annot[k] == '+' && temp_annot[k - 1] != '\\') {
-					infos[i].accept = (char**) realloc(infos[i].accept, sizeof(char*) * (accept_cnt + 1));
-					infos[i].accept[accept_cnt] = (char*)malloc(sizeof(char) * (k - prev + 1));
+					infos[i].accept = (unichar**) realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 1));
+					infos[i].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
 					n = 0;
 					for(j = prev; j < k; j++)
 					    if(temp_annot[j] != '\\') {
@@ -264,8 +268,8 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 					accept_cnt++;
 				    }
 				}
-				infos[i].accept = (char**) realloc(infos[i].accept, sizeof(char*) * (accept_cnt + 1));
-				infos[i].accept[accept_cnt] = (char*)malloc(sizeof(char) * (k - prev + 1));
+				infos[i].accept = (unichar**) realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 1));
+				infos[i].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
 				n = 0;
 				for(j = prev; j < k; j++)
 				    if(temp_annot[j] != '\\') {
@@ -277,8 +281,8 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 			    }
 			    if(ignore != NULL)
 				free(ignore);
-			    if(ignore_token != NULL)
-				free(ignore_token);
+			    //if(ignore_token != NULL)
+				//free(ignore_token);
 			}
 			infos[i].ignore_count = ignore_cnt;
 			infos[i].annotation = (unichar*) malloc(sizeof(unichar) * (annot_end - division));
@@ -296,7 +300,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
     return infos;
 }
 
-unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int num, int *updates, grfInfo *infos) {
+unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec, int num, int *updates, grfInfo *infos) {
     unichar **entity_string = NULL;
     entity_string = (unichar**) malloc(sizeof(unichar*) * num);
     for(int i = 0; i < num; i++)
@@ -322,8 +326,10 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
 			}
 			if(infos[k].annotation[i] == '\0') {
 			    int line_len = u_strlen(line);
-			    int start,end,annot_start;
-			    int annot = -1;
+				int start = 0;
+				int end = 0;
+				int annot_start = 0;
+				int annot = -1;
 			    unichar *prev_char = NULL;
 			    unichar *entity_whole = NULL;
 			    for(int x = 0; x < line_len; x++) {
@@ -349,16 +355,16 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
 				    annot = -1;
 				    if(line[x] == '}' && start > 0) {
 					int matches = 0;
-					char *annot = (char*) malloc(sizeof(char) * (x - annot_start));
+					unichar *annot_ = (unichar*) malloc(sizeof(unichar) * (x - annot_start));
 					int z = 0;
 					for(int y = annot_start; y < x; y++)
 					    if(line[y] != '\\') {
-						annot[z++] = (char) line[y];
+						annot_[z++] = (unichar) line[y];
 					    }
-					annot[z] = '\0';
+					annot_[z] = '\0';
 					if(infos[k].ignore != NULL) {
 					    for(int m = 0; m < infos[k].ignore_count; m++)
-						if(strncmp(annot,infos[k].ignore[m],strlen(infos[k].ignore[m])) == 0) {
+						if(u_strncmp(annot_,infos[k].ignore[m],u_strlen(infos[k].ignore[m])) == 0) {
 						    matches = 1;
 						    break;
 						}
@@ -366,7 +372,7 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
 					if(infos[k].accept != NULL) {
 					    matches = 1;
 					    for(int m = 0; m < infos[k].accept_count; m++)
-						if(strncmp(annot,infos[k].accept[m],strlen(infos[k].accept[m])) == 0) {
+						if(u_strncmp(annot_,infos[k].accept[m],u_strlen(infos[k].accept[m])) == 0) {
 						    matches = 0;
 						    break;
 						}
@@ -394,8 +400,8 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
 					    if(entity != NULL)
 						free(entity);
 					}
-					if(annot != NULL)
-					    free(annot);
+					if(annot_ != NULL)
+					    free(annot_);
 					start = -1;
 				    }
 				}
@@ -431,7 +437,32 @@ unichar **extract_entities(char *token_list, VersatileEncodingConfig *vec, int n
     return entity_string;
 }
 
-int update_tmp_graph(char *transducer, VersatileEncodingConfig *vec, unichar **lines, int total_lines, unichar *start, int start_loc, int num_entities, int num_info, grfInfo *infos, int mode) {
+
+static void print_entity_param(U_FILE* out, unichar* format, const unichar*param)
+{
+	int len_format = (int)u_strlen(format);
+	int pos_insert_string = -1;
+	int i;
+	for (i = 0; (i + 1) < len_format; i++) {
+		if (((*(format + i)) == '%') && ((*(format + i + 1)) == 'S')) {
+			pos_insert_string = i;
+			break;
+		}
+	}
+	if ((i + 1) == len_format) {
+		u_fprintf(out, "%S", format);
+		return;
+	}
+
+	*(format + i) = '\0';
+	u_fprintf(out, "%S", format);
+	*(format + i) = '%';
+	u_fprintf(out, "%S", param);
+	u_fprintf(out, "%S", format+2);
+}
+
+
+int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unichar **lines, int total_lines, unichar *start, int start_loc, int num_entities, int num_info, grfInfo *infos, int mode) {
     int status = 0;
     U_FILE *graph_file = u_fopen(vec,transducer,U_WRITE);
     if (graph_file !=NULL) {
@@ -460,7 +491,7 @@ int update_tmp_graph(char *transducer, VersatileEncodingConfig *vec, unichar **l
 		    int loc = num_lines - start_loc;
 		    for(int i = 0; i < num_info; i++) {
 			if(infos[i].entity_loc == loc) {
-			    u_fprintf(graph_file,infos[i].entity_format, infos[i].entities);
+				print_entity_param(graph_file,infos[i].entity_format, infos[i].entities);
 			    u_fprintf(graph_file,"\n");
 			}
 		    }

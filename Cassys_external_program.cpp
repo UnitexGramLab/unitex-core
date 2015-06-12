@@ -243,6 +243,10 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
 	add_argument(invoker,alphabet_argument);
 
+	for (int arg = 0; arg<((additional_args == NULL) ? 0 : (additional_args->nbelems)); arg++) {
+		add_argument(invoker, (const char*)additional_args->tab[arg]);
+	}
+
 	char *line_command = build_command_line_alloc(invoker);
 	u_printf("%s\n",line_command);
 

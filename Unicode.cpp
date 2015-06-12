@@ -2209,7 +2209,8 @@ int BuildEncodedOutForUnicharString(Encoding encoding,const unichar *pc,Buffer_O
     return 1;
 }
 
-int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
+
+static int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
 {
     unichar tab[2];
     tab[0]=w;
@@ -2217,7 +2218,7 @@ int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOu
     return BuildEncodedOutForUnicharString(encoding,&tab[0],pBufOut,convLFtoCRLF,f);
 }
 
-int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
+static int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
 {
     while ((*pc)!=0)
     {
@@ -3560,6 +3561,18 @@ if ((a!=NULL) && (b!=NULL)) {
 
 
 /**
+ * unicode version of strncmp
+ */
+int u_strncmp(const unichar* s1, const unichar* s2, size_t n)
+{
+	while (n--)
+		if ((*(s1++)) != (*(s2++)))
+		return (int)(*(const unichar*)(s1 - 1) - *(const unichar*)(s2 - 1));
+	return 0;
+}
+
+
+/**
  * u_strcpy_optional_buffer (and u_strcat_optional_buffer - free_string_optional_buffer)
  *  are used to use a small unichar array in stack to store string, by copy then append
  *  if the small buffer in stack is smaller, we allocate a buffer in heap
@@ -3859,6 +3872,62 @@ if ((a!=NULL) && (b!=NULL)) {
   }
 }
 
+
+/**
+ * Unicode version of strtok_r.
+ */
+unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr) {
+	int i = 0;
+	int len = (int)u_strlen(delim);
+
+
+	/* if the original string has nothing left */
+	if (!str && !(*saveptr))
+		return NULL;
+
+	/* initialize the sp during the first call */
+	if (str && !(*saveptr))
+		(*saveptr) = str;
+
+	/* find the start of the substring, skip delim */
+	unichar* p_start = (*saveptr);
+	for (;;) {
+		for (i = 0; i < len; i++) {
+			if (*p_start == delim[i]) {
+				p_start++;
+				break;
+			}
+		}
+
+		if (i == len) {
+			(*saveptr) = p_start;
+			break;
+		}
+	}
+
+	/* return NULL if nothing left */
+	if (*(*saveptr) == '\0') {
+		(*saveptr) = NULL;
+		return (*saveptr);
+	}
+
+	/* find the end of the substring, and
+	replace the delimiter with null */
+	while (*(*saveptr) != '\0') {
+		for (i = 0; i < len; i++) {
+			if (*(*saveptr) == delim[i]) {
+				*(*saveptr) = '\0';
+				break;
+			}
+		}
+
+		(*saveptr)++;
+		if (i < len)
+			break;
+	}
+
+	return p_start;
+}
 
 
 /**

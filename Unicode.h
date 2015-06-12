@@ -280,8 +280,10 @@ int is_str_mono_unichar_string(const unichar*, unichar);
 #define is_str_mono_unichar_string(str,c) (((str)!=NULL) && (*(str)==(c)) && (*((str)+1)==0))
 int u_strcmp(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
+int u_strncmp(const unichar*, const unichar*,size_t num);
 int u_strcmp_ignore_case(const unichar*, const unichar*);
 int u_strcmp_ignore_case(const unichar*, const char*);
+unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr);
 int u_equal(const unichar*, const unichar*);
 int u_equal_ignore_case(const unichar*, const unichar*);
 unichar* u_strdup(const unichar*);
