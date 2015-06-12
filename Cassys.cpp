@@ -461,6 +461,8 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                 }
                 free(entity_whole);
                 }
+				if (prev_char != NULL)
+					free(prev_char);
             }
             }
         }
