@@ -446,7 +446,7 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                 if(entity_whole != NULL) {
                 int entity_len = u_strlen(entity_whole);
                 if(infos[k].entity_count == 0) {
-                    infos[k].entities = (unichar*) malloc(sizeof(unichar) * (entity_len)+1);
+                    infos[k].entities = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
                     u_strcpy(infos[k].entities,entity_whole);
                     infos[k].entity_count++;
                     *updates = *updates + 1;
