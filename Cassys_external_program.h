@@ -69,6 +69,8 @@ int launch_locate_in_Cassys(const char *text_name,
 int launch_concord_in_Cassys(const char *text_name,
                             const char* index_file,
                             const char *alphabet_name,
+                            const char *uima_name,
+                            const char *output_offsets_name,
                             VersatileEncodingConfig*,
                             vector_ptr* additional_args);
 

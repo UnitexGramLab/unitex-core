@@ -271,7 +271,10 @@ unichar *unprotect_lexical_tags(unichar *u){
 }
 
 
-cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const char *tokens_text_name, const char *text_cod_name, struct text_tokens **tokens, cassys_tokens_allocation_tool * allocation_tool){
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const char *tokens_text_name, const char *text_cod_name, 
+         struct text_tokens **tokens, const vector_int* uima_offset, cassys_tokens_allocation_tool * allocation_tool) {
+
+	DISCARD_UNUSED_PARAMETER(uima_offset)
 
 	*tokens = load_text_tokens(vec, tokens_text_name);
 

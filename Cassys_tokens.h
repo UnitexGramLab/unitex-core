@@ -28,6 +28,7 @@
 #define CASSYS_TOKENS_H_
 
 #include "List_ustring.h"
+#include "Vector.h"
 #include "Text_tokens.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -110,7 +111,8 @@ void free_cassys_tokens_allocation_tool(cassys_tokens_allocation_tool * allocati
  *
  * Each element of the cassys_tokens_list token field is pointing on a element of tokens.
  */
-cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig*,const char *token_text_name, const char * text_cod_name, struct text_tokens **tokens, cassys_tokens_allocation_tool * allocation_tool);
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig*,const char *token_text_name, const char * text_cod_name,
+         struct text_tokens **tokens, const vector_int* uima_offset, cassys_tokens_allocation_tool * allocation_tool);
 
 cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list, int previous_transducer, int previous_iteration,
 		 int transducer_id, int iteration, const char *alphabet, const VersatileEncodingConfig*, cassys_tokens_allocation_tool * allocation_tool);

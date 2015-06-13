@@ -58,7 +58,7 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 	u_printf("Launch tokenize in Cassys \n");
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
 
-    char tmp[FILENAME_MAX];
+    char tmp[FILENAME_MAX+20];
     {
         tmp[0]=0;
         get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
@@ -76,9 +76,8 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
     }
 
 	// add the alphabet
-	char alphabet_argument[FILENAME_MAX + 11];
-	sprintf(alphabet_argument, "--alphabet=%s", alphabet_name);
-	add_argument(invoker, alphabet_argument);
+	sprintf(tmp, "--alphabet=%s", alphabet_name);
+	add_argument(invoker, tmp);
 
 	// Tokenize word by word
 	add_argument(invoker, "--word_by_word");
@@ -88,9 +87,8 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 
 	// if a token.txt file already exists, use it
 	if(token_txt_name != NULL){
-		char token_argument[FILENAME_MAX + 9];
-		sprintf(token_argument,"--tokens=%s",token_txt_name);
-		add_argument(invoker,token_argument);
+		sprintf(tmp,"--tokens=%s",token_txt_name);
+		add_argument(invoker,tmp);
 	}
 
 
@@ -135,7 +133,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
 
-    char tmp[FILENAME_MAX];
+    char tmp[FILENAME_MAX + 20];
     {
         tmp[0]=0;
         get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
@@ -155,9 +153,8 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
     add_argument(invoker, transducer->transducer_file_name);
 
 	// add the text
-	char text_argument[FILENAME_MAX+7];
-	sprintf(text_argument,"--text=%s",text_name);
-	add_argument(invoker, text_argument);
+	sprintf(tmp,"--text=%s",text_name);
+	add_argument(invoker, tmp);
 
 	// add the merge or replace option
 	switch (transducer ->output_policy) {
@@ -167,9 +164,8 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 	}
 
 	// add the alphabet
-	char alphabet_argument[FILENAME_MAX+11];
-	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
-	add_argument(invoker, alphabet_argument);
+	sprintf(tmp,"--alphabet=%s",alphabet_name);
+	add_argument(invoker, tmp);
 
 	// look for the longest match argument
 	add_argument(invoker, "--longest_matches");
@@ -178,15 +174,13 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 	add_argument(invoker, "--all");
 
 	if(morpho_dic != NULL){
-		char morpho_dic_argument[FILENAME_MAX+20];
-		sprintf(morpho_dic_argument,"--morpho=%s",morpho_dic);
-		add_argument(invoker,morpho_dic_argument);
+		sprintf(tmp,"--morpho=%s",morpho_dic);
+		add_argument(invoker,tmp);
 	}
 
     if ((*negation_operator) != 0) {
-        char negation_operator_argument[0x40];
-        sprintf(negation_operator_argument,"--negation_operator=%s",negation_operator);
-        add_argument(invoker,negation_operator_argument);
+        sprintf(tmp,"--negation_operator=%s",negation_operator);
+        add_argument(invoker,tmp);
     }
 
 
@@ -221,7 +215,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, vector_ptr *additional_args) {
     ProgramInvoker *invoker = new_ProgramInvoker(main_Grf2Fst2, "main_Grf2Fst2");
 
-    char tmp[FILENAME_MAX];
+    char tmp[FILENAME_MAX + 20];
 	{
 	    tmp[0] = 0;
 	    get_reading_encoding_text(tmp, sizeof(tmp) - 1, vec->mask_encoding_compatibility_input);
@@ -239,9 +233,9 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 
 	add_argument(invoker,text_name);
 	add_argument(invoker,"-y");
-	char alphabet_argument[FILENAME_MAX + 11];
-	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
-	add_argument(invoker,alphabet_argument);
+
+	sprintf(tmp,"--alphabet=%s",alphabet_name);
+	add_argument(invoker,tmp);
 
 	for (int arg = 0; arg<((additional_args == NULL) ? 0 : (additional_args->nbelems)); arg++) {
 		add_argument(invoker, (const char*)additional_args->tab[arg]);
@@ -270,6 +264,7 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
  *
  */
 int launch_concord_in_Cassys(const char *text_name, const char *index_file, const char *alphabet_name,
+	const char *uima_name, const char *output_offsets_name,
 	VersatileEncodingConfig* vec,
 	vector_ptr* additional_args){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
@@ -311,7 +306,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 
 	add_argument(invoker,index_file);
 
-    char tmp[FILENAME_MAX];
+    char tmp[FILENAME_MAX + 20];
     {
         tmp[0]=0;
         get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
@@ -328,13 +323,23 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
         }
     }
 
-	char text_argument[FILENAME_MAX+7];
-	sprintf(text_argument,"--merge=%s",text_name);
-	add_argument(invoker,text_argument);
+	if ((uima_name != NULL) && (uima_name[0] != '\0')) {
+		sprintf(tmp, "--uima=%s", uima_name);
+		add_argument(invoker, tmp);
+	}
 
-	char alphabet_argument[FILENAME_MAX+11];
-	sprintf(alphabet_argument,"--alphabet=%s",alphabet_name);
+	sprintf(tmp,"--merge=%s",text_name);
+	add_argument(invoker,tmp);
 
+
+	if ((output_offsets_name != NULL) && (output_offsets_name[0] != '\0')) {
+		sprintf(tmp, "--output_offsets=%s", output_offsets_name);
+		add_argument(invoker, tmp);
+	}
+
+
+	sprintf(tmp,"--alphabet=%s",alphabet_name);
+	add_argument(invoker, tmp);
 
 	for (int arg = 0; arg<((additional_args == NULL) ? 0 : (additional_args->nbelems)); arg++) {
 		add_argument(invoker, (const char*)additional_args->tab[arg]);
