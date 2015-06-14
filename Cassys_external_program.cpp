@@ -35,7 +35,7 @@
 
 namespace unitex {
 
-
+#define SIZE_TMP_BUFFER (FILENAME_MAX + 0x1f)
 
 /**
  * \brief Calls the tokenize program in Cassys
@@ -58,17 +58,22 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 	u_printf("Launch tokenize in Cassys \n");
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
 
-    char tmp[FILENAME_MAX+20];
+	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
+	if (tmp == NULL) {
+		fatal_alloc_error("launch__in_Cassys");
+		exit(1);
+	}
+
     {
         tmp[0]=0;
-        get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
+        get_reading_encoding_text(tmp, SIZE_TMP_BUFFER,vec->mask_encoding_compatibility_input);
         if (tmp[0] != '\0') {
             add_argument(invoker,"-k");
             add_argument(invoker,tmp);
         }
 
         tmp[0]=0;
-        get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
+        get_writing_encoding_text(tmp, SIZE_TMP_BUFFER,vec->encoding_output,vec->bom_output);
         if (tmp[0] != '\0') {
             add_argument(invoker,"-q");
             add_argument(invoker,tmp);
@@ -103,6 +108,7 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
 
+	free(tmp);
 	return result;
 }
 
@@ -133,17 +139,22 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
 
-    char tmp[FILENAME_MAX + 20];
+    char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
+	if (tmp == NULL) {
+		fatal_alloc_error("launch__in_Cassys");
+		exit(1);
+	}
+
     {
         tmp[0]=0;
-        get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
+        get_reading_encoding_text(tmp, SIZE_TMP_BUFFER,vec->mask_encoding_compatibility_input);
         if (tmp[0] != '\0') {
             add_argument(invoker,"-k");
             add_argument(invoker,tmp);
         }
 
         tmp[0]=0;
-        get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
+        get_writing_encoding_text(tmp, SIZE_TMP_BUFFER,vec->encoding_output,vec->bom_output);
         if (tmp[0] != '\0') {
             add_argument(invoker,"-q");
             add_argument(invoker,tmp);
@@ -195,6 +206,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
 
+	free(tmp);
 	return result;
 }
 
@@ -215,16 +227,21 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, vector_ptr *additional_args) {
     ProgramInvoker *invoker = new_ProgramInvoker(main_Grf2Fst2, "main_Grf2Fst2");
 
-    char tmp[FILENAME_MAX + 20];
+	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
+	if (tmp == NULL) {
+		fatal_alloc_error("launch__in_Cassys");
+		exit(1);
+	}
+
 	{
 	    tmp[0] = 0;
-	    get_reading_encoding_text(tmp, sizeof(tmp) - 1, vec->mask_encoding_compatibility_input);
+	    get_reading_encoding_text(tmp, SIZE_TMP_BUFFER, vec->mask_encoding_compatibility_input);
 	    if(tmp[0] != '\0') {
 		add_argument(invoker,"-k");
 		add_argument(invoker,tmp);
 	    }
 	    tmp[0] = 0;
-	    get_writing_encoding_text(tmp, sizeof(tmp) - 1, vec->encoding_output, vec->bom_output);
+	    get_writing_encoding_text(tmp, SIZE_TMP_BUFFER, vec->encoding_output, vec->bom_output);
 	    if(tmp[0] != '\0') {
 		add_argument(invoker,"-q");
 		add_argument(invoker,tmp);
@@ -247,6 +264,7 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 	int result = invoke(invoker);
 	free_ProgramInvoker(invoker);
 	free_command_line_alloc(line_command);
+	free(tmp);
 	return result;
 }
 
@@ -268,6 +286,12 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	VersatileEncodingConfig* vec,
 	vector_ptr* additional_args){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
+
+	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
+	if (tmp == NULL) {
+		fatal_alloc_error("launch__in_Cassys");
+		exit(1);
+	}
 
 	// verify the braces in concordance
 			U_FILE *concord;
@@ -306,17 +330,17 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 
 	add_argument(invoker,index_file);
 
-    char tmp[FILENAME_MAX + 20];
+    
     {
         tmp[0]=0;
-        get_reading_encoding_text(tmp,sizeof(tmp)-1,vec->mask_encoding_compatibility_input);
+        get_reading_encoding_text(tmp, SIZE_TMP_BUFFER,vec->mask_encoding_compatibility_input);
         if (tmp[0] != '\0') {
             add_argument(invoker,"-k");
             add_argument(invoker,tmp);
         }
 
         tmp[0]=0;
-        get_writing_encoding_text(tmp,sizeof(tmp)-1,vec->encoding_output,vec->bom_output);
+        get_writing_encoding_text(tmp, SIZE_TMP_BUFFER,vec->encoding_output,vec->bom_output);
         if (tmp[0] != '\0') {
             add_argument(invoker,"-q");
             add_argument(invoker,tmp);
@@ -354,6 +378,8 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	if (line != NULL) {
 		free(line);
 	}
+
+	free(tmp);
 	return result;
 }
 

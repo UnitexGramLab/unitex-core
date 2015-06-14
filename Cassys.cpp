@@ -136,6 +136,7 @@ struct grfInfo {
     int entity_count;
 };
 
+
 int is_template_graph(const char *transducer) {
     int ret_value = 0;
     int pos = -1;
@@ -150,6 +151,7 @@ int is_template_graph(const char *transducer) {
 
     return ret_value;
 }
+
 
 unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
     int num_lines = 0;
@@ -580,24 +582,49 @@ int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unich
 }
 
 
+typedef struct {
+	char transducer_list_file_name[FILENAME_MAX];
+	char text_file_name[FILENAME_MAX];
+	char alphabet_file_name[FILENAME_MAX];
+	char name_uima_offsets_file[FILENAME_MAX];
+	char transducer_filename_prefix[FILENAME_MAX];
+	char extension_text_name[FILENAME_MAX];
+} Cassys_text_buffer;
+
+typedef struct {
+	char last_labeled_text_name[FILENAME_MAX];
+	char orig_grf[FILENAME_MAX];
+	char template_name_without_extension[FILENAME_MAX];
+	//              char graph_file_name_n[FILENAME_MAX];
+	char result_file_name_XML[FILENAME_MAX];
+	char text_name_without_extension[FILENAME_MAX];
+	char path[FILENAME_MAX];
+	char last_resulting_text_path[FILENAME_MAX];
+	char result_file_name_path_XML[FILENAME_MAX];
+	char result_file_name_path_offset[FILENAME_MAX + 0x20];
+	char result_file_name_raw[FILENAME_MAX];
+	char result_file_name_path_raw[FILENAME_MAX];
+	char graph_file_name[FILENAME_MAX];
+} Cascade_text_buffer;
+
 int main_Cassys(int argc,char* const argv[]) {
     if (argc==1) {
         usage();
         return 0;
     }
 
+	Cassys_text_buffer* textbuf = (Cassys_text_buffer*)malloc(sizeof(Cassys_text_buffer));
+	if (textbuf == NULL) {
+		fatal_alloc_error("main_Cassys");
+		exit(1);
+	}
 
     char* morpho_dic=NULL;
 
-    char transducer_list_file_name[FILENAME_MAX];
     bool has_transducer_list = false;
 
-    char text_file_name[FILENAME_MAX];
     bool has_text_file_name = false;
 
-    char alphabet_file_name[FILENAME_MAX];
-    char name_uima_offsets_file[FILENAME_MAX];
-    char transducer_filename_prefix[FILENAME_MAX];
     bool has_alphabet = false;
     char negation_operator[0x20];
 
@@ -638,8 +665,8 @@ int main_Cassys(int argc,char* const argv[]) {
     int val;
     int index = 1;
     negation_operator[0]='\0';
-    transducer_filename_prefix[0]='\0';
-    name_uima_offsets_file[0] = '\0';
+	textbuf->transducer_filename_prefix[0]='\0';
+	textbuf->name_uima_offsets_file[0] = '\0';
     struct OptVars* vars=new_OptVars();
     while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
             lopts_Cassys, &index, vars))) {
@@ -656,6 +683,7 @@ int main_Cassys(int argc,char* const argv[]) {
                   free_vector_ptr(tokenize_additional_args, free);
                   free_vector_ptr(locate_additional_args, free);
                   free_vector_ptr(concord_additional_args, free);
+				  free(textbuf);
                   return 0;
         case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -672,15 +700,14 @@ int main_Cassys(int argc,char* const argv[]) {
                 fatal_error("Command line error : Empty file name argument\n");
             }
 
-            char extension_text_name[FILENAME_MAX];
-            get_extension(vars -> optarg, extension_text_name);
-            if (strcmp(extension_text_name, ".snt") != 0) {
+            get_extension(vars -> optarg, textbuf->extension_text_name);
+            if (strcmp(textbuf->extension_text_name, ".snt") != 0) {
                 fatal_error(
                         "Command line error : File name argument %s must be a preprocessed snt file\n",
                         vars -> optarg);
             }
 
-            strcpy(text_file_name, vars -> optarg);
+            strcpy(textbuf->text_file_name, vars -> optarg);
             has_text_file_name = true;
 
             break;
@@ -689,7 +716,7 @@ int main_Cassys(int argc,char* const argv[]) {
             if(vars -> optarg[0] == '\0'){
                 fatal_error("Command line error : Empty transducer list argument\n");
             } else {
-                strcpy(transducer_list_file_name, vars -> optarg);
+                strcpy(textbuf->transducer_list_file_name, vars -> optarg);
                 has_transducer_list = true;
             }
             break;
@@ -698,7 +725,7 @@ int main_Cassys(int argc,char* const argv[]) {
             if(vars -> optarg[0] == '\0'){
                 fatal_error("Command line error : Empty transducer directory argument\n");
             } else {
-                strcpy(transducer_filename_prefix, vars -> optarg);
+                strcpy(textbuf->transducer_filename_prefix, vars -> optarg);
                 has_transducer_list = true;
             }
             break;
@@ -723,7 +750,7 @@ int main_Cassys(int argc,char* const argv[]) {
             if (vars -> optarg[0] == '\0') {
                 fatal_error("Command line error : Empty alphabet argument\n");
             } else {
-                strcpy(alphabet_file_name, vars -> optarg);
+                strcpy(textbuf->alphabet_file_name, vars -> optarg);
                 has_alphabet = true;
             }
             break;
@@ -732,7 +759,7 @@ int main_Cassys(int argc,char* const argv[]) {
             if (vars -> optarg[0] == '\0') {
                 fatal_error("Command line error : Empty uima offsets file argument\n");
             } else {
-                strcpy(name_uima_offsets_file, vars -> optarg);
+                strcpy(textbuf->name_uima_offsets_file, vars -> optarg);
                 has_alphabet = true;
             }
             break;
@@ -860,11 +887,11 @@ int main_Cassys(int argc,char* const argv[]) {
     // Load the list of transducers from the file transducer list and stores it in a list
     //struct fifo *transducer_list = load_transducer(transducer_list_file_name);
     if ((transducer_name_and_mode_linked_list_arg == NULL) && has_transducer_list)
-        transducer_name_and_mode_linked_list_arg = load_transducer_list_file(transducer_list_file_name, translate_path_separator_to_native);
-    struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg,transducer_filename_prefix);
+        transducer_name_and_mode_linked_list_arg = load_transducer_list_file(textbuf->transducer_list_file_name, translate_path_separator_to_native);
+    struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg, textbuf->transducer_filename_prefix);
 
-    cascade(text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
-        transducer_list, alphabet_file_name, name_uima_offsets_file, negation_operator,
+   int ret_value = cascade(textbuf->text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
+        transducer_list, textbuf->alphabet_file_name, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
         dump_graph, realign_token_graph_pointer);
@@ -881,7 +908,8 @@ int main_Cassys(int argc,char* const argv[]) {
     free_vector_ptr(tokenize_additional_args, free);
     free_vector_ptr(locate_additional_args, free);
     free_vector_ptr(concord_additional_args, free);
-    return 0;
+	free(textbuf);
+    return ret_value;
 }
 
 
@@ -897,7 +925,13 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
     int dump_graph, int realign_token_graph_pointer) {
 
+	int ret_value = 0;
 
+	Cascade_text_buffer* textbuf = (Cascade_text_buffer*)malloc(sizeof(Cascade_text_buffer));
+	if (textbuf == NULL) {
+		fatal_alloc_error("cascade");
+		exit(1);
+	}
     cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
 
@@ -1001,7 +1035,6 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
     int transducer_number = 1;
     char *labeled_text_name = NULL;
-    char last_labeled_text_name[FILENAME_MAX];
 
     if (in_place != 0){
        labeled_text_name = create_labeled_files_and_directory(text,
@@ -1014,7 +1047,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
          }
          labeled_text_name = create_labeled_files_and_directory(text,
                  0,0,0,0, must_create_directory,0);
-         sprintf(last_labeled_text_name, "%s", labeled_text_name);
+         sprintf(textbuf->last_labeled_text_name, "%s", labeled_text_name);
     }
 
     int previous_transducer_number = 0;
@@ -1053,15 +1086,13 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 unichar *start_node_line = NULL;
                 int start_node_loc = -1;
                 int total_lines = 0;
-                char orig_grf[FILENAME_MAX];
-                char template_name_without_extension[FILENAME_MAX];
                 int num_entities = 0;
                 struct grfInfo *grf_infos = NULL;
 
-                remove_extension(current_transducer->transducer_file_name, template_name_without_extension);
-                sprintf(orig_grf, "%s.grf", template_name_without_extension);
+                remove_extension(current_transducer->transducer_file_name, textbuf->template_name_without_extension);
+                sprintf(textbuf->orig_grf, "%s.grf", textbuf->template_name_without_extension);
 
-                unichar **grf_lines = load_file_in_memory(orig_grf, vec, &total_lines);
+                unichar **grf_lines = load_file_in_memory(textbuf->orig_grf, vec, &total_lines);
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
 
                 if (num_annots > 0) {
@@ -1071,7 +1102,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                     updated_grf_file_name = create_updated_graph_filename(text,
                             in_place ? 0 : transducer_number,
                             in_place ? 0 : iteration,
-                            filename_without_path(template_name_without_extension), ".grf");
+                            filename_without_path(textbuf->template_name_without_extension), ".grf");
 
                     if (update_tmp_graph(updated_grf_file_name, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
                         if (num_entities > 0) {
@@ -1080,7 +1111,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                             updated_fst2_file_name = create_updated_graph_filename(text,
                                 in_place ? 0 : transducer_number,
                                 in_place ? 0 : iteration,
-                                filename_without_path(template_name_without_extension), ".fst2");
+                                filename_without_path(textbuf->template_name_without_extension), ".fst2");
 
                             entity = num_entities;
                         }
@@ -1128,7 +1159,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 previous_transducer_number = transducer_number;
                 previous_iteration = iteration;
 
-                sprintf(last_labeled_text_name, "%s", labeled_text_name);
+                sprintf(textbuf->last_labeled_text_name, "%s", labeled_text_name);
             }
 
 
@@ -1183,50 +1214,41 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
     struct snt_files *snt_files = new_snt_files(text);
 
-    char result_file_name_XML[FILENAME_MAX];
-    char text_name_without_extension[FILENAME_MAX];
-    remove_extension(original_text,text_name_without_extension);
-    sprintf(result_file_name_XML,"%s_csc.txt",text_name_without_extension);
+    remove_extension(original_text, textbuf->text_name_without_extension);
+    sprintf(textbuf->result_file_name_XML,"%s_csc.txt", textbuf->text_name_without_extension);
 
     // make a copy of the last resulting text of the cascade in the file named _csc.txt
     // this result his in XML form
-    char path[FILENAME_MAX];
-    get_path(text,path);
-    char last_resulting_text_path[FILENAME_MAX];
-    char result_file_name_path_XML[FILENAME_MAX];
-    char result_file_name_path_offset[FILENAME_MAX + 0x20];
-    sprintf(last_resulting_text_path,"%s",last_labeled_text_name);
-    sprintf(result_file_name_path_XML,"%s", result_file_name_XML);
-    copy_file(result_file_name_path_XML, last_resulting_text_path);
+    get_path(text, textbuf->path);
+    sprintf(textbuf->last_resulting_text_path,"%s", textbuf->last_labeled_text_name);
+    sprintf(textbuf->result_file_name_path_XML,"%s", textbuf->result_file_name_XML);
+    copy_file(textbuf->result_file_name_path_XML, textbuf->last_resulting_text_path);
 
-    result_file_name_path_offset[0]='\0';
+	textbuf->result_file_name_path_offset[0]='\0';
     if (name_uima_offsets_file && (name_uima_offsets_file[0]!='\0'))
-        sprintf(result_file_name_path_offset, "%s_csc_txt_offsets.txt", text_name_without_extension);
+        sprintf(textbuf->result_file_name_path_offset, "%s_csc_txt_offsets.txt", textbuf->text_name_without_extension);
 
     // create the text file including XMLized concordance
-    launch_concord_in_Cassys(result_file_name_path_XML, snt_files->concord_ind, alphabet, name_uima_offsets_file, result_file_name_path_offset, vec,concord_args);
+    launch_concord_in_Cassys(textbuf->result_file_name_path_XML, snt_files->concord_ind, alphabet, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
 
     // make a copy of the last resulting text of the cascade in the file named _csc.raw
-    char result_file_name_raw[FILENAME_MAX];
-    sprintf(result_file_name_raw,"%s_csc.raw",text_name_without_extension);
-    char result_file_name_path_raw[FILENAME_MAX];
-    sprintf(result_file_name_path_raw,"%s", result_file_name_raw);
-    copy_file(result_file_name_path_raw, last_resulting_text_path);
+    sprintf(textbuf->result_file_name_raw,"%s_csc.raw", textbuf->text_name_without_extension);
+    sprintf(textbuf->result_file_name_path_raw,"%s", textbuf->result_file_name_raw);
+    copy_file(textbuf->result_file_name_path_raw, textbuf->last_resulting_text_path);
 
-    result_file_name_path_offset[0] = '\0';
+	textbuf->result_file_name_path_offset[0] = '\0';
     if (name_uima_offsets_file && (name_uima_offsets_file[0] != '\0'))
-        sprintf(result_file_name_path_offset, "%s_csc_raw_offsets.txt", text_name_without_extension);
+        sprintf(textbuf->result_file_name_path_offset, "%s_csc_raw_offsets.txt", textbuf->text_name_without_extension);
 
     // relaunch the construction of the concord file without XML
     construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
     // relaunch the construction of the text file without XML
-    launch_concord_in_Cassys(result_file_name_path_raw, snt_files->concord_ind, alphabet, name_uima_offsets_file, result_file_name_path_offset, vec,concord_args);
+    launch_concord_in_Cassys(textbuf->result_file_name_path_raw, snt_files->concord_ind, alphabet, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
 
     if (dump_graph)
     {
-        char graph_file_name[FILENAME_MAX];
-        sprintf(graph_file_name, "%s.dot", text_name_without_extension);
-        cassys_tokens_2_graph(tokens_list, graph_file_name, realign_token_graph_pointer);
+        sprintf(textbuf->graph_file_name, "%s.dot", textbuf->text_name_without_extension);
+        cassys_tokens_2_graph(tokens_list, textbuf->graph_file_name, realign_token_graph_pointer);
     }
 
 
@@ -1265,8 +1287,8 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
     if (uima_offsets != NULL)
         free_vector_int(uima_offsets);
-
-    return 0;
+	free(textbuf);
+    return ret_value;
 }
 
 } // namespace unitex
