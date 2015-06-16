@@ -2197,13 +2197,13 @@ no_o_files:
 .libunitex: no_o_files $(OBJS) Test_lib.o
 	$(RM) Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.$(DYLIBEXT)
-	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
+	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex $(OPTIONS) -o ../bin/Test_lib
 
 .libunitexjni: no_o_files $(UNITEX_JNI_OBJS) $(OBJS) Test_lib.o
 	$(RM) Main_*.o
 	$(CC) *.o $(OPTIONS) -shared -o ../bin/libUnitexJni.$(DYLIBEXT)
 	jar cvf ../bin/UnitexJni.jar -C ../UnitexLibAndJni/ fr/umlv/unitex/jni/UnitexJni.class
-	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lUnitexJni -o ../bin/Test_lib
+	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lUnitexJni $(OPTIONS) -o ../bin/Test_lib
 
 .libunitexstatic: $(OBJS)
 	$(RM) Main_*.o

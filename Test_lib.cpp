@@ -59,7 +59,7 @@ SetUnitexBufferMode();
 INSTALLLOGGER pInstallLogger = NULL;
 
 if (argc>3) {
-	int skip_arg = argc;
+	int skip_arg = 0;
 	if ((strcmp(argv[1], "{") == 0) && (strcmp(argv[2], "CreateLog") == 0))
 	{
 		for (int i = 2;i<argc;i++) {
