@@ -70,7 +70,7 @@ u_printf(usage_VersionInfo);
 }
 
 
-const char* optstring_VersionInfo=":hmcrvpjxo:k:q:";
+const char* optstring_VersionInfo=":hmcRrvpjxo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
       {"copyright",no_argument_TS,NULL,'c'},
       {"version",no_argument_TS,NULL,'v'},
@@ -182,7 +182,7 @@ if (argc==1) {
 }
 */
 
-
+int retValue=0;
 const char *output_file = NULL;
 int do_version_only=0;
 int do_revision_only=0;
@@ -198,6 +198,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInf
    switch(val) {
    case 'c': do_copyright_only=1; break;
    case 'r': do_revision_only=1; break;
+   case 'R': retValue = get_unitex_revision(); break;
    case 'v': do_version_only=1; break;
    case 'p': do_platform_info = 1; break;
    case 'm': do_compiler_info = 1; break;
@@ -208,7 +209,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInf
              }
              output_file = vars->optarg;
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free_OptVars(vars); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_VersionInfo[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -280,6 +281,7 @@ else {
 if (!check_regex_lib_in_unitex()) {
     u_sprintf(DisplayText + u_strlen(DisplayText),"Regex Library is not functionnal\n");
     error("Regex Library is not functionnal\n");
+	retValue = 1;
 }
 
 if (do_platform_info) {
@@ -309,6 +311,7 @@ if (output_file!=NULL) {
    if (text==NULL) {
       error("Cannot create text file %s\n",output_file);
       free(DisplayText);
+	  free_OptVars(vars);
       return 1;
    }
    u_fprintf(text,"%S", DisplayText);
@@ -319,7 +322,8 @@ else {
 }
 
 free(DisplayText);
-return 0;
+free_OptVars(vars);
+return retValue;
 }
 
 } // namespace unitex

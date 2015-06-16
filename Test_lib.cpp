@@ -55,10 +55,10 @@ int main(int argc,char *argv[])
 #endif
 {
 SetUnitexBufferMode();
-
+int retValue = 0;
 INSTALLLOGGER pInstallLogger = NULL;
 
-if (argc>3) {
+if (argc>=3) {
 	int skip_arg = 0;
 	if ((strcmp(argv[1], "{") == 0) && (strcmp(argv[2], "CreateLog") == 0))
 	{
@@ -112,14 +112,18 @@ if (argc>1) {
   }
 }
 
-const char* argv_VersionInfo[] = { "UnitexTool", "VersionInfo", "-p", "-m", NULL };
-UnitexTool_public_run(4, (char**)argv_VersionInfo, NULL, NULL);
+const char* argv_VersionInfo[] = { "UnitexTool", "VersionInfo", NULL };
+UnitexTool_public_run(2, (char**)argv_VersionInfo, NULL, NULL);
+
+const char* argv_VersionInfo2[] = { "UnitexTool", "VersionInfo", "-p", "-m","-r", NULL };
+UnitexTool_public_run(5, (char**)argv_VersionInfo2, NULL, NULL);
 
 /* These lines are just here to test if the TRE library was correctly linked. */
 if (CheckRegexLibInUnitex()) {
     puts("Regex Library is functionnal.");
 } else {
     puts("Regex Library is NOT functionnal.");
+	retValue = 1;
 }
 
 
@@ -159,5 +163,5 @@ RemoveUnitexFile(grf);
 if (pInstallLogger != NULL) {
 	RemoveLoggerFromParamFile(pInstallLogger);
 }
-return 0;
+return retValue;
 }
