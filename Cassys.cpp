@@ -48,7 +48,7 @@ namespace unitex {
 
 
 
-const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNnm:s:ir:f:T:L:C:";
+const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNnm:s:ir:f:T:L:C:$:";
 const struct option_TS lopts_Cassys[] = {
         {"text", required_argument_TS, NULL, 't'},
         {"alphabet", required_argument_TS, NULL, 'a'},
@@ -72,6 +72,7 @@ const struct option_TS lopts_Cassys[] = {
         {"locate_argument", required_argument_TS, NULL, 'L' },
         {"concord_argument", required_argument_TS, NULL, 'C' },
         {"uima", required_argument_TS, NULL, 'f' },
+		{"input_offsets",required_argument_TS,NULL,'$'},
         {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -587,6 +588,7 @@ typedef struct {
 	char text_file_name[FILENAME_MAX];
 	char alphabet_file_name[FILENAME_MAX];
 	char name_uima_offsets_file[FILENAME_MAX];
+	char name_input_offsets_file[FILENAME_MAX];
 	char transducer_filename_prefix[FILENAME_MAX];
 	char extension_text_name[FILENAME_MAX];
 } Cassys_text_buffer;
@@ -667,6 +669,7 @@ int main_Cassys(int argc,char* const argv[]) {
     negation_operator[0]='\0';
 	textbuf->transducer_filename_prefix[0]='\0';
 	textbuf->name_uima_offsets_file[0] = '\0';
+	textbuf->name_input_offsets_file[0] = '\0';
     struct OptVars* vars=new_OptVars();
     while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
             lopts_Cassys, &index, vars))) {
@@ -751,6 +754,15 @@ int main_Cassys(int argc,char* const argv[]) {
                 fatal_error("Command line error : Empty alphabet argument\n");
             } else {
                 strcpy(textbuf->alphabet_file_name, vars -> optarg);
+                has_alphabet = true;
+            }
+            break;
+        }
+        case '$':{
+            if (vars -> optarg[0] == '\0') {
+                fatal_error("Command line error : Empty input offsets file argument\n");
+            } else {
+                strcpy(textbuf->name_input_offsets_file, vars -> optarg);
                 has_alphabet = true;
             }
             break;
@@ -891,7 +903,7 @@ int main_Cassys(int argc,char* const argv[]) {
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg, textbuf->transducer_filename_prefix);
 
    int ret_value = cascade(textbuf->text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
-        transducer_list, textbuf->alphabet_file_name, textbuf->name_uima_offsets_file, negation_operator,
+        transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
         dump_graph, realign_token_graph_pointer);
@@ -919,7 +931,8 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  */
 int cascade(const char* original_text, int in_place, int must_create_directory,  int must_do_temp_cleanup, const char* temp_work_dir,
-    fifo* transducer_list, const char *alphabet, const char* name_uima_offsets_file,
+    fifo* transducer_list, const char *alphabet, 
+	const char*name_input_offsets_file, const char* name_uima_offsets_file,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
@@ -1149,7 +1162,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 protect_lexical_tag_in_concord(snt_text_files->concord_ind, current_transducer->output_policy, vec);
                 // generate concordance for this transducer
                 launch_concord_in_Cassys(labeled_text_name,
-                    snt_text_files->concord_ind, alphabet, NULL, NULL, vec, concord_args);
+                    snt_text_files->concord_ind, alphabet, NULL, NULL, NULL, vec, concord_args);
 
                 //
                 add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
@@ -1225,11 +1238,12 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(textbuf->result_file_name_path_XML, textbuf->last_resulting_text_path);
 
 	textbuf->result_file_name_path_offset[0]='\0';
-    if (name_uima_offsets_file && (name_uima_offsets_file[0]!='\0'))
+	if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_txt_offsets.txt", textbuf->text_name_without_extension);
 
     // create the text file including XMLized concordance
-    launch_concord_in_Cassys(textbuf->result_file_name_path_XML, snt_files->concord_ind, alphabet, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
+    launch_concord_in_Cassys(textbuf->result_file_name_path_XML, snt_files->concord_ind, alphabet, 
+		name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
 
     // make a copy of the last resulting text of the cascade in the file named _csc.raw
     sprintf(textbuf->result_file_name_raw,"%s_csc.raw", textbuf->text_name_without_extension);
@@ -1237,13 +1251,14 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(textbuf->result_file_name_path_raw, textbuf->last_resulting_text_path);
 
 	textbuf->result_file_name_path_offset[0] = '\0';
-    if (name_uima_offsets_file && (name_uima_offsets_file[0] != '\0'))
+    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_raw_offsets.txt", textbuf->text_name_without_extension);
 
     // relaunch the construction of the concord file without XML
     construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
     // relaunch the construction of the text file without XML
-    launch_concord_in_Cassys(textbuf->result_file_name_path_raw, snt_files->concord_ind, alphabet, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
+    launch_concord_in_Cassys(textbuf->result_file_name_path_raw, snt_files->concord_ind, alphabet, 
+		name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
 
     if (dump_graph)
     {

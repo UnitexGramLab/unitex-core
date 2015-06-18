@@ -88,13 +88,14 @@ struct conc_opt {
   PRLG* PRLG_data;
   char only_matches;
   char original_file_offsets;
+  char input_offsets[FILENAME_MAX];
   char output_offsets[FILENAME_MAX];
 };
 
 struct conc_opt* new_conc_opt();
 void free_conc_opt(struct conc_opt*);
 
-void create_concordance(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
+int create_concordance(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
                         int,int*,struct conc_opt*);
 
 } // namespace unitex

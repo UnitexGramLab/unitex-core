@@ -91,7 +91,8 @@ const char* usage_Concord =
 		"  --lemmatize: produces a special HTML concordance used by the lemmatization interface\n"
 		"               in the GUI.\n"
 		"  NOTE: both -e and -w options accepts an offset file, as -u does\n"
-		"  --output_offsets=XXX: offset file to be produced. Uses with --uima=XXX --merge=YYY\n"
+		"  --input_offsets=XXX: base offset file to be used. Uses with --merge=YYY\n"
+		"  --output_offsets=XXX: offset file to be produced. Uses with --merge=YYY\n"
 		"\n"
 		"  --PRLG=X,Y: produces a concordance for PRLG corpora where each line is prefixed\n"
 		"              by information extracted with Unxmlize's --PRLG option. X is the\n"
@@ -202,7 +203,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:h@:k:q:";
+const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:h$:@:k:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -236,6 +237,7 @@ const struct option_TS lopts_Concord[]= {
       {"directory",required_argument_TS,NULL,'d'},
       {"PRLG",required_argument_TS,NULL,9},
       {"output_offsets",required_argument_TS,NULL,'@'},
+      {"input_offsets",required_argument_TS,NULL,'$'},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -358,6 +360,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
                 strcpy(offset_file, vars->optarg);
                 options->original_file_offsets = 1;
              }
+             break;
+   case '$': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_offsets argument\n");
+             }
+             strcpy(options->input_offsets,vars->optarg);
              break;
    case '@': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output_offsets argument\n");

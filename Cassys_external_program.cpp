@@ -282,7 +282,7 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
  *
  */
 int launch_concord_in_Cassys(const char *text_name, const char *index_file, const char *alphabet_name,
-	const char *uima_name, const char *output_offsets_name,
+	const char *input_offsets_name, const char *uima_name, const char *output_offsets_name,
 	VersatileEncodingConfig* vec,
 	vector_ptr* additional_args){
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
@@ -355,6 +355,11 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	sprintf(tmp,"--merge=%s",text_name);
 	add_argument(invoker,tmp);
 
+
+	if ((input_offsets_name != NULL) && (input_offsets_name[0] != '\0')) {
+		sprintf(tmp, "--input_offsets=%s", input_offsets_name);
+		add_argument(invoker, tmp);
+	}
 
 	if ((output_offsets_name != NULL) && (output_offsets_name[0] != '\0')) {
 		sprintf(tmp, "--output_offsets=%s", output_offsets_name);

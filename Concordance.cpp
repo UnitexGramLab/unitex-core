@@ -41,8 +41,8 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
-		char*,int,int*, vector_uima_offset*,const char*);
+static void create_modified_text_file(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
+		char*,int,const int*, vector_uima_offset*,const char*, vector_offset* v_offsets);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
@@ -207,7 +207,7 @@ u_fprintf(out,"\t%S",s);
  * This segment
  * 2.5  9
  */
-void create_concordance(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
+int create_concordance(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* options) {
 U_FILE* out;
 U_FILE* f;
@@ -224,10 +224,41 @@ compute_token_length(token_length,tokens);
 if (options->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
+
+	vector_offset* in_offsets = NULL;
+	vector_offset* out_offsets = NULL;
+	U_FILE* f_output_offsets = NULL;
+	if ((options->input_offsets[0] != '\0') && (options->output_offsets[0] != '\0')) {
+
+		in_offsets = load_offsets(vec, options->input_offsets);
+		if (in_offsets == NULL) {
+			fatal_error("Cannot load offset file %s\n", options->input_offsets);
+		}
+
+		out_offsets = new_vector_offset();
+
+
+		/* We deal with offsets only if we have to produce output offsets */
+		f_output_offsets = u_fopen(vec, options->output_offsets, U_WRITE);
+		if (f_output_offsets == NULL) {
+			error("Cannot create offset file %s\n", options->output_offsets);
+			return 1;
+		}
+
+	}
+
 	create_modified_text_file(vec,concordance,text,tokens,
-			options->output,n_enter_char,enter_pos,options->uima_offsets,options->output_offsets);
+			options->output,n_enter_char,enter_pos,options->uima_offsets,
+			(out_offsets != NULL) ? NULL : options->output_offsets, out_offsets);
+
+	if (f_output_offsets != NULL) {
+		process_offsets(in_offsets, out_offsets, f_output_offsets);
+		u_fclose(f_output_offsets);
+	}
 	free(token_length);
-	return;
+	free_vector_offset(in_offsets);
+	free_vector_offset(out_offsets);
+	return 0;
 }
 /* If the expected result is a concordance */
 if (options->result_mode==GLOSSANET_) {
@@ -269,7 +300,7 @@ else f=u_fopen(vec,temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
 	free(token_length);
-	return;
+	return 1;
 }
 /* First, we create a raw text concordance.
  * NOTE: columns may have been reordered according to the sort mode. See the
@@ -281,7 +312,7 @@ N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,
 u_fclose(f);
 free(token_length);
 
-if(options->result_mode==XALIGN_) return;
+if(options->result_mode==XALIGN_) return 0;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (options->sort_mode!=TEXT_ORDER) {
@@ -295,7 +326,7 @@ if (options->sort_mode!=TEXT_ORDER) {
 f=u_fopen(vec,temp_file_name,U_READ);
 if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
-	return;
+	return 1;
 }
 if (options->result_mode==TEXT_ || options->result_mode==INDEX_
       || options->result_mode==XML_ || options->result_mode==XML_WITH_HEADER_
@@ -311,7 +342,7 @@ else {
 if (out==NULL) {
 	error("Cannot write %s\n",options->output);
 	u_fclose(f);
-	return;
+	return 1;
 }
 /* If we have an HTML or a GlossaNet/script concordance, we must write an HTML
  * file header. */
@@ -568,6 +599,7 @@ free_Ustring(PRLG_tag);
 if (options->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
 }
+return 0;
 }
 
 
@@ -1398,7 +1430,7 @@ return pos_in_enter_pos;
  */
 static int move_to_end_of_text_with_writing(ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
 									int current_global_position,U_FILE* output,int* len_written,
-									int n_enter_char,int* enter_pos,int pos_in_enter_pos,
+									int n_enter_char,const int* enter_pos,int pos_in_enter_pos,
 									struct buffer_mapped* buffer) {
 //long int address=current_global_position*sizeof(int);
 //fseek(text,address,SEEK_SET);
@@ -1425,9 +1457,10 @@ return pos_in_enter_pos;
  * the longest is preferred. If 2 matches start and end at the same positions,
  * then the first one is arbitrarily preferred.
  */
-void create_modified_text_file(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
-                               struct text_tokens* tokens,char* output_name,
-                               int n_enter_char,int* enter_pos, vector_uima_offset* uima_offsets,const char* offset_file_name) {
+static void create_modified_text_file(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
+                                      struct text_tokens* tokens,char* output_name,
+                                      int n_enter_char,const int* enter_pos, vector_uima_offset* uima_offsets,
+                                      const char* offset_file_name, vector_offset* v_offsets) {
 U_FILE* output=u_fopen(vec,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
@@ -1438,6 +1471,7 @@ U_FILE* f_offsets=NULL;
 if ((offset_file_name!=NULL) && ((*offset_file_name)!='\0')) {
 	f_offsets=u_fopen(vec, offset_file_name, U_WRITE);
 }
+int do_offset_compute = f_offsets || v_offsets;
 struct match_list* matches;
 struct match_list* matches_tmp;
 int current_global_position_in_token=0;
@@ -1475,12 +1509,11 @@ while (matches!=NULL) {
 		int size_skipped=0;
 
 		int copied_begin_first_token = 0;
-		int copied_end_last_token = 0;
 
 		pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
 													current_global_position_in_token,output,
-													f_offsets ? (&pos_in_output) : NULL,
-													f_offsets ? (&size_skipped) : NULL,
+													do_offset_compute ? (&pos_in_output) : NULL,
+													do_offset_compute ? (&size_skipped) : NULL,
 													n_enter_char,enter_pos,pos_in_enter_pos,
 													buffer,&current_global_position_in_char);
 		int size_copied=pos_in_output-pos_in_output_before;
@@ -1543,24 +1576,16 @@ while (matches!=NULL) {
 		}
 
 		if (f_offsets && (!uima_offsets)) {
-			//int size_replaced_token = 0;
-
-			/*
-			move_in_text_with_writing(int match_start, int match_end, ABSTRACTMAPFILE*, struct text_tokens* tokens,
-				int current_global_position, U_FILE* output, int* len_written,
-				int n_enter_char, int* enter_pos, int pos_in_enter_pos,
-			struct buffer_mapped* buffer, int *pos_int_char) {
-
-
-			for (int replacedtoken = matches->m.start_pos_in_token;replacedtoken < matches->m.end_pos_in_token;replacedtoken++) {
-				size_replaced_token += 0;
-			}*/
-
-			u_fprintf(f_offsets, "%d %d %d %d\n", pos_original_tokenized, pos_original_tokenized + ((size_skipped - copied_begin_first_token) - nb_char_from_last_token) + 0,
+			u_fprintf(f_offsets, "%d %d %d %d\n", pos_original_tokenized, pos_original_tokenized + ((size_skipped - copied_begin_first_token) - nb_char_from_last_token),
 				pos_in_output_before_match, pos_in_output);
-			pos_original_tokenized += ((size_skipped - copied_begin_first_token));
 		}
 
+		if (v_offsets) {
+			vector_offset_add(v_offsets, pos_original_tokenized, pos_original_tokenized + ((size_skipped - copied_begin_first_token) - nb_char_from_last_token),
+				pos_in_output_before_match, pos_in_output);
+		}
+
+		pos_original_tokenized += ((size_skipped - copied_begin_first_token));
 		pos_in_output+=nb_char_from_last_token;
 
 		/* We skip to the next match of the list */
@@ -1572,7 +1597,7 @@ while (matches!=NULL) {
 /* Finally, we don't forget to dump all the text that may remain after the
  * last match. */
 move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,
-								f_offsets ? (&pos_in_output) : NULL,
+								do_offset_compute ? (&pos_in_output) : NULL,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
 free(buffer);
@@ -1613,6 +1638,7 @@ opt->PRLG_data=NULL;
 opt->only_matches=0;
 opt->original_file_offsets=0;
 opt->output_offsets[0]='\0';
+opt->input_offsets[0] = '\0';
 return opt;
 }
 
