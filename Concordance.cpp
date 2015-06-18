@@ -1315,7 +1315,7 @@ return number_of_matches;
  * returns the updated current position in the 'pos_in_enter_pos' array.
  */
 static int fprint_token(U_FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
-				int current_global_position,int n_enter_char,int* enter_pos, int* len_written,
+				int current_global_position,int n_enter_char,const int* enter_pos, int* len_written,
 				int pos_in_enter_pos,struct buffer_mapped* buffer) {
 /* We look for the new line that is closer (but after) to the token to print */
 while (pos_in_enter_pos < n_enter_char) {
@@ -1332,7 +1332,9 @@ while (pos_in_enter_pos < n_enter_char) {
 	else if ((current_global_position+offset_in_buffer) == enter_pos[pos_in_enter_pos]) {
 		/* The token to print is a new line, so we print it and return */
 		pos_in_enter_pos++;
-		u_fputc((unichar)'\n',output);
+		if (output != NULL) {
+			u_fputc((unichar)'\n', output);
+		}
 		if (len_written != NULL) {
 			(*len_written) += 1+1;
 		}
@@ -1341,7 +1343,9 @@ while (pos_in_enter_pos < n_enter_char) {
 }
 /* The token to print is not a new line, so we print it and return */
 const unichar* token_to_write=tokens->token[buffer->int_buffer_[buffer->skip + offset_in_buffer]];
-u_fputs(token_to_write,output);
+if (output != NULL) {
+	u_fputs(token_to_write, output);
+}
 if (len_written != NULL) {
 	(*len_written) += (int)u_strlen(token_to_write);
 }
@@ -1358,8 +1362,8 @@ return pos_in_enter_pos;
  * The function also makes sure that the last token #match_end has been loaded into the buffer.
  */
 static int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
-								int current_global_position,U_FILE* output,int* len_written,
-								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
+								int current_global_position,U_FILE* output,int* len_written,int* len_skipped,
+								int n_enter_char,const int* enter_pos,int pos_in_enter_pos,
 								struct buffer_mapped* buffer,int *pos_int_char) {
 buf_map_int_pseudo_seek(buffer,current_global_position);
 int last_pos_to_be_loaded=match_end+1;
@@ -1374,6 +1378,15 @@ for (int i=0;i<last_pos_to_be_written;i++) {
 	pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
 									n_enter_char,enter_pos,len_written,pos_in_enter_pos,
 									buffer);
+}
+
+
+if (len_skipped != NULL) {
+	for (int i = last_pos_to_be_written;i+0<buffer->size;i++) {
+		pos_in_enter_pos=fprint_token(NULL, tokens, i, current_global_position,
+			n_enter_char, enter_pos, len_skipped, pos_in_enter_pos,
+			buffer);
+	}
 }
 return pos_in_enter_pos;
 }
@@ -1422,7 +1435,7 @@ if (output==NULL) {
 	fatal_error("Cannot write file %s\n",output_name);
 }
 U_FILE* f_offsets=NULL;
-if ((uima_offsets!=NULL) && (offset_file_name!=NULL) && ((*offset_file_name)!='\0')) {
+if ((offset_file_name!=NULL) && ((*offset_file_name)!='\0')) {
 	f_offsets=u_fopen(vec, offset_file_name, U_WRITE);
 }
 struct match_list* matches;
@@ -1443,6 +1456,7 @@ int pos_in_original=0;
 /* We load the match list */
 matches=load_match_list(concordance,NULL,NULL);
 int pos_in_enter_pos=0;
+int pos_original_tokenized=0;
 u_printf("Merging outputs with text...\n");
 while (matches!=NULL) {
 	while (matches!=NULL &&
@@ -1457,11 +1471,20 @@ while (matches!=NULL) {
 	}
 	if (matches!=NULL) {
 		/* There, we are sure that we have a valid match to process */
+		int pos_in_output_before=pos_in_output;
+		int size_skipped=0;
+
+		int copied_begin_first_token = 0;
+		int copied_end_last_token = 0;
+
 		pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
 													current_global_position_in_token,output,
 													f_offsets ? (&pos_in_output) : NULL,
+													f_offsets ? (&size_skipped) : NULL,
 													n_enter_char,enter_pos,pos_in_enter_pos,
 													buffer,&current_global_position_in_char);
+		int size_copied=pos_in_output-pos_in_output_before;
+		pos_original_tokenized+=size_copied;
 		/* Now, we are sure that the buffer contains all we want */
 		/* If the match doesn't start at the beginning of the token, we add the prefix */
 		int zz=matches->m.start_pos_in_token-current_global_position_in_token;
@@ -1474,6 +1497,8 @@ while (matches!=NULL) {
 		   u_fprintf(output,"%C",first_token[i]);
 		   pos_in_output++;
 		   pos_in_original++;
+		   pos_original_tokenized++;
+		   copied_begin_first_token++;
 		}
 		int pos_in_output_before_match=pos_in_output;
 		if (matches->output!=NULL) {
@@ -1489,9 +1514,6 @@ while (matches!=NULL) {
 			pos_end_in_original += matches->m.end_pos_in_char;
 		}
 
-		if (f_offsets) {
-			u_fprintf(f_offsets,"%d %d %d %d\n", pos_in_original, pos_end_in_original + 1, pos_in_output_before_match, pos_in_output);
-		}
 
 		if (last_token[matches->m.end_pos_in_char+1]=='\0') {
 		   /* If we have completely consumed the last token of the match */
@@ -1514,6 +1536,31 @@ while (matches!=NULL) {
 		    * will work fine */
 		   current_global_position_in_token++;
 		}
+
+
+		if (f_offsets && uima_offsets) {
+			u_fprintf(f_offsets, "%d %d %d %d\n", pos_in_original, pos_end_in_original + 1, pos_in_output_before_match, pos_in_output);
+		}
+
+		if (f_offsets && (!uima_offsets)) {
+			//int size_replaced_token = 0;
+
+			/*
+			move_in_text_with_writing(int match_start, int match_end, ABSTRACTMAPFILE*, struct text_tokens* tokens,
+				int current_global_position, U_FILE* output, int* len_written,
+				int n_enter_char, int* enter_pos, int pos_in_enter_pos,
+			struct buffer_mapped* buffer, int *pos_int_char) {
+
+
+			for (int replacedtoken = matches->m.start_pos_in_token;replacedtoken < matches->m.end_pos_in_token;replacedtoken++) {
+				size_replaced_token += 0;
+			}*/
+
+			u_fprintf(f_offsets, "%d %d %d %d\n", pos_original_tokenized, pos_original_tokenized + ((size_skipped - copied_begin_first_token) - nb_char_from_last_token) + 0,
+				pos_in_output_before_match, pos_in_output);
+			pos_original_tokenized += ((size_skipped - copied_begin_first_token));
+		}
+
 		pos_in_output+=nb_char_from_last_token;
 
 		/* We skip to the next match of the list */
