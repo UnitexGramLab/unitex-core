@@ -912,7 +912,7 @@ EXTRACT      = Extract
 EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o Copyright.o LocatePattern.o LocateTrace.o \
                Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionStack.o \
                OptimizedFst2.o TransductionVariables.o \
-               ParsingInfo.o CompoundWordTree.o List_int.o Concordance.o \
+               ParsingInfo.o CompoundWordTree.o List_int.o Concordance.o Offsets.o \
                DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o AbstractDelaLoad.o AbstractFst2Load.o \
                Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o \
                MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o \
