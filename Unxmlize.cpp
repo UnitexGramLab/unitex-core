@@ -38,19 +38,20 @@
 namespace unitex {
 
 const char* usage_Unxmlize =
-         "Usage: Unxmlize <file>\n"
-         "\n"
-         "  <file>: an unicode .xml or .html file to be processed\n"
-         "\n"
-         "OPTIONS:\n"
-         "  -o TXT/--output=TXT: output file. By default, foo.xml => foo.txt\n"
+		 "Usage: Unxmlize <file>\n"
+		 "\n"
+		 "  <file>: an unicode .xml or .html file to be processed\n"
+		 "\n"
+		 "OPTIONS:\n"
+		 "  -o TXT/--output=TXT: output file. By default, foo.xml => foo.txt\n"
+		 "  --input_offsets=XXX: base offset file to be used\n"
 		 "  --output_offsets=XXX: specifies the offset file to be produced\n"
 		 "  --PRLG=XXX: extracts to file XXX special information used in the\n"
 		 "              PRLG project on ancient Greek (requires --output_offsets)\n"
 		 "\n"
 		 "  -t/--html: consider the file as html file (disregard extension)\n"
-         "  -x/--xml: consider the file as xml file (disregard extension)\n"
-         "  -l/--tolerate: try tolerate somes markup langage malformation\n"
+		 "  -x/--xml: consider the file as xml file (disregard extension)\n"
+		 "  -l/--tolerate: try tolerate somes markup langage malformation\n"
 		 "\n"
 		 "  --comments=IGNORE: every comment is removed (default)\n"
 		 "  --comments=SPACE: every comment is replaced by a single space\n"
@@ -60,9 +61,9 @@ const char* usage_Unxmlize =
 		 "\n"
 		 "  --normal_tags=IGNORE: every other tag is removed (default for .xml)\n"
 		 "  --normal_tags=SPACE: every other tag is replaced by a single space(default for .html)\n"
-         "  -h/--help: this help\n"
-         "\n"
-         "Removes all xml tags from the given file to produce a text file that\n"
+		 "  -h/--help: this help\n"
+		 "\n"
+		 "Removes all xml tags from the given file to produce a text file that\n"
 		 "can be processed by Unitex.\n";
 
 
@@ -72,17 +73,20 @@ u_printf(usage_Unxmlize);
 }
 
 
-const char* optstring_Unxmlize=":o:h:k:q:txl";
+const char* optstring_Unxmlize=":o:h:k:q:txlp:c:s:n:@:$:";
 const struct option_TS lopts_Unxmlize[]={
    {"output", required_argument_TS, NULL, 'o'},
-   {"output_offsets",required_argument_TS,NULL,1},
-   {"PRLG",required_argument_TS,NULL,2},
+   {"input_offsets",required_argument_TS,NULL,'$'},
+   {"output_offsets",required_argument_TS,NULL,'@'},
+   {"PRLG",required_argument_TS,NULL,'p'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
-   {"comments",required_argument_TS,NULL,10},
-   {"scripts",required_argument_TS,NULL,11},
-   {"normal_tags",required_argument_TS,NULL,12},
+   {"comments",required_argument_TS,NULL,'c'},
+   {"scripts",required_argument_TS,NULL,'s'},
+   {"normal_tags",required_argument_TS,NULL,'n'},
    {"tolerate", no_argument_TS, NULL, 'l'},
+   {"html", no_argument_TS, NULL, 't'},
+   {"xml", no_argument_TS, NULL, 'x'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -95,7 +99,8 @@ if (argc==1) {
 }
 
 char output[FILENAME_MAX]="";
-char output_offsets[FILENAME_MAX]="";
+char input_offsets[FILENAME_MAX]="";
+char output_offsets[FILENAME_MAX] = "";
 char output_PRLG[FILENAME_MAX]="";
 char comments=-1;
 char scripts=-1;
@@ -114,17 +119,22 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
              }
              strcpy(output,vars->optarg);
              break;
-   case 1: if (vars->optarg[0]=='\0') {
+   case '$': if (vars->optarg[0]=='\0') {
+                   fatal_error("You must specify a non empty input offset file name\n");
+                }
+                strcpy(input_offsets,vars->optarg);
+                break;
+   case '@': if (vars->optarg[0]=='\0') {
                    fatal_error("You must specify a non empty offset file name\n");
                 }
                 strcpy(output_offsets,vars->optarg);
                 break;
-   case 2: if (vars->optarg[0]=='\0') {
+   case 'p': if (vars->optarg[0]=='\0') {
                    fatal_error("You must specify a non empty PRLG file name\n");
                 }
                 strcpy(output_PRLG,vars->optarg);
                 break;
-   case 10: {
+   case 'c': {
 	   if (!strcmp(vars->optarg,"IGNORE")) {
 		   comments=UNXMLIZE_IGNORE;
 	   } else if (!strcmp(vars->optarg,"SPACE")) {
@@ -134,7 +144,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
 	   }
 	   break;
    }
-   case 11: {
+   case 's': {
 	   if (!strcmp(vars->optarg,"IGNORE")) {
 		   scripts=UNXMLIZE_IGNORE;
 	   } else if (!strcmp(vars->optarg,"SPACE")) {
@@ -144,7 +154,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&ind
 	   }
 	   break;
    }
-   case 12: {
+   case 'n': {
 	   if (!strcmp(vars->optarg,"IGNORE")) {
 		   normal_tags=UNXMLIZE_IGNORE;
 	   } else if (!strcmp(vars->optarg,"SPACE")) {
@@ -184,6 +194,7 @@ U_FILE* f_input;
 U_FILE* f_output;
 U_FILE* f_offsets=NULL;
 vector_offset* offsets=NULL;
+vector_offset* v_input_offsets = NULL;
 UnxmlizeOpts opts;
 if (output[0]=='\0') {
     remove_extension(argv[vars->optind],output);
@@ -234,6 +245,9 @@ if (output_offsets[0]!='\0') {
 	   return 1;
 	}
 	offsets=new_vector_offset();
+	if (input_offsets[0] != '\0') {
+		v_input_offsets = load_offsets(&vec, input_offsets);
+	}
 }
 unichar* PRLG_ptrs[10]={0,0,0,0,0,0,0,0,0,0};
 unichar** PRLG=NULL;
@@ -259,6 +273,7 @@ if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malform
 		af_remove(output_offsets);
 	}
 	free_vector_offset(offsets);
+	free_vector_offset(v_input_offsets);
 	free_OptVars(vars);
 
 	for (int i=0;i<10;i++) {
@@ -277,13 +292,14 @@ for (int i=0;i<10;i++) {
 }
 
 if (offsets!=NULL) {
-	process_offsets(NULL,offsets,f_offsets);
+	process_offsets(v_input_offsets,offsets,f_offsets);
 }
 u_fclose(f_input);
 u_fclose(f_output);
 u_fclose(f_offsets);
 u_fclose(f_PRLG);
 free_vector_offset(offsets);
+free_vector_offset(v_input_offsets);
 free_OptVars(vars);
 u_printf("\nDone.\n");
 return 0;
