@@ -151,15 +151,15 @@ U_FILE* f_output_offsets=NULL;
 
 if (output_offsets[0]!='\0') {
 	/* We deal with offsets only if we have to produce output offsets */
+	if (input_offsets[0]!='\0') {
+		v_input_offsets=load_offsets(&vec,input_offsets);
+	}
 	f_output_offsets=u_fopen(&vec, output_offsets, U_WRITE);
 	if (f_output_offsets==NULL) {
 		error("Cannot create offset file %s\n",output_offsets);
 		return 1;
 	}
 	v_output_offsets=new_vector_offset();
-	if (input_offsets[0]!='\0') {
-		v_input_offsets=load_offsets(&vec,input_offsets);
-	}
 }
 char tmp_file[FILENAME_MAX];
 get_extension(argv[vars->optind],tmp_file);

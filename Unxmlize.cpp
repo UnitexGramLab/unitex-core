@@ -237,6 +237,9 @@ if (f_output==NULL) {
 }
 
 if (output_offsets[0]!='\0') {
+	if (input_offsets[0] != '\0') {
+		v_input_offsets = load_offsets(&vec, input_offsets);
+	}
 	f_offsets=u_fopen(&vec,output_offsets,U_WRITE);
 	if (f_offsets==NULL) {
 	   error("Cannot create offset file %s\n",output_offsets);
@@ -245,9 +248,6 @@ if (output_offsets[0]!='\0') {
 	   return 1;
 	}
 	offsets=new_vector_offset();
-	if (input_offsets[0] != '\0') {
-		v_input_offsets = load_offsets(&vec, input_offsets);
-	}
 }
 unichar* PRLG_ptrs[10]={0,0,0,0,0,0,0,0,0,0};
 unichar** PRLG=NULL;

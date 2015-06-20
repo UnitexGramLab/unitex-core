@@ -158,10 +158,6 @@ if (p->text_file==NULL) {
    fatal_error("You must specify the text file\n");
 }
 if (out_offsets[0]!='\0') {
-	p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
-	if (p->f_out_offsets==NULL) {
-		fatal_error("Cannot create file %s\n",out_offsets);
-	}
 	/* We deal with offsets only if the program is expected to produce some */
 	if (in_offsets[0]!='\0') {
 		p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
@@ -172,6 +168,10 @@ if (out_offsets[0]!='\0') {
 		/* If there is no input offset file, we create an empty offset vector
 		 * in order to avoid testing whether the vector is NULL or not */
 		p->v_in_offsets=new_vector_offset(1);
+	}
+	p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
+	if (p->f_out_offsets==NULL) {
+		fatal_error("Cannot create file %s\n",out_offsets);
 	}
 }
 
