@@ -90,6 +90,7 @@ const char* usage_Cassys =
         "-l TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
+        "--input_offsets=XXX: base offset file to be used (optional)\n"
         "-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
         "-i/--in_place mean uses the same csc/snt directories for each transducer\n"
         "-p X/--working_dir=X: uses directory X for intermediate working file\n"

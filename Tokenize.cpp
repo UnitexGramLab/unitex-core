@@ -93,7 +93,7 @@ const char* usage_Tokenize =
          "                             creating a new one from scratch;\n"
          "Offset options:\n"
          "  --input_offsets=XXX: base offset file to be used\n"
-         "  --output_offsets=XXX: offset file to be produced\n"
+         "  --output_offsets=XXX: offset file to be produced (at \"uima\" format)\n"
          "\n"
          "  -h/--help: this help\n"
          "\n"
