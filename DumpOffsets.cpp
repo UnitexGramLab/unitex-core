@@ -65,6 +65,7 @@ const char* usage_DumpOffsets =
          "  -n X/--new=X: name of new file to read\n"
          "  -p X/--output=X: name of output dump file to write\n"
          "  -f/--full: dump common text additionaly\n"
+         "  -d/--denorm: denormalize the whole text\n"
          "  -q/--quiet: display no message\n"
          "  -c/--no_escape_sequence: don't escape text sequence\n"
          "  -h/--help: this help\n"
@@ -133,7 +134,7 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hfumvVtTs:S:o:n:p:k:q:";
+const char* optstring_DumpOffsets=":hfumdvVtTs:S:o:n:p:k:q:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
@@ -145,6 +146,7 @@ const struct option_TS lopts_DumpOffsets[]={
    {"old_size",required_argument_TS,NULL,'s'},
    {"new_size",required_argument_TS,NULL,'S'},
    {"full",no_argument_TS,NULL,'f'},
+   {"denorm",no_argument_TS,NULL,'d'},
    {"quiet",no_argument_TS,NULL,'u'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
@@ -211,7 +213,7 @@ static void read_text_file(const VersatileEncodingConfig* cfg, const char*filena
 }
 
 
-static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, int end, int escape)
+static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, int end, int escape, int quotes)
 {
     if (end < start)
     {
@@ -227,12 +229,14 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
     else
     if (end == start)
     {
-        u_fprintf(f, "empty sequence\n");
+        if(quotes)
+            u_fprintf(f, "empty sequence\n");
         return 0;
     }
     else
     {
-        u_fprintf(f, "'");
+        if(quotes)
+            u_fprintf(f, "'");
         for (int i = start; i < end; i++) {
             unichar c = *(text + i);
             if (escape) {
@@ -253,11 +257,54 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
                 u_fputc(c, f);
             }
         }
-        u_fprintf(f, "'\n");
+        if(quotes)
+            u_fprintf(f, "'\n");
     }
     return 0;
 }
 
+static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end)
+{
+    if(old_end < old_start || new_end < new_start || old_end > old_textsize || new_end > new_textsize)
+        return 1;
+    else if(old_end == old_start || new_start == new_end)
+        return 0;
+    int i = old_start;
+    int j = new_start;
+    unichar old_c = *(old_text + i);
+    unichar new_c = *(new_text + j);
+    while(i<old_end && j<new_end ) {
+         
+        while(!(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end) {
+            i++;
+            old_c = *(old_text + i);
+        }
+        
+        while(!(new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j<new_end) {
+            u_fputc(new_c, f);
+            j++;
+            new_c = *(new_text + j);
+        }
+        
+        while((new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j<new_end) {
+            j++;
+            new_c = *(new_text + j);
+        }
+        
+        while((old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end) {
+            u_fputc(old_c, f);
+            i++;
+            old_c = *(old_text + i);
+        }
+    }
+    while(j<new_end) {
+        u_fputc(new_c, f);
+        j++;
+        new_c = *(new_text + j);
+    }
+    
+    return 0;
+}
 
 
 static int CompareCommon(U_FILE* f,
@@ -320,7 +367,7 @@ static void load_offset_translation(const VersatileEncodingConfig* vec, const ch
 
 int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename, const char* new_filename,
     const char*offset_file_name, const char* output,
-    int full, int quiet, int escape)
+    int full, int quiet, int escape,int quotes)
 {
     unichar* old_text = NULL;
     int old_read_size = 0;
@@ -352,17 +399,17 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
         if (full) {
             u_fprintf(fout, "===========================================\n\n");
             u_fprintf(fout, "Common zone:\n\n");
-            DumpSequence(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start, escape);
-            DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape);
+            DumpSequence(fout, old_text, old_read_size, prevOffset.old_end, curOffset.old_start, escape, quotes);
+            DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape, quotes);
         }
         if ((i > 0) || (full)) {
             u_fprintf(fout, "-------------------------------------------\n\n");
         }
         u_fprintf(fout, "%8d: %d.%d -> %d.%d\n", i, curOffset.old_start, curOffset.old_end, curOffset.new_start, curOffset.new_end);
-        if (DumpSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, escape)) {
+        if (DumpSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, escape, quotes)) {
             coherency = 0;
         }
-        if (DumpSequence(fout, new_text, new_read_size, curOffset.new_start, curOffset.new_end, escape)) {
+        if (DumpSequence(fout, new_text, new_read_size, curOffset.new_start, curOffset.new_end, escape, quotes)) {
             coherency = 0;
         }
 
@@ -376,8 +423,8 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
             if ((full) && ((curOffset.old_end != old_read_size) || (curOffset.new_end != new_read_size))) {
                 u_fprintf(fout, "===========================================\n\n");
                 u_fprintf(fout, "Last Common zone:\n\n");
-                DumpSequence(fout, old_text, old_read_size, curOffset.old_end, old_read_size, escape);
-                DumpSequence(fout, new_text, new_read_size, curOffset.new_end, new_read_size, escape);
+                DumpSequence(fout, old_text, old_read_size, curOffset.old_end, old_read_size, escape, quotes);
+                DumpSequence(fout, new_text, new_read_size, curOffset.new_end, new_read_size, escape, quotes);
             }
         }
     }
@@ -393,8 +440,8 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
         if ((full) && ((0 != old_read_size) || (0 != new_read_size))) {
             u_fprintf(fout, "===========================================\n\n");
             u_fprintf(fout, "Last Common zone:\n\n");
-            DumpSequence(fout, old_text, old_read_size, 0, old_read_size, escape);
-            DumpSequence(fout, new_text, new_read_size, 0, new_read_size, escape);
+            DumpSequence(fout, old_text, old_read_size, 0, old_read_size, escape, quotes);
+            DumpSequence(fout, new_text, new_read_size, 0, new_read_size, escape, quotes);
         }
     }
 
@@ -410,6 +457,47 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
     return coherency ? 0 : 1;
 }
 
+int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, const char* new_filename,
+    const char*offset_file_name, const char* output,int escape, int quotes) {
+    unichar* old_text = NULL;
+    int old_read_size = 0;
+    read_text_file(vec, old_filename, &old_text, &old_read_size);
+
+    unichar* new_text = NULL;
+    int new_read_size = 0;
+    read_text_file(vec, new_filename, &new_text, &new_read_size);
+
+    vector_offset* offsets = load_offsets(vec, offset_file_name);
+    if (offsets == NULL) {
+        fatal_error("cannot read file %s", offset_file_name);
+        return 0;
+    }
+    
+    int coherency = 1;
+    
+    U_FILE* fout = u_fopen(vec, output, U_WRITE);
+    int count = 0;
+    for (int i = 0; i < offsets->nbelems; i++) {
+        count++;
+        Offsets curOffset = offsets->tab[i];
+        Offsets prevOffset;
+        if (i > 0) {
+            prevOffset = offsets->tab[i - 1];
+        }
+        else {
+            prevOffset.old_end = prevOffset.new_end = 0;
+        }
+        DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape, quotes);
+        DenormalizeSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, new_text, new_read_size, curOffset.new_start, curOffset.new_end);
+    }
+
+    free_vector_offset(offsets);
+    free(old_text);
+    free(new_text);
+    u_fclose(fout);
+    
+    return 1;
+}
 
 int main_DumpOffsets(int argc,char* const argv[]) {
 if (argc==1) {
@@ -426,6 +514,7 @@ int escape=1;
 int merge=0;
 int full=0;
 int quiet=0;
+int denorm=0;
 int convert_modified_to_common=0;
 int convert_common_to_modified=0;
 int translate_position_file=0;
@@ -433,6 +522,7 @@ int translate_position_file_invert=0;
 int old_size=-1;
 int new_size=-1;
 int val,index=-1;
+int quotes=1;
 //char foo=0;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffsets,&index,vars))) {
@@ -480,6 +570,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 't': translate_position_file = 1; break;
    case 'T': translate_position_file_invert = 1; break;
    case 'u': quiet = 1; break;
+   case 'd': denorm = 1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
@@ -587,9 +678,14 @@ if (translate_position_file || translate_position_file_invert) {
         u_printf("\nDumpOffsets dump done, file %s created.\n", output);
     }
     return 0;
-} else {
+} else if (denorm) {
+    quotes = 0;
+    escape = 0;
+    return Denormalize(&vec, old_filename, new_filename, offset_file_name, output,escape, quotes);
+}
+else {
     return DumpOffsetApply(&vec, old_filename, new_filename, offset_file_name, output,
-        full, quiet, escape);
+        full, quiet, escape, quotes);
 }
 
 
