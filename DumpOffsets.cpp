@@ -263,6 +263,7 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
     return 0;
 }
 
+
 static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end)
 {
     if(old_end < old_start || new_end < new_start || old_end > old_textsize || new_end > new_textsize)
@@ -472,8 +473,6 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
         fatal_error("cannot read file %s", offset_file_name);
         return 0;
     }
-    
-    int coherency = 1;
     
     U_FILE* fout = u_fopen(vec, output, U_WRITE);
     int count = 0;
