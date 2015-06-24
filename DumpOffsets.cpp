@@ -281,6 +281,7 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
     
     for(int k = new_start; k < new_end; k++)
         denorm_text[k-new_start] = *(new_text + k);
+	denorm_text[new_end - new_start] = 0;
     
     int k = 0;
     unichar new_c = denorm_text[k];
