@@ -274,14 +274,14 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
     int i = old_start;
     unichar old_c = *(old_text + i);
     unichar *denorm_text = NULL;
-    
+
     denorm_text = (unichar *)malloc(sizeof(unichar) * (new_end - new_start + 1));
     if(denorm_text == NULL)
         return 1;
-    
+
     for(int k = new_start; k < new_end; k++)
         denorm_text[k-new_start] = *(new_text + k);
-    
+
     int k = 0;
     unichar new_c = denorm_text[k];
     /* First for loop replaces [] by {}*/
@@ -294,13 +294,13 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
             k++;
             new_c = denorm_text[k];
         }
-        
-        if(old_c=='{' && new_c=='[') 
+
+        if(old_c=='{' && new_c=='[')
             denorm_text[k] = old_c;
         else if(old_c=='}' && new_c==']')
             denorm_text[k] = old_c;
         i++;
-        k++;          
+        k++;
     }
     i = old_start;
     int j = 0;
@@ -310,32 +310,32 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
     old_str[0] = old_c;
     old_str[1] = '\0';
     new_c = denorm_text[j];
-    
+
     /* Second for loop restores white spaces*/
     /* We are assuming that the replacement rules change a character into a whitespace*/
     while(i<old_end && j+new_start<new_end ) {
-         
+
         while(!(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end && get_value_index(old_str, replacements,DONT_INSERT)==NO_VALUE_INDEX) {
             i++;
             old_c = *(old_text + i);
             old_str[0] = old_c;
             old_str[1] = '\0';
         }
-        
+
         while(!(new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j+new_start<new_end) {
             u_fputc(new_c, f);
             j++;
             new_c = denorm_text[j];
         }
-        
+
         while((new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j+new_start<new_end) {
             j++;
             new_c = denorm_text[j];
         }
-        
+
         while((old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r' || get_value_index(old_str, replacements,DONT_INSERT)!=NO_VALUE_INDEX) && i<old_end) {
             /* Do not add \r with \n if the original file did not have it*/
-            u_fputc_raw(old_c, f);     
+            u_fputc_raw(old_c, f);
             i++;
             old_c = *(old_text + i);
             old_str[0] = old_c;
@@ -351,7 +351,7 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
         free(old_str);
     if(denorm_text !=NULL)
         free(denorm_text);
-    
+
     return 0;
 }
 
@@ -521,22 +521,22 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
         fatal_error("cannot read file %s", offset_file_name);
         return 1;
     }
-    
+
     U_FILE* fout = u_fopen(vec, output, U_WRITE);
-    
+
     struct string_hash* replacements = NULL;
     if (rules != NULL && rules[0] != '\0') {
         replacements = load_key_value_list(rules, vec, '\t');
-	if (replacements == NULL) {
+    if (replacements == NULL) {
             error("Cannot load replacement rules file %s\n", rules);
             replacements = new_string_hash();
-	}
+    }
     }
     else {
-	replacements = new_string_hash();
+    replacements = new_string_hash();
     }
-    
-    
+
+
     for (int i = 0; i < offsets->nbelems; i++) {
         Offsets curOffset = offsets->tab[i];
         Offsets prevOffset;
@@ -549,13 +549,13 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
         DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape, quotes);
         DenormalizeSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, new_text, new_read_size, curOffset.new_start, curOffset.new_end,replacements);
     }
-    
+
     free_string_hash(replacements);
     free_vector_offset(offsets);
     free(old_text);
     free(new_text);
     u_fclose(fout);
-    
+
     return 0;
 }
 

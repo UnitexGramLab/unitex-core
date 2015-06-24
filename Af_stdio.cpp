@@ -980,22 +980,27 @@ static int af_remove_folder_recursive(const char* foldername)
 
 int af_remove_folder(const char*folderName)
 {
-	if (is_filename_in_abstract_file_space(folderName) == 0)
-		return RemoveFileSystemFolder(folderName);
-	else
-	{
-		char*folderNameStar = (char*)malloc(strlen(folderName) + 4);
-		if (folderNameStar == NULL)
-			return -1;
-		strcpy(folderNameStar, folderName);
-		strcat(folderNameStar, "*");
-		int retValue1 = af_remove(folderNameStar);
-		free(folderNameStar);
-		int retValue2 = af_remove_folder_recursive(folderName);
-		return ((retValue1 == 0) || (retValue2 == 0)) ? 0 : -1;
-	}
-}
+	int retValue3 = -1;
+	if (Call_logger_need_log_af_remove() == 0)
+		return af_remove_folder_unlogged(folderName);
+	 
+	char*folderNameStar = (char*)malloc(strlen(folderName) + 4);
+	if (folderNameStar == NULL)
+		return -1;
+	strcpy(folderNameStar, folderName);
+	strcat(folderNameStar, "*");
 
+	// we first call "manual" recursive delete, because we can log record all remove
+	int retValue2 = af_remove_folder_recursive(folderName);
+
+	int retValue1 = af_remove(folderNameStar);
+	free(folderNameStar);
+	 
+	if (is_filename_in_abstract_file_space(folderName) == 0)
+		retValue3 = RemoveFileSystemFolder(folderName);
+
+	return ((retValue1 == 0) || (retValue2 == 0) || (retValue3 == 0)) ? 0 : -1;
+}
 
 
 ABSTRACTFILE* af_fopen(const char* name,const char* MODE)

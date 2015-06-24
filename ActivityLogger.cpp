@@ -228,6 +228,7 @@ void Call_logger_fnc_before_af_remove(const char* name)
 	}
 }
 
+
 void Call_logger_fnc_after_af_remove(const char* name,int ret)
 {
     struct List_LoggerInfo* tmp = p_logger_info_list;
@@ -239,6 +240,20 @@ void Call_logger_fnc_after_af_remove(const char* name,int ret)
 	}
 }
 
+
+int Call_logger_need_log_af_remove()
+{
+	struct List_LoggerInfo* tmp = p_logger_info_list;
+	while (tmp != NULL)
+	{
+		if ((tmp->lgi.func_array.fnc_before_af_remove) != NULL)
+			return 1;
+		if ((tmp->lgi.func_array.fnc_after_af_remove) != NULL)
+			return 1;
+		tmp = tmp->next;
+	}
+	return 0;
+}
 
 void Call_logger_fnc_before_calling_tool(mainFunc* fnc,int argc,char* const argv[])
 {

@@ -178,7 +178,7 @@ int SearchPossiblePosFileNameInArg(const char*arg)
 		{
 			if ((*(arg + j)) == '\0')
 			{
-				return 1*retValue;
+				return retValue;
 			}
 
 			if ((*(arg + j)) == '=')
