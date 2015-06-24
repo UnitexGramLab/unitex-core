@@ -471,7 +471,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
     vector_offset* offsets = load_offsets(vec, offset_file_name);
     if (offsets == NULL) {
         fatal_error("cannot read file %s", offset_file_name);
-        return 0;
+        return 1;
     }
     
     U_FILE* fout = u_fopen(vec, output, U_WRITE);
@@ -495,7 +495,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
     free(new_text);
     u_fclose(fout);
     
-    return 1;
+    return 0;
 }
 
 int main_DumpOffsets(int argc,char* const argv[]) {
