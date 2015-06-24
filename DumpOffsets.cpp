@@ -134,7 +134,7 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hfumdvVtTs:S:o:n:p:k:q:";
+const char* optstring_DumpOffsets=":hfumdvVtTs:S:o:n:p:k:q:r:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
@@ -148,6 +148,7 @@ const struct option_TS lopts_DumpOffsets[]={
    {"full",no_argument_TS,NULL,'f'},
    {"denorm",no_argument_TS,NULL,'d'},
    {"quiet",no_argument_TS,NULL,'u'},
+   {"replacement_rules",required_argument_TS,NULL,'r'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
@@ -264,45 +265,92 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
 }
 
 
-static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end)
+static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end,struct string_hash* replacements)
 {
     if(old_end < old_start || new_end < new_start || old_end > old_textsize || new_end > new_textsize)
         return 1;
     else if(old_end == old_start || new_start == new_end)
         return 0;
     int i = old_start;
-    int j = new_start;
     unichar old_c = *(old_text + i);
-    unichar new_c = *(new_text + j);
-    while(i<old_end && j<new_end ) {
-         
-        while(!(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end) {
+    unichar *denorm_text = NULL;
+    
+    denorm_text = (unichar *)malloc(sizeof(unichar) * (new_end - new_start + 1));
+    if(denorm_text == NULL)
+        return 1;
+    
+    for(int k = new_start; k < new_end; k++)
+        denorm_text[k-new_start] = *(new_text + k);
+    
+    int k = 0;
+    unichar new_c = denorm_text[k];
+    /* First for loop replaces [] by {}*/
+    while(i<old_end && k+new_start<new_end ) {
+        while(!(old_c =='[' || old_c =='{' || old_c ==']' || old_c =='}') && i<old_end) {
             i++;
             old_c = *(old_text + i);
         }
+        while(!(new_c =='[' || new_c =='{' || new_c ==']' || new_c =='}') && k+new_start<new_end) {
+            k++;
+            new_c = denorm_text[k];
+        }
         
-        while(!(new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j<new_end) {
+        if(old_c=='{' && new_c=='[') 
+            denorm_text[k] = old_c;
+        else if(old_c=='}' && new_c==']')
+            denorm_text[k] = old_c;
+        i++;
+        k++;          
+    }
+    i = old_start;
+    int j = 0;
+    unichar* old_str = NULL;
+    old_str = (unichar *)malloc(sizeof(unichar) * 2);
+    old_c = *(old_text + i);
+    old_str[0] = old_c;
+    old_str[1] = '\0';
+    new_c = denorm_text[j];
+    
+    /* Second for loop restores white spaces*/
+    /* We are assuming that the replacement rules change a character into a whitespace*/
+    while(i<old_end && j+new_start<new_end ) {
+         
+        while(!(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end && get_value_index(old_str, replacements,DONT_INSERT)==NO_VALUE_INDEX) {
+            i++;
+            old_c = *(old_text + i);
+            old_str[0] = old_c;
+            old_str[1] = '\0';
+        }
+        
+        while(!(new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j+new_start<new_end) {
             u_fputc(new_c, f);
             j++;
-            new_c = *(new_text + j);
+            new_c = denorm_text[j];
         }
         
-        while((new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j<new_end) {
+        while((new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r') && j+new_start<new_end) {
             j++;
-            new_c = *(new_text + j);
+            new_c = denorm_text[j];
         }
         
-        while((old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end) {
-            u_fputc(old_c, f);
+        while((old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r' || get_value_index(old_str, replacements,DONT_INSERT)!=NO_VALUE_INDEX) && i<old_end) {
+            /* Do not add \r with \n if the original file did not have it*/
+            u_fputc_raw(old_c, f);     
             i++;
             old_c = *(old_text + i);
+            old_str[0] = old_c;
+            old_str[1] = '\0';
         }
     }
-    while(j<new_end) {
+    while(j+new_start<new_end) {
         u_fputc(new_c, f);
         j++;
-        new_c = *(new_text + j);
+        new_c = denorm_text[j];
     }
+    if(old_str != NULL)
+        free(old_str);
+    if(denorm_text !=NULL)
+        free(denorm_text);
     
     return 0;
 }
@@ -459,7 +507,7 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
 }
 
 int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, const char* new_filename,
-    const char*offset_file_name, const char* output,int escape, int quotes) {
+    const char*offset_file_name, const char* output,int escape, int quotes, const char* rules) {
     unichar* old_text = NULL;
     int old_read_size = 0;
     read_text_file(vec, old_filename, &old_text, &old_read_size);
@@ -475,9 +523,21 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
     }
     
     U_FILE* fout = u_fopen(vec, output, U_WRITE);
-    int count = 0;
+    
+    struct string_hash* replacements = NULL;
+    if (rules != NULL && rules[0] != '\0') {
+        replacements = load_key_value_list(rules, vec, '\t');
+	if (replacements == NULL) {
+            error("Cannot load replacement rules file %s\n", rules);
+            replacements = new_string_hash();
+	}
+    }
+    else {
+	replacements = new_string_hash();
+    }
+    
+    
     for (int i = 0; i < offsets->nbelems; i++) {
-        count++;
         Offsets curOffset = offsets->tab[i];
         Offsets prevOffset;
         if (i > 0) {
@@ -487,9 +547,10 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
             prevOffset.old_end = prevOffset.new_end = 0;
         }
         DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape, quotes);
-        DenormalizeSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, new_text, new_read_size, curOffset.new_start, curOffset.new_end);
+        DenormalizeSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, new_text, new_read_size, curOffset.new_start, curOffset.new_end,replacements);
     }
-
+    
+    free_string_hash(replacements);
     free_vector_offset(offsets);
     free(old_text);
     free(new_text);
@@ -508,6 +569,7 @@ char old_filename[FILENAME_MAX]="";
 char new_filename[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char offset_file_name[FILENAME_MAX]="";
+char rules[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int escape=1;
 int merge=0;
@@ -540,6 +602,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output, vars->optarg);
+             break;
+   case 'r': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty replacement rule file name\n");
+             }
+             strcpy(rules,vars->optarg);
              break;
    case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty size for old file\n");
@@ -680,7 +747,7 @@ if (translate_position_file || translate_position_file_invert) {
 } else if (denorm) {
     quotes = 0;
     escape = 0;
-    return Denormalize(&vec, old_filename, new_filename, offset_file_name, output,escape, quotes);
+    return Denormalize(&vec, old_filename, new_filename, offset_file_name, output,escape, quotes, rules);
 }
 else {
     return DumpOffsetApply(&vec, old_filename, new_filename, offset_file_name, output,
