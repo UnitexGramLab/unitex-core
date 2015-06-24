@@ -153,16 +153,17 @@ int SearchPossiblePosFileNameInArg(const char*arg)
         else /* we are in --xx args, we search --xx=yy */
         {
             unsigned int j=1;
+			int retValue = -1;
             for (;;)
             {
                 if ((*(arg+j)) == '\0')
                 {
-                    return -1;
+                    return retValue;
                 }
 
                 if ((*(arg+j)) == '=')
                 {
-                    return (int)(j+1);
+					retValue = (int)(j+1);
                 }
 
                 j++;
@@ -170,8 +171,26 @@ int SearchPossiblePosFileNameInArg(const char*arg)
         }
     }
     else
-        return 0;
+	{
+		unsigned int j = 0;
+		int retValue = 0;
+		for (;;)
+		{
+			if ((*(arg + j)) == '\0')
+			{
+				return 1*retValue;
+			}
+
+			if ((*(arg + j)) == '=')
+			{
+				retValue = (int)(j + 1);
+			}
+
+			j++;
+		}
+	}
 }
+
 
 int countSeparatorInPathName(const char* pathname)
 {
@@ -186,6 +205,7 @@ int countSeparatorInPathName(const char* pathname)
     }
     return count;
 }
+
 
 void CopyReworkedArgRemoving(char* dst,const char* arg,const char*portion_ignore_pathname)
 {
@@ -236,6 +256,7 @@ const char* GetFileNameRemovePrefixIfFound(const char* filename,const char*porti
     return filename;
 }
 
+
 const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy)
 {
  	for (;;)
@@ -277,6 +298,7 @@ const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy)
             filenamecpy+=2;
     return filenamecpy;
 }
+
 
 void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunPath,
                                 const char**p_position_filename,const char** p_portion_filename_from_param)
@@ -337,6 +359,7 @@ void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunP
         }
     }
 }
+
 
 } // namespace logger
 } // namespace unitex
