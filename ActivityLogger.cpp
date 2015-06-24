@@ -45,7 +45,7 @@
 namespace unitex {
 
 struct LoggerInfo {
-	t_logger_func_array func_array;
+	t_logger_func_array_ex_1 func_array;
 	void* privateLoggerPtr;
 } ;
 
@@ -58,9 +58,10 @@ struct List_LoggerInfo {
 
 struct List_LoggerInfo* p_logger_info_list=NULL;
 
+#define my_min(a,b) (((a)<(b)) ? (a) : (b))
 
 
-UNITEX_FUNC int UNITEX_CALL AddLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr)
+UNITEX_FUNC int UNITEX_CALL AddLoggerInfoEx1(const t_logger_func_array_ex_1* func_array,void* privateLoggerPtr)
 {
 	struct List_LoggerInfo* new_item;
 	new_item = (struct List_LoggerInfo*)malloc(sizeof(struct List_LoggerInfo));
@@ -86,7 +87,8 @@ UNITEX_FUNC int UNITEX_CALL AddLoggerInfo(const t_logger_func_array* func_array,
 	return 1;
 }
 
-UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr)
+
+UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfoEx1(const t_logger_func_array_ex_1* func_array,void* privateLoggerPtr)
 {
 	struct List_LoggerInfo* tmp = p_logger_info_list;
 	struct List_LoggerInfo* tmp_previous = NULL;
@@ -113,6 +115,23 @@ UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfo(const t_logger_func_array* func_arr
 	return 0;
 }
 
+UNITEX_FUNC int UNITEX_CALL AddLoggerInfo(const t_logger_func_array* func_array, void* privateLoggerPtr)
+{
+	t_logger_func_array_ex_1 func_array_ex_1;
+	memset(&func_array_ex_1, 0, sizeof(t_logger_func_array_ex_1));
+	memcpy(&func_array_ex_1, func_array, my_min(func_array->size_struct, sizeof(t_logger_func_array_ex_1)));
+	func_array_ex_1.size_struct = sizeof(t_logger_func_array_ex_1);
+	return AddLoggerInfoEx1(&func_array_ex_1, privateLoggerPtr);
+}
+
+UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfo(const t_logger_func_array* func_array, void* privateLoggerPtr)
+{
+	t_logger_func_array_ex_1 func_array_ex_1;
+	memset(&func_array_ex_1, 0, sizeof(t_logger_func_array_ex_1));
+	memcpy(&func_array_ex_1, func_array, my_min(func_array->size_struct, sizeof(t_logger_func_array_ex_1)));
+	func_array_ex_1.size_struct = sizeof(t_logger_func_array_ex_1);
+	return RemoveLoggerInfoEx1(&func_array_ex_1, privateLoggerPtr);
+}
 
 UNITEX_FUNC int UNITEX_CALL GetNbLoggerInfoInstalled()
 {
@@ -241,15 +260,50 @@ void Call_logger_fnc_after_af_remove(const char* name,int ret)
 }
 
 
+void Call_logger_fnc_before_af_remove_folder(const char* name)
+{
+	struct List_LoggerInfo* tmp = p_logger_info_list;
+	while (tmp != NULL)
+	{
+		if (tmp->lgi.func_array.size_struct >= sizeof(t_logger_func_array_ex_1))
+			if ((tmp->lgi.func_array.fnc_before_af_remove_folder) != NULL) {
+				(*(tmp->lgi.func_array.fnc_before_af_remove_folder))(name, tmp->lgi.privateLoggerPtr);
+			}
+		tmp = tmp->next;
+	}
+}
+
+
+void Call_logger_fnc_after_af_remove_folder(const char* name, int ret)
+{
+	struct List_LoggerInfo* tmp = p_logger_info_list;
+	while (tmp != NULL)
+	{
+		if (tmp->lgi.func_array.size_struct >= sizeof(t_logger_func_array_ex_1))
+			if ((tmp->lgi.func_array.fnc_after_af_remove_folder) != NULL) {
+				(*(tmp->lgi.func_array.fnc_after_af_remove_folder))(name, ret, tmp->lgi.privateLoggerPtr);
+			}
+		tmp = tmp->next;
+	}
+}
+
+
 int Call_logger_need_log_af_remove()
 {
 	struct List_LoggerInfo* tmp = p_logger_info_list;
 	while (tmp != NULL)
 	{
-		if ((tmp->lgi.func_array.fnc_before_af_remove) != NULL)
+		t_logger_func_array_ex_1* func_array = &(tmp->lgi.func_array);
+		if ((func_array->fnc_before_af_remove) != NULL)
 			return 1;
-		if ((tmp->lgi.func_array.fnc_after_af_remove) != NULL)
+		if ((func_array->fnc_after_af_remove) != NULL)
 			return 1;
+		if (func_array->size_struct >= sizeof(t_logger_func_array_ex_1)) {
+			if ((func_array->fnc_before_af_remove_folder) != NULL)
+				return 1;
+			if ((func_array->fnc_after_af_remove_folder) != NULL)
+				return 1;
+		}
 		tmp = tmp->next;
 	}
 	return 0;

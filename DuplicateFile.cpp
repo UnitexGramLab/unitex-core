@@ -42,6 +42,7 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+
 namespace unitex {
 
 const char* usage_DuplicateFile =
@@ -54,6 +55,7 @@ const char* usage_DuplicateFile =
          "-m INFILE/--move=INFILE: path to input file to move (rename)\n"
          "-d/--delete: to just delete the outfile\n"
          "-a/--make-dir: to create empty directory named outfile\n"
+         "-p/--parents: to create empty directory named outfile, creating parent if needed\n"
          "-r/--recursive-delete: to just delete the outfile folder\n"
          "\n";
 
@@ -64,17 +66,44 @@ u_printf(usage_DuplicateFile);
 }
 
 
-const char* optstring_DuplicateFile=":ardi:m:k:q:";
+const char* optstring_DuplicateFile=":aprdi:m:k:q:";
 const struct option_TS lopts_DuplicateFile[]= {
       {"delete",no_argument_TS,NULL,'d'},
       {"recursive-delete",no_argument_TS,NULL,'r'},
       {"make-dir", no_argument_TS, NULL,'a'},
+      {"parents", no_argument_TS, NULL,'p'},
       {"move",required_argument_TS,NULL,'m'},
       {"input",required_argument_TS,NULL,'i'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+static int mkDirRecursiveIfNeeded(const char* dir_name)
+{
+	int res_mk = mkDirPortable(dir_name);
+	if (res_mk == 0)
+		return 0;
+
+	int len_dir = (int)strlen(dir_name);
+	int last_separator = -1;
+	for (int i = 0;i < len_dir;i++) {
+		if ((*(dir_name + i) == '\\') || (*(dir_name + i) == '/'))
+			last_separator = i;
+	}
+
+	if (last_separator == -1)
+		return res_mk;
+
+	char* up_dir_name = (char*)malloc(last_separator + 1);
+	memcpy(up_dir_name, dir_name, last_separator);
+	*(up_dir_name + last_separator) = '\0';
+	mkDirRecursiveIfNeeded(up_dir_name);
+	free(up_dir_name);
+
+	return mkDirPortable(dir_name);
+}
 
 
 int main_DuplicateFile(int argc,char* const argv[]) {
@@ -91,11 +120,13 @@ int do_delete=0;
 int do_recursive_delete=0;
 int do_move=0;
 int do_make_dir=0;
+int do_make_dir_parent=0;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_DuplicateFile,&index,vars))) {
    switch(val) {
    case 'a': do_make_dir = 1; break;
+   case 'p': do_make_dir_parent = 1; break;
    case 'd': do_delete = 1; break;
    case 'r': do_delete = do_recursive_delete = 1; break;
    case 'i': if (vars->optarg[0]=='\0') {
@@ -128,7 +159,7 @@ if (vars->optind!=argc-1) {
 
 output_file = argv[vars->optind];
 
-if ((input_file==NULL) && (do_delete==0) && (do_make_dir==0)) {
+if ((input_file==NULL) && (do_delete==0) && (do_make_dir==0) && (do_make_dir_parent ==0)) {
    fatal_error("You must specify the input_file file\n");
 }
 
@@ -154,6 +185,11 @@ else
 if (do_make_dir != 0) {
     u_printf("make dir %s\n", output_file);
     result = mkDirPortable(output_file);
+}
+else
+if (do_make_dir_parent != 0) {
+	u_printf("make dir %s with parent\n", output_file);
+	result = mkDirRecursiveIfNeeded(output_file);
 }
 else {
     if (do_recursive_delete == 0) {

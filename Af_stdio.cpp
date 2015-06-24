@@ -981,9 +981,11 @@ static int af_remove_folder_recursive(const char* foldername)
 int af_remove_folder(const char*folderName)
 {
 	int retValue3 = -1;
+	int retValue ;
 	if (Call_logger_need_log_af_remove() == 0)
 		return af_remove_folder_unlogged(folderName);
 	 
+	Call_logger_fnc_before_af_remove_folder(folderName);
 	char*folderNameStar = (char*)malloc(strlen(folderName) + 4);
 	if (folderNameStar == NULL)
 		return -1;
@@ -999,7 +1001,10 @@ int af_remove_folder(const char*folderName)
 	if (is_filename_in_abstract_file_space(folderName) == 0)
 		retValue3 = RemoveFileSystemFolder(folderName);
 
-	return ((retValue1 == 0) || (retValue2 == 0) || (retValue3 == 0)) ? 0 : -1;
+	retValue = ((retValue1 == 0) || (retValue2 == 0) || (retValue3 == 0)) ? 0 : -1;
+
+	Call_logger_fnc_after_af_remove_folder(folderName, retValue);
+	return retValue;
 }
 
 

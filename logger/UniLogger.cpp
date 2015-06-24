@@ -253,10 +253,11 @@ void CleanFileReadArray(struct ExecutionLogging* pEL)
 }
 
 
-int SearchFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn,unsigned int*pos)
+int SearchFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn,unsigned int*pos, int is_folder)
 {
     unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileToWrite);
     unsigned int i;
+	int len_fn = (int)strlen(fn);
     for (i=0;i<nbItem;i++)
     {
         const struct FileToWriteInfoItem* pFrif = (const struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,i);
@@ -266,13 +267,21 @@ int SearchFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn,unsi
                 *pos=i;
             return 1;
         }
+		if (is_folder) {
+			int len_cur = (int)strlen(pFrif->FileName);
+			if ((len_cur > len_fn) && (memcmp(pFrif->FileName, fn, len_fn) == 0)) {
+				if (pos != NULL)
+					*pos = i;
+				return 1;
+			}
+		}
     }
     return 0;
 }
 
 int AddFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn)
 {
-    if (SearchFileInFileToWriteArray(pEL,fn,NULL)!=0)
+    if (SearchFileInFileToWriteArray(pEL,fn,NULL,0)!=0)
         return 1;
     struct FileToWriteInfoItem Frif ;
     char *fnCopy=(char*)malloc(strlen(fn)+1);
@@ -300,16 +309,21 @@ unsigned int GetNbFileToWrite(struct ExecutionLogging* pEL)
     return GetNbItemPtrArrayExpanding(pEL->pAE_FileToWrite);
 }
 
-void RemoveFileFileOnWriteArray(struct ExecutionLogging* pEL,const char*fn)
+static void RemoveFileFileOnWriteArray(struct ExecutionLogging* pEL,const char*fn, int is_folder)
 {
     unsigned int pos;
-    if (SearchFileInFileToWriteArray(pEL,fn,&pos) == 0)
-        return ;
+	for (;;)
+	{
+		if (SearchFileInFileToWriteArray(pEL, fn, &pos, is_folder) == 0)
+			return;
 
-    struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,pos);
-    free((void*)pFrif->FileName);
+		struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite, pos);
+		free((void*)pFrif->FileName);
 
-    DeleteItemPtrArrayExpanding(pEL->pAE_FileToWrite,pos);
+		DeleteItemPtrArrayExpanding(pEL->pAE_FileToWrite, pos);
+		if (is_folder == 0)
+			return;
+	}
 }
 
 void CleanFileWriteArray(struct ExecutionLogging* pEL)
@@ -1021,7 +1035,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
 void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
 {
-    if (SearchFileInFileToWriteArray(pEL,name,NULL)==0)
+    if (SearchFileInFileToWriteArray(pEL,name,NULL,0)==0)
         if (SearchFileInFileToReadArray(pEL,name,NULL)==0)
         {
             unsigned int size=0;
@@ -1056,7 +1070,7 @@ void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
 
 void DoFileWriteWork(struct ExecutionLogging* pEL,const char* name)
 {
-        if (SearchFileInFileToWriteArray(pEL,name,NULL)==0)
+        if (SearchFileInFileToWriteArray(pEL,name,NULL,0)==0)
         {
             AddFileInFileToWriteArray(pEL,name);
         }
@@ -1151,7 +1165,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_rename(const char* name1,const 
     if (result==0)
     {
         DoFileWriteWork(pEL,name2);
-        RemoveFileFileOnWriteArray(pEL,name1);
+        RemoveFileFileOnWriteArray(pEL,name1, 0);
     }
 }
 
@@ -1185,9 +1199,19 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_remove(const char* name,int res
         return;
 
     if (result==0)
-        RemoveFileFileOnWriteArray(pEL,name);
+        RemoveFileFileOnWriteArray(pEL,name, 0);
 }
 
+
+void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_remove_folder(const char* name, int result, void* privateLoggerPtr)
+{
+	struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+	if (pEL == NULL)
+		return;
+
+	if (result == 0)
+		RemoveFileFileOnWriteArray(pEL, name, 1);
+}
 
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogOutWrite(const void*Buf, size_t size,void* privateLoggerPtr)
@@ -1209,9 +1233,9 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_LogErrWrite(const void*Buf, size_t size,
     FlushOutData(Buf,size,pEL->pAE_StdErr);
 }
 
-const t_logger_func_array logger_func_array =
+const t_logger_func_array_ex_1 logger_func_array =
 {
-    sizeof(t_logger_func_array), //unsigned int size_struct;
+    sizeof(t_logger_func_array_ex_1), //unsigned int size_struct;
 
     NULL, // t_fnc_Init_Logger fnc_Init_Logger;
     NULL, // t_fnc_Uninit_Logger fnc_Uninit_Logger;
@@ -1235,7 +1259,11 @@ const t_logger_func_array logger_func_array =
     UniLogger_after_calling_tool, //t_fnc_after_calling_tool fnc_after_calling_tool;
 
     UniLogger_LogOutWrite,//t_fnc_LogOutWrite fnc_LogOutWrite;
-    UniLogger_LogErrWrite//t_fnc_LogErrWrite fnc_LogErrWrite;
+    UniLogger_LogErrWrite,//t_fnc_LogErrWrite fnc_LogErrWrite;
+
+
+	NULL, //t_fnc_before_af_remove fnc_before_af_remove;
+	UniLogger_after_af_remove_folder //t_fnc_after_af_remove fnc_after_af_remove;
 } ;
 
 
@@ -1261,7 +1289,7 @@ UNITEX_FUNC int UNITEX_CALL AddActivityLogger(struct UniLoggerSpace *p_ule)
     pALPD -> pMutexLog = SyncBuildMutex();
 
     p_ule -> privateUnloggerData = (void*)pALPD;
-    return AddLoggerInfo(&logger_func_array,p_ule);
+    return AddLoggerInfoEx1(&logger_func_array,p_ule);
 }
 
 UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule)
@@ -1270,7 +1298,7 @@ UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule)
     SyncDeleteTls(pALPD->pTlsSlot);
     SyncDeleteMutex(pALPD->pMutexLog);
     free(pALPD);
-    return RemoveLoggerInfo(&logger_func_array,p_ule);
+    return RemoveLoggerInfoEx1(&logger_func_array,p_ule);
 }
 
 } // namespace logger

@@ -81,6 +81,9 @@ typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_af_remove)(const char* name
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_af_remove)(const char* name,int,void* privateLoggerPtr);
 
 
+typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_af_remove_folder)(const char* name, void* privateLoggerPtr);
+typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_af_remove_folder)(const char* name, int, void* privateLoggerPtr);
+
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_calling_tool)(mainFunc*,int argc,char* const argv[],void* privateLoggerPtr);
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_calling_tool)(mainFunc*,int argc,char* const argv[],int,void* privateLoggerPtr);
 
@@ -121,11 +124,48 @@ typedef struct
     t_fnc_LogErrWrite fnc_LogErrWrite;
 } t_logger_func_array;
 
+typedef struct
+{
+	unsigned int size_struct;
+
+	t_fnc_Init_Logger fnc_Init_Logger;
+	t_fnc_Uninit_Logger fnc_Uninit_Logger;
+
+	t_fnc_before_af_fopen fnc_before_af_fopen;
+	t_fnc_after_af_fopen  fnc_after_af_fopen;
+
+	t_fnc_before_af_fclose fnc_before_af_fclose;
+	t_fnc_after_af_fclose fnc_after_af_fclose;
+
+	t_fnc_before_af_rename fnc_before_af_rename;
+	t_fnc_after_af_rename fnc_after_af_rename;
+
+	t_fnc_before_af_copy fnc_before_af_copy;
+	t_fnc_after_af_copy fnc_after_af_copy;
+
+	t_fnc_before_af_remove fnc_before_af_remove;
+	t_fnc_after_af_remove fnc_after_af_remove;
+
+	t_fnc_before_calling_tool fnc_before_calling_tool;
+	t_fnc_after_calling_tool fnc_after_calling_tool;
+
+	t_fnc_LogOutWrite fnc_LogOutWrite;
+	t_fnc_LogErrWrite fnc_LogErrWrite;
+
+
+	t_fnc_before_af_remove_folder fnc_before_af_remove_folder;
+	t_fnc_after_af_remove_folder fnc_after_af_remove_folder;
+} t_logger_func_array_ex_1;
+
 /* these functions respectively add and remove logger.
   you can add several logger with the same func_array callback set, but with different privateLoggerPtr
   privateLoggerPtr is the parameters which can be set as the last parameter of each callback */
 UNITEX_FUNC int UNITEX_CALL AddLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr);
 UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr);
+
+
+UNITEX_FUNC int UNITEX_CALL AddLoggerInfoEx1(const t_logger_func_array_ex_1* func_array, void* privateLoggerPtr);
+UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfoEx1(const t_logger_func_array_ex_1* func_array, void* privateLoggerPtr);
 
 /* just return the number of Logger Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbLoggerInfoInstalled();

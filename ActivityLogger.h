@@ -59,6 +59,9 @@ void Call_logger_fnc_after_af_copy(const char* name1,const char* name2,int);
 void Call_logger_fnc_before_af_remove(const char* name);
 void Call_logger_fnc_after_af_remove(const char* name,int);
 
+void Call_logger_fnc_before_af_remove_folder(const char* name);
+void Call_logger_fnc_after_af_remove_folder(const char* name, int);
+
 int Call_logger_need_log_af_remove();
 
 void Call_logger_fnc_before_calling_tool(mainFunc*,int argc,char* const argv[]);
