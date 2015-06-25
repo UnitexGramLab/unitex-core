@@ -350,18 +350,18 @@ return ((path[0]>='a' && path[0]<='z') || (path[0]>='A' && path[0]<='Z'))
 
 #ifdef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
 #include "DirHelper.h"
-static void create_path(const char* path) {
-	mkDirPortable(path);
+static int create_path(const char* path) {
+	return mkDirPortable(path);
 }
 #else
-static void create_path(const char* path) {
+static int create_path(const char* path) {
 char command[10+FILENAME_MAX];
 #ifdef _NOT_UNDER_WINDOWS
 sprintf(command,"mkdir -p %s",path);
-system(command);
+return system(command);
 #else
 sprintf(command,"mkdir %s",path);
-system(command);
+return system(command);
 #endif
 }
 #endif
@@ -370,10 +370,10 @@ system(command);
  * Tries to create all directories that lead to 'name' with
  * system("mkdir ...");
  */
-void create_path_to_file(const char* name) {
+int create_path_to_file(const char* name) {
 char path[FILENAME_MAX];
 get_path(name,path);
-create_path(path);
+return create_path(path);
 }
 
 } // namespace unitex

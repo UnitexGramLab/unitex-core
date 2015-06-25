@@ -72,7 +72,7 @@ long get_file_size(U_FILE*);
 int add_path_separator(char*);
 int is_absolute_path(const char*);
 int is_root(const char*);
-void create_path_to_file(const char*);
+int create_path_to_file(const char*);
 
 } // namespace unitex
 
