@@ -177,6 +177,10 @@
 #include "SortTxt.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SPELLCHECK))) || defined(TOOL_SPELLCHECK))
+#include "SpellCheck.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_STATS))) || defined(TOOL_STATS))
 #include "Stats.h"
 #endif
@@ -469,6 +473,10 @@ const struct utility_item utility_array[]=
 
 #if (((!defined(NO_TOOL_SORTTXT))) || defined(TOOL_SORTTXT))
 	{ "SortTxt", 7, &main_SortTxt, usage_SortTxt, optstring_SortTxt, lopts_SortTxt } ,
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SPELLCHECK))) || defined(TOOL_SPELLCHECK))
+	{ "SpellCheck", 10, &main_SpellCheck, usage_SpellCheck, optstring_SpellCheck, lopts_SpellCheck },
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_STATS))) || defined(TOOL_STATS))

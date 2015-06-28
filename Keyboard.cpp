@@ -290,7 +290,7 @@ return 0;
 
 
 /* This line is used to force the initialization of the keyboards */
-static int phantom_var=init_keyboards();
+int phantom_var_keyboard=init_keyboards();
 
 
 
