@@ -138,23 +138,6 @@ struct grfInfo {
     int entity_count;
 };
 
-
-int is_template_graph(const char *transducer) {
-    int ret_value = 0;
-    int pos = -1;
-    for(int i = (int)strlen(transducer) - 1; i >= 0; i--)
-    if(transducer[i] == PATH_SEPARATOR_CHAR) {
-        pos = i;
-        break;
-    }
-
-    if(pos >= 0 && transducer[pos+1] == '@')
-    ret_value = 1;
-
-    return ret_value;
-}
-
-
 unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
     int num_lines = 0;
     unichar **grf_lines = NULL;
@@ -1075,8 +1058,8 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         if(is_debug_mode(current_transducer, vec) == true){
             fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
         }
-
-        int is_template_grf = is_template_graph(current_transducer->transducer_file_name);
+        
+        int is_template_grf = current_transducer->generic_graph;
 
         for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
             if (in_place == 0) {
