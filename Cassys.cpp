@@ -222,7 +222,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 *start_line = (unichar*)malloc(sizeof(unichar) * (num_char + 2));
                 u_strcpy(*start_line, lines[num_lines]);
             }
-            else if (num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
+            else if (num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == '@') {
                 infos = (grfInfo*)realloc(infos, (num_info + 1) * sizeof(grfInfo));
                 infos[num_info].accept = NULL;
                 infos[num_info].ignore = NULL;
@@ -236,8 +236,8 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 infos[num_info].entity_count = 0;
                 infos[num_info].entities = NULL;
                 int spaces = 0;
-                for (size_t i = 2; i <= num_char; i++) {
-                    infos[num_info].entity_format[i + 1] = (unichar)lines[num_lines][i];
+                for (size_t i = 3; i <= num_char; i++) {
+                    infos[num_info].entity_format[i] = (unichar)lines[num_lines][i];
                     if (spaces == 4 && lines[num_lines][i] > 47 && lines[num_lines][i] < 58) { //is digit
                         infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
                     }
@@ -261,8 +261,10 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                             if (lines[num_lines][j] == '/') {
                                 division = j;
                             }
-                            else if (lines[num_lines][j] == '"') {
+                            else if(lines[num_lines][j] == '"') {
                                 annot_end = j;
+                                if(j > 0 && lines[num_lines][j-1] == '}')
+                                    annot_end = j-1;
                             }
                         }
 
