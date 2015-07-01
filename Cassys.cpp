@@ -136,6 +136,7 @@ struct grfInfo {
     unichar *annotation;
     unichar *entities;
     int entity_count;
+    int negLeftContxt_loc;
 };
 
 unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
@@ -208,6 +209,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
     DISCARD_UNUSED_PARAMETER(locations)
     int start = -1;
     int num_info = 0;
+    int count = 0;
     struct grfInfo *infos = NULL;
     if (lines != NULL) {
         int num_lines = 0;
@@ -222,7 +224,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 *start_line = (unichar*)malloc(sizeof(unichar) * (num_char + 2));
                 u_strcpy(*start_line, lines[num_lines]);
             }
-            else if (num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == '@') {
+            else if (num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == 'G') {
                 infos = (grfInfo*)realloc(infos, (num_info + 1) * sizeof(grfInfo));
                 infos[num_info].accept = NULL;
                 infos[num_info].ignore = NULL;
@@ -235,6 +237,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 infos[num_info].annotation_loc = 0;
                 infos[num_info].entity_count = 0;
                 infos[num_info].entities = NULL;
+                infos[num_info].negLeftContxt_loc = total_lines + count*3;
                 int spaces = 0;
                 for (size_t i = 3; i <= num_char; i++) {
                     infos[num_info].entity_format[i] = (unichar)lines[num_lines][i];
@@ -529,7 +532,7 @@ int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unich
             }
             u_fprintf(graph_file,"\n");
         }
-        else if(mode && num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
+        else if(mode && num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == 'G') {
             int loc = num_lines - start_loc;
             for(int i = 0; i < num_info; i++) {
             if(infos[i].entity_loc == loc) {
