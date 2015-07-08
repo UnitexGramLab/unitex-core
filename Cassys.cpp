@@ -136,8 +136,26 @@ struct grfInfo {
     unichar *annotation;
     unichar *entities;
     int entity_count;
-    int negLeftContxt_loc;
 };
+
+
+int is_template_graph(const char *transducer) {
+    int ret_value = 0;
+    int pos = -1;
+	int len = (int)strlen(transducer);
+    for(int i = len - 1; i >= 0; i--)
+    if((transducer[i] == PATH_SEPARATOR_CHAR) || (transducer[i] == '\\') || (transducer[i] == '/')) {
+        pos = i;
+        break;
+    }
+
+    if(transducer[pos+1] == '@') {
+      ret_value = 1;
+	}
+
+    return ret_value;
+}
+
 
 unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
     int num_lines = 0;
@@ -209,7 +227,6 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
     DISCARD_UNUSED_PARAMETER(locations)
     int start = -1;
     int num_info = 0;
-    int count = 0;
     struct grfInfo *infos = NULL;
     if (lines != NULL) {
         int num_lines = 0;
@@ -221,15 +238,15 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
             else if (num_lines == start + 2) {
                 *loc = num_lines;
                 if ((*start_line) != NULL) free(*start_line);
-                *start_line = (unichar*)malloc(sizeof(unichar) * (num_char + 1));
+                *start_line = (unichar*)malloc(sizeof(unichar) * (num_char + 2));
                 u_strcpy(*start_line, lines[num_lines]);
             }
-            else if (num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == 'G') {
+            else if (num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
                 infos = (grfInfo*)realloc(infos, (num_info + 1) * sizeof(grfInfo));
                 infos[num_info].accept = NULL;
                 infos[num_info].ignore = NULL;
                 infos[num_info].annotation = NULL;
-                infos[num_info].entity_format = (unichar*)malloc(sizeof(unichar) * (num_char + 1));
+                infos[num_info].entity_format = (unichar*)malloc(sizeof(unichar) * (num_char + 2));
                 infos[num_info].entity_format[0] = '"';
                 infos[num_info].entity_format[1] = '%';
                 infos[num_info].entity_format[2] = 'S';
@@ -237,11 +254,9 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                 infos[num_info].annotation_loc = 0;
                 infos[num_info].entity_count = 0;
                 infos[num_info].entities = NULL;
-                infos[num_info].negLeftContxt_loc = total_lines - (*loc) + count*3; //negative context is made up of 3 lines
-                count++;
                 int spaces = 0;
-                for (size_t i = 3; i <= num_char; i++) {
-                    infos[num_info].entity_format[i] = (unichar)lines[num_lines][i];
+                for (size_t i = 2; i <= num_char; i++) {
+                    infos[num_info].entity_format[i + 1] = (unichar)lines[num_lines][i];
                     if (spaces == 4 && lines[num_lines][i] > 47 && lines[num_lines][i] < 58) { //is digit
                         infos[num_info].annotation_loc = 10 * infos[num_info].annotation_loc + lines[num_lines][i] - 48;
                     }
@@ -265,10 +280,8 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                             if (lines[num_lines][j] == '/') {
                                 division = j;
                             }
-                            else if(lines[num_lines][j] == '"') {
+                            else if (lines[num_lines][j] == '"') {
                                 annot_end = j;
-                                if(j > 0 && lines[num_lines][j-1] == '}')
-                                    annot_end = j-1;
                             }
                         }
 
@@ -495,17 +508,16 @@ static void print_entity_param(U_FILE* out, unichar* format, const unichar*param
             break;
         }
     }
-    /*if ((i + 1) == len_format) {
+    if ((i + 1) == len_format) {
         u_fprintf(out, "%S", format);
         return;
-    }*/
-    u_fprintf(out, "\"%S", param);
-    //*(format + i) = '\0';
-    //u_fprintf(out, "%S", format);
-    //u_printf( "%S", format);
-    //*(format + i) = '%';
-    
-    u_fprintf(out, "%S", format+3);
+    }
+
+    *(format + i) = '\0';
+    u_fprintf(out, "%S", format);
+    *(format + i) = '%';
+    u_fprintf(out, "%S", param);
+    u_fprintf(out, "%S", format+2);
 }
 
 
@@ -518,10 +530,7 @@ int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unich
         int updates = 0;
         while(num_lines < total_lines && lines[num_lines] !=NULL) {
         size_t num_char = u_strlen(lines[num_lines]);
-        if (num_lines == start_loc -1 && mode) {
-            u_fprintf(graph_file,"%d\n",total_lines-start_loc+3*num_info); //total number of lines should be updated to reflect the newly added negative contexts
-        }
-        else if(mode && num_lines == start_loc) {
+        if(mode && num_lines == start_loc) {
             int spaces = 0;
             for(int i = 0; start[i] !='\0'; i++) {
             u_fprintf(graph_file,"%C",start[i]);
@@ -532,13 +541,12 @@ int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unich
             }
             u_fprintf(graph_file,"%d ",num_entities);
             for(int i = 0; i < num_info; i++) {
-                if(infos[i].entity_count > 0) {
-                    u_fprintf(graph_file,"%d ",infos[i].negLeftContxt_loc); //point to negative context
-                }
+            if(infos[i].entity_count > 0)
+                u_fprintf(graph_file,"%d ",infos[i].entity_loc);
             }
             u_fprintf(graph_file,"\n");
         }
-        else if(mode && num_char > 3 && lines[num_lines][0] == '"' && lines[num_lines][1] == '$' && lines[num_lines][2] == 'G') {
+        else if(mode && num_char > 2 && lines[num_lines][0] == '"' && lines[num_lines][1] == '@') {
             int loc = num_lines - start_loc;
             for(int i = 0; i < num_info; i++) {
             if(infos[i].entity_loc == loc) {
@@ -557,33 +565,18 @@ int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unich
                 int j = 0;
                 while(lines[num_lines][j] != '\0' && lines[num_lines][j] != '/')
                 j++;
-                for(; j<(int)u_strlen(lines[num_lines]); j++) {
-                    u_fprintf(graph_file,"%C",lines[num_lines][j]);
-                }
+                for(; j<(int)u_strlen(lines[num_lines]); j++)
+                u_fprintf(graph_file,"%C",lines[num_lines][j]);
                 u_fprintf(graph_file,"\n");
                 found++;
             }
             }
-            if(found == 0) {
-                u_fprintf(graph_file,"%S\n",lines[num_lines]);
-            }
-        }
-        else {
+            if(found == 0)
             u_fprintf(graph_file,"%S\n",lines[num_lines]);
         }
+        else
+            u_fprintf(graph_file,"%S\n",lines[num_lines]);
         num_lines++;
-        }
-        if(mode) { // add the negative left context for each path
-            for(int i = 0; i < num_info; i++) {
-                u_fprintf(graph_file,"\"$![\" 10 20 1"); //use random coordinates
-                u_fprintf(graph_file," %d \n",infos[i].negLeftContxt_loc+1);
-                u_fprintf(graph_file,"\"<");
-                for(int j=2; infos[i].annotation[j]!='\0'; j++ ) {
-                    u_fprintf(graph_file,"%C",infos[i].annotation[j]);
-                }
-                u_fprintf(graph_file,">\" 10 20 1 %d \n",infos[i].negLeftContxt_loc+2);
-                u_fprintf(graph_file,"\"$]\" 10 20 1 %d \n",infos[i].entity_loc); // point back to the entity
-            }
         }
     }
     u_fclose(graph_file);
@@ -1084,9 +1077,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         if(is_debug_mode(current_transducer, vec) == true){
             fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
         }
-        
-        int is_template_grf = current_transducer->generic_graph;
-        
+
+        int is_template_grf = is_template_graph(current_transducer->transducer_file_name);
+
         for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
             if (in_place == 0) {
 
@@ -1117,7 +1110,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                 unichar **grf_lines = load_file_in_memory(textbuf->orig_grf, vec, &total_lines);
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
-                   
+
                 if (num_annots > 0) {
                     unichar**entity_string = extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
                     free(entity_string);
