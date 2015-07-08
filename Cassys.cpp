@@ -139,22 +139,6 @@ struct grfInfo {
 };
 
 
-int is_template_graph(const char *transducer) {
-    int ret_value = 0;
-    int pos = -1;
-	int len = (int)strlen(transducer);
-    for(int i = len - 1; i >= 0; i--)
-    if((transducer[i] == PATH_SEPARATOR_CHAR) || (transducer[i] == '\\') || (transducer[i] == '/')) {
-        pos = i;
-        break;
-    }
-
-    if(transducer[pos+1] == '@') {
-      ret_value = 1;
-	}
-
-    return ret_value;
-}
 
 
 unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
