@@ -497,9 +497,9 @@ bool is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
 		return false;
 	}
 	graph_file = u_fopen(vec, t->transducer_file_name, U_READ);
+	// if graph is persisted, file cannot be opened
 	if (graph_file == NULL) {
-		fatal_error("Cannot open file %s\n", t->transducer_file_name);
-		exit(1);
+		return false;
 	}
 
 	unichar c = (unichar)u_fgetc(graph_file);
