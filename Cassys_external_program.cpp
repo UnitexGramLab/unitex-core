@@ -28,6 +28,7 @@
 #include "Grf2Fst2.h"
 #include "Cassys.h"
 #include "Cassys_external_program.h"
+#include "SyncTool.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -51,16 +52,45 @@ namespace unitex {
  *
  *
  */
+
+static int cassys_invoke(ProgramInvoker *invoker, int display_perf, unsigned int* time_elapsed) {
+	hTimeElapsed htmWork = NULL;
+	unsigned int time_elapsed_invoke = 0;
+	char* line_command = build_command_line_alloc(invoker, 0, 1);
+	u_printf("%s\n", line_command);
+
+	if (display_perf || time_elapsed) {
+		htmWork = SyncBuidTimeMarkerObject();
+	}
+	int result = invoke(invoker);
+
+	if (display_perf || time_elapsed) {
+		time_elapsed_invoke = SyncGetMSecElapsed(htmWork);
+
+		const char* name_tool = (const char*)(invoker->args->tab[0]);
+		if ((strlen(name_tool) > 5) && (memcmp(name_tool, "main_", 5) == 0)) name_tool += 5;
+		if (display_perf) {
+			u_printf("Running %s take %.3f sec\n", name_tool, (time_elapsed_invoke / 1000.));
+		}
+		if (time_elapsed)
+			*time_elapsed += time_elapsed_invoke;
+	}
+	free_command_line_alloc(line_command);
+
+	return result;
+}
+
+
 int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, const char *token_txt_name,
     VersatileEncodingConfig* vec,
-    vector_ptr* additional_args){
+    vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed) {
 
 	u_printf("Launch tokenize in Cassys \n");
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Tokenize,"main_Tokenize");
 
 	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
 	if (tmp == NULL) {
-		fatal_alloc_error("launch__in_Cassys");
+		fatal_alloc_error("launch_tokenize_in_Cassys");
 		exit(1);
 	}
 
@@ -101,20 +131,13 @@ int launch_tokenize_in_Cassys(const char *text_name, const char *alphabet_name, 
 		add_argument(invoker, (const char*)additional_args->tab[i]);
 	}
 
-	char* line_command = build_command_line_alloc(invoker);
-	u_printf("%s\n", line_command);
+	int result = cassys_invoke(invoker, display_perf, time_elapsed);
 
-	int result = invoke(invoker);
-	free_command_line_alloc(line_command);
 	free_ProgramInvoker(invoker);
 
 	free(tmp);
 	return result;
 }
-
-
-
-
 
 
 /**
@@ -135,7 +158,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
     const char*negation_operator,
     const VersatileEncodingConfig* vec,
     const char *morpho_dic,
-    vector_ptr* additional_args){
+    vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed) {
 
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Locate, "main_Locate");
 
@@ -199,11 +222,9 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
 		add_argument(invoker, (const char*)additional_args->tab[i]);
 	}
 
-	char* line_command = build_command_line_alloc(invoker);
-	u_printf("%s\n", line_command);
 
-	int result = invoke(invoker);
-	free_command_line_alloc(line_command);
+	int result = cassys_invoke(invoker, display_perf, time_elapsed);
+
 	free_ProgramInvoker(invoker);
 
 	free(tmp);
@@ -224,7 +245,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
  *
  */
 
-int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, vector_ptr *additional_args) {
+int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, vector_ptr *additional_args, int display_perf, unsigned int* time_elapsed) {
     ProgramInvoker *invoker = new_ProgramInvoker(main_Grf2Fst2, "main_Grf2Fst2");
 
 	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
@@ -258,12 +279,10 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 		add_argument(invoker, (const char*)additional_args->tab[arg]);
 	}
 
-	char *line_command = build_command_line_alloc(invoker);
-	u_printf("%s\n",line_command);
 
-	int result = invoke(invoker);
+	int result = cassys_invoke(invoker, display_perf, time_elapsed);
 	free_ProgramInvoker(invoker);
-	free_command_line_alloc(line_command);
+
 	free(tmp);
 	return result;
 }
@@ -284,7 +303,7 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 int launch_concord_in_Cassys(const char *text_name, const char *index_file, const char *alphabet_name,
 	const char *input_offsets_name, const char *uima_name, const char *output_offsets_name,
 	VersatileEncodingConfig* vec,
-	vector_ptr* additional_args){
+	vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed) {
 	ProgramInvoker *invoker = new_ProgramInvoker(main_Concord, "main_Concord");
 
 	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
@@ -374,11 +393,9 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 		add_argument(invoker, (const char*)additional_args->tab[arg]);
 	}
 
-	char* line_command = build_command_line_alloc(invoker);
-	u_printf("%s\n", line_command);
 
-	int result = invoke(invoker);
-	free_command_line_alloc(line_command);
+	int result = cassys_invoke(invoker, display_perf, time_elapsed);
+
 	free_ProgramInvoker(invoker);
 	if (line != NULL) {
 		free(line);
@@ -387,5 +404,6 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 	free(tmp);
 	return result;
 }
+
 
 }

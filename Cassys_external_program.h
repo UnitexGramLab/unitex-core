@@ -52,7 +52,7 @@ int launch_locate_in_Cassys(const char *text_name,
                             const char*negation_operator,
                             const VersatileEncodingConfig*,
                             const char *morpho_dic,
-                            vector_ptr* additional_args);
+                            vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed);
 
 
 
@@ -73,7 +73,7 @@ int launch_concord_in_Cassys(const char *text_name,
                             const char *uima_name,
                             const char *output_offsets_name,
                             VersatileEncodingConfig*,
-                            vector_ptr* additional_args);
+                            vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed);
 
 
 
@@ -97,7 +97,7 @@ int launch_tokenize_in_Cassys(const char *text_name,
                             const char *alphabet_name,
                             const char *token_txt_name,
                             VersatileEncodingConfig*,
-                            vector_ptr* additional_args);
+                            vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed);
 
 /**
  * \brief Calls the Grf2fst2 program in Cassys
@@ -112,7 +112,7 @@ int launch_tokenize_in_Cassys(const char *text_name,
  *
  */
 
-int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig*, vector_ptr* additional_args);
+int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig*, vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed);
 
 }
 #endif /* CASSYS_EXTERNAL_PROGRAM_H_ */

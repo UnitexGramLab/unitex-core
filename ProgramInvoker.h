@@ -51,7 +51,7 @@ void add_long_option(ProgramInvoker* invoker,const char* opt_name,const char* op
 void remove_last_argument(ProgramInvoker* invoker);
 int invoke(ProgramInvoker* invoker);
 void build_command_line(ProgramInvoker* invoker,char* line);
-char* build_command_line_alloc(ProgramInvoker* invoker);
+char* build_command_line_alloc(ProgramInvoker* invoker, int line_protection=1, int skip_main=0);
 void free_command_line_alloc(char* line);
 int exec_unitex_command(MAIN_FUNCTION f,const char* name,...);
 

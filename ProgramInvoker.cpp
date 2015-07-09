@@ -23,6 +23,7 @@
 #include "ProgramInvoker.h"
 #include "Error.h"
 #include "Ustring.h"
+#include "SyncTool.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -194,13 +195,13 @@ static int arg_need_protection(const char* arg)
 /**
  * Builds and returns a command line ready to be used with a 'system' call, alloc a memory buffer.
  */
-char* build_command_line_alloc(ProgramInvoker* invoker) {
+char* build_command_line_alloc(ProgramInvoker* invoker, int line_protection, int skip_main) {
 /* If we are under Windows, we have to surround the whole command line with an
  * additional pair of double quotes */
 #ifdef _NOT_UNDER_WINDOWS
 const char* protection="";
 #else
-const char* protection="\"";
+const char* protection= line_protection ? "\"" : "";
 #endif
 
 size_t totalize_size=2;
@@ -213,7 +214,12 @@ if (line==NULL) {
    fatal_alloc_error("build_command_line_alloc");
 }
 
-sprintf(line,"%s\"%s\"",protection,(const char*)(invoker->args->tab[0]));
+const char* name_tool = (const char*)(invoker->args->tab[0]);
+if ((skip_main) && (strlen(name_tool) > 5) && (memcmp(name_tool,"main_",5)==0)) {
+   sprintf(line, "%s", name_tool + 5);
+} else {
+   sprintf(line, "%s\"%s\"", protection, (const char*)(invoker->args->tab[0]));
+}
 for (int i=1;i<invoker->args->nbelems;i++) {
    const char* cur_arg = (const char*)(invoker->args->tab[i]);
    int cur_arg_need_protection = arg_need_protection(cur_arg);

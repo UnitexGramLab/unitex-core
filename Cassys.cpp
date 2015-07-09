@@ -38,6 +38,7 @@
 #include "Cassys_lexical_tags.h"
 #include "Cassys_concord.h"
 #include "UnusedParameter.h"
+#include "SyncTool.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -48,7 +49,7 @@ namespace unitex {
 
 
 
-const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNnm:s:ir:f:T:L:C:$:";
+const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNncm:s:ir:f:T:L:C:$:";
 const struct option_TS lopts_Cassys[] = {
         {"text", required_argument_TS, NULL, 't'},
         {"alphabet", required_argument_TS, NULL, 'a'},
@@ -65,6 +66,7 @@ const struct option_TS lopts_Cassys[] = {
         {"dump_token_graph", no_argument_TS, NULL, 'u' },
         {"no_dump_token_graph", no_argument_TS, NULL, 'N' },
         {"realign_token_graph_pointer", no_argument_TS, NULL, 'n' },
+        {"display_time", no_argument_TS, NULL, 'c' },
         {"translate_path_separator_to_native", no_argument_TS, NULL, 'v' },
         {"working_dir", required_argument_TS, NULL, 'p' },
         {"cleanup_working_files", no_argument_TS, NULL, 'b' },
@@ -72,7 +74,7 @@ const struct option_TS lopts_Cassys[] = {
         {"locate_argument", required_argument_TS, NULL, 'L' },
         {"concord_argument", required_argument_TS, NULL, 'C' },
         {"uima", required_argument_TS, NULL, 'f' },
-		{"input_offsets",required_argument_TS,NULL,'$'},
+        {"input_offsets",required_argument_TS,NULL,'$'},
         {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -90,15 +92,16 @@ const char* usage_Cassys =
         "-l TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
-        "--input_offsets=XXX: base offset file to be used (optional)\n"
+        "--input_offsets=XXX base offset file to be used (optional)\n"
         "-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
         "-i/--in_place mean uses the same csc/snt directories for each transducer\n"
-        "-p X/--working_dir=X: uses directory X for intermediate working file\n"
-        "-b/--cleanup_working_files: remove intermediate working file after usage\n"
+        "-p X/--working_dir=X uses directory X for intermediate working file\n"
+        "-b/--cleanup_working_files remove intermediate working file after usage\n"
         "-u/--dump_token_graph create a .dot file with graph dump infos\n"
         "-N/--no_dump_token_graph create a .dot file with graph dump infos\n"
         "-n/--realign_token_graph_pointer create a.dot file will not depends to pointer allocation to be deterministic\n"
         "-v/--translate_path_separator_to_native replace path separator in csc by native separator for portable csc file\n"
+        "-c/--display_time display time used in each unitex tool\n"
         "-d/--no_create_directory mean the all snt/csc directories already exist and don't need to be created\n"
         "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
         "  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
@@ -504,7 +507,7 @@ static void print_entity_param(U_FILE* out, unichar* format, const unichar*param
     //u_fprintf(out, "%S", format);
     //u_printf( "%S", format);
     //*(format + i) = '%';
-    
+
     u_fprintf(out, "%S", format+3);
 }
 
@@ -594,29 +597,29 @@ int update_tmp_graph(const char *transducer, VersatileEncodingConfig *vec, unich
 
 
 typedef struct {
-	char transducer_list_file_name[FILENAME_MAX];
-	char text_file_name[FILENAME_MAX];
-	char alphabet_file_name[FILENAME_MAX];
-	char name_uima_offsets_file[FILENAME_MAX];
-	char name_input_offsets_file[FILENAME_MAX];
-	char transducer_filename_prefix[FILENAME_MAX];
-	char extension_text_name[FILENAME_MAX];
+    char transducer_list_file_name[FILENAME_MAX];
+    char text_file_name[FILENAME_MAX];
+    char alphabet_file_name[FILENAME_MAX];
+    char name_uima_offsets_file[FILENAME_MAX];
+    char name_input_offsets_file[FILENAME_MAX];
+    char transducer_filename_prefix[FILENAME_MAX];
+    char extension_text_name[FILENAME_MAX];
 } Cassys_text_buffer;
 
 typedef struct {
-	char last_labeled_text_name[FILENAME_MAX];
-	char orig_grf[FILENAME_MAX];
-	char template_name_without_extension[FILENAME_MAX];
-	//              char graph_file_name_n[FILENAME_MAX];
-	char result_file_name_XML[FILENAME_MAX];
-	char text_name_without_extension[FILENAME_MAX];
-	char path[FILENAME_MAX];
-	char last_resulting_text_path[FILENAME_MAX];
-	char result_file_name_path_XML[FILENAME_MAX];
-	char result_file_name_path_offset[FILENAME_MAX + 0x20];
-	char result_file_name_raw[FILENAME_MAX];
-	char result_file_name_path_raw[FILENAME_MAX];
-	char graph_file_name[FILENAME_MAX];
+    char last_labeled_text_name[FILENAME_MAX];
+    char orig_grf[FILENAME_MAX];
+    char template_name_without_extension[FILENAME_MAX];
+    //              char graph_file_name_n[FILENAME_MAX];
+    char result_file_name_XML[FILENAME_MAX];
+    char text_name_without_extension[FILENAME_MAX];
+    char path[FILENAME_MAX];
+    char last_resulting_text_path[FILENAME_MAX];
+    char result_file_name_path_XML[FILENAME_MAX];
+    char result_file_name_path_offset[FILENAME_MAX + 0x20];
+    char result_file_name_raw[FILENAME_MAX];
+    char result_file_name_path_raw[FILENAME_MAX];
+    char graph_file_name[FILENAME_MAX];
 } Cascade_text_buffer;
 
 
@@ -626,11 +629,11 @@ int main_Cassys(int argc,char* const argv[]) {
         return 0;
     }
 
-	Cassys_text_buffer* textbuf = (Cassys_text_buffer*)malloc(sizeof(Cassys_text_buffer));
-	if (textbuf == NULL) {
-		fatal_alloc_error("main_Cassys");
-		exit(1);
-	}
+    Cassys_text_buffer* textbuf = (Cassys_text_buffer*)malloc(sizeof(Cassys_text_buffer));
+    if (textbuf == NULL) {
+        fatal_alloc_error("main_Cassys");
+        exit(1);
+    }
 
     char* morpho_dic=NULL;
 
@@ -647,6 +650,7 @@ int main_Cassys(int argc,char* const argv[]) {
     int realign_token_graph_pointer = 0;
     int translate_path_separator_to_native = 0;
     int dump_graph = 0; // By default, don't build a .dot file.
+    int display_perf = 0;
 
 // define CASSYS_DEFAULT_TEMP_WORK_DIR with a default location (probably in virtual system file) to
 //  build a version of k6 which uses this temp location and perform cleanup
@@ -678,9 +682,9 @@ int main_Cassys(int argc,char* const argv[]) {
     int val;
     int index = 1;
     negation_operator[0]='\0';
-	textbuf->transducer_filename_prefix[0]='\0';
-	textbuf->name_uima_offsets_file[0] = '\0';
-	textbuf->name_input_offsets_file[0] = '\0';
+    textbuf->transducer_filename_prefix[0]='\0';
+    textbuf->name_uima_offsets_file[0] = '\0';
+    textbuf->name_input_offsets_file[0] = '\0';
     struct OptVars* vars=new_OptVars();
     while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
             lopts_Cassys, &index, vars))) {
@@ -805,6 +809,10 @@ int main_Cassys(int argc,char* const argv[]) {
             dump_graph = 1;
             break;
         }
+        case 'c': {
+            display_perf = 1;
+            break;
+        }
         case 'N': {
             dump_graph = 0;
             break;
@@ -917,7 +925,7 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
-        dump_graph, realign_token_graph_pointer);
+        dump_graph, realign_token_graph_pointer, display_perf);
 
     if (temp_work_dir != NULL){
         free(temp_work_dir);
@@ -931,7 +939,7 @@ int main_Cassys(int argc,char* const argv[]) {
     free_vector_ptr(tokenize_additional_args, free);
     free_vector_ptr(locate_additional_args, free);
     free_vector_ptr(concord_additional_args, free);
-	free(textbuf);
+    free(textbuf);
     return ret_value;
 }
 
@@ -942,20 +950,29 @@ int main_Cassys(int argc,char* const argv[]) {
  *
  */
 int cascade(const char* original_text, int in_place, int must_create_directory,  int must_do_temp_cleanup, const char* temp_work_dir,
-    fifo* transducer_list, const char *alphabet, 
-	const char*name_input_offsets_file, const char* name_uima_offsets_file,
+    fifo* transducer_list, const char *alphabet,
+    const char*name_input_offsets_file, const char* name_uima_offsets_file,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
-    int dump_graph, int realign_token_graph_pointer) {
+    int dump_graph, int realign_token_graph_pointer, int display_perf) {
 
-	int ret_value = 0;
+    int ret_value = 0;
+    unsigned int time_tokenize = 0;
+    unsigned int time_grf2fst2 = 0;
+    unsigned int time_locate = 0;
+    unsigned int time_concord = 0;
+    unsigned int time_cascade = 0;
 
-	Cascade_text_buffer* textbuf = (Cascade_text_buffer*)malloc(sizeof(Cascade_text_buffer));
-	if (textbuf == NULL) {
-		fatal_alloc_error("cascade");
-		exit(1);
-	}
+    hTimeElapsed htm_cascade = NULL;
+    if (display_perf) {
+        htm_cascade = SyncBuidTimeMarkerObject();
+    }
+    Cascade_text_buffer* textbuf = (Cascade_text_buffer*)malloc(sizeof(Cascade_text_buffer));
+    if (textbuf == NULL) {
+        fatal_alloc_error("cascade");
+        exit(1);
+    }
     cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
 
@@ -1045,7 +1062,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     initialize_working_directory_before_tokenize(text, must_create_directory);
         /*Commenting out launch_tokenize_in_Cassys because the call is redundant
          *  and throws the error "Cannot write tok_by_freq.txt" */
-    //launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args);
+    //launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args, display_perf);
 
     //if (in_place == 0)
         initialize_working_directory(text, must_create_directory);
@@ -1087,7 +1104,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         if ((!is_template_grf) && is_debug_mode(current_transducer, vec) == true) {
             fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
         }
-        
+
         for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
             if (in_place == 0) {
 
@@ -1099,7 +1116,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
             }
 
             launch_tokenize_in_Cassys(labeled_text_name, alphabet,
-                snt_text_files->tokens_txt, vec, tokenize_args);
+                snt_text_files->tokens_txt, vec, tokenize_args, display_perf, display_perf ? &time_tokenize : NULL);
 
             int entity = 0;
             char* updated_grf_file_name = NULL;
@@ -1118,7 +1135,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                 unichar **grf_lines = load_file_in_memory(textbuf->orig_grf, vec, &total_lines);
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
-                   
+
                 if (num_annots > 0) {
                     unichar**entity_string = extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
                     free(entity_string);
@@ -1130,7 +1147,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                     if (update_tmp_graph(updated_grf_file_name, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
                         if (num_entities > 0) {
-                            launch_grf2fst2_in_Cassys(updated_grf_file_name, alphabet, vec, concord_args);
+                            launch_grf2fst2_in_Cassys(updated_grf_file_name, alphabet, vec, concord_args, display_perf, display_perf ? &time_grf2fst2 : NULL);
 
                             updated_fst2_file_name = create_updated_graph_filename(text,
                                 in_place ? 0 : transducer_number,
@@ -1161,7 +1178,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 }
 
                 launch_locate_in_Cassys(labeled_text_name, current_transducer,
-                    alphabet, negation_operator, vec, morpho_dic, locate_args);
+                    alphabet, negation_operator, vec, morpho_dic, locate_args, display_perf, display_perf ? &time_locate : NULL);
 
                 if (backup_transducer_filename != NULL)
                     current_transducer->transducer_file_name = backup_transducer_filename;
@@ -1173,7 +1190,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 protect_lexical_tag_in_concord(snt_text_files->concord_ind, current_transducer->output_policy, vec);
                 // generate concordance for this transducer
                 launch_concord_in_Cassys(labeled_text_name,
-                    snt_text_files->concord_ind, alphabet, NULL, NULL, NULL, vec, concord_args);
+                    snt_text_files->concord_ind, alphabet, NULL, NULL, NULL, vec, concord_args, display_perf, display_perf ? &time_concord : NULL);
 
                 //
                 add_replaced_text(labeled_text_name, tokens_list, previous_transducer_number, previous_iteration,
@@ -1248,28 +1265,28 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     sprintf(textbuf->result_file_name_path_XML,"%s", textbuf->result_file_name_XML);
     copy_file(textbuf->result_file_name_path_XML, textbuf->last_resulting_text_path);
 
-	textbuf->result_file_name_path_offset[0]='\0';
-	if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
+    textbuf->result_file_name_path_offset[0]='\0';
+    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_txt_offsets.txt", textbuf->text_name_without_extension);
 
     // create the text file including XMLized concordance
-    launch_concord_in_Cassys(textbuf->result_file_name_path_XML, snt_files->concord_ind, alphabet, 
-		name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
+    launch_concord_in_Cassys(textbuf->result_file_name_path_XML, snt_files->concord_ind, alphabet,
+        name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args, display_perf, display_perf ? &time_concord : NULL);
 
     // make a copy of the last resulting text of the cascade in the file named _csc.raw
     sprintf(textbuf->result_file_name_raw,"%s_csc.raw", textbuf->text_name_without_extension);
     sprintf(textbuf->result_file_name_path_raw,"%s", textbuf->result_file_name_raw);
     copy_file(textbuf->result_file_name_path_raw, textbuf->last_resulting_text_path);
 
-	textbuf->result_file_name_path_offset[0] = '\0';
+    textbuf->result_file_name_path_offset[0] = '\0';
     if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_raw_offsets.txt", textbuf->text_name_without_extension);
 
     // relaunch the construction of the concord file without XML
     construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
     // relaunch the construction of the text file without XML
-    launch_concord_in_Cassys(textbuf->result_file_name_path_raw, snt_files->concord_ind, alphabet, 
-		name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args);
+    launch_concord_in_Cassys(textbuf->result_file_name_path_raw, snt_files->concord_ind, alphabet,
+        name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args, display_perf, display_perf ? &time_concord : NULL);
 
     if (dump_graph)
     {
@@ -1313,7 +1330,22 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
     if (uima_offsets != NULL)
         free_vector_int(uima_offsets);
-	free(textbuf);
+    free(textbuf);
+
+
+
+    if (display_perf) {
+        time_cascade = SyncGetMSecElapsed(htm_cascade);
+        float ratio = (float)(time_cascade / 100.);
+        if (ratio == 0) ratio = 1;
+        u_printf("time cascade = %.3f sec\n", time_cascade / 1000.);
+
+        u_printf("time time_tokenize = %.3f sec, %.1f %% total\n", time_tokenize / 1000.,time_tokenize / ratio);
+        u_printf("time time_grf2fst2 = %.3f sec, %.1f %% total\n", time_grf2fst2 / 1000., time_grf2fst2/ratio);
+        u_printf("time time_locate = %.3f sec, %.1f %% total\n", time_locate / 1000., time_locate/ratio);
+        u_printf("time time_concord = %.3f sec, %.1f %% total\n", time_concord / 1000., time_concord/ratio);
+    }
+
     return ret_value;
 }
 
