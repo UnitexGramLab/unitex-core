@@ -619,6 +619,7 @@ typedef struct {
 	char graph_file_name[FILENAME_MAX];
 } Cascade_text_buffer;
 
+
 int main_Cassys(int argc,char* const argv[]) {
     if (argc==1) {
         usage();
@@ -696,7 +697,7 @@ int main_Cassys(int argc,char* const argv[]) {
                   free_vector_ptr(tokenize_additional_args, free);
                   free_vector_ptr(locate_additional_args, free);
                   free_vector_ptr(concord_additional_args, free);
-				  free(textbuf);
+                  free(textbuf);
                   return 0;
         case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");

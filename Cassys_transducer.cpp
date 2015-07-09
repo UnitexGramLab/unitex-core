@@ -38,6 +38,7 @@
 
 namespace unitex {
 
+
 /**
  * Adds the transducer 'fileName' to the linked list of transducer 'current_list'. The mode of the transductor is assumed to be by
  * 'set_last_transducer_linked_list_mode' function
@@ -127,6 +128,7 @@ struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name
 	return add_transducer_linked_list_new_name(current_list, filename, 1,0);
 }
 
+
 void set_last_transducer_linked_list_mode(struct transducer_name_and_mode_linked_list *current_list,OutputPolicy mode)
 {
     struct transducer_name_and_mode_linked_list *browse_current_list = current_list;
@@ -152,13 +154,10 @@ OutputPolicy GetOutputPolicyFromString(const char*option_name)
 }
 
 
-
-
 void set_last_transducer_linked_list_mode_by_string(struct transducer_name_and_mode_linked_list *current_list,const char*option_name)
 {
     set_last_transducer_linked_list_mode(current_list,GetOutputPolicyFromString(option_name));
 }
-
 
 
 void free_transducer_name_and_mode_linked_list(struct transducer_name_and_mode_linked_list *list)
@@ -183,6 +182,7 @@ void translate_path_separator_to_native_in_filename(char* filename) {
 	}
 }
  
+
 struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name, int translate_path_separator_to_native) {
 
 	U_FILE *file_transducer_list;
@@ -200,7 +200,7 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 		char *transducer_file_name;
 		char *enabled_policy;
 		int repeat_policy;
-                int generic_graph;
+		int generic_graph;
 
 		OutputPolicy transducer_policy;
 
@@ -217,7 +217,7 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 		transducer_policy = extract_cassys_transducer_policy(line);
 		enabled_policy = extract_cassys_disabled(line);
 		repeat_policy = extract_cassys_tranducer_star(line);
-                generic_graph = extract_cassys_generic_mark(line);
+		generic_graph = extract_cassys_generic_mark(line);
 		if (transducer_file_name != NULL && transducer_policy != IGNORE_OUTPUTS && (strcmp("",enabled_policy)==0 || strcmp("Enabled",enabled_policy)==0)) {
 			res=add_transducer_linked_list_new_name(res,transducer_file_name, repeat_policy, generic_graph);
             set_last_transducer_linked_list_mode(res,transducer_policy);
@@ -243,9 +243,10 @@ struct transducer_name_and_mode_linked_list *load_transducer_list_file(const cha
 	return res;
 }
 
+
 /**  if a filename must be concatenated, we must remove the absolute prefix on filename to concat
-  *  (by example, replace 'c:\folder\sub\file' by 'folder\sub\file')
-  */
+ *  (by example, replace 'c:\folder\sub\file' by 'folder\sub\file')
+ */
 static const char*skip_absolute_prefix(const char* filename) {
 	// if Windows filename begin with 'c:', we skip two char
 	if ((*(filename)) != '\0')
@@ -255,6 +256,7 @@ static const char*skip_absolute_prefix(const char* filename) {
 		filename++;
 	return filename;
 }
+
 
 struct fifo *load_transducer_from_linked_list(const struct transducer_name_and_mode_linked_list *list,const char* transducer_filename_prefix){
 	struct fifo *transducer_fifo = new_fifo();
@@ -336,6 +338,7 @@ void remove_cassys_comments(char *line){
 	line[i]='\0';
 }
 
+
 /**
  * \brief \b fgets working with \b U_FILE and storing \b char
  *
@@ -364,7 +367,6 @@ char *cassys_fgets(char *line, int n, U_FILE *u) {
 	//u_printf("fgets result =%s\n",line);
 	return line;
 }
-
 
 
 /**
@@ -440,6 +442,7 @@ int extract_cassys_tranducer_star(const char *line) {
 
 }
 
+
 char *extract_cassys_disabled(const char *line){
 	char *enabled_policy;
 
@@ -481,7 +484,6 @@ char *extract_cassys_disabled(const char *line){
 	strcpy(enabled_policy,option_name);
 
 	return enabled_policy;
-
 }
 
 
@@ -521,7 +523,8 @@ OutputPolicy extract_cassys_transducer_policy(const char *line) {
 	return IGNORE_OUTPUTS;
 }
 
-bool is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
+
+bool is_debug_mode(transducer *t, const VersatileEncodingConfig* vec) {
 
 	U_FILE *graph_file;
 	graph_file = u_fopen(vec, t->transducer_file_name, U_READ);
@@ -538,8 +541,8 @@ bool is_debug_mode(transducer *t, const VersatileEncodingConfig* vec){
 	} else {
 		return false;
 	}
-
 }
+
 
 }
 
