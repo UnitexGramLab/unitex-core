@@ -131,7 +131,7 @@ void free_couple(struct couple*);
 void get_node(unichar*, int, struct sort_tree_node*, struct sort_infos* inf);
 void explore_node(struct sort_tree_node*, struct sort_infos* inf,
 		struct dela_entry**);
-void quicksort(struct sort_tree_transition**, int, int, struct sort_infos* inf);
+static void quicksort(struct sort_tree_transition**, int, int, struct sort_infos* inf);
 int char_cmp(unichar, unichar, struct sort_infos* inf);
 int strcmp2(unichar*, unichar*, struct sort_infos* inf);
 struct couple* insert_string_thai(unichar*, struct couple*,
@@ -804,7 +804,7 @@ void explore_node(struct sort_tree_node* n, struct sort_infos* inf,
 /**
  * Partitions the given array for quicksort.
  */
-int partition(struct sort_tree_transition** t, int m, int n,
+static int partition(struct sort_tree_transition** t, int m, int n,
 		struct sort_infos* inf) {
 	unichar pivot;
 	struct sort_tree_transition* tmp;
@@ -827,10 +827,11 @@ int partition(struct sort_tree_transition** t, int m, int n,
 	}
 }
 
+
 /**
  * Quicksorts the given sort tree transition array.
  */
-void quicksort(struct sort_tree_transition** t, int m, int n,
+static void quicksort(struct sort_tree_transition** t, int m, int n,
 		struct sort_infos* inf) {
 	int p;
 	if (m < n) {
@@ -839,6 +840,7 @@ void quicksort(struct sort_tree_transition** t, int m, int n,
 		quicksort(t, p + 1, n, inf);
 	}
 }
+
 
 /**
  * Converts the string 'src' into a string with no diacritic sign and

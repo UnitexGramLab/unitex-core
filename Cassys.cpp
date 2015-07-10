@@ -142,6 +142,7 @@ struct grfInfo {
     int negLeftContxt_loc;
 };
 
+
 unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
     int num_lines = 0;
     unichar **grf_lines = NULL;
@@ -944,6 +945,85 @@ int main_Cassys(int argc,char* const argv[]) {
 }
 
 
+typedef struct {
+    unsigned int elapsed_time;
+    unsigned int index;
+    char* name;
+} locate_perf_info;
+
+
+static int compare_perf_info(const locate_perf_info* p1, const locate_perf_info* p2)
+{
+    if (p1->elapsed_time < p2->elapsed_time)
+        return -1;
+    if (p1->elapsed_time > p2->elapsed_time)
+        return 1;
+    if (p1->index < p2->index)
+        return -1;
+    if (p1->index > p2->index)
+        return 1;
+    return 0;
+}
+
+
+/**
+* Sorts the locate perf info
+*/
+static void quicksort_recursive(unsigned int nb_items, locate_perf_info* array)
+{
+    unsigned int i, j;
+    locate_perf_info pivot;
+    int fOnePermut, fMoveIJ;
+    if (nb_items < 2) return;
+    pivot = *(array + (nb_items / 2));
+    i = 0;
+    j = nb_items - 1;
+    fOnePermut = 0;
+    do
+    {
+        fMoveIJ = 0;
+        while (compare_perf_info(array + i, &pivot) < 0)
+        {
+            i++;
+            fMoveIJ = 1;
+        }
+
+        while ((j != 0) && (compare_perf_info(array + j, &pivot) > 0))
+        {
+            j--;
+            fMoveIJ = 1;
+        }
+
+        if (i <= j)
+        {
+            locate_perf_info permut;
+
+            permut = *(array + i);
+            *(array + i) = *(array + j);
+            *(array + j) = permut;
+            if (!fOnePermut)
+                if ((compare_perf_info(array + i, &pivot) != 0))
+                fOnePermut = 1;
+        }
+    } while ((i < j) && (fMoveIJ));
+
+    if (fOnePermut || (j + 1<nb_items))
+        if (j >= 1) quicksort_recursive(j + 1, array);
+    if (fOnePermut || (i>0))
+        if (i<nb_items - 1) quicksort_recursive(nb_items - i, array + i);
+
+    if ((i == 0) && (j == 0) && (!fOnePermut) && (nb_items>1))
+        quicksort_recursive(nb_items - 1, array + 1);
+    else if ((i == nb_items - 1) && (j == i) && (!fOnePermut) && (nb_items>1))
+        quicksort_recursive(nb_items - 1, array);
+}
+
+
+static void quicksort(int nb_items, locate_perf_info* transitions) {
+    quicksort_recursive(nb_items, transitions);
+}
+
+
 /**
  * The main function of the cascade
  *
@@ -964,10 +1044,21 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     unsigned int time_concord = 0;
     unsigned int time_cascade = 0;
 
+    unsigned int nb_perf_info = 0;
+    unsigned int nb_perf_info_allocated = 0;
+    locate_perf_info* p_locate_perf_info = NULL;
+
     hTimeElapsed htm_cascade = NULL;
     if (display_perf) {
         htm_cascade = SyncBuidTimeMarkerObject();
+        nb_perf_info_allocated = 1;
+        p_locate_perf_info = (locate_perf_info*)malloc(nb_perf_info_allocated*sizeof(locate_perf_info));
+        if (p_locate_perf_info == NULL) {
+            fatal_alloc_error("cascade");
+            exit(1);
+        }
     }
+
     Cascade_text_buffer* textbuf = (Cascade_text_buffer*)malloc(sizeof(Cascade_text_buffer));
     if (textbuf == NULL) {
         fatal_alloc_error("cascade");
@@ -1177,11 +1268,28 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                     current_transducer->transducer_file_name = updated_fst2_file_name;
                 }
 
+                unsigned int time_this_locate = 0;
                 launch_locate_in_Cassys(labeled_text_name, current_transducer,
-                    alphabet, negation_operator, vec, morpho_dic, locate_args, display_perf, display_perf ? &time_locate : NULL);
+                    alphabet, negation_operator, vec, morpho_dic, locate_args, display_perf, display_perf ? &time_this_locate : NULL);
 
                 if (backup_transducer_filename != NULL)
                     current_transducer->transducer_file_name = backup_transducer_filename;
+
+                if (display_perf) {
+                    time_locate += time_this_locate;
+                    if (nb_perf_info_allocated <= nb_perf_info) {
+                        nb_perf_info_allocated *= 2;
+                        p_locate_perf_info = (locate_perf_info*)realloc(p_locate_perf_info,nb_perf_info_allocated*sizeof(locate_perf_info));
+                        if (p_locate_perf_info == NULL) {
+                            fatal_alloc_error("cascade");
+                            exit(1);
+                        }
+                    }
+                    (p_locate_perf_info + nb_perf_info)->elapsed_time = time_this_locate;
+                    (p_locate_perf_info + nb_perf_info)->name = strdup(current_transducer->transducer_file_name);
+                    (p_locate_perf_info + nb_perf_info)->index = nb_perf_info;
+                    nb_perf_info++;
+                }
 
                 // add protection character in lexical tags when needed
                 //u_printf("labeled_text_name = %s *******\n", labeled_text_name);
@@ -1337,14 +1445,39 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     if (display_perf) {
         time_cascade = SyncGetMSecElapsed(htm_cascade);
         float ratio = (float)(time_cascade / 100.);
+        float ratio_locate = (float)(time_locate / 100.);
         if (ratio == 0) ratio = 1;
-        u_printf("time cascade = %.3f sec\n", time_cascade / 1000.);
+        if (ratio_locate == 0) ratio_locate = 1;
+        u_printf("time running cascade = %.3f sec\n", time_cascade / 1000.);
 
-        u_printf("time time_tokenize = %.3f sec, %.1f %% total\n", time_tokenize / 1000.,time_tokenize / ratio);
-        u_printf("time time_grf2fst2 = %.3f sec, %.1f %% total\n", time_grf2fst2 / 1000., time_grf2fst2/ratio);
-        u_printf("time time_locate = %.3f sec, %.1f %% total\n", time_locate / 1000., time_locate/ratio);
-        u_printf("time time_concord = %.3f sec, %.1f %% total\n", time_concord / 1000., time_concord/ratio);
+        u_printf("time on tokenize = %.3f sec, %.1f %% total\n", time_tokenize / 1000.,time_tokenize / ratio);
+        u_printf("time on grf2fst2 = %.3f sec, %.1f %% total\n", time_grf2fst2 / 1000., time_grf2fst2 / ratio);
+        u_printf("time on locate = %.3f sec, %.1f %% total\n", time_locate / 1000., time_locate / ratio);
+        u_printf("time on concord = %.3f sec, %.1f %% total\n", time_concord / 1000., time_concord / ratio);
+
+        u_printf("\nlocate time on transduced order:\n");
+        for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++)
+            u_printf("locate %.3f sec (%.1f %%) for %s\n",
+                (p_locate_perf_info + loop_display_perf)->elapsed_time / 1000.,
+                (p_locate_perf_info + loop_display_perf)->elapsed_time / ratio_locate,
+                (p_locate_perf_info + loop_display_perf)->name);
+
+        quicksort(nb_perf_info, p_locate_perf_info);
+
+        u_printf("\nlocate time sorted by time:\n");
+        for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++)
+            u_printf("locate %.3f sec (%.1f %%) for %s\n",
+                (p_locate_perf_info + loop_display_perf)->elapsed_time / 1000.,
+                (p_locate_perf_info + loop_display_perf)->elapsed_time / ratio_locate,
+                (p_locate_perf_info + loop_display_perf)->name);
     }
+
+	if (p_locate_perf_info != NULL)
+	{
+		for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++)
+			free((p_locate_perf_info + loop_display_perf)->name);
+		free(p_locate_perf_info);
+	}
 
     return ret_value;
 }

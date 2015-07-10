@@ -32,8 +32,8 @@ namespace unitex {
 
 void increment_reference_DLC_tree_node(struct DLC_tree_node*);
 void decrement_reference_DLC_tree_node(struct DLC_tree_node*);
-void quicksort(int*,int);
-void quicksort2(int*,void**,int);
+static void quicksort(int*,int);
+static void quicksort2(int*,void**,int);
 IntSequence clone_IntSequence(IntSequence);
 int compare_IntSequence(IntSequence,IntSequence);
 
@@ -595,7 +595,7 @@ optimize_DLC_node(DLC_tree->root);
 /**
  * Builds a quicksort partition of the given array.
  */
-int partition(int start,int end,int* array) {
+static int partition(int start,int end,int* array) {
 int pivot;
 int tmp;
 int i=start-1;
@@ -621,7 +621,7 @@ return j;
 /**
  * Sorts the given int array.
  */
-void quicksort(int start,int end,int* array) {
+static void quicksort(int start,int end,int* array) {
 int p;
 if (start<end) {
    p=partition(start,end,array);
@@ -634,7 +634,7 @@ if (start<end) {
 /**
  * Sorts the given int array.
  */
-void quicksort(int* array,int size) {
+static void quicksort(int* array,int size) {
 quicksort(0,size-1,array);
 }
 
@@ -642,7 +642,7 @@ quicksort(0,size-1,array);
 /**
  * Builds a quicksort partition of the given arrays.
  */
-int partition2(int start,int end,int* array1,void** array2) {
+static int partition2(int start,int end,int* array1,void** array2) {
 int pivot;
 int tmp;
 int i=start-1;
@@ -674,7 +674,7 @@ return j;
 /**
  * Sorts the given int arrays.
  */
-void quicksort2(int start,int end,int* array1,void** array2) {
+static void quicksort2(int start,int end,int* array1,void** array2) {
 int p;
 if (start<end) {
    p=partition2(start,end,array1,array2);
@@ -688,7 +688,7 @@ if (start<end) {
  * Sorts the given int arrays. The sort is done according to the values of
  * 'array1', but the element permutations are done on both arrays.
  */
-void quicksort2(int* array1,void** array2,int size) {
+static void quicksort2(int* array1,void** array2,int size) {
 quicksort2(0,size-1,array1,array2);
 }
 
