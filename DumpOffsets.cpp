@@ -255,7 +255,7 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
                 }
             }
             else {
-                u_fputc(c, f);
+                u_fputc_raw(c, f);
             }
         }
         if(quotes)
@@ -353,6 +353,136 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
     if(denorm_text !=NULL)
         free(denorm_text);
 
+    return 0;
+}
+
+static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end,struct string_hash* replacements)
+{
+    if(old_end < old_start || new_end < new_start || old_end > old_textsize || new_end > new_textsize)
+        return 1;
+    else if(old_end == old_start || new_start == new_end)
+        return 0;
+    int i = old_start;
+    unichar old_c = *(old_text + i);
+    
+    unichar* old_str = NULL;
+    old_str = (unichar *)malloc(sizeof(unichar) * 2);
+    
+    int j = new_start;
+    unichar new_c = *(new_text + j);
+    
+    while(i<old_end && j<new_end ) {
+        while(i<old_end && j<new_end && old_c == new_c) {
+            u_fputc_raw(new_c, f);
+            i++;
+            j++;
+            old_c = *(old_text + i);
+            new_c = *(new_text + j);
+        }
+        old_str[0] = old_c;
+        old_str[1] = '\0';
+        int idx = get_value_index(old_str, replacements,DONT_INSERT);
+        if(idx!=NO_VALUE_INDEX && replacements->value[idx][0]== new_c) {
+            u_fputc_raw(old_c, f);
+            i++;
+            j++;
+            old_c = *(old_text + i);
+            new_c = *(new_text + j);
+        }
+        int wht_spaces = 0;
+        while(j < new_end && (new_c ==' ' || new_c =='\t' || new_c =='\n' || new_c =='\r')) {
+            j++;
+            new_c = *(new_text + j);
+            wht_spaces = 1;
+        }
+        
+        while(i < old_end && (old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && wht_spaces == 1) {
+            u_fputc_raw(old_c, f);  
+            i++;
+            old_c = *(old_text + i);
+        }
+        
+        if(old_c != new_c) {
+            if(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') {
+                if(j-1 > new_start && (*(new_text + j - 1) ==' ' || *(new_text + j - 1) =='\r' || *(new_text + j - 1) =='\n')) {
+                    while(i<old_end && (old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r')) {
+                        u_fputc_raw(old_c, f);  
+                        i++;
+                        old_c = *(old_text + i);
+                    }
+                }
+                else if(j-1 > new_start && i-1 > old_start && *(new_text + j - 1) == *(old_text + i - 1) ) {
+                    if(i+1 < old_end && old_c =='\r' &&  *(old_text + i + 1) == '\n') {
+                        if(i+3 < old_end && j+1 < new_end  && *(old_text + i + 2)== new_c && *(old_text + i + 3)== *(new_text + j + 1)) {
+                            u_fputc_raw(old_c, f);
+                            u_fputc_raw('\n', f);
+                            i += 2;
+                            old_c = *(old_text + i);
+                        }
+                        else if(new_c=='<'){
+                            while(j+1<new_end && !(new_c== '>' && *(new_text + j + 1) ==' ')) {
+                                u_fputc_raw(new_c, f);
+                                j++;
+                                new_c = *(new_text + j);
+                            }
+                            if(new_c== '>' && *(new_text + j + 1) ==' ') {
+                                u_fputc_raw(new_c, f);
+                                u_fputc_raw(old_c, f);
+                                u_fputc_raw('\n', f);
+                                i += 2;
+                                old_c = *(old_text + i);
+                                j++;
+                                new_c = *(new_text + j);
+                            }
+                        }
+                    }
+                    else if(old_c ==' ' && new_c=='<') {
+                        while(j+1<new_end && !(new_c== '>' && *(new_text + j + 1) ==' ')) {
+                            u_fputc_raw(new_c, f);
+                            j++;
+                            new_c = *(new_text + j);
+                         }
+                        u_fputc_raw(new_c, f);
+                        u_fputc_raw(' ', f);
+                        j += 2;
+                        new_c = *(new_text + j);
+                        i++;
+                        old_c = *(old_text + i);
+                    }
+                    else if(old_c=='\n' && i-1 > old_start && *(old_text + i - 1)!='\r' &&  i+1 < old_end && *(new_text + j)== *(old_text + i + 1)) {
+                        u_fputc_raw(old_c, f);
+                        i++;
+                        old_c = *(old_text + i);
+                    }
+                    else {
+                        while(j < new_end && old_c != new_c) {
+                            u_fputc_raw(new_c, f);
+                            j++;
+                            new_c = *(new_text + j);
+                        }                    
+                    }
+                }
+                else {
+                    u_fputc_raw(old_c, f);
+                    i++;
+                    old_c = *(old_text + i);   
+                }
+            }
+            else {
+                while(j < new_end && old_c != new_c) {
+                    u_fputc_raw(new_c, f);
+                    j++;
+                    new_c = *(new_text + j);
+                }
+            }
+        }
+    }
+    for (;j<new_end; j++) {
+        new_c = *(new_text + j);
+        u_fputc_raw(new_c, f);
+    }
+    if(old_str != NULL)
+        free(old_str);
     return 0;
 }
 
@@ -548,7 +678,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
             prevOffset.old_end = prevOffset.new_end = 0;
         }
         DumpSequence(fout, new_text, new_read_size, prevOffset.new_end, curOffset.new_start, escape, quotes);
-        DenormalizeSequence(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, new_text, new_read_size, curOffset.new_start, curOffset.new_end,replacements);
+        DenormalizeSequence_new(fout, old_text, old_read_size, curOffset.old_start, curOffset.old_end, new_text, new_read_size, curOffset.new_start, curOffset.new_end,replacements);
     }
 
     free_string_hash(replacements);
