@@ -107,16 +107,22 @@ int n_matches_at_token_pos__morphological_locate;
  * This structure is used to store all the information needed
  * during the locate operations
  */
-struct locate_parameters {
 
-   Abstract_allocator prv_alloc;
+
+struct locate_allocators {
+   Abstract_allocator prv_alloc_generic;
+   // prv_alloc_inside_token allocator is clean between each token
+   Abstract_allocator prv_alloc_inside_token;
    Abstract_allocator prv_alloc_recycle;
    Abstract_allocator prv_alloc_backup_growing_recycle;
    Abstract_allocator prv_alloc_trace_info_allocator;
    Abstract_allocator prv_alloc_context;
 
    Abstract_allocator prv_alloc_recycle_morphlogical_content_buffer;
-   
+};
+
+struct locate_parameters {
+    locate_allocators al;
    /* The transduction variables of the fst2 */
    Variables* input_variables;
    OutputVariables* output_variables;

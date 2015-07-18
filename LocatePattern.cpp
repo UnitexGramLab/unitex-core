@@ -117,9 +117,10 @@ p->failfast=NULL;
 p->match_cache_first=NULL;
 p->match_cache_last=NULL;
 p->match_cache=NULL;
-p->prv_alloc=NULL;
-p->prv_alloc_recycle=NULL;
-p->prv_alloc_recycle_morphlogical_content_buffer=NULL;
+p->al.prv_alloc_generic=NULL;
+p->al.prv_alloc_inside_token=NULL;
+p->al.prv_alloc_recycle=NULL;
+p->al.prv_alloc_recycle_morphlogical_content_buffer=NULL;
 p->token_error_ctx.last_length=0;
 p->token_error_ctx.last_start=0;
 p->token_error_ctx.n_errors=0;
@@ -482,6 +483,10 @@ locate_recycle_abstract_allocator=create_abstract_allocator("locate_pattern_recy
                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipOftenRecycledObject,
                                  get_prefered_allocator_item_size_for_nb_variable(nb_input_variable));
 
+Abstract_allocator locate_work_abstract_allocator_inside_token = NULL;
+locate_work_abstract_allocator_inside_token=create_abstract_allocator("locate_pattern_inside_token", AllocatorCreationFlagAutoFreePrefered);/*create_abstract_allocator("locate_pattern_recycle",
+                                 AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipOftenRecycledObject,
+                                 get_prefered_allocator_item_size_for_nb_variable(nb_input_variable));*/
 
 Abstract_allocator morphlogical_content_buffer_recycle_abstract_allocator=NULL;
 morphlogical_content_buffer_recycle_abstract_allocator=create_abstract_allocator("morphlogical_content_buffer_recycle",
@@ -513,12 +518,13 @@ if (is_korean) {
 p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 
 u_printf("Working...\n");
-p->prv_alloc=locate_work_abstract_allocator;
-p->prv_alloc_recycle=locate_recycle_abstract_allocator;
-p->prv_alloc_recycle_morphlogical_content_buffer=morphlogical_content_buffer_recycle_abstract_allocator;
-p->prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
-p->prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
-p->prv_alloc_context=locate_recycle_context_abstract_allocator;
+p->al.prv_alloc_generic=locate_work_abstract_allocator;
+p->al.prv_alloc_inside_token=locate_work_abstract_allocator_inside_token;
+p->al.prv_alloc_recycle=locate_recycle_abstract_allocator;
+p->al.prv_alloc_recycle_morphlogical_content_buffer=morphlogical_content_buffer_recycle_abstract_allocator;
+p->al.prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
+p->al.prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
+p->al.prv_alloc_context=locate_recycle_context_abstract_allocator;
 launch_locate(out,text_size,info,p);
 if (allow_trace!=0) {
    close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
@@ -552,6 +558,7 @@ if (free_abstract_allocator_item) {
   free_list_int(p->tag_token_list,locate_abstract_allocator);
 }
 close_abstract_allocator(locate_abstract_allocator);
+close_abstract_allocator(locate_work_abstract_allocator_inside_token);
 close_abstract_allocator(locate_recycle_abstract_allocator);
 close_abstract_allocator(locate_recycle_backup_abstract_allocator);
 close_abstract_allocator(locate_recycle_locate_trace_info_allocator);

@@ -121,7 +121,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 			n_read = p->current_origin % unite;
 			if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY)) {
 				startTime = currentTime;
-				u_printf("%2.0f%% done        \r", 100.0
+				u_printf("%2.2f%% done        \r", 100.0
 						* (float) (p->current_origin)
 						/ (float) text_size);
 			}
@@ -145,7 +145,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 						int size=tmp->m.end_pos_in_token-tmp->m.start_pos_in_token;
 						tmp->m.start_pos_in_token=p->current_origin;
 						tmp->m.end_pos_in_token=tmp->m.start_pos_in_token+size;
-						real_add_match(tmp,p,p->prv_alloc);
+						real_add_match(tmp,p,p->al.prv_alloc_generic);
 						tmp=tmp->next;
 					}
 				}
@@ -172,6 +172,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->weight=-1;
                 int n_matches=0;
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
+
+				clean_allocator(p->al.prv_alloc_inside_token);
 
 
 				int count_call_real = p->counting_step.count_call;
@@ -221,7 +223,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 				}
 				struct match_list* tmp;
 				while (p->match_cache_first != NULL) {
-					real_add_match(p->match_cache_first, p, p->prv_alloc);
+					real_add_match(p->match_cache_first, p, p->al.prv_alloc_generic);
 					tmp = p->match_cache_first;
 					p->match_cache_first = p->match_cache_first->next;
 					if (can_cache_matches &&
@@ -240,26 +242,26 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 						cache_match(tmp, p->buffer,
 								tmp->m.start_pos_in_token,
 								p->last_matched_position,
-								&(p->match_cache[current_token]), p->prv_alloc);
+								&(p->match_cache[current_token]), p->al.prv_alloc_generic);
 					} else {
-						free_match_list_element(tmp, p->prv_alloc);
+						free_match_list_element(tmp, p->al.prv_alloc_generic);
 					}
 				}
 				p->match_cache_last = NULL;
-				free_parsing_info(matches, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
+				free_parsing_info(matches, p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle);
                 if (p->dic_variables != NULL) {
                     clear_dic_variable_list(&(p->dic_variables));
                 }
 			}
 		}
 		reset_Variables(p->input_variables);
-		p->match_list = save_matches(p->match_list,p->current_origin, out, p, p->prv_alloc);
+		p->match_list = save_matches(p->match_list,p->current_origin, out, p, p->al.prv_alloc_generic);
 		(p->current_origin)++;
 	} /* End of the big while */
 	free_reserve(backup_reserve);
     p->backup_memory_reserve = NULL;
 
-	p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->prv_alloc);
+	p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
 	u_printf("100%% done      \n\n");
 	u_printf("%d match%s\n", p->number_of_matches,
 			(p->number_of_matches == 1) ? "" : "es");
@@ -431,7 +433,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 		{
 			if ((p->fnc_locate_trace_step != NULL)) {
 				locate_trace_info* lti;
-				lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->prv_alloc_trace_info_allocator);
+				lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
 				if (lti==NULL) {
 					fatal_alloc_error("locate");
 				}
@@ -456,7 +458,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				lti->pos_in_jamo=0;
 
 				p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-				free_cb(lti,p->prv_alloc_trace_info_allocator);
+				free_cb(lti,p->al.prv_alloc_trace_info_allocator);
 			}
 
 			if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
@@ -535,18 +537,18 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 			(p->token_error_ctx.n_matches_at_token_pos__morphological_locate)++;
 			if (p->output_policy == IGNORE_OUTPUTS) {
 				if (pos > 0) {
-					add_match(pos + p->current_origin-1,NULL, p, p->prv_alloc);
+					add_match(pos + p->current_origin-1,NULL, p, p->al.prv_alloc_generic);
 				} else {
-					add_match(pos + p->current_origin,NULL, p, p->prv_alloc);
+					add_match(pos + p->current_origin,NULL, p, p->al.prv_alloc_generic);
 				}
 			} else {
 				p->stack->stack[stack_top + 1] = '\0';
 				if (pos > 0) {
 					add_match(pos + p->current_origin-1,
-							p->stack->stack + p->left_ctx_base, p, p->prv_alloc);
+							p->stack->stack + p->left_ctx_base, p, p->al.prv_alloc_generic);
 				} else {
 					add_match(pos + p->current_origin,
-							p->stack->stack + p->left_ctx_base, p, p->prv_alloc);
+							p->stack->stack + p->left_ctx_base, p, p->al.prv_alloc_generic);
 				}
 			}
 		} else {
@@ -569,13 +571,13 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->weight,p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle);
 				} else {
 					(*matches) = insert_if_absent(pos, -1, -1, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, NULL, p->weight,p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->weight,p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle);
 				}
 			}
 		}
@@ -639,7 +641,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					p->backup_memory_reserve);
 			dic_variables_backup = p->dic_variables;
 			if (p->nb_output_variables != 0) {
-			    output_var_backup = create_output_variable_backup(p->output_variables,p->prv_alloc_backup_growing_recycle);
+			    output_var_backup = create_output_variable_backup(p->output_variables,p->al.prv_alloc_backup_growing_recycle);
 			}
 		}
 
@@ -736,7 +738,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						}
 						L = L->next;
 					} while (L != NULL);
-					free_parsing_info(L_first, p->prv_alloc_recycle,p->prv_alloc,p->prv_alloc_backup_growing_recycle); //  free all subgraph matches
+					free_parsing_info(L_first, p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle); //  free all subgraph matches
 				}
 				/* As free_parsing_info has freed p->dic_variables, we must restore it */
 				t1 = t1->next;
@@ -765,7 +767,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			if (p->nb_output_variables != 0) {
 			    install_output_variable_backup(p->output_variables,output_var_backup);
-			    free_output_variable_backup(output_var_backup,p->prv_alloc_backup_growing_recycle);
+			    free_output_variable_backup(output_var_backup,p->al.prv_alloc_backup_growing_recycle);
 			}
 		}
 		p->dic_variables = dic_variables_backup;
@@ -1388,7 +1390,7 @@ while (output_variable_list != NULL) {
 				continue;
 			}
 			/* We look for a positive context from the current position */
-			struct list_context* c = new_list_context(0, ctx, p->prv_alloc_context);
+			struct list_context* c = new_list_context(0, ctx, p->al.prv_alloc_context);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
 			p->weight=old_weight1;
@@ -1424,13 +1426,13 @@ while (output_variable_list != NULL) {
 					free(backup);
 				}
 			}
-			free_list_context(c, p->prv_alloc_context);
+			free_list_context(c, p->al.prv_alloc_context);
 		}
 		for (int n_ctxt = 0; n_ctxt < contexts->size_negative; n_ctxt = n_ctxt
 				+ 2) {
 			t2 = contexts->negative_mark[n_ctxt];
 			/* We look for a negative context from the current position */
-			struct list_context* c = new_list_context(0, ctx, p->prv_alloc_context);
+			struct list_context* c = new_list_context(0, ctx, p->al.prv_alloc_context);
 			locate(/*graph_depth,*/ p->optimized_states[t2->state_number], pos,
 					NULL, 0, c, p);
 			p->weight=old_weight1;
@@ -1450,7 +1452,7 @@ while (output_variable_list != NULL) {
 				}
 			}
 			/* We just want to free the cell we created */
-			free_list_context(c, p->prv_alloc_context);
+			free_list_context(c, p->al.prv_alloc_context);
 		}
 		if ((t2 = contexts->end_mark) != NULL) {
 			/* If we have a closing context mark */
