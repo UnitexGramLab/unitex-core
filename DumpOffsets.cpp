@@ -265,6 +265,7 @@ static int DumpSequence(U_FILE* f,const unichar* text, int textsize, int start, 
 }
 
 
+/*
 static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end,struct string_hash* replacements)
 {
     if(old_end < old_start || new_end < new_start || old_end > old_textsize || new_end > new_textsize)
@@ -285,7 +286,7 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
 
     int k = 0;
     unichar new_c = denorm_text[k];
-    /* First for loop replaces [] by {}*/
+    // First for loop replaces [] by {}
     while(i<old_end && k+new_start<new_end ) {
         while(!(old_c =='[' || old_c =='{' || old_c ==']' || old_c =='}') && i<old_end) {
             i++;
@@ -312,8 +313,8 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
     old_str[1] = '\0';
     new_c = denorm_text[j];
 
-    /* Second for loop restores white spaces*/
-    /* We are assuming that the replacement rules change a character into a whitespace*/
+    // Second for loop restores white spaces
+    // We are assuming that the replacement rules change a character into a whitespace
     while(i<old_end && j+new_start<new_end ) {
 
         while(!(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && i<old_end && get_value_index(old_str, replacements,DONT_INSERT)==NO_VALUE_INDEX) {
@@ -335,7 +336,7 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
         }
 
         while((old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r' || get_value_index(old_str, replacements,DONT_INSERT)!=NO_VALUE_INDEX) && i<old_end) {
-            /* Do not add \r with \n if the original file did not have it*/
+            // Do not add \r with \n if the original file did not have it
             u_fputc_raw(old_c, f);
             i++;
             old_c = *(old_text + i);
@@ -355,6 +356,8 @@ static int DenormalizeSequence(U_FILE* f,const unichar* old_text, int old_textsi
 
     return 0;
 }
+*/
+
 
 static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_textsize, int old_start, int old_end,const unichar* new_text, int new_textsize, int new_start, int new_end,struct string_hash* replacements)
 {
