@@ -48,6 +48,8 @@ namespace unitex {
  * This structure represents the parameters required by Fst2Txt.
  */
 struct fst2txt_parameters {
+   struct parsing_allocator pa;
+   Abstract_allocator fst2txt_abstract_allocator;
    char* text_file;
    char* temp_file;
    char* fst_file;
@@ -56,7 +58,6 @@ struct fst2txt_parameters {
    U_FILE* f_input;
    U_FILE* f_output;
    Fst2* fst2;
-   Abstract_allocator fst2txt_abstract_allocator;
    Alphabet* alphabet;
 
    OutputPolicy output_policy;

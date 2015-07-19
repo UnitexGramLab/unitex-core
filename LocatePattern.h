@@ -110,11 +110,10 @@ int n_matches_at_token_pos__morphological_locate;
 
 
 struct locate_allocators {
+   struct parsing_allocator pa;
    Abstract_allocator prv_alloc_generic;
-   // prv_alloc_inside_token allocator is clean between each token
-   Abstract_allocator prv_alloc_inside_token;
-   Abstract_allocator prv_alloc_recycle;
-   Abstract_allocator prv_alloc_backup_growing_recycle;
+
+
    Abstract_allocator prv_alloc_trace_info_allocator;
    Abstract_allocator prv_alloc_context;
 
@@ -122,7 +121,7 @@ struct locate_allocators {
 };
 
 struct locate_parameters {
-    locate_allocators al;
+   struct locate_allocators al;
    /* The transduction variables of the fst2 */
    Variables* input_variables;
    OutputVariables* output_variables;
