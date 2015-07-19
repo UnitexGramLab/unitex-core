@@ -76,11 +76,11 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 	}
 
 
-    p->fst2txt_abstract_allocator=create_abstract_allocator("fst2txt_fst2",AllocatorCreationFlagAutoFreePrefered);
+	p->fst2txt_abstract_allocator = create_abstract_allocator("fst2txt_fst2",AllocatorCreationFlagAutoFreePrefered);
 
 	p->pa.prv_alloc_vector_int_inside_token = create_abstract_allocator("fst2_txt_inside_token", AllocatorCreationFlagAutoFreePrefered);
 	p->pa.prv_alloc_recycle = create_abstract_allocator("fst2_txt_recycle",
-		AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipOftenRecycledObject,
+		AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipGrowingOftenRecycledObject,
 		0);
 	p->pa.prv_alloc_backup_growing_recycle = create_abstract_allocator("fst2_txt_pattern_growing_recycle",
 		AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipGrowingOftenRecycledObject,
@@ -681,11 +681,11 @@ static void scan_graph(
 			unichar* pile_old;
 			p->stack->stack[p->stack->stack_pointer + 1] = '\0';
 			pile_old = u_strdup(p->stack->stack);
-			vector_int* old_insertions = vector_int_dup(p->current_insertions, p->fst2txt_abstract_allocator);
+			vector_int* old_insertions = vector_int_dup(p->current_insertions, p->pa.prv_alloc_vector_int_inside_token);
 			scan_graph((((unsigned) n_etiq) - 1),
 					p->fst2->initial_states[-n_etiq], pos, depth, &liste,
 					word_token_buffer, p);
-			free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
+			free_vector_int(p->current_insertions, p->pa.prv_alloc_vector_int_inside_token);
 			p->current_insertions = NULL;
 			while (liste != NULL) {
 				p->stack->stack_pointer = liste->stack_pointer - 1;
@@ -694,7 +694,7 @@ static void scan_graph(
 				liste->insertions = NULL;
 				scan_graph(n_graph, t->state_number, liste->pos_in_tokens, depth,
 						match_list, word_token_buffer, p);
-				free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
+				free_vector_int(p->current_insertions, p->pa.prv_alloc_vector_int_inside_token);
 				struct parsing_info* l_tmp = liste;
 				liste = liste->next;
 				l_tmp->next = NULL; // in order not to free the next item
