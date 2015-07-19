@@ -179,8 +179,8 @@ while (*list!=NULL) {
 }
 
 
-// enable experimental but slower not recurive insert
-#define DONT_USE_RECURSIVE_INSERT 1
+// disable experimental but slower not recurive insert
+// #define DONT_USE_RECURSIVE_INSERT 1
 #ifndef DONT_USE_RECURSIVE_INSERT
 
 /**
