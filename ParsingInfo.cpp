@@ -179,6 +179,10 @@ while (*list!=NULL) {
 }
 
 
+// enable experimental but slower not recurive insert
+#define DONT_USE_RECURSIVE_INSERT 1
+#ifndef DONT_USE_RECURSIVE_INSERT
+
 /**
  * Inserts an element in the given information list only if there is no element
  * with same end position of match.
@@ -330,17 +334,20 @@ list->next=insert_morphological_match(pos_in_tokens,pos_in_chars,state,list->nex
 return list;
 }
 
+// else of #ifndef DONT_USE_RECURSIVE_INSERT
 
-// experimental no recursive code. To be check for performance and reliability
-/*
+#else
+
+// experimental no recursive code. To be check for performance and reliability. Seem slower !
 
 struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
                                       unichar* stack,Variables* v,OutputVariables* output_var,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
                                       vector_int* insertions,
-                                      int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
-filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
+                                      int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int, Abstract_allocator prv_alloc_backup_growing_recycle) {
+
+filter_lesser_weights(weight, &list, prv_alloc_recycle, prv_alloc_vector_int, prv_alloc_backup_growing_recycle);
 
 struct parsing_info**lnext=&list;
 for (;;) {
@@ -349,10 +356,10 @@ for (;;) {
   if (lcur==NULL) {
 	  *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
-                                        weight,prv_alloc_recycle,prv_alloc_vector_int);
+                                        weight,prv_alloc_recycle,prv_alloc_vector_int, prv_alloc_backup_growing_recycle);
 	  break;
   }
-  if (lcur->position==pos && lcur->pos_in_token==pos_in_token && lcur->state_number==state
+  if (lcur->pos_in_chars==pos && lcur->pos_in_tokens==pos_in_token && lcur->state_number==state
 	&& lcur->jamo==jamo // We can because we only work on pointers on unique elements
 	&& lcur->pos_in_jamo==pos_in_jamo) {
    lcur->stack_pointer=stack_pointer;
@@ -372,8 +379,8 @@ for (;;) {
       lcur->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
       lcur->variable_backup_size=v_variable_index_size;
    }
-   free_output_variable_backup(lcur->output_variable_backup);
-   lcur->output_variable_backup=create_output_variable_backup(output_var);
+   free_output_variable_backup(lcur->output_variable_backup,prv_alloc_backup_growing_recycle);
+   lcur->output_variable_backup=create_output_variable_backup(output_var,prv_alloc_backup_growing_recycle);
    clear_dic_variable_list(&lcur->dic_variable_backup);
    lcur->dic_variable_backup=clone_dic_variable_list(v2);
    if (lcur->dic_entry!=NULL) {
@@ -407,8 +414,8 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          int left_ctx_shift,int left_ctx_base,
                                          unichar* jamo,int pos_in_jamo,
                                          vector_int* insertions,
-                                         int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
-	filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int);
+                                         int weight,Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int, Abstract_allocator prv_alloc_backup_growing_recycle) {
+	filter_lesser_weights(weight,&list,prv_alloc_recycle,prv_alloc_vector_int, prv_alloc_backup_growing_recycle);
 
 struct parsing_info**lnext=&list;
 for (;;) {
@@ -416,12 +423,12 @@ for (;;) {
   if ((lcur)==NULL) {
 	  *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
-                                        weight,prv_alloc_recycle,prv_alloc_vector_int);
+                                        weight,prv_alloc_recycle,prv_alloc_vector_int, prv_alloc_backup_growing_recycle);
 	  break;
   }
 
-if ((lcur->position==pos) // If the length is the same...
-    && (lcur->pos_in_token==pos_in_token)
+if ((lcur->pos_in_chars==pos) // If the length is the same...
+    && (lcur->pos_in_tokens==pos_in_token)
     && (lcur->state_number==state)
     && !(u_strcmp(lcur->stack,stack)) // ...and if the stack content too
     && lcur->left_ctx_shift==left_ctx_shift
@@ -444,8 +451,8 @@ if ((lcur->position==pos) // If the length is the same...
       lcur->input_variable_backup=create_variable_backup(v,prv_alloc_recycle);
       lcur->variable_backup_size=v_variable_index_size;
    }
-   free_output_variable_backup(lcur->output_variable_backup);
-   lcur->output_variable_backup=create_output_variable_backup(output_var);
+   free_output_variable_backup(lcur->output_variable_backup, prv_alloc_backup_growing_recycle);
+   lcur->output_variable_backup=create_output_variable_backup(output_var, prv_alloc_backup_growing_recycle);
    clear_dic_variable_list(&lcur->dic_variable_backup);
    lcur->dic_variable_backup=clone_dic_variable_list(v2);
    if (lcur->dic_entry!=NULL) {
@@ -471,16 +478,16 @@ return list;
 												
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
-                                                Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int) {
+                                                Abstract_allocator prv_alloc_recycle,Abstract_allocator prv_alloc_vector_int, Abstract_allocator prv_alloc_backup_growing_recycle) {
 struct parsing_info**lnext=&list;
 for (;;) {
   struct parsing_info*lcur=*lnext;
   if ((lcur)==NULL) {
 		*lnext=new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
-		  jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle,prv_alloc_vector_int);
+		  jamo,pos_in_jamo,NULL,-1,prv_alloc_recycle,prv_alloc_vector_int, prv_alloc_backup_growing_recycle);
 		break;
   }
-  if (lcur->position==pos && lcur->pos_in_token==pos_in_token && lcur->state_number==state
+  if (lcur->pos_in_chars ==pos && lcur->pos_in_tokens==pos_in_token && lcur->state_number==state
     && lcur->dic_entry==dic_entry
     && lcur->jamo==jamo // See comment in insert_if_absent
     && lcur->pos_in_jamo==pos_in_jamo) {
@@ -494,5 +501,8 @@ for (;;) {
 return list;
 }
 
-*/
+
+#endif
+
+
 } // namespace unitex
