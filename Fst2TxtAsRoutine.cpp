@@ -321,6 +321,7 @@ static void parse_text(struct fst2txt_parameters* p) {
 	/* The following test used to be a <, but now it's a <= because of the {$} tag
 	 * that may be used even if the end of the text has already been reached */
 	while (p->current_origin <= p->text_buffer->size) {
+		clean_allocator(p->pa.prv_alloc_vector_int_inside_token);
 		if (!p->text_buffer->end_of_file && p->current_origin
 				> (p->text_buffer->size - MINIMAL_SIZE_PRELOADED_TEXT)) {
 			/* If we must change of block, we update the absolute offset, and we fill the
