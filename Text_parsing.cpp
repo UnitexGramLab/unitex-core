@@ -173,7 +173,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 int n_matches=0;
 				locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
 
-				clean_allocator(p->al.prv_alloc_inside_token);
+				clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
 
 				int count_call_real = p->counting_step.count_call;
@@ -248,7 +248,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 					}
 				}
 				p->match_cache_last = NULL;
-				free_parsing_info(matches, p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle);
+				free_parsing_info(matches,&p->al.pa);
                 if (p->dic_variables != NULL) {
                     clear_dic_variable_list(&(p->dic_variables));
                 }
@@ -571,13 +571,13 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, NULL, p->weight,p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->weight,&p->al.pa);
 				} else {
 					(*matches) = insert_if_absent(pos, -1, -1, (*matches),
 							p->stack->stack_pointer,
 							&(p->stack->stack[p->stack_base + 1]),
 							p->input_variables, p->output_variables,p->dic_variables, p->left_ctx_shift,
-							p->left_ctx_base, NULL, -1, NULL, p->weight,p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle);
+							p->left_ctx_base, NULL, -1, NULL, p->weight,&p->al.pa);
 				}
 			}
 		}
@@ -641,7 +641,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					p->backup_memory_reserve);
 			dic_variables_backup = p->dic_variables;
 			if (p->nb_output_variables != 0) {
-			    output_var_backup = create_output_variable_backup(p->output_variables,p->al.prv_alloc_backup_growing_recycle);
+			    output_var_backup = create_output_variable_backup(p->output_variables,p->al.pa.prv_alloc_backup_growing_recycle);
 			}
 		}
 
@@ -738,7 +738,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 						}
 						L = L->next;
 					} while (L != NULL);
-					free_parsing_info(L_first, p->al.prv_alloc_recycle,p->al.prv_alloc_inside_token,p->al.prv_alloc_backup_growing_recycle); //  free all subgraph matches
+					free_parsing_info(L_first, &p->al.pa); //  free all subgraph matches
 				}
 				/* As free_parsing_info has freed p->dic_variables, we must restore it */
 				t1 = t1->next;
@@ -767,7 +767,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 			if (p->nb_output_variables != 0) {
 			    install_output_variable_backup(p->output_variables,output_var_backup);
-			    free_output_variable_backup(output_var_backup,p->al.prv_alloc_backup_growing_recycle);
+			    free_output_variable_backup(output_var_backup,p->al.pa.prv_alloc_backup_growing_recycle);
 			}
 		}
 		p->dic_variables = dic_variables_backup;

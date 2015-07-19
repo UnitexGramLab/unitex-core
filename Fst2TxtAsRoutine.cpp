@@ -78,6 +78,13 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 
     p->fst2txt_abstract_allocator=create_abstract_allocator("fst2txt_fst2",AllocatorCreationFlagAutoFreePrefered);
 
+	p->pa.prv_alloc_vector_int_inside_token = create_abstract_allocator("fst2_txt_inside_token", AllocatorCreationFlagAutoFreePrefered);
+	p->pa.prv_alloc_recycle = create_abstract_allocator("fst2_txt_recycle",
+		AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipOftenRecycledObject,
+		0);
+	p->pa.prv_alloc_backup_growing_recycle = create_abstract_allocator("fst2_txt_pattern_growing_recycle",
+		AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipGrowingOftenRecycledObject,
+		0);
 
     p->fst2=new_Fst2_clone(fst2load,p->fst2txt_abstract_allocator);
     free_abstract_Fst2(fst2load,&fst2load_free);
@@ -127,6 +134,9 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	p->f_output = NULL;
 	p->fst2 = NULL;
 	p->fst2txt_abstract_allocator = NULL;
+	p->pa.prv_alloc_backup_growing_recycle = NULL;
+	p->pa.prv_alloc_recycle = NULL;
+	p->pa.prv_alloc_vector_int_inside_token = NULL;
 	p->alphabet = NULL;
 	p->text_file = NULL;
 	p->temp_file = NULL;
@@ -191,7 +201,12 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 		free_vector_int(p->current_insertions, p->fst2txt_abstract_allocator);
 	}
 	u_fclose(p->f_out_offsets);
+
 	close_abstract_allocator(p->fst2txt_abstract_allocator);
+	close_abstract_allocator(p->pa.prv_alloc_vector_int_inside_token);
+	close_abstract_allocator(p->pa.prv_alloc_recycle);
+	close_abstract_allocator(p->pa.prv_alloc_backup_growing_recycle);
+
 	free(p);
 }
 
@@ -542,7 +557,7 @@ static void scan_graph(
 				struct parsing_info* la_tmp = *match_list;
 				*match_list = (*match_list)->next;
 				la_tmp->next = NULL; // to don't free the next item
-				free_parsing_info(la_tmp, p->fst2txt_abstract_allocator, NULL, NULL);
+				free_parsing_info(la_tmp, &p->pa);
 			}
 		}
 		return;
@@ -565,7 +580,7 @@ static void scan_graph(
 			(*match_list) = insert_if_absent(pos, -1, -1, (*match_list),
 					p->stack->stack_pointer + 1, p->stack->stack, p->variables,
 					NULL, NULL, -1, -1, NULL, -1, p->current_insertions,-1,
-					p->fst2txt_abstract_allocator,p->fst2txt_abstract_allocator,NULL);
+					&p->pa);
 		}
 	}
 
@@ -683,7 +698,7 @@ static void scan_graph(
 				struct parsing_info* l_tmp = liste;
 				liste = liste->next;
 				l_tmp->next = NULL; // in order not to free the next item
-				free_parsing_info(l_tmp, p->fst2txt_abstract_allocator, NULL,NULL);
+				free_parsing_info(l_tmp, &p->pa);
 			}
 			u_strcpy(p->stack->stack, pile_old);
 			p->current_insertions = old_insertions;
