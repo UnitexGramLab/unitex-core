@@ -152,7 +152,6 @@
     <ClInclude Include="..\SyncTool.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\RegExFacade.h" />
     <ClInclude Include="..\UnitexLibDir.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -209,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h">
       <Filter>Source Files\yaml-0.1.6\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RegExFacade.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

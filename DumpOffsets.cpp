@@ -102,7 +102,7 @@ const char* usage_DumpOffsets =
          "\n" \
          "\n" \
          "\n" \
-         "Other Usage: DumpOffsets [-V/--convert_common_to_modified] [OPTIONS] <txt>\n" \
+         "Other Usage: DumpOffsets [-M/--convert_common_to_modified] [OPTIONS] <txt>\n" \
          "\n" \
          "  <txt>: a offset file to read\n" \
          "\n" \
@@ -134,7 +134,7 @@ u_printf(usage_DumpOffsets);
 }
 
 
-const char* optstring_DumpOffsets=":hfumdvVtTs:S:o:n:p:k:q:r:";
+const char* optstring_DumpOffsets=":hfumdvMtTs:S:o:n:p:k:q:r:";
 const struct option_TS lopts_DumpOffsets[]={
    {"old",required_argument_TS, NULL,'o'},
    {"new",required_argument_TS,NULL,'n'},
@@ -142,7 +142,7 @@ const struct option_TS lopts_DumpOffsets[]={
    {"no_escape_sequence",required_argument_TS,NULL,'c'},
    {"merge",no_argument_TS,NULL,'m'},
    {"convert_modified_to_common",no_argument_TS,NULL,'v'},
-   {"convert_common_to_modified",no_argument_TS,NULL,'V'},
+   {"convert_common_to_modified",no_argument_TS,NULL,'M'},
    {"old_size",required_argument_TS,NULL,'s'},
    {"new_size",required_argument_TS,NULL,'S'},
    {"full",no_argument_TS,NULL,'f'},
@@ -766,7 +766,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 'f': full = 1; break;
    case 'm': merge = 1; break;
    case 'v': convert_modified_to_common = 1; break;
-   case 'V': convert_common_to_modified = 1; break;
+   case 'M': convert_common_to_modified = 1; break;
    case 't': translate_position_file = 1; break;
    case 'T': translate_position_file_invert = 1; break;
    case 'u': quiet = 1; break;
