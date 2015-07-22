@@ -18,23 +18,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-  
+/* ************************************************************************** */ 
 #ifndef ErrorH
 #define ErrorH
-
+/* ************************************************************************** */
+#include <cstdlib>                // EXIT_FAILURE
+/* ************************************************************************** */
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
 
-#define DEFAULT_ERROR_CODE 1
+/**
+ * Like EXIT_FAILURE: expands to a system-dependent integral expression that,
+ * when used as the argument for function return or exit, signifies that the
+ * function or program failed
+ */
+#define DEFAULT_ERROR_CODE EXIT_FAILURE
+
+
 #define ALLOC_ERROR_CODE   2
 
 /**
- * Like EX_USAGE : The command was used incorrectly, e.g.,
- * with the wrong number of arguments, a bad flag, a bad
- * syntax in a parameter, or whatever.
+ * Like EX_USAGE: The command was used incorrectly, e.g., with the wrong number
+ * of arguments, a bad flag, a bad syntax in a parameter, or whatever
  */
 #define USAGE_ERROR_CODE  64
 
@@ -55,7 +63,5 @@ void fatal_assert(int condition, const char*, ...);
 
 
 } // namespace unitex
-
-#endif
-
-
+/* ************************************************************************** */ 
+#endif  // ErrorH
