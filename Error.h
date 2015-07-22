@@ -28,6 +28,17 @@
 
 namespace unitex {
 
+#define DEFAULT_ERROR_CODE 1
+#define ALLOC_ERROR_CODE   2
+
+/**
+ * Like EX_USAGE : The command was used incorrectly, e.g.,
+ * with the wrong number of arguments, a bad flag, a bad
+ * syntax in a parameter, or whatever.
+ */
+#define USAGE_ERROR_CODE  64
+
+void fatal_error(int);
 void fatal_error(int,const char*,...);
 void fatal_error(const char*,...);
 void fatal_alloc_error(const char*);

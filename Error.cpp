@@ -32,9 +32,6 @@
 
 namespace unitex {
 
-#define DEFAULT_ERROR_CODE 1
-#define ALLOC_ERROR_CODE 2
-
 #ifdef DEBUG
 static char DEBUG_ON=0;
 #endif
