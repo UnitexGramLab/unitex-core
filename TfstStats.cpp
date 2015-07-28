@@ -226,19 +226,30 @@ while (t!=NULL) {
 return n;
 }
 
+static inline int compare_freq_then_name(double freq_a,  const unichar * name_a, double freq_b,const unichar* name_b)
+{
+	if (freq_a < freq_b)
+		return -1;
+	if (freq_a > freq_b)
+		return 1;
+	return u_strcmp(name_a, name_b);
+}
 
 static int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tags,vector_double* freq) {
-double pivot;
+double pivot_freq;
+const unichar* pivot_name;
 double tmp;
 unichar* tmp_char;
 int i = m-1;
 int j = n+1; // final pivot index
-pivot=freq->tab[(m+n)/2];
+pivot_freq=freq->tab[(m+n)/2];
+pivot_name=(const unichar*)tags->tab[(m+n)/2];
 for (;;) {
   do j--;
-  while ((j>(m-1))&&(pivot>freq->tab[j]));
+  while ((j>(m-1)) && (compare_freq_then_name(pivot_freq, pivot_name, freq->tab[j], (const unichar*)tags->tab[j])>0));
+
   do i++;
-  while ((i<n+1)&&(freq->tab[i]>pivot));
+  while ((i<n+1) && (compare_freq_then_name(freq->tab[i], (const unichar*)tags->tab[i], pivot_freq, pivot_name)>0));
   if (i<j) {
     tmp=freq->tab[i];
     freq->tab[i]=freq->tab[j];
@@ -261,17 +272,17 @@ if (first<last) {
 }
 
 static int partition_for_quicksort_by_alph_order(int m, int n,vector_ptr* tags,vector_double* freq) {
-unichar* pivot;
+const unichar* pivot;
 unichar* tmp;
 double tmp_double;
 int i = m-1;
 int j = n+1; // final pivot index
-pivot=(unichar*)tags->tab[(m+n)/2];
+pivot=(const unichar*)tags->tab[(m+n)/2];
 for (;;) {
   do j--;
-  while ((j>(m-1))&&(u_strcmp(pivot,(unichar*)tags->tab[j])<0));
+  while ((j>(m-1))&&(u_strcmp(pivot,(const unichar*)tags->tab[j])<0));
   do i++;
-  while ((i<n+1)&&(u_strcmp((unichar*)tags->tab[i],pivot)<0));
+  while ((i<n+1)&&(u_strcmp((const unichar*)tags->tab[i],pivot)<0));
   if (i<j) {
     tmp_double=freq->tab[i];
     freq->tab[i]=freq->tab[j];
