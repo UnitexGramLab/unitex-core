@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +36,7 @@
 
 namespace unitex {
 
-static void process(Tfst* in,Tfst* out,struct match_list* matches);
+static int process(Tfst* in,Tfst* out,struct match_list* matches);
 
 const char* usage_TfstTag =
          "Usage: TfstTag [OPTIONS] <tfst>\n"
@@ -47,15 +46,15 @@ const char* usage_TfstTag =
          "OPTIONS:\n"
          "  -i XXX/--ind_file=XXX: the .ind file to use\n"
          "  -o XXX/--output=XXX: output .tfst (by default, the given .tfst is modified)\n"
-		 "  -h/--help: this help\n"
+         "  -h/--help: this help\n"
          "\n"
          "Adds transitions to the given .tfst. Transitions are taken from a .ind file\n"
-		 "as the tags.ind produced by Dico.\n\n";
+         "as the tags.ind produced by Dico.\n\n";
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_TfstTag);
+  display_copyright_notice();
+  u_printf(usage_TfstTag);
 }
 
 
@@ -73,62 +72,72 @@ const struct option_TS lopts_TfstTag[]= {
 int main_TfstTag(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TfstTag,lopts_TfstTag,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_TfstTag,lopts_TfstTag,&index))) {
    switch(val) {
-   case 'i': strcpy(ind,vars->optarg);
+   case 'i': strcpy(ind,options.vars()->optarg);
              break;
-   case 'o': strcpy(output,vars->optarg);
+   case 'o': strcpy(output,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_TfstTag[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_TfstTag[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (ind[0]=='\0') {
-   fatal_error("You must specify a .ind file\n");
+if (options.vars()->optind!=argc-1) {
+  error("Invalid arguments: rerun with --help\n");
+  return DEFAULT_ERROR_CODE;
 }
+
+if (ind[0]=='\0') {
+   error("You must specify a .ind file\n");
+   return USAGE_ERROR_CODE;
+}
+
 U_FILE* f=u_fopen(&vec,ind,U_READ);
 if (f==NULL) {
-	fatal_error("Cannot load ind file %s\n",ind);
+	error("Cannot load ind file %s\n",ind);
+  return USAGE_ERROR_CODE;
 }
+
 unichar header;
 struct match_list* matches=load_match_list(f,NULL,&header);
 u_fclose(f);
 if (header!='X') {
-	fatal_error("Invalid ind file %s\n",ind);
+	error("Invalid ind file %s\n",ind);
+  return DEFAULT_ERROR_CODE;
 }
 
-if (vars->optind!=argc-1) {
-   error("Invalid arguments: rerun with --help\n");
-   return 1;
-}
 char in_tfst[FILENAME_MAX];
 char in_tind[FILENAME_MAX];
-strcpy(in_tfst,argv[vars->optind]);
-remove_extension(argv[vars->optind],in_tind);
+strcpy(in_tfst,argv[options.vars()->optind]);
+remove_extension(argv[options.vars()->optind],in_tind);
 strcat(in_tind,".tind");
 char out_tfst[FILENAME_MAX];
 char out_tind[FILENAME_MAX];
@@ -140,18 +149,25 @@ if (output[0]!='\0') {
 	strcpy(out_tfst,"tmp__.tfst");
 	strcpy(out_tind,"tmp__.tind");
 }
+
 U_FILE* f_out_tfst=u_fopen(&vec,out_tfst,U_WRITE);
 if (f_out_tfst==NULL) {
-	fatal_error("Cannot create %s\n",out_tfst);
-}
-U_FILE* f_out_tind=u_fopen(&vec,out_tind,U_WRITE);
-if (f_out_tind==NULL) {
-	fatal_error("Cannot create %s\n",out_tind);
+	error("Cannot create %s\n",out_tfst);
+  return DEFAULT_ERROR_CODE;
 }
 
-Tfst* input_tfst=open_text_automaton(&vec,argv[vars->optind]);
+U_FILE* f_out_tind=u_fopen(&vec,out_tind,U_WRITE);
+if (f_out_tind==NULL) {
+	error("Cannot create %s\n",out_tind);
+  u_fclose(f_out_tfst);
+  return DEFAULT_ERROR_CODE;
+}
+
+Tfst* input_tfst=open_text_automaton(&vec,argv[options.vars()->optind]);
 Tfst* output_tfst=new_Tfst(f_out_tfst,f_out_tind,input_tfst->N);
-process(input_tfst,output_tfst,matches);
+
+int return_value = process(input_tfst,output_tfst,matches);
+
 close_text_automaton(input_tfst);
 close_text_automaton(output_tfst);
 if (output[0]=='\0') {
@@ -161,21 +177,22 @@ if (output[0]=='\0') {
 	::rename(out_tfst,in_tfst);
 	::rename(out_tind,in_tind);
 }
-free_OptVars(vars);
+
 u_printf("Done.\n");
-return 0;
+return return_value;
 }
 
-
-static void process_matches(Tfst* in,struct match_list* *matches) {
+static int process_matches(Tfst* in,struct match_list* *matches) {
 int sentence,start,end,pos;
 int epsilon=0;
 while (*matches!=NULL) {
 	if ((*matches)->output==NULL) {
-		fatal_error("Unexpected NULL output in process_matches\n");
+		error("Unexpected NULL output in process_matches\n");
+    return DEFAULT_ERROR_CODE;
 	}
 	if (3!=u_sscanf((*matches)->output,"%d %d %d:%n",&sentence,&start,&end,&pos)) {
-		fatal_error("Invalid tagging output in process_matches:\n_%S_\n",(*matches)->output);
+		error("Invalid tagging output in process_matches:\n_%S_\n",(*matches)->output);
+    return DEFAULT_ERROR_CODE;
 	}
 	if (sentence!=in->current_sentence) break;
 	unichar* s=(*matches)->output+pos;
@@ -198,23 +215,28 @@ while (*matches!=NULL) {
 if (epsilon) {
 	remove_epsilon_transitions(in->automaton,0);
 }
+return SUCCESS_RETURN_CODE;
 }
-
 
 /**
  * Process all tagging matches to produce the output .tfst.
  * The match list is freed by this function.
  */
-static void process(Tfst* in,Tfst* out,struct match_list* matches) {
+static int process(Tfst* in,Tfst* out,struct match_list* matches) {
+int process_matches_return_value = SUCCESS_RETURN_CODE; 
 u_fprintf(out->tfst,"%010d\n",out->N);
 for (int i=1;i<=in->N;i++) {
 	load_sentence(in,i);
 	/* We reverse transitions to have an identical output if the sentence is
 	 * not modified */
 	reverse_transition_lists(in->automaton);
-	process_matches(in,&matches);
+	process_matches_return_value = process_matches(in,&matches);
+  if(process_matches_return_value != SUCCESS_RETURN_CODE) {
+    return process_matches_return_value;
+  }
 	save_current_sentence(in,out->tfst,out->tind,NULL,0,NULL);
 }
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

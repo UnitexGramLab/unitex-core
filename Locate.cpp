@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,8 +44,6 @@
 #include "UnitexGetOpt.h"
 #include "ProgramInvoker.h"
 
-
-
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
@@ -68,7 +65,7 @@ const char* usage_Locate =
          "  -m DIC/--morpho=DIC: specifies that DIC is a .bin dictionary\n"
          "                       to use in morphological mode. Use as many\n"
          "                       -m XXX as there are .bin to use. You can also\n"
-		 "                       separate several .bin with semi-colons.\n"
+         "                       separate several .bin with semi-colons.\n"
          "  -s/--start_on_space: enables morphological use of space\n"
          "  -x/--dont_start_on_space: disables morphological use of space (default)\n"
          "  -c/--char_by_char: uses char by char tokenization; useful for languages like Thai\n"
@@ -99,8 +96,8 @@ const char* usage_Locate =
          "  -M/--merge\n"
          "  -R/--replace\n"
          "  -p/--protect_dic_chars: when -M or -R mode is used, -p protects some input characters\n"
-		 "                          with a backslash. This is useful when Locate is called by Dico\n"
-		 "                          in order to avoid producing bad lines like \"3,14,.PI.NUM\"\n"
+         "                          with a backslash. This is useful when Locate is called by Dico\n"
+         "                          in order to avoid producing bad lines like \"3,14,.PI.NUM\"\n"
          "\n"
          "Ambiguous output options:\n"
          "  -b/--ambiguous_outputs: allows the production of several matches with same input\n"
@@ -138,14 +135,13 @@ const char* usage_Locate =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Locate);
+  display_copyright_notice();
+  u_printf(usage_Locate);
 #ifndef REGEX_FACADE_ENGINE
-   error("\nWARNING: on this system, morphological filters will not be taken into account,\n");
-   error("         because wide characters are not supported\n");
+  error("\nWARNING: on this system, morphological filters will not be taken into account,\n");
+  error("         because wide characters are not supported\n");
 #endif
 }
-
 
 const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:$:@:C:P:HQN+:";
 const struct option_TS lopts_Locate[]= {
@@ -196,7 +192,8 @@ char** new_locate_trace_param()
 {
 	char** empty_list_param_trace = (char**)malloc(sizeof(char*));
 	if (empty_list_param_trace == NULL) {
-		fatal_alloc_error("new_locate_trace_param");
+		alloc_error("new_locate_trace_param");
+    return NULL;
 	}
 	*empty_list_param_trace = NULL;
 	return empty_list_param_trace;
@@ -210,12 +207,14 @@ char** add_locate_trace_param(char** list_param_trace, const char* add_param)
 
 	char** new_list_param_trace = (char**)realloc(list_param_trace,sizeof(char*)*(i+2));
 	if (new_list_param_trace == NULL) {
-		fatal_alloc_error("add_locate_trace_param");
+		alloc_error("add_locate_trace_param");
+    return NULL;
 	}
 
 	*(new_list_param_trace + i) = strdup(add_param);
 	if ((*(new_list_param_trace + i)) == NULL) {
-		fatal_alloc_error("add_locate_trace_param");
+		alloc_error("add_locate_trace_param");
+    return NULL;
 	}
 
 	*(new_list_param_trace + i + 1) = NULL;
@@ -242,8 +241,9 @@ void free_locate_trace_param(char** list_param_trace)
 int main_Locate(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
+
 int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
@@ -273,49 +273,67 @@ char** list_param_trace=new_locate_trace_param();
 char foo;
 vector_ptr* injected_vars=new_vector_ptr();
 VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&index))) {
    switch(val) {
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty text file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty text file name\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(text,vars->optarg);
+             strcpy(text,options.vars()->optarg);
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet name\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
-             strcpy(alph,vars->optarg);
+             strcpy(alph,options.vars()->optarg);
              break;
-   case 'm': if (vars->optarg[0]!='\0') {
+   case 'm': if (options.vars()->optarg[0]!='\0') {
                 if (morpho_dic==NULL) {
-                  morpho_dic=strdup(vars->optarg);
+                  morpho_dic=strdup(options.vars()->optarg);
                   if (morpho_dic==NULL) {
-                     fatal_alloc_error("main_Locate");
+                    alloc_error("main_Locate");
+                    free_vector_ptr(injected_vars,free);
+                    free_locate_trace_param(list_param_trace);
+                    free(morpho_dic);
+                    return ALLOC_ERROR_CODE;                     
                   }
                 }
                 else
                 {
-                    morpho_dic = (char*)realloc((void*)morpho_dic,strlen(morpho_dic)+strlen(vars->optarg)+2);
+                    morpho_dic = (char*)realloc((void*)morpho_dic,strlen(morpho_dic)+strlen(options.vars()->optarg)+2);
                     if (morpho_dic==NULL) {
-                       fatal_alloc_error("main_Locate");
+                      alloc_error("main_Locate");
+                      free_vector_ptr(injected_vars,free);
+                      free_locate_trace_param(list_param_trace);
+                      free(morpho_dic);
+                      return ALLOC_ERROR_CODE;
                     }
                     strcat(morpho_dic,";");
-                    strcat(morpho_dic,vars->optarg);
+                    strcat(morpho_dic,options.vars()->optarg);
                 }
              }
              break;
-   case 'g': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify an argument for negation operator\n");
+   case 'g': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify an argument for negation operator\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
              selected_negation_operator=1;
-             if ((strcmp(vars->optarg,"minus")==0) || (strcmp(vars->optarg,"-")==0))
-             {
+             if ((strcmp(options.vars()->optarg,"minus")==0) || (strcmp(options.vars()->optarg,"-")==0)) {
                  tilde_negation_operator=0;
              }
              else
-             if ((strcmp(vars->optarg,"tilde")!=0) && (strcmp(vars->optarg,"~")!=0))
-             {
-                 fatal_error("You must specify a valid argument for negation operator\n");
+             if ((strcmp(options.vars()->optarg,"tilde")!=0) && (strcmp(options.vars()->optarg,"~")!=0)) {
+                 error("You must specify a valid argument for negation operator\n");
              }
              break;
    case 'S': match_policy=SHORTEST_MATCHES; break;
@@ -330,72 +348,104 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'l': search_limit=NO_MATCH_LIMIT; break;
    case 'e': useLocateCache=0; break;
    case 'T': allow_trace=0; break;
-   case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
+   case 'n': if (1!=sscanf(options.vars()->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
-                fatal_error("Invalid search limit argument: %s\n",vars->optarg);
+                error("Invalid search limit argument: %s\n",options.vars()->optarg);
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
              break;
    case 'o': {
                 int param1 = 0;
                 int param2 = 0;
-                int ret_scan = sscanf(vars->optarg,"%d,%d%c",&param1,&param2,&foo);
+                int ret_scan = sscanf(options.vars()->optarg,"%d,%d%c",&param1,&param2,&foo);
                 if (ret_scan == 2) {
                     max_count_call_warning = param1;
                     max_count_call = param2;
                     if (((max_count_call < -1)) || (max_count_call_warning < -1)) {
                         /* foo is used to check that the search limit is not like "45gjh" */
-                        fatal_error("Invalid stop count argument: %s\n",vars->optarg);
+                        error("Invalid stop count argument: %s\n",options.vars()->optarg);
+                        free_vector_ptr(injected_vars,free);
+                        free_locate_trace_param(list_param_trace);
+                        free(morpho_dic);
+                        return USAGE_ERROR_CODE;                        
                     }
                 }
                 else
-                    if (1!=sscanf(vars->optarg,"%d%c",&max_count_call,&foo) || (max_count_call < -1)) {
+                    if (1!=sscanf(options.vars()->optarg,"%d%c",&max_count_call,&foo) || (max_count_call < -1)) {
                         /* foo is used to check that the search limit is not like "45gjh" */
-                        fatal_error("Invalid stop count argument: %s\n",vars->optarg);
+                        error("Invalid stop count argument: %s\n",options.vars()->optarg);
+                        free_vector_ptr(injected_vars,free);
+                        free_locate_trace_param(list_param_trace);
+                        free(morpho_dic);
+                        return USAGE_ERROR_CODE;                        
                     }
              }
              break;
-   case '$': if (1!=sscanf(vars->optarg,"%d%c",&stack_max,&foo) || stack_max<=0) {
+   case '$': if (1!=sscanf(options.vars()->optarg,"%d%c",&stack_max,&foo) || stack_max<=0) {
                 /* foo is used to check that the param is not like "45gjh" */
-                fatal_error("Invalid argument: %s\n",vars->optarg);
+                error("Invalid argument: %s\n",options.vars()->optarg);
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
              break;
-   case '@': if (1!=sscanf(vars->optarg,"%d%c",&max_errors,&foo) || max_errors<=0) {
+   case '@': if (1!=sscanf(options.vars()->optarg,"%d%c",&max_errors,&foo) || max_errors<=0) {
                 /* foo is used to check that the param is not like "45gjh" */
-                fatal_error("Invalid argument: %s\n",vars->optarg);
+                error("Invalid argument: %s\n",options.vars()->optarg);
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
              break;
-   case 'C': if (1!=sscanf(vars->optarg,"%d%c",&max_matches_per_subgraph,&foo) || max_matches_per_subgraph<=0) {
+   case 'C': if (1!=sscanf(options.vars()->optarg,"%d%c",&max_matches_per_subgraph,&foo) || max_matches_per_subgraph<=0) {
                 /* foo is used to check that the param is not like "45gjh" */
-                fatal_error("Invalid argument: %s\n",vars->optarg);
+                error("Invalid argument: %s\n",options.vars()->optarg);
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
              break;
-   case 'P': if (1!=sscanf(vars->optarg,"%d%c",&max_matches_at_token_pos,&foo) || max_matches_at_token_pos<=0) {
+   case 'P': if (1!=sscanf(options.vars()->optarg,"%d%c",&max_matches_at_token_pos,&foo) || max_matches_at_token_pos<=0) {
                 /* foo is used to check that the param is not like "45gjh" */
-                fatal_error("Invalid argument: %s\n",vars->optarg);
+                error("Invalid argument: %s\n",options.vars()->optarg);
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
              break;
    case 'H': {
                 stack_max = STACK_MAX / 2;
-				max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 2;
-				max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 2;
+                max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 2;
+                max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 2;
              }
              break;
    case 'Q': {
                 stack_max = STACK_MAX / 5;
-				max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 5;
-				max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 5;
+                max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 5;
+                max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 5;
              }
              break;
    case 'N': {
                 stack_max = STACK_MAX / 10;
-				max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 10;
-				max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 10;
+                max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 10;
+                max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 10;
              }
              break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty snt dir name\n");
+   case 'd': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty snt dir name\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
-             strcpy(dynamicSntDir,vars->optarg);
+             strcpy(dynamicSntDir,options.vars()->optarg);
              break;
    case 'c': tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'w': tokenization_policy=WORD_BY_WORD_TOKENIZATION; break;
@@ -407,35 +457,55 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'K': is_korean=1;
              break;
    case 'h': usage();
-             free_locate_trace_param(list_param_trace);
              free_vector_ptr(injected_vars,free);
-             free_OptVars(vars);
-             return 0;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+             free_locate_trace_param(list_param_trace);
+             free(morpho_dic);
+             return SUCCESS_RETURN_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'u': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty arabic rule configuration file name\n");
+   case 'u': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty arabic rule configuration file name\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
-             strcpy(arabic_rules,vars->optarg);
+             strcpy(arabic_rules,options.vars()->optarg);
              break;
-   case '+': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty trace option\n");
+   case '+': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty trace option\n");
+                free_vector_ptr(injected_vars,free);
+                free_locate_trace_param(list_param_trace);
+                free(morpho_dic);
+                return USAGE_ERROR_CODE;                
              }
-             list_param_trace=add_locate_trace_param(list_param_trace,vars->optarg);
+             list_param_trace=add_locate_trace_param(list_param_trace,options.vars()->optarg);
              break;
    case 'v': {
-	   unichar* key=u_strdup(vars->optarg);
+	   unichar* key=u_strdup(options.vars()->optarg);
 	   unichar* value=u_strchr(key,'=');
 	   if (value==NULL) {
-		   fatal_error("Invalid variable injection: %s\n",vars->optarg);
+		   error("Invalid variable injection: %s\n",options.vars()->optarg);
+       free_vector_ptr(injected_vars,free);
+       free_locate_trace_param(list_param_trace);
+       free(morpho_dic);
+       return USAGE_ERROR_CODE;       
 	   }
 	   (*value)='\0';
 	   value++;
@@ -444,32 +514,53 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
 	   vector_ptr_add(injected_vars,value);
 	   break;
    }
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Locate[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Locate[index].name);
+             free_vector_ptr(injected_vars,free);
+             free_locate_trace_param(list_param_trace);
+             free(morpho_dic);
+             return USAGE_ERROR_CODE;                         
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free_vector_ptr(injected_vars,free);
+             free_locate_trace_param(list_param_trace);
+             free(morpho_dic);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (selected_negation_operator==0)
-    get_graph_compatibility_mode_by_file(&vec,&tilde_negation_operator);
+if (options.vars()->optind!=argc-1) {
+  error("Invalid arguments: rerun with --help\n");
+  free_vector_ptr(injected_vars,free);
+  free_locate_trace_param(list_param_trace);
+  free(morpho_dic);
+  return USAGE_ERROR_CODE;   
+}
 
 if (text[0]=='\0') {
-   fatal_error("You must specify a .snt text file\n");
-}
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+  error("You must specify a .snt text file\n");
+  free_vector_ptr(injected_vars,free);
+  free_locate_trace_param(list_param_trace);
+  free(morpho_dic);
+  return USAGE_ERROR_CODE; 
 }
 
+if (selected_negation_operator==0) {
+  get_graph_compatibility_mode_by_file(&vec,&tilde_negation_operator);
+}
 
 size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
+
 char* buffer_filename = (char*)malloc(step_filename_buffer * 6);
-if (buffer_filename == NULL)
-{
-	fatal_alloc_error("main_Locate");
+if (buffer_filename == NULL) {
+	alloc_error("main_Locate");
+  free_vector_ptr(injected_vars,free);
+  free_locate_trace_param(list_param_trace);
+  free(morpho_dic);
+  return ALLOC_ERROR_CODE;  
 }
+
 char* staticSntDir = (buffer_filename + (step_filename_buffer * 0));
 char* tokens_txt = (buffer_filename + (step_filename_buffer * 1));
 char* text_cod = (buffer_filename + (step_filename_buffer * 2));
@@ -497,21 +588,43 @@ strcat(dlc,"dlc");
 strcpy(err,staticSntDir);
 strcat(err,"err");
 
-int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
+int OK=locate_pattern(text_cod,
+               tokens_txt,
+               argv[options.vars()->optind],
+               dlf,
+               dlc,
+               err,
+               alph,
+               match_policy,
+               output_policy,
                &vec,
-               dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
-               ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,
-               max_count_call,max_count_call_warning,
-               stack_max, max_matches_at_token_pos, max_matches_per_subgraph, max_errors,
-               arabic_rules,tilde_negation_operator,
-               useLocateCache,allow_trace,list_param_trace,injected_vars);
-if (morpho_dic!=NULL) {
-   free(morpho_dic);
-}
-free_vector_ptr(injected_vars,free);
-free_OptVars(vars);
+               dynamicSntDir,
+               tokenization_policy,
+               space_policy,
+               search_limit,
+               morpho_dic,
+               ambiguous_output_policy,
+               variable_error_policy,
+               protect_dic_chars,
+               is_korean,
+               max_count_call,
+               max_count_call_warning,
+               stack_max,
+               max_matches_at_token_pos,
+               max_matches_per_subgraph,
+               max_errors,
+               arabic_rules,
+               tilde_negation_operator,
+               useLocateCache,
+               allow_trace,
+               list_param_trace,
+               injected_vars);
+
 free(buffer_filename);
+free_vector_ptr(injected_vars,free);
 free_locate_trace_param(list_param_trace);
+free(morpho_dic);
+
 return (!OK);
 }
 

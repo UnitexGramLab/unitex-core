@@ -63,8 +63,8 @@ const char* usage_Elag =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Elag);
+  display_copyright_notice();
+  u_printf(usage_Elag);
 }
 
 
@@ -83,7 +83,7 @@ const struct option_TS lopts_Elag[]= {
 int main_Elag(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -92,55 +92,66 @@ char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Elag,lopts_Elag,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Elag,lopts_Elag,&index))) {
    switch(val) {
-   case 'l': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty language definition file\n");
+   case 'l': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty language definition file\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(language,vars->optarg);
+             strcpy(language,options.vars()->optarg);
              break;
-   case 'r': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty rule file\n");
+   case 'r': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty rule file\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(rule_file,vars->optarg);
+             strcpy(rule_file,options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output_tfst,vars->optarg);
+             strcpy(output_tfst,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Elag[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Elag[index].name);
+             return USAGE_ERROR_CODE;                         
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
 if (language[0]=='\0') {
-   fatal_error("You must define the language definition file\n");
+   error("You must define the language definition file\n");
+   return USAGE_ERROR_CODE;
 }
 if (rule_file[0]=='\0') {
-   fatal_error("You must define the rule file\n");
+   error("You must define the rule file\n");
+   return USAGE_ERROR_CODE;
 }
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 char input_tfst[FILENAME_MAX];
-strcpy(input_tfst,argv[vars->optind]);
+strcpy(input_tfst,argv[options.vars()->optind]);
 
 u_printf("Loading %s language definition ...\n",language);
 language_t* lang = load_language_definition(&vec,language);
@@ -152,16 +163,16 @@ if (output_tfst[0]=='\0') {
 get_path(rule_file,directory);
 vector_ptr* grammars;
 if ((grammars=load_elag_grammars(&vec,rule_file,lang,directory)) == NULL) {
+   error("Unable to load grammar %s", rule_file);
    free_language_t(lang);
-   free_OptVars(vars);
-   fatal_error("Unable to load grammar %s", rule_file);
+   return DEFAULT_ERROR_CODE;
 }
 u_printf("Grammars are loaded.\n");
+
 remove_ambiguities(input_tfst,grammars,output_tfst,&vec,lang);
-free_language_t(lang);
 free_vector_ptr(grammars,(release_f)free_Fst2Automaton_including_symbols);
-free_OptVars(vars);
-return 0;
+free_language_t(lang);
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

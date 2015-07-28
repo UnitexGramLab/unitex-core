@@ -49,7 +49,7 @@ const char* usage_Tfst2Grf =
          "  -o XXX/--output=XXX:  name .grf file as XXX.grf and the .txt one as XXX.txt (default=cursentence)\n"
          "  -f FONT/--font=FONT: use the font FONT in the output .grf (default=Times new Roman).\n"
          "  -z N/--fontsize=N: set the font size (default=10).\n"
-		 "  -h/--help: this help\n"
+         "  -h/--help: this help\n"
          "\n"
          "Converts a sentence automaton into a GRF file that can be viewed. The\n"
          "resulting file, named cursentence.grf, is stored in the same directory\n"
@@ -59,8 +59,8 @@ const char* usage_Tfst2Grf =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Tfst2Grf);
+  display_copyright_notice();
+  u_printf(usage_Tfst2Grf);
 }
 
 
@@ -80,9 +80,8 @@ const struct option_TS lopts_Tfst2Grf[]= {
 int main_Tfst2Grf(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
-
 
 int SENTENCE=-1;
 int size=10;
@@ -92,72 +91,106 @@ int is_sequence_automaton=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char foo;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,&index))) {
    switch(val) {
-   case 's': if (1!=sscanf(vars->optarg,"%d%c",&SENTENCE,&foo) || SENTENCE<=0) {
+   case 's': if (1!=sscanf(options.vars()->optarg,"%d%c",&SENTENCE,&foo) || SENTENCE<=0) {
                 /* foo is used to check that the sentence number is not like "45gjh" */
-                fatal_error("Invalid sentence number: %s\n",vars->optarg);
+                error("Invalid sentence number: %s\n",options.vars()->optarg);
+                free(fontname);
+                free(output);
+                return USAGE_ERROR_CODE;
              }
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output name pattern\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output name pattern\n");
+                free(fontname);
+                return USAGE_ERROR_CODE;                
              }
-             output=strdup(vars->optarg);
+             output=strdup(options.vars()->optarg);
              if (output==NULL) {
-                fatal_alloc_error("main_Tfst2Grf");
+                alloc_error("main_Tfst2Grf");
+                free(fontname);
+                return ALLOC_ERROR_CODE;
              }
              break;
-   case 'f': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty font name\n");
+   case 'f': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty font name\n");
+                free(output);
+                return USAGE_ERROR_CODE; 
              }
-             fontname=strdup(vars->optarg);
+             fontname=strdup(options.vars()->optarg);
              if (fontname==NULL) {
-                fatal_alloc_error("main_Tfst2Grf");
+                alloc_error("main_Tfst2Grf");
+                free(output);
+                return ALLOC_ERROR_CODE;
              }
              break;
-   case 'z': if (1!=sscanf(vars->optarg,"%d%c",&size,&foo) || size<=0) {
+   case 'z': if (1!=sscanf(options.vars()->optarg,"%d%c",&size,&foo) || size<=0) {
                 /* foo is used to check that the sentence number is not like "45gjh" */
-                fatal_error("Invalid font size: %s\n",vars->optarg);
+                error("Invalid font size: %s\n",options.vars()->optarg);
+                free(fontname);
+                free(output);
+                return USAGE_ERROR_CODE;                
              }
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(fontname);
+                free(output);
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(fontname);
+                free(output);
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Tfst2Grf[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage();
+             free(fontname);
+             free(output);
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Tfst2Grf[index].name);
+             free(fontname);
+             free(output);                         
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(fontname);
+             free(output); 
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
 if (SENTENCE==-1) {
-   fatal_error("You must specify a sentence number\n");
+   error("You must specify a sentence number\n");
+   free(fontname);
+   free(output); 
+   return USAGE_ERROR_CODE;   
 }
 
-if (vars->optind!=argc-1) {
+if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   free(fontname);
+   free(output); 
+   return USAGE_ERROR_CODE;
 }
+
 char grf_name[FILENAME_MAX];
 char txt_name[FILENAME_MAX];
 char tok_name[FILENAME_MAX];
 char start_name[FILENAME_MAX];
 
-get_path(argv[vars->optind],grf_name);
-get_path(argv[vars->optind],txt_name);
-get_path(argv[vars->optind],tok_name);
-get_path(argv[vars->optind],start_name);
+get_path(argv[options.vars()->optind],grf_name);
+get_path(argv[options.vars()->optind],txt_name);
+get_path(argv[options.vars()->optind],tok_name);
+get_path(argv[options.vars()->optind],start_name);
 if (output==NULL) {
    strcat(grf_name,"cursentence.grf");
    strcat(txt_name,"cursentence.txt");
@@ -173,66 +206,81 @@ if (output==NULL) {
    strcat(start_name,output);
    strcat(start_name,".start");
 }
+
 if (fontname==NULL) {
    fontname=strdup("Times New Roman");
    if (fontname==NULL) {
-      fatal_alloc_error("main_Tfst2Grf");
+      alloc_error("main_Tfst2Grf");
+      free(output); 
+      return ALLOC_ERROR_CODE;      
    }
 }
+
 U_FILE* f=u_fopen(&vec,grf_name,U_WRITE);
 if (f==NULL) {
-   error("Cannot file %s\n",grf_name);
-   return 1;
+   error("Cannot open file %s\n",grf_name);
+   free(fontname);
+   free(output); 
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* txt=u_fopen(&vec,txt_name,U_WRITE);
 if (txt==NULL) {
-   error("Cannot file %s\n",txt_name);
+   error("Cannot open file %s\n",txt_name);
    u_fclose(f);
-   return 1;
+   free(fontname);
+   free(output); 
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* tok=u_fopen(&vec,tok_name,U_WRITE);
 if (tok==NULL) {
-   error("Cannot file %s\n",tok_name);
+   error("Cannot open file %s\n",tok_name);
    u_fclose(f);
    u_fclose(txt);
-   return 1;
+   free(fontname);
+   free(output); 
+   return DEFAULT_ERROR_CODE;
 }
-u_printf("Loading %s...\n",argv[vars->optind]);
-Tfst* tfst=open_text_automaton(&vec,argv[vars->optind]);
+
+u_printf("Loading %s...\n",argv[options.vars()->optind]);
+Tfst* tfst=open_text_automaton(&vec,argv[options.vars()->optind]);
 
 load_sentence(tfst,SENTENCE);
 u_fprintf(txt,"%S\n",tfst->text);
 u_fclose(txt);
+
 U_FILE* start=u_fopen(&vec,start_name,U_WRITE);
 if (start==NULL) {
-   error("Cannot file %s\n",start_name);
+   error("Cannot open file %s\n",start_name);
+   close_text_automaton(tfst);
+   u_fclose(tok);
    u_fclose(f);
-   u_fclose(txt);
-   return 1;
+   free(fontname);
+   free(output); 
+   return DEFAULT_ERROR_CODE;
 }
+
 u_fprintf(start,"%d %d\n",tfst->offset_in_tokens,tfst->offset_in_chars);
 u_fclose(start);
-
 
 for (int i=0;i<tfst->tokens->nbelems;i++) {
    u_fprintf(tok,"%d %d\n",tfst->tokens->tab[i],tfst->token_sizes->tab[i]);
 }
 u_fclose(tok);
 
-
 u_printf("Creating GRF...\n");
 Grf* grf=sentence_to_grf(tfst,fontname,size,is_sequence_automaton);
 save_Grf(f,grf);
+
 free_Grf(grf);
 u_fclose(f);
 free(fontname);
-if (output!=NULL) {
-   free(output);
-}
+free(output);
 close_text_automaton(tfst);
-free_OptVars(vars);
+
 u_printf("Done.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

@@ -27,10 +27,6 @@
  * contact : unitex-contribution@ergonotics.com
  *
  */
-
-
-
-
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_LOGGER_AUTOINSTALL))))
 
 #include <string.h>
@@ -61,8 +57,7 @@ namespace unitex {
 
 namespace logger {
 
-void InstallLogger::LoadParamFile(const char* parameter_filename)
-{
+void InstallLogger::LoadParamFile(const char* parameter_filename) {
     init_done = 0;
     
     ABSTRACTFILE *af_fin = af_fopen_unlogged((parameter_filename != NULL) ?
@@ -111,8 +106,7 @@ void InstallLogger::LoadParamFile(const char* parameter_filename)
 }
 
 InstallLogger::InstallLogger(const char* parameter_filename) :
-    ule(ule_default_init),init_done(0)
-{
+    ule(ule_default_init),init_done(0) {
     LoadParamFile(parameter_filename);
 }
 
@@ -143,8 +137,8 @@ const char* usage_CreateLog =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_CreateLog);
+  display_copyright_notice();
+  u_printf(usage_CreateLog);
 }
 
 
@@ -169,100 +163,98 @@ const struct option_TS lopts_CreateLog[]= {
 };
 
 InstallLogger::InstallLogger(int argc,char* const argv[]) :
-  ule(ule_default_init),init_done(0)
-{
+  ule(ule_default_init), init_done(0) {
   ClearUniLoggerSpaceStruct(0);
-
   if (argc==1) {
     usage();
     return;
-}
+  }
 
-Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
-int bom_output = DEFAULT_BOM_OUTPUT;
-int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
-int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CreateLog,lopts_CreateLog,&index,vars))) {
-   switch(val) {
+  Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+  int bom_output = DEFAULT_BOM_OUTPUT;
+  int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+  int val,index=-1;
 
-   case 'h': usage(); return ;
+  UnitexGetOpt options;
+  while (EOF!=(val=options.parse_long(argc,argv,optstring_CreateLog,lopts_CreateLog,&index))) {
+     switch(val) {
+       case 'h': usage();
+                 return;
+       case 'n': ule.store_file_in_content = 0;
+                 break;
+       case 'i': ule.store_file_in_content = 1;
+                 break;
+       case 'o': ule.store_file_out_content = 1;
+                 break;
+       case 'u': ule.store_file_out_content = 0;
+                 break;
+       case 's': ule.store_list_file_in_content = 1;
+                 break;
+       case 't': ule.store_list_file_in_content = 0;
+                 break;
+       case 'r': ule.store_list_file_out_content = 1;
+                 break;
+       case 'f': ule.store_list_file_out_content = 0;
+                 break;
+       case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                             error("Missing argument for option --%s\n",lopts_CreateLog[index].name);
+                 return;            
+       case 'k': if (options.vars()->optarg[0]=='\0') {
+                    error("Empty input_encoding argument\n");
+                    return;
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,options.vars()->optarg);
+                 break;
+       case 'q': if (options.vars()->optarg[0]=='\0') {
+                    error("Empty output_encoding argument\n");
+                    return;
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
+                 break;
+       case 'g': ClearUniLoggerSpaceStruct(1);
+                 return;
+       case 'p': if (options.vars()->optarg[0]=='\0') {
+                    error("You must specify a non empty param file\n");
+                    return;
+                 }
+                 ClearUniLoggerSpaceStruct(1);
+                 LoadParamFile(options.vars()->optarg);
+                 return;
+       case 'l': if (options.vars()->optarg[0]=='\0') {
+                    error("You must specify a non empty log filename\n");
+                    return;
+                 }
+                 if (ule.szNameLog != NULL) {
+                     free((void*)ule.szNameLog);
+                 }
+                 ule.szNameLog = strdup(options.vars()->optarg);
+                 break;
+     
+       case 'd': if (options.vars()->optarg[0]=='\0') {
+                    error("You must specify a non empty directory\n");
+                    return;
+                 }
+                 if (ule.szPathLog != NULL) {
+                     free((void*)ule.szPathLog);
+                 }    
+                 ule.szPathLog = strdup(options.vars()->optarg);
+                 break;
 
-   case 'n': ule.store_file_in_content = 0;
-             break;
-   case 'i': ule.store_file_in_content = 1;
-             break;
-   case 'o': ule.store_file_out_content = 1;
-             break;
-   case 'u': ule.store_file_out_content = 0;
-             break;
-   case 's': ule.store_list_file_in_content = 1;
-             break;
-   case 't': ule.store_list_file_in_content = 0;
-             break;
-   case 'r': ule.store_list_file_out_content = 1;
-             break;
-   case 'f': ule.store_list_file_out_content = 0;
-             break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_CreateLog[index].name);
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
-             }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
-             break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
-             }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
-             break;
+       case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                             error("Invalid option --%s\n",options.vars()->optarg);
+                 return;
+     }
+     index=-1;
+  }
 
-   case 'g': ClearUniLoggerSpaceStruct(1);
-             free_OptVars(vars);
-             return;
+  if (options.vars()->optind!=argc-1) {
+  }
 
-   case 'p': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty param file\n");
-             }
-             ClearUniLoggerSpaceStruct(1);
-             LoadParamFile(vars->optarg);
-             free_OptVars(vars);
-             return;
-
-   case 'l': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty log filename\n");
-             }
-             if (ule.szNameLog != NULL)
-                 free((void*)ule.szNameLog);
-             ule.szNameLog = strdup(vars->optarg);
-             break;
- 
-   case 'd': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty directory\n");
-             }
-             if (ule.szPathLog != NULL)
-                 free((void*)ule.szPathLog);
-             ule.szPathLog = strdup(vars->optarg);
-             break;
-
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
-   }
-   index=-1;
-}
-
-if (vars->optind!=argc-1) {
-}
-
-if (AddActivityLogger(&ule) != 0)
+  if (AddActivityLogger(&ule) != 0) {
     init_done = 1;
-else
-{
+  } else {
     ClearUniLoggerSpaceStruct(1);
-}
-
-free_OptVars(vars);
+  }
 }
 
 void InstallLogger::ClearUniLoggerSpaceStruct(int clear_memory)

@@ -49,47 +49,45 @@ const char* usage_Tagger =
          "  <tfst>: the text automaton to use in input\n"
          "\n"
          "OPTIONS:\n"
-		   "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		   "  -d DATA/--data=DATA: use the .bin tagger data file containing tuples (unigrams,bigrams and trigrams)"
-		   " with frequencies\n"
-		   "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
-		   "\n"
-		   "Output options:\n"
-		   "  -o OUT/--output=OUT: specifies the output .tfst file. By default, the input .tfst is replaced.\n"
-		   "  -h/--help: this help\n"
-		   "\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
+         "  -d DATA/--data=DATA: use the .bin tagger data file containing tuples (unigrams,bigrams and trigrams)"
+         " with frequencies\n"
+         "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
+         "\n"
+         "Output options:\n"
+         "  -o OUT/--output=OUT: specifies the output .tfst file. By default, the input .tfst is replaced.\n"
+         "  -h/--help: this help\n"
+         "\n"
          "Applies statistical tagging to the given text automaton.\n"
-		   "The output .tfst file is a linear text automaton.\n\n";
-
-
+         "The output .tfst file is a linear text automaton.\n\n";
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Tagger);
+  display_copyright_notice();
+  u_printf(usage_Tagger);
 }
 
 
 const char* optstring_Tagger=":a:d:t:o:k:q:h";
 const struct option_TS lopts_Tagger[]= {
-	  {"alphabet", required_argument_TS, NULL, 'a'},
-	  {"data", required_argument_TS, NULL, 'd'},
-	  {"tagset", required_argument_TS, NULL, 't'},
-	  {"output",required_argument_TS,NULL,'o'},
-	  {"input_encoding",required_argument_TS,NULL,'k'},
-	  {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+    {"alphabet", required_argument_TS, NULL, 'a'},
+    {"data", required_argument_TS, NULL, 'd'},
+    {"tagset", required_argument_TS, NULL, 't'},
+    {"output",required_argument_TS,NULL,'o'},
+    {"input_encoding",required_argument_TS,NULL,'k'},
+    {"output_encoding",required_argument_TS,NULL,'q'},
+    {"help",no_argument_TS,NULL,'h'},
+    {NULL,no_argument_TS,NULL,0}
 };
 
 
 int main_Tagger(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
+UnitexGetOpt options;
 char tfst[FILENAME_MAX]="";
 char tind[FILENAME_MAX]="";
 char tmp_tind[FILENAME_MAX]="";
@@ -101,57 +99,67 @@ char data[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tagger,lopts_Tagger,&index,vars))) {
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Tagger,lopts_Tagger,&index))) {
    switch(val) {
-   case 'a': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty alphabet file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(alphabet,vars->optarg);
+                strcpy(alphabet,options.vars()->optarg);
                 break;
-   case 'd': if (vars->optarg[0]=='\0') {
-				  fatal_error("You must specify a non empty data file name\n");
+   case 'd': if (options.vars()->optarg[0]=='\0') {
+				  error("You must specify a non empty data file name\n");
+          return USAGE_ERROR_CODE;
 			   }
-			   strcpy(data,vars->optarg);
+			   strcpy(data,options.vars()->optarg);
 			   break;
-   case 't': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty tagset file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty tagset file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(tagset,vars->optarg);
+                strcpy(tagset,options.vars()->optarg);
                 break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Tagger[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Tagger[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
+if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   return USAGE_ERROR_CODE;
 }
 
 if(alphabet[0] == '\0'){
-	fatal_error("No alphabet file specified\n");
+	error("No alphabet file specified\n");
+  return USAGE_ERROR_CODE;
 }
-strcpy(tfst,argv[vars->optind]);
+
+strcpy(tfst,argv[options.vars()->optind]);
 
 strcpy(tind,tfst);
 remove_extension(tind);
@@ -167,20 +175,28 @@ remove_extension(data,data_inf);
 strcat(data_inf,".inf");
 Dictionary* d=new_Dictionary(&vec,data,data_inf);
 if (d==NULL) {
-	return 1;
+  free_alphabet(alpha);
+  return DEFAULT_ERROR_CODE;
 }
+
 char* current_tfst = tfst;
 int form_type = get_form_type(d,alpha);
 if(form_type == 1){
 	if(tagset[0] == '\0'){
-		fatal_error("No tagset file specified\n");
+    error("No tagset file specified\n");
+    free_Dictionary(d);
+    free_alphabet(alpha);
+    return USAGE_ERROR_CODE;
 	}
 	/* if we use inflected forms in the viterbi algorithm
 	 * we must separate tags according to their morphological
 	 * features (one tag per feature). Explode operation is
 	 * necessary.*/
 	if(tagset[0] == '\0'){
-		fatal_error("-t option is mandatory when inflected data file is used\n");
+		error("-t option is mandatory when inflected data file is used\n");
+    free_Dictionary(d);
+    free_alphabet(alpha);
+    return USAGE_ERROR_CODE;    
 	}
 	u_printf("Explodes tfst automaton according to tagset...\n");
 	strcpy(tmp_tfst,tfst);
@@ -192,9 +208,13 @@ if(form_type == 1){
 	current_tfst = tmp_tfst;
 	u_printf("\n");
 }
+
 Tfst* input_tfst = open_text_automaton(&vec,current_tfst);
 if(input_tfst == NULL) {
-	fatal_error("Cannot load input .tfst\n");
+	error("Cannot load input .tfst\n");
+  free_Dictionary(d);
+  free_alphabet(alpha);
+  return DEFAULT_ERROR_CODE;
 }
 
 remove_extension(temp,tmp_tind);
@@ -202,12 +222,23 @@ strcat(tmp_tind,".tind");
 
 U_FILE* out_tfst=u_fopen(&vec,temp,U_WRITE);
 if (out_tfst==NULL) {
-	fatal_error("Cannot create output .tfst\n");
+	error("Cannot create output .tfst\n");
+  close_text_automaton(input_tfst);
+  free_Dictionary(d);
+  free_alphabet(alpha);
+  return DEFAULT_ERROR_CODE;  
 }
+
 U_FILE* out_tind=u_fopen(BINARY,tmp_tind,U_WRITE);
 if (out_tind==NULL) {
-	fatal_error("Cannot create output .tind\n");
+	error("Cannot create output .tind\n");
+  u_fclose(out_tfst);
+  close_text_automaton(input_tfst);
+  free_Dictionary(d);
+  free_alphabet(alpha);
+  return DEFAULT_ERROR_CODE;    
 }
+
 Tfst* result=new_Tfst(out_tfst,out_tind,input_tfst->N);
 
 u_printf("Tagging...\n");
@@ -237,14 +268,18 @@ if (output[0]!='\0') {
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
 }
+
 U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_freq);
 }
+
+
 U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }
+
 sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
 u_fclose(f_tfst_tags_by_freq);
 u_fclose(f_tfst_tags_by_alph);
@@ -263,11 +298,12 @@ else {
 	strcat(output_tind,".tind");
 	af_rename(tmp_tind,output_tind);
 }
+
 free_alphabet(alpha);
 free_Dictionary(d);
-free_OptVars(vars);
+
 u_printf("Done.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

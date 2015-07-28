@@ -18,11 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
-/* Created by Agata Savary (savary@univ-tours.fr)
- */
-
-
+ /* 
+  *Originally created by Agata Savary (savary@univ-tours.fr)
+  */
 #include <stdio.h>
 #include <string.h>
 #include "MF_LangMorpho.h"
@@ -79,8 +77,8 @@ const char* usage_MultiFlex =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_MultiFlex);
+  display_copyright_notice();
+  u_printf(usage_MultiFlex);
 }
 
 
@@ -107,7 +105,7 @@ const struct option_TS lopts_MultiFlex[]= {
 int main_MultiFlex(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char output[FILENAME_MAX]="";
@@ -119,24 +117,27 @@ int is_korean=0;
 // default policy is to compile only out of date graphs
 GraphRecompilationPolicy graph_recompilation_policy = ONLY_OUT_OF_DATE;
 //Current language's alphabet
-Alphabet* alph=NULL;
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty DELAF file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty DELAF file name\n");
+                free(named);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                free(named);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
-   case 'd': strcpy(config_dir,vars->optarg); break;
+   case 'd': strcpy(config_dir,options.vars()->optarg); break;
    case 'K': is_korean=1;
              break;
    case 's': error_check_status=ONLY_SIMPLE_WORDS; break;
@@ -144,63 +145,83 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&i
    case 'f': graph_recompilation_policy = ALWAYS_RECOMPILE; break;
    case 'n': graph_recompilation_policy = NEVER_RECOMPILE;  break;
    case 't': graph_recompilation_policy = ONLY_OUT_OF_DATE; break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(named);
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(named);
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'p': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty package directory name\n");
+   case 'p': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty package directory name\n");
+                free(named);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(pkgdir,vars->optarg);
+             strcpy(pkgdir,options.vars()->optarg);
              break;
    case 'r': if (named==NULL) {
-                  named=strdup(vars->optarg);
+                  named=strdup(options.vars()->optarg);
                   if (named==NULL) {
-                     fatal_alloc_error("main_Grf2Fst2");
+                     alloc_error("main_Grf2Fst2");
+                     return ALLOC_ERROR_CODE;
                   }
              } else {
-            	 named = (char*)realloc((void*)named,strlen(named)+strlen(vars->optarg)+2);
-                 if (named==NULL) {
-                    fatal_alloc_error("main_MultiFlex");
+            	   char* more_names = (char*)realloc((void*)named,strlen(named)+strlen(options.vars()->optarg)+2);
+                 if (more_names) {
+                  named = more_names;
+                 } else {
+                  alloc_error("main_MultiFlex");
+                  free(named);
+                  return ALLOC_ERROR_CODE;
                  }
                  strcat(named,";");
-                 strcat(named,vars->optarg);
+                 strcat(named,options.vars()->optarg);
              }
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
+             free(named);
+             return USAGE_ERROR_CODE;                         
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(named);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free(named);
+   return USAGE_ERROR_CODE;   
 }
 
 if (output[0]=='\0') {
-   fatal_error("You must specify the output DELAF name\n");
+   error("You must specify the output DELAF name\n");
+   free(named);
+   return USAGE_ERROR_CODE;   
 }
 
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(config_dir,"Morphology.txt",morphology);
 //int config_files_status=CONFIG_FILES_OK;
+Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
    //Load alphabet
    alph=load_alphabet(&vec,alphabet,1);  //To be done once at the beginning of the inflection
    if (alph==NULL) {
       error("Cannot open alphabet file %s\n",alphabet);
-      return 1;
+      free(named);
+      return DEFAULT_ERROR_CODE;
    }
 }
 //Init equivalence files
@@ -211,7 +232,9 @@ new_file(config_dir,"Equivalences.txt",equivalences);
 Korean* korean=NULL;
 if (is_korean) {
    if (alph==NULL) {
-      fatal_error("Cannot initialize Korean data with a NULL alphabet\n");
+      error("Cannot initialize Korean data with a NULL alphabet\n");
+      free(named);
+      return DEFAULT_ERROR_CODE;      
    }
 	korean=new Korean(alph);
 }
@@ -224,12 +247,8 @@ MultiFlex_ctx* p_multiFlex_ctx=new_MultiFlex_ctx(config_dir,
                                                  named,
                                                  graph_recompilation_policy);
 
-
 //DELAC inflection
-int err = inflect(argv[vars->optind],output,p_multiFlex_ctx,alph,error_check_status);
-
-// FIXME(martinec) err is never used 
-((void)(err));
+int return_value = inflect(argv[options.vars()->optind],output,p_multiFlex_ctx,alph,error_check_status);
 
 free(named);
 
@@ -237,14 +256,17 @@ for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fs
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
     p_multiFlex_ctx->fst2[count_free_fst2] = NULL;
 }
+
 free_alphabet(alph);
-free_OptVars(vars);
+
 free_MultiFlex_ctx(p_multiFlex_ctx);
+
 if (korean!=NULL) {
 	delete korean;
 }
+
 u_printf("Done.\n");
-return 0;
+return return_value;
 }
 
 } // namespace unitex

@@ -69,9 +69,17 @@ return l;
  * Frees a single match list element.
  */
 void free_match_list_element(struct match_list* l,Abstract_allocator prv_alloc) {
-if (l==NULL) return;
-if (l->output!=NULL) free_cb(l->output,prv_alloc);
-free_cb(l,prv_alloc);
+  if (l==NULL) {
+    return;
+  }  
+  if (l->output!=NULL) {
+    free_cb(l->output,prv_alloc);
+  }
+    
+  free_cb(l,prv_alloc);
+
+  // protecting against dangling pointer bugs
+  l = NULL;
 }
 
 
@@ -103,21 +111,21 @@ char is_an_output;
 /* We read the header */
 unichar foo;
 if (header==NULL) {
-	header=&foo;
+  header=&foo;
 }
 u_fscanf(f,"#%C\n",header);
 OutputPolicy policy;
 switch(*header) {
    case 'D': {
-	   policy=DEBUG_OUTPUTS;
-	   /* In debug mode, we have to skip the debug header */
-	   int n_graphs;
-	   u_fscanf(f,"%d\n",&n_graphs);
-	   while ((n_graphs--)>-1) {
-		   /* -1, because we also have to skip the #[IMR] line */
-		   readline(line,f);
-	   }
-	   break;
+     policy=DEBUG_OUTPUTS;
+     /* In debug mode, we have to skip the debug header */
+     int n_graphs;
+     u_fscanf(f,"%d\n",&n_graphs);
+     while ((n_graphs--)>-1) {
+       /* -1, because we also have to skip the #[IMR] line */
+       readline(line,f);
+     }
+     break;
    }
    case 'M': policy=MERGE_OUTPUTS; break;
    case 'R':
@@ -134,11 +142,11 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
    int c=u_fgetc(f);
    if (c==' ') {
       /* If we have an output to read */
-	  readline(line,f);
-	  /* In debug mode, we have to stop at the char #1 */
+    readline(line,f);
+    /* In debug mode, we have to stop at the char #1 */
       int i=-1;
       while (line->str[++i]!=1 && line->str[i]!='\0') {
-	  }
+    }
       line->str[i]='\0';
    }
    is_an_output=(policy!=IGNORE_OUTPUTS);
@@ -179,71 +187,71 @@ struct match_list* l=*list;
 int previous_was_identical=0;
 int original_match_number=-1;
 while (l!=NULL) {
-	original_match_number++;
-	if (previous==NULL) {
-		/* Case 1: we are at the beginning of the list */
-		/* Case 1a: there is only one cell */
-		if (l->next==NULL) {
-			free_match_list(l);
-			*list=NULL;
-			return;
-		}
-		/* Case 1b: there is a next cell, but it's not ambiguous with the current one */
-		if (!are_ambiguous(l,l->next)) {
-			/* We have to delete the current cell */
-			tmp=l->next;
-			free_match_list_element(l);
-			l=tmp;
-			continue;
-		}
-		/* Case 1c: the next cell is an ambiguous one, we can move on */
-		/* Now we know the list head element */
-		*list=l;
-		previous=l;
-		previous_was_identical=1;
-		l=l->next;
-		vector_int_add(renumber,original_match_number);
-		continue;
-	} else {
-		/* Case 2: there is a previous cell */
-		if (previous_was_identical) {
-			vector_int_add(renumber,original_match_number);
-			/* Case 2a: we know that we have to keep this current cell, but
-			 * we must check if the next is also an ambiguous one */
-			if (l->next==NULL) {
-				/* No next cell ? We're done then */
-				return;
-			}
-			previous_was_identical=are_ambiguous(l,l->next);
-			previous=l;
-			l=l->next;
-			continue;
-		}
-		/* Case 2b: previous cell is different, so we have to test the next one
-		 * to know whether we must keep the current one or not */
-		if (l->next==NULL) {
-			/* No next cell ? We have to delete the current one and then
-			 * we are done */
-			free_match_list_element(l);
-			previous->next=NULL;
-			return;
-		}
-		previous_was_identical=are_ambiguous(l,l->next);
-		if (previous_was_identical) {
-			/* We have to keep the current cell */
-			previous=l;
-			l=l->next;
-			vector_int_add(renumber,original_match_number);
-			continue;
-		}
-		/* Final case, the next cell is not ambiguous, so we have to delete
-		 * the current one */
-		tmp=l;
-		l=l->next;
-		free_match_list_element(tmp);
-		previous->next=l;
-		continue;
-	}
+  original_match_number++;
+  if (previous==NULL) {
+    /* Case 1: we are at the beginning of the list */
+    /* Case 1a: there is only one cell */
+    if (l->next==NULL) {
+      free_match_list(l);
+      *list=NULL;
+      return;
+    }
+    /* Case 1b: there is a next cell, but it's not ambiguous with the current one */
+    if (!are_ambiguous(l,l->next)) {
+      /* We have to delete the current cell */
+      tmp=l->next;
+      free_match_list_element(l);
+      l=tmp;
+      continue;
+    }
+    /* Case 1c: the next cell is an ambiguous one, we can move on */
+    /* Now we know the list head element */
+    *list=l;
+    previous=l;
+    previous_was_identical=1;
+    l=l->next;
+    vector_int_add(renumber,original_match_number);
+    continue;
+  } else {
+    /* Case 2: there is a previous cell */
+    if (previous_was_identical) {
+      vector_int_add(renumber,original_match_number);
+      /* Case 2a: we know that we have to keep this current cell, but
+       * we must check if the next is also an ambiguous one */
+      if (l->next==NULL) {
+        /* No next cell ? We're done then */
+        return;
+      }
+      previous_was_identical=are_ambiguous(l,l->next);
+      previous=l;
+      l=l->next;
+      continue;
+    }
+    /* Case 2b: previous cell is different, so we have to test the next one
+     * to know whether we must keep the current one or not */
+    if (l->next==NULL) {
+      /* No next cell ? We have to delete the current one and then
+       * we are done */
+      free_match_list_element(l);
+      previous->next=NULL;
+      return;
+    }
+    previous_was_identical=are_ambiguous(l,l->next);
+    if (previous_was_identical) {
+      /* We have to keep the current cell */
+      previous=l;
+      l=l->next;
+      vector_int_add(renumber,original_match_number);
+      continue;
+    }
+    /* Final case, the next cell is not ambiguous, so we have to delete
+     * the current one */
+    tmp=l;
+    l=l->next;
+    free_match_list_element(tmp);
+    previous->next=l;
+    continue;
+  }
 }
 }
 

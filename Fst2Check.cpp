@@ -27,10 +27,6 @@
  * contact : unitex-contribution@ergonotics.com
  *
  */
-
-
-
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -111,8 +107,8 @@ const char* usage_Fst2Check =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Fst2Check);
+  display_copyright_notice();
+  u_printf(usage_Fst2Check);
 }
 
 
@@ -181,14 +177,13 @@ const struct option_TS lopts_Fst2Check[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 
-
 /**
  * The same than main, but no call to setBufferMode.
  */
 int main_Fst2Check(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int check_recursion=0,tfst_check=0;
@@ -198,8 +193,9 @@ char no_empty_graph_warning=0;
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&index))) {
    switch(val) {
    case 'a': append_output=1; break;
    case 'y': check_recursion=1; break;
@@ -212,42 +208,45 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&i
              no_empty_graph_warning=1;
              break;
    case 'e': no_empty_graph_warning=1; break;
-   case 'h': usage(); free_OptVars(vars); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Fst2Check[index].name);
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage();  
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Fst2Check[index].name);
+             return USAGE_ERROR_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty output file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(output,vars->optarg);
+                strcpy(output,options.vars()->optarg);
                 break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   free_OptVars(vars);
+if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
 
 char fst2_file_name[FILENAME_MAX];
-remove_extension(argv[vars->optind],fst2_file_name);
-strcpy(fst2_file_name,argv[vars->optind]);
+remove_extension(argv[options.vars()->optind],fst2_file_name);
+strcpy(fst2_file_name,argv[options.vars()->optind]);
 U_FILE* ferr=NULL;
-free_OptVars(vars);
 
 if (output[0]!=0) {
   if (append_output == 0) {
@@ -262,31 +261,26 @@ if (display_statistics) {
     display_fst2_file_stat(&vec,fst2_file_name,ferr);
 }
 
-
 if (check_recursion) {
    if (!OK_for_Locate_write_error(&vec,fst2_file_name,no_empty_graph_warning,ferr)) {
-      if (ferr != NULL) {
-          u_fclose(ferr);
-      }
-      return 1;
-   }
-}
-if (tfst_check) {
-   if (!valid_sentence_automaton_write_error(&vec,fst2_file_name,ferr)) {
-      if (ferr != NULL) {
-          u_fclose(ferr);
-      }
-      return 1;
+      u_fclose(ferr);
+      return DEFAULT_ERROR_CODE;
    }
 }
 
-if (ferr != NULL) {
-    u_fclose(ferr);
+if (tfst_check) {
+   if (!valid_sentence_automaton_write_error(&vec,fst2_file_name,ferr)) {
+      u_fclose(ferr);
+      return DEFAULT_ERROR_CODE;
+   }
 }
+
 if ((check_recursion) || (tfst_check)) {
   u_printf("%s fst2 check has succeeded\n",fst2_file_name);
 }
-return 0;
+
+u_fclose(ferr);
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

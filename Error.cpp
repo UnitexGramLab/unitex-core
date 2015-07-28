@@ -77,11 +77,11 @@ fatal_error(DEFAULT_ERROR_CODE);
 #ifndef IGNORE_FATAL_ASSERT
 void fatal_assert(int assert_condition, const char* format, ...) {
 if (assert_condition) {
-	va_list list;
-	va_start(list, format);
-	u_vfprintf(U_STDERR, format, list);
-	va_end(list);
-	fatal_error(DEFAULT_ERROR_CODE);
+  va_list list;
+  va_start(list, format);
+  u_vfprintf(U_STDERR, format, list);
+  va_end(list);
+  fatal_error(DEFAULT_ERROR_CODE);
 }
 }
 #endif
@@ -126,6 +126,13 @@ DISCARD_UNUSED_PARAMETER(mode)
 #endif
 }
 
+/**
+ * Raises a memory allocation error. 'function' is the name
+ * of the function where the error occurred
+ */
+void alloc_error(const char* function) {
+  error("Not enough memory in %s\n",function);
+}
 
 /**
  * Raises a fatal memory allocation error. 'function' is the name

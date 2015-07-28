@@ -76,8 +76,8 @@ const char* usage_Grf2Fst2 =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Grf2Fst2);
+  display_copyright_notice();
+  u_printf(usage_Grf2Fst2);
 }
 
 
@@ -187,7 +187,8 @@ for (int i=0;i<n_morpho_dics;i++) {
    }
    name[pos]='\0';
    if (*s!='=') {
-	   fatal_error("Invalid named_repositories: %s\n",src);
+	   error("Invalid named_repositories: %s\n",src);
+     return;
    }
    s++;
    pos=0;
@@ -210,8 +211,9 @@ for (int i=0;i<n_morpho_dics;i++) {
 int main_Grf2Fst2(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
+
 struct compilation_info* infos=new_compilation_info();
 int check_recursion=0,tfst_check=0;
 
@@ -224,9 +226,10 @@ char fst2_file_name[FILENAME_MAX];
 infos->verbose_name_grf=1;
 char alph[FILENAME_MAX]="";
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
 fst2_file_name[0]='\0';
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index))) {
    switch(val) {
    case 'y': check_recursion=1; break;
    case 'n': check_recursion=0; break;
@@ -240,83 +243,114 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
    case 'e': infos->no_empty_graph_warning=1; break;
    case 'c': infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'a': infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
-			   strcpy(alph,vars->optarg);
+			   strcpy(alph,options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output\n");
+                free(named);
+                free_compilation_info(infos);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(fst2_file_name,vars->optarg);
+             strcpy(fst2_file_name,options.vars()->optarg);
              break;
-   case 'd': strcpy(infos->repository,vars->optarg); break;
+   case 'd': strcpy(infos->repository,options.vars()->optarg); break;
    case 1: infos->debug=1; break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Grf2Fst2[index].name);
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Grf2Fst2[index].name);
+            free(named);
+            free_compilation_info(infos);
+            return USAGE_ERROR_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(named);
+                free_compilation_info(infos);
+                return USAGE_ERROR_CODE;                
              }
-             decode_reading_encoding_parameter(&(infos->vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(infos->vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(named);
+                free_compilation_info(infos);
+                return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(infos->vec.encoding_output),&(infos->vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(infos->vec.encoding_output),&(infos->vec.bom_output),options.vars()->optarg);
              break;
    case 'r': if (named==NULL) {
-                  named=strdup(vars->optarg);
+                  named=strdup(options.vars()->optarg);
                   if (named==NULL) {
-                     fatal_alloc_error("main_Grf2Fst2");
+                     alloc_error("main_Grf2Fst2");
+                     free_compilation_info(infos);
+                     return ALLOC_ERROR_CODE;
                   }
              } else {
-            	 named = (char*)realloc((void*)named,strlen(named)+strlen(vars->optarg)+2);
+            	   named = (char*)realloc((void*)named,strlen(named)+strlen(options.vars()->optarg)+2);
                  if (named==NULL) {
-                    fatal_alloc_error("main_Grf2Fst2");
+                    alloc_error("main_Grf2Fst2");
+                    free_compilation_info(infos);
+                    return ALLOC_ERROR_CODE;
                  }
                  strcat(named,";");
-                 strcat(named,vars->optarg);
+                 strcat(named,options.vars()->optarg);
              }
              break;
    case 'v': infos->check_outputs=1; break;
    case 'S': infos->strict_tokenization=1; break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(named);
+             free_compilation_info(infos);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
+
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free(named);
+   free_compilation_info(infos);
+   return DEFAULT_ERROR_CODE;  
+}
+
 deal_with_named_repositories(named,infos->named_repositories);
 free(named);
+
 if (alph[0]!='\0') {
 	infos->alphabet=load_alphabet(&(infos->vec),alph);
 	if (infos->alphabet==NULL) {
-		fatal_error("Cannot load alphabet file %s\n",alph);
+		error("Cannot load alphabet file %s\n",alph);
+    free_compilation_info(infos);
+    return DEFAULT_ERROR_CODE;    
 	}
 }
-if (vars->optind!=argc-1) {
-   error("Invalid arguments: rerun with --help\n");
-   return 1;
-}
+
 if (fst2_file_name[0]=='\0') {
-	strcpy(fst2_file_name,argv[vars->optind]);
+	strcpy(fst2_file_name,argv[options.vars()->optind]);
 }
 remove_extension(fst2_file_name);
 strcat(fst2_file_name,".fst2");
 if ((infos->fst2=u_fopen(&(infos->vec),fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
-   return 1;
+   free_alphabet(infos->alphabet);
+   free_compilation_info(infos);
+   return DEFAULT_ERROR_CODE; 
 }
 u_fprintf(infos->fst2,"0000000000\n");
-int result=compile_grf(argv[vars->optind],infos);
+int result=compile_grf(argv[options.vars()->optind],infos);
 if (result==0) {
    error("Compilation has failed\n");
-   free_compilation_info(infos);
    u_fclose(infos->fst2);
-   return 1;
+   free_alphabet(infos->alphabet);
+   free_compilation_info(infos);
+   return DEFAULT_ERROR_CODE;
 }
-free_alphabet(infos->alphabet);
+
 write_tags(infos->fst2,infos->tags);
 u_fclose(infos->fst2);
-free_OptVars(vars);
+free_alphabet(infos->alphabet);
+
 write_number_of_graphs(&(infos->vec),fst2_file_name,infos->current_saved_graph,infos->debug);
 /* Now, we may have to renumber graph calls */
 if (infos->renumber->tab[infos->graph_names->size-1]!=infos->graph_names->size) {
@@ -329,18 +363,20 @@ if (infos->renumber->tab[infos->graph_names->size-1]!=infos->graph_names->size) 
 if (check_recursion) {
    if (!OK_for_Locate(&(infos->vec),fst2_file_name,infos->no_empty_graph_warning)) {
       free_compilation_info(infos);
-      return 1;
+      return DEFAULT_ERROR_CODE;
    }
 }
+
 if (tfst_check) {
    if (!valid_sentence_automaton(&(infos->vec),fst2_file_name)) {
       free_compilation_info(infos);
-      return 1;
+      return DEFAULT_ERROR_CODE;
    }
 }
+
 free_compilation_info(infos);
 u_printf("Compilation has succeeded\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

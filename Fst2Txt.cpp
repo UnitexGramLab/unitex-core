@@ -61,8 +61,8 @@ const char* usage_Fst2Txt =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Fst2Txt);
+  display_copyright_notice();
+  u_printf(usage_Fst2Txt);
 }
 
 
@@ -88,30 +88,39 @@ const struct option_TS lopts_Fst2Txt[]= {
 int main_Fst2Txt(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 char in_offsets[FILENAME_MAX]="";
 char out_offsets[FILENAME_MAX]="";
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index))) {
    switch(val) {
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty text file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty text file name\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE;
              }
-             p->text_file=strdup(vars->optarg);
+             p->text_file=strdup(options.vars()->optarg);
              if (p->text_file==NULL) {
-                fatal_alloc_error("main_Fst2Txt");
+                alloc_error("main_Fst2Txt");
+                free_fst2txt_parameters(p);
+                return ALLOC_ERROR_CODE;
              }
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE;                
              }
-             p->alphabet_file=strdup(vars->optarg);
+             p->alphabet_file=strdup(options.vars()->optarg);
              if (p->alphabet_file==NULL) {
-                fatal_alloc_error("main_Fst2Txt");
+               alloc_error("main_Fst2Txt");
+               free_fst2txt_parameters(p);
+               return ALLOC_ERROR_CODE;               
              }
              break;
    case 'M': p->output_policy=MERGE_OUTPUTS; break;
@@ -120,49 +129,68 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index
    case 'w': p->tokenization_policy=WORD_BY_WORD_TOKENIZATION; break;
    case 's': p->space_policy=START_WITH_SPACE; break;
    case 'x': p->space_policy=DONT_START_WITH_SPACE; break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Fst2Txt[index].name);
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Fst2Txt[index].name);
+             free_fst2txt_parameters(p);
+             return USAGE_ERROR_CODE; 
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE;                 
              }
-             decode_reading_encoding_parameter(&(p->vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(p->vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE; 
              }
-             decode_writing_encoding_parameter(&(p->vec.encoding_output),&(p->vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(p->vec.encoding_output),&(p->vec.bom_output),options.vars()->optarg);
              break;
-   case '$': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_offsets argument\n");
+   case '$': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_offsets argument\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE; 
              }
-             strcpy(in_offsets,vars->optarg);
+             strcpy(in_offsets,options.vars()->optarg);
              break;
-   case '@': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_offsets argument\n");
+   case '@': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_offsets argument\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE; 
              }
-             strcpy(out_offsets,vars->optarg);
+             strcpy(out_offsets,options.vars()->optarg);
              break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free_fst2txt_parameters(p);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free_fst2txt_parameters(p);
+   return USAGE_ERROR_CODE;
 }
 
 if (p->text_file==NULL) {
-   fatal_error("You must specify the text file\n");
+   error("You must specify the text file\n");
+   free_fst2txt_parameters(p);
+   return USAGE_ERROR_CODE;   
 }
+
 if (out_offsets[0]!='\0') {
 	/* We deal with offsets only if the program is expected to produce some */
 	if (in_offsets[0]!='\0') {
 		p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
 		if (p->v_in_offsets==NULL) {
-			fatal_error("Cannot load offset file %s\n",in_offsets);
+			error("Cannot load offset file %s\n",in_offsets);
+      free_fst2txt_parameters(p);
+      return DEFAULT_ERROR_CODE;      
 		}
 	} else {
 		/* If there is no input offset file, we create an empty offset vector
@@ -171,7 +199,9 @@ if (out_offsets[0]!='\0') {
 	}
 	p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
 	if (p->f_out_offsets==NULL) {
-		fatal_error("Cannot create file %s\n",out_offsets);
+		error("Cannot create file %s\n",out_offsets);
+    free_fst2txt_parameters(p);
+    return DEFAULT_ERROR_CODE;     
 	}
 }
 
@@ -180,15 +210,20 @@ remove_extension(p->text_file,tmp);
 strcat(tmp,".tmp");
 p->temp_file=strdup(tmp);
 if (p->temp_file==NULL) {
-   fatal_alloc_error("main_Fst2Txt");
+   alloc_error("main_Fst2Txt");
+   free_fst2txt_parameters(p);
+   return ALLOC_ERROR_CODE;   
 }
-p->fst_file=strdup(argv[vars->optind]);
+p->fst_file=strdup(argv[options.vars()->optind]);
 if (p->fst_file==NULL) {
-   fatal_alloc_error("main_Fst2Txt");
+   alloc_error("main_Fst2Txt");
+   free_fst2txt_parameters(p);
+   return ALLOC_ERROR_CODE;   
 }
+
 int result=main_fst2txt(p);
+
 free_fst2txt_parameters(p);
-free_OptVars(vars);
 return result;
 }
 

@@ -51,10 +51,9 @@ const char* usage_Tfst2Unambig =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Tfst2Unambig);
+  display_copyright_notice();
+  u_printf(usage_Tfst2Unambig);
 }
-
 
 const char* optstring_Tfst2Unambig=":o:hk:q:";
 
@@ -70,83 +69,100 @@ const struct option_TS lopts_Tfst2Unambig[]= {
 int main_Tfst2Unambig(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
 char* output=NULL;
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2Unambig,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2Unambig,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output text file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output text file name\n");
+                free(output);
+                return USAGE_ERROR_CODE;
              }
-             output=strdup(vars->optarg);
+             output=strdup(options.vars()->optarg);
              if (output==NULL) {
-                fatal_alloc_error("main_Tfst2Unambig");
+                alloc_error("main_Tfst2Unambig");
+                return ALLOC_ERROR_CODE;                
              }
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(output);
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(output);
+                return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Tfst2Unambig[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
+   case 'h': usage();
+             free(output); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Tfst2Unambig[index].name);
+             free(output);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(output);
+             return USAGE_ERROR_CODE;
              break;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free(output);
+   return USAGE_ERROR_CODE;
 }
 
 if (output==NULL) {
-   fatal_error("You must specify an output text file\n");
+   error("You must specify an output text file\n");
+   free(output);
+   return USAGE_ERROR_CODE;   
 }
 
 u_printf("Loading text automaton...\n");
-Tfst* tfst=open_text_automaton(&vec,argv[vars->optind]);
+Tfst* tfst=open_text_automaton(&vec,argv[options.vars()->optind]);
 if (tfst==NULL) {
-   error("Cannot load text automaton %s\n",argv[vars->optind]);
+   error("Cannot load text automaton %s\n",argv[options.vars()->optind]);
    free(output);
-   free_OptVars(vars);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 int res=isLinearAutomaton(tfst);
 if (res!=LINEAR_AUTOMATON) {
    error("Error: the text automaton is not linear in sentence %d\n",res);
    close_text_automaton(tfst);
    free(output);
-   free_OptVars(vars);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* f=u_fopen(&vec,output,U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",output);
    close_text_automaton(tfst);
    free(output);
-   free_OptVars(vars);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 u_printf("Converting linear automaton into text...\n");
 convertLinearAutomaton(tfst,f);
 u_fclose(f);
 close_text_automaton(tfst);
 free(output);
-free_OptVars(vars);
+
 u_printf("Done.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

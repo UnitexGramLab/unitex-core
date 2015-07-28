@@ -27,10 +27,6 @@
  * contact : unitex-contribution@ergonotics.com
  *
  */
-
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,8 +69,8 @@ const char* usage_Untokenize =
          "These files are located in the XXX_snt directory where XXX is <txt> without its extension.\n";
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Untokenize);
+  display_copyright_notice();
+  u_printf(usage_Untokenize);
 }
 
 
@@ -94,7 +90,7 @@ const struct option_TS lopts_Untokenize[]={
 int main_Untokenize(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char alphabet[FILENAME_MAX]="";
@@ -106,114 +102,132 @@ int range_start,range_stop,use_range;
 int token_step_number=0;
 range_start=range_stop=use_range=0;
 char foo=0;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Untokenize,lopts_Untokenize,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Untokenize,lopts_Untokenize,&index))) {
    switch(val) {
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty snt dir name\n");
+   case 'd': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty snt dir name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(dynamicSntDir,vars->optarg);
+                strcpy(dynamicSntDir,options.vars()->optarg);
                 break;
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty token file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty token file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(token_file,vars->optarg);
+             strcpy(token_file,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
 
-   case 'n': if (1!=sscanf(vars->optarg,"%d%c",&token_step_number,&foo) || token_step_number<=0) {
+   case 'n': if (1!=sscanf(options.vars()->optarg,"%d%c",&token_step_number,&foo) || token_step_number<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
-                fatal_error("Invalid token numbering argument: %s\n",vars->optarg);
+                error("Invalid token numbering argument: %s\n",options.vars()->optarg);
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'r': {
                 int param1 = 0;
                 int param2 = 0;
-                int ret_scan = sscanf(vars->optarg,"%d,%d%c",&param1,&param2,&foo);
+                int ret_scan = sscanf(options.vars()->optarg,"%d,%d%c",&param1,&param2,&foo);
                 if (ret_scan == 2) {
                     range_start = param1;
                     range_stop  = param2;
                     use_range=1;
                     if (((range_start < -1)) || (range_stop < -1)) {
                         /* foo is used to check that the search limit is not like "45gjh" */
-                        fatal_error("Invalid stop count argument: %s\n",vars->optarg);
+                        error("Invalid stop count argument: %s\n",options.vars()->optarg);
+                        return USAGE_ERROR_CODE;
                     }
                 }
                 else
-                    if (1!=sscanf(vars->optarg,"%d%c",&range_start,&foo) || (range_start < -1)) {
+                    if (1!=sscanf(options.vars()->optarg,"%d%c",&range_start,&foo) || (range_start < -1)) {
                         /* foo is used to check that the search limit is not like "45gjh" */
-                        fatal_error("Invalid stop count argument: %s\n",vars->optarg);
+                        error("Invalid stop count argument: %s\n",options.vars()->optarg);
+                        return USAGE_ERROR_CODE;
                     }
                     use_range=1;
              }
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Untokenize[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Untokenize[index].name);
+             return USAGE_ERROR_CODE;            
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
-U_FILE* text;
+
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
-Alphabet* alph=NULL;
+
 if (dynamicSntDir[0]=='\0') {
-    get_snt_path(argv[vars->optind],dynamicSntDir);
+    get_snt_path(argv[options.vars()->optind],dynamicSntDir);
 }
+
 strcpy(text_cod,dynamicSntDir);
 strcat(text_cod,"text.cod");
 strcpy(enter_pos,dynamicSntDir);
 strcat(enter_pos,"enter.pos");
 strcpy(tokens_txt,dynamicSntDir);
 strcat(tokens_txt,"tokens.txt");
+
+Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
    alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
-      return 1;
+      return DEFAULT_ERROR_CODE;
    }
 }
 
 ABSTRACTMAPFILE* af_text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
 if (af_text_cod==NULL) {
-	error("Cannot open file %s\n",text_cod);
-	if (alph!=NULL) {
-      free_alphabet(alph);
-	}
-	return 1;
+  error("Cannot open file %s\n",text_cod);
+  free_alphabet(alph);
+  return DEFAULT_ERROR_CODE;
 }
 
 ABSTRACTMAPFILE* af_enter_pos=af_open_mapfile(enter_pos,MAPFILE_OPTION_READ,0);
-text = u_fopen(&vec,argv[vars->optind],U_WRITE);
+if (af_enter_pos==NULL) {
+  error("Cannot open file %s\n",enter_pos);
+  af_close_mapfile(af_text_cod);
+  free_alphabet(alph);
+  return DEFAULT_ERROR_CODE;
+}
+
+U_FILE* text = u_fopen(&vec,argv[options.vars()->optind],U_WRITE);
 if (text==NULL) {
-   error("Cannot create text file %s\n",argv[vars->optind]);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
-   af_close_mapfile(af_text_cod);
-   return 1;
+  error("Cannot create text file %s\n",argv[options.vars()->optind]);
+  af_close_mapfile(af_enter_pos);
+  af_close_mapfile(af_text_cod);
+  free_alphabet(alph);
+  return DEFAULT_ERROR_CODE;
 }
 
 struct text_tokens* tok=load_text_tokens(&vec,tokens_txt);
@@ -263,24 +277,15 @@ for (size_t i=0;i<nb_item;i++) {
 }
 
 af_release_mapfile_pointer(af_text_cod,buf);
-if (buf_enter!=NULL) {
-    af_release_mapfile_pointer(af_enter_pos,buf_enter);
-}
-if (af_enter_pos!=NULL) {
-    af_close_mapfile(af_enter_pos);
-}
+af_release_mapfile_pointer(af_enter_pos,buf_enter);
+af_close_mapfile(af_enter_pos);
 af_close_mapfile(af_text_cod);
-if (alph!=NULL) {
-   free_alphabet(alph);
-}
-u_fclose(text);
 free_text_tokens(tok);
-if (alph!=NULL) {
-   free_alphabet(alph);
-}
-free_OptVars(vars);
+u_fclose(text);
+free_alphabet(alph);
+
 u_printf("\nDone.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

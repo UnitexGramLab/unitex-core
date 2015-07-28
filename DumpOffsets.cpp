@@ -28,9 +28,6 @@
  *
  */
 
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,8 +126,8 @@ const char* usage_DumpOffsets =
          ;
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_DumpOffsets);
+  display_copyright_notice();
+  u_printf(usage_DumpOffsets);
 }
 
 
@@ -161,16 +158,16 @@ const struct option_TS lopts_DumpOffsets[]={
 #define READ_FILE_BUFFER_SIZE 65536
 
 /**
-* This code run well, but in really not optimized
-*/
-static unichar* read_text_file(U_FILE *f,int * filesize){
-
-    unichar *text = NULL;
+ * FIXME(jhondoe) This code runs well, but isn't really optimized
+ */
+static unichar* read_text_file(U_FILE* f, int* filesize){
     *filesize = 0;
-
-    text = (unichar *)malloc(sizeof(unichar));
-    if (text == NULL){
-        fatal_alloc_error("read_text_file");
+    
+    unichar* more_text =  NULL;
+    unichar* text = (unichar *)malloc(sizeof(unichar));
+    if (!text){
+        alloc_error("read_text_file");
+        return NULL;
     }
     text[0] = '\0';
 
@@ -180,21 +177,25 @@ static unichar* read_text_file(U_FILE *f,int * filesize){
         unichar buffer[READ_FILE_BUFFER_SIZE + 1];
         memset(buffer, 0, sizeof(unichar)*(READ_FILE_BUFFER_SIZE + 1));
 
-        for (read = 0; read < READ_FILE_BUFFER_SIZE; read++)
-        {
+        for (read = 0; read < READ_FILE_BUFFER_SIZE; read++) {
             int r = u_fgetc_raw(f);
-            if (r == EOF)
+            if (r == EOF) {
                 break;
+            }
             *(buffer + read) = (unichar)r;
         }
 
         total_read += u_strlen(buffer);
-        text = (unichar *)realloc(text, sizeof(unichar)*(total_read + 1));
-        if (text == NULL){
-            fatal_alloc_error("read_text_file");
-        }
-        u_strcat(text, buffer);
+        more_text = (unichar *) realloc(text, sizeof(unichar)*(total_read + 1));
 
+        if (more_text) {
+          text = more_text;
+          u_strcat(text, buffer);
+        } else {
+          alloc_error("read_text_file");
+          free (text);
+          return NULL;
+        }
     } while (read == READ_FILE_BUFFER_SIZE);
 
     text[total_read] = '\0';
@@ -207,7 +208,8 @@ static void read_text_file(const VersatileEncodingConfig* cfg, const char*filena
 {
     U_FILE* f = u_fopen(cfg, filename, U_READ);
     if (f == NULL) {
-        fatal_error("cannot read file %s", filename);
+        error("cannot read file %s", filename);
+        return;
     }
     *buffer = read_text_file(f, filesize);
     u_fclose(f);
@@ -491,8 +493,8 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
 
 
 static int CompareCommon(U_FILE* f,
-    const unichar*old_text, int old_size, int old_pos, int old_limit,
-    const unichar*new_text, int new_size, int new_pos, int new_limit)
+    const unichar* old_text, int old_size, int old_pos, int old_limit,
+    const unichar* new_text, int new_size, int new_pos, int new_limit)
 {
     if ((old_limit < old_pos) || (new_limit < new_pos)) {
         u_fprintf(f, "Invalid common sequence : end before start !\n");
@@ -515,41 +517,52 @@ static int CompareCommon(U_FILE* f,
 }
 
 
-static void load_offset_translation(const VersatileEncodingConfig* vec, const char* name, int** pos_from_file, int * nb_position) {
-    *pos_from_file = NULL;
-    *nb_position = 0;
+static void load_offset_translation(const VersatileEncodingConfig* vec, const char* name, int** pos_from_file, int* nb_position) {
     U_FILE* f = u_fopen(vec, name, U_READ);
-    if (f == NULL) return ;
+    if (!f) {
+     error("Cannot open file %s", name);
+     return;
+    }    
 
     int nb_allocated = 1;
     *pos_from_file = (int*)malloc(sizeof(int) * nb_allocated);
+
     if ((*pos_from_file) == NULL) {
-        fatal_alloc_error("load_offset_translation");
+        alloc_error("load_offset_translation");
+        u_fclose(f);
+        return;
     }
 
     int a,n;
 
+    *nb_position = 0;
     while ((n = u_fscanf(f, "%d", &a)) != EOF) {
         if (n != 1) {
-            fatal_error("Corrupted file %s\n", name);
+            error("Corrupted file %s\n", name);
+            free(*pos_from_file);
+            u_fclose(f);
+            return;
         }
         if ((*nb_position) >= nb_allocated) {
             nb_allocated *= 2;
             *pos_from_file = (int*)realloc(*pos_from_file, sizeof(int) * nb_allocated);
             if ((*pos_from_file) == NULL) {
-                fatal_alloc_error("load_offset_translation");
+                alloc_error("load_offset_translation");
+                free(*pos_from_file);
+                u_fclose(f);
             }
         }
         *((*pos_from_file) + (*nb_position)) = a;
         (*nb_position)++;
     }
+    free(*pos_from_file);
     u_fclose(f);
     return ;
 }
 
 
 int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename, const char* new_filename,
-    const char*offset_file_name, const char* output,
+    const char* offset_file_name, const char* output,
     int full, int quiet, int escape,int quotes)
 {
     unichar* old_text = NULL;
@@ -562,7 +575,8 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
 
     vector_offset* offsets = load_offsets(vec, offset_file_name);
     if (offsets == NULL) {
-        fatal_error("cannot read file %s", offset_file_name);
+        error("Cannot read file %s", offset_file_name);
+        return DEFAULT_ERROR_CODE;
     }
     int coherency = 1;
     U_FILE* fout = u_fopen(vec, output, U_WRITE);
@@ -641,7 +655,7 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
 }
 
 int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, const char* new_filename,
-    const char*offset_file_name, const char* output,int escape, int quotes, const char* rules) {
+    const char* offset_file_name, const char* output,int escape, int quotes, const char* rules) {
     unichar* old_text = NULL;
     int old_read_size = 0;
     read_text_file(vec, old_filename, &old_text, &old_read_size);
@@ -652,7 +666,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
 
     vector_offset* offsets = load_offsets(vec, offset_file_name);
     if (offsets == NULL) {
-        fatal_error("cannot read file %s", offset_file_name);
+        error("Cannot read file %s", offset_file_name);
         return 1;
     }
 
@@ -669,8 +683,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
     else {
     replacements = new_string_hash();
     }
-
-
+    
     for (int i = 0; i < offsets->nbelems; i++) {
         Offsets curOffset = offsets->tab[i];
         Offsets prevOffset;
@@ -696,7 +709,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
 int main_DumpOffsets(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char old_filename[FILENAME_MAX]="";
@@ -719,48 +732,56 @@ int new_size=-1;
 int val,index=-1;
 int quotes=1;
 //char foo=0;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffsets,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_DumpOffsets,lopts_DumpOffsets,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty old file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty old file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(old_filename, vars->optarg);
+             strcpy(old_filename, options.vars()->optarg);
              break;
-   case 'n': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty new file name\n");
+   case 'n': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty new file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(new_filename, vars->optarg);
+             strcpy(new_filename, options.vars()->optarg);
              break;
-   case 'p': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'p': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output, vars->optarg);
+             strcpy(output, options.vars()->optarg);
              break;
-   case 'r': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty replacement rule file name\n");
+   case 'r': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty replacement rule file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(rules,vars->optarg);
+             strcpy(rules,options.vars()->optarg);
              break;
-   case 's': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty size for old file\n");
+   case 's': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty size for old file\n");
+                return USAGE_ERROR_CODE;
              }
-             old_size = atoi(vars->optarg);
+             old_size = atoi(options.vars()->optarg);
              break;
-   case 'S': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty size for new file\n");
+   case 'S': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty size for new file\n");
+                return USAGE_ERROR_CODE;
              }
-             new_size = atoi(vars->optarg);
+             new_size = atoi(options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'c': escape = 0; break;
    case 'f': full = 1; break;
@@ -771,23 +792,24 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DumpOffsets,lopts_DumpOffset
    case 'T': translate_position_file_invert = 1; break;
    case 'u': quiet = 1; break;
    case 'd': denorm = 1; break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
+             return USAGE_ERROR_CODE;            
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 
-strcpy(offset_file_name, argv[vars->optind]);
-free_OptVars(vars);
+strcpy(offset_file_name, argv[options.vars()->optind]);
 
 if (translate_position_file || translate_position_file_invert) {
     int* pos_from_file = NULL;
@@ -811,7 +833,7 @@ if (translate_position_file || translate_position_file_invert) {
     }
     u_fclose(f_output_translation);
     free(translation);
-    return 0;
+    return SUCCESS_RETURN_CODE;
 } else if (convert_modified_to_common) {
     int ret_value = 1;
     vector_offset* modified_offset = NULL;
@@ -868,7 +890,7 @@ if (translate_position_file || translate_position_file_invert) {
     U_FILE* f_output_offsets = u_fopen(&vec, output, U_WRITE);
     if (f_output_offsets == NULL) {
         error("Cannot create offset file %s\n", output);
-        return 2;
+        return DEFAULT_ERROR_CODE;
     }
     process_offsets(prev_offsets, offsets, f_output_offsets);
     free_vector_offset(prev_offsets);
@@ -877,7 +899,7 @@ if (translate_position_file || translate_position_file_invert) {
     if (!quiet) {
         u_printf("\nDumpOffsets dump done, file %s created.\n", output);
     }
-    return 0;
+    return SUCCESS_RETURN_CODE;
 } else if (denorm) {
     quotes = 0;
     escape = 0;

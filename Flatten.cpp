@@ -58,8 +58,8 @@ const char* usage_Flatten =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Flatten);
+  display_copyright_notice();
+  u_printf(usage_Flatten);
 }
 
 
@@ -78,7 +78,7 @@ const struct option_TS lopts_Flatten[]= {
 int main_Flatten(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int RTN=1;
@@ -86,51 +86,59 @@ int depth=10;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char foo;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Flatten,lopts_Flatten,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Flatten,lopts_Flatten,&index))) {
    switch(val) {
    case 'f': RTN=0; break;
    case 'r': RTN=1; break;
-   case 'd': if (1!=sscanf(vars->optarg,"%d%c",&depth,&foo) || depth<=0) {
+   case 'd': if (1!=sscanf(options.vars()->optarg,"%d%c",&depth,&foo) || depth<=0) {
                 /* foo is used to check that the depth is not like "45gjh" */
-                fatal_error("Invalid depth argument: %s\n",vars->optarg);
+                error("Invalid depth argument: %s\n",options.vars()->optarg);
+                return USAGE_ERROR_CODE;
              }
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Flatten[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
+   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Flatten[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
              break;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
+if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   return USAGE_ERROR_CODE;
 }
 
-u_printf("Loading %s...\n",argv[vars->optind]);
+u_printf("Loading %s...\n",argv[options.vars()->optind]);
 struct FST2_free_info fst2_free;
-Fst2* origin=load_abstract_fst2(&vec,argv[vars->optind],1,&fst2_free);
+Fst2* origin=load_abstract_fst2(&vec,argv[options.vars()->optind],1,&fst2_free);
 if (origin==NULL) {
-   error("Cannot load %s\n",argv[vars->optind]);
-   return 1;
+   error("Cannot load %s\n",argv[options.vars()->optind]);
+   return DEFAULT_ERROR_CODE;
 }
+
 char temp[FILENAME_MAX];
-strcpy(temp,argv[vars->optind]);
+strcpy(temp,argv[options.vars()->optind]);
 strcat(temp,".tmp.fst2");
+
 switch (flatten_fst2(origin,depth,temp,&vec,RTN)) {
    case EQUIVALENT_FST:
       u_printf("The resulting grammar is an equivalent finite-state transducer.\n");
@@ -141,13 +149,17 @@ switch (flatten_fst2(origin,depth,temp,&vec,RTN)) {
    case EQUIVALENT_RTN:
       u_printf("The resulting grammar is an equivalent FST2 (RTN).\n");
       break;
-   default: fatal_error("Internal state error in Flatten's main\n");
+   default: 
+      error("Internal state error in Flatten's main\n");
+      free_abstract_Fst2(origin,&fst2_free);
+      return DEFAULT_ERROR_CODE;
 }
+
 free_abstract_Fst2(origin,&fst2_free);
-af_remove(argv[vars->optind]);
-af_rename(temp,argv[vars->optind]);
-free_OptVars(vars);
-return 0;
+af_remove(argv[options.vars()->optind]);
+af_rename(temp,argv[options.vars()->optind]);
+
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

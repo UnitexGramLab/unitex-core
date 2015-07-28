@@ -51,8 +51,8 @@ const char* usage_LocateTfst =
          "  -K/--korean: tells LocateTfst that it works on Korean\n"
          "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
          "  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
-		 "  --single_tags_only: skips all results that match more than one text tag\n"
-		 "  --dont_match_word_boundaries: allows 'air'+'port' in a graph to match 'airport' in the TFST\n"
+         "  --single_tags_only: skips all results that match more than one text tag\n"
+         "  --dont_match_word_boundaries: allows 'air'+'port' in a graph to match 'airport' in the TFST\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -95,8 +95,8 @@ const char* usage_LocateTfst =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_LocateTfst);
+  display_copyright_notice();
+  u_printf(usage_LocateTfst);
 }
 
 
@@ -137,7 +137,7 @@ const struct option_TS lopts_LocateTfst[]= {
 int main_LocateTfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -155,42 +155,50 @@ OutputPolicy output_policy=IGNORE_OUTPUTS;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int search_limit=NO_MATCH_LIMIT;
-struct OptVars* vars=new_OptVars();
 char foo;
 vector_ptr* injected=new_vector_ptr();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateTfst,&index))) {
    switch(val) {
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty .tfst name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty .tfst name\n");
+                free_vector_ptr(injected);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(text,vars->optarg);
+             strcpy(text,options.vars()->optarg);
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet name\n");
+                free_vector_ptr(injected);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
    case 'K': is_korean=1;
    	   	   	  match_word_boundaries=0;
               break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
-   case 'g': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify an argument for negation operator\n");
+   case 'g': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify an argument for negation operator\n");
+                free_vector_ptr(injected);
+                return USAGE_ERROR_CODE;
              }
              selected_negation_operator=1;
-             if ((strcmp(vars->optarg,"minus")==0) || (strcmp(vars->optarg,"-")==0))
-             {
+             if ((strcmp(options.vars()->optarg,"minus")==0) || (strcmp(options.vars()->optarg,"-")==0)) {
                  tilde_negation_operator=0;
              }
              else
-             if ((strcmp(vars->optarg,"tilde")!=0) && (strcmp(vars->optarg,"~")!=0))
-             {
-                 fatal_error("You must specify a valid argument for negation operator\n");
+             if ((strcmp(options.vars()->optarg,"tilde")!=0) && (strcmp(options.vars()->optarg,"~")!=0)) {
+                 error("You must specify a valid argument for negation operator\n");
+                 free_vector_ptr(injected);
+                 return USAGE_ERROR_CODE;                 
              }
              break;
-   case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
+   case 'n': if (1!=sscanf(options.vars()->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
-                fatal_error("Invalid search limit argument: %s\n",vars->optarg);
+                error("Invalid search limit argument: %s\n",options.vars()->optarg);
+                free_vector_ptr(injected);
+                return USAGE_ERROR_CODE;                
              }
              break;
    case 'S': match_policy=SHORTEST_MATCHES; break;
@@ -204,25 +212,32 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    case 'Z': variable_error_policy=BACKTRACK_ON_VARIABLE_ERRORS; break;
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case 1: tagging=1; break;
    case 2: single_tags_only=1; break;
    case 3: match_word_boundaries=0; break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free_vector_ptr(injected);
+                return USAGE_ERROR_CODE;                
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free_vector_ptr(injected);
+                return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'v': {
-	   unichar* key=u_strdup(vars->optarg);
+	   unichar* key=u_strdup(options.vars()->optarg);
 	   unichar* value=u_strchr(key,'=');
 	   if (value==NULL) {
-		   fatal_error("Invalid variable injection: %s\n",vars->optarg);
+		   error("Invalid variable injection: %s\n",options.vars()->optarg);
+       free_vector_ptr(injected);
+       return USAGE_ERROR_CODE;       
 	   }
 	   (*value)='\0';
 	   value++;
@@ -231,32 +246,54 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
 	   vector_ptr_add(injected,value);
 	   break;
    }
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);
+             free_vector_ptr(injected);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free_vector_ptr(injected);
+             return USAGE_ERROR_CODE;
              break;
    }
    index=-1;
 }
 
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free_vector_ptr(injected);
+   return USAGE_ERROR_CODE;
+}
+
+if (selected_negation_operator==0) {
+    get_graph_compatibility_mode_by_file(&vec,&tilde_negation_operator);
+}
+
 char grammar[FILENAME_MAX];
 char output[FILENAME_MAX];
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
-}
-if (selected_negation_operator==0)
-    get_graph_compatibility_mode_by_file(&vec,&tilde_negation_operator);
-strcpy(grammar,argv[vars->optind]);
+strcpy(grammar,argv[options.vars()->optind]);
 get_path(text,output);
 strcat(output,"concord.ind");
 
-int OK=locate_tfst(text,grammar,alphabet,output,
-                   &vec,match_policy,output_policy,
-                   ambiguous_output_policy,variable_error_policy,search_limit,is_korean,
-                   tilde_negation_operator,injected,tagging,single_tags_only,match_word_boundaries);
+int OK=locate_tfst(text,
+                   grammar,
+                   alphabet,
+                   output,
+                   &vec,
+                   match_policy,
+                   output_policy,
+                   ambiguous_output_policy,
+                   variable_error_policy,
+                   search_limit,
+                   is_korean,
+                   tilde_negation_operator,
+                   injected,
+                   tagging,
+                   single_tags_only,
+                   match_word_boundaries);
+
 free_vector_ptr(injected);
-free_OptVars(vars);
+
 return (!OK);
 }
 

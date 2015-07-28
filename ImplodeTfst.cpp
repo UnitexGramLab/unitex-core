@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
 #include <stdio.h>
 #include "Unicode.h"
 #include "Copyright.h"
@@ -44,7 +43,6 @@ namespace unitex {
 
 void implode(Tfst*,U_FILE*,U_FILE*,struct hash_table* form_frequencies);
 
-
 const char* usage_ImplodeTfst =
          "Usage: ImplodeTfst [OPTIONS] <tfst>\n"
          "\n"
@@ -60,8 +58,8 @@ const char* usage_ImplodeTfst =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_ImplodeTfst);
+  display_copyright_notice();
+  u_printf(usage_ImplodeTfst);
 }
 
 
@@ -78,7 +76,7 @@ const struct option_TS lopts_ImplodeTfst[]= {
 int main_ImplodeTfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -87,76 +85,97 @@ char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ImplodeTfst,lopts_ImplodeTfst,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_ImplodeTfst,lopts_ImplodeTfst,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name: %s\n",vars->optarg);
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name: %s\n",options.vars()->optarg);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output_tfst,vars->optarg);
+             strcpy(output_tfst,options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_ImplodeTfst[index].name);
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_ImplodeTfst[index].name);
+             return USAGE_ERROR_CODE;                         
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+  error("Invalid arguments: rerun with --help\n");
+  return USAGE_ERROR_CODE;
 }
 
-strcpy(input_tfst,argv[vars->optind]);
+strcpy(input_tfst,argv[options.vars()->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
 char foo[FILENAME_MAX];
 remove_path(input_tfst,foo);
 int elag=!strcmp(foo,"text-elag.tfst");
 int no_explicit_output=0;
+
 if (output_tfst[0]=='\0') {
    no_explicit_output=1;
    sprintf(output_tfst,"%s.new",input_tfst);
    sprintf(output_tind,"%s.new",input_tind);
 }
+
 u_printf("Loading '%s'...\n",input_tfst);
+
 Tfst* tfst=open_text_automaton(&vec,input_tfst);
 if (tfst==NULL) {
-   fatal_error("Unable to load '%s'\n",input_tfst);
+   error("Unable to load '%s'\n",input_tfst);
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* f_tfst=u_fopen(&vec,output_tfst,U_WRITE);
 if (f_tfst==NULL) {
-   fatal_error("Cannot open '%s' for writing\n",output_tfst);
+   error("Cannot open '%s' for writing\n",output_tfst);
+   close_text_automaton(tfst);
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* f_tind=u_fopen(BINARY,output_tind,U_WRITE);
 if (f_tind==NULL) {
-   fatal_error("Cannot open '%s' for writing\n",output_tind);
+   error("Cannot open '%s' for writing\n",output_tind);  
+   u_fclose(f_tfst);
+   close_text_automaton(tfst);
+   return DEFAULT_ERROR_CODE;  
 }
+
 /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
 struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
         (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
 implode(tfst,f_tfst,f_tind,form_frequencies);
-u_fclose(f_tfst);
+
 u_fclose(f_tind);
+u_fclose(f_tfst);
 close_text_automaton(tfst);
 
 /* We save statistics */
 char tfst_tags_by_freq[FILENAME_MAX];
 char tfst_tags_by_alph[FILENAME_MAX];
 get_path(input_tfst,tfst_tags_by_freq);
+
 if (elag) {
 	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
 } else {
@@ -168,15 +187,19 @@ if (elag) {
 } else {
 	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
 }
+
 U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_freq);
 }
+
 U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }
+
 sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+
 u_fclose(f_tfst_tags_by_freq);
 u_fclose(f_tfst_tags_by_alph);
 free_hash_table(form_frequencies);
@@ -188,8 +211,8 @@ if (no_explicit_output) {
    af_rename(output_tfst,input_tfst);
    af_rename(output_tind,input_tind);
 }
-free_OptVars(vars);
-return 0;
+
+return SUCCESS_RETURN_CODE;
 }
 
 
@@ -245,7 +268,6 @@ while (list!=NULL) {
 return result;
 }
 
-
 /**
  * This structure is used to represent a pair (imploded tag,original tag).
  * This is used to check that we do not merge tags if their text positions differ.
@@ -255,14 +277,15 @@ struct implode_infos {
    TfstTag* tag;
 };
 
-
 /**
  * Allocates, initializes and returns a struct implode_infos*
  */
 struct implode_infos* new_implode_infos(struct dela_entry* entry,TfstTag* tag) {
 struct implode_infos* res=(struct implode_infos*)malloc(sizeof(struct implode_infos));
 if (res==NULL) {
-   fatal_alloc_error("new_implode_infos");
+   alloc_error("new_implode_infos");
+   // TODO(martinec) Check if return NULL here is fine
+   return NULL;
 }
 res->entry=entry;
 res->tag=tag;

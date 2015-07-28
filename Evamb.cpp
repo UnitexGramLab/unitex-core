@@ -54,8 +54,8 @@ const char* usage_Evamb =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Evamb);
+  display_copyright_notice();
+  u_printf(usage_Evamb);
 }
 
 
@@ -73,69 +73,78 @@ const struct option_TS lopts_Evamb[]= {
 int main_Evamb(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
-
 
 int val,index=-1;
 int sentence_number=-1;
 const char* outfilename=NULL;
 char output_name_buffer[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Evamb,lopts_Evamb,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Evamb,lopts_Evamb,&index))) {
    switch(val) {
    case 's':   {  char c_foo;
-                  if (1!=sscanf(vars->optarg,"%d%c",&sentence_number,&c_foo) || sentence_number<=0) {
+                  if (1!=sscanf(options.vars()->optarg,"%d%c",&sentence_number,&c_foo) || sentence_number<=0) {
                     /* foo is used to check that the sentence number is not like "45gjh" */
-                    fatal_error("Invalid sentence number: %s\n",vars->optarg);
+                    error("Invalid sentence number: %s\n",options.vars()->optarg);
+                    return USAGE_ERROR_CODE;
                   }
                 }
                 break;
-      case 'o': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty output file name\n");
+      case 'o': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty output file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(output_name_buffer,vars->optarg);
+                strcpy(output_name_buffer,options.vars()->optarg);
                 outfilename=output_name_buffer;
                 break;
-      case 'k': if (vars->optarg[0]=='\0') {
-                  fatal_error("Empty input_encoding argument\n");
+      case 'k': if (options.vars()->optarg[0]=='\0') {
+                  error("Empty input_encoding argument\n");
+                  return USAGE_ERROR_CODE;
                 }
-                decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+                decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
                 break;
-      case 'q': if (vars->optarg[0]=='\0') {
-                  fatal_error("Empty output_encoding argument\n");
+      case 'q': if (options.vars()->optarg[0]=='\0') {
+                  error("Empty output_encoding argument\n");
+                  return USAGE_ERROR_CODE;
                 }
-                decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+                decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
                 break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Evamb[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Evamb[index].name);
+             return USAGE_ERROR_CODE;                         
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
-u_printf("Loading '%s'...\n",argv[vars->optind]);
-Tfst* tfst=open_text_automaton(&vec,argv[vars->optind]);
+u_printf("Loading '%s'...\n",argv[options.vars()->optind]);
+Tfst* tfst=open_text_automaton(&vec,argv[options.vars()->optind]);
 if (tfst==NULL) {
-   fatal_error("Unable to load '%s'\n",argv[vars->optind]);
+   error("Unable to load '%s'\n",argv[options.vars()->optind]);
+   return DEFAULT_ERROR_CODE;
 }
 if (sentence_number>tfst->N) {
-   fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,tfst->N);
+   error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,tfst->N);
+   close_text_automaton(tfst);
+   return DEFAULT_ERROR_CODE;
 }
 U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(&vec,outfilename,U_WRITE);
 if (outfile==NULL) {
-    close_text_automaton(tfst);
-    free_OptVars(vars);
     error("Cannot create file %s\n",outfilename);
-    return 1;
+    close_text_automaton(tfst);
+    return DEFAULT_ERROR_CODE;
 }
 if (sentence_number==-1) {
    /* If we have to evaluate the ambiguity rate of the whole automaton */
@@ -200,12 +209,13 @@ if (sentence_number==-1) {
       u_fprintf(outfile,"Sentence %d: ambiguity rate=%.3f\n",sentence_number,exp(lognp/lmoy));
    }
 }
-if (outfile!=U_STDOUT)
+
+if (outfile!=U_STDOUT) {
   u_fclose(outfile);
+}
 
 close_text_automaton(tfst);
-free_OptVars(vars);
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

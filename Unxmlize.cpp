@@ -68,8 +68,8 @@ const char* usage_Unxmlize =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Unxmlize);
+  display_copyright_notice();
+  u_printf(usage_Unxmlize);
 }
 
 
@@ -95,7 +95,7 @@ const struct option_TS lopts_Unxmlize[]={
 int main_Unxmlize(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char output[FILENAME_MAX]="";
@@ -111,110 +111,125 @@ int tolerate_markup_malformation=0;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case '$': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty input offset file name\n");
+   case '$': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty input offset file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(input_offsets,vars->optarg);
+                strcpy(input_offsets,options.vars()->optarg);
                 break;
-   case '@': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty offset file name\n");
+   case '@': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty offset file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(output_offsets,vars->optarg);
+                strcpy(output_offsets,options.vars()->optarg);
                 break;
-   case 'p': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty PRLG file name\n");
+   case 'p': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty PRLG file name\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(output_PRLG,vars->optarg);
+                strcpy(output_PRLG,options.vars()->optarg);
                 break;
    case 'c': {
-	   if (!strcmp(vars->optarg,"IGNORE")) {
+	   if (!strcmp(options.vars()->optarg,"IGNORE")) {
 		   comments=UNXMLIZE_IGNORE;
-	   } else if (!strcmp(vars->optarg,"SPACE")) {
+	   } else if (!strcmp(options.vars()->optarg,"SPACE")) {
 		   comments=UNXMLIZE_REPLACE_BY_SPACE;
 	   } else {
-		   fatal_error("Invalid argument for option --comments\n");
+		   error("Invalid argument for option --comments\n");
+       return USAGE_ERROR_CODE;
 	   }
 	   break;
    }
    case 's': {
-	   if (!strcmp(vars->optarg,"IGNORE")) {
+	   if (!strcmp(options.vars()->optarg,"IGNORE")) {
 		   scripts=UNXMLIZE_IGNORE;
-	   } else if (!strcmp(vars->optarg,"SPACE")) {
+	   } else if (!strcmp(options.vars()->optarg,"SPACE")) {
 		   scripts=UNXMLIZE_REPLACE_BY_SPACE;
 	   } else {
-		   fatal_error("Invalid argument for option --scripts\n");
+		   error("Invalid argument for option --scripts\n");
+       return USAGE_ERROR_CODE;
 	   }
 	   break;
    }
    case 'n': {
-	   if (!strcmp(vars->optarg,"IGNORE")) {
+	   if (!strcmp(options.vars()->optarg,"IGNORE")) {
 		   normal_tags=UNXMLIZE_IGNORE;
-	   } else if (!strcmp(vars->optarg,"SPACE")) {
+	   } else if (!strcmp(options.vars()->optarg,"SPACE")) {
 		   normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
 	   } else {
-		   fatal_error("Invalid argument for option --normal_tags\n");
+		   error("Invalid argument for option --normal_tags\n");
+       return USAGE_ERROR_CODE;
 	   }
 	   break;
    }
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 't': force_html=1; break;
    case 'x': force_xml=1; break;
    case 'l': tolerate_markup_malformation=1; break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Unxmlize[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Unxmlize[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
-U_FILE* f_input;
-U_FILE* f_output;
-U_FILE* f_offsets=NULL;
+
+U_FILE* f_input   = NULL;
+U_FILE* f_output  = NULL;
+U_FILE* f_offsets = NULL;
 vector_offset* offsets=NULL;
 vector_offset* v_input_offsets = NULL;
 UnxmlizeOpts opts;
 if (output[0]=='\0') {
-    remove_extension(argv[vars->optind],output);
+    remove_extension(argv[options.vars()->optind],output);
     strcat(output,".txt");
 }
 
-f_input=u_fopen(&vec,argv[vars->optind],U_READ);
+f_input=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (f_input==NULL) {
-	error("Cannot open file %s\n",argv[vars->optind]);
-	return 1;
+	error("Cannot open file %s\n",argv[options.vars()->optind]);
+	return DEFAULT_ERROR_CODE;
 }
+
 char extension[FILENAME_MAX];
-get_extension(argv[vars->optind],extension);
+get_extension(argv[options.vars()->optind],extension);
 int consider_as_html=0;
 if (force_xml!=0) {
-} else
-if (force_html!=0) {
-	consider_as_html=1;
-} else if (!strcmp(extension,".html") || !strcmp(extension,".HTML") || !strcmp(extension,".htm") || !strcmp(extension,".HTM")) {
-	consider_as_html=1;
+} else {
+  if (force_html!=0) {
+    consider_as_html=1;
+  } else if (!strcmp(extension,".html") || !strcmp(extension,".HTML") || !strcmp(extension,".htm") || !strcmp(extension,".HTM")) {
+    consider_as_html=1;
+  }
 }
 
 if (consider_as_html!=0) {
@@ -226,14 +241,21 @@ if (consider_as_html!=0) {
 	opts.scripts=UNXMLIZE_DO_NOTHING;
 	opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
 }
-if (comments!=-1) opts.comments=comments;
-if (scripts!=-1) opts.scripts=scripts;
-if (normal_tags!=-1) opts.normal_tags=normal_tags;
+if (comments!=-1) {
+  opts.comments=comments;
+}
+if (scripts!=-1) {
+  opts.scripts=scripts;
+}
+if (normal_tags!=-1) {
+  opts.normal_tags=normal_tags;
+}
+
 f_output = u_fopen(&vec,output,U_WRITE);
 if (f_output==NULL) {
    error("Cannot create text file %s\n",output);
    u_fclose(f_input);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
 
 if (output_offsets[0]!='\0') {
@@ -242,10 +264,11 @@ if (output_offsets[0]!='\0') {
 	}
 	f_offsets=u_fopen(&vec,output_offsets,U_WRITE);
 	if (f_offsets==NULL) {
-	   error("Cannot create offset file %s\n",output_offsets);
-	   u_fclose(f_input);
-	   u_fclose(f_output);
-	   return 1;
+	  error("Cannot create offset file %s\n",output_offsets);
+    free_vector_offset(v_input_offsets);
+    u_fclose(f_output);
+    u_fclose(f_input);
+    return DEFAULT_ERROR_CODE;
 	}
 	offsets=new_vector_offset();
 }
@@ -254,55 +277,66 @@ unichar** PRLG=NULL;
 U_FILE* f_PRLG=NULL;
 if (output_PRLG[0]!='\0') {
 	if (f_offsets==NULL) {
-		fatal_error("Cannot use the --PRLG option if --output_offsets is not used\n");
+		error("Cannot use the --PRLG option if --output_offsets is not used\n");
+    free_vector_offset(offsets);
+    free_vector_offset(v_input_offsets);
+    u_fclose(f_output);
+    u_fclose(f_input);
+    return DEFAULT_ERROR_CODE;
 	}
 	PRLG=PRLG_ptrs;
 	f_PRLG=u_fopen(&vec,output_PRLG,U_WRITE);
 	if (f_offsets==NULL) {
-		fatal_error("Cannot create PRLG file %s\n",output_PRLG);
+		error("Cannot create PRLG file %s\n",output_PRLG);
+    free_vector_offset(offsets);
+    u_fclose(f_offsets);
+    free_vector_offset(v_input_offsets);
+    u_fclose(f_output);
+    u_fclose(f_input);
+    return DEFAULT_ERROR_CODE;
 	}
 }
 if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malformation)) {
 	error("The input file was not a valid xml one. Operation aborted.\n");
-	u_fclose(f_input);
-	u_fclose(f_output);
-	u_fclose(f_offsets);
-	u_fclose(f_PRLG);
-	af_remove(output);
-	if (f_output!=NULL) {
-		af_remove(output_offsets);
-	}
-	free_vector_offset(offsets);
-	free_vector_offset(v_input_offsets);
-	free_OptVars(vars);
 
-	for (int i=0;i<10;i++) {
-		if (PRLG_ptrs[i]!=NULL) {
-			free(PRLG_ptrs[i]);
-		}
-	}
+  for (int i=0;i<10;i++) {
+    if (PRLG_ptrs[i]!=NULL) {
+      free(PRLG_ptrs[i]);
+    }
+  }
 
-	return 1;
+  af_remove(output);
+  if (f_output!=NULL) {
+    af_remove(output_offsets);
+  }
+
+  u_fclose(f_PRLG);
+  free_vector_offset(offsets);
+  u_fclose(f_offsets);
+  free_vector_offset(v_input_offsets);
+  u_fclose(f_output);
+  u_fclose(f_input);
+  return DEFAULT_ERROR_CODE;
 }
 
 for (int i=0;i<10;i++) {
-	if (PRLG_ptrs[i]!=NULL) {
-		free(PRLG_ptrs[i]);
-	}
+  if (PRLG_ptrs[i]!=NULL) {
+    free(PRLG_ptrs[i]);
+  }
 }
 
 if (offsets!=NULL) {
 	process_offsets(v_input_offsets,offsets,f_offsets);
 }
-u_fclose(f_input);
-u_fclose(f_output);
-u_fclose(f_offsets);
+
 u_fclose(f_PRLG);
 free_vector_offset(offsets);
+u_fclose(f_offsets);
 free_vector_offset(v_input_offsets);
-free_OptVars(vars);
+u_fclose(f_output);
+u_fclose(f_input);
 u_printf("\nDone.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

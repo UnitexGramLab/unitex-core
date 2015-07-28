@@ -119,7 +119,7 @@ const char* usage_Txt2Tfst =
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
          "with the special tag {S}, the program produces one automaton per sentence.\n"
-		   "If not, the text is turned into " STR_VALUE_MACRO_STRING(MAX_TOKENS_IN_SENTENCE) " token long automata. The result files\n"
+         "If not, the text is turned into " STR_VALUE_MACRO_STRING(MAX_TOKENS_IN_SENTENCE) " token long automata. The result files\n"
          "named \"text.tfst\" and \"text.tind\" are stored is the text directory.\n"
          "\n"
          "Note that the program will also take into account the file \"tags.ind\", if any.\n";
@@ -127,8 +127,8 @@ const char* usage_Txt2Tfst =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Txt2Tfst);
+  display_copyright_notice();
+  u_printf(usage_Txt2Tfst);
 }
 
 
@@ -149,7 +149,7 @@ const struct option_TS lopts_Txt2Tfst[]={
 int main_Txt2Tfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char alphabet[FILENAME_MAX]="";
@@ -159,53 +159,62 @@ int is_korean=0;
 int CLEAN=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&index))) {
    switch(val) {
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
    case 'c': CLEAN=1; break;
-   case 'n': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty normalization grammar name\n");
+   case 'n': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty normalization grammar name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(norm,vars->optarg);
+             strcpy(norm,options.vars()->optarg);
              break;
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty tagset file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty tagset file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(tagset,vars->optarg);
+             strcpy(tagset,options.vars()->optarg);
              break;
    case 'K': is_korean=1;
              break;
-   case 'h': usage(); return 0;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Txt2Tfst[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Txt2Tfst[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 if (is_korean) {
    if (alphabet[0]=='\0') {
-      fatal_error("-a option is mandatory when -k is used\n");
+      error("-a option is mandatory when -k is used\n");
+      return USAGE_ERROR_CODE;
    }
    if (norm[0]!='\0') {
       error("-n option is ignored when -k is used\n");
@@ -222,67 +231,97 @@ char text_cod[FILENAME_MAX];
 char dlf[FILENAME_MAX];
 char dlc[FILENAME_MAX];
 char tags_ind[FILENAME_MAX];
-get_snt_path(argv[vars->optind],tokens_txt);
+get_snt_path(argv[options.vars()->optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path(argv[vars->optind],text_cod);
+get_snt_path(argv[options.vars()->optind],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path(argv[vars->optind],dlf);
+get_snt_path(argv[options.vars()->optind],dlf);
 strcat(dlf,"dlf");
-get_snt_path(argv[vars->optind],dlc);
+get_snt_path(argv[options.vars()->optind],dlc);
 strcat(dlc,"dlc");
-get_snt_path(argv[vars->optind],tags_ind);
+get_snt_path(argv[options.vars()->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
 struct match_list* tag_list=NULL;
 load_DELA(&vec,dlf,tree);
 load_DELA(&vec,dlc,tree);
+
 u_printf("Loading %s...\n",tags_ind);
 U_FILE* tag_file=u_fopen(&vec,tags_ind,U_READ);
 if (tag_file!=NULL) {
    tag_list=load_match_list(tag_file,NULL,NULL);
    u_fclose(tag_file);
 }
+
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
    alph=load_alphabet(&vec,alphabet,is_korean);
    if (alph==NULL) {
-      fatal_error("Cannot open %s\n",alphabet);
+      error("Cannot open %s\n",alphabet);
+      free_DELA_tree(tree);
+      return DEFAULT_ERROR_CODE;
    }
 }
+
 Korean* korean=NULL;
 if (is_korean) {
    korean=new Korean(alph);
 }
+
 struct text_tokens* tokens=load_text_tokens(&vec,tokens_txt);
 if (tokens==NULL) {
-   fatal_error("Cannot open %s\n",tokens_txt);
+   error("Cannot open %s\n",tokens_txt);
+   delete korean;
+   free_alphabet(alph);
+   free_DELA_tree(tree);
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* f=u_fopen(BINARY,text_cod,U_READ);
 if (f==NULL) {
-   fatal_error("Cannot open %s\n",text_cod);
+  error("Cannot open %s\n",text_cod);
+  free_text_tokens(tokens);
+  delete korean;
+  free_alphabet(alph);
+  free_DELA_tree(tree);
+  return DEFAULT_ERROR_CODE;
 }
+
 char text_tfst[FILENAME_MAX];
-get_snt_path(argv[vars->optind],text_tfst);
+get_snt_path(argv[options.vars()->optind],text_tfst);
 strcat(text_tfst,"text.tfst");
 U_FILE* tfst=u_fopen(&vec,text_tfst,U_WRITE);
 if (tfst==NULL) {
-   u_fclose(f);
-   fatal_error("Cannot create %s\n",text_tfst);
+  error("Cannot create %s\n",text_tfst);
+  u_fclose(f);
+  free_text_tokens(tokens);
+  delete korean;
+  free_alphabet(alph);
+  free_DELA_tree(tree);
+  return DEFAULT_ERROR_CODE;
 }
+
 char text_tind[FILENAME_MAX];
-get_snt_path(argv[vars->optind],text_tind);
+get_snt_path(argv[options.vars()->optind],text_tind);
 strcat(text_tind,"text.tind");
 U_FILE* tind=u_fopen(BINARY,text_tind,U_WRITE);
 if (tind==NULL) {
-   u_fclose(f);
-   u_fclose(tfst);
-   fatal_error("Cannot create %s\n",text_tind);
+  error("Cannot create %s\n",text_tind);
+  u_fclose(tfst);
+  u_fclose(f);
+  free_text_tokens(tokens);
+  delete korean;
+  free_alphabet(alph);
+  free_DELA_tree(tree);
+  return DEFAULT_ERROR_CODE;   
 }
+
 struct normalization_tree* normalization_tree=NULL;
 if (norm[0]!='\0') {
    normalization_tree=load_normalization_fst2(&vec,norm,alph,tokens);
 }
+
 char enter_pos_f[FILENAME_MAX];
-get_snt_path(argv[vars->optind],enter_pos_f);
+get_snt_path(argv[options.vars()->optind],enter_pos_f);
 strcat(enter_pos_f,"enter.pos");
 U_FILE* f_enter=u_fopen(BINARY,enter_pos_f,U_READ);
 int n_enter_char;
@@ -294,20 +333,40 @@ if (f_enter==NULL) {
 else {
    n_enter_char=(int)(get_file_size(f_enter)/4);
    enter_pos=(int*)malloc(sizeof(int)*n_enter_char);
-   if (enter_pos==NULL) {
-      fatal_alloc_error("main_Txt2Tfst");
-   }
-   if (n_enter_char!=(int)fread(enter_pos,sizeof(int),n_enter_char,f_enter)) {
-      fatal_error("I/O error in main on file %d %s\n",n_enter_char,enter_pos_f);
+   if (enter_pos==NULL  || 
+      (enter_pos!=NULL  && n_enter_char!=(int)fread(enter_pos,sizeof(int),n_enter_char,f_enter))) {
+      enter_pos==NULL ? alloc_error("main_Txt2Tfst") :
+                        error("I/O error in main on file %d %s\n",n_enter_char,enter_pos_f);
+      free_normalization_tree(normalization_tree);
+      u_fclose(tind);
+      u_fclose(tfst);
+      u_fclose(f);
+      free_text_tokens(tokens);
+      delete korean;
+      free_alphabet(alph);
+      free_DELA_tree(tree);
+      return DEFAULT_ERROR_CODE;
    }
    u_fclose(f_enter);
 }
+
 char snt_offsets_pos[FILENAME_MAX];
-get_snt_path(argv[vars->optind],snt_offsets_pos);
+get_snt_path(argv[options.vars()->optind],snt_offsets_pos);
 strcat(snt_offsets_pos,"snt_offsets.pos");
+
 vector_int* snt_offsets=load_snt_offsets(snt_offsets_pos);
 if (snt_offsets==NULL) {
-	fatal_error("Cannot load offset file %s\n",snt_offsets_pos);
+	error("Cannot load offset file %s\n",snt_offsets_pos);
+  free(enter_pos);
+  free_normalization_tree(normalization_tree);
+  u_fclose(tind);
+  u_fclose(tfst);
+  u_fclose(f);
+  free_text_tokens(tokens);
+  delete korean;
+  free_alphabet(alph);
+  free_DELA_tree(tree);
+  return DEFAULT_ERROR_CODE;  
 }
 
 language_t* language=NULL;
@@ -348,9 +407,9 @@ free_vector_int(snt_offsets);
 /* Finally, we save statistics */
 char tfst_tags_by_freq[FILENAME_MAX];
 char tfst_tags_by_alph[FILENAME_MAX];
-get_snt_path(argv[vars->optind],tfst_tags_by_freq);
+get_snt_path(argv[options.vars()->optind],tfst_tags_by_freq);
 strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
-get_snt_path(argv[vars->optind],tfst_tags_by_alph);
+get_snt_path(argv[options.vars()->optind],tfst_tags_by_alph);
 strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
 U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
 if (f_tfst_tags_by_freq==NULL) {
@@ -360,27 +419,27 @@ U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
 if (f_tfst_tags_by_alph==NULL) {
 	error("Cannot open %s\n",tfst_tags_by_alph);
 }
-sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
-u_fclose(f_tfst_tags_by_freq);
-u_fclose(f_tfst_tags_by_alph);
 
+sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+
+u_fclose(f_tfst_tags_by_alph);
+u_fclose(f_tfst_tags_by_freq);
 free_hash_table(form_frequencies);
 free_Ustring(text);
-u_fclose(tfst);
-u_fclose(tind);
-if (korean!=NULL) {
-   delete korean;
-}
-write_number_of_graphs(&vec,text_tfst,sentence_number-1,0);
-free_DELA_tree(tree);
-free_text_tokens(tokens);
-free_alphabet(alph);
-free_normalization_tree(normalization_tree);
 free_language_t(language);
-free_OptVars(vars);
+free_normalization_tree(normalization_tree);
+u_fclose(tind);
+// close tfst before call write_number_of_graphs()
+u_fclose(tfst);
+write_number_of_graphs(&vec,text_tfst,sentence_number-1,0);
+free_text_tokens(tokens);
+delete korean;
+free_alphabet(alph);
+free_DELA_tree(tree);
+
 /* After the execution, tag_list should have been emptied, so that we don't
  * need to do it here */
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

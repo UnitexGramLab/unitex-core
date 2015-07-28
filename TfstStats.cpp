@@ -52,7 +52,7 @@ static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizin
  */
 void compute_form_frequencies(SingleGraph g,TfstTag** tags,
 								struct hash_table* form_frequencies) {
-compute_form_frequencies(g,(void**)tags,1,form_frequencies);
+  compute_form_frequencies(g,(void**)tags,1,form_frequencies);
 }
 
 
@@ -73,8 +73,10 @@ unichar** tags=(unichar**)calloc(n_string_tags,sizeof(unichar*));
 if (tags==NULL) {
 	fatal_alloc_error("compute_form_frequencies");
 }
+
 Ustring* foo=new_Ustring(64);
 tags[0]=u_strdup("<E>");
+
 for (int i=1;i<n_string_tags;i++) {
 	const unichar* s=string_tags[i];
 	int n_at=0;

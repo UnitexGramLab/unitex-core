@@ -59,8 +59,8 @@ const char* usage_KeyWords =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_KeyWords);
+  display_copyright_notice();
+  u_printf(usage_KeyWords);
 }
 
 
@@ -83,7 +83,7 @@ const struct option_TS lopts_KeyWords[]= {
 int main_KeyWords(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -94,61 +94,87 @@ char alph[FILENAME_MAX]="";
 char cdic[FILENAME_MAX]="";
 unichar* code=u_strdup("XXX");
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_KeyWords,lopts_KeyWords,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_KeyWords,lopts_KeyWords,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output\n");
+                free(code);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                free(code);
+                return USAGE_ERROR_CODE;                
              }
-             strcpy(alph,vars->optarg);
+             strcpy(alph,options.vars()->optarg);
              break;
-   case 'f': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty forbidden code\n");
+   case 'f': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty forbidden code\n");
+                free(code);
+                return USAGE_ERROR_CODE;                
              }
-			 free(code);
-			 code=u_strdup(vars->optarg);
-			 break;
-   case 'c': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty file name\n");
-             }
-             strcpy(cdic,vars->optarg);
+             free(code);
+             code=u_strdup(options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'c': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty file name\n");
+                free(code);
+                return USAGE_ERROR_CODE;                
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             strcpy(cdic,options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'h': usage();
+             free(code);
+             return SUCCESS_RETURN_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(code);
+                return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_KeyWords[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(code);
+                return USAGE_ERROR_CODE;                
+             }
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
+             break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_KeyWords[index].name);
+             free(code);
+             return USAGE_ERROR_CODE;
+             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(code);
+             return USAGE_ERROR_CODE;
              break;
    }
    index=-1;
 }
+
+if (options.vars()->optind==argc || options.vars()->optind==argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free(code);
+   return USAGE_ERROR_CODE;
+}
+
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
-	alphabet=load_alphabet(&vec,alph);
-	if (alphabet==NULL) {
-		fatal_error("Cannot load alphabet file %s\n",alph);
-	}
+  alphabet=load_alphabet(&vec,alph);
+  if (alphabet==NULL) {
+    error("Cannot load alphabet file %s\n",alph);
+    free(code);
+    return DEFAULT_ERROR_CODE;    
+  }
 }
-if (vars->optind==argc || vars->optind==argc-1) {
-   error("Invalid arguments: rerun with --help\n");
-   return 1;
-}
-strcpy(tokens,argv[(vars->optind++)]);
+
+strcpy(tokens,argv[(options.vars()->optind++)]);
 if (output[0]=='\0') {
 	get_path(tokens,output);
 	strcat(output,"keywords.txt");
@@ -159,8 +185,8 @@ if (cdic[0]!='\0') {
 	load_compound_words(cdic,&vec,keywords);
 }
 
-for (;vars->optind!=argc;(vars->optind)++) {
-	filter_keywords_with_dic(keywords,argv[vars->optind],&vec,alphabet);
+for (;options.vars()->optind!=argc;(options.vars()->optind)++) {
+	filter_keywords_with_dic(keywords,argv[options.vars()->optind],&vec,alphabet);
 }
 merge_case_equivalent_unknown_words(keywords,alphabet);
 struct string_hash* forbidden_lemmas=compute_forbidden_lemmas(keywords,code);
@@ -168,17 +194,25 @@ remove_keywords_with_forbidden_lemma(keywords,forbidden_lemmas);
 free_string_hash(forbidden_lemmas);
 vector_ptr* sorted=sort_keywords(keywords);
 U_FILE* f_output=u_fopen(&vec,output,U_WRITE);
+
 if (f_output==NULL) {
-	fatal_error("Cannot write in file %s\n",output);
+	error("Cannot write in file %s\n",output);
+  free_vector_ptr(sorted,(void(*)(void*))free_KeyWord_list);
+  free_string_hash_ptr(keywords,(void(*)(void*))free_KeyWord_list);
+  free_alphabet(alphabet);
+  free(code);
+  return DEFAULT_ERROR_CODE;  
 }
+
 dump_keywords(sorted,f_output);
+
 u_fclose(f_output);
-free_string_hash_ptr(keywords,(void(*)(void*))free_KeyWord_list);
 free_vector_ptr(sorted,(void(*)(void*))free_KeyWord_list);
-free(code);
+free_string_hash_ptr(keywords,(void(*)(void*))free_KeyWord_list);
 free_alphabet(alphabet);
-free_OptVars(vars);
-return 0;
+free(code);
+
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

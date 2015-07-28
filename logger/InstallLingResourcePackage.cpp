@@ -148,12 +148,10 @@ namespace unitex {
             { NULL, no_argument_TS, NULL, 0 }
         };
 
-        int main_InstallLingResourcePackage(int argc, char* const argv[])
-        {
-
+        int main_InstallLingResourcePackage(int argc, char* const argv[]) {
             if (argc == 1) {
                 usage();
-                return 0;
+                return SUCCESS_RETURN_CODE;
             }
             char ListFile_FileName[FILENAME_MAX + 0x20] = "";
             char ListGraph_FileName[FILENAME_MAX + 0x20] = "";
@@ -174,8 +172,8 @@ namespace unitex {
             int verbose = 0;
             int transform_path_separator = -1;
             //int persistence_alphabet = 0;
-            struct OptVars* vars = new_OptVars();
-            while (EOF != (val = getopt_long_TS(argc, argv, optstring_InstallLingResourcePackage, lopts_InstallLingResourcePackage, &index, vars))) {
+            UnitexGetOpt options;
+            while (EOF != (val = options.parse_long(argc, argv, optstring_InstallLingResourcePackage, lopts_InstallLingResourcePackage, &index))) {
                 switch (val) {
 
 
@@ -187,52 +185,60 @@ namespace unitex {
 
                 case 'w': transform_path_separator = UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_WINDOWS; break;
 
-                case 'k': if (vars->optarg[0] == '\0') {
-                              fatal_error("Empty input_encoding argument\n");
+                case 'k': if (options.vars()->optarg[0] == '\0') {
+                              error("Empty input_encoding argument\n");
+                              return USAGE_ERROR_CODE;
                 }
-                          decode_reading_encoding_parameter(&mask_encoding_compatibility_input, vars->optarg);
+                          decode_reading_encoding_parameter(&mask_encoding_compatibility_input, options.vars()->optarg);
                           break;
-                case 'q': if (vars->optarg[0] == '\0') {
-                              fatal_error("Empty output_encoding argument\n");
+                case 'q': if (options.vars()->optarg[0] == '\0') {
+                              error("Empty output_encoding argument\n");
+                              return USAGE_ERROR_CODE;
                 }
-                          decode_writing_encoding_parameter(&encoding_output, &bom_output, vars->optarg);
-                          break;
-
-
-                case 'x': if (vars->optarg[0] == '\0') {
-                    fatal_error("You must specify a non empty argument\n");
-                }
-                          strcpy(Prefix_Name, vars->optarg);
+                          decode_writing_encoding_parameter(&encoding_output, &bom_output, options.vars()->optarg);
                           break;
 
-                case 'p': if (vars->optarg[0] == '\0') {
-                    fatal_error("You must specify a non empty argument\n");
+
+                case 'x': if (options.vars()->optarg[0] == '\0') {
+                    error("You must specify a non empty argument\n");
+                    return USAGE_ERROR_CODE;
                 }
-                          strcpy(Package_FileName, vars->optarg);
+                          strcpy(Prefix_Name, options.vars()->optarg);
                           break;
 
-                case 'f': if (vars->optarg[0] == '\0') {
-                    fatal_error("You must specify a non empty argument\n");
+                case 'p': if (options.vars()->optarg[0] == '\0') {
+                    error("You must specify a non empty argument\n");
+                    return USAGE_ERROR_CODE;
                 }
-                          strcpy(ListFile_FileName, vars->optarg);
+                          strcpy(Package_FileName, options.vars()->optarg);
                           break;
 
-                case 'g': if (vars->optarg[0] == '\0') {
-                    fatal_error("You must specify a non empty argument\n");
+                case 'f': if (options.vars()->optarg[0] == '\0') {
+                    error("You must specify a non empty argument\n");
+                    return USAGE_ERROR_CODE;
                 }
-                          strcpy(ListGraph_FileName, vars->optarg);
+                          strcpy(ListFile_FileName, options.vars()->optarg);
                           break;
 
-                case 'd': if (vars->optarg[0] == '\0') {
-                    fatal_error("You must specify a non empty argument\n");
+                case 'g': if (options.vars()->optarg[0] == '\0') {
+                    error("You must specify a non empty argument\n");
+                    return USAGE_ERROR_CODE;
                 }
-                          strcpy(ListDico_FileName, vars->optarg);
+                          strcpy(ListGraph_FileName, options.vars()->optarg);
                           break;
 
-                case 'a': if (vars->optarg[0] == '\0') {
-                    fatal_error("You must specify a non empty argument\n");
+                case 'd': if (options.vars()->optarg[0] == '\0') {
+                    error("You must specify a non empty argument\n");
+                    return USAGE_ERROR_CODE;
                 }
-                          strcpy(ListAlphabet_FileName, vars->optarg);
+                          strcpy(ListDico_FileName, options.vars()->optarg);
+                          break;
+
+                case 'a': if (options.vars()->optarg[0] == '\0') {
+                    error("You must specify a non empty argument\n");
+                    return USAGE_ERROR_CODE;
+                }
+                          strcpy(ListAlphabet_FileName, options.vars()->optarg);
                           break;
 
                 case 'v': verbose = 1; break;
@@ -247,21 +253,23 @@ namespace unitex {
 
                 case 'u': uninstall = 1; break;
 
-                case 'h': usage(); return 0;
-                case ':': if (index == -1) fatal_error("Missing argument for option -%c\n", vars->optopt);
-                          else fatal_error("Missing argument for option --%s\n", lopts_InstallLingResourcePackage[index].name);
-                case '?': if (index == -1) fatal_error("Invalid option -%c\n", vars->optopt);
-                          else fatal_error("Invalid option --%s\n", vars->optarg);
-                          break;
+                case 'h': usage(); 
+                          return SUCCESS_RETURN_CODE;
+                case ':': index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
+                                        error("Missing argument for option --%s\n", lopts_InstallLingResourcePackage[index].name);
+                          return USAGE_ERROR_CODE;
+                case '?': index == -1 ? error("Invalid option -%c\n", options.vars()->optopt) :
+                                        error("Invalid option --%s\n", options.vars()->optarg);
+                          return USAGE_ERROR_CODE;
                 }
                 index = -1;
             }
             /*
-            if (vars->optind != argc - 1) {
-                fatal_error("Invalid arguments: rerun with --help\n");
+            if (options.vars()->optind != argc - 1) {
+                error("Invalid arguments: rerun with --help\n");
+                return USAGE_ERROR_CODE;
             }*/
-            free_OptVars(vars);
-
+            
             if (transform_path_separator == -1)
             {
                 /*
@@ -304,7 +312,8 @@ namespace unitex {
             {
                 if ((*Package_FileName) == '\0')
                 {
-                    fatal_error("no linguistic resource package provided.\n");
+                    error("no linguistic resource package provided.\n");
+                    return USAGE_ERROR_CODE;
                 }
 
                 if (((persist_file == 0) && ((*ListFile_FileName) != '\0')) ||
@@ -312,11 +321,13 @@ namespace unitex {
                     ((persist_dictionary == 0) && ((*ListDico_FileName) != '\0')) ||
                     ((persist_alphabet == 0) && ((*ListAlphabet_FileName) != '\0')))
                 {
-                    fatal_error("You cannot disable a persistence and provide list filename.\n");
+                    error("You cannot disable a persistence and provide list filename.\n");
+                    return USAGE_ERROR_CODE;
                 }
 
-                if (verbose)
+                if (verbose) {
                     u_printf("Install resource from package %s to prefix %s\n", Package_FileName, Prefix_Name);
+                }
 
                 char** list_installed_file = NULL;
                 char** list_installed_graph = NULL;
@@ -415,7 +426,7 @@ namespace unitex {
                 }
             }
 
-            return success ? 0 : 1;
+            return success ? SUCCESS_RETURN_CODE : DEFAULT_ERROR_CODE;
         }
 
 //    } // namespace logger

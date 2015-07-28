@@ -64,8 +64,8 @@ const char* usage_CheckDic =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_CheckDic);
+  display_copyright_notice();
+  u_printf(usage_CheckDic);
 }
 
 
@@ -87,7 +87,7 @@ const struct option_TS lopts_CheckDic[]= {
 int main_CheckDic(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int is_a_DELAF=-1;
@@ -97,64 +97,74 @@ char alph[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int space_warnings=1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_CheckDic,lopts_CheckDic,&index))) {
    switch(val) {
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case 'r': strict_unprotected=1; break;
    case 't': strict_unprotected=0; break;
    case 'n': space_warnings=0; break;
    case 'p': skip_path=1; break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty alphabet argument\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("Empty alphabet argument\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alph,vars->optarg);
+             strcpy(alph,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
-   	   	   	   break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt):
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (is_a_DELAF==-1 || vars->optind!=argc-1) {
+if (is_a_DELAF==-1 || options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   return USAGE_ERROR_CODE;
 }
 
-U_FILE* dic=u_fopen(&vec,argv[vars->optind],U_READ);
+U_FILE* dic=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (dic==NULL) {
-	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
+  error("Cannot open dictionary %s\n",argv[options.vars()->optind]);
+  return DEFAULT_ERROR_CODE;
 }
+
+char output_filename[FILENAME_MAX];
+get_path(argv[options.vars()->optind],output_filename);
+strcat(output_filename,"CHECK_DIC.TXT");
+U_FILE* out=u_fopen(&vec,output_filename,U_WRITE);
+if (out==NULL) {
+  error("Cannot create %s\n",output_filename);
+  u_fclose(dic);
+  return DEFAULT_ERROR_CODE;
+}
+
 Alphabet* alphabet0=NULL;
 if (alph[0]!='\0') {
    alphabet0=load_alphabet(&vec,alph,1);
 }
-char output_filename[FILENAME_MAX];
-get_path(argv[vars->optind],output_filename);
-strcat(output_filename,"CHECK_DIC.TXT");
-U_FILE* out=u_fopen(&vec,output_filename,U_WRITE);
-if (out==NULL) {
-	u_fclose(dic);
-	fatal_error("Cannot create %s\n",output_filename);
-}
-u_printf("Checking %s...\n",argv[vars->optind]);
+
+u_printf("Checking %s...\n",argv[options.vars()->optind]);
 int line_number=1;
+
 /*
  * We declare and initialize an array in order to know which
  * letters are used in the dictionary.
@@ -162,7 +172,11 @@ int line_number=1;
 int i;
 char* alphabet=(char*)malloc(sizeof(char)*MAX_NUMBER_OF_UNICODE_CHARS);
 if (alphabet==NULL) {
-	fatal_alloc_error("CheckDic's main");
+  alloc_error("CheckDic's main");
+  u_fclose(dic);
+  u_fclose(out);
+  free_alphabet(alphabet0);
+  return ALLOC_ERROR_CODE;
 }
 memset(alphabet,0,sizeof(char)*MAX_NUMBER_OF_UNICODE_CHARS);
 /*
@@ -182,27 +196,27 @@ int n_compound_entries=0;
 Ustring* line=new_Ustring(DIC_LINE_SIZE);
 while (EOF!=readline(line,dic)) {
    if (line->str[0]=='\0') {
-		/* If we have an empty line, we print a unicode error message
-		 * into the output file */
-		u_fprintf(out,"Line %d: empty line\n",line_number);
-	}
-	else if (line->str[0]=='/') {
-		/* If a line starts with '/', it is a commment line, so
-		 * we ignore it */
-	}
-	else {
-		/* If we have a line to check, we check it according to the
-		 * dictionary type */
-		check_DELA_line(line->str,out,is_a_DELAF,line_number,alphabet,semantic_codes,
-		                inflectional_codes,simple_lemmas,compound_lemmas,
-		                &n_simple_entries,&n_compound_entries,alphabet0,strict_unprotected);
-	}
-	/* At regular intervals, we display a message on the standard
-	 * output to show that the program is working */
-	if (line_number%10000==0) {
-		u_printf("%d lines read...\r",line_number);
-	}
-	line_number++;
+    /* If we have an empty line, we print a unicode error message
+     * into the output file */
+    u_fprintf(out,"Line %d: empty line\n",line_number);
+  }
+  else if (line->str[0]=='/') {
+    /* If a line starts with '/', it is a commment line, so
+     * we ignore it */
+  }
+  else {
+    /* If we have a line to check, we check it according to the
+     * dictionary type */
+    check_DELA_line(line->str,out,is_a_DELAF,line_number,alphabet,semantic_codes,
+                    inflectional_codes,simple_lemmas,compound_lemmas,
+                    &n_simple_entries,&n_compound_entries,alphabet0,strict_unprotected);
+  }
+  /* At regular intervals, we display a message on the standard
+   * output to show that the program is working */
+  if (line_number%10000==0) {
+    u_printf("%d lines read...\r",line_number);
+  }
+  line_number++;
 }
 free_Ustring(line);
 u_printf("%d lines read\n",line_number-1);
@@ -216,11 +230,11 @@ u_fprintf(out,"-------------  Stats  -------------\n");
 u_fprintf(out,"-----------------------------------\n");
 if (skip_path != 0) { 
     char filename_without_path[FILENAME_MAX];
-    remove_path(argv[vars->optind],filename_without_path);
+    remove_path(argv[options.vars()->optind],filename_without_path);
     u_fprintf(out,"File: %s\n",filename_without_path);
 }
 else {
-    u_fprintf(out,"File: %s\n",argv[vars->optind]);
+    u_fprintf(out,"File: %s\n",argv[options.vars()->optind]);
 }
 u_fprintf(out,"Type: %s\n",is_a_DELAF?"DELAF":"DELAS");
 u_fprintf(out,"%d line%s read\n",line_number-1,(line_number-1>1)?"s":"");
@@ -238,9 +252,9 @@ u_fprintf(out,"-----------------------------------\n");
 u_fprintf(out,"----  All chars used in forms  ----\n");
 u_fprintf(out,"-----------------------------------\n");
 for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
-	if (alphabet[i]) {
+  if (alphabet[i]) {
       u_fprintf(out,"%C (%04X)\n",i,i);
-	}
+  }
 }
 /*
  * Then we print the list of all grammatical and semantic codes used in the
@@ -252,12 +266,12 @@ u_fprintf(out,"----  %3d grammatical/semantic code%s",semantic_codes->size,(sema
 u_fprintf(out,"-------------------------------------------------------------\n");
 unichar comment[2000];
 for (i=0;i<semantic_codes->size;i++) {
-	/* We print the code, followed if necessary by a warning */
-	u_fputs(semantic_codes->value[i],out);
-	if (warning_on_code(semantic_codes->value[i],comment,space_warnings)) {
-		u_fprintf(out," %S",comment);
-	}
-	u_fprintf(out,"\n");
+  /* We print the code, followed if necessary by a warning */
+  u_fputs(semantic_codes->value[i],out);
+  if (warning_on_code(semantic_codes->value[i],comment,space_warnings)) {
+    u_fprintf(out," %S",comment);
+  }
+  u_fprintf(out,"\n");
 }
 /*
  * Finally, we print the list of inflectional codes,
@@ -270,21 +284,19 @@ u_fprintf(out,"-----------------------------------------------------\n");
 
 
 for (i=0;i<inflectional_codes->size;i++) {
-	u_fputs(inflectional_codes->value[i],out);
-	if (warning_on_code(inflectional_codes->value[i],comment,space_warnings)) {
-		u_fprintf(out," %S",comment);
-	}
-	u_fprintf(out,"\n");
+  u_fputs(inflectional_codes->value[i],out);
+  if (warning_on_code(inflectional_codes->value[i],comment,space_warnings)) {
+    u_fprintf(out," %S",comment);
+  }
+  u_fprintf(out,"\n");
 }
 u_fclose(out);
-free_OptVars(vars);
 u_printf("Done.\n");
-/* Note that we don't free anything since it would only waste time */
 
 free(alphabet);
-if (alphabet0!=NULL) {
-   free_alphabet(alphabet0);
-}
+free_alphabet(alphabet0);
+
+/* Note that we don't free anything below since it would only waste time */
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 /* cleanup for no leak on library */
 free_string_hash(semantic_codes);
@@ -292,7 +304,7 @@ free_string_hash(inflectional_codes);
 free_string_hash(simple_lemmas);
 free_string_hash(compound_lemmas);
 #endif
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

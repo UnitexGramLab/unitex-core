@@ -56,8 +56,8 @@ const char* usage_GrfDiff3 =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_GrfDiff3);
+  display_copyright_notice();
+  u_printf(usage_GrfDiff3);
 }
 
 
@@ -81,86 +81,110 @@ const struct option_TS lopts_GrfDiff3[]= {
 int main_GrfDiff3(int argc,char* const argv[]) {
 if (argc==1) {
 	usage();
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
+
 VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";
 char conflicts[FILENAME_MAX]="";
 int only_cosmetics=0;
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&index,vars))) {
+
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&index))) {
    switch(val) {
-   case 'h': usage(); return 0;
-   case 1: {
-	   strcpy(output,vars->optarg);
-	   break;
-   }
-   case 2: {
-	   strcpy(conflicts,vars->optarg);
-	   break;
-   }
-   case 3: only_cosmetics=1; break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
-             }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
-             break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
-             }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
-             break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_GrfDiff3[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+     case 'h': usage(); 
+               return SUCCESS_RETURN_CODE;
+     case 1: {
+  	   strcpy(output,options.vars()->optarg);
+  	   break;
+     }
+     case 2: {
+  	   strcpy(conflicts,options.vars()->optarg);
+  	   break;
+     }
+     case 3: only_cosmetics=1; break;
+     case 'k': if (options.vars()->optarg[0]=='\0') {
+                  error("Empty input_encoding argument\n");
+                  return USAGE_ERROR_CODE;
+               }
+               decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
+               break;
+     case 'q': if (options.vars()->optarg[0]=='\0') {
+                  error("Empty output_encoding argument\n");
+                  return USAGE_ERROR_CODE;
+               }
+               decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
+               break;
+     case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                           error("Missing argument for option --%s\n",lopts_GrfDiff3[index].name);
+               return USAGE_ERROR_CODE;                           
+     case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                           error("Invalid option --%s\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
    }
    index=-1;
 }
-if (vars->optind!=argc-3) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-3) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
+
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
 	f=u_fopen(&vec,output,U_WRITE);
 	if (f==NULL) {
 		error("Cannot create file %s\n",output);
-		free_OptVars(vars);
-		return 2;
+    return DEFAULT_ERROR_CODE;
 	}
 }
+
 U_FILE* f_conflicts=NULL;
 if (conflicts[0]!='\0') {
 	/* There is no point in encoding the conflict file in UTF16 */
 	f_conflicts=u_fopen(UTF8,conflicts,U_WRITE);
 	if (f_conflicts==NULL) {
-		error("Cannot create file %s\n",conflicts);
-		free_OptVars(vars);
-		return 2;
+    error("Cannot create file %s\n",conflicts);
+    if (f!=U_STDOUT) {
+     u_fclose(f);
+    }
+    return DEFAULT_ERROR_CODE;
 	}
 }
-Grf* mine=load_Grf(&vec,argv[vars->optind]);
+
+Grf* mine=load_Grf(&vec,argv[options.vars()->optind]);
 if (mine==NULL) {
-	free_OptVars(vars);
-	return 2;
+  error("Cannot load graph %s\n",argv[options.vars()->optind]);
+  u_fclose(f_conflicts);
+  if (f!=U_STDOUT) {
+   u_fclose(f);
+  }
+  return DEFAULT_ERROR_CODE;
 }
-Grf* base=load_Grf(&vec,argv[vars->optind+1]);
+
+Grf* base=load_Grf(&vec,argv[options.vars()->optind+1]);
 if (base==NULL) {
 	free_Grf(mine);
-	free_OptVars(vars);
-	return 2;
+  u_fclose(f_conflicts);
+  if (f!=U_STDOUT) {
+   u_fclose(f);
+  }
+  return DEFAULT_ERROR_CODE;
 }
-Grf* other=load_Grf(&vec,argv[vars->optind+2]);
+
+Grf* other=load_Grf(&vec,argv[options.vars()->optind+2]);
 if (other==NULL) {
+  free_Grf(base);  
 	free_Grf(mine);
-	free_Grf(base);
-	free_OptVars(vars);
-	return 2;
+  u_fclose(f_conflicts);
+  if (f!=U_STDOUT) {
+   u_fclose(f);
+  }
+  return DEFAULT_ERROR_CODE;
 }
-free_OptVars(vars);
+
 int res=diff3(f,f_conflicts,mine,base,other,only_cosmetics);
+
 if (f!=U_STDOUT) {
 	u_fclose(f);
 	if (res!=0) {
@@ -168,6 +192,7 @@ if (f!=U_STDOUT) {
 		af_remove(output);
 	}
 }
+
 if (f_conflicts!=NULL) {
 	u_fclose(f_conflicts);
 	if (res==0) {
@@ -175,6 +200,7 @@ if (f_conflicts!=NULL) {
 		af_remove(conflicts);
 	}
 }
+
 free_Grf(mine);
 free_Grf(base);
 free_Grf(other);

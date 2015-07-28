@@ -57,10 +57,9 @@ const char* usage_Extract =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Extract);
+  display_copyright_notice();
+  u_printf(usage_Extract);
 }
-
 
 const char* optstring_Extract=":yni:o:hk:q:";
 const struct option_TS lopts_Extract[]= {
@@ -78,9 +77,8 @@ const struct option_TS lopts_Extract[]= {
 int main_Extract(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
-
 
 int val,index=-1;
 char extract_matching_units=1;
@@ -88,66 +86,82 @@ char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Extract,lopts_Extract,&index,vars))) {
+UnitexGetOpt options;
+
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Extract,lopts_Extract,&index))) {
    switch(val) {
    case 'y': extract_matching_units=1; break;
    case 'n': extract_matching_units=0; break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'i': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty concordance file name\n");
+   case 'i': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty concordance file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(concord_ind,vars->optarg);
+             strcpy(concord_ind,options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Extract[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Extract[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    }
    index=-1;
 }
 
 if (output[0]=='\0') {
-   fatal_error("You must specify the output text file\n");
+   error("You must specify the output text file\n");
+   return USAGE_ERROR_CODE;
 }
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
-strcpy(text_name,argv[vars->optind]);
+
+strcpy(text_name,argv[options.vars()->optind]);
 
 struct snt_files* snt_files=new_snt_files(text_name);
 ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod,MAPFILE_OPTION_READ,0);
 if (text==NULL) {
    error("Cannot open %s\n",snt_files->text_cod);
-   return 1;
+   free_snt_files(snt_files);
+   return DEFAULT_ERROR_CODE;
 }
 struct text_tokens* tok=load_text_tokens(&vec,snt_files->tokens_txt);
 if (tok==NULL) {
    error("Cannot load token list %s\n",snt_files->tokens_txt);
    af_close_mapfile(text);
-   return 1;
+   free_snt_files(snt_files);
+   return DEFAULT_ERROR_CODE;
 }
 if (concord_ind[0]=='\0') {
    char tmp[FILENAME_MAX];
    get_extension(text_name,tmp);
    if (strcmp(tmp,"snt")) {
-      fatal_error("Unable to find the concord.ind file. Please explicit it\n");
+      error("Unable to find the concord.ind file. Please explicit it\n");
+      free_text_tokens(tok);
+      af_close_mapfile(text);
+      free_snt_files(snt_files);
+      return DEFAULT_ERROR_CODE;   
    }
    remove_extension(text_name,concord_ind);
    strcat(concord_ind,"_snt");
@@ -156,48 +170,55 @@ if (concord_ind[0]=='\0') {
 }
 U_FILE* concord=u_fopen(&vec,concord_ind,U_READ);
 if (concord==NULL) {
-   error("Cannot open concordance %s\n",concord_ind);
-   af_close_mapfile(text);
-   free_text_tokens(tok);
-   return 1;
+    error("Cannot open concordance %s\n",concord_ind);
+    free_text_tokens(tok);
+    af_close_mapfile(text);
+    free_snt_files(snt_files);
+    return DEFAULT_ERROR_CODE;
 }
+
 struct match_list* l=load_match_list(concord,NULL,NULL);
+
 u_fclose(concord);
+
 if (tok->SENTENCE_MARKER==-1) {
 	/* We have a special case when the text has not been
 	 * split into sentences: the result will be either an empty
 	 * file or the text itself
 	 */
-	if ((extract_matching_units && l==NULL)
-			|| (!extract_matching_units && l!=NULL)) {
+	if ((extract_matching_units && l==NULL) ||
+       (!extract_matching_units && l!=NULL)) {
 		/* result = empty file */
 		u_fempty(&vec,output);
-		return 0;
+		return SUCCESS_RETURN_CODE;
 	}
 	free_match_list(l);
 	af_copy(text_name,output);
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
-
-
-
 
 U_FILE* result=u_fopen(&vec,output,U_WRITE);
+
 if (result==NULL) {
    error("Cannot write output file %s\n",output);
-   af_close_mapfile(text);
-   u_fclose(concord);
+   free_match_list(l);
    free_text_tokens(tok);
-   return 1;
+   af_close_mapfile(text);
+   free_snt_files(snt_files);
+   return DEFAULT_ERROR_CODE;
 }
-free_snt_files(snt_files);
+
 extract_units(extract_matching_units,text,tok,result,l);
-af_close_mapfile(text);
+
+// don't call here free_match_list(l)
+// this is already performed inside extract_units()
 u_fclose(result);
 free_text_tokens(tok);
-free_OptVars(vars);
+af_close_mapfile(text);
+free_snt_files(snt_files);
+
 u_printf("Done.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

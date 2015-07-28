@@ -22,7 +22,7 @@
 #ifndef ErrorH
 #define ErrorH
 /* ************************************************************************** */
-#include <cstdlib>                // EXIT_FAILURE
+#include <cstdlib>                // EXIT_FAILURE, EXIT_SUCCESS
 /* ************************************************************************** */
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -31,25 +31,33 @@
 namespace unitex {
 
 /**
+ * Like EXIT_SUCCESS: expands to a system-dependent integral expression that, 
+ * when used as the argument for function return, signifies that the 
+ * function was successful
+ */
+#define SUCCESS_RETURN_CODE EXIT_SUCCESS  
+
+/**
  * Like EXIT_FAILURE: expands to a system-dependent integral expression that,
- * when used as the argument for function return or exit, signifies that the
+ * when used as the argument for function return, signifies that the
  * function or program failed
  */
-#define DEFAULT_ERROR_CODE EXIT_FAILURE
+#define DEFAULT_ERROR_CODE  EXIT_FAILURE
 
 
-#define ALLOC_ERROR_CODE   2
+#define ALLOC_ERROR_CODE    2
 
 /**
  * Like EX_USAGE: The command was used incorrectly, e.g., with the wrong number
  * of arguments, a bad flag, a bad syntax in a parameter, or whatever
  */
-#define USAGE_ERROR_CODE  64
+#define USAGE_ERROR_CODE    64
 
 void fatal_error(int);
 void fatal_error(int,const char*,...);
 void fatal_error(const char*,...);
 void fatal_alloc_error(const char*);
+void alloc_error(const char*);
 void error(const char*,...);
 void debug(const char*,...);
 void set_debug(char);

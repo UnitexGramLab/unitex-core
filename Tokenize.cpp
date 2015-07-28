@@ -46,9 +46,6 @@ namespace unitex {
 #define NORMAL 0
 #define CHAR_BY_CHAR 1
 
-
-
-
 static void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
 static void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
 static void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
@@ -56,7 +53,7 @@ static int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct has
 		vector_int*,vector_int*,
 		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 static void save_new_line_positions(U_FILE*,vector_int*);
-static void load_token_file(char* filename, const VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
+static int load_token_file(char* filename, const VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
 void write_number_of_tokens(const VersatileEncodingConfig* vec,const char* name,int n) {
   U_FILE* f;
@@ -74,9 +71,6 @@ void write_number_of_tokens(const VersatileEncodingConfig* vec,const char* name,
 u_fprintf(f,number);
 u_fclose(f);
 }
-
-
-
 
 const char* usage_Tokenize =
          "Usage: Tokenize [OPTIONS] <txt>\n"
@@ -104,14 +98,13 @@ const char* usage_Tokenize =
          "alphabetical order and \"stats.n\" contains some statistics. The file \"enter.pos\"\n"
          "contains the position in tokens of all the carriage return sequences. The file\n"
          "\"snt_offsets.pos\" contains the offset shifts between .snt and coded representation.\n"
-		 "All files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n";
+         "All files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n";
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Tokenize);
+  display_copyright_notice();
+  u_printf(usage_Tokenize);
 }
-
 
 const char* optstring_Tokenize=":a:cwt:hk:q:$:@:";
 const struct option_TS lopts_Tokenize[]={
@@ -131,145 +124,184 @@ const struct option_TS lopts_Tokenize[]={
 int main_Tokenize(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
 char* buffer_filename = (char*)malloc(step_filename_buffer * 8);
-if (buffer_filename == NULL)
-{
-	fatal_alloc_error("main_Tokenize");
+
+if (buffer_filename == NULL) {
+	alloc_error("main_Tokenize");
+  return ALLOC_ERROR_CODE;
 }
-char* alphabet = (buffer_filename + (step_filename_buffer * 0));
-char* token_file = (buffer_filename + (step_filename_buffer * 1));
-char* in_offsets = (buffer_filename + (step_filename_buffer * 2));
+
+char* alphabet    = (buffer_filename + (step_filename_buffer * 0));
+char* token_file  = (buffer_filename + (step_filename_buffer * 1));
+char* in_offsets  = (buffer_filename + (step_filename_buffer * 2));
 char* out_offsets = (buffer_filename + (step_filename_buffer * 3));
-*alphabet = '\0';
-*token_file = '\0';
-*in_offsets = '\0';
+*alphabet    = '\0';
+*token_file  = '\0';
+*in_offsets  = '\0';
 *out_offsets = '\0';
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int mode=NORMAL;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Tokenize,lopts_Tokenize,&index))) {
    switch(val) {
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
    case 'c': mode=CHAR_BY_CHAR; break;
    case 'w': mode=NORMAL; break;
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty token file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty token file name\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(token_file,vars->optarg);
+             strcpy(token_file,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case '$': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_offsets argument\n");
+   case '$': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_offsets argument\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(in_offsets,vars->optarg);
+             strcpy(in_offsets,options.vars()->optarg);
              break;
-   case '@': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_offsets argument\n");
+   case '@': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_offsets argument\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(out_offsets,vars->optarg);
+             strcpy(out_offsets,options.vars()->optarg);
              break;
-   case 'h': usage(); free(buffer_filename); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Tokenize[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage();
+             free(buffer_filename);
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Tokenize[index].name);
+             free(buffer_filename);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(buffer_filename);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+  error("Invalid arguments: rerun with --help\n");
+  free(buffer_filename);
+  return USAGE_ERROR_CODE;   
 }
-U_FILE* text;
-U_FILE* out;
-U_FILE* output;
-U_FILE* enter;
+
+U_FILE* text   = NULL;
+U_FILE* out    = NULL;
+U_FILE* output = NULL;
+U_FILE* enter  = NULL;
 U_FILE* f_out_offsets=NULL;
 vector_offset* v_in_offsets=NULL;
 
-char* tokens_txt = (buffer_filename + (step_filename_buffer * 4));
-char* text_cod = (buffer_filename + (step_filename_buffer * 5));
-char* enter_pos = (buffer_filename + (step_filename_buffer * 6));
+char* tokens_txt      = (buffer_filename + (step_filename_buffer * 4));
+char* text_cod        = (buffer_filename + (step_filename_buffer * 5));
+char* enter_pos       = (buffer_filename + (step_filename_buffer * 6));
 char* snt_offsets_pos = (buffer_filename + (step_filename_buffer * 7));
+
 *tokens_txt = '\0';
-*text_cod = '\0';
-*enter_pos = '\0';
+*text_cod   = '\0';
+*enter_pos  = '\0';
 *snt_offsets_pos = '\0';
 
 Alphabet* alph=NULL;
 
-get_snt_path(argv[vars->optind],text_cod);
+get_snt_path(argv[options.vars()->optind],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path(argv[vars->optind],tokens_txt);
+get_snt_path(argv[options.vars()->optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path(argv[vars->optind],enter_pos);
+get_snt_path(argv[options.vars()->optind],enter_pos);
 strcat(enter_pos,"enter.pos");
-get_snt_path(argv[vars->optind],snt_offsets_pos);
+get_snt_path(argv[options.vars()->optind],snt_offsets_pos);
 strcat(snt_offsets_pos,"snt_offsets.pos");
-text=u_fopen(&vec,argv[vars->optind],U_READ);
+
+text=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (text==NULL) {
-   fatal_error("Cannot open text file %s\n",argv[vars->optind]);
+  error("Cannot open text file %s\n",argv[options.vars()->optind]);
+  free(buffer_filename);
+  return DEFAULT_ERROR_CODE;   
 }
+
 if (alphabet[0]!='\0') {
    alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
       u_fclose(text);
       free(buffer_filename);
-      return 1;
+      return DEFAULT_ERROR_CODE;
    }
 }
+
 out=u_fopen(BINARY,text_cod,U_WRITE);
 if (out==NULL) {
    error("Cannot create file %s\n",text_cod);
+   free_alphabet(alph);
    u_fclose(text);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
    free(buffer_filename); 
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 enter=u_fopen(BINARY,enter_pos,U_WRITE);
 if (enter==NULL) {
    error("Cannot create file %s\n",enter_pos);
-   u_fclose(text);
    u_fclose(out);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
+   free_alphabet(alph);
+   u_fclose(text);
    free(buffer_filename); 
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 if (out_offsets[0]!='\0') {
 	f_out_offsets=u_fopen(&vec,out_offsets,U_WRITE);
 	if (f_out_offsets==NULL) {
-		fatal_error("Cannot create file %s\n",out_offsets);
+		error("Cannot create file %s\n",out_offsets);
+    u_fclose(enter);
+    u_fclose(out);
+    free_alphabet(alph);
+    u_fclose(text);
+    free(buffer_filename); 
+    return DEFAULT_ERROR_CODE;
 	}
 	/* We deal with offsets only if the program is expected to produce some */
 	if (in_offsets[0]!='\0') {
 		v_in_offsets=load_offsets(&vec,in_offsets);
 		if (v_in_offsets==NULL) {
-			fatal_error("Cannot load offset file %s\n",in_offsets);
+			error("Cannot load offset file %s\n",in_offsets);
+      u_fclose(f_out_offsets);
+      u_fclose(enter);
+      u_fclose(out);
+      free_alphabet(alph);
+      u_fclose(text);
+      free(buffer_filename); 
+      return DEFAULT_ERROR_CODE;
 		}
 	} else {
 		/* If there is no input offset file, we create an empty offset vector
@@ -278,7 +310,6 @@ if (out_offsets[0]!='\0') {
 	}
 }
 
-
 vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
@@ -286,25 +317,44 @@ vector_int* snt_offsets=new_vector_int(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
                                             (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 if (token_file[0]!='\0') {
-   load_token_file(token_file,&vec,tokens,hashtable,n_occur);
+   int load_token_file_return_value = load_token_file(token_file,
+                                                      &vec,
+                                                      tokens,
+                                                      hashtable,
+                                                      n_occur);
+  if(load_token_file_return_value != SUCCESS_RETURN_CODE) {
+   free_hash_table(hashtable);
+   free_vector_int(snt_offsets);
+   free_vector_int(n_enter_pos);
+   free_vector_int(n_occur);
+   free_vector_ptr(tokens,free);
+   free_vector_offset(v_in_offsets);
+   u_fclose(f_out_offsets);
+   u_fclose(enter);
+   u_fclose(out);
+   free_alphabet(alph);
+   u_fclose(text);
+   free(buffer_filename); 
+   return DEFAULT_ERROR_CODE;
+  } 
 }
 
 output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot create file %s\n",tokens_txt);
-   u_fclose(text);
-   u_fclose(out);
-   u_fclose(enter);
-   if (alph!=NULL) {
-      free_alphabet(alph);
-   }
    free_hash_table(hashtable);
-   free_vector_ptr(tokens,free);
-   free_vector_int(n_occur);
-   free_vector_int(n_enter_pos);
    free_vector_int(snt_offsets);
+   free_vector_int(n_enter_pos);
+   free_vector_int(n_occur);
+   free_vector_ptr(tokens,free);
+   free_vector_offset(v_in_offsets);
+   u_fclose(f_out_offsets);
+   u_fclose(enter);
+   u_fclose(out);
+   free_alphabet(alph);
+   u_fclose(text);
    free(buffer_filename); 
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
 u_fprintf(output,"0000000000\n");
 
@@ -317,19 +367,35 @@ int result_tokenization = tokenization(text,out,output,alph,tokens,hashtable,n_o
                           snt_offsets,
                           &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL,f_out_offsets,
                           v_in_offsets,(mode!=NORMAL));
-u_printf((result_tokenization == 0) ? "\nDone.\n" : "\nGRAVE Tokenization error.\n");
+u_printf((result_tokenization == 0) ? "\nDone.\n" : "\nTokenization error.\n");
 save_new_line_positions(enter,n_enter_pos);
 if (!save_snt_offsets(snt_offsets,snt_offsets_pos)) {
-	fatal_error("Cannot save snt offsets in file %s\n",snt_offsets_pos);
+	error("Cannot save snt offsets in file %s\n",snt_offsets_pos);
+  u_fclose(output);
+  free_hash_table(hashtable);
+  free_vector_int(snt_offsets);
+  free_vector_int(n_enter_pos);
+  free_vector_int(n_occur);
+  free_vector_ptr(tokens,free);
+  free_vector_offset(v_in_offsets);
+  u_fclose(f_out_offsets);  
+  u_fclose(enter);
+  u_fclose(out);
+  free_alphabet(alph);
+  u_fclose(text);
+  free(buffer_filename); 
+  return DEFAULT_ERROR_CODE;  
 }
+
+u_fclose(output);
 free_vector_int(snt_offsets);
 u_fclose(enter);
-u_fclose(text);
 u_fclose(out);
-u_fclose(output);
+u_fclose(text);
+
 write_number_of_tokens(&vec,tokens_txt,tokens->nbelems);
 // we compute some statistics
-get_snt_path(argv[vars->optind],tokens_txt);
+get_snt_path(argv[options.vars()->optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
 output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
@@ -340,7 +406,7 @@ else {
    u_fclose(output);
 }
 // we save the tokens by frequence
-get_snt_path(argv[vars->optind],tokens_txt);
+get_snt_path(argv[options.vars()->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
 output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
@@ -351,7 +417,7 @@ else {
    u_fclose(output);
 }
 // we save the tokens by alphabetical order
-get_snt_path(argv[vars->optind],tokens_txt);
+get_snt_path(argv[options.vars()->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
 output=u_fopen(&vec,tokens_txt,U_WRITE);
 if (output==NULL) {
@@ -361,15 +427,15 @@ else {
    sort_and_save_by_alph_order(output,tokens,n_occur);
    u_fclose(output);
 }
+
 free_hash_table(hashtable);
-free_vector_ptr(tokens,free);
-free_vector_int(n_occur);
 free_vector_int(n_enter_pos);
-free_alphabet(alph);
-u_fclose(f_out_offsets);
+free_vector_int(n_occur);
+free_vector_ptr(tokens,free);
 free_vector_offset(v_in_offsets);
-free_OptVars(vars);
-free(buffer_filename); 
+u_fclose(f_out_offsets);
+free_alphabet(alph);
+free(buffer_filename);
 return result_tokenization;
 }
 //---------------------------------------------------------------------------
@@ -398,14 +464,17 @@ return n;
 /**
  * Loads an existing token file.
  */
-static void load_token_file(char* filename, const VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+static int load_token_file(char* filename, const VersatileEncodingConfig* vec,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
 U_FILE* f=u_fopen(vec,filename,U_READ);
 if (f==NULL) {
-   fatal_error("Cannot open token file %s\n",filename);
+   error("Cannot open token file %s\n",filename);
+   return DEFAULT_ERROR_CODE;
 }
 Ustring* tmp=new_Ustring(1024);
 if (EOF==readline(tmp,f)) {
-   fatal_error("Unexpected empty token file %s\n",filename);
+   error("Unexpected empty token file %s\n",filename);
+   u_fclose(f);
+   return DEFAULT_ERROR_CODE;
 }
 while (EOF!=readline(tmp,f)) {
    int n=get_token_number(tmp->str,tokens,hashtable,n_occur);
@@ -414,6 +483,7 @@ while (EOF!=readline(tmp,f)) {
 }
 free_Ustring(tmp);
 u_fclose(f);
+return SUCCESS_RETURN_CODE;
 }
 
 
@@ -546,28 +616,34 @@ static inline int fast_u_fgetc_raw(U_FILE* f, unichar*buffer,unsigned int* pos_i
 	}
 }
 
-static void enlarge_token_buffer_as_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed)
+static int enlarge_token_buffer_as_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed)
 {
-	if (size_needed <= (*buffer_size))
-		return;
+	if (size_needed <= (*buffer_size)) {
+		return SUCCESS_RETURN_CODE;
+  }
 
 	size_t buffer_new_size = *buffer_size;
-	while (size_needed > buffer_new_size)
+	while (size_needed > buffer_new_size) {
 		buffer_new_size *= 2;
+  }
 
 	unichar* new_token_buffer = (unichar*)realloc((void*)*token_buffer, buffer_new_size*sizeof(unichar));
 	if (new_token_buffer == NULL) {
-		fatal_alloc_error("enlarge_token_buffer_as_needed");
+		alloc_error("enlarge_token_buffer_as_needed");
+    return ALLOC_ERROR_CODE;
 	}
+
 	*token_buffer = new_token_buffer;
 	*buffer_size = buffer_new_size;
+
+  return SUCCESS_RETURN_CODE;
 }
 
-static inline void enlarge_token_buffer_if_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed)
-{
-	if (size_needed <= (*buffer_size))
-		return;
-	enlarge_token_buffer_as_needed(token_buffer, buffer_size, size_needed);
+static inline int enlarge_token_buffer_if_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed) {
+	if (size_needed <= (*buffer_size)) {
+		return SUCCESS_RETURN_CODE;
+  }
+	return enlarge_token_buffer_as_needed(token_buffer, buffer_size, size_needed);
 }
 
 #define TOKENIZE_ORIGINAL_TOKEN_BUFFER_SIZE 0x400
@@ -599,7 +675,8 @@ int result=0; // 0 = no error
 size_t token_buffer_size = TOKENIZE_ORIGINAL_TOKEN_BUFFER_SIZE;
 unichar * token_buffer = (unichar*)malloc(sizeof(unichar)*token_buffer_size);
 if (token_buffer == NULL) {
-  fatal_alloc_error("tokenization");
+  alloc_error("tokenization");
+  return ALLOC_ERROR_CODE;
 }
 while ((c!=EOF) && (result == 0)) {
    current_pos=COUNT;
@@ -652,11 +729,15 @@ while ((c!=EOF) && (result == 0)) {
         // if the tag has no ending }
         enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z + 1);
         token_buffer[z]='\0';
-        fatal_error("Error: a tag without ending } has been found:\n%S\n",token_buffer);
+        error("Error: a tag without ending } has been found:\n%S\n",token_buffer);
+        free(token_buffer);
+        return DEFAULT_ERROR_CODE;
      }
      if (c=='\n') {
         // if the tag contains a return
-        fatal_error("Error: a tag containing a new-line sequence has been found\n");
+        error("Error: a tag containing a new-line sequence has been found\n");
+        free(token_buffer);
+        return DEFAULT_ERROR_CODE;
      }
      enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z + 2);
      token_buffer[z]='}';
@@ -667,7 +748,9 @@ while ((c!=EOF) && (result == 0)) {
      } else {
         if (u_strcmp(token_buffer,"{STOP}") && !check_tag_token(token_buffer,1)) {
            // if a tag is incorrect, we exit
-           fatal_error("The text contains an invalid tag. Unitex cannot process it.");
+           error("The text contains an invalid tag. Unitex cannot process it.");
+           free(token_buffer);
+           return DEFAULT_ERROR_CODE;
         }
      }
      n=get_token_number(token_buffer,tokens,hashtable,n_occur);
@@ -714,9 +797,11 @@ for (n=0;n<tokens->nbelems;n++) {
 }
 if (result!=0) {
    u_printf("Unsucessfull.\n");
+   free(token_buffer);
+   return DEFAULT_ERROR_CODE;
 }
 free(token_buffer);
-return result;
+return SUCCESS_RETURN_CODE;
 }
 
 

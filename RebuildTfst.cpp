@@ -55,8 +55,8 @@ const char* usage_RebuildTfst =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_RebuildTfst);
+  display_copyright_notice();
+  u_printf(usage_RebuildTfst);
 }
 
 
@@ -77,57 +77,58 @@ const struct option_TS lopts_RebuildTfst[]= {
 int main_RebuildTfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val, index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RebuildTfst,lopts_RebuildTfst,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_RebuildTfst,lopts_RebuildTfst,&index))) {
    switch (val) {
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'h':
       usage();
-      return 0;
-   case ':':
-      if (index==-1)
-         fatal_error("Missing argument for option -%c\n", vars->optopt);
-      else
-         fatal_error("Missing argument for option --%s\n", lopts_RebuildTfst[index].name);
-   case '?':
-      if (index==-1)
-         fatal_error("Invalid option -%c\n", vars->optopt);
-      else
-         fatal_error("Invalid option --%s\n", vars->optarg);
-      break;
+      return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
+                         error("Missing argument for option --%s\n", lopts_RebuildTfst[index].name);
+     return USAGE_ERROR_CODE;                    
+   case '?': index==-1 ? error("Invalid option -%c\n", options.vars()->optopt) :
+                         error("Invalid option --%s\n", options.vars()->optarg);
+     return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 char input_tfst[FILENAME_MAX];
 char input_tind[FILENAME_MAX];
-strcpy(input_tfst,argv[vars->optind]);
+strcpy(input_tfst,argv[options.vars()->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
 
 u_printf("Loading %s...\n",input_tfst);
+
 Tfst* tfst = open_text_automaton(&vec,input_tfst);
 if (tfst==NULL) {
-   fatal_error("Unable to load %s automaton\n",input_tfst);
+   error("Unable to load %s automaton\n",input_tfst);
+   return DEFAULT_ERROR_CODE;
 }
+
 char basedir[FILENAME_MAX];
 get_path(input_tfst,basedir);
 char output_tfst[FILENAME_MAX];
@@ -137,12 +138,17 @@ sprintf(output_tind, "%s.new.tind",input_tfst);
 
 U_FILE* f_tfst;
 if ((f_tfst = u_fopen(&vec,output_tfst,U_WRITE)) == NULL) {
-   fatal_error("Unable to open %s for writing\n", output_tfst);
+   error("Unable to open %s for writing\n", output_tfst);
+   close_text_automaton(tfst);
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* f_tind;
 if ((f_tind = u_fopen(BINARY,output_tind,U_WRITE)) == NULL) {
    u_fclose(f_tfst);
-   fatal_error("Unable to open %s for writing\n", output_tind);
+   close_text_automaton(tfst);
+   error("Unable to open %s for writing\n", output_tind);
+   return DEFAULT_ERROR_CODE;
 }
 /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
 struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
@@ -186,10 +192,12 @@ for (int i = 1; i <= tfst->N; i++) {
       free(tags);
    }
 }
+
 u_printf("Text automaton rebuilt.\n");
-close_text_automaton(tfst);
-u_fclose(f_tfst);
+
 u_fclose(f_tind);
+u_fclose(f_tfst);
+close_text_automaton(tfst);
 
 /* Finally, we save statistics */
 char tfst_tags_by_freq[FILENAME_MAX];
@@ -225,8 +233,8 @@ af_rename(output_tfst,input_tfst);
 af_rename(output_tind,input_tind);
 u_printf("\nYou can find a backup of the original files in:\n    %s\nand %s\n",
          backup_tfst,backup_tind);
-free_OptVars(vars);
-return 0;
+
+return SUCCESS_RETURN_CODE;
 }
 
 
@@ -270,7 +278,8 @@ if (fst2->states[0]->transitions==NULL) {
 }
 unichar** tags=(unichar**)malloc(sizeof(unichar*)*fst2->number_of_tags);
 if (tags==NULL) {
-   fatal_alloc_error("create_tfst_tags");
+   alloc_error("create_tfst_tags");
+   return NULL;
 }
 tags[0]=u_strdup("@<E>\n.\n");
 unichar tmp[4096];

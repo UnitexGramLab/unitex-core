@@ -57,8 +57,8 @@ const char* usage_Table2Grf =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Table2Grf);
+  display_copyright_notice();
+  u_printf(usage_Table2Grf);
 }
 
 
@@ -80,90 +80,106 @@ const struct option_TS lopts_Table2Grf[]= {
 int main_Table2Grf(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
+
 char reference_graph_name[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char subgraph_pattern[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&index))) {
    switch(val) {
-   case 'r': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty reference graph name\n");
+   case 'r': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty reference graph name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(reference_graph_name,vars->optarg);
+             strcpy(reference_graph_name,options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output graph name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output graph name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 's': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty subgraph name pattern\n");
+   case 's': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty subgraph name pattern\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(subgraph_pattern,vars->optarg);
+             strcpy(subgraph_pattern,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Table2Grf[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Table2Grf[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 if (reference_graph_name[0]=='\0') {
-   fatal_error("You must specify the reference graph to use\n");
+   error("You must specify the reference graph to use\n");
+   return USAGE_ERROR_CODE;
 }
 if (output[0]=='\0') {
-   fatal_error("You must specify the output graph name\n");
+   error("You must specify the output graph name\n");
+   return USAGE_ERROR_CODE;
 }
 
-U_FILE* table=u_fopen(&vec,argv[vars->optind],U_READ);
+U_FILE* table=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (table==NULL) {
-   fatal_error("Cannot open table %s\n",argv[vars->optind]);
+   error("Cannot open table %s\n",argv[options.vars()->optind]);
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* reference_graph=u_fopen(&vec,reference_graph_name,U_READ);
 if (reference_graph==NULL) {
    error("Cannot open reference graph %s\n",reference_graph_name);
    u_fclose(table);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* result_graph=u_fopen(&vec,output,U_WRITE);
 if (result_graph==NULL) {
    error("Cannot create result graph %s\n",output);
    u_fclose(table);
    u_fclose(reference_graph);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 if (subgraph_pattern[0]=='\0') {
    /* If no subgraph name is given for the graph TUTU.grf, we
     * take TUTU_xxxx as subgraph name */
    remove_extension(subgraph_pattern,output);
    strcat(subgraph_pattern,"_@%.grf");
 }
+
 char path[FILENAME_MAX];
 get_path(output,path);
 table2grf(table,reference_graph,result_graph,&vec,subgraph_pattern,path);
-free_OptVars(vars);
-return 0;
+
+return SUCCESS_RETURN_CODE;
 }
 
 
@@ -218,17 +234,18 @@ u_fprintf(f,"#Unigraph\n"
 
 
 struct state* new_state() {
-struct state* e;
-e=(struct state*)malloc(sizeof(struct state));
-if (e==NULL) {
-   fatal_alloc_error("new_state");
-}
-e->content[0]='\0';
-e->x=0;
-e->y=0;
-e->mark=0;
-e->n_trans=0;
-return e;
+  struct state* e;
+  e=(struct state*)malloc(sizeof(struct state));
+  if (e==NULL) {
+     alloc_error("new_state");
+     return NULL;
+  }
+  e->content[0]='\0';
+  e->x=0;
+  e->y=0;
+  e->mark=0;
+  e->n_trans=0;
+  return e;
 }
 
 
@@ -330,7 +347,7 @@ for (i=0;i<n_fields;i++) {
          for (int j=i;j<n_fields;j++) {
             line[j]=(unichar*)malloc(sizeof(unichar));
             if (line[j]==NULL) {
-               fatal_alloc_error("read_table_line");
+               alloc_error("read_table_line");
             }
             line[j][0]='\0';
          }
@@ -396,16 +413,20 @@ if (source[pos_in_src]=='@' && is_in_A_Z(source[pos_in_src+1])) {
    if (source[pos_in_src+2]=='\0' || source[pos_in_src+2]=='/') {
       // if we are in the case @A or @A/something
       row_number=source[pos_in_src+1]-'A';
-      if (row_number >= n_fields)
-        fatal_error("Error in parameterized graph: row #%d (@%C) not defined in table\n",
-                    row_number,source[pos_in_src+1]);
+      if (row_number >= n_fields) {
+        error("Error in parameterized graph: row #%d (@%C) not defined in table\n",
+               row_number,source[pos_in_src+1]);
+        return;
+      }
    }
    else if (is_in_A_Z(source[pos_in_src+2]) && (source[pos_in_src+3]=='\0' || source[pos_in_src+3]=='/')) {
            // if we are in the case @AB or @AB/something
            row_number=(source[pos_in_src+1]-'A'+1)*(26)+(source[pos_in_src+2]-'A');
-           if (row_number >= n_fields)
-             fatal_error("Error in parameterized graph: row #%d (@%C%C) not defined in table\n",
+           if (row_number >= n_fields) {
+             error("Error in parameterized graph: row #%d (@%C%C) not defined in table\n",
                          row_number,source[pos_in_src+1],source[pos_in_src+2]);
+             return;
+           }
    }
    if (row_number!=-1) {
       // if we have a valid row reference
@@ -454,16 +475,20 @@ while (source[pos_in_src]!='\0') {
          if (is_in_A_Z(source[pos_in_src+1])) {
             // if we are in the @AB case
             row_number=(source[pos_in_src]-'A'+1)*(26)+(source[pos_in_src+1]-'A');
-            if (row_number > n_fields)
-              fatal_error("Error: row #%d (@%c%c) not defined in table\n",
-                          row_number,source[pos_in_src],source[pos_in_src+1]);
+            if (row_number > n_fields) {
+              error("Error: row #%d (@%c%c) not defined in table\n",
+                   row_number,source[pos_in_src],source[pos_in_src+1]);
+              return;
+            }
             pos_in_src++;
          }
          else {
            row_number=source[pos_in_src]-'A';
-           if (row_number > n_fields)
-             fatal_error("Error: row #%d (@%c) not defined in table\n",
-                         row_number,source[pos_in_src]);
+           if (row_number > n_fields) {
+             error("Error: row #%d (@%c) not defined in table\n",
+                   row_number,source[pos_in_src]);
+             return;
+           }
          }
          pos_in_src++;
          if (!u_strcmp(field[row_number],"+")) {
@@ -540,14 +565,13 @@ while (i<g->tab[e]->n_trans) {
 return 1;
 }
 
-
-
 static int clean_graph(struct reference_graph *G) {
 int i,n_states,current_state,j;
 int *t;
 
 if ((G->tab[0])==NULL) {
-   fatal_error("Internal error in clean_graph: NULL for initial state content\n");
+   error("Internal error in clean_graph: NULL for initial state content\n");
+   return -1;
 }
 if (G->tab[0]->content[0]=='\0') {
    // if the initial state is empty, we must remove the whole graph
@@ -562,7 +586,8 @@ if (G->tab[0]->n_trans==0) {
 }
 t=(int*)malloc(sizeof(int)*n_states);
 if (t==NULL) {
-   fatal_alloc_error("clean_graph");
+   alloc_error("clean_graph");
+   return -1;
 }
 for (i=0;i<n_states;i++) {
   t[i]=i;

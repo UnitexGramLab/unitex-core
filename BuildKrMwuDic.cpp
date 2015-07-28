@@ -63,11 +63,9 @@ const char* usage_BuildKrMwuDic =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_BuildKrMwuDic);
+  display_copyright_notice();
+  u_printf(usage_BuildKrMwuDic);
 }
-
-
 
 const char* optstring_BuildKrMwuDic="o:d:a:b:hfntk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
@@ -91,7 +89,7 @@ const struct option_TS lopts_BuildKrMwuDic[]= {
 int main_BuildKrMwuDic(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 
@@ -107,81 +105,102 @@ GraphRecompilationPolicy graph_recompilation_policy = ONLY_OUT_OF_DATE;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 
-struct OptVars* vars=new_OptVars();
+UnitexGetOpt options;
 
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrMwuDic,&index,vars))) {
+while (EOF!=(val=options.parse_long(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrMwuDic,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty inflection directory\n");
+   case 'd': if (options.vars()->optarg[0]=='\0') {
+                error("Empty inflection directory\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(inflection_dir,vars->optarg);
+             strcpy(inflection_dir,options.vars()->optarg);
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
-   case 'b': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty binary dictionary name\n");
+   case 'b': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty binary dictionary name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(dic_bin,vars->optarg);
+             strcpy(dic_bin,options.vars()->optarg);
              remove_extension(dic_bin,dic_inf);
              strcat(dic_inf,".inf");
              break;
-   case 'h': usage(); return 0;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case 'f': graph_recompilation_policy = ALWAYS_RECOMPILE; break;
    case 'n': graph_recompilation_policy = NEVER_RECOMPILE;  break;
    case 't': graph_recompilation_policy = ONLY_OUT_OF_DATE; break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_BuildKrMwuDic[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_BuildKrMwuDic[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    }
    index=-1;
 }
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 if (output[0]=='\0') {
-   fatal_error("Output file must be specified\n");
+   error("Output file must be specified\n");
+   return USAGE_ERROR_CODE;
 }
 if (inflection_dir[0]=='\0') {
-   fatal_error("Inflection directory must be specified\n");
+   error("Inflection directory must be specified\n");
+   return USAGE_ERROR_CODE;
 }
 if (alphabet[0]=='\0') {
-   fatal_error("Alphabet file must be specified\n");
+   error("Alphabet file must be specified\n");
+   return USAGE_ERROR_CODE;
 }
 if (dic_bin[0]=='\0') {
-   fatal_error("Binary dictionary must be specified\n");
+   error("Binary dictionary must be specified\n");
+   return USAGE_ERROR_CODE;
 }
 
-U_FILE* delas=u_fopen(&vec,argv[vars->optind],U_READ);
+U_FILE* delas=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (delas==NULL) {
-   fatal_error("Cannot open %s\n",argv[vars->optind]);
+   error("Cannot open %s\n",argv[options.vars()->optind]);
+   return DEFAULT_ERROR_CODE;
 }
+
 U_FILE* grf=u_fopen(&vec,output,U_WRITE);
 if (grf==NULL) {
-   fatal_error("Cannot open %s\n",output);
+   error("Cannot open %s\n",output);
+   u_fclose(delas);  
+   return DEFAULT_ERROR_CODE;
 }
+
 Alphabet* alph=load_alphabet(&vec,alphabet,1);
 if (alph==NULL) {
-   fatal_error("Cannot open alphabet file %s\n",alphabet);
+   u_fclose(grf);
+   u_fclose(delas);
+   error("Cannot open alphabet file %s\n",alphabet);
+   return DEFAULT_ERROR_CODE;
 }
 Korean* korean=new Korean(alph);
 
@@ -208,9 +227,8 @@ for (int count_free_fst2=0;count_free_fst2<multiFlex_ctx->n_fst2;count_free_fst2
     multiFlex_ctx->fst2[count_free_fst2]=NULL;
 }
 free_MultiFlex_ctx(multiFlex_ctx);
-free_OptVars(vars);
 u_printf("Done.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

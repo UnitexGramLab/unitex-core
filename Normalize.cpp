@@ -47,7 +47,7 @@ const char* usage_Normalize =
          "  -n/--no_carriage_return: every separator sequence will be turned into a single space\n"
          "  --input_offsets=XXX: base offset file to be used\n"
          "  --output_offsets=XXX: offset file to be produced\n"
-		 "  --no_separator_normalization: only applies replacement rules specified with -r\n"
+         "  --no_separator_normalization: only applies replacement rules specified with -r\n"
          "  -r XXX/--replacement_rules=XXX: specifies a configuration file XXX that contains\n"
          "                                  replacement instructions in the form of lines like:\n"
          "\n"
@@ -67,8 +67,8 @@ const char* usage_Normalize =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Normalize);
+  display_copyright_notice();
+  u_printf(usage_Normalize);
 }
 
 
@@ -89,8 +89,8 @@ const struct option_TS lopts_Normalize[]= {
 
 int main_Normalize(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return 0;
+  usage();
+  return 0;
 }
 int mode=KEEP_CARRIAGE_RETURN;
 int separator_normalization=1;
@@ -100,49 +100,58 @@ char output_offsets[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int convLFtoCRLF=1;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Normalize,lopts_Normalize,&index))) {
    switch(val) {
    case 'l': convLFtoCRLF=0; break;
    case 'n': mode=REMOVE_CARRIAGE_RETURN; break;
-   case 'r': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty replacement rule file name\n");
+   case 'r': if (options.vars()->optarg[0]=='\0') {
+              error("You must specify a non empty replacement rule file name\n");
+              return USAGE_ERROR_CODE;
              }
-             strcpy(rules,vars->optarg);
+             strcpy(rules,options.vars()->optarg);
              break;
    case 1: separator_normalization=0; break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+              error("Empty input_encoding argument\n");
+              return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+              error("Empty output_encoding argument\n");
+              return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case '$': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty input offset file name\n");
+   case '$': if (options.vars()->optarg[0]=='\0') {
+              error("You must specify a non empty input offset file name\n");
+              return USAGE_ERROR_CODE;
              }
-             strcpy(input_offsets,vars->optarg);
+             strcpy(input_offsets,options.vars()->optarg);
              break;
-   case '@': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output offset file name\n");
+   case '@': if (options.vars()->optarg[0]=='\0') {
+              error("You must specify a non empty output offset file name\n");
+              return USAGE_ERROR_CODE;
              }
-             strcpy(output_offsets,vars->optarg);
+             strcpy(output_offsets,options.vars()->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Normalize[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Normalize[index].name);
+             return USAGE_ERROR_CODE;
+             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;  
              break;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+  error("Invalid arguments: rerun with --help\n");
+  return USAGE_ERROR_CODE;
 }
 
 vector_offset* v_input_offsets=NULL;
@@ -150,45 +159,44 @@ vector_offset* v_output_offsets=NULL;
 U_FILE* f_output_offsets=NULL;
 
 if (output_offsets[0]!='\0') {
-	/* We deal with offsets only if we have to produce output offsets */
-	if (input_offsets[0]!='\0') {
-		v_input_offsets=load_offsets(&vec,input_offsets);
-	}
-	f_output_offsets=u_fopen(&vec, output_offsets, U_WRITE);
-	if (f_output_offsets==NULL) {
-		error("Cannot create offset file %s\n",output_offsets);
-		return 1;
-	}
-	v_output_offsets=new_vector_offset();
+  /* We deal with offsets only if we have to produce output offsets */
+  if (input_offsets[0]!='\0') {
+    v_input_offsets=load_offsets(&vec,input_offsets);
+  }
+  f_output_offsets=u_fopen(&vec, output_offsets, U_WRITE);
+  if (f_output_offsets==NULL) {
+    error("Cannot create offset file %s\n",output_offsets);
+    return DEFAULT_ERROR_CODE;
+  }
+  v_output_offsets=new_vector_offset();
 }
 char tmp_file[FILENAME_MAX];
-get_extension(argv[vars->optind],tmp_file);
+get_extension(argv[options.vars()->optind],tmp_file);
 if (!strcmp(tmp_file, ".snt")) {
    /* If the file to process has already the .snt extension, we temporary rename it to
-	 * .snt.normalizing */
-	strcpy(tmp_file,argv[vars->optind]);
-	strcat(tmp_file,".normalizing");
-	af_rename(argv[vars->optind],tmp_file);
+   * .snt.normalizing */
+  strcpy(tmp_file,argv[options.vars()->optind]);
+  strcat(tmp_file,".normalizing");
+  af_rename(argv[options.vars()->optind],tmp_file);
 } else {
-   strcpy(tmp_file,argv[vars->optind]);
+   strcpy(tmp_file,argv[options.vars()->optind]);
 }
 /* We set the destination file */
 char dest_file[FILENAME_MAX];
-remove_extension(argv[vars->optind],dest_file);
+remove_extension(argv[options.vars()->optind],dest_file);
 strcat(dest_file,".snt");
-u_printf("Normalizing %s...\n",argv[vars->optind]);
+u_printf("Normalizing %s...\n",argv[options.vars()->optind]);
 int result=normalize(tmp_file, dest_file, &vec, mode, convLFtoCRLF,rules,
-		v_output_offsets,separator_normalization);
+    v_output_offsets,separator_normalization);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
-if (strcmp(tmp_file,argv[vars->optind])) {
+if (strcmp(tmp_file,argv[options.vars()->optind])) {
    af_remove(tmp_file);
 }
 process_offsets(v_input_offsets,v_output_offsets,f_output_offsets);
 u_fclose(f_output_offsets);
 free_vector_offset(v_input_offsets);
 free_vector_offset(v_output_offsets);
-free_OptVars(vars);
 u_printf((result==0) ? "Done.\n" : "Unsuccessfull.\n");
 return result;
 }

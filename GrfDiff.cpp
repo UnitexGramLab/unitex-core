@@ -64,8 +64,8 @@ const char* usage_GrfDiff =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_GrfDiff);
+  display_copyright_notice();
+  u_printf(usage_GrfDiff);
 }
 
 
@@ -87,40 +87,49 @@ const struct option_TS lopts_GrfDiff[] = {
 int main_GrfDiff(int argc,char* const argv[]) {
 if (argc==1) {
 	usage();
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
+
 VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
 int val,index=-1;
 char output[FILENAME_MAX]="";
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index,vars))) {
+
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index))) {
    switch(val) {
-   case 'h': usage(); return 0;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case 1: {
-	   strcpy(output,vars->optarg);
+	   strcpy(output,options.vars()->optarg);
 	   break;
    }
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_GrfDiff[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_GrfDiff[index].name);
+             return USAGE_ERROR_CODE;                         
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
-if (vars->optind!=argc-2) {
-	   fatal_error("Invalid arguments: rerun with --help\n");
+
+if (options.vars()->optind!=argc-2) {
+  error("Invalid arguments: rerun with --help\n");
+  return USAGE_ERROR_CODE;
 }
+
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
 	/* Since the output is supposed to be a diff-like one, there is no point
@@ -128,28 +137,33 @@ if (output[0]!='\0') {
 	f=u_fopen(UTF8,output,U_WRITE);
 	if (f==NULL) {
 		error("Cannot create file %s\n",output);
-		free_OptVars(vars);
-		return 2;
+    return DEFAULT_ERROR_CODE;
 	}
 }
-Grf* a=load_Grf(&vec,argv[vars->optind]);
+
+Grf* a=load_Grf(&vec,argv[options.vars()->optind]);
 if (a==NULL) {
-	free_OptVars(vars);
-	return 2;
+  if (f!=U_STDOUT) {
+    u_fclose(f);
+  }
+  return DEFAULT_ERROR_CODE;
 }
-Grf* b=load_Grf(&vec,argv[vars->optind+1]);
+
+Grf* b=load_Grf(&vec,argv[options.vars()->optind+1]);
 if (b==NULL) {
 	free_Grf(a);
-	free_OptVars(vars);
-	return 2;
+  if (f!=U_STDOUT) {
+    u_fclose(f);
+  }
+  return DEFAULT_ERROR_CODE;
 }
-free_OptVars(vars);
+
 GrfDiff* diff=grf_diff(a,b);
 free_Grf(a);
 free_Grf(b);
 print_diff(f,diff);
 if (f!=U_STDOUT) {
-	u_fclose(f);
+  u_fclose(f);
 }
 int different=diff->diff_ops->nbelems!=0;
 free_GrfDiff(diff);

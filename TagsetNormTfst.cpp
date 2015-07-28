@@ -51,9 +51,6 @@ namespace unitex {
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-
-
-
 const char* usage_TagsetNormTfst =
          "Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
          "\n"
@@ -73,13 +70,11 @@ const char* usage_TagsetNormTfst =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_TagsetNormTfst);
+  display_copyright_notice();
+  u_printf(usage_TagsetNormTfst);
 }
 
-
 int get_tfst_tag_index(vector_ptr*,unichar*,Match*);
-
 
 const char* optstring_TagsetNormTfst=":o:t:hk:q:";
 const struct option_TS lopts_TagsetNormTfst[]= {
@@ -95,7 +90,7 @@ const struct option_TS lopts_TagsetNormTfst[]= {
 int main_TagsetNormTfst(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char tfst[FILENAME_MAX]="";
@@ -105,50 +100,59 @@ char output_tind[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TagsetNormTfst,lopts_TagsetNormTfst,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_TagsetNormTfst,lopts_TagsetNormTfst,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output_tfst,vars->optarg);
+             strcpy(output_tfst,options.vars()->optarg);
              remove_extension(output_tfst,output_tind);
              strcat(output_tind,".tind");
              break;
-   case 't': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty tagset file name\n");
+   case 't': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty tagset file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(tagset,vars->optarg);
+             strcpy(tagset,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_TagsetNormTfst[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_TagsetNormTfst[index].name);
+             return USAGE_ERROR_CODE;                         
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 if (tagset[0]=='\0') {
-   fatal_error("You must specify the tagset file\n");
+   error("You must specify the tagset file\n");
+   return USAGE_ERROR_CODE;
 }
-strcpy(tfst,argv[vars->optind]);
-remove_extension(argv[vars->optind],tind);
+
+strcpy(tfst,argv[options.vars()->optind]);
+remove_extension(argv[options.vars()->optind],tind);
 strcat(tind,".tind");
 int no_explicit_output=0;
 char foo2[FILENAME_MAX];
@@ -165,7 +169,9 @@ language_t* language=load_language_definition(&vec,tagset);
 
 Elag_Tfst_file_in* txtin=load_tfst_file(&vec,tfst,language);
 if (txtin==NULL) {
-   fatal_error("Unable to load text automaton '%s'\n",tfst);
+   error("Unable to load text automaton '%s'\n",tfst);
+   free_language_t(language);
+   return DEFAULT_ERROR_CODE;
 }
 
 /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
@@ -174,12 +180,20 @@ struct hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(
 
 U_FILE* out_tfst=u_fopen(&vec,output_tfst,U_WRITE);
 if (out_tfst==NULL) {
-   fatal_error("Unable to open text automaton '%s'\n",output_tfst);
+   error("Unable to open text automaton '%s'\n",output_tfst);
+   tfst_file_close_in(txtin);
+   free_language_t(language);
+   return DEFAULT_ERROR_CODE;
 }
+
 u_fprintf(out_tfst,"%010d\n",txtin->tfst->N);
 U_FILE* out_tind=u_fopen(BINARY,output_tind,U_WRITE);
 if (out_tind==NULL) {
-   fatal_error("Unable to open text automaton index '%s'\n",output_tind);
+   error("Unable to open text automaton index '%s'\n",output_tind);
+   u_fclose(out_tfst);
+   tfst_file_close_in(txtin);
+   free_language_t(language);
+   return DEFAULT_ERROR_CODE;
 }
 
 u_printf("Cleaning text automaton...\n");
@@ -292,7 +306,19 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
             t=&((*t)->next);
          } else {
             /* Should not happen */
-            fatal_error("Internal error in TagsetNormTfst\n");
+            error("Internal error in TagsetNormTfst\n");
+            for (int i=0;i<original_number_of_tags;i++) {
+               free_list_int(renumbering[i]);
+            }
+#           ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+             free(renumbering);
+#           endif
+            free_string_hash(tmp_tags);
+            u_fclose(out_tind);
+            u_fclose(out_tfst);
+            tfst_file_close_in(txtin);
+            free_language_t(language);
+            return DEFAULT_ERROR_CODE;
          }
       }
    }
@@ -364,8 +390,8 @@ if (no_explicit_output) {
    af_rename(output_tind,tind);
 }
 free_language_t(language);
-free_OptVars(vars);
-return 0;
+
+return SUCCESS_RETURN_CODE;
 }
 
 

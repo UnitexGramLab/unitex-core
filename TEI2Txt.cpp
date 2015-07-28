@@ -35,7 +35,7 @@
 
 namespace unitex {
 
-void tei2txt(char*, char*, const VersatileEncodingConfig*);
+int tei2txt(char*, char*, const VersatileEncodingConfig*);
 
 const char* usage_TEI2Txt =
          "Usage: TEI2Txt [OPTIONS] <xml>\n"
@@ -43,17 +43,16 @@ const char* usage_TEI2Txt =
          "  <xml>: the input TEI file\n"
          "\n"
          "OPTIONS:\n"
-	     "  -o TXT/--output=TXT: optional output file name (default: file.xml > file.txt)\n"
+         "  -o TXT/--output=TXT: optional output file name (default: file.xml > file.txt)\n"
          "  -h/--help: this help\n"
          "\n"
          "Produces a raw text file from the given TEI file.\n";
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_TEI2Txt);
+  display_copyright_notice();
+  u_printf(usage_TEI2Txt);
 }
-
 
 const char* optstring_TEI2Txt=":o:hk:q:";
 const struct option_TS lopts_TEI2Txt[]={
@@ -68,67 +67,82 @@ const struct option_TS lopts_TEI2Txt[]={
 int main_TEI2Txt(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_TEI2Txt[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_TEI2Txt[index].name);
+             return USAGE_ERROR_CODE;               
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;            
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 if(output[0]=='\0') {
-   remove_extension(argv[vars->optind],output);
+  remove_extension(argv[options.vars()->optind],output);
 	strcat(output,".txt");
 }
-tei2txt(argv[vars->optind],output,&vec);
-free_OptVars(vars);
-return 0;
+
+int return_value = tei2txt(argv[options.vars()->optind],output,&vec);
+
+return return_value;
 }
 
+static const char* body = "body";
 
-static const char *body = "body";
-
-void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
+int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 	void* html_ctx = init_HTML_character_context();
-	if (html_ctx == NULL) fatal_alloc_error("tei2txt");
+	if (html_ctx == NULL) { 
+    alloc_error("tei2txt");
+    return ALLOC_ERROR_CODE;
+  }  
 
 	U_FILE* input = u_fopen(vec, fin, U_READ);
-	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
+	if (input == NULL) {
+    error("Input file '%s' not found!\n", fin);
+    free_HTML_character_context(html_ctx);
+    return DEFAULT_ERROR_CODE;
+  } 
 
 	U_FILE* output = u_fopen(vec, fout, U_WRITE);
 	if (output == NULL) {
-		u_fclose(input);
-		fatal_error("Cannot open output file '%s'!\n", fout);
+    error("Cannot open output file '%s'!\n", fout);
+    u_fclose(input);
+    free_HTML_character_context(html_ctx);
+    return DEFAULT_ERROR_CODE;
 	}
 
 	unichar buffer[5000];
@@ -139,8 +153,9 @@ void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 		c = (unichar)i;
 
 		for (;;) {
-			while(c != '<' && (i = u_fgetc(input)) != EOF)
+			while(c != '<' && (i = u_fgetc(input)) != EOF) {
 				c = (unichar)i;
+      }
 
 			j = 0;
 			while((i = u_fgetc(input)) != EOF && (c = (unichar)i) != ' '
@@ -155,16 +170,21 @@ void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
          }
 			//u_printf("Current tag : <%S>\n", buffer);
 
-			if(!u_strcmp(buffer, body)) break;
-			else buffer[0] = '\0';
+			if(!u_strcmp(buffer, body)) { 
+        break;
+      } else { 
+        buffer[0] = '\0';
+      }  
 		}
-	} else error("Empty TEI file %s\n", fin);
+	} else { 
+    error("Empty TEI file %s\n", fin);
+  }  
 
 	char schars[11];
 
-   int first_sentence=1;
+  int first_sentence=1;
 	int current_state = 0;
-   int inside_sentence=0;
+  int inside_sentence=0;
 	while ((i = u_fgetc(input)) != EOF) {
 		c = (unichar)i;
 		switch (current_state) {
@@ -172,17 +192,22 @@ void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 				if(c == '<') {
                current_state = 1;
                inside_sentence=0;
-            }
-				else if(c == '&') current_state = 3;
-				else if (inside_sentence) u_fputc(c, output);
+        } else if(c == '&') {
+          current_state = 3;
+        } else if (inside_sentence) { 
+          u_fputc(c, output);
+        }  
 				break;
 			}
 			case 1: {
-				if(c == 's' || c == 'S') current_state = 2;
-				else {
+				if(c == 's' || c == 'S') {
+          current_state = 2;
+				} else {
 					while((i = u_fgetc(input)) != EOF) {
 						c = (unichar)i;
-						if(c == '>') break;
+						if(c == '>') {
+              break;
+            }  
 					}
 					current_state = 0;
 				}
@@ -190,19 +215,21 @@ void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 			}
 			case 2: {
 				if(c == ' ' || c == '>') {
-					current_state = 0;
-               inside_sentence=1;
-               if (!first_sentence) {
-                  /* We put a {STOP} tag in order to avoid matches that overlap 2 sentences */
-                  u_fprintf(output,"\n{STOP}{S}");
-               } else {
-                  first_sentence=0;
-               }
+          current_state = 0;
+          inside_sentence=1;
+          if (!first_sentence) {
+             /* We put a {STOP} tag in order to avoid matches that overlap 2 sentences */
+             u_fprintf(output,"\n{STOP}{S}");
+          } else {
+             first_sentence=0;
+          }
 				}
 				if(c != '>') {
 					while((i = u_fgetc(input)) != EOF) {
 						c = (unichar)i;
-						if(c == '>') break;
+						if(c == '>') {
+              break;
+            }  
 					}
 				}
 				break;
@@ -242,10 +269,12 @@ void tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
 		}
 	}
 
-	free_HTML_character_context(html_ctx);
-	u_fclose(input);
 	u_fclose(output);
+	u_fclose(input);
+  free_HTML_character_context(html_ctx);
 	u_printf("Done.\n");
+  
+  return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

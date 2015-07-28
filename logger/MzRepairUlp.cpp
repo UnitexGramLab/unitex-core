@@ -1,3 +1,32 @@
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
+
+ /*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
+ * as part of an UNITEX optimization and reliability effort
+ *
+ * additional information: http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +66,7 @@ extern const char* usage_MzRepairUlp;
 const char* usage_MzRepairUlp =
          "Usage : MzRepairUlp [OPTIONS] <ulpfile>\n"
          "\n"
-		 "  <ulpfile>: a corrupted ulp file (often, a crashing log)\n"
+		     "  <ulpfile>: a corrupted ulp file (often, a crashing log)\n"
          "\n"
          "OPTIONS:\n"
          "  -o X/--output=X: uses X as filename for fixed .ulp file (<ulpfile>.repair by default)\n"
@@ -48,8 +77,8 @@ const char* usage_MzRepairUlp =
          "\n";
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_MzRepairUlp);
+  display_copyright_notice();
+  u_printf(usage_MzRepairUlp);
 }
 
 
@@ -65,13 +94,12 @@ const struct option_TS lopts_MzRepairUlp[]={
    {NULL, no_argument_TS, NULL, 0}
 };
 
-int main_MzRepairUlp(int argc,char* const argv[])
-{
-
+int main_MzRepairUlp(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
+
 char outputFile[FILENAME_MAX+0x20]="";
 char tempFile[FILENAME_MAX+0x20]="";
 
@@ -81,70 +109,69 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 int val,index=-1;
 int quiet=0;
 int verbose=0;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MzRepairUlp,lopts_MzRepairUlp,&index,vars))) {
+
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_MzRepairUlp,lopts_MzRepairUlp,&index))) {
    switch(val) {
 
    case 'm': quiet=1; break;
    case 'v': verbose=1; break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+               error("You must specify a non empty output file name\n");
+               return USAGE_ERROR_CODE;
              }
-             strcpy(outputFile,vars->optarg);
+             strcpy(outputFile,options.vars()->optarg);
              break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty temp file name\n");
+   case 'd': if (options.vars()->optarg[0]=='\0') {
+                  error("You must specify a non empty temp file name\n");
+                  return USAGE_ERROR_CODE;
                 }
-                strcpy(tempFile,vars->optarg);
+                strcpy(tempFile,options.vars()->optarg);
                 break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_MzRepairUlp[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_MzRepairUlp[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
+const char* ulpFile=argv[options.vars()->optind];
 
-
-
-const char* ulpFile=argv[vars->optind];
-
-
-if (outputFile[0]=='\0')
-{
+if (outputFile[0]=='\0') {
 	strcpy(outputFile,ulpFile);
 	strcat(outputFile,".repair");
 }
 
-if (tempFile[0]=='\0')
-{
+if (tempFile[0]=='\0') {
 	strcpy(tempFile,outputFile);
 	strcat(tempFile,".build");
 }
 
-
 int retRepair=0;
 uLong nRecovered=0;
 uLong bytesRecovered=0;
-
-
 
 retRepair=ulpRepair(ulpFile,(const char*)outputFile,(const char*)tempFile,&nRecovered,&bytesRecovered);
 if ((retRepair!=0)) {

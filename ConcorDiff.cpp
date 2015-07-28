@@ -53,8 +53,8 @@ const char* usage_ConcorDiff =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_ConcorDiff);
+  display_copyright_notice();
+  u_printf(usage_ConcorDiff);
 }
 
 
@@ -74,7 +74,7 @@ const struct option_TS lopts_ConcorDiff[]= {
 int main_ConcorDiff(int argc,char* const argv[]) {
 if (argc==1) {
 	usage();
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
 
 int val,index=-1;
@@ -84,70 +84,110 @@ int size=0;
 char foo;
 int diff_only=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file\n");
+                free(font);
+                free(out);
+                return USAGE_ERROR_CODE;
              }
-             out=strdup(vars->optarg);
+             out=strdup(options.vars()->optarg);
              if (out==NULL) {
-                fatal_alloc_error("main_ConcorDiff");
+                alloc_error("main_ConcorDiff");
+                free(font);
+                free(out);
+                return ALLOC_ERROR_CODE;
              }
              break;
-   case 'f': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty font name\n");
+   case 'f': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty font name\n");
+                free(font);
+                free(out);
+                return USAGE_ERROR_CODE;                
              }
-             font=strdup(vars->optarg);
+             font=strdup(options.vars()->optarg);
              if (font==NULL) {
-                fatal_alloc_error("main_ConcorDiff");
+                alloc_error("main_ConcorDiff");
+                free(font);
+                free(out);
+                return ALLOC_ERROR_CODE;
              }
              break;
-   case 's': if (1!=sscanf(vars->optarg,"%d%c",&size,&foo)
+   case 's': if (1!=sscanf(options.vars()->optarg,"%d%c",&size,&foo)
                  || size<=0) {
                 /* foo is used to check that the font size is not like "45gjh" */
-                fatal_error("Invalid font size argument: %s\n",vars->optarg);
+                error("Invalid font size argument: %s\n",options.vars()->optarg);
+                free(font);
+                free(out);
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'd': diff_only=1; break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_ConcorDiff[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage();
+             free(font);
+             free(out);
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_ConcorDiff[index].name);
+             free(font);
+             free(out);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(font);
+             free(out);
+             return USAGE_ERROR_CODE;
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+               error("Empty input_encoding argument\n");
+               free(font);
+               free(out);
+               return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+               error("Empty output_encoding argument\n");
+               free(font);
+               free(out);
+               return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    }
    index=-1;
 }
 
 if (out==NULL) {
-   fatal_error("You must specify the output file\n");
+   error("You must specify the output file\n");
+   free(font);
+   return USAGE_ERROR_CODE;
 }
 if (font==NULL) {
-   fatal_error("You must specify the font to use\n");
+   error("You must specify the font to use\n");
+   free(out);
+   return USAGE_ERROR_CODE;   
 }
 if (size==0) {
-   fatal_error("You must specify the font size to use\n");
+   error("You must specify the font size to use\n");
+   free(font);
+   free(out);
+   return USAGE_ERROR_CODE;
 }
-if (vars->optind!=argc-2) {
+
+if (options.vars()->optind!=argc-2) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   free(font);
+   free(out);
+   return USAGE_ERROR_CODE;
 }
-diff(&vec,argv[vars->optind],argv[vars->optind+1],out,font,size,diff_only);
-free(out);
+
+diff(&vec,argv[options.vars()->optind],argv[options.vars()->optind+1],out,font,size,diff_only);
+
 free(font);
-free_OptVars(vars);
-return 0;
+free(out);
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

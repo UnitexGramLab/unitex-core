@@ -46,8 +46,8 @@ const char* usage_SelectOutput =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_SelectOutput);
+  display_copyright_notice();
+  u_printf(usage_SelectOutput);
 }
 
 
@@ -70,53 +70,58 @@ const struct option_TS lopts_SelectOutput[] = {
 int main_SelectOutput(int argc,char* const argv[]) {
 if (argc==1) {
 	usage();
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
-VersatileEncodingConfig vec=VEC_DEFAULT;
-struct OptVars* vars=new_OptVars();
-int val,index=-1;
 
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_SelectOutput,lopts_SelectOutput,&index,vars))) {
+VersatileEncodingConfig vec=VEC_DEFAULT;
+int val,index=-1;
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_SelectOutput,&index))) {
    switch(val) {
-   case 'h': usage(); return 0;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case 'e':
    case 'o':
 	   {
 		   enum stdwrite_kind swk = (val == 'o') ? stdwrite_kind_out : stdwrite_kind_err;
-		   if (strcmp(vars->optarg,"on") == 0)
+		   if (strcmp(options.vars()->optarg,"on") == 0)
 		   {
 		       SetStdWriteCB(swk,0,NULL,NULL);
 		   }
 		   else
-		   if (strcmp(vars->optarg,"off") == 0)
+		   if (strcmp(options.vars()->optarg,"off") == 0)
 		   {
 		       SetStdWriteCB(swk,1,NULL,NULL);
 		   }
 		   else 
-			   fatal_error("Invalid option --%s, must be 'on' or 'off'\n",vars->optarg);
+			   error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
+         return USAGE_ERROR_CODE;
 		   break;
 	   }
    
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_SelectOutput[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_SelectOutput[index].name);
+             return USAGE_ERROR_CODE;            
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

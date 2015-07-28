@@ -1,3 +1,32 @@
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
+
+ /*
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
+ * as part of an UNITEX optimization and reliability effort
+ *
+ * additional information: http://www.ergonotics.com/unitex-contribution/
+ * contact : unitex-contribution@ergonotics.com
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,20 +80,20 @@ int buildPackFile(const char* packFile,int append_status,const char* global_comm
 const char* usage_PackFile =
          "Usage : PackFile [OPTIONS] <ulpfile>\n"
          "\n"
-		 "  <ulpfile>: a an archive file to create\n"
+         "  <ulpfile>: a an archive file to create\n"
          "\n"
          "OPTIONS:\n"
          "  -i X/--include=X: uses X as filename or prefix to include\n"
          "  -p/--prefix: mean include value is a prefix and not single filename\n"
          "  -a/--append: append file in existing archive\n"
          "  -m/--quiet: do not emit message when running\n"
-		 "  -g X/--global=X: uses X as archive global comment (cosmetic)\n"
-		 "  -j X/--junk_prefix=X: remove X at the beginning in the stored filename\n"
+         "  -g X/--global=X: uses X as archive global comment (cosmetic)\n"
+         "  -j X/--junk_prefix=X: remove X at the beginning in the stored filename\n"
          "\n";
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_PackFile);
+ display_copyright_notice();
+ u_printf(usage_PackFile);
 }
 
 
@@ -82,13 +111,12 @@ const struct option_TS lopts_PackFile[]={
    {NULL, no_argument_TS, NULL, 0}
 };
 
-int main_PackFile(int argc,char* const argv[])
-{
-
+int main_PackFile(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
+
 char junk_prefix[FILENAME_MAX+0x20]="";
 char include_filename[FILENAME_MAX+0x20]="";
 char global_comment[FILENAME_MAX+0x20]="";
@@ -100,73 +128,83 @@ int val,index=-1;
 int quiet=0;
 int add_one_file_only=1;
 int append=0;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PackFile,lopts_PackFile,&index,vars))) {
+
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_PackFile,lopts_PackFile,&index))) {
    switch(val) {
 
    case 'm': quiet=1; break;
    case 'p': add_one_file_only=0; break;
    case 'a': append=1; break;
-   case 'i': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty include file name\n");
+   case 'i': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty include file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(include_filename,vars->optarg);
+             strcpy(include_filename,options.vars()->optarg);
              break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty junk prefix file name\n");
+   case 'j': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty junk prefix file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(junk_prefix,vars->optarg);
+             strcpy(junk_prefix,options.vars()->optarg);
              break;
-   case 'g': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty global comment\n");
+   case 'g': if (options.vars()->optarg[0]=='\0') {
+                   error("You must specify a non empty global comment\n");
+                   return USAGE_ERROR_CODE;
                 }
-                strcpy(global_comment,vars->optarg);
+                strcpy(global_comment,options.vars()->optarg);
                 break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_PackFile[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_PackFile[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
-const char* ulpFile=argv[vars->optind];
+const char* ulpFile=argv[options.vars()->optind];
 
 if (ulpFile == NULL) {
-   fatal_error("Invalid arguments: rerun with --help\n");
-}
-if ((*ulpFile)=='\0') {
-   fatal_error("Invalid arguments: rerun with --help\n");
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
-int retValue = buildPackFile(ulpFile,append ,
-	                          global_comment,
-                 include_filename,add_one_file_only,  junk_prefix,
-				    quiet);
-if (retValue == 0)
-{
-	error("error in creating %s\n",ulpFile);
-	return 1;
+if ((*ulpFile)=='\0') {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
-else
-{
-	return 0;
+
+int retValue = buildPackFile(ulpFile,append,
+	                           global_comment,
+                             include_filename,
+                             add_one_file_only,
+                             junk_prefix,
+				                     quiet);
+if (retValue == 0) {
+	error("Error creating %s\n", ulpFile);
+	return DEFAULT_ERROR_CODE;
+} else {
+	return SUCCESS_RETURN_CODE;
 }
 
 }

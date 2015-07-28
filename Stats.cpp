@@ -39,10 +39,10 @@ namespace unitex {
 
 // main work functions
 
-void concord_stats(const char* , int , const char *, const char* , const char* , const char*,
-		const VersatileEncodingConfig*, int , int, int );
-void build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
-void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
+int concord_stats(const char* , int , const char *, const char* , const char* , const char*,
+    const VersatileEncodingConfig*, int , int, int );
+int build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
+int build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
 
 // ...main work functions
 
@@ -50,25 +50,25 @@ void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, 
 
 struct vec_CS_tag
 {
-	vector_int* vec;
-	int CStag;
-	text_tokens* tokens;
-	Alphabet* alphabet;
+  vector_int* vec;
+  int CStag;
+  text_tokens* tokens;
+  Alphabet* alphabet;
 };
 
 struct int_CS_tag
 {
-	int tokenID;
-	int CStag;
-	text_tokens* tokens;
-	Alphabet* alphabet;
+  int tokenID;
+  int CStag;
+  text_tokens* tokens;
+  Alphabet* alphabet;
 } ;
 
 struct counted_match_descriptor
 {
-	int countOfMatch;
-	int leftEndsAt;
-	int rightStartsAt;
+  int countOfMatch;
+  int leftEndsAt;
+  int rightStartsAt;
 };
 
 // ... structs
@@ -81,8 +81,8 @@ inline long min_long(long, long);
 inline long max_long(long, long);
 vector_int* get_string_in_context_as_token_list(match_list*, int, int, int**, long*, long*, long, text_tokens*, U_FILE*, int, counted_match_descriptor*);
 void print_string_token_list_with_count(U_FILE*,vector_int*, text_tokens*, counted_match_descriptor*);
-void get_buffer_around_token(U_FILE*, int**, long, long, long, long*, long*);
-void count_collocates(U_FILE* , text_tokens* , Alphabet*, int, hash_table* , hash_table** , int* );
+int get_buffer_around_token(U_FILE*, int**, long, long, long, long*, long*);
+int count_collocates(U_FILE* , text_tokens* , Alphabet*, int, hash_table* , hash_table** , int* );
 int is_appropriate_token(int tokenID, text_tokens* tokens);
 
  // sort helper functions
@@ -128,122 +128,141 @@ const char* usage_Stats =
          "\n"
          "  <concord>: a concord.ind file\n"
          "\n"
-		   "OPTIONS:\n"
-			"-m MODE/--mode=MODE: specifies mode of operation: \n"
-			"                     0 = left + match + right count\n"
+         "OPTIONS:\n"
+         "-m MODE/--mode=MODE: specifies mode of operation: \n"
+         "                     0 = left + match + right count\n"
          "                     1 = collocate count\n"
          "                     2 = collocate count with z-score\n"
-			"-a ALPH/--alphabet=ALPH: path to the alphabet file\n"
-			"-o OUT/--output=OUT: output file\n"
-			"-l N/--left=N: length of left context in tokens\n"
-			"-r N/--right=N: length of right context in tokens\n"
-			"-c N/--case=N: 0=case insensitive, 1=case sensitive (default is 1)\n"
+         "-a ALPH/--alphabet=ALPH: path to the alphabet file\n"
+         "-o OUT/--output=OUT: output file\n"
+         "-l N/--left=N: length of left context in tokens\n"
+         "-r N/--right=N: length of right context in tokens\n"
+         "-c N/--case=N: 0=case insensitive, 1=case sensitive (default is 1)\n"
          "-h/--help: this help\n"
          "\n"
          "Computes some statistics.\n";
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Stats);
+  display_copyright_notice();
+  u_printf(usage_Stats);
 }
 
 
 const char* optstring_Stats=":m:a:l:r:c:o:k:q:";
 
-	const struct option_TS lopts_Stats[]= {
-	      {"mode",required_argument_TS,NULL,'m'},
-	      {"alphabet",required_argument_TS,NULL,'a'},
-	      {"left",required_argument_TS,NULL,'l'},
-	      {"right",required_argument_TS,NULL,'r'},
-	      {"case",optional_argument_TS,NULL,'c'},
-	      {"output",optional_argument_TS,NULL,'o'},
-	      {"input_encoding",required_argument_TS,NULL,'k'},
-	      {"output_encoding",required_argument_TS,NULL,'q'},
-	      {0, 0, 0, 0 }
-	 } ;
+const struct option_TS lopts_Stats[]= {
+      {"mode",required_argument_TS,NULL,'m'},
+      {"alphabet",required_argument_TS,NULL,'a'},
+      {"left",required_argument_TS,NULL,'l'},
+      {"right",required_argument_TS,NULL,'r'},
+      {"case",optional_argument_TS,NULL,'c'},
+      {"output",optional_argument_TS,NULL,'o'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
+      {0, 0, 0, 0 }
+ } ;
 
 int main_Stats(int argc,char* const argv[]) {
-	if (argc <= 1) {
-		usage();
-		return 0;
-	}
+if (argc <= 1) {
+  usage();
+  return SUCCESS_RETURN_CODE;
+}
 
-	int leftContext = 0,  rightContext = 0, mode=-1, caseSensitive = 1;
-	char concord_ind[FILENAME_MAX]="";
-	char tokens_txt[FILENAME_MAX]="";
-	char text_cod[FILENAME_MAX]="";
-	char output[FILENAME_MAX]="";
-	char alphabet[FILENAME_MAX]="";
-	VersatileEncodingConfig vec=VEC_DEFAULT;
-	int val,index=-1;
-	char foo;
-	struct OptVars* vars=new_OptVars();
-	while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Stats,lopts_Stats,&index,vars))) {
-	   switch(val) {
-	   case 'm': if (1!=sscanf(vars->optarg,"%d%c",&mode,&foo) || mode<0 || mode>2) {
-	                fatal_error("Invalid mode %s: should be 0, 1 or 2\n",vars->optarg);
-	             }
-	             break;
-	   case 'a': if (vars->optarg[0]=='\0') {
-	                fatal_error("You must specify a non empty alphabet file name\n");
-	             }
-	             strcpy(alphabet,vars->optarg);
-	             break;
-	   case 'l': if (1!=sscanf(vars->optarg,"%d%c",&leftContext,&foo) || leftContext<0) {
-                   fatal_error("Invalid left context %s: should >=0\n",vars->optarg);
-                }
-                break;
-      case 'r': if (1!=sscanf(vars->optarg,"%d%c",&rightContext,&foo) || rightContext<0) {
-                   fatal_error("Invalid right context %s: should >=0\n",vars->optarg);
-                }
-                break;
-      case 'c': if (1!=sscanf(vars->optarg,"%d%c",&caseSensitive,&foo) || caseSensitive<0 || caseSensitive>1) {
-                   fatal_error("Invalid case mode %s: should be 0 or 1\n",vars->optarg);
-                }
-                break;
-      case 'o': if (vars->optarg[0]=='\0') {
-                   fatal_error("You must specify a non empty output file name\n");
-                }
-                strcpy(output,vars->optarg);
-                break;
-      case 'k': if (vars->optarg[0]=='\0') {
-                  fatal_error("Empty input_encoding argument\n");
-                }
-                decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
-                break;
-      case 'q': if (vars->optarg[0]=='\0') {
-                  fatal_error("Empty output_encoding argument\n");
-                }
-                decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
-                break;
-	   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-	             else fatal_error("Missing argument for option --%s\n",lopts_Stats[index].name);
-	   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-	             else fatal_error("Invalid option --%s\n",vars->optarg);
-	             break;
-	   }
-	   index=-1;
-	}
+int leftContext = 0,  rightContext = 0, mode=-1, caseSensitive = 1;
+char concord_ind[FILENAME_MAX]="";
+char tokens_txt[FILENAME_MAX]="";
+char text_cod[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+char alphabet[FILENAME_MAX]="";
+VersatileEncodingConfig vec=VEC_DEFAULT;
+int val,index=-1;
+char foo;
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Stats,lopts_Stats,&index))) {
+   switch(val) {
+   case 'm': if (1!=sscanf(options.vars()->optarg,"%d%c",&mode,&foo) || mode<0 || mode>2) {
+                error("Invalid mode %s: should be 0, 1 or 2\n",options.vars()->optarg);
+                return USAGE_ERROR_CODE;
+             }
+             break;
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                return USAGE_ERROR_CODE;
+             }
+             strcpy(alphabet,options.vars()->optarg);
+             break;
+  case 'l': if (1!=sscanf(options.vars()->optarg,"%d%c",&leftContext,&foo) || leftContext<0) {
+               error("Invalid left context %s: should >=0\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
+            }
+            break;
+  case 'r': if (1!=sscanf(options.vars()->optarg,"%d%c",&rightContext,&foo) || rightContext<0) {
+               error("Invalid right context %s: should >=0\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
+            }
+            break;
+  case 'c': if (1!=sscanf(options.vars()->optarg,"%d%c",&caseSensitive,&foo) || caseSensitive<0 || caseSensitive>1) {
+               error("Invalid case mode %s: should be 0 or 1\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
+            }
+            break;
+  case 'o': if (options.vars()->optarg[0]=='\0') {
+               error("You must specify a non empty output file name\n");
+               return USAGE_ERROR_CODE;
+            }
+            strcpy(output,options.vars()->optarg);
+            break;
+  case 'k': if (options.vars()->optarg[0]=='\0') {
+              error("Empty input_encoding argument\n");
+              return USAGE_ERROR_CODE;
+            }
+            decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
+            break;
+  case 'q': if (options.vars()->optarg[0]=='\0') {
+              error("Empty output_encoding argument\n");
+              return USAGE_ERROR_CODE;
+            }
+            decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
+            break;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Stats[index].name);
+             return USAGE_ERROR_CODE;            
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
+   }
+   index=-1;
+}
 
-if (vars->optind!=argc-1) {
-   fatal_error("You must specify a concordance file\n");
+if (options.vars()->optind!=argc-1) {
+   error("You must specify a concordance file\n");
+   return USAGE_ERROR_CODE;
 }
 if (output[0]=='\0') {
-   fatal_error("You must specify a output file\n");
+   error("You must specify a output file\n");
+   return USAGE_ERROR_CODE;
 }
-strcpy(concord_ind,argv[vars->optind]);
+
+strcpy(concord_ind,argv[options.vars()->optind]);
 get_path(concord_ind,tokens_txt);
 strcat(tokens_txt,"tokens.txt");
 get_path(concord_ind,text_cod);
 strcat(text_cod,"text.cod");
 
-concord_stats(output, mode, concord_ind, tokens_txt, text_cod, alphabet, 
-              &vec, leftContext, rightContext, caseSensitive);
-free_OptVars(vars);
-return 0;
-}
+int return_value = concord_stats(output, 
+                                 mode,
+                                 concord_ind,
+                                 tokens_txt,
+                                 text_cod,
+                                 alphabet, 
+                                 &vec,
+                                 leftContext,
+                                 rightContext,
+                                 caseSensitive);
 
+return return_value;
+}
 
 /**
  * This is the main function for making statistics on concordances. Parameter mode represents
@@ -254,167 +273,286 @@ return 0;
  * match to build string for counting. The function is_appropriate_token makes distinction between
  * "space"-like and "regular" tokens to include.
  */
-void concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
-				   const char* alphabetName, 
-                   const VersatileEncodingConfig* vec,
-                   int leftContext, int rightContext, int caseSensitive)
-{
-	U_FILE* concord = u_fopen(vec, concordfname, U_READ);
-	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(vec, outfilename, U_WRITE);
-	U_FILE* cod = u_fopen(BINARY, codname, U_READ);
-	match_list* matches = load_match_list(concord,NULL,NULL);
-	u_fclose(concord);
+int concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
+                  const char* alphabetName, 
+                  const VersatileEncodingConfig* vec,
+                  int leftContext, int rightContext, int caseSensitive) {
+  U_FILE* concord = u_fopen(vec, concordfname, U_READ);
+  U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(vec, outfilename, U_WRITE);
+  U_FILE* cod = u_fopen(BINARY, codname, U_READ);
+  match_list* matches = load_match_list(concord,NULL,NULL);
+  u_fclose(concord);
+
+  text_tokens* tokens = load_text_tokens(vec,tokens_path);
+
+  if (tokens == NULL) {
+    error("Error in build_counted_concord, tokens cannot be loaded!");
+    
+    match_list* current_match = matches;
+    struct match_list* next_match = NULL;
+    
+    while(current_match != NULL) {
+      next_match = current_match->next;
+      free_match_list_element(current_match);
+      current_match = next_match;
+    }
+
+    u_fclose(cod);
+    
+    if (outfile != U_STDOUT) {
+      u_fclose(outfile);
+    }
+
+    return DEFAULT_ERROR_CODE;
+  }
+
+  Alphabet* alphabet = NULL;
+  if (alphabetName!=NULL && alphabetName[0]!='\0') {
+     alphabet=load_alphabet(vec,alphabetName);
+     if (alphabet == NULL) {
+        error("Error in concord_stats, alphabet cannot be loaded!");
+
+        free_text_tokens(tokens);
+        match_list* current_match = matches;
+        struct match_list* next_match = NULL;
+        
+        while(current_match != NULL) {
+          next_match = current_match->next;
+          free_match_list_element(current_match);
+          current_match = next_match;
+        }
+
+        u_fclose(cod);
+        
+        if (outfile != U_STDOUT) {
+          u_fclose(outfile);
+        }      
+        return DEFAULT_ERROR_CODE;
+     }
+  }
+
+  int i;
+  int counted_concord_return_value     = SUCCESS_RETURN_CODE;
+  int counted_collocates_return_value  = SUCCESS_RETURN_CODE;
+
+  any* hash_val = NULL;
+  counted_match_descriptor* descriptor = NULL;
+
+  if (mode == 0) {
+    vector_ptr* allMatches     = NULL;
+    hash_table* countsPerMatch = NULL;
+
+    counted_concord_return_value = build_counted_concord(matches, 
+                                                         tokens, 
+                                                         cod,
+                                                         alphabet,
+                                                         leftContext,
+                                                         rightContext,
+                                                         caseSensitive,
+                                                         &allMatches,
+                                                         &countsPerMatch);
+   // return when build_counted_concord() fails
+   if(counted_concord_return_value != SUCCESS_RETURN_CODE) {
+      free_alphabet(alphabet);
+      free_text_tokens(tokens);
+
+      match_list* current_match     = matches;
+      struct match_list* next_match = NULL;
+
+      while(current_match != NULL) {
+        next_match = current_match->next;
+        free_match_list_element(current_match);
+        current_match = next_match;
+      }
+
+      u_fclose(cod);
+      
+      if (outfile != U_STDOUT) {
+        u_fclose(outfile);
+      }
+
+      return counted_concord_return_value;
+    }
+
+    // now we sort
+    sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_ptr, compare_ptr, countsPerMatch, NULL, -1);
+    
+    // and then print
+    for (i = 0; i < allMatches->nbelems ; i++) {
+      hash_val = get_value(countsPerMatch, allMatches->tab[i], HT_DONT_INSERT);
+      descriptor = (counted_match_descriptor*)hash_val->_ptr;
+      print_string_token_list_with_count(outfile, ((vec_CS_tag*)(allMatches->tab[i]))->vec, tokens, descriptor);
+      // we free descriptors here
+      free(descriptor);
+      hash_val->_ptr = NULL;
+    }
+
+    free_hash_table(countsPerMatch);
+    free_vector_ptr(allMatches, NULL);
+  } else if (mode == 1) {
+    vector_int* allMatches     = NULL;
+    hash_table* countsPerMatch = NULL;
+
+    counted_collocates_return_value = build_counted_collocates(matches, 
+                                                               tokens,
+                                                               cod,
+                                                               alphabet,
+                                                               leftContext,
+                                                               rightContext,
+                                                               caseSensitive,
+                                                               &allMatches,
+                                                               &countsPerMatch,
+                                                               NULL,
+                                                               NULL);
+    // return when build_counted_collocates() fails
+    if(counted_concord_return_value != SUCCESS_RETURN_CODE) {
+      free_alphabet(alphabet);
+      free_text_tokens(tokens);
+      
+      match_list* current_match     = matches;
+      struct match_list* next_match = NULL;
+
+      while(current_match != NULL) {
+        next_match = current_match->next;
+        free_match_list_element(current_match);
+        current_match = next_match;
+      }
+
+      u_fclose(cod);
+      
+      if (outfile != U_STDOUT) {
+        u_fclose(outfile);
+      }
+
+      return counted_collocates_return_value;
+    }
+
+    // now we sort
+    int_CS_tag* sampleKey = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
+    sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_int, compare_int, countsPerMatch, sampleKey, -1);
+    free_int_CS_tag(sampleKey);
+
+    // and then print
+    int K;
+
+    int_CS_tag* currentKey = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
+
+    for (i = 0 ; i < allMatches->nbelems ; i++) {
+      currentKey->tokenID = allMatches->tab[i];
+      hash_val = get_value(countsPerMatch, currentKey, HT_DONT_INSERT);
+
+      K = hash_val->_int;
+      u_fprintf(outfile,"%S\t%d\n", tokens->token[allMatches->tab[i]], K);
+    }
+
+    free_int_CS_tag(currentKey);
+    free_vector_int(allMatches);
+    free_hash_table(countsPerMatch);
+  } else if (mode == 2) {
+    vector_int* allMatches      = NULL;
+    hash_table* countsPerMatch  = NULL;
+    hash_table* z_score         = NULL;
+    hash_table* countInCorpora  = NULL;
+
+    counted_collocates_return_value = build_counted_collocates(matches,
+                                                               tokens,
+                                                               cod,
+                                                               alphabet,
+                                                               leftContext,
+                                                               rightContext,
+                                                               caseSensitive,
+                                                               &allMatches,
+                                                               &countsPerMatch,
+                                                               &z_score,
+                                                               &countInCorpora);
+
+    // return when build_counted_collocates() fails
+    if(counted_concord_return_value != SUCCESS_RETURN_CODE) {
+      free_alphabet(alphabet);
+      free_text_tokens(tokens);
+      
+      match_list* current_match     = matches;
+      struct match_list* next_match = NULL;
+
+      while(current_match != NULL) {
+        next_match = current_match->next;
+        free_match_list_element(current_match);
+        current_match = next_match;
+      }
+
+      u_fclose(cod);
+      
+      if (outfile != U_STDOUT) {
+        u_fclose(outfile);
+      }
+
+      return counted_collocates_return_value;    	
+    }
+
+    // now we sort
+    int_CS_tag* sampleKey = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
+    sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_int, compare_double, z_score, sampleKey, -1);
+    free_int_CS_tag(sampleKey);
+
+    // and then print
+    int Fc, K;
+    double zScore;
+    int_CS_tag* key = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
+
+    for (i = 0 ; i < allMatches->nbelems ; i++) {
+      key->tokenID = allMatches->tab[i];
+
+      hash_val = get_value(countsPerMatch, key, HT_DONT_INSERT);
+
+      K = hash_val->_int;
+
+      hash_val = get_value(countInCorpora, key, HT_DONT_INSERT);
+
+      Fc = hash_val->_int;
+
+      hash_val = get_value(z_score, key, HT_DONT_INSERT);
+
+      zScore = *((double*)hash_val->_ptr);
+
+      u_fprintf(outfile,"%S\t%d\t%d\t%f\n", tokens->token[allMatches->tab[i]], Fc, K, zScore);
+    }
 
 
-	text_tokens* tokens = load_text_tokens(vec,tokens_path);
+    // we have to deallocate pointers to doubles allocated for zscore
+    /*for (i = 0 ; i < allMatches->nbelems; i++)
+    {
+      key->tokenID = allMatches->tab[i];
+      hash_val = get_value(z_score, key, HT_DONT_INSERT);
+      free(hash_val->_ptr);
+    }*/
 
-	if (tokens == NULL)
-	{
-		fatal_error("Error in build_counted_concord, tokens cannot be loaded!");
-	}
+    free_int_CS_tag(key);
+    free_vector_int(allMatches);
+    free_hash_table(countsPerMatch);
+    free_hash_table(z_score);
+    free_hash_table(countInCorpora);
+  }
 
-	Alphabet* alphabet = NULL;
-	if (alphabetName!=NULL && alphabetName[0]!='\0') {
-	   alphabet=load_alphabet(vec,alphabetName);
-	   if (alphabet == NULL) {
-	      fatal_error("Error in concord_stats, alphabet cannot be loaded!");
-	   }
-	}
+  free_alphabet(alphabet);
 
-	int i;
-	any* hash_val;
-	counted_match_descriptor* descriptor;
+  free_text_tokens(tokens);
 
-	if (mode == 0)
-	{
-		vector_ptr* allMatches;
-		hash_table* countsPerMatch;
+  match_list* current_match     = matches;
+  struct match_list* next_match = NULL;
+  
+  while(current_match != NULL) {
+    next_match = current_match->next;
+    free_match_list_element(current_match);
+    current_match = next_match;
+  }
 
-		build_counted_concord(matches, tokens, cod, alphabet, leftContext, rightContext, caseSensitive, &allMatches, &countsPerMatch);
-		// now we sort
-		sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_ptr, compare_ptr, countsPerMatch, NULL, -1);
-		// and then print
+  u_fclose(cod);
+  
+  if (outfile != U_STDOUT) {
+    u_fclose(outfile);
+  }
 
-
-		for (i = 0; i < allMatches->nbelems ; i++)
-		{
-			hash_val = get_value(countsPerMatch, allMatches->tab[i], HT_DONT_INSERT);
-			descriptor = (counted_match_descriptor*)hash_val->_ptr;
-			print_string_token_list_with_count(outfile, ((vec_CS_tag*)(allMatches->tab[i]))->vec, tokens, descriptor);
-			// we free descriptors here
-			free(descriptor);
-			hash_val->_ptr = NULL;
-		}
-
-		free_vector_ptr(allMatches, NULL);
-		free_hash_table(countsPerMatch);
-	}
-	else if (mode == 1)
-	{
-		vector_int* allMatches;
-		hash_table* countsPerMatch;
-
-		build_counted_collocates(matches, tokens, cod, alphabet, leftContext, rightContext, caseSensitive, &allMatches, &countsPerMatch, NULL, NULL);
-
-		// now we sort
-
-		int_CS_tag* sampleKey = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
-		sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_int, compare_int, countsPerMatch, sampleKey, -1);
-		free_int_CS_tag(sampleKey);
-
-		// and then print
-
-		int K;
-
-		int_CS_tag* currentKey;
-
-		currentKey = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
-
-		for (i = 0 ; i < allMatches->nbelems ; i++)
-		{
-			currentKey->tokenID = allMatches->tab[i];
-			hash_val = get_value(countsPerMatch, currentKey, HT_DONT_INSERT);
-
-			K = hash_val->_int;
-			u_fprintf(outfile,"%S\t%d\n", tokens->token[allMatches->tab[i]], K);
-		}
-
-		free_int_CS_tag(currentKey);
-		free_vector_int(allMatches);
-		free_hash_table(countsPerMatch);
-	}
-	else if (mode == 2)
-	{
-		vector_int* allMatches;
-		hash_table* countsPerMatch;
-		hash_table* z_score;
-		hash_table* countInCorpora;
-
-		build_counted_collocates(matches, tokens, cod, alphabet, leftContext, rightContext, caseSensitive, &allMatches, &countsPerMatch, &z_score, &countInCorpora);
-
-		// now we sort
-
-		int_CS_tag* sampleKey = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
-		sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_int, compare_double, z_score, sampleKey, -1);
-		free_int_CS_tag(sampleKey);
-
-		// and then print
-
-		int Fc, K;
-		double zScore;
-		int_CS_tag* key = new_int_CS_tag(0, caseSensitive, tokens, alphabet);
-
-
-		for (i = 0 ; i < allMatches->nbelems ; i++)
-		{
-			key->tokenID = allMatches->tab[i];
-
-			hash_val = get_value(countsPerMatch, key, HT_DONT_INSERT);
-
-			K = hash_val->_int;
-
-			hash_val = get_value(countInCorpora, key, HT_DONT_INSERT);
-
-			Fc = hash_val->_int;
-
-			hash_val = get_value(z_score, key, HT_DONT_INSERT);
-
-			zScore = *((double*)hash_val->_ptr);
-
-			u_fprintf(outfile,"%S\t%d\t%d\t%f\n", tokens->token[allMatches->tab[i]], Fc, K, zScore);
-		}
-
-
-		// we have to deallocate pointers to doubles allocated for zscore
-		/*for (i = 0 ; i < allMatches->nbelems; i++)
-		{
-			key->tokenID = allMatches->tab[i];
-			hash_val = get_value(z_score, key, HT_DONT_INSERT);
-			free(hash_val->_ptr);
-		}*/
-
-		free_int_CS_tag(key);
-		free_vector_int(allMatches);
-		free_hash_table(countsPerMatch);
-		free_hash_table(z_score);
-		free_hash_table(countInCorpora);
-	}
-
-
-	u_fclose(cod);
-	if (outfilename != NULL)
-		u_fclose(outfile);
-	free_text_tokens(tokens);
-	free_alphabet(alphabet);
-	match_list* current_match = matches;
-	struct match_list* next_match;
-
-	while(current_match != NULL)
-	{
-		next_match = current_match->next;
-		free_match_list_element(current_match);
-		current_match = next_match;
-	}
+  return SUCCESS_RETURN_CODE;
 }
 
 /**
@@ -423,79 +561,99 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
  * found, and these strings are key to the hash table containing count per string in corpora. Strings
  * are represented by integer vector containing token IDs.
  */
-void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod, Alphabet* alphabet, int leftContext, int rightContext, int caseSensitive, vector_ptr** ret_vector, hash_table** ret_hash)
-{
-	if (ret_vector == NULL)
-	{
-		fatal_error("Fatal error in build_counted_concord, ret_vector cannot be NULL!");
-	}
+int build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod, Alphabet* alphabet, int leftContext, int rightContext, int caseSensitive, vector_ptr** ret_vector, hash_table** ret_hash) {
+  if (ret_vector == NULL) {
+    error("Fatal error in build_counted_concord, ret_vector cannot be NULL!");
+    return DEFAULT_ERROR_CODE;
+  }
 
-	if (ret_hash == NULL)
-	{
-		fatal_error("Fatal error in build_counted_concord, ret_hash cannot be NULL!");
-	}
+  if (ret_hash == NULL) {
+    error("Fatal error in build_counted_concord, ret_hash cannot be NULL!");
+    return DEFAULT_ERROR_CODE;
+  }
 
-	long codSize = get_file_size(cod) / sizeof(int);
-	int *buffer = NULL;
+  long codSize = get_file_size(cod) / sizeof(int);
+  int* buffer = NULL;
 
-	long buff_start, buff_end;
+  long buff_start, buff_end;
 
-	// we initialize buffer to encompass 4096 tokens from starting position
-	get_buffer_around_token(cod, &buffer, 0, 0, STATS_BUFFER_LENGTH, &buff_start, &buff_end);
+  // we initialize buffer to encompass 4096 tokens from starting position
+  int get_buffer_return_value = get_buffer_around_token(cod, 
+  	                                                    &buffer, 
+  	                                                    0, 
+  	                                                    0, 
+  	                                                    STATS_BUFFER_LENGTH, 
+  	                                                    &buff_start, 
+  	                                                    &buff_end);
+  if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+    free(buffer);
+    return get_buffer_return_value;
+  }
 
-	any* hash_val;
-	int hash_ret;
+  any* hash_val = NULL;
+  int hash_ret;
 
-	vector_ptr* allMatches = new_vector_ptr();
-	hash_table* countPerMatch = new_hash_table(hash_vector_int, vectors_equal, free_vec, free,copy_vec);
-	vector_int* currentMatchList;
-	vec_CS_tag* currentKey;
+  vector_ptr* allMatches       = new_vector_ptr();
+  hash_table* countPerMatch    = new_hash_table(hash_vector_int, vectors_equal, free_vec, free,copy_vec);
+  vector_int* currentMatchList = NULL;
+  vec_CS_tag* currentKey       = NULL;
 
-	match_list* current_match = matches;
+  match_list* current_match    = matches;
 
-	counted_match_descriptor* descriptor;
-	counted_match_descriptor tmpDescriptor;
+  counted_match_descriptor* descriptor = NULL;
+  counted_match_descriptor tmpDescriptor;
 
-	int i = 0;
+  int i = 0;
 
-	// for all matches, we form list of token IDs and check it against hash table
-	while(current_match != NULL)
-	{
-		currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1, &tmpDescriptor);
+  // for all matches, we form list of token IDs and check it against hash table
+  while(current_match != NULL) {
+    currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1, &tmpDescriptor);
 
-		currentKey = new_vec_CS_tag(currentMatchList, caseSensitive, tokens, alphabet);
+    currentKey = new_vec_CS_tag(currentMatchList, caseSensitive, tokens, alphabet);
+    if (!currentKey) {
+      free_hash_table(countPerMatch);
+      free_vector_ptr(allMatches, NULL);
+      free(buffer);
+      return ALLOC_ERROR_CODE;
+    }
 
-		hash_val = get_value(countPerMatch, currentKey, HT_INSERT_IF_NEEDED, &hash_ret);
+    hash_val = get_value(countPerMatch, currentKey, HT_INSERT_IF_NEEDED, &hash_ret);
 
-		if (hash_ret == HT_KEY_ADDED)
-		{
-			// new value, we need to set descriptor
-			descriptor = (counted_match_descriptor*)malloc(sizeof(counted_match_descriptor));
-			if (descriptor == NULL)
-				fatal_alloc_error("build_counted_concord, counted_match_descriptor");
-			descriptor->countOfMatch = 1;
-			descriptor->leftEndsAt = tmpDescriptor.leftEndsAt;
-			descriptor->rightStartsAt = tmpDescriptor.rightStartsAt;
-			hash_val->_ptr = descriptor;
+    if (hash_ret == HT_KEY_ADDED) {
+      // new value, we need to set descriptor
+      descriptor = (counted_match_descriptor*)malloc(sizeof(counted_match_descriptor));
+      if (descriptor == NULL) {
+        alloc_error("build_counted_concord, counted_match_descriptor");
+        free_vec_CS_tag(currentKey);
+        free_hash_table(countPerMatch);
+        free_vector_ptr(allMatches, NULL);
+        free(buffer);
+        return ALLOC_ERROR_CODE;
+      }
+      descriptor->countOfMatch  = 1;
+      descriptor->leftEndsAt    = tmpDescriptor.leftEndsAt;
+      descriptor->rightStartsAt = tmpDescriptor.rightStartsAt;
+      hash_val->_ptr            = descriptor;
 
-			vector_ptr_add(allMatches, currentKey);
-		}
-		else
-		{
-			descriptor = (counted_match_descriptor*)(hash_val->_ptr);
-			descriptor->countOfMatch++;
-			// we need to free, since it was not added to the table
-			free_vec_CS_tag(currentKey);
-		}
+      vector_ptr_add(allMatches, currentKey);
+    }
+    else {
+      descriptor = (counted_match_descriptor*)(hash_val->_ptr);
+      descriptor->countOfMatch++;
+      // we need to free, since it was not added to the table
+      free_vec_CS_tag(currentKey);
+    }
 
-		current_match = current_match->next;
-		i++;
-	}
+    current_match = current_match->next;
+    i++;
+  }
 
-	free(buffer);
+  free(buffer);
 
-	*ret_vector = allMatches;
-	*ret_hash = countPerMatch;
+  *ret_vector = allMatches;
+  *ret_hash   = countPerMatch;
+
+  return SUCCESS_RETURN_CODE;
 }
 
 /**
@@ -507,173 +665,205 @@ void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod
  * represents z-score of a collocate and countsInCorpora hash table which returns total count of a token
  * found in context of a match in the whole corpora.
  */
-void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* cod, Alphabet* alphabet, int leftContext, int rightContext, int caseSensitive, vector_int** ret_vector, hash_table** ret_hash, hash_table** z_score, hash_table** countsInCorpora)
-{
-	if (ret_vector == NULL)
-	{
-		fatal_error("Fatal error in build_counted_collocates, ret_vector cannot be NULL!");
-	}
+int build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* cod, Alphabet* alphabet, int leftContext, int rightContext, int caseSensitive, vector_int** ret_vector, hash_table** ret_hash, hash_table** z_score, hash_table** countsInCorpora) {
+  if (ret_vector == NULL) {
+    error("Fatal error in build_counted_collocates, ret_vector cannot be NULL!");
+    return DEFAULT_ERROR_CODE;
+  }
 
-	if (ret_hash == NULL)
-	{
-		fatal_error("Fatal error in build_counted_collocates, ret_hash cannot be NULL!");
-	}
+  if (ret_hash == NULL) {
+    error("Fatal error in build_counted_collocates, ret_hash cannot be NULL!");
+    return DEFAULT_ERROR_CODE;
+  }
 
-	long codSize = get_file_size(cod) / sizeof(int);
-	int *buffer = NULL;
+  long codSize = get_file_size(cod) / sizeof(int);
+  int* buffer = NULL;
 
-	long buff_start, buff_end;
+  long buff_start, buff_end;
 
-	// we initialize buffer to encompass 4096 tokens from starting position
-	get_buffer_around_token(cod, &buffer, 0, 0, STATS_BUFFER_LENGTH, &buff_start, &buff_end);
+  // we initialize buffer to encompass 4096 tokens from starting position
+  int get_buffer_return_value = get_buffer_around_token(cod,
+  	                                                    &buffer,
+  	                                                    0, 
+  	                                                    0,
+  	                                                    STATS_BUFFER_LENGTH,
+  	                                                    &buff_start,
+  	                                                    &buff_end);
 
-	any* hash_val;
-	int hash_ret;
+  if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+    free(buffer);
+    return get_buffer_return_value;
+  }  
 
-	int i;
+  any* hash_val = NULL;
+  int hash_ret;
 
-	vector_int* allMatches = new_vector_int();
-	hash_table* countPerCollocate = new_hash_table(hash_token_as_int, tokens_as_int_equal,
-					free_token_as_int, NULL, copy_token_as_int);
-	vector_int* currentMatchList;
-	vector_int* tmpMatchList;
+  int i;
 
-	match_list* current_match = matches;
+  vector_int* allMatches        = new_vector_int();
+  hash_table* countPerCollocate = new_hash_table(hash_token_as_int, 
+  	                                             tokens_as_int_equal,
+                                                 free_token_as_int,
+                                                 NULL, 
+                                                 copy_token_as_int);
+  vector_int* currentMatchList;
+  vector_int* tmpMatchList;
 
-	hash_table* collocateCountInCorpora;
-	int totalMatches = 0;
-	int corporaLength;
-	int wordsTakenByMatches = 0;
-	int totalWindow = 0;
-	int_CS_tag* currentKey;
+  match_list* current_match = matches;
 
-	// for all matches, we form list of token IDs and check it against hash table
-	while(current_match != NULL)
-	{
-		currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 0, NULL);
+  hash_table* collocateCountInCorpora = NULL;
+  int totalMatches = 0;
+  int corporaLength;
+  int wordsTakenByMatches = 0;
+  int totalWindow = 0;
+  int_CS_tag* currentKey = NULL;
 
-		// now we don't just insert the whole match as we did in build_counted_concord, but
-		// for each token in the left and right context we treat it as a possible entry to a hash
-		// table
+  // for all matches, we form list of token IDs and check it against hash table
+  while(current_match != NULL) {
+    currentMatchList = get_string_in_context_as_token_list(current_match, 
+    	                                                     leftContext,
+    	                                                     rightContext,
+    	                                                     &buffer,
+    	                                                     &buff_start,
+    	                                                     &buff_end,
+    	                                                     codSize,
+    	                                                     tokens,
+    	                                                     cod,
+    	                                                     0,
+    	                                                     NULL);
 
-		for (i = 0 ; i < currentMatchList->nbelems ; i++)
-		{
-			// we don't want space, sentence or stop tokens in results
+    // now we don't just insert the whole match as we did in build_counted_concord, but
+    // for each token in the left and right context we treat it as a possible entry to a hash
+    // table
 
-			if (!is_appropriate_token(currentMatchList->tab[i], tokens))
-			{
-				continue;
-			}
+    for (i = 0 ; i < currentMatchList->nbelems ; i++) {
+      // we don't want space, sentence or stop tokens in results
 
-			currentKey = new_int_CS_tag(currentMatchList->tab[i], caseSensitive, tokens, alphabet);
+      if (!is_appropriate_token(currentMatchList->tab[i], tokens)) {
+        continue;
+      }
 
-			hash_val = get_value(countPerCollocate, currentKey, HT_INSERT_IF_NEEDED, &hash_ret);
+      currentKey = new_int_CS_tag(currentMatchList->tab[i], caseSensitive, tokens, alphabet);
+      if (!currentKey) {
+        free_hash_table(countPerCollocate);
+        free_vector_int(allMatches, NULL);
+        free(buffer);
+        return ALLOC_ERROR_CODE;
+      }      
 
-			if (hash_ret == HT_KEY_ADDED)
-			{
-				// new value, we need to set count to 1
-				hash_val->_int = 1;
-				vector_int_add(allMatches, currentMatchList->tab[i]);
-			}
-			else
-			{
-				hash_val->_int++;
-			}
-			free_int_CS_tag(currentKey);
-		}
+      hash_val = get_value(countPerCollocate, currentKey, HT_INSERT_IF_NEEDED, &hash_ret);
 
-		// if we're calculating z-score as well, we have to account for totalWindow score
-		// which represents total space in non-space tokens taken by matches and their
-		// left and right contexts
+      if (hash_ret == HT_KEY_ADDED) {
+        // new value, we need to set count to 1
+        hash_val->_int = 1;
+        vector_int_add(allMatches, currentMatchList->tab[i]);
+      } else {
+        hash_val->_int++;
+      }
+      free_int_CS_tag(currentKey);
+    }
 
-		if (z_score != NULL && countsInCorpora != NULL)
-		{
-			// first we account for number of non-space tokens taken by the match itself
-			tmpMatchList = get_string_in_context_as_token_list(current_match, 0, 0, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1, NULL);
+    // if we're calculating z-score as well, we have to account for totalWindow score
+    // which represents total space in non-space tokens taken by matches and their
+    // left and right contexts
 
-			for (i = 0 ; i < tmpMatchList->nbelems ; i++)
-			{
-				if (is_appropriate_token(tmpMatchList->tab[i], tokens))
-				{
-					totalWindow++;
-					wordsTakenByMatches++;
-				}
-			}
+    if (z_score != NULL && countsInCorpora != NULL) {
+      // first we account for number of non-space tokens taken by the match itself
+      tmpMatchList = get_string_in_context_as_token_list(current_match, 0, 0, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1, NULL);
 
-			free_vector_int(tmpMatchList);
-			// then we account for number of non-space tokens taken by left and right context
+      for (i = 0 ; i < tmpMatchList->nbelems ; i++)
+      {
+        if (is_appropriate_token(tmpMatchList->tab[i], tokens))
+        {
+          totalWindow++;
+          wordsTakenByMatches++;
+        }
+      }
 
-			for (i = 0 ; i < currentMatchList->nbelems; i++)
-			{
-				if (is_appropriate_token(currentMatchList->tab[i], tokens))
-				{
-					totalWindow++;
-				}
-			}
-		}
+      free_vector_int(tmpMatchList);
+      // then we account for number of non-space tokens taken by left and right context
 
-		// in this method, we free anyway, since this is no longer needed
-		free_vector_int(currentMatchList);
-		current_match = current_match->next;
-		totalMatches++;
-	}
+      for (i = 0 ; i < currentMatchList->nbelems; i++) {
+        if (is_appropriate_token(currentMatchList->tab[i], tokens)) {
+          totalWindow++;
+        }
+      }
+    }
 
-	free(buffer);
-	*ret_vector = allMatches;
-	*ret_hash = countPerCollocate;
+    // in this method, we free anyway, since this is no longer needed
+    free_vector_int(currentMatchList);
+    current_match = current_match->next;
+    totalMatches++;
+  }
+
+  free(buffer);
+  *ret_vector = allMatches;
+  *ret_hash   = countPerCollocate;
 
 
-	// we don't proceed with calculating z-score unless it's required
-	if (z_score == NULL || countsInCorpora == NULL)
-	{
-		return;
-	}
+  // we don't proceed with calculating z-score unless it's required
+  if (z_score == NULL || countsInCorpora == NULL) {
+    return SUCCESS_RETURN_CODE;
+  }
 
-	// now we count all collocates in corpus
+  // now we count all collocates in corpus
+  int count_collocates_return_value = count_collocates(cod,
+  	                                                   tokens,
+  	                                                   alphabet,
+  	                                                   caseSensitive,
+  	                                                   countPerCollocate,
+  	                                                   &collocateCountInCorpora,
+  	                                                   &corporaLength);
 
-	count_collocates(cod, tokens, alphabet, caseSensitive, countPerCollocate, &collocateCountInCorpora, &corporaLength);
+  // return when count_collocates() fails
+  if (count_collocates_return_value != SUCCESS_RETURN_CODE) {
+    return count_collocates_return_value;
+  }
 
-	// now we build z_score hash per collocate
+  // now we build z_score hash per collocate
+  hash_table* zret  = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, free,
+                copy_token_as_int);
+  double* tmpZScore = NULL;
+  int K, Fc;
+  double p;
+  double E;
 
-	hash_table* zret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, free,
-								copy_token_as_int);
-	double *tmpZScore;
-	int K, Fc;
-	double p;
-	double E;
+  for (i = 0 ; i < allMatches->nbelems ; i++) {
+    currentKey = new_int_CS_tag(allMatches->tab[i], caseSensitive, tokens, alphabet);
+    hash_val   = get_value(countPerCollocate, currentKey, HT_DONT_INSERT);
 
-	for (i = 0 ; i < allMatches->nbelems ; i++)
-	{
-		currentKey = new_int_CS_tag(allMatches->tab[i], caseSensitive, tokens, alphabet);
-		hash_val = get_value(countPerCollocate, currentKey, HT_DONT_INSERT);
+    K = hash_val->_int;
 
-		K = hash_val->_int;
+    hash_val = get_value(collocateCountInCorpora, currentKey, HT_DONT_INSERT);
 
-		hash_val = get_value(collocateCountInCorpora, currentKey, HT_DONT_INSERT);
+    Fc = hash_val->_int;
 
-		Fc = hash_val->_int;
+    tmpZScore = (double*)malloc(sizeof(double));
 
-		tmpZScore = (double*)malloc(sizeof(double));
+    if (tmpZScore == NULL) {
+      alloc_error("build_counted_collocates");
+      free_hash_table(zret);
+      free_hash_table(collocateCountInCorpora);
+      free_int_CS_tag(currentKey);
+      free_hash_table(countPerCollocate);
+      free_vector_int(allMatches, NULL);
+      return ALLOC_ERROR_CODE;
+    }
 
-		if (tmpZScore == NULL)
-		{
-			fatal_alloc_error("build_counted_collocates");
-		}
+    p = (double)Fc / (corporaLength - wordsTakenByMatches);
+    E = p * totalWindow;
 
-		p = (double)Fc / (corporaLength - wordsTakenByMatches);
-		E = p * totalWindow;
+    *tmpZScore = (K - E) / sqrt(E * (1 - p));
 
-		*tmpZScore = (K - E) / sqrt(E * (1 - p));
+    hash_val = get_value(zret, currentKey, HT_INSERT_IF_NEEDED);
+    hash_val->_ptr = tmpZScore;
 
-		hash_val = get_value(zret, currentKey, HT_INSERT_IF_NEEDED);
-		hash_val->_ptr = tmpZScore;
+    free_int_CS_tag(currentKey);
+  }
 
-		free_int_CS_tag(currentKey);
-	}
-
-	*countsInCorpora = collocateCountInCorpora;
-	*z_score = zret;
-
+  *countsInCorpora = collocateCountInCorpora;
+  *z_score         = zret;
+  return SUCCESS_RETURN_CODE;
 }
 
 /**
@@ -682,90 +872,104 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
  * total length of corpora in non-space tokens. Non-space tokens are determined by the result
  * of is_appropriate_token function.
  */
-void count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int caseSensitive, hash_table* collocates, hash_table** ret_hash, int* corpora_length)
-{
-	if (ret_hash == NULL)
-	{
-		fatal_error("Error in count_collocates, ret_hash cannot be null!");
-	}
+int count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int caseSensitive, hash_table* collocates, hash_table** ret_hash, int* corpora_length) {
+  if (ret_hash == NULL) {
+    error("Error in count_collocates, ret_hash cannot be null!");
+    return DEFAULT_ERROR_CODE;
+  }
 
-	hash_table* ret = new_hash_table(hash_token_as_int, tokens_as_int_equal, free_token_as_int, NULL,
-						copy_token_as_int);
-	int* buffer = NULL;
-	long bufferStart, bufferEnd;
-	long codSize = get_file_size(cod) / sizeof(int);
-	any* hash_val;
-	int hash_ret;
-	int_CS_tag* currentKey;
+  int* buffer   = NULL;
+  long bufferStart;
+  long bufferEnd;
 
-	get_buffer_around_token(cod, &buffer, 0, 0, STATS_BUFFER_LENGTH, &bufferStart, &bufferEnd);
+  int get_buffer_return_value = get_buffer_around_token(cod, 
+  	                                                    &buffer, 
+  	                                                    0, 
+  	                                                    0, 
+  	                                                    STATS_BUFFER_LENGTH,
+  	                                                    &bufferStart,
+  	                                                    &bufferEnd);
 
-	int i ;
+  if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+    free(buffer);
+    return get_buffer_return_value;
+  }
 
-	*corpora_length = 0;
+  hash_table* ret = new_hash_table(hash_token_as_int, 
+  	                               tokens_as_int_equal,
+  	                               free_token_as_int, 
+  	                               NULL,
+  	                               copy_token_as_int);
 
-	for (i = 0 ; i < codSize ; i++)
-	{
-		if (i < bufferStart || i > bufferEnd)
-		{
-			get_buffer_around_token(cod, &buffer, i, 0, STATS_BUFFER_LENGTH, &bufferStart, &bufferEnd);
-		}
+  *corpora_length = 0;
+  int_CS_tag* currentKey = NULL;
+  int hash_ret;
+  any* hash_val = NULL;
+  int i ;
+  long codSize  = get_file_size(cod) / sizeof(int);
+  for (i = 0 ; i < codSize ; i++) {
+    if (i < bufferStart || i > bufferEnd) {
+      get_buffer_return_value = get_buffer_around_token(cod,
+      	                                                &buffer,
+      	                                                i,
+      	                                                0,
+      	                                                STATS_BUFFER_LENGTH,
+      	                                                &bufferStart,
+      	                                                &bufferEnd);
+      if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+        free(buffer);
+        return get_buffer_return_value;
+      }
+    }
 
-		if (is_appropriate_token(buffer[i - bufferStart], tokens))
-		{
-			(*corpora_length)++;
-		}
+    if (is_appropriate_token(buffer[i - bufferStart], tokens)) {
+      (*corpora_length)++;
+    }
 
-		currentKey = new_int_CS_tag(buffer[i - bufferStart], caseSensitive, tokens, alphabet);
+    currentKey = new_int_CS_tag(buffer[i - bufferStart], caseSensitive, tokens, alphabet);
 
-		hash_val = get_value(collocates, currentKey, HT_DONT_INSERT, &hash_ret);
+    hash_val = get_value(collocates, currentKey, HT_DONT_INSERT, &hash_ret);
 
-		if (hash_val!=NULL && hash_ret == HT_KEY_ALREADY_THERE)
-		{
-			// this means that we can count this collocate in another hash
+    if (hash_val!=NULL && hash_ret == HT_KEY_ALREADY_THERE) {
+      // this means that we can count this collocate in another hash
 
-			int_CS_tag* insertKey = new_int_CS_tag(buffer[i - bufferStart], caseSensitive, tokens, alphabet);
+      int_CS_tag* insertKey = new_int_CS_tag(buffer[i - bufferStart], caseSensitive, tokens, alphabet);
 
-			hash_val = get_value(ret, insertKey, HT_INSERT_IF_NEEDED, &hash_ret);
+      hash_val = get_value(ret, insertKey, HT_INSERT_IF_NEEDED, &hash_ret);
 
-			if (hash_ret == HT_KEY_ADDED)
-			{
-				hash_val->_int = 1;
-			}
-			else
-			{
-				hash_val->_int++;
-			}
-			free_int_CS_tag(insertKey);
-		}
+      if (hash_ret == HT_KEY_ADDED) {
+        hash_val->_int = 1;
+      }
+      else {
+        hash_val->_int++;
+      }
+      free_int_CS_tag(insertKey);
+    }
 
-		free_int_CS_tag(currentKey);
-	}
+    free_int_CS_tag(currentKey);
+  }
 
-	*ret_hash = ret;
+  *ret_hash = ret;
 
-	free(buffer);
+  free(buffer);
+
+  return SUCCESS_RETURN_CODE;
 }
 
-
-inline int min_int(int a, int b)
-{
-	return (a < b) ? a : b;
+inline int min_int(int a, int b) {
+  return (a < b) ? a : b;
 }
 
-inline int max_int(int a, int b)
-{
-	return (a > b) ? a : b;
+inline int max_int(int a, int b) {
+  return (a > b) ? a : b;
 }
 
-inline long min_long(long a, long b)
-{
-	return (a < b) ? a : b;
+inline long min_long(long a, long b) {
+  return (a < b) ? a : b;
 }
 
-inline long max_long(long a, long b)
-{
-	return (a > b) ? a : b;
+inline long max_long(long a, long b) {
+  return (a > b) ? a : b;
 }
 
 /**
@@ -773,120 +977,127 @@ inline long max_long(long a, long b)
  * as an int vector. It expands match to the left and right by number of "appropriate" non-space tokens.
  * These tokens are determined by is_appropriate_token function.
  */
-vector_int* get_string_in_context_as_token_list(match_list* match, int leftContext, int rightContext, int** buffer, long* bufferStart, long* bufferEnd, long totalSize, text_tokens* tokens, U_FILE* source, int includeMatch, counted_match_descriptor* descriptor)
-{
-	long i;
+vector_int* get_string_in_context_as_token_list(match_list* match, int leftContext, int rightContext, int** buffer, long* bufferStart, long* bufferEnd, long totalSize, text_tokens* tokens, U_FILE* source, int includeMatch, counted_match_descriptor* descriptor) {
+  long i;
 
-	if (match == NULL)
-	{
-		fatal_error("Error in get_string_as_token_list, match cannot be NULL!");
-		return NULL;
-	}
+  if (match == NULL) {
+    error("Error in get_string_as_token_list, match cannot be NULL!");
+    return NULL;
+  }
 
-	if (buffer == NULL)
-	{
-		fatal_error("Error in get_string_as_token_list, buffer cannot be NULL");
-		return NULL;
-	}
+  if (buffer == NULL) {
+    error("Error in get_string_as_token_list, buffer cannot be NULL");
+    return NULL;
+  }
 
-	if (*bufferStart > *bufferEnd)
-	{
-		fatal_error("Error in get_string_as_token_list, bufferStart must be <= bufferEnd!");
-		return NULL;
-	}
+  if (*bufferStart > *bufferEnd) {
+    error("Error in get_string_as_token_list, bufferStart must be <= bufferEnd!");
+    return NULL;
+  }
 
-	vector_int* res = new_vector_int();
+  vector_int* res = new_vector_int();
 
-	long startFrom = match->m.start_pos_in_token - 1;
-	long endAt = match->m.end_pos_in_token + 1;
-	int foundLeft = 0;
-	int foundRight = 0;
+  long startFrom = match->m.start_pos_in_token - 1;
+  long endAt = match->m.end_pos_in_token + 1;
+  int foundLeft = 0;
+  int foundRight = 0;
 
-	// first we skip sentence and space tokens to the left and right until we have
-	// enough left and right context to work with
+  // first we skip sentence and space tokens to the left and right until we have
+  // enough left and right context to work with
+  int get_buffer_return_value = SUCCESS_RETURN_CODE;
+  while(startFrom >= 0 && foundLeft < leftContext) {
+    if (startFrom < *bufferStart || startFrom > *bufferEnd) {
+      // request new buffer
+      get_buffer_return_value = get_buffer_around_token(source,
+      	                                                buffer,
+      	                                                startFrom,
+      	                                                STATS_BUFFER_LENGTH,
+      	                                                0,
+      	                                                bufferStart,
+      	                                                bufferEnd);
+      if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+        return NULL;
+      }
+    }
 
-	while(startFrom >= 0 && foundLeft < leftContext)
-	{
-		if (startFrom < *bufferStart || startFrom > *bufferEnd)
-		{
-			// request new buffer
-			get_buffer_around_token(source, buffer, startFrom, STATS_BUFFER_LENGTH, 0, bufferStart, bufferEnd);
-		}
+    if (is_appropriate_token((*buffer)[startFrom - *bufferStart], tokens)) {
+      foundLeft++;
+    }
+    startFrom--;
+  }
 
-		if (is_appropriate_token((*buffer)[startFrom - *bufferStart], tokens))
-		{
-			foundLeft++;
-		}
-		startFrom--;
-	}
+  if (descriptor != NULL) {
+    // we set where left context ends (last token of left context)
+    descriptor->leftEndsAt = (int)(match->m.start_pos_in_token - 1 - (startFrom + 1));
+    // we set where right context starts (first token of right context)
+    descriptor->rightStartsAt = (int)(match->m.end_pos_in_token + 1 - (startFrom + 1));
+  }
 
-	if (descriptor != NULL)
-	{
-		// we set where left context ends (last token of left context)
-		descriptor->leftEndsAt = (int)(match->m.start_pos_in_token - 1 - (startFrom + 1));
-		// we set where right context starts (first token of right context)
-		descriptor->rightStartsAt = (int)(match->m.end_pos_in_token + 1 - (startFrom + 1));
-	}
+  while(endAt <= totalSize-1 && foundRight < rightContext) {
+    if (endAt > *bufferEnd || endAt < *bufferStart) {
+      // request new buffer
+       get_buffer_return_value = get_buffer_around_token(source,
+       	                                                 buffer,
+       	                                                 endAt,
+       	                                                 0,
+       	                                                 STATS_BUFFER_LENGTH,
+       	                                                 bufferStart,
+       	                                                 bufferEnd);
+      if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+        return NULL;
+      }       
+    }
 
-	while(endAt <= totalSize-1 && foundRight < rightContext)
-	{
-		if (endAt > *bufferEnd || endAt < *bufferStart)
-		{
-			// request new buffer
-			get_buffer_around_token(source, buffer, endAt, 0, STATS_BUFFER_LENGTH, bufferStart, bufferEnd);
-		}
+    if (is_appropriate_token((*buffer)[endAt - *bufferStart], tokens)) {
+      foundRight++;
+    }
+    endAt++;
+  }
 
-		if (is_appropriate_token((*buffer)[endAt - *bufferStart], tokens))
-		{
-			foundRight++;
-		}
-		endAt++;
-	}
+  for (i = startFrom + 1 ; i <= endAt - 1 ; i++) {
+    if (!includeMatch && i >= match->m.start_pos_in_token && i <= match->m.end_pos_in_token) {
+      // we don't want the match, just the context
+      continue;
+    }
 
-	for (i = startFrom + 1 ; i <= endAt - 1 ; i++)
-	{
-		if (!includeMatch && i >= match->m.start_pos_in_token && i <= match->m.end_pos_in_token)
-		{
-			// we don't want the match, just the context
-			continue;
-		}
+    if (i < *bufferStart || i > *bufferEnd) {
+      int get_buffer_return_value = get_buffer_around_token(source, 
+      	                                                    buffer, 
+      	                                                    i, 
+      	                                                    0, 
+      	                                                    STATS_BUFFER_LENGTH,
+      	                                                    bufferStart,
+      	                                                    bufferEnd);
+      if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+        return NULL;
+      }      
+    }
 
-		if (i < *bufferStart || i > *bufferEnd)
-		{
-			get_buffer_around_token(source, buffer, i, 0, STATS_BUFFER_LENGTH, bufferStart, bufferEnd);
-		}
-
-		vector_int_add(res, (*buffer)[i - *bufferStart]);
-	}
-	return res;
+    vector_int_add(res, (*buffer)[i - *bufferStart]);
+  }
+  return res;
 }
 
-unsigned int hash_vector_int(const void* vec)
-{
-	const vec_CS_tag* v = (const vec_CS_tag*)vec;
-	const vector_int* vector = v->vec;
-	if (v->CStag)
-	{
-		return jenkins_one_at_a_time_hash((const unsigned char*)&vector->tab[0], sizeof(int) * vector->nbelems);
-	}
-	else
-	{
-		// since we're in case-insensitive mode, we have to look at the contents of a token
+unsigned int hash_vector_int(const void* vec) {
+  const vec_CS_tag* v = (const vec_CS_tag*)vec;
+  const vector_int* vector = v->vec;
+  if (v->CStag) {
+    return jenkins_one_at_a_time_hash((const unsigned char*)&vector->tab[0], sizeof(int) * vector->nbelems);
+  } else {
+    // since we're in case-insensitive mode, we have to look at the contents of a token
 
-		int i = 0;
-		int hash = 0;
+    int i = 0;
+    int hash = 0;
 
-		for (i = 0 ; i < vector->nbelems ; i++)
-		{
-			hash ^= jenkins_one_at_a_time_hash_string_uppercase(v->tokens->token[vector->tab[i]], u_strlen(v->tokens->token[vector->tab[i]]), v->alphabet);
-		}
+    for (i = 0 ; i < vector->nbelems ; i++) {
+      hash ^= jenkins_one_at_a_time_hash_string_uppercase(v->tokens->token[vector->tab[i]], u_strlen(v->tokens->token[vector->tab[i]]), v->alphabet);
+    }
 
-		return hash;
-	}
+    return hash;
+  }
 }
 
-unsigned int jenkins_one_at_a_time_hash(const unsigned char *key, size_t key_len)
-{
+unsigned int jenkins_one_at_a_time_hash(const unsigned char *key, size_t key_len) {
     unsigned int hash = 0;
     size_t i;
 
@@ -901,8 +1112,7 @@ unsigned int jenkins_one_at_a_time_hash(const unsigned char *key, size_t key_len
     return hash;
 }
 
-unsigned int jenkins_one_at_a_time_hash_string_uppercase(const unichar *key, size_t key_len, Alphabet* alphabet)
-{
+unsigned int jenkins_one_at_a_time_hash_string_uppercase(const unichar *key, size_t key_len, Alphabet* alphabet) {
     unsigned int hash = 0;
     size_t i;
 
@@ -918,371 +1128,329 @@ unsigned int jenkins_one_at_a_time_hash_string_uppercase(const unichar *key, siz
 }
 
 
-void print_string_token_list_with_count(U_FILE* outfile,vector_int* list, text_tokens* tokens, counted_match_descriptor* descriptor)
-{
-	int i;
+void print_string_token_list_with_count(U_FILE* outfile,vector_int* list, text_tokens* tokens, counted_match_descriptor* descriptor) {
+  int i;
 
-	for (i = 0 ; i < list->nbelems ; i++)
-	{
-		if (i == descriptor->leftEndsAt + 1)
-		{
-			u_fprintf(outfile, "\t");
-		}
-		u_fputs(tokens->token[list->tab[i]],outfile);
-		if (i == descriptor->rightStartsAt - 1)
-		{
-			u_fprintf(outfile, "\t");
-		}
-	}
-	u_fprintf(outfile,"\t%d", descriptor->countOfMatch);
-	u_fprintf(outfile,"\n");
+  for (i = 0 ; i < list->nbelems ; i++) {
+    if (i == descriptor->leftEndsAt + 1) {
+      u_fprintf(outfile, "\t");
+    }
+    u_fputs(tokens->token[list->tab[i]],outfile);
+    if (i == descriptor->rightStartsAt - 1) {
+      u_fprintf(outfile, "\t");
+    }
+  }
+  u_fprintf(outfile,"\t%d", descriptor->countOfMatch);
+  u_fprintf(outfile,"\n");
 }
 
 /**
  * This function fills a buffer of token IDs starting from a particular token to the left and/or right.
  */
-void get_buffer_around_token(U_FILE* inputFile, int** buffer, long tokenPosition, long leftSize, long rightSize, long* buffer_start_from, long* buffer_ends_at)
-{
-	// free old buffer first
-	if (*buffer != NULL)
-	{
-		free(*buffer);
-		*buffer_start_from = -1;
-		*buffer_ends_at = -1;
-	}
+int get_buffer_around_token(U_FILE* inputFile, int** buffer, long tokenPosition, long leftSize, long rightSize, long* buffer_start_from, long* buffer_ends_at) {
+  // free old buffer first
+  if (*buffer != NULL) {
+    free(*buffer);
+    *buffer_start_from = -1;
+    *buffer_ends_at = -1;
+  }
 
-	long fileSize = get_file_size(inputFile);
-	long seekTo = max_long(0, tokenPosition - leftSize);
-	long endReadingAt = min_long(fileSize/sizeof(int) - 1, tokenPosition + rightSize);
+  long fileSize = get_file_size(inputFile);
+  long seekTo = max_long(0, tokenPosition - leftSize);
+  long endReadingAt = min_long(fileSize/sizeof(int) - 1, tokenPosition + rightSize);
 
-	int bufferSize = (int)(endReadingAt - seekTo + 1);
+  int bufferSize = (int)(endReadingAt - seekTo + 1);
 
-	*buffer = (int*)malloc(sizeof(int) * bufferSize);
+  *buffer = (int*)malloc(sizeof(int) * bufferSize);
 
-	if (*buffer == NULL)
-	{
-		fatal_alloc_error("get_buffer_around_token");
-	}
+  if (*buffer == NULL) {
+    alloc_error("get_buffer_around_token");
+    return ALLOC_ERROR_CODE;
+  }
 
-	fseek(inputFile, seekTo * sizeof(int), SEEK_SET);
+  fseek(inputFile, seekTo * sizeof(int), SEEK_SET);
 
-	long numRead = (long)fread(*buffer, sizeof(int), bufferSize, inputFile);
+  long numRead = (long)fread(*buffer, sizeof(int), bufferSize, inputFile);
 
-	if (numRead != bufferSize)
-	{
-		fatal_error("Error reading file in get_buffer_around_token!");
-	}
+  if (numRead != bufferSize) {
+    error("Error reading file in get_buffer_around_token!");
+    return DEFAULT_ERROR_CODE;
+  }
 
-	*buffer_start_from = seekTo;
-	*buffer_ends_at = endReadingAt;
+  *buffer_start_from = seekTo;
+  *buffer_ends_at = endReadingAt;
+
+  return SUCCESS_RETURN_CODE;
 }
 
-int vectors_equal(const void* v1, const void* v2)
-{
-	int cs = ((const vec_CS_tag*)v1)->CStag;
-	text_tokens* tokens = ((vec_CS_tag*)v1)->tokens;
-	const Alphabet* a = ((vec_CS_tag*)v1)->alphabet;
+int vectors_equal(const void* v1, const void* v2) {
+  int cs = ((const vec_CS_tag*)v1)->CStag;
+  text_tokens* tokens = ((vec_CS_tag*)v1)->tokens;
+  const Alphabet* a = ((vec_CS_tag*)v1)->alphabet;
 
-	const vector_int* vec1 = ((const vec_CS_tag*)v1)->vec;
-	const vector_int* vec2 = ((const vec_CS_tag*)v2)->vec;
+  const vector_int* vec1 = ((const vec_CS_tag*)v1)->vec;
+  const vector_int* vec2 = ((const vec_CS_tag*)v2)->vec;
 
-	if (vec1->nbelems != vec2->nbelems)
-	{
-		return 0;
-	}
+  if (vec1->nbelems != vec2->nbelems) {
+    return 0;
+  }
 
-	int i;
+  int i;
 
-	for (i = 0 ; i < vec1->nbelems ; i++)
-	{
-		if (vec1->tab[i] != vec2->tab[i])
-		{
-			if (!cs)
-			{
-				if (!tokens_equal_ignore_case(tokens->token[vec1->tab[i]], tokens->token[vec2->tab[i]], a))
-				{
-					return 0;
-				}
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	}
-	return 1;
+  for (i = 0 ; i < vec1->nbelems ; i++) {
+    if (vec1->tab[i] != vec2->tab[i]) {
+      if (!cs) {
+        if (!tokens_equal_ignore_case(tokens->token[vec1->tab[i]], tokens->token[vec2->tab[i]], a)) {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
+    }
+  }
+  return 1;
 }
 
 
-void free_vec(void* vec)
-{
-	free_vec_CS_tag((vec_CS_tag*)vec);
+void free_vec(void* vec) {
+  free_vec_CS_tag((vec_CS_tag*)vec);
 }
 
-void* copy_vec(const void* vec)
-{
-	const vector_int* const input = ((const vec_CS_tag*)vec)->vec;
-	vector_int* output = new_vector_int();
-	vec_CS_tag* ret = new_vec_CS_tag(output, ((const vec_CS_tag*)vec)->CStag, ((const vec_CS_tag*)vec)->tokens, ((const vec_CS_tag*)vec)->alphabet);
+void* copy_vec(const void* vec) {
+  const vector_int* const input = ((const vec_CS_tag*)vec)->vec;
+  vector_int* output = new_vector_int();
+  vec_CS_tag* ret    = new_vec_CS_tag(output, ((const vec_CS_tag*)vec)->CStag, ((const vec_CS_tag*)vec)->tokens, ((const vec_CS_tag*)vec)->alphabet);
 
-	int i;
+  int i;
 
-	for (i = 0 ; i < input->nbelems ; i++)
-	{
-		vector_int_add(output, input->tab[i]);
-	}
+  for (i = 0 ; i < input->nbelems ; i++) {
+    vector_int_add(output, input->tab[i]);
+  }
 
-	return ret;
+  return ret;
 }
 
-void sort_matches_ptr(void *array, int left, int right, void (*swap)(void*, int, int), int (*compare)(void*, int, int, void*, void*), void* objectForCompare, void* objectForCompare2, int direction)
-{
-	if (left >= right)
-		return;
+void sort_matches_ptr(void *array, int left, int right, void (*swap)(void*, int, int), int (*compare)(void*, int, int, void*, void*), void* objectForCompare, void* objectForCompare2, int direction) {
+  if (left >= right) {
+    return;
+  }
 
-	int partitionIndex = partition_ptr(array, left, right, swap, compare, objectForCompare, objectForCompare2, direction);
-	if (partitionIndex != -1)
-	{
-		sort_matches_ptr(array, partitionIndex+1, right, swap, compare, objectForCompare, objectForCompare2, direction);
-		sort_matches_ptr(array, left, partitionIndex-1, swap, compare, objectForCompare, objectForCompare2, direction);
-	}
+  int partitionIndex = partition_ptr(array, left, right, swap, compare, objectForCompare, objectForCompare2, direction);
+  if (partitionIndex != -1) {
+    sort_matches_ptr(array, partitionIndex+1, right, swap, compare, objectForCompare, objectForCompare2, direction);
+    sort_matches_ptr(array, left, partitionIndex-1, swap, compare, objectForCompare, objectForCompare2, direction);
+  }
 }
 
-int partition_ptr(void *array, int left, int right, void (*swap)(void*, int, int), int (*compare)(void*, int, int, void*, void*), void* objectForCompare, void* objectForCompare2, int direction)
-{
-	swap(array, left, right);
+int partition_ptr(void *array, int left, int right, void (*swap)(void*, int, int), int (*compare)(void*, int, int, void*, void*), void* objectForCompare, void* objectForCompare2, int direction) {
+  swap(array, left, right);
 
-	// frequently, all counts in partition are equal (lots of items with count 1)
-	// we can speed things up dramatically if we check, in one pass, that not all counts are equal
+  // frequently, all counts in partition are equal (lots of items with count 1)
+  // we can speed things up dramatically if we check, in one pass, that not all counts are equal
 
-	int allEqual = 1; int i;
+  int allEqual = 1; int i;
 
-	for (i = left ; i < right ; i++)
-	{
-		if (compare(array, i, right, objectForCompare, objectForCompare2) != 0)
-		{
-			allEqual = 0;
-			break;
-		}
-	}
+  for (i = left ; i < right ; i++) {
+    if (compare(array, i, right, objectForCompare, objectForCompare2) != 0) {
+      allEqual = 0;
+      break;
+    }
+  }
 
-	if (allEqual)
-	{
-		return -1;
-	}
+  if (allEqual) {
+    return -1;
+  }
 
-	int storeIndex = left;
+  int storeIndex = left;
 
-	for (i = left ; i < right ; i++)
-	{
-		if (direction * compare(array, i, right, objectForCompare, objectForCompare2) <= 0)
-		{
-			swap(array, i, storeIndex);
-			storeIndex++;
-		}
-	}
-	swap(array, storeIndex, right);
+  for (i = left ; i < right ; i++) {
+    if (direction * compare(array, i, right, objectForCompare, objectForCompare2) <= 0) {
+      swap(array, i, storeIndex);
+      storeIndex++;
+    }
+  }
+  swap(array, storeIndex, right);
 
-	return storeIndex;
+  return storeIndex;
 }
 
-void swap_ptr(void *array, int idx1, int idx2)
-{
-	void **real_arr = (void**)array;
-	void *tmp = real_arr[idx1];
-	real_arr[idx1] = real_arr[idx2];
-	real_arr[idx2] = tmp;
+void swap_ptr(void *array, int idx1, int idx2) {
+  void **real_arr = (void**)array;
+  void *tmp = real_arr[idx1];
+  real_arr[idx1] = real_arr[idx2];
+  real_arr[idx2] = tmp;
 }
 
-int compare_ptr(void *array, int idx1, int idx2, void* hash, void* /*unused*/)
-{
-	void **real_arr = (void**)array;
-	hash_table* hsh = (hash_table*)hash;
-	any* hash_val1, *hash_val2;
+int compare_ptr(void *array, int idx1, int idx2, void* hash, void* /*unused*/) {
+  void **real_arr = (void**)array;
+  hash_table* hsh = (hash_table*)hash;
+  any* hash_val1, *hash_val2;
 
-	counted_match_descriptor* desc1, *desc2;
+  counted_match_descriptor* desc1, *desc2;
 
-	hash_val1 = get_value(hsh, real_arr[idx1], HT_DONT_INSERT);
-	hash_val2 = get_value(hsh, real_arr[idx2], HT_DONT_INSERT);
+  hash_val1 = get_value(hsh, real_arr[idx1], HT_DONT_INSERT);
+  hash_val2 = get_value(hsh, real_arr[idx2], HT_DONT_INSERT);
 
-	desc1 = (counted_match_descriptor*)hash_val1->_ptr;
-	desc2 = (counted_match_descriptor*)hash_val2->_ptr;
+  desc1 = (counted_match_descriptor*)hash_val1->_ptr;
+  desc2 = (counted_match_descriptor*)hash_val2->_ptr;
 
-	if (desc1->countOfMatch < desc2->countOfMatch)
-		return -1;
-	else if (desc1->countOfMatch > desc2->countOfMatch)
-		return 1;
-	else
-		return 0;
+  if (desc1->countOfMatch < desc2->countOfMatch){
+    return -1;
+  } else if (desc1->countOfMatch > desc2->countOfMatch) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-void swap_int(void *array, int idx1, int idx2)
-{
-	int* real_arr = (int*)array;
-	int tmp = real_arr[idx1];
-	real_arr[idx1] = real_arr[idx2];
-	real_arr[idx2] = tmp;
+void swap_int(void *array, int idx1, int idx2) {
+  int* real_arr = (int*)array;
+  int tmp = real_arr[idx1];
+  real_arr[idx1] = real_arr[idx2];
+  real_arr[idx2] = tmp;
 }
 
-int compare_int(void *array, int idx1, int idx2, void *hash, void* int_CS_sample)
-{
-	int *real_arr = (int*)array;
-	hash_table* hsh = (hash_table*)hash;
-	any* hash_val1, *hash_val2;
-	int_CS_tag* tag = (int_CS_tag*)int_CS_sample;
+int compare_int(void *array, int idx1, int idx2, void *hash, void* int_CS_sample) {
+  int *real_arr = (int*)array;
+  hash_table* hsh = (hash_table*)hash;
+  any* hash_val1, *hash_val2;
+  int_CS_tag* tag = (int_CS_tag*)int_CS_sample;
 
-	tag->tokenID = real_arr[idx1];
-	hash_val1 = get_value(hsh, tag, HT_DONT_INSERT);
-	tag->tokenID = real_arr[idx2];
-	hash_val2 = get_value(hsh, tag, HT_DONT_INSERT);
+  tag->tokenID = real_arr[idx1];
+  hash_val1 = get_value(hsh, tag, HT_DONT_INSERT);
+  tag->tokenID = real_arr[idx2];
+  hash_val2 = get_value(hsh, tag, HT_DONT_INSERT);
 
-	if (hash_val1->_int < hash_val2->_int)
-		return -1;
-	else if (hash_val1->_int > hash_val2->_int)
-		return 1;
-	else
-		return 0;
+  if (hash_val1->_int < hash_val2->_int) {
+    return -1;
+  } else if (hash_val1->_int > hash_val2->_int) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-int compare_double(void *array, int idx1, int idx2, void *hash, void* int_CS_sample)
-{
-	int *real_arr = (int*)array;
-	hash_table* hsh = (hash_table*)hash;
-	any* hash_val1, *hash_val2;
-	int_CS_tag* tag = (int_CS_tag*)int_CS_sample;
+int compare_double(void *array, int idx1, int idx2, void *hash, void* int_CS_sample) {
+  int *real_arr = (int*)array;
+  hash_table* hsh = (hash_table*)hash;
+  any* hash_val1, *hash_val2;
+  int_CS_tag* tag = (int_CS_tag*)int_CS_sample;
 
-	tag->tokenID = real_arr[idx1];
-	hash_val1 = get_value(hsh, tag, HT_DONT_INSERT);
-	tag->tokenID = real_arr[idx2];
-	hash_val2 = get_value(hsh, tag, HT_DONT_INSERT);
+  tag->tokenID = real_arr[idx1];
+  hash_val1 = get_value(hsh, tag, HT_DONT_INSERT);
+  tag->tokenID = real_arr[idx2];
+  hash_val2 = get_value(hsh, tag, HT_DONT_INSERT);
 
-	if (*((double*)hash_val1->_ptr) < *((double*)hash_val2->_ptr))
-		return -1;
-	else if (*((double*)hash_val1->_ptr) > *((double*)hash_val2->_ptr))
-		return 1;
-	else
-		return 0;
+  if (*((double*)hash_val1->_ptr) < *((double*)hash_val2->_ptr)) {
+    return -1;
+  } else if (*((double*)hash_val1->_ptr) > *((double*)hash_val2->_ptr)) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-int is_appropriate_token(int tokenID, text_tokens* tokens)
-{
-	if (tokenID != tokens->SPACE && tokenID != tokens->SENTENCE_MARKER && tokenID != tokens->STOP_MARKER)
-		return 1;
-	else
-		return 0;
+int is_appropriate_token(int tokenID, text_tokens* tokens) {
+  if (tokenID != tokens->SPACE && tokenID != tokens->SENTENCE_MARKER && tokenID != tokens->STOP_MARKER) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-vec_CS_tag* new_vec_CS_tag(vector_int* vec, int CS, text_tokens* tokens, Alphabet* alphabet)
-{
-	vec_CS_tag* ret = (vec_CS_tag*)malloc(sizeof(vec_CS_tag));
-	if (ret == NULL)
-	{
-		fatal_alloc_error("new_vec_CS_tag");
-	}
+vec_CS_tag* new_vec_CS_tag(vector_int* vec, int CS, text_tokens* tokens, Alphabet* alphabet) {
+  vec_CS_tag* ret = (vec_CS_tag*)malloc(sizeof(vec_CS_tag));
+  if (ret == NULL) {
+    alloc_error("new_vec_CS_tag");
+    return NULL;
+  }
 
-	ret->CStag = CS;
-	ret->vec = vec;
-	ret->tokens = tokens;
-	ret->alphabet = alphabet;
+  ret->CStag    = CS;
+  ret->vec      = vec;
+  ret->tokens   = tokens;
+  ret->alphabet = alphabet;
 
-	return ret;
+  return ret;
 }
 
 
-int_CS_tag* new_int_CS_tag(int value, int CS, text_tokens* tokens, Alphabet* alphabet)
-{
-	int_CS_tag* ret = (int_CS_tag*)malloc(sizeof(int_CS_tag));
+int_CS_tag* new_int_CS_tag(int value, int CS, text_tokens* tokens, Alphabet* alphabet) {
+  int_CS_tag* ret = (int_CS_tag*)malloc(sizeof(int_CS_tag));
 
-	if (ret == NULL)
-	{
-		fatal_alloc_error("new_int_CS_tag");
-	}
+  if (ret == NULL) {
+    alloc_error("new_int_CS_tag");
+    return NULL;
+  }
 
-	ret->CStag = CS;
-	ret->tokenID = value;
-	ret->tokens = tokens;
-	ret->alphabet = alphabet;
+  ret->CStag = CS;
+  ret->tokenID = value;
+  ret->tokens = tokens;
+  ret->alphabet = alphabet;
 
-	return ret;
+  return ret;
 }
 
-void free_vec_CS_tag(vec_CS_tag* vec)
-{
-	free_vector_int(vec->vec);
-	free(vec);
+void free_vec_CS_tag(vec_CS_tag* vec) {
+  free_vector_int(vec->vec);
+  free(vec);
 }
 
-void free_int_CS_tag(int_CS_tag* inttag)
-{
-	free(inttag);
+void free_int_CS_tag(int_CS_tag* inttag) {
+  free(inttag);
 }
 
-int tokens_equal_ignore_case(const unichar* s1, const unichar* s2, const Alphabet* a)
-{
-	int i = 0;
+int tokens_equal_ignore_case(const unichar* s1, const unichar* s2, const Alphabet* a) {
+  int i = 0;
 
-	while(s1[i] && is_equal_ignore_case(s1[i], s2[i], a))
-		i++;
+  while(s1[i] && is_equal_ignore_case(s1[i], s2[i], a)) {
+    i++;
+  }
 
-	return (s1[i] == '\0' && s2[i] == '\0');
+  return (s1[i] == '\0' && s2[i] == '\0');
 
 }
 
-unichar alphabet_to_upper(unichar c, Alphabet* alphabet)
-{
-	const unichar* t;
-	int i_pos_in_array_of_string = alphabet->pos_in_represent_list[c];
-	t = (i_pos_in_array_of_string == 0) ? NULL :
-		  (alphabet->t_array_collection[i_pos_in_array_of_string]);
-	return (t == NULL) ? c : (((*t)=='\0') ? c : (*t));
+unichar alphabet_to_upper(unichar c, Alphabet* alphabet) {
+  const unichar* t = NULL;
+  int i_pos_in_array_of_string = alphabet->pos_in_represent_list[c];
+  t = (i_pos_in_array_of_string == 0) ? NULL :
+      (alphabet->t_array_collection[i_pos_in_array_of_string]);
+  return (t == NULL) ? c : (((*t)=='\0') ? c : (*t));
 }
 
-unsigned int hash_token_as_int(const void* t)
-{
-	const int_CS_tag* token = (const int_CS_tag*)t;
+unsigned int hash_token_as_int(const void* t) {
+  const int_CS_tag* token = (const int_CS_tag*)t;
 
-	if (!(token->CStag))
-	{
-		return jenkins_one_at_a_time_hash_string_uppercase(token->tokens->token[token->tokenID], u_strlen(token->tokens->token[token->tokenID]), token->alphabet);
-	}
-	else
-	{
-		return token->tokenID;
-	}
+  if (!(token->CStag)) {
+    return jenkins_one_at_a_time_hash_string_uppercase(token->tokens->token[token->tokenID], u_strlen(token->tokens->token[token->tokenID]), token->alphabet);
+  }
+  
+  return token->tokenID;
 }
 
-int tokens_as_int_equal(const void* t1, const void* t2)
-{
-	const int_CS_tag* T1 = (int_CS_tag*)t1;
-	const int_CS_tag* T2 = (int_CS_tag*)t2;
+int tokens_as_int_equal(const void* t1, const void* t2) {
+  const int_CS_tag* T1 = (int_CS_tag*)t1;
+  const int_CS_tag* T2 = (int_CS_tag*)t2;
 
-	if (!(T1->CStag))
-	{
-		if (tokens_equal_ignore_case(T1->tokens->token[T1->tokenID], T2->tokens->token[T2->tokenID], T1->alphabet))
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		return T1->tokenID == T2->tokenID;
-	}
+  if (!(T1->CStag)) {
+    if (tokens_equal_ignore_case(T1->tokens->token[T1->tokenID], T2->tokens->token[T2->tokenID], T1->alphabet)) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } else {
+    return T1->tokenID == T2->tokenID;
+  }
 }
 
-void* copy_token_as_int(const void* t)
-{
-	const int_CS_tag* source = (const int_CS_tag*)t;
-	int_CS_tag* ret = new_int_CS_tag(source->tokenID, source->CStag, source->tokens, source->alphabet);
-	return ret;
+void* copy_token_as_int(const void* t) {
+  const int_CS_tag* source = (const int_CS_tag*)t;
+  int_CS_tag* ret = new_int_CS_tag(source->tokenID, source->CStag, source->tokens, source->alphabet);
+  return ret;
 }
 
-void free_token_as_int(void* t)
-{
-	free_int_CS_tag((int_CS_tag*)t);
+void free_token_as_int(void* t) {
+  free_int_CS_tag((int_CS_tag*)t);
 }
 
 } // namespace unitex

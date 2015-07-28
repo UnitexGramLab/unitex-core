@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +42,7 @@
 namespace unitex {
 
 
-void build_sequence_automaton(char* txt,char* grf,Alphabet* alph,int only_stop,int max_wildcards,
+int build_sequence_automaton(char* txt,char* grf,Alphabet* alph,int only_stop,int max_wildcards,
 		int n_delete,int n_insert,int n_replace,int beautify,VersatileEncodingConfig* vec,
 		int case_sensitive);
 
@@ -98,7 +97,7 @@ const struct option_TS lopts_Seq2Grf[] = {
 int main_Seq2Grf(int argc, char* const argv[]) {
 if (argc==1) {
 	usage();
-	return 0;
+	return SUCCESS_RETURN_CODE;
 }
 char alphabet[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
@@ -107,41 +106,46 @@ int case_sensitive=1;
 int max_wildcards=0,n_delete=0,n_replace=0,n_insert=0,only_stop=0,beautify=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Seq2Grf,lopts_Seq2Grf,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Seq2Grf,lopts_Seq2Grf,&index))) {
 	switch (val) {
 		case 'a': {
-			if (vars->optarg[0] == '\0') {
-				fatal_error("You must specify a non empty alphabet file name\n");
+			if (options.vars()->optarg[0] == '\0') {
+				error("You must specify a non empty alphabet file name\n");
+				return USAGE_ERROR_CODE;
 			}
-			strcpy(alphabet, vars->optarg);
+			strcpy(alphabet, options.vars()->optarg);
 			break;
 		}
 		case 'o': {
-			strcpy(output, vars->optarg);
+			strcpy(output, options.vars()->optarg);
 			break;
 		}
 		case 'w': {
-			if (1!=sscanf(vars->optarg,"%d%c",&max_wildcards,&foo)) {
-				fatal_error("Invalid wildcards number argument: %s\n",vars->optarg);
+			if (1!=sscanf(options.vars()->optarg,"%d%c",&max_wildcards,&foo)) {
+				error("Invalid wildcards number argument: %s\n",options.vars()->optarg);
+				return USAGE_ERROR_CODE;
 			}
 			break;
 		}
 		case 'i': {
-			if (1!=sscanf(vars->optarg,"%d%c",&n_insert,&foo)) {
-				fatal_error("Invalid insertions argument: %s\n",vars->optarg);
+			if (1!=sscanf(options.vars()->optarg,"%d%c",&n_insert,&foo)) {
+				error("Invalid insertions argument: %s\n",options.vars()->optarg);
+				return USAGE_ERROR_CODE;
 			}
 			break;
 		}
 		case 'r': {
-			if (1!=sscanf(vars->optarg,"%d%c",&n_replace,&foo)) {
-				fatal_error("Invalid replacements argument: %s\n",vars->optarg);
+			if (1!=sscanf(options.vars()->optarg,"%d%c",&n_replace,&foo)) {
+				error("Invalid replacements argument: %s\n",options.vars()->optarg);
+				return USAGE_ERROR_CODE;
 			}
 			break;
 		}
 		case 'd': {
-			if (1!=sscanf(vars->optarg,"%d%c",&n_delete,&foo)) {
-				fatal_error("Invalid deletions argument: %s\n",vars->optarg);
+			if (1!=sscanf(options.vars()->optarg,"%d%c",&n_delete,&foo)) {
+				error("Invalid deletions argument: %s\n",options.vars()->optarg);
+				return USAGE_ERROR_CODE;
 			}
 			break;
 		}
@@ -167,56 +171,54 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Seq2Grf,lopts_Seq2Grf,&index
 		}
 		case 'h': {
 			usage();
-			return 0;
+			return SUCCESS_RETURN_CODE;
 		}
 		case 'k': {
-			if (vars->optarg[0] == '\0') {
-				fatal_error("Empty input_encoding argument\n");
+			if (options.vars()->optarg[0] == '\0') {
+				error("Empty input_encoding argument\n");
+				return USAGE_ERROR_CODE;
 			}
-			decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input), vars->optarg);
+			decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input), options.vars()->optarg);
 			break;
 		}
 		case 'q': {
-			if (vars->optarg[0] == '\0') {
-				fatal_error("Empty output_encoding argument\n");
+			if (options.vars()->optarg[0] == '\0') {
+				error("Empty output_encoding argument\n");
+				return USAGE_ERROR_CODE;
 			}
-			decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output), vars->optarg);
+			decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output), options.vars()->optarg);
 			break;
 		}
-		case ':': {
-			if (index == -1)
-				fatal_error("Missing argument for option -%c\n", vars->optopt);
-			else
-				fatal_error("Missing argument for option --%s\n",
-						lopts_Seq2Grf[index].name);
-			break;
-		}
-		case '?': {
-			if (index == -1)
-				fatal_error("Invalid option -%c\n", vars->optopt);
-			else
-				fatal_error("Invalid option --%s\n", vars->optarg);
-			break;
-		}
+    case ':': index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
+                            error("Missing argument for option --%s\n", lopts_Seq2Grf[index].name);
+              return USAGE_ERROR_CODE;
+    case '?': index == -1 ? error("Invalid option -%c\n", options.vars()->optopt) :
+                            error("Invalid option --%s\n", options.vars()->optarg);
+              return USAGE_ERROR_CODE;
 	}
 	index=-1;
 }
-if (vars->optind!=argc-1) {
-	fatal_error("Invalid arguments: rerun with --help\n");
+
+if (options.vars()->optind!=argc-1) {
+	error("Invalid arguments: rerun with --help\n");
+	return USAGE_ERROR_CODE;
 }
+
 if (output[0]=='\0') {
-	fatal_error("Error: you must specify the output .grf file\n");
+	error("Error: you must specify the output .grf file\n");
+	return USAGE_ERROR_CODE;
 }
+
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0' ) {
 	alph=load_alphabet(&vec,alphabet,0);
 }
-build_sequence_automaton(argv[vars->optind],output,alph,only_stop,max_wildcards,n_delete,
+
+int return_value = build_sequence_automaton(argv[options.vars()->optind],output,alph,only_stop,max_wildcards,n_delete,
 		n_insert,n_replace,beautify,&vec,case_sensitive);
 
 free_alphabet(alph);
-free_OptVars(vars);
-return 0;
+return return_value;
 }
 
 
@@ -432,13 +434,15 @@ free(variants);
 }
 
 
-void build_sequence_automaton(char* txt,char* output,Alphabet* alph,int only_stop,int max_wildcards,
+int build_sequence_automaton(char* txt,char* output,Alphabet* alph,int only_stop,int max_wildcards,
 		int n_delete,int n_insert,int n_replace,int do_beautify,VersatileEncodingConfig* vec,
 		int case_sensitive) {
 U_FILE* f=u_fopen(vec,txt,U_READ);
 if (f==NULL) {
-	fatal_error("Cannot open file %s\n",txt);
+	error("Cannot open file %s\n",txt);
+	return DEFAULT_ERROR_CODE;
 }
+
 Ustring* line=new_Ustring(1024);
 Ustring* seq=new_Ustring(1024);
 SingleGraph automaton=new_SingleGraph(INT_TAGS);
@@ -449,6 +453,7 @@ struct string_hash* tokens=new_string_hash(128);
 get_value_index(EPSILON,tokens);
 int first_on_this_line=0,line_start;
 u_printf("Seq2Grf: reading sequence file...\n");
+
 while (EOF!=readline(line,f)) {
 	/* If there is {STOP} tag, it is always a sequence delimiter */
 	line_start=0;
@@ -458,7 +463,9 @@ while (EOF!=readline(line,f)) {
 			 * part to the previous, with a \n if necessary
 			 */
 			if (first_on_this_line) {
-				if (seq->len!=0) u_strcat(seq,"\n");
+				if (seq->len!=0) {
+					u_strcat(seq,"\n");
+				}
 				first_on_this_line=0;
 			}
 			line->str[i]='\0';
@@ -472,7 +479,9 @@ while (EOF!=readline(line,f)) {
 		}
 	}
 	if (first_on_this_line) {
-		if (seq->len!=0) u_strcat(seq,"\n");
+		if (seq->len!=0) { 
+			u_strcat(seq,"\n");
+		}	
 		first_on_this_line=0;
 	}
 	u_strcat(seq,line->str+line_start);
@@ -485,26 +494,37 @@ while (EOF!=readline(line,f)) {
 }
 process_sequence(seq,alph,max_wildcards,n_delete,n_insert,n_replace,automaton,tokens,
 		case_sensitive);
+
 u_fclose(f);
 free_Ustring(line);
 free_Ustring(seq);
+
 u_printf("Seq2Grf: minimizing graph...\n");
 minimize(automaton,1);
+
 Grf* grf=sentence_to_grf(automaton,tokens,12);
 if (do_beautify) {
 	u_printf("Seq2Grf: beautifying graph...\n");
 	beautify(grf,alph);
 }
+
 U_FILE* f_output=u_fopen(vec,output,U_WRITE);
 if (f_output==NULL) {
-	fatal_error("Cannot create file %s\n",output);
+	error("Cannot create file %s\n",output);
+  free_Grf(grf);
+  free_string_hash(tokens);
+  free_SingleGraph(automaton,NULL);
+  return DEFAULT_ERROR_CODE;
 }
+
 save_Grf(f_output,grf);
+
 u_fclose(f_output);
 free_Grf(grf);
 free_string_hash(tokens);
 free_SingleGraph(automaton,NULL);
 u_printf("Seq2Grf: done.\n");
+return SUCCESS_RETURN_CODE;
 }
 
 

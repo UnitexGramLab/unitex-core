@@ -46,9 +46,6 @@
 
 namespace unitex {
 
-
-
-
 const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNncm:s:ir:f:T:L:C:$:";
 const struct option_TS lopts_Cassys[] = {
         {"text", required_argument_TS, NULL, 't'},
@@ -86,9 +83,9 @@ const char* usage_Cassys =
         "-r X/--transducer_dir=X: take transducer on directory X (so you don't specify \n"
         "      full path for each transducer; note that X must be (back)slash terminated\n"
         "-w DIC/--morpho=DIC: specifies that DIC is a .bin dictionary\n"
-                 "                       to use in morphological mode. Use as many\n"
-                 "                       -m XXX as there are .bin to use. You can also\n"
-                 "                       separate several .bin with semi-colons.\n"
+        "                       to use in morphological mode. Use as many\n"
+        "                       -m XXX as there are .bin to use. You can also\n"
+        "                       separate several .bin with semi-colons.\n"
         "-l TRANSDUCERS_LIST/--transducers_list=TRANSDUCERS_LIST the transducers list file with their output policy\n"
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
@@ -111,21 +108,21 @@ const char* usage_Cassys =
         "-h/--help display this help\n"
         "\n"
         "Applies a list of grammar to a text and saves the matching sequence index in a\n"
-         "file named \"concord.ind\" stored in the text directory.\n\n"
-         "The target text file has to be a preprocessed snt file with its _snt/ directory.\n"
-         "The transducer list file is a file in which each line contains the path to a transducer.\n"
-         "followed by the output policy to be applied to this transducer.\n"
-         "Instead a list file, you can specify each file and each output policy by a set of couple\n"
-         "of -s/--transducer_file and -m/--transducer_policy argument to enumerate the list\n"
-         "The policy may be MERGE or REPLACE.\n"
-         "The file option, the alphabet option and the transducer list file option are mandatory.\n"
-         "\n";
+        "file named \"concord.ind\" stored in the text directory.\n\n"
+        "The target text file has to be a preprocessed snt file with its _snt/ directory.\n"
+        "The transducer list file is a file in which each line contains the path to a transducer.\n"
+        "followed by the output policy to be applied to this transducer.\n"
+        "Instead a list file, you can specify each file and each output policy by a set of couple\n"
+        "of -s/--transducer_file and -m/--transducer_policy argument to enumerate the list\n"
+        "The policy may be MERGE or REPLACE.\n"
+        "The file option, the alphabet option and the transducer list file option are mandatory.\n"
+        "\n";
 
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Cassys);
+  display_copyright_notice();
+  u_printf(usage_Cassys);
 }
 
 struct grfInfo {
@@ -627,16 +624,16 @@ typedef struct {
 int main_Cassys(int argc,char* const argv[]) {
     if (argc==1) {
         usage();
-        return 0;
+        return SUCCESS_RETURN_CODE;
     }
 
     Cassys_text_buffer* textbuf = (Cassys_text_buffer*)malloc(sizeof(Cassys_text_buffer));
     if (textbuf == NULL) {
-        fatal_alloc_error("main_Cassys");
-        exit(1);
+        alloc_error("main_Cassys");
+        return ALLOC_ERROR_CODE;
     }
 
-    char* morpho_dic=NULL;
+    char* morpho_dic = NULL;
 
     bool has_transducer_list = false;
 
@@ -671,12 +668,31 @@ int main_Cassys(int argc,char* const argv[]) {
 
     struct transducer_name_and_mode_linked_list* transducer_name_and_mode_linked_list_arg=NULL;
 
-    vector_ptr * tokenize_additional_args = new_vector_ptr();
-    vector_ptr * locate_additional_args = new_vector_ptr();
-    vector_ptr * concord_additional_args = new_vector_ptr();
+    vector_ptr* tokenize_additional_args = new_vector_ptr();
+    if (tokenize_additional_args == NULL) {
+        alloc_error("main_Cassys");
+        free(temp_work_dir);
+        free(textbuf);
+        return ALLOC_ERROR_CODE;
+    }
 
-    if (locate_additional_args == NULL) {
-        fatal_alloc_error("main_Cassys");
+    vector_ptr* locate_additional_args   = new_vector_ptr();
+    if (locate_additional_args   == NULL) {
+        alloc_error("main_Cassys");
+        free_vector_ptr(tokenize_additional_args, free);
+        free(temp_work_dir);
+        free(textbuf);        
+        return ALLOC_ERROR_CODE;
+    }
+
+    vector_ptr* concord_additional_args  = new_vector_ptr();
+    if (tokenize_additional_args == NULL) {
+        alloc_error("main_Cassys");
+        free_vector_ptr(locate_additional_args, free);
+        free_vector_ptr(tokenize_additional_args, free);
+        free(temp_work_dir);
+        free(textbuf);        
+        return ALLOC_ERROR_CODE;
     }
 
     // decode the command line
@@ -686,121 +702,219 @@ int main_Cassys(int argc,char* const argv[]) {
     textbuf->transducer_filename_prefix[0]='\0';
     textbuf->name_uima_offsets_file[0] = '\0';
     textbuf->name_input_offsets_file[0] = '\0';
-    struct OptVars* vars=new_OptVars();
-    while (EOF != (val = getopt_long_TS(argc, argv, optstring_Cassys,
-            lopts_Cassys, &index, vars))) {
+    UnitexGetOpt options;
+    while (EOF != (val=options.parse_long(argc, argv, optstring_Cassys,
+                                          lopts_Cassys, &index))) {
         switch (val) {
         case 'h': usage();
-                  free_OptVars(vars);
                   free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
-                  if (morpho_dic != NULL) {
-                     free(morpho_dic);
-                  }
-                  if (temp_work_dir != NULL) {
-                      free(temp_work_dir);
-                  }
-                  free_vector_ptr(tokenize_additional_args, free);
-                  free_vector_ptr(locate_additional_args, free);
                   free_vector_ptr(concord_additional_args, free);
+                  free_vector_ptr(locate_additional_args, free);
+                  free_vector_ptr(tokenize_additional_args, free);
+                  free(temp_work_dir);
+                  free(morpho_dic);
                   free(textbuf);
-                  return 0;
-        case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+                  return SUCCESS_RETURN_CODE;
+        case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-        case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+        case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
         case 't': {
-            if (vars -> optarg[0] == '\0') {
-                fatal_error("Command line error : Empty file name argument\n");
+            if (options.vars()->optarg[0] == '\0') {
+                error("Command line error : Empty file name argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
             }
 
-            get_extension(vars -> optarg, textbuf->extension_text_name);
+            get_extension(options.vars()->optarg, textbuf->extension_text_name);
             if (strcmp(textbuf->extension_text_name, ".snt") != 0) {
-                fatal_error(
-                        "Command line error : File name argument %s must be a preprocessed snt file\n",
-                        vars -> optarg);
+                error("Command line error : File name argument %s must be a preprocessed snt file\n",
+                        options.vars()->optarg);
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
             }
 
-            strcpy(textbuf->text_file_name, vars -> optarg);
+            strcpy(textbuf->text_file_name, options.vars()->optarg);
             has_text_file_name = true;
 
             break;
         }
         case 'l': {
-            if(vars -> optarg[0] == '\0'){
-                fatal_error("Command line error : Empty transducer list argument\n");
+            if(options.vars()->optarg[0] == '\0'){
+                error("Command line error : Empty transducer list argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
             } else {
-                strcpy(textbuf->transducer_list_file_name, vars -> optarg);
+                strcpy(textbuf->transducer_list_file_name, options.vars()->optarg);
                 has_transducer_list = true;
             }
             break;
         }
         case 'r': {
-            if(vars -> optarg[0] == '\0'){
-                fatal_error("Command line error : Empty transducer directory argument\n");
+            if(options.vars()->optarg[0] == '\0'){
+                error("Command line error : Empty transducer directory argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
             } else {
-                strcpy(textbuf->transducer_filename_prefix, vars -> optarg);
+                strcpy(textbuf->transducer_filename_prefix, options.vars()->optarg);
                 has_transducer_list = true;
             }
             break;
         }
         case 's': {
-            if(vars -> optarg[0] == '\0'){
-                fatal_error("Command line error : Empty transducer filename argument\n");
+            if(options.vars()->optarg[0] == '\0'){
+                error("Command line error : Empty transducer filename argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
             } else {
-                transducer_name_and_mode_linked_list_arg=add_transducer_linked_list_new_name(transducer_name_and_mode_linked_list_arg,vars -> optarg);
+                transducer_name_and_mode_linked_list_arg=add_transducer_linked_list_new_name(transducer_name_and_mode_linked_list_arg,options.vars()->optarg);
             }
             break;
         }
         case 'm': {
-            if(vars -> optarg[0] == '\0'){
-                fatal_error("Command line error : Empty transducer mode argument\n");
+            if(options.vars()->optarg[0] == '\0'){
+                error("Command line error : Empty transducer mode argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
             } else {
-                set_last_transducer_linked_list_mode_by_string(transducer_name_and_mode_linked_list_arg,vars -> optarg);
+                set_last_transducer_linked_list_mode_by_string(transducer_name_and_mode_linked_list_arg,options.vars()->optarg);
             }
             break;
         }
         case 'a':{
-            if (vars -> optarg[0] == '\0') {
-                fatal_error("Command line error : Empty alphabet argument\n");
+            if (options.vars()->optarg[0] == '\0') {
+                error("Command line error : Empty alphabet argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;
             } else {
-                strcpy(textbuf->alphabet_file_name, vars -> optarg);
+                strcpy(textbuf->alphabet_file_name, options.vars()->optarg);
                 has_alphabet = true;
             }
             break;
         }
         case '$':{
-            if (vars -> optarg[0] == '\0') {
-                fatal_error("Command line error : Empty input offsets file argument\n");
+            if (options.vars()->optarg[0] == '\0') {
+                error("Command line error : Empty input offsets file argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;
             } else {
-                strcpy(textbuf->name_input_offsets_file, vars -> optarg);
+                strcpy(textbuf->name_input_offsets_file, options.vars()->optarg);
                 has_alphabet = true;
             }
             break;
         }
         case 'f':{
-            if (vars -> optarg[0] == '\0') {
-                fatal_error("Command line error : Empty uima offsets file argument\n");
+            if (options.vars()->optarg[0] == '\0') {
+                error("Command line error : Empty uima offsets file argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;
             } else {
-                strcpy(textbuf->name_uima_offsets_file, vars -> optarg);
+                strcpy(textbuf->name_uima_offsets_file, options.vars()->optarg);
                 has_alphabet = true;
             }
             break;
         }
-        case 'g': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify an argument for negation operator\n");
+        case 'g': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify an argument for negation operator\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;                
              }
-             if ((strcmp(vars->optarg,"minus")!=0) && (strcmp(vars->optarg,"-")!=0) &&
-                 (strcmp(vars->optarg,"tilde")!=0) && (strcmp(vars->optarg,"~")!=0))
+             if ((strcmp(options.vars()->optarg,"minus")!=0) && (strcmp(options.vars()->optarg,"-")!=0) &&
+                 (strcmp(options.vars()->optarg,"tilde")!=0) && (strcmp(options.vars()->optarg,"~")!=0))
              {
-                 fatal_error("You must specify a valid argument for negation operator\n");
+                 error("You must specify a valid argument for negation operator\n");
+                 free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                 free_vector_ptr(concord_additional_args, free);
+                 free_vector_ptr(locate_additional_args, free);
+                 free_vector_ptr(tokenize_additional_args, free);
+                 free(temp_work_dir);
+                 free(morpho_dic);
+                 free(textbuf);
+                 return USAGE_ERROR_CODE;
              }
-             strcpy(negation_operator,vars->optarg);
+             strcpy(negation_operator,options.vars()->optarg);
              break;
         case 'i': {
             in_place = 1;
@@ -835,113 +949,175 @@ int main_Cassys(int argc,char* const argv[]) {
             break;
         }
         case 'p' : {
-            if (vars->optarg[0] != '\0') {
+            if (options.vars()->optarg[0] != '\0') {
                    if (temp_work_dir != NULL) {
                       free(temp_work_dir);
                    }
-                   temp_work_dir = strdup(vars->optarg);
+                   temp_work_dir = strdup(options.vars()->optarg);
                     if (temp_work_dir == NULL) {
-                        fatal_alloc_error("main_Cassys");
+                        alloc_error("main_Cassys");
+                        free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                        free_vector_ptr(concord_additional_args, free);
+                        free_vector_ptr(locate_additional_args, free);
+                        free_vector_ptr(tokenize_additional_args, free);
+                        free(morpho_dic);
+                        free(textbuf);
+                        return ALLOC_ERROR_CODE;                      
                     }
 
             }
             break;
         }
         case 'w' : {
-            if (vars->optarg[0] != '\0') {
+            if (options.vars()->optarg[0] != '\0') {
                 if (morpho_dic == NULL) {
-                    morpho_dic = strdup(vars->optarg);
+                    morpho_dic = strdup(options.vars()->optarg);
                     if (morpho_dic == NULL) {
-                        fatal_alloc_error("main_Cassys");
+                        alloc_error("main_Cassys");
+                        free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                        free_vector_ptr(concord_additional_args, free);
+                        free_vector_ptr(locate_additional_args, free);
+                        free_vector_ptr(tokenize_additional_args, free);
+                        free(temp_work_dir);
+                        free(textbuf);
+                        return ALLOC_ERROR_CODE; 
                     }
                 } else {
-                    morpho_dic = (char*) realloc((void*) morpho_dic, strlen(
-                            morpho_dic) + strlen(vars->optarg) + 2);
-                    if (morpho_dic == NULL) {
-                        fatal_alloc_error("main_Cassys");
+                    char* more_morpho_dics = (char*) realloc((void*) morpho_dic, strlen(
+                            morpho_dic) + strlen(options.vars()->optarg) + 2);
+                    if (more_morpho_dics != NULL) {
+                        morpho_dic = more_morpho_dics;
+                    } else {
+                        alloc_error("main_Cassys");
+                        free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                        free_vector_ptr(concord_additional_args, free);
+                        free_vector_ptr(locate_additional_args, free);
+                        free_vector_ptr(tokenize_additional_args, free);
+                        free(temp_work_dir);
+                        free(morpho_dic);
+                        free(textbuf);
+                        return ALLOC_ERROR_CODE; 
                     }
                     strcat(morpho_dic, ";");
-                    strcat(morpho_dic, vars->optarg);
+                    strcat(morpho_dic, options.vars()->optarg);
                 }
             }
             break;
         }
         case 'T': {
-            if (vars->optarg[0] != '\0') {
-                char * locate_arg = strdup(vars->optarg);
+            if (options.vars()->optarg[0] != '\0') {
+                char * locate_arg = strdup(options.vars()->optarg);
                 if (locate_arg == NULL) {
-                    fatal_alloc_error("main_Cassys");
+                    alloc_error("main_Cassys");
+                    free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                    free_vector_ptr(concord_additional_args, free);
+                    free_vector_ptr(locate_additional_args, free);
+                    free_vector_ptr(tokenize_additional_args, free);
+                    free(temp_work_dir);
+                    free(textbuf);
+                    return ALLOC_ERROR_CODE; 
                 }
                 vector_ptr_add(tokenize_additional_args, locate_arg);
             }
             break;
         }
         case 'L': {
-            if (vars->optarg[0] != '\0') {
-                char * locate_arg = strdup(vars->optarg);
+            if (options.vars()->optarg[0] != '\0') {
+                char * locate_arg = strdup(options.vars()->optarg);
                 if (locate_arg == NULL) {
-                    fatal_alloc_error("main_Cassys");
+                    alloc_error("main_Cassys");
+                    free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                    free_vector_ptr(concord_additional_args, free);
+                    free_vector_ptr(locate_additional_args, free);
+                    free_vector_ptr(tokenize_additional_args, free);
+                    free(temp_work_dir);
+                    free(textbuf);
+                    return ALLOC_ERROR_CODE; 
                 }
                 vector_ptr_add(locate_additional_args, locate_arg);
             }
             break;
         }
         case 'C': {
-            if (vars->optarg[0] != '\0') {
-                char * locate_arg = strdup(vars->optarg);
+            if (options.vars()->optarg[0] != '\0') {
+                char * locate_arg = strdup(options.vars()->optarg);
                 if (locate_arg == NULL) {
-                    fatal_alloc_error("main_Cassys");
+                    alloc_error("main_Cassys");
+                    free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                    free_vector_ptr(concord_additional_args, free);
+                    free_vector_ptr(locate_additional_args, free);
+                    free_vector_ptr(tokenize_additional_args, free);
+                    free(temp_work_dir);
+                    free(textbuf);
+                    return ALLOC_ERROR_CODE; 
                 }
                 vector_ptr_add(concord_additional_args, locate_arg);
             }
             break;
         }
         default :{
-            fatal_error("Unknown option : %c\n",val);
-            break;
+            error("Unknown option : %c\n",val);
+            free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+            free_vector_ptr(concord_additional_args, free);
+            free_vector_ptr(locate_additional_args, free);
+            free_vector_ptr(tokenize_additional_args, free);
+            free(temp_work_dir);
+            free(textbuf);
+            return USAGE_ERROR_CODE;
         }
         }
     }
     index = -1;
 
+    int command_line_errors = 0;
+
     if(has_alphabet == false){
-        fatal_error("Command line error : no alphabet provided\nRerun with --help\n");
+        error("Command line error : no alphabet provided\nRerun with --help\n");
+        command_line_errors = 1;
     }
     if(has_text_file_name == false){
-        fatal_error("Command line error : no text file provided\nRerun with --help\n");
+        error("Command line error : no text file provided\nRerun with --help\n");
+        command_line_errors = 1;
     }
     if((has_transducer_list == false) && (transducer_name_and_mode_linked_list_arg == NULL)){
-        fatal_error("Command line error : no transducer list provided\nRerun with --help\n");
+        error("Command line error : no transducer list provided\nRerun with --help\n");
+        command_line_errors = 1;
     }
 
-
+    if(command_line_errors) {
+        free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+        free_vector_ptr(concord_additional_args, free);
+        free_vector_ptr(locate_additional_args, free);
+        free_vector_ptr(tokenize_additional_args, free);
+        free(temp_work_dir);
+        free(morpho_dic);
+        free(textbuf);
+        return USAGE_ERROR_CODE;
+    }
 
     // Load the list of transducers from the file transducer list and stores it in a list
     //struct fifo *transducer_list = load_transducer(transducer_list_file_name);
-    if ((transducer_name_and_mode_linked_list_arg == NULL) && has_transducer_list)
+    if ((transducer_name_and_mode_linked_list_arg == NULL) && has_transducer_list) {
         transducer_name_and_mode_linked_list_arg = load_transducer_list_file(textbuf->transducer_list_file_name, translate_path_separator_to_native);
+    }
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg, textbuf->transducer_filename_prefix);
 
-   int ret_value = cascade(textbuf->text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
+    int return_value = cascade(textbuf->text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
         transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
         dump_graph, realign_token_graph_pointer, display_perf);
 
-    if (temp_work_dir != NULL){
-        free(temp_work_dir);
-    }
-    if(morpho_dic != NULL){
-        free(morpho_dic);
-    }
     free_fifo(transducer_list);
-    free_OptVars(vars);
     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
-    free_vector_ptr(tokenize_additional_args, free);
-    free_vector_ptr(locate_additional_args, free);
     free_vector_ptr(concord_additional_args, free);
+    free_vector_ptr(locate_additional_args, free);
+    free_vector_ptr(tokenize_additional_args, free);
+    free(temp_work_dir);
+    free(morpho_dic);
     free(textbuf);
-    return ret_value;
+       
+    return return_value;
 }
 
 
@@ -1037,7 +1213,6 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
     int dump_graph, int realign_token_graph_pointer, int display_perf) {
 
-    int ret_value = 0;
     unsigned int time_tokenize = 0;
     unsigned int time_grf2fst2 = 0;
     unsigned int time_locate = 0;
@@ -1045,7 +1220,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     unsigned int time_cascade = 0;
 
     unsigned int nb_perf_info = 0;
-    unsigned int nb_perf_info_allocated = 0;
+    unsigned int nb_perf_info_allocated  = 0;
     locate_perf_info* p_locate_perf_info = NULL;
 
     hTimeElapsed htm_cascade = NULL;
@@ -1054,27 +1229,29 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         nb_perf_info_allocated = 1;
         p_locate_perf_info = (locate_perf_info*)malloc(nb_perf_info_allocated*sizeof(locate_perf_info));
         if (p_locate_perf_info == NULL) {
-            fatal_alloc_error("cascade");
-            exit(1);
+            alloc_error("cascade");
+            return ALLOC_ERROR_CODE;
         }
     }
 
     Cascade_text_buffer* textbuf = (Cascade_text_buffer*)malloc(sizeof(Cascade_text_buffer));
     if (textbuf == NULL) {
-        fatal_alloc_error("cascade");
-        exit(1);
+        alloc_error("cascade");
+        free(p_locate_perf_info);
+        return ALLOC_ERROR_CODE;
     }
-    cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
+    cassys_tokens_allocation_tool* tokens_allocation_tool = build_cassys_tokens_allocation_tool();
 
     if (must_do_temp_cleanup) {
         in_place = 1;
     }
+
     const char* text = original_text;
-    char * build_text = NULL;
-    char * build_work_text_snt_path = NULL;
-    char * build_work_text_csc_path = NULL;
-    char * build_work_text_csc_work_path = NULL;
+    char* build_text = NULL;
+    char* build_work_text_snt_path = NULL;
+    char* build_work_text_csc_path = NULL;
+    char* build_work_text_csc_work_path = NULL;
     vector_int* uima_offsets = NULL;
 
     if (name_uima_offsets_file != NULL)
@@ -1091,27 +1268,45 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
             build_work_text_snt_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
             if (build_work_text_snt_path == NULL) {
-                fatal_alloc_error("load_transducer_from_linked_list");
-                exit(1);
+                alloc_error("load_transducer_from_linked_list");
+                free_vector_int(uima_offsets);
+                free(textbuf);
+                free(p_locate_perf_info);
+                return ALLOC_ERROR_CODE;
             }
 
             build_work_text_csc_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
             if (build_work_text_csc_path == NULL) {
-                fatal_alloc_error("load_transducer_from_linked_list");
-                exit(1);
+                alloc_error("load_transducer_from_linked_list");
+                free(build_work_text_snt_path);
+                free_vector_int(uima_offsets);
+                free(textbuf);
+                free(p_locate_perf_info);
+                return ALLOC_ERROR_CODE;
             }
 
             build_work_text_csc_work_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
             if (build_work_text_csc_work_path == NULL) {
-                fatal_alloc_error("load_transducer_from_linked_list");
-                exit(1);
+                alloc_error("load_transducer_from_linked_list");
+                free(build_work_text_csc_path);
+                free(build_work_text_snt_path);
+                free_vector_int(uima_offsets);
+                free(textbuf);
+                free(p_locate_perf_info);
+                return ALLOC_ERROR_CODE;
             }
 
             if (len_temp_work_dir > 0) {
                 build_text = (char*)malloc(len_temp_work_dir + strlen(original_text) + 0x10);
                 if (build_text == NULL) {
-                    fatal_alloc_error("load_transducer_from_linked_list");
-                    exit(1);
+                    alloc_error("load_transducer_from_linked_list");
+                    free(build_work_text_csc_work_path);
+                    free(build_work_text_csc_path);
+                    free(build_work_text_snt_path);
+                    free_vector_int(uima_offsets);
+                    free(textbuf);
+                    free(p_locate_perf_info);
+                    return ALLOC_ERROR_CODE;
                 }
 
                 strcpy(build_text, (len_temp_work_dir > 0) ? temp_work_dir : original_text);
@@ -1122,10 +1317,17 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 remove_path(original_text, build_text + strlen(build_text));
 
 
-                char * build_original_text_snt_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
+                char* build_original_text_snt_path = (char*)malloc(len_temp_work_dir + (strlen(original_text) * 2) + 0x40);
                 if (build_original_text_snt_path == NULL) {
-                    fatal_alloc_error("load_transducer_from_linked_list");
-                    exit(1);
+                    alloc_error("load_transducer_from_linked_list");
+                    free(build_text);
+                    free(build_work_text_csc_work_path);
+                    free(build_work_text_csc_path);
+                    free(build_work_text_snt_path);
+                    free_vector_int(uima_offsets);
+                    free(textbuf);
+                    free(p_locate_perf_info);
+                    return ALLOC_ERROR_CODE;
                 }
 
                 get_snt_path(text, build_original_text_snt_path);
@@ -1156,17 +1358,17 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     //launch_tokenize_in_Cassys(text,alphabet,NULL,vec,tokenize_args, display_perf);
 
     //if (in_place == 0)
-        initialize_working_directory(text, must_create_directory);
+    initialize_working_directory(text, must_create_directory);
 
-    struct snt_files *snt_text_files = new_snt_files(text);
+    struct snt_files* snt_text_files = new_snt_files(text);
 
-    struct text_tokens *tokens = NULL;
-    cassys_tokens_list *tokens_list = cassys_load_text(vec,snt_text_files->tokens_txt, snt_text_files->text_cod,&tokens, uima_offsets,tokens_allocation_tool);
+    struct text_tokens* tokens = NULL;
+    cassys_tokens_list* tokens_list = cassys_load_text(vec,snt_text_files->tokens_txt, snt_text_files->text_cod,&tokens, uima_offsets,tokens_allocation_tool);
 
     u_printf("CasSys Cascade begins\n");
 
     int transducer_number = 1;
-    char *labeled_text_name = NULL;
+    char* labeled_text_name = NULL;
 
     if (in_place != 0){
        labeled_text_name = create_labeled_files_and_directory(text,
@@ -1193,7 +1395,22 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         int is_template_grf = current_transducer->generic_graph;
 
         if ((!is_template_grf) && is_debug_mode(current_transducer, vec) == true) {
-            fatal_error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
+            error("graph %s has been compiled in debug mode. Please recompile it in normal mode\n", current_transducer->transducer_file_name);
+            free(labeled_text_name);
+            free_text_tokens(tokens);
+            free_snt_files(snt_text_files);
+            free(build_text);
+            free(build_work_text_csc_work_path);
+            free(build_work_text_csc_path);
+            free(build_work_text_snt_path);
+            free_vector_int(uima_offsets);
+            free_cassys_tokens_allocation_tool(tokens_allocation_tool);
+            free(textbuf);
+            for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
+                free((p_locate_perf_info + loop_display_perf)->name);
+            }
+            free(p_locate_perf_info);
+            return DEFAULT_ERROR_CODE;           
         }
 
         for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
@@ -1279,14 +1496,30 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                     time_locate += time_this_locate;
                     if (nb_perf_info_allocated <= nb_perf_info) {
                         nb_perf_info_allocated *= 2;
-                        p_locate_perf_info = (locate_perf_info*)realloc(p_locate_perf_info,nb_perf_info_allocated*sizeof(locate_perf_info));
-                        if (p_locate_perf_info == NULL) {
-                            fatal_alloc_error("cascade");
-                            exit(1);
+                        locate_perf_info* p_locate_perf_info_more = (locate_perf_info*)realloc(p_locate_perf_info,nb_perf_info_allocated*sizeof(locate_perf_info));
+                        if (p_locate_perf_info_more != NULL) {
+                            p_locate_perf_info = p_locate_perf_info_more;
+                        } else {
+                            alloc_error("cascade");
+                            free(labeled_text_name);
+                            free_text_tokens(tokens);
+                            free_snt_files(snt_text_files);
+                            free(build_text);
+                            free(build_work_text_csc_work_path);
+                            free(build_work_text_csc_path);
+                            free(build_work_text_snt_path);
+                            free_vector_int(uima_offsets);
+                            free_cassys_tokens_allocation_tool(tokens_allocation_tool);
+                            free(textbuf);
+                            for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
+                                free((p_locate_perf_info + loop_display_perf)->name);
+                            }
+                            free(p_locate_perf_info);
+                            return ALLOC_ERROR_CODE;
                         }
                     }
                     (p_locate_perf_info + nb_perf_info)->elapsed_time = time_this_locate;
-                    (p_locate_perf_info + nb_perf_info)->name = strdup(current_transducer->transducer_file_name);
+                    (p_locate_perf_info + nb_perf_info)->name  = strdup(current_transducer->transducer_file_name);
                     (p_locate_perf_info + nb_perf_info)->index = nb_perf_info;
                     nb_perf_info++;
                 }
@@ -1313,14 +1546,16 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
 
             if (updated_grf_file_name) {
-                if (must_do_temp_cleanup)
+                if (must_do_temp_cleanup) {
                     af_remove(updated_grf_file_name);
+                }
                 free(updated_grf_file_name);
             }
 
             if (updated_fst2_file_name) {
-                if (must_do_temp_cleanup)
+                if (must_do_temp_cleanup) {
                     af_remove(updated_fst2_file_name);
+                }
                 free(updated_fst2_file_name);
             }
 
@@ -1374,8 +1609,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(textbuf->result_file_name_path_XML, textbuf->last_resulting_text_path);
 
     textbuf->result_file_name_path_offset[0]='\0';
-    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
+    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0'))) {
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_txt_offsets.txt", textbuf->text_name_without_extension);
+    }
 
     // create the text file including XMLized concordance
     launch_concord_in_Cassys(textbuf->result_file_name_path_XML, snt_files->concord_ind, alphabet,
@@ -1387,8 +1623,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(textbuf->result_file_name_path_raw, textbuf->last_resulting_text_path);
 
     textbuf->result_file_name_path_offset[0] = '\0';
-    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')))
+    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0'))) {
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_raw_offsets.txt", textbuf->text_name_without_extension);
+    }
 
     // relaunch the construction of the concord file without XML
     construct_cascade_concord(tokens_list,text,transducer_number, iteration, vec);
@@ -1396,12 +1633,10 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     launch_concord_in_Cassys(textbuf->result_file_name_path_raw, snt_files->concord_ind, alphabet,
         name_input_offsets_file, name_uima_offsets_file, textbuf->result_file_name_path_offset, vec,concord_args, display_perf, display_perf ? &time_concord : NULL);
 
-    if (dump_graph)
-    {
+    if (dump_graph) {
         sprintf(textbuf->graph_file_name, "%s.dot", textbuf->text_name_without_extension);
         cassys_tokens_2_graph(tokens_list, textbuf->graph_file_name, realign_token_graph_pointer);
     }
-
 
     //free_cassys_tokens_list(tokens_list);
     free_snt_files(snt_files);
@@ -1421,26 +1656,30 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         cleanup_work_directory_content(build_work_text_csc_path);
     }
 
-    if (labeled_text_name != NULL)
+    if (labeled_text_name != NULL) {
       free(labeled_text_name);
+    }
 
-    if (build_text != NULL)
+    if (build_text != NULL) {
         free(build_text);
+    }
 
-    if (build_work_text_snt_path != NULL)
+    if (build_work_text_snt_path != NULL) {
         free(build_work_text_snt_path);
+    }
 
-    if (build_work_text_csc_path != NULL)
+    if (build_work_text_csc_path != NULL) {
         free(build_work_text_csc_path);
+    }
 
-    if (build_work_text_csc_work_path != NULL)
+    if (build_work_text_csc_work_path != NULL) {
         free(build_work_text_csc_work_path);
+    }
 
-    if (uima_offsets != NULL)
+    if (uima_offsets != NULL) {
         free_vector_int(uima_offsets);
+    }
     free(textbuf);
-
-
 
     if (display_perf) {
         time_cascade = SyncGetMSecElapsed(htm_cascade);
@@ -1472,14 +1711,14 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 (p_locate_perf_info + loop_display_perf)->name);
     }
 
-	if (p_locate_perf_info != NULL)
-	{
-		for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++)
+	if (p_locate_perf_info != NULL) {
+		for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
 			free((p_locate_perf_info + loop_display_perf)->name);
+        }
 		free(p_locate_perf_info);
 	}
 
-    return ret_value;
+    return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

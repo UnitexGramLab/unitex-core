@@ -50,14 +50,14 @@ const char* usage_Compress =
          "\n"
          "OPTIONS:\n"
          "  -o BIN/--output=BIN: name of destination file (by default, xxx.dic produces\n"
-		 "                       xxx.bin). This option is mandatory when there are more than\n"
-		 "                       one input .dic file\n"
+         "                       xxx.bin). This option is mandatory when there are more than\n"
+         "                       one input .dic file\n"
          "  -f/--flip: specifies that the inflected and lemma forms must be swapped\n"
          "  -s/--semitic: uses the semitic compression algorithm\n"
-		 "  --v1: produces an old style .bin file\n"
-		 "  --v2: produces a new style .bin file, with no file size limitation to 16Mb\n"
-		 "        and a smaller size (default)\n"
-		 "  -h/--help: this help\n"
+         "  --v1: produces an old style .bin file\n"
+         "  --v2: produces a new style .bin file, with no file size limitation to 16Mb\n"
+         "        and a smaller size (default)\n"
+         "  -h/--help: this help\n"
          "\n"
          "Compresses one or more dictionaries into an finite state automaton. This automaton\n"
          "is stored is a .bin file, and the associated inflectional codes are\n"
@@ -65,8 +65,8 @@ const char* usage_Compress =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Compress);
+  display_copyright_notice();
+  u_printf(usage_Compress);
 }
 
 
@@ -115,9 +115,9 @@ if (semitic) {
    add_argument(invoker,"-s");
 }
 if (new_style_bin) {
-	add_argument(invoker,"--v2");
+  add_argument(invoker,"--v2");
 } else {
-	add_argument(invoker,"--v1");
+  add_argument(invoker,"--v1");
 }
 
 add_argument(invoker,dic);
@@ -150,7 +150,7 @@ const struct option_TS lopts_Compress[]= {
 int main_Compress(int argc, char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int FLIP=0;
@@ -160,10 +160,12 @@ int semitic=0;
 
 size_t step_filename_buffer = ((((DIC_WORD_SIZE*sizeof(unichar)) / 0x10) + 1) * 0x10);
 char* buffer_filename = (char*)malloc(step_filename_buffer * 5);
-if (buffer_filename == NULL)
-{
-	fatal_alloc_error("main_Compress");
+
+if (buffer_filename == NULL) {
+  alloc_error("main_Compress");
+  return ALLOC_ERROR_CODE;
 }
+
 char* bin = (buffer_filename + (step_filename_buffer * 0));
 char* inf = (buffer_filename + (step_filename_buffer * 1));
 *bin = '\0';
@@ -171,247 +173,291 @@ char* inf = (buffer_filename + (step_filename_buffer * 1));
 VersatileEncodingConfig vec=VEC_DEFAULT;
 
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Compress,lopts_Compress,&index))) {
    switch(val) {
    case 'f': FLIP=1; break;
    case 's': semitic=1; break;
    case 1: new_style_bin=0; bin_type=BIN_CLASSIC; break;
    case 2: new_style_bin=1; bin_type=BIN_CLASSIC; break;
    case 3: new_style_bin=1; bin_type=BIN_BIN2; break;
-   case 'h': usage(); free(buffer_filename); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output\n");
+   case 'h': usage();
+             free(buffer_filename);
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Compress[index].name);
+             free(buffer_filename);
+             return USAGE_ERROR_CODE;          
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             strcpy(bin,vars->optarg);
+             strcpy(bin,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                free(buffer_filename);
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             free(buffer_filename);            
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind==argc) {
+if (options.vars()->optind==argc) {
    error("Invalid arguments: rerun with --help\n");
    free(buffer_filename);
-   return 1;
+   return USAGE_ERROR_CODE;
 }
 
-if (vars->optind!=argc-1 && bin[0]=='\0') {
-	fatal_error("You must use the -o option when there are more than one .dic\n");
+if (options.vars()->optind!=argc-1 && bin[0]=='\0') {
+   error("You must use the -o option when there are more than one .dic\n");
+   free(buffer_filename);
+   return USAGE_ERROR_CODE;   
 }
 
-Abstract_allocator compress_abstract_allocator=NULL;
-Abstract_allocator compress_tokenize_abstract_allocator=NULL;
-int tokenize_allocator_has_clean = 0;
-
-compress_abstract_allocator=create_abstract_allocator("main_Compress",AllocatorCreationFlagAutoFreePrefered);
-compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize_first",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
-tokenize_allocator_has_clean = ((get_allocator_flag(compress_tokenize_abstract_allocator) & AllocatorCleanPresent) != 0);
-
-U_FILE* f;
-U_FILE* INF_file=NULL;
-struct dela_entry* entry;
-struct dictionary_node* root; /* Root of the dictionary tree */
-struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
-
-/* We compute the name of the output .bin and .inf files */
+// Compute the name of the output .bin file
 if (bin[0]=='\0') {
-	strcpy(bin,argv[vars->optind]);
-	remove_extension(bin);
-	strcat(bin,".bin");
-	if (bin_type==BIN_BIN2) {
-		strcat(bin,"2");
-	}
+  strcpy(bin,argv[options.vars()->optind]);
+  remove_extension(bin);
+  strcat(bin,".bin");
+  if (bin_type==BIN_BIN2) {
+    strcat(bin,"2");
+  }
 }
+
+// Compute the name of the output .inf file
 remove_extension(bin,inf);
 strcat(inf,".inf");
+
+U_FILE* INF_file=NULL;
 if (bin_type==BIN_CLASSIC) {
-	INF_file=u_fopen(&vec,inf,U_WRITE);
-	if (INF_file==NULL) {
-		fatal_error("Cannot create %s\n",inf);
-	}
-	/* First, we print a sequence of zeros at the beginning of the .inf file
-	 * in order to book some place, so that we can later come and write there
-	 * the number of lines of this file. */
-	u_fprintf(INF_file,"0000000000\n");
+  INF_file=u_fopen(&vec,inf,U_WRITE);
+  if (INF_file==NULL) {
+    error("Cannot create %s\n",inf);
+    free(buffer_filename);
+    return DEFAULT_ERROR_CODE;
+  }
+  /* First, we print a sequence of zeros at the beginning of the .inf file
+   * in order to book some place, so that we can later come and write there
+   * the number of lines of this file. */
+  u_fprintf(INF_file,"0000000000\n");
 }
-root=new_dictionary_node(compress_abstract_allocator);
-INF_codes=new_string_hash();
+
+Abstract_allocator compress_abstract_allocator = create_abstract_allocator("main_Compress",AllocatorCreationFlagAutoFreePrefered);
+Abstract_allocator compress_tokenize_abstract_allocator = create_abstract_allocator("main_Compress_tokenize_first",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
+int tokenize_allocator_has_clean = ((get_allocator_flag(compress_tokenize_abstract_allocator) & AllocatorCleanPresent) != 0);
+
+// Root of the dictionary tree
+struct dictionary_node* root  = new_dictionary_node(compress_abstract_allocator);
+// Structure that will contain all the INF codes
+struct string_hash* INF_codes = new_string_hash();
+
 unichar* tmp = (unichar*)(buffer_filename + (step_filename_buffer * 2));
 *tmp = '\0';
-/* We read until there is no more lines in the .dic file */
+
 Ustring* s=new_Ustring(DIC_WORD_SIZE);
+struct dela_entry* entry=NULL;
+U_FILE* f=NULL;
 int line=0; /* Current line number */
-for (;vars->optind!=argc;(vars->optind)++) {
-	u_printf("Compressing %s...\n",argv[vars->optind]);
-	f=u_fopen(&vec,argv[vars->optind],U_READ);
-	if (f==NULL) {
-		fatal_error("Cannot open %s\n",argv[vars->optind]);
-	}
-	while(EOF!=readline(s,f)) {
-		if (s->str[0]=='\0') {
-			/* Empty lines should not appear in a .dic file */
-			error("Line %d: empty line\n",line);
-		}
-		else if (s->str[0]=='/') {
-			/* We do nothing if the line begins by a '/', because
-			 * it is considered as a comment line. */
-		}
-		else {
-			/* If we have a line, we tokenize it */
-			/* First, to avoid problems, we replace by the char #1 any occurrence of '='
-			 * that should be replaced by ' ' and and '-'. For instance:
-			 *
-			 * =,X.Y   =>   $,X.Y  ($ stands here for the char whose code is 1)
-			 * \=,X.Y   =>  \=,X.Y
-			 * \\=,X.Y   =>  \$,X.Y
-			 */
-			replace_special_equal_signs(s->str);
-			entry=tokenize_DELAF_line(s->str,1,NULL,compress_tokenize_abstract_allocator);
-			if (entry!=NULL) {
-				/* If the entry is well-formed */
-				/* The unescaped = that were not in the inflected or lemma form must
-				 * be restored as real = characters
-				 */
-				for (int i=0;i<entry->n_semantic_codes;i++) {
-					replace_unprotected_equal_sign(entry->semantic_codes[i],(unichar)'=');
-				}
-				for (int i=0;i<entry->n_inflectional_codes;i++) {
-					replace_unprotected_equal_sign(entry->inflectional_codes[i],(unichar)'=');
-				}
-				if (FLIP) {
-					/* If the "-flip" parameter has been used, we flip
-					 * the inflected form and the lemma of the entry */
-					unichar* o=entry->inflected;
-					entry->inflected=entry->lemma;
-					entry->lemma=o;
-				}
-				if (contains_unprotected_equal_sign(entry->inflected)
-						|| contains_unprotected_equal_sign(entry->lemma)) {
-					/* If the inflected form or lemma contains any unprotected = sign,
-					 * we must insert the space entry and the - entry:
-					 * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
-					 *                        pomme-de-terre,pomme-de-terre.N
-					 */
-					unichar* inflected=u_strdup(entry->inflected,compress_tokenize_abstract_allocator);
-					unichar* lemma=u_strdup(entry->lemma,compress_tokenize_abstract_allocator);
-					if (inflected==NULL || lemma==NULL) {
-						fatal_alloc_error("main_Compress");
-					}
-					unichar* inf_tmp = (unichar*)(buffer_filename + (step_filename_buffer * 3));
-					unichar* lem_tmp = (unichar*)(buffer_filename + (step_filename_buffer * 4));
-					u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
-					u_strcpy_sized(lem_tmp,DIC_WORD_SIZE,entry->lemma);
-					/* We replace the unprotected = signs by spaces */
-					replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
-					replace_unprotected_equal_sign(entry->lemma,(unichar)' ');
-					/* We insert "pomme de terre,pomme de terre.N" */
-					get_compressed_line(entry,tmp,semitic);
-					add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
-					/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
-					u_strcpy(entry->inflected,inf_tmp);
-					u_strcpy(entry->lemma,lem_tmp);
-					/* We replace the unprotected = signs by minus */
-					free_cb(entry->inflected,compress_tokenize_abstract_allocator); entry->inflected=inflected;
-					free_cb(entry->lemma,compress_tokenize_abstract_allocator); entry->lemma=lemma;
-					replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
-					replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
-					get_compressed_line(entry,tmp,semitic);
-					add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
-				} else {
-					get_compressed_line(entry,tmp,semitic);
-					add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
-				}
-				/* and last, but not least: don't forget to free your memory
-				 * or it would be impossible to compress large dictionaries */
-				if (tokenize_allocator_has_clean == 0) {
-					free_dela_entry(entry,compress_tokenize_abstract_allocator);
-				} else {
-					clean_allocator(compress_tokenize_abstract_allocator);
-				}
-			}
-		}
-		/* We print something at regular intervals in order to show
-		 * that the program actually works */
-		if (line%10000==0) {
-			u_printf("%d line%s read...       \r",line,(line>1)?"s":"");
-			if (compress_tokenize_abstract_allocator != NULL) {
-				if (tokenize_allocator_has_clean == 0) {
-					close_abstract_allocator(compress_tokenize_abstract_allocator);
-					compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
-				}
-			}
-		}
-		line++;
-	}
-	u_fclose(f);
+
+// We read until there is no more lines in the .dic file
+for (;options.vars()->optind!=argc;(options.vars()->optind)++) {
+  u_printf("Compressing %s...\n",argv[options.vars()->optind]);
+  f=u_fopen(&vec,argv[options.vars()->optind],U_READ);
+  if (f==NULL) {
+    error("Cannot open %s\n",argv[options.vars()->optind]);
+# if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
+    /* cleanup for no leak on library */
+    free_dictionary_node(root,compress_abstract_allocator);
+    close_abstract_allocator(compress_abstract_allocator);
+    close_abstract_allocator(compress_tokenize_abstract_allocator);
+    free_string_hash(INF_codes);
+# endif
+    free_Ustring(s);    
+    u_fclose(INF_file);
+    free(buffer_filename);
+    return DEFAULT_ERROR_CODE;    
+  }
+  while(EOF!=readline(s,f)) {
+    if (s->str[0]=='\0') {
+      /* Empty lines should not appear in a .dic file */
+      error("Line %d: empty line\n",line);
+    }
+    else if (s->str[0]=='/') {
+      /* We do nothing if the line begins by a '/', because
+       * it is considered as a comment line. */
+    }
+    else {
+      /* If we have a line, we tokenize it */
+      /* First, to avoid problems, we replace by the char #1 any occurrence of '='
+       * that should be replaced by ' ' and and '-'. For instance:
+       *
+       * =,X.Y   =>   $,X.Y  ($ stands here for the char whose code is 1)
+       * \=,X.Y   =>  \=,X.Y
+       * \\=,X.Y   =>  \$,X.Y
+       */
+      replace_special_equal_signs(s->str);
+      entry=tokenize_DELAF_line(s->str,1,NULL,compress_tokenize_abstract_allocator);
+      if (entry!=NULL) {
+        /* If the entry is well-formed */
+        /* The unescaped = that were not in the inflected or lemma form must
+         * be restored as real = characters
+         */
+        for (int i=0;i<entry->n_semantic_codes;i++) {
+          replace_unprotected_equal_sign(entry->semantic_codes[i],(unichar)'=');
+        }
+        for (int i=0;i<entry->n_inflectional_codes;i++) {
+          replace_unprotected_equal_sign(entry->inflectional_codes[i],(unichar)'=');
+        }
+        if (FLIP) {
+          /* If the "-flip" parameter has been used, we flip
+           * the inflected form and the lemma of the entry */
+          unichar* o=entry->inflected;
+          entry->inflected=entry->lemma;
+          entry->lemma=o;
+        }
+        if (contains_unprotected_equal_sign(entry->inflected)
+            || contains_unprotected_equal_sign(entry->lemma)) {
+          /* If the inflected form or lemma contains any unprotected = sign,
+           * we must insert the space entry and the - entry:
+           * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
+           *                        pomme-de-terre,pomme-de-terre.N
+           */
+          unichar* inflected=u_strdup(entry->inflected,compress_tokenize_abstract_allocator);
+          unichar* lemma=u_strdup(entry->lemma,compress_tokenize_abstract_allocator);
+          if (inflected==NULL || lemma==NULL) {
+            alloc_error("main_Compress");
+#         if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
+            /* cleanup for no leak on library */
+            free_dictionary_node(root,compress_abstract_allocator);
+            if (tokenize_allocator_has_clean == 0) {
+              free_dela_entry(entry,compress_tokenize_abstract_allocator);
+            }            
+            close_abstract_allocator(compress_abstract_allocator);
+            close_abstract_allocator(compress_tokenize_abstract_allocator);
+            free_string_hash(INF_codes);
+#         endif            
+            u_fclose(f);
+            free_Ustring(s);
+            u_fclose(INF_file);
+            free(buffer_filename);
+            return ALLOC_ERROR_CODE;             
+          }
+          unichar* inf_tmp = (unichar*)(buffer_filename + (step_filename_buffer * 3));
+          unichar* lem_tmp = (unichar*)(buffer_filename + (step_filename_buffer * 4));
+          u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
+          u_strcpy_sized(lem_tmp,DIC_WORD_SIZE,entry->lemma);
+          /* We replace the unprotected = signs by spaces */
+          replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
+          replace_unprotected_equal_sign(entry->lemma,(unichar)' ');
+          /* We insert "pomme de terre,pomme de terre.N" */
+          get_compressed_line(entry,tmp,semitic);
+          add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
+          /* And then we insert "pomme-de-terre,pomme-de-terre.N" */
+          u_strcpy(entry->inflected,inf_tmp);
+          u_strcpy(entry->lemma,lem_tmp);
+          /* We replace the unprotected = signs by minus */
+          free_cb(entry->inflected,compress_tokenize_abstract_allocator); entry->inflected=inflected;
+          free_cb(entry->lemma,compress_tokenize_abstract_allocator); entry->lemma=lemma;
+          replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
+          replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
+          get_compressed_line(entry,tmp,semitic);
+          add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
+        } else {
+          get_compressed_line(entry,tmp,semitic);
+          add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes,line,compress_abstract_allocator);
+        }
+        /* and last, but not least: don't forget to free your memory
+         * or it would be impossible to compress large dictionaries */
+        if (tokenize_allocator_has_clean == 0) {
+          free_dela_entry(entry,compress_tokenize_abstract_allocator);
+        } else {
+          clean_allocator(compress_tokenize_abstract_allocator);
+        }
+      }
+    }
+    /* We print something at regular intervals in order to show
+     * that the program actually works */
+    if (line%10000==0) {
+      u_printf("%d line%s read...       \r",line,(line>1)?"s":"");
+      if (compress_tokenize_abstract_allocator != NULL) {
+        if (tokenize_allocator_has_clean == 0) {
+          close_abstract_allocator(compress_tokenize_abstract_allocator);
+          compress_tokenize_abstract_allocator=create_abstract_allocator("main_Compress_tokenize",AllocatorCreationFlagAutoFreePrefered | AllocatorCreationFlagCleanPrefered);
+        }
+      }
+    }
+    line++;
+  }
+  u_fclose(f);
 }
 free_Ustring(s);
 struct bit_array* used_inf_values=new_bit_array(INF_codes->size,ONE_BIT);
 if (bin_type==BIN_BIN2) {
-	/* For a .bin2 dictionary, we have to place the inf codes on transitions outputs */
-	move_outputs_on_transitions(root,INF_codes);
+  /* For a .bin2 dictionary, we have to place the inf codes on transitions outputs */
+  move_outputs_on_transitions(root,INF_codes);
 }
 /* We build a minimal transducer from the entry tree */
 minimize_tree(root,used_inf_values,compress_abstract_allocator);
 int* inf_indirection=NULL;
 int n_used_inf_codes=0;
+
 if (INF_file!=NULL) {
-	/* Now we reorder INF codes in order to group the ones that are actually
-	 * used so that we can save space in the .inf file by not saving codes
-	 * that are never referenced in the .bin file */
-	inf_indirection=(int*)malloc(sizeof(int)*INF_codes->size);
-	int last=INF_codes->size-1;
-	/* This -1 initialization is used for safety checking */
-	for (int i=0;i<INF_codes->size;i++) {
-		inf_indirection[i]=-1;
-	}
-	for (int i=0;i<INF_codes->size && i<=last;i++) {
-		if (get_value(used_inf_values,i)) {
-			/* A used INF value stays at its place */
-			n_used_inf_codes++;
-			inf_indirection[i]=i;
-		} else {
-			/* We have found an unused INF code. We look for a used one at
-			 * the end of the array to swap them */
-			while (last>i && !get_value(used_inf_values,last)) {
-				last--;
-			}
-			if (last==i) {
-				/* We have finished */
-				break;
-			}
-			n_used_inf_codes++;
-			/* We redirect the old used INF code */
-			inf_indirection[last]=i;
-			/* And we swap codes */
-			unichar* tmpInfValue=INF_codes->value[i];
-			INF_codes->value[i]=INF_codes->value[last];
-			INF_codes->value[last]=tmpInfValue;
-			last--;
-		}
-	}
-	int old_size=INF_codes->size;
-	INF_codes->size=n_used_inf_codes;
-	/* Now we can dump the INF codes into the .inf file */
-	dump_values(INF_file,INF_codes);
-	u_fclose(INF_file);
-	write_INF_file_header(&vec,inf,INF_codes->size);
-	INF_codes->size=old_size;
+  /* Now we reorder INF codes in order to group the ones that are actually
+   * used so that we can save space in the .inf file by not saving codes
+   * that are never referenced in the .bin file */
+  inf_indirection=(int*)malloc(sizeof(int)*INF_codes->size);
+  int last=INF_codes->size-1;
+  /* This -1 initialization is used for safety checking */
+  for (int i=0;i<INF_codes->size;i++) {
+    inf_indirection[i]=-1;
+  }
+  for (int i=0;i<INF_codes->size && i<=last;i++) {
+    if (get_value(used_inf_values,i)) {
+      /* A used INF value stays at its place */
+      n_used_inf_codes++;
+      inf_indirection[i]=i;
+    } else {
+      /* We have found an unused INF code. We look for a used one at
+       * the end of the array to swap them */
+      while (last>i && !get_value(used_inf_values,last)) {
+        last--;
+      }
+      if (last==i) {
+        /* We have finished */
+        break;
+      }
+      n_used_inf_codes++;
+      /* We redirect the old used INF code */
+      inf_indirection[last]=i;
+      /* And we swap codes */
+      unichar* tmpInfValue=INF_codes->value[i];
+      INF_codes->value[i]=INF_codes->value[last];
+      INF_codes->value[last]=tmpInfValue;
+      last--;
+    }
+  }
+  int old_size=INF_codes->size;
+  INF_codes->size=n_used_inf_codes;
+  /* Now we can dump the INF codes into the .inf file */
+  dump_values(INF_file,INF_codes);
+  u_fclose(INF_file);
+  write_INF_file_header(&vec,inf,INF_codes->size);
+  INF_codes->size=old_size;
 } /* End of dealing with the .inf file, if needed */
 
 /* And we dump it into the .bin file */
@@ -423,34 +469,31 @@ free(inf_indirection);
 free_bit_array(used_inf_values);
 u_printf("Binary file: %d bytes\n",bin_size);
 if (bin_type==BIN_CLASSIC) {
-	u_printf("%d line%s read            \n"
+  u_printf("%d line%s read            \n"
          "%d INF entr%s created\n",
          line,
          (line!=1)?"s":"",
          n_used_inf_codes,
          (n_used_inf_codes!=1)?"ies":"y");
 } else {
-	u_printf("%d line%s read            \n",
+  u_printf("%d line%s read            \n",
          line,
          (line!=1)?"s":"");
 }
 u_printf("%d states, %d transitions\n",n_states,n_transitions);
-free_OptVars(vars);
 /*
  * WARNING: we do not free the 'INF_codes' structure because of a slowness
  *          problem with very large INF lines.
  */
-
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 /* cleanup for no leak on library */
-free_string_hash(INF_codes);
 free_dictionary_node(root,compress_abstract_allocator);
 close_abstract_allocator(compress_abstract_allocator);
 close_abstract_allocator(compress_tokenize_abstract_allocator);
-compress_abstract_allocator=NULL;
+free_string_hash(INF_codes);
 #endif
 free(buffer_filename);
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

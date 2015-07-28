@@ -27,10 +27,6 @@
  * contact : unitex-contribution@ergonotics.com
  *
  */
-
-
-
-
 #include "Unicode.h"
 #include "File.h"
 #include "Error.h"
@@ -65,10 +61,9 @@ const char* usage_VersionInfo =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_VersionInfo);
+  display_copyright_notice();
+  u_printf(usage_VersionInfo);
 }
-
 
 const char* optstring_VersionInfo=":hmcRrvpjxo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
@@ -182,8 +177,8 @@ if (argc==1) {
 }
 */
 
-int retValue=0;
-const char *output_file = NULL;
+int retValue = SUCCESS_RETURN_CODE;
+const char* output_file = NULL;
 int do_version_only=0;
 int do_revision_only=0;
 int do_copyright_only=0;
@@ -193,8 +188,8 @@ int do_xml_info=0;
 int do_json_info=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInfo,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_VersionInfo,&index))) {
    switch(val) {
    case 'c': do_copyright_only=1; break;
    case 'r': do_revision_only=1; break;
@@ -204,21 +199,25 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInf
    case 'm': do_compiler_info = 1; break;
    case 'j': do_json_info = 1; break;
    case 'x': do_xml_info = 1; break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output argument\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output argument\n");
+                return USAGE_ERROR_CODE;
              }
-             output_file = vars->optarg;
+             output_file = options.vars()->optarg; // FIXME(gvollant)
              break;
-   case 'h': usage(); free_OptVars(vars); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_VersionInfo[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_VersionInfo[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'k': /* ignore -k and parameter instead make error */
              break;
@@ -229,7 +228,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_VersionInfo,lopts_VersionInf
 if (((do_revision_only!=0) && (do_version_only!=0)) ||
     ((do_copyright_only!=0) && (do_version_only!=0)) ||
     ((do_revision_only!=0) && (do_copyright_only!=0))) {
-   fatal_error("Incompatible arguments: rerun with --help\n");
+   error("Incompatible arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 
@@ -237,7 +237,8 @@ if (((do_revision_only!=0) && (do_version_only!=0)) ||
 
 unichar* DisplayText = (unichar*)malloc(sizeof(unichar) * (MAX_SIZE_DISPLAY_TEXT + 1));
 if (DisplayText == NULL) {
-    fatal_alloc_error("main_VersionInfo");
+  alloc_error("main_VersionInfo");
+  return ALLOC_ERROR_CODE;
 }
 
 int revision = get_unitex_revision();
@@ -277,11 +278,10 @@ else {
     }
 }
 
-
 if (!check_regex_lib_in_unitex()) {
     u_sprintf(DisplayText + u_strlen(DisplayText),"Regex Library is not functionnal\n");
     error("Regex Library is not functionnal\n");
-	retValue = 1;
+    retValue = DEFAULT_ERROR_CODE;
 }
 
 if (do_platform_info) {
@@ -311,8 +311,7 @@ if (output_file!=NULL) {
    if (text==NULL) {
       error("Cannot create text file %s\n",output_file);
       free(DisplayText);
-	  free_OptVars(vars);
-      return 1;
+      return DEFAULT_ERROR_CODE;
    }
    u_fprintf(text,"%S", DisplayText);
    u_fclose(text);
@@ -322,8 +321,12 @@ else {
 }
 
 free(DisplayText);
-free_OptVars(vars);
-return retValue;
+
+// FIXME(gvollant) To conform with the C/C++ standard, isn't a good idea to 
+// return a custom integer equal to get_unitex_revision() here
+// An exit value greater than 255 returns an exit code modulo 256
+// see http://www.tldp.org/LDP/abs/html/exitcodes.html#AEN23629
+return retValue; 
 }
 
 } // namespace unitex

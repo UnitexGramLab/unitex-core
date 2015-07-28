@@ -44,14 +44,14 @@ const char* usage_Reg2Grf =
          "  <txt>: unicode text file where the regular expression is stored.\n"
          "         We must use a file, because we cannot give Unicode\n"
          "         parameters on a command line.\n"
-		 "  -o X/--output=X: output filename .grf file (optional)\n"
+         "  -o X/--output=X: output filename .grf file (optional)\n"
          "\n"
          "OPTIONS:\n"
          "  -h/--help: this help\n"
          "\n"
          "Converts the regular expression into a graph named \"regexp.grf\"\n"
-		 "and stored in the same directory that <file> (or specified with -o).\n"
-		 "You can use the following operators:\n"
+         "and stored in the same directory that <file> (or specified with -o).\n"
+         "You can use the following operators:\n"
          " A+B          matches either the expression A or B\n"
          " A.B or A B   matches the concatenation of A and B\n"
          " A*           matches 0 more more times the expression A\n"
@@ -62,8 +62,8 @@ const char* usage_Reg2Grf =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Reg2Grf);
+  display_copyright_notice();
+  u_printf(usage_Reg2Grf);
 }
 
 
@@ -80,66 +80,79 @@ const struct option_TS lopts_Reg2Grf[]= {
 int main_Reg2Grf(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 char grf_name[FILENAME_MAX]="";
 int val, index = -1;
-struct OptVars* vars = new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index))) {
    switch(val) {
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0] == '\0') {
-                fatal_error("You must specify a non empty output filename\n");
+   case 'o': if (options.vars()->optarg[0] == '\0') {
+                error("You must specify a non empty output filename\n");
+                return USAGE_ERROR_CODE;
              }
-			 strcpy(grf_name, vars->optarg);
+			 strcpy(grf_name, options.vars()->optarg);
 			 break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Reg2Grf[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Reg2Grf[index].name);
+             return USAGE_ERROR_CODE;            
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;            
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
-U_FILE* f=u_fopen(&vec,argv[vars->optind],U_READ);
+U_FILE* f=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (f==NULL) {
-   fatal_error("Cannot open file %s\n",argv[vars->optind]);
+   error("Cannot open file %s\n",argv[options.vars()->optind]);
+   return DEFAULT_ERROR_CODE;
 }
+
 /* We read the regular expression in the file */
 unichar* exp=readline_safe(f);
 if (exp==NULL) {
-   fatal_error("Empty file %s\n",argv[vars->optind]);
+   error("Empty file %s\n",argv[options.vars()->optind]);
+   u_fclose(f);
+   return DEFAULT_ERROR_CODE;
 }
 u_fclose(f);
+
 if (grf_name[0] == '\0') {
-  get_path(argv[vars->optind],grf_name);
+  get_path(argv[options.vars()->optind],grf_name);
   strcat(grf_name,"regexp.grf");
 }
+
 if (!reg2grf(exp,grf_name,&vec)) {
 	free(exp);
-   return 1;
+  return DEFAULT_ERROR_CODE;
 }
+
 free(exp);
-free_OptVars(vars);
+
 u_printf("Expression converted.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

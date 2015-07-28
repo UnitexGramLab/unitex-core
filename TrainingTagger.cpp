@@ -45,30 +45,27 @@ const char* usage_TrainingTagger =
          "\n"
          "  <text>: the text corpus to use in input\n"
          "\n"
-		 "Output options:\n"
-		 "  -b/--binaries: indicates whether the program should compress data files into"
-		 " .bin files (default)\n"
-		 "  -n/--no_binaries: indicates whether the program should not compress data files into"
-		 " .bin files, in this case only .dic data files are generated\n"
-		 "  -a/--all: indicates whether the program should produce all data files (default)\n"
-		 "  -c/--cat: indicates whether the program should produce only data file with 'cat' tags\n"
-		 "  -m/--morph: indicates whether the program should produce only data file with 'morph' tags\n"
-		 "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_cat.bin"
-		 " and XXX_data_morph.bin (default=filename of text corpus without extension)\n"
-		 "  -s/--semitic: the output .bin will use the semitic compression algorithm\n"
-		 "  -h/--help: this help\n"
-		 "\n"
+         "Output options:\n"
+         "  -b/--binaries: indicates whether the program should compress data files into"
+         " .bin files (default)\n"
+         "  -n/--no_binaries: indicates whether the program should not compress data files into"
+         " .bin files, in this case only .dic data files are generated\n"
+         "  -a/--all: indicates whether the program should produce all data files (default)\n"
+         "  -c/--cat: indicates whether the program should produce only data file with 'cat' tags\n"
+         "  -m/--morph: indicates whether the program should produce only data file with 'morph' tags\n"
+         "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_cat.bin"
+         " and XXX_data_morph.bin (default=filename of text corpus without extension)\n"
+         "  -s/--semitic: the output .bin will use the semitic compression algorithm\n"
+         "  -h/--help: this help\n"
+         "\n"
          "Extract statistics from a tagged corpus and save its into a tagger data file. "
          "These statistics are necessary in the tagging process in order to compute probabilities."
          "Tagger data files are saved in the same path as corpus file.\n\n";
 
-
-
 static void usage() {
-display_copyright_notice();
-u_printf(usage_TrainingTagger);
+  display_copyright_notice();
+  u_printf(usage_TrainingTagger);
 }
-
 
 const char* optstring_TrainingTagger=":o:hbnriask:q:";
 const struct option_TS lopts_TrainingTagger[]= {
@@ -89,23 +86,24 @@ const struct option_TS lopts_TrainingTagger[]= {
 int main_TrainingTagger(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int val,index=-1,binaries=1,r_forms=1,i_forms=1;
 int semitic=0;
-struct OptVars* vars=new_OptVars();
+UnitexGetOpt options;
 char text[FILENAME_MAX]="";
 char raw_forms[FILENAME_MAX]="";
 char inflected_forms[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_TrainingTagger,&index,vars))) {
+while (EOF!=(val=options.parse_long(argc,argv,optstring_TrainingTagger,lopts_TrainingTagger,&index))) {
    switch(val) {
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty pattern\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+               error("You must specify a non empty pattern\n");
+               return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
    case 'b': binaries = 1;
 			 break;
@@ -118,41 +116,44 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TrainingTagger,lopts_Trainin
    			 break;
    case 'S': semitic=1;
    			 break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+               error("Empty input_encoding argument\n");
+               return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+               error("Empty output_encoding argument\n");
+               return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_TrainingTagger[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_TrainingTagger[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   free_OptVars(vars);
+if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return 1;
+   return USAGE_ERROR_CODE;
 }
-strcpy(text,argv[vars->optind]);
+
+strcpy(text,argv[options.vars()->optind]);
 U_FILE* input_text=u_fopen(&vec,text,U_READ);
-if (input_text==NULL) {
-   free_OptVars(vars);
-   fatal_error("cannot open file %s\n",text);
-   return 1;
+if (input_text==NULL) {   
+  error("cannot open file %s\n",text);
+  return DEFAULT_ERROR_CODE;
 }
 
 if(output[0]=='\0'){
-	remove_path_and_extension(text,output);
+  remove_path_and_extension(text,output);
 }
 
 char path[FILENAME_MAX],filename[FILENAME_MAX];
@@ -207,9 +208,9 @@ if(i_forms == 1){
 	pseudo_main_Compress(&vec,0,semitic,inflected_forms,1);
 }
 }
-free_OptVars(vars);
+
 u_printf("Done.\n");
-return 0;
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

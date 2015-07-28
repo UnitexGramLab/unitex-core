@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
 #include <stdlib.h>
 #include <string.h>
 #include "Copyright.h"
@@ -43,7 +42,7 @@ namespace unitex {
 #define XML 0
 #define TEI 1
 
-void xmlize(const VersatileEncodingConfig*,const char*,const char*,int);
+int xmlize(const VersatileEncodingConfig*,const char*,const char*,int);
 
 
 /* Headers (XML & TEI) Variables
@@ -57,25 +56,25 @@ static const char *tei_close = "</div>\n</body>\n</text>\n</tei>";
 
 
 const char* usage_XMLizer =
-         "Usage: XMLizer [OPTIONS] <txt>\n"
-         "\n"
-         "  <txt>: the input text file\n"
-         "\n"
-	      "OPTIONS:\n"
-         "  -x/--xml: build a simple XML file from a raw text file\n"
-	      "  -t/--tei: build a minimal TEI file from a raw text file (default)\n"
-	      "  -n XXX/--normalization=XXX: optional configuration file for the normalization process\n"
-	      "  -o OUT/--output=OUT: optional output file name (default: file.txt > file.xml)\n"
-	      "  -a ALPH/--alphabet=ALPH: alphabet file\n"
-         "  -s SEG/--segmentation_grammar=SEG: .fst2 segmentation grammar\n"
-         "  -h/--help: this help\n"
-         "\n"
-	      "Produces a TEI or simple XML file from the given raw text file.\n";
+        "Usage: XMLizer [OPTIONS] <txt>\n"
+        "\n"
+        "  <txt>: the input text file\n"
+        "\n"
+        "OPTIONS:\n"
+        "  -x/--xml: build a simple XML file from a raw text file\n"
+        "  -t/--tei: build a minimal TEI file from a raw text file (default)\n"
+        "  -n XXX/--normalization=XXX: optional configuration file for the normalization process\n"
+        "  -o OUT/--output=OUT: optional output file name (default: file.txt > file.xml)\n"
+        "  -a ALPH/--alphabet=ALPH: alphabet file\n"
+        "  -s SEG/--segmentation_grammar=SEG: .fst2 segmentation grammar\n"
+        "  -h/--help: this help\n"
+        "\n"
+        "Produces a TEI or simple XML file from the given raw text file.\n";
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_XMLizer);
+  display_copyright_notice();
+  u_printf(usage_XMLizer);
 }
 
 
@@ -97,7 +96,7 @@ const struct option_TS lopts_XMLizer[] = {
 int main_XMLizer(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 int output_style=TEI;
@@ -108,112 +107,143 @@ char segmentation[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int convLFtoCRLF=1;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&index))) {
    switch(val) {
    case 'x': output_style=XML; break;
    case 't': output_style=TEI; break;
-   case 'n': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty normalization grammar name\n");
+   case 'n': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty normalization grammar name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(normalization,vars->optarg);
+             strcpy(normalization,options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
-   case 's': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty segmentation grammar name\n");
+   case 's': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty segmentation grammar name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(segmentation,vars->optarg);
+             strcpy(segmentation,options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_XMLizer[index].name);
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_XMLizer[index].name);
+             return USAGE_ERROR_CODE;                         
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case '?': index==-1  ? error("Invalid option -%c\n",options.vars()->optopt) :
+                          error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;             
+  
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
+
 if (segmentation[0]=='\0') {
-   fatal_error("You must specify the segmentation grammar to use\n");
+   error("You must specify the segmentation grammar to use\n");
+   return USAGE_ERROR_CODE;
 }
+
 char input[FILENAME_MAX];
-strcpy(input,argv[vars->optind]);
+strcpy(input,argv[options.vars()->optind]);
 char snt[FILENAME_MAX];
 remove_extension(input,snt);
 strcat(snt,"_tmp.snt");
 char tmp[FILENAME_MAX];
 remove_extension(input,tmp);
 strcat(tmp,".tmp");
-normalize(input,snt,&vec,KEEP_CARRIAGE_RETURN,convLFtoCRLF,
-		normalization,NULL,1);
+normalize(input,snt,&vec,KEEP_CARRIAGE_RETURN,convLFtoCRLF,normalization,NULL,1);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 p->vec=vec;
 p->text_file=strdup(snt);
 if (p->text_file==NULL) {
-   fatal_alloc_error("main_XMLizer");
+   alloc_error("main_XMLizer");
+   free_fst2txt_parameters(p);
+   return ALLOC_ERROR_CODE;
 }
+
 p->temp_file=strdup(tmp);
 if (p->temp_file==NULL) {
-   fatal_alloc_error("main_XMLizer");
+   alloc_error("main_XMLizer");
+   free_fst2txt_parameters(p);
+   return ALLOC_ERROR_CODE;
 }
 p->fst_file=strdup(segmentation);
 if (p->fst_file==NULL) {
-   fatal_alloc_error("main_XMLizer");
+   alloc_error("main_XMLizer");
+   free_fst2txt_parameters(p);
+   return ALLOC_ERROR_CODE;
 }
 p->alphabet_file=strdup(alphabet);
 if (p->alphabet_file==NULL) {
-   fatal_alloc_error("main_XMLizer");
+   alloc_error("main_XMLizer");
+   free_fst2txt_parameters(p);
+   return ALLOC_ERROR_CODE;
 }
+
 p->output_policy=MERGE_OUTPUTS;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
+
 main_fst2txt(p);
+
 free_fst2txt_parameters(p);
+
 if (output[0]=='\0') {
-   remove_extension(input,output);
+  remove_extension(input,output);
 	strcat(output,".xml");
 }
-xmlize(&vec,snt,output,output_style);
+
+int return_value = xmlize(&vec,snt,output,output_style);
+
 af_remove(snt);
 af_remove(tmp);
-free_OptVars(vars);
-return 0;
+
+return return_value;
 }
 
 
 
-void xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,int ouput_style) {
+int xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,int ouput_style) {
 	U_FILE* input = u_fopen(vec, fin, U_READ);
-	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
+	if (input == NULL) {
+    error("Input file '%s' not found!\n", fin);
+    return DEFAULT_ERROR_CODE;
+  }  
 
 	U_FILE* output = u_fopen(UTF8, fout, U_WRITE);
 	if (output == NULL) {
+    error("Cannot open output file '%s'!\n", fout);
 		u_fclose(input);
-		fatal_error("Cannot open output file '%s'!\n", fout);
-	} else
+    return DEFAULT_ERROR_CODE;
+	} else // FIXME(johndoe) put breaks
 
 	if(ouput_style==XML) {
 	   u_fprintf(output, xml_open);
@@ -222,9 +252,9 @@ void xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,
 	   u_fprintf(output, tei_open);
 	}
 
-	int sentence_count = 1;
-   int sentence_count_relative = 1;
-   int paragraph_count = 1;
+  int sentence_count = 1;
+  int sentence_count_relative = 1;
+  int paragraph_count = 1;
 
 	u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
 
@@ -340,6 +370,7 @@ void xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,
 	u_fclose(input);
 	u_fclose(output);
 	u_printf("Done.\n");
+  return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

@@ -66,8 +66,8 @@ const char* usage_Reconstrucao =
 
 
 static void usage() {
-display_copyright_notice();
-u_printf(usage_Reconstrucao);
+  display_copyright_notice();
+  u_printf(usage_Reconstrucao);
 }
 
 
@@ -89,7 +89,7 @@ const struct option_TS lopts_Reconstrucao[]= {
 int main_Reconstrucao(int argc,char* const argv[]) {
 if (argc==1) {
    usage();
-   return 0;
+   return SUCCESS_RETURN_CODE;
 }
 
 char alphabet[FILENAME_MAX]="";
@@ -100,77 +100,97 @@ char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
-struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index,vars))) {
+UnitexGetOpt options;
+while (EOF!=(val=options.parse_long(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index))) {
    switch(val) {
-   case 'a': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty alphabet file name\n");
+   case 'a': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty alphabet file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(alphabet,vars->optarg);
+             strcpy(alphabet,options.vars()->optarg);
              break;
-   case 'r': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty root dictionary file name\n");
+   case 'r': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty root dictionary file name\n");
+                return USAGE_ERROR_CODE;                
              }
-             strcpy(root,vars->optarg);
+             strcpy(root,options.vars()->optarg);
              break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty dictionary file name\n");
+   case 'd': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty dictionary file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(dictionary,vars->optarg);
+             strcpy(dictionary,options.vars()->optarg);
              break;
-   case 'p': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty pronoun rewriting rule file name\n");
+   case 'p': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty pronoun rewriting rule file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(pronoun_rules,vars->optarg);
+             strcpy(pronoun_rules,options.vars()->optarg);
              break;
-   case 'n': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty nasal pronoun rewriting rule file name\n");
+   case 'n': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty nasal pronoun rewriting rule file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(nasal_pronoun_rules,vars->optarg);
+             strcpy(nasal_pronoun_rules,options.vars()->optarg);
              break;
-   case 'o': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name\n");
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty output file name\n");
+                return USAGE_ERROR_CODE;
              }
-             strcpy(output,vars->optarg);
+             strcpy(output,options.vars()->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty input_encoding argument\n");
+   case 'k': if (options.vars()->optarg[0]=='\0') {
+                error("Empty input_encoding argument\n");
+                return USAGE_ERROR_CODE;                
              }
-             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),vars->optarg);
+             decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
-   case 'q': if (vars->optarg[0]=='\0') {
-                fatal_error("Empty output_encoding argument\n");
+   case 'q': if (options.vars()->optarg[0]=='\0') {
+                error("Empty output_encoding argument\n");
+                return USAGE_ERROR_CODE;
              }
-             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),vars->optarg);
+             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts_Reconstrucao[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
-             else fatal_error("Invalid option --%s\n",vars->optarg);
-             break;
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
+   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                         error("Missing argument for option --%s\n",lopts_Reconstrucao[index].name);
+             return USAGE_ERROR_CODE;
+   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                         error("Invalid option --%s\n",options.vars()->optarg);
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
 
-if (vars->optind!=argc-1) {
-   fatal_error("Invalid arguments: rerun with --help\n");
+if (options.vars()->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return USAGE_ERROR_CODE;
 }
 
 if (root[0]=='\0') {
-   fatal_error("You must specify the root .bin dictionary\n");
+   error("You must specify the root .bin dictionary\n");
+   return USAGE_ERROR_CODE;
 }
+
 if (dictionary[0]=='\0') {
-   fatal_error("You must specify the .bin dictionary to use\n");
+   error("You must specify the .bin dictionary to use\n");
+   return USAGE_ERROR_CODE;
 }
+
 if (pronoun_rules[0]=='\0') {
-   fatal_error("You must specify the pronoun rule file\n");
+   error("You must specify the pronoun rule file\n");
+   return USAGE_ERROR_CODE;
 }
+
 if (nasal_pronoun_rules[0]=='\0') {
-   fatal_error("You must specify the nasal pronoun rule file\n");
+   error("You must specify the nasal pronoun rule file\n");
+   return USAGE_ERROR_CODE;
 }
+
 if (output[0]=='\0') {
-   fatal_error("You must specify the output dictionary file name\n");
+   error("You must specify the output dictionary file name\n");
+   return USAGE_ERROR_CODE;
 }
 
 Alphabet* alph=NULL;
@@ -178,34 +198,40 @@ if (alphabet[0]!='\0') {
    u_printf("Loading alphabet...\n");
    alph=load_alphabet(&vec,alphabet);
    if (alph==NULL) {
-      fatal_error("Cannot load alphabet file %s\n",alphabet);
-      return 1;
+      error("Cannot load alphabet file %s\n",alphabet);
+      return DEFAULT_ERROR_CODE;
    }
 }
+
 u_printf("Loading match list...\n");
-U_FILE* f_list=u_fopen(&vec,argv[vars->optind],U_READ);
+U_FILE* f_list=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (f_list==NULL) {
-   error("Cannot load match list %s\n",argv[vars->optind]);
+   error("Cannot load match list %s\n",argv[options.vars()->optind]);
    free_alphabet(alph);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 OutputPolicy output_policy;
 struct match_list* list=load_match_list(f_list,&output_policy,NULL);
 u_fclose(f_list);
+
 if (output_policy==IGNORE_OUTPUTS) {
-   error("Invalid match list %s\n",argv[vars->optind]);
+   error("Invalid match list %s\n",argv[options.vars()->optind]);
    free_alphabet(alph);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 char root_inf_file[FILENAME_MAX];
 remove_extension(root,root_inf_file);
 strcat(root_inf_file,".inf");
+
 u_printf("Loading radical form dictionary...\n");
 Dictionary* root_dic=new_Dictionary(&vec,root,root_inf_file);
 if ((*root)=='\0') {
 	free_alphabet(alph);
-	return 1;
+	return DEFAULT_ERROR_CODE;
 }
+
 u_printf("Loading inflected form dictionary...\n");
 char inflected_inf_file[FILENAME_MAX];
 remove_extension(dictionary,inflected_inf_file);
@@ -214,8 +240,9 @@ Dictionary* inflected_dic=new_Dictionary(&vec,dictionary,inflected_inf_file);
 if (inflected_dic==NULL) {
 	free_Dictionary(root_dic);
 	free_alphabet(alph);
-	return 1;
+	return DEFAULT_ERROR_CODE;
 }
+
 u_printf("Loading pronoun rewriting rule grammar...\n");
 struct normalization_tree* rewriting_rules=load_normalization_transducer_string(&vec,pronoun_rules);
 if (rewriting_rules==NULL) {
@@ -223,8 +250,9 @@ if (rewriting_rules==NULL) {
    free_alphabet(alph);
    free_Dictionary(root_dic);
    free_Dictionary(inflected_dic);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
+
 u_printf("Loading nasal pronoun rewriting rule grammar...\n");
 struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_string(&vec,nasal_pronoun_rules);
 if (rewriting_rules==NULL) {
@@ -233,7 +261,7 @@ if (rewriting_rules==NULL) {
    free_Dictionary(root_dic);
    free_Dictionary(inflected_dic);
    free_normalization_tree(rewriting_rules);
-   return 1;
+   return DEFAULT_ERROR_CODE;
 }
 u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_dic,inflected_dic,output,
@@ -243,8 +271,8 @@ free_Dictionary(root_dic);
 free_Dictionary(inflected_dic);
 free_normalization_tree(rewriting_rules);
 free_normalization_tree(nasal_rewriting_rules);
-free_OptVars(vars);
-return 0;
+
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex
