@@ -108,7 +108,9 @@ namespace unitex {
             "    Without -D, files ending with .bin (with an associated .inf) or .bin2 will be persisted as dict.\n"
             "    Without -A, files ending with Alphabet.txt will be persisted as alphabet.\n"
             "\n"
-            "other options:"
+            "other options:\n"
+            "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+            "  -h/--help: this help\n"
             "  -n/--no_translate_path_separator: do not translate separator in filename from pack\n"
             "  -t/--translate_path_separator_to_native: translate separator in filename from pack to current platform\n"
             ""
@@ -120,13 +122,12 @@ namespace unitex {
         }
 
 
-        const char* optstring_InstallLingResourcePackage = ":vtnwluerFGDAf:g:d:a:hx:p:k:q:";
+        const char* optstring_InstallLingResourcePackage = ":vtnwluerFGDAf:g:d:a:Vhx:p:k:q:";
         const struct option_TS lopts_InstallLingResourcePackage[] = {
             { "input_encoding", required_argument_TS, NULL, 'k' },
             { "output_encoding", required_argument_TS, NULL, 'q' },
+            { "only_verify_arguments",no_argument_TS,NULL,'V'},
             { "help", no_argument_TS, NULL, 'h' },
-
-
             { "list_files", required_argument_TS, NULL, 'f' },
             { "list_graph", required_argument_TS, NULL, 'g' },
             { "list_dictionary", required_argument_TS, NULL, 'd' },
@@ -172,6 +173,7 @@ namespace unitex {
             int verbose = 0;
             int transform_path_separator = -1;
             //int persistence_alphabet = 0;
+            bool only_verify_arguments = false;
             UnitexGetOpt options;
             while (EOF != (val = options.parse_long(argc, argv, optstring_InstallLingResourcePackage, lopts_InstallLingResourcePackage, &index))) {
                 switch (val) {
@@ -252,7 +254,8 @@ namespace unitex {
 
 
                 case 'u': uninstall = 1; break;
-
+                case 'V': only_verify_arguments = true;
+                          break;
                 case 'h': usage(); 
                           return SUCCESS_RETURN_CODE;
                 case ':': index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
@@ -325,6 +328,11 @@ namespace unitex {
                     return USAGE_ERROR_CODE;
                 }
 
+                if (only_verify_arguments) {
+                 // freeing all allocated memory
+                 return SUCCESS_RETURN_CODE;
+                }
+
                 if (verbose) {
                     u_printf("Install resource from package %s to prefix %s\n", Package_FileName, Prefix_Name);
                 }
@@ -384,6 +392,11 @@ namespace unitex {
             }
             else // uninstall
             {
+                if (only_verify_arguments) {
+                 // freeing all allocated memory
+                 return SUCCESS_RETURN_CODE;
+                }
+
                 if (verbose)
                     u_printf("Uninstall resource from package %s to prefix %s\n", Package_FileName, Prefix_Name);
 

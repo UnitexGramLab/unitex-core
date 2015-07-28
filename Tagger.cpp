@@ -56,6 +56,7 @@ const char* usage_Tagger =
          "\n"
          "Output options:\n"
          "  -o OUT/--output=OUT: specifies the output .tfst file. By default, the input .tfst is replaced.\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies statistical tagging to the given text automaton.\n"
@@ -67,7 +68,7 @@ static void usage() {
 }
 
 
-const char* optstring_Tagger=":a:d:t:o:k:q:h";
+const char* optstring_Tagger=":a:d:t:o:k:q:Vh";
 const struct option_TS lopts_Tagger[]= {
     {"alphabet", required_argument_TS, NULL, 'a'},
     {"data", required_argument_TS, NULL, 'd'},
@@ -75,6 +76,7 @@ const struct option_TS lopts_Tagger[]= {
     {"output",required_argument_TS,NULL,'o'},
     {"input_encoding",required_argument_TS,NULL,'k'},
     {"output_encoding",required_argument_TS,NULL,'q'},
+    {"only_verify_arguments",no_argument_TS,NULL,'V'},
     {"help",no_argument_TS,NULL,'h'},
     {NULL,no_argument_TS,NULL,0}
 };
@@ -87,7 +89,6 @@ if (argc==1) {
 }
 
 int val,index=-1;
-UnitexGetOpt options;
 char tfst[FILENAME_MAX]="";
 char tind[FILENAME_MAX]="";
 char tmp_tind[FILENAME_MAX]="";
@@ -99,6 +100,8 @@ char data[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
+UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Tagger,lopts_Tagger,&index))) {
    switch(val) {
    case 'a': if (options.vars()->optarg[0]=='\0') {
@@ -137,6 +140,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tagger,lopts_Tagger,&ind
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -157,6 +162,11 @@ if (options.vars()->optind!=argc-1) {
 if(alphabet[0] == '\0'){
 	error("No alphabet file specified\n");
   return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(tfst,argv[options.vars()->optind]);

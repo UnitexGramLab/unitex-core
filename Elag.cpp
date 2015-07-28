@@ -57,6 +57,7 @@ const char* usage_Elag =
          "  -l LANG/--language=LANG: language definition file\n"
          "  -r RULES/--rules=RULES: compiled elag rules file\n"
          "  -o OUT/--output=OUT: resulting output .tfst file\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Disambiguate the input text automaton <tfst> using the specified compiled elag rules.\n";
@@ -68,15 +69,16 @@ static void usage() {
 }
 
 
-const char* optstring_Elag=":l:r:o:hk:q:";
+const char* optstring_Elag=":l:r:o:Vhk:q:";
 const struct option_TS lopts_Elag[]= {
-      {"language",required_argument_TS,NULL,'l'},
-      {"rules",required_argument_TS,NULL,'r'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"language",required_argument_TS,NULL,'l'},
+  {"rules",required_argument_TS,NULL,'r'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -92,6 +94,7 @@ char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Elag,lopts_Elag,&index))) {
@@ -126,6 +129,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Elag,lopts_Elag,&index))
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -142,14 +147,22 @@ if (language[0]=='\0') {
    error("You must define the language definition file\n");
    return USAGE_ERROR_CODE;
 }
+
 if (rule_file[0]=='\0') {
    error("You must define the rule file\n");
    return USAGE_ERROR_CODE;
 }
+
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
 }
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
+}
+
 char input_tfst[FILENAME_MAX];
 strcpy(input_tfst,argv[options.vars()->optind]);
 

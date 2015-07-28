@@ -80,10 +80,10 @@ setBufferMode();
 if (argc <= 1) {
     disp_usage_RunLog_mini();
     unitex_tool_usage(1,0);
-    return 0;
+    return SUCCESS_RETURN_CODE;
 }
 
-int ret=0;
+int return_value=SUCCESS_RETURN_CODE;
 int done=0;
 int skip_arg=0;
 
@@ -113,50 +113,51 @@ if ((argc-skip_arg)>1) {
     if (strcmp(argv[1+skip_arg],"UnpackFile")==0)
     {
         done = 1;
-        ret = main_UnpackFile(argc-(skip_arg+1),argv+skip_arg+1);
+        return_value = main_UnpackFile(argc-(skip_arg+1),argv+skip_arg+1);
     }
 
  
     if (strcmp(argv[1+skip_arg],"PackFile")==0)
     {
         done = 1;
-        ret = main_PackFile(argc-(skip_arg+1),argv+skip_arg+1);
+        return_value = main_PackFile(argc-(skip_arg+1),argv+skip_arg+1);
     }
 
  
     if (strcmp(argv[1+skip_arg],"InstallLingResourcePackage")==0)
     {
         done = 1;
-        ret = main_InstallLingResourcePackage(argc - (skip_arg + 1), argv + skip_arg + 1);
+        return_value = main_InstallLingResourcePackage(argc - (skip_arg + 1), argv + skip_arg + 1);
     }
 
     if (strcmp(argv[1+skip_arg],"MzRepairUlp")==0)
     {
         done = 1;
-        ret = main_MzRepairUlp(argc-(skip_arg+1),argv+skip_arg+1);
+        return_value = main_MzRepairUlp(argc-(skip_arg+1),argv+skip_arg+1);
     }
 
 
     if (strcmp(argv[1+skip_arg],"RunLog")==0)
     {
         done = 1;
-        ret = main_RunLog(argc-(skip_arg+1),argv+skip_arg+1);
+        return_value = main_RunLog(argc-(skip_arg+1),argv+skip_arg+1);
     }
 }
 
 if (((argc-skip_arg)>3) && (done == 0)) {
     if (strcmp(argv[1+skip_arg],"RunUnitexLog")==0)
     {
-        ret = RunLog(argv[2+skip_arg],argv[3+skip_arg],((argc-skip_arg) > 4) ? argv[4+skip_arg] : NULL);
+        return_value = RunLog(argv[2+skip_arg],argv[3+skip_arg],((argc-skip_arg) > 4) ? argv[4+skip_arg] : NULL);
         done = 1;
     }
 }
 
 if (done == 0) {
-  ret = main_UnitexTool(argc-skip_arg,argv+skip_arg);
+  return_value = main_UnitexTool(argc-skip_arg,argv+skip_arg);
 }
 
-if (pInstallLogger != NULL)
+if (pInstallLogger != NULL) {
     delete(pInstallLogger);
-return ret;
+}
+return return_value;
 }

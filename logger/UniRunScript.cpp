@@ -480,6 +480,8 @@ const char* usage_UniRunScript =
 "OPTIONS:\n"
 "  -a X/--variable=X=Y: uses X as variable with Y content\n"
 "  -v/--verbose: emit message when running\n"
+"  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+"  -h/--help: this help\n"
 "\n";
 
 
@@ -489,12 +491,13 @@ static void usage() {
 }
 
 
-const char* optstring_UniRunScript = ":hk:q:a:v";
+const char* optstring_UniRunScript = ":Vhk:q:a:v";
 const struct option_TS lopts_UniRunScript[] = {
   { "variable", required_argument_TS, NULL, 'a' },
   { "verbose", no_argument_TS, NULL, 'v' },
   { "input_encoding", required_argument_TS, NULL, 'k' },
   { "output_encoding", required_argument_TS, NULL, 'q' },
+  { "only_verify_arguments",no_argument_TS,NULL,'V'},  
   { "help", no_argument_TS, NULL, 'h' },
   { NULL, no_argument_TS, NULL, 0 }
 };
@@ -512,6 +515,7 @@ int main_UniRunScript(int argc, char* const argv[]) {
   fill_unique_string_for_pointer((const void*)&verbose, unique_string);
   char** users_variables = build_empty_users_variables();
   users_variables = insert_variable_and_value(users_variables, "UNIQUE_VALUE", unique_string);
+  bool only_verify_arguments = false;
   UnitexGetOpt options;
   while (EOF != (val=options.parse_long(argc, argv, optstring_UniRunScript, lopts_UniRunScript, &index))) {
     switch (val) {
@@ -563,8 +567,11 @@ int main_UniRunScript(int argc, char* const argv[]) {
               }
           decode_writing_encoding_parameter(&vec.encoding_output, &vec.bom_output, options.vars()->optarg);
           break;
-    case 'h': usage(); 
-              return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+          break;          
+    case 'h': usage();
+          free_users_variable(users_variables);
+          return SUCCESS_RETURN_CODE;
     case ':': index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
                             error("Missing argument for option --%s\n", lopts_UniRunScript[index].name);
           free_users_variable(users_variables);
@@ -581,6 +588,12 @@ int main_UniRunScript(int argc, char* const argv[]) {
     error("Invalid arguments: rerun with --help\n");
     free_users_variable(users_variables);
     return USAGE_ERROR_CODE;
+  }
+
+  if (only_verify_arguments) {
+    // freeing all allocated memory
+    free_users_variable(users_variables);
+    return SUCCESS_RETURN_CODE;
   }
 
   const char* scriptFile = argv[options.vars()->optind];

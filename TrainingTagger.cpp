@@ -56,6 +56,7 @@ const char* usage_TrainingTagger =
          "  -o XXX/--output=XXX: pattern used to name output tagger data files XXX_data_cat.bin"
          " and XXX_data_morph.bin (default=filename of text corpus without extension)\n"
          "  -s/--semitic: the output .bin will use the semitic compression algorithm\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Extract statistics from a tagged corpus and save its into a tagger data file. "
@@ -67,19 +68,20 @@ static void usage() {
   u_printf(usage_TrainingTagger);
 }
 
-const char* optstring_TrainingTagger=":o:hbnriask:q:";
+const char* optstring_TrainingTagger=":o:Vhbnriask:q:";
 const struct option_TS lopts_TrainingTagger[]= {
-	  {"output",required_argument_TS,NULL,'o'},
-	  {"binaries",no_argument_TS,NULL,'b'},
-	  {"no_binaries",no_argument_TS,NULL,'n'},
-	  {"cat",no_argument_TS,NULL,'r'},
-	  {"morph",no_argument_TS,NULL,'i'},
-	  {"all",no_argument_TS,NULL,'a'},
-	  {"semitic",no_argument_TS,NULL,'s'},
-	  {"input_encoding",required_argument_TS,NULL,'k'},
-	  {"output_encoding",required_argument_TS,NULL,'q'},
-	  {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"binaries",no_argument_TS,NULL,'b'},
+  {"no_binaries",no_argument_TS,NULL,'n'},
+  {"cat",no_argument_TS,NULL,'r'},
+  {"morph",no_argument_TS,NULL,'i'},
+  {"all",no_argument_TS,NULL,'a'},
+  {"semitic",no_argument_TS,NULL,'s'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -91,12 +93,13 @@ if (argc==1) {
 
 int val,index=-1,binaries=1,r_forms=1,i_forms=1;
 int semitic=0;
-UnitexGetOpt options;
 char text[FILENAME_MAX]="";
 char raw_forms[FILENAME_MAX]="";
 char inflected_forms[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
+UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_TrainingTagger,lopts_TrainingTagger,&index))) {
    switch(val) {
    case 'o': if (options.vars()->optarg[0]=='\0') {
@@ -128,6 +131,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TrainingTagger,lopts_Tra
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -143,6 +148,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TrainingTagger,lopts_Tra
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(text,argv[options.vars()->optind]);

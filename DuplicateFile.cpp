@@ -28,9 +28,6 @@
  *
  */
 
-
-
-
 #include "Copyright.h"
 #include "Error.h"
 #include "File.h"
@@ -51,12 +48,14 @@ const char* usage_DuplicateFile =
          "  <outfile>: the destination file\n"
          "\n"
          "OPTIONS:\n"
-         "-i INFILE/--input=INFILE: path to input file to read and copy\n"
-         "-m INFILE/--move=INFILE: path to input file to move (rename)\n"
-         "-d/--delete: to just delete the outfile\n"
-         "-a/--make-dir: to create empty directory named outfile\n"
-         "-p/--parents: to create empty directory named outfile, creating parent if needed\n"
-         "-r/--recursive-delete: to just delete the outfile folder\n"
+         "  -i INFILE/--input=INFILE: path to input file to read and copy\n"
+         "  -m INFILE/--move=INFILE: path to input file to move (rename)\n"
+         "  -d/--delete: to just delete the outfile\n"
+         "  -a/--make-dir: to create empty directory named outfile\n"
+         "  -p/--parents: to create empty directory named outfile, creating parent if needed\n"
+         "  -r/--recursive-delete: to just delete the outfile folder\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+         "  -h/--help: this help\n"
          "\n";
 
 
@@ -65,18 +64,19 @@ static void usage() {
   u_printf(usage_DuplicateFile);
 }
 
-
-const char* optstring_DuplicateFile=":aprdi:m:k:q:";
+const char* optstring_DuplicateFile=":Vhaprdi:m:k:q:";
 const struct option_TS lopts_DuplicateFile[]= {
-      {"delete",no_argument_TS,NULL,'d'},
-      {"recursive-delete",no_argument_TS,NULL,'r'},
-      {"make-dir", no_argument_TS, NULL,'a'},
-      {"parents", no_argument_TS, NULL,'p'},
-      {"move",required_argument_TS,NULL,'m'},
-      {"input",required_argument_TS,NULL,'i'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"delete",no_argument_TS,NULL,'d'},
+  {"recursive-delete",no_argument_TS,NULL,'r'},
+  {"make-dir", no_argument_TS, NULL,'a'},
+  {"parents", no_argument_TS, NULL,'p'},
+  {"move",required_argument_TS,NULL,'m'},
+  {"input",required_argument_TS,NULL,'i'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -120,6 +120,7 @@ int do_move=0;
 int do_make_dir=0;
 int do_make_dir_parent=0;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_DuplicateFile,lopts_DuplicateFile,&index))) {
@@ -141,7 +142,9 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_DuplicateFile,lopts_Dupl
              input_file = options.vars()->optarg; 
              do_move=1; 
              break;
-   case 'h': usage();
+   case 'V': only_verify_arguments = true;
+             break;   
+   case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt):
                          error("Missing argument for option --%s\n",lopts_DuplicateFile[index].name);
@@ -175,6 +178,11 @@ if ((input_file!=NULL) && (do_delete==1)) {
 if (output_file==NULL) {
    error("You must specify the output_file file\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 int result = 0;

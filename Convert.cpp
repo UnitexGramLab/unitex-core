@@ -84,6 +84,7 @@ const char* usage_Convert =
      "  -a/--aliases: to get the whole list (main names+aliases)\n"
      "  -A/--all-infos: to display all the information about all the encodings\n"
      "  -i X/--info=X: to get information about the encoding X\n"
+     "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
      "  -h/--help: this help\n"
      "\n"
      "Converts a text file into another encoding.\n";
@@ -95,30 +96,31 @@ static void usage() {
 }
 
 
-const char* optstring_Convert=":s:d:ri:hmaAo:k:q:FS";
+const char* optstring_Convert=":s:d:ri:VhmaAo:k:q:FS";
 const struct option_TS lopts_Convert[]= {
-      {"src",required_argument_TS,NULL,'s'},
-      {"dest",required_argument_TS,NULL,'d'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"replace",no_argument_TS,NULL,'r'},
-      {"ps",required_argument_TS,NULL,0},
-      {"pd",required_argument_TS,NULL,1},
-      {"ss",required_argument_TS,NULL,2},
-      {"sd",required_argument_TS,NULL,3},
-      {"dnc",no_argument_TS,NULL,4},
-      {"dcc",no_argument_TS,NULL,5},
-      {"eac",no_argument_TS,NULL,6},
-      {"ecc",no_argument_TS,NULL,7},
-      {"main-names",no_argument_TS,NULL,'m'},
-      {"aliases",no_argument_TS,NULL,'a'},
-      {"all-infos",no_argument_TS,NULL,'A'},
-      {"info",required_argument_TS,NULL,'i'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"delaf",no_argument_TS,NULL,'F'},
-      {"delas",no_argument_TS,NULL,'S'},
-      {NULL,no_argument_TS,NULL,0}
+  {"src",required_argument_TS,NULL,'s'},
+  {"dest",required_argument_TS,NULL,'d'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"replace",no_argument_TS,NULL,'r'},
+  {"ps",required_argument_TS,NULL,0},
+  {"pd",required_argument_TS,NULL,1},
+  {"ss",required_argument_TS,NULL,2},
+  {"sd",required_argument_TS,NULL,3},
+  {"dnc",no_argument_TS,NULL,4},
+  {"dcc",no_argument_TS,NULL,5},
+  {"eac",no_argument_TS,NULL,6},
+  {"ecc",no_argument_TS,NULL,7},
+  {"main-names",no_argument_TS,NULL,'m'},
+  {"aliases",no_argument_TS,NULL,'a'},
+  {"all-infos",no_argument_TS,NULL,'A'},
+  {"info",required_argument_TS,NULL,'i'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"delaf",no_argument_TS,NULL,'F'},
+  {"delas",no_argument_TS,NULL,'S'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -144,6 +146,7 @@ int decode_control_characters=0;
 int encode_all_characters=0;
 int encode_control_characters=0;
 int format=CONV_REGULAR_FILE;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&index))) {
    switch(val) {
@@ -195,6 +198,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&i
              return SUCCESS_RETURN_CODE;
    case 'F': format=CONV_DELAF_FILE; break;
    case 'S': format=CONV_DELAS_FILE; break;
+   case 'V': only_verify_arguments = true;
+             break;     
    case 'h': usage(); 
              free_encodings_context(encoding_ctx); 
              return SUCCESS_RETURN_CODE;
@@ -236,19 +241,25 @@ if (dest_encoding==NULL) {
   return USAGE_ERROR_CODE;   
 }
 
+if ((output_mode == OUTPUT_EXPLICIT_FILENAME) && ((options.vars()->optind+1)!=argc)) {
+  error("explicit output filename need exactly one input file\n");
+  free_encodings_context(encoding_ctx);
+  return USAGE_ERROR_CODE;   
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free_encodings_context(encoding_ctx);  
+  return SUCCESS_RETURN_CODE;
+}
+
 /*
  * Now we will transcode all the files described by the remaining
  * parameters.
  */
 U_FILE* input=NULL;
 U_FILE* output=NULL;
-int error_code;
-if ((output_mode == OUTPUT_EXPLICIT_FILENAME) && ((options.vars()->optind+1)!=argc)) {
-  error("explicit output filename need exactly one input file\n");
-  free_encodings_context(encoding_ctx);
-  return USAGE_ERROR_CODE;   
-}
-  
+int error_code=CONVERSION_OK;  
 for (int i=options.vars()->optind;i<argc;i++) {
   /*
    * We set input and output file names according to the output mode

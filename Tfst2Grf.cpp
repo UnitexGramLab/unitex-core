@@ -49,6 +49,7 @@ const char* usage_Tfst2Grf =
          "  -o XXX/--output=XXX:  name .grf file as XXX.grf and the .txt one as XXX.txt (default=cursentence)\n"
          "  -f FONT/--font=FONT: use the font FONT in the output .grf (default=Times new Roman).\n"
          "  -z N/--fontsize=N: set the font size (default=10).\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Converts a sentence automaton into a GRF file that can be viewed. The\n"
@@ -64,16 +65,17 @@ static void usage() {
 }
 
 
-const char* optstring_Tfst2Grf=":s:o:f:z:hk:q:";
+const char* optstring_Tfst2Grf=":s:o:f:z:Vhk:q:";
 const struct option_TS lopts_Tfst2Grf[]= {
-      {"sentence",required_argument_TS,NULL,'s'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"font",required_argument_TS,NULL,'f'},
-      {"fontsize",required_argument_TS,NULL,'z'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"sentence",required_argument_TS,NULL,'s'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"font",required_argument_TS,NULL,'f'},
+  {"fontsize",required_argument_TS,NULL,'z'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -91,6 +93,7 @@ int is_sequence_automaton=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char foo;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,&index))) {
    switch(val) {
@@ -150,6 +153,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage();
              free(fontname);
              free(output);
@@ -169,17 +174,24 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
 }
 
 if (SENTENCE==-1) {
-   error("You must specify a sentence number\n");
-   free(fontname);
-   free(output); 
-   return USAGE_ERROR_CODE;   
+  error("You must specify a sentence number\n");
+  free(fontname);
+  free(output); 
+  return USAGE_ERROR_CODE;   
 }
 
 if (options.vars()->optind!=argc-1) {
-   error("Invalid arguments: rerun with --help\n");
-   free(fontname);
-   free(output); 
-   return USAGE_ERROR_CODE;
+  error("Invalid arguments: rerun with --help\n");
+  free(fontname);
+  free(output); 
+  return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory 
+  free(fontname);
+  free(output);   
+  return SUCCESS_RETURN_CODE;
 }
 
 char grf_name[FILENAME_MAX];

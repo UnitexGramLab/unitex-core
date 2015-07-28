@@ -42,37 +42,38 @@
 namespace unitex {
 
 const char* usage_Grf2Fst2 =
-         "Usage : Grf2Fst2 [OPTIONS] <grf>\n"
-         "\n"
-         "  <grf>: main graph of grammar (must be an absolute path)\n"
-         "\n"
-         "OPTIONS:\n"
-         "  -o FST2/--output=FST2: name of destination file\n"
-         "  -y/--loop_check: enables the loops/left-recursion detection\n"
-         "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
-         "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
-         "                   automaton\n"
-         "  -s/--silent_grf_name: do not display the list of .grf files\n"
-         "  -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
-         "  -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
-         "                           lexical units.\n"
-         "  -c/--char_by_char: lexical units are single letters. If both -a and -c options are\n"
-         "                     unused, lexical units will be sequences of any unicode letters.\n"
-         "  -d DIR/--pkgdir=DIR: path of the default graph repository\n"
-         "  -r XXX/--named_repositories=XXX: declaration of named repositories. XXX is\n"
-		 "                                   made of one or more X=Y sequences, separated by ;\n"
-		 "                                   where X is the name of the repository denoted by\n"
-		 "                                   the pathname Y. You can use this option several times\n"
+     "Usage : Grf2Fst2 [OPTIONS] <grf>\n"
+     "\n"
+     "  <grf>: main graph of grammar (must be an absolute path)\n"
+     "\n"
+     "OPTIONS:\n"
+     "  -o FST2/--output=FST2: name of destination file\n"
+     "  -y/--loop_check: enables the loops/left-recursion detection\n"
+     "  -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
+     "  -t/--tfst_check: checks if the given .grf can be considered as a valid sentence\n"
+     "                   automaton\n"
+     "  -s/--silent_grf_name: do not display the list of .grf files\n"
+     "  -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
+     "  -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
+     "                           lexical units.\n"
+     "  -c/--char_by_char: lexical units are single letters. If both -a and -c options are\n"
+     "                     unused, lexical units will be sequences of any unicode letters.\n"
+     "  -d DIR/--pkgdir=DIR: path of the default graph repository\n"
+     "  -r XXX/--named_repositories=XXX: declaration of named repositories. XXX is\n"
+     "                                   made of one or more X=Y sequences, separated by ;\n"
+     "                                   where X is the name of the repository denoted by\n"
+     "                                   the pathname Y. You can use this option several times\n"
          "  --debug: compile graphs in debug mode\n"
-		 "  -v/--check_variables: checks output validity to avoid malformed variable expressions\n"
-		 "  -S/--strict_tokenization: spaces and # will be inserted to force box line tokenization\n"
-		 "                            to produce the exact sequence the used typed. For instance,\n"
-		 "                            'let pi=3.14' will be tokenized as:\n"
-		 "                            'let' space 'pi' # '=' # '3' # '.' # '1' # '4'\n"
-         "  -h/--help: this help\n"
-         "\n"
-         "Compiles the grammar <grf> and saves the result in a FST2 file\n"
-         "stored in the same directory as <grf>.\n";
+     "  -v/--check_variables: checks output validity to avoid malformed variable expressions\n"
+     "  -S/--strict_tokenization: spaces and # will be inserted to force box line tokenization\n"
+     "                            to produce the exact sequence the used typed. For instance,\n"
+     "                            'let pi=3.14' will be tokenized as:\n"
+     "                            'let' space 'pi' # '=' # '3' # '.' # '1' # '4'\n"
+     "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+     "  -h/--help: this help\n"
+     "\n"
+     "Compiles the grammar <grf> and saves the result in a FST2 file\n"
+     "stored in the same directory as <grf>.\n";
 
 
 static void usage() {
@@ -135,25 +136,26 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":yntsa:d:echo:k:q:r:vS";
+const char* optstring_Grf2Fst2=":yntsa:d:ecVho:k:q:r:vS";
 const struct option_TS lopts_Grf2Fst2[]= {
-      {"loop_check",no_argument_TS,NULL,'y'},
-      {"no_loop_check",no_argument_TS,NULL,'n'},
-      {"tfst_check",no_argument_TS,NULL,'t'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"pkgdir",required_argument_TS,NULL,'d'},
-      {"no_empty_graph_warning",no_argument_TS,NULL,'e'},
-      {"silent_grf_name",no_argument_TS,NULL,'s'},
-      {"char_by_char",no_argument_TS,NULL,'c'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"debug",no_argument_TS,NULL,1},
-      {"help",no_argument_TS,NULL,'h'},
-      {"named_repositories",required_argument_TS,NULL,'r'},
-      {"check_variables",no_argument_TS,NULL,'v'},
-      {"strict_tokenization",no_argument_TS,NULL,'S'},
-      {NULL,no_argument_TS,NULL,0}
+  {"loop_check",no_argument_TS,NULL,'y'},
+  {"no_loop_check",no_argument_TS,NULL,'n'},
+  {"tfst_check",no_argument_TS,NULL,'t'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"pkgdir",required_argument_TS,NULL,'d'},
+  {"no_empty_graph_warning",no_argument_TS,NULL,'e'},
+  {"silent_grf_name",no_argument_TS,NULL,'s'},
+  {"char_by_char",no_argument_TS,NULL,'c'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"debug",no_argument_TS,NULL,1},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"named_repositories",required_argument_TS,NULL,'r'},
+  {"check_variables",no_argument_TS,NULL,'v'},
+  {"strict_tokenization",no_argument_TS,NULL,'S'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -187,7 +189,7 @@ for (int i=0;i<n_morpho_dics;i++) {
    }
    name[pos]='\0';
    if (*s!='=') {
-	   error("Invalid named_repositories: %s\n",src);
+     error("Invalid named_repositories: %s\n",src);
      return;
    }
    s++;
@@ -227,6 +229,7 @@ infos->verbose_name_grf=1;
 char alph[FILENAME_MAX]="";
 int val,index=-1;
 fst2_file_name[0]='\0';
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index))) {
@@ -243,7 +246,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
    case 'e': infos->no_empty_graph_warning=1; break;
    case 'c': infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'a': infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
-			   strcpy(alph,options.vars()->optarg);
+         strcpy(alph,options.vars()->optarg);
              break;
    case 'o': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty output\n");
@@ -255,6 +258,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
              break;
    case 'd': strcpy(infos->repository,options.vars()->optarg); break;
    case 1: infos->debug=1; break;
+   case 'V': only_verify_arguments = true;
+             break;   
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -286,7 +291,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
                      return ALLOC_ERROR_CODE;
                   }
              } else {
-            	   named = (char*)realloc((void*)named,strlen(named)+strlen(options.vars()->optarg)+2);
+                 named = (char*)realloc((void*)named,strlen(named)+strlen(options.vars()->optarg)+2);
                  if (named==NULL) {
                     alloc_error("main_Grf2Fst2");
                     free_compilation_info(infos);
@@ -311,23 +316,30 @@ if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free(named);
    free_compilation_info(infos);
-   return DEFAULT_ERROR_CODE;  
+   return USAGE_ERROR_CODE;  
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(named);
+  free_compilation_info(infos);  
+  return SUCCESS_RETURN_CODE;
 }
 
 deal_with_named_repositories(named,infos->named_repositories);
 free(named);
 
 if (alph[0]!='\0') {
-	infos->alphabet=load_alphabet(&(infos->vec),alph);
-	if (infos->alphabet==NULL) {
-		error("Cannot load alphabet file %s\n",alph);
+  infos->alphabet=load_alphabet(&(infos->vec),alph);
+  if (infos->alphabet==NULL) {
+    error("Cannot load alphabet file %s\n",alph);
     free_compilation_info(infos);
     return DEFAULT_ERROR_CODE;    
-	}
+  }
 }
 
 if (fst2_file_name[0]=='\0') {
-	strcpy(fst2_file_name,argv[options.vars()->optind]);
+  strcpy(fst2_file_name,argv[options.vars()->optind]);
 }
 remove_extension(fst2_file_name);
 strcat(fst2_file_name,".fst2");
@@ -354,10 +366,10 @@ free_alphabet(infos->alphabet);
 write_number_of_graphs(&(infos->vec),fst2_file_name,infos->current_saved_graph,infos->debug);
 /* Now, we may have to renumber graph calls */
 if (infos->renumber->tab[infos->graph_names->size-1]!=infos->graph_names->size) {
-	Fst2* fst2=load_fst2(&(infos->vec),fst2_file_name,1);
-	renumber_graph_calls(fst2,infos->renumber,infos->part_of_precompiled_fst2);
-	save_Fst2(&(infos->vec),fst2_file_name,fst2);
-	free_Fst2(fst2);
+  Fst2* fst2=load_fst2(&(infos->vec),fst2_file_name,1);
+  renumber_graph_calls(fst2,infos->renumber,infos->part_of_precompiled_fst2);
+  save_Fst2(&(infos->vec),fst2_file_name,fst2);
+  free_Fst2(fst2);
 }
 
 if (check_recursion) {

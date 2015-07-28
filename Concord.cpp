@@ -119,6 +119,7 @@ const char* usage_Concord =
     "  -d DIR/--directory=DIR: does not work in the same directory than <concord> but in DIR\n"
     "  -a ALPH/--alphabet=ALPH : the char order file used for sorting\n"
     "  -T/--thai: option to use for Thai concordances\n"
+    "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
     "  -h/--help: this help\n"
     "\n"
     "Extracts the matches stored in <concord>, and stores them into a UTF-8\n"
@@ -203,45 +204,46 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:h$:@:k:q:";
+const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:Vh$:@:k:q:";
 const struct option_TS lopts_Concord[]= {
-      {"font",required_argument_TS,NULL,'f'},
-      {"fontsize",required_argument_TS,NULL,'s'},
-      {"left",required_argument_TS,NULL,'l'},
-      {"right",required_argument_TS,NULL,'r'},
-      {"only_ambiguous",no_argument_TS,NULL,8},
-      {"only_matches",no_argument_TS,NULL,10},
-      {"lemmatize",no_argument_TS,NULL,11},
-      {"export_csv",no_argument_TS,NULL,12},
-      {"TO",no_argument_TS,NULL,0},
-      {"LC",no_argument_TS,NULL,1},
-      {"LR",no_argument_TS,NULL,2},
-      {"CL",no_argument_TS,NULL,3},
-      {"CR",no_argument_TS,NULL,4},
-      {"RL",no_argument_TS,NULL,5},
-      {"RC",no_argument_TS,NULL,6},
-      {"html",no_argument_TS,NULL,'H'},
-      {"text",optional_argument_TS,NULL,'t'},
-      {"xml",optional_argument_TS,NULL,'e'},
-      {"xml-with-header",optional_argument_TS,NULL,'w'},
-      {"glossanet",required_argument_TS,NULL,'g'},
-      {"script",required_argument_TS,NULL,'p'},
-      {"index",no_argument_TS,NULL,'i'},
-      {"uima",optional_argument_TS,NULL,'u'},
-      {"axis",no_argument_TS,NULL,'A'},
-      {"xalign",no_argument_TS,NULL,'x'},
-      {"diff",no_argument_TS,NULL,7},
-      {"merge",required_argument_TS,NULL,'m'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"thai",no_argument_TS,NULL,'T'},
-      {"directory",required_argument_TS,NULL,'d'},
-      {"PRLG",required_argument_TS,NULL,9},
-      {"output_offsets",required_argument_TS,NULL,'@'},
-      {"input_offsets",required_argument_TS,NULL,'$'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"font",required_argument_TS,NULL,'f'},
+  {"fontsize",required_argument_TS,NULL,'s'},
+  {"left",required_argument_TS,NULL,'l'},
+  {"right",required_argument_TS,NULL,'r'},
+  {"only_ambiguous",no_argument_TS,NULL,8},
+  {"only_matches",no_argument_TS,NULL,10},
+  {"lemmatize",no_argument_TS,NULL,11},
+  {"export_csv",no_argument_TS,NULL,12},
+  {"TO",no_argument_TS,NULL,0},
+  {"LC",no_argument_TS,NULL,1},
+  {"LR",no_argument_TS,NULL,2},
+  {"CL",no_argument_TS,NULL,3},
+  {"CR",no_argument_TS,NULL,4},
+  {"RL",no_argument_TS,NULL,5},
+  {"RC",no_argument_TS,NULL,6},
+  {"html",no_argument_TS,NULL,'H'},
+  {"text",optional_argument_TS,NULL,'t'},
+  {"xml",optional_argument_TS,NULL,'e'},
+  {"xml-with-header",optional_argument_TS,NULL,'w'},
+  {"glossanet",required_argument_TS,NULL,'g'},
+  {"script",required_argument_TS,NULL,'p'},
+  {"index",no_argument_TS,NULL,'i'},
+  {"uima",optional_argument_TS,NULL,'u'},
+  {"axis",no_argument_TS,NULL,'A'},
+  {"xalign",no_argument_TS,NULL,'x'},
+  {"diff",no_argument_TS,NULL,7},
+  {"merge",required_argument_TS,NULL,'m'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"thai",no_argument_TS,NULL,'T'},
+  {"directory",required_argument_TS,NULL,'d'},
+  {"PRLG",required_argument_TS,NULL,9},
+  {"output_offsets",required_argument_TS,NULL,'@'},
+  {"input_offsets",required_argument_TS,NULL,'$'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 /**
@@ -260,6 +262,7 @@ VersatileEncodingConfig vec=VEC_DEFAULT;
 int ret;
 char offset_file[FILENAME_MAX]="";
 char PRLG[FILENAME_MAX]="";
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&index))) {
    switch(val) {
@@ -422,6 +425,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
              }
              strcpy(concord_options->working_directory,options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage();
              free_conc_opt(concord_options); 
              return SUCCESS_RETURN_CODE;
@@ -450,6 +455,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
    }
    index=-1;
 }
+
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free_conc_opt(concord_options);
@@ -462,6 +468,13 @@ if (concord_options->fontname==NULL || concord_options->fontsize<=0) {
       return USAGE_ERROR_CODE;      
    }
 }
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free_conc_opt(concord_options);
+  return SUCCESS_RETURN_CODE;
+}
+
 U_FILE* concor=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (concor==NULL) {
    error("Cannot open concordance index file %s\n",argv[options.vars()->optind]);

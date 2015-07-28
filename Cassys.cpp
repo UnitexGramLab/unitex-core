@@ -46,33 +46,34 @@
 
 namespace unitex {
 
-const char *optstring_Cassys = ":bp:t:a:w:l:hk:q:g:dvuNncm:s:ir:f:T:L:C:$:";
+const char *optstring_Cassys = ":bp:t:a:w:l:Vhk:q:g:dvuNncm:s:ir:f:T:L:C:$:";
 const struct option_TS lopts_Cassys[] = {
-        {"text", required_argument_TS, NULL, 't'},
-        {"alphabet", required_argument_TS, NULL, 'a'},
-        {"morpho",required_argument_TS,NULL,'w'},
-        {"transducers_list", required_argument_TS, NULL,'l'},
-        {"input_encoding",required_argument_TS,NULL,'k'},
-        {"output_encoding",required_argument_TS,NULL,'q'},
-        {"no_create_directory",no_argument_TS,NULL,'d'},
-        {"negation_operator",required_argument_TS,NULL,'g'},
-        {"transducer_policy",required_argument_TS,NULL,'m'},
-        {"transducer_file",required_argument_TS,NULL,'s'},
-        {"transducer_dir",required_argument_TS,NULL,'r'},
-        {"in_place", no_argument_TS,NULL,'i'},
-        {"dump_token_graph", no_argument_TS, NULL, 'u' },
-        {"no_dump_token_graph", no_argument_TS, NULL, 'N' },
-        {"realign_token_graph_pointer", no_argument_TS, NULL, 'n' },
-        {"display_time", no_argument_TS, NULL, 'c' },
-        {"translate_path_separator_to_native", no_argument_TS, NULL, 'v' },
-        {"working_dir", required_argument_TS, NULL, 'p' },
-        {"cleanup_working_files", no_argument_TS, NULL, 'b' },
-        {"tokenize_argument", required_argument_TS, NULL, 'T' },
-        {"locate_argument", required_argument_TS, NULL, 'L' },
-        {"concord_argument", required_argument_TS, NULL, 'C' },
-        {"uima", required_argument_TS, NULL, 'f' },
-        {"input_offsets",required_argument_TS,NULL,'$'},
-        {"help", no_argument_TS,NULL,'h'}
+  {"text", required_argument_TS, NULL, 't'},
+  {"alphabet", required_argument_TS, NULL, 'a'},
+  {"morpho",required_argument_TS,NULL,'w'},
+  {"transducers_list", required_argument_TS, NULL,'l'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"no_create_directory",no_argument_TS,NULL,'d'},
+  {"negation_operator",required_argument_TS,NULL,'g'},
+  {"transducer_policy",required_argument_TS,NULL,'m'},
+  {"transducer_file",required_argument_TS,NULL,'s'},
+  {"transducer_dir",required_argument_TS,NULL,'r'},
+  {"in_place", no_argument_TS,NULL,'i'},
+  {"dump_token_graph", no_argument_TS, NULL, 'u' },
+  {"no_dump_token_graph", no_argument_TS, NULL, 'N' },
+  {"realign_token_graph_pointer", no_argument_TS, NULL, 'n' },
+  {"display_time", no_argument_TS, NULL, 'c' },
+  {"translate_path_separator_to_native", no_argument_TS, NULL, 'v' },
+  {"working_dir", required_argument_TS, NULL, 'p' },
+  {"cleanup_working_files", no_argument_TS, NULL, 'b' },
+  {"tokenize_argument", required_argument_TS, NULL, 'T' },
+  {"locate_argument", required_argument_TS, NULL, 'L' },
+  {"concord_argument", required_argument_TS, NULL, 'C' },
+  {"uima", required_argument_TS, NULL, 'f' },
+  {"input_offsets",required_argument_TS,NULL,'$'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS,NULL,'h'}
 };
 
 const char* usage_Cassys =
@@ -105,7 +106,8 @@ const char* usage_Cassys =
         "-T ARG/--tokenize_argument=ARG specify additionnal argument for Tokenize internal call (several possible)\n"
         "-L ARG/--locate_argument=ARG specify additionnal argument for Locate internal call (several possible)\n"
         "-C ARG/--concord_argument=ARG specify additionnal argument for Concord internal call (several possible)\n"
-        "-h/--help display this help\n"
+        "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+        "  -h/--help display this help\n"
         "\n"
         "Applies a list of grammar to a text and saves the matching sequence index in a\n"
         "file named \"concord.ind\" stored in the text directory.\n\n"
@@ -702,10 +704,13 @@ int main_Cassys(int argc,char* const argv[]) {
     textbuf->transducer_filename_prefix[0]='\0';
     textbuf->name_uima_offsets_file[0] = '\0';
     textbuf->name_input_offsets_file[0] = '\0';
+    bool only_verify_arguments = false;
     UnitexGetOpt options;
     while (EOF != (val=options.parse_long(argc, argv, optstring_Cassys,
                                           lopts_Cassys, &index))) {
         switch (val) {
+        case 'V': only_verify_arguments = true;
+                  break;        
         case 'h': usage();
                   free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
                   free_vector_ptr(concord_additional_args, free);
@@ -1056,7 +1061,7 @@ int main_Cassys(int argc,char* const argv[]) {
             break;
         }
         default :{
-            error("Unknown option : %c\n",val);
+            error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
             free_vector_ptr(concord_additional_args, free);
             free_vector_ptr(locate_additional_args, free);
@@ -1084,7 +1089,8 @@ int main_Cassys(int argc,char* const argv[]) {
         command_line_errors = 1;
     }
 
-    if(command_line_errors) {
+    if(command_line_errors || only_verify_arguments) {
+        // freeing all allocated memory 
         free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
         free_vector_ptr(concord_additional_args, free);
         free_vector_ptr(locate_additional_args, free);
@@ -1092,8 +1098,13 @@ int main_Cassys(int argc,char* const argv[]) {
         free(temp_work_dir);
         free(morpho_dic);
         free(textbuf);
-        return USAGE_ERROR_CODE;
-    }
+        
+        if (command_line_errors) {
+          return USAGE_ERROR_CODE;
+        }
+
+        return SUCCESS_RETURN_CODE;  
+    } 
 
     // Load the list of transducers from the file transducer list and stores it in a list
     //struct fifo *transducer_list = load_transducer(transducer_list_file_name);

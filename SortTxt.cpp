@@ -224,6 +224,7 @@ const char* usage_SortTxt =
         "  -t/--thai: sorts thai text\n"
         "  -f/--factorize_inflectional_codes: makes two entries XXX,YYY.ZZZ:A and XXX,YYY.ZZZ:B\n"
         "                                   become a single entry XXX,YYY.ZZZ:A:B\n"
+        "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
         "  -h/--help: this help\n"
         "\n"
         "By default, the sort is done according the Unicode char order, removing duplicates.\n";
@@ -283,19 +284,20 @@ int pseudo_main_SortTxt(const VersatileEncodingConfig* vec, int duplicates,
   return ret;
 }
 
-const char* optstring_SortTxt = ":ndr:o:l:tfhk:q:";
+const char* optstring_SortTxt = ":ndr:o:l:tfVhk:q:";
 const struct option_TS lopts_SortTxt[] = { 
-	    { "no_duplicates", no_argument_TS, NULL, 'n' }, 
-      { "duplicates", no_argument_TS, NULL, 'd' }, 
-      { "reverse", no_argument_TS, NULL, 'r' }, 
-      { "sort_order", required_argument_TS, NULL, 'o' }, 
-      { "line_info", required_argument_TS, NULL, 'l' }, 
-      { "thai", no_argument_TS, NULL, 't' }, 
-      { "factorize_inflectional_codes", no_argument_TS, NULL, 'f' },
-      { "input_encoding", required_argument_TS, NULL, 'k' }, 
-      { "output_encoding", required_argument_TS, NULL, 'q' },
-      { "help", no_argument_TS, NULL, 'h' }, { NULL, no_argument_TS, NULL, 0 } 
-    };
+  { "no_duplicates", no_argument_TS, NULL, 'n' }, 
+  { "duplicates", no_argument_TS, NULL, 'd' }, 
+  { "reverse", no_argument_TS, NULL, 'r' }, 
+  { "sort_order", required_argument_TS, NULL, 'o' }, 
+  { "line_info", required_argument_TS, NULL, 'l' }, 
+  { "thai", no_argument_TS, NULL, 't' }, 
+  { "factorize_inflectional_codes", no_argument_TS, NULL, 'f' },
+  { "input_encoding", required_argument_TS, NULL, 'k' }, 
+  { "output_encoding", required_argument_TS, NULL, 'q' },
+  { "only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h' }, { NULL, no_argument_TS, NULL, 0 } 
+};
 
 int main_SortTxt(int argc, char* const argv[]) {
   if (argc == 1) {
@@ -314,7 +316,7 @@ int main_SortTxt(int argc, char* const argv[]) {
   VersatileEncodingConfig vec = { DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,
       DEFAULT_ENCODING_OUTPUT, DEFAULT_BOM_OUTPUT };
   int val, index = -1;
-
+  bool only_verify_arguments = false;
   UnitexGetOpt options;
   while (EOF != (val = options.parse_long(argc, argv, optstring_SortTxt,
       lopts_SortTxt, &index))) {
@@ -350,6 +352,8 @@ int main_SortTxt(int argc, char* const argv[]) {
     case 'f':
       inf->factorize_inflectional_codes = 1;
       break;
+    case 'V': only_verify_arguments = true;
+      break;      
     case 'h':
       usage();
       free_sort_infos(inf);
@@ -390,6 +394,12 @@ int main_SortTxt(int argc, char* const argv[]) {
     error("Invalid arguments: rerun with --help\n");
     free_sort_infos(inf);
     return USAGE_ERROR_CODE;    
+  }
+
+  if (only_verify_arguments) {
+    // freeing all allocated memory
+    free_sort_infos(inf);
+    return SUCCESS_RETURN_CODE;
   }
 
   if (sort_order[0] != '\0') {

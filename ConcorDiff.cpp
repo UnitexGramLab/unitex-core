@@ -46,6 +46,7 @@ const char* usage_ConcorDiff =
          "  -f FONT/--font=FONT: name of the font to use\n"
          "  -s N/--fontsize=N: size of the font to use\n"
          "  -d/--diff_only: don't show identical sequences\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "\nProduces an HTML file that shows differences between input\n"
@@ -58,16 +59,17 @@ static void usage() {
 }
 
 
-const char* optstring_ConcorDiff=":o:f:s:hk:q:d";
+const char* optstring_ConcorDiff=":o:f:s:Vhk:q:d";
 const struct option_TS lopts_ConcorDiff[]= {
-      {"out",required_argument_TS,NULL,'o'},
-      {"font",required_argument_TS,NULL,'f'},
-      {"fontsize",required_argument_TS,NULL,'s'},
-      {"diff_only",no_argument_TS,NULL,'d'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"out",required_argument_TS,NULL,'o'},
+  {"font",required_argument_TS,NULL,'f'},
+  {"fontsize",required_argument_TS,NULL,'s'},
+  {"diff_only",no_argument_TS,NULL,'d'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -84,6 +86,7 @@ int size=0;
 char foo;
 int diff_only=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,&index))) {
    switch(val) {
@@ -125,6 +128,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ConcorDiff,lopts_ConcorD
              }
              break;
    case 'd': diff_only=1; break;
+   case 'V': only_verify_arguments = true;
+             break;   
    case 'h': usage();
              free(font);
              free(out);
@@ -182,6 +187,13 @@ if (options.vars()->optind!=argc-2) {
    free(out);
    return USAGE_ERROR_CODE;
 }
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(font);
+  free(out);
+  return SUCCESS_RETURN_CODE;
+}             
 
 diff(&vec,argv[options.vars()->optind],argv[options.vars()->optind+1],out,font,size,diff_only);
 

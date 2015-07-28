@@ -70,6 +70,7 @@ const char* usage_MultiFlex =
          "  -n/--never-recompile-graphs:         avoids graph recompiling even if the fst is not up to date\n"
          "  -t/--only-recompile-outdated-graphs: only recompiling when the fst is not up to date (default)\n"
          "\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: display this help and exit\n"
          "\n"
          "Inflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n"
@@ -82,23 +83,24 @@ static void usage() {
 }
 
 
-const char* optstring_MultiFlex=":o:a:d:Kscfnthk:q:p:r:";
+const char* optstring_MultiFlex=":o:a:d:KscfntVhk:q:p:r:";
 const struct option_TS lopts_MultiFlex[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"directory",required_argument_TS,NULL,'d'},
-      {"korean",no_argument_TS,NULL,'K'},
-      {"only-simple-words",no_argument_TS,NULL,'s'},
-      {"only-compound-words",no_argument_TS,NULL,'c'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"pkgdir",required_argument_TS,NULL,'p'},
-      {"named_repositories",required_argument_TS,NULL,'r'},
-      {"always-recompile-graphs",no_argument_TS,NULL,'f'},
-      {"never-recompile-graphs",no_argument_TS,NULL,'n'},
-      {"only-recompile-outdated-graphs",no_argument_TS,NULL,'t'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"directory",required_argument_TS,NULL,'d'},
+  {"korean",no_argument_TS,NULL,'K'},
+  {"only-simple-words",no_argument_TS,NULL,'s'},
+  {"only-compound-words",no_argument_TS,NULL,'c'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"pkgdir",required_argument_TS,NULL,'p'},
+  {"named_repositories",required_argument_TS,NULL,'r'},
+  {"always-recompile-graphs",no_argument_TS,NULL,'f'},
+  {"never-recompile-graphs",no_argument_TS,NULL,'n'},
+  {"only-recompile-outdated-graphs",no_argument_TS,NULL,'t'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -120,6 +122,7 @@ GraphRecompilationPolicy graph_recompilation_policy = ONLY_OUT_OF_DATE;
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&index))) {
    switch(val) {
@@ -185,7 +188,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFle
                  strcat(named,options.vars()->optarg);
              }
              break;
-   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+             break;
+   case 'h': usage();
+             free(named);
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
              free(named);
@@ -208,6 +215,12 @@ if (output[0]=='\0') {
    error("You must specify the output DELAF name\n");
    free(named);
    return USAGE_ERROR_CODE;   
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(named);
+  return SUCCESS_RETURN_CODE;
 }
 
 //Load morphology description

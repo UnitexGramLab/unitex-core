@@ -127,6 +127,7 @@ const char* usage_Locate =
          "  --least_tolerant: set max matches per subgraph, max matches per token and\n"
          "                         max exploration step at a tenth of default value.\n"
          "\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text, and saves the matching sequence index in a\n"
@@ -143,49 +144,50 @@ static void usage() {
 #endif
 }
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKhk:q:o:u:g:Tv:$:@:C:P:HQN+:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cewsxbzpKVhk:q:o:u:g:Tv:$:@:C:P:HQN+:";
 const struct option_TS lopts_Locate[]= {
-      {"text",required_argument_TS,NULL,'t'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"morpho",required_argument_TS,NULL,'m'},
-      {"shortest_matches",no_argument_TS,NULL,'S'},
-      {"longest_matches",no_argument_TS,NULL,'L'},
-      {"all_matches",no_argument_TS,NULL,'A'},
-      {"ignore",no_argument_TS,NULL,'I'},
-      {"merge",no_argument_TS,NULL,'M'},
-      {"replace",no_argument_TS,NULL,'R'},
-      {"exit_on_variable_error",no_argument_TS,NULL,'X'},
-      {"ignore_variable_errors",no_argument_TS,NULL,'Y'},
-      {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
-      {"all",no_argument_TS,NULL,'l'},
-      {"number_of_matches",required_argument_TS,NULL,'n'},
-      {"sntdir",required_argument_TS,NULL,'d'},
-      {"char_by_char",no_argument_TS,NULL,'c'},
-      {"word_by_word",no_argument_TS,NULL,'w'},
-      {"start_on_space",no_argument_TS,NULL,'s'},
-      {"dont_start_on_space",no_argument_TS,NULL,'x'},
-      {"ambiguous_outputs",no_argument_TS,NULL,'b'},
-      {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
-      {"protect_dic_chars",no_argument_TS,NULL,'p'},
-      {"korean",no_argument_TS,NULL,'K'},
-      {"stop_token_count",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"arabic_rules",required_argument_TS,NULL,'u'},
-      {"negation_operator",required_argument_TS,NULL,'g'},
-      {"dont_use_locate_cache",no_argument_TS,NULL,'e'},
-      {"dont_allow_trace",no_argument_TS,NULL,'T'},
-      {"variable",required_argument_TS,NULL,'v'},
-      {"stack_max",required_argument_TS,NULL,'$'},
-      {"max_errors",required_argument_TS,NULL,'@'},
-      {"max_matches_per_subgraph",required_argument_TS,NULL,'C'},
-      {"max_matches_at_token_pos",required_argument_TS,NULL,'P'},
-      {"less_tolerant",no_argument_TS,NULL,'H'},
-      {"lesser_tolerant",no_argument_TS,NULL,'Q'},
-      {"least_tolerant",no_argument_TS,NULL,'N'},
-      {"trace_option",required_argument_TS,NULL,'+'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"text",required_argument_TS,NULL,'t'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"morpho",required_argument_TS,NULL,'m'},
+  {"shortest_matches",no_argument_TS,NULL,'S'},
+  {"longest_matches",no_argument_TS,NULL,'L'},
+  {"all_matches",no_argument_TS,NULL,'A'},
+  {"ignore",no_argument_TS,NULL,'I'},
+  {"merge",no_argument_TS,NULL,'M'},
+  {"replace",no_argument_TS,NULL,'R'},
+  {"exit_on_variable_error",no_argument_TS,NULL,'X'},
+  {"ignore_variable_errors",no_argument_TS,NULL,'Y'},
+  {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
+  {"all",no_argument_TS,NULL,'l'},
+  {"number_of_matches",required_argument_TS,NULL,'n'},
+  {"sntdir",required_argument_TS,NULL,'d'},
+  {"char_by_char",no_argument_TS,NULL,'c'},
+  {"word_by_word",no_argument_TS,NULL,'w'},
+  {"start_on_space",no_argument_TS,NULL,'s'},
+  {"dont_start_on_space",no_argument_TS,NULL,'x'},
+  {"ambiguous_outputs",no_argument_TS,NULL,'b'},
+  {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
+  {"protect_dic_chars",no_argument_TS,NULL,'p'},
+  {"korean",no_argument_TS,NULL,'K'},
+  {"stop_token_count",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"arabic_rules",required_argument_TS,NULL,'u'},
+  {"negation_operator",required_argument_TS,NULL,'g'},
+  {"dont_use_locate_cache",no_argument_TS,NULL,'e'},
+  {"dont_allow_trace",no_argument_TS,NULL,'T'},
+  {"variable",required_argument_TS,NULL,'v'},
+  {"stack_max",required_argument_TS,NULL,'$'},
+  {"max_errors",required_argument_TS,NULL,'@'},
+  {"max_matches_per_subgraph",required_argument_TS,NULL,'C'},
+  {"max_matches_at_token_pos",required_argument_TS,NULL,'P'},
+  {"less_tolerant",no_argument_TS,NULL,'H'},
+  {"lesser_tolerant",no_argument_TS,NULL,'Q'},
+  {"least_tolerant",no_argument_TS,NULL,'N'},
+  {"trace_option",required_argument_TS,NULL,'+'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 char** new_locate_trace_param()
@@ -273,6 +275,7 @@ char** list_param_trace=new_locate_trace_param();
 char foo;
 vector_ptr* injected_vars=new_vector_ptr();
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&index))) {
    switch(val) {
@@ -456,6 +459,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
    case 'p': protect_dic_chars=1; break;
    case 'K': is_korean=1;
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage();
              free_vector_ptr(injected_vars,free);
              free_locate_trace_param(list_param_trace);
@@ -544,6 +549,14 @@ if (text[0]=='\0') {
   free_locate_trace_param(list_param_trace);
   free(morpho_dic);
   return USAGE_ERROR_CODE; 
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free_vector_ptr(injected_vars,free);
+  free_locate_trace_param(list_param_trace);
+  free(morpho_dic);  
+  return SUCCESS_RETURN_CODE;
 }
 
 if (selected_negation_operator==0) {

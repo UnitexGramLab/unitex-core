@@ -46,6 +46,7 @@ const char* usage_TfstTag =
          "OPTIONS:\n"
          "  -i XXX/--ind_file=XXX: the .ind file to use\n"
          "  -o XXX/--output=XXX: output .tfst (by default, the given .tfst is modified)\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Adds transitions to the given .tfst. Transitions are taken from a .ind file\n"
@@ -58,14 +59,15 @@ static void usage() {
 }
 
 
-const char* optstring_TfstTag=":i:o:hk:q:";
+const char* optstring_TfstTag=":i:o:Vhk:q:";
 const struct option_TS lopts_TfstTag[]= {
-      {"ind_file",required_argument_TS,NULL,'i'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"ind_file",required_argument_TS,NULL,'i'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -79,6 +81,7 @@ char ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_TfstTag,lopts_TfstTag,&index))) {
    switch(val) {
@@ -98,6 +101,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TfstTag,lopts_TfstTag,&i
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -112,7 +117,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TfstTag,lopts_TfstTag,&i
 
 if (options.vars()->optind!=argc-1) {
   error("Invalid arguments: rerun with --help\n");
-  return DEFAULT_ERROR_CODE;
+  return USAGE_ERROR_CODE;
 }
 
 if (ind[0]=='\0') {
@@ -120,10 +125,15 @@ if (ind[0]=='\0') {
    return USAGE_ERROR_CODE;
 }
 
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
+}
+
 U_FILE* f=u_fopen(&vec,ind,U_READ);
 if (f==NULL) {
 	error("Cannot load ind file %s\n",ind);
-  return USAGE_ERROR_CODE;
+  return DEFAULT_ERROR_CODE;
 }
 
 unichar header;

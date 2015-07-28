@@ -89,6 +89,8 @@ const char* usage_PackFile =
          "  -m/--quiet: do not emit message when running\n"
          "  -g X/--global=X: uses X as archive global comment (cosmetic)\n"
          "  -j X/--junk_prefix=X: remove X at the beginning in the stored filename\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+         "  -h/--help: this help\n"         
          "\n";
 
 static void usage() {
@@ -97,7 +99,7 @@ static void usage() {
 }
 
 
-const char* optstring_PackFile=":hi:pamg:j:k:q:";
+const char* optstring_PackFile=":Vhi:pamg:j:k:q:";
 const struct option_TS lopts_PackFile[]={
    {"include", required_argument_TS, NULL, 'i'},
    {"prefix",no_argument_TS,NULL,'p'},
@@ -107,6 +109,7 @@ const struct option_TS lopts_PackFile[]={
    {"junk_prefix",required_argument_TS,NULL,'j'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
+   {"only_verify_arguments",no_argument_TS,NULL,'V'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -128,7 +131,7 @@ int val,index=-1;
 int quiet=0;
 int add_one_file_only=1;
 int append=0;
-
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_PackFile,lopts_PackFile,&index))) {
    switch(val) {
@@ -166,7 +169,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_PackFile,lopts_PackFile,
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
              break;
-   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+             break;             
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_PackFile[index].name);
              return USAGE_ERROR_CODE;
@@ -192,6 +198,11 @@ if (ulpFile == NULL) {
 if ((*ulpFile)=='\0') {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 int retValue = buildPackFile(ulpFile,append,

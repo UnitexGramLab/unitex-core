@@ -37,12 +37,14 @@
 namespace unitex {
 
 const char* usage_SelectOutput =
-         "Usage: SelectOutput [OPTIONS]\n"
-         "\n"
-         "OPTIONS:\n"
-		 "  -o [on/off]/--output=[on/off]: enable (on) or disable (off) standard output\n"
-		 "  -e [on/off]/--error=[on/off]: enable (on) or disable (off) error output\n"
-		 "\n";
+  "Usage: SelectOutput [OPTIONS]\n"
+  "\n"
+  "OPTIONS:\n"
+  "  -o [on/off]/--output=[on/off]: enable (on) or disable (off) standard output\n"
+  "  -e [on/off]/--error=[on/off]: enable (on) or disable (off) error output\n"
+  "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+  "  -h/--help: this help\n"     
+  "\n";
 
 
 static void usage() {
@@ -53,14 +55,15 @@ static void usage() {
 
 /* Undocumented short options are those given by the svn client. They
  * are listed here just to be safely ignored by getopt */
-const char* optstring_SelectOutput=":ho:e:k:q:";
+const char* optstring_SelectOutput=":Vho:e:k:q:";
 const struct option_TS lopts_SelectOutput[] = {
-      {"output",required_argument_TS,NULL,'o'},
-      {"error",required_argument_TS,NULL,'e'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"error",required_argument_TS,NULL,'e'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -75,9 +78,12 @@ if (argc==1) {
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_SelectOutput,&index))) {
    switch(val) {
+   case 'V': only_verify_arguments = true;
+             break;    
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case 'e':
@@ -120,6 +126,13 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
    }
    index=-1;
 }
+
+  // keep this for further modifications
+  if (only_verify_arguments) {
+    // freeing all allocated memory
+    return SUCCESS_RETURN_CODE;
+  }
+
 
 	return SUCCESS_RETURN_CODE;
 }

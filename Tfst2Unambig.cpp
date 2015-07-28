@@ -44,6 +44,7 @@ const char* usage_Tfst2Unambig =
          "\n"
          "OPTIONS:\n"
          "  -o TXT/--out=TXT : output unicode text file\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Converts a linear Unitex text automaton into a text file. If\n"
@@ -55,14 +56,15 @@ static void usage() {
   u_printf(usage_Tfst2Unambig);
 }
 
-const char* optstring_Tfst2Unambig=":o:hk:q:";
+const char* optstring_Tfst2Unambig=":o:Vhk:q:";
 
 const struct option_TS lopts_Tfst2Unambig[]= {
-      {"out",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"out",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -75,6 +77,7 @@ if (argc==1) {
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char* output=NULL;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2Unambig,&index))) {
    switch(val) {
@@ -103,6 +106,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage();
              free(output); 
              return SUCCESS_RETURN_CODE;
@@ -129,6 +134,12 @@ if (output==NULL) {
    error("You must specify an output text file\n");
    free(output);
    return USAGE_ERROR_CODE;   
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(output);
+  return SUCCESS_RETURN_CODE;
 }
 
 u_printf("Loading text automaton...\n");

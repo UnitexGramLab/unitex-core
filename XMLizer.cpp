@@ -56,20 +56,21 @@ static const char *tei_close = "</div>\n</body>\n</text>\n</tei>";
 
 
 const char* usage_XMLizer =
-        "Usage: XMLizer [OPTIONS] <txt>\n"
-        "\n"
-        "  <txt>: the input text file\n"
-        "\n"
-        "OPTIONS:\n"
-        "  -x/--xml: build a simple XML file from a raw text file\n"
-        "  -t/--tei: build a minimal TEI file from a raw text file (default)\n"
-        "  -n XXX/--normalization=XXX: optional configuration file for the normalization process\n"
-        "  -o OUT/--output=OUT: optional output file name (default: file.txt > file.xml)\n"
-        "  -a ALPH/--alphabet=ALPH: alphabet file\n"
-        "  -s SEG/--segmentation_grammar=SEG: .fst2 segmentation grammar\n"
-        "  -h/--help: this help\n"
-        "\n"
-        "Produces a TEI or simple XML file from the given raw text file.\n";
+  "Usage: XMLizer [OPTIONS] <txt>\n"
+  "\n"
+  "  <txt>: the input text file\n"
+  "\n"
+  "OPTIONS:\n"
+  "  -x/--xml: build a simple XML file from a raw text file\n"
+  "  -t/--tei: build a minimal TEI file from a raw text file (default)\n"
+  "  -n XXX/--normalization=XXX: optional configuration file for the normalization process\n"
+  "  -o OUT/--output=OUT: optional output file name (default: file.txt > file.xml)\n"
+  "  -a ALPH/--alphabet=ALPH: alphabet file\n"
+  "  -s SEG/--segmentation_grammar=SEG: .fst2 segmentation grammar\n"
+  "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+  "  -h/--help: this help\n"
+  "\n"
+  "Produces a TEI or simple XML file from the given raw text file.\n";
 
 
 static void usage() {
@@ -78,18 +79,19 @@ static void usage() {
 }
 
 
-const char* optstring_XMLizer = ":xtn:o:a:s:hk:q:";
+const char* optstring_XMLizer = ":xtn:o:a:s:Vhk:q:";
 const struct option_TS lopts_XMLizer[] = {
-   {"xml", no_argument_TS, NULL, 'x'},
-   {"tei", no_argument_TS, NULL, 't'},
-   {"normalization", required_argument_TS, NULL, 'n'},
-   {"output", required_argument_TS, NULL, 'o'},
-   {"alphabet", required_argument_TS, NULL, 'a'},
-   {"segmentation_grammar", required_argument_TS, NULL, 's'},
-   {"input_encoding",required_argument_TS,NULL,'k'},
-   {"output_encoding",required_argument_TS,NULL,'q'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
+  {"xml", no_argument_TS, NULL, 'x'},
+  {"tei", no_argument_TS, NULL, 't'},
+  {"normalization", required_argument_TS, NULL, 'n'},
+  {"output", required_argument_TS, NULL, 'o'},
+  {"alphabet", required_argument_TS, NULL, 'a'},
+  {"segmentation_grammar", required_argument_TS, NULL, 's'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {NULL, no_argument_TS, NULL, 0}
 };
 
 
@@ -107,6 +109,7 @@ char segmentation[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int convLFtoCRLF=1;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&index))) {
    switch(val) {
@@ -135,6 +138,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&i
                 return USAGE_ERROR_CODE;
              }
              strcpy(segmentation,options.vars()->optarg);
+             break;
+   case 'V': only_verify_arguments = true;
              break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
@@ -169,6 +174,11 @@ if (options.vars()->optind!=argc-1) {
 if (segmentation[0]=='\0') {
    error("You must specify the segmentation grammar to use\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 char input[FILENAME_MAX];

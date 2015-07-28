@@ -44,6 +44,7 @@ const char* usage_Evamb =
          "OPTIONS:\n"
          "  -o OUT/--output=OUT: optional output file\n"
          "  -s N/--sentence=N: sentence number\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Prints the average lexical ambiguity rate of the whole text automaton, or of the\n"
@@ -59,14 +60,15 @@ static void usage() {
 }
 
 
-const char* optstring_Evamb=":s:ho:k:q:";
+const char* optstring_Evamb=":s:Vho:k:q:";
 const struct option_TS lopts_Evamb[]= {
-      {"sentence",required_argument_TS,NULL,'s'},
-      {"output",optional_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"sentence",required_argument_TS,NULL,'s'},
+  {"output",optional_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -81,45 +83,48 @@ int sentence_number=-1;
 const char* outfilename=NULL;
 char output_name_buffer[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Evamb,lopts_Evamb,&index))) {
    switch(val) {
-   case 's':   {  char c_foo;
-                  if (1!=sscanf(options.vars()->optarg,"%d%c",&sentence_number,&c_foo) || sentence_number<=0) {
-                    /* foo is used to check that the sentence number is not like "45gjh" */
-                    error("Invalid sentence number: %s\n",options.vars()->optarg);
-                    return USAGE_ERROR_CODE;
+     case 's':   {  char c_foo;
+                    if (1!=sscanf(options.vars()->optarg,"%d%c",&sentence_number,&c_foo) || sentence_number<=0) {
+                      /* foo is used to check that the sentence number is not like "45gjh" */
+                      error("Invalid sentence number: %s\n",options.vars()->optarg);
+                      return USAGE_ERROR_CODE;
+                    }
                   }
-                }
-                break;
-      case 'o': if (options.vars()->optarg[0]=='\0') {
-                   error("You must specify a non empty output file name\n");
-                   return USAGE_ERROR_CODE;
-                }
-                strcpy(output_name_buffer,options.vars()->optarg);
-                outfilename=output_name_buffer;
-                break;
-      case 'k': if (options.vars()->optarg[0]=='\0') {
-                  error("Empty input_encoding argument\n");
+               break;
+     case 'o': if (options.vars()->optarg[0]=='\0') {
+                  error("You must specify a non empty output file name\n");
                   return USAGE_ERROR_CODE;
-                }
-                decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
-                break;
-      case 'q': if (options.vars()->optarg[0]=='\0') {
-                  error("Empty output_encoding argument\n");
-                  return USAGE_ERROR_CODE;
-                }
-                decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
-                break;
-   case 'h': usage(); 
-             return SUCCESS_RETURN_CODE;
-   case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
-                         error("Missing argument for option --%s\n",lopts_Evamb[index].name);
-             return USAGE_ERROR_CODE;                         
-   case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
-                         error("Invalid option --%s\n",options.vars()->optarg);
-             return USAGE_ERROR_CODE;
+               }
+               strcpy(output_name_buffer,options.vars()->optarg);
+               outfilename=output_name_buffer;
+               break;
+     case 'k': if (options.vars()->optarg[0]=='\0') {
+                 error("Empty input_encoding argument\n");
+                 return USAGE_ERROR_CODE;
+               }
+               decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
+               break;
+     case 'q': if (options.vars()->optarg[0]=='\0') {
+                 error("Empty output_encoding argument\n");
+                 return USAGE_ERROR_CODE;
+               }
+               decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
+               break;
+     case 'V': only_verify_arguments = true;
+               break;                
+     case 'h': usage(); 
+               return SUCCESS_RETURN_CODE;
+     case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
+                           error("Missing argument for option --%s\n",lopts_Evamb[index].name);
+               return USAGE_ERROR_CODE;                         
+     case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
+                           error("Invalid option --%s\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
    }
    index=-1;
 }
@@ -127,6 +132,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Evamb,lopts_Evamb,&index
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 u_printf("Loading '%s'...\n",argv[options.vars()->optind]);

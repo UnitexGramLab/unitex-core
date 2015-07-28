@@ -47,6 +47,7 @@ const char* usage_Reg2Grf =
          "  -o X/--output=X: output filename .grf file (optional)\n"
          "\n"
          "OPTIONS:\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Converts the regular expression into a graph named \"regexp.grf\"\n"
@@ -66,16 +67,15 @@ static void usage() {
   u_printf(usage_Reg2Grf);
 }
 
-
-const char* optstring_Reg2Grf=":ho:k:q:";
+const char* optstring_Reg2Grf=":Vho:k:q:";
 const struct option_TS lopts_Reg2Grf[]= {
-      {"output", required_argument_TS, NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output", required_argument_TS, NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
-
 
 int main_Reg2Grf(int argc,char* const argv[]) {
 if (argc==1) {
@@ -86,6 +86,7 @@ if (argc==1) {
 VersatileEncodingConfig vec=VEC_DEFAULT;
 char grf_name[FILENAME_MAX]="";
 int val, index = -1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index))) {
    switch(val) {
@@ -107,6 +108,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&i
              }
 			 strcpy(grf_name, options.vars()->optarg);
 			 break;
+   case 'V': only_verify_arguments = true;
+             break;       
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -122,6 +125,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&i
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* f=u_fopen(&vec,argv[options.vars()->optind],U_READ);

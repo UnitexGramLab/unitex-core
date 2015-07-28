@@ -84,6 +84,8 @@ const char* usage_UnpackFile =
          "  -o/--output: output filename for -l/--list\n"
          "  -m/--quiet: do not emit message when running\n"
          "  -v/--verbose: emit message when running\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+         "  -h/--help: this help\n"
          "\n";
 
 static void usage() {
@@ -91,8 +93,7 @@ static void usage() {
   u_printf(usage_UnpackFile);
 }
 
-
-const char* optstring_UnpackFile=":hd:f:jpmlk:q:o:n";
+const char* optstring_UnpackFile=":Vhd:f:jpmlk:q:o:n";
 const struct option_TS lopts_UnpackFile[]={
    {"extractdir", required_argument_TS, NULL, 'd'},
    {"selectfile", required_argument_TS, NULL, 'f'},
@@ -104,6 +105,7 @@ const struct option_TS lopts_UnpackFile[]={
    {"output", required_argument_TS, NULL,'o'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
+   {"only_verify_arguments",no_argument_TS,NULL,'V'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -127,6 +129,7 @@ int list=0;
 int junk_path_in_pack_archive=0;
 int transform_path_separator=0;
 int list_only_filename=0;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_UnpackFile,lopts_UnpackFile,&index))) {
    switch(val) {
@@ -165,7 +168,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnpackFile,lopts_UnpackF
                }
                decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
                break;
-     case 'h': usage();  return SUCCESS_RETURN_CODE;
+     case 'V': only_verify_arguments = true;
+             break;
+     case 'h': usage();  
+               return SUCCESS_RETURN_CODE;
      case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                            error("Missing argument for option --%s\n",lopts_UnpackFile[index].name);
                return USAGE_ERROR_CODE;
@@ -191,6 +197,11 @@ if (ulpFile == NULL) {
 if ((*ulpFile)=='\0') {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 int retValue = 0;

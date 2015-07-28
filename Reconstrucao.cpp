@@ -60,6 +60,7 @@ const char* usage_Reconstrucao =
          "  -p PRO/--pronoun_rules=PRO: the .fst2 grammar describing pronoun rewriting rules\n"
          "  -n NAS/--nasal_pronoun_rules=NAS: the .fst2 grammar describing nasal pronoun rewriting rules\n"
          "  -o OUT/--output=OUT:  the name of the .grf graph to be generated\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Takes a list of multi-part verbs and creates an apropriate normalization grammar.\n";
@@ -71,18 +72,19 @@ static void usage() {
 }
 
 
-const char* optstring_Reconstrucao=":a:r:d:p:n:o:hk:q:";
+const char* optstring_Reconstrucao=":a:r:d:p:n:o:Vhk:q:";
 const struct option_TS lopts_Reconstrucao[]= {
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"root",required_argument_TS,NULL,'r'},
-      {"dictionary",required_argument_TS,NULL,'d'},
-      {"pronoun_rules",required_argument_TS,NULL,'p'},
-      {"nasal_pronoun_rules",required_argument_TS,NULL,'n'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"root",required_argument_TS,NULL,'r'},
+  {"dictionary",required_argument_TS,NULL,'d'},
+  {"pronoun_rules",required_argument_TS,NULL,'p'},
+  {"nasal_pronoun_rules",required_argument_TS,NULL,'n'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -100,6 +102,7 @@ char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index))) {
    switch(val) {
@@ -151,6 +154,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reconstrucao,lopts_Recon
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;  
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -191,6 +196,11 @@ if (nasal_pronoun_rules[0]=='\0') {
 if (output[0]=='\0') {
    error("You must specify the output dictionary file name\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 Alphabet* alph=NULL;

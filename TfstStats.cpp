@@ -19,8 +19,6 @@
  *
  */
 
-
-
 #include "TfstStats.h"
 #include "BitArray.h"
 #include "Tfst.h"

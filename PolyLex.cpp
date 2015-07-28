@@ -80,20 +80,21 @@ static void usage() {
 }
 
 
-const char* optstring_PolyLex=":DGNRa:d:o:i:hk:q:";
+const char* optstring_PolyLex=":DGNRa:d:o:i:Vhk:q:";
 const struct option_TS lopts_PolyLex[]= {
-      {"dutch",no_argument_TS,NULL,'D'},
-      {"german",no_argument_TS,NULL,'G'},
-      {"norwegian",no_argument_TS,NULL,'N'},
-      {"russian",no_argument_TS,NULL,'R'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"dictionary",required_argument_TS,NULL,'d'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"info",required_argument_TS,NULL,'i'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"dutch",no_argument_TS,NULL,'D'},
+  {"german",no_argument_TS,NULL,'G'},
+  {"norwegian",no_argument_TS,NULL,'N'},
+  {"russian",no_argument_TS,NULL,'R'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"dictionary",required_argument_TS,NULL,'d'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"info",required_argument_TS,NULL,'i'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -110,6 +111,7 @@ char output[FILENAME_MAX]="";
 char info[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_PolyLex,lopts_PolyLex,&index))) {
    switch(val) {
@@ -153,6 +155,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_PolyLex,lopts_PolyLex,&i
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -183,6 +187,11 @@ if (output[0]=='\0') {
 if (language==-1) {
    error("You must specify the language\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 Alphabet* alph=NULL;

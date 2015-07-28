@@ -48,6 +48,7 @@ const char* usage_RebuildTfst =
       "  <tfst>: text automaton to be rebuilt\n"
       "\n"
       "OPTIONS:\n"
+      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"      
       "  -h/--help: this help\n"
       "\n"
       "Rebuilds the text automaton taking into account sentence graphs that have\n"
@@ -64,13 +65,14 @@ SingleGraph create_copy_of_fst2_subgraph(Fst2* fst2,int n);
 unichar** create_tfst_tags(Fst2* fst2,int *n_tags);
 
 
-const char* optstring_RebuildTfst=":hk:q:";
+const char* optstring_RebuildTfst=":Vhk:q:";
 
 const struct option_TS lopts_RebuildTfst[]= {
-   { "input_encoding",required_argument_TS,NULL,'k'},
-   { "output_encoding",required_argument_TS,NULL,'q'},
-   { "help", no_argument_TS, NULL, 'h' },
-   { NULL, no_argument_TS, NULL, 0 }
+  { "input_encoding",required_argument_TS,NULL,'k'},
+  { "output_encoding",required_argument_TS,NULL,'q'},
+  { "only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h' },
+  { NULL, no_argument_TS, NULL, 0 }
 };
 
 
@@ -82,6 +84,7 @@ if (argc==1) {
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val, index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_RebuildTfst,lopts_RebuildTfst,&index))) {
    switch (val) {
@@ -97,6 +100,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_RebuildTfst,lopts_Rebuil
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h':
       usage();
       return SUCCESS_RETURN_CODE;
@@ -113,6 +118,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_RebuildTfst,lopts_Rebuil
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 char input_tfst[FILENAME_MAX];

@@ -84,6 +84,7 @@ const char* usage_Dico =
          "  -r X/--raw=X: indicates that Dico should just produce one output file X containing\n"
          "                both simple and compound words, without requiring a text directory.\n"
          "                If X is omitted, results are displayed on the standard output.\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
@@ -204,20 +205,21 @@ if (len==0 || s[len]!='-') {
 
 
 
-const char* optstring_Dico=":t:a:m:Khk:q:u:g:sr::";
+const char* optstring_Dico=":t:a:m:KVhk:q:u:g:sr::";
 const struct option_TS lopts_Dico[]= {
-      {"text",required_argument_TS,NULL,'t'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"morpho",required_argument_TS,NULL,'m'},
-      {"korean",no_argument_TS,NULL,'K'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"negation_operator",required_argument_TS,NULL,'g'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"arabic_rules",required_argument_TS,NULL,'u'},
-      {"raw",optional_argument_TS,NULL,'r'},
-      {"semitic",no_argument_TS,NULL,'s'},
-      {NULL,no_argument_TS,NULL,0}
+  {"text",required_argument_TS,NULL,'t'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"morpho",required_argument_TS,NULL,'m'},
+  {"korean",no_argument_TS,NULL,'K'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"negation_operator",required_argument_TS,NULL,'g'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"arabic_rules",required_argument_TS,NULL,'u'},
+  {"raw",optional_argument_TS,NULL,'r'},
+  {"semitic",no_argument_TS,NULL,'s'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -252,6 +254,7 @@ int is_korean=0;
 int semitic=0;
 U_FILE* f_raw_output=NULL;
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))) {
    switch(val) {
@@ -312,6 +315,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
              break;
    case 'K': is_korean=1;
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage();
              free(morpho_dic);
              free(buffer_filename);
@@ -381,6 +386,14 @@ if (options.vars()->optind==argc) {
    free(buffer_filename);
    return USAGE_ERROR_CODE;   
 }
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(morpho_dic);
+  free(buffer_filename);  
+  return SUCCESS_RETURN_CODE;
+}
+
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
    /* We load the alphabet */

@@ -124,24 +124,23 @@ int is_appropriate_token(int tokenID, text_tokens* tokens);
 
 
 const char* usage_Stats =
-         "Usage: Stats [OPTIONS] <concord>\n"
-         "\n"
-         "  <concord>: a concord.ind file\n"
-         "\n"
-         "OPTIONS:\n"
-         "-m MODE/--mode=MODE: specifies mode of operation: \n"
-         "                     0 = left + match + right count\n"
-         "                     1 = collocate count\n"
-         "                     2 = collocate count with z-score\n"
-         "-a ALPH/--alphabet=ALPH: path to the alphabet file\n"
-         "-o OUT/--output=OUT: output file\n"
-         "-l N/--left=N: length of left context in tokens\n"
-         "-r N/--right=N: length of right context in tokens\n"
-         "-c N/--case=N: 0=case insensitive, 1=case sensitive (default is 1)\n"
-         "-h/--help: this help\n"
-         "\n"
-         "Computes some statistics.\n";
-
+  "Usage: Stats [OPTIONS] <concord>\n"
+  "\n"
+  "  <concord>: a concord.ind file\n"
+  "\n"
+  "OPTIONS:\n"
+  "-m MODE/--mode=MODE: specifies mode of operation: \n"
+  "                     0 = left + match + right count\n"
+  "                     1 = collocate count\n"
+  "                     2 = collocate count with z-score\n"
+  "-a ALPH/--alphabet=ALPH: path to the alphabet file\n"
+  "-o OUT/--output=OUT: output file\n"
+  "-l N/--left=N: length of left context in tokens\n"
+  "-r N/--right=N: length of right context in tokens\n"
+  "-c N/--case=N: 0=case insensitive, 1=case sensitive (default is 1)\n"
+  "-h/--help: this help\n"
+  "\n"
+  "Computes some statistics.\n";
 
 static void usage() {
   display_copyright_notice();
@@ -149,18 +148,20 @@ static void usage() {
 }
 
 
-const char* optstring_Stats=":m:a:l:r:c:o:k:q:";
+const char* optstring_Stats=":m:a:l:r:c:o:Vhk:q:";
 
 const struct option_TS lopts_Stats[]= {
-      {"mode",required_argument_TS,NULL,'m'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"left",required_argument_TS,NULL,'l'},
-      {"right",required_argument_TS,NULL,'r'},
-      {"case",optional_argument_TS,NULL,'c'},
-      {"output",optional_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {0, 0, 0, 0 }
+  {"mode",required_argument_TS,NULL,'m'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"left",required_argument_TS,NULL,'l'},
+  {"right",required_argument_TS,NULL,'r'},
+  {"case",optional_argument_TS,NULL,'c'},
+  {"output",optional_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},      
+  {0, 0, 0, 0 }
  } ;
 
 int main_Stats(int argc,char* const argv[]) {
@@ -178,6 +179,7 @@ char alphabet[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char foo;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Stats,lopts_Stats,&index))) {
    switch(val) {
@@ -225,6 +227,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Stats,lopts_Stats,&index
             }
             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
             break;
+   case 'V': only_verify_arguments = true;
+             break;             
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;            
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Stats[index].name);
              return USAGE_ERROR_CODE;            
@@ -242,6 +248,11 @@ if (options.vars()->optind!=argc-1) {
 if (output[0]=='\0') {
    error("You must specify a output file\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(concord_ind,argv[options.vars()->optind]);

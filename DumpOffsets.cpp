@@ -65,6 +65,7 @@ const char* usage_DumpOffsets =
          "  -d/--denorm: denormalize the whole text\n"
          "  -q/--quiet: display no message\n"
          "  -c/--no_escape_sequence: don't escape text sequence\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "DumpOffsets dump sequence offset to study them.\n"
@@ -131,25 +132,26 @@ static void usage() {
 }
 
 
-const char* optstring_DumpOffsets=":hfumdvMtTs:S:o:n:p:k:q:r:";
+const char* optstring_DumpOffsets=":VhfumdvMtTs:S:o:n:p:k:q:r:";
 const struct option_TS lopts_DumpOffsets[]={
-   {"old",required_argument_TS, NULL,'o'},
-   {"new",required_argument_TS,NULL,'n'},
-   {"output",required_argument_TS,NULL,'p'},
-   {"no_escape_sequence",required_argument_TS,NULL,'c'},
-   {"merge",no_argument_TS,NULL,'m'},
-   {"convert_modified_to_common",no_argument_TS,NULL,'v'},
-   {"convert_common_to_modified",no_argument_TS,NULL,'M'},
-   {"old_size",required_argument_TS,NULL,'s'},
-   {"new_size",required_argument_TS,NULL,'S'},
-   {"full",no_argument_TS,NULL,'f'},
-   {"denorm",no_argument_TS,NULL,'d'},
-   {"quiet",no_argument_TS,NULL,'u'},
-   {"replacement_rules",required_argument_TS,NULL,'r'},
-   {"input_encoding",required_argument_TS,NULL,'k'},
-   {"output_encoding",required_argument_TS,NULL,'q'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
+  {"old",required_argument_TS, NULL,'o'},
+  {"new",required_argument_TS,NULL,'n'},
+  {"output",required_argument_TS,NULL,'p'},
+  {"no_escape_sequence",required_argument_TS,NULL,'c'},
+  {"merge",no_argument_TS,NULL,'m'},
+  {"convert_modified_to_common",no_argument_TS,NULL,'v'},
+  {"convert_common_to_modified",no_argument_TS,NULL,'M'},
+  {"old_size",required_argument_TS,NULL,'s'},
+  {"new_size",required_argument_TS,NULL,'S'},
+  {"full",no_argument_TS,NULL,'f'},
+  {"denorm",no_argument_TS,NULL,'d'},
+  {"quiet",no_argument_TS,NULL,'u'},
+  {"replacement_rules",required_argument_TS,NULL,'r'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {NULL, no_argument_TS, NULL, 0}
 };
 
 
@@ -732,6 +734,7 @@ int new_size=-1;
 int val,index=-1;
 int quotes=1;
 //char foo=0;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_DumpOffsets,lopts_DumpOffsets,&index))) {
    switch(val) {
@@ -792,7 +795,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_DumpOffsets,lopts_DumpOf
    case 'T': translate_position_file_invert = 1; break;
    case 'u': quiet = 1; break;
    case 'd': denorm = 1; break;
-   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+             break;   
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;             
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
              return USAGE_ERROR_CODE;            
@@ -808,6 +814,10 @@ if (options.vars()->optind!=argc-1) {
    return USAGE_ERROR_CODE;
 }
 
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
+}
 
 strcpy(offset_file_name, argv[options.vars()->optind]);
 

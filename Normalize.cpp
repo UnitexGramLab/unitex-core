@@ -50,10 +50,9 @@ const char* usage_Normalize =
          "  --no_separator_normalization: only applies replacement rules specified with -r\n"
          "  -r XXX/--replacement_rules=XXX: specifies a configuration file XXX that contains\n"
          "                                  replacement instructions in the form of lines like:\n"
-         "\n"
-         "                                     input_sequence TABULATION output_sequence\n"
-         "\n"
+         "                                  input_sequence TABULATION output_sequence\n"
          "                                  By default, the program only replaces { and } by [ and ]\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Turns every sequence of separator chars (space, tab, new line) into one.\n"
@@ -72,25 +71,26 @@ static void usage() {
 }
 
 
-const char* optstring_Normalize=":nlr:hk:q:@:";
+const char* optstring_Normalize=":nlr:Vhk:q:@:";
 const struct option_TS lopts_Normalize[]= {
-      {"no_carriage_return",no_argument_TS,NULL,'n'},
-      {"no_convert_lf_to_crlf",no_argument_TS,NULL,'l'},
-      {"replacement_rules",required_argument_TS,NULL,'r'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"input_offsets",required_argument_TS,NULL,'$'},
-      {"output_offsets",required_argument_TS,NULL,'@'},
-      {"no_separator_normalization",no_argument_TS,NULL,1},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"no_carriage_return",no_argument_TS,NULL,'n'},
+  {"no_convert_lf_to_crlf",no_argument_TS,NULL,'l'},
+  {"replacement_rules",required_argument_TS,NULL,'r'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"input_offsets",required_argument_TS,NULL,'$'},
+  {"output_offsets",required_argument_TS,NULL,'@'},
+  {"no_separator_normalization",no_argument_TS,NULL,1},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
 int main_Normalize(int argc,char* const argv[]) {
 if (argc==1) {
   usage();
-  return 0;
+  return SUCCESS_RETURN_CODE;
 }
 int mode=KEEP_CARRIAGE_RETURN;
 int separator_normalization=1;
@@ -100,6 +100,7 @@ char output_offsets[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int convLFtoCRLF=1;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Normalize,lopts_Normalize,&index))) {
    switch(val) {
@@ -136,7 +137,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Normalize,lopts_Normaliz
              }
              strcpy(output_offsets,options.vars()->optarg);
              break;
-   case 'h': usage(); return 0;
+   case 'V': only_verify_arguments = true;
+             break;             
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Normalize[index].name);
              return USAGE_ERROR_CODE;
@@ -152,6 +156,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Normalize,lopts_Normaliz
 if (options.vars()->optind!=argc-1) {
   error("Invalid arguments: rerun with --help\n");
   return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory 
+  return SUCCESS_RETURN_CODE;
 }
 
 vector_offset* v_input_offsets=NULL;
@@ -186,8 +195,15 @@ char dest_file[FILENAME_MAX];
 remove_extension(argv[options.vars()->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[options.vars()->optind]);
-int result=normalize(tmp_file, dest_file, &vec, mode, convLFtoCRLF,rules,
-    v_output_offsets,separator_normalization);
+
+int return_value = normalize(tmp_file, 
+                             dest_file, 
+                             &vec,
+                             mode,
+                             convLFtoCRLF,
+                             rules,
+                             v_output_offsets,
+                             separator_normalization);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[options.vars()->optind])) {
@@ -197,8 +213,9 @@ process_offsets(v_input_offsets,v_output_offsets,f_output_offsets);
 u_fclose(f_output_offsets);
 free_vector_offset(v_input_offsets);
 free_vector_offset(v_output_offsets);
-u_printf((result==0) ? "Done.\n" : "Unsuccessfull.\n");
-return result;
+u_printf((return_value==SUCCESS_RETURN_CODE) ? "Done.\n" : "Unsuccessfull.\n");
+
+return return_value;
 }
 
 } // namespace unitex

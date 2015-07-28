@@ -71,6 +71,7 @@ const char* usage_SpellCheck =
         "                  default, no keyboard heuristic is used\n"
         "  --show-keyboards: displays all available keyboard configurations\n"
         "\n"
+        "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
         "  -h/--help: this help\n"
         "\n";
 
@@ -109,28 +110,29 @@ static void usage_scores() {
 }
 
 
-const char* optstring_SpellCheck=":hk:q:s:f:o::I:O:";
+const char* optstring_SpellCheck=":Vhk:q:s:f:o::I:O:";
 const struct option_TS lopts_SpellCheck[]= {
-    {"snt",required_argument_TS,NULL,'s'},
-    {"file",required_argument_TS,NULL,'f'},
-    {"output",optional_argument_TS,NULL,'o'},
-    {"input-op",required_argument_TS,NULL,'I'},
-    {"output-op",required_argument_TS,NULL,'O'},
-    {"input_encoding",required_argument_TS,NULL,'k'},
-    {"output_encoding",required_argument_TS,NULL,'q'},
-    {"keyboard",required_argument_TS,NULL,1},
-    {"show-keyboards",no_argument_TS,NULL,2},
-    {"max-errors",required_argument_TS,NULL,10},
-    {"max-insert",required_argument_TS,NULL,11},
-    {"max-suppr",required_argument_TS,NULL,12},
-    {"max-change",required_argument_TS,NULL,13},
-    {"max-swap",required_argument_TS,NULL,14},
-    {"scores",required_argument_TS,NULL,20},
-    {"help-scores",no_argument_TS,NULL,21},
-    {"min-lengths",required_argument_TS,NULL,22},
-    {"upper-initial",required_argument_TS,NULL,23},
-    {"help",no_argument_TS,NULL,'h'},
-    {NULL,no_argument_TS,NULL,0}
+  {"snt",required_argument_TS,NULL,'s'},
+  {"file",required_argument_TS,NULL,'f'},
+  {"output",optional_argument_TS,NULL,'o'},
+  {"input-op",required_argument_TS,NULL,'I'},
+  {"output-op",required_argument_TS,NULL,'O'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"keyboard",required_argument_TS,NULL,1},
+  {"show-keyboards",no_argument_TS,NULL,2},
+  {"max-errors",required_argument_TS,NULL,10},
+  {"max-insert",required_argument_TS,NULL,11},
+  {"max-suppr",required_argument_TS,NULL,12},
+  {"max-change",required_argument_TS,NULL,13},
+  {"max-swap",required_argument_TS,NULL,14},
+  {"scores",required_argument_TS,NULL,20},
+  {"help-scores",no_argument_TS,NULL,21},
+  {"min-lengths",required_argument_TS,NULL,22},
+  {"upper-initial",required_argument_TS,NULL,23},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 int main_SpellCheck(int argc,char* const argv[]) {
@@ -163,6 +165,7 @@ config.input_op='D';
 config.keyboard=NULL;
 config.allow_uppercase_initial=0;
 char foo;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_SpellCheck,lopts_SpellCheck,&index))) {
    switch(val) {
@@ -293,10 +296,13 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SpellCheck,lopts_SpellCh
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+             break;             
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_SpellCheck[index].name);
-             return USAGE_ERROR_CODE;
+             return USAGE_ERROR_CODE;           
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;
@@ -312,6 +318,11 @@ if (options.vars()->optind==argc) {
 if (mode==0) {
   error("You must use either --snt or --file\n");
   return USAGE_ERROR_CODE;  
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 config.n_dics=argc-options.vars()->optind;

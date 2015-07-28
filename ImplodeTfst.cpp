@@ -51,6 +51,7 @@ const char* usage_ImplodeTfst =
          "OPTIONS:\n"
          "  -o OUT/--output=OUT: resulting text automaton. By default, the input\n"
          "                       text automaton is modified.\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Implodes the specified text automaton by merging together lexical entries\n"
@@ -63,13 +64,14 @@ static void usage() {
 }
 
 
-const char* optstring_ImplodeTfst=":o:hk:q:";
+const char* optstring_ImplodeTfst=":o:Vhk:q:";
 const struct option_TS lopts_ImplodeTfst[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -85,6 +87,7 @@ char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_ImplodeTfst,lopts_ImplodeTfst,&index))) {
@@ -94,6 +97,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ImplodeTfst,lopts_Implod
                 return USAGE_ERROR_CODE;
              }
              strcpy(output_tfst,options.vars()->optarg);
+             break;
+   case 'V': only_verify_arguments = true;
              break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
@@ -122,6 +127,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ImplodeTfst,lopts_Implod
 if (options.vars()->optind!=argc-1) {
   error("Invalid arguments: rerun with --help\n");
   return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(input_tfst,argv[options.vars()->optind]);

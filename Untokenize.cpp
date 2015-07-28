@@ -61,6 +61,7 @@ const char* usage_Untokenize =
          "  -n N/--number_token=N: adds tokens number each N token\n"
          "  -r N/--range=N: emits only token from number N to end\n"
          "  -r N,M/--range=N,M: emits only token from number N to M\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Untokenizes and rebuild the orgininal text. The token list is stored into \"tokens.txt\" and\n"
@@ -74,16 +75,17 @@ static void usage() {
 }
 
 
-const char* optstring_Untokenize=":a:hn:r:d:k:q:";
+const char* optstring_Untokenize=":a:Vhn:r:d:k:q:";
 const struct option_TS lopts_Untokenize[]={
-   {"alphabet", required_argument_TS, NULL, 'a'},
-   {"range",required_argument_TS,NULL,'r'},
-   {"number_token",required_argument_TS,NULL,'n'},
-   {"sntdir",required_argument_TS,NULL,'d'},
-   {"input_encoding",required_argument_TS,NULL,'k'},
-   {"output_encoding",required_argument_TS,NULL,'q'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
+  {"alphabet", required_argument_TS, NULL, 'a'},
+  {"range",required_argument_TS,NULL,'r'},
+  {"number_token",required_argument_TS,NULL,'n'},
+  {"sntdir",required_argument_TS,NULL,'d'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {NULL, no_argument_TS, NULL, 0}
 };
 
 
@@ -102,6 +104,7 @@ int range_start,range_stop,use_range;
 int token_step_number=0;
 range_start=range_stop=use_range=0;
 char foo=0;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Untokenize,lopts_Untokenize,&index))) {
    switch(val) {
@@ -165,6 +168,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Untokenize,lopts_Untoken
                     use_range=1;
              }
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -180,6 +185,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Untokenize,lopts_Untoken
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 char tokens_txt[FILENAME_MAX];

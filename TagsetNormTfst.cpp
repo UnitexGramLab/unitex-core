@@ -60,6 +60,7 @@ const char* usage_TagsetNormTfst =
          "  -o OUT/--output=OUT: specifies the output .tfst file. By default, the input\n"
          "                       text automaton is modified.\n"
          "  -t TAGSET/--tagset=TAGSET: tagset description file\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Normalizes the specified text automaton according to the tagset description\n"
@@ -76,14 +77,15 @@ static void usage() {
 
 int get_tfst_tag_index(vector_ptr*,unichar*,Match*);
 
-const char* optstring_TagsetNormTfst=":o:t:hk:q:";
+const char* optstring_TagsetNormTfst=":o:t:Vhk:q:";
 const struct option_TS lopts_TagsetNormTfst[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"tagset",required_argument_TS,NULL,'t'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"tagset",required_argument_TS,NULL,'t'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -100,6 +102,7 @@ char output_tind[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_TagsetNormTfst,lopts_TagsetNormTfst,&index))) {
    switch(val) {
@@ -129,6 +132,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TagsetNormTfst,lopts_Tag
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -149,6 +154,11 @@ if (options.vars()->optind!=argc-1) {
 if (tagset[0]=='\0') {
    error("You must specify the tagset file\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(tfst,argv[options.vars()->optind]);

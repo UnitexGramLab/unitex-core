@@ -57,6 +57,7 @@ const char* usage_Compress =
          "  --v1: produces an old style .bin file\n"
          "  --v2: produces a new style .bin file, with no file size limitation to 16Mb\n"
          "        and a smaller size (default)\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Compresses one or more dictionaries into an finite state automaton. This automaton\n"
@@ -127,18 +128,19 @@ return ret;
 }
 
 
-const char* optstring_Compress=":fshk:q:o:";
+const char* optstring_Compress=":fsVhk:q:o:";
 const struct option_TS lopts_Compress[]= {
-      {"flip",no_argument_TS,NULL,'f'},
-      {"semitic",no_argument_TS,NULL,'s'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"v1",no_argument_TS,NULL,1},
-      {"v2",no_argument_TS,NULL,2},
-      {"bin2",no_argument_TS,NULL,3},
-      {NULL,no_argument_TS,NULL,0}
+  {"flip",no_argument_TS,NULL,'f'},
+  {"semitic",no_argument_TS,NULL,'s'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"v1",no_argument_TS,NULL,1},
+  {"v2",no_argument_TS,NULL,2},
+  {"bin2",no_argument_TS,NULL,3},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -173,6 +175,7 @@ char* inf = (buffer_filename + (step_filename_buffer * 1));
 VersatileEncodingConfig vec=VEC_DEFAULT;
 
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Compress,lopts_Compress,&index))) {
    switch(val) {
@@ -181,6 +184,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Compress,lopts_Compress,
    case 1: new_style_bin=0; bin_type=BIN_CLASSIC; break;
    case 2: new_style_bin=1; bin_type=BIN_CLASSIC; break;
    case 3: new_style_bin=1; bin_type=BIN_BIN2; break;
+   case 'V': only_verify_arguments = true;
+             break;   
    case 'h': usage();
              free(buffer_filename);
              return SUCCESS_RETURN_CODE;
@@ -227,6 +232,12 @@ if (options.vars()->optind!=argc-1 && bin[0]=='\0') {
    error("You must use the -o option when there are more than one .dic\n");
    free(buffer_filename);
    return USAGE_ERROR_CODE;   
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(buffer_filename);
+  return SUCCESS_RETURN_CODE;
 }
 
 // Compute the name of the output .bin file

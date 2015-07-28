@@ -115,6 +115,7 @@ const char* usage_Txt2Tfst =
          "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
          "  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
          "  -K/--korean: tells Txt2Tfst that it works on Korean\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
@@ -124,25 +125,24 @@ const char* usage_Txt2Tfst =
          "\n"
          "Note that the program will also take into account the file \"tags.ind\", if any.\n";
 
-
-
 static void usage() {
   display_copyright_notice();
   u_printf(usage_Txt2Tfst);
 }
 
 
-const char* optstring_Txt2Tfst=":a:cn:t:Khk:q:";
+const char* optstring_Txt2Tfst=":a:cn:t:KVhk:q:";
 const struct option_TS lopts_Txt2Tfst[]={
-   {"alphabet", required_argument_TS, NULL, 'a'},
-   {"clean", no_argument_TS, NULL, 'c'},
-   {"normalization_grammar", required_argument_TS, NULL, 'n'},
-   {"tagset", required_argument_TS, NULL, 't'},
-   {"korean", no_argument_TS, NULL, 'K'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {"input_encoding",required_argument_TS,NULL,'k'},
-   {"output_encoding",required_argument_TS,NULL,'q'},
-   {NULL, no_argument_TS, NULL, 0}
+  {"alphabet", required_argument_TS, NULL, 'a'},
+  {"clean", no_argument_TS, NULL, 'c'},
+  {"normalization_grammar", required_argument_TS, NULL, 'n'},
+  {"tagset", required_argument_TS, NULL, 't'},
+  {"korean", no_argument_TS, NULL, 'K'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL, no_argument_TS, NULL, 0}
 };
 
 
@@ -159,6 +159,7 @@ int is_korean=0;
 int CLEAN=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&index))) {
    switch(val) {
@@ -182,6 +183,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,
              strcpy(tagset,options.vars()->optarg);
              break;
    case 'K': is_korean=1;
+             break;
+   case 'V': only_verify_arguments = true;
              break;
    case 'h': usage();
              return SUCCESS_RETURN_CODE;
@@ -211,17 +214,25 @@ if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
 }
+
 if (is_korean) {
    if (alphabet[0]=='\0') {
       error("-a option is mandatory when -k is used\n");
       return USAGE_ERROR_CODE;
    }
    if (norm[0]!='\0') {
+      // TODO(martinec) change this by a warning
       error("-n option is ignored when -k is used\n");
    }
    if (tagset[0]!='\0') {
+      // TODO(martinec) change this by a warning    
       error("-t option is ignored when -k is used\n");
    }
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 struct DELA_tree* tree=new_DELA_tree();

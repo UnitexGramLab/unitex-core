@@ -38,21 +38,21 @@
 namespace unitex {
 
 const char* usage_GrfDiff3 =
-         "Usage: GrfDiff3 <mine> <base> <other>\n"
-         "\n"
-         "  <mine>: my .grf file\n"
-         "  <other>: the other .grf file that may be conflicting\n"
-         "  <base>: the common ancestor .grf file\n"
-         "\n"
-         "OPTIONS:\n"
-		 "--output X: saves the result, if any, in X instead of printing it on the output\n"
-		 "--conflicts X: saves the description of the conflicts, if any, in X\n"
-		 "--only-cosmetic: reports a conflict for any change that is not purely cosmetic\n"
-		 "  -h/--help: this help\n"
-         "\n"
-         "Tries to merge <mine> and <other>. In case of success, the result is printed on the\n"
-		 "standard output and 0 is returned. In case of unresolved conflicts, 1 is returned and\n"
-		 "nothing is printed. 2 is returned in case of error.\n";
+  "Usage: GrfDiff3 <mine> <base> <other>\n"
+  "\n"
+  "  <mine>: my .grf file\n"
+  "  <other>: the other .grf file that may be conflicting\n"
+  "  <base>: the common ancestor .grf file\n"
+  "\n"
+  "OPTIONS:\n"
+  "--output X: saves the result, if any, in X instead of printing it on the output\n"
+  "--conflicts X: saves the description of the conflicts, if any, in X\n"
+  "--only-cosmetic: reports a conflict for any change that is not purely cosmetic\n"
+  "  -h/--help: this help\n"
+  "\n"
+  "Tries to merge <mine> and <other>. In case of success, the result is printed on the\n"
+  "standard output and 0 is returned. In case of unresolved conflicts, 1 is returned and\n"
+  "nothing is printed. 2 is returned in case of error.\n";
 
 
 static void usage() {
@@ -63,15 +63,16 @@ static void usage() {
 
 /* Undocumented short options are those given by the svn client. They
  * are listed here just to be safely ignored by getopt */
-const char* optstring_GrfDiff3=":hEmL:k:q:";
+const char* optstring_GrfDiff3=":VhEmL:k:q:";
 const struct option_TS lopts_GrfDiff3[]= {
-      {"output",required_argument_TS,NULL,1},
-      {"conflicts",required_argument_TS,NULL,2},
-      {"only-cosmetic",no_argument_TS,NULL,3},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,1},
+  {"conflicts",required_argument_TS,NULL,2},
+  {"only-cosmetic",no_argument_TS,NULL,3},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -89,10 +90,12 @@ int val,index=-1;
 char output[FILENAME_MAX]="";
 char conflicts[FILENAME_MAX]="";
 int only_cosmetics=0;
-
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,&index))) {
    switch(val) {
+     case 'V': only_verify_arguments = true;
+               break;    
      case 'h': usage(); 
                return SUCCESS_RETURN_CODE;
      case 1: {
@@ -125,9 +128,15 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,
    }
    index=-1;
 }
+
 if (options.vars()->optind!=argc-3) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* f=U_STDOUT;

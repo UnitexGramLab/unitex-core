@@ -49,6 +49,7 @@ const char* usage_Flatten =
        "  -r/--rtn: the grammar will be flattened according to the depth limit.\n"
        "            The resulting grammar may not be finite-state (default);\n"
        "  -d N/--depth=N: maximum subgraph depth to be flattened (default=10).\n"
+       "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
        "  -h/--help: this help\n"
        "\n"
        "Flattens a FST2 grammar into a finite state transducer in the limit of\n"
@@ -63,15 +64,16 @@ static void usage() {
 }
 
 
-const char* optstring_Flatten=":frd:hk:q:";
+const char* optstring_Flatten=":frd:Vhk:q:";
 const struct option_TS lopts_Flatten[]= {
-      {"fst",no_argument_TS,NULL,'f'},
-      {"rtn",no_argument_TS,NULL,'r'},
-      {"depth",required_argument_TS,NULL,'d'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"fst",no_argument_TS,NULL,'f'},
+  {"rtn",no_argument_TS,NULL,'r'},
+  {"depth",required_argument_TS,NULL,'d'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -86,6 +88,7 @@ int depth=10;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char foo;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Flatten,lopts_Flatten,&index))) {
@@ -125,6 +128,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Flatten,lopts_Flatten,&i
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 u_printf("Loading %s...\n",argv[options.vars()->optind]);

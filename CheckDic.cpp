@@ -56,6 +56,7 @@ const char* usage_CheckDic =
          "  -t/--tolerate: tolerates unprotected dot and comma (default)\n"
          "  -n/--no_space_warning: tolerates spaces in grammatical/semantic/inflectional codes\n"
          "  -p/--skip_path: doesn't display the full pathname of dictionary\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
@@ -69,19 +70,20 @@ static void usage() {
 }
 
 
-const char* optstring_CheckDic=":sfpa:hrtk:nq:";
+const char* optstring_CheckDic=":sfpa:Vhrtk:nq:";
 const struct option_TS lopts_CheckDic[]= {
-      {"delas",no_argument_TS,NULL,'s'},
-      {"delaf",no_argument_TS,NULL,'f'},
-      {"skip_path",no_argument_TS,NULL,'p'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"tolerate",no_argument_TS,NULL,'t'},
-      {"no_space_warning",no_argument_TS,NULL,'n'},
-      {"strict",no_argument_TS,NULL,'r'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"delas",no_argument_TS,NULL,'s'},
+  {"delaf",no_argument_TS,NULL,'f'},
+  {"skip_path",no_argument_TS,NULL,'p'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"tolerate",no_argument_TS,NULL,'t'},
+  {"no_space_warning",no_argument_TS,NULL,'n'},
+  {"strict",no_argument_TS,NULL,'r'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 int main_CheckDic(int argc,char* const argv[]) {
@@ -97,11 +99,14 @@ char alph[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int space_warnings=1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_CheckDic,lopts_CheckDic,&index))) {
    switch(val) {
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
+   case 'V': only_verify_arguments = true;
+             break;   
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case 'r': strict_unprotected=1; break;
@@ -139,6 +144,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_CheckDic,lopts_CheckDic,
 if (is_a_DELAF==-1 || options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory 
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* dic=u_fopen(&vec,argv[options.vars()->optind],U_READ);

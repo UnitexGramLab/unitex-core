@@ -101,6 +101,7 @@ const char* usage_Fst2Check =
          "  -o OUT/--output=OUT: output file for error message\n"
          "  -a/--append: opens the message output file in append mode\n"
          "  -s/--statistics: displays statistics about the .fst2 file\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "This program checks if a .fst2 file has no error for Locate.\n";
@@ -162,19 +163,20 @@ free_ProgramInvoker(invoker);
 return ret;
 }
 
-const char* optstring_Fst2Check=":ynatesho:k:q:";
+const char* optstring_Fst2Check=":ynatesVho:k:q:";
 const struct option_TS lopts_Fst2Check[]= {
-      {"append",no_argument_TS,NULL,'a'},
-      {"statistics",no_argument_TS,NULL,'s'},
-      {"loop_check",no_argument_TS,NULL,'y'},
-      {"no_loop_check",no_argument_TS,NULL,'n'},
-      {"tfst_check",no_argument_TS,NULL,'t'},
-      {"no_empty_graph_warning",no_argument_TS,NULL,'e'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"append",no_argument_TS,NULL,'a'},
+  {"statistics",no_argument_TS,NULL,'s'},
+  {"loop_check",no_argument_TS,NULL,'y'},
+  {"no_loop_check",no_argument_TS,NULL,'n'},
+  {"tfst_check",no_argument_TS,NULL,'t'},
+  {"no_empty_graph_warning",no_argument_TS,NULL,'e'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 /**
@@ -193,6 +195,7 @@ char no_empty_graph_warning=0;
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Check,lopts_Fst2Check,&index))) {
@@ -208,6 +211,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Check,lopts_Fst2Chec
              no_empty_graph_warning=1;
              break;
    case 'e': no_empty_graph_warning=1; break;
+   case 'V': only_verify_arguments = true;
+             break;   
    case 'h': usage();  
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -240,7 +245,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Check,lopts_Fst2Chec
 
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
-   return DEFAULT_ERROR_CODE;
+   return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 char fst2_file_name[FILENAME_MAX];

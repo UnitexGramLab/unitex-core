@@ -58,6 +58,7 @@ const char* usage_BuildKrMwuDic =
         "  -n/--never-recompile-graphs:         avoids graph recompiling even if the fst is not up to date\n"
         "  -t/--only-recompile-outdated-graphs: only recompiling when the fst is not up to date (default)\n"
         "\n"
+        "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
         "  -h/--help: display this help and exit\n"
         "\n";
 
@@ -67,19 +68,20 @@ static void usage() {
   u_printf(usage_BuildKrMwuDic);
 }
 
-const char* optstring_BuildKrMwuDic="o:d:a:b:hfntk:q:";
+const char* optstring_BuildKrMwuDic="o:d:a:b:Vhfntk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"directory",required_argument_TS,NULL,'d'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"binary",required_argument_TS,NULL,'b'},      
-      {"help",no_argument_TS,NULL,'h'},
-      {"always-recompile-graphs",no_argument_TS,NULL,'f'},
-      {"never-recompile-graphs",no_argument_TS,NULL,'n'},
-      {"only-recompile-outdated-graphs",no_argument_TS,NULL,'t'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"directory",required_argument_TS,NULL,'d'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"binary",required_argument_TS,NULL,'b'},      
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"always-recompile-graphs",no_argument_TS,NULL,'f'},
+  {"never-recompile-graphs",no_argument_TS,NULL,'n'},
+  {"only-recompile-outdated-graphs",no_argument_TS,NULL,'t'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -92,7 +94,6 @@ if (argc==1) {
    return SUCCESS_RETURN_CODE;
 }
 
-
 int val,index=-1;
 char output[FILENAME_MAX]="";
 char inflection_dir[FILENAME_MAX]="";
@@ -104,6 +105,8 @@ char dic_inf[FILENAME_MAX]="";
 GraphRecompilationPolicy graph_recompilation_policy = ONLY_OUT_OF_DATE;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
+
+bool only_verify_arguments = false;
 
 UnitexGetOpt options;
 
@@ -134,6 +137,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_BuildKrMwuDic,lopts_Buil
              strcpy(dic_bin,options.vars()->optarg);
              remove_extension(dic_bin,dic_inf);
              strcat(dic_inf,".inf");
+             break;
+   case 'V': only_verify_arguments = true;
              break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
@@ -180,6 +185,11 @@ if (alphabet[0]=='\0') {
 if (dic_bin[0]=='\0') {
    error("Binary dictionary must be specified\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory 
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* delas=u_fopen(&vec,argv[options.vars()->optind],U_READ);

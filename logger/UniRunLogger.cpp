@@ -1478,6 +1478,9 @@ const char* usage_RunLog =
          "  -w/--no-copy-always-unfound-resource: don't copy always unfound resource, but\n"
          "           uses from original location. Useful with InstallLingResourcePackage\n"
          "\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+         "  -h/--help: this help\n"
+         "\n"
          "rerun a log.\n";
 
 
@@ -1486,7 +1489,7 @@ static void usage() {
   u_printf(usage_RunLog);
 }
 
-const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lna:o:u:bf:g:";
+const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lVhna:o:u:bf:g:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1509,6 +1512,8 @@ const struct option_TS lopts_RunLog[]= {
       {"break-after",required_argument_TS,NULL,'f'},
       {"junk-summary",no_argument_TS,NULL,'j'},
       {"loop",required_argument_TS,NULL,'g'},
+      {"only_verify_arguments",no_argument_TS,NULL,'V'},
+      {"help",no_argument_TS,NULL,'h'},      
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1734,6 +1739,7 @@ runLog_ctx->run_before_break=-1;
 
 int nbloop=1;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_RunLog,lopts_RunLog,&index))) {
    switch(val) {
@@ -1794,6 +1800,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_RunLog,lopts_RunLog,&ind
    case 'e': strcpy(runLog_ctx->summary_error_file,options.vars()->optarg); break;
    case 'o': strcpy(runLog_ctx->select_tool,options.vars()->optarg); break;
    case 'u': strcpy(runLog_ctx->LocationUnfoundVirtualRessource,options.vars()->optarg); break;
+   case 'V': only_verify_arguments = true;
+             break;
+   case 'h': usage();
+             free(runLog_ctx);
+             return SUCCESS_RETURN_CODE;
    }
    index=-1;
 }
@@ -1827,6 +1838,12 @@ if (runLog_ctx->runulp[0]=='\0') {
    error("Invalid arguments: rerun with --help\n");
    free(runLog_ctx);
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(runLog_ctx);
+  return SUCCESS_RETURN_CODE;
 }
 
 if (runLog_ctx->rundir[0]==0) {

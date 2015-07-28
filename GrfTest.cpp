@@ -52,7 +52,7 @@ namespace unitex {
 #define PFX_GRF2FST2 "G:"
 #define PFX_LOCATE "L:"
 
-const char* optstring_GrfTest=":ho:d:a:w:ck:q:s:r:n";
+const char* optstring_GrfTest=":Vho:d:a:w:ck:q:s:r:n";
 
 const char* usage_GrfTest =
          "Usage: GrfTest [OPTIONS] <grf_1> [<grf_2> <grf_3> ...]\n"
@@ -69,6 +69,7 @@ const char* usage_GrfTest =
          "  -a ALPH: alphabet file to use for all programs\n"
          "  -w DIR: working directory to use\n"
          "  -c: tells all programs that we work in char by char mode\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "EXTRA OPTIONS:\n"
@@ -115,6 +116,7 @@ while (lopts[i].name!=NULL || lopts[i].has_arg!=0 || lopts[i].flag!=NULL || lopt
   (*n)++;
   i++;
 }
+ return SUCCESS_RETURN_CODE;
 }
 
 struct option_TS* filter_options() {
@@ -168,10 +170,15 @@ int val,index=-1;
 int return_value=SUCCESS_RETURN_CODE;
 int alter_stdout=1;
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfTest,lopts_GrfTest,&index))) {
    switch(val) {
-   case 'h': usage(); free(dic_list); return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+             break;    
+   case 'h': usage();
+             return_value = SUCCESS_RETURN_CODE;
+             goto end;
    case 'n': alter_stdout=0; break;
    case 'o': strcpy(output,options.vars()->optarg); break;
    case 'r': strcpy(resume_out_filename,options.vars()->optarg); break;
@@ -241,11 +248,19 @@ if (options.vars()->optind==argc) {
   return_value = SUCCESS_RETURN_CODE; 
   goto end;
 }
+
 if (working_dir[0]=='\0') {
   error("You must specify a working directory\n");
   return_value = USAGE_ERROR_CODE;
   goto end;
 }
+
+if (only_verify_arguments) {
+  return_value = SUCCESS_RETURN_CODE;
+  // freeing all allocated memory
+  goto end;
+}
+
 if (output[0]!='\0') {
   f_output=u_fopen(&vec,output,U_WRITE);
   if (f_output==NULL) {

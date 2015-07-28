@@ -50,6 +50,7 @@ const char* usage_Table2Grf =
          "                                 subgraphs. Use \"@%%\" to insert the id (line number)\n"
          "                                 to get unique names, e.g. \"sub_@%%.grf\". The default is\n"
          "                                 BINIOU_@%%.grf where BINIOU.grf=OUT.\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n"
@@ -65,15 +66,16 @@ static void usage() {
 void table2grf(U_FILE*,U_FILE*,U_FILE*, const VersatileEncodingConfig*, char*, char*);
 
 
-const char* optstring_Table2Grf=":r:o:s:hk:q:";
+const char* optstring_Table2Grf=":r:o:s:Vhk:q:";
 const struct option_TS lopts_Table2Grf[]= {
-      {"reference_graph",required_argument_TS,NULL,'r'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"subgraph_pattern",required_argument_TS,NULL,'s'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"reference_graph",required_argument_TS,NULL,'r'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"subgraph_pattern",required_argument_TS,NULL,'s'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -88,6 +90,7 @@ char output[FILENAME_MAX]="";
 char subgraph_pattern[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&index))) {
    switch(val) {
@@ -121,6 +124,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Table2Grf,lopts_Table2Gr
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -145,6 +150,11 @@ if (reference_graph_name[0]=='\0') {
 if (output[0]=='\0') {
    error("You must specify the output graph name\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* table=u_fopen(&vec,argv[options.vars()->optind],U_READ);

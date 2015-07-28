@@ -131,6 +131,7 @@ const char* usage_CreateLog =
          "  -r/--store_list_output_file: store list of output file in log (default).\n"
          "  -f/--no_store_list_output_file: don't store list of output file in log.\n"
          "\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Dpecify option to create a the logfile on running tool.\n\n";
@@ -142,8 +143,9 @@ static void usage() {
 }
 
 
-const char* optstring_CreateLog=":hgp:niofrtusk:q:l:d:";
+const char* optstring_CreateLog=":Vhgp:niofrtusk:q:l:d:";
 const struct option_TS lopts_CreateLog[]= {
+      {"only_verify_arguments",no_argument_TS,NULL,'V'},
       {"help",no_argument_TS,NULL,'h'},
       {"no_create_log",no_argument_TS,NULL,'g'},
       {"param_file",required_argument_TS,NULL,'p'},
@@ -174,10 +176,12 @@ InstallLogger::InstallLogger(int argc,char* const argv[]) :
   int bom_output = DEFAULT_BOM_OUTPUT;
   int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
   int val,index=-1;
-
+  bool only_verify_arguments = false;
   UnitexGetOpt options;
   while (EOF!=(val=options.parse_long(argc,argv,optstring_CreateLog,lopts_CreateLog,&index))) {
      switch(val) {
+       case 'V': only_verify_arguments = true;
+                 break;
        case 'h': usage();
                  return;
        case 'n': ule.store_file_in_content = 0;
@@ -248,6 +252,11 @@ InstallLogger::InstallLogger(int argc,char* const argv[]) :
   }
 
   if (options.vars()->optind!=argc-1) {
+  }
+
+  if (only_verify_arguments) {
+    // freeing all allocated memory
+    return;
   }
 
   if (AddActivityLogger(&ule) != 0) {

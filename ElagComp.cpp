@@ -57,6 +57,7 @@ const char* usage_ElagComp =
          "  -l LANG/--language=LANG: Elag language description file\n"
          "  -o OUT/--output=OUT: output file where the resulting compiled grammar is stored\n"
          "                       The default name is same as RULES except for the .rul extension\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "ElagComp compiles one Elag grammar specified by GRAMMAR or all the grammars\n"
@@ -70,16 +71,17 @@ static void usage() {
 }
 
 
-const char* optstring_ElagComp=":l:r:o:g:hk:q:";
+const char* optstring_ElagComp=":l:r:o:g:Vhk:q:";
 const struct option_TS lopts_ElagComp[]= {
-      {"language",required_argument_TS,NULL,'l'},
-      {"rulelist",required_argument_TS,NULL,'r'},
-      {"grammar",required_argument_TS,NULL,'g'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"language",required_argument_TS,NULL,'l'},
+  {"rulelist",required_argument_TS,NULL,'r'},
+  {"grammar",required_argument_TS,NULL,'g'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -96,6 +98,7 @@ char directory[FILENAME_MAX]="";
 char grammar[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char lang[FILENAME_MAX]="";
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_ElagComp,lopts_ElagComp,&index))) {
    switch(val) {
@@ -137,7 +140,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ElagComp,lopts_ElagComp,
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
-   case 'h': usage(); return SUCCESS_RETURN_CODE;
+   case 'V': only_verify_arguments = true;
+             break;             
+   case 'h': usage(); 
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_ElagComp[index].name);
              return USAGE_ERROR_CODE;            
@@ -170,6 +176,11 @@ if (rule_file[0]=='\0' && grammar[0]=='\0') {
 if (rule_file[0]!='\0' && grammar[0]!='\0') {
    error("Cannot handle both a rule file and a grammar\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 language_t* language = load_language_definition(&vec,lang);

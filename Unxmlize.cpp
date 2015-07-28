@@ -61,6 +61,7 @@ const char* usage_Unxmlize =
 		 "\n"
 		 "  --normal_tags=IGNORE: every other tag is removed (default for .xml)\n"
 		 "  --normal_tags=SPACE: every other tag is replaced by a single space(default for .html)\n"
+     "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
 		 "  -h/--help: this help\n"
 		 "\n"
 		 "Removes all xml tags from the given file to produce a text file that\n"
@@ -73,22 +74,23 @@ static void usage() {
 }
 
 
-const char* optstring_Unxmlize=":o:h:k:q:txlp:c:s:n:@:$:";
+const char* optstring_Unxmlize=":o:Vh:k:q:txlp:c:s:n:@:$:";
 const struct option_TS lopts_Unxmlize[]={
-   {"output", required_argument_TS, NULL, 'o'},
-   {"input_offsets",required_argument_TS,NULL,'$'},
-   {"output_offsets",required_argument_TS,NULL,'@'},
-   {"PRLG",required_argument_TS,NULL,'p'},
-   {"input_encoding",required_argument_TS,NULL,'k'},
-   {"output_encoding",required_argument_TS,NULL,'q'},
-   {"comments",required_argument_TS,NULL,'c'},
-   {"scripts",required_argument_TS,NULL,'s'},
-   {"normal_tags",required_argument_TS,NULL,'n'},
-   {"tolerate", no_argument_TS, NULL, 'l'},
-   {"html", no_argument_TS, NULL, 't'},
-   {"xml", no_argument_TS, NULL, 'x'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
+  {"output", required_argument_TS, NULL, 'o'},
+  {"input_offsets",required_argument_TS,NULL,'$'},
+  {"output_offsets",required_argument_TS,NULL,'@'},
+  {"PRLG",required_argument_TS,NULL,'p'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"comments",required_argument_TS,NULL,'c'},
+  {"scripts",required_argument_TS,NULL,'s'},
+  {"normal_tags",required_argument_TS,NULL,'n'},
+  {"tolerate", no_argument_TS, NULL, 'l'},
+  {"html", no_argument_TS, NULL, 't'},
+  {"xml", no_argument_TS, NULL, 'x'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {NULL, no_argument_TS, NULL, 0}
 };
 
 
@@ -111,6 +113,7 @@ int tolerate_markup_malformation=0;
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,&index))) {
    switch(val) {
@@ -186,6 +189,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
    case 't': force_html=1; break;
    case 'x': force_xml=1; break;
    case 'l': tolerate_markup_malformation=1; break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -201,6 +206,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* f_input   = NULL;

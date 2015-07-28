@@ -47,6 +47,7 @@ const char* usage_Uncompress =
          "OPTIONS:\n"
          "  -o OUT/--output=OUT: specifies the output file. By default, it is\n"
          "                       'foo.dic' where 'foo.bin' is the input file.\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Uncompresses a binary dictionary into a text one.\n\n";
@@ -58,13 +59,14 @@ static void usage() {
 }
 
 
-const char* optstring_Uncompress=":o:hk:q:";
+const char* optstring_Uncompress=":o:Vhk:q:";
 const struct option_TS lopts_Uncompress[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -77,6 +79,7 @@ if (argc==1) {
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 char output[FILENAME_MAX]="";
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Uncompress,lopts_Uncompress,&index))) {
    switch(val) {
@@ -98,6 +101,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Uncompress,lopts_Uncompr
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -113,6 +118,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Uncompress,lopts_Uncompr
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 if (output[0]=='\0') {

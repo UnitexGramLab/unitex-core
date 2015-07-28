@@ -56,6 +56,7 @@ const char* usage_VersionInfo =
          "  -m/--compiler: compiler used to build unitex info\n"
          "  -j/--json: revision and version on json string\n"
          "  -x/--xml: revision and version on xml string\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n";
 
@@ -65,20 +66,21 @@ static void usage() {
   u_printf(usage_VersionInfo);
 }
 
-const char* optstring_VersionInfo=":hmcRrvpjxo:k:q:";
+const char* optstring_VersionInfo=":VhmcRrvpjxo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
-      {"copyright",no_argument_TS,NULL,'c'},
-      {"version",no_argument_TS,NULL,'v'},
-      {"revision",no_argument_TS,NULL,'r'},
-      {"platform",no_argument_TS,NULL,'p'},
-      {"compiler",no_argument_TS,NULL,'m'},
-      {"xml",no_argument_TS,NULL,'x'},
-      {"json",no_argument_TS,NULL,'j'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"copyright",no_argument_TS,NULL,'c'},
+  {"version",no_argument_TS,NULL,'v'},
+  {"revision",no_argument_TS,NULL,'r'},
+  {"platform",no_argument_TS,NULL,'p'},
+  {"compiler",no_argument_TS,NULL,'m'},
+  {"xml",no_argument_TS,NULL,'x'},
+  {"json",no_argument_TS,NULL,'j'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 static void fill_compiler_info(unichar* s) {
@@ -188,6 +190,7 @@ int do_xml_info=0;
 int do_json_info=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_VersionInfo,&index))) {
    switch(val) {
@@ -204,6 +207,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
                 return USAGE_ERROR_CODE;
              }
              output_file = options.vars()->optarg; // FIXME(gvollant)
+             break;
+   case 'V': only_verify_arguments = true;
              break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
@@ -232,6 +237,10 @@ if (((do_revision_only!=0) && (do_version_only!=0)) ||
    return USAGE_ERROR_CODE;
 }
 
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
+}
 
 #define MAX_SIZE_DISPLAY_TEXT 0x1000
 

@@ -38,24 +38,24 @@
 namespace unitex {
 
 const char* usage_KeyWords =
-         "Usage : KeyWords <tok_by_freq> <dic1> [<dic2> ...]\n"
-         "\n"
-         "  <tok_by_freq>: a tok_by_freq.txt file produced by Tokenize\n"
-		 "  <dicX>:        a DELAF in text format (dlf, dlc)\n"
-         "\n"
-         "OPTIONS:\n"
-         "  -o OUT/--output=OUT: name of destination file (default=keywords.txt in the\n"
-		 "                       same directory than <tok_by_freq>\n"
-         "  -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
-         "                           lexical units\n"
-		 "  -f CODE/--forbidden_code=CODE: the grammatical/semantic code that will be\n"
-		 "                                 used to filter tokens (default=XXX)\n"
-		 "  -c F/--cdic=F: a text file containing one compound word per line\n"
-         "  -h/--help: this help\n"
-         "\n"
-         "Removes from the given token file every token that is part of a DELAF entry\n"
-		 "that contains the forbidden code. A frequency estimation is computed for compound\n"
-		 "words, and tokens are lemmatized.\n";
+  "Usage : KeyWords <tok_by_freq> <dic1> [<dic2> ...]\n"
+  "\n"
+  "  <tok_by_freq>: a tok_by_freq.txt file produced by Tokenize\n"
+  "  <dicX>:        a DELAF in text format (dlf, dlc)\n"
+  "\n"
+  "OPTIONS:\n"
+  "  -o OUT/--output=OUT: name of destination file (default=keywords.txt in the\n"
+  "                       same directory than <tok_by_freq>\n"
+  "  -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
+  "                           lexical units\n"
+  "  -f CODE/--forbidden_code=CODE: the grammatical/semantic code that will be\n"
+  "                                 used to filter tokens (default=XXX)\n"
+  "  -c F/--cdic=F: a text file containing one compound word per line\n"
+  "  -h/--help: this help\n"
+  "\n"
+  "Removes from the given token file every token that is part of a DELAF entry\n"
+  "that contains the forbidden code. A frequency estimation is computed for compound\n"
+  "words, and tokens are lemmatized.\n";
 
 
 static void usage() {
@@ -64,16 +64,17 @@ static void usage() {
 }
 
 
-const char* optstring_KeyWords=":o:a:f:c:hk:q:";
+const char* optstring_KeyWords=":o:a:f:c:Vhk:q:";
 const struct option_TS lopts_KeyWords[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"forbidden_code",required_argument_TS,NULL,'f'},
-      {"cdic",required_argument_TS,NULL,'c'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
+  {"output",required_argument_TS,NULL,'o'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"forbidden_code",required_argument_TS,NULL,'f'},
+  {"cdic",required_argument_TS,NULL,'c'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -94,6 +95,7 @@ char alph[FILENAME_MAX]="";
 char cdic[FILENAME_MAX]="";
 unichar* code=u_strdup("XXX");
 int val,index=-1;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_KeyWords,lopts_KeyWords,&index))) {
@@ -126,6 +128,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_KeyWords,lopts_KeyWords,
                 return USAGE_ERROR_CODE;                
              }
              strcpy(cdic,options.vars()->optarg);
+             break;
+   case 'V': only_verify_arguments = true;
              break;
    case 'h': usage();
              free(code);
@@ -162,6 +166,12 @@ if (options.vars()->optind==argc || options.vars()->optind==argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free(code);
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(code);
+  return SUCCESS_RETURN_CODE;
 }
 
 Alphabet* alphabet=NULL;

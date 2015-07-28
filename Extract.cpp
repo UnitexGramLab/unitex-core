@@ -50,6 +50,7 @@ const char* usage_Extract =
          "  -i X/--index=X: the .ind file that describes the concordance. By default,\n"
          "                  X is the concord.ind file located in the text directory.\n"
          "  -o OUT/--output=OUT: the text file where the units will be stored\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"         
          "  -h/--help: this help\n"
          "\n"
          "\nExtract all the units that contain (or not) any part of a utterance. The\n"
@@ -61,16 +62,17 @@ static void usage() {
   u_printf(usage_Extract);
 }
 
-const char* optstring_Extract=":yni:o:hk:q:";
+const char* optstring_Extract=":yni:o:Vhk:q:";
 const struct option_TS lopts_Extract[]= {
-      {"yes",no_argument_TS,NULL,'y'},
-      {"no",no_argument_TS,NULL,'n'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"index",required_argument_TS,NULL,'i'},
-      {"help",no_argument_TS,NULL,'h'},
-      {"input_encoding",required_argument_TS,NULL,'k'},
-      {"output_encoding",required_argument_TS,NULL,'q'},
-      {NULL,no_argument_TS,NULL,0}
+  {"yes",no_argument_TS,NULL,'y'},
+  {"no",no_argument_TS,NULL,'n'},
+  {"output",required_argument_TS,NULL,'o'},
+  {"index",required_argument_TS,NULL,'i'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -86,6 +88,7 @@ char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 VersatileEncodingConfig vec=VEC_DEFAULT;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Extract,lopts_Extract,&index))) {
@@ -104,6 +107,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Extract,lopts_Extract,&i
              }
              strcpy(concord_ind,options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -135,6 +140,11 @@ if (output[0]=='\0') {
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(text_name,argv[options.vars()->optind]);

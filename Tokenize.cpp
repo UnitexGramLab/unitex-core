@@ -89,6 +89,7 @@ const char* usage_Tokenize =
          "  --input_offsets=XXX: base offset file to be used\n"
          "  --output_offsets=XXX: offset file to be produced (at \"uima\" format)\n"
          "\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Tokenizes the text. The token list is stored into \"tokens.txt\" and\n"
@@ -106,18 +107,19 @@ static void usage() {
   u_printf(usage_Tokenize);
 }
 
-const char* optstring_Tokenize=":a:cwt:hk:q:$:@:";
+const char* optstring_Tokenize=":a:cwt:Vhk:q:$:@:";
 const struct option_TS lopts_Tokenize[]={
-   {"alphabet", required_argument_TS, NULL, 'a'},
-   {"char_by_char", no_argument_TS, NULL, 'c'},
-   {"word_by_word", no_argument_TS, NULL, 'w'},
-   {"tokens", required_argument_TS, NULL, 't'},
-   {"input_encoding",required_argument_TS,NULL,'k'},
-   {"output_encoding",required_argument_TS,NULL,'q'},
-   {"input_offsets",required_argument_TS,NULL,'$'},
-   {"output_offsets",required_argument_TS,NULL,'@'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
+  {"alphabet", required_argument_TS, NULL, 'a'},
+  {"char_by_char", no_argument_TS, NULL, 'c'},
+  {"word_by_word", no_argument_TS, NULL, 'w'},
+  {"tokens", required_argument_TS, NULL, 't'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"input_offsets",required_argument_TS,NULL,'$'},
+  {"output_offsets",required_argument_TS,NULL,'@'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help", no_argument_TS, NULL, 'h'},
+  {NULL, no_argument_TS, NULL, 0}
 };
 
 
@@ -147,6 +149,7 @@ char* out_offsets = (buffer_filename + (step_filename_buffer * 3));
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 int mode=NORMAL;
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Tokenize,lopts_Tokenize,&index))) {
    switch(val) {
@@ -194,6 +197,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tokenize,lopts_Tokenize,
              }
              strcpy(out_offsets,options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;             
    case 'h': usage();
              free(buffer_filename);
              return SUCCESS_RETURN_CODE;
@@ -214,6 +219,13 @@ if (options.vars()->optind!=argc-1) {
   free(buffer_filename);
   return USAGE_ERROR_CODE;   
 }
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free(buffer_filename);
+  return SUCCESS_RETURN_CODE;
+}
+
 
 U_FILE* text   = NULL;
 U_FILE* out    = NULL;

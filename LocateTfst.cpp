@@ -32,8 +32,6 @@
 #include "LocateConstants.h"
 #include "LocateTfst.h"
 
-
-
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
@@ -41,57 +39,57 @@
 namespace unitex {
 
 const char* usage_LocateTfst =
-         "Usage: LocateTfst [OPTIONS] <fst2>\n"
-         "\n"
-         "  <fst2>: the grammar to be applied\n"
-         "\n"
-         "OPTIONS:\n"
-         "  -t TFST/--text=TFST: the .tfst text automaton\n"
-         "  -a ALPH/--alphabet=ALPH: the language alphabet file\n"
-         "  -K/--korean: tells LocateTfst that it works on Korean\n"
-         "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
-         "  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
-         "  --single_tags_only: skips all results that match more than one text tag\n"
-         "  --dont_match_word_boundaries: allows 'air'+'port' in a graph to match 'airport' in the TFST\n"
-         "\n"
-         "Search limit options:\n"
-         "  -l/--all: looks for all matches (default)\n"
-         "  -n N/--number_of_matches=N: stops after the first N matches\n"
-         "\n"
-         "Matching mode options:\n"
-         "  -S/--shortest_matches\n"
-         "  -L/--longest_matches (default)\n"
-         "  -A/--all_matches\n"
-         "\n"
-         "Output options:\n"
-         "  -I/--ignore (default)\n"
-         "  -M/--merge\n"
-         "  -R/--replace\n"
-         "\n"
-         "Ambiguous output options:\n"
-         "  -b/--ambiguous_outputs: allows the production of several matches with same input\n"
-         "                          but different outputs (default)\n"
-         "  -z/--no_ambiguous_outputs: forbids ambiguous outputs\n"
-         "\n"
-         "Variable error options:\n"
-         "These options have no effect if the output mode is --ignore; otherwise, they rule\n"
-         "the behavior of the Locate program when an output is found that contains a reference\n"
-         "to a variable that is not correctly defined.\n"
-         "  -X/--exit_on_variable_error: kills the program\n"
-         "  -Y/--ignore_variable_errors: acts as if the variable has an empty content (default)\n"
-         "  -Z/--backtrack_on_variable_errors: stop exploring the current path of the grammar\n"
-         "\n"
-		 "Variable injection:\n"
-		 "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y\n"
-		 "\n"
-		 "Tagging option:\n"
-		 "  --tagging: indicates that the concordance must be a tagging one, containing\n"
-		 "             additional information on the start and end states of each match\n"
-		 "\n"
-		 "  -h/--help: this help\n"
-         "\n"
-         "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
-         "file named 'concord.ind', just as Locate does.\n";
+  "Usage: LocateTfst [OPTIONS] <fst2>\n"
+  "\n"
+  "  <fst2>: the grammar to be applied\n"
+  "\n"
+  "OPTIONS:\n"
+  "  -t TFST/--text=TFST: the .tfst text automaton\n"
+  "  -a ALPH/--alphabet=ALPH: the language alphabet file\n"
+  "  -K/--korean: tells LocateTfst that it works on Korean\n"
+  "  -g minus/--negation_operator=minus: uses minus as negation operator for Unitex 2.0 graphs\n"
+  "  -g tilde/--negation_operator=tilde: uses tilde as negation operator (default)\n"
+  "  --single_tags_only: skips all results that match more than one text tag\n"
+  "  --dont_match_word_boundaries: allows 'air'+'port' in a graph to match 'airport' in the TFST\n"
+  "\n"
+  "Search limit options:\n"
+  "  -l/--all: looks for all matches (default)\n"
+  "  -n N/--number_of_matches=N: stops after the first N matches\n"
+  "\n"
+  "Matching mode options:\n"
+  "  -S/--shortest_matches\n"
+  "  -L/--longest_matches (default)\n"
+  "  -A/--all_matches\n"
+  "\n"
+  "Output options:\n"
+  "  -I/--ignore (default)\n"
+  "  -M/--merge\n"
+  "  -R/--replace\n"
+  "\n"
+  "Ambiguous output options:\n"
+  "  -b/--ambiguous_outputs: allows the production of several matches with same input\n"
+  "                          but different outputs (default)\n"
+  "  -z/--no_ambiguous_outputs: forbids ambiguous outputs\n"
+  "\n"
+  "Variable error options:\n"
+  "These options have no effect if the output mode is --ignore; otherwise, they rule\n"
+  "the behavior of the Locate program when an output is found that contains a reference\n"
+  "to a variable that is not correctly defined.\n"
+  "  -X/--exit_on_variable_error: kills the program\n"
+  "  -Y/--ignore_variable_errors: acts as if the variable has an empty content (default)\n"
+  "  -Z/--backtrack_on_variable_errors: stop exploring the current path of the grammar\n"
+  "\n"
+  "Variable injection:\n"
+  "  -v X=Y/--variable=X=Y: sets an output variable named X with content Y\n"
+  "\n"
+  "Tagging option:\n"
+  "  --tagging: indicates that the concordance must be a tagging one, containing\n"
+  "             additional information on the start and end states of each match\n"
+  "\n"
+  "  -h/--help: this help\n"
+  "\n"
+  "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
+  "file named 'concord.ind', just as Locate does.\n";
 
 
 static void usage() {
@@ -100,33 +98,34 @@ static void usage() {
 }
 
 
-const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzhg:k:q:v:";
+const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzVhg:k:q:v:";
 const struct option_TS lopts_LocateTfst[]= {
-     {"text",required_argument_TS,NULL,'t'},
-     {"alphabet",required_argument_TS,NULL,'a'},
-     {"korean",no_argument_TS,NULL,'K'},
-     {"all",no_argument_TS,NULL,'l'},
-     {"number_of_matches",required_argument_TS,NULL,'n'},
-     {"shortest_matches",no_argument_TS,NULL,'S'},
-     {"longest_matches",no_argument_TS,NULL,'L'},
-     {"all_matches",no_argument_TS,NULL,'A'},
-     {"ignore",no_argument_TS,NULL,'I'},
-     {"merge",no_argument_TS,NULL,'M'},
-     {"replace",no_argument_TS,NULL,'R'},
-     {"exit_on_variable_error",no_argument_TS,NULL,'X'},
-     {"ignore_variable_errors",no_argument_TS,NULL,'Y'},
-     {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
-     {"ambiguous_outputs",no_argument_TS,NULL,'b'},
-     {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
-     {"input_encoding",required_argument_TS,NULL,'k'},
-     {"output_encoding",required_argument_TS,NULL,'q'},
-     {"help",no_argument_TS,NULL,'h'},
-     {"negation_operator",required_argument_TS,NULL,'g'},
-     {"variable",required_argument_TS,NULL,'v'},
-     {"tagging",no_argument_TS,NULL,1},
-     {"single_tags_only",no_argument_TS,NULL,2},
-     {"dont_match_word_boundaries", no_argument_TS, NULL,3},
-     {NULL,no_argument_TS,NULL,0}
+  {"text",required_argument_TS,NULL,'t'},
+  {"alphabet",required_argument_TS,NULL,'a'},
+  {"korean",no_argument_TS,NULL,'K'},
+  {"all",no_argument_TS,NULL,'l'},
+  {"number_of_matches",required_argument_TS,NULL,'n'},
+  {"shortest_matches",no_argument_TS,NULL,'S'},
+  {"longest_matches",no_argument_TS,NULL,'L'},
+  {"all_matches",no_argument_TS,NULL,'A'},
+  {"ignore",no_argument_TS,NULL,'I'},
+  {"merge",no_argument_TS,NULL,'M'},
+  {"replace",no_argument_TS,NULL,'R'},
+  {"exit_on_variable_error",no_argument_TS,NULL,'X'},
+  {"ignore_variable_errors",no_argument_TS,NULL,'Y'},
+  {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
+  {"ambiguous_outputs",no_argument_TS,NULL,'b'},
+  {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"help",no_argument_TS,NULL,'h'},
+  {"negation_operator",required_argument_TS,NULL,'g'},
+  {"variable",required_argument_TS,NULL,'v'},
+  {"tagging",no_argument_TS,NULL,1},
+  {"single_tags_only",no_argument_TS,NULL,2},
+  {"dont_match_word_boundaries", no_argument_TS, NULL,3},
+  {NULL,no_argument_TS,NULL,0}
 };
 
 
@@ -157,6 +156,7 @@ VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int search_limit=NO_MATCH_LIMIT;
 char foo;
 vector_ptr* injected=new_vector_ptr();
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateTfst,&index))) {
    switch(val) {
@@ -212,6 +212,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
    case 'Z': variable_error_policy=BACKTRACK_ON_VARIABLE_ERRORS; break;
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage(); 
              return SUCCESS_RETURN_CODE;
    case 1: tagging=1; break;
@@ -263,6 +265,12 @@ if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free_vector_ptr(injected);
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  free_vector_ptr(injected);
+  return SUCCESS_RETURN_CODE;
 }
 
 if (selected_negation_operator==0) {

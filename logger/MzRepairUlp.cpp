@@ -73,7 +73,8 @@ const char* usage_MzRepairUlp =
          "  -t X/--temp=X: uses X as filename for temporary file (<ulpfile>.build by default)\n"
          "  -m/--quiet: do not emit message when running\n"
          "  -v/--verbose: emit message when running\n"
-
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+         "  -h/--help: this help\n"
          "\n";
 
 static void usage() {
@@ -82,7 +83,7 @@ static void usage() {
 }
 
 
-const char* optstring_MzRepairUlp=":hmvo:t:k:q:";
+const char* optstring_MzRepairUlp=":Vhmvo:t:k:q:";
 const struct option_TS lopts_MzRepairUlp[]={
    {"output", required_argument_TS, NULL, 'o'},
    {"temp",required_argument_TS,NULL,'t'},
@@ -90,6 +91,7 @@ const struct option_TS lopts_MzRepairUlp[]={
    {"output_encoding",required_argument_TS,NULL,'q'},
    {"quiet",no_argument_TS,NULL,'m'},
    {"verbose",no_argument_TS,NULL,'v'},
+   { "only_verify_arguments",no_argument_TS,NULL,'V'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -109,7 +111,7 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 int val,index=-1;
 int quiet=0;
 int verbose=0;
-
+bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_MzRepairUlp,lopts_MzRepairUlp,&index))) {
    switch(val) {
@@ -140,6 +142,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MzRepairUlp,lopts_MzRepa
              }
              decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
              break;
+   case 'V': only_verify_arguments = true;
+             break;
    case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -155,6 +159,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MzRepairUlp,lopts_MzRepa
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+  // freeing all allocated memory
+  return SUCCESS_RETURN_CODE;
 }
 
 const char* ulpFile=argv[options.vars()->optind];
