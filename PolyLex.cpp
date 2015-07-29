@@ -59,6 +59,7 @@ const char* usage_PolyLex =
          "  -i INFO/--info=INFO: if this optional parameter is precised, it is taken as\n"
          "                       the name of a file which will contain information about\n"
          "                       the analysis\n"
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "Language options:\n"

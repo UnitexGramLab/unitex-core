@@ -86,6 +86,7 @@ const char* usage_LocateTfst =
   "  --tagging: indicates that the concordance must be a tagging one, containing\n"
   "             additional information on the start and end states of each match\n"
   "\n"
+  "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
   "  -h/--help: this help\n"
   "\n"
   "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"

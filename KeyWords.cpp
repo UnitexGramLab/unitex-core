@@ -51,6 +51,7 @@ const char* usage_KeyWords =
   "  -f CODE/--forbidden_code=CODE: the grammatical/semantic code that will be\n"
   "                                 used to filter tokens (default=XXX)\n"
   "  -c F/--cdic=F: a text file containing one compound word per line\n"
+  "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
   "  -h/--help: this help\n"
   "\n"
   "Removes from the given token file every token that is part of a DELAF entry\n"

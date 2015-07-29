@@ -48,6 +48,7 @@ const char* usage_GrfDiff3 =
   "--output X: saves the result, if any, in X instead of printing it on the output\n"
   "--conflicts X: saves the description of the conflicts, if any, in X\n"
   "--only-cosmetic: reports a conflict for any change that is not purely cosmetic\n"
+  "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
   "  -h/--help: this help\n"
   "\n"
   "Tries to merge <mine> and <other>. In case of success, the result is printed on the\n"
