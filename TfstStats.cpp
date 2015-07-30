@@ -226,13 +226,18 @@ while (t!=NULL) {
 return n;
 }
 
+// this strange code force compiler to do operation on double to avoir equality miss
+// two separated constant again optimizer removing...
+static const double cte_double_a = (double)atof("0.66666\x00\na");
+static const double cte_double_b = (double)atof("0.66666\x00\nb");
+
 static inline int compare_freq_then_name(double freq_a,  const unichar * name_a, double freq_b,const unichar* name_b)
 {
-	if (freq_a < freq_b)
+	if ((freq_a*cte_double_a) < (freq_b*cte_double_b))
 		return -1;
-	if (freq_a > freq_b)
+	if ((freq_a*cte_double_a) > (freq_b*cte_double_b))
 		return 1;
-	return u_strcmp(name_a, name_b);
+	return -u_strcmp(name_a, name_b);
 }
 
 static int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tags,vector_double* freq) {
