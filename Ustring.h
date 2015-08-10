@@ -53,7 +53,7 @@ typedef struct {
    unsigned int len;
 } Ustring;
 
-    
+
 void resize(Ustring* ustr,unsigned int size);
 
 Ustring* new_Ustring(const unichar*);
@@ -76,6 +76,8 @@ static inline void u_strcat(Ustring*,const char*);
 static inline void u_strcpy(Ustring*,const Ustring*);
 static inline void u_strcpy(Ustring*,const unichar*);
 static inline void u_strcpy(Ustring*,const char*);
+void u_strcpy(Ustring*,const char*,unsigned int);
+void u_strcpy(Ustring*,const unichar*,unsigned int);
 
 static inline void chomp_new_line(Ustring*);
 
@@ -140,6 +142,7 @@ if (b->str==NULL || b->str[0]=='\0') return;
 u_strcat(a,b->str,b->len);
 }
 
+void u_strcat(Ustring* ustr,const char* str,unsigned int length);
 
 /**
  * Concatenates the given string to the given Ustring.

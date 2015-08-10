@@ -37,8 +37,9 @@ namespace unitex {
 static unsigned int buffer_size_for_len(unsigned int string_len)
 {
     unsigned int buffer_size = 0x10;
-    while (buffer_size <= string_len)
+    while (buffer_size <= string_len) {
         buffer_size *= 2;
+    }
     return buffer_size;
 }
 
@@ -49,34 +50,47 @@ static unsigned int buffer_size_for_len(unsigned int string_len)
 static unsigned int buffer_size_rounded(unsigned int give_len)
 {
     unsigned int buffer_size = 0x10;
-    while (buffer_size < give_len)
+    while (buffer_size < give_len) {
         buffer_size *= 2;
+    }
     return buffer_size;
 }
 
 
 /**
  * Allocates, initializes and returns a Ustring representing the given string.
+ * Rewritten by martinec
  */
 Ustring* new_Ustring(const unichar* str) {
-Ustring* res=(Ustring*)malloc(sizeof(Ustring));
-if (res==NULL) {
-   fatal_alloc_error("new_Ustring");
-}
-if (str==NULL) {
-   str=U_EMPTY;
-}
-res->len=u_strlen(str);
-// minor buffer enlarging
-res->size=buffer_size_for_len(res->len);
-res->str=(unichar*)malloc(res->size*sizeof(unichar));
-if (res->str==NULL) {
-   fatal_alloc_error("new_Ustring");
-}
-for (unsigned int i=0;i<((res->len)+1);i++) {
-   res->str[i]=str[i];
-}
-return res;
+  Ustring* res = (Ustring*) malloc(sizeof(Ustring));
+
+  if (res == NULL) {
+    fatal_alloc_error("new_Ustring");
+  }
+
+  // calculate string length
+  res->len  = (str == NULL) ? 0u : u_strlen(str);
+
+  // minor buffer enlarging
+  res->size = buffer_size_for_len(res->len);
+  res->str  = (unichar*) malloc(res->size * sizeof(unichar));
+
+  if (res->str == NULL) {
+    fatal_alloc_error("new_Ustring");
+  }
+
+  // avoid trying to copy a null string
+  if (res->len > 0) {
+    // make a byte-for-byte copy of the string
+    for (unsigned int i = 0u; i < res->len; ++i) {
+      res->str[i] = str[i];
+    }
+  }
+
+  // mark the end of the string
+  res->str[res->len] = '\0';
+
+  return res;
 }
 
 
@@ -92,15 +106,25 @@ return new_Ustring((unichar*)NULL);
  * Allocates, initializes and returns a Ustring representing the empty string.
  * The internal buffer is set to the given size.
  */
+// FIXME(martinec) this function fails if size is negative,
+// actually a negative number is a valid external representation
+// of an unsigned number e.g. calling new_Ustring(-1), -1 will be equal
+// to the max unsigned int, if the size of int is 4 bytes, using 2's
+// complement to represent the integer, this is equal to 4294967295
+//(2^32-1). Maybe the best is avoid using unsigned ints here
 Ustring* new_Ustring(unsigned int size) {
+// it is only a temporary fix for the above problem
+if (!(size > 0 && size + 1 > size)) {
+  fatal_error("new_Ustring called with a negative size");
+}
+
 Ustring* res=(Ustring*)malloc(sizeof(Ustring));
 if (res==NULL) {
    fatal_alloc_error("new_Ustring");
 }
-if (size<=0) {
-   size=1;
-}
-res->len=0;
+
+res->len=0u;
+// minor buffer enlarging
 res->size=buffer_size_for_len(size);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
@@ -233,6 +257,24 @@ ustr->str[newlen]='\0';
 ustr->len=newlen;
 }
 
+void u_strcpy(Ustring* ustr,const char* str,unsigned int length) {
+  unsigned int newlen=length;
+  if (ustr->size<newlen+1) {
+    /* If necessary, we enlarge the internal buffer */
+    unsigned int n=ustr->size;
+    if (n==0) n=1;
+    while (n<=newlen+1) {
+      n=n*2;
+    }
+    resize(ustr,n);
+    }
+    for (unsigned int i=0;i<length;i++) {
+       ustr->str[i]=str[i];
+  }
+
+  ustr->str[newlen] = 0;
+  ustr->len=newlen;
+}
 
 void u_strcpy(Ustring* ustr,const unichar* str,unsigned int length) {
   unsigned int newlen=length;
