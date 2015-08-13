@@ -43,10 +43,24 @@ include $(CLEAR_VARS)
 
 
 # Here we give our module name and source file(s)
-LOCAL_MODULE    := UnitexJNI
+LOCAL_MODULE    := UnitexJni
 LOCAL_CFLAGS := -D_NOT_UNDER_WINDOWS -DHAVE_CONFIG_H -DUNITEX_LIBRARY -DUNITEX_LIBRARY_VF_IMPORT -DUNITEX_LIBRARY_VF_IMPORT -DANDROID -I$(JNI_DIR)/Unitex-C++ -I$(JNI_DIR)/Unitex-C++/logger -I$(JNI_DIR)/Unitex-C++/include_tre
 
 LOCAL_SRC_FILES := \
+\
+Unitex-C++/build/tre-0.8.0/lib/regcomp.c \
+Unitex-C++/build/tre-0.8.0/lib/regerror.c \
+Unitex-C++/build/tre-0.8.0/lib/regexec.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-ast.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-compile.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-match-approx.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-match-backtrack.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-match-parallel.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-mem.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-parse.c \
+Unitex-C++/build/tre-0.8.0/lib/tre-stack.c \
+Unitex-C++/build/tre-0.8.0/lib/xmalloc.c \
+\
 Unitex-C++/UnitexLibAndJni/fr_umlv_unitex_jni_UnitexJni.cpp \
 Unitex-C++/UnitexLibDirPosix.cpp \
 Unitex-C++/UnitexLibIO.cpp \
@@ -61,18 +75,7 @@ Unitex-C++/UnitexRevisionInfo.cpp Unitex-C++/Unxmlize.cpp Unitex-C++/VersionInfo
 Unitex-C++/VirtualFiles.cpp Unitex-C++/Xml.cpp \
 Unitex-C++/KeyWords.cpp Unitex-C++/KeyWords_lib.cpp Unitex-C++/RegExFacade.cpp \
 Unitex-C++/PRLG.cpp \
-Unitex-C++/build/tre-0.8.0/lib/regcomp.c \
-Unitex-C++/build/tre-0.8.0/lib/regerror.c \
-Unitex-C++/build/tre-0.8.0/lib/regexec.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-ast.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-compile.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-match-approx.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-match-backtrack.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-match-parallel.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-mem.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-parse.c \
-Unitex-C++/build/tre-0.8.0/lib/tre-stack.c \
-Unitex-C++/build/tre-0.8.0/lib/xmalloc.c \
+\
 Unitex-C++/logger/InstallLingResourcePackage.cpp \
 Unitex-C++/logger/LingResourcePackage.cpp \
 Unitex-C++/logger/MzRepairUlp.cpp \
@@ -266,7 +269,7 @@ Unitex-C++/UnitexGetOpt.cpp \
 Unitex-C++/UnitexTool.cpp \
 Unitex-C++/Untokenize.cpp \
 Unitex-C++/UserCancelling.cpp \
-Unitex-C++/ustring.cpp \
+Unitex-C++/Ustring.cpp \
 Unitex-C++/VariableUtils.cpp
 
 include $(BUILD_SHARED_LIBRARY)

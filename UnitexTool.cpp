@@ -73,7 +73,7 @@
 #include "DumpOffsets.h"
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 #include "DuplicateFile.h"
 #endif
 
@@ -246,20 +246,20 @@
 #endif
 
 
-#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG)
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 #include "logger/PackFile.h"
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 #include "logger/UnpackFile.h"
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 #include "logger/InstallLingResourcePackage.h"
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 #include "logger/UniRunScript.h"
 #endif
 #endif
@@ -342,7 +342,7 @@ const struct utility_item utility_array[]=
 	{ "DumpOffsets", 11, &main_DumpOffsets, usage_DumpOffsets, optstring_DumpOffsets, lopts_DumpOffsets },
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_DUPLICATEFILE))) || defined(TOOL_DUPLICATEFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "DuplicateFile", 13, &main_DuplicateFile, usage_DuplicateFile, optstring_DuplicateFile, lopts_DuplicateFile } ,
 #endif
 
@@ -398,8 +398,8 @@ const struct utility_item utility_array[]=
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
 
-#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE))
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_INSTALLING_LING_RESOURCE_PACKAGE))) || defined(TOOL_INSTALLING_LING_RESOURCE_PACKAGE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "InstallLingResourcePackage", 26, &main_InstallLingResourcePackage, usage_InstallLingResourcePackage, optstring_InstallLingResourcePackage, lopts_InstallLingResourcePackage },
 #endif
 #endif
@@ -430,8 +430,8 @@ const struct utility_item utility_array[]=
 	{ "Normalize", 9, &main_Normalize, usage_Normalize, optstring_Normalize, lopts_Normalize } ,
 #endif
 
-#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "PackFile", 8, &main_PackFile, usage_PackFile, optstring_PackFile, lopts_PackFile } ,
 #endif
 #endif
@@ -452,15 +452,15 @@ const struct utility_item utility_array[]=
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
 #endif
 
-#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
 	{ "RunLog", 6, &main_RunLog, usage_RunLog, optstring_RunLog, lopts_RunLog },
 #endif
 #endif
 
 
-#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "RunScript", 9, &main_UniRunScript, usage_UniRunScript, optstring_UniRunScript, lopts_UniRunScript },
 #endif
 #endif
@@ -529,8 +529,8 @@ const struct utility_item utility_array[]=
 	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
 #endif
 
-#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "UnpackFile", 10, &main_UnpackFile, usage_UnpackFile, optstring_UnpackFile, lopts_UnpackFile } ,
 #endif
 #endif
