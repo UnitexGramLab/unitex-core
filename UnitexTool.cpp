@@ -246,7 +246,7 @@
 #endif
 
 
-#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
 #include "logger/PackFile.h"
 #endif
@@ -259,16 +259,18 @@
 #include "logger/InstallLingResourcePackage.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
+#include "logger/UniRunScript.h"
+#endif
+#endif
+
+#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_MZREPAIR_ULP))) || defined(NO_TOOL_MZREPAIR_ULP))
 #include "logger/MzRepairUlp.h"
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
 #include "logger/UniRunLogger.h"
-#endif
-
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
-#include "logger/UniRunScript.h"
 #endif
 #endif
 
@@ -428,7 +430,7 @@ const struct utility_item utility_array[]=
 	{ "Normalize", 9, &main_Normalize, usage_Normalize, optstring_Normalize, lopts_Normalize } ,
 #endif
 
-#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
 	{ "PackFile", 8, &main_PackFile, usage_PackFile, optstring_PackFile, lopts_PackFile } ,
 #endif
@@ -450,14 +452,14 @@ const struct utility_item utility_array[]=
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
 #endif
 
-#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNLOGGER_ULP))) || defined(NO_TOOL_UNIRUNLOGGER_ULP))
 	{ "RunLog", 6, &main_RunLog, usage_RunLog, optstring_RunLog, lopts_RunLog },
 #endif
 #endif
 
 
-#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT))
 	{ "RunScript", 9, &main_UniRunScript, usage_UniRunScript, optstring_UniRunScript, lopts_UniRunScript },
 #endif
@@ -527,7 +529,7 @@ const struct utility_item utility_array[]=
 	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
 #endif
 
-#ifdef UNITEXTOOL_TOOL_FROM_LOGGER
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEXTOOL_LINGPKG_SUPPORT)
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE))
 	{ "UnpackFile", 10, &main_UnpackFile, usage_UnpackFile, optstring_UnpackFile, lopts_UnpackFile } ,
 #endif

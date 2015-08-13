@@ -81,13 +81,16 @@ Unitex-C++/logger/FilePack.cpp \
 Unitex-C++/logger/FilePackCrc32.cpp \
 Unitex-C++/logger/FilePackIo.cpp \
 Unitex-C++/logger/FileUnPack.cpp \
-Unitex-C++/logger/UnpackFileTool.cpp \
 Unitex-C++/logger/ReworkArg.cpp \
 Unitex-C++/logger/SyncLoggerPosix.cpp \
 Unitex-C++/logger/UniLogger.cpp \
 Unitex-C++/logger/UniLoggerAutoInstall.cpp \
 Unitex-C++/logger/UniRunLogger.cpp \
 Unitex-C++/logger/RunTools.cpp \
+Unitex-C++/logger/PackFile.cpp \
+Unitex-C++/logger/UnpackFile.cpp \
+Unitex-C++/logger/PackFileTool.cpp \
+Unitex-C++/logger/UnpackFileTool.cpp \
 Unitex-C++/logger/UniRunScript.cpp \
 Unitex-C++/XMLizer.cpp \
 Unitex-C++/AbstractAllocator.cpp \
