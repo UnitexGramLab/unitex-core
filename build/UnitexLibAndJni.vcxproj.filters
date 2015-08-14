@@ -702,6 +702,9 @@
     <ClCompile Include="..\PersistenceInterface.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>
+    <ClCompile Include="..\PersistResource.cpp">
+      <Filter>Unitex-C++</Filter>
+    </ClCompile>
     <ClCompile Include="..\KeyWords_lib.cpp">
       <Filter>Unitex-C++</Filter>
     </ClCompile>

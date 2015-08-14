@@ -187,6 +187,7 @@
 		2232E1DB169101B300C56E5A /* Cassys_lexical_tags.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1D1169101B300C56E5A /* Cassys_lexical_tags.cpp */; };
 		2232E1DD169101B300C56E5A /* Cassys_transducer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1D4169101B300C56E5A /* Cassys_transducer.cpp */; };
 		2232E1DE169101B300C56E5A /* Cassys_xml_output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2232E1D6169101B300C56E5A /* Cassys_xml_output.cpp */; };
+		2234C61B1B7E034700D3CF5D /* PersistResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2234C61A1B7E034700D3CF5D /* PersistResource.cpp */; };
 		2237A5B411D68EFA00D247CF /* OutputTransductionVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */; };
 		2237A6C111D8492500D247CF /* BuildKrMwuDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */; };
 		2237A6DE11D951CB00D247CF /* TfstStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2237A6DC11D951CB00D247CF /* TfstStats.cpp */; };
@@ -643,6 +644,8 @@
 		2232E1D5169101B300C56E5A /* Cassys_transducer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_transducer.h; path = ../Cassys_transducer.h; sourceTree = "<group>"; };
 		2232E1D6169101B300C56E5A /* Cassys_xml_output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cassys_xml_output.cpp; path = ../Cassys_xml_output.cpp; sourceTree = "<group>"; };
 		2232E1D7169101B300C56E5A /* Cassys_xml_output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cassys_xml_output.h; path = ../Cassys_xml_output.h; sourceTree = "<group>"; };
+		2234C6191B7E034700D3CF5D /* PersistResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PersistResource.h; path = ../PersistResource.h; sourceTree = "<group>"; };
+		2234C61A1B7E034700D3CF5D /* PersistResource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PersistResource.cpp; path = ../PersistResource.cpp; sourceTree = "<group>"; };
 		2237A5B211D68EFA00D247CF /* OutputTransductionVariables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OutputTransductionVariables.cpp; path = ../OutputTransductionVariables.cpp; sourceTree = SOURCE_ROOT; };
 		2237A5B311D68EFA00D247CF /* OutputTransductionVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OutputTransductionVariables.h; path = ../OutputTransductionVariables.h; sourceTree = SOURCE_ROOT; };
 		2237A6BF11D8492500D247CF /* BuildKrMwuDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BuildKrMwuDic.cpp; path = ../BuildKrMwuDic.cpp; sourceTree = SOURCE_ROOT; };
@@ -813,6 +816,8 @@
 			isa = PBXGroup;
 			children = (
 				1F0B06A11AFD539E00029933 /* yaml-0.1.6 */,
+				2234C61A1B7E034700D3CF5D /* PersistResource.cpp */,
+				2234C6191B7E034700D3CF5D /* PersistResource.h */,
 				226063B71AF3A2AC00BC2033 /* DumpOffsets.cpp */,
 				226063B81AF3A2AC00BC2033 /* DumpOffsets.h */,
 				2232E1CB169101B300C56E5A /* Cassys_concord.cpp */,
@@ -1556,6 +1561,7 @@
 				222F7C321107A68E00C91CC7 /* MF_Unif.cpp in Sources */,
 				222F7C331107A68E00C91CC7 /* MF_Util.cpp in Sources */,
 				222F7C341107A68E00C91CC7 /* MorphologicalFilters.cpp in Sources */,
+				2234C61B1B7E034700D3CF5D /* PersistResource.cpp in Sources */,
 				222F7C351107A68E00C91CC7 /* MorphologicalLocate.cpp in Sources */,
 				222F7C361107A68E00C91CC7 /* MultiFlex.cpp in Sources */,
 				222F7C371107A68E00C91CC7 /* NewLineShifts.cpp in Sources */,

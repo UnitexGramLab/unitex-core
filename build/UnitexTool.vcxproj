@@ -296,6 +296,7 @@
     <ClInclude Include="..\LocateTracePlugCallback.h" />
     <ClInclude Include="..\OutputTransductionVariables.h" />
     <ClInclude Include="..\PersistenceInterface.h" />
+    <ClInclude Include="..\PersistResource.h" />
     <ClInclude Include="..\PRLG.h" />
     <ClInclude Include="..\RegExFacade.h" />
     <ClInclude Include="..\SelectOutput.h" />
@@ -406,6 +407,7 @@
     <ClCompile Include="..\Overlap.cpp" />
     <ClCompile Include="..\Persistence.cpp" />
     <ClCompile Include="..\PersistenceInterface.cpp" />
+    <ClCompile Include="..\PersistResource.cpp" />
     <ClCompile Include="..\PRLG.cpp" />
     <ClCompile Include="..\RegExFacade.cpp" />
     <ClCompile Include="..\SelectOutput.cpp" />

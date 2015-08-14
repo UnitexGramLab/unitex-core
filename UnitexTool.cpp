@@ -149,6 +149,10 @@
 #include "Normalize.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PERSISTRESOURCE))) || defined(TOOL_PERSISTRESOURCE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
+#include "PersistResource.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_POLYLEX))) || defined(TOOL_POLYLEX))
 #include "PolyLex.h"
 #endif
@@ -165,7 +169,7 @@
 #include "Reg2Grf.h"
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 #include "SelectOutput.h"
 #endif
 
@@ -436,6 +440,10 @@ const struct utility_item utility_array[]=
 #endif
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PERSISTRESOURCE))) || defined(TOOL_PERSISTRESOURCE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
+	{ "PersistResource", 15, &main_PersistResource, usage_PersistResource, optstring_PersistResource, lopts_PersistResource } ,
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_POLYLEX))) || defined(TOOL_POLYLEX))
 	{ "PolyLex", 7, &main_PolyLex, usage_PolyLex, optstring_PolyLex, lopts_PolyLex } ,
 #endif
@@ -465,7 +473,7 @@ const struct utility_item utility_array[]=
 #endif
 #endif
 
-#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT))
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_SELECTOUTPUT))) || defined(TOOL_SELECTOUTPUT) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "SelectOutput", 12, &main_SelectOutput, usage_SelectOutput, optstring_SelectOutput, lopts_SelectOutput } ,
 #endif
 

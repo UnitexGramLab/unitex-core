@@ -350,6 +350,7 @@
     <ClCompile Include="..\PatternTree.cpp" />
     <ClCompile Include="..\Persistence.cpp" />
     <ClCompile Include="..\PersistenceInterface.cpp" />
+    <ClCompile Include="..\PersistResource.cpp" />
     <ClCompile Include="..\PolyLex.cpp" />
     <ClCompile Include="..\PortugueseNormalization.cpp" />
     <ClCompile Include="..\PRLG.cpp" />

@@ -871,6 +871,9 @@
     <ClCompile Include="..\PersistenceInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\PersistResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\KeyWords_lib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -1159,7 +1159,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PersistResource.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PersistenceInterface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PersistResource.h"
 				>
 			</File>
 			<File

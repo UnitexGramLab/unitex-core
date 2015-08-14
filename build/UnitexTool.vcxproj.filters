@@ -99,6 +99,7 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\PersistenceInterface.h" />
+    <ClInclude Include="..\PersistResource.h" />
     <ClInclude Include="..\KeyWords_lib.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -766,6 +767,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\PersistenceInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PersistResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\KeyWords_lib.cpp">

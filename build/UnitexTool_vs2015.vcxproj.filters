@@ -158,6 +158,9 @@
     <ClInclude Include="..\PersistenceInterface.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\PersistResource.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -779,6 +782,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\PersistenceInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PersistResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\KeyWords_lib.cpp">

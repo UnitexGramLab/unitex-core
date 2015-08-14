@@ -328,6 +328,7 @@
     <ClCompile Include="..\Overlap.cpp" />
     <ClCompile Include="..\Persistence.cpp" />
     <ClCompile Include="..\PersistenceInterface.cpp" />
+    <ClCompile Include="..\PersistResource.cpp" />
     <ClCompile Include="..\PRLG.cpp" />
     <ClCompile Include="..\RegExFacade.cpp" />
     <ClCompile Include="..\SelectOutput.cpp" />

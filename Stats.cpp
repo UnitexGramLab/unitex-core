@@ -1073,14 +1073,14 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
     }
 
     if (i < *bufferStart || i > *bufferEnd) {
-      int get_buffer_return_value = get_buffer_around_token(source, 
+      int get_buffer_around_token_return_value = get_buffer_around_token(source,
       	                                                    buffer, 
       	                                                    i, 
       	                                                    0, 
       	                                                    STATS_BUFFER_LENGTH,
       	                                                    bufferStart,
       	                                                    bufferEnd);
-      if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
+      if(get_buffer_around_token_return_value != SUCCESS_RETURN_CODE) {
         return NULL;
       }      
     }

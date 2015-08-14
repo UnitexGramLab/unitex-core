@@ -317,8 +317,8 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
          } else {
             /* Should not happen */
             error("Internal error in TagsetNormTfst\n");
-            for (int i=0;i<original_number_of_tags;i++) {
-               free_list_int(renumbering[i]);
+            for (int loop=0;loop<original_number_of_tags;loop++) {
+               free_list_int(renumbering[loop]);
             }
 #           ifdef NO_C99_VARIABLE_LENGTH_ARRAY
              free(renumbering);

@@ -1342,7 +1342,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o \
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o CompressedDic.o LoadInf.o \
                   Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o GrfSvn_lib.o DebugMode.o \
                   GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o SpellChecking.o \
-                  Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
+                  Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o PersistResource.o TfstTag.o PRLG.o \
                   KeyWords.o KeyWords_lib.o \
                   RegExFacade.o $(TRE_LINK_OBJS) SelectOutput.o UnitexLibIO.o $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL)
 
@@ -1381,8 +1381,8 @@ UNITEXTOOL_LOGGER_NO_MAIN_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogg
                   OutputTransductionVariables.o TfstStats.o VariableUtils.o Overlap.o \
                   CompressedDic.o LoadInf.o Unxmlize.o Xml.o GrfDiff.o GrfDiff3.o Grf_lib.o \
                   GrfSvn_lib.o DebugMode.o GrfBeauty.o GrfTest.o GrfTest_lib.o SpellCheck.o \
-                  SpellChecking.o Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o TfstTag.o PRLG.o \
-                  KeyWords.o KeyWords_lib.o \
+                  SpellChecking.o Keyboard.o VirtualFiles.o Persistence.o PersistenceInterface.o PersistResource.o \
+                  TfstTag.o PRLG.o KeyWords.o KeyWords_lib.o \
                   RegExFacade.o SelectOutput.o UnitexLibIO.o $(TRE_LINK_OBJS) \
                   $(YAML_LINK_OBJS) $(SYSLIBDIRIO) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBLOGGER)
 
