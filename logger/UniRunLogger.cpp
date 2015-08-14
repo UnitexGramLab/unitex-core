@@ -43,7 +43,7 @@
 #include "FileUnPack.h"
 #include "FilePackCrc32.h"
 
-
+#include "UnitexGetOpt.h"
 #include "UniLogger.h"
 #include "UniRunLogger.h"
 #include "DirHelper.h"

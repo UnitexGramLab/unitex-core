@@ -35,6 +35,7 @@
 #include <string.h>
 
 #include "Unicode.h"
+#include "UnitexGetOpt.h"
 #include "SyncTool.h"
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))

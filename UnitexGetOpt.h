@@ -88,6 +88,8 @@ void free_OptVars(struct OptVars*);
 int getopt_TS(int, char * const *, const char *,struct OptVars*);
 int getopt_long_TS(int, char *const *, const char *, const struct option_TS *, int *,struct OptVars*);
 int getopt_long_only_TS(int, char *const *, const char *, const struct option_TS *, int *,struct OptVars*);
+
+#ifdef __cplusplus
 /* ************************************************************************** */
 /**
  * @class    UnitexGetOpt
@@ -201,6 +203,7 @@ class UnitexGetOpt {
   OptVars* data_;
 };  // class UnitexGetOpt  
 /* ************************************************************************** */
+#endif
 
 #ifdef __cplusplus
 } // namespace unitex
