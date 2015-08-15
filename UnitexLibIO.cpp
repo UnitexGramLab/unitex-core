@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -86,7 +86,7 @@ UNITEX_FUNC int UNITEX_CALL WriteUnitexFile(const char*name,const void*buffer_pr
     if (vfWrite == NULL)
     {
 #ifdef VERBOSE_WRITEUNITEXFILE_ERROR
-		fprintf(stderr, "WriteUnitexFile: could not open file %s\n", name);
+        fprintf(stderr, "WriteUnitexFile: could not open file %s\n", name);
 #endif
         return 1;
     }
@@ -94,19 +94,19 @@ UNITEX_FUNC int UNITEX_CALL WriteUnitexFile(const char*name,const void*buffer_pr
     if (size_prefix > 0)
         if (size_prefix != af_fwrite(buffer_prefix,1,size_prefix,vfWrite)) {
 #ifdef VERBOSE_WRITEUNITEXFILE_ERROR
-			fprintf(stderr, "WriteUnitexFile: could not write prefix of file %s\n", name);
+            fprintf(stderr, "WriteUnitexFile: could not write prefix of file %s\n", name);
 #endif
             retValue = 1;
-		}
-		
+        }
+
     if (retValue==0 && (size_suffix > 0))
         if (size_suffix != af_fwrite(buffer_suffix,1,size_suffix,vfWrite)) {
 #ifdef VERBOSE_WRITEUNITEXFILE_ERROR
-			fprintf(stderr, "WriteUnitexFile: could not write suffix of file %s\n", name);
+            fprintf(stderr, "WriteUnitexFile: could not write suffix of file %s\n", name);
 #endif
             retValue = 1;
-		}
-		
+        }
+
     af_fclose(vfWrite);
     return retValue;
 }
@@ -121,9 +121,9 @@ UNITEX_FUNC int UNITEX_CALL AppendUnitexFile(const char*name,const void*buffer_d
     ABSTRACTFILE* vfWrite = af_fopen(name, "ab");
     if (vfWrite == NULL)
     {
-		af_fseek(vfWrite, 0, SEEK_END);
+        af_fseek(vfWrite, 0, SEEK_END);
 #ifdef VERBOSE_WRITEUNITEXFILE_ERROR
-		fprintf(stderr, "AppendUnitexFile: could not open file %s\n", name);
+        fprintf(stderr, "AppendUnitexFile: could not open file %s\n", name);
 #endif
         return 1;
     }
@@ -131,11 +131,11 @@ UNITEX_FUNC int UNITEX_CALL AppendUnitexFile(const char*name,const void*buffer_d
     if (size_data > 0)
         if (size_data != af_fwrite(buffer_data,1,size_data,vfWrite)) {
 #ifdef VERBOSE_WRITEUNITEXFILE_ERROR
-			fprintf(stderr, "AppendUnitexFile: could not write data of file %s\n", name);
+            fprintf(stderr, "AppendUnitexFile: could not write data of file %s\n", name);
 #endif
             retValue = 1;
-		} 
-		
+        }
+
     af_fclose(vfWrite);
     return retValue;
 }
@@ -194,14 +194,35 @@ UNITEX_FUNC int UNITEX_CALL CreateUnitexFolder(const char*folderName)
 
 /**
  * Check if a path is present in abstract file space.
- * is_filename_in_abstract_file_space return 
+ * is_filename_in_abstract_file_space return
  *   0 if a filename is a file opened with fopen
  *   1 if a filename use an installed abstract filespace
  */
-UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path) 
+UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path)
 {
     return is_filename_in_abstract_file_space(path);
 }
+
+
+#ifndef AF_REMOVE_FOLDER_PRESENT_AF_STDIO
+// if we compile UnitexLibIo.cpp with old Unitex (3.0), we define here af_remove_folder_unlogged
+int af_remove_folder_unlogged(const char*folderName)
+{
+    if (is_filename_in_abstract_file_space(folderName)==0)
+            return RemoveFileSystemFolder(folderName);
+    else
+    {
+        char*folderNameStar=(char*)malloc(strlen(folderName)+4);
+        if (folderNameStar == NULL)
+            return -1;
+        strcpy(folderNameStar,folderName);
+        strcat(folderNameStar,"*");
+        int retValue =  af_remove_unlogged(folderNameStar);
+        free(folderNameStar);
+        return retValue;
+    }
+}
+#endif
 
 
 /**
@@ -209,21 +230,18 @@ UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path)
  */
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexFolder(const char*folderName)
 {
-#ifdef AF_REMOVE_FOLDER_PRESENT
     return af_remove_folder_unlogged(folderName);
-#else
-	return -1;
-#endif
 }
+
 
 #ifdef HAS_LIST_FILE
 UNITEX_FUNC char** UNITEX_CALL GetUnitexFileList(const char* path)
 {
-	return af_get_list_file(path);
+    return af_get_list_file(path);
 }
 
 UNITEX_FUNC void UNITEX_CALL ReleaseUnitexFileList(const char* path,char**list)
 {
-	af_release_list_file(path,list);
+    af_release_list_file(path,list);
 }
 #endif
