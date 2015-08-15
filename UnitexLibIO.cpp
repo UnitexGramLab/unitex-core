@@ -209,7 +209,11 @@ UNITEX_FUNC int UNITEX_CALL UnitexAbstractPathExists(const char* path)
  */
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexFolder(const char*folderName)
 {
+#ifdef AF_REMOVE_FOLDER_PRESENT
     return af_remove_folder_unlogged(folderName);
+#else
+	return -1;
+#endif
 }
 
 #ifdef HAS_LIST_FILE
