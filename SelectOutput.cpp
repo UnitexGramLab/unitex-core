@@ -100,8 +100,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
 		       SetStdWriteCB(swk,1,NULL,NULL);
 		   }
 		   else 
-			   error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
-         return USAGE_ERROR_CODE;
+		   {
+		       error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
+		       return USAGE_ERROR_CODE;
+		   }
 		   break;
 	   }
    
