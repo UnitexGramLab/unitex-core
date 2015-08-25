@@ -115,8 +115,7 @@ if (argc>1) {
 const char* argv_VersionInfo[] = { "UnitexTool", "VersionInfo", NULL };
 UnitexTool_public_run(2, (char**)argv_VersionInfo, NULL, NULL);
 
-const char* argv_VersionInfo2[] = { "UnitexTool", "VersionInfo", "-p", "-m","-r", NULL };
-UnitexTool_public_run(5, (char**)argv_VersionInfo2, NULL, NULL);
+UnitexTool_public_run_string("UnitexTool VersionInfo -m -\"r\" -p");
 
 /* These lines are just here to test if the TRE library was correctly linked. */
 if (CheckRegexLibInUnitex()) {

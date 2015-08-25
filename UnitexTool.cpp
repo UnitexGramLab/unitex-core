@@ -897,6 +897,136 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	return ret;
 }
 
+
+
+
+static int countArgs(char** args)
+{
+	int count = 0;
+
+	char**tmp = args;
+	while ((*tmp) != NULL)
+	{
+		count++;
+		tmp++;
+	}
+	return count;
+}
+
+
+static void freeArgs(char**args)
+{
+	char** tmp = args;
+	while ((*tmp) != NULL)
+	{
+		free(*tmp);
+		tmp++;
+	}
+	free(args);
+}
+
+
+static const char* CopyStrArg(const char*lpSrc, char* lpDest, size_t dwMaxSize)
+{
+	int isInQuote = 0;
+	size_t dwDestPos = 0;
+
+	*lpDest = '\0';
+
+	if (lpSrc == NULL)
+		return NULL;
+
+	while ((*lpSrc) == ' ')
+		lpSrc++;
+
+	while (((*lpSrc) != '\0') && ((dwMaxSize == 0) || (dwDestPos<dwMaxSize)))
+	{
+		if ((*lpSrc) == '"')
+		{
+			isInQuote = !isInQuote;
+			lpSrc++;
+			continue;
+		}
+
+		if (((*lpSrc) == ' ') && (!isInQuote))
+		{
+			while ((*lpSrc) == ' ')
+				lpSrc++;
+			return lpSrc;
+		}
+
+		*lpDest = *lpSrc;
+		lpDest++;
+		dwDestPos++;
+		*lpDest = '\0';
+		lpSrc++;
+	}
+	return lpSrc;
+}
+
+
+static char**argsFromCString(const char* cmdLine)
+{
+	size_t len_cmd_line = strlen(cmdLine);
+
+	char* work_buf = (char*)malloc(len_cmd_line + 0x10);
+	if (work_buf == NULL)
+		return 0;
+
+	const char*lpParcLine;
+	int nb_args_found = 0;
+
+	lpParcLine = cmdLine;
+	while ((*lpParcLine) != '\0')
+	{
+		*work_buf = 0;
+		lpParcLine = CopyStrArg(lpParcLine, work_buf, len_cmd_line + 8);
+		nb_args_found++;
+	}
+
+	char **args = NULL;
+	if (nb_args_found>0)
+		args = (char**)malloc((nb_args_found + 1) * sizeof(char*));
+	else
+		args = NULL;
+
+	if (args == NULL)
+	{
+		free(work_buf);
+		return NULL;
+	}
+
+	lpParcLine = cmdLine;
+	int i = 0;
+	while ((*lpParcLine) != '\0')
+	{
+		*work_buf = 0;
+		lpParcLine = CopyStrArg(lpParcLine, work_buf, len_cmd_line + 8);
+		args[i] = strdup(work_buf);
+		i++;
+	}
+	args[i] = NULL;
+
+	free(work_buf);
+	return args;
+}
+
+
+
+int UnitexTool_commandstring_several_info(const char* cmd_line, int* p_number_done, struct pos_tools_in_arg* ptia)
+{
+	char** argv = argsFromCString(cmd_line);
+	int argc = countArgs(argv);
+	int ret_value = UnitexTool_several_info(argc, argv, p_number_done, ptia);
+	freeArgs(argv);
+	return ret_value;
+}
+
+
+
+
+
+
 int UnitexTool_several(int argc,char* const argv[],int* p_number_done)
 {
 	return UnitexTool_several_info(argc,argv,p_number_done,NULL);
@@ -923,13 +1053,22 @@ UNITEX_FUNC int UNITEX_CALL main_UnitexTool_C(int argc,char* const argv[])
 }
 
 
-
-
-
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
 {
     return UnitexTool_several_info(argc,argv,p_number_done,ptia);
 }
+
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_string(const char* cmd_line)
+{
+	return UnitexTool_commandstring_several_info(cmd_line, NULL, NULL);
+}
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_string_ret_infos(const char* cmd_line, int* p_number_done, struct pos_tools_in_arg* ptia)
+{
+	return UnitexTool_commandstring_several_info(cmd_line, p_number_done, ptia);
+}
+
 
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_one_tool(const char*toolname,int argc,char* const argv[])
 {

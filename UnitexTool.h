@@ -98,6 +98,10 @@ UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetNumberOfTool();
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_byname(const char* toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_string(const char* cmd_line);
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_string_ret_infos(const char* cmd_line, int* p_number_done, struct pos_tools_in_arg* ptia);
+
 #ifdef __cplusplus
 } // extern "C"
 } // namespace unitex
