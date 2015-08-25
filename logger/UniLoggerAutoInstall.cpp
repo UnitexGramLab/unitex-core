@@ -33,6 +33,10 @@
 #include <stdlib.h>
 #include <memory.h>
 
+#include "Unicode.h"
+#include "Copyright.h"
+#include "UnitexGetOpt.h"
+
 #include "File.h"
 
 #include "ActivityLogger.h"

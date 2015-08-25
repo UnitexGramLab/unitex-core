@@ -34,7 +34,10 @@
 #include <string.h>
 #include <time.h>
 
+
+#include "Unicode.h"
 #include "Copyright.h"
+#include "UnitexGetOpt.h"
 
 #include "ActivityLoggerPlugCallback.h"
 #include "File.h"
