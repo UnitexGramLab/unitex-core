@@ -461,6 +461,38 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         i++;
                         old_c = *(old_text + i);
                     }
+                    else if(old_c=='\n' && new_c=='<') {
+                        int resume = i;
+                        /*Check if the tag in the old text is same as the tag in the new text*/
+                        i++;
+                        old_c = *(old_text + i);
+                        while(old_c != new_c) {
+                            i++;
+                            old_c = *(old_text + i);
+                        }
+                        /*if they are same then we write white spaces*/
+                        if(i+3<old_end && j+3<new_end && *(old_text + i + 1) == *(new_text + j + 1) && *(old_text + i + 2) == *(new_text + j + 2)) {
+                            i = resume;
+                            old_c = *(old_text + i);
+                            while(old_c != new_c) {
+                                u_fputc_raw(old_c, f);
+                                i++;
+                                old_c = *(old_text + i);
+                            }
+                        }
+                        else { //otherwise write the new tag first
+                            i = resume;
+                            old_c = *(old_text + i);
+                            while(new_c != '>') {
+                                u_fputc(new_c,f);
+                                j++;
+                                new_c = *(new_text + j);
+                            }
+                            u_fputc(new_c,f);
+                            j++;
+                            new_c = *(new_text + j);
+                        }
+                    }
                     else {
                         while(j < new_end && old_c != new_c) {
                             u_fputc_raw(new_c, f);
