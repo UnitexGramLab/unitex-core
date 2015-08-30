@@ -143,8 +143,13 @@ if ((output_file!=NULL) && (unpersist!=0)) {
 }
 
 if (options.vars()->optind!=argc-1) {
-   error("Invalid arguments: rerun with --help\n");
-   return USAGE_ERROR_CODE;
+	error("Invalid arguments: rerun with --help\n");
+	return USAGE_ERROR_CODE;
+}
+
+if (only_verify_arguments) {
+	// freeing all allocated memory
+	return SUCCESS_RETURN_CODE;
 }
 
 resource_file = argv[options.vars()->optind];
