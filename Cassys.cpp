@@ -251,94 +251,89 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                     if (lines[num_lines][i] == ' ')
                         spaces++;
                 }
-                num_info++;
-            }
-            else {
-                for (int i = 0; i < num_info; i++) {
-                    if (num_lines == infos[i].annotation_loc + *loc) {
-                        int n = u_strlen(lines[num_lines]);
-                        int j, k;
-                        int division = -1;
-                        int annot_end = -1;
-                        int ignore_cnt = 0;
-                        infos[i].ignore = NULL;
-                        infos[i].accept = NULL;
-                        int is_accept = 0;
-                        for (j = 0; j < n; j++) {
-                            if (lines[num_lines][j] == '/') {
-                                division = j;
-                            }
-                            else if(lines[num_lines][j] == '"') {
-                                annot_end = j;
-                                if(j > 0 && lines[num_lines][j-1] == '}')
-                                    annot_end = j-1;
-                            }
+                // start extract tag information
+                int annot_pos = infos[num_info].annotation_loc + *loc;
+                int n = u_strlen(lines[annot_pos]);
+                int j, k;
+                int division = -1;
+                int annot_end = -1;
+                int ignore_cnt = 0;
+                int is_accept = 0;
+                for (j = 0; j < n; j++) {
+                    if (lines[annot_pos][j] == '/') {
+                        division = j;
+                    }
+                    else if(lines[annot_pos][j] == '"') {
+                        annot_end = j;
+                        if(j > 0 && lines[annot_pos][j-1] == '}')
+                            annot_end = j-1;
+                    }
+                }
+
+                unichar *temp_annot = (unichar*)malloc(sizeof(unichar) * division);
+                for (k = 1; k < division; k++)
+                    temp_annot[k - 1] = lines[annot_pos][k];
+                temp_annot[k - 1] = '\0';
+
+                if (u_strcmp(temp_annot, "<E>") != 0) {
+                    unichar *saveptr = NULL;
+                    const unichar DELIMITER[] = { '~', 0 };
+                    unichar *ignore_token = u_strtok_r(temp_annot, DELIMITER, &saveptr);
+                    unichar *ignore = NULL;
+                    while (ignore_token) {
+                        ignore = ignore_token;
+                        if (u_strcmp(ignore, temp_annot) == 0) {
+                            is_accept = 1;
+                            break;
                         }
-
-
-                        unichar *temp_annot = (unichar*)malloc(sizeof(unichar) * division);
-                        for (k = 1; k < division; k++)
-                            temp_annot[k - 1] = lines[num_lines][k];
-                        temp_annot[k - 1] = '\0';
-
-                        if (u_strcmp(temp_annot, "<E>") != 0) {
-                            unichar *saveptr = NULL;
-                            const unichar DELIMITER[] = { '~', 0 };
-                            unichar *ignore_token = u_strtok_r(temp_annot, DELIMITER, &saveptr);
-                            unichar *ignore = NULL;
-                            while (ignore_token) {
-                                ignore = ignore_token;
-                                if (u_strcmp(ignore, temp_annot) == 0) {
-                                    is_accept = 1;
-                                    break;
-                                }
-                                ignore_token = u_strtok_r(NULL, DELIMITER, &saveptr);
-                                infos[i].ignore = (unichar**)realloc(infos[i].ignore, sizeof(unichar*) * (ignore_cnt + 2));
-                                infos[i].ignore[ignore_cnt] = (unichar*)malloc(sizeof(unichar) * (u_strlen(ignore) + 1));
-                                u_strcpy(infos[i].ignore[ignore_cnt], ignore);
-                                ignore_cnt++;
-                                infos[i].ignore[ignore_cnt] = NULL;
-                            }
-                            if (is_accept && infos[i].ignore == NULL) {
-                                int accept_cnt = 0;
-                                int prev = 0;
-                                for (k = 0; k < division; k++) {
-                                    if (k > 0 && temp_annot[k] == '+' && temp_annot[k - 1] != '\\') {
-                                        infos[i].accept = (unichar**)realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 2));
-                                        infos[i].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
-                                        infos[i].accept[accept_cnt + 1] = NULL;
-                                        n = 0;
-                                        for (j = prev; j < k; j++)
-                                            if (temp_annot[j] != '\\') {
-                                                infos[i].accept[accept_cnt][n++] = temp_annot[j];
-                                            }
-                                        infos[i].accept[accept_cnt][n] = '\0';
-                                        prev = k;
-                                        accept_cnt++;
-                                    }
-                                }
-                                infos[i].accept = (unichar**)realloc(infos[i].accept, sizeof(unichar*) * (accept_cnt + 2));
-                                infos[i].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
-                                infos[i].accept[accept_cnt + 1] = NULL;
+                        ignore_token = u_strtok_r(NULL, DELIMITER, &saveptr);
+                        infos[num_info].ignore = (unichar**)realloc(infos[num_info].ignore, sizeof(unichar*) * (ignore_cnt + 2));
+                        infos[num_info].ignore[ignore_cnt] = (unichar*)malloc(sizeof(unichar) * (u_strlen(ignore) + 1));
+                        u_strcpy(infos[num_info].ignore[ignore_cnt], ignore);
+                        ignore_cnt++;
+                        infos[num_info].ignore[ignore_cnt] = NULL;
+                    }
+                    if (is_accept && infos[num_info].ignore == NULL) {
+                        int accept_cnt = 0;
+                        int prev = 0;
+                        for (k = 0; k < division; k++) {
+                            if (k > 0 && temp_annot[k] == '+' && temp_annot[k - 1] != '\\') {
+                                infos[num_info].accept = (unichar**)realloc(infos[num_info].accept, sizeof(unichar*) * (accept_cnt + 2));
+                                infos[num_info].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
+                                infos[num_info].accept[accept_cnt + 1] = NULL;
                                 n = 0;
                                 for (j = prev; j < k; j++)
                                     if (temp_annot[j] != '\\') {
-                                        infos[i].accept[accept_cnt][n++] = temp_annot[j];
+                                        infos[num_info].accept[accept_cnt][n++] = temp_annot[j];
                                     }
-                                infos[i].accept[accept_cnt][n] = '\0';
+                                infos[num_info].accept[accept_cnt][n] = '\0';
+                                prev = k;
                                 accept_cnt++;
-                                infos[i].accept_count = accept_cnt;
                             }
                         }
-                        free(temp_annot);
-                        infos[i].ignore_count = ignore_cnt;
-                        infos[i].annotation = (unichar*)malloc(sizeof(unichar) * (annot_end - division));
-
-                        for (k = 0, j = division + 1; j < annot_end; k++, j++)
-                            infos[i].annotation[k] = lines[num_lines][j];
-                        infos[i].annotation[k] = '\0';
+                        infos[num_info].accept = (unichar**)realloc(infos[num_info].accept, sizeof(unichar*) * (accept_cnt + 2));
+                        infos[num_info].accept[accept_cnt] = (unichar*)malloc(sizeof(unichar) * (k - prev + 1));
+                        infos[num_info].accept[accept_cnt + 1] = NULL;
+                        n = 0;
+                        for (j = prev; j < k; j++)
+                            if (temp_annot[j] != '\\') {
+                                infos[num_info].accept[accept_cnt][n++] = temp_annot[j];
+                            }
+                        infos[num_info].accept[accept_cnt][n] = '\0';
+                        accept_cnt++;
+                        infos[num_info].accept_count = accept_cnt;
                     }
                 }
+                free(temp_annot);
+                infos[num_info].ignore_count = ignore_cnt;
+                infos[num_info].annotation = (unichar*)malloc(sizeof(unichar) * (annot_end - division));
+
+                for (k = 0, j = division + 1; j < annot_end; k++, j++)
+                    infos[num_info].annotation[k] = lines[annot_pos][j];
+                infos[num_info].annotation[k] = '\0';
+                //end extract tag information
+                
+                num_info++;
             }
             num_lines++;
         }
