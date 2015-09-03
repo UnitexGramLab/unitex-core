@@ -437,6 +437,9 @@ unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec,
                         else {
                         int current_len = u_strlen(entity_whole);
                         entity_whole =  (unichar*) realloc(entity_whole,sizeof(unichar) * (current_len + entity_len + 2));
+                        if(prev_char[0] == '{') { //In case of multi level annotation, there could be multiple '\{' characters before the entity
+                            prev_char[0] = ' ' ;
+                        }
                         u_strcat(entity_whole,prev_char);
                         u_strcat(entity_whole,entity);
                         }
