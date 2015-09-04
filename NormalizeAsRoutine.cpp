@@ -149,7 +149,8 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 	u_strcpy(key, "}");
 	u_strcpy(value, "]");
 	get_value_index(key, replacements, INSERT_IF_NEEDED, value);
-
+	// now we'll assume length of adding new line is 1 + convLFtoCRLF
+	convLFtoCRLF = (convLFtoCRLF == 0) ? 0 : 1;
 	struct OUTBUF OutBuf;
 	OutBuf.pos = 0;
 	Ustring* tmp = new_Ustring(MAX_EXPECTED_TAG_LENGTH);
@@ -325,22 +326,31 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 								== KEEP_CARRIAGE_RETURN)) {
 							/* We print a new line if the sequence contains one and if we are
 							 * allowed to; otherwise, we print a space. */
-							if (delta!=2) {
-								/* We will deal with offsets only if they change, and
-								 * as any sequence of 2 characters normalized into a
-								 * \r\n will not modify offsets, we should do nothing
-								 * in that case */
-								if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+delta,new_start_pos,new_start_pos+2);
+							if (offsets)
+							{
+								int must_push_offset = 1;
+								// if we replace exactly a CR LF by a CR LF, don't push offset
+								if ((convLFtoCRLF) && (delta == 2))
+								{
+									if ((buff[old_position] == '\r') && (buff[old_position + 1] == '\n'))
+										must_push_offset = 0;
+								}
+								if ((!convLFtoCRLF) && (delta == 1))
+								{
+									if (buff[old_position] == '\n')
+										must_push_offset = 0;
+								}
+								if (must_push_offset)
+								{
+									vector_offset_add(offsets, old_start_pos, old_start_pos + delta, new_start_pos, new_start_pos + 1 + convLFtoCRLF);
+								}
 							}
+
 							old_start_pos=old_start_pos+delta;
-							new_start_pos+=2;
+							new_start_pos+=1+convLFtoCRLF;
 							WriteOufBuf(&OutBuf, convLFtoCRLF, '\n', output, 0);
 						} else {
-							if (delta!=1) {
-								/* We will deal with offsets only if they change, and
-								 * as any sequence of 1 character normalized into a
-								 * single space will not modify offsets, we should do nothing
-								 * in that case */
+							if ((delta!=1) || (buff[old_position] != ' ')) {
 								if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+delta,new_start_pos,new_start_pos+1);
 							}
 							old_start_pos=old_start_pos+delta;
@@ -351,30 +361,40 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 						/* If, finally, we have a normal character to normalize, we just print it */
 						unichar c=buff[current_start_pos];
 						if (c=='\r') {
-							c='\n';
 							if (buff[current_start_pos+1]=='\n') {
-								/* If we have a real \r\n, we do nothing special */
-								current_start_pos++;
+								/* If we have a real \r\n, we write \n if convLFtoCRLF=0 and keep unmodified \r\n if convLFtoCRLF=1 */
 								old_start_pos+=2;
-								new_start_pos+=2;
+								new_start_pos+=1+convLFtoCRLF;
+								// we use 1 as param for convLFtoCRLF of WriteOufBuf to really write a \r\n
+								if ((offsets != NULL) && (!convLFtoCRLF)) {
+									vector_offset_add(offsets, old_start_pos, old_start_pos + 2, new_start_pos, new_start_pos + 1);
+								}
+								current_start_pos+=2;
+								WriteOufBuf(&OutBuf, convLFtoCRLF, '\n', output, 0);
 							} else {
 								/* The text contains only \r and we will have to turn
-								 * it into \r\n, so there we be a shift of 1 */
-								if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+2);
+								 * it into \n if convLFtoCRLF==0, and \r\n if convLFtoCRLF==1 so there we be a shift of 1 or 2 */
+								if (offsets != NULL) {
+									vector_offset_add(offsets, old_start_pos, old_start_pos + 1, new_start_pos, new_start_pos + 1 + convLFtoCRLF);
+								}
 								old_start_pos++;
-								new_start_pos+=2;
+								new_start_pos+=1+convLFtoCRLF;
+								current_start_pos++;
+								WriteOufBuf(&OutBuf, convLFtoCRLF, '\n', output, 0);
 							}
-						} else if (c=='\n') {
+						} else if ((c=='\n') && convLFtoCRLF) {
 							/* \n => \r\n means a shift of 1 */
 							if (offsets!=NULL) vector_offset_add(offsets,old_start_pos,old_start_pos+1,new_start_pos,new_start_pos+2);
 							old_start_pos++;
 							new_start_pos+=2;
+							current_start_pos++;
+							WriteOufBuf(&OutBuf, convLFtoCRLF, '\n', output, 0);
 						} else {
 							old_start_pos++;
 							new_start_pos++;
+							current_start_pos++;
+							WriteOufBuf(&OutBuf, convLFtoCRLF, c, output, 0);
 						}
-						current_start_pos++;
-						WriteOufBuf(&OutBuf, convLFtoCRLF, c, output, 0);
 					}
 				}
 			}
