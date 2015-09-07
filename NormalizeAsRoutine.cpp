@@ -89,6 +89,12 @@ while (i!=*pfx && j>=0 && key[i]==value[j]) {
 return 1;
 }
 
+int is_unicode_space(unichar c) {
+    if(c==160 || (c>8191 && c<8201)) {
+        return 1;
+    }
+    return 0;
+}
 
 /**
  * This function produces a normalized version of 'input' and stores it into 'ouput'.
@@ -299,14 +305,16 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 					if (separator_normalization && (buff[current_start_pos] == ' '
 							|| buff[current_start_pos] == '\t'
 							|| buff[current_start_pos] == '\n'
-							|| buff[current_start_pos] == 0x0d)) {
+							|| buff[current_start_pos] == 0x0d
+                                                        || is_unicode_space(buff[current_start_pos]))) {
 						/* If we have a separator, we try to read the longest separator sequence
 						 * that we can read. By the way, we note if it contains a new line */
 						int new_line = 0;
 						while (buff[current_start_pos] == ' '
 								|| buff[current_start_pos] == '\t'
 								|| buff[current_start_pos] == '\n'
-								|| buff[current_start_pos] == 0x0d) {
+								|| buff[current_start_pos] == 0x0d
+                                                                || is_unicode_space(buff[current_start_pos])) {
 							/* Note 1: no bound check is needed, since an unichar buffer is always
 							 *        ended by a \0
 							 *
