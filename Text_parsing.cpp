@@ -339,7 +339,8 @@ void error_at_token_pos(const char* message, int start, int length,
 	(p->token_error_ctx.n_errors)++;
 	if (!p->debug && p->token_error_ctx.n_errors >= p->max_errors) {
 		/* In debug mode, we don't stop on such a problem */
-		fatal_error("Too many errors, giving up!\n");
+		error("Too many errors, giving up!\n");
+		p->is_in_cancel_state = 3;
 	}
 	p->token_error_ctx.last_start = start;
 	p->token_error_ctx.last_length = length;
