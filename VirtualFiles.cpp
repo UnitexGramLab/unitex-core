@@ -95,23 +95,45 @@ public:
 	InitVirtualFiles();
 	~InitVirtualFiles();
 	inline SYNC_Mutex_OBJECT getMutex() { return mutex; };
+	void performInit();
+	void performUninit();
 private:
 	SYNC_Mutex_OBJECT mutex;
+	bool init_done;
 };
 
 InitVirtualFiles::InitVirtualFiles()
-	: mutex(SyncBuildMutex())
+	: mutex(NULL),init_done(false)
 {
+	performInit();
+}
+
+InitVirtualFiles::~InitVirtualFiles()
+{
+	performUninit();
+}
+
+void InitVirtualFiles::performInit()
+{
+if (init_done) {
+	return;
+}
+mutex = SyncBuildMutex();
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
 if (!AddAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
 	fatal_error("Cannot create virtual file system\n");
 }
+init_done = true;
 }
 
-InitVirtualFiles::~InitVirtualFiles()
+void InitVirtualFiles::performUninit()
 {
+if (!init_done) {
+	return;
+}
+
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
@@ -123,10 +145,20 @@ if (mutex != NULL) {
 	SyncDeleteMutex(mutex);
 	mutex = NULL;
 }
+init_done = false;
 }
 
 static InitVirtualFiles InitVirtualFilesInstance;
 
+// init_virtual_files is not a public api. it is here only for compatibility
+
+void init_virtual_files() {
+	return InitVirtualFilesInstance.performInit();
+}
+
+void uninit_virtual_files() {
+	return InitVirtualFilesInstance.performUninit();
+}
 
 #define VFS_mutex (InitVirtualFilesInstance.getMutex())
 
