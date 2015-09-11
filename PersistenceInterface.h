@@ -80,6 +80,11 @@ UNITEX_FUNC void UNITEX_CALL persistence_public_unload_fst2(const char*filename)
 UNITEX_FUNC int UNITEX_CALL persistence_public_load_alphabet(const char*filename,char* persistent_filename_buffer,size_t buffer_size);
 UNITEX_FUNC void UNITEX_CALL persistence_public_unload_alphabet(const char*filename);
 
+
+UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_fst2_filename(const char*filename);
+UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_dictionary_filename(const char*filename);
+UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_alphabet_filename(const char*filename);
+
 #ifdef __cplusplus
 } // extern "C"
 } // namespace unitex

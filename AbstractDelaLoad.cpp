@@ -35,6 +35,7 @@
 #include "LoadInf.h"
 #include "AbstractDelaLoad.h"
 #include "AbstractDelaPlugCallback.h"
+#include "Persistence.h"
 
 //#ifndef HAS_UNITEX_NAMESPACE
 //#define HAS_UNITEX_NAMESPACE 1
@@ -143,6 +144,16 @@ const AbstractDelaSpace * GetDelaSpaceForFileName(const char*name)
 }
 
 /*******************************/
+
+int is_abstract_or_persistent_dictionary_filename(const char* filename)
+{
+	if (GetDelaSpaceForFileName(filename))
+		return 1;
+	if (get_persistent_structure(filename))
+		return 1;
+	return 0;
+}
+
 
 const struct INF_codes* load_abstract_INF_file(const VersatileEncodingConfig* vec,const char* name,struct INF_free_info* p_inf_free_info)
 {

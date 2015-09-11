@@ -69,6 +69,8 @@ void free_abstract_INF(const struct INF_codes*,struct INF_free_info*);
 const unsigned char* load_abstract_BIN_file(const char*,long*,struct BIN_free_info*);
 void free_abstract_BIN(const unsigned char*,struct BIN_free_info*);
 
+int is_abstract_or_persistent_dictionary_filename(const char* filename);
+
 //} // namespace unitex
 
 #endif

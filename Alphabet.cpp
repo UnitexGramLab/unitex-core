@@ -140,6 +140,14 @@ if (alphabet->korean_equivalent_syllable!=NULL) {
 }
 
 
+int is_abstract_or_persistent_alphabet_filename(const char* filename)
+{
+	if (get_persistent_structure(filename))
+		return 1;
+	return 0;
+}
+
+
 /**
  * Loads an alphabet file and returns the associated 'Alphabet*' structure.
  * If 'korean' is non null, we compute the equivalences between Chinese and Hangul

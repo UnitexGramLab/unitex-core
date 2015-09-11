@@ -35,6 +35,7 @@
 
 #include "AbstractFst2Load.h"
 #include "AbstractFst2PlugCallback.h"
+#include "Persistence.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -178,6 +179,16 @@ Fst2* load_abstract_fst2(const VersatileEncodingConfig* vec,const char* filename
 int is_abstract_fst2_filename(const char* filename)
 {
 	return ((GetFst2SpaceForFileName(filename) == NULL) ? 0 : 1);
+}
+
+
+int is_abstract_or_persistent_fst2_filename(const char* filename)
+{
+	if (GetFst2SpaceForFileName(filename))
+		return 1;
+	if (get_persistent_structure(filename))
+		return 1;
+	return 0;
 }
 
 

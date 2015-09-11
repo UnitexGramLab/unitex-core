@@ -24,6 +24,8 @@
 
 #include "CompressedDic.h"
 #include "Fst2.h"
+#include "AbstractDelaLoad.h"
+#include "AbstractFst2Load.h"
 #include "Alphabet.h"
 
 #include "PersistenceInterface.h"
@@ -107,6 +109,21 @@ UNITEX_FUNC int UNITEX_CALL persistence_public_load_alphabet(const char*filename
 UNITEX_FUNC void UNITEX_CALL persistence_public_unload_alphabet(const char*filename)
 {
 	return standard_unload_persistence_alphabet(filename);
+}
+
+UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_fst2_filename(const char*filename)
+{
+	return is_abstract_or_persistent_fst2_filename(filename);
+}
+
+UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_dictionary_filename(const char*filename)
+{
+	return is_abstract_or_persistent_dictionary_filename(filename);
+}
+
+UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_alphabet_filename(const char*filename)
+{
+	return is_abstract_or_persistent_alphabet_filename(filename);
 }
 
 } // namespace unitex

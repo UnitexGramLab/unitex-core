@@ -90,6 +90,7 @@ typedef struct alphabet_ Alphabet;
 
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*);
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*,int);
+int is_abstract_or_persistent_alphabet_filename(const char* filename);
 void free_alphabet(Alphabet*);
 int is_upper_of(unichar,unichar,const Alphabet*);
 int is_equal_ignore_case(unichar,unichar,const Alphabet*);
