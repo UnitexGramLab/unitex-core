@@ -387,26 +387,30 @@ to_keep_protected[1]='n';
 to_keep_protected[2]='\\';
 to_keep_protected[3]='\0';
 
-int code;
-while (EOF!=(code=u_fgets2(temp,f))) {
-   if (code==0) {
+int line_length = 0;
+while (EOF!=(line_length=u_fgets2(temp,f))) {
+   if (line_length==0) {
       error("Empty line\n");
    }
    else {
       /* First, we try to read a non empty key */
       int pos=0;
-      code=parse_string(temp,&pos,key,stop,P_EMPTY,to_keep_protected);
+      int code=parse_string(temp,&pos,key,stop,P_EMPTY,to_keep_protected);
       if (code==P_BACKSLASH_AT_END) {
          error("Backslash at end of line:<%S>\n\n",temp);
       }
       else if (pos==0 && temp[pos]=='\0') {
          /* Empty line */
     	  continue;
-      }
+      }    
       else if (pos==0) {
          /* If the line starts with the separator */
          error("Line with empty key:\n<%S>\n",temp);
       }
+      else if (pos>=line_length) {
+        /* If the line doesn't have a separator */
+        error("Line without separator:\n<%S>\n",temp);
+      }        
       else {
          /* We jump over the separator */
          pos++;
