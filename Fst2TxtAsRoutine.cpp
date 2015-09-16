@@ -392,12 +392,23 @@ static void parse_text(struct fst2txt_parameters* p) {
 				vector_offset_add(p->v_out_offsets, a, b, c, d);
 			}
 		}
-		u_fputs(p->output,p->f_output);
+                if(p->convLFtoCRLF==0) {
+                    u_fputs_raw(p->output,p->f_output);
+                }
+                else {
+                    u_fputs(p->output,p->f_output);
+                }
 		p->new_absolute_origin = p->new_absolute_origin + u_strlen(p->output);
 		if (p->input_length == 0) {
 			// if no input was read, we go on
-			if (p->current_origin < p->text_buffer->size)
-				u_fputc(p->buffer[p->current_origin], p->f_output);
+			if (p->current_origin < p->text_buffer->size) {
+                            if(p->convLFtoCRLF==0) {
+				u_fputc_raw(p->buffer[p->current_origin], p->f_output);
+                            }
+                            else {
+                                u_fputc(p->buffer[p->current_origin], p->f_output);
+                            }
+                        }
 			(p->new_absolute_origin)++;
 			if (p->buffer[p->current_origin] == '\n') {
 				/* If we just have skipped a \n, we note there is an offset shift of 1 */

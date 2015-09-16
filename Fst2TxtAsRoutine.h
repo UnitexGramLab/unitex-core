@@ -102,6 +102,7 @@ struct fst2txt_parameters {
    int CR_shift;
    int new_absolute_origin;
    int last_offset_index;
+   int convLFtoCRLF;
 };
 
 struct fst2txt_parameters* new_fst2txt_parameters();
