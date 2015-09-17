@@ -164,7 +164,7 @@ const struct option_TS lopts_DumpOffsets[]={
  */
 static unichar* read_text_file(U_FILE* f, int* filesize){
     *filesize = 0;
-    
+
     unichar* more_text =  NULL;
     unichar* text = (unichar *)malloc(sizeof(unichar));
     if (!text){
@@ -371,13 +371,13 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
         return 0;
     int i = old_start;
     unichar old_c = *(old_text + i);
-    
+
     unichar* old_str = NULL;
     old_str = (unichar *)malloc(sizeof(unichar) * 2);
-    
+
     int j = new_start;
     unichar new_c = *(new_text + j);
-    
+
     while(i<old_end && j<new_end ) {
         while(i<old_end && j<new_end && old_c == new_c) {
             u_fputc_raw(new_c, f);
@@ -402,18 +402,18 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
             new_c = *(new_text + j);
             wht_spaces = 1;
         }
-        
+
         while(i < old_end && (old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') && wht_spaces == 1) {
-            u_fputc_raw(old_c, f);  
+            u_fputc_raw(old_c, f);
             i++;
             old_c = *(old_text + i);
         }
-        
+
         if(old_c != new_c) {
             if(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') {
                 if(j-1 > new_start && (*(new_text + j - 1) ==' ' || *(new_text + j - 1) =='\r' || *(new_text + j - 1) =='\n')) {
                     while(i<old_end && (old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r')) {
-                        u_fputc_raw(old_c, f);  
+                        u_fputc_raw(old_c, f);
                         i++;
                         old_c = *(old_text + i);
                     }
@@ -498,13 +498,13 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             u_fputc_raw(new_c, f);
                             j++;
                             new_c = *(new_text + j);
-                        }                    
+                        }
                     }
                 }
                 else {
                     u_fputc_raw(old_c, f);
                     i++;
-                    old_c = *(old_text + i);   
+                    old_c = *(old_text + i);
                 }
             }
             else {
@@ -556,7 +556,7 @@ static void load_offset_translation(const VersatileEncodingConfig* vec, const ch
     if (!f) {
      error("Cannot open file %s", name);
      return;
-    }    
+    }
 
     int nb_allocated = 1;
     *pos_from_file = (int*)malloc(sizeof(int) * nb_allocated);
@@ -609,11 +609,20 @@ int DumpOffsetApply(const VersatileEncodingConfig* vec, const char* old_filename
 
     vector_offset* offsets = load_offsets(vec, offset_file_name);
     if (offsets == NULL) {
+        free(old_text);
+        free(new_text);
         error("Cannot read file %s", offset_file_name);
         return DEFAULT_ERROR_CODE;
     }
     int coherency = 1;
     U_FILE* fout = u_fopen(vec, output, U_WRITE);
+    if (fout == NULL) {
+        error("Cannot create file %s", output);
+        free_vector_offset(offsets);
+        free(old_text);
+        free(new_text);
+        return DEFAULT_ERROR_CODE;
+    }
     for (int i = 0; i < offsets->nbelems; i++) {
         Offsets curOffset = offsets->tab[i];
         Offsets prevOffset;
@@ -717,7 +726,7 @@ int Denormalize(const VersatileEncodingConfig* vec, const char* old_filename, co
     else {
     replacements = new_string_hash();
     }
-    
+
     for (int i = 0; i < offsets->nbelems; i++) {
         Offsets curOffset = offsets->tab[i];
         Offsets prevOffset;
@@ -828,12 +837,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_DumpOffsets,lopts_DumpOf
    case 'u': quiet = 1; break;
    case 'd': denorm = 1; break;
    case 'V': only_verify_arguments = true;
-             break;   
-   case 'h': usage(); 
-             return SUCCESS_RETURN_CODE;             
+             break;
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_DumpOffsets[index].name);
-             return USAGE_ERROR_CODE;            
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;
