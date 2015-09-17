@@ -280,7 +280,7 @@ void emit_output(struct fst2txt_parameters* p, unichar* s, int pos) {
 			/* In REPLACE mode, there will be only one big output, so there is
 			 * no need for all those subtle calculus */
 			int CR_shift = 0;
-			if (pos + p->current_origin < p->text_buffer->size) {
+			if ((p->convLFtoCRLF != 0) && (pos + p->current_origin < p->text_buffer->size)) {
 				for (int i = p->current_origin; i < pos + p->current_origin; i++) {
 					if (p->buffer[i] == '\n') {
 						CR_shift++;
@@ -325,7 +325,7 @@ static void parse_text(struct fst2txt_parameters* p) {
 	while (p->current_origin <= p->text_buffer->size) {
 		clean_allocator(p->pa.prv_alloc_vector_int_inside_token);
 		if (!p->text_buffer->end_of_file && p->current_origin
-				> (p->text_buffer->size - MINIMAL_SIZE_PRELOADED_TEXT)) {
+			> (p->text_buffer->size - MINIMAL_SIZE_PRELOADED_TEXT)) {
 			/* If we must change of block, we update the absolute offset, and we fill the
 			 * buffer. */
 			p->absolute_offset = p->absolute_offset + p->current_origin;
@@ -343,10 +343,12 @@ static void parse_text(struct fst2txt_parameters* p) {
 		}
 		if (p->buffer[p->current_origin] == '{') {
 			within_tag = 1;
-		} else if (p->buffer[p->current_origin] == '}') {
+		}
+		else if (p->buffer[p->current_origin] == '}') {
 			within_tag = 0;
-		} else if (!within_tag && (p->buffer[p->current_origin] != ' '
-				|| p->space_policy == START_WITH_SPACE)) {
+		}
+		else if (!within_tag && (p->buffer[p->current_origin] != ' '
+			|| p->space_policy == START_WITH_SPACE)) {
 			// we don't start a match on a space
 			unichar mot_token_buffer[MOT_BUFFER_TOKEN_SIZE];
 			scan_graph(0, debut, 0, 0, NULL, mot_token_buffer, p);
@@ -356,73 +358,77 @@ static void parse_text(struct fst2txt_parameters* p) {
 			if (p->insertions != NULL && p->insertions->nbelems != 0) {
 				for (int i = 0; i < p->insertions->nbelems; i = i + 4) {
 					vector_offset_add(p->v_out_offsets, p->insertions->tab[i],
-							p->insertions->tab[i + 1],
-							p->insertions->tab[i + 2],
-							p->insertions->tab[i + 3]);
+						p->insertions->tab[i + 1],
+						p->insertions->tab[i + 2],
+						p->insertions->tab[i + 3]);
 				}
 			}
-		} else if (p->output_policy == REPLACE_OUTPUTS && p->input_length != 0) {
+		}
+		else if (p->output_policy == REPLACE_OUTPUTS && p->input_length != 0) {
 			int a = p->current_origin + p->CR_shift + p->absolute_offset;
 			int b = a + p->input_length;
-			int output_length=u_strlen(p->output);
+			int output_length = u_strlen(p->output);
 			int diff = 0;
-			int i,j;
-			
+			int i, j;
 
-			for (i=0; i < p->input_length; i++) {
-				if (p->buffer[i + p->current_origin] == '\n')
+
+			for (i = 0; i < p->input_length; i++) {
+				if ((p->convLFtoCRLF != 0) && (p->buffer[i + p->current_origin] == '\n'))
 					b++;
 			}
-			for (i=0,j=0; i < p->input_length && j<output_length; i++,j++) {
+			for (i = 0, j = 0; i < p->input_length && j<output_length; i++, j++) {
 				if (!diff && p->buffer[i + p->current_origin] != p->output[j]) {
 					diff = 1;
 				}
 			}
 
-			if (p->input_length>0 && p->output[0]=='\0') {
+			if (p->input_length>0 && p->output[0] == '\0') {
 				/* any input deletion must be considered */
-				diff=1;
+				diff = 1;
 			}
 			if (!diff && p->output[j] != '\0') {
 				diff = 1;
 			}
 			if (diff) {
 				/* There is no need to consider fake replace that happen when
-				 * normalizing quotes or dashes */
+				* normalizing quotes or dashes */
 				int c = p->new_absolute_origin;
 				int d = c + u_strlen(p->output);
 				vector_offset_add(p->v_out_offsets, a, b, c, d);
 			}
 		}
-                if(p->convLFtoCRLF==0) {
-                    u_fputs_raw(p->output,p->f_output);
-                }
-                else {
-                    u_fputs(p->output,p->f_output);
-                }
+		if (p->convLFtoCRLF == 0) {
+			u_fputs_raw(p->output, p->f_output);
+		}
+		else {
+			u_fputs(p->output, p->f_output);
+		}
 		p->new_absolute_origin = p->new_absolute_origin + u_strlen(p->output);
 		if (p->input_length == 0) {
 			// if no input was read, we go on
+			// u_fputc_raw write exactly the unichar in parameter
+			// u_fputc replace LF ('\n') by CRLF ('\r\n')
 			if (p->current_origin < p->text_buffer->size) {
-                            if(p->convLFtoCRLF==0) {
-				u_fputc_raw(p->buffer[p->current_origin], p->f_output);
-                            }
-                            else {
-                                u_fputc(p->buffer[p->current_origin], p->f_output);
-                            }
-                        }
+				if (p->convLFtoCRLF == 0) {
+					u_fputc_raw(p->buffer[p->current_origin], p->f_output);
+				}
+				else {
+					u_fputc(p->buffer[p->current_origin], p->f_output);
+				}
+			}
 			(p->new_absolute_origin)++;
-			if (p->buffer[p->current_origin] == '\n') {
+			if ((p->convLFtoCRLF != 0) && (p->buffer[p->current_origin] == '\n')) {
 				/* If we just have skipped a \n, we note there is an offset shift of 1 */
 				(p->CR_shift)++;
 				(p->new_absolute_origin)++;
 			}
 			(p->current_origin)++;
-		} else {
+		}
+		else {
 			// we increase current_origin
 			int new_origin = p->current_origin + p->input_length;
 			for (int i = p->current_origin; i < new_origin; i++) {
-				if (p->buffer[i] == '\n') {
+				if ((p->convLFtoCRLF != 0) && (p->buffer[i] == '\n')) {
 					/* If we just have skipped a \n, we note there is an offset shift of 1 */
 					(p->CR_shift)++;
 					if (p->output_policy == MERGE_OUTPUTS) {
@@ -438,6 +444,7 @@ static void parse_text(struct fst2txt_parameters* p) {
 	free_Variables(p->variables);
 	p->variables = NULL;
 }
+
 
 /*
  * scan_graph token a lot of time of comparing string against
