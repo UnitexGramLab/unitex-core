@@ -192,15 +192,16 @@ strcat(tmp,".tmp");
 normalize(input,snt,&vec,KEEP_CARRIAGE_RETURN,convLFtoCRLF,normalization,NULL,1);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 p->vec=vec;
-p->text_file=strdup(snt);
-if (p->text_file==NULL) {
+p->input_text_file=strdup(snt);
+if (p->input_text_file ==NULL) {
    alloc_error("main_XMLizer");
    free_fst2txt_parameters(p);
    return ALLOC_ERROR_CODE;
 }
 
-p->temp_file=strdup(tmp);
-if (p->temp_file==NULL) {
+p->output_text_file_is_temp=1;
+p->output_text_file=strdup(tmp);
+if (p->output_text_file_is_temp ==NULL) {
    alloc_error("main_XMLizer");
    free_fst2txt_parameters(p);
    return ALLOC_ERROR_CODE;

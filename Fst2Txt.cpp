@@ -41,6 +41,7 @@ const char* usage_Fst2Txt =
          "\n"
          "OPTIONS:\n"
          "  -t TXT/--text=TXT: the unicode text file to be parsed\n"
+         "  -o TXT/--output=TXT: the result unicode text file (if absent, replace original file)\n"
          "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
          "  -s/--start_on_space: enables morphological use of space\n"
          "  -x/--dont_start_on_space: disables morphological use of space (default)\n"
@@ -66,8 +67,7 @@ static void usage() {
   u_printf(usage_Fst2Txt);
 }
 
-
-const char* optstring_Fst2Txt=":t:a:MRcwsxVhkl:q:$:@:";
+const char* optstring_Fst2Txt=":t:a:MRcwsxVhlo:k:q:$:@:";
 const struct option_TS lopts_Fst2Txt[]= {
   {"text",required_argument_TS,NULL,'t'},
   {"alphabet",required_argument_TS,NULL,'a'},
@@ -77,6 +77,7 @@ const struct option_TS lopts_Fst2Txt[]= {
   {"word_by_word",no_argument_TS,NULL,'w'},
   {"start_on_space",no_argument_TS,NULL,'s'},
   {"dont_start_on_space",no_argument_TS,NULL,'x'},
+  {"output",required_argument_TS,NULL,'o'},
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"output_encoding",required_argument_TS,NULL,'q'},
   {"input_offsets",required_argument_TS,NULL,'$'},
@@ -100,7 +101,6 @@ char out_offsets[FILENAME_MAX]="";
 int val,index=-1;
 bool only_verify_arguments = false;
 UnitexGetOpt options;
-p->convLFtoCRLF=1;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index))) {
    switch(val) {
@@ -109,8 +109,21 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&i
                 free_fst2txt_parameters(p);
                 return USAGE_ERROR_CODE;
              }
-             p->text_file=strdup(options.vars()->optarg);
-             if (p->text_file==NULL) {
+             p->input_text_file=strdup(options.vars()->optarg);
+             if (p->input_text_file==NULL) {
+                alloc_error("main_Fst2Txt");
+                free_fst2txt_parameters(p);
+                return ALLOC_ERROR_CODE;
+             }
+             break;
+   case 'o': if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a non empty text output file name\n");
+                free_fst2txt_parameters(p);
+                return USAGE_ERROR_CODE;
+             }
+             p->output_text_file=strdup(options.vars()->optarg);
+			 p->output_text_file_is_temp=0;
+             if (p->output_text_file==NULL) {
                 alloc_error("main_Fst2Txt");
                 free_fst2txt_parameters(p);
                 return ALLOC_ERROR_CODE;
@@ -186,7 +199,7 @@ if (options.vars()->optind!=argc-1) {
    return USAGE_ERROR_CODE;
 }
 
-if (p->text_file==NULL) {
+if (p->input_text_file==NULL) {
    error("You must specify the text file\n");
    free_fst2txt_parameters(p);
    return USAGE_ERROR_CODE;   
@@ -220,14 +233,17 @@ if (out_offsets[0]!='\0') {
 	}
 }
 
-char tmp[FILENAME_MAX];
-remove_extension(p->text_file,tmp);
-strcat(tmp,".tmp");
-p->temp_file=strdup(tmp);
-if (p->temp_file==NULL) {
-   alloc_error("main_Fst2Txt");
-   free_fst2txt_parameters(p);
-   return ALLOC_ERROR_CODE;   
+if (p->output_text_file == NULL) {
+	char tmp[FILENAME_MAX];
+	remove_extension(p->input_text_file, tmp);
+	strcat(tmp, ".tmp");
+	p->output_text_file_is_temp=1;
+	p->output_text_file = strdup(tmp);
+	if (p->output_text_file == NULL) {
+		alloc_error("main_Fst2Txt");
+		free_fst2txt_parameters(p);
+		return ALLOC_ERROR_CODE;
+	}
 }
 p->fst_file=strdup(argv[options.vars()->optind]);
 if (p->fst_file==NULL) {

@@ -42,9 +42,9 @@ static void build_state_token_trees(struct fst2txt_parameters*);
 static void parse_text(struct fst2txt_parameters*);
 
 int main_fst2txt(struct fst2txt_parameters* p) {
-	p->f_input = u_fopen(&(p->vec), p->text_file, U_READ);
+	p->f_input = u_fopen(&(p->vec), p->input_text_file, U_READ);
 	if (p->f_input == NULL) {
-		error("Cannot open file %s\n", p->text_file);
+		error("Cannot open file %s\n", p->input_text_file);
 		return 1;
 	}
 
@@ -52,9 +52,9 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 			CAPACITY_LIMIT);
 	p->buffer = p->text_buffer->unichar_buffer;
 
-	p->f_output = u_fopen(&(p->vec), p->temp_file, U_WRITE);
+	p->f_output = u_fopen(&(p->vec), p->output_text_file, U_WRITE);
 	if (p->f_output == NULL) {
-		error("Cannot open temporary file %s\n", p->temp_file);
+		error("Cannot open output file %s\n", p->output_text_file);
 		u_fclose(p->f_input);
 		return 1;
 	}
@@ -109,8 +109,10 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 	parse_text(p);
 	u_fclose(p->f_input);
 	u_fclose(p->f_output);
-	af_remove(p->text_file);
-	af_rename(p->temp_file, p->text_file);
+	if (p->output_text_file_is_temp) {
+		af_remove(p->input_text_file);
+		af_rename(p->output_text_file, p->input_text_file);
+	}
 	/* And finally, we compute offsets */
 	process_offsets(p->v_in_offsets, p->v_out_offsets, p->f_out_offsets);
 	u_printf("Done.\n");
@@ -126,8 +128,9 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	if (p == NULL) {
 		fatal_alloc_error("new_fst2txt_parameters");
 	}
-	p->text_file = NULL;
-	p->temp_file = NULL;
+	p->input_text_file = NULL;
+	p->output_text_file = NULL;
+	p->output_text_file_is_temp = 1;
 	p->fst_file = NULL;
 	p->alphabet_file = NULL;
 	p->f_input = NULL;
@@ -138,8 +141,6 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	p->pa.prv_alloc_recycle = NULL;
 	p->pa.prv_alloc_vector_int_inside_token = NULL;
 	p->alphabet = NULL;
-	p->text_file = NULL;
-	p->temp_file = NULL;
 	p->fst_file = NULL;
 	p->alphabet_file = NULL;
 	p->token_tree = NULL;
@@ -165,6 +166,7 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	p->current_insertions = NULL;
 	p->CR_shift = 0;
 	p->new_absolute_origin = 0;
+	p->convLFtoCRLF = 1;
 	return p;
 }
 
@@ -174,8 +176,8 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 	if (p == NULL)
 		return;
-	free(p->text_file);
-	free(p->temp_file);
+	free(p->input_text_file);
+	free(p->output_text_file);
 	free(p->fst_file);
 	free(p->alphabet_file);
 	for (int i = 0; i < p->n_token_trees; i++) {

@@ -50,10 +50,11 @@ namespace unitex {
 struct fst2txt_parameters {
    struct parsing_allocator pa;
    Abstract_allocator fst2txt_abstract_allocator;
-   char* text_file;
-   char* temp_file;
+   char* input_text_file;
+   char* output_text_file;
    char* fst_file;
    char* alphabet_file;
+   int output_text_file_is_temp;
 
    U_FILE* f_input;
    U_FILE* f_output;
