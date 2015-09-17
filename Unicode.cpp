@@ -184,6 +184,11 @@ int u_fread(unichar* t,int N,U_FILE* f,int *OK) {
 return u_fread(f->enc,t,N,f->f,OK);
 }
 
+int u_fread_raw(Encoding,unichar*,int,ABSTRACTFILE*,int*);
+int u_fread_raw(unichar* t,int N,U_FILE* f,int *OK) {
+return u_fread_raw(f->enc,t,N,f->f,OK);
+}
+
 int u_fputc_raw(Encoding,unichar,ABSTRACTFILE*);
 int u_fputc_raw(unichar c,U_FILE* f) {
 return u_fputc_raw(f->enc,c,f->f);
@@ -1154,6 +1159,27 @@ return i;
 }
 
 
+/**
+ * Reads N characters THAT ARE NOT '\0' and stores them in 't', that is supposed to be large enough.
+ * Returns the number of characters read. This function converts \r\n into \n.
+ *
+ * The '*OK' parameter is set to 0 if at least one '\0' was found and ignored; 1 otherwise.
+ */
+int u_fread_raw(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f,int *OK) {
+int i,c;
+*OK=1;
+i=0;
+while (i<N) {
+   c= u_fgetc_raw(encoding,f);
+   if (c==EOF) return i;
+   if (c=='\0') {
+      *OK=0;
+   } else {
+      t[i++]=(unichar)c;
+   }
+}
+return i;
+}
 /**
  * UTF16-LE version of fputc. It does not put a 0xOA after a 0x0D.
  * Returns 1 in case of success; 0 otherwise.

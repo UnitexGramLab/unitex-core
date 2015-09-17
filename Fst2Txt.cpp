@@ -67,7 +67,7 @@ static void usage() {
   u_printf(usage_Fst2Txt);
 }
 
-const char* optstring_Fst2Txt=":t:a:MRcwsxVhlo:k:q:$:@:";
+const char* optstring_Fst2Txt=":t:a:MRcwsxVhlro:k:q:$:@:";
 const struct option_TS lopts_Fst2Txt[]= {
   {"text",required_argument_TS,NULL,'t'},
   {"alphabet",required_argument_TS,NULL,'a'},
@@ -85,6 +85,7 @@ const struct option_TS lopts_Fst2Txt[]= {
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
   {"help",no_argument_TS,NULL,'h'},
   {"no_convert_lf_to_crlf",no_argument_TS,NULL,'l'},
+  {"no_suppress_cr",no_argument_TS,NULL,'r'},
   {NULL,no_argument_TS,NULL,0}
 };
 
@@ -185,6 +186,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&i
              strcpy(out_offsets,options.vars()->optarg);
              break;
    case 'l': p->convLFtoCRLF=0; break;
+   case 'r': p->keepCR = 1; break;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free_fst2txt_parameters(p);

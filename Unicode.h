@@ -146,6 +146,7 @@ int u_fgetc_UTF16BE(ABSTRACTFILE*);
 int u_fgetc_UTF8(ABSTRACTFILE*);
 int u_fgetc(U_FILE*);
 int u_fgetc_CR(U_FILE*);
+int u_fread_raw(unichar*,int,U_FILE*,int*);
 int u_fread_raw(unichar*,int,U_FILE*);
 int u_fread(unichar*,int,U_FILE*,int*);
 

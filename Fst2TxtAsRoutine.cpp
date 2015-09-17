@@ -167,6 +167,7 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
 	p->CR_shift = 0;
 	p->new_absolute_origin = 0;
 	p->convLFtoCRLF = 1;
+	p->keepCR = 0;
 	return p;
 }
 
@@ -309,7 +310,7 @@ void emit_output(struct fst2txt_parameters* p, unichar* s, int pos) {
 
 
 static void parse_text(struct fst2txt_parameters* p) {
-	fill_buffer(p->text_buffer, p->f_input);
+	fill_buffer(p->text_buffer, p->text_buffer->MAXIMUM_BUFFER_SIZE, p->keepCR, p->f_input);
 	int debut = p->fst2->initial_states[1];
 	p->variables = new_Variables(p->fst2->input_variables);
 	int n_blocks = 0;
@@ -329,7 +330,7 @@ static void parse_text(struct fst2txt_parameters* p) {
 			/* If we must change of block, we update the absolute offset, and we fill the
 			 * buffer. */
 			p->absolute_offset = p->absolute_offset + p->current_origin;
-			fill_buffer(p->text_buffer, p->current_origin, p->f_input);
+			fill_buffer(p->text_buffer, p->current_origin, p->keepCR, p->f_input);
 			p->current_origin = 0;
 			n_blocks++;
 			u_printf("\rBlock %d        ", n_blocks);

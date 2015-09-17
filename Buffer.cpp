@@ -136,7 +136,7 @@ free(buffer);
  * character buffer, if skips '\0' chars that should not appear in a text file. In that
  * case, the function ignore those characters and returns 0.
  */
-int fill_buffer(struct buffer* buffer,int pos,U_FILE* f) {
+int fill_buffer(struct buffer* buffer,int pos,int raw,U_FILE* f) {
 int new_position=-1;
 int n_element_read=-1;
 int OK=1;
@@ -175,7 +175,7 @@ switch (buffer->type) {
       /* Here, we must not use a 'fread', since it would not unify \r\n
        * into the single \n that is used in Unitex programs */
       int tmp;
-      n_element_read=u_fread(&(u_array[new_position]),pos,f,&tmp);
+      n_element_read=(raw!=0) ? u_fread_raw(&(u_array[new_position]),pos,f,&tmp) : u_fread(&(u_array[new_position]), pos, f, &tmp);
       if (!tmp) {
          OK=0;
       }
@@ -196,7 +196,22 @@ return OK;
  * See above for details about the returned value.
  */
 int fill_buffer(struct buffer* buffer,U_FILE* f) {
-return fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,f);
+return fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,0,f);
+}
+
+
+int fill_buffer(struct buffer* buffer, int pos, U_FILE* f) {
+	return fill_buffer(buffer, pos, 0, f);
+}
+
+
+int fill_buffer_raw(struct buffer* buffer, U_FILE* f) {
+	return fill_buffer(buffer, buffer->MAXIMUM_BUFFER_SIZE, 1, f);
+}
+
+
+int fill_buffer_raw(struct buffer* buffer, int pos, U_FILE* f) {
+	return fill_buffer(buffer, pos, 1, f);
 }
 
 } // namespace unitex
