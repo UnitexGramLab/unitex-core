@@ -60,6 +60,9 @@
     <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h">
       <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
     </ClInclude>
+    <ClInclude Include="..\PersistResource.h">
+      <Filter>Unitex-C++</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractAllocator.cpp">
@@ -814,6 +817,9 @@
     </ClCompile>
     <ClCompile Include="..\yaml-0.1.6\src\writer.c">
       <Filter>Unitex-C++\yaml-0.1.6\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PersistResource.cpp">
+      <Filter>Unitex-C++</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -201,7 +201,7 @@ if (p->input_text_file ==NULL) {
 
 p->output_text_file_is_temp=1;
 p->output_text_file=strdup(tmp);
-if (p->output_text_file_is_temp ==NULL) {
+if (p->output_text_file==NULL) {
    alloc_error("main_XMLizer");
    free_fst2txt_parameters(p);
    return ALLOC_ERROR_CODE;

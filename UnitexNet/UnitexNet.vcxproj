@@ -111,6 +111,7 @@
       </TypeLibraryFile>
       <MergedIDLBaseFileName>
       </MergedIDLBaseFileName>
+      <MinimumRequiredVersion>4.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -133,6 +134,7 @@
       </TypeLibraryFile>
       <MergedIDLBaseFileName>
       </MergedIDLBaseFileName>
+      <MinimumRequiredVersion>5.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -151,6 +153,7 @@
       <AdditionalDependencies />
       <TypeLibraryFile>Interop.UnitexNet</TypeLibraryFile>
       <MergedIDLBaseFileName>Interop.UnitexNet</MergedIDLBaseFileName>
+      <MinimumRequiredVersion>4.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -170,6 +173,7 @@
       </AdditionalDependencies>
       <TypeLibraryFile>Interop.UnitexNet</TypeLibraryFile>
       <MergedIDLBaseFileName>Interop.UnitexNet</MergedIDLBaseFileName>
+      <MinimumRequiredVersion>5.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -187,6 +191,7 @@
     <ClInclude Include="..\logger\LingResourcePackage.h" />
     <ClInclude Include="..\logger\RunTools.h" />
     <ClInclude Include="..\logger\UniRunScript.h" />
+    <ClInclude Include="..\PersistResource.h" />
     <ClInclude Include="..\yaml-0.1.6\src\yaml_private.h" />
     <ClInclude Include="clix.h" />
     <ClInclude Include="resource.h" />
@@ -1154,6 +1159,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
+    <ClCompile Include="..\PersistResource.cpp" />
     <ClCompile Include="..\PolyLex.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
