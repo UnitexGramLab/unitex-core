@@ -214,4 +214,13 @@ int fill_buffer_raw(struct buffer* buffer, int pos, U_FILE* f) {
 	return fill_buffer(buffer, pos, 1, f);
 }
 
+int fill_buffer_keepCR_option(struct buffer* buffer, int pos, int keep_cr, U_FILE* f) {
+	return fill_buffer(buffer, pos, keep_cr, f);
+}
+
+int fill_buffer_keepCR_option(struct buffer* buffer, int keep_cr, U_FILE* f) {
+	return fill_buffer(buffer, buffer->MAXIMUM_BUFFER_SIZE, keep_cr, f);
+}
+
+
 } // namespace unitex

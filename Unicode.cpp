@@ -194,6 +194,11 @@ int u_fputc_raw(unichar c,U_FILE* f) {
 return u_fputc_raw(f->enc,c,f->f);
 }
 
+int u_fputc_conv_lf_to_crlf_option(Encoding, unichar, ABSTRACTFILE*, int);
+int u_fputc_conv_lf_to_crlf_option(unichar c, U_FILE* f, int conv_lf_to_crlf_option) {
+	return u_fputc_conv_lf_to_crlf_option(f->enc, c, f->f, conv_lf_to_crlf_option);
+}
+
 int u_fputc(Encoding,unichar,ABSTRACTFILE*);
 int u_fputc_UTF16LE(unichar c,ABSTRACTFILE* f) {
 return u_fputc(UTF16_LE,c,f);
@@ -240,6 +245,12 @@ void u_fputs(const unichar* t, U_FILE* f) {
 	//u_fputs(f->enc, t, f->f);
 }
 
+
+void u_fputs_conv_lf_to_crlf_option(Encoding, const unichar*, ABSTRACTFILE*, int);
+void u_fputs_conv_lf_to_crlf_option(const unichar*t, U_FILE* f, int conv_lf_to_crlf_option) {
+	fwriteString(f, t, conv_lf_to_crlf_option);
+	//return u_fputs_conv_lf_to_crlf_option(f->enc, t, f->f, conv_lf_to_crlf_option);
+}
 
 int u_fgets(Encoding,unichar*,ABSTRACTFILE*);
 int u_fgets(unichar* s,U_FILE* f) {
@@ -1276,6 +1287,13 @@ if (c=='\n') {
 return u_fputc_raw(encoding,c,f);
 }
 
+
+int u_fputc_conv_lf_to_crlf_option(Encoding encoding, unichar c, ABSTRACTFILE* f, int conv_lf_to_crlf_option) {
+	if ((c == '\n') && (conv_lf_to_crlf_option!=0)) {
+		if (!u_fputc_raw(encoding, 0x0D, f)) return 0;
+	}
+	return u_fputc_raw(encoding, c, f);
+}
 
 /**
  * UTF16 version of ungetc. In fact, we just rewind 2 bytes before in 'f'.

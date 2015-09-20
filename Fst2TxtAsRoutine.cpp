@@ -330,7 +330,7 @@ static void parse_text(struct fst2txt_parameters* p) {
 			/* If we must change of block, we update the absolute offset, and we fill the
 			 * buffer. */
 			p->absolute_offset = p->absolute_offset + p->current_origin;
-			fill_buffer(p->text_buffer, p->current_origin, p->keepCR, p->f_input);
+			fill_buffer_keepCR_option(p->text_buffer, p->current_origin, p->keepCR, p->f_input);
 			p->current_origin = 0;
 			n_blocks++;
 			u_printf("\rBlock %d        ", n_blocks);

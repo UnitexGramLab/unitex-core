@@ -42,7 +42,7 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tok
 void compute_token_length(int*,struct text_tokens*);
 
 static void create_modified_text_file(const VersatileEncodingConfig*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,
-		char*,int,const int*, vector_uima_offset*,const char*, vector_offset* v_offsets);
+		char*,int,int,const int*, vector_uima_offset*,const char*, vector_offset* v_offsets);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
@@ -248,7 +248,7 @@ if (options->result_mode==MERGE_) {
 	}
 
 	create_modified_text_file(vec,concordance,text,tokens,
-			options->output,n_enter_char,enter_pos,options->uima_offsets,
+			options->output,options->convLFtoCRLF,n_enter_char,enter_pos,options->uima_offsets,
 			(out_offsets != NULL) ? NULL : options->output_offsets, out_offsets);
 
 	if (f_output_offsets != NULL) {
@@ -1277,7 +1277,7 @@ while (matches!=NULL) {
 		start_pos_char=uima_offset_token_start_pos(options->uima_offsets,first_token);
 		end_pos_char=uima_offset_token_end_pos(options->uima_offsets,last_token);
 	}
-	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
+	/* Finally, we copy the sequence bounds and t he sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d %d",start_pos_char,end_pos_char,current_sentence,concord_ind_match_number);
 	const unichar* closest_tag=NULL;
 	if (options->PRLG_data!=NULL) {
@@ -1346,7 +1346,7 @@ return number_of_matches;
  * 'pos_in_enter_pos' is the current position in this array. The function
  * returns the updated current position in the 'pos_in_enter_pos' array.
  */
-static int fprint_token(U_FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
+static int fprint_token(U_FILE* output,int convLFtoCRLF,struct text_tokens* tokens,long int offset_in_buffer,
 				int current_global_position,int n_enter_char,const int* enter_pos, int* len_written,
 				int pos_in_enter_pos,struct buffer_mapped* buffer) {
 /* We look for the new line that is closer (but after) to the token to print */
@@ -1365,10 +1365,10 @@ while (pos_in_enter_pos < n_enter_char) {
 		/* The token to print is a new line, so we print it and return */
 		pos_in_enter_pos++;
 		if (output != NULL) {
-			u_fputc((unichar)'\n', output);
+			u_fputc_conv_lf_to_crlf_option((unichar)'\n', output, convLFtoCRLF);
 		}
 		if (len_written != NULL) {
-			(*len_written) += 1+1;
+			(*len_written) += 1+convLFtoCRLF;
 		}
 		return pos_in_enter_pos;
 	}
@@ -1376,7 +1376,7 @@ while (pos_in_enter_pos < n_enter_char) {
 /* The token to print is not a new line, so we print it and return */
 const unichar* token_to_write=tokens->token[buffer->int_buffer_[buffer->skip + offset_in_buffer]];
 if (output != NULL) {
-	u_fputs(token_to_write, output);
+	u_fputs_conv_lf_to_crlf_option(token_to_write, output, convLFtoCRLF);
 }
 if (len_written != NULL) {
 	(*len_written) += (int)u_strlen(token_to_write);
@@ -1394,7 +1394,7 @@ return pos_in_enter_pos;
  * The function also makes sure that the last token #match_end has been loaded into the buffer.
  */
 static int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
-								int current_global_position,U_FILE* output,int* len_written,int* len_skipped,
+								int current_global_position,U_FILE* output,int convLFtoCRLF,int* len_written,int* len_skipped,
 								int n_enter_char,const int* enter_pos,int pos_in_enter_pos,
 								struct buffer_mapped* buffer,int *pos_int_char) {
 buf_map_int_pseudo_seek(buffer,current_global_position);
@@ -1407,7 +1407,7 @@ if (buffer->size>0) {
 }
 int last_pos_to_be_written=buffer->size-(match_end+1-match_start);
 for (int i=0;i<last_pos_to_be_written;i++) {
-	pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
+	pos_in_enter_pos=fprint_token(output,convLFtoCRLF,tokens,i,current_global_position,
 									n_enter_char,enter_pos,len_written,pos_in_enter_pos,
 									buffer);
 }
@@ -1415,7 +1415,7 @@ for (int i=0;i<last_pos_to_be_written;i++) {
 
 if (len_skipped != NULL) {
 	for (int i = last_pos_to_be_written;i+0<buffer->size;i++) {
-		pos_in_enter_pos=fprint_token(NULL, tokens, i, current_global_position,
+		pos_in_enter_pos=fprint_token(NULL, convLFtoCRLF,tokens, i, current_global_position,
 			n_enter_char, enter_pos, len_skipped, pos_in_enter_pos,
 			buffer);
 	}
@@ -1429,7 +1429,7 @@ return pos_in_enter_pos;
  * the end.
  */
 static int move_to_end_of_text_with_writing(ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
-									int current_global_position,U_FILE* output,int* len_written,
+									int current_global_position,U_FILE* output,int convLFtoCRLF,int* len_written,
 									int n_enter_char,const int* enter_pos,int pos_in_enter_pos,
 									struct buffer_mapped* buffer) {
 //long int address=current_global_position*sizeof(int);
@@ -1438,7 +1438,7 @@ buf_map_int_pseudo_seek(buffer,current_global_position);
 //while (0!=(buffer->size = (int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
 while (0!=(buffer->size = (int)buf_map_int_pseudo_read(buffer,buffer->nb_item))) {
 	for (long address=0;address<buffer->size;address++) {
-		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
+		pos_in_enter_pos=fprint_token(output,convLFtoCRLF,tokens,address,current_global_position,
 										n_enter_char,enter_pos,len_written,pos_in_enter_pos,buffer);
 	}
    current_global_position = current_global_position+(int)buffer->nb_item;
@@ -1458,7 +1458,7 @@ return pos_in_enter_pos;
  * then the first one is arbitrarily preferred.
  */
 static void create_modified_text_file(const VersatileEncodingConfig* vec,U_FILE* concordance,ABSTRACTMAPFILE* text,
-                                      struct text_tokens* tokens,char* output_name,
+                                      struct text_tokens* tokens,char* output_name,int convLFtoCRLF,
                                       int n_enter_char,const int* enter_pos, vector_uima_offset* uima_offsets,
                                       const char* offset_file_name, vector_offset* v_offsets) {
 U_FILE* output=u_fopen(vec,output_name,U_WRITE);
@@ -1511,7 +1511,7 @@ while (matches!=NULL) {
 		int copied_begin_first_token = 0;
 
 		pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
-													current_global_position_in_token,output,
+													current_global_position_in_token,output,convLFtoCRLF,
 													do_offset_compute ? (&pos_in_output) : NULL,
 													do_offset_compute ? (&size_skipped) : NULL,
 													n_enter_char,enter_pos,pos_in_enter_pos,
@@ -1527,7 +1527,7 @@ while (matches!=NULL) {
 			pos_in_original = uima_offset_token_start_pos(uima_offsets,matches->m.start_pos_in_token);
 		}
 		for (int i=current_global_position_in_char;i<matches->m.start_pos_in_char;i++) {
-		   u_fprintf(output,"%C",first_token[i]);
+		   u_fputc_conv_lf_to_crlf_option(first_token[i],output,convLFtoCRLF);
 		   pos_in_output++;
 		   pos_in_original++;
 		   pos_original_tokenized++;
@@ -1535,7 +1535,7 @@ while (matches!=NULL) {
 		}
 		int pos_in_output_before_match=pos_in_output;
 		if (matches->output!=NULL) {
-			u_fputs(matches->output,output);
+			u_fputs_conv_lf_to_crlf_option(matches->output,output,convLFtoCRLF);
 			pos_in_output+=(int)u_strlen(matches->output);
 		}
 		zz=matches->m.end_pos_in_token-current_global_position_in_token;
@@ -1562,7 +1562,7 @@ while (matches!=NULL) {
 		if (current_global_position_in_char!=0 &&
 		      (matches->next==NULL || matches->next->m.start_pos_in_token!=current_global_position_in_token)) {
 		   for (int i=current_global_position_in_char;last_token[i]!='\0';i++) {
-		      u_fprintf(output,"%C",last_token[i]);
+		      u_fputc_conv_lf_to_crlf_option(last_token[i],output,convLFtoCRLF);
 			  nb_char_from_last_token++;
 		   }
 		   /* We update the position in tokens so that 'move_to_end_of_text_with_writing'
@@ -1596,7 +1596,7 @@ while (matches!=NULL) {
 }
 /* Finally, we don't forget to dump all the text that may remain after the
  * last match. */
-move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,
+move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,convLFtoCRLF,
 								do_offset_compute ? (&pos_in_output) : NULL,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
@@ -1639,6 +1639,7 @@ opt->only_matches=0;
 opt->original_file_offsets=0;
 opt->output_offsets[0]='\0';
 opt->input_offsets[0] = '\0';
+opt->convLFtoCRLF=1;
 return opt;
 }
 

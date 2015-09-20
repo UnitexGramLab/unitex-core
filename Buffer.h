@@ -64,6 +64,8 @@ int fill_buffer(struct buffer*,int,int,U_FILE*);
 int fill_buffer(struct buffer*,U_FILE*);
 int fill_buffer_raw(struct buffer*, int, U_FILE*);
 int fill_buffer_raw(struct buffer*, U_FILE*);
+int fill_buffer_keepCR_option(struct buffer*,int,U_FILE*);
+int fill_buffer_keepCR_option(struct buffer*,int,int,U_FILE*);
 
 } // namespace unitex
 

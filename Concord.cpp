@@ -204,7 +204,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:Vh$:@:k:q:";
+const char* optstring_Concord=":f:s:l:r:Ht::e::w::g:p:iu::Axm:a:Td:VLh$:@:k:q:";
 const struct option_TS lopts_Concord[]= {
   {"font",required_argument_TS,NULL,'f'},
   {"fontsize",required_argument_TS,NULL,'s'},
@@ -237,6 +237,7 @@ const struct option_TS lopts_Concord[]= {
   {"thai",no_argument_TS,NULL,'T'},
   {"directory",required_argument_TS,NULL,'d'},
   {"PRLG",required_argument_TS,NULL,9},
+  {"no_convert_lf_to_crlf",no_argument_TS,NULL,'L'},
   {"output_offsets",required_argument_TS,NULL,'@'},
   {"input_offsets",required_argument_TS,NULL,'$'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
@@ -305,6 +306,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
                 concord_options->right_context_until_eos=1;
              }
              break;
+   case 'L': concord_options->convLFtoCRLF=0; break;
    case 0: concord_options->sort_mode=TEXT_ORDER; break;
    case 1: concord_options->sort_mode=LEFT_CENTER; break;
    case 2: concord_options->sort_mode=LEFT_RIGHT; break;

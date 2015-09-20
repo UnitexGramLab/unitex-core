@@ -72,6 +72,7 @@ struct conc_opt {
   unsigned char left_context_until_eos;
   unsigned char right_context_until_eos;
   int thai_mode;
+  int convLFtoCRLF;
   char* fontname;
   int fontsize;
   int result_mode;
