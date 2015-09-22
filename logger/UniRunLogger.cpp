@@ -1865,6 +1865,7 @@ if (runLog_ctx->cleanlog==2) {
    runLog_ctx->cleanlog=0;
 }
 
+int return_value = SUCCESS_RETURN_CODE;
 hTimeElapsed htmAll = SyncBuidTimeMarkerObject();
 
 for (int countloop = 0; countloop < nbloop; countloop++) {
@@ -1967,6 +1968,7 @@ for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
 }
 
 u_printf("\n");
+
 for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
     u_printf("final resume");
     if (runLog_ctx->nb_thread>1) {
@@ -1979,6 +1981,15 @@ for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
         u_printf("\n");
     } else {
         u_printf(", ");
+    }
+
+    // test first if there are any error
+    if ((prunLog_ThreadData+ut)->count_run_error > 0) {
+        return_value = RUNLOG_COMPARE_ERROR_CODE;
+    // if there are not errors, test then for warnings    
+    } else if ((return_value != RUNLOG_COMPARE_ERROR_CODE) &&
+               ((prunLog_ThreadData+ut)->count_run_warning > 0)) {
+        return_value = RUNLOG_COMPARE_WARNING_CODE;
     }
 }
 u_printf("%u msec\n",timeElapsedWork);
@@ -1993,7 +2004,7 @@ if (nbloop>1) {
 }
 
 free(runLog_ctx);
-return SUCCESS_RETURN_CODE;
+return return_value;
 }
 
 UNITEX_FUNC int UNITEX_CALL GetRunLogInfo(mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts) {

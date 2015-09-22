@@ -53,6 +53,17 @@ namespace unitex {
  */
 #define USAGE_ERROR_CODE    64
 
+/**
+ * Codes between 65 and 78 are reserved for future use
+ */
+
+/**
+ * RunLog tool custom exit codes
+ */
+#define RUNLOG_COMPARE_WARNING_CODE     79
+#define RUNLOG_COMPARE_ERROR_CODE       80
+
+
 void fatal_error(int);
 void fatal_error(int,const char*,...);
 void fatal_error(const char*,...);
