@@ -112,7 +112,7 @@ int launch_tokenize_in_Cassys(const char *text_name,
  *
  */
 
-int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig*, vector_ptr* additional_args, int display_perf, unsigned int* time_elapsed);
+int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig*, int display_perf, unsigned int* time_elapsed);
 
 }
 #endif /* CASSYS_EXTERNAL_PROGRAM_H_ */

@@ -245,7 +245,7 @@ int launch_locate_in_Cassys(const char *text_name, const transducer *transducer,
  *
  */
 
-int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, vector_ptr *additional_args, int display_perf, unsigned int* time_elapsed) {
+int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, VersatileEncodingConfig *vec, int display_perf, unsigned int* time_elapsed) {
     ProgramInvoker *invoker = new_ProgramInvoker(main_Grf2Fst2, "main_Grf2Fst2");
 
 	char *tmp = (char*)malloc(SIZE_TMP_BUFFER + 1);
@@ -274,12 +274,7 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 
 	sprintf(tmp,"--alphabet=%s",alphabet_name);
 	add_argument(invoker,tmp);
-
-	for (int arg = 0; arg<((additional_args == NULL) ? 0 : (additional_args->nbelems)); arg++) {
-		add_argument(invoker, (const char*)additional_args->tab[arg]);
-	}
-
-
+        
 	int result = cassys_invoke(invoker, display_perf, time_elapsed);
 	free_ProgramInvoker(invoker);
 

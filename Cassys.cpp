@@ -1043,8 +1043,8 @@ int main_Cassys(int argc,char* const argv[]) {
         }
         case 'C': {
             if (options.vars()->optarg[0] != '\0') {
-                char * locate_arg = strdup(options.vars()->optarg);
-                if (locate_arg == NULL) {
+                char * concord_arg = strdup(options.vars()->optarg);
+                if (concord_arg == NULL) {
                     alloc_error("main_Cassys");
                     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
                     free_vector_ptr(concord_additional_args, free);
@@ -1054,7 +1054,7 @@ int main_Cassys(int argc,char* const argv[]) {
                     free(textbuf);
                     return ALLOC_ERROR_CODE; 
                 }
-                vector_ptr_add(concord_additional_args, locate_arg);
+                vector_ptr_add(concord_additional_args, concord_arg);
             }
             break;
         }
@@ -1464,7 +1464,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
                     if (update_tmp_graph(updated_grf_file_name, vec, grf_lines, total_lines, start_node_line, start_node_loc, num_entities, num_annots, grf_infos, 1)) {
                         if (num_entities > 0) {
-                            launch_grf2fst2_in_Cassys(updated_grf_file_name, alphabet, vec, concord_args, display_perf, display_perf ? &time_grf2fst2 : NULL);
+                            launch_grf2fst2_in_Cassys(updated_grf_file_name, alphabet, vec, display_perf, display_perf ? &time_grf2fst2 : NULL);
 
                             updated_fst2_file_name = create_updated_graph_filename(text,
                                 in_place ? 0 : transducer_number,
