@@ -493,6 +493,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             new_c = *(new_text + j);
                         }
                     }
+#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT					
                     else if(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') { //add the missing white spaces back
                         while(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') {
                             u_fputc_raw(old_c, f);
@@ -500,6 +501,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             old_c = *(old_text + i);
                         }
                     }
+#endif
                     else {
                         while(j < new_end && old_c != new_c) {
                             u_fputc_raw(new_c, f);
@@ -514,6 +516,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                     old_c = *(old_text + i);
                 }
             }
+#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT
             else if(new_c !='<' && i < old_end) { 
                 /*we know that characters don't match and the new text 
                  * is not the start of a tag so we give preference to the
@@ -525,6 +528,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                     old_c = *(old_text + i);
                 }
             }
+#endif
             else {
                 while(j < new_end && old_c != new_c) {
                     u_fputc_raw(new_c, f);
@@ -534,10 +538,12 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
             }
         }
     }
+#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT
     for (;i<old_end; i++) {
         old_c = *(old_text + i);
         u_fputc_raw(old_c, f);
     }
+#endif
     for (;j<new_end; j++) {
         new_c = *(new_text + j);
         u_fputc_raw(new_c, f);
