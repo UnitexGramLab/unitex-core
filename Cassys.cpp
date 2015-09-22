@@ -46,7 +46,7 @@
 
 namespace unitex {
 
-const char *optstring_Cassys = ":bp:t:a:w:l:Vhk:q:g:dvuNncm:s:ir:f:T:L:C:$:";
+const char *optstring_Cassys = ":bp:t:a:w:l:Vhk:q:g:dvuNncm:s:ir:f:T:L:C:O$:";
 const struct option_TS lopts_Cassys[] = {
   {"text", required_argument_TS, NULL, 't'},
   {"alphabet", required_argument_TS, NULL, 'a'},
@@ -72,6 +72,7 @@ const struct option_TS lopts_Cassys[] = {
   {"concord_argument", required_argument_TS, NULL, 'C' },
   {"uima", required_argument_TS, NULL, 'f' },
   {"input_offsets",required_argument_TS,NULL,'$'},
+  {"produce_offsets_file",no_argument_TS,NULL,'O'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
   {"help", no_argument_TS,NULL,'h'}
 };
@@ -91,6 +92,7 @@ const char* usage_Cassys =
         "-s transducer.fst2/--transducer_file=transducer.fst2 a transducer to apply\n"
         "-m output_policy/--transducer_policy=output_policy the output policy of the transducer specified\n"
         "--input_offsets=XXX base offset file to be used (optional)\n"
+        "-O/--produce_offsets_file produce offsets file (automatic if --input_offsets=XXX is used)\n"
         "-t TXT/--text=TXT the text file to be modified, with extension .snt\n"
         "-i/--in_place mean uses the same csc/snt directories for each transducer\n"
         "-p X/--working_dir=X uses directory X for intermediate working file\n"
@@ -649,6 +651,7 @@ int main_Cassys(int argc,char* const argv[]) {
     int translate_path_separator_to_native = 0;
     int dump_graph = 0; // By default, don't build a .dot file.
     int display_perf = 0;
+    int produce_offsets_file = 0;
 
 // define CASSYS_DEFAULT_TEMP_WORK_DIR with a default location (probably in virtual system file) to
 //  build a version of k6 which uses this temp location and perform cleanup
@@ -874,6 +877,10 @@ int main_Cassys(int argc,char* const argv[]) {
                 strcpy(textbuf->name_input_offsets_file, options.vars()->optarg);
                 has_alphabet = true;
             }
+            break;
+        }
+        case 'O': {
+            produce_offsets_file = 1;
             break;
         }
         case 'f':{
@@ -1112,7 +1119,7 @@ int main_Cassys(int argc,char* const argv[]) {
     struct fifo *transducer_list=load_transducer_from_linked_list(transducer_name_and_mode_linked_list_arg, textbuf->transducer_filename_prefix);
 
     int return_value = cascade(textbuf->text_file_name, in_place, must_create_directory, must_do_temp_cleanup, temp_work_dir,
-        transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
+        transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, produce_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
         dump_graph, realign_token_graph_pointer, display_perf);
@@ -1216,7 +1223,7 @@ static void quicksort(int nb_items, locate_perf_info* transitions) {
  */
 int cascade(const char* original_text, int in_place, int must_create_directory,  int must_do_temp_cleanup, const char* temp_work_dir,
     fifo* transducer_list, const char *alphabet,
-    const char*name_input_offsets_file, const char* name_uima_offsets_file,
+    const char*name_input_offsets_file, int produce_offsets_file, const char* name_uima_offsets_file,
     const char*negation_operator,
     VersatileEncodingConfig* vec,
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
@@ -1618,7 +1625,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(textbuf->result_file_name_path_XML, textbuf->last_resulting_text_path);
 
     textbuf->result_file_name_path_offset[0]='\0';
-    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0'))) {
+    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')) || (produce_offsets_file != 0)) {
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_txt_offsets.txt", textbuf->text_name_without_extension);
     }
 
@@ -1632,7 +1639,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     copy_file(textbuf->result_file_name_path_raw, textbuf->last_resulting_text_path);
 
     textbuf->result_file_name_path_offset[0] = '\0';
-    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0'))) {
+    if ((name_uima_offsets_file && (name_uima_offsets_file[0] != '\0')) || (name_input_offsets_file && (name_input_offsets_file[0] != '\0')) || (produce_offsets_file != 0)) {
         sprintf(textbuf->result_file_name_path_offset, "%s_csc_raw_offsets.txt", textbuf->text_name_without_extension);
     }
 
