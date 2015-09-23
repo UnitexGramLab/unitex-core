@@ -98,6 +98,8 @@ char** buildListFileInDiskDir(const char*dirname)
 
 	while ((ent = readdir(dir)) != NULL)
 	{
+		if (ent->d_type == DT_DIR)
+			continue;
 		char** newret = (char**)realloc(ret, sizeof(char*)*(count + 2));
 		if (newret == NULL)
 		{

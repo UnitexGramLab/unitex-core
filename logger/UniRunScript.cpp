@@ -889,7 +889,7 @@ const struct option_TS lopts_UniBatchRunScript[] = {
 
 int main_UniBatchRunScript(int argc, char* const argv[]) {
 	if (argc == 1) {
-		usage();
+		UniBatchRunScript_usage();
 		return SUCCESS_RETURN_CODE;
 	}
 
