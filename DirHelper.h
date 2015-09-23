@@ -45,6 +45,7 @@ extern "C" {
 
 int mkDirPortable(const char* dirname);
 
+char** buildListFileInDiskDir(const char*dirname);
 
 #if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_APP)
 #if WINAPI_FAMILY==WINAPI_FAMILY_APP

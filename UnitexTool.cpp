@@ -311,6 +311,12 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_LINKPKG_SCRIPT)
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(TOOL_UNIRUNSCRIPT))) || defined(NO_TOOL_UNIRUNSCRIPT) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
+{ "BatchRunScript", 14, &main_UniBatchRunScript, usage_UniBatchRunScript, optstring_UniBatchRunScript, lopts_UniBatchRunScript },
+#endif
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))
 	{ "BuildKrMwuDic",13,&main_BuildKrMwuDic,usage_BuildKrMwuDic, optstring_BuildKrMwuDic, lopts_BuildKrMwuDic},
 #endif

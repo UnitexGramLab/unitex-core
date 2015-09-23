@@ -41,7 +41,7 @@
 #include "MappedFileHelper.h"
 #include "UnitexLibDir.h"
 #include "ActivityLogger.h"
-
+#include "DirHelper.h"
 
 using namespace unitex;
 
@@ -738,7 +738,7 @@ char** af_get_list_file(const char*name)
 	 
 	if (pafs == NULL)
 	{
-		return NULL;
+		return buildListFileInDiskDir(name);
 	}
 	else {
         if (pafs->func_array.fnc_memFile_getList != NULL) {

@@ -73,6 +73,13 @@ namespace unitex {
 	int main_UniRunScript(int argc, char* const argv[]);
 
 
+	extern const char* optstring_UniBatchRunScript;
+	extern const struct option_TS lopts_UniBatchRunScript[];
+	extern const char* usage_UniBatchRunScript;
+
+	int main_UniBatchRunScript(int argc, char* const argv[]);
+
+
 #ifdef __cplusplus
 	//        } // extern "C"
 	//    } // namespace logger

@@ -74,3 +74,44 @@ int rmDirPortable(const char* dirname)
 
     return rmdir(dirname);
 }
+
+
+
+char** buildListFileInDiskDir(const char*dirname)
+{
+	DIR *dir;
+	struct dirent *ent;
+	dir = opendir(dirname);
+
+
+	if (dir == NULL)
+		return NULL;
+
+	int count = 0;
+	char**ret = (char**)malloc(sizeof(char*));
+	if (ret == NULL)
+	{
+		closedir(dir);
+		return NULL;
+	}
+	*ret = NULL;
+
+	while ((ent = readdir(dir)) != NULL) {
+	{
+		char** newret = (char**)realloc(ret, sizeof(char*)*(count + 2));
+		if (newret == NULL)
+		{
+			break;
+		}
+		ret = newret;
+		*(newret + count) = (char*)malloc(strlen(ent->d_name) + 1);
+		if ((*(newret + count)) == NULL)
+			break;
+		strcpy(*(newret + count), ent->d_name);
+		count++;
+		*(newret + count) = NULL;
+	}
+
+	closedir(dir);
+	return ret;
+}
