@@ -518,6 +518,40 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
             }
 #ifdef NEW_DENORMALIZE_FIX_EXPERIMENT
             else if(new_c !='<' && i < old_end) { 
+                if(new_c=='{') {
+                    /* check if it is annotation in raw format
+                     If yes then preference is given to the new text*/
+                    int look_ahead = j+2;
+                    int is_annotation = 0;
+                    while(look_ahead < new_end) {
+                        if(*(new_text+look_ahead-1) ==',' && *(new_text+look_ahead) =='.') {
+                            is_annotation = 1;
+                        }
+                        if(*(new_text+look_ahead-2) =='}') {
+                            break;
+                        }
+                        look_ahead++;
+                    }
+                 
+
+                    if(look_ahead == new_end && *(new_text+look_ahead-1) == '}') {
+                        look_ahead += 1;
+                    }
+                    if(is_annotation == 1 && *(new_text+look_ahead-2) =='}') {
+                        /* The braces are around the text from the old text
+                         so we need to increment the pointer in the old text also
+                         */
+                        while(j<look_ahead-1) {
+                            u_fputc_raw(new_c, f);
+                            j++;
+                            if(new_c == *(old_text + i)) {
+                                i++;
+                            }
+                            new_c = *(new_text + j);
+                        }
+                        old_c = *(old_text + i);
+                    }
+                }
                 /*we know that characters don't match and the new text 
                  * is not the start of a tag so we give preference to the
                  * old text 
@@ -527,6 +561,17 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                     i++;
                     old_c = *(old_text + i);
                 }
+            }
+            else if(new_c =='<') {
+                /* Most likely it is a tag*/
+                while(j < new_end && new_c !='>') {
+                    u_fputc_raw(new_c, f);
+                    j++;
+                    new_c = *(new_text + j);
+                }
+                u_fputc_raw(new_c, f);
+                j++;
+                new_c = *(new_text + j);
             }
 #endif
             else {
