@@ -904,7 +904,7 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
 	char script_name[FILENAME_MAX + 0x20];
 	int nb_threads = 1;
 	char foo;
-	char global_comment[FILENAME_MAX + 0x20] = "";
+
 	strcpy(script_name, "script");
 	strcat(script_name, PATH_SEPARATOR_STRING);
 	strcat(script_name, "standard.uniscript");

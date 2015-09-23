@@ -96,7 +96,7 @@ char** buildListFileInDiskDir(const char*dirname)
 	}
 	*ret = NULL;
 
-	while ((ent = readdir(dir)) != NULL) {
+	while ((ent = readdir(dir)) != NULL)
 	{
 		char** newret = (char**)realloc(ret, sizeof(char*)*(count + 2));
 		if (newret == NULL)
