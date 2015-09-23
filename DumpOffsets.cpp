@@ -46,6 +46,8 @@
 #include "DumpOffsets.h"
 #include "Offsets.h"
 
+#define NEW_DENORMALIZE_FIX_EXPERIMENT
+
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
