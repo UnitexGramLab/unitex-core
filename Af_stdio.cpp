@@ -42,6 +42,7 @@
 #include "UnitexLibDir.h"
 #include "ActivityLogger.h"
 #include "DirHelper.h"
+#include "UnusedParameter.h"
 
 using namespace unitex;
 
@@ -784,6 +785,7 @@ char** af_get_list_file(const char*name)
 
 void af_release_list_file(const char*name,char**list)
 {
+	DISCARD_UNUSED_PARAMETER(name);
 	if (list == NULL) return;
 	 /*
 	const AbstractFileSpace * pafs ;
