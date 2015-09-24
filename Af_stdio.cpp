@@ -784,14 +784,15 @@ char** af_get_list_file(const char*name)
 
 void af_release_list_file(const char*name,char**list)
 {
-	const AbstractFileSpace * pafs ;
 	if (list == NULL) return;
-	pafs = GetFileSpaceForFileName(name);
 	 /*
+	const AbstractFileSpace * pafs ;
+	pafs = GetFileSpaceForFileName(name);
 	if (pafs == NULL) {
 		return ;
 	}
-	else*/
+	else
+	*/
 	{
 		char** list_walk=list;
 		while ((*list_walk)!=NULL) {
