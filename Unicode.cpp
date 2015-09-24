@@ -235,8 +235,8 @@ static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF);
 
 void u_fputs_raw(Encoding, const unichar*, ABSTRACTFILE*);
 void u_fputs_raw(const unichar* t, U_FILE* f) {
-	//fwriteString(f, t, 0);
-	u_fputs_raw(f->enc, t, f->f);
+	fwriteString(f, t, 0);
+	//u_fputs_raw(f->enc, t, f->f);
 }
 
 void u_fputs(Encoding, const unichar*, ABSTRACTFILE*);
@@ -1421,7 +1421,7 @@ return N;
 }
 
 
-
+/*
 void u_fputs_raw(Encoding encoding, const unichar* s, ABSTRACTFILE* f) {
 	int i = 0;
 	while (s[i] != '\0')
@@ -1433,7 +1433,7 @@ void u_fputs(Encoding encoding, const unichar* s, ABSTRACTFILE* f) {
 	while (s[i] != '\0')
 		u_fputc(encoding, (unichar)((unsigned char)s[i++]), f);
 }
-
+*/
 /**
  * Prints a char string into a file. Characters are promoted to unicode
  * and encoded according to the given encoding.
