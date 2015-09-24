@@ -9,20 +9,90 @@ This section covers compilation and installation of Unitex/GramLab on Windows an
 
 ### Windows
 
-A common way to install Unitex/GramLab is via the [setup installer]({{UNITEX_RELEASES_LATEST_BETA_WIN32_URL}}), then you have nothing to do but running the graphical interface by double-clicking on the file "Unitex.jar" (Classic IDE) or  "GramLab.jar" (Project-oriented IDE) located under the "App" directory. If you prefer a manual install, check the following section.
+Unitex/GramLab for Windows is distributed as a binary executable installer.
+It can be downloaded from:
+
+{{UNITEX _RELEASES_LATEST_BETA_SOURCE_URL}}
+
+The downloaded file will be named something similar to:
+
+```
+Unitex-GramLab-3.1beta_win32-setup.exe
+Unitex-GramLab-3.1beta_win64-setup.exe
+```
+
+To begin the installation process, double-click on that file and follow the instructions provided. Please note it is best to uninstall any existing versions before continue. 
+
+Once the installation has been finished, you have nothing to do but running the graphical interface by double-clicking on the file "Unitex" (Unitex Classic IDE) or "GramLab" (Unitex Project-oriented IDE) located under the "App" directory. If you prefer a manual install, check the [source distribution package]() section.
+
+The Windows setup installer accepts several optional command line parameters. 
+Some common options are:
+
++ `/AllUsers`                 : Sets default to a per-machine installation
++ `/CurrentUser`              : Sets default to a per-user installation
++ `/D C:\path\without quotes\`: Sets the default installation directory
++ `/NCRC`                     : Not perform a Cyclic Redundancy Check
++ `/S`                        : Runs the installer silently
+
+### GNU/Linux
+
+Unitex/GramLab for GNU/Linux is distributed as a binary executable installer.
+It can be downloaded from:
+
+{{UNITEX _RELEASES_LATEST_BETA_SOURCE_URL}}
+
+The downloaded file will be named something similar to:
+
+```
+Unitex-GramLab-3.1beta-linux-i686.run
+Unitex-GramLab-3.1beta-linux-x86_64.run
+```
+
+Before begin the installation process, you will need to give it executable permissions:
+
+```
+chmod a+x Unitex-GramLab-3.1beta-linux-i686.run
+```
+
+The .run file is a self-extracting archive. You can execute it at any time with:
+
+```
+./Unitex-GramLab-3.1beta-linux-i686.run
+```
+
+The GNU/Linux setup installer accepts several optional command line parameters. 
+Some common options are:
+
++ `--confirm`                 : Ask before running the embedded installation script
++ `--quiet`                   : Do not print anything except error messages
++ `--noexec`                  : Do not run the embedded installation script
++ `--target dir`              : Sets the default installation directory
+
 
 ### Source Distribution Package
 
-First, acquire the [source distribution package]({{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}), then you must compile the Core sources. To do that, extract the files from the source zip file into a folder, go into the directory named  "Src/C++/build" and type:
+Proceeding through the install process is straightforward. First, acquire the source distribution package from:
+
+{{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}
+
+The downloaded file will be named something similar to:
+
+```
+Unitex-GramLab-3.1beta-source-distribution.zip
+```
+
+After this, extract the contents of the compressed file to a preferred location. Then, go into the directory named `App/install` and type:
+
+```
+sh setup
+```
+
+This script check if you have Java installed, compile the C++ Core sources, setup the Unitex and GramLab workspace directories and create some desktop shortcuts. After finish installing, double click in `App/Unitex` to open the Unitex IDE, or in `App/GramLab` to open the GramLab IDE.
+
+If you want to compile only the C++ Core sources. Extract the files from the source distribution package, go into the directory named  `Src/C++/build` and type:
 
 ```
 make install
-```
-
-Then, you can launch the Classic IDE using the following command: 
-
-```
-java -jar YOUR_UNITEX_PATH/App/Unitex.jar &
 ```
 
 ## Documentation
@@ -40,6 +110,12 @@ See the [Bug Reporting Guide]({{UNITEX_BUG_URL}}) for information on how to repo
 ## Governance Model
 
 Unitex/GramLab project decision-making is based on a community meritocratic process, anyone with an interest in can join the community, contribute to the project design and participate in decisions. The [Unitex/GramLab Governance Model]({{UNITEX_GOVERNANCE_URL}}) describes how that participation takes place and how to set about earning merit within the project community.
+
+## Spelling
+
+Unitex/GramLab is spelled with capitals "U" "G" and "L", and with everything else lower case. Do not put a space or any character between words. Only when a forward slash is not allowed, replace it with a hyphen "-", i.e. "Unitex-GramLab".
+
+It's common to refer to the Unitex/GramLab Core as "Unitex", and to the Unitex Project-oriented IDE as "GramLab". If you are mentioning the distribution suite (Core, IDE, Linguistic Resources and others) always use "Unitex/GramLab".
 
 ## License
 
