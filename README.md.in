@@ -5,91 +5,109 @@ Unitex/GramLab is {{UNITEX_DESCRIPTION}}. Project home page can be found from: <
 
 ## Installation
 
-This section covers compilation and installation of Unitex/GramLab on Windows and Unix-like systems. For the latest downloads please visit our [releases page]({{UNITEX_RELEASES_URL}}).
+This section covers compilation and installation of Unitex/GramLab on
+Windows and Unix-like systems. For the latest downloads please visit
+our [releases page]({{UNITEX_RELEASES_URL}}).
 
 ### Windows
 
-Unitex/GramLab for Windows is distributed as a binary executable installer.
-It can be downloaded from:
+Unitex/GramLab for Windows is distributed as a binary executable
+installer. It can be downloaded from:
 
-{{UNITEX _RELEASES_LATEST_BETA_SOURCE_URL}}
+<{{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}>
 
 The downloaded file will be named something similar to:
 
 ```
-Unitex-GramLab-3.1beta_win32-setup.exe
-Unitex-GramLab-3.1beta_win64-setup.exe
+Unitex-GramLab-{{UNITEX_VERSION}}_win32-setup.exe
+Unitex-GramLab-{{UNITEX_VERSION}}_win64-setup.exe
 ```
 
-To begin the installation process, double-click on that file and follow the instructions provided. Please note it is best to uninstall any existing versions before continue. 
+To begin the installation process, double-click on that file and follow
+the instructions provided. Please note it is best to uninstall any
+existing versions before continue.
 
-Once the installation has been finished, you have nothing to do but running the graphical interface by double-clicking on the file "Unitex" (Unitex Classic IDE) or "GramLab" (Unitex Project-oriented IDE) located under the "App" directory. If you prefer a manual install, check the [source distribution package]() section.
+Once the installation has been finished, you have nothing to do but
+running the graphical interface by double-clicking on the file "Unitex"
+(Unitex Classic IDE) or "GramLab" (Unitex Project-oriented IDE) located
+under the "App" directory. If you prefer a manual install, check the
+[source distribution package]() section.
 
-The Windows setup installer accepts several optional command line parameters. 
-Some common options are:
+The Windows setup installer accepts several optional command line
+parameters. Some common options are:
 
-+ `/AllUsers`                 : Sets default to a per-machine installation
-+ `/CurrentUser`              : Sets default to a per-user installation
++ `/AllUsers`                 : Sets default to a per-machine install
++ `/CurrentUser`              : Sets default to a per-user install
 + `/D C:\path\without quotes\`: Sets the default installation directory
 + `/NCRC`                     : Not perform a Cyclic Redundancy Check
 + `/S`                        : Runs the installer silently
 
 ### GNU/Linux
 
-Unitex/GramLab for GNU/Linux is distributed as a binary executable installer.
-It can be downloaded from:
+Unitex/GramLab for GNU/Linux is distributed as a binary executable
+installer. It can be downloaded from:
 
-{{UNITEX _RELEASES_LATEST_BETA_SOURCE_URL}}
+<{{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}>
 
 The downloaded file will be named something similar to:
 
 ```
-Unitex-GramLab-3.1beta-linux-i686.run
-Unitex-GramLab-3.1beta-linux-x86_64.run
+Unitex-GramLab-{{UNITEX_VERSION}}-linux-i686.run
+Unitex-GramLab-{{UNITEX_VERSION}}-linux-x86_64.run
 ```
 
-Before begin the installation process, you will need to give it executable permissions:
+Before begin the installation process, you will need to give it
+executable permissions:
 
 ```
-chmod a+x Unitex-GramLab-3.1beta-linux-i686.run
+chmod a+x Unitex-GramLab-{{UNITEX_VERSION}}-linux-i686.run
 ```
 
-The .run file is a self-extracting archive. You can execute it at any time with:
+The .run file is a self-extracting archive. You can execute it at any
+time with:
 
 ```
-./Unitex-GramLab-3.1beta-linux-i686.run
+./Unitex-GramLab-{{UNITEX_VERSION}}-linux-i686.run
 ```
 
-The GNU/Linux setup installer accepts several optional command line parameters. 
-Some common options are:
+The GNU/Linux setup installer accepts several optional command line
+parameters. Some common options are:
 
-+ `--confirm`                 : Ask before running the embedded installation script
-+ `--quiet`                   : Do not print anything except error messages
-+ `--noexec`                  : Do not run the embedded installation script
-+ `--target dir`              : Sets the default installation directory
++ `--confirm`     : Ask before running the embedded installation script
++ `--quiet`       : Do not print anything except error messages
++ `--noexec`      : Do not run the embedded installation script
++ `--target dir`  : Sets the default installation directory
 
 
 ### Source Distribution Package
 
-Proceeding through the install process is straightforward. First, acquire the source distribution package from:
+Proceeding through the install process is straightforward. First,
+acquire the source distribution package from:
 
 {{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}
 
 The downloaded file will be named something similar to:
 
 ```
-Unitex-GramLab-3.1beta-source-distribution.zip
+Unitex-GramLab-{{UNITEX_VERSION}}-source-distribution.zip
 ```
 
-After this, extract the contents of the compressed file to a preferred location. Then, go into the directory named `App/install` and type:
+After this, extract the contents of the compressed file to a preferred
+location. Then, go into the directory named `App/install` and type:
 
 ```
 sh setup
 ```
 
-This script check if you have Java installed, compile the C++ Core sources, setup the Unitex and GramLab workspace directories and create some desktop shortcuts. After finish installing, double click in `App/Unitex` to open the Unitex IDE, or in `App/GramLab` to open the GramLab IDE.
+This script check if you have Java installed, compile the C++ Core
+sources, setup the Unitex and GramLab workspace directories and create
+some desktop shortcuts. After finish installing, double click in
+`App/Unitex` to open the Unitex IDE, or in `App/GramLab` to open the
+GramLab IDE.
 
-If you want to compile only the C++ Core sources. Extract the files from the source distribution package, go into the directory named  `Src/C++/build` and type:
+If you want to compile only the C++ Core sources. Extract the files
+from the source distribution package, go into the directory named
+`Src/C++/build` and type:
 
 ```
 make install
@@ -97,35 +115,67 @@ make install
 
 ## Documentation
 
-User's Manual (in PDF format) is available in English and French (more translations are welcome). You can view and print them with Evince, downloadable [here](https://wiki.gnome.org/Apps/Evince/Downloads). The latest on-line version of the User's Manual is accessible [here]({{UNITEX_DOCS_URL}}).
+User's Manual (in PDF format) is available in English and French (more
+translations are welcome). You can view and print them with Evince,
+downloadable [here](https://wiki.gnome.org/Apps/Evince/Downloads). The
+latest on-line version of the User's Manual is accessible
+[here]({{UNITEX_DOCS_URL}}).
 
 ## Support
 
-Support questions can be posted in the [community support forum]({{UNITEX_FORUM_URL}}). Please feel free to submit any suggestions or requests for new features too. Some general advice about asking technical support questions can be found [here](http://www.catb.org/esr/faqs/smart-questions.html).
+Support questions can be posted in the [community support
+forum]({{UNITEX_FORUM_URL}}). Please feel free to submit any
+suggestions or requests for new features too. Some general advice about
+asking technical support questions can be found
+[here](http://www.catb.org/esr/faqs/smart-questions.html).
 
 ## Reporting Bugs
 
-See the [Bug Reporting Guide]({{UNITEX_BUG_URL}}) for information on how to report bugs.
+See the [Bug Reporting
+Guide]({{UNITEX_BUG_URL}}) for information on
+how to report bugs.
 
 ## Governance Model
 
-Unitex/GramLab project decision-making is based on a community meritocratic process, anyone with an interest in can join the community, contribute to the project design and participate in decisions. The [Unitex/GramLab Governance Model]({{UNITEX_GOVERNANCE_URL}}) describes how that participation takes place and how to set about earning merit within the project community.
+Unitex/GramLab project decision-making is based on a community
+meritocratic process, anyone with an interest in can join the
+community, contribute to the project design and participate in
+decisions. The [Unitex/GramLab Governance
+Model]({{UNITEX_GOVERNANCE_URL}}) describes
+how that participation takes place and how to set about earning merit
+within the project community.
 
 ## Spelling
 
-Unitex/GramLab is spelled with capitals "U" "G" and "L", and with everything else lower case. Do not put a space or any character between words. Only when a forward slash is not allowed, replace it with a hyphen "-", i.e. "Unitex-GramLab".
+Unitex/GramLab is spelled with capitals "U" "G" and "L", and with
+everything else lower case. Excepting the forward slash, do not put
+a space or any character between words. Only when the forward slash
+is not allowed, replace it with a hyphen "-", i.e. "Unitex-GramLab".
 
-It's common to refer to the Unitex/GramLab Core as "Unitex", and to the Unitex Project-oriented IDE as "GramLab". If you are mentioning the distribution suite (Core, IDE, Linguistic Resources and others) always use "Unitex/GramLab".
+It's common to refer to the Unitex/GramLab Core as "Unitex", and to the
+Unitex Project-oriented IDE as "GramLab". If you are mentioning the
+distribution suite (Core, IDE, Linguistic Resources and others bundled
+tools) always use "Unitex/GramLab".
 
 ## License
 
-* All Unitex/GramLab programs, libraries and source codes are distributed under the terms of the [GNU Lesser General Public License version 2.1][LGPLv2] (LGPLv2), which itself incorporates the terms and conditions of the GNU General Public License.
+* All Unitex/GramLab programs, libraries and source codes are
+distributed under the terms of the [GNU Lesser General Public License
+version 2.1][LGPLv2] (LGPLv2), which itself incorporates the terms and
+conditions of the GNU General Public License.
 
-* Linguistic Resources are distributed under the terms of the [Lesser General Public License For Linguistic Resources][LGPLLR] (LGPLLR).
+* Linguistic Resources are distributed under the terms of the [Lesser
+General Public License For Linguistic Resources][LGPLLR] (LGPLLR).
 
-* Documentation is licensed under the terms of the [GNU Free Documentation License version 1.3][GFDL] (GFDL), as published by the Free Software Foundation.
+* Documentation is licensed under the terms of the [GNU Free
+Documentation License version 1.3][GFDL] (GFDL), as published by the
+Free Software Foundation.
 
-* Unitex/GramLab includes copyrighted third-party libraries licensed under the terms of the [Apache Software License version 2.0][Apache-2.0] (Apache-2.0), the [BSD 2-Clause License][BSD-2-Clause] (BSD License), and the [MIT License][MIT] (MIT). All third-party packages are copyright by their respective authors.
+* Unitex/GramLab includes copyrighted third-party libraries licensed
+under the terms of the [Apache Software License version
+2.0][Apache-2.0] (Apache-2.0), the [BSD 2-Clause License][BSD-2-Clause]
+(BSD License), and the [MIT License][MIT] (MIT). All third-party
+packages are copyright by their respective authors.
 
 ---
 Copyright (c) {{UNITEX_COPYRIGHT_HOLDER}}, 2001-{{UNITEX_CURRENT_YEAR}}
