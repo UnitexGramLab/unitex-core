@@ -45,7 +45,8 @@ enum meta_symbol {
    META_END_MORPHO,   // $>: used to leave the morphological mode
    META_LEFT_CONTEXT, // $*: used to specify the end of a left context
    META_TEXT_START,   // {^}: matches the text start
-   META_TEXT_END      // {$}: matches the end of the text
+   META_TEXT_END,      // {$}: matches the end of the text
+   META_LETTRE      //<LETR>: matches a letter in the morphological mode
 };
 
 #endif

@@ -177,6 +177,10 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_TOKEN;
             }
+            else if (!u_strcmp(content,"LETTRE")) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_LETTRE;
+            }
             else {
                /* If we arrive here, we have not a meta but a pattern like
                 * <be>, <be.V>, <V:K>, ... */

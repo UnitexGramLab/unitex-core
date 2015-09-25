@@ -579,7 +579,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				}
 				break;
 
-			case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
+                        case META_LETTRE: case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
 			 the alphabet file */
 				if (token == -1)
 					break;
