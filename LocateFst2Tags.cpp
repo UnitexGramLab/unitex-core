@@ -120,13 +120,29 @@ for (int i=0;i<fst2->number_of_tags;i++) {
             }
             /* Then, we must test if we have or not a meta. To do that, we
              * extract the content without < > and ! if any.*/
-            unichar* content=u_strdup(&(tag[i]->input[1+negative_tag]),length-2-negative_tag,prv_alloc);
+            //unichar* content=u_strdup(&(tag[i]->input[1+negative_tag]),length-2-negative_tag,prv_alloc);
+			const unichar* content_start = &(tag[i]->input[1 + negative_tag]);
+			int len_content = length - 2 - negative_tag;
+
+			const unichar content_meta_mot[] = { 'M' , 'O' , 'T' };
+			const unichar content_meta_dic[] = { 'D' , 'I' , 'C' };
+			const unichar content_meta_cdic[] = { 'C' , 'D' , 'I' , 'C' };
+			const unichar content_meta_sdic[] = { 'S' , 'D' , 'I' , 'C' };
+			const unichar content_meta_tdic[] = { 'T' , 'D' , 'I' , 'C' };
+			const unichar content_meta_maj[] = { 'M' , 'A' , 'J' };
+			const unichar content_meta_min[] = { 'M' , 'I' , 'N' };
+			const unichar content_meta_pre[] = { 'P' , 'R' , 'E' };
+			const unichar content_meta_nb[] = { 'N' , 'B' };
+			const unichar content_meta_token[] = { 'T', 'O' , 'K' , 'E' , 'N' };
+			const unichar content_meta_lettre[] = { 'L', 'E' , 'T' , 'T' , 'R' , 'E' };
+
+
             /* And we test all the possible metas */
-            if (!u_strcmp(content,"MOT")) {
+            if ((len_content==3) && (!memcmp(content_start, content_meta_mot, 3*sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_MOT;
             }
-            else if (!u_strcmp(content,"DIC")) {
+			else if ((len_content == 3) && (!memcmp(content_start, content_meta_dic, 3 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_DIC;
                if (!negative_tag) {
@@ -140,44 +156,44 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                   (*is_DIC)=1;
                }
             }
-            else if (!u_strcmp(content,"CDIC")) {
+			else if ((len_content == 4) && (!memcmp(content_start, content_meta_cdic, 4 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_CDIC;
                (*is_CDIC)=1;
             }
-            else if (!u_strcmp(content,"SDIC")) {
+			else if ((len_content == 4) && (!memcmp(content_start, content_meta_sdic, 4 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_SDIC;
                (*is_SDIC)=1;
             }
-            else if (!u_strcmp(content,"TDIC")) {
+			else if ((len_content == 4) && (!memcmp(content_start, content_meta_tdic, 4 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_TDIC;
             }
-            else if (!u_strcmp(content,"MAJ")) {
+			else if ((len_content == 3) && (!memcmp(content_start, content_meta_maj, 3 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_MAJ;
             }
-            else if (!u_strcmp(content,"MIN")) {
+			else if ((len_content == 3) && (!memcmp(content_start, content_meta_min, 3 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_MIN;
             }
-            else if (!u_strcmp(content,"PRE")) {
+			else if ((len_content == 3) && (!memcmp(content_start, content_meta_pre, 3 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_PRE;
             }
-            else if (!u_strcmp(content,"NB")) {
+			else if ((len_content == 2) && (!memcmp(content_start, content_meta_nb, 2 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_NB;
                if (negative_tag) {
                   error("Negative mark will be ignored in <!NB>\n");
                }
             }
-            else if (!u_strcmp(content,"TOKEN")) {
+			else if ((len_content == 5) && (!memcmp(content_start, content_meta_token, 5 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_TOKEN;
             }
-            else if (!u_strcmp(content,"LETTRE")) {
+			else if ((len_content == 6) && (!memcmp(content_start, content_meta_lettre, 6 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_LETTRE;
             }
@@ -185,7 +201,29 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                /* If we arrive here, we have not a meta but a pattern like
                 * <be>, <be.V>, <V:K>, ... */
                tag[i]->type=PATTERN_TAG;
+
+			   // we allocate an heap buffer only for long meta
+#define STATIC_BUFFER_CONTENT_PROCESS_TAGS_SIZE (0x40)
+			   unichar static_buffer_content[STATIC_BUFFER_CONTENT_PROCESS_TAGS_SIZE];
+			   unichar * content;
+			   if (len_content >= STATIC_BUFFER_CONTENT_PROCESS_TAGS_SIZE)
+			   {
+				   content = (unichar*)malloc_cb((len_content + 1)*sizeof(unichar), prv_alloc);
+				   if (content == NULL) {
+					   fatal_alloc_error("process_tags");
+				   }
+			   }
+			   else
+				   content = static_buffer_content;
+			   memcpy(content, &(tag[i]->input[1 + negative_tag]), len_content*sizeof(unichar));
+			   *(content + len_content) = '\0';
                tag[i]->pattern=build_pattern(content,semantic_codes,parameters->tilde_negation_operator,prv_alloc);
+
+			   /* We don't forget to free the content if needed */
+			   if (len_content >= STATIC_BUFFER_CONTENT_PROCESS_TAGS_SIZE) {
+				   free_cb(content, prv_alloc);
+			   }
+
                if (tag[i]->pattern->type==CODE_PATTERN ||
                    tag[i]->pattern->type==LEMMA_AND_CODE_PATTERN ||
                    tag[i]->pattern->type==FULL_PATTERN || 
@@ -201,8 +239,6 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                   }
                }
             }
-            /* We don't forget to free the content */
-            free_cb(content,prv_alloc);
          }
       }
    }
