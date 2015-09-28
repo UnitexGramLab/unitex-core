@@ -14,7 +14,7 @@ our [releases page]({{UNITEX_RELEASES_URL}}).
 Unitex/GramLab for Windows is distributed as a binary executable
 installer. It can be downloaded from:
 
-<{{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}>
+{{UNITEX_RELEASES_LATEST_BETA}}
 
 The downloaded file will be named something similar to:
 
@@ -47,7 +47,7 @@ parameters. Some common options are:
 Unitex/GramLab for GNU/Linux is distributed as a binary executable
 installer. It can be downloaded from:
 
-<{{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}>
+{{UNITEX_RELEASES_LATEST_BETA}}
 
 The downloaded file will be named something similar to:
 
@@ -84,7 +84,7 @@ parameters. Some common options are:
 Proceeding through the install process is straightforward. First,
 acquire the source distribution package from:
 
-{{UNITEX_RELEASES_LATEST_BETA_SOURCE_URL}}
+{{UNITEX_RELEASES_LATEST_BETA}}
 
 The downloaded file will be named something similar to:
 
@@ -150,7 +150,8 @@ within the project community.
 Unitex/GramLab is spelled with capitals "U" "G" and "L", and with
 everything else lower case. Excepting the forward slash, do not put
 a space or any character between words. Only when the forward slash
-is not allowed, replace it with a hyphen "-", i.e. "Unitex-GramLab".
+is not allowed, you could replace it with a hyphen "-", i.e.
+"Unitex-GramLab".
 
 It's common to refer to the Unitex/GramLab Core as "Unitex", and to the
 Unitex Project-oriented IDE as "GramLab". If you are mentioning the
