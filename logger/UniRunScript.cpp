@@ -634,11 +634,9 @@ typedef struct
     WORK_ITEM* wrk_item_array;
     int next_job;
     int count_job;
-    int verbose;
-    int quiet_tool;
-    int trash_out ;
-    t_fnc_stdOutWrite fnc_out ;
-    void* private_out ;
+    int verbose_when_run;
+	int verbose_direct_stdout;
+    
 
     SYNC_Mutex_OBJECT mutex;
 
@@ -658,34 +656,44 @@ static int get_next_job(CONFIG_BATCH* config_batch, unsigned int iNumThread, int
         }
     }
 
-	if ((config_batch->verbose) && (config_batch->quiet_tool))
+	WORK_ITEM * finished_job = (config_batch->wrk_item_array) + prev_job;
+	WORK_ITEM * new_job = (config_batch->wrk_item_array) + start_job;
+
+
+	char* buffer_info = NULL;
+	if ((prev_job != -1) && (config_batch->verbose_when_run))
+		buffer_info = (char*)malloc((strlen(finished_job->src_filename) + strlen(finished_job->dest_filename) + 0x80) * sizeof(char*));
+	if (buffer_info != NULL)
 	{
-		SetStdWriteCB(stdwrite_kind_out, config_batch->trash_out, config_batch->fnc_out, config_batch->private_out);
+		sprintf(buffer_info,"%u: finished work %s to %s job %.2f sec\n", iNumThread, finished_job->src_filename, finished_job->dest_filename, finished_job->time_work / 1000.);
+		if (config_batch->verbose_direct_stdout)
+			puts(buffer_info);
+		else
+			u_printf("%s\n", buffer_info);
+		free(buffer_info);
+		buffer_info = NULL;
 	}
 
-	if (config_batch->verbose)
+
+	if ((start_job != -1) && (config_batch->verbose_when_run))
+		buffer_info = (char*)malloc((strlen(new_job->src_filename) + strlen(new_job->dest_filename) + 0x80) * sizeof(char*));
+	if (buffer_info != NULL)
 	{
-		if (prev_job != -1)
-		{
-			WORK_ITEM * finished_job = (config_batch->wrk_item_array) + prev_job;
-			u_printf("%u: finished work %s to %s job %.2f sec\n", iNumThread, finished_job->src_filename, finished_job->dest_filename, finished_job->time_work/1000.);
-		}
-		if (start_job != -1)
-		{
-			WORK_ITEM * new_job = (config_batch->wrk_item_array) + start_job;
-			u_printf("%u: start work %s to %s job %.2f sec\n", iNumThread, new_job->src_filename, new_job->dest_filename);
-		}
+		sprintf(buffer_info, "%u: start work %s to %s job %.2f sec\n", iNumThread, new_job->src_filename, new_job->dest_filename);
+		if (config_batch->verbose_direct_stdout)
+			puts(buffer_info);
+		else
+			u_printf("%s\n", buffer_info);
+		free(buffer_info);
+		buffer_info = NULL;
 	}
 
-	if ((config_batch->verbose) && (config_batch->quiet_tool))
-	{
-		SetStdWriteCB(stdwrite_kind_out, 1, NULL, NULL);
-	}
 
     SyncReleaseMutex(config_batch->mutex);
 
     return start_job;
 }
+
 
 static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned int iNumThread)
 {
@@ -703,8 +711,6 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned 
 
         if (buf_cmd_line != NULL)
         {
-
-
             char unique_string[UNIQUE_STRING_FOR_POINTER_MAX_SIZE];
             fill_unique_string_for_pointer((const void*)&num_job, unique_string);
             char** users_variables = build_empty_users_variables();
@@ -721,7 +727,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned 
 
             const char* scriptFile = buf_cmd_line;
 			current_job->thread_num = (int)iNumThread;
-            int retvalue = run_scriptfile(config_batch->vec, scriptFile, users_variables, config_batch->verbose);
+            int retvalue = run_scriptfile(config_batch->vec, scriptFile, users_variables, config_batch->verbose_when_run);
             free_users_variable(users_variables);
             current_job->result = retvalue;
 
@@ -736,7 +742,9 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned 
 }
 
 
-static int run_package_script_batch_internal(const VersatileEncodingConfig* vec, int verbose, int verbose_when_run, int quiet_tool,
+static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
+											 int verbose, int verbose_list_at_end, int verbose_when_run, int verbose_direct_stdout,
+											 int quiet_tool, int quiet_tool_err,
                                              const char* package_name, const char* script_name,
                                              const char*src_dir, const char* dest_dir,
                                              const char*resource_dir, const char* corpus_work_dir,
@@ -750,8 +758,9 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
     char unique_string[UNIQUE_STRING_FOR_POINTER_MAX_SIZE];
     fill_unique_string_for_pointer((const void*)&unique_string, unique_string);
 
-    char defaultResDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x40];
-    char defaultWorkDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x40];
+    char defaultResDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x20];
+    char defaultWorkDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x20];
+	char buffer_info[0x80];
 
     if ((resource_dir == NULL) || ((*resource_dir) == '\0'))
     {
@@ -807,8 +816,9 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
     config_batch.corpus_work_dir = corpus_work_dir;
     config_batch.mutex = SyncBuildMutex();
     config_batch.script_name = script_name;
-    config_batch.verbose = verbose_when_run;
-    config_batch.quiet_tool = quiet_tool;
+    config_batch.verbose_when_run = verbose_when_run;
+	config_batch.verbose_direct_stdout = verbose_direct_stdout && verbose_when_run;
+
     config_batch.wrk_item_array = (WORK_ITEM*)malloc(sizeof(WORK_ITEM) * (nb_files + 1));
     for (int i = 0;i < nb_files;i++)
     {
@@ -838,17 +848,30 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
 
 
 	if ((verbose) || (verbose_when_run))
-	{			
-			u_printf("start %d jobs using %d threads\n", config_batch.count_job, nb_threads);
+	{	
+			sprintf(buffer_info, "start %d jobs using %d threads\n", config_batch.count_job, nb_threads);
+			if (verbose_direct_stdout)
+				puts(buffer_info);
+			else
+				u_printf("%s\n", buffer_info);
 	}
 
-    config_batch.trash_out = 0;
-    config_batch.fnc_out = NULL;
-    config_batch.private_out = NULL;
-    if (config_batch.quiet_tool == 1) {
-        GetStdWriteCB(stdwrite_kind_out, &config_batch.trash_out, &config_batch.fnc_out, &config_batch.private_out);
+	int trash_out = 0;
+	t_fnc_stdOutWrite fnc_out = NULL;
+	void* private_out = NULL;
+	
+    if (quiet_tool == 1) {
+        GetStdWriteCB(stdwrite_kind_out, &trash_out, &fnc_out, &private_out);
         SetStdWriteCB(stdwrite_kind_out, 1, NULL, NULL);
     }
+
+	int trash_err = 0;
+	t_fnc_stdOutWrite fnc_err = NULL;
+	void* private_err = NULL;
+	if (quiet_tool_err == 1) {
+		GetStdWriteCB(stdwrite_kind_err, &trash_err, &fnc_err, &private_err);
+		SetStdWriteCB(stdwrite_kind_err, 1, NULL, NULL);
+	}
 
 	hTimeElapsed calc_works_time = SyncBuidTimeMarkerObject();
 
@@ -871,19 +894,32 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
 
 	unsigned int time_works = SyncGetMSecElapsed(calc_works_time);
 
-
-    if (config_batch.quiet_tool == 1) {
-        SetStdWriteCB(stdwrite_kind_out, config_batch.trash_out, config_batch.fnc_out, config_batch.private_out);
+	
+    if (quiet_tool == 1) {
+        SetStdWriteCB(stdwrite_kind_out, trash_out, fnc_out, private_out);
     }
+	if (quiet_tool_err) {
+		SetStdWriteCB(stdwrite_kind_err, trash_err, fnc_err, private_err);
+	}
 
     for (int i = 0;i < nb_files;i++)
     {
         WORK_ITEM * current_job = (config_batch.wrk_item_array) + i;
 
-		if ((verbose) || (verbose_when_run))
+		if (verbose_list_at_end)
 		{
-			u_printf("%d: %s to %s result take %.3f sec on thread %d\n", i, current_job->src_filename, current_job->dest_filename,
-				current_job->result, current_job->time_work / 1000., current_job->thread_num);
+			char* buffer_info_list = (char*)malloc((strlen(current_job->src_filename) + strlen(current_job->dest_filename) + 0x80) * sizeof(char*));
+
+			if (buffer_info_list != NULL)
+			{
+				sprintf(buffer_info_list, "%d: %s to %s result %d take %.3f sec on thread %d\n", i, current_job->src_filename, current_job->dest_filename,
+					current_job->result, current_job->time_work / 1000., current_job->thread_num);
+				if (verbose_direct_stdout)
+					puts(buffer_info_list);
+				else
+					u_printf("%s\n", buffer_info_list);
+				free(buffer_info_list);
+			}
 		}
         free(current_job->src_filename);
         free(current_job->dest_filename);
@@ -892,7 +928,11 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
 
 	if ((verbose) || (verbose_when_run))
 	{
-		u_printf("done %d jobs taking %.3f sec using %d threads\n", config_batch.count_job, time_works/1000.,nb_threads);
+		sprintf(buffer_info, "done %d jobs taking %.3f sec using %d threads\n", config_batch.count_job, time_works/1000.,nb_threads);
+		if (verbose_direct_stdout)
+			puts(buffer_info);
+		else
+			u_printf("%s\n", buffer_info);
 	}
 
     free(config_batch.wrk_item_array);
@@ -933,8 +973,12 @@ const char* usage_UniBatchRunScript =
 "  -w XXX/--corpus_work_dir=XXX : directory for working on corpus\n"
 "  -s XXX/--script_name=XXX : name of script file\n"
 "  -t N /--thread = N: create N thread\n"
-"  -v/--verbose: emit batch info message when running\n"
+"  -v/--verbose: emit batch info message\n"
+"  -l/--verbose_final: emit batch info list after running\n"
+"  -p/--verbose_progress: emit batch info message when running\n"
+"  -d/--verbose_direct: emit batch info message when running\n"
 "  -m/--quiet: suppress working output\n"
+"  -f/--quietter: suppress working output and error\n"
 "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
 "  -h/--help: this help\n"
 "\n";
@@ -946,10 +990,14 @@ static void UniBatchRunScript_usage() {
 }
 
 
-const char* optstring_UniBatchRunScript = ":Vhi:o:s:t:k:q:vmr:w:";
+const char* optstring_UniBatchRunScript = ":Vhfi:o:s:t:k:q:vmldpr:w:";
 const struct option_TS lopts_UniBatchRunScript[] = {
 	{ "quiet", no_argument_TS, NULL, 'm' },
+	{ "quietter", no_argument_TS, NULL, 'f' },
 	{ "verbose", no_argument_TS, NULL, 'v' },
+	{ "verbose_final", no_argument_TS, NULL, 'l' },
+	{ "verbose_progress", no_argument_TS, NULL, 'p' },
+	{ "verbose_direct", no_argument_TS, NULL, 'd' },
     { "input_dir", required_argument_TS, NULL, 'i' },
     { "output_dir", required_argument_TS, NULL, 'o' },
 	{ "corpus_work_dir", required_argument_TS, NULL, 'w' },
@@ -971,7 +1019,10 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
 
     int verbose = 0;
 	int verbose_when_run = 0;
-    int quiet_tools = 0;
+    int quiet_out = 0;
+	int quiet_err = 0;
+	int verbose_direct_stdout = 0;
+	int verbose_list_at_end = 0;
     VersatileEncodingConfig vec = VEC_DEFAULT;
     int val, index = -1;
     bool only_verify_arguments = false;
@@ -990,13 +1041,24 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
     strcat(script_name, "standard.uniscript");
     while (EOF != (val = options.parse_long(argc, argv, optstring_UniBatchRunScript, lopts_UniBatchRunScript, &index))) {
         switch (val) {
-        case 'm': quiet_tools = 1;
+		case 'm': quiet_out = 1;
+			break;
+
+		case 'f': quiet_out = quiet_err = 1;
+			break;
+
+		case 'v': verbose = 1;
             break;
 
-        case 'v': verbose = 1;
-            break;
+		case 'l': verbose = verbose_list_at_end = 1;
+			break;
 
+		case 'p': verbose = verbose_when_run = 1;
+			break;
 			
+		case 'd': verbose = verbose_direct_stdout = 1;
+			break;
+
         case 'w': if (options.vars()->optarg[0] == '\0') {
 						error("You must specify a non corpus working directory\n");
 						return USAGE_ERROR_CODE;
@@ -1080,8 +1142,12 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
 
     const char* package_name = argv[options.vars()->optind];
 
+	if (verbose_when_run && quiet_out)
+		verbose_direct_stdout = 1;
 
-    int retvalue = run_package_script_batch_internal(&vec, verbose, verbose_when_run, quiet_tools,
+    int retvalue = run_package_script_batch_internal(&vec, 
+		verbose, verbose_list_at_end, verbose_when_run, verbose_direct_stdout,
+		quiet_out, quiet_err,
         package_name, script_name,
         input_dir, output_dir,
         resource_dir, corpus_work_dir,
