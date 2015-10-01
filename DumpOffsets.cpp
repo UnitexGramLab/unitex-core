@@ -566,14 +566,27 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
             }
             else if(new_c =='<') {
                 /* Most likely it is a tag*/
-                while(j < new_end && new_c !='>') {
-                    u_fputc_raw(new_c, f);
-                    j++;
-                    new_c = *(new_text + j);
+                int look_ahead = j;
+                while(look_ahead < new_end && new_c !='>') {
+                    // Go to the end of the tag
+                    look_ahead++;
+                    new_c = *(new_text + look_ahead);
                 }
-                u_fputc_raw(new_c, f);
-                j++;
-                new_c = *(new_text + j);
+                look_ahead++;
+                new_c = *(new_text + look_ahead);
+                if(new_c != old_c) { 
+                //if the text after the tag is not same then print old text first    
+                    while(old_c != new_c && i < old_end) {
+                        u_fputc_raw(old_c, f);
+                        i++;
+                        old_c = *(old_text + i);
+                    }
+                }
+                //else print the tag
+                for(int pos = j; pos < look_ahead; pos++) {
+                    u_fputc_raw(*(new_text+pos),f);
+                }
+                j = look_ahead;
             }
 #endif
             else {
