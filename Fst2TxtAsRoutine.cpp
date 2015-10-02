@@ -489,6 +489,10 @@ static int u_len_possible_match(const unichar* s) {
 		return 4;
 	if ((*(s + 5)) == 0)
 		return 5;
+        if ((*(s + 6)) == 0)
+		return 6;
+        if ((*(s + 7)) == 0)
+		return 7;
 	return 0;
 }
 
