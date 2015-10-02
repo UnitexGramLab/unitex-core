@@ -917,7 +917,7 @@ static void scan_graph(
 			} else if ((contenu_len_possible_match == 5 // <MAJ>
 					&& !u_trymatch_superfast5(contenu, ETIQ_MAJ_LN5))
                                 || (contenu_len_possible_match == 7 // <UPPER>
-                                && !u_trymatch_superfast5(contenu, ETIQ_UPPER_LN7))) {
+                                && !u_trymatch_superfast7(contenu, ETIQ_UPPER_LN7))) {
 				// case of upper case letter sequence
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -962,7 +962,7 @@ static void scan_graph(
 				}
 			} else if ((contenu_len_possible_match == 5 // <MIN>
 					&& !u_trymatch_superfast5(contenu, ETIQ_MIN_LN5))
-                                || (contenu_len_possible_match == 5 //<LOWER>
+                                || (contenu_len_possible_match == 7 //<LOWER>
                                 && !u_trymatch_superfast7(contenu, ETIQ_LOWER_LN7))) {
 				// case of lower case letter sequence
 				if (!end_of_text) {
@@ -1009,7 +1009,7 @@ static void scan_graph(
 			} else if ((contenu_len_possible_match == 5 // <PRE>
 					&& !u_trymatch_superfast5(contenu, ETIQ_PRE_LN5))
                                 || (contenu_len_possible_match == 7 // <FIRST>
-                                && !u_trymatch_superfast5(contenu, ETIQ_FIRST_LN7))) {
+                                && !u_trymatch_superfast7(contenu, ETIQ_FIRST_LN7))) {
 				// case of a sequence beginning by an upper case letter
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
