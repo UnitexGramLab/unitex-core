@@ -679,7 +679,7 @@ static int get_next_job(CONFIG_BATCH* config_batch, unsigned int iNumThread, int
 		buffer_info = (char*)malloc((strlen(new_job->src_filename) + strlen(new_job->dest_filename) + 0x80) * sizeof(char*));
 	if (buffer_info != NULL)
 	{
-		sprintf(buffer_info, "%u: start work %s to %s job %.2f sec\n", iNumThread, new_job->src_filename, new_job->dest_filename);
+		sprintf(buffer_info, "%u: start work %s to %s job\n", iNumThread, new_job->src_filename, new_job->dest_filename);
 		if (config_batch->verbose_direct_stdout)
 			puts(buffer_info);
 		else
