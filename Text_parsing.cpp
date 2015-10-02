@@ -863,7 +863,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				}
 				break;
 
-                        case META_WORD: case META_MOT:
+			case META_WORD:
+			case META_MOT:
+			case META_LETTER:
 				update_last_tested_position(p, pos2);
 				if (!morpho_filter_OK || token2 == p->SENTENCE || token2
 						== p->STOP) {
