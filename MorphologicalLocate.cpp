@@ -579,7 +579,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				}
 				break;
 
-                        case META_LETTRE: case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
+                        case META_LETTER: case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
 			 the alphabet file */
 				if (token == -1)
 					break;
@@ -730,7 +730,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				fatal_error("Unexpected <$> tag in morphological mode\n");
 				break;
 
-			case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
+                        case META_UPPER: case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
 			 the alphabet file */
 				if (token == -1)
 					break;
@@ -743,7 +743,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				}
 				break;
 
-			case META_MIN: /* In morphological mode, this tag matches a lowercase letter, as defined in
+                        case META_LOWER: case META_MIN: /* In morphological mode, this tag matches a lowercase letter, as defined in
 			 the alphabet file */
 				if (token == -1)
 					break;
@@ -760,7 +760,10 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <PRE> tag in morphological mode\n");
 				break;
-
+                        case META_FIRST:
+                                error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
+                                fatal_error("Unexpected <FIRST> tag in morphological mode\n");
+                                break;
 			case META_NB:
 				error("Error in graph %S:\n",p->fst2->graph_names[get_graph_index(p->fst2,current_state_index)]);
 				fatal_error("Unexpected <NB> tag in morphological mode\n");
@@ -832,7 +835,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
 			} /* End of the switch */
 			if (match_one_letter) {
-				/* We factorize here the cases <MOT>, <MIN> and <MAJ> that all correspond
+				/* We factorize here the cases <MOT>, <MIN>, <LETTER>, <UPPER>, <LOWER> and <MAJ> that all correspond
 				 * to matching one letter */
 				captured_chars=0;
 				if (p->output_policy != IGNORE_OUTPUTS) {

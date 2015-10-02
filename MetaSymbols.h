@@ -46,7 +46,11 @@ enum meta_symbol {
    META_LEFT_CONTEXT, // $*: used to specify the end of a left context
    META_TEXT_START,   // {^}: matches the text start
    META_TEXT_END,      // {$}: matches the end of the text
-   META_LETTRE      //<LETR>: matches a letter in the morphological mode
+   META_LETTER,      //<LETTER>: matches a letter in the morphological mode
+   META_WORD,       // <WORD>: used to match a token made of letters
+   META_FIRST,      // <FIRST>: used to match a token made of letters that starts with an uppercase one
+   META_UPPER,      // <UPPER>: used to match a token made of uppercase letters
+   META_LOWER       // <LOWER>: used to match a token made of lowercase letters
 };
 
 #endif

@@ -450,6 +450,7 @@ static void parse_text(struct fst2txt_parameters* p) {
 /*
  * scan_graph token a lot of time of comparing string against
  *  "<E>", "<MOT>", "<NB>", "<MAJ>", "<MIN>", "<PRE>", "<PNC>", "<L>", "<^>", "#", " "
+ *  "<WORD>", "<UPPER>", "<LOWER>", "<FIRST>"
  */
 static const unichar ETIQ_E_LN3[] = { '<', 'E', '>', 0 };
 static const unichar ETIQ_MOT_LN5[] = { '<', 'M', 'O', 'T', '>', 0 };
@@ -460,6 +461,10 @@ static const unichar ETIQ_PRE_LN5[] = { '<', 'P', 'R', 'E', '>', 0 };
 static const unichar ETIQ_PNC_LN5[] = { '<', 'P', 'N', 'C', '>', 0 };
 static const unichar ETIQ_L_LN3[] = { '<', 'L', '>', 0 };
 static const unichar ETIQ_CIRC_LN3[] = { '<', '^', '>', 0 };
+static const unichar ETIQ_WORD_LN6[] = { '<', 'W', 'O', 'R', 'D', '>', 0 };
+static const unichar ETIQ_UPPER_LN7[] = { '<', 'U', 'P', 'P', 'E', 'R', '>', 0 };
+static const unichar ETIQ_LOWER_LN7[] = { '<', 'L', 'O', 'W', 'E', 'R', '>', 0 };
+static const unichar ETIQ_FIRST_LN7[] = { '<', 'F', 'I', 'R', 'S', 'T', '>', 0 };
 // static const unichar ETIQ_DIESE_LN1[] = { '#', 0 };
 // static const unichar ETIQ_SPACE_LN1[] = { ' ', 0 };
 
@@ -794,8 +799,8 @@ static void scan_graph(
 							match_list, word_token_buffer, p);
 					restore(p->current_insertions, old_nb_insert);
 				}
-			} else if ((contenu_len_possible_match == 5) // <MOT>
-					&& (!u_trymatch_superfast5(contenu, ETIQ_MOT_LN5))) {
+			} else if ((contenu_len_possible_match == 5) // <MOT> <WORD>
+					&& (!u_trymatch_superfast5(contenu, ETIQ_MOT_LN5) || !u_trymatch_superfast5(contenu, ETIQ_WORD_LN6))) {
 				// case of transition by any sequence of letters
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ' && pos
@@ -873,8 +878,8 @@ static void scan_graph(
 						restore(p->current_insertions, old_nb_insert);
 					}
 				}
-			} else if ((contenu_len_possible_match == 5) // <MAJ>
-					&& (!u_trymatch_superfast5(contenu, ETIQ_MAJ_LN5))) {
+			} else if ((contenu_len_possible_match == 5) // <MAJ> <UPPER>
+					&& (!u_trymatch_superfast5(contenu, ETIQ_MAJ_LN5) || !u_trymatch_superfast5(contenu, ETIQ_UPPER_LN7))) {
 				// case of upper case letter sequence
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -917,8 +922,8 @@ static void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 5) // <MIN>
-					&& (!u_trymatch_superfast5(contenu, ETIQ_MIN_LN5))) {
+			} else if ((contenu_len_possible_match == 5) // <MIN> <LOWER>
+					&& (!u_trymatch_superfast5(contenu, ETIQ_MIN_LN5) || !u_trymatch_superfast5(contenu, ETIQ_LOWER_LN7))) {
 				// case of lower case letter sequence
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -961,8 +966,8 @@ static void scan_graph(
 						}
 					}
 				}
-			} else if ((contenu_len_possible_match == 5) // <PRE>
-					&& (!u_trymatch_superfast5(contenu, ETIQ_PRE_LN5))) {
+			} else if ((contenu_len_possible_match == 5) // <PRE> <FIRST>
+					&& (!u_trymatch_superfast5(contenu, ETIQ_PRE_LN5) || !u_trymatch_superfast5(contenu, ETIQ_FIRST_LN7))) {
 				// case of a sequence beginning by an upper case letter
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -1261,6 +1266,18 @@ int not_a_letter_sequence(Fst2Tag e, Alphabet* alphabet) {
 				|| (!u_trymatch_superfast5(s, ETIQ_PNC_LN5)))
 			return 1;
 	}
+        if (s_len_possible_match == 6) {
+            if (!u_trymatch_superfast5(s, ETIQ_WORD_LN6))
+                return 1;
+        }
+        if (s_len_possible_match == 7) {
+            if ((!u_trymatch_superfast5(s, ETIQ_FIRST_LN7))
+				|| (!u_trymatch_superfast5(s, ETIQ_UPPER_LN7))
+				|| (!u_trymatch_superfast5(s, ETIQ_LOWER_LN7)))
+                return 1;
+            
+        }
+        
 	return 0;
 }
 

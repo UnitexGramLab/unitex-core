@@ -863,11 +863,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				}
 				break;
 
-			case META_MOT:
+                        case META_WORD: case META_MOT:
 				update_last_tested_position(p, pos2);
 				if (!morpho_filter_OK || token2 == p->SENTENCE || token2
 						== p->STOP) {
-					/* <MOT> and <!MOT> must NEVER match {S} and {STOP}! */
+					/* <MOT>, <WORD> and <!MOT> must NEVER match {S} and {STOP}! */
 					break;
 				}
 				if ((p->space_policy == START_WITH_SPACE) && (token2
@@ -1044,7 +1044,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				}
 				break;
 
-			case META_MAJ:
+                            case META_UPPER: case META_MAJ:
 				if (token2 == -1)
 					break;
 				update_last_tested_position(p, pos2);
@@ -1067,7 +1067,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				}
 				break;
 
-			case META_MIN:
+                        case META_LOWER: case META_MIN:
 				if (token2 == -1)
 					break;
 				update_last_tested_position(p, pos2);
@@ -1090,7 +1090,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				}
 				break;
 
-			case META_PRE:
+                        case META_FIRST: case META_PRE:
 				if (token2 == -1)
 					break;
 				update_last_tested_position(p, pos2);

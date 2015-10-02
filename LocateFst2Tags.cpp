@@ -134,7 +134,11 @@ for (int i=0;i<fst2->number_of_tags;i++) {
 			const unichar content_meta_pre[] = { 'P' , 'R' , 'E' };
 			const unichar content_meta_nb[] = { 'N' , 'B' };
 			const unichar content_meta_token[] = { 'T', 'O' , 'K' , 'E' , 'N' };
-			const unichar content_meta_lettre[] = { 'L', 'E' , 'T' , 'T' , 'R' , 'E' };
+			const unichar content_meta_letter[] = { 'L', 'E' , 'T' , 'T' , 'E' , 'R' };
+                        const unichar content_meta_word[] = { 'W', 'O' , 'R' , 'D'  };
+                        const unichar content_meta_first[] = { 'F', 'I' , 'R' , 'S' , 'T' };
+                        const unichar content_meta_upper[] = { 'U', 'P' , 'P' , 'E' , 'R' };
+                        const unichar content_meta_lower[] = { 'L', 'O' , 'W' , 'E' , 'R' };
 
 
             /* And we test all the possible metas */
@@ -193,9 +197,25 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_TOKEN;
             }
-			else if ((len_content == 6) && (!memcmp(content_start, content_meta_lettre, 6 * sizeof(unichar)))) {
+			else if ((len_content == 6) && (!memcmp(content_start, content_meta_letter, 6 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
-               tag[i]->meta=META_LETTRE;
+               tag[i]->meta=META_LETTER;
+            }
+                        else if ((len_content == 4) && (!memcmp(content_start, content_meta_word, 4 * sizeof(unichar)))) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_WORD;
+            }
+                        else if ((len_content == 5) && (!memcmp(content_start, content_meta_first, 5 * sizeof(unichar)))) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_FIRST;
+            }
+            else if ((len_content == 5) && (!memcmp(content_start, content_meta_upper, 5 * sizeof(unichar)))) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_UPPER;
+            }
+                        else if ((len_content == 5) && (!memcmp(content_start, content_meta_lower, 5 * sizeof(unichar)))) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_LOWER;
             }
             else {
                /* If we arrive here, we have not a meta but a pattern like
