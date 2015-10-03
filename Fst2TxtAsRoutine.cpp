@@ -86,8 +86,8 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipGrowingOftenRecycledObject,
 		0);
 
-    p->fst2=new_Fst2_clone(fst2load,p->fst2txt_abstract_allocator);
-    free_abstract_Fst2(fst2load,&fst2load_free);
+	p->fst2=new_Fst2_clone(fst2load,p->fst2txt_abstract_allocator);
+	free_abstract_Fst2(fst2load,&fst2load_free);
 
 
 	OK_for_Fst2Txt(p->fst2);
@@ -489,9 +489,9 @@ static int u_len_possible_match(const unichar* s) {
 		return 4;
 	if ((*(s + 5)) == 0)
 		return 5;
-        if ((*(s + 6)) == 0)
+	if ((*(s + 6)) == 0)
 		return 6;
-        if ((*(s + 7)) == 0)
+	if ((*(s + 7)) == 0)
 		return 7;
 	return 0;
 }
@@ -548,7 +548,7 @@ static inline int u_trymatch_superfast6(const unichar* a, const unichar*b) {
 		return 1;
 	if ((*(a + 4)) != (*(b + 4)))
 		return 1;
-        if ((*(a + 5)) != (*(b + 5)))
+	if ((*(a + 5)) != (*(b + 5)))
 		return 1;
 	return 0;
 }
@@ -562,9 +562,9 @@ static inline int u_trymatch_superfast7(const unichar* a, const unichar*b) {
 		return 1;
 	if ((*(a + 4)) != (*(b + 4)))
 		return 1;
-        if ((*(a + 5)) != (*(b + 5)))
+	if ((*(a + 5)) != (*(b + 5)))
 		return 1;
-        if ((*(a + 6)) != (*(b + 6)))
+	if ((*(a + 6)) != (*(b + 6)))
 		return 1;
 	return 0;
 }
@@ -834,9 +834,9 @@ static void scan_graph(
 					restore(p->current_insertions, old_nb_insert);
 				}
 			} else if ((contenu_len_possible_match == 5 // <MOT> <WORD>
-					&& !u_trymatch_superfast5(contenu, ETIQ_MOT_LN5))
-                                || (contenu_len_possible_match == 6 // 
-                                && !u_trymatch_superfast6(contenu, ETIQ_WORD_LN6))) {
+						&& !u_trymatch_superfast5(contenu, ETIQ_MOT_LN5))
+					|| (contenu_len_possible_match == 6 // 
+						&& !u_trymatch_superfast6(contenu, ETIQ_WORD_LN6))) {
 				// case of transition by any sequence of letters
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ' && pos
@@ -915,9 +915,9 @@ static void scan_graph(
 					}
 				}
 			} else if ((contenu_len_possible_match == 5 // <MAJ>
-					&& !u_trymatch_superfast5(contenu, ETIQ_MAJ_LN5))
-                                || (contenu_len_possible_match == 7 // <UPPER>
-                                && !u_trymatch_superfast7(contenu, ETIQ_UPPER_LN7))) {
+						&& !u_trymatch_superfast5(contenu, ETIQ_MAJ_LN5))
+					|| (contenu_len_possible_match == 7 // <UPPER>
+						&& !u_trymatch_superfast7(contenu, ETIQ_UPPER_LN7))) {
 				// case of upper case letter sequence
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -961,9 +961,9 @@ static void scan_graph(
 					}
 				}
 			} else if ((contenu_len_possible_match == 5 // <MIN>
-					&& !u_trymatch_superfast5(contenu, ETIQ_MIN_LN5))
-                                || (contenu_len_possible_match == 7 //<LOWER>
-                                && !u_trymatch_superfast7(contenu, ETIQ_LOWER_LN7))) {
+						&& !u_trymatch_superfast5(contenu, ETIQ_MIN_LN5))
+					|| (contenu_len_possible_match == 7 //<LOWER>
+						&& !u_trymatch_superfast7(contenu, ETIQ_LOWER_LN7))) {
 				// case of lower case letter sequence
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -1007,9 +1007,9 @@ static void scan_graph(
 					}
 				}
 			} else if ((contenu_len_possible_match == 5 // <PRE>
-					&& !u_trymatch_superfast5(contenu, ETIQ_PRE_LN5))
-                                || (contenu_len_possible_match == 7 // <FIRST>
-                                && !u_trymatch_superfast7(contenu, ETIQ_FIRST_LN7))) {
+						&& !u_trymatch_superfast5(contenu, ETIQ_PRE_LN5))
+					|| (contenu_len_possible_match == 7 // <FIRST>
+						&& !u_trymatch_superfast7(contenu, ETIQ_FIRST_LN7))) {
 				// case of a sequence beginning by an upper case letter
 				if (!end_of_text) {
 					if (p->buffer[pos + p->current_origin] == ' ') {
@@ -1295,11 +1295,13 @@ int not_a_letter_sequence(Fst2Tag e, Alphabet* alphabet) {
 				s, ETIQ_E_LN3)) || (!u_trymatch_superfast3(s, ETIQ_CIRC_LN3)))
 			return 1;
 	}
+
 	// added in revision 1028
 	if (s_len_possible_match == 4) {
 		if ((!u_trymatch_superfast4(s, ETIQ_NB_LN4)))
 			return 1;
 	}
+
 	if (s_len_possible_match == 5) {
 		if ((!u_trymatch_superfast5(s, ETIQ_MOT_LN5))
 				|| (!u_trymatch_superfast5(s, ETIQ_MAJ_LN5))
@@ -1308,18 +1310,20 @@ int not_a_letter_sequence(Fst2Tag e, Alphabet* alphabet) {
 				|| (!u_trymatch_superfast5(s, ETIQ_PNC_LN5)))
 			return 1;
 	}
-        if (s_len_possible_match == 6) {
-            if (!u_trymatch_superfast6(s, ETIQ_WORD_LN6))
-                return 1;
-        }
-        if (s_len_possible_match == 7) {
-            if ((!u_trymatch_superfast7(s, ETIQ_FIRST_LN7))
+
+	// added in revision 4073
+	if (s_len_possible_match == 6) {
+		if (!u_trymatch_superfast6(s, ETIQ_WORD_LN6))
+			return 1;
+	}
+
+	if (s_len_possible_match == 7) {
+		if ((!u_trymatch_superfast7(s, ETIQ_FIRST_LN7))
 				|| (!u_trymatch_superfast7(s, ETIQ_UPPER_LN7))
 				|| (!u_trymatch_superfast7(s, ETIQ_LOWER_LN7)))
-                return 1;
-            
-        }
-        
+			return 1;
+	}
+
 	return 0;
 }
 
