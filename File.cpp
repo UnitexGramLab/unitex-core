@@ -94,6 +94,68 @@ if (l>=0) path[l+1]='\0';
 else path[0]='\0';
 }
 
+/**
+ * @brief Unitex implementation of realpath()
+ *
+ * Derives from the pathname pointed to by file_name, an
+ * absolute pathname that names the same file, whose
+ * resolution does not involve ".", "..", or symbolic
+ * links.
+ * 
+ * @param[in]  file_name null-terminated string, with a filename to resolve
+ * @param[out] resolved_name null-terminated string, up to a maximum of {FILENAME_MAX} bytes
+ * @return     different from SUCCESS_RETURN_CODE if fails
+ *
+ * @remark     If resolved_name is a null pointer, function will fail
+ */ 
+int get_real_path(const char* file_name, char* resolved_name) {
+ // check that the arguments are not NULL pointers
+ fatal_assert(!file_name,    "NULL error in get_realpath file_name\n");  
+ fatal_assert(!resolved_name,"NULL error in get_realpath resolved_name\n");
+
+ // check that the file name is not empty
+ if (file_name[0]=='\0') {
+  return DEFAULT_ERROR_CODE;
+ }
+
+ // check that the file exists and can be read
+ if(!fexists(file_name)) {
+  return DEFAULT_ERROR_CODE;
+ }
+ 
+ // if the file is under the abstract file layer
+ // the name is already resolved
+ if(is_filename_in_abstract_file_space(file_name)) {
+  strcpy(resolved_name, file_name);
+  return SUCCESS_RETURN_CODE;
+ }
+
+ // code to be returned by the function
+ int return_code = DEFAULT_ERROR_CODE;
+
+ // temporal buffer to store the resolved_name
+ char buffer[FILENAME_MAX + 1] = {0}; 
+ 
+#ifdef _NOT_UNDER_WINDOWS
+ // try to get the resolved filename
+ if (realpath(file_name, buffer) != NULL) {
+  return_code = SUCCESS_RETURN_CODE;
+ }
+#else   // under Windows
+ // try to get the resolved filename
+ if (_fullpath(buffer, file_name, FILENAME_MAX)) {
+  return_code = SUCCESS_RETURN_CODE; 
+ }
+#endif  // #ifdef _NOT_UNDER_WINDOWS
+
+ // if we have a resolved name copy it into the
+ // resolved_name output buffer
+ if(return_code == SUCCESS_RETURN_CODE) {
+   strncpy(resolved_name, buffer, FILENAME_MAX);
+ }
+  
+ return return_code;
+}
 
 /**
  * Takes a file name, removes its extension and adds the suffix "_snt"
