@@ -380,7 +380,17 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
     int j = new_start;
     unichar new_c = *(new_text + j);
 
+    int prev_i = -1;
+    int prev_j = -1;
     while(i<old_end && j<new_end ) {
+        // protect against infinite loop
+        if ((i == prev_i) && (j == prev_j))
+        {
+            error("infinite loop in denormalize_new, exit from loop\n");
+            return 1;
+        }
+        prev_i = i;
+        prev_j = j;
         while(i<old_end && j<new_end && old_c == new_c) {
             u_fputc_raw(new_c, f);
             i++;
