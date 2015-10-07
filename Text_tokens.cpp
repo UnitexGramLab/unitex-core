@@ -71,11 +71,19 @@ while (NULL!=(tmp=readline_safe(f))) {
          }
   i++;
   if (i>res->N) {
-     fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n"
-    		     "Last token loaded=%S\n",nom,res->N,tmp);
+    break;
   }
 }
 u_fclose(f);
+if (i!=res->N) {
+  error("Inconsistency in file %s between header (%d) and actual number of lines\n", nom, res->N);
+  if (tmp) error("Last token loaded=%S\n", tmp);
+  for (int j = 0;j < i; j++) free(res->token[j]);
+  free_cb(res->token, prv_alloc);
+  free_cb(res, prv_alloc);
+  return NULL;
+}
+
 return res;
 }
 
@@ -119,7 +127,7 @@ return res;
 
 void free_text_tokens(struct text_tokens* tok,Abstract_allocator prv_alloc) {
 for (int i=0;i<tok->N;i++) {
-   free_cb(tok->token[i],prv_alloc);
+   free(tok->token[i]);
 }
 free_cb(tok->token,prv_alloc);
 free_cb(tok,prv_alloc);
