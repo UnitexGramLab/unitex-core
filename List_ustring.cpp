@@ -153,6 +153,20 @@ return l;
 
 
 /**
+* Inserts an element at the end of a list maintaing pointer to latest item.
+*/
+struct list_ustring* insert_at_end_of_list_with_latest(const unichar* s, struct list_ustring* l, struct list_ustring** latest, Abstract_allocator prv_alloc) {
+  if ((*latest) == NULL) {
+    *latest = new_list_ustring(s, prv_alloc);
+    return *latest;
+  }	
+  (*latest)->next = new_list_ustring(s, prv_alloc);
+  *latest = (*latest)->next;
+  return l;
+}
+
+
+/**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
 int is_in_list(const unichar* value,const struct list_ustring* l) {

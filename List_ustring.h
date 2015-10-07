@@ -47,6 +47,7 @@ void free_list_ustring_element(struct list_ustring*,Abstract_allocator prv_alloc
 struct list_ustring* sorted_insert(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_ustring* head_insert(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_ustring* insert_at_end_of_list(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_ustring* insert_at_end_of_list_with_latest(const unichar*,struct list_ustring*,struct list_ustring**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int is_in_list(const unichar*,const struct list_ustring*);
 int equal(const struct list_ustring*,const struct list_ustring*);
 struct list_ustring* clone(const struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
