@@ -233,6 +233,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 
 	cassys_tokens_list *output=get_output(list, number_of_transducer, iteration);
 	struct list_ustring *sentence = NULL;
+	struct list_ustring *latest_on_sentence = NULL;
 	bool output_detected = false;
 	long token_position=0;
 
@@ -259,11 +260,16 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 				}
 
 				struct list_ustring *iterator = sentence;
+
+				/*
+				// remove code not useful...
 				while(iterator -> next != NULL){
 					iterator = iterator -> next;
 				}
 
 				iterator = sentence;
+				*/
+
 				u_fprintf(concord_desc_file, "%d.0.0 %d.%d.0 ",start_position,end_position,last_token_length);
 				while(iterator != NULL){
 					u_fputs(iterator->string,concord_desc_file);
@@ -275,6 +281,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 
 				free_list_ustring(sentence);
 				sentence = NULL;
+				latest_on_sentence = NULL;
 
 				if(current_pos_in_original_text==NULL){
 					break;
@@ -300,7 +307,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 		else {
 			//u_printf("insert new sentence\n");
 
-			sentence = insert_at_end_of_list(output->token, sentence);
+			sentence = insert_at_end_of_list_with_latest(output->token, sentence, &latest_on_sentence);
 			output = output -> next_token;
 			output = get_output(output, number_of_transducer, iteration);
 			output_detected = true;

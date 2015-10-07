@@ -103,6 +103,7 @@ unichar *protect_lexical_tag(const unichar *text, bool is_substring = false) {
 list_ustring *cassys_tokenize(const unichar* text) {
 
 	list_ustring *result = NULL;
+	list_ustring *latest_on_result = NULL;
 
 	int position = 0;
 	int last_position = 0;
@@ -140,7 +141,11 @@ list_ustring *cassys_tokenize(const unichar* text) {
 
 		int token_size = offset ;// We take also the closing bracket
 
-		unichar *token = (unichar*)malloc(sizeof(unichar)*(token_size+1));
+		#define DEFAULT_TOKEN_BUFFER_SIZE (0x40)
+
+		unichar default_token_buffer[DEFAULT_TOKEN_BUFFER_SIZE];
+		
+		unichar *token = ((token_size + 1) < DEFAULT_TOKEN_BUFFER_SIZE) ? default_token_buffer : (unichar*)malloc(sizeof(unichar)*(token_size+1));
 		if(token == NULL){
 			fatal_error("malloc cassys_tokenize\n");
 		}
@@ -148,13 +153,11 @@ list_ustring *cassys_tokenize(const unichar* text) {
 			u_strncpy(token,text+last_position, token_size);
 		}
 		token[token_size]='\0';
-		result = insert_at_end_of_list(token, result);
-		free(token);
-
+		result = insert_at_end_of_list_with_latest(token, result, &latest_on_result);
+		if (!((token_size + 1) < DEFAULT_TOKEN_BUFFER_SIZE)) free(token);
 	}
 
 	return result;
-
 }
 
 /**
@@ -607,6 +610,7 @@ bool is_lexical_token(unichar *token){
 list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* alphabet){
 
 	list_ustring *result = NULL;
+	list_ustring *latest_on_result = NULL;
 	unichar token[4096];
 	unichar braced_token[4096];
 	int i=0,j=0;
@@ -665,7 +669,7 @@ list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* a
 		}
 		if(token_found){
 			token[j] = '\0';
-			result = insert_at_end_of_list(token,result);
+			result = insert_at_end_of_list_with_latest(token,result,&latest_on_result);
 			j=0;
 			token_found = false;
 			//u_printf("token = %S\n",token);
