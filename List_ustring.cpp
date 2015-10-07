@@ -145,7 +145,9 @@ return new_head;
  */
 struct list_ustring* insert_at_end_of_list(const unichar* s,struct list_ustring* l,Abstract_allocator prv_alloc) {
 if (l==NULL) return new_list_ustring(s,prv_alloc);
-l->next=insert_at_end_of_list(s,l->next,prv_alloc);
+struct list_ustring* l_browse = l;
+while (l_browse->next != NULL) l_browse = l_browse->next;
+l_browse->next=new_list_ustring(s, prv_alloc);
 return l;
 }
 
