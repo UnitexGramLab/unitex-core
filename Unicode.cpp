@@ -4462,6 +4462,26 @@ do {
 } while (c!='\0');
 }
 
+/**
+ * Converts up to n unichar* src characters into a char* dest.
+ * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
+ */
+void u_to_char_n(char *dest, unichar *src, unsigned int n) {
+    if (n == 0) {
+        dest[0] = '\0';
+        return;
+    }
+    register unichar c;
+    do {
+        c = *src++;
+        if (c<=0xFF) *dest++ =  static_cast<char>(c);
+        --n;
+        if (n == 0) {
+            *dest = '\0';
+            return;
+        }
+    } while (c != '\0');
+}
 
 /**
  * Removes the \n at the end of the string, if any.

@@ -324,6 +324,7 @@ int u_escape(const unichar* source, T* destination);
 
 
 void u_to_char(char*,unichar*);
+void u_to_char_n(char *, unichar *, unsigned int);
 void u_chomp_new_line(unichar*);
 int JSONize(const unichar* source,unichar* destination);
 int URLize(const unichar*,unichar*);
