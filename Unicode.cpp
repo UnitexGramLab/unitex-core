@@ -4462,6 +4462,7 @@ do {
 } while (c!='\0');
 }
 
+
 /**
  * Converts up to n unichar* src characters into a char* dest.
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
@@ -4474,7 +4475,7 @@ void u_to_char_n(char *dest, unichar *src, unsigned int n) {
     register unichar c;
     do {
         c = *src++;
-        if (c<=0xFF) *dest++ =  static_cast<char>(c);
+        if (c<=0xFF) *((unsigned char*)dest)++ = (unsigned char)c;
         --n;
         if (n == 0) {
             *dest = '\0';
@@ -4482,6 +4483,7 @@ void u_to_char_n(char *dest, unichar *src, unsigned int n) {
         }
     } while (c != '\0');
 }
+
 
 /**
  * Removes the \n at the end of the string, if any.
@@ -4630,6 +4632,7 @@ int JSONize(const unichar* source,unichar* destination) {
   // return the length of the destination string
   return pos;
 }
+
 
 /**
  * Puts a copy of 'src' into 'dst', replacing:
