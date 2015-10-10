@@ -4448,8 +4448,8 @@ int u_substr(const unichar *str, const unichar *target) {
 
 
 /**
- * Converts the unichar* src into a char* dest.
- * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
+ * Converts the unichar* src into a char* dest
+ * Note that wide characters (> 8-bit) are skipped
  *
  * Author: Sébastien Paumier
  * Modified by S?bastian Nagel
@@ -4464,8 +4464,8 @@ do {
 
 
 /**
- * Converts up to n unichar* src characters into a char* dest.
- * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
+ * Converts up to n unichar* src characters into a char* dest
+ * Note that wide characters (> 8-bit) are skipped
  */
 void u_to_char_n(char *dest, unichar *src, unsigned int n) {
     unsigned char* dest_unsigned_char = (unsigned char*)dest;
