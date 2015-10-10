@@ -4468,6 +4468,7 @@ do {
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
  */
 void u_to_char_n(char *dest, unichar *src, unsigned int n) {
+    unsigned char* dest_unsigned_char = (unsigned char*)dest;
     if (n == 0) {
         dest[0] = '\0';
         return;
@@ -4475,7 +4476,7 @@ void u_to_char_n(char *dest, unichar *src, unsigned int n) {
     register unichar c;
     do {
         c = *src++;
-        if (c<=0xFF) *((unsigned char*)dest)++ = (unsigned char)c;
+        if (c<=0xFF) *(dest_unsigned_char++) = (unsigned char)c;
         --n;
         if (n == 0) {
             *dest = '\0';
