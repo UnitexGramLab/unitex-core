@@ -3463,7 +3463,7 @@ unichar* u_strcpy(unichar* dest,const char* src) {
 unichar *s = dest; // backup pointer to start of destination string
 register unichar c;
 do {
-   c=*src++;
+   c = (unsigned char) *src++;
    *dest++=c;
 } while (c!='\0');
 return s;
