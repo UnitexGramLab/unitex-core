@@ -4479,7 +4479,7 @@ void u_to_char_n(char *dest, unichar *src, unsigned int n) {
         if (c<=0xFF) *(dest_unsigned_char++) = (unsigned char)c;
         --n;
         if (n == 0) {
-            *dest = '\0';
+            *(dest_unsigned_char++) = '\0';
             return;
         }
     } while (c != '\0');
