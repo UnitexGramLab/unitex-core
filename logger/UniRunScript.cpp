@@ -620,7 +620,7 @@ typedef struct
     unsigned int time_work;
     int done;
     int result;
-	int thread_num;
+    int thread_num;
 
 } WORK_ITEM;
 
@@ -635,8 +635,8 @@ typedef struct
     int next_job;
     int count_job;
     int verbose_when_run;
-	int verbose_direct_stdout;
-    
+    int verbose_direct_stdout;
+
 
     SYNC_Mutex_OBJECT mutex;
 
@@ -656,37 +656,37 @@ static int get_next_job(CONFIG_BATCH* config_batch, unsigned int iNumThread, int
         }
     }
 
-	WORK_ITEM * finished_job = (config_batch->wrk_item_array) + prev_job;
-	WORK_ITEM * new_job = (config_batch->wrk_item_array) + start_job;
+    WORK_ITEM * finished_job = (config_batch->wrk_item_array) + prev_job;
+    WORK_ITEM * new_job = (config_batch->wrk_item_array) + start_job;
 
 
-	char* buffer_info = NULL;
-	if ((prev_job != -1) && (config_batch->verbose_when_run))
-		buffer_info = (char*)malloc((strlen(finished_job->src_filename) + strlen(finished_job->dest_filename) + 0x80) * sizeof(char*));
-	if (buffer_info != NULL)
-	{
-		sprintf(buffer_info,"%u: finished work %s to %s job %.2f sec\n", iNumThread, finished_job->src_filename, finished_job->dest_filename, finished_job->time_work / 1000.);
-		if (config_batch->verbose_direct_stdout)
-			puts(buffer_info);
-		else
-			u_printf("%s\n", buffer_info);
-		free(buffer_info);
-		buffer_info = NULL;
-	}
+    char* buffer_info = NULL;
+    if ((prev_job != -1) && (config_batch->verbose_when_run))
+        buffer_info = (char*)malloc((strlen(finished_job->src_filename) + strlen(finished_job->dest_filename) + 0x80) * sizeof(char*));
+    if (buffer_info != NULL)
+    {
+        sprintf(buffer_info,"%u: finished work %s to %s job %.2f sec\n", iNumThread, finished_job->src_filename, finished_job->dest_filename, finished_job->time_work / 1000.);
+        if (config_batch->verbose_direct_stdout)
+            puts(buffer_info);
+        else
+            u_printf("%s\n", buffer_info);
+        free(buffer_info);
+        buffer_info = NULL;
+    }
 
 
-	if ((start_job != -1) && (config_batch->verbose_when_run))
-		buffer_info = (char*)malloc((strlen(new_job->src_filename) + strlen(new_job->dest_filename) + 0x80) * sizeof(char*));
-	if (buffer_info != NULL)
-	{
-		sprintf(buffer_info, "%u: start work %s to %s job\n", iNumThread, new_job->src_filename, new_job->dest_filename);
-		if (config_batch->verbose_direct_stdout)
-			puts(buffer_info);
-		else
-			u_printf("%s\n", buffer_info);
-		free(buffer_info);
-		buffer_info = NULL;
-	}
+    if ((start_job != -1) && (config_batch->verbose_when_run))
+        buffer_info = (char*)malloc((strlen(new_job->src_filename) + strlen(new_job->dest_filename) + 0x80) * sizeof(char*));
+    if (buffer_info != NULL)
+    {
+        sprintf(buffer_info, "%u: start work %s to %s job\n", iNumThread, new_job->src_filename, new_job->dest_filename);
+        if (config_batch->verbose_direct_stdout)
+            puts(buffer_info);
+        else
+            u_printf("%s\n", buffer_info);
+        free(buffer_info);
+        buffer_info = NULL;
+    }
 
 
     SyncReleaseMutex(config_batch->mutex);
@@ -726,7 +726,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned 
             strcat(buf_cmd_line, config_batch->script_name);
 
             const char* scriptFile = buf_cmd_line;
-			current_job->thread_num = (int)iNumThread;
+            current_job->thread_num = (int)iNumThread;
             int retvalue = run_scriptfile(config_batch->vec, scriptFile, users_variables, config_batch->verbose_when_run);
             free_users_variable(users_variables);
             current_job->result = retvalue;
@@ -736,52 +736,63 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned 
         else
             current_job->result = -1;
 
-        current_job->time_work = SyncGetMSecElapsed(calc_work_time);		
+        current_job->time_work = SyncGetMSecElapsed(calc_work_time);
         current_job->done = 1;
     }
 }
 
+typedef struct {
+    char unique_string[UNIQUE_STRING_FOR_POINTER_MAX_SIZE];
+    char defaultResDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x20];
+    char defaultWorkDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x20];
+    char buffer_info[0x200];
+} run_package_script_batch_text_buffer;
 
 static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
-											 int verbose, int verbose_list_at_end, int verbose_when_run, int verbose_direct_stdout,
-											 int quiet_tool, int quiet_tool_err,
+                                             int verbose, int verbose_list_at_end, int verbose_when_run, int verbose_direct_stdout,
+                                             int quiet_tool, int quiet_tool_err,
                                              const char* package_name, const char* script_name,
                                              const char*src_dir, const char* dest_dir,
                                              const char*resource_dir, const char* corpus_work_dir,
                                              int nb_threads, char** file_list)
 {
+
+
+    run_package_script_batch_text_buffer* textbuf = (run_package_script_batch_text_buffer*)malloc(sizeof(run_package_script_batch_text_buffer));
+    if (textbuf == NULL) {
+        alloc_error("main_UniBatchRunScript");
+        return ALLOC_ERROR_CODE;
+    }
+    memset(textbuf, 0, sizeof(run_package_script_batch_text_buffer));
+
+
     int must_free_file_list = 0;
     //const char*resource_dir = "*UnitexPkgResource"; // VFS
 
     //String cmd_install = "UnitexTool InstallLingResourcePackage -p " + ling_package + " -x \"" + resource_dir + "\" -v";
 
-    char unique_string[UNIQUE_STRING_FOR_POINTER_MAX_SIZE];
-    fill_unique_string_for_pointer((const void*)&unique_string, unique_string);
-
-    char defaultResDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x20];
-    char defaultWorkDir[UNIQUE_STRING_FOR_POINTER_MAX_SIZE + 0x20];
-	char buffer_info[0x80];
+    fill_unique_string_for_pointer((const void*)textbuf, textbuf->unique_string);
 
     if ((resource_dir == NULL) || ((*resource_dir) == '\0'))
     {
         if (is_filename_in_abstract_file_space("*resourceDir"))
-            sprintf(defaultResDir, "*resourceDir_%s", unique_string);
+            sprintf(textbuf->defaultResDir, "*resourceDir_%s", textbuf->unique_string);
         else if (is_filename_in_abstract_file_space("$:resourceDir"))
-            sprintf(defaultResDir, "$:resourceDir_%s", unique_string);
+            sprintf(textbuf->defaultResDir, "$:resourceDir_%s", textbuf->unique_string);
         else
-            sprintf(defaultResDir, "resourceDir_%s", unique_string);
-        resource_dir = defaultResDir;
+            sprintf(textbuf->defaultResDir, "resourceDir_%s", textbuf->unique_string);
+        resource_dir = textbuf->defaultResDir;
     }
 
     if ((corpus_work_dir == NULL) || ((*corpus_work_dir) == '\0'))
     {
         if (is_filename_in_abstract_file_space("*workDir"))
-            sprintf(defaultWorkDir, "*workDir_%s", unique_string);
+            sprintf(textbuf->defaultWorkDir, "*workDir_%s", textbuf->unique_string);
         else if (is_filename_in_abstract_file_space("$:workDir"))
-            sprintf(defaultWorkDir, "$:workDir_%s", unique_string);
+            sprintf(textbuf->defaultWorkDir, "$:workDir_%s", textbuf->unique_string);
         else
-            sprintf(defaultWorkDir, "workDir_%s", unique_string);
-        corpus_work_dir = defaultWorkDir;
+            sprintf(textbuf->defaultWorkDir, "workDir_%s", textbuf->unique_string);
+        corpus_work_dir = textbuf->defaultWorkDir;
     }
 
     const char* args_install[] = { "UnitexTool", "InstallLingResourcePackage","-p", package_name,"-x",resource_dir,"-v",NULL };
@@ -793,14 +804,17 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
     if (install != 0)
     {
         error("error in install resource %s", package_name);
+        free(textbuf);
         return DEFAULT_ERROR_CODE;
     }
 
     if (file_list == NULL)
     {
         file_list = af_get_list_file(src_dir);
-        if (file_list == NULL)
+        if (file_list == NULL) {
+            free(textbuf);
             return DEFAULT_ERROR_CODE;
+        }
         must_free_file_list = 1;
     }
 
@@ -817,7 +831,7 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
     config_batch.mutex = SyncBuildMutex();
     config_batch.script_name = script_name;
     config_batch.verbose_when_run = verbose_when_run;
-	config_batch.verbose_direct_stdout = verbose_direct_stdout && verbose_when_run;
+    config_batch.verbose_direct_stdout = verbose_direct_stdout && verbose_when_run;
 
     config_batch.wrk_item_array = (WORK_ITEM*)malloc(sizeof(WORK_ITEM) * (nb_files + 1));
     for (int i = 0;i < nb_files;i++)
@@ -827,7 +841,7 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
         current_job->done = 0;
         current_job->result = -1;
         current_job->time_work = 0;
-		current_job->thread_num = 0;
+        current_job->thread_num = 0;
         current_job->src_filename = (char*)malloc(strlen(src_dir) + strlen(original_filename) + 0x10);
         current_job->dest_filename = (char*)malloc(strlen(dest_dir) + strlen(original_filename) + 0x40);
         strcpy(current_job->src_filename, src_dir);
@@ -847,33 +861,33 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
 
 
 
-	if ((verbose) || (verbose_when_run))
-	{	
-			sprintf(buffer_info, "start %d jobs using %d threads\n", config_batch.count_job, nb_threads);
-			if (verbose_direct_stdout)
-				puts(buffer_info);
-			else
-				u_printf("%s\n", buffer_info);
-	}
+    if ((verbose) || (verbose_when_run))
+    {
+            sprintf(textbuf->buffer_info, "start %d jobs using %d threads\n", config_batch.count_job, nb_threads);
+            if (verbose_direct_stdout)
+                puts(textbuf->buffer_info);
+            else
+                u_printf("%s\n", textbuf->buffer_info);
+    }
 
-	int trash_out = 0;
-	t_fnc_stdOutWrite fnc_out = NULL;
-	void* private_out = NULL;
-	
+    int trash_out = 0;
+    t_fnc_stdOutWrite fnc_out = NULL;
+    void* private_out = NULL;
+
     if (quiet_tool == 1) {
         GetStdWriteCB(stdwrite_kind_out, &trash_out, &fnc_out, &private_out);
         SetStdWriteCB(stdwrite_kind_out, 1, NULL, NULL);
     }
 
-	int trash_err = 0;
-	t_fnc_stdOutWrite fnc_err = NULL;
-	void* private_err = NULL;
-	if (quiet_tool_err == 1) {
-		GetStdWriteCB(stdwrite_kind_err, &trash_err, &fnc_err, &private_err);
-		SetStdWriteCB(stdwrite_kind_err, 1, NULL, NULL);
-	}
+    int trash_err = 0;
+    t_fnc_stdOutWrite fnc_err = NULL;
+    void* private_err = NULL;
+    if (quiet_tool_err == 1) {
+        GetStdWriteCB(stdwrite_kind_err, &trash_err, &fnc_err, &private_err);
+        SetStdWriteCB(stdwrite_kind_err, 1, NULL, NULL);
+    }
 
-	hTimeElapsed calc_works_time = SyncBuidTimeMarkerObject();
+    hTimeElapsed calc_works_time = SyncBuidTimeMarkerObject();
 
     if (nb_threads > 0)
     {
@@ -892,48 +906,48 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
     }
 
 
-	unsigned int time_works = SyncGetMSecElapsed(calc_works_time);
+    unsigned int time_works = SyncGetMSecElapsed(calc_works_time);
 
-	
+
     if (quiet_tool == 1) {
         SetStdWriteCB(stdwrite_kind_out, trash_out, fnc_out, private_out);
     }
-	if (quiet_tool_err) {
-		SetStdWriteCB(stdwrite_kind_err, trash_err, fnc_err, private_err);
-	}
+    if (quiet_tool_err) {
+        SetStdWriteCB(stdwrite_kind_err, trash_err, fnc_err, private_err);
+    }
 
     for (int i = 0;i < nb_files;i++)
     {
         WORK_ITEM * current_job = (config_batch.wrk_item_array) + i;
 
-		if (verbose_list_at_end)
-		{
-			char* buffer_info_list = (char*)malloc((strlen(current_job->src_filename) + strlen(current_job->dest_filename) + 0x80) * sizeof(char*));
+        if (verbose_list_at_end)
+        {
+            char* buffer_info_list = (char*)malloc((strlen(current_job->src_filename) + strlen(current_job->dest_filename) + 0x80) * sizeof(char*));
 
-			if (buffer_info_list != NULL)
-			{
-				sprintf(buffer_info_list, "%d: %s to %s result %d take %.3f sec on thread %d\n", i, current_job->src_filename, current_job->dest_filename,
-					current_job->result, current_job->time_work / 1000., current_job->thread_num);
-				if (verbose_direct_stdout)
-					puts(buffer_info_list);
-				else
-					u_printf("%s\n", buffer_info_list);
-				free(buffer_info_list);
-			}
-		}
+            if (buffer_info_list != NULL)
+            {
+                sprintf(buffer_info_list, "%d: %s to %s result %d take %.3f sec on thread %d\n", i, current_job->src_filename, current_job->dest_filename,
+                    current_job->result, current_job->time_work / 1000., current_job->thread_num);
+                if (verbose_direct_stdout)
+                    puts(buffer_info_list);
+                else
+                    u_printf("%s\n", buffer_info_list);
+                free(buffer_info_list);
+            }
+        }
         free(current_job->src_filename);
         free(current_job->dest_filename);
     }
 
 
-	if ((verbose) || (verbose_when_run))
-	{
-		sprintf(buffer_info, "done %d jobs taking %.3f sec using %d threads\n", config_batch.count_job, time_works/1000.,nb_threads);
-		if (verbose_direct_stdout)
-			puts(buffer_info);
-		else
-			u_printf("%s\n", buffer_info);
-	}
+    if ((verbose) || (verbose_when_run))
+    {
+        sprintf(textbuf->buffer_info, "done %d jobs taking %.3f sec using %d threads\n", config_batch.count_job, time_works/1000.,nb_threads);
+        if (verbose_direct_stdout)
+            puts(textbuf->buffer_info);
+        else
+            u_printf("%s\n", textbuf->buffer_info);
+    }
 
     free(config_batch.wrk_item_array);
     SyncDeleteMutex(config_batch.mutex);
@@ -949,8 +963,10 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
     if (uninstall != 0)
     {
         error("error in uninstall resource %s", package_name);
+        free(textbuf);
         return DEFAULT_ERROR_CODE;
     }
+    free(textbuf);
     return 0;
 }
 
@@ -992,16 +1008,16 @@ static void UniBatchRunScript_usage() {
 
 const char* optstring_UniBatchRunScript = ":Vhfi:o:s:t:k:q:vmldpr:w:";
 const struct option_TS lopts_UniBatchRunScript[] = {
-	{ "quiet", no_argument_TS, NULL, 'm' },
-	{ "quietter", no_argument_TS, NULL, 'f' },
-	{ "verbose", no_argument_TS, NULL, 'v' },
-	{ "verbose_final", no_argument_TS, NULL, 'l' },
-	{ "verbose_progress", no_argument_TS, NULL, 'p' },
-	{ "verbose_direct", no_argument_TS, NULL, 'd' },
+    { "quiet", no_argument_TS, NULL, 'm' },
+    { "quietter", no_argument_TS, NULL, 'f' },
+    { "verbose", no_argument_TS, NULL, 'v' },
+    { "verbose_final", no_argument_TS, NULL, 'l' },
+    { "verbose_progress", no_argument_TS, NULL, 'p' },
+    { "verbose_direct", no_argument_TS, NULL, 'd' },
     { "input_dir", required_argument_TS, NULL, 'i' },
     { "output_dir", required_argument_TS, NULL, 'o' },
-	{ "corpus_work_dir", required_argument_TS, NULL, 'w' },
-	{ "resource_dir", required_argument_TS, NULL, 'r' },
+    { "corpus_work_dir", required_argument_TS, NULL, 'w' },
+    { "resource_dir", required_argument_TS, NULL, 'r' },
     { "script_name", required_argument_TS, NULL, 's' },
     { "thread", required_argument_TS, NULL, 't' },
     { "input_encoding", required_argument_TS, NULL, 'k' },
@@ -1011,151 +1027,171 @@ const struct option_TS lopts_UniBatchRunScript[] = {
     { NULL, no_argument_TS, NULL, 0 }
 };
 
+typedef struct
+{
+    char input_dir[FILENAME_MAX + 0x20] ;
+    char output_dir[FILENAME_MAX + 0x20] ;
+    char script_name[FILENAME_MAX + 0x20];
+    char corpus_work_dir[FILENAME_MAX + 0x20] ;
+    char resource_dir[FILENAME_MAX + 0x20] ;
+} UniBatchRunScript_text_buffer;
+
 int main_UniBatchRunScript(int argc, char* const argv[]) {
     if (argc == 1) {
         UniBatchRunScript_usage();
         return SUCCESS_RETURN_CODE;
     }
 
+
+    UniBatchRunScript_text_buffer* textbuf = (UniBatchRunScript_text_buffer*)malloc(sizeof(UniBatchRunScript_text_buffer));
+    if (textbuf == NULL) {
+        alloc_error("main_UniBatchRunScript");
+        return ALLOC_ERROR_CODE;
+    }
+    memset(textbuf, 0, sizeof(UniBatchRunScript_text_buffer));
+
     int verbose = 0;
-	int verbose_when_run = 0;
+    int verbose_when_run = 0;
     int quiet_out = 0;
-	int quiet_err = 0;
-	int verbose_direct_stdout = 0;
-	int verbose_list_at_end = 0;
+    int quiet_err = 0;
+    int verbose_direct_stdout = 0;
+    int verbose_list_at_end = 0;
     VersatileEncodingConfig vec = VEC_DEFAULT;
     int val, index = -1;
     bool only_verify_arguments = false;
     UnitexGetOpt options;
-
-    char input_dir[FILENAME_MAX + 0x20] = "";
-    char output_dir[FILENAME_MAX + 0x20] = "";
-    char script_name[FILENAME_MAX + 0x20] ;
-    char corpus_work_dir[FILENAME_MAX + 0x20] = "";
-    char resource_dir[FILENAME_MAX + 0x20] = "";
     int nb_threads = 1;
     char foo;
 
-    strcpy(script_name, "script");
-    strcat(script_name, PATH_SEPARATOR_STRING);
-    strcat(script_name, "standard.uniscript");
+    strcpy(textbuf->script_name, "script");
+    strcat(textbuf->script_name, PATH_SEPARATOR_STRING);
+    strcat(textbuf->script_name, "standard.uniscript");
     while (EOF != (val = options.parse_long(argc, argv, optstring_UniBatchRunScript, lopts_UniBatchRunScript, &index))) {
         switch (val) {
-		case 'm': quiet_out = 1;
-			break;
-
-		case 'f': quiet_out = quiet_err = 1;
-			break;
-
-		case 'v': verbose = 1;
+        case 'm': quiet_out = 1;
             break;
 
-		case 'l': verbose = verbose_list_at_end = 1;
-			break;
+        case 'f': quiet_out = quiet_err = 1;
+            break;
 
-		case 'p': verbose = verbose_when_run = 1;
-			break;
-			
-		case 'd': verbose = verbose_direct_stdout = 1;
-			break;
+        case 'v': verbose = 1;
+            break;
+
+        case 'l': verbose = verbose_list_at_end = 1;
+            break;
+
+        case 'p': verbose = verbose_when_run = 1;
+            break;
+
+        case 'd': verbose = verbose_direct_stdout = 1;
+            break;
 
         case 'w': if (options.vars()->optarg[0] == '\0') {
-						error("You must specify a non corpus working directory\n");
-						return USAGE_ERROR_CODE;
-					}
-                  strcpy(corpus_work_dir, options.vars()->optarg);
+                        error("You must specify a non corpus working directory\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
+                  strcpy(textbuf->corpus_work_dir, options.vars()->optarg);
                   break;
 
         case 'r': if (options.vars()->optarg[0] == '\0') {
-						error("You must specify a non empty resource directory\n");
-						return USAGE_ERROR_CODE;
-					}
-                  strcpy(resource_dir, options.vars()->optarg);
+                        error("You must specify a non empty resource directory\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
+                  strcpy(textbuf->resource_dir, options.vars()->optarg);
                   break;
 
         case 'i': if (options.vars()->optarg[0] == '\0') {
-						error("You must specify a non empty input dir\n");
-						return USAGE_ERROR_CODE;
-					}
-                  strcpy(input_dir, options.vars()->optarg);
+                        error("You must specify a non empty input dir\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
+                  strcpy(textbuf->input_dir, options.vars()->optarg);
                   break;
 
         case 'o': if (options.vars()->optarg[0] == '\0') {
-						error("You must specify a non empty output dir\n");
-						return USAGE_ERROR_CODE;
-					}
-                  strcpy(output_dir, options.vars()->optarg);
+                        error("You must specify a non empty output dir\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
+                  strcpy(textbuf->output_dir, options.vars()->optarg);
                   break;
 
         case 's': if (options.vars()->optarg[0] == '\0') {
-						error("You must specify a non empty script name\n");
-						return USAGE_ERROR_CODE;
-					}
-                  strcpy(script_name, options.vars()->optarg);
+                        error("You must specify a non empty script name\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
+                  strcpy(textbuf->script_name, options.vars()->optarg);
                   break;
 
-        case 't': if (1 != sscanf(options.vars()->optarg, "%d%c", &nb_threads, &foo) || nb_threads <= 0) {
-						/* foo is used to check that arg is not like "45gjh" */
-						error("Invalid nb_thread argument: %s\n", options.vars()->optarg);
-						return USAGE_ERROR_CODE;
-					}
+        case 't': if (1 != sscanf(options.vars()->optarg, "%d%c", &nb_threads, &foo) || nb_threads < 0) {
+                        /* foo is used to check that arg is not like "45gjh" */
+                        error("Invalid nb_thread argument: %s\n", options.vars()->optarg);
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
                   break;
 
         case 'k': if (options.vars()->optarg[0] == '\0') {
-						error("Empty input_encoding argument\n");
-						return USAGE_ERROR_CODE;
-					}
+                        error("Empty input_encoding argument\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
                   decode_reading_encoding_parameter(&vec.mask_encoding_compatibility_input, options.vars()->optarg);
                   break;
         case 'q': if (options.vars()->optarg[0] == '\0') {
-						error("Empty output_encoding argument\n");
-						return USAGE_ERROR_CODE;
-					}
+                        error("Empty output_encoding argument\n");
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
                   decode_writing_encoding_parameter(&vec.encoding_output, &vec.bom_output, options.vars()->optarg);
                   break;
         case 'V': only_verify_arguments = true;
             break;
         case 'h': UniBatchRunScript_usage();
+            free(textbuf);
             return SUCCESS_RETURN_CODE;
         case ':': index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
             error("Missing argument for option --%s\n", lopts_UniRunScript[index].name);
             return USAGE_ERROR_CODE;
         case '?': index == -1 ? error("Invalid option -%c\n", options.vars()->optopt) :
             error("Invalid option --%s\n", options.vars()->optarg);
-
+            free(textbuf);
             return USAGE_ERROR_CODE;
         }
         index = -1;
     }
 
-    if ((options.vars()->optind != argc - 1) || ((*input_dir) == '\0') || ((*output_dir) == '\0')) {
+    if ((options.vars()->optind != argc - 1) || ((*(textbuf->input_dir)) == '\0') || ((*(textbuf->output_dir)) == '\0')) {
         error("Invalid arguments: rerun with --help\n");
-
+        free(textbuf);
         return USAGE_ERROR_CODE;
     }
 
     if (only_verify_arguments) {
         // freeing all allocated memory
-
+        free(textbuf);
         return SUCCESS_RETURN_CODE;
     }
 
     const char* package_name = argv[options.vars()->optind];
 
-	if (verbose_when_run && quiet_out)
-		verbose_direct_stdout = 1;
+    if (verbose_when_run && quiet_out)
+        verbose_direct_stdout = 1;
 
-    int retvalue = run_package_script_batch_internal(&vec, 
-		verbose, verbose_list_at_end, verbose_when_run, verbose_direct_stdout,
-		quiet_out, quiet_err,
-        package_name, script_name,
-        input_dir, output_dir,
-        resource_dir, corpus_work_dir,
+    int retvalue = run_package_script_batch_internal(&vec,
+        verbose, verbose_list_at_end, verbose_when_run, verbose_direct_stdout,
+        quiet_out, quiet_err,
+        package_name, textbuf->script_name,
+        textbuf->input_dir, textbuf->output_dir,
+        textbuf->resource_dir, textbuf->corpus_work_dir,
         nb_threads, NULL);
 
+    free(textbuf);
     return retvalue;
 }
-
 
 
 
