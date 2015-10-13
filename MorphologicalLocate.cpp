@@ -917,15 +917,23 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	 * OUTPUT VARIABLE STARTS
 	 */
 	struct opt_variable* variable_list=current_state->unoptimized_output_variable_starts;
+	Ustring* recycle_Ustring=NULL;
 	while (variable_list != NULL) {
+	  if (recycle_Ustring==NULL) {
+	    recycle_Ustring=new_Ustring();
+	  } else {
+	    empty(recycle_Ustring);
+	  }
+	  swap_output_variable_content(p->output_variables, variable_list->variable_number, recycle_Ustring);
 		set_output_variable_pending(p->output_variables,variable_list->variable_number);
 		morphological_locate(/*graph_depth,*/ variable_list->transition->state_number, pos_in_tokens,
 				pos_in_chars, matches, n_matches, ctx,
 				p, jamo, pos_in_jamo,
 				content_buffer);
 		p->weight=old_weight;
+    unset_output_variable_pending(p->output_variables,variable_list->variable_number);
+    swap_output_variable_content(p->output_variables, variable_list->variable_number, recycle_Ustring);
 		p->stack->stack_pointer = stack_top;
-		unset_output_variable_pending(p->output_variables,variable_list->variable_number);
 		variable_list=variable_list->next;
 	}
 
