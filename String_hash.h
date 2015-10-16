@@ -117,6 +117,7 @@ int get_value_index(const unichar*,struct string_hash*);
 struct string_hash* load_key_list(const VersatileEncodingConfig*,const char*);
 struct string_hash* load_key_value_list(const char*, const VersatileEncodingConfig*,unichar);
 void dump_values(U_FILE*,struct string_hash*);
+void dump_n_values(U_FILE* f, const struct string_hash* hash, int num);
 int get_longest_key_index(const unichar*,int*,struct string_hash*);
 
 

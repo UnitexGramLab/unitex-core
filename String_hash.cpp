@@ -450,6 +450,24 @@ for (int i=0;i<hash->size;i++) {
 }
 }
 
+/**
+ * Dumps the first num values of the given string_hash into the given file
+ * (one string per line). Raises a fatal error if the string_hash has no values.
+ */
+void dump_n_values(U_FILE* f, const struct string_hash* hash, int num) {
+  if (hash == NULL) {
+    fatal_error("NULL error in dump_values\n");
+  }
+  if (hash->value == NULL) {
+    fatal_error("No values to dump in dump_values\n");
+  }
+  if (num > hash->size) {
+    fatal_error("Too many values requested to dump in dump_values\n");
+  }
+  for (int i = 0; i < num; ++i) {
+    u_fprintf(f, "%S\n", hash->value[i]);
+  }
+}
 
 /**
  * This function explores the string 's' in order to find the longest prefix that is a key
