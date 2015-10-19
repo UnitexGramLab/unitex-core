@@ -4452,14 +4452,17 @@ int u_substr(const unichar *str, const unichar *target) {
  * Note that wide characters (> 8-bit) are skipped
  *
  * Author: Sébastien Paumier
- * Modified by S?bastian Nagel
+ * Modified by Sébastian Nagel
+ * Modified by Cristian Martinez 
  */
 void u_to_char(char *dest,unichar *src) {
-register unichar c;
-do {
-   c=*src++;
-   if (c<=0xFF) *dest++ = (char)c;
-} while (c!='\0');
+  // C-style reinterpret cast, @see http://stackoverflow.com/a/5042335/2042871
+  unsigned char* dest_unsigned_char = (unsigned char*) dest;
+  register unichar c;
+  do {
+    c = *src++;
+    if (c <= 0xFF) *(dest_unsigned_char++) = (unsigned char) c;
+  } while (c != '\0');
 }
 
 
@@ -4467,7 +4470,7 @@ do {
  * Converts up to n unichar* src characters into a char* dest
  * Note that wide characters (> 8-bit) are skipped
  */
-void u_to_char_n(char *dest, unichar *src, unsigned int n) {
+void u_to_char_n(char* dest, const unichar* src, unsigned int n) {
     unsigned char* dest_unsigned_char = (unsigned char*)dest;
     if (n == 0) {
         dest[0] = '\0';
