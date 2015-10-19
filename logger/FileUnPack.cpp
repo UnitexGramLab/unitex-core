@@ -1729,16 +1729,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (
         }
     }
 
-/*
-#ifndef NO_ZLIB
-    if ((s->cur_file_info.compression_method!=0) &&
-        (s->cur_file_info.compression_method!=Z_DEFLATED))
-        err=UNZ_BADZIPFILE;
-#else
-    if ((s->cur_file_info.compression_method!=0))
-        err=UNZ_BADZIPFILE;
-#endif
-*/
+
     pfile_in_zip_read_info->crc32_wait=s->cur_file_info.crc;
     pfile_in_zip_read_info->crc32=0;
     pfile_in_zip_read_info->compression_method =
@@ -1753,11 +1744,11 @@ extern int ZEXPORT unzOpenCurrentFile3 (
     if ((s->cur_file_info.compression_method == 8) &&
         (!raw))
     {
-        //pfile_in_zip_read_info->read_buffer = (char*)ALLOC()
+        // we read and decompress full file in memory with TINFL
         void* compressed = (void*)ALLOC(s->cur_file_info.compressed_size+1);
-        void* uncompressed = (void*)ALLOC(s->cur_file_info.uncompressed_size+1);
+        void* uncompressed = (compressed == NULL) ? NULL : (void*)ALLOC(s->cur_file_info.uncompressed_size+1);
 
-        if ((uncompressed!=NULL) && (compressed!=NULL))
+        if (uncompressed!=NULL)
             if (ZSEEK(pfile_in_zip_read_info->z_filefunc,
                 pfile_in_zip_read_info->filestream,
                 s->cur_file_info_internal.offset_curfile + SIZEZIPLOCALHEADER +
@@ -1770,7 +1761,8 @@ extern int ZEXPORT unzOpenCurrentFile3 (
                     compressed,
                     s->cur_file_info.compressed_size) == s->cur_file_info.compressed_size)
                 {
-                    size_t result = tinfl_decompress_mem_to_mem(uncompressed, s->cur_file_info.uncompressed_size, compressed, s->cur_file_info.compressed_size, TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF);
+                    size_t result = tinfl_decompress_mem_to_mem(uncompressed, s->cur_file_info.uncompressed_size, compressed,
+                        s->cur_file_info.compressed_size, TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF);
                     if (result == s->cur_file_info.uncompressed_size)
                     {
                         uLong calc_crc32 = crc32(0, uncompressed, s->cur_file_info.uncompressed_size);
@@ -1785,8 +1777,6 @@ extern int ZEXPORT unzOpenCurrentFile3 (
                             TRYFREE(pfile_in_zip_read_info->read_buffer);
                             pfile_in_zip_read_info->read_buffer = (char*)uncompressed;
                             uncompressed = NULL;
-                            pfile_in_zip_read_info->rest_read_compressed = 0;
-                            pfile_in_zip_read_info->rest_read_compressed = 0;
                             pfile_in_zip_read_info->stream.total_out = 0;
                         }
                     }
@@ -1794,6 +1784,12 @@ extern int ZEXPORT unzOpenCurrentFile3 (
             }
         TRYFREE(compressed);
         TRYFREE(uncompressed);
+        if (pfile_in_zip_read_info->raw != 2)
+        {
+            TRYFREE(pfile_in_zip_read_info->read_buffer);
+            TRYFREE(pfile_in_zip_read_info);
+            return UNZ_BADZIPFILE;
+        }
     }
 #endif
 #ifndef NO_ZLIB
