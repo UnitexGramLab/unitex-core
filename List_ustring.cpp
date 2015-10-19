@@ -32,6 +32,23 @@ namespace unitex {
 /**
  * Allocates, initializes and returns a new string list element.
  */
+struct list_ustring* new_list_ustring(const char* string, struct list_ustring* following,Abstract_allocator prv_alloc) {
+  if (string==NULL) {
+    fatal_error("NULL string argument in new_list_ustring\n");
+  }
+  struct list_ustring* l;
+  l=(struct list_ustring*)malloc_cb(sizeof(struct list_ustring),prv_alloc);
+  if (l==NULL) {
+    fatal_alloc_error("new_list_ustring");
+  }
+  l->string=u_strdup(string,prv_alloc);
+  l->next=following;
+  return l;
+}
+
+/**
+ * Allocates, initializes and returns a new string list element.
+ */
 struct list_ustring* new_list_ustring(const unichar* string,struct list_ustring* following,Abstract_allocator prv_alloc) {
 if (string==NULL) {
    fatal_error("NULL string argument in new_list_ustring\n");
@@ -54,6 +71,12 @@ struct list_ustring* new_list_ustring(const unichar* string,Abstract_allocator p
 return new_list_ustring(string,NULL,prv_alloc);
 }
 
+/**
+ * Allocates, initializes and returns a new string list element.
+ */
+struct list_ustring* new_list_ustring(const char* string,Abstract_allocator prv_alloc) {
+return new_list_ustring(string,NULL,prv_alloc);
+}
 
 /**
  * Frees a whole unicode string list.
@@ -151,9 +174,20 @@ l_browse->next=new_list_ustring(s, prv_alloc);
 return l;
 }
 
+/**
+ * Inserts an element at the end of a list.
+ */
+struct list_ustring* insert_at_end_of_list(const char* s,struct list_ustring* l,Abstract_allocator prv_alloc) {
+if (l==NULL) return new_list_ustring(s,prv_alloc);
+struct list_ustring* l_browse = l;
+while (l_browse->next != NULL) l_browse = l_browse->next;
+l_browse->next=new_list_ustring(s, prv_alloc);
+return l;
+}
+
 
 /**
-* Inserts an element at the end of a list maintaing pointer to latest item.
+* Inserts an element at the end of a list maintaining the pointer to latest item.
 */
 struct list_ustring* insert_at_end_of_list_with_latest(const unichar* s, struct list_ustring* l, struct list_ustring** latest, Abstract_allocator prv_alloc) {
   if ((*latest) == NULL) {
@@ -165,11 +199,38 @@ struct list_ustring* insert_at_end_of_list_with_latest(const unichar* s, struct 
   return l;
 }
 
+/**
+* Inserts an element at the end of a list maintaining the pointer to latest item.
+*/
+struct list_ustring* insert_at_end_of_list_with_latest(const char* s, struct list_ustring* l, struct list_ustring** latest, Abstract_allocator prv_alloc) {
+  if ((*latest) == NULL) {
+    *latest = new_list_ustring(s, prv_alloc);
+    return *latest;
+  } 
+  (*latest)->next = new_list_ustring(s, prv_alloc);
+  *latest = (*latest)->next;
+  return l;
+}
+
 
 /**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
 int is_in_list(const unichar* value,const struct list_ustring* l) {
+if (value==NULL) {
+   fatal_error("NULL string argument in is_in_list\n");
+}
+while (l!=NULL) {
+  if (!u_strcmp(l->string,value)) return 1;
+  l=l->next;
+}
+return 0;
+}
+
+/**
+ * Returns 1 if the given value is in the list; 0 otherwise.
+ */
+int is_in_list(const char* value,const struct list_ustring* l) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
 }
