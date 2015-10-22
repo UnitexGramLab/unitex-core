@@ -34,6 +34,7 @@
 #define UnitexToolH
 
 #include "AbstractCallbackFuncModifier.h"
+#include "UnitexGetOpt.h"
 
 #define _UNITEX_VER 0300
 
