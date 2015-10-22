@@ -472,7 +472,7 @@ static int do_extract_from_opened_pack_archive_currentfile(
             af_setsizereservation(fout, (long)file_info.uncompressed_size);
             do
             {
-                err = unzReadCurrentFile(uf,buf,size_buf);
+                err = unzReadCurrentFile(uf,buf,(unsigned)size_buf);
                 if (err<0)
                 {
                     error("error %d with zipfile in unzReadCurrentFile\n",err);
