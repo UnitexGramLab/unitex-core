@@ -83,7 +83,7 @@ typedef struct {
 
 
 typedef struct {
-  unichar dico_class[MAX_CLASS_NAME];   //morphological class as it appears in a dictionary (e.g. "N")
+  unichar dico_class[MAX_DIC_CLASS_NAME];   //morphological class as it appears in a dictionary (e.g. "N")
   l_class_T* cl;                       //language class
 } d_class_eq_T;
 

@@ -50,7 +50,7 @@ namespace unitex {
 //maximum number of inflection classes (noun, adj, etc.)
 #define MAX_CLASSES 50
 //maximum length of a class name in a dictionary
-#define MAX_CLASS_NAME 10
+#define MAX_DIC_CLASS_NAME 10
 //maximum number of values for an inflection category
 #define MAX_CAT_VALUES 500
 //maximum length of a line in the language morhology file

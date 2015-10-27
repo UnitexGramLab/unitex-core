@@ -494,9 +494,9 @@ int DLC_scan_comment(unichar** comment, unichar* line) {
 /* If the string beginning the inflection paradigm is not in the list of class        */
 /* equivalences, returns NULL.                                                        */
 l_class_T* DLC_class_para(unichar* para, d_class_equiv_T* D_CLASS_EQUIV) {
-	unichar cl[MAX_CLASS_NAME]; //buffer for the class string
+	unichar cl[MAX_DIC_CLASS_NAME]; //buffer for the class string
 	int l; //length of a scanned sequence
-	l = u_scan_until_char(cl, para, MAX_CLASS_NAME - 1, "0123456789 _;-:/\\+",
+	l = u_scan_until_char(cl, para, MAX_DIC_CLASS_NAME - 1, "0123456789 _;-:/\\+",
 			1);
 	if (l)
 		return d_get_class_str(cl, D_CLASS_EQUIV);
