@@ -384,6 +384,8 @@ struct locate_parameters {
 
 
    int graph_depth_backup_nested;
+
+   const char* graph_filename;
 };
 
 

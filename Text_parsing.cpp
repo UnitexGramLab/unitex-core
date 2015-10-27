@@ -186,14 +186,14 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
 				if ((p->max_count_call > 0)
 						&& (p->counting_step.count_call >= p->max_count_call)) {
-					u_printf(
-							"stop computing token %u after %u step computing.\n",
-							p->current_origin, p->counting_step.count_call);
+					error(
+							"Stop computing token %u after %u step computing with grammar %s.\n",
+							p->current_origin, p->counting_step.count_call, p->graph_filename);
 				} else if ((p->max_count_call_warning > 0) && (p->counting_step.count_call
 						>= p->max_count_call_warning)) {
-					u_printf(
-							"warning : computing token %u take %u step computing.\n",
-							p->current_origin, p->counting_step.count_call);
+					error(
+							"Warning : computing token %u take %u step computing with grammar %s.\n",
+							p->current_origin, p->counting_step.count_call, p->graph_filename);
 				}
 				int can_cache_matches = 0;
 				p->last_tested_position=p->last_tested_position+p->current_origin;
@@ -318,7 +318,7 @@ void error_at_token_pos(const char* message, int start, int length,
 		/* The context was already printed */
 		return;
 	}
-	error("%s\n  ", message);
+	error("%s with grammar %s\n  ", message, p->graph_filename);
 	for (i = (start - 4); (i <= (start + 20)) && (i < p->buffer_size); i++) {
 		if (i < 0) {
 			continue;

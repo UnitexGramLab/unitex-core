@@ -51,6 +51,7 @@ struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct loca
 if (p==NULL) {
    fatal_alloc_error("new_locate_parameters");
 }
+memset(p,0,sizeof(struct locate_parameters));
 p->tilde_negation_operator=1;
 p->useLocateCache=1;
 p->token_control=NULL;
@@ -252,6 +253,7 @@ p->protect_dic_chars=protect_dic_chars;
 p->max_count_call = max_count_call;
 p->max_count_call_warning = max_count_call_warning;
 p->token_filename = tokens;
+p->graph_filename = fst2_name;
 char* concord = (buffer_filename + (step_filename_buffer * 0));
 char* concord_info = (buffer_filename + (step_filename_buffer * 1));
 
