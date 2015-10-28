@@ -771,13 +771,15 @@ extern int ZEXPORT zipOpenNewFileInZip3 (
     uInt i;
     int err = ZIP_OK;
 
+    /* code to force compiler include zip_copyright string in binary */
+    size_t length_copyright_dummy = strlen(zip_copyright);
+
     /* code to prevent warning */
     (void)windowBits;
     (void)memLevel;
     (void)strategy;
     (void)crcForCrypting;
-    
-    strlen(zip_copyright);
+    ((void)(length_copyright_dummy));
 
 
 #    ifdef NOCRYPT
