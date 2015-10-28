@@ -21,6 +21,7 @@
 
 #include <string.h>
 #include "ProgramInvoker.h"
+#include "UnusedParameter.h"
 #include "Error.h"
 #include "Ustring.h"
 #include "SyncTool.h"
@@ -200,6 +201,7 @@ char* build_command_line_alloc(ProgramInvoker* invoker, int line_protection, int
  * additional pair of double quotes */
 #ifdef _NOT_UNDER_WINDOWS
 const char* protection="";
+DISCARD_UNUSED_PARAMETER(line_protection)
 #else
 const char* protection= line_protection ? "\"" : "";
 #endif
