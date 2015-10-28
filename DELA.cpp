@@ -1840,12 +1840,13 @@ for (int i=0;i<e->n_inflectional_codes;i++) {
  * \=,X.Y   =>  \=,X.Y
  * \\=,X.Y   =>  \$,X.Y
  */
-void replace_special_equal_signs(unichar* s) {
+int replace_special_equal_signs(unichar* s) {
 int i=0;
 while (s[i]!='\0') {
 	if (s[i]==PROTECTION_CHAR) {
 		if (s[i+1]=='\0') {
-			fatal_error("Unexpected \\ at end of string in replace_special_equal_signs\n");
+			error("Unexpected \\ at end of string in replace_special_equal_signs\n");
+			return DEFAULT_ERROR_CODE; 
 		}
 		i=i+2;
 	} else {
@@ -1853,6 +1854,7 @@ while (s[i]!='\0') {
 		i++;
 	}
 }
+return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

@@ -143,7 +143,7 @@ void debug_print_entry(struct dela_entry*);
 void debug_println_entry(struct dela_entry*);
 
 void dela_entry_to_string(Ustring* s,struct dela_entry* e);
-void replace_special_equal_signs(unichar* s);
+int replace_special_equal_signs(unichar* s);
 
 } // namespace unitex
 
