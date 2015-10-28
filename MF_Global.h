@@ -68,7 +68,7 @@ typedef enum {
   // Force .grf recompilation even if fst exists
   ALWAYS_RECOMPILE,
   // Never recompile .grf files
-  NEVER_RECOMPILE, 
+  NEVER_RECOMPILE
 } GraphRecompilationPolicy;
 
 typedef struct {

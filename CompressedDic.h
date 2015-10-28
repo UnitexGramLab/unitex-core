@@ -58,7 +58,7 @@ typedef enum {
 typedef enum {
 	BIN_CLASSIC_STATE,   /* old style .bin state encoding on 2 bytes */
 	BIN_NEW_STATE,       /* variable length state encoding */
-	BIN_BIN2_STATE,      /* .bin2 state encoding */
+	BIN_BIN2_STATE       /* .bin2 state encoding */
 } BinStateEncoding;
 
 
