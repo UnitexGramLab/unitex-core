@@ -264,7 +264,7 @@ void cleanup_filename_inzip_minivfs(char* fn) {
                 *(fn+len_after) = '\0';
                 continue;
             }
-        }    
+        }
         fn++;
     }
 }
@@ -343,7 +343,7 @@ int do_extracting_currentfile(unzFile uf,
                     mkdir_recursive(write_filename_create,0,pdlfc);
                     fout=af_fopen_unlogged(write_filename_create,"wb");
                 }
-            }    
+            }
         }
 
         if (fout!=NULL) {
@@ -357,12 +357,12 @@ int do_extracting_currentfile(unzFile uf,
                         err=UNZ_ERRNO;
                         break;
                     }
-                }    
+                }
             }
             while (err>0); // FIXME(gvollant) This is an empty loop !!!
             if (fout) {
                     af_fclose_unlogged(fout);
-            }        
+            }
 /*
             if (err==0)
                 change_file_date(write_filename_create,file_info.dosDate,
@@ -422,7 +422,7 @@ int do_extracting_currentfile_memory(unzFile uf,
         free(*ptr);
         *ptr = NULL;
         *size_file = 0;
-    } else {   
+    } else {
        /* we append three '\0' at end of file, to be sure UTF16 are NULL terminated */
         *(((char*)(*ptr)) + file_info.uncompressed_size) = 0;
         *(((char*)(*ptr)) + file_info.uncompressed_size+1) = 0;
@@ -608,7 +608,7 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo) {
           *summaryInfo = (char*)malloc(lenMsg+1);
           if ((*summaryInfo) != NULL) {
             memcpy(*summaryInfo,msgThis,lenMsg+1);
-          }  
+          }
           return ((*summaryInfo) == NULL) ? 0 : 1;
       } else {
           size_t pos = strlen(*summaryInfo);
@@ -1019,13 +1019,13 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,
             if (is_filename_in_abstract_file_space(filename_to_be_written) == 0)
               mkdir_recursive(filename_to_be_written,0,pdlfc);
         }
-      }  
+      }
 
 
       hTimeElapsed htm = NULL;
       if (pTimeElapsed != NULL) {
         htm = SyncBuidTimeMarkerObject();
-      }  
+      }
       /* calling the tool to rerun */
       int ret_tool = main_UnitexTool_C_internal(argc_log+1,(char**)argv_log_reworked);
       if (htm != NULL) {
@@ -1163,7 +1163,7 @@ int RunLogParamInstallLoggerClassEx(const char* LogNameRead,
               AddMsgToSummaryBuf(msgEnd,summaryInfo);
               if (error_compare != 0) {
                 AddMsgToSummaryBuf(msgEnd,summaryInfoErrorOnly);
-              } 
+              }
           }
       }
 
@@ -1331,12 +1331,12 @@ int fExpand = 0;
 
     if (iln == 0) {
         return 0;
-    }    
-    
+    }
+
     for (i=iln-1;i>=0;i--) {
       if ((*(lpFn+i)) == '.') {
         iEndName = i;
-      }  
+      }
     }
     iPoint = iEndName;
 
@@ -1349,11 +1349,11 @@ int fExpand = 0;
           for (iBegChif=iEndChif=i;iBegChif>0;iBegChif--) {
             if (!IsNumber(*(lpFn+iBegChif-1))) {
                 break;
-            }    
-          }  
+            }
+          }
           break;
         }
-      }  
+      }
       fInExt = fFoundChif = (i>=iBegName) ;
       }
 
@@ -1365,11 +1365,11 @@ int fExpand = 0;
             for (iBegChif=iEndChif=i;iBegChif>0;iBegChif--) {
               if (!IsNumber(*(lpFn+iBegChif-1))) {
                 break;
-              }  
+              }
             }
             break;
         }
-      }    
+      }
       fFoundChif = (i>=iBegName) ;
       }
 
@@ -1401,7 +1401,7 @@ int fExpand = 0;
             if (*(lpFn+j) != '9') {
              fExpand = 0;
             }
-          }  
+          }
           if ((iEndName-iBegName > (fInExt ? 2 : 7)) && (fExpand)) {
             fExpand = 0;
             if (((iBegChif > 0) && (!fInExt)) || ((iBegChif > (iPoint+2)) && (fInExt))) {
@@ -1421,8 +1421,8 @@ int fExpand = 0;
         iLenChif=iEndChif+1-iBegChif;
         memcpy(szBuf,lpFn+iBegChif,iLenChif);
         szBuf[iLenChif] = '\0';
-    
-        if (fForce) { 
+
+        if (fForce) {
           dwNb =0 ;
         } else {
           dwNb = atol(szBuf) ;
@@ -1473,7 +1473,7 @@ const char* usage_RunLog =
          "  -o NameTool/--tool=NameTool: run only log for NameTool\n"
          "  -i N/--increment=N: increment filename <ulp> by 0 to N\n"
          "  -t N/--thread=N: create N thread\n"
-         "  -z N /--stack-size = N: set stack size with N kilobytes (N multiple of 64)\n"
+         "  -z Nk /--stack-size = Nk: set stack size with N kilobytes (N multiple of 64)\n"
          "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
          "  -g N/--loop=N: perform the whole task N time\n"
          "  -f N/--break-after=N: user cancel after N run (with one thread only)\n"
@@ -1517,7 +1517,7 @@ const struct option_TS lopts_RunLog[]= {
       {"junk-summary",no_argument_TS,NULL,'j'},
       {"loop",required_argument_TS,NULL,'g'},
       {"only_verify_arguments",no_argument_TS,NULL,'V'},
-      {"help",no_argument_TS,NULL,'h'},      
+      {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1602,11 +1602,11 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
     long i;
     unsigned long lprev=0;
     long nb_iteration = (p_RunLog_ctx->random != 0) ? p_RunLog_ctx->random : p_RunLog_ctx->increment;
-    
+
     if (nb_iteration==0) {
         nb_iteration=1;
     }
-    
+
     unsigned long add_thread = p_RunLog_ThreadData->num_thread * nb_iteration;
 
     if (p_RunLog_ctx->random != 0) {
@@ -1791,14 +1791,31 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_RunLog,lopts_RunLog,&ind
              }
              runLog_ctx->nb_thread=atoi(options.vars()->optarg);
              break;
+
    case 'z':
-             if (options.vars()->optarg[0]=='\0') {
-                error("You must specify a stack size value\n");
+            {
+                char cSuffix = 0;
+                char foo;
+                int r = sscanf(options.vars()->optarg, "%u%c%c", &stack_size, &cSuffix, &foo);
+                if ((r==2) && ((cSuffix == 'k') || (cSuffix=='K')))
+                {
+                    stack_size = stack_size * 1024;
+                    break;
+                }
+
+                if ((r==2) && ((cSuffix == 'm') || (cSuffix=='M')))
+                {
+                    stack_size = stack_size * 1024 * 1024;
+                    break;
+                }
+
+                if (r==1) break;
+
+                error("Invalid stack-size argument: %s\n", options.vars()->optarg);
                 free(runLog_ctx);
                 return USAGE_ERROR_CODE;
-             }
-             stack_size=(unsigned int)atoi(options.vars()->optarg);
-             break;
+            }
+
    case 'f':
              if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a number of test before break\n");
@@ -1933,7 +1950,7 @@ hTimeElapsed htmWork = SyncBuidTimeMarkerObject();
 if ((runLog_ctx->nb_thread <= 1) && (stack_size==0)) {
    DoWork(*ptrptr,0);
 } else {
-   SyncDoRunThreadsWithStackSize(runLog_ctx->nb_thread,DoWork,ptrptr, stack_size * 1024);
+   SyncDoRunThreadsWithStackSize(runLog_ctx->nb_thread,DoWork,ptrptr, stack_size);
 }
 
 unsigned int timeElapsedWork = SyncGetMSecElapsed(htmWork);
@@ -1996,7 +2013,7 @@ for (ut=0;ut<runLog_ctx->nb_thread;ut++) {
     // test first if there are any error
     if ((prunLog_ThreadData+ut)->count_run_error > 0) {
         return_value = RUNLOG_COMPARE_ERROR_CODE;
-    // if there are not errors, test then for warnings    
+    // if there are not errors, test then for warnings
     } else if ((return_value != RUNLOG_COMPARE_ERROR_CODE) &&
                ((prunLog_ThreadData+ut)->count_run_warning > 0)) {
         return_value = RUNLOG_COMPARE_WARNING_CODE;

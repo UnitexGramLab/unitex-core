@@ -895,7 +895,7 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
         {
             for (int i = 0;i < nb_threads;i++)
                 *(ptrptr + i) = &config_batch;
-            SyncDoRunThreadsWithStackSize(nb_threads, ThreadFuncBatch, ptrptr, stack_size * 1024);
+            SyncDoRunThreadsWithStackSize(nb_threads, ThreadFuncBatch, ptrptr, stack_size);
             free(ptrptr);
         }
     }
@@ -988,7 +988,7 @@ const char* usage_UniBatchRunScript =
 "  -w XXX/--corpus_work_dir=XXX : directory for working on corpus\n"
 "  -s XXX/--script_name=XXX : name of script file\n"
 "  -t N /--thread = N: create N thread\n"
-"  -z N /--stack-size = N: set stack size with N kilobytes (N multiple of 64)\n"
+"  -z Nk /--stack-size = Nk: set stack size with N kilobytes (N multiple of 64)\n"
 "  -v/--verbose: emit batch info message\n"
 "  -l/--verbose_final: emit batch info list after running\n"
 "  -p/--verbose_progress: emit batch info message when running\n"
@@ -1136,13 +1136,28 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
                     }
                   break;
 
-        case 'z': if (1 != sscanf(options.vars()->optarg, "%u%c", &stack_size, &foo) || nb_threads < 0) {
-                        /* foo is used to check that arg is not like "45gjh" */
-                        error("Invalid stack-size argument: %s\n", options.vars()->optarg);
-                        free(textbuf);
-                        return USAGE_ERROR_CODE;
-                    }
-                  break;
+        case 'z':
+        {
+            char cSuffix = 0;
+            int r = sscanf(options.vars()->optarg, "%u%c%c", &stack_size, &cSuffix, &foo);
+            if ((r == 2) && ((cSuffix == 'k') || (cSuffix == 'K')))
+            {
+                stack_size = stack_size * 1024;
+                break;
+            }
+
+            if ((r == 2) && ((cSuffix == 'm') || (cSuffix == 'M')))
+            {
+                stack_size = stack_size * 1024 * 1024;
+                break;
+            }
+
+            if (r == 1) break;
+
+            error("Invalid stack-size argument: %s\n", options.vars()->optarg);
+            free(textbuf);
+            return USAGE_ERROR_CODE;
+        }
 
         case 'k': if (options.vars()->optarg[0] == '\0') {
                         error("Empty input_encoding argument\n");
