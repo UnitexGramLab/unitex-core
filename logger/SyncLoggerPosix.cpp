@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -34,7 +34,7 @@
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
 #include "SyncLogger.h"
-
+#include "Error.h"
 #include <sys/time.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -75,11 +75,30 @@ UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible()
     return 1;
 }
 
-UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray)
+// see http://linux.die.net/man/3/pthread_create
+
+static void internal_do_run_threads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray, unsigned int stackSize)
 {
     unsigned int i;
     pthread_t * pTid=(pthread_t*)malloc(sizeof(pthread_t)*iNbThread);
+    pthread_attr_t attr;
     SYNC_THEAD_INFO* pThreadInfoArray=(SYNC_THEAD_INFO*)malloc(sizeof(SYNC_THEAD_INFO)*iNbThread);
+    memset(&attr, 0, sizeof(pthread_attr_t));
+
+    if (stackSize != 0)
+    {
+        int s = pthread_attr_init(&attr);
+        if (s != 0)
+        {
+            error("error in pthread_attr_init");
+            return;
+        }
+        s = pthread_attr_setstacksize(&attr, (size_t)stackSize);
+        if (s != 0)
+        {
+            error("invalid stack size %u", stackSize);
+        }
+    }
 
     for (i=0;i<iNbThread;i++)
     {
@@ -87,18 +106,32 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
         (pThreadInfoArray+i)->privateDataPtr = privateDataPtr;
         (pThreadInfoArray+i)->thread_func = thread_func;
         (pThreadInfoArray+i)->iNbThread = i;
-        pthread_create(pTid+i,NULL,SyncThreadWrkFuncPosix,(pThreadInfoArray+i));
+        pthread_create(pTid+i, (stackSize != 0) ? (&attr) : NULL, SyncThreadWrkFuncPosix, (pThreadInfoArray+i));
     }
-
-    
 
     for (i=0;i<iNbThread;i++)
         pthread_join(*(pTid+i),NULL);
+
+    if (stackSize != 0)
+    {
+        pthread_attr_destroy(&attr);
+    }
 
     free(pThreadInfoArray);
     free(pTid);
 }
 
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray)
+{
+    internal_do_run_threads(iNbThread, thread_func, privateDataPtrArray, 0);
+}
+
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreadsWithStackSize(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray, unsigned int stackSize)
+{
+    internal_do_run_threads(iNbThread, thread_func, privateDataPtrArray, stackSize);
+}
 
 
 typedef struct

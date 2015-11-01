@@ -59,9 +59,9 @@ extern "C" {
 typedef void (SYNC_CALLBACK_UNITEX* t_thread_func)(void* privateDataPtr,unsigned int iNbThread);
 
 UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible();
+
 UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray);
-
-
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreadsWithStackSize(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray, unsigned int stackSize);
 
 
 

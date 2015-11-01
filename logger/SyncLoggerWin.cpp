@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -34,6 +34,7 @@
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
 #include "SyncLogger.h"
+#include "UnusedParameter.h"
 
 #if (defined(_WIN32)) || defined(WIN32)
 
@@ -101,7 +102,7 @@ UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible()
     return 1;
 }
 
-UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray)
+static void internal_do_run_threads(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray, unsigned int stackSize)
 {
     unsigned int i;
     HANDLE* pHandle=(HANDLE*)malloc(sizeof(HANDLE)*iNbThread);
@@ -114,12 +115,12 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
         (pThreadInfoArray+i)->thread_func = thread_func;
         (pThreadInfoArray+i)->iNbThread = i;
 #ifdef UNITEX_USING_WINRT_API
-        *(pHandle+i) = ThreadEmulation::CreateThread(NULL,0,SyncThreadWrkFunc,(pThreadInfoArray+i),0,&((pThreadInfoArray+i)->dwThreadId));
+        *(pHandle+i) = ThreadEmulation::CreateThread(NULL,(size_t)stackSize,SyncThreadWrkFunc,(pThreadInfoArray+i),0,&((pThreadInfoArray+i)->dwThreadId));
 #else
-        *(pHandle+i) = CreateThread(NULL,0,SyncThreadWrkFunc,(pThreadInfoArray+i),0,&((pThreadInfoArray+i)->dwThreadId));
+        *(pHandle+i) = CreateThread(NULL,(size_t)stackSize,SyncThreadWrkFunc,(pThreadInfoArray+i),0,&((pThreadInfoArray+i)->dwThreadId));
 #endif
     }
-	
+
 #ifdef UNITEX_USING_WINRT_API
     WaitForMultipleObjectsEx(iNbThread,pHandle,TRUE,INFINITE,FALSE);
 #else
@@ -129,6 +130,19 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
     free(pThreadInfoArray);
 }
 #endif
+
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray)
+{
+    internal_do_run_threads(iNbThread, thread_func, privateDataPtrArray, 0);
+}
+
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreadsWithStackSize(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray, unsigned int stackSize)
+{
+    internal_do_run_threads(iNbThread, thread_func, privateDataPtrArray, stackSize);
+}
+
 /**************************/
 
 
@@ -163,28 +177,28 @@ UNITEX_FUNC SYNC_TLS_OBJECT UNITEX_CALL SyncBuildTls()
 
     if (pstoi != NULL)
     {
-		int new_slot_pos;
+        int new_slot_pos;
         for (new_slot_pos=0;new_slot_pos<NbTLSSlotInMap;new_slot_pos++)
-		{
-			if (!(*(TlsSlotMap+new_slot_pos)))
-				break;
-		}
+        {
+            if (!(*(TlsSlotMap+new_slot_pos)))
+                break;
+        }
 
-		if (new_slot_pos==NbTLSSlotInMap)
-		{
-			BOOL* newTlsSlotMap = (BOOL*)((TlsSlotMap == NULL) ? 
-				malloc(sizeof(BOOL)*(new_slot_pos+1)) :
-			    realloc(TlsSlotMap,sizeof(BOOL)*(new_slot_pos+1)));
-			if (newTlsSlotMap == NULL)
-			{
-				free(pstoi);
-				return NULL;
-			}
-			TlsSlotMap = newTlsSlotMap;
-			NbTLSSlotInMap = new_slot_pos+1;		
-		}
-		*(TlsSlotMap+new_slot_pos) = TRUE;
-		pstoi->slotPos = new_slot_pos;
+        if (new_slot_pos==NbTLSSlotInMap)
+        {
+            BOOL* newTlsSlotMap = (BOOL*)((TlsSlotMap == NULL) ?
+                malloc(sizeof(BOOL)*(new_slot_pos+1)) :
+                realloc(TlsSlotMap,sizeof(BOOL)*(new_slot_pos+1)));
+            if (newTlsSlotMap == NULL)
+            {
+                free(pstoi);
+                return NULL;
+            }
+            TlsSlotMap = newTlsSlotMap;
+            NbTLSSlotInMap = new_slot_pos+1;
+        }
+        *(TlsSlotMap+new_slot_pos) = TRUE;
+        pstoi->slotPos = new_slot_pos;
     }
 
     return (SYNC_TLS_OBJECT)pstoi;
@@ -195,27 +209,27 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteTls(SYNC_TLS_OBJECT pTls)
     SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION* pstoi = (SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION*)pTls;
     if (pstoi != NULL)
     {
-		int slotPos = pstoi->slotPos;
-		if (slotPos < NbTLSSlotInMap)
-		{
-			*(TlsSlotMap+slotPos) = FALSE;
-		}
+        int slotPos = pstoi->slotPos;
+        if (slotPos < NbTLSSlotInMap)
+        {
+            *(TlsSlotMap+slotPos) = FALSE;
+        }
 
-		int last_slot_used = -1;
-		for (int loop_slot=0;loop_slot<NbTLSSlotInMap;loop_slot++)
-		{
-			if (*(TlsSlotMap+loop_slot))
-				last_slot_used = TRUE;
-		}
+        int last_slot_used = -1;
+        for (int loop_slot=0;loop_slot<NbTLSSlotInMap;loop_slot++)
+        {
+            if (*(TlsSlotMap+loop_slot))
+                last_slot_used = TRUE;
+        }
 
-		if (last_slot_used == -1)
-		{
-			if (TlsSlotMap != NULL)
-				free(TlsSlotMap);
-			TlsSlotMap = NULL;			
-		}
-		NbTLSSlotInMap = last_slot_used+1;
-		
+        if (last_slot_used == -1)
+        {
+            if (TlsSlotMap != NULL)
+                free(TlsSlotMap);
+            TlsSlotMap = NULL;
+        }
+        NbTLSSlotInMap = last_slot_used+1;
+
         free(pstoi);
     }
 }
@@ -226,58 +240,58 @@ UNITEX_FUNC int UNITEX_CALL SyncTlsSetValue(SYNC_TLS_OBJECT pTls,void* pUsrPtr)
     if (pstoi == NULL)
         return 0;
 
-	int slotPos = pstoi->slotPos;
+    int slotPos = pstoi->slotPos;
 
-	if (pUsrPtr != NULL)
-	{
-		if (slotPos >= NbTLSSlotInMap)
-			return 0;
-		if (!(*(TlsSlotMap+slotPos)))
-			return 0;
-		if (TlsEmulationCurrentThreadNbSlotValuesAllocated <= slotPos)
-		{
-			void** newTlsEmulationCurrentThreadSlotValues = (void**) ((TlsEmulationCurrentThreadSlotValues == NULL) ?
-							malloc(sizeof(void*)*(slotPos+1)) :
-							realloc(TlsEmulationCurrentThreadSlotValues,sizeof(void*)*(slotPos+1)));
-			if (newTlsEmulationCurrentThreadSlotValues == NULL)
-				return 0;
+    if (pUsrPtr != NULL)
+    {
+        if (slotPos >= NbTLSSlotInMap)
+            return 0;
+        if (!(*(TlsSlotMap+slotPos)))
+            return 0;
+        if (TlsEmulationCurrentThreadNbSlotValuesAllocated <= slotPos)
+        {
+            void** newTlsEmulationCurrentThreadSlotValues = (void**) ((TlsEmulationCurrentThreadSlotValues == NULL) ?
+                            malloc(sizeof(void*)*(slotPos+1)) :
+                            realloc(TlsEmulationCurrentThreadSlotValues,sizeof(void*)*(slotPos+1)));
+            if (newTlsEmulationCurrentThreadSlotValues == NULL)
+                return 0;
 
-			TlsEmulationCurrentThreadSlotValues = newTlsEmulationCurrentThreadSlotValues;
-			for (int fill=TlsEmulationCurrentThreadNbSlotValuesAllocated;fill<slotPos;fill++)
-				*(TlsEmulationCurrentThreadSlotValues + fill) = (void*)NULL;
-			*(TlsEmulationCurrentThreadSlotValues + slotPos) = pUsrPtr;
-			TlsEmulationCurrentThreadNbSlotValuesAllocated = slotPos + 1;
-		}
-	}
-	else
-	{
-		if (TlsEmulationCurrentThreadNbSlotValuesAllocated > slotPos)
-		{
-			*(TlsEmulationCurrentThreadSlotValues + slotPos) = pUsrPtr;
+            TlsEmulationCurrentThreadSlotValues = newTlsEmulationCurrentThreadSlotValues;
+            for (int fill=TlsEmulationCurrentThreadNbSlotValuesAllocated;fill<slotPos;fill++)
+                *(TlsEmulationCurrentThreadSlotValues + fill) = (void*)NULL;
+            *(TlsEmulationCurrentThreadSlotValues + slotPos) = pUsrPtr;
+            TlsEmulationCurrentThreadNbSlotValuesAllocated = slotPos + 1;
+        }
+    }
+    else
+    {
+        if (TlsEmulationCurrentThreadNbSlotValuesAllocated > slotPos)
+        {
+            *(TlsEmulationCurrentThreadSlotValues + slotPos) = pUsrPtr;
 
-			int isOneSlotFilled=0;
-			for (int checkOneFilledLoop=0;(checkOneFilledLoop<TlsEmulationCurrentThreadNbSlotValuesAllocated) && (checkOneFilledLoop<NbTLSSlotInMap);checkOneFilledLoop++)
-			{
-				if (*(TlsSlotMap+checkOneFilledLoop))
-					if ((*(TlsEmulationCurrentThreadSlotValues + checkOneFilledLoop)) != (void*)NULL)
-					{
-						isOneSlotFilled=1;
-						break;
-					}
-			}
+            int isOneSlotFilled=0;
+            for (int checkOneFilledLoop=0;(checkOneFilledLoop<TlsEmulationCurrentThreadNbSlotValuesAllocated) && (checkOneFilledLoop<NbTLSSlotInMap);checkOneFilledLoop++)
+            {
+                if (*(TlsSlotMap+checkOneFilledLoop))
+                    if ((*(TlsEmulationCurrentThreadSlotValues + checkOneFilledLoop)) != (void*)NULL)
+                    {
+                        isOneSlotFilled=1;
+                        break;
+                    }
+            }
 
-			if (isOneSlotFilled == 0)
-			{
-				if (TlsEmulationCurrentThreadSlotValues != NULL)
-				{
-					free(TlsEmulationCurrentThreadSlotValues);
-					TlsEmulationCurrentThreadSlotValues = NULL;
-				}
-				TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
-			}
-		}
-	}
-    
+            if (isOneSlotFilled == 0)
+            {
+                if (TlsEmulationCurrentThreadSlotValues != NULL)
+                {
+                    free(TlsEmulationCurrentThreadSlotValues);
+                    TlsEmulationCurrentThreadSlotValues = NULL;
+                }
+                TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
+            }
+        }
+    }
+
     return 1;
 }
 
@@ -286,10 +300,10 @@ UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls)
     SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION* pstoi = (SYNC_TLS_OBJECT_INTERNAL_MSVC_EXTENSION*)pTls;
     if (pstoi == NULL)
         return NULL;
-	int slotPos = pstoi->slotPos;
-	if ((slotPos < TlsEmulationCurrentThreadNbSlotValuesAllocated) && (slotPos < NbTLSSlotInMap))
-		if (*(TlsSlotMap+slotPos))
-			return *(TlsEmulationCurrentThreadSlotValues + slotPos);
+    int slotPos = pstoi->slotPos;
+    if ((slotPos < TlsEmulationCurrentThreadNbSlotValuesAllocated) && (slotPos < NbTLSSlotInMap))
+        if (*(TlsSlotMap+slotPos))
+            return *(TlsEmulationCurrentThreadSlotValues + slotPos);
 
     return NULL;
 }
@@ -298,12 +312,12 @@ UNITEX_FUNC void* UNITEX_CALL SyncTlsGetValue(SYNC_TLS_OBJECT pTls)
 
 UNITEX_FUNC void UNITEX_CALL TlsCleanupCurrentThread()
 {
-	if (TlsEmulationCurrentThreadSlotValues != NULL)
-	{
-		free(TlsEmulationCurrentThreadSlotValues);
-		TlsEmulationCurrentThreadSlotValues = NULL;
-	}
-	TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
+    if (TlsEmulationCurrentThreadSlotValues != NULL)
+    {
+        free(TlsEmulationCurrentThreadSlotValues);
+        TlsEmulationCurrentThreadSlotValues = NULL;
+    }
+    TlsEmulationCurrentThreadNbSlotValuesAllocated = 0;
 }
 
 #else

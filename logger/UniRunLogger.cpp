@@ -1473,6 +1473,7 @@ const char* usage_RunLog =
          "  -o NameTool/--tool=NameTool: run only log for NameTool\n"
          "  -i N/--increment=N: increment filename <ulp> by 0 to N\n"
          "  -t N/--thread=N: create N thread\n"
+         "  -z N /--stack-size = N: set stack size with N kilobytes (N multiple of 64)\n"
          "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
          "  -g N/--loop=N: perform the whole task N time\n"
          "  -f N/--break-after=N: user cancel after N run (with one thread only)\n"
@@ -1492,7 +1493,7 @@ static void usage() {
   u_printf(usage_RunLog);
 }
 
-const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:lVhna:o:u:bf:g:";
+const char* optstring_RunLog=":pcwd:r:i:s:e:mvt:z:lVhna:o:u:bf:g:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1504,9 +1505,9 @@ const struct option_TS lopts_RunLog[]= {
       {"quiet",no_argument_TS,NULL,'m'},
       {"verbose",no_argument_TS,NULL,'v'},
       {"thread",required_argument_TS,NULL,'t'},
+      {"stack-size",required_argument_TS,NULL,'z'},
       {"cleanlog",no_argument_TS,NULL,'n'},
       {"keeplog",no_argument_TS,NULL,'l'},
-      {"thread",required_argument_TS,NULL,'t'},
       {"random",required_argument_TS,NULL,'a'},
       {"tool",required_argument_TS,NULL,'o'},
       {"unfound-location",required_argument_TS,NULL,'u'},
@@ -1740,6 +1741,7 @@ runLog_ctx->benchmark=1;
 runLog_ctx->junk_summary=0;
 runLog_ctx->run_before_break=-1;
 
+unsigned int stack_size=0;
 int nbloop=1;
 int val,index=-1;
 bool only_verify_arguments = false;
@@ -1788,6 +1790,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_RunLog,lopts_RunLog,&ind
                 return USAGE_ERROR_CODE;
              }
              runLog_ctx->nb_thread=atoi(options.vars()->optarg);
+             break;
+   case 'z':
+             if (options.vars()->optarg[0]=='\0') {
+                error("You must specify a stack size value\n");
+                free(runLog_ctx);
+                return USAGE_ERROR_CODE;
+             }
+             stack_size=(unsigned int)atoi(options.vars()->optarg);
              break;
    case 'f':
              if (options.vars()->optarg[0]=='\0') {
@@ -1920,10 +1930,10 @@ if (runLog_ctx->run_before_break!=-1) {
 
 hTimeElapsed htmWork = SyncBuidTimeMarkerObject();
 
-if (runLog_ctx->nb_thread <= 1) {
+if ((runLog_ctx->nb_thread <= 1) && (stack_size==0)) {
    DoWork(*ptrptr,0);
 } else {
-   SyncDoRunThreads(runLog_ctx->nb_thread,DoWork,ptrptr);
+   SyncDoRunThreadsWithStackSize(runLog_ctx->nb_thread,DoWork,ptrptr, stack_size * 1024);
 }
 
 unsigned int timeElapsedWork = SyncGetMSecElapsed(htmWork);

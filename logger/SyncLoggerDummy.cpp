@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -34,6 +34,7 @@
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
 #include "SyncLogger.h"
+#include "UnusedParameter.h"
 #include <time.h>
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -52,10 +53,24 @@ UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible()
     return 0;
 }
 
-UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_func thread_func,void** privateDataPtrArray)
+
+static void internal_do_run_threads(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray, unsigned int stackSize)
 {
-    if (iNbThread>0)
-        (*thread_func)(*privateDataPtrArray,0);
+    DISCARD_UNUSED_PARAMETER(stackSize)
+    for (int i = 0;i < iNbThread; i++)
+        (*thread_func)(*(privateDataPtrArray+i), 0);
+}
+
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray)
+{
+    internal_do_run_threads(iNbThread, thread_func, privateDataPtrArray, 0);
+}
+
+
+UNITEX_FUNC void UNITEX_CALL SyncDoRunThreadsWithStackSize(unsigned int iNbThread, t_thread_func thread_func, void** privateDataPtrArray, unsigned int stackSize)
+{
+    internal_do_run_threads(iNbThread, thread_func, privateDataPtrArray, stackSize);
 }
 
 

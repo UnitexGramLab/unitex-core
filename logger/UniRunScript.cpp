@@ -754,9 +754,8 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
                                              const char* package_name, const char* script_name,
                                              const char*src_dir, const char* dest_dir,
                                              const char*resource_dir, const char* corpus_work_dir,
-                                             int nb_threads, char** file_list)
+                                             int nb_threads, unsigned int stack_size, char** file_list)
 {
-
 
     run_package_script_batch_text_buffer* textbuf = (run_package_script_batch_text_buffer*)malloc(sizeof(run_package_script_batch_text_buffer));
     if (textbuf == NULL) {
@@ -889,14 +888,14 @@ static int run_package_script_batch_internal(const VersatileEncodingConfig* vec,
 
     hTimeElapsed calc_works_time = SyncBuidTimeMarkerObject();
 
-    if (nb_threads > 0)
+    if ((nb_threads > 0) || (stack_size != 0))
     {
         void** ptrptr = (void**)malloc(sizeof(void*)*(nb_threads + 1));
         if (ptrptr != NULL)
         {
             for (int i = 0;i < nb_threads;i++)
                 *(ptrptr + i) = &config_batch;
-            SyncDoRunThreads(nb_threads, ThreadFuncBatch, ptrptr);
+            SyncDoRunThreadsWithStackSize(nb_threads, ThreadFuncBatch, ptrptr, stack_size * 1024);
             free(ptrptr);
         }
     }
@@ -989,6 +988,7 @@ const char* usage_UniBatchRunScript =
 "  -w XXX/--corpus_work_dir=XXX : directory for working on corpus\n"
 "  -s XXX/--script_name=XXX : name of script file\n"
 "  -t N /--thread = N: create N thread\n"
+"  -z N /--stack-size = N: set stack size with N kilobytes (N multiple of 64)\n"
 "  -v/--verbose: emit batch info message\n"
 "  -l/--verbose_final: emit batch info list after running\n"
 "  -p/--verbose_progress: emit batch info message when running\n"
@@ -1006,7 +1006,7 @@ static void UniBatchRunScript_usage() {
 }
 
 
-const char* optstring_UniBatchRunScript = ":Vhfi:o:s:t:k:q:vmldpr:w:";
+const char* optstring_UniBatchRunScript = ":Vhfi:o:s:t:z:k:q:vmldpr:w:";
 const struct option_TS lopts_UniBatchRunScript[] = {
     { "quiet", no_argument_TS, NULL, 'm' },
     { "quietter", no_argument_TS, NULL, 'f' },
@@ -1020,6 +1020,7 @@ const struct option_TS lopts_UniBatchRunScript[] = {
     { "resource_dir", required_argument_TS, NULL, 'r' },
     { "script_name", required_argument_TS, NULL, 's' },
     { "thread", required_argument_TS, NULL, 't' },
+    { "stack-size",required_argument_TS,NULL,'z' },
     { "input_encoding", required_argument_TS, NULL, 'k' },
     { "output_encoding", required_argument_TS, NULL, 'q' },
     { "only_verify_arguments",no_argument_TS,NULL, 'V' },
@@ -1061,6 +1062,7 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
     bool only_verify_arguments = false;
     UnitexGetOpt options;
     int nb_threads = 1;
+    unsigned int stack_size = 0;
     char foo;
 
     strcpy(textbuf->script_name, "script");
@@ -1134,6 +1136,14 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
                     }
                   break;
 
+        case 'z': if (1 != sscanf(options.vars()->optarg, "%u%c", &stack_size, &foo) || nb_threads < 0) {
+                        /* foo is used to check that arg is not like "45gjh" */
+                        error("Invalid stack-size argument: %s\n", options.vars()->optarg);
+                        free(textbuf);
+                        return USAGE_ERROR_CODE;
+                    }
+                  break;
+
         case 'k': if (options.vars()->optarg[0] == '\0') {
                         error("Empty input_encoding argument\n");
                         free(textbuf);
@@ -1187,7 +1197,7 @@ int main_UniBatchRunScript(int argc, char* const argv[]) {
         package_name, textbuf->script_name,
         textbuf->input_dir, textbuf->output_dir,
         textbuf->resource_dir, textbuf->corpus_work_dir,
-        nb_threads, NULL);
+        nb_threads, stack_size, NULL);
 
     free(textbuf);
     return retvalue;
