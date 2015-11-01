@@ -38,6 +38,11 @@
 #include "UnitexGetOpt.h"
 #include "SyncTool.h"
 
+#if defined(UNITEXTOOL_TOOL_FROM_LOGGER) || defined(UNITEX_TOOL_STACKOPTION)
+#include "logger/SyncLogger.h"
+#define UNITEXTOOL_HAVE_SYNC_LOGGER 1
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_BUILDKRMWUDIC))) || defined(TOOL_BUILDKRMWUDIC))
 #include "BuildKrMwuDic.h"
 #endif
@@ -790,8 +795,27 @@ else {
 }
 }
 
+typedef struct
+{
+	int argc;
+	char* const* argv;
+	int* p_number_done;
+	struct pos_tools_in_arg* ptia;
+	int ret;
+} unitexTool_run_in_thread_infos;
 
-int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
+
+static int UnitexTool_several_info_ignore_stack_option(int argc, char* const argv[], int* p_number_done, struct pos_tools_in_arg* ptia, int ignore_stack_option);
+
+#ifdef UNITEXTOOL_HAVE_SYNC_LOGGER
+static void SYNC_CALLBACK_UNITEX DoWorkUnitexToolInThread(void* privateDataPtr, unsigned int /*iNbThread*/)
+{
+	unitexTool_run_in_thread_infos* infos = (unitexTool_run_in_thread_infos*)privateDataPtr;
+	infos->ret = UnitexTool_several_info_ignore_stack_option(infos->argc, infos->argv, infos->p_number_done, infos->ptia, 1);
+}
+#endif
+
+static int UnitexTool_several_info_ignore_stack_option(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia, int ignore_stack_option)
 {
 	int ret=0;
 	int number_done_dummy=0;
@@ -805,11 +829,72 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	if (argc>1)
 		firstArg=argv[1];
 
+	if ((firstArg != NULL) && (strstr(firstArg, "--stack-size=") == firstArg)) {
+
+#ifdef UNITEXTOOL_HAVE_SYNC_LOGGER
+		const char* stack_size_option = firstArg + 13;
+		if (ignore_stack_option == 0)
+		{
+			unitexTool_run_in_thread_infos infos;
+			unitexTool_run_in_thread_infos* pinfos = &infos;
+
+			
+			char cSuffix = 0;
+			char foo = 0;
+			unsigned int stack_size = 0;
+			int r = sscanf(stack_size_option, "%u%c%c", &stack_size, &cSuffix, &foo);
+
+			if ((r == 2) && ((cSuffix == 'k') || (cSuffix == 'K')))
+			{
+				stack_size = stack_size * 1024;
+			}
+			else
+			if ((r == 2) && ((cSuffix == 'm') || (cSuffix == 'M')))
+			{
+				stack_size = stack_size * 1024 * 1024;
+			}
+			else
+			if (r != 1)
+			{
+				error("Invalid stack-size argument: %s\n", stack_size_option);
+				if (p_number_done != NULL)
+					*p_number_done = 0;
+				if (ptia != NULL)
+				{
+					ptia->argcpos = 1;
+					ptia->nbargs = 1;
+					ptia->tool_number = 0;
+					ptia->ret = USAGE_ERROR_CODE;
+				}
+				return USAGE_ERROR_CODE;
+			}
+
+
+			infos.argc = argc;
+			infos.argv = argv;
+			infos.p_number_done = p_number_done;
+			infos.ptia = ptia;
+
+			SyncDoRunThreadsWithStackSize(1, DoWorkUnitexToolInThread, (void**)&pinfos, stack_size);
+			return infos.ret;
+		}
+#endif
+
+		pos++;
+		if (argc>pos)
+			firstArg = argv[pos];
+	}
+
+
 	if ((firstArg!=NULL) && (strstr(firstArg,"--time=")==firstArg)) {
-		fTime=firstArg+7;
-		startTime=SyncBuidTimeMarkerObject();
-		argc--;
-		argv++;
+
+		fTime = firstArg + 7;
+		startTime = SyncBuidTimeMarkerObject();
+		pos++;
+		/*
+		if (argc>pos)
+			firstArg = argv[pos];
+			*/
 	}
 
 	if (p_number_done == NULL)
@@ -829,7 +914,7 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 	u_printf("\n");
 #endif
 	
-	if (argc <= 1)
+	if (argc <= pos)
 	{
 		unitex_tool_usage(1,1);
 	}
@@ -875,8 +960,8 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 		{
 			const struct utility_item* utility_called = found_utility(argv[pos]);
 			if (utility_called != NULL) {
-				ptia->argcpos = 1;
-				ptia->nbargs = argc-1;
+				ptia->argcpos = pos;
+				ptia->nbargs = argc-pos;
 				ptia->ret = ret = CallToolLogged(utility_called->fnc,ptia->nbargs,((char**)argv)+ptia->argcpos);
 			}
 			else
@@ -904,6 +989,11 @@ int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struc
 }
 
 
+
+int UnitexTool_several_info(int argc, char* const argv[], int* p_number_done, struct pos_tools_in_arg* ptia)
+{
+	return UnitexTool_several_info_ignore_stack_option(argc, argv, p_number_done, ptia, 0);
+}
 
 
 static int countArgs(char** args)
