@@ -1111,7 +1111,7 @@ if (return_value == SUCCESS_RETURN_CODE) {
   }
 }
 
-// finally, print some stats
+// finally, print some stats 
 if (return_value == SUCCESS_RETURN_CODE) {
   u_printf("Binary file: %d bytes\n",     bin_size);
   u_printf("%d file%s read\n",            n_files,       (n_files         > 1)? "s"   :  "");
