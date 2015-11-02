@@ -59,14 +59,23 @@ namespace unitex {
 #define required_argument_TS       1
 #define optional_argument_TS       2
 
+/**
+ * This structure describes a single long option name for the sake of
+ * getopt_long_TS. The argument long_options must be an array of these
+ * structures, one for each long option. Terminate the array with an
+ * element containing all zeros
+ * @see http://man7.org/linux/man-pages/man3/getopt.3.html
+ */
 struct option_TS {
-   const char *name;
-   int  has_arg;
-   int *flag;
-   int val;
+   const char *name;  // the name of the option
+   int  has_arg;      // no_argument_TS, required_argument_TS or optional_argument_TS 
+   int *flag;         // If flag is a null pointer, val is a value which identifies
+                      // this option. If not, it is the address of an int variable
+                      // which is the flag for this option
+   int val;           // if flag is null, val is a value which identifies this option
+                      // if flag is not null, val is the value to store in the flag to
+                      // indicate that the option was seen
 };
-
-
 
 /**
  * This structure defines all the things getopt needs to work in a thread safe way.

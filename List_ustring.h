@@ -31,7 +31,12 @@
 
 namespace unitex {
 
+// list pointer
 typedef struct list_ustring* list_ustring_ptr;
+// string compare function between a Unicode and C string
+typedef int (*unichar_char_comparator)(const unichar* lhs, const char* rhs);
+// string compare function between two Unicode strings
+typedef int (*unichar_unichar_comparator)(const unichar* lhs, const unichar* rhs);
 
 /**
  * This is a simple structure for manipulating unicode string lists.
@@ -53,9 +58,9 @@ struct list_ustring* insert_at_end_of_list(const char*,struct list_ustring*,Abst
 struct list_ustring* insert_at_end_of_list(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_ustring* insert_at_end_of_list_with_latest(const unichar*,struct list_ustring*,struct list_ustring**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct list_ustring* insert_at_end_of_list_with_latest(const char*,struct list_ustring*,struct list_ustring**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-int is_in_list(const unichar*,const struct list_ustring*);
-int is_in_list(const char*,const struct list_ustring*);
-int equal(const struct list_ustring*,const struct list_ustring*);
+int is_in_list(const unichar*, const struct list_ustring*, unichar_unichar_comparator compare = unitex::u_strcmp);
+int is_in_list(const char*, const struct list_ustring*, unichar_char_comparator compare = unitex::u_strcmp);
+int equal(const struct list_ustring*, const struct list_ustring*, unichar_unichar_comparator compare = unitex::u_strcmp);
 struct list_ustring* clone(const struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int length(const struct list_ustring*);
 } // namespace unitex

@@ -216,12 +216,14 @@ struct list_ustring* insert_at_end_of_list_with_latest(const char* s, struct lis
 /**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
-int is_in_list(const unichar* value,const struct list_ustring* l) {
+int is_in_list(const unichar* value,
+               const struct list_ustring* l, 
+               unichar_unichar_comparator compare) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
 }
 while (l!=NULL) {
-  if (!u_strcmp(l->string,value)) return 1;
+  if (!compare(l->string,value)) return 1;
   l=l->next;
 }
 return 0;
@@ -230,12 +232,14 @@ return 0;
 /**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
-int is_in_list(const char* value,const struct list_ustring* l) {
+int is_in_list(const char* value,
+               const struct list_ustring* l, 
+               unichar_char_comparator compare) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
 }
 while (l!=NULL) {
-  if (!u_strcmp(l->string,value)) return 1;
+  if (!compare(l->string,value)) return 1;
   l=l->next;
 }
 return 0;
@@ -247,9 +251,11 @@ return 0;
  * both NULL or they contain the same elements in the
  * same order.
  */
-int equal(const struct list_ustring* a,const struct list_ustring* b) {
+int equal(const struct list_ustring* a,
+          const struct list_ustring* b, 
+          unichar_unichar_comparator compare) {
 while ((a!=NULL) && (b!=NULL)) {
-   if (u_strcmp(a->string,b->string)) {
+   if (compare(a->string,b->string)) {
       return 0;
    }
    a=a->next;
