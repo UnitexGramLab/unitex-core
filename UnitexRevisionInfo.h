@@ -44,6 +44,7 @@ namespace unitex {
 
 int get_unitex_revision();
 void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number);
+const char* get_unitex_semver_string();
 size_t get_unitex_version_revision_xml_string(char* string, size_t buflen);
 size_t get_unitex_version_revision_json_string(char* string, size_t buflen);
 
@@ -54,6 +55,7 @@ extern "C" {
 
 UNITEX_FUNC int UNITEX_CALL GetUnitexRevision();
 UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number);
+UNITEX_FUNC const char* UNITEX_CALL GetUnitexSemVerString();
 
 #ifdef __cplusplus
 } // extern "C"

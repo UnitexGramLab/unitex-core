@@ -786,7 +786,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Copyright.o
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check_lib.o ProgramInvoker.o \
                      MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o MF_Global.o \
                      MF_Operators_Util.o MF_DicoMorpho.o Arabic.o AbstractDelaLoad.o List_pointer.o \
-                     CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o \
+                     CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                      $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CASSYS      = Cassys
@@ -799,13 +799,13 @@ CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o U
             Tagset.o Tokenize.o HashTable.o OutputTransductionVariables.o LocateCache.o \
             Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o Grf_lib.o Fst2Check_lib.o \
             Arabic.o Match.o VariableUtils.o Offsets.o Overlap.o CompressedDic.o LoadInf.o RegExFacade.o $(TRE_LINK_OBJS) \
-            DebugMode.o VirtualFiles.o Persistence.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+            DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o \
-                LoadInf.o Ustring.o VirtualFiles.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
@@ -813,7 +813,7 @@ COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o Act
                 String_hash.o AutomatonDictionary2Bin.o File.o List_int.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
                 BitArray.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
-                VirtualFiles.o Persistence.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o Text_tokens.o String_hash.o \
@@ -828,7 +828,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o Activi
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                 ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
                 Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-                LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o VirtualFiles.o Persistence.o PRLG.o \
+                LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o \
                 $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORDIFF      = ConcorDiff
@@ -843,7 +843,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o C
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                 ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
                 Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-                LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o VirtualFiles.o Persistence.o PRLG.o \
+                LoadInf.o Offsets.o Overlap.o RegExFacade.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o \
                 $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONVERT      = Convert
@@ -863,7 +863,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             Korean.o SortTxt.o Thai.o Compress.o DictionaryTree.o \
             AutomatonDictionary2Bin.o HashTable.o LocateCache.o Arabic.o \
             OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-            DebugMode.o LoadInf.o VirtualFiles.o Persistence.o BuildTextAutomaton.o Tfst.o SingleGraph.o \
+            DebugMode.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o BuildTextAutomaton.o Tfst.o SingleGraph.o \
             FIFO.o TfstStats.o RegExFacade.o \
             $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
@@ -882,7 +882,7 @@ ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o \
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o \
             BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o UnitexGetOpt.o Tfst.o \
-            TfstStats.o AbstractDelaLoad.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o \
+            TfstStats.o AbstractDelaLoad.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 ELAGCOMP      = ElagComp
@@ -894,7 +894,7 @@ ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Copyright.o Af_stdio.o Act
                 Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o \
                 SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o \
                 Transitions.o ElagDebug.o UnitexGetOpt.o Tfst.o TfstStats.o AbstractDelaLoad.o \
-                CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o \
+                CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 EVAMB      = Evamb
@@ -905,7 +905,7 @@ EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogg
              BitArray.o HashTable.o FIFO.o Transitions.o \
              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
              Tfst.o TfstStats.o File.o AbstractDelaLoad.o CompressedDic.o \
-             LoadInf.o VirtualFiles.o Persistence.o \
+             LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
              $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 EXTRACT      = Extract
@@ -921,7 +921,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o Copyright.o LocatePattern.o L
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                ProgramInvoker.o NewLineShifts.o Korean.o HashTable.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_LINK_OBJS) \
-               DebugMode.o LoadInf.o VirtualFiles.o Persistence.o PRLG.o \
+               DebugMode.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FLATTEN      = Flatten
@@ -932,7 +932,7 @@ FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Copyright.o Alphabet.o Af_std
                String_hash.o StringParsing.o Transitions.o DELA.o \
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
-               DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o \
+               DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2CHECK      = Fst2Check
@@ -942,7 +942,7 @@ FST2CHECK_OBJS = Main_Fst2Check.o Fst2Check.o Fst2Check_lib.o IOBuffer.o Copyrig
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
-                VirtualFiles.o Persistence.o SingleGraph.o BitArray.o FIFO.o HashTable.o List_pointer.o \
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o SingleGraph.o BitArray.o FIFO.o HashTable.o List_pointer.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2LIST      = Fst2List
@@ -952,7 +952,7 @@ FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Copyright.o Af_stdio.o Act
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o \
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o \
                 Ustring.o Tagset.o AbstractDelaLoad.o CompressedDic.o LoadInf.o \
-                VirtualFiles.o Persistence.o \
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 FST2TXT      = Fst2Txt
@@ -966,7 +966,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o Stack_unichar.o \
                Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o \
                Offsets.o Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o List_pointer.o \
-               VirtualFiles.o Persistence.o Fst2Check_lib.o \
+               VirtualFiles.o Persistence.o UnitexRevisionInfo.o Fst2Check_lib.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 GRF2FST2      = Grf2Fst2
@@ -977,7 +977,7 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Copyright.o Alphabet.o Af_
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o \
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                 ProgramInvoker.o AbstractDelaLoad.o CompressedDic.o LoadInf.o List_pointer.o \
-                DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o \
+                DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 GRFDIFF      = GrfDiff
@@ -1013,7 +1013,7 @@ GRFTEST_OBJS = Main_GrfTest.o GrfTest.o Unicode.o Error.o IOBuffer.o Copyright.o
             List_pointer.o LocateTrace.o PatternTree.o LocateFst2Tags.o \
             CompoundWordTree.o LemmaTree.o OptimizedFst2.o GrfTest_lib.o Grf2Fst2.o \
             Grf2Fst2_lib.o Fst2Check_lib.o Concord.o Concordance.o \
-            NewLineShifts.o VirtualFiles.o Persistence.o PRLG.o BuildTextAutomaton.o RegExFacade.o \
+            NewLineShifts.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o PRLG.o BuildTextAutomaton.o RegExFacade.o \
             $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 IMPLODETFST      = ImplodeTfst
@@ -1023,13 +1023,13 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Copyright.o Af_st
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                    BitArray.o HashTable.o FIFO.o Match.o TfstStats.o AbstractDelaLoad.o \
-                   CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o \
+                   CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 KEYWORDS      = KeyWords
 KEYWORDS_OBJS = Main_KeyWords.o KeyWords.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o Unicode.o \
             AbstractAllocator.o Alphabet.o StringParsing.o DELA.o File.o UnitexGetOpt.o \
-            VirtualFiles.o Persistence.o Error.o String_hash.o Ustring.o List_ustring.o \
+            VirtualFiles.o Persistence.o UnitexRevisionInfo.o Error.o String_hash.o Ustring.o List_ustring.o \
             CompressedDic.o AbstractDelaLoad.o LoadInf.o KeyWords_lib.o Tokenization.o \
             $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
@@ -1047,7 +1047,7 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Copyright.o Af_stdio.o ActivityL
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
               ProgramInvoker.o Korean.o HashTable.o LocateCache.o Arabic.o \
               OutputTransductionVariables.o VariableUtils.o CompressedDic.o RegExFacade.o $(TRE_LINK_OBJS) \
-              LoadInf.o DebugMode.o VirtualFiles.o Persistence.o \
+              LoadInf.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 LOCATETFST      = LocateTfst
@@ -1060,7 +1060,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Copyright.o Af_stdio
                   OptimizedTfstTagMatching.o List_pointer.o \
                   TransductionVariables.o TransductionStackTfst.o Contexts.o \
                   OutputTransductionVariables.o DicVariables.o TfstStats.o AbstractDelaLoad.o \
-                  CompressedDic.o LoadInf.o DebugMode.o VirtualFiles.o Persistence.o RegExFacade.o \
+                  CompressedDic.o LoadInf.o DebugMode.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o RegExFacade.o \
                   $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
@@ -1074,7 +1074,7 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                  MF_Operators_Util.o UnitexGetOpt.o ProgramInvoker.o Korean.o \
                  Arabic.o AbstractDelaLoad.o CompressedDic.o LoadInf.o MF_Global.o \
-                 DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o \
+                 DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                  $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 MZREPAIRULP      = MzRepairUlp
@@ -1087,7 +1087,7 @@ NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Copyright.o Af_stdio.o 
                 AbstractAllocator.o File.o DELA.o List_ustring.o String_hash.o \
                 Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o \
                 UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Ustring.o \
-                Offsets.o Overlap.o VirtualFiles.o Persistence.o \
+                Offsets.o Overlap.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 POLYLEX      = PolyLex
@@ -1097,7 +1097,7 @@ POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Copyright.o Af_stdio.o Activi
                 NorwegianCompounds.o GermanCompounds.o File.o \
                 RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o \
                 DutchCompounds.o UnitexGetOpt.o CompressedDic.o LoadInf.o Ustring.o \
-                VirtualFiles.o Persistence.o \
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 REBUILDTFST      = RebuildTfst
@@ -1109,7 +1109,7 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Copyright.o Af_st
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                    UnitexGetOpt.o Tfst.o TfstStats.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o \
                    HashTable.o FIFO.o Fst2Check_lib.o ProgramInvoker.o AbstractDelaLoad.o \
-                   CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o \
+                   CompressedDic.o LoadInf.o DebugMode.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 RECONSTRUCAO      = Reconstrucao
@@ -1127,7 +1127,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                Tfst.o TfstStats.o SingleGraph.o FIFO.o HashTable.o Korean.o LocateCache.o \
                Arabic.o OutputTransductionVariables.o VariableUtils.o CompressedDic.o \
-               DebugMode.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o RegExFacade.o \
+               DebugMode.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o RegExFacade.o \
                $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 REG2GRF      = Reg2Grf
@@ -1147,7 +1147,7 @@ SEQ2GRF_OBJS = Main_Seq2Grf.o Seq2Grf.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Symbol.o LanguageDefinition.o Tagset.o Overlap.o \
                AbstractFst2Load.o Fst2.o Pattern.o \
                DELA.o StringParsing.o CompressedDic.o LoadInf.o GrfBeauty.o \
-               File.o Alphabet.o VirtualFiles.o Persistence.o \
+               File.o Alphabet.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SORTTXT      = SortTxt
@@ -1155,7 +1155,7 @@ SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Unicode.o AbstractAllocator.o Error.o Thai.o UnitexGetOpt.o \
                ProgramInvoker.o DELA.o StringParsing.o Ustring.o String_hash.o Alphabet.o \
                CompressedDic.o AbstractDelaLoad.o LoadInf.o List_ustring.o File.o \
-               VirtualFiles.o Persistence.o \
+               VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 SPELLCHECK      = SpellCheck
@@ -1163,7 +1163,7 @@ SPELLCHECK_OBJS = Main_SpellCheck.o SpellCheck.o IOBuffer.o Copyright.o Af_stdio
                Unicode.o AbstractAllocator.o Error.o UnitexGetOpt.o \
                ProgramInvoker.o File.o SpellChecking.o CompressedDic.o AbstractDelaLoad.o \
                LoadInf.o List_ustring.o Ustring.o StringParsing.o DELA.o String_hash.o \
-               Alphabet.o Keyboard.o VirtualFiles.o Persistence.o \
+               Alphabet.o Keyboard.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 STATS      = Stats
@@ -1172,7 +1172,7 @@ STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogg
                ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
                LocateMatches.o Match.o DELA.o \
                Alphabet.o StringParsing.o List_int.o List_ustring.o AbstractDelaLoad.o CompressedDic.o \
-               LoadInf.o Ustring.o VirtualFiles.o Persistence.o \
+               LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TABLE2GRF      = Table2Grf
@@ -1188,7 +1188,7 @@ TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Copyright.o Af_stdio.o ActivityL
               File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o \
               AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o \
               SymbolAlphabet.o ElagStateSet.o Symbol_op.o AbstractDelaLoad.o CompressedDic.o \
-              LoadInf.o VirtualFiles.o Persistence.o \
+              LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TAGSETNORMTFST = TagsetNormTfst
@@ -1199,7 +1199,7 @@ TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Copyrigh
                     List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
                     BitMasks.o FIFO.o Transitions.o \
                     Symbol_op.o Fst2Automaton.o UnitexGetOpt.o Tfst.o TfstStats.o \
-                    Match.o AbstractDelaLoad.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o \
+                    Match.o AbstractDelaLoad.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                     $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TEI2TXT      = TEI2Txt
@@ -1214,7 +1214,7 @@ TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Copyright.o Af_stdio.o Act
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o \
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o \
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o \
-               AbstractDelaLoad.o CompressedDic.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o \
+               AbstractDelaLoad.o CompressedDic.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TFSTTAG      = TfstTag
@@ -1224,7 +1224,7 @@ TFSTTAG_OBJS = Main_TfstTag.o TfstTag.o IOBuffer.o Copyright.o Af_stdio.o Activi
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o \
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o \
                Ustring.o Tagset.o UnitexGetOpt.o SingleGraph.o HashTable.o FIFO.o \
-               AbstractDelaLoad.o CompressedDic.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o \
+               AbstractDelaLoad.o CompressedDic.o LoadInf.o Grf_lib.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TFST2UNAMBIG      = Tfst2Unambig
@@ -1235,7 +1235,7 @@ TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o TfstStats.o Error.
                    List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o \
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o \
                    UnitexGetOpt.o SingleGraph.o BitArray.o HashTable.o FIFO.o File.o \
-                   AbstractDelaLoad.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o \
+                   AbstractDelaLoad.o CompressedDic.o LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TOKENIZE      = Tokenize
@@ -1243,7 +1243,7 @@ TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Copyright.o Af_stdio.o Act
                 Unicode.o AbstractAllocator.o Alphabet.o String_hash.o \
                 File.o DELA.o AbstractDelaLoad.o List_ustring.o HashTable.o Error.o \
                 StringParsing.o UnitexGetOpt.o \
-                Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o VirtualFiles.o Persistence.o \
+                Offsets.o Overlap.o CompressedDic.o LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TRAININGTAGGER      = TrainingTagger
@@ -1254,7 +1254,7 @@ TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o I
               String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o \
               File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o \
               DictionaryTree.o AutomatonDictionary2Bin.o AbstractDelaLoad.o CompressedDic.o \
-              LoadInf.o VirtualFiles.o Persistence.o \
+              LoadInf.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
               $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 TXT2TFST      = Txt2Tfst
@@ -1267,7 +1267,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Copyright.o Text_tokens.o 
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o UnitexGetOpt.o \
                 Tfst.o TfstStats.o NewLineShifts.o Korean.o AbstractDelaLoad.o \
                 CompressedDic.o LoadInf.o Offsets.o Overlap.o DebugMode.o Grf_lib.o \
-                VirtualFiles.o Persistence.o \
+                VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                 $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
@@ -1281,7 +1281,7 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Copyright.o Af_stdio.o Activi
                Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o \
                Korean.o HashTable.o OutputTransductionVariables.o VariableUtils.o List_pointer.o \
                Overlap.o AbstractDelaLoad.o CompressedDic.o LoadInf.o Offsets.o BitArray.o \
-               VirtualFiles.o Persistence.o Fst2Check_lib.o \
+               VirtualFiles.o Persistence.o UnitexRevisionInfo.o Fst2Check_lib.o \
                $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
@@ -1290,7 +1290,7 @@ UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o Unicode.o \
                    AbstractAllocator.o DELA.o AbstractDelaLoad.o \
                    String_hash.o StringParsing.o List_ustring.o Alphabet.o Af_stdio.o ActivityLogger.o \
                    UnitexGetOpt.o IOBuffer.o Copyright.o CompressedDic.o LoadInf.o Ustring.o \
-                   VirtualFiles.o Persistence.o \
+                   VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 
@@ -1300,14 +1300,14 @@ UNTOKENIZE_OBJS  = Main_Untokenize.o Untokenize.o File.o Error.o Unicode.o Abstr
                    String_hash.o StringParsing.o List_int.o List_ustring.o Text_tokens.o \
                    Alphabet.o Af_stdio.o ActivityLogger.o \
                    UnitexGetOpt.o IOBuffer.o Copyright.o CompressedDic.o LoadInf.o Ustring.o \
-                   VirtualFiles.o Persistence.o \
+                   VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                    $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 UNXMLIZE       = Unxmlize
 UNXMLIZE_OBJS  = Main_Unxmlize.o Unxmlize.o File.o Error.o Unicode.o Xml.o Af_stdio.o \
                  ActivityLogger.o AbstractAllocator.o \
                  UnitexGetOpt.o IOBuffer.o Copyright.o Offsets.o Overlap.o HTMLCharacters.o \
-                 AsciiSearchTree.o Alphabet.o Ustring.o VirtualFiles.o Persistence.o \
+                 AsciiSearchTree.o Alphabet.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o \
                  $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 UNITEXTOOL   = UnitexTool

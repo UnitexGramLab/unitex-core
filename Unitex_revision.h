@@ -30,7 +30,7 @@
 #define UNITEX_REVISION (-1)
 #define UNITEXREVISION (-1)
 #define UNITEX_REVISION_TEXT "-1"
-
+#define UNITEX_REVISION_IS_UNDEFINED
 
 #endif
 

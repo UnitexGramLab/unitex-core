@@ -39,6 +39,21 @@ namespace unitex {
 #define UNITEX_MAJOR_VERSION_NUMBER 3
 #define UNITEX_MINOR_VERSION_NUMBER 1
 
+/**
+ * Defines a pre-release label
+ * 
+ * A pre-release version indicates that the version is unstable and might not 
+ * satisfy the intended compatibility requirements as denoted by its associated
+ * normal version. Valid labels are:
+ * 
+ * - "dev"   : in-development release
+ * - "alpha" : features completed but its usage is not stable enough
+ * - "beta"  : features completed, only minor bugs are expected
+ * - "rc"    : release candidate, all minor bugs are fixed, the software works stably
+ */
+#define UNITEX_VERSION_SUFFIX       "beta"
+#define UNITEX_VERSION_IS_UNSTABLE  1
+
 #define UNITEX_IS_BETA
 
 #define UNITEX_HAVE_SYNCTOOL 1
