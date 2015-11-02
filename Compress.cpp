@@ -1008,8 +1008,6 @@ list_ustring_ptr dictionary_list = NULL;
 for (; options.vars()->optind != argc; (options.vars()->optind)++) {
   // to prevent including a file repeatedly, we only stored resolved filenames 
   // @see get_real_path for more information
-  char test[] = "\\\\servername\\sharename\\path\\filename";
-  to_unix_path_separators(test);
   if (get_real_path(argv[options.vars()->optind],
                    resolved_filename) == SUCCESS_RETURN_CODE) {
     // only include in the list if it is not already present
@@ -1111,7 +1109,7 @@ if (return_value == SUCCESS_RETURN_CODE) {
   }
 }
 
-// finally, print some stats 
+// finally, print some stats
 if (return_value == SUCCESS_RETURN_CODE) {
   u_printf("Binary file: %d bytes\n",     bin_size);
   u_printf("%d file%s read\n",            n_files,       (n_files         > 1)? "s"   :  "");
