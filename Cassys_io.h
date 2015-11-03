@@ -128,6 +128,12 @@ char* create_updated_graph_filename(const char *text,
 	const char* graph_name,
 	const char* ext);
 
+char* get_file_in_current_snt(const char *text,
+	int next_transducer_label,
+	int next_iteration,
+	const char* file_name,
+        const char* ext);
+
 /**
  * copy the content of the file with stream f and return this content.
  */

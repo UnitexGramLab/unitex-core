@@ -345,12 +345,14 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
 }
 
 
-unichar **extract_entities(const char *token_list, VersatileEncodingConfig *vec, int num, int *updates, grfInfo *infos) {
+unichar **extract_entities(const char *token_list, const char *token_list_backup, VersatileEncodingConfig *vec, int num, int *updates, grfInfo *infos) {
     unichar **entity_string = NULL;
     entity_string = (unichar**) malloc(sizeof(unichar*) * num);
     for(int i = 0; i < num; i++)
         entity_string[i] = NULL;
-    U_FILE *dico = u_fopen(vec, token_list, U_READ);
+    U_FILE *dico = u_fopen(vec, token_list, U_READ); //token list in the current _snt folder
+    if(dico == NULL)
+        dico = u_fopen(vec, token_list_backup, U_READ);   //token list in the previous _snt folder 
     if(dico != NULL && infos != NULL) {
     int * num_entity = (int*)malloc(sizeof(int)*(num+1));
     for(int i = 0; i < num; i++)
@@ -1461,7 +1463,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
 
                 if (num_annots > 0) {
-                    unichar**entity_string = extract_entities(snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+                    unichar**entity_string = extract_entities(get_file_in_current_snt(text,transducer_number,iteration,"tok_by_alph",".txt"),snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
                     free(entity_string);
 
                     updated_grf_file_name = create_updated_graph_filename(text,

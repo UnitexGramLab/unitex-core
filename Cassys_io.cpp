@@ -310,6 +310,15 @@ char* create_updated_graph_filename(const char *text,
 	return full_graph_name;
 }
 
+char* get_file_in_current_snt(const char *text,
+	int next_transducer_label,
+	int next_iteration,
+	const char* file_name,
+	const char* ext)
+{
+    return create_updated_graph_filename(text,next_transducer_label,next_iteration,file_name,ext);
+}
+
 void protect_text(const char *fileName, const VersatileEncodingConfig* vec){
 
 	U_FILE *file_reader = u_fopen(vec, fileName, U_READ);
