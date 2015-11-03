@@ -63,14 +63,14 @@ const char* usage_Compress =
 "                                  output when dealing with semitic languages\n"
 " \n"
 "Output options:\n"
-"  -t=TYPE, --output_type=TYPE     specifies the type of the output file.\n"
+"  -t TYPE, --output_type=TYPE     specifies the type of the output file.\n"
 "                                  Optional types are: bin1, produces a .bin file\n"
 "                                  with the associated inflectional codes stored\n"
 "                                  in a .inf file; bin2, produces a .bin file\n"
 "                                  with the associated inflectional codes bundled\n"
 "                                  in it, i.e. no .inf file is created\n"
 "                                  [default: bin1]\n"
-"  -o=BINFILE, --output=BINFILE    filename used to write the produced automaton\n"
+"  -o BINFILE, --output=BINFILE    filename used to write the produced automaton\n"
 " \n"
 "Deprecated options:\n"
 "  --v1                            produces an old style .bin file with a size\n"
@@ -81,9 +81,9 @@ const char* usage_Compress =
 "  --bin2                          Same as --output_type=bin2\n"
 " \n"
 "Encoding options:\n"
-"  -k=ENCODING, --input_encoding=ENCODING\n"
+"  -k ENCODING, --input_encoding=ENCODING\n"
 "                                  [default: utf16le-bom,utf16be-bom,utf8-bom]\n"
-"  -q=ENCODING, --output_encoding=ENCODING\n"
+"  -q ENCODING, --output_encoding=ENCODING\n"
 "                                  [default: utf16le-bom]\n"
 " \n"
 "Other options:\n"
@@ -680,7 +680,7 @@ static int create_and_save_inf(const VersatileEncodingConfig* vec,
 }
 
 /**
- * @brief Minimizes and save a classic DELAF dictionary into a file
+ * @brief Minimizes and save a DELAF dictionary tree into a classic bin file 
  *
  * @param[in] vec encoding I/O Configuration for the \a output_inf file
  * @param[in] bin_filename null-terminated string, with the output .bin filename
@@ -750,9 +750,9 @@ static int minimize_and_save_tree_as_bin_classic(
 }
 
 /**
- * @brief Minimizes and save a bin2 DELAF dictionary into a file
+ * @brief Minimizes and save a DELAF dictionary tree into a bin2 file
  *
- * @param[in] bin_filename null-terminated string, with the output .bin filename
+ * @param[in] bin_filename null-terminated string, with the output .bin2 filename
  * @param[in] inf_codes all the INF codes used by the dictionary tree
  * @param[in] minimize function that minimizes the dictionary tree
  * @param[in,out] root initial state of the dictionary tree

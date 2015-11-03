@@ -366,7 +366,7 @@ int get_real_path(const char* filename, char* resolved_name) {
   return SUCCESS_RETURN_CODE;
  }
  
- // defaut value to be returned by this function
+ // default value to be returned by this function
  int return_code = DEFAULT_ERROR_CODE;
 
  // temporal buffer to store the resolved_name
