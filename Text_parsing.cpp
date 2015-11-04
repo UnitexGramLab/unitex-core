@@ -1057,7 +1057,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					break;
 				if (!negation) {
 					if (ctrl & MAJ_TOKEN_BIT_MASK) {
-						start = pos;
+						start = pos2;
 						end = pos2 + 1;
 					}
 					break;
@@ -1103,7 +1103,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 					break;
 				if (!negation) {
 					if (ctrl & PRE_TOKEN_BIT_MASK) {
-						start = pos;
+						start = pos2;
 						end = pos2 + 1;
 					}
 					break;
