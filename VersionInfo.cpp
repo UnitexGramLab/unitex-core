@@ -56,6 +56,7 @@ const char* usage_VersionInfo =
          "  -m/--compiler: compiler used to build unitex info\n"
          "  -j/--json: revision and version on json string\n"
          "  -x/--xml: revision and version on xml string\n"
+         "  -s/--semver: revision and version on semver string\n"
          "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n";
@@ -75,6 +76,7 @@ const struct option_TS lopts_VersionInfo[]= {
   {"compiler",no_argument_TS,NULL,'m'},
   {"xml",no_argument_TS,NULL,'x'},
   {"json",no_argument_TS,NULL,'j'},
+  {"semver",no_argument_TS,NULL,'s'},
   {"output",required_argument_TS,NULL,'o'},
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"output_encoding",required_argument_TS,NULL,'q'},

@@ -77,36 +77,36 @@ const char* UnitexRevisionConstant = "Unitex version unknown";
       defined(UNITEX_MINOR_VERSION_NUMBER)  &&\
      !defined(UNITEX_REVISION_IS_UNDEFINED)
    // MAJOR.MINOR.PATCH-SUFFIX
-   const char* UNITEX_VERSION_STRING = STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "."
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "."
-                                       STRINGIZE(SVN_REVISION)                "-"
-                                       UNITEX_VERSION_SUFFIX;
+       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
+                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
+                                       STRINGIZE(SVN_REVISION)                "-" \
+                                       UNITEX_VERSION_SUFFIX
 # elif defined(UNITEX_MAJOR_VERSION_NUMBER) &&\
        defined(UNITEX_MINOR_VERSION_NUMBER)
    // MAJOR.MINOR.0-SUFFIX    
-   const char* UNITEX_VERSION_STRING = STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "."
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "."
-                                       "0"                                    "-"
-                                       UNITEX_VERSION_SUFFIX;
+       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
+                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
+                                       "0"                                    "-" \
+                                       UNITEX_VERSION_SUFFIX
 # else     // unknown release as 0.0.0-SUFFIX
-   const char* UNITEX_VERSION_STRING = "0.0.0-" UNITEX_VERSION_SUFFIX
+       #define UNITEX_SEMVER_STRING   "0.0.0-" UNITEX_VERSION_SUFFIX
 # endif  // defined(UNITEX_MAJOR_VERSION_NUMBER)
 #else  // UNITEX_VERSION_IS_STABLE
 # if  defined(UNITEX_MAJOR_VERSION_NUMBER)  &&\
       defined(UNITEX_MINOR_VERSION_NUMBER)  &&\
      !defined(UNITEX_REVISION_IS_UNDEFINED)
    // MAJOR.MINOR.PATCH
-   const char* UNITEX_VERSION_STRING = STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "."
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "."
-                                       STRINGIZE(SVN_REVISION) "";
+       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
+                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
+                                       STRINGIZE(SVN_REVISION) ""
 # elif defined(UNITEX_MAJOR_VERSION_NUMBER) &&\
        defined(UNITEX_MINOR_VERSION_NUMBER)
    // MAJOR.MINOR.0    
-   const char* UNITEX_VERSION_STRING = STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "."
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "."
-                                       "0";
+       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
+                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
+                                       "0"
 # else     // unknown release as 0.0.0
-   const char* UNITEX_VERSION_STRING = "0.0.0";
+       #define UNITEX_SEMVER_STRING = "0.0.0"
 # endif  // defined(UNITEX_MAJOR_VERSION_NUMBER)  &&
 #endif  // defined(UNITEX_VERSION_IS_UNSTABLE)
 
@@ -117,7 +117,9 @@ const char* get_unitex_verbose_version_string() {
 
 
 const char* get_unitex_semver_string() {
-	return UNITEX_VERSION_STRING;
+	// with this code, you can enter under Windows type UnitexToolLogger.exe | find "semver="
+	const char* include_semver_in_binary = "\n\0semver=" UNITEX_SEMVER_STRING "\0\n";
+	return include_semver_in_binary + 9;
 }
 
 UNITEX_FUNC const char* UNITEX_CALL GetUnitexSemVerString() {
@@ -175,20 +177,26 @@ size_t get_unitex_version_revision_xml_string(char* string, size_t buflen)
 #endif
 
 #if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined(UNITEX_MINOR_VERSION_NUMBER)
-	const char* xmlStringVersion = "\0<UnitexMajorVersion>"  STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "</UnitexMajorVersion>"
-		"<UnitexMinorVersion>"  STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "</UnitexMinorVersion>\0";
+	const char* xmlStringVersion = "\0<UnitexMajorVersion>"  STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "</UnitexMajorVersion>" \
+		"<UnitexMinorVersion>"  STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "</UnitexMinorVersion>" \
+		"\0";
 #else
 	const char* xmlStringVersion = "\0<UnitexMajorVersion>x</UnitexMajorVersion>"
 		"<UnitexMinorVersion>x</UnitexMinorVersion>\0";
 #endif
 
+	const char* xmlStringSemVer = "\0<UnitexSemVer>" UNITEX_SEMVER_STRING "</UnitexSemVer>";
+
 	const char* usableXmlStringRevision = xmlStringRevision + 1;
 	const char* usableXmlStringVersion = xmlStringVersion + 1;
-	size_t len = strlen(usableXmlStringRevision)+strlen(usableXmlStringVersion)+(2*strlen("\n"));
+	const char* usableXmlStringSemVer = xmlStringSemVer + 1;
+	size_t len = strlen(usableXmlStringRevision)+strlen(usableXmlStringVersion)+strlen(usableXmlStringSemVer)+(3*strlen("\n"));
 	if (buflen > len) {
 		strcpy(string, usableXmlStringVersion);
 		strcat(string, "\n");
 		strcat(string, usableXmlStringRevision);
+		strcat(string, "\n");
+		strcat(string, usableXmlStringSemVer);
 		strcat(string, "\n");
 	}
 
@@ -200,9 +208,10 @@ size_t get_unitex_version_revision_json_string(char* string, size_t buflen)
 {
 #if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined(UNITEX_MINOR_VERSION_NUMBER) && defined (SVN_REVISION)
 	const char* jsonString = "\0{\"UnitexMajorVersion\":" STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER)
-		",\"UnitexMinorVersion\":" STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) ",\"UnitexRevision\":" STRINGIZE(SVN_REVISION) "}";
+		", \"UnitexMinorVersion\":" STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) ", \"UnitexRevision\":" STRINGIZE(SVN_REVISION) \
+		", \"UnitexSemVer\":\"" UNITEX_SEMVER_STRING "\"}";
 #else
-	const char* jsonString = "\0{\"UnitexMajorVersion\":-1,\"UnitexMinorVersion\":-1,\"UnitexRevision\":-1}";
+	const char* jsonString = "\0{\"UnitexMajorVersion\":-1, \"UnitexMinorVersion\":-1, \"UnitexRevision\":-1, \"UnitexSemVer\":\"" UNITEX_SEMVER_STRING "\"}";
 #endif
 
 	const char* usableStringRevision = jsonString + 1;
