@@ -1463,7 +1463,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 grf_infos = extract_info(grf_lines, &num_annots, total_lines, &start_node_loc, &start_node_line, &entity_loc);
 
                 if (num_annots > 0) {
-                    unichar**entity_string = extract_entities(get_file_in_current_snt(text,transducer_number,iteration,"tok_by_alph",".txt"),snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+                    char* token_list = get_file_in_current_snt(text, transducer_number, iteration, "tok_by_alph", ".txt");
+                    unichar**entity_string = extract_entities(token_list,snt_text_files->tok_by_alph_txt, vec, num_annots, &num_entities, grf_infos);
+                    free(token_list);
                     free(entity_string);
 
                     updated_grf_file_name = create_updated_graph_filename(text,
