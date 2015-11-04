@@ -59,57 +59,6 @@ const char* UnitexRevisionConstant = "Unitex version unknown";
 #endif
 #endif
 
-/**
- * @brief Defines a canonical Unitex version string
- * 
- * VERSION = MAJOR.MINOR.PATCH('-'SUFFIX)?
- *  
- * This format is intend to be compliant with the Semantic Versioning scheme 
- * and with the version string of the "Standards for Command Line Interfaces"
- * 
- * @see http://semver.org/spec/v2.0.0.html
- * @see https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
- * @author Cristian Martinez
- */
-#if  defined(UNITEX_VERSION_IS_UNSTABLE)    &&\
-             UNITEX_VERSION_IS_UNSTABLE
-# if  defined(UNITEX_MAJOR_VERSION_NUMBER)  &&\
-      defined(UNITEX_MINOR_VERSION_NUMBER)  &&\
-     !defined(UNITEX_REVISION_IS_UNDEFINED)
-   // MAJOR.MINOR.PATCH-SUFFIX
-       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
-                                       STRINGIZE(SVN_REVISION)                "-" \
-                                       UNITEX_VERSION_SUFFIX
-# elif defined(UNITEX_MAJOR_VERSION_NUMBER) &&\
-       defined(UNITEX_MINOR_VERSION_NUMBER)
-   // MAJOR.MINOR.0-SUFFIX    
-       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
-                                       "0"                                    "-" \
-                                       UNITEX_VERSION_SUFFIX
-# else     // unknown release as 0.0.0-SUFFIX
-       #define UNITEX_SEMVER_STRING   "0.0.0-" UNITEX_VERSION_SUFFIX
-# endif  // defined(UNITEX_MAJOR_VERSION_NUMBER)
-#else  // UNITEX_VERSION_IS_STABLE
-# if  defined(UNITEX_MAJOR_VERSION_NUMBER)  &&\
-      defined(UNITEX_MINOR_VERSION_NUMBER)  &&\
-     !defined(UNITEX_REVISION_IS_UNDEFINED)
-   // MAJOR.MINOR.PATCH
-       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
-                                       STRINGIZE(SVN_REVISION) ""
-# elif defined(UNITEX_MAJOR_VERSION_NUMBER) &&\
-       defined(UNITEX_MINOR_VERSION_NUMBER)
-   // MAJOR.MINOR.0    
-       #define UNITEX_SEMVER_STRING   STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "." \
-                                       STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "." \
-                                       "0"
-# else     // unknown release as 0.0.0
-       #define UNITEX_SEMVER_STRING = "0.0.0"
-# endif  // defined(UNITEX_MAJOR_VERSION_NUMBER)  &&
-#endif  // defined(UNITEX_VERSION_IS_UNSTABLE)
-
 
 const char* get_unitex_verbose_version_string() {
 	return UnitexRevisionConstant;
