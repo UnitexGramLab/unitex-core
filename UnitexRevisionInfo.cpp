@@ -109,7 +109,13 @@ const char* UnitexRevisionConstant = "Unitex version unknown";
    const char* UNITEX_VERSION_STRING = "0.0.0";
 # endif  // defined(UNITEX_MAJOR_VERSION_NUMBER)  &&
 #endif  // defined(UNITEX_VERSION_IS_UNSTABLE)
-   
+
+
+const char* get_unitex_verbose_version_string() {
+	return UnitexRevisionConstant;
+}
+
+
 const char* get_unitex_semver_string() {
 	return UNITEX_VERSION_STRING;
 }
@@ -212,11 +218,8 @@ size_t get_unitex_version_revision_json_string(char* string, size_t buflen)
 
 UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number)
 {
-	// to prevent optimizer discard UnitexRevisionConstant
-	unichar dummyUnichar[0x100];
 	char bufXml[0x200];
 	get_unitex_version_revision_xml_string(bufXml, sizeof(bufXml));
-	u_sprintf(dummyUnichar,"%s",UnitexRevisionConstant);
 
 	get_unitex_version(major_version_number, minor_version_number);
 }

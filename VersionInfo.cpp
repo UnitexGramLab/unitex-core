@@ -66,7 +66,7 @@ static void usage() {
   u_printf(usage_VersionInfo);
 }
 
-const char* optstring_VersionInfo=":VhmcRrvpjxo:k:q:";
+const char* optstring_VersionInfo=":VhmcRrvpjxsuo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
   {"copyright",no_argument_TS,NULL,'c'},
   {"version",no_argument_TS,NULL,'v'},
@@ -188,6 +188,8 @@ int do_platform_info=0;
 int do_compiler_info=0;
 int do_xml_info=0;
 int do_json_info=0;
+int do_semver_info = 0;
+int do_user_friendly_info = 0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 bool only_verify_arguments = false;
@@ -202,6 +204,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
    case 'm': do_compiler_info = 1; break;
    case 'j': do_json_info = 1; break;
    case 'x': do_xml_info = 1; break;
+   case 's': do_semver_info = 1; break;
+   case 'u': do_user_friendly_info = 1; break;
    case 'o': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output argument\n");
                 return USAGE_ERROR_CODE;
@@ -265,6 +269,14 @@ if (do_json_info) {
     char buf[0x200]="";
     get_unitex_version_revision_xml_string(buf, sizeof(buf));
     u_sprintf(DisplayText,"%s", buf);
+} else if (do_user_friendly_info) {
+    char buf[0x200]="";
+	strcpy(buf, get_unitex_verbose_version_string());
+    u_sprintf(DisplayText,"%s", buf);
+} else if (do_semver_info) {
+    char buf[0x200]="";
+	strcpy(buf,get_unitex_semver_string());
+    u_sprintf(DisplayText,"%s", buf);
 } else if (do_copyright_only) {
 	get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
 }
@@ -326,7 +338,7 @@ if (output_file!=NULL) {
    u_fclose(text);
 }
 else {
-    u_printf("%S", DisplayText);
+    u_printf("%S\n", DisplayText);
 }
 
 free(DisplayText);
