@@ -47,6 +47,7 @@ void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_
 const char* get_unitex_semver_string();
 size_t get_unitex_version_revision_xml_string(char* string, size_t buflen);
 size_t get_unitex_version_revision_json_string(char* string, size_t buflen);
+const char* get_unitex_verbose_version_string();
 
 #ifdef __cplusplus
 extern "C" {
