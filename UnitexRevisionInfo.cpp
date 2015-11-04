@@ -34,10 +34,6 @@
 #include "UnitexRevisionInfo.h"
 
 
-#if (!defined(SVN_REVISION))
-#include "Unitex_revision.h"
-#define SVN_REVISION UNITEX_REVISION
-#endif
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
