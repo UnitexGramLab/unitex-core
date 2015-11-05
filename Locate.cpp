@@ -266,6 +266,7 @@ int max_count_call_warning=MAX_COUNT_CALL_WARNING;
 int stack_max=STACK_MAX;
 int max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;
 int max_matches_per_subgraph=MAX_MATCHES_PER_SUBGRAPH;
+int tolerance_divide_factor=1;
 int max_errors=0;
 int tilde_negation_operator=1;
 int useLocateCache=1;
@@ -424,21 +425,15 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
              }
              break;
    case 'H': {
-                stack_max = STACK_MAX / 2;
-                max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 2;
-                max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 2;
+                tolerance_divide_factor=2;
              }
              break;
    case 'Q': {
-                stack_max = STACK_MAX / 5;
-                max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 5;
-                max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 5;
+                tolerance_divide_factor=5;
              }
              break;
    case 'N': {
-                stack_max = STACK_MAX / 10;
-                max_matches_at_token_pos = MAX_MATCHES_AT_TOKEN_POS / 10;
-                max_matches_per_subgraph = MAX_MATCHES_PER_SUBGRAPH / 10;
+                tolerance_divide_factor=10;
              }
              break;
    case 'd': if (options.vars()->optarg[0]=='\0') {
@@ -534,6 +529,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
    }
    index=-1;
 }
+
+stack_max /= tolerance_divide_factor;
+max_matches_at_token_pos /= tolerance_divide_factor;
+max_matches_per_subgraph /= tolerance_divide_factor;
 
 if (options.vars()->optind!=argc-1) {
   error("Invalid arguments: rerun with --help\n");
