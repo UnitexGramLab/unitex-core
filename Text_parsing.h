@@ -56,6 +56,12 @@ namespace unitex {
                           needed to avoid overflow of error buffers in Java GUI */
 
 
+/* default number of maximal iteration on a token before emit warning */
+#define MAX_COUNT_CALL_WARNING 131072
+
+/* default number of maximal iteration on a token before skip to next token */
+#define MAX_COUNT_CALL 1048576
+
 /* we try to known if user request cancel each COUNT_CANCEL_TRYING_INIT_CONST locate */
 #define COUNT_CANCEL_TRYING_INIT_CONST (1024)
 
