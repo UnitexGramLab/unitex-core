@@ -829,15 +829,13 @@ static int UnitexTool_several_info_ignore_stack_option(int argc,char* const argv
 	if (argc>1)
 		firstArg=argv[1];
 
-	if ((firstArg != NULL) && (strstr(firstArg, "--stack-size=") == firstArg)) {
-
+	if ((firstArg != NULL) && ((strstr(firstArg, "--stack-size=") == firstArg) || (strstr(firstArg, "--stack_size=") == firstArg))) {
 #ifdef UNITEXTOOL_HAVE_SYNC_LOGGER
-		const char* stack_size_option = firstArg + 13;
 		if (ignore_stack_option == 0)
 		{
 			unitexTool_run_in_thread_infos infos;
 			unitexTool_run_in_thread_infos* pinfos = &infos;
-
+			const char* stack_size_option = firstArg + 13;
 			
 			char cSuffix = 0;
 			char foo = 0;
