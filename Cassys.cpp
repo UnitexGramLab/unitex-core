@@ -444,6 +444,11 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                         if(prev_char[0] == '{') { //In case of multi level annotation, there could be multiple '\{' characters before the entity
                             prev_char[0] = ' ' ;
                         }
+                        if(infos[k].accept_count==1) {
+                            //if same element appears more than once then we store
+                            // them separately
+                            prev_char[0] = '+' ;
+                        }
                         u_strcat(entity_whole,prev_char);
                         u_strcat(entity_whole,entity);
                         }
