@@ -1,0 +1,69 @@
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
+/**
+ * @file      Version.h
+ * @brief     Defines the current version of the Unitex Core
+ *            
+ * @author    @UNITEX_BUILD_AUTHOR@
+ * 
+ * @warning   DO NOT CHANGE THIS FILE DIRECTLY! IT WILL BE OVERWRITTEN.
+ *            BUT INSTEAD USE VERSION.H.IN
+ *          
+ * @date      @UNITEX_BUILD_VERSION_DATE@
+ * 
+ */
+/* ************************************************************************** */
+#ifndef UNITEX_CORE_VERSION_H_                                      // NOLINT
+#define UNITEX_CORE_VERSION_H_                                      // NOLINT
+/* ************************************************************************** */
+#define UNITEX_VERSION_NAME                "@UNITEX_VERSION_NAME@"
+#define UNITEX_VERSION_NAMESPACE           "@UNITEX_VERSION_NAMESPACE@"
+/* ************************************************************************** */
+#define UNITEX_VERSION_AUTHOR              "@UNITEX_VERSION_AUTHOR@"
+#define UNITEX_VERSION_COMPANY             "@UNITEX_VERSION_COMPANY@"
+#define UNITEX_VERSION_COPYRIGHT           "@UNITEX_VERSION_COPYRIGHT@"
+#define UNITEX_VERSION_DESCRIPTION_SHORT   "@UNITEX_VERSION_DESCRIPTION_SHORT@"
+#define UNITEX_VERSION_DESCRIPTION         "@UNITEX_VERSION_DESCRIPTION@"
+#define UNITEX_VERSION_LICENSE             "@UNITEX_VERSION_LICENSE@"
+/* ************************************************************************** */
+#define UNITEX_VERSION_URL_ISSUES          "@UNITEX_VERSION_URL_ISSUES@"
+#define UNITEX_VERSION_URL_REPOSITORY      "@UNITEX_VERSION_URL_REPOSITORY@"
+#define UNITEX_VERSION_URL_WEBSITE         "@UNITEX_VERSION_URL_WEBSITE@"
+/* ************************************************************************** */
+#define UNITEX_VERSION_MAJOR_NUMBER        @UNITEX_VERSION_MAJOR_NUMBER@
+#define UNITEX_VERSION_MINOR_NUMBER        @UNITEX_VERSION_MINOR_NUMBER@
+#define UNITEX_VERSION_REVISION_NUMBER     @UNITEX_VERSION_REVISION_NUMBER@
+#define UNITEX_VERSION_SUFFIX              "@UNITEX_VERSION_SUFFIX@"
+#define UNITEX_VERSION_IS_UNSTABLE         @UNITEX_VERSION_IS_UNSTABLE@
+/* ************************************************************************** */
+#define UNITEX_VERSION_BUILD_IS_ANONYMOUS  @UNITEX_VERSION_BUILD_IS_ANONYMOUS@
+#define UNITEX_VERSION_BUILD_NUMBER        @UNITEX_VERSION_BUILD_NUMBER@
+#define UNITEX_VERSION_BUILD_DAY           "@UNITEX_VERSION_BUILD_DAY@"
+#define UNITEX_VERSION_BUILD_MONTH         "@UNITEX_VERSION_BUILD_MONTH@"
+#define UNITEX_VERSION_BUILD_TIMESTAMP     "@UNITEX_VERSION_BUILD_TIMESTAMP@"
+#define UNITEX_VERSION_BUILD_YEAR          "@UNITEX_VERSION_BUILD_YEAR@"
+#define UNITEX_VERSION_BUILD_COMMIT_BRANCH "@UNITEX_VERSION_BUILD_COMMIT_BRANCH@"
+#define UNITEX_VERSION_BUILD_COMMIT_DATE   "@UNITEX_VERSION_BUILD_COMMIT_DATE@"
+#define UNITEX_VERSION_BUILD_COMMIT_HASH   "@UNITEX_VERSION_BUILD_COMMIT_HASH@"
+#define UNITEX_VERSION_BUILD_COMMIT_TAG    "@UNITEX_VERSION_BUILD_COMMIT_TAG@"
+/* ************************************************************************** */
+#endif  // UNITEX_CORE_VERSION_H_                                   // NOLINT
+
