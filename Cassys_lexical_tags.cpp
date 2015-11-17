@@ -131,7 +131,8 @@ list_ustring *cassys_tokenize(const unichar* text) {
 		} else if(mode==LEXICAL_TAG_MODE){
 			offset = end_of_lexical_tag(text+position);
 			if(offset == -1){
-				fatal_error("%S : Expected '}' character in cassys_tokenize", text+position);
+				error("%S : Expected '}' character in cassys_tokenize", text+position);
+				return result;
 			}
 			offset++; // add the } character
 			position+=offset;
