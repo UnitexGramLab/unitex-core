@@ -91,6 +91,8 @@ struct compilation_info {
    int current_saved_graph;
    char check_outputs;
    char strict_tokenization;
+   /* output associated with subgraphs*/
+   struct string_hash* graph_output;
 };
 
 

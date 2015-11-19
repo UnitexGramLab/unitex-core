@@ -98,6 +98,7 @@ s->box_content=NULL;
 s->transitions=new_vector_int();
 s->rank=-1;
 s->box_number=-1;
+s->is_first=-1;
 return s;
 }
 
@@ -112,6 +113,7 @@ s->x=x;
 s->y=y;
 s->box_number=box_number;
 s->rank=rank;
+s->is_first=-1;
 return s;
 }
 
