@@ -239,6 +239,10 @@
 #include "Uncompress.h"
 #endif
 
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNPREPROCESS))) || defined(TOOL_UNPREPROCESS))
+#include "DumpOffsets.h"
+#endif
+
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNTOKENIZE))) || defined(TOOL_UNTOKENIZE))
 #include "Untokenize.h"
 #endif
@@ -553,6 +557,10 @@ const struct utility_item utility_array[]=
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_PACKFILE))) || defined(TOOL_PACKFILE) || defined(UNITEX_TOOL_LINKPKG_SCRIPT))
 	{ "UnpackFile", 10, &main_UnpackFile, usage_UnpackFile, optstring_UnpackFile, lopts_UnpackFile } ,
 #endif
+#endif
+
+#if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNPREPROCESS))) || defined(TOOL_UNPREPROCESS))
+	{ "UnPreprocess", 12, &main_UnPreprocess, usage_UnPreprocess, optstring_UnPreprocess, lopts_UnPreprocess },
 #endif
 
 #if (((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))) && (!defined(NO_TOOL_UNTOKENIZE))) || defined(TOOL_UNTOKENIZE))

@@ -48,7 +48,14 @@ extern const char* usage_DumpOffsets;
 
 int main_DumpOffsets(int argc,char* const argv[]);
 
+
+
+extern const char* optstring_UnPreprocess;
+extern const struct option_TS lopts_UnPreprocess[];
+extern const char* usage_UnPreprocess;
+
+int main_UnPreprocess(int argc,char* const argv[]);
+
 } // namespace unitex
 
 #endif
-
