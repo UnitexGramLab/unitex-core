@@ -152,6 +152,26 @@ permute_args(int panonopt_start, int panonopt_end, int opt_end,
 	}
 }
 
+// a tolerant version of strncmp which accept interoperate - and _
+static int strncmp_tolerant(const char*str1, const char*str2, size_t Count)
+{
+	char c1, c2;
+	int v;
+
+	if (Count == 0)
+		return 0;
+
+	do {
+		c1 = *str1++;
+		c2 = *str2++;
+		if (c1 == '_') c1 = '-';
+		if (c2 == '_') c2 = '-';
+		v = (unsigned int)c1 - (unsigned int)c2;
+	} while ((v == 0) && (c1 != '\0') && (--Count > 0));
+
+	return v;
+}
+
 /*
  * parse_long_options --
  *	Parse long options in argc/argv argument vector.
@@ -179,7 +199,7 @@ parse_long_options_TS(char * const *nargv, const char *options,
 
 	for (i = 0; long_options[i].name; i++) {
 		/* find matching long option */
-		if (strncmp(current_argv, long_options[i].name,
+		if (strncmp_tolerant(current_argv, long_options[i].name,
 		    current_argv_len))
 			continue;
 
