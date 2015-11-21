@@ -2020,7 +2020,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 					 
 
 
-					if (pos_in_unichar_line == (size - 1))
+					if (pos_in_unichar_line == size)
 					{
 						af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
 							
