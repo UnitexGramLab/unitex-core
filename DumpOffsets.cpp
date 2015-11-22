@@ -1291,7 +1291,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 	}
 
 
-
+	u_fclose(f_output);
 	free_vector_offset(v_preprocessed_offset);
 	free_vector_offset(v_processed_offset);
 	u_fclose(f_input_original_file);
