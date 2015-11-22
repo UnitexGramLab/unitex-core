@@ -809,7 +809,6 @@ public:
     ePtrCnt = tPtrCnt = 0;
 
     if (outLineLimit <= numberOfOutLine) {
-      error("End by line limit %d\r\n", numberOfOutLine);
       return 1;
     }
     return 0;
