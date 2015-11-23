@@ -21,51 +21,49 @@
 /**
  * @file      Version.h
  * @brief     Defines the current version of the Unitex Core
- *            
- * @author    Vinber Process
- * 
+ *
+ * @author    Anonymous Builder
+ *
  * @warning   DO NOT CHANGE THIS FILE DIRECTLY! IT WILL BE OVERWRITTEN.
  *            BUT INSTEAD USE VERSION.H.IN
- *
- * @remark    
- *          
- * @date      November 09, 2015
- * 
  */
 /* ************************************************************************** */
-#ifndef UNITEX_CORE_VERSION_H                                       // NOLINT
-#define UNITEX_CORE_VERSION_H                                       // NOLINT
+#ifndef UNITEX_CORE_VERSION_H_                                      // NOLINT
+#define UNITEX_CORE_VERSION_H_                                      // NOLINT
 /* ************************************************************************** */
 #define UNITEX_VERSION_NAME                "Unitex"
 #define UNITEX_VERSION_NAMESPACE           "unitex"
 /* ************************************************************************** */
-#define UNITEX_VERSION_AUTHOR              "The Unitex Authors"
+#define UNITEX_VERSION_AUTHOR              "The Unitex/GramLab Authors"
 #define UNITEX_VERSION_COMPANY             "Universite Paris-Est Marne-la-Vallee"
 #define UNITEX_VERSION_COPYRIGHT           "Copyright (C) 2001-2015"
 #define UNITEX_VERSION_DESCRIPTION_SHORT   "corpus processing suite"
 #define UNITEX_VERSION_DESCRIPTION         "an open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite"
 #define UNITEX_VERSION_LICENSE             "LGPL-2.1"
 /* ************************************************************************** */
+#define UNITEX_VERSION_URL_HOMEPAGE        "http://unitexgramlab.org"
 #define UNITEX_VERSION_URL_ISSUES          "http://forum.unitexgramlab.org"
-#define UNITEX_VERSION_URL_REPOSITORY      "https://svnigm.univ-mlv.fr/svn/unitex/Unitex-C++"
-#define UNITEX_VERSION_URL_WEBSITE         "http://unitexgramlab.org"
+#define UNITEX_VERSION_URL_REPOSITORY      "https://svnigm.univ-mlv.fr/svn/unitex/Unitex-C%2B%2B"
 /* ************************************************************************** */
 #define UNITEX_VERSION_MAJOR_NUMBER        3
 #define UNITEX_VERSION_MINOR_NUMBER        1
 #define UNITEX_VERSION_REVISION_NUMBER     0
 #define UNITEX_VERSION_SUFFIX              "beta"
+#define UNITEX_VERSION_TYPE                "unstable"
 #define UNITEX_VERSION_IS_UNSTABLE         1
 /* ************************************************************************** */
 #define UNITEX_VERSION_BUILD_IS_ANONYMOUS  1
 #define UNITEX_VERSION_BUILD_NUMBER        0
+#define UNITEX_VERSION_BUILD_DATE          "?"
 #define UNITEX_VERSION_BUILD_DAY           "?"
 #define UNITEX_VERSION_BUILD_MONTH         "?"
-#define UNITEX_VERSION_BUILD_TIMESTAMP     "?"
 #define UNITEX_VERSION_BUILD_YEAR          "?"
-#define UNITEX_VERSION_BUILD_COMMIT_BRANCH "?"
-#define UNITEX_VERSION_BUILD_COMMIT_DATE   "?"
-#define UNITEX_VERSION_BUILD_COMMIT_HASH   "?"
-#define UNITEX_VERSION_BUILD_COMMIT_TAG    "?"
+#define UNITEX_VERSION_BUILD_TIMESTAMP     "?"
+#define UNITEX_VERSION_BUILD_SYSTEM        "Anonymous Builder"
 /* ************************************************************************** */
-#endif  // UNITEX_CORE_VERSION_H                                    // NOLINT
-
+#define UNITEX_VERSION_COMMIT_BRANCH       "?"
+#define UNITEX_VERSION_COMMIT_DATE         "?"
+#define UNITEX_VERSION_COMMIT_HASH         "?"
+#define UNITEX_VERSION_COMMIT_TAG          "?"
+/* ************************************************************************** */
+#endif  // UNITEX_CORE_VERSION_H_                                   // NOLINT

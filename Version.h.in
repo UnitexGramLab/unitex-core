@@ -21,21 +21,18 @@
 /**
  * @file      Version.h
  * @brief     Defines the current version of the Unitex Core
- *            
- * @author    @UNITEX_BUILD_AUTHOR@
- * 
+ *
+ * @author    @UNITEX_VERSION_BUILD_SYSTEM@
+ *
  * @warning   DO NOT CHANGE THIS FILE DIRECTLY! IT WILL BE OVERWRITTEN.
  *            BUT INSTEAD USE VERSION.H.IN
- *          
- * @date      @UNITEX_BUILD_VERSION_DATE@
- * 
  */
 /* ************************************************************************** */
 #ifndef UNITEX_CORE_VERSION_H_                                      // NOLINT
 #define UNITEX_CORE_VERSION_H_                                      // NOLINT
 /* ************************************************************************** */
-#define UNITEX_VERSION_NAME                "@UNITEX_VERSION_NAME@"
-#define UNITEX_VERSION_NAMESPACE           "@UNITEX_VERSION_NAMESPACE@"
+#define UNITEX_VERSION_NAME                "Unitex"
+#define UNITEX_VERSION_NAMESPACE           "unitex"
 /* ************************************************************************** */
 #define UNITEX_VERSION_AUTHOR              "@UNITEX_VERSION_AUTHOR@"
 #define UNITEX_VERSION_COMPANY             "@UNITEX_VERSION_COMPANY@"
@@ -44,26 +41,29 @@
 #define UNITEX_VERSION_DESCRIPTION         "@UNITEX_VERSION_DESCRIPTION@"
 #define UNITEX_VERSION_LICENSE             "@UNITEX_VERSION_LICENSE@"
 /* ************************************************************************** */
-#define UNITEX_VERSION_URL_ISSUES          "@UNITEX_VERSION_URL_ISSUES@"
-#define UNITEX_VERSION_URL_REPOSITORY      "@UNITEX_VERSION_URL_REPOSITORY@"
-#define UNITEX_VERSION_URL_WEBSITE         "@UNITEX_VERSION_URL_WEBSITE@"
+#define UNITEX_VERSION_URL_HOMEPAGE        "@UNITEX_VERSION_URL_HOMEPAGE@"
+#define UNITEX_VERSION_URL_ISSUES          "@UNITEX_VERSION_URL_ISSUES_CORE@"
+#define UNITEX_VERSION_URL_REPOSITORY      "@UNITEX_VERSION_URL_REPOSITORY_CORE@"
 /* ************************************************************************** */
 #define UNITEX_VERSION_MAJOR_NUMBER        @UNITEX_VERSION_MAJOR_NUMBER@
 #define UNITEX_VERSION_MINOR_NUMBER        @UNITEX_VERSION_MINOR_NUMBER@
 #define UNITEX_VERSION_REVISION_NUMBER     @UNITEX_VERSION_REVISION_NUMBER@
 #define UNITEX_VERSION_SUFFIX              "@UNITEX_VERSION_SUFFIX@"
+#define UNITEX_VERSION_TYPE                "@UNITEX_VERSION_TYPE@"
 #define UNITEX_VERSION_IS_UNSTABLE         @UNITEX_VERSION_IS_UNSTABLE@
 /* ************************************************************************** */
 #define UNITEX_VERSION_BUILD_IS_ANONYMOUS  @UNITEX_VERSION_BUILD_IS_ANONYMOUS@
 #define UNITEX_VERSION_BUILD_NUMBER        @UNITEX_VERSION_BUILD_NUMBER@
+#define UNITEX_VERSION_BUILD_DATE          "@UNITEX_VERSION_BUILD_DATE@"
 #define UNITEX_VERSION_BUILD_DAY           "@UNITEX_VERSION_BUILD_DAY@"
 #define UNITEX_VERSION_BUILD_MONTH         "@UNITEX_VERSION_BUILD_MONTH@"
-#define UNITEX_VERSION_BUILD_TIMESTAMP     "@UNITEX_VERSION_BUILD_TIMESTAMP@"
 #define UNITEX_VERSION_BUILD_YEAR          "@UNITEX_VERSION_BUILD_YEAR@"
-#define UNITEX_VERSION_BUILD_COMMIT_BRANCH "@UNITEX_VERSION_BUILD_COMMIT_BRANCH@"
-#define UNITEX_VERSION_BUILD_COMMIT_DATE   "@UNITEX_VERSION_BUILD_COMMIT_DATE@"
-#define UNITEX_VERSION_BUILD_COMMIT_HASH   "@UNITEX_VERSION_BUILD_COMMIT_HASH@"
-#define UNITEX_VERSION_BUILD_COMMIT_TAG    "@UNITEX_VERSION_BUILD_COMMIT_TAG@"
+#define UNITEX_VERSION_BUILD_TIMESTAMP     "@UNITEX_VERSION_BUILD_TIMESTAMP@"
+#define UNITEX_VERSION_BUILD_SYSTEM        "@UNITEX_VERSION_BUILD_SYSTEM@"
+/* ************************************************************************** */
+#define UNITEX_VERSION_COMMIT_BRANCH       "@UNITEX_VERSION_COMMIT_BRANCH_CORE@"
+#define UNITEX_VERSION_COMMIT_DATE         "@UNITEX_VERSION_COMMIT_DATE_CORE@"
+#define UNITEX_VERSION_COMMIT_HASH         "@UNITEX_VERSION_COMMIT_HASH_CORE@"
+#define UNITEX_VERSION_COMMIT_TAG          "@UNITEX_VERSION_COMMIT_TAG_CORE@"
 /* ************************************************************************** */
 #endif  // UNITEX_CORE_VERSION_H_                                   // NOLINT
-
