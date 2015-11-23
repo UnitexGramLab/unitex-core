@@ -1193,11 +1193,39 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 		int next_stop_preprocessed = (pos_in_preprocessed_offset >= v_preprocessed_offset->nbelems) ?
 				-1 : v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
 
+
+		enum {
+			preprocess_next_action_skip_preprocess,
+			preprocess_next_action_apply_preprocess,
+			preprocess_next_action_apply_process,
+			preprocess_next_action_break,
+		} preprocess_next_action ;
+		
+		// if there is no more preprocess offset, just apply next process offset
 		if ((next_stop_processed == -1) && (next_stop_preprocessed == -1))
 		{
-			break;
+			preprocess_next_action = preprocess_next_action_break;
 		}
-		
+		else
+		if (next_stop_preprocessed == -1) {
+			preprocess_next_action = preprocess_next_action_apply_process;
+		}
+		else // if process offset is before next preprocess offset and doesn't overlap
+		if (v_processed_offset->tab[pos_in_processed_offset].old_end <= v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start) {
+			preprocess_next_action = preprocess_next_action_apply_process;
+		}
+		else // if process offset is after next preprocess offset and doesn't overlap
+		if (v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end <= v_processed_offset->tab[pos_in_processed_offset].old_start) {
+			preprocess_next_action = preprocess_next_action_apply_preprocess;
+		}
+		else {
+			preprocess_next_action = preprocess_next_action_skip_preprocess;
+		}
+
+
+		if (preprocess_next_action == preprocess_next_action_break)
+			break;
+
 		int first_stop;
 		if ((next_stop_processed != -1) && (next_stop_preprocessed != -1))
 			first_stop = (next_stop_processed < next_stop_preprocessed) ? next_stop_processed : next_stop_preprocessed;
@@ -1213,7 +1241,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 
 
 		// test if there the next modification is a processed modification to keep
-		if ((next_stop_processed != -1) && ((next_stop_processed <= next_stop_preprocessed) || (next_stop_preprocessed==-1)))
+		if (preprocess_next_action == preprocess_next_action_apply_process)
 		{
 			int size_old_in_process_modification = v_processed_offset->tab[pos_in_processed_offset].old_end - v_processed_offset->tab[pos_in_processed_offset].old_start;
 			int size_new_in_process_modification = v_processed_offset->tab[pos_in_processed_offset].new_end - v_processed_offset->tab[pos_in_processed_offset].new_start;
@@ -1232,15 +1260,15 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 		// if this test is true, we knwown that next_stop_processed > next_stop_preprocessed)
 
 		// we test if there is overlap. If there is overlap, we ignore preprocessed modification
-		if ((next_stop_processed != -1) && 
-			(next_stop_preprocessed -= -1) &&
-			(v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end >= next_stop_processed)) {
+		if (preprocess_next_action == preprocess_next_action_skip_preprocess)
+		{
 			int size_old_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_start;
 			int size_new_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
-			size_skip_original_for_ignored_offset += size_new_in_preprocess_skip - size_old_in_preprocess_skip;
+			size_skip_original_for_ignored_offset += size_old_in_preprocess_skip - size_new_in_preprocess_skip;
+			skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
 			pos_in_preprocessed_offset++;
 		}
-		else
+		else // here if (preprocess_next_action == preprocess_next_action_apply_process)
 		{
 		// the modification is a preprocessed modification to keep
 
