@@ -1101,7 +1101,9 @@ int copy_chars_between_unicharfiles(U_FILE* input, U_FILE* output, int* pos_in, 
 		if ((result_read == 0) || (nb_needed == 0))
 			break;
 	}
-	(*pos_in) += result;
+	if (pos_in != NULL) {
+		(*pos_in) += result;
+	}
 	if (pos_out != NULL) {
 		(*pos_out) += result;
 	}
@@ -1188,7 +1190,6 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 
 		
 		// now, between pos_in_preprocessed_file and next_stop_preprocessed, we can integrate revert modification made by pre-processing
-		
 
 		int next_stop_preprocessed = (pos_in_preprocessed_offset >= v_preprocessed_offset->nbelems) ?
 				-1 : v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
@@ -1237,8 +1238,6 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 		pos_in_preprocessed_file += until_first_stop;
 
 		size_skip_original_for_ignored_offset += until_first_stop;
-		skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
-
 
 		// test if there the next modification is a processed modification to keep
 		if (preprocess_next_action == preprocess_next_action_apply_process)
@@ -1251,7 +1250,6 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 			pos_in_preprocessed_file += size_old_in_process_modification;
 			
 			size_skip_original_for_ignored_offset += size_old_in_process_modification;
-			skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
 
 			pos_in_processed_offset++;
 		}
@@ -1265,7 +1263,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 			int size_old_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_start;
 			int size_new_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
 			size_skip_original_for_ignored_offset += size_old_in_preprocess_skip - size_new_in_preprocess_skip;
-			skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
+
 			pos_in_preprocessed_offset++;
 		}
 		else // here if (preprocess_next_action == preprocess_next_action_apply_process)
@@ -1281,13 +1279,14 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 				pos_in_processed_file + delta_output_against_processed, pos_in_processed_file + delta_output_against_processed + size_old_in_preprocess_keep);
 			delta_output_against_processed += (size_old_in_preprocess_keep - size_new_in_preprocess_keep);
 
+			skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
 			copy_chars_between_unicharfiles(f_input_original_file, f_output, &pos_in_original_file, &pos_in_output, size_old_in_preprocess_keep, buffer_for_copy, buffer_for_copy_size);
+
 			pos_in_preprocessed_file+=size_new_in_preprocess_keep;
 			skip_chars_in_unicharfiles(f_input_processed, &pos_in_processed_file, size_new_in_preprocess_keep, buffer_for_copy, buffer_for_copy_size);
 
 			pos_in_preprocessed_offset++;
 		}
-
 	}
 
 	// copy unmodified text after all offsets
