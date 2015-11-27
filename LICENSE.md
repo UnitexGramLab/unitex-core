@@ -1,0 +1,67 @@
+# Unitex licensing
+
+These are the license details, copyright notice, and disclaimer for Unitex.
+Unitex is the core engine of Unitex/GramLab, an open source, cross-platform,
+multilingual, lexicon- and grammar-based corpus processing suite.
+
+## Copyright notice
+
+> Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex-devel@univ-mlv.fr>  
+> All rights reserved.
+> 
+> This library is free software; you can redistribute it and/or modify it
+> under the terms of the GNU Lesser General Public License as published by
+> the Free Software Foundation; either version 2.1 of the License, or (at
+> your option) any later version.
+> 
+> This library is distributed in the hope that it will be useful, but WITHOUT
+> ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+> FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+> details.
+> 
+> You should have received a copy of the GNU Lesser General Public License
+> along with this library; if not, write to the Free Software Foundation, 
+> Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+
+## Third-party libraries
+
+This library includes copyrighted third-party libraries licensed under the
+terms of the BSD 2-Clause License (BSD License), the BSD 3-Clause License
+(BSD License) and the MIT License (MIT). All third-party packages are
+copyright by their respective authors.
+
+* LibYAML
+  - A YAML 1.1 parser and emitter written in C.
+  - Copyright (c) Kirill Simonov
+  - https://bitbucket.org/xi/libyaml
+  - [MIT License][MIT]
+
+* Pstdin
+  - A cross platform stdint.h (for precisely sized integers on all platforms)
+  - Copyright (c) Paul Hsieh
+  - http://www.azillionmonkeys.com/qed/pstdint.h
+  - [BSD 3-Clause License][BSD-3-Clause]
+  
+* TRE
+  - A regex matching package (library and tools) with support for
+    approximate matching.
+  - Copyright (c) Ville Laurikari
+  - https://github.com/laurikari/tre
+  - [BSD 2-Clause License][BSD-2-Clause]
+
+* WinGetOpt
+  - getopt library for Windows compilers
+  - Copyright (c) Todd C. Miller  
+    Copyright (c) The NetBSD Foundation, Inc.
+  - [BSD 2-Clause License][BSD-2-Clause]
+
+Some of those third-party packages are under licenses which require that the 
+copyright and license notices are included when distributing the code in binary
+form. These notices are available in the `licenses` directory.
+
+---
+
+[BSD-2-Clause]: http://opensource.org/licenses/BSD-2-Clause
+[BSD-3-Clause]: http://opensource.org/licenses/BSD-3-Clause
+[MIT]:          http://opensource.org/licenses/MIT
+[LGPLv2]:       http://opensource.org/licenses/lgpl-2.1
