@@ -429,9 +429,15 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                         unichar *entity = NULL;
                         entity = (unichar*) malloc(sizeof(unichar) * ((end - start)+1));
                         z = 0;
-                        for(int y = start; y < end; y++)
-                        if(line[y] != '\\')
-                            entity[z++] = line[y];
+                        for(int y = start; y < end; y++) {
+                            if(line[y] != '\\') {
+                                if(line[y] == '/') {
+                                   entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+2));
+                                   entity[z++] = '\\';
+                                }
+                                entity[z++] = line[y];
+                            }
+                        }
                         entity[z] = '\0';
                         int entity_len = z + 1;
                         if(entity_whole == NULL) {
