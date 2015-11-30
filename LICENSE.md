@@ -1,8 +1,9 @@
 # Unitex licensing
 
 These are the license details, copyright notice, and disclaimer for Unitex.
-Unitex is the core engine of Unitex/GramLab, an open source, cross-platform,
-multilingual, lexicon- and grammar-based corpus processing suite.
+Unitex is the natural language processing (NLP) engine of Unitex/GramLab,
+an open source, cross-platform, multilingual, lexicon- and grammar-based
+corpus processing suite.
 
 ## Copyright notice
 
