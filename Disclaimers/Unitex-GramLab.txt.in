@@ -1,4 +1,4 @@
-# Unitex/GramLab {{UNITEX_VERSION_FULL}}
+Unitex/GramLab {{UNITEX_VERSION_FULL}}
 {{UNITEX_VERSION_BUILD_DATE}}
 
 Unitex/GramLab is an open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite.
@@ -8,7 +8,7 @@ Binary releases	@UNITEX_VERSION_URL_RELEASES@
 Users forum	@UNITEX_VERSION_URL_FORUM@
 Developers list	@UNITEX_BUILD_DEVEL_LIST@
 Code hosting	@UNITEX_VERSION_URL_SOURCES@
-Governance @UNITEX_VERSION_URL_REPOSITORY_GOVERNANCE@
+Governance	@UNITEX_VERSION_URL_REPOSITORY_GOVERNANCE@
 
 Unitex is the natural language processing (NLP) engine of Unitex/GramLab. It is distributed under the terms of the GNU General Public License (LGPL) and contains third-party code licensed under more- permissive licenses. All third-party components are copyright by their respective authors. See the `licenses` directory for copyright and license notices.
 
