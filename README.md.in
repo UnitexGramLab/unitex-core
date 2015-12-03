@@ -1,26 +1,26 @@
-# Unitex/GramLab {{UNITEX_VERSION_FULL}}
-{{UNITEX_VERSION_BUILD_DATE}}
+# Unitex/GramLab @UNITEX_VERSION_FULL@
+@UNITEX_VERSION_BUILD_DATE@
 
-Unitex/GramLab is {{UNITEX_VERSION_DESCRIPTION}}. Project home page can be found from: <{{UNITEX_VERSION_URL_HOMEPAGE}}>.
+Unitex/GramLab is @UNITEX_VERSION_DESCRIPTION@. Project home page can be found from: <@UNITEX_VERSION_URL_HOMEPAGE@>.
 
 ## Installation
 
 This section covers compilation and installation of Unitex/GramLab on
 Windows and Unix-like systems. For the latest downloads please visit
-our [releases page]({{UNITEX_VERSION_URL_RELEASES}}).
+our [releases page](@UNITEX_VERSION_URL_RELEASES@).
 
 ### Windows
 
 Unitex/GramLab for Windows is distributed as a binary executable
 installer. It can be downloaded from:
 
-{{UNITEX_RELEASES_LATEST_URL}}
+@UNITEX_RELEASES_LATEST_URL@
 
 The downloaded file will be named something similar to:
 
 ```
-Unitex-GramLab-{{UNITEX_VERSION}}_win32-setup.exe
-Unitex-GramLab-{{UNITEX_VERSION}}_win64-setup.exe
+Unitex-GramLab-@UNITEX_VERSION@_win32-setup.exe
+Unitex-GramLab-@UNITEX_VERSION@_win64-setup.exe
 ```
 
 To begin the installation process, double-click on that file and follow
@@ -47,27 +47,27 @@ parameters. Some common options are:
 Unitex/GramLab for GNU/Linux is distributed as a binary executable
 installer. It can be downloaded from:
 
-{{UNITEX_RELEASES_LATEST_URL}}
+@UNITEX_RELEASES_LATEST_URL@
 
 The downloaded file will be named something similar to:
 
 ```
-Unitex-GramLab-{{UNITEX_VERSION}}-linux-i686.run
-Unitex-GramLab-{{UNITEX_VERSION}}-linux-x86_64.run
+Unitex-GramLab-@UNITEX_VERSION@-linux-i686.run
+Unitex-GramLab-@UNITEX_VERSION@-linux-x86_64.run
 ```
 
 Before begin the installation process, you will need to give it
 executable permissions:
 
 ```
-chmod a+x Unitex-GramLab-{{UNITEX_VERSION}}-linux-i686.run
+chmod a+x Unitex-GramLab-@UNITEX_VERSION@-linux-i686.run
 ```
 
 The .run file is a self-extracting archive. You can execute it at any
 time with:
 
 ```
-./Unitex-GramLab-{{UNITEX_VERSION}}-linux-i686.run
+./Unitex-GramLab-@UNITEX_VERSION@-linux-i686.run
 ```
 
 The GNU/Linux setup installer accepts several optional command line
@@ -84,12 +84,12 @@ parameters. Some common options are:
 Proceeding through the install process is straightforward. First,
 acquire the source distribution package from:
 
-{{UNITEX_RELEASES_LATEST_URL}}
+@UNITEX_RELEASES_LATEST_URL@
 
 The downloaded file will be named something similar to:
 
 ```
-Unitex-GramLab-{{UNITEX_VERSION}}-source-distribution.zip
+Unitex-GramLab-@UNITEX_VERSION@-source-distribution.zip
 ```
 
 After this, extract the contents of the compressed file to a preferred
@@ -119,12 +119,12 @@ User's Manual (in PDF format) is available in English and French (more
 translations are welcome). You can view and print them with Evince,
 downloadable [here](https://wiki.gnome.org/Apps/Evince/Downloads). The
 latest on-line version of the User's Manual is accessible
-[here]({{UNITEX_VERSION_URL_DOCS}}).
+[here](@UNITEX_VERSION_URL_DOCS@).
 
 ## Support
 
 Support questions can be posted in the [community support
-forum]({{UNITEX_VERSION_URL_FORUM}}). Please feel free to submit any
+forum](@UNITEX_VERSION_URL_FORUM@). Please feel free to submit any
 suggestions or requests for new features too. Some general advice about
 asking technical support questions can be found
 [here](http://www.catb.org/esr/faqs/smart-questions.html).
@@ -132,7 +132,7 @@ asking technical support questions can be found
 ## Reporting Bugs
 
 See the [Bug Reporting
-Guide]({{UNITEX_VERSION_URL_ISSUES}}) for information on
+Guide](@UNITEX_VERSION_URL_ISSUES@) for information on
 how to report bugs.
 
 ## Governance Model
@@ -141,7 +141,7 @@ Unitex/GramLab project decision-making is based on a community
 meritocratic process, anyone with an interest in can join the
 community, contribute to the project design and participate in
 decisions. The [Unitex/GramLab Governance
-Model]({{UNITEX_VERSION_URL_REPOSITORY_GOVERNANCE}}) describes
+Model](@UNITEX_VERSION_URL_REPOSITORY_GOVERNANCE@) describes
 how that participation takes place and how to set about earning merit
 within the project community.
 
@@ -179,7 +179,7 @@ under the terms of the [Apache Software License version
 packages are copyright by their respective authors.
 
 ---
-Copyright (c) {{UNITEX_VERSION_COMPANY}}, 2001-{{UNITEX_VERSION_BUILD_YEAR}}
+Copyright (c) @UNITEX_VERSION_COMPANY@, 2001-@UNITEX_VERSION_BUILD_YEAR@
 
 [Apache-2.0]:   http://opensource.org/licenses/Apache-2.0
 [BSD-2-Clause]: http://opensource.org/licenses/BSD-2-Clause
