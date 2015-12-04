@@ -45,6 +45,10 @@
 #define UNITEX_VERSION_URL_ISSUES          "@UNITEX_VERSION_URL_ISSUES_CORE@"
 #define UNITEX_VERSION_URL_REPOSITORY      "@UNITEX_VERSION_URL_REPOSITORY_CORE@"
 /* ************************************************************************** */
+#define UNITEX_VERSION_RELEASE             "@UNITEX_VERSION_RELEASE@"
+#define UNITEX_VERSION_STRING              "@UNITEX_VERSION_STRING@";
+#define UNITEX_VERSION_SEMVER              "@UNITEX_VERSION_SEMVER@";
+/* ************************************************************************** */
 #define UNITEX_VERSION_MAJOR_NUMBER        @UNITEX_VERSION_MAJOR_NUMBER@
 #define UNITEX_VERSION_MINOR_NUMBER        @UNITEX_VERSION_MINOR_NUMBER@
 #define UNITEX_VERSION_REVISION_NUMBER     @UNITEX_VERSION_REVISION_NUMBER@
