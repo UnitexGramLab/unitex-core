@@ -1,4 +1,4 @@
-Unitex/GramLab @UNITEX_VERSION_FULL@
+Unitex/GramLab @UNITEX_VERSION_STRING@
 @UNITEX_VERSION_BUILD_DATE@
 
 Unitex/GramLab is an open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite.
