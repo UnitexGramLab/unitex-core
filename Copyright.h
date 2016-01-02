@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2016 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -139,7 +139,7 @@ return 0;
 
 #define COPYRIGHT_NOTICE \
 	"This program is part of Unitex " UNITEX_SEMVER_STRING " version\n" \
-	"Copyright " COPYRIGHT_UTF8 " 2001-2015 Universit" E_ACUTE_UTF8 " Paris-Est Marne-la-Vall" E_ACUTE_UTF8 "e\nContact: <unitex@univ-mlv.fr>\n\n"
+	"Copyright " COPYRIGHT_UTF8 " 2001-2016 Universit" E_ACUTE_UTF8 " Paris-Est Marne-la-Vall" E_ACUTE_UTF8 "e\nContact: <unitex@univ-mlv.fr>\n\n"
 
 #define	SIZE_COPYRIGHT_NOTICE_BUFFER 0x400
 

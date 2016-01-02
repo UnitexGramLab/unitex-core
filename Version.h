@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2015 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2016 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@
 /* ************************************************************************** */
 #define UNITEX_VERSION_AUTHOR              "The Unitex/GramLab Authors"
 #define UNITEX_VERSION_COMPANY             "Universite Paris-Est Marne-la-Vallee"
-#define UNITEX_VERSION_COPYRIGHT           "Copyright (C) 2001-2015"
+#define UNITEX_VERSION_COPYRIGHT           "Copyright (C) 2001-2016"
 #define UNITEX_VERSION_DESCRIPTION_SHORT   "corpus processing suite"
 #define UNITEX_VERSION_DESCRIPTION         "an open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite"
 #define UNITEX_VERSION_LICENSE             "LGPL-2.1"
