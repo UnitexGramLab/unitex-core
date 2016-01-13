@@ -23,6 +23,6 @@ Unitex/GramLab is distributed in the hope that it will be useful, but WITHOUT AN
 ---
 Copyright (c) {{UNITEX_VERSION_COMPANY}}, 2001-{{UNITEX_VERSION_BUILD_YEAR}}
 
-[GFDL]:          http://www.gnu.org/licenses/fdl-1.3.txt
+[GFDL]:         http://www.gnu.org/licenses/fdl-1.3.txt
 [LGPLLR]:       http://spdx.org/licenses/LGPLLR.html
 [LGPLv2]:       http://opensource.org/licenses/lgpl-2.1
