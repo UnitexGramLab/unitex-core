@@ -36,6 +36,7 @@
 /* ************************************************************************** */
 #define UNITEX_VERSION_AUTHOR              "The Unitex/GramLab Authors"
 #define UNITEX_VERSION_COMPANY             "Universite Paris-Est Marne-la-Vallee"
+#define UNITEX_VERSION_CONTACT             "unitex-devel@univ-mlv.fr"
 #define UNITEX_VERSION_COPYRIGHT           "Copyright (C) 2001-2016"
 #define UNITEX_VERSION_DESCRIPTION_SHORT   "corpus processing suite"
 #define UNITEX_VERSION_DESCRIPTION         "an open source, cross-platform, multilingual, lexicon- and grammar-based corpus processing suite"
@@ -46,8 +47,8 @@
 #define UNITEX_VERSION_URL_REPOSITORY      "https://svnigm.univ-mlv.fr/svn/unitex/Unitex-C%2B%2B"
 /* ************************************************************************** */
 #define UNITEX_VERSION_RELEASE             "Unitex/GramLab 3.1beta"
-#define UNITEX_VERSION_STRING              "3.1beta";
-#define UNITEX_VERSION_SEMVER              "3.1.0-beta";
+#define UNITEX_VERSION_STRING              "3.1beta"
+#define UNITEX_VERSION_SEMVER              "3.1.0-beta"
 /* ************************************************************************** */
 #define UNITEX_VERSION_MAJOR_NUMBER        3
 #define UNITEX_VERSION_MINOR_NUMBER        1

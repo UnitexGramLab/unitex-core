@@ -18,19 +18,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
-#ifndef UnitexRevisionH
-#define UnitexRevisionH
-
 /**
- * This file may be overwritten to indicate the actual SVN revision number
- * of the C/C++ code of Unitex.
+ * @file      Unitex_revision.h
+ * @brief     Defines the current revision of the Unitex Core
+ * @date      November 06, 2015
  */
-
-#define UNITEX_REVISION (-1)
-#define UNITEXREVISION (-1)
-#define UNITEX_REVISION_TEXT "-1"
-#define UNITEX_REVISION_IS_UNDEFINED
-
-#endif
-
+/* ************************************************************************** */
+#ifndef UNITEX_CORE_UNITEX_REVISION_H                               // NOLINT
+#define UNITEX_CORE_UNITEX_REVISION_H                               // NOLINT
+/* ************************************************************************** */
+#include "Version.h"
+/* ************************************************************************** */
+#define QUOTE(s) "\""#s"\""
+/* ************************************************************************** */
+#if defined(UNITEX_VERSION_BUILD_IS_ANONYMOUS) &&\
+          (!UNITEX_VERSION_BUILD_IS_ANONYMOUS)
+# define UNITEX_REVISION               UNITEX_VERSION_REVISION_NUMBER
+# define UNITEXREVISION                UNITEX_VERSION_REVISION_NUMBER
+# define UNITEX_REVISION_TEXT          QUOTE(UNITEX_VERSION_REVISION_NUMBER)
+#else  // Anonymous Build
+# define UNITEX_REVISION               (-1)
+# define UNITEXREVISION                (-1)
+# define UNITEX_REVISION_TEXT          "-1"
+#endif  // defined(UNITEX_VERSION_BUILD_IS_ANONYMOUS)
+/* ************************************************************************** */
+#undef QUOTE
+/* ************************************************************************** */
+#endif  // UNITEX_CORE_UNITEX_REVISION_H                            // NOLINT
