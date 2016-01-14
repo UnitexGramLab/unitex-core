@@ -601,13 +601,19 @@ for (int priority=1;priority<4;priority++) {
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority,export_in_morpho_dic);
             if (export_in_morpho_dic==PRODUCE_MORPHO_DIC_NOW) {
-               /* If we have to compress right now the local morphological dictionary,
-                * we must close it, sort it, call Compress and reopen it in append mode */
-               u_fclose(info->morpho);
-               pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
-                                   snt_files->morpho_dic,1);
-               /* Then we compress it */
-               pseudo_main_Compress(&vec,0,semitic,snt_files->morpho_dic,1);
+               // only if the local morphological dictionary isn't empty 
+               if(get_file_size(info->morpho) > 0l) {
+                  /* If we have to compress right now the local morphological dictionary,
+                   * we must close it, sort it, call Compress and reopen it in append mode */
+                  u_fclose(info->morpho);
+                  
+                  pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
+                                      snt_files->morpho_dic,1);
+                  /* Then we compress it */
+                  pseudo_main_Compress(&vec,0,semitic,snt_files->morpho_dic,1);
+               } else {
+                 u_fclose(info->morpho);
+               }
                info->morpho=u_fopen(&vec,snt_files->morpho_dic,U_APPEND);
                if (info->morpho==NULL) {
                  error("Cannot open morphological dictionary file %s\n",snt_files->morpho_dic);
@@ -660,14 +666,20 @@ u_fclose(info->err);
 u_fclose(info->tags_err);
 
 if (info->morpho!=NULL) {
-   /* If we have produced a morpho.dic file, it's time to work with it */
-   u_fclose(info->morpho);
-   /* We sort it to remove duplicates */
-   pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
-                       snt_files->morpho_dic,1);
-   /* Then we compress it */
-   pseudo_main_Compress(&vec,0,semitic,
-       snt_files->morpho_dic,1);
+   // only if morpho.dic isn't empty 
+   if(get_file_size(info->morpho) > 0l) {
+      /* If we have produced a morpho.dic file, it's time to work with it */
+      u_fclose(info->morpho);
+      
+      /* We sort it to remove duplicates */
+      pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
+                          snt_files->morpho_dic,1);
+      /* Then we compress it */
+      pseudo_main_Compress(&vec,0,semitic,
+          snt_files->morpho_dic,1);
+   } else {
+     u_fclose(info->morpho);
+   }
 }
 
 free_dico_application(info);
