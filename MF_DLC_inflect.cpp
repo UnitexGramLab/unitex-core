@@ -162,7 +162,6 @@ int inflect(char* DLC, char* DLCF,
 			free_dela_entry(DELAS_entry);
 			/* End of simple word case */
 		} else {
-			u_fprintf(U_STDERR,"we no have a strict DELAS line\n");
 			/* If we have not a simple word DELAS line, we try to analyse it
 			 * as a compound word DELAC line */
 			if (error_check_status==ONLY_SIMPLE_WORDS) {
