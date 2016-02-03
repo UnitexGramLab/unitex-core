@@ -85,7 +85,7 @@ dependencies=compute_dependencies(origin);
 int* new_graph_number=check_for_graphs_to_keep(origin,depth,dependencies);
 int n_graphs_to_keep=renumber_graphs_to_keep(origin,new_graph_number);
 #ifdef DEBUG
-  print_dependencies(origin);
+  print_dependencies(origin,dependencies);
 #endif
 /* Now we can free liberation of the dependency structures */
 for (int i=1;i<=origin->number_of_graphs;i++) {

@@ -61,18 +61,18 @@ u_printf("--------------------------------\n");
 }
 
 
-int DEBUG=0;
+int ELAG_DEBUG=0;
 
 void set_debug() {
-DEBUG=1;
+ELAG_DEBUG=1;
 }
 
 void unset_debug() {
-DEBUG=0;
+ELAG_DEBUG=0;
 }
 
 int is_set_debug() {
-return DEBUG;
+return ELAG_DEBUG;
 }
 
 } // namespace unitex

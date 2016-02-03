@@ -82,7 +82,7 @@ enum ModeOut {
   PR_SEPARATION, PR_TOGETHER
 }; // make word and output separe ou together
 enum printOutType {
-  GRAPH, FULL, DEBUG
+  GRAPH, FULL, FST2LIST_DEBUG
 };
 enum initialType {
   SINGLE, MULTI
@@ -751,7 +751,7 @@ public:
       if ((automateMode == TRANMODE) && SOutCnt) {
         u_fprintf(foutput, "%S%S", saveSep, SOUTLINE);
       }
-      if (display_control == DEBUG)
+      if (display_control == FST2LIST_DEBUG)
         CqueuePathPr(foutput);
       u_fprintf(foutput, "\n");
       numberOfOutLine++;
@@ -1267,7 +1267,7 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
 
     break;
   }
-  case DEBUG:
+  case FST2LIST_DEBUG:
     break;
   case FULL:
     switch (traitAuto) {
@@ -1936,7 +1936,7 @@ int CFstApp::outWordsOfGraph(int depth) {
         if (outOneWord(0) != 0)
           return 1;
         break;
-      case DEBUG:
+      case FST2LIST_DEBUG:
       case FULL:
         fatal_error("???");
       }
@@ -2047,7 +2047,7 @@ int main_Fst2List(int argc, char* const argv[]) {
         aa.display_control = FULL;
         break;
       case 'd':
-        aa.display_control = DEBUG;
+        aa.display_control = FST2LIST_DEBUG;
         break;
       default:
         error("Invalid arguments: rerun with --help\n");
