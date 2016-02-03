@@ -244,7 +244,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 
 		if(output == NULL || output -> transducer_id == 0){
 			if(output_detected){
-				int start_position = token_position;
+				int start_position = (int)token_position;
 				int last_token_length = 0;
 				while(current_pos_in_original_text != output){
 					token_position ++;
@@ -253,7 +253,7 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 				}
 
 				// token position pointe sur le token suivant�
-				int end_position=token_position-1;
+				int end_position=(int)(token_position-1);
 
 				if(sentence == NULL){
 					fatal_error("construct_cassys_concordance : Phrase de remplacement vide\n");

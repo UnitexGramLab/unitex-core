@@ -367,9 +367,9 @@ cassys_tokens_list *add_replaced_text(
 			// Since matches are sorted, we begin the search from the last known position in the list.
 			// We have to substract from the text position the current token position.
 			cassys_tokens_list *list_position = get_element_at(current_list_position, previous_transducer, previous_iteration,
-				l->token_start_offset - current_token_position);
+				(int)(l->token_start_offset - current_token_position));
 
-			int replaced_sentence_length = l->token_end_offset - l->token_start_offset+1;
+			int replaced_sentence_length = (int)(l->token_end_offset - l->token_start_offset+1);
 			int new_sentence_length = length(new_sentence_lu);
 
 			add_output(list_position, new_sentence_ctl, previous_transducer, previous_iteration, transducer_id, iteration,

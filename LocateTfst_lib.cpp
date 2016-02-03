@@ -922,6 +922,7 @@ int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Ta
                                         int *pos_pending_fst2_tag,int *pos_pending_tfst_tag,
                                         int tilde_negation_operator) {
 DISCARD_UNUSED_PARAMETER(tfst)
+int ret_value;
 if (/*infos->korean &&*/ *pos_pending_fst2_tag!=-1 && *pos_pending_tfst_tag!=-1) {
    fatal_error("Internal error in match_between_text_and_grammar_tags: cannot have partial match on both\n"
                "text tag and grammar tag\n");
@@ -1242,7 +1243,6 @@ if (!u_strcmp(grammar_tag->input,text_tag->content)) {
 return NO_MATCH_STATUS;
 
 /* We arrive here when we have used dela_entry variables */
-int ret_value;
 
 ok_match:
 /* We test the morphological filter, if any */

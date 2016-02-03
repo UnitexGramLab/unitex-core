@@ -332,7 +332,7 @@ if (f->open_type==OPEN_CREATE_MF) {
 	/* Cannot read in write-only mode */
 	return 0;
 }
-unsigned int to_read=f->inode->size-f->pos;
+unsigned int to_read=(unsigned int)(f->inode->size-f->pos);
 if (size<to_read) {
 	to_read=(unsigned int)size;
 }
@@ -354,7 +354,7 @@ if (f->open_type==OPEN_READ_MF) {
 }
 if (f->pos+size>f->inode->capacity) {
 	/* We need to enlarge our buffer */
-	unsigned int n=f->inode->capacity;
+	unsigned int n=(unsigned int)(f->inode->capacity);
 	if (n==0) n=1;
 	while (f->pos+size>n) n=n*2;
 	f->inode->ptr=realloc(f->inode->ptr,n);
