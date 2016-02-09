@@ -429,10 +429,12 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                         unichar *entity = NULL;
                         entity = (unichar*) malloc(sizeof(unichar) * ((end - start)+1));
                         z = 0;
+                        int nb_expand=0;
                         for(int y = start; y < end; y++) {
                             if(line[y] != '\\') {
                                 if(line[y] == '/') {
-                                   entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+2));
+                                   nb_expand++;
+                                   entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+1+nb_expand));
                                    entity[z++] = '\\';
                                 }
                                 entity[z++] = line[y];
