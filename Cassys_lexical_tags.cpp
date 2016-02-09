@@ -610,13 +610,31 @@ bool is_lexical_token(unichar *token){
 
 list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* alphabet){
 
+#define CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER 4096
+#define CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER_MARGIN 0x10
+
 	list_ustring *result = NULL;
 	list_ustring *latest_on_result = NULL;
-	unichar token[4096];
-	unichar braced_token[4096];
+	unichar token_default_buffer[CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER];
+	unichar braced_token_default_buffer[CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER];
+	unichar *token=token_default_buffer;
+	unichar *braced_token=braced_token_default_buffer;
+	int heap_buffer=0;
+
 	int i=0,j=0;
-
-
+	int text_len=u_strlen(text);
+	if ((text_len + CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER_MARGIN) > CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER)
+	{
+		heap_buffer=1;
+		token = (unichar*)malloc(sizeof(unichar)*(text_len + CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER_MARGIN));
+		if (token == NULL) {
+			fatal_alloc_error("malloc in cassys_tokenize_word_by_word");
+		}
+		braced_token=(unichar*)malloc(sizeof(unichar)*(text_len + CASSYS_TOKENIZE_WORD_BY_WORD_DEFAULT_BUFFER_MARGIN));
+		if (braced_token == NULL) {
+			fatal_alloc_error("malloc in cassys_tokenize_word_by_word");
+		}
+	}
 	int opened_bracket = 0;
 	bool protected_char = false;
 	bool token_found = false;
@@ -678,6 +696,10 @@ list_ustring *cassys_tokenize_word_by_word(const unichar* text,const Alphabet* a
 		i++;
 	}
 
+	if (heap_buffer != 0) {
+		free(token);
+		free(braced_token);
+	}
 	return result;
 }
 
