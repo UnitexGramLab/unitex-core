@@ -39,6 +39,7 @@
 #include "Cassys_concord.h"
 #include "UnusedParameter.h"
 #include "SyncTool.h"
+#include "StringParsing.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -144,7 +145,8 @@ struct grfInfo {
 };
 
 
-unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec, int *total_lines) {
+unichar** load_file_in_memory(const char* tmp_file, VersatileEncodingConfig *vec,
+        int *total_lines) {
     int num_lines = 0;
     unichar **grf_lines = NULL;
     unichar *line = NULL;
@@ -210,7 +212,8 @@ void free_grf_info(grfInfo *infos, int num) {
 }
 
 
-grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc, unichar **start_line, int **locations) {
+grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc,
+        unichar **start_line, int **locations) {
     DISCARD_UNUSED_PARAMETER(locations)
     int start = -1;
     int num_info = 0;
@@ -372,6 +375,21 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 j++;
             }
             if(infos[k].annotation[i] == '\0') {
+                int reverse_i =  j; //We will go in reverse to find the entity
+                int stop = 0;
+                int num_paren = 0;
+                while(reverse_i >=0 && stop == 0) {
+                    if(line[reverse_i] =='{' && num_paren == 0) {
+                        stop = 1;
+                    }
+                    else if(line[reverse_i] =='{' && num_paren > 0 ) {
+                        num_paren--;
+                    }
+                    else if(line[reverse_i] =='}') {
+                        num_paren++;
+                    }
+                    reverse_i--;
+                } 
                 int line_len = u_strlen(line);
                 int start = 0;
                 int end = 0;
@@ -379,114 +397,118 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 int annot = -1;
                 unichar *prev_char = NULL;
                 unichar *entity_whole = NULL;
-                for(int x = 0; x < line_len; x++) {
-                if(line[x] == '{') {
-                    start = x+1;
-                    if (x > 0) {
-                    if (prev_char!=NULL) free(prev_char);
-                    prev_char = (unichar*) malloc(sizeof(unichar) * 2);
-                    prev_char[0] = line[x - 1];
-                    if(line[x - 1] == '\\')
-                        prev_char[0] = line[x - 2];
-                    prev_char[1] = '\0';
-                    }
-                }
-                else if(line[x] == ',') {
-                    annot = 0;
-                    end = x;
-                }
-                else if(annot == 0 && line[x] == '.') {
-                    annot = -1;
-                    annot_start = x + 1;
-                }
-                else if(line[x] != '\\') {
-                    annot = -1;
-                    if(line[x] == '}' && start > 0) {
-                    int matches = 0;
-                    unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
-                    int z = 0;
-                    for(int y = annot_start; y < x; y++)
-                        if(line[y] != '\\') {
-                        annot_[z++] = (unichar) line[y];
-                        }
-                    annot_[z] = '\0';
-                    if(infos[k].ignore != NULL) {
-                        for(int m = 0; m < infos[k].ignore_count; m++)
-                        if(u_strncmp(annot_,infos[k].ignore[m],u_strlen(infos[k].ignore[m])) == 0) {
-                            matches = 1;
-                            break;
+                for(int x = reverse_i; x < line_len; x++) {
+                    if(line[x] == '{') {
+                        start = x+1;
+                        if (x > 0) {
+                            if (prev_char!=NULL) free(prev_char);
+                            prev_char = (unichar*) malloc(sizeof(unichar) * 2);
+                            prev_char[0] = line[x - 1];
+                            if(line[x - 1] == '\\')
+                                prev_char[0] = line[x - 2];
+                            prev_char[1] = '\0';
                         }
                     }
-                    if(infos[k].accept != NULL) {
-                        matches = 1;
-                        for(int m = 0; m < infos[k].accept_count; m++)
-                        if(u_strncmp(annot_,infos[k].accept[m],u_strlen(infos[k].accept[m])) == 0) {
-                            matches = 0;
-                            break;
-                        }
+                    else if(line[x] == ',') {
+                        annot = 0;
+                        end = x;
                     }
-                    if(matches == 0) {
-                        unichar *entity = NULL;
-                        entity = (unichar*) malloc(sizeof(unichar) * ((end - start)+1));
-                        z = 0;
-                        int nb_expand=0;
-                        for(int y = start; y < end; y++) {
-                            if(line[y] != '\\') {
-                                if(line[y] == '/') {
-                                   nb_expand++;
-                                   entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+1+nb_expand));
-                                   entity[z++] = '\\';
+                    else if(annot == 0 && line[x] == '.') {
+                        annot = -1;
+                        annot_start = x + 1;
+                    }
+                    else if(line[x] != '\\') {
+                        annot = -1;
+                        if(line[x] == '}' && start > 0) {
+                            int matches = 0;
+                            unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
+                            int z = 0;
+                            for(int y = annot_start; y < x; y++)
+                                if(line[y] != '\\') {
+                                annot_[z++] = (unichar) line[y];
                                 }
-                                entity[z++] = line[y];
+                            annot_[z] = '\0';
+                            if(infos[k].ignore != NULL) {
+                                for(int m = 0; m < infos[k].ignore_count; m++)
+                                if(u_strncmp(annot_,infos[k].ignore[m],u_strlen(infos[k].ignore[m])) == 0) {
+                                    matches = 1;
+                                    break;
+                                }
                             }
-                        }
-                        entity[z] = '\0';
-                        int entity_len = z + 1;
-                        if(entity_whole == NULL) {
-                        entity_whole = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
-                        u_strcpy(entity_whole,entity);
-                        }
-                        else {
-                        int current_len = u_strlen(entity_whole);
-                        entity_whole =  (unichar*) realloc(entity_whole,sizeof(unichar) * (current_len + entity_len + 2));
-                        if(prev_char[0] == '{') { //In case of multi level annotation, there could be multiple '\{' characters before the entity
-                            prev_char[0] = ' ' ;
-                        }
-                        if(infos[k].accept_count==1) {
-                            //if same element appears more than once then we store
-                            // them separately
-                            prev_char[0] = '+' ;
-                        }
-                        u_strcat(entity_whole,prev_char);
-                        u_strcat(entity_whole,entity);
-                        }
+                            if(infos[k].accept != NULL) {
+                                matches = 1;
+                                for(int m = 0; m < infos[k].accept_count; m++)
+                                if(u_strncmp(annot_,infos[k].accept[m],u_strlen(infos[k].accept[m])) == 0) {
+                                    matches = 0;
+                                    break;
+                                }
+                            }
+                            if(matches == 0) {
+                                unichar *entity = NULL;
+                                entity = (unichar*) malloc(sizeof(unichar) * ((end - start)+1));
+                                z = 0;
+                                int nb_expand=0;
+                                for(int y = start; y < end; y++) {
+                                    if(line[y] != '\\') {
+                                        if(line[y] == '/') {
+                                           nb_expand++;
+                                           entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+1+nb_expand));
+                                           entity[z++] = '\\';
+                                        }
+                                        entity[z++] = line[y];
+                                    }
+                                }
+                                entity[z] = '\0';
+                                int entity_len = z + 1;
+                                if(entity_whole == NULL) {
+                                entity_whole = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
+                                u_strcpy(entity_whole,entity);
+                                }
+                                else {
+                                int current_len = u_strlen(entity_whole);
+                                entity_whole =  (unichar*) realloc(entity_whole,sizeof(unichar) * (current_len + entity_len + 2));
+                                if(prev_char[0] == '{') { //In case of multi level annotation, there could be multiple '\{' characters before the entity
+                                    prev_char[0] = ' ' ;
+                                }
+                                if(infos[k].accept_count==1) {
+                                    //if same element appears more than once then we store
+                                    // them separately
+                                    prev_char[0] = '+' ;
+                                }
+                                u_strcat(entity_whole,prev_char);
+                                u_strcat(entity_whole,entity);
+                                }
 
-                        if(entity != NULL)
-                        free(entity);
+                                if(entity != NULL)
+                                free(entity);
+                            }
+                            if(annot_ != NULL)
+                                free(annot_);
+                            start = -1;
+                        }
                     }
-                    if(annot_ != NULL)
-                        free(annot_);
-                    start = -1;
-                    }
-                }
                 }
                 if(entity_whole != NULL) {
-                int entity_len = u_strlen(entity_whole);
-                if(infos[k].entity_count == 0) {
-                    infos[k].entities = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
-                    u_strcpy(infos[k].entities,entity_whole);
-                    infos[k].entity_count++;
-                    *updates = *updates + 1;
-                }
-                else {
-                    int current_len = u_strlen(infos[k].entities);
-                    infos[k].entities = (unichar*) realloc(infos[k].entities, sizeof(unichar) * (current_len + entity_len + 2));
-                    infos[k].entities[current_len] = '+';
-                    for(int a = current_len + 1, b = 0; a < current_len + entity_len + 2; a++)
-                    infos[k].entities[a] = entity_whole[b++];
-                    infos[k].entities[current_len + entity_len + 1] = '\0';
-                }
-                free(entity_whole);
+                    int entity_len = u_strlen(entity_whole);
+                    unichar* protected_entity = NULL;
+                    protected_entity = (unichar*) malloc(sizeof(unichar) * ((1+entity_len)*2));
+                    entity_len = escape(entity_whole,protected_entity,P_PLUS_COLON_SLASH);
+                    if(infos[k].entity_count == 0) {
+                        infos[k].entities = (unichar*) malloc(sizeof(unichar) * (entity_len+1));
+                        u_strcpy(infos[k].entities,protected_entity);
+                        infos[k].entity_count++;
+                        *updates = *updates + 1;
+                    }
+                    else {
+                        int current_len = u_strlen(infos[k].entities);
+                        infos[k].entities = (unichar*) realloc(infos[k].entities, sizeof(unichar) * (current_len + entity_len + 2));
+                        infos[k].entities[current_len] = '+';
+                        for(int a = current_len + 1, b = 0; a < current_len + entity_len + 2; a++)
+                        infos[k].entities[a] = protected_entity[b++];
+                        infos[k].entities[current_len + entity_len + 1] = '\0';
+                    }
+                    free(entity_whole);
+                    free(protected_entity);
                 }
                 if (prev_char != NULL)
                     free(prev_char);
