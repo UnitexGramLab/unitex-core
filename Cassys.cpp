@@ -396,8 +396,8 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 int annot_start = 0;
                 int annot = -1;
                 unichar *prev_char = NULL;
-                unichar *entity_whole = NULL;
-                for(int x = reverse_i; x < line_len; x++) {
+                unichar *entity_whole = NULL; // test on reverse_i is a quick fix to pass valgrind validation
+                for(int x = (reverse_i > 0) ? reverse_i : 0; x < line_len; x++) {
                     if(line[x] == '{') {
                         start = x+1;
                         if (x > 0) {
