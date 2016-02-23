@@ -1086,28 +1086,30 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
 	if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
 	   text_entry=tokenize_tag_token(text_tag->content,1);
 	}
-   if (!u_strcmp(grammar_tag->input,"<MOT>")) {
+   if (!u_strcmp(grammar_tag->input,"<MOT>") || !u_strcmp(grammar_tag->input,"<WORD>")) {
       /* <MOT> matches a sequence of letters or a tag like {tutu,toto.XXX}, even
        * if 'tutu' is not made of characters,
        * BUT, it matches only if we are not already inside a tfst tag in order
        * to avoid that a grammar like "pr <MOT>" could match tags like
-       * {préciser,.V:W} */
+       * {préciser,.V:W}
+       * <WORD> can also be used instead of <MOT> */
       if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) || text_entry!=NULL)
     		  && !((*pos_pending_tfst_tag)>0)) {
          goto ok_match;
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<!MOT>")) {
-      /* <!MOT> matches the opposite of <MOT> */
+   if (!u_strcmp(grammar_tag->input,"<!MOT>") || !u_strcmp(grammar_tag->input,"<!WORD>")) {
+      /* <!MOT> matches the opposite of <MOT> 
+       <!WORD> matches the opposite of <WORD>*/
       if (!is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet)
           && text_entry==NULL) {
     	  goto ok_match;
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<MIN>")) {
-      /* <MIN> matches a sequence of letters or a tag like {tutu,toto.XXX}
+   if (!u_strcmp(grammar_tag->input,"<MIN>") || !u_strcmp(grammar_tag->input,"<LOWER>")) {
+      /* <MIN> or <LOWER> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * only made of lower case letters */
       if (is_sequence_of_lowercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet) ||
           (text_entry!=NULL && is_sequence_of_lowercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
@@ -1115,8 +1117,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<!MIN>")) {
-      /* <!MIN> matches a sequence of letters or a tag like {tutu,toto.XXX}
+   if (!u_strcmp(grammar_tag->input,"<!MIN>") || !u_strcmp(grammar_tag->input,"<!LOWER>")) {
+      /* <!MIN> or <!LOWER> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that is not only made of lower case letters */
       if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) && !is_sequence_of_lowercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet))
           || (text_entry!=NULL && !is_sequence_of_lowercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
@@ -1124,8 +1126,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<MAJ>")) {
-      /* <MAJ> matches a sequence of letters or a tag like {TUTU,toto.XXX}
+   if (!u_strcmp(grammar_tag->input,"<MAJ>") || !u_strcmp(grammar_tag->input,"<UPPER>")) {
+      /* <MAJ> or <UPPER> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * only made of upper case letters */
       if (is_sequence_of_uppercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet) ||
           (text_entry!=NULL && is_sequence_of_uppercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
@@ -1133,8 +1135,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<!MAJ>")) {
-      /* <!MAJ> matches a sequence of letters or a tag like {tutu,toto.XXX}
+   if (!u_strcmp(grammar_tag->input,"<!MAJ>") || !u_strcmp(grammar_tag->input,"<!UPPER>")) {
+      /* <!MAJ> or <!UPPER> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that is not only made of upper case letters */
       if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) && !is_sequence_of_uppercase_letters(text_tag->content+pos_in_tfst_input,infos->alphabet))
           || (text_entry!=NULL && !is_sequence_of_uppercase_letters(text_entry->inflected+pos_in_tfst_input,infos->alphabet))) {
@@ -1142,8 +1144,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<PRE>")) {
-      /* <PRE> matches a sequence of letters or a tag like {TUTU,toto.XXX}
+   if (!u_strcmp(grammar_tag->input,"<PRE>") || !u_strcmp(grammar_tag->input,"<FIRST>")) {
+      /* <PRE> or <FIRST> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * that begins by an upper case letter */
       if (is_upper(text_tag->content[pos_in_tfst_input],infos->alphabet) ||
           (text_entry!=NULL && is_upper(text_entry->inflected[pos_in_tfst_input],infos->alphabet))) {
@@ -1151,8 +1153,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       }
       goto no_match;
    }
-   if (!u_strcmp(grammar_tag->input,"<!PRE>")) {
-      /* <!PRE> matches a sequence of letters or a tag like {TUTU,toto.XXX}
+   if (!u_strcmp(grammar_tag->input,"<!PRE>") || !u_strcmp(grammar_tag->input,"<!FIRST>")) {
+      /* <!PRE> or <!FIRST> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that does not begin by an upper case letter */
       if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) && !is_upper(text_tag->content[pos_in_tfst_input],infos->alphabet)) ||
           (text_entry!=NULL && is_letter(text_entry->inflected[pos_in_tfst_input],infos->alphabet) && !is_upper(text_entry->inflected[pos_in_tfst_input],infos->alphabet))) {
