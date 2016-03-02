@@ -489,6 +489,10 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             while(old_c != new_c) {
                                 u_fputc_raw(old_c, f);
                                 i++;
+                                if (i >= old_end) { 
+                                    error("End of old text reached in denormalize!!\n");
+                                    break;
+                                }
                                 old_c = *(old_text + i);
                             }
                         }
@@ -510,6 +514,10 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         while(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') {
                             u_fputc_raw(old_c, f);
                             i++;
+                            if (i >= old_end) {
+                                error("End of old text reached in denormalize!!!\n");
+                                break;
+                            }
                             old_c = *(old_text + i);
                         }
                     }
