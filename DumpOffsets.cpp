@@ -480,6 +480,10 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         old_c = *(old_text + i);
                         while(old_c != new_c) {
                             i++;
+                            if (i >= old_end) {
+                                error("End of old text reached !!\n");
+                                break;
+                            }
                             old_c = *(old_text + i);
                         }
                         /*if they are same then we write white spaces*/
