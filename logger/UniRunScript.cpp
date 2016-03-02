@@ -436,6 +436,11 @@ static void freeScriptFile(char** list) {
 int run_scriptfile(const VersatileEncodingConfig* vec, const char*scriptFileName, char**users_variables, int verbose) {
   char** lines = ReadScriptFile(vec, scriptFileName, users_variables, UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM);
 
+  if (lines == NULL) {
+      error("Error in reading script file %s\n",scriptFileName);
+      return DEFAULT_ERROR_CODE;
+  }
+
   int i = 0;
   for (;;)
   {
