@@ -159,16 +159,26 @@ const struct option_TS lopts_DumpOffsets[]={
 
 
 
-#define READ_FILE_BUFFER_SIZE 65536
+
+#define MINIMAL_BUFFER_ALLOC 4096
+
+static size_t around_power_two(size_t size_needed) {
+    size_t size_alloc = MINIMAL_BUFFER_ALLOC;
+    while (size_alloc < size_needed) {
+        size_alloc *= 2;
+    }
+    return size_alloc;
+}
 
 /**
  * FIXME(jhondoe) This code runs well, but isn't really optimized
  */
+#define READ_FILE_BUFFER_SIZE 65536
 static unichar* read_text_file(U_FILE* f, int* filesize){
     *filesize = 0;
 
-    unichar* more_text =  NULL;
-    unichar* text = (unichar *)malloc(sizeof(unichar));
+    size_t size_alloc_buffer = around_power_two(sizeof(unichar));
+    unichar* text = (unichar *)malloc(size_alloc_buffer);
     if (!text){
         alloc_error("read_text_file");
         return NULL;
@@ -176,6 +186,7 @@ static unichar* read_text_file(U_FILE* f, int* filesize){
     text[0] = '\0';
 
     int total_read = 0;
+    unsigned int pos_in_text = 0;
     int read;
     do {
         unichar buffer[READ_FILE_BUFFER_SIZE + 1];
@@ -190,11 +201,13 @@ static unichar* read_text_file(U_FILE* f, int* filesize){
         }
 
         total_read += u_strlen(buffer);
-        more_text = (unichar *) realloc(text, sizeof(unichar)*(total_read + 1));
-
+        size_t new_size_alloc_buffer = around_power_two(sizeof(unichar)*(total_read + 1));
+        unichar* more_text = (new_size_alloc_buffer == size_alloc_buffer) ? text : (unichar *) realloc(text, new_size_alloc_buffer);
         if (more_text) {
           text = more_text;
-          u_strcat(text, buffer);
+          size_alloc_buffer = new_size_alloc_buffer;
+          u_strcpy(text + pos_in_text, buffer);
+          pos_in_text += u_strlen(buffer);
         } else {
           alloc_error("read_text_file");
           free (text);
