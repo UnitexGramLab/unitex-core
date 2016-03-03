@@ -185,7 +185,7 @@ static unichar* read_text_file(U_FILE* f, int* filesize){
     int size_read;
     int pos_in_text = 0;
     do {
-        size_t new_size_alloc_buffer = around_power_two(sizeof(unichar)*(pos_in_text + READ_FILE_BUFFER_SIZE + 1));
+        size_t new_size_alloc_buffer = around_power_two(sizeof(unichar)*(((size_t)pos_in_text) + READ_FILE_BUFFER_SIZE + 1));
         unichar* more_text = (new_size_alloc_buffer == size_alloc_buffer) ? text : (unichar *) realloc(text, new_size_alloc_buffer);
         if (!more_text) {
           alloc_error("read_text_file");
