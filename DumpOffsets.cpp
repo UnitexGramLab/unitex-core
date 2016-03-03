@@ -199,7 +199,7 @@ static unichar* read_text_file(U_FILE* f, int* filesize){
             size_read = 0;
         }
         pos_in_text += size_read;
-        *(text + pos_in_text + 1) = '\0';
+        *(text + pos_in_text) = '\0';
     } while (size_read != 0);
     
     *filesize = pos_in_text;
