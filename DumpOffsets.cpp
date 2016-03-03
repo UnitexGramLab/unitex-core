@@ -160,10 +160,9 @@ const struct option_TS lopts_DumpOffsets[]={
 
 
 
-#define MINIMAL_BUFFER_ALLOC 4096
 
 static size_t around_power_two(size_t size_needed) {
-    size_t size_alloc = MINIMAL_BUFFER_ALLOC;
+    size_t size_alloc = 1;
     while (size_alloc < size_needed) {
         size_alloc *= 2;
     }
@@ -176,47 +175,34 @@ static size_t around_power_two(size_t size_needed) {
 #define READ_FILE_BUFFER_SIZE 65536
 static unichar* read_text_file(U_FILE* f, int* filesize){
     *filesize = 0;
-
     size_t size_alloc_buffer = around_power_two(sizeof(unichar));
     unichar* text = (unichar *)malloc(size_alloc_buffer);
     if (!text){
         alloc_error("read_text_file");
         return NULL;
     }
-    text[0] = '\0';
-
-    int total_read = 0;
-    unsigned int pos_in_text = 0;
-    int read;
+    
+    int size_read;
+    int pos_in_text = 0;
     do {
-        unichar buffer[READ_FILE_BUFFER_SIZE + 1];
-        memset(buffer, 0, sizeof(unichar)*(READ_FILE_BUFFER_SIZE + 1));
-
-        for (read = 0; read < READ_FILE_BUFFER_SIZE; read++) {
-            int r = u_fgetc_raw(f);
-            if (r == EOF) {
-                break;
-            }
-            *(buffer + read) = (unichar)r;
-        }
-
-        total_read += u_strlen(buffer);
-        size_t new_size_alloc_buffer = around_power_two(sizeof(unichar)*(total_read + 1));
+        size_t new_size_alloc_buffer = around_power_two(sizeof(unichar)*(pos_in_text + READ_FILE_BUFFER_SIZE + 1));
         unichar* more_text = (new_size_alloc_buffer == size_alloc_buffer) ? text : (unichar *) realloc(text, new_size_alloc_buffer);
-        if (more_text) {
-          text = more_text;
-          size_alloc_buffer = new_size_alloc_buffer;
-          u_strcpy(text + pos_in_text, buffer);
-          pos_in_text += u_strlen(buffer);
-        } else {
+        if (!more_text) {
           alloc_error("read_text_file");
           free (text);
           return NULL;
         }
-    } while (read == READ_FILE_BUFFER_SIZE);
-
-    text[total_read] = '\0';
-    *filesize = total_read;
+        text = more_text;
+        size_alloc_buffer = new_size_alloc_buffer;
+        size_read = u_fget_unichars_raw(text + pos_in_text, READ_FILE_BUFFER_SIZE, f);
+        if (size_read == EOF) {
+            size_read = 0;
+        }
+        pos_in_text += size_read;
+        *(text + pos_in_text + 1) = '\0';
+    } while (size_read != 0);
+    
+    *filesize = pos_in_text;
     return text;
 }
 
