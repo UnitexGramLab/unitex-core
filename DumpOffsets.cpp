@@ -481,7 +481,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         while(old_c != new_c) {
                             i++;
                             if (i >= old_end) {
-                                error("End of old text reached !!\n");
+                                error("End of old text reached!\n");
                                 break;
                             }
                             old_c = *(old_text + i);
@@ -506,6 +506,10 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             while(new_c != '>') {
                                 u_fputc(new_c,f);
                                 j++;
+                                if (j >= new_end) {
+                                    error("End of new text reached in denormalize!!\n");
+                                    break;
+                                }
                                 new_c = *(new_text + j);
                             }
                             u_fputc(new_c,f);
