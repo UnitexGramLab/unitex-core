@@ -425,7 +425,8 @@ unichar *protect_form(unichar *string){
 		}
 		if (string[i] == '\\' ) {
 			if(string[i+1]=='\0'){
-				fatal_error("Unexpected end of string\n");
+				number_of_special_character++;
+				error("Unexpected end of string in string of length %d : %S\n", size, string);
 			}
 			i++;
 			if(string[i] == ',' || string[i]==':' || string[i] == '.' || string[i]=='+' || string[i]=='\\' || string[i]=='{' || string[i]=='}'){
@@ -456,7 +457,7 @@ unichar *protect_form(unichar *string){
 		if (string[i] == '\\') {
 			result[i+j]='\\';
 			if (string[i + 1] == '\0') {
-				fatal_error("Unexpected end of string\n");
+				error("Unexpected end of string!\n");
 			}
 			i++;
 			if (string[i]==',' || string[i]==':' || string[i]=='.' || string[i]=='+' || string[i]=='\\' || string[i]=='{' || string[i]=='}') {
