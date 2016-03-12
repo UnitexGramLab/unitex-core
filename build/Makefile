@@ -84,6 +84,11 @@
 # make STATICLIB=yes
 # => creates libunitex.a
 #
+# With Linux on x86-64 processor, you can have an error message asking -fPIC
+#   make 64BITS=yes LIBRARY=yes TRE_DIRECT_COMPILE=yes
+# or 
+#   make 64BITS=yes JNILIBRARY=yes TRE_DIRECT_COMPILE=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-7-openjdk-amd64/include/
+#
 # you can add parameters to ./configure when build TRE with
 # TRE_CONFIGURE_OPTION (by example for cross compiling) 
 
