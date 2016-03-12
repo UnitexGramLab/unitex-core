@@ -80,13 +80,13 @@
 # mingw32:  make SYSTEM=mingw32 LIBRARY=yes
 # => creates unitex.dll
 #
-# If you want to generate a static library, yse:
+# If you want to generate a static library, use:
 # make STATICLIB=yes
 # => creates libunitex.a
 #
-# With Linux on x86-64 processor, you can have an error message asking -fPIC
+# With Linux on x86-64 processor, you can have an error message asking -fPIC, you can try:
 #   make 64BITS=yes LIBRARY=yes TRE_DIRECT_COMPILE=yes
-# or 
+# or
 #   make 64BITS=yes JNILIBRARY=yes TRE_DIRECT_COMPILE=yes ADDITIONAL_INCLUDE=/usr/lib/jvm/java-7-openjdk-amd64/include/
 #
 # you can add parameters to ./configure when build TRE with
