@@ -34,125 +34,27 @@
 
 namespace unitex {
 
+#ifdef MAX_GRF2FST2_FACTOR
 /* Maximum length for the content of a grf box */
-#define MAX_GRF_BOX_CONTENT (10000*100)
-
-#define MAX_TOKEN_SIZE 10000
+#define MAX_GRF_BOX_CONTENT (10000*MAX_GRF2FST2_FACTOR)
 
 /* Maximum number of token in a box line */
-#define MAX_TOKENS_IN_A_SEQUENCE (4096*100)
+#define MAX_TOKENS_IN_A_SEQUENCE (4096*MAX_GRF2FST2_FACTOR)
+#else
+/* Maximum length for the content of a grf box */
+#define MAX_GRF_BOX_CONTENT 10000
+
+/* Maximum number of token in a box line */
+#define MAX_TOKENS_IN_A_SEQUENCE 4096
+#endif
 
 /* Maximum number of graphs in a grammar */
 #define MAX_NUMBER_OF_GRAPHS 10000
-
-
-#define DEFAULT_UNICHAR_TMP_BUFFER_SIZE 128
 
 #define NON_PROCESSED_GRAPH 0
 #define EMPTY_GRAPH 1
 #define NON_EMPTY_GRAPH 2
 
-
-static size_t around_needed_size(size_t needed_size) {
-	size_t alloc_size = 256;
-	while (alloc_size < needed_size) {
-		alloc_size *= 2;
-	}
-	return alloc_size;
-}
-
-
-
-/**
- * Allocates and Reallocate , initializes and returns a compilation information structure.
- */
-static void reallocate_int_buffer(int** buffer, size_t *buffer_allocated_size, size_t needed_size) {
-	if (needed_size <= (*buffer_allocated_size)) {
-		return;
-	}
-	size_t new_alloc_size = around_needed_size(needed_size);
-	int* new_buffer = ((*buffer) == NULL) ? ((int*)malloc(new_alloc_size*sizeof(int))) : 
-		                                    ((int*)realloc(*buffer, new_alloc_size*sizeof(int)));
-	if (new_buffer == NULL) {
-		fatal_alloc_error("reallocate_int_buffer");
-	}
-	*buffer = new_buffer;
-	*buffer_allocated_size = new_alloc_size;
-}
-
-static void free_reallocate_int_buffer(int** buffer)
-{
-	if ((*buffer) != NULL) {
-		free(*buffer);
-	}
-	*buffer = NULL;
-}
-
-
-static inline void reallocate_unichar_buffer(unichar** buffer, size_t *buffer_allocated_size, size_t needed_size) {
-	if (needed_size <= (*buffer_allocated_size)) {
-		return;
-	}
-	size_t new_alloc_size = around_needed_size(needed_size);
-	unichar* new_buffer = ((*buffer) == NULL) ? ((unichar*)malloc(new_alloc_size*sizeof(unichar))) :
-		((unichar*)realloc(*buffer, new_alloc_size*sizeof(unichar)));
-	if (new_buffer == NULL) {
-		fatal_alloc_error("reallocate_unichar_buffer");
-	}
-	*buffer = new_buffer;
-	*buffer_allocated_size = new_alloc_size;
-}
-
-
-static inline void free_reallocate_unichar_buffer(unichar** buffer)
-{
-	if ((*buffer) != NULL) {
-		free(*buffer);
-	}
-	*buffer = NULL;
-}
-
-#if (!(defined(DEBUGGING_ALLOCATE))) && (defined(_DEBUG) || (defined(DEBUG)) || defined(VALGRIND_DBG))
-#define DEBUGGING_ALLOCATE
-#endif
-
-#ifdef DEBUGGING_ALLOCATE
-
-static unichar* choose_allocated_or_stack_unichar_buffer(unichar* /*stack_buffer*/, size_t /*stack_buffer_size*/, size_t needed_size) {
-	unsigned char* buf_allocate = (unsigned char*)malloc((needed_size*sizeof(unichar)) + sizeof(size_t));
-	*((size_t*)buf_allocate) = needed_size;
-	unichar* ret_buffer = (unichar*)(buf_allocate + sizeof(size_t));
-	return ret_buffer;
-}
-
-static void free_choosen_allocated_or_stack_unichar_buffer(unichar* used_buffer, unichar* /*stack_buffer*/) {
-	unsigned char* buf_allocate = ((unsigned char*)used_buffer)-sizeof(size_t);
-	size_t needed_size = *((size_t*)buf_allocate);
-	size_t len_string = u_strlen(used_buffer);
-	if (len_string >= needed_size) {
-		fatal_error("buffer smaller than expected on free_choosen_allocated_or_stack_unichar_buffer\n");
-	}
-	free(buf_allocate);
-}
-#else
-// uses DEFAULT_UNICHAR_TMP_BUFFER_SIZE
-static unichar* choose_allocated_or_stack_unichar_buffer(unichar* stack_buffer, size_t stack_buffer_size, size_t needed_size) {
-	if (needed_size < stack_buffer_size)
-		return stack_buffer;
-	unichar* allocated_buffer = (unichar*)malloc(needed_size * sizeof(unichar));
-	if (allocated_buffer == NULL) {
-		fatal_alloc_error("reallocate_unichar_buffer");
-	}
-	return allocated_buffer;
-}
-
-
-static inline void free_choosen_allocated_or_stack_unichar_buffer(unichar* used_buffer, unichar* stack_buffer) {
-	if ((used_buffer != stack_buffer) && (used_buffer != NULL)) {
-		free(used_buffer);
-	}
-}
-#endif
 
 /**
  * Allocates, initializes and returns a compilation information structure.
@@ -213,7 +115,7 @@ free(infos);
  * Returns 1 if the given character is a letter, according to the
  * tokenization policy; 0 otherwise.
  */
-static int is_letter_generic(unichar c,struct compilation_info* infos) {
+int is_letter_generic(unichar c,struct compilation_info* infos) {
 switch(infos->tokenization_policy) {
 case DEFAULT_TOKENIZATION: return u_is_letter(c);
 case CHAR_BY_CHAR_TOKENIZATION: return 0; /* By convention */
@@ -227,7 +129,7 @@ return 0;
 /**
  * Writes the given state into the given file.
  */
-static void write_state(U_FILE* f,SingleGraphState s) {
+void write_state(U_FILE* f,SingleGraphState s) {
 if (is_final_state(s)) u_fputc('t',f);
 else u_fputc(':',f);
 Transition* ptr=s->outgoing_transitions;
@@ -272,7 +174,7 @@ u_fprintf(f,"f \n");
 /**
  * Creates a new state and relies it to the origin state.
  */
-static void create_intermediate_state(SingleGraph graph,int origin_state,int tag_number) {
+void create_intermediate_state(SingleGraph graph,int origin_state,int tag_number) {
 add_state(graph);
 int dest_state=graph->number_of_states-1;
 add_outgoing_transition(graph->states[origin_state],tag_number,dest_state);
@@ -284,7 +186,7 @@ add_outgoing_transition(graph->states[origin_state],tag_number,dest_state);
  * This function returns 1 if the given file name is an absolute
  * Windows-style one like "C:\tmp\foo.grf" or "C::tmp:foo.grf"
  */
-static int test4abs_windows_path_name(const unichar* name) {
+int test4abs_windows_path_name(unichar* name) {
 if (((name[0] >= 'A' && name[0] <= 'Z') ||
      (name[0] >= 'a' && name[0] <= 'z'))
     && (name[1] == ':') && ((name[2] == '\\') || (name[2] == ':'))) {
@@ -304,7 +206,7 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
  * Computes the absolute path of the graph #n, taking into account references
  * to the graph repository, if any.
  */
-static void get_absolute_name(int *called_from,char* name,int n,struct compilation_info* infos) {
+void get_absolute_name(int *called_from,char* name,int n,struct compilation_info* infos) {
 unichar temp[FILENAME_MAX];
 /* offset is the position where to start replacing ':' by '/' or '\' */
 int offset;
@@ -398,7 +300,7 @@ if (called_from!=NULL) sscanf(name+pos+1,"%d",called_from);
  * Takes a grf box content and splits it into an input and an output.
  * Note that the output can be empty.
  */
-static void split_input_output(const unichar* box_content,unichar* input,unichar* output) {
+void split_input_output(unichar* box_content,unichar* input,unichar* output) {
 int i=0;
 while (box_content[i]!='\0' && box_content[i]!='/') {
    if (box_content[i]=='\\') {
@@ -445,7 +347,7 @@ do {
 /**
  * Gets one character from the input.
  */
-static void get_character(const unichar* input,int *pos,unichar* dest) {
+void get_character(unichar* input,int *pos,unichar* dest) {
 dest[0]=input[*pos];
 dest[1]='\0';
 (*pos)++;
@@ -455,11 +357,14 @@ dest[1]='\0';
 /**
  * Gets a word from the input according to the default tokenization.
  */
-static void get_default_tokenization_word(const unichar* input,int *pos,unichar* dest) {
+void get_default_tokenization_word(unichar* input,int *pos,unichar* dest) {
 int i=0;
 do {
    dest[i++]=input[(*pos)++];
-} while (u_is_letter(input[(*pos)-1]));
+} while (u_is_letter(input[(*pos)-1]) && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Word too long in get_default_tokenization_word\n");
+}
 dest[i-1]='\0';
 (*pos)--;
 }
@@ -468,11 +373,14 @@ dest[i-1]='\0';
 /**
  * Gets a word from the input according to an alphabet tokenization.
  */
-static void get_alphabet_tokenization_word(const unichar* input,int *pos,unichar* dest,Alphabet* alph) {
+void get_alphabet_tokenization_word(unichar* input,int *pos,unichar* dest,Alphabet* alph) {
 int i=0;
 do {
    dest[i++]=input[(*pos)++];
-} while (is_letter(input[(*pos)-1],alph));
+} while (is_letter(input[(*pos)-1],alph) && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Word too long in get_alphabet_tokenization_word\n");
+}
 dest[i-1]='\0';
 (*pos)--;
 }
@@ -481,7 +389,7 @@ dest[i-1]='\0';
 /**
  * Gets a letter sequence from the input.
  */
-static void get_letter_sequence(const unichar* input,int *pos,unichar* dest,struct compilation_info* infos) {
+void get_letter_sequence(unichar* input,int *pos,unichar* dest,struct compilation_info* infos) {
 switch(infos->tokenization_policy) {
 case DEFAULT_TOKENIZATION: get_default_tokenization_word(input,pos,dest); return;
 case CHAR_BY_CHAR_TOKENIZATION: get_character(input,pos,dest); return;
@@ -494,7 +402,7 @@ default: fatal_error("Internal error in get_letter_sequence\n");
 /**
  * Gets an angle bracket sequence from the input.
  */
-static void get_angle_bracket_sequence(const unichar* input,int *pos,unichar* dest) {
+void get_angle_bracket_sequence(unichar* input,int *pos,unichar* dest) {
 int i=0;
 do {
    dest[i++]=input[(*pos)++];
@@ -504,7 +412,10 @@ do {
       }
       dest[i++]=input[(*pos)++];
    }
-} while (input[*pos]!='>' && input[*pos]!='\0');
+} while (input[*pos]!='>' && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Angle bracket sequence too long in get_angle_bracket_sequence\n");
+}
 if (input[*pos]=='\0') {
    fatal_error("Missing > at the end of an angle bracket sequence\n");
 }
@@ -549,11 +460,14 @@ dest[i+1]='\0';
 /**
  * Gets a round bracket sequence from the input.
  */
-static void get_round_bracket_sequence(const unichar* input,int *pos,unichar* dest) {
+void get_round_bracket_sequence(unichar* input,int *pos,unichar* dest) {
 int i=0;
 do {
    dest[i++]=input[(*pos)++];
-} while ((input[*pos]!='}' || input[(*pos)-1]=='\\') && input[*pos]!='\0');
+} while ((input[*pos]!='}' || input[(*pos)-1]=='\\') && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Round bracket sequence too long in get_round_bracket_sequence\n");
+}
 if (input[*pos]=='\0') {
    fatal_error("Missing } in round bracket sequence\n");
 }
@@ -574,7 +488,7 @@ if (!u_strcmp(dest,"{STOP}")) {
  * indicate that they don't tolerate case variations.
  * Returns 1 if the end of the double quoted sequence is found; 0 otherwise.
  */
-static int get_double_quoted_token(const unichar* input,int *pos,unichar* dest,struct compilation_info* infos) {
+int get_double_quoted_token(unichar* input,int *pos,unichar* dest,struct compilation_info* infos) {
 dest[0]='@';
 /* If we have a backslash */
 if (input[*pos]=='\\') {
@@ -608,16 +522,14 @@ return 0;
 /**
  * This function reads a sequence between double quotes from  the input.
  */
-static void get_double_quoted_sequence(const unichar* input,int *pos,
+void get_double_quoted_sequence(unichar* input,int *pos,
                                 struct fifo* tokens,
                                 struct compilation_info* infos) {
 (*pos)++;
-unichar tmp_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
-unichar* tmp=choose_allocated_or_stack_unichar_buffer(tmp_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE,u_strlen(input)+0x80);
+unichar tmp[MAX_GRF_BOX_CONTENT];
 while (!get_double_quoted_token(input,pos,tmp,infos) && input[*pos]!='\0') {
    put_ptr(tokens,u_strdup(tmp));
 }
-free_choosen_allocated_or_stack_unichar_buffer(tmp,tmp_stack);
 }
 
 
@@ -626,15 +538,18 @@ free_choosen_allocated_or_stack_unichar_buffer(tmp,tmp_stack);
  * and copies everything to 'dest' until it finds a '+' or the end of string.
  * All '/' and '\' are turned into ':'.
  */
-static void get_subgraph_call(const unichar* input,int *pos,unichar* dest) {
+void get_subgraph_call(unichar* input,int *pos,unichar* dest) {
 int i=0;
-while (input[*pos]!='+' && input[*pos]!='\0') {
+while (input[*pos]!='+' && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT) {
    dest[i]=input[*pos];
    if (dest[i]=='/' || dest[i]=='\\') {
       dest[i]=':';
    }
    i++;
    (*pos)++;
+}
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Graph call too long in get_subgraph_call\n");
 }
 dest[i]='\0';
 if (u_ends_with(dest,".grf")) {
@@ -647,7 +562,7 @@ if (u_ends_with(dest,".grf")) {
  * Returns 1 iff the given string if non empty and only made of spaces; 0 otherwise.
  * As a side effect, if 1 is returned, *pos is modified to point to the final '\0'.
  */
-static int only_spaces(const unichar* input,int *pos) {
+static int only_spaces(unichar* input,int *pos) {
 if (*pos!=0 || input[0]=='\0') {
 	return 0;
 }
@@ -671,9 +586,9 @@ return 1;
  * 2) we are not in strict tokenization mode. In such case, we translate the full line
  * to a <E> to avoid raising an empty token error.
  */
-static int process_box_line_token(const unichar* input,int *pos,
-                                  struct fifo* tokens,
-                                  int n,struct compilation_info* infos) {
+int process_box_line_token(unichar* input,int *pos,
+                           struct fifo* tokens,
+                           int n,struct compilation_info* infos) {
 if (only_spaces(input,pos)) {
 	put_ptr(tokens,u_strdup("<E>"));
 	return 0;
@@ -681,7 +596,7 @@ if (only_spaces(input,pos)) {
 if (input[*pos]=='\0') {
    fatal_error("Empty string in process_box_line_token\n");
 }
-unichar token[MAX_TOKEN_SIZE];
+unichar token[MAX_GRF_BOX_CONTENT];
 if (input[*pos]==':') {
    /* If we have a subgraph call */
    token[0]=':';
@@ -797,13 +712,10 @@ return 0;
 /**
  * Takes a token sequence and turns it into an integer sequence.
  */
-static int* token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
-                                              struct compilation_info* infos,
-                                              int *n_tokens,int current_graph,int must_add_token_to_debug,
-                                              int must_keep_output) {
-int* i_tokens = NULL;
-size_t size_alloc_i_token=0;
-reallocate_int_buffer(&i_tokens, &size_alloc_i_token, 1);
+void token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
+                                int* i_tokens,struct compilation_info* infos,
+                                int *n_tokens,int current_graph,int must_add_token_to_debug,
+                                int must_keep_output) {
 if (u_tokens==NULL) {
    fatal_error("NULL error in token_sequence_2_integer_sequence\n");
 }
@@ -812,7 +724,7 @@ if (is_empty(u_tokens)) {
 }
 *n_tokens=0;
 unichar* token=(unichar*)take_ptr(u_tokens);
-unichar tmp_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
+unichar tmp[MAX_GRF_BOX_CONTENT];
 int is_an_output=(output!=NULL && output[0]!='\0');
 if (!must_keep_output && is_an_output && !u_strcmp(token,"<E>") && output[1]==DEBUG_INFO_COORD_MARK) {
 	/* We don't want to produce debug outputs for <E> that had no actual
@@ -826,11 +738,8 @@ if (token[0]==':' && token[1]!='\0') {
 	if (infos->debug) {
 		/* In debug mode, we generate two <E> tags: one before and
 		 * one after the graph call */
-		unichar* tmp=choose_allocated_or_stack_unichar_buffer(tmp_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE,u_strlen(output)+0x80);
 		create_graph_call_debug_tag(tmp,output,graph_number,1);
-		reallocate_int_buffer(&i_tokens, &size_alloc_i_token, (*n_tokens)+1);
 		i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
-		free_choosen_allocated_or_stack_unichar_buffer(tmp,tmp_stack);
 	}
 	else if (is_an_output) {
       error("WARNING in %S: ignoring output associated to subgraph call %S\n",
@@ -840,23 +749,18 @@ if (token[0]==':' && token[1]!='\0') {
       fatal_error("%S: unexpected token after subgraph call in token_sequence_2_integer_sequence\n",
             infos->graph_names->value[current_graph]);
    }
-   reallocate_int_buffer(&i_tokens, &size_alloc_i_token, (*n_tokens) + 1);
    i_tokens[(*n_tokens)++]=-graph_number;
    free(token);
 	if (infos->debug) {
 		/* In debug mode, we generate two <E> tags: one before and
 		 * one after the graph call */
-		unichar* tmp=choose_allocated_or_stack_unichar_buffer(tmp_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE,u_strlen(output)+0x80);
 		create_graph_call_debug_tag(tmp,output,graph_number,0);
-		reallocate_int_buffer(&i_tokens, &size_alloc_i_token, (*n_tokens) + 1);
 		i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
-		free_choosen_allocated_or_stack_unichar_buffer(tmp,tmp_stack);
 	}
-   return i_tokens;
+   return;
 }
 if (is_an_output) {
    /* If there is an output, we associate it to the first token */
-   unichar* tmp = choose_allocated_or_stack_unichar_buffer(tmp_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, (u_strlen(token) * 2) + u_strlen(output) + 0x80);
    u_sprintf(tmp,"%S/%S",token,output);
    /* In debug mode, we have to add the input */
    if (infos->debug && must_add_token_to_debug) {
@@ -871,11 +775,8 @@ if (is_an_output) {
 	   tmp[size]=DEBUG_INFO_END_MARK;
 	   tmp[size+1]='\0';
    }
-   reallocate_int_buffer(&i_tokens, &size_alloc_i_token, (*n_tokens) + 1);
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
-   free_choosen_allocated_or_stack_unichar_buffer(tmp, tmp_stack);
 } else {
-   reallocate_int_buffer(&i_tokens, &size_alloc_i_token, (*n_tokens) + 1);
    i_tokens[(*n_tokens)++]=get_value_index(token,infos->tags);
 }
 free(token);
@@ -886,9 +787,7 @@ while (!is_empty(u_tokens)) {
    if (token[0]==':' && token[1]!='\0') {
       fatal_error("%S: unexpected subgraph call in token_sequence_2_integer_sequence\n",
             infos->graph_names->value[current_graph]);
-	  break;
    }
-   unichar* tmp = choose_allocated_or_stack_unichar_buffer(tmp_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, (u_strlen(token) * 2) + u_strlen(output) + 0x80);
    u_sprintf(tmp,"%S",token);
    if (infos->debug) {
 	   /* In debug mode, we have to add an output, but only the part with the
@@ -911,12 +810,9 @@ while (!is_empty(u_tokens)) {
 	   tmp[size]=DEBUG_INFO_END_MARK;
 	   tmp[size+1]='\0';
    }
-   reallocate_int_buffer(&i_tokens, &size_alloc_i_token, (*n_tokens) + 1);
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
-   free_choosen_allocated_or_stack_unichar_buffer(tmp, tmp_stack);
    free(token);
 }
-return i_tokens;
 }
 
 
@@ -925,7 +821,7 @@ return i_tokens;
  * and it creates pathes from the current state to each of the reachable states,
  * introducing at new intermediate states as needed.
  */
-static void write_transitions(SingleGraph graph,int* tag_numbers,vector_int* transitions,
+void write_transitions(SingleGraph graph,int* tag_numbers,vector_int* transitions,
                       int current_state,int n_tag_numbers) {
 int tmp_state;
 for (int i=0;i<transitions->nbelems;i++) {
@@ -976,9 +872,9 @@ return res;
  * "abc+d e f/foo" and one with "d e f/foo" (more exactly, it's '*pos' that will
  * be 0 for the first call and 4 for the second call).
  */
-static void process_box_line(SingleGraph graph,const unichar* input,unichar* output,vector_int* transitions,
-                             int *pos,int current_state,int n,struct compilation_info* infos,int line,
-                             GrfState* state) {
+void process_box_line(SingleGraph graph,unichar* input,unichar* output,vector_int* transitions,
+                     int *pos,int current_state,int n,struct compilation_info* infos,int line,
+                     GrfState* state) {
 int result=0;
 struct fifo* sequence=new_fifo();
 while (result==0 && input[*pos]!='\0') {
@@ -988,22 +884,18 @@ if (infos->strict_tokenization) {
 	/* If needed, we insert # tags where there were no spaces */
 	sequence=insert_sharp_tags(sequence);
 }
-int* sequence_ent;
+int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;
 if (!infos->debug) {
-	sequence_ent=token_sequence_2_integer_sequence(sequence,output,infos,&n_tokens,n,1,0);
+	token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n,1,0);
 } else {
-	unichar output2stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
-	// added debug info take less than 80 unichar
-	unichar*output2 = choose_allocated_or_stack_unichar_buffer(output2stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, u_strlen(output) + 0x80);
+	unichar output2[MAX_GRF_BOX_CONTENT];
 	u_strcpy(output2,output);
 	add_debug_infos(output2,n,state->box_number,line);
-	sequence_ent=token_sequence_2_integer_sequence(sequence,output2,infos,&n_tokens,n,1,0);
-	free_choosen_allocated_or_stack_unichar_buffer(output2, output2stack);
+	token_sequence_2_integer_sequence(sequence,output2,sequence_ent,infos,&n_tokens,n,1,0);
 }
 free_fifo(sequence);
 write_transitions(graph,sequence_ent,transitions,current_state,n_tokens);
-free_reallocate_int_buffer(&sequence_ent);
 }
 
 
@@ -1011,32 +903,26 @@ free_reallocate_int_buffer(&sequence_ent);
  * If we have a variable or context mark, we store it in the tags, if not already
  * present, and we write the corresponding transitions.
  */
-static void process_variable_or_context(SingleGraph graph,const unichar* input,
-                                        vector_int* transitions,
-                                        int current_state,struct compilation_info* infos,
-                                        int current_graph,unichar* debug_output) {
+void process_variable_or_context(SingleGraph graph,unichar* input,
+                                vector_int* transitions,
+                                int current_state,struct compilation_info* infos,
+                                int current_graph,unichar* debug_output) {
 struct fifo* tmp=new_fifo();
 int token[2];
 int i;
 int n=0;
 if (debug_output[0]!='\0' && u_strcmp(input,"$]")) {
 	put_ptr(tmp,u_strdup("<E>"));
-	int* i_token1=token_sequence_2_integer_sequence(tmp,debug_output,infos,&i,current_graph,0,1);
-	*(token + n) = *i_token1;
+	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0,1);
 	n++;
-	free_reallocate_int_buffer(&i_token1);
 }
 put_ptr(tmp,u_strdup(input));
-int* i_token2=token_sequence_2_integer_sequence(tmp,NULL,infos,&i,current_graph,0,0);
-*(token + n) = *i_token2;
+token_sequence_2_integer_sequence(tmp,NULL,token+n,infos,&i,current_graph,0,0);
 n++;
-free_reallocate_int_buffer(&i_token2);
 if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
 	put_ptr(tmp,u_strdup("<E>"));
-	int* i_token3=token_sequence_2_integer_sequence(tmp,debug_output,infos,&i,current_graph,0,1);
-	*(token + n) = *i_token3;
+	token_sequence_2_integer_sequence(tmp,debug_output,token+n,infos,&i,current_graph,0,1);
 	n++;
-	free_reallocate_int_buffer(&i_token3);
 }
 free_fifo(tmp);
 write_transitions(graph,token,transitions,current_state,n);
@@ -1171,19 +1057,18 @@ free_Ustring(foo);
 /**
  * Processes the given grf state of the graph #n.
  */
-void process_grf_state(const unichar* box_content,vector_int* transitions,
+void process_grf_state(unichar* box_content,vector_int* transitions,
                       SingleGraph graph,int current_state,
                       int n,struct compilation_info* infos,
                       GrfState* state) {
+unichar input[MAX_GRF_BOX_CONTENT];
+unichar output[MAX_GRF_BOX_CONTENT];
 if (transitions->nbelems==0) {
    /* If the state has no outgoing transition, it will be discarded when the
     * graph is cleaned, so it's not necessary to process it. */
    return;
 }
-int length = u_strlen(box_content); 
-size_t working_buffer_size = (size_t)(length + 0x80);
-unichar input_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
-unichar* input = choose_allocated_or_stack_unichar_buffer(input_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, working_buffer_size);
+int length=u_strlen(box_content);
 if ((length>2 && box_content[0]=='$' &&
        (box_content[length-1]=='('
         || box_content[length-1]==')'))
@@ -1200,8 +1085,7 @@ if ((length>2 && box_content[0]=='$' &&
        * (see declaration of CONTEXT_COUNTER) */
       u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",(infos->CONTEXT_COUNTER)++);
    }
-   unichar debug_output_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
-   unichar* debug_output = choose_allocated_or_stack_unichar_buffer(debug_output_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, working_buffer_size);
+   unichar debug_output[MAX_GRF_BOX_CONTENT];
    debug_output[0]='\0';
    if (infos->debug) {
 	   /* As a normal variable/context tag has no output, we have
@@ -1215,12 +1099,8 @@ if ((length>2 && box_content[0]=='$' &&
 	   debug_output[size+1]='\0';
    }
    process_variable_or_context(graph,input,transitions,current_state,infos,n,debug_output);
-   free_choosen_allocated_or_stack_unichar_buffer(input,input_stack);
-   free_choosen_allocated_or_stack_unichar_buffer(debug_output, debug_output_stack);
    return;
 }
-unichar output_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
-unichar* output = choose_allocated_or_stack_unichar_buffer(output_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, working_buffer_size);
 /* Otherwise, we deal with the output of the box, if any */
 int shift=0;
 if (infos->debug) {
@@ -1238,8 +1118,6 @@ while (input[pos]!='\0') {
    process_box_line(graph,input,output,transitions,&pos,current_state,n,infos,line,state);
    line++;
 }
-free_choosen_allocated_or_stack_unichar_buffer(input, input_stack);
-free_choosen_allocated_or_stack_unichar_buffer(output, output_stack);
 }
 
 
@@ -1379,7 +1257,7 @@ free_ReverseTransitions(reverse);
  * We have to copy the given fst2 as some graphs in the current .fst2
  * being saved.
  */
-static void save_compiled_fst2(char* name,Fst2* fst2,struct compilation_info* infos) {
+void save_compiled_fst2(char* name,Fst2* fst2,struct compilation_info* infos) {
 Ustring* ustr=new_Ustring();
 int n=infos->current_saved_graph;
 for (int i=0;i<fst2->number_of_graphs;i++) {
@@ -1433,7 +1311,7 @@ free_Ustring(ustr);
  * This function compiles the graph number #n and saves its states into the
  * output .fst2.
  */
-static int compile_grf(int n,struct compilation_info* infos) {
+int compile_grf(int n,struct compilation_info* infos) {
 int i;
 char called_from[FILENAME_MAX]="";
 char name[FILENAME_MAX];
@@ -1573,7 +1451,7 @@ return 1;
  *    "/tmp/foo.grf" => "/tmp/" and "foo"
  *
  */
-static void extract_path_and_main_graph(char* main_graph,struct compilation_info* infos) {
+void extract_path_and_main_graph(char* main_graph,struct compilation_info* infos) {
 char temp[FILENAME_MAX];
 char temp2[FILENAME_MAX];
 unichar temp3[FILENAME_MAX];
