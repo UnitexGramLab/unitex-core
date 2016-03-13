@@ -504,15 +504,12 @@ struct cassys_pattern* load_cassys_pattern(unichar *string){
 		/*
 		 * No comma so this lexical tag only contains form
 		 */
-		cp->form = (unichar*) malloc(sizeof(unichar) * (string_size /*- 2*/ + 1)); // -2 to exclude { and }, but in comment to prevent less than 1 if error
+		cp->form = (unichar*) malloc(sizeof(unichar) * (string_size - 2 + 1)); // -2 to exclude { and }
 		if (cp->form == NULL) {
 			fatal_alloc_error("malloc");
 		}
-		cp->form[0] = '\0';
-		if (string_size > 2) {
-			u_strncpy(cp->form, string + 1, string_size - 2); // we copy string without brackets so begin at position 1 and lenght -2
-			cp->form[string_size - 2] = '\0';
-		}
+		u_strncpy(cp->form, string + 1, string_size - 2); // we copy string without brackets so begin at position 1 and lenght -2
+		cp->form[string_size - 2] = '\0';
 
 		free(result);
 
@@ -524,7 +521,7 @@ struct cassys_pattern* load_cassys_pattern(unichar *string){
 	if (cp->form == NULL) {
 		fatal_alloc_error("malloc");
 	}
-	if (form_size>0) u_strncpy(cp->form, string + 1, form_size); // we copy string without brackets so begin at position 1
+	u_strncpy(cp->form, string + 1, form_size); // we copy string without brackets so begin at position 1
 	cp->form[form_size] = '\0';
 
 
@@ -538,13 +535,12 @@ struct cassys_pattern* load_cassys_pattern(unichar *string){
 		fatal_alloc_error("malloc");
 	}
 
-	if (annotation_size>0) u_strncpy(annotation, string + form_lemma_separator_position + 1, annotation_size); // again +1 to exclude comma
+	u_strncpy(annotation, string + form_lemma_separator_position + 1, annotation_size); // again +1 to exclude comma
 	annotation[annotation_size]='\0';
 
 	position = 0;
 	if (parse_string(annotation, &position, result, P_DOT) != P_OK) {
-		error("%S : malformed cassys pattern!\n",annotation);
-		*result='\0';
+		fatal_error("%S : malformed cassys pattern\n",annotation);
 	}
 	cp->lem = (unichar*) malloc(sizeof(unichar) * (u_strlen(result)+ 1));
 	if (cp->lem == NULL) {
@@ -559,8 +555,7 @@ struct cassys_pattern* load_cassys_pattern(unichar *string){
 		position++;
 		if (parse_string(annotation, &position, result,
 				P_PLUS_CLOSING_ROUND_BRACE) != P_OK) {
-			error("%S : malformed cassys pattern!!\n",annotation);
-			*result = '\0';
+			fatal_error("%S : malformed cassys pattern\n",annotation);
 		}
 		if(u_strlen(result) >0){
 			unichar *token = (unichar *)malloc(sizeof(unichar)*(u_strlen(result)+1));

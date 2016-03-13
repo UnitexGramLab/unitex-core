@@ -34,19 +34,11 @@
 
 namespace unitex {
 
-#ifdef MAX_GRF2FST2_FACTOR
-/* Maximum length for the content of a grf box */
-#define MAX_GRF_BOX_CONTENT (10000*MAX_GRF2FST2_FACTOR)
-
-/* Maximum number of token in a box line */
-#define MAX_TOKENS_IN_A_SEQUENCE (4096*MAX_GRF2FST2_FACTOR)
-#else
 /* Maximum length for the content of a grf box */
 #define MAX_GRF_BOX_CONTENT 10000
 
 /* Maximum number of token in a box line */
 #define MAX_TOKENS_IN_A_SEQUENCE 4096
-#endif
 
 /* Maximum number of graphs in a grammar */
 #define MAX_NUMBER_OF_GRAPHS 10000
