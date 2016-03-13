@@ -135,6 +135,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
             const unichar content_meta_nb[] = { 'N' , 'B' };
             const unichar content_meta_token[] = { 'T', 'O' , 'K' , 'E' , 'N' };
             const unichar content_meta_letter[] = { 'L', 'E' , 'T' , 'T' , 'E' , 'R' };
+            const unichar content_meta_lettre[] = { 'L', 'E' , 'T' , 'T' , 'R' , 'E' };
             const unichar content_meta_word[] = { 'W', 'O' , 'R' , 'D'  };
             const unichar content_meta_first[] = { 'F', 'I' , 'R' , 'S' , 'T' };
             const unichar content_meta_upper[] = { 'U', 'P' , 'P' , 'E' , 'R' };
@@ -200,6 +201,10 @@ for (int i=0;i<fst2->number_of_tags;i++) {
             else if ((len_content == 6) && (!memcmp(content_start, content_meta_letter, 6 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_LETTER;
+            }
+            else if ((len_content == 6) && (!memcmp(content_start, content_meta_lettre, 6 * sizeof(unichar)))) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_LETTRE;
             }
             else if ((len_content == 4) && (!memcmp(content_start, content_meta_word, 4 * sizeof(unichar)))) {
                tag[i]->type=META_TAG;

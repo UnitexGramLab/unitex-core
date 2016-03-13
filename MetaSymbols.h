@@ -47,6 +47,7 @@ enum meta_symbol {
    META_TEXT_START,   // {^}: matches the text start
    META_TEXT_END,      // {$}: matches the end of the text
    META_LETTER,      //<LETTER>: matches a letter in the morphological mode
+   META_LETTRE,      //<LETTRE>: matches a letter in the morphological mode
    META_WORD,       // <WORD>: used to match a token made of letters
    META_FIRST,      // <FIRST>: used to match a token made of letters that starts with an uppercase one
    META_UPPER,      // <UPPER>: used to match a token made of uppercase letters
