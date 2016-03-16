@@ -333,37 +333,46 @@ Grf* tfst_transitions_to_grf_states(Tfst* tfst,
 		while (trans!=NULL) {
 			TfstTag* t=(TfstTag*)tfst->tags->tab[trans->tag_number];
 			empty(content);
+			if (sequences==1){
+				if (!u_strcmp(t->content,"\"")) {
+					/* If the box content is a double quote, we must protect it in a special
+					 * way since both \ and "  are special characters in grf files. */
+					u_sprintf(content,"\"\\\\\\\"\"");
+				} else if(!u_strcmp(t->content,"<")){
+					u_strcpy(content,"\"\\<\"");
+				} else if(!u_strcmp(t->content,"\\")){
+					u_strcpy(content,"\"\\\\\"");
+				} else if(!u_strcmp(t->content,"+")){
+					u_strcpy(content,"\"\\+\"");
+				} else if(!u_strcmp(t->content,"-")){
+					u_strcpy(content,"\"\\-\"");
+				} else if(!u_strcmp(t->content,":")){
+					u_strcpy(content,"\"\\:\"");
+				} else if(!u_strcmp(t->content,"/")){
+					u_strcpy(content,"\"\\/\"");
+				}	else {
+					/* Otherwise, we put the content between double quotes */
+					u_strcpy(content,"\"");
+					escape(t->content,content,P_DOUBLE_QUOTE);
+					u_strcatf(content,"\"");
+				}
+			}else{
 
-			if (!u_strcmp(t->content,"\"")) {
-				/* If the box content is a double quote, we must protect it in a special
-				 * way since both \ and "  are special characters in grf files. */
-				u_sprintf(content,"\"\\\\\\\"");
-			} else if(!u_strcmp(t->content,"<")){
-				u_strcpy(content,"\"\\<");
-			} else if(!u_strcmp(t->content,"\\")){
-				u_strcpy(content,"\"\\\\");
-			} else if(!u_strcmp(t->content,"+")){
-				u_strcpy(content,"\"\\+");
-			} else if(!u_strcmp(t->content,"-")){
-				u_strcpy(content,"\"\\-");
-			} else if(!u_strcmp(t->content,":")){
-				u_strcpy(content,"\"\\:");
-			} else if(!u_strcmp(t->content,"/")){
-				u_strcpy(content,"\"\\/");
-			}	else {
-				/* Otherwise, we put the content between double quotes */
-				u_strcpy(content,"\"");
-				escape(t->content,content,P_DOUBLE_QUOTE);
+				if (!u_strcmp(t->content,"\"")) {
+					/* If the box content is a double quote, we must protect it in a special
+					 * way since both \ and "  are special characters in grf files. */
+					u_sprintf(content,"\"\\\\\\\"/%d %d %d %d %d %d\"",
+							t->m.start_pos_in_token,t->m.start_pos_in_char,t->m.start_pos_in_letter,
+							t->m.end_pos_in_token,t->m.end_pos_in_char,t->m.end_pos_in_letter);
+				} else {
+					/* Otherwise, we put the content between double quotes */
+					u_strcpy(content,"\"");
+					escape(t->content,content,P_DOUBLE_QUOTE);
+					u_strcatf(content,"/%d %d %d %d %d %d\"",
+							t->m.start_pos_in_token,t->m.start_pos_in_char,t->m.start_pos_in_letter,
+							t->m.end_pos_in_token,t->m.end_pos_in_char,t->m.end_pos_in_letter);
+				}
 			}
-
-			if (sequences==0){
-				u_strcat(t->content,"\"");
-			} else {
-				u_strcatf(content,"/%d %d %d %d %d %d\"",
-						t->m.start_pos_in_token,t->m.start_pos_in_char,t->m.start_pos_in_letter,
-						t->m.end_pos_in_token,t->m.end_pos_in_char,t->m.end_pos_in_letter);
-			}
-
 			int index=add_GrfState(grf,new_GrfState(content->str,pos_X[rank[i]],0,rank[i],grf->n_states));
 			/* Now that we have created the grf state, we set its outgoing transitions */
 			if (tfst->automaton->states[trans->state_number]->outgoing_transitions==NULL
