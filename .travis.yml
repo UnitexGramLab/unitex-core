@@ -1,0 +1,77 @@
+# add by martinec
+# based on:
+# https://github.com/mapbox/protozero/blob/master/.travis.yml
+# https://github.com/dftlibs/xcfun/blob/master/.travis.yml
+# https://github.com/clMathLibraries/clBLAS/blob/master/.travis.yml
+# https://github.com/Automattic/_s/blob/master/.travis.yml
+
+# language: instructs travis what compilers && environment to set up in build matrix
+language: cpp
+
+# sudo: false instructs Travis to build our project in a docker VM (faster)
+sudo: required
+
+# only available on private builds
+cache:
+ - apt
+
+# Travis CI clones repositories to a depth of 50 commits
+git:
+  depth: 3 
+
+# Save common build configurations as shortcuts, so we can reference them later.
+addons_shortcuts:
+  addons_clang35: &clang35
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+      packages: [ 'clang-3.5', 'cmake', 'cppcheck', 'valgrind' ]
+  addons_gcc48: &gcc48
+    apt:
+      sources: [ 'ubuntu-toolchain-r-test' ]
+      packages: [ 'g++-4.8', 'gcc-4.8', 'cmake', 'cppcheck', 'valgrind' ]
+
+matrix:
+  # if a rows in the build matrix fails, set
+  # the build to finish as soon as possible
+  fast_finish: true
+  include:
+    - os: linux
+      dist: trusty
+      compiler: "clang"
+      env: CXX=clang++-3.5
+      addons: *clang35
+    - os: linux
+      dist: trusty
+      compiler: "gcc"
+      env: CXX=g++-4.8
+      addons: *gcc48
+
+notifications:
+  email:
+    recipients:
+      - unitex-devel@univ-mlv.fr
+    on_success: change
+    on_failure: always
+  slack:
+    secure: Czf+dd6CyKvEvRTYi3E70lrsDoDZHXdyXSI7+PyQdJpjErU9LeTA0BXNlH5RYBaM7GOXftxQZuvkh0nXTF8e0xqz5qhO3bUdT7iJqivfmzLVuA5LPaKUg8vIv796RsG2RE9TH4SaOhQjJXfzWT5RgwQZeOldGL8scWzNtsnmgkv5QTdScwEU2m9qyo/WZXY6hnh6uKe2gtDgeeG0csRCk/n8SkPHY3AwBLrcLT9XhgQN7GbHOigfkSqF0OF6K8MCl2TxGGuO85cNZx1MXAYI8800F63+zGEz3AlNUZIS61/POaHIYD5fCjheyUDxtC7+GDIcOy8n6eN3nXB9ewIh0okg/Bg4yEfIfdBeKprEvTjKw4qcYOKoVsSoQ8C0pRyMQRdcSisivweaatvr0s/hAQwsrzyZvbfTqUsYaJD3gShe29UULfMWalc5tK9PQtNYtia5Dxn1776kIcGJ+z/lgFLboWsE6uluenMKwVVPc27ArknZZ6YcgC4C8rdMxc2yvZFNMQjmuwqUswq9Iuv3GB80/1YJO/mihjP6nXn6CZ1jk/eUuKrZDXqe3kruKn3atMOsXsLl15MhX0QAdz/ASbLu/GqHhOwUgsOwLQMaajWAn1L/8+GnMjODM75hlr06qrm8MIXvb+ERP5zAujeMTUWCpkYBdi3F1W1ahOrUTcE=
+
+before_install:
+  - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
+
+install:
+  # workaround for an issue related with the default export of the CC environment variable on Travis
+  # https://github.com/travis-ci/travis-ci/issues/4682
+  # https://github.com/travis-ci/docs-travis-ci-com/commit/fbca7ce4
+  - test -n $CC && unset CC 
+  - mkdir bin && cd build && make DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
+  - export UNITEX_CORE_GIT_REVISION=$(git describe --always HEAD)
+  - export UNITEX_BIN="$PWD/bin/UnitexToolLogger"
+  - echo ${UNITEX_BIN}
+  - echo ${UNITEX_CORE_GIT_REVISION}
+  
+# overwrite the default build step
+script:
+  - cd unitex-core-tests
+  - "./shellcheck-check.sh"
+  - "./unitex-core-test.sh -p1"
+
