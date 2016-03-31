@@ -57,6 +57,7 @@ notifications:
 
 before_install:
   - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
+  - cd unitex-core-tests && "./shellcheck-install.sh" && cd ..
 
 install:
   # workaround for an issue related with the default export of the CC environment variable on Travis
