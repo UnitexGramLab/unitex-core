@@ -44,16 +44,16 @@
 /* ************************************************************************** */
 #define UNITEX_VERSION_URL_HOMEPAGE        "http://unitexgramlab.org"
 #define UNITEX_VERSION_URL_ISSUES          "http://forum.unitexgramlab.org"
-#define UNITEX_VERSION_URL_REPOSITORY      "https://svnigm.univ-mlv.fr/svn/unitex/Unitex-C%2B%2B"
+#define UNITEX_VERSION_URL_REPOSITORY      "https://github.com/UnitexGramLab/unitex-core"
 /* ************************************************************************** */
-#define UNITEX_VERSION_RELEASE             "Unitex/GramLab 3.1beta"
-#define UNITEX_VERSION_STRING              "3.1beta"
-#define UNITEX_VERSION_SEMVER              "3.1.0-beta"
+#define UNITEX_VERSION_RELEASE             "Unitex/GramLab 3.2alpha"
+#define UNITEX_VERSION_STRING              "3.2alpha"
+#define UNITEX_VERSION_SEMVER              "3.2.0-alpha"
 /* ************************************************************************** */
 #define UNITEX_VERSION_MAJOR_NUMBER        3
-#define UNITEX_VERSION_MINOR_NUMBER        1
+#define UNITEX_VERSION_MINOR_NUMBER        2
 #define UNITEX_VERSION_REVISION_NUMBER     0
-#define UNITEX_VERSION_SUFFIX              "beta"
+#define UNITEX_VERSION_SUFFIX              "alpha"
 #define UNITEX_VERSION_TYPE                "unstable"
 #define UNITEX_VERSION_IS_UNSTABLE         1
 /* ************************************************************************** */
