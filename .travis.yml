@@ -23,12 +23,28 @@ git:
 addons_shortcuts:
   addons_clang35: &clang35
     apt:
-      sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
-      packages: [ 'clang-3.5', 'cmake', 'cppcheck', 'valgrind' ]
-  addons_gcc48: &gcc48
+      sources:    [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+      packages:   [ 'clang-3.5', 'cmake', 'cppcheck', 'valgrind' ]
+  addons_clang38: &clang38
     apt:
-      sources: [ 'ubuntu-toolchain-r-test' ]
-      packages: [ 'g++-4.8', 'gcc-4.8', 'cmake', 'cppcheck', 'valgrind' ]
+      sources:    [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise' ]
+      packages:   [ 'clang-3.8', 'cmake', 'cppcheck', 'valgrind' ]
+  addons_gcc49:   &gcc47
+    apt:
+      sources:    [ 'ubuntu-toolchain-r-test' ]
+      packages:   [ 'g++-4.7', 'gcc-4.7',  'cmake', 'cppcheck', 'valgrind' ]      
+  addons_gcc48:   &gcc48
+    apt:
+      sources:    [ 'ubuntu-toolchain-r-test' ]
+      packages:   [ 'g++-4.8', 'gcc-4.8', 'cmake', 'cppcheck', 'valgrind' ]
+  addons_gcc49:   &gcc49
+    apt:
+      sources:    [ 'ubuntu-toolchain-r-test' ]
+      packages:   [ 'g++-4.9', 'gcc-4.9', 'cmake', 'cppcheck', 'valgrind' ]
+  addons_gcc49:   &gcc5
+    apt:
+      sources:    [ 'ubuntu-toolchain-r-test' ]
+      packages:   [ 'g++-5', 'gcc-5', 'cmake', 'cppcheck', 'valgrind' ]      
 
 matrix:
   # if a rows in the build matrix fails, set
@@ -42,9 +58,29 @@ matrix:
       addons: *clang35
     - os: linux
       dist: trusty
+      compiler: "clang"
+      env: CXX=clang++-3.8
+      addons: *clang38
+    - os: linux
+      dist: trusty
+      compiler: "gcc"
+      env: CXX=g++-4.7
+      addons: *gcc47    
+    - os: linux
+      dist: trusty
       compiler: "gcc"
       env: CXX=g++-4.8
       addons: *gcc48
+    - os: linux
+      dist: trusty
+      compiler: "gcc"
+      env: CXX=g++-4.9
+      addons: *gcc49
+    - os: linux
+      dist: trusty
+      compiler: "gcc"
+      env: CXX=g++-5
+      addons: *gcc5
 
 notifications:
   email:
@@ -56,14 +92,15 @@ notifications:
     secure: Czf+dd6CyKvEvRTYi3E70lrsDoDZHXdyXSI7+PyQdJpjErU9LeTA0BXNlH5RYBaM7GOXftxQZuvkh0nXTF8e0xqz5qhO3bUdT7iJqivfmzLVuA5LPaKUg8vIv796RsG2RE9TH4SaOhQjJXfzWT5RgwQZeOldGL8scWzNtsnmgkv5QTdScwEU2m9qyo/WZXY6hnh6uKe2gtDgeeG0csRCk/n8SkPHY3AwBLrcLT9XhgQN7GbHOigfkSqF0OF6K8MCl2TxGGuO85cNZx1MXAYI8800F63+zGEz3AlNUZIS61/POaHIYD5fCjheyUDxtC7+GDIcOy8n6eN3nXB9ewIh0okg/Bg4yEfIfdBeKprEvTjKw4qcYOKoVsSoQ8C0pRyMQRdcSisivweaatvr0s/hAQwsrzyZvbfTqUsYaJD3gShe29UULfMWalc5tK9PQtNYtia5Dxn1776kIcGJ+z/lgFLboWsE6uluenMKwVVPc27ArknZZ6YcgC4C8rdMxc2yvZFNMQjmuwqUswq9Iuv3GB80/1YJO/mihjP6nXn6CZ1jk/eUuKrZDXqe3kruKn3atMOsXsLl15MhX0QAdz/ASbLu/GqHhOwUgsOwLQMaajWAn1L/8+GnMjODM75hlr06qrm8MIXvb+ERP5zAujeMTUWCpkYBdi3F1W1ahOrUTcE=
 
 before_install:
+  - echo ${CXX}
   - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
-  - cd unitex-core-tests && "./shellcheck-install.sh" && cd ..
+  - cd unitex-core-tests && "./shellcheck-install.sh" && "./shellcheck-check.sh" && cd ..
 
 install:
   # workaround for an issue related with the default export of the CC environment variable on Travis
   # https://github.com/travis-ci/travis-ci/issues/4682
   # https://github.com/travis-ci/docs-travis-ci-com/commit/fbca7ce4
-  - test -n $CC && unset CC 
+  - test -n $CC && unset CC
   - mkdir bin && cd build && make DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
   - export UNITEX_CORE_GIT_REVISION=$(git describe --always HEAD)
   - export UNITEX_BIN="$PWD/bin/UnitexToolLogger"
@@ -73,6 +110,5 @@ install:
 # overwrite the default build step
 script:
   - cd unitex-core-tests
-  - "./shellcheck-check.sh"
   - "./unitex-core-test.sh -p1"
 
