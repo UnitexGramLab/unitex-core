@@ -93,22 +93,19 @@ notifications:
 
 before_install:
   - echo ${CXX}
-  - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
-  - cd unitex-core-tests && "./shellcheck-install.sh" && "./shellcheck-check.sh" && cd ..
+  - export UNITEX_CORE_GIT_REVISION=$(git describe --always HEAD) && echo ${UNITEX_CORE_GIT_REVISION}
 
 install:
+  - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
+  - cd unitex-core-tests && "./shellcheck-install.sh" && "./shellcheck-check.sh" && cd ..
+  
+# overwrite the default build step
+script:
   # workaround for an issue related with the default export of the CC environment variable on Travis
   # https://github.com/travis-ci/travis-ci/issues/4682
   # https://github.com/travis-ci/docs-travis-ci-com/commit/fbca7ce4
   - test -n $CC && unset CC
   - mkdir bin && cd build && make DEBUG=yes UNITEXTOOLLOGGERONLY=yes && cd ..
-  - export UNITEX_CORE_GIT_REVISION=$(git describe --always HEAD)
-  - export UNITEX_BIN="$PWD/bin/UnitexToolLogger"
-  - echo ${UNITEX_BIN}
-  - echo ${UNITEX_CORE_GIT_REVISION}
-  
-# overwrite the default build step
-script:
-  - cd unitex-core-tests
-  - "./unitex-core-test.sh -p1"
+  - export UNITEX_BIN="$PWD/bin/UnitexToolLogger" && echo ${UNITEX_BIN}
+  - cd unitex-core-tests && "./unitex-core-test.sh -p1"
 
