@@ -27,8 +27,8 @@
 
 
 /*
- * Historic svn : https://gforgeigm.univ-mlv.fr/svn/unitex/Unitex-C++
- * new svn path for githuib: https://github.com/UnitexGramLab/unitex-core/trunk
+ * Historic svn : https://svnigm.univ-mlv.fr/svn/unitex/Unitex-C++
+ * new svn path for github: https://github.com/UnitexGramLab/unitex-core/trunk
  * new git path for unitex-core on github: https://github.com/UnitexGramLab/unitex-core
  */
 /* ************************************************************************** */
@@ -44,8 +44,13 @@
 #  define SVN_NEW_REVISION UNITEX_NEW_REVISION
 # endif
 #endif
+#ifdef UNITEX_CORE_GIT_REVISION_STRING
+#define GIT_HEAD_REVISION UNITEX_CORE_GIT_REVISION_STRING
+#else
 #ifdef UNITEX_CORE_GIT_REVISION
-#define GIT_HEAD_REVISION UNITEX_CORE_GIT_REVISION
+#define GIT_HEAD_STRING_AND_QUOTE(s) "\""#s"\""
+#define GIT_HEAD_REVISION GIT_HEAD_STRING_AND_QUOTE(UNITEX_CORE_GIT_REVISION)
+#endif	
 #endif
 #endif
 
