@@ -43,7 +43,7 @@
 #define UNITEX_VERSION_LICENSE             "LGPL-2.1"
 /* ************************************************************************** */
 #define UNITEX_VERSION_URL_HOMEPAGE        "http://unitexgramlab.org"
-#define UNITEX_VERSION_URL_ISSUES          "http://forum.unitexgramlab.org"
+#define UNITEX_VERSION_URL_ISSUES          "https://github.com/UnitexGramLab/unitex-core/issues/new"
 #define UNITEX_VERSION_URL_REPOSITORY      "https://github.com/UnitexGramLab/unitex-core"
 /* ************************************************************************** */
 #define UNITEX_VERSION_RELEASE             "Unitex/GramLab 3.2alpha"
