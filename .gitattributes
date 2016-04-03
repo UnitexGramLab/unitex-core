@@ -51,3 +51,19 @@
 *.exe           binary
 *.out           binary
 *.app           binary
+
+
+# lines below are from VisualStudio.gitattributes
+# https://github.com/Danimoth/gitattributes
+
+# custom for visual studio
+*.sln           text eol=crlf
+*.csproj        text eol=crlf
+*.vbproj        text eol=crlf
+*.fsproj        text eol=crlf
+*.dbproj        text eol=crlf
+
+*.vcxproj       text eol=crlf
+*.vcxitems      text eol=crlf
+*.props         text eol=crlf
+*.filters       text eol=crlf
