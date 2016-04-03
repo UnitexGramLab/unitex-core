@@ -66,9 +66,9 @@
 #define UNITEX_VERSION_BUILD_TIMESTAMP     "?"
 #define UNITEX_VERSION_BUILD_SYSTEM        "Anonymous Builder"
 /* ************************************************************************** */
-#define UNITEX_VERSION_COMMIT_BRANCH       "?"
-#define UNITEX_VERSION_COMMIT_DATE         "?"
-#define UNITEX_VERSION_COMMIT_HASH         "?"
-#define UNITEX_VERSION_COMMIT_TAG          "?"
+#define UNITEX_CORE_VERSION_COMMIT_BRANCH  "?"
+#define UNITEX_CORE_VERSION_COMMIT_DATE    "?"
+#define UNITEX_CORE_VERSION_COMMIT_HASH    "?"
+#define UNITEX_CORE_VERSION_COMMIT_TAG     "?"
 /* ************************************************************************** */
 #endif  // UNITEX_CORE_VERSION_H_                                   // NOLINT
