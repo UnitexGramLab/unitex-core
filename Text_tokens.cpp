@@ -50,7 +50,7 @@ if (f==NULL) {
 }
 struct text_tokens* res=new_text_tokens(prv_alloc);
 u_fscanf(f,"%d\n",&(res->N));
-res->token=(unichar**)malloc_cb((res->N)*sizeof(unichar*),prv_alloc);
+res->token=(unichar**)malloc_cb(((res->N)+1)*sizeof(unichar*),prv_alloc);
 if (res->token==NULL) {
    fatal_alloc_error("load_text_tokens");
 }

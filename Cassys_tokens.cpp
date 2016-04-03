@@ -277,6 +277,8 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const c
 	DISCARD_UNUSED_PARAMETER(uima_offset)
 
 	*tokens = load_text_tokens(vec, tokens_text_name);
+	if ((*tokens) == NULL)
+		return NULL;
 
 	ABSTRACTMAPFILE* map_text_cod = af_open_mapfile(text_cod_name, MAPFILE_OPTION_READ, 0);
 
