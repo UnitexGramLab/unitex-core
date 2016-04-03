@@ -1,0 +1,53 @@
+# auto detect text files and perform LF normalization
+*               text=auto
+
+# force conversion to Unix format
+*.sh            eol=lf
+
+# force conversion to Windows format
+*.bat           eol=crlf
+
+# for the next files NOT found below, normalize CRLF into LF
+*.gitattributes text
+.gitignore      text
+*.md            text
+
+# lines below are from C++.gitattributes
+# https://github.com/Danimoth/gitattributes
+
+# sources
+*.c             text
+*.cc            text
+*.cxx           text
+*.cpp           text
+*.c++           text
+*.hpp           text
+*.h             text
+*.h++           text
+*.hh            text
+
+# compiled object files
+*.slo           binary
+*.lo            binary
+*.o             binary
+*.obj           binary
+
+# precompiled Headers
+*.gch           binary
+*.pch           binary
+
+# compiled dynamic libraries
+*.so            binary
+*.dylib         binary
+*.dll           binary
+
+# compiled static libraries
+*.lai           binary
+*.la            binary
+*.a             binary
+*.lib           binary
+
+# executables
+*.exe           binary
+*.out           binary
+*.app           binary
