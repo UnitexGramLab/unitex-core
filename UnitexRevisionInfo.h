@@ -55,6 +55,8 @@ extern "C" {
 
 
 UNITEX_FUNC int UNITEX_CALL GetUnitexRevision();
+UNITEX_FUNC int UNITEX_CALL GetUnitexNewRevision();
+UNITEX_FUNC const char* UNITEX_CALL GetUnitexCoreGitRevision();
 UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number);
 UNITEX_FUNC const char* UNITEX_CALL GetUnitexSemVerString();
 

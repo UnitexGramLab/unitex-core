@@ -24,11 +24,49 @@
 /* ************************************************************************** */
 #include "Version.h"
 #include "Unicode.h"
+
+
+/*
+ * Historic svn : https://gforgeigm.univ-mlv.fr/svn/unitex/Unitex-C++
+ * new svn path for githuib: https://github.com/UnitexGramLab/unitex-core/trunk
+ * new git path for unitex-core on github: https://github.com/UnitexGramLab/unitex-core
+ */
 /* ************************************************************************** */
-#if (!defined(SVN_REVISION))
+#if (!defined(SVN_REVISION)) && (!defined(SVN_NEW_REVISION)) && (!defined(GIT_HEAD))
 # include "Unitex_revision.h"
-# define SVN_REVISION UNITEX_REVISION
+#ifdef UNITEX_REVISION
+# if UNITEX_REVISION != -1
+#  define SVN_REVISION UNITEX_REVISION
+# endif
 #endif
+#ifdef UNITEX_NEW_REVISION
+# if UNITEX_NEW_REVISION != -1
+#  define SVN_NEW_REVISION UNITEX_NEW_REVISION
+# endif
+#endif
+#ifdef UNITEX_CORE_GIT_REVISION
+#define GIT_HEAD_REVISION UNITEX_CORE_GIT_REVISION
+#endif
+#endif
+
+#define UNITEX_NEW_SVN_DIFFERENCE 1632
+
+//see http://stackoverflow.com/questions/7126329/how-do-i-stringify-macros-that-are-the-results-of-operations-on-macros
+
+#if (defined(SVN_REVISION)) && (!defined(SVN_NEW_REVISION))
+#define SVN_NEW_REVISION (SVN_REVISION - UNITEX_NEW_SVN_DIFFERENCE)
+#endif
+
+
+#if (defined(SVN_NEW_REVISION)) && (!defined(SVN_REVISION))
+#define SVN_REVISION (SVN_NEW_REVISION + UNITEX_NEW_SVN_DIFFERENCE)
+#endif
+
+#if (!defined(SVN_NEW_REVISION)) && (!defined(SVN_REVISION))
+#define SVN_REVISION  -1
+#define SVN_NEW_REVISION  -1
+#endif
+
 /* ************************************************************************** */
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
