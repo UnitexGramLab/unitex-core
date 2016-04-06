@@ -1879,6 +1879,13 @@ if (only_verify_arguments) {
 if (runLog_ctx->rundir[0]==0) {
     strcpy(runLog_ctx->rundir,runLog_ctx->runulp);
     strcat(runLog_ctx->rundir,"_tmpdir");
+    char* walk_rundir = runLog_ctx->rundir;
+    while ((*walk_rundir) != '\0') {
+        if (((*walk_rundir) == '/') || ((*walk_rundir) == '/')) {
+            *walk_rundir = PATH_SEPARATOR_CHAR;
+        }
+        walk_rundir++;
+    }
 }
 
 if (runLog_ctx->resultulp[0]=='\0') {
