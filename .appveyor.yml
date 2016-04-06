@@ -79,6 +79,8 @@ notifications:
     on_build_failure: true
     on_build_status_changed: true
   - provider: Slack
+    # variables from eventData on http://www.appveyor.com/docs/notifications#message-template
+    template: "Build <{{buildUrl}}|{{buildVersion}}> (<{{commitUrl}}|{{commitId}}>) of {{repositoryName}}@{{branch}} by {{commitAuthor}} {{status}} in {{duration}}"  
     incoming_webhook:
       # encrypted with https://ci.appveyor.com/tools/encrypt
       secure: ZCn/FzQ0KC70XIvB5pP8zFzcOtPK6IeGybrxv/fPA1mlrAWvQobqE5NS2A2yYSeVX4tAaFpHHCWm744o9qKahzCeRfVOE0Z0+PTTqjOLUaU=
