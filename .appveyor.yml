@@ -67,7 +67,7 @@ build_script:
   - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set MSBuildOptions=/v:m /p:Configuration=Debug /logger:%MSBuildLogger%
   - msbuild %MSBuildOptions% UnitexToolAndLib_vs2015.sln
-  - dir x64
+  - dir /s x64\UnitexToolLogger_vs2015
 
 # scripts to run before tests
 before_test:
@@ -75,7 +75,9 @@ before_test:
 
 # to run our custom script instead of the automatic test
 test_script:
-  - bash --login -i "ls"
+#  - cp C:\projects\unitex-core\build\x64\UnitexToolLogger_vs2015\Debug\UnitexToolLogger.exe C:\projects\unitex-core\build\unitex-core-tests
+#  - cd C:\projects\unitex-core\build\unitex-core-tests
+  - C:\msys64\usr\bin\bash -lc  "export UNITEX_BIN=./UnitexToolLogger; echo $UNITEX_BIN; pwd"
 
 notifications:
   # Email
