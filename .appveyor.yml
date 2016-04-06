@@ -67,8 +67,8 @@ build_script:
   - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set MSBuildOptions=/v:m /p:Configuration=Debug /logger:%MSBuildLogger%
   - msbuild %MSBuildOptions% UnitexToolAndLib_vs2015.sln
-  - cd C:\projects\unitex-core\bin
-  - dir
+  - dir *.exe
+  - start "" "%SYSTEMDRIVE%\Program Files (x86)\Git\bin\sh.exe" --login
 
 notifications:
   # Email
@@ -79,7 +79,7 @@ notifications:
     on_build_failure: true
     on_build_status_changed: true
   - provider: Slack
-    # variables from eventData on http://www.appveyor.com/docs/notifications#message-template
+    # variables from eventData on https://www.appveyor.com/docs/notifications#webhook-payload
     template: "Build <{{buildUrl}}|{{buildVersion}}> (<{{commitUrl}}|{{commitId}}>) of {{repositoryName}}@{{branch}} by {{commitAuthor}} {{status}} in {{duration}}"  
     incoming_webhook:
       # encrypted with https://ci.appveyor.com/tools/encrypt
