@@ -66,6 +66,8 @@ build_script:
   - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set MSBuildOptions=/v:m /p:Configuration=Debug /logger:%MSBuildLogger%
   - msbuild %MSBuildOptions% UnitexToolAndLib_vs2015.sln
+  - cd C:\projects\unitex-core\bin
+  - dir
 
 notifications:
   # Email
@@ -75,8 +77,6 @@ notifications:
     on_build_success: false
     on_build_failure: true
     on_build_status_changed: true
-  #- provider: Slack
-    #auth_token:
-      #secure: xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    #channel: ci
-    #template: "{message}, {commitId}, ..."
+  - provider: Slack
+    incoming_webhook:
+      secure: ZCn/FzQ0KC70XIvB5pP8zFzcOtPK6IeGybrxv/fPA1mlrAWvQobqE5NS2A2yYSeVX4tAaFpHHCWm744o9qKahzCeRfVOE0Z0+PTTqjOLUaU=
