@@ -11,8 +11,8 @@ version: '#{build}'
 
 os: Visual Studio 2015
 
-# disable test phase
-test: off
+# to disable automatic tests 
+# test: off
 
 # clone folder
 clone_folder: C:\projects\unitex-core
@@ -67,8 +67,15 @@ build_script:
   - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set MSBuildOptions=/v:m /p:Configuration=Debug /logger:%MSBuildLogger%
   - msbuild %MSBuildOptions% UnitexToolAndLib_vs2015.sln
-  - dir
-  - start "" "%SYSTEMDRIVE%\Program Files\Git\bin\bash.exe" --login -i "ls"
+  - dir x64
+
+# scripts to run before tests
+before_test:
+  - git clone -b master --depth 1 https://github.com/UnitexGramLab/unitex-core-tests
+
+# to run our custom script instead of the automatic test
+test_script:
+  - bash --login -i "ls"
 
 notifications:
   # Email
