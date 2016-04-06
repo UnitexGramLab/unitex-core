@@ -7,7 +7,7 @@
 # - Section names should be unique on each level.
 
 # version format
-version: '{build}'
+version: '#{build}'
 
 os: Visual Studio 2015
 
