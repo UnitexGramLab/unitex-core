@@ -1881,7 +1881,7 @@ if (runLog_ctx->rundir[0]==0) {
     strcat(runLog_ctx->rundir,"_tmpdir");
     char* walk_rundir = runLog_ctx->rundir;
     while ((*walk_rundir) != '\0') {
-        if (((*walk_rundir) == '/') || ((*walk_rundir) == '/')) {
+        if (((*walk_rundir) == '/') || ((*walk_rundir) == '\\')) {
             *walk_rundir = PATH_SEPARATOR_CHAR;
         }
         walk_rundir++;
