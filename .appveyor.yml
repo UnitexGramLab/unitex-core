@@ -67,8 +67,8 @@ build_script:
   - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - set MSBuildOptions=/v:m /p:Configuration=Debug /logger:%MSBuildLogger%
   - msbuild %MSBuildOptions% UnitexToolAndLib_vs2015.sln
-  - dir *.exe
-  - start "" "%SYSTEMDRIVE%\Program Files (x86)\Git\bin\sh.exe" --login
+  - dir
+  - start "" "%SYSTEMDRIVE%\Program Files\Git\bin\bash.exe" --login -i "ls"
 
 notifications:
   # Email
