@@ -75,7 +75,7 @@ before_test:
 # to run our custom script instead of the automatic test
 test_script:
   - copy C:\projects\unitex-core\build\x64\UnitexToolLogger_vs2015\Debug\tmp\UnitexToolLogger_vs2015.exe C:\projects\unitex-core\build\unitex-core-tests\UnitexToolLogger.exe
-  - C:\msys64\usr\bin\bash -lc  "cd $APPVEYOR_BUILD_FOLDER; export UNITEX_CORE_VERSION_GIT_COMMIT_HASH=$(git describe --always HEAD); export UNITEX_BIN=$APPVEYOR_BUILD_FOLDER/build/unitex-core-tests/UnitexToolLogger; cd $APPVEYOR_BUILD_FOLDER/build/unitex-core-tests; ./unitex-core-test.sh -p1"
+ - C:\msys64\usr\bin\bash -lc  "cd $APPVEYOR_BUILD_FOLDER; export UNITEX_BIN=$APPVEYOR_BUILD_FOLDER/build/unitex-core-tests/UnitexToolLogger; cd $APPVEYOR_BUILD_FOLDER/build/unitex-core-tests; ./unitex-core-test.sh -c0 -p1 Compress"
 
 notifications:
   # Email
