@@ -1,0 +1,82 @@
+# add by martinec
+# based on http://www.appveyor.com/docs/appveyor-yml
+#
+# - Indent each level of configuration with 2 spaces. Do not use tabs!
+# - All section names are case-sensitive.
+# - Section names should be unique on each level.
+
+# version format
+version: '{build}'
+
+os: Visual Studio 2015
+
+# disable test phase
+test: off
+
+# clone folder
+clone_folder: C:\projects\unitex-core
+
+skip_commits:
+  # commits that have [ci skip] anywhere in the commit messages are ignored
+  message: /.*\[ci skip\].*/
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  # fix line endings on Windows
+  - git config --global core.autocrlf true
+
+# fetch repository as zip archive
+shallow_clone: true
+
+# set clone depth
+clone_depth: 3
+
+#environment:
+#  matrix
+#    # immediately finish build once one job fails
+#    fast_finish: true
+
+#platform:
+##  - x86
+# - x64
+## - Any CPU
+
+## build Configuration
+# configuration: Debug
+
+## build the binary after tests
+# build: off
+
+#build:
+#  parallel: true
+#  project:  build/UnitexToolAndLib_vs2015.sln
+#  verbosity: detailed
+
+#
+# Install needed build dependencies
+# 
+install:
+  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64'
+  - cd C:\projects\unitex-core
+  - 7z x C:\projects\unitex-core\vendor\tre-0.8.0.tar.gz   -so | 7z x -si -ttar > nul
+  - 7z x C:\projects\unitex-core\vendor\yaml-0.1.6.tar.gz  -so | 7z x -si -ttar > nul
+  
+build_script:
+  - cd C:\projects\unitex-core\build
+  - set MSBuildLogger="C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - set MSBuildOptions=/v:m /p:Configuration=Debug /logger:%MSBuildLogger%
+  - msbuild %MSBuildOptions% UnitexToolAndLib_vs2015.sln
+
+notifications:
+  # Email
+  - provider: Email
+    to:
+      - unitex-devel@univ-mlv.fr
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
+  #- provider: Slack
+    #auth_token:
+      #secure: xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #channel: ci
+    #template: "{message}, {commitId}, ..."

@@ -1,4 +1,4 @@
-# Unitex/GramLab Core [![Build Status](https://travis-ci.org/UnitexGramLab/unitex-core.svg?branch=master)](https://travis-ci.org/UnitexGramLab/unitex-core)
+# Unitex/GramLab Core [![Build Status](https://travis-ci.org/UnitexGramLab/unitex-core.svg?branch=master)](https://travis-ci.org/UnitexGramLab/unitex-core) [![Build status](https://ci.appveyor.com/api/projects/status/ucuu8ocibexmagju?svg=true)](https://ci.appveyor.com/project/martinec/unitex-core)
 
 Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unitexgramlab].
 
