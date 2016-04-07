@@ -764,7 +764,10 @@ if (final) {
 					uncompress_entry(current_component,l->string,entry);
 					/* And we add it to the analysis */
 					u_strcat(dec_,entry->str);
-					unichar new_dela_line[4096];
+					unichar* new_dela_line = (unichar*)malloc(sizeof(unichar) * 4096);
+					if (new_dela_line == NULL) {
+						fatal_alloc_error("explore_state");
+					}
 					/* We copy the current output DELA line that contains
 					 * the concatenation of the previous components */
 					u_strcpy(new_dela_line,output_dela_line);
@@ -822,6 +825,7 @@ if (final) {
 						(*L)=wdl;
 					}
 					free_Ustring(entry);
+					free(new_dela_line);
 					/* We go on with the next INF code of the last component */
 					l=l->next;
 				}
@@ -885,7 +889,12 @@ if (final) {
 				 * it was ended by double letter, because we can have things
 				 * like "oppbrent = opp,.ADV +++ brent,brenne.V:K" */
 				unichar* dec_ = dec_buffer;
-				unichar line[4096];
+
+				unichar* multi_buffer_alloc = (unichar*)malloc(sizeof(unichar) * 4096 * 3);
+				if (multi_buffer_alloc == NULL) {
+					fatal_alloc_error("explore_state");
+				}
+				unichar *line = multi_buffer_alloc;
 				u_strcpy(dec_,analysis);
 				if (dec_[0]!='\0') {
 					/* We add the "+++" mark if the current component is not the first one */
@@ -902,8 +911,8 @@ if (final) {
 				free_Ustring(entry);
 				u_strcpy(line,output_dela_line);
 				u_strcat(line,current_component);
-				unichar temp[4096];
-				unichar dec_temp[4096];
+				unichar* temp = multi_buffer_alloc + 4096;
+				unichar* dec_temp = multi_buffer_alloc + 4096 + 4096;
 				u_strcpy(dec_temp,dec_);
 				/* Then, we explore the dictionary in order to analyze the
 				 * next component. We start at the root of the dictionary
@@ -912,6 +921,7 @@ if (final) {
 				explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
 					dec_temp,line,L,number_of_components+1,infos,foo,0,dec_buffer,sia_code_buffer);
 				free_Ustring(foo);
+				free(multi_buffer_alloc);
 			}
 		}
 	}
