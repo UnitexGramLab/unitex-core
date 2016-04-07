@@ -57,7 +57,7 @@ void DLC_delete_entry(DLC_entry_T* entry);
 /////////////////////////////////////////////////////////////////////////////////
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char* DLC, char* DLCF, 
+int inflect(char* DLC, char* DLCF,
 		    MultiFlex_ctx* p_multiFlex_ctx, Alphabet* alph,
 		    int error_check_status) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
@@ -109,7 +109,7 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			// Fix bug#8 - "Inflection with Semitic Mode is not working anymore"
-			p_multiFlex_ctx->semitic  = semitic;      
+			p_multiFlex_ctx->semitic  = semitic;
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
 			if (DELAS_entry->n_filter_codes != 0) {
 
@@ -135,14 +135,14 @@ int inflect(char* DLC, char* DLCF,
 
 			/* Then, we print its inflected forms to the output */
 			for (int i = 0; i < forms.no_forms; i++) {
-			   unichar foo[1024];   
+			   unichar foo[1024];
 			   if (p_multiFlex_ctx->korean!=NULL) {
 
 			      Hanguls_to_Jamos(forms.forms[i].form,foo,p_multiFlex_ctx->korean,1);
 			   } else {
 			      u_strcpy(foo,forms.forms[i].form);
 			   }
-			   
+
 			   u_fprintf(dlcf, "%S,%S.%S", foo/*forms.forms[i].form*/,
 						DELAS_entry->lemma, code_gramm);
 				/* We add the semantic codes, if any */
@@ -307,6 +307,13 @@ int DLC_line2entry(Alphabet* alph,struct l_morpho_t* pL_MORPHO,unichar* line, DL
 
 	//Scan the semantic codes
 	l = DLC_scan_codes(entry->codes, &(line[pos]));
+	if (l < 0) {
+		error("Bad format in DELAC line:\n%S\n", line);
+		MU_delete_lemma(entry->lemma); //delete lemma
+		for (int c = 0; entry->codes[c]; c++) //delete codes
+			free(entry->codes[c]);
+		return 2;
+  }
 	pos += l;
 
 	//Scan the comment
@@ -456,13 +463,25 @@ int DLC_scan_codes(unichar* codes[MAX_CODES], unichar* line) {
 	c = 0;
 	while (line[pos] == (unichar) '+') {
 		pos++; //Omit the '+'
-		l
-				= u_scan_until_char(tmp, &(line[pos]), DIC_LINE_SIZE - 1,
-						":/\\+/", 1);
+		l = u_scan_until_char(tmp, &(line[pos]), DIC_LINE_SIZE - 1, ":/\\+/", 1);
 		if (l) {
-			codes[c] = u_strdup(tmp);
+			if (c == MAX_CODES - 1) {
+				// c[MAX_CODES - 1] -> last usable position to store NULL
+				error("Number of semantic codes exceeded, max = %d\n", MAX_CODES - 2);
+				codes[c] = NULL;
+				return -2;
+			}
+
+			for (int prev_code_index = 0; prev_code_index < c; ++prev_code_index) {
+				if (u_strcmp(codes[prev_code_index], tmp) == 0) {
+					error("Duplicate semantic code: %S\n", tmp);
+					codes[c] = NULL;
+					return -1;
+				}
+			}
+
+			codes[c++] = u_strdup(tmp);
 			pos += l;
-			c++;
 		}
 	}
 	codes[c] = NULL;
