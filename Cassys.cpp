@@ -47,7 +47,7 @@
 
 namespace unitex {
 
-const char *optstring_Cassys = ":bp:t:a:w:l:Vhk:q:g:dvuNncm:s:ir:f:T:L:C:O$:";
+const char *optstring_Cassys = ":bp:t:a:w:l:Vhk:q:g:dvuNncm:s:ir:f:T:L:C:O$:x:";
 const struct option_TS lopts_Cassys[] = {
   {"text", required_argument_TS, NULL, 't'},
   {"alphabet", required_argument_TS, NULL, 'a'},
@@ -75,6 +75,7 @@ const struct option_TS lopts_Cassys[] = {
   {"input_offsets",required_argument_TS,NULL,'$'},
   {"produce_offsets_file",no_argument_TS,NULL,'O'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"istex",required_argument_TS,NULL,'x'},
   {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -689,7 +690,7 @@ int main_Cassys(int argc,char* const argv[]) {
     int dump_graph = 0; // By default, don't build a .dot file.
     int display_perf = 0;
     int produce_offsets_file = 0;
-
+	int istex_param = 0;
 // define CASSYS_DEFAULT_TEMP_WORK_DIR with a default location (probably in virtual system file) to
 //  build a version of k6 which uses this temp location and perform cleanup
 #ifdef CASSYS_DEFAULT_TEMP_WORK_DIR
@@ -1102,6 +1103,28 @@ int main_Cassys(int argc,char* const argv[]) {
             }
             break;
         }
+        case 'x': {
+			if (options.vars()->optarg[0] != '\0') {
+				if(strcmp(options.vars()->optarg,"standoff")==0) {
+					istex_param = 2;
+				}
+				else if(strcmp(options.vars()->optarg,"token")==0) {
+					istex_param = 1;
+				}
+			}
+			else {
+                error("You must specify an argument for istex\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;       				
+			}
+			break;
+		}
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
