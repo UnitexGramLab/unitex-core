@@ -96,6 +96,68 @@ static inline int is_unicode_space(unichar c) {
     return 0;
 }
 
+
+/**
+ * The Ustring version, in order to avoid buffer overflow in result.
+ * Note that this version appends the string to result instead of replacing
+ * its previous content.
+ */
+/**
+ * this is a modified version of parse_string from StringParsing, considering
+ * forbidden_chars = '\r' or '\n'
+ * stop_char = '{' or '}'
+ * chars_to_keep_protected = NULL
+ * AND a modification: if a PROTECTION_CHAR is just before a \n or \r, we don't
+ *   consider is at PROTECTION_CHAR, because a text in brace cannot contain them
+ */
+static int parse_string_into_brace(const unichar* s,int *ptr,Ustring* result) {
+if (s[*ptr]=='\0') return P_EOS;
+while (s[*ptr]!='\0') {
+   int is_protection_char=0;
+   if (s[*ptr]==PROTECTION_CHAR) {
+
+      if (s[(*ptr)+1]=='\0') {
+         /* It must not appear at the end of the string */
+         return P_BACKSLASH_AT_END;
+      }
+      
+      if ((s[(*ptr) + 1] != '\r') && (s[(*ptr)+1]!='\n')) {
+         /* If there is a protection character (backslash) before end of line, we do like this is not a protection char */
+		 is_protection_char=1;
+      }
+   }
+
+   if (is_protection_char) {
+      /* If there is a protection character (backslash) */
+      if (s[(*ptr)+1]=='\0') {
+         /* It must not appear at the end of the string */
+         return P_BACKSLASH_AT_END;
+      }
+      //if (chars_to_keep_protected==NULL) IS TRUE
+	  {
+         /* If the character must keep its backslash (only when chars_to_keep_protected is not NULL) */
+         u_strcat(result,PROTECTION_CHAR);
+      }
+      u_strcat(result,s[(*ptr)+1]);
+      (*ptr)=(*ptr)+2;
+   } else {
+      /* If we have an unprotected character */
+      if ((s[*ptr] == '{') || (s[*ptr] == '}')) {
+         /* If it is a stop char, we have finished */
+         return P_OK;
+      }
+      if ((s[*ptr] == '\n') || (s[*ptr] == '\r')) {
+         /* If it is a forbidden char, it's an error */
+         return P_FORBIDDEN_CHAR;
+      }
+      /* If it's a normal char, we copy it */
+      u_strcat(result,s[(*ptr)++]);
+   }
+}
+/* If we arrive here, we have reached the end of the string without error */
+return P_OK;
+}
+
 /**
  * This function produces a normalized version of 'input' and stores it into 'ouput'.
  * The following rules are applied in the given order:
@@ -238,8 +300,7 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 				current_start_pos++;
 
 				u_strcpy(tmp,"{");
-				int code = parse_string(buff, &current_start_pos, tmp,
-						stop_chars, forbidden_chars, NULL);
+				int code = parse_string_into_brace(buff, &current_start_pos, tmp);
 				if (code == P_FORBIDDEN_CHAR || code == P_BACKSLASH_AT_END
 						|| buff[current_start_pos] != '}') {
 					/* If we have found a new line or a {, or if there is
