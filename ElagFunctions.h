@@ -19,9 +19,9 @@
  *
  */
 
-/* Nom 		: elag-functions.h */
-/* Date 	: juin 98 */
-/* Auteur(s) 	: MAYER Laurent et al */
+/* Nom          : elag-functions.h */
+/* Date         : juin 98 */
+/* Auteur(s)    : MAYER Laurent et al */
 
 #ifndef ElagFunctionsH
 #define ElagFunctionsH
@@ -38,7 +38,7 @@
 namespace unitex {
 
 void remove_ambiguities(const char* input_tfst,vector_ptr* grammars,const char* output_tfst, const VersatileEncodingConfig*,
-		language_t* language);
+        language_t* language,int save_statistics);
 void explode_tfst(const char* input_tfst,const char* output_tfst, const VersatileEncodingConfig*,language_t* language,struct hash_table* form_frequencies);
 vector_ptr* load_elag_grammars(const VersatileEncodingConfig*,const char* filename,language_t* language,const char* directory);
 

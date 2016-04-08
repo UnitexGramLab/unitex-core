@@ -59,7 +59,7 @@ vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
  */
-void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* output, const VersatileEncodingConfig* vec,language_t* language) {
+void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* output, const VersatileEncodingConfig* vec,language_t* language,int save_statistics) {
    Elag_Tfst_file_in* input=load_tfst_file(vec,input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
@@ -105,7 +105,7 @@ void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* ou
       if (tfst->automaton->number_of_states<2) {
          /* If the sentence is empty, we replace the sentence automaton
           * by a 1-state automaton with no transition. */
-    	 error("Sentence %d is empty\n",current_sentence);
+         error("Sentence %d is empty\n",current_sentence);
          free_SingleGraph(tfst->automaton,free_symbol);
          tfst->automaton=new_SingleGraph(1,PTR_TAGS);
          SingleGraphState initial_state=add_state(tfst->automaton);
@@ -199,23 +199,25 @@ void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* ou
          N, nb_unloadable, n_rejected_sentences);
 
    /* Finally, we save statistics */
-   char tfst_tags_by_freq[FILENAME_MAX];
-   char tfst_tags_by_alph[FILENAME_MAX];
-   get_path(input_tfst,tfst_tags_by_freq);
-   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
-   get_path(input_tfst,tfst_tags_by_alph);
-   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
-   U_FILE* f_tfst_tags_by_freq=u_fopen(vec,tfst_tags_by_freq,U_WRITE);
-   if (f_tfst_tags_by_freq==NULL) {
-   	error("Cannot open %s\n",tfst_tags_by_freq);
+   if (save_statistics) {
+       char tfst_tags_by_freq[FILENAME_MAX];
+       char tfst_tags_by_alph[FILENAME_MAX];
+       get_path(input_tfst, tfst_tags_by_freq);
+       strcat(tfst_tags_by_freq, "tfst_tags_by_freq.new.txt");
+       get_path(input_tfst, tfst_tags_by_alph);
+       strcat(tfst_tags_by_alph, "tfst_tags_by_alph.new.txt");
+       U_FILE* f_tfst_tags_by_freq = u_fopen(vec, tfst_tags_by_freq, U_WRITE);
+       if (f_tfst_tags_by_freq == NULL) {
+           error("Cannot open %s\n", tfst_tags_by_freq);
+       }
+       U_FILE* f_tfst_tags_by_alph = u_fopen(vec, tfst_tags_by_alph, U_WRITE);
+       if (f_tfst_tags_by_alph == NULL) {
+           error("Cannot open %s\n", tfst_tags_by_alph);
+       }
+       sort_and_save_tfst_stats(form_frequencies, f_tfst_tags_by_freq, f_tfst_tags_by_alph);
+       u_fclose(f_tfst_tags_by_freq);
+       u_fclose(f_tfst_tags_by_alph);
    }
-   U_FILE* f_tfst_tags_by_alph=u_fopen(vec,tfst_tags_by_alph,U_WRITE);
-   if (f_tfst_tags_by_alph==NULL) {
-   	error("Cannot open %s\n",tfst_tags_by_alph);
-   }
-   sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
-   u_fclose(f_tfst_tags_by_freq);
-   u_fclose(f_tfst_tags_by_alph);
    free_hash_table(form_frequencies);
 }
 
@@ -236,7 +238,7 @@ void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* ou
  * tfst_tags_by_freq/alph.txt or tfst_tags_by_freq/alph.new.txt
  */
 void explode_tfst(const char* input_tfst,const char* output, const VersatileEncodingConfig* vec,language_t* language,
-		hash_table* form_frequencies) {
+        hash_table* form_frequencies) {
    static const unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static const unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
@@ -271,7 +273,7 @@ void explode_tfst(const char* input_tfst,const char* output, const VersatileEnco
       }
       vector_ptr* new_tags=convert_elag_symbols_to_tfst_tags(input);
       save_current_sentence(input->tfst,output_tfst,output_tind,(unichar**)new_tags->tab,new_tags->nbelems,
-								 form_frequencies);
+                                 form_frequencies);
       free_vector_ptr(new_tags,free);
    }
    tfst_file_close_in(input);

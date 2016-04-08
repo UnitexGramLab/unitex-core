@@ -57,6 +57,7 @@ const char* usage_Elag =
          "  -l LANG/--language=LANG: language definition file\n"
          "  -r RULES/--rules=RULES: compiled elag rules file\n"
          "  -o OUT/--output=OUT: resulting output .tfst file\n"
+         "  -S/--no_statistics: do not produce statistics file\n"
          "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
@@ -69,7 +70,7 @@ static void usage() {
 }
 
 
-const char* optstring_Elag=":l:r:o:Vhk:q:";
+const char* optstring_Elag=":l:r:o:Vhk:q:S";
 const struct option_TS lopts_Elag[]= {
   {"language",required_argument_TS,NULL,'l'},
   {"rules",required_argument_TS,NULL,'r'},
@@ -77,6 +78,7 @@ const struct option_TS lopts_Elag[]= {
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"output_encoding",required_argument_TS,NULL,'q'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"no_statistics",no_argument_TS,NULL,'S'},
   {"help",no_argument_TS,NULL,'h'},
   {NULL,no_argument_TS,NULL,0}
 };
@@ -90,6 +92,7 @@ if (argc==1) {
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+int save_statistics=1;
 char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
@@ -129,13 +132,15 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Elag,lopts_Elag,&index))
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'S': save_statistics = 0;
+             break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Elag[index].name);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;
@@ -182,7 +187,7 @@ if ((grammars=load_elag_grammars(&vec,rule_file,lang,directory)) == NULL) {
 }
 u_printf("Grammars are loaded.\n");
 
-remove_ambiguities(input_tfst,grammars,output_tfst,&vec,lang);
+remove_ambiguities(input_tfst,grammars,output_tfst,&vec,lang,save_statistics);
 free_vector_ptr(grammars,(release_f)free_Fst2Automaton_including_symbols);
 free_language_t(lang);
 return SUCCESS_RETURN_CODE;

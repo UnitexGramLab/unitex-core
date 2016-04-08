@@ -85,16 +85,16 @@ if (length<MAX_TOKENS_IN_SENTENCE && control==1 && buffer[length]==SENTENCE_MARK
    (*total)++;
 }
 if (control==0) {
-	/* If we have reached the end of file, we make sure that we really have a sentence
-	 * and not just only remaining spaces after the last {S} */
-	int only_spaces=1;
-	for (int i=0;i<length;i++) {
-		if (buffer[i]!=SPACE) {
-			only_spaces=0;
-			break;
-		}
-	}
-	if (only_spaces) return 0;
+   /* If we have reached the end of file, we make sure that we really have a sentence
+    * and not just only remaining spaces after the last {S} */
+   int only_spaces=1;
+   for (int i=0;i<length;i++) {
+       if (buffer[i]!=SPACE) {
+           only_spaces=0;
+           break;
+       }
+   }
+   if (only_spaces) return 0;
 }
 if (length==0) return 0;
 *N=length;
@@ -115,6 +115,7 @@ const char* usage_Txt2Tfst =
          "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
          "  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
          "  -K/--korean: tells Txt2Tfst that it works on Korean\n"
+         "  -S/--no_statistics: do not produce statistics file\n"
          "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
@@ -131,7 +132,7 @@ static void usage() {
 }
 
 
-const char* optstring_Txt2Tfst=":a:cn:t:KVhk:q:";
+const char* optstring_Txt2Tfst=":a:cn:t:KVhk:q:S";
 const struct option_TS lopts_Txt2Tfst[]={
   {"alphabet", required_argument_TS, NULL, 'a'},
   {"clean", no_argument_TS, NULL, 'c'},
@@ -142,6 +143,7 @@ const struct option_TS lopts_Txt2Tfst[]={
   {"help", no_argument_TS, NULL, 'h'},
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"output_encoding",required_argument_TS,NULL,'q'},
+  {"no_statistics",no_argument_TS,NULL,'S'},
   {NULL, no_argument_TS, NULL, 0}
 };
 
@@ -152,6 +154,7 @@ if (argc==1) {
    return SUCCESS_RETURN_CODE;
 }
 
+int save_statistics=1;
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
@@ -183,6 +186,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,
              strcpy(tagset,options.vars()->optarg);
              break;
    case 'K': is_korean=1;
+             break;
+   case 'S': save_statistics = 0;
              break;
    case 'V': only_verify_arguments = true;
              break;
@@ -225,7 +230,7 @@ if (is_korean) {
       error("-n option is ignored when -k is used\n");
    }
    if (tagset[0]!='\0') {
-      // TODO(martinec) change this by a warning    
+      // TODO(martinec) change this by a warning
       error("-t option is ignored when -k is used\n");
    }
 }
@@ -323,7 +328,7 @@ if (tind==NULL) {
   delete korean;
   free_alphabet(alph);
   free_DELA_tree(tree);
-  return DEFAULT_ERROR_CODE;   
+  return DEFAULT_ERROR_CODE;
 }
 
 struct normalization_tree* normalization_tree=NULL;
@@ -344,7 +349,7 @@ if (f_enter==NULL) {
 else {
    n_enter_char=(int)(get_file_size(f_enter)/4);
    enter_pos=(int*)malloc(sizeof(int)*n_enter_char);
-   if (enter_pos==NULL  || 
+   if (enter_pos==NULL  ||
       (enter_pos!=NULL  && n_enter_char!=(int)fread(enter_pos,sizeof(int),n_enter_char,f_enter))) {
       enter_pos==NULL ? alloc_error("main_Txt2Tfst") :
                         error("I/O error in main on file %d %s\n",n_enter_char,enter_pos_f);
@@ -367,7 +372,7 @@ strcat(snt_offsets_pos,"snt_offsets.pos");
 
 vector_int* snt_offsets=load_snt_offsets(snt_offsets_pos);
 if (snt_offsets==NULL) {
-	error("Cannot load offset file %s\n",snt_offsets_pos);
+  error("Cannot load offset file %s\n",snt_offsets_pos);
   free(enter_pos);
   free_normalization_tree(normalization_tree);
   u_fclose(tind);
@@ -377,7 +382,7 @@ if (snt_offsets==NULL) {
   delete korean;
   free_alphabet(alph);
   free_DELA_tree(tree);
-  return DEFAULT_ERROR_CODE;  
+  return DEFAULT_ERROR_CODE;
 }
 
 language_t* language=NULL;
@@ -416,25 +421,27 @@ u_fclose(f);
 free(enter_pos);
 free_vector_int(snt_offsets);
 /* Finally, we save statistics */
-char tfst_tags_by_freq[FILENAME_MAX];
-char tfst_tags_by_alph[FILENAME_MAX];
-get_snt_path(argv[options.vars()->optind],tfst_tags_by_freq);
-strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
-get_snt_path(argv[options.vars()->optind],tfst_tags_by_alph);
-strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
-U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
-if (f_tfst_tags_by_freq==NULL) {
-	error("Cannot open %s\n",tfst_tags_by_freq);
-}
-U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
-if (f_tfst_tags_by_alph==NULL) {
-	error("Cannot open %s\n",tfst_tags_by_alph);
-}
+if (save_statistics) {
+    char tfst_tags_by_freq[FILENAME_MAX];
+    char tfst_tags_by_alph[FILENAME_MAX];
+    get_snt_path(argv[options.vars()->optind], tfst_tags_by_freq);
+    strcat(tfst_tags_by_freq, "tfst_tags_by_freq.txt");
+    get_snt_path(argv[options.vars()->optind], tfst_tags_by_alph);
+    strcat(tfst_tags_by_alph, "tfst_tags_by_alph.txt");
+    U_FILE* f_tfst_tags_by_freq = u_fopen(&vec, tfst_tags_by_freq, U_WRITE);
+    if (f_tfst_tags_by_freq == NULL) {
+        error("Cannot open %s\n", tfst_tags_by_freq);
+    }
+    U_FILE* f_tfst_tags_by_alph = u_fopen(&vec, tfst_tags_by_alph, U_WRITE);
+    if (f_tfst_tags_by_alph == NULL) {
+        error("Cannot open %s\n", tfst_tags_by_alph);
+    }
 
-sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
+    sort_and_save_tfst_stats(form_frequencies, f_tfst_tags_by_freq, f_tfst_tags_by_alph);
 
-u_fclose(f_tfst_tags_by_alph);
-u_fclose(f_tfst_tags_by_freq);
+    u_fclose(f_tfst_tags_by_alph);
+    u_fclose(f_tfst_tags_by_freq);
+}
 free_hash_table(form_frequencies);
 free_Ustring(text);
 free_language_t(language);

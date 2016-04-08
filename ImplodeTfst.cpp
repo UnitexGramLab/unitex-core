@@ -51,6 +51,7 @@ const char* usage_ImplodeTfst =
          "OPTIONS:\n"
          "  -o OUT/--output=OUT: resulting text automaton. By default, the input\n"
          "                       text automaton is modified.\n"
+         "  -S/--no_statistics: do not produce statistics file\n"
          "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
@@ -64,12 +65,13 @@ static void usage() {
 }
 
 
-const char* optstring_ImplodeTfst=":o:Vhk:q:";
+const char* optstring_ImplodeTfst=":o:Vhk:q:S";
 const struct option_TS lopts_ImplodeTfst[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"output_encoding",required_argument_TS,NULL,'q'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"no_statistics",no_argument_TS,NULL,'S'},
   {"help",no_argument_TS,NULL,'h'},
   {NULL,no_argument_TS,NULL,0}
 };
@@ -83,6 +85,7 @@ if (argc==1) {
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
+int save_statistics=1;
 char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
@@ -98,13 +101,15 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ImplodeTfst,lopts_Implod
              }
              strcpy(output_tfst,options.vars()->optarg);
              break;
+   case 'S': save_statistics = 0;
+             break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_ImplodeTfst[index].name);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 return USAGE_ERROR_CODE;
@@ -165,10 +170,10 @@ if (f_tfst==NULL) {
 
 U_FILE* f_tind=u_fopen(BINARY,output_tind,U_WRITE);
 if (f_tind==NULL) {
-   error("Cannot open '%s' for writing\n",output_tind);  
+   error("Cannot open '%s' for writing\n",output_tind);
    u_fclose(f_tfst);
    close_text_automaton(tfst);
-   return DEFAULT_ERROR_CODE;  
+   return DEFAULT_ERROR_CODE;
 }
 
 /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
@@ -182,36 +187,40 @@ u_fclose(f_tfst);
 close_text_automaton(tfst);
 
 /* We save statistics */
-char tfst_tags_by_freq[FILENAME_MAX];
-char tfst_tags_by_alph[FILENAME_MAX];
-get_path(input_tfst,tfst_tags_by_freq);
+if (save_statistics) {
+    char tfst_tags_by_freq[FILENAME_MAX];
+    char tfst_tags_by_alph[FILENAME_MAX];
+    get_path(input_tfst, tfst_tags_by_freq);
 
-if (elag) {
-	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.new.txt");
-} else {
-	   strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
+    if (elag) {
+        strcat(tfst_tags_by_freq, "tfst_tags_by_freq.new.txt");
+    }
+    else {
+        strcat(tfst_tags_by_freq, "tfst_tags_by_freq.txt");
+    }
+    get_path(input_tfst, tfst_tags_by_alph);
+    if (elag) {
+        strcat(tfst_tags_by_alph, "tfst_tags_by_alph.new.txt");
+    }
+    else {
+        strcat(tfst_tags_by_alph, "tfst_tags_by_alph.txt");
+    }
+
+    U_FILE* f_tfst_tags_by_freq = u_fopen(&vec, tfst_tags_by_freq, U_WRITE);
+    if (f_tfst_tags_by_freq == NULL) {
+        error("Cannot open %s\n", tfst_tags_by_freq);
+    }
+
+    U_FILE* f_tfst_tags_by_alph = u_fopen(&vec, tfst_tags_by_alph, U_WRITE);
+    if (f_tfst_tags_by_alph == NULL) {
+        error("Cannot open %s\n", tfst_tags_by_alph);
+    }
+
+    sort_and_save_tfst_stats(form_frequencies, f_tfst_tags_by_freq, f_tfst_tags_by_alph);
+
+    u_fclose(f_tfst_tags_by_freq);
+    u_fclose(f_tfst_tags_by_alph);
 }
-get_path(input_tfst,tfst_tags_by_alph);
-if (elag) {
-	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.new.txt");
-} else {
-	   strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
-}
-
-U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
-if (f_tfst_tags_by_freq==NULL) {
-	error("Cannot open %s\n",tfst_tags_by_freq);
-}
-
-U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
-if (f_tfst_tags_by_alph==NULL) {
-	error("Cannot open %s\n",tfst_tags_by_alph);
-}
-
-sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
-
-u_fclose(f_tfst_tags_by_freq);
-u_fclose(f_tfst_tags_by_alph);
 free_hash_table(form_frequencies);
 
 /* Finally, we rename files if we must modify the input text automaton */

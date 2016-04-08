@@ -48,7 +48,8 @@ const char* usage_RebuildTfst =
       "  <tfst>: text automaton to be rebuilt\n"
       "\n"
       "OPTIONS:\n"
-      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"      
+      "  -S/--no_statistics: do not produce statistics file\n"
+      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
       "  -h/--help: this help\n"
       "\n"
       "Rebuilds the text automaton taking into account sentence graphs that have\n"
@@ -68,11 +69,12 @@ unichar** create_tfst_tags(Fst2* fst2,int *n_tags);
 const char* optstring_RebuildTfst=":Vhk:q:";
 
 const struct option_TS lopts_RebuildTfst[]= {
-  { "input_encoding",required_argument_TS,NULL,'k'},
-  { "output_encoding",required_argument_TS,NULL,'q'},
-  { "only_verify_arguments",no_argument_TS,NULL,'V'},
-  {"help", no_argument_TS, NULL, 'h' },
-  { NULL, no_argument_TS, NULL, 0 }
+  {"input_encoding",required_argument_TS,NULL,'k'},
+  {"output_encoding",required_argument_TS,NULL,'q'},
+  {"only_verify_arguments",no_argument_TS,NULL,'V'},
+  {"no_statistics",no_argument_TS,NULL,'S'},
+  {"help", no_argument_TS,NULL,'h'},
+  {NULL, no_argument_TS,NULL,0}
 };
 
 
@@ -86,6 +88,7 @@ VersatileEncodingConfig vec=VEC_DEFAULT;
 int val, index=-1;
 bool only_verify_arguments = false;
 UnitexGetOpt options;
+int save_statistics=1;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_RebuildTfst,lopts_RebuildTfst,&index))) {
    switch (val) {
    case 'k': if (options.vars()->optarg[0]=='\0') {
@@ -100,14 +103,16 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_RebuildTfst,lopts_Rebuil
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
+   case 'S': save_statistics = 0;
+             break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h':
       usage();
       return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
                          error("Missing argument for option --%s\n", lopts_RebuildTfst[index].name);
-     return USAGE_ERROR_CODE;                    
+     return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n", options.vars()->optopt) :
                          error("Invalid option --%s\n", options.vars()->optarg);
      return USAGE_ERROR_CODE;
@@ -210,23 +215,25 @@ u_fclose(f_tfst);
 close_text_automaton(tfst);
 
 /* Finally, we save statistics */
-char tfst_tags_by_freq[FILENAME_MAX];
-char tfst_tags_by_alph[FILENAME_MAX];
-strcpy(tfst_tags_by_freq,basedir);
-strcat(tfst_tags_by_freq,"tfst_tags_by_freq.txt");
-strcpy(tfst_tags_by_alph,basedir);
-strcat(tfst_tags_by_alph,"tfst_tags_by_alph.txt");
-U_FILE* f_tfst_tags_by_freq=u_fopen(&vec,tfst_tags_by_freq,U_WRITE);
-if (f_tfst_tags_by_freq==NULL) {
-	error("Cannot open %s\n",tfst_tags_by_freq);
+if (save_statistics) {
+    char tfst_tags_by_freq[FILENAME_MAX];
+    char tfst_tags_by_alph[FILENAME_MAX];
+    strcpy(tfst_tags_by_freq, basedir);
+    strcat(tfst_tags_by_freq, "tfst_tags_by_freq.txt");
+    strcpy(tfst_tags_by_alph, basedir);
+    strcat(tfst_tags_by_alph, "tfst_tags_by_alph.txt");
+    U_FILE* f_tfst_tags_by_freq = u_fopen(&vec, tfst_tags_by_freq, U_WRITE);
+    if (f_tfst_tags_by_freq == NULL) {
+        error("Cannot open %s\n", tfst_tags_by_freq);
+    }
+    U_FILE* f_tfst_tags_by_alph = u_fopen(&vec, tfst_tags_by_alph, U_WRITE);
+    if (f_tfst_tags_by_alph == NULL) {
+        error("Cannot open %s\n", tfst_tags_by_alph);
+    }
+    sort_and_save_tfst_stats(form_frequencies, f_tfst_tags_by_freq, f_tfst_tags_by_alph);
+    u_fclose(f_tfst_tags_by_freq);
+    u_fclose(f_tfst_tags_by_alph);
 }
-U_FILE* f_tfst_tags_by_alph=u_fopen(&vec,tfst_tags_by_alph,U_WRITE);
-if (f_tfst_tags_by_alph==NULL) {
-	error("Cannot open %s\n",tfst_tags_by_alph);
-}
-sort_and_save_tfst_stats(form_frequencies,f_tfst_tags_by_freq,f_tfst_tags_by_alph);
-u_fclose(f_tfst_tags_by_freq);
-u_fclose(f_tfst_tags_by_alph);
 free_hash_table(form_frequencies);
 
 /* make a backup and replace old automaton with new */
