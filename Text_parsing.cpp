@@ -1206,6 +1206,12 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				fatal_error("Unexpected morphological mode end tag $>\n");
 				break;
 
+			// avoid ‘META_LETTER’ and ‘META_LETTRE’ not handled in switch warning
+			case META_LETTER:
+			case META_LETTRE:
+			  // do nothing
+			  break;
+
 			case META_LEFT_CONTEXT:
 				int current_shift = p->left_ctx_shift;
 				if (p->space_policy == START_WITH_SPACE) {
@@ -1231,7 +1237,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 				p->left_ctx_base = old_left_ctx_stack_base;
 				p->stack->stack_pointer = stack_top;
 				break;
-
 			} /* End of the switch */
 
 			if (start != -1) {
