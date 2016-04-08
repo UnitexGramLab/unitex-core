@@ -8,11 +8,70 @@ Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unite
     cd unitex-core/build
     make DEBUG=yes UNITEXTOOLLOGGERONLY=yes
 
-## Core Tests
+## Contributing
 
-If your are developing or improving a Unitex Core functionality you can, and should,
-contribute tests for it. To get further details check the
-[unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository.
+We welcome everyone to contribute to improve the Unitex Core by [forking this repository](https://help.github.com/articles/fork-a-repo/)
+and [sending pull requests](https://help.github.com/articles/using-pull-requests/)
+with your changes. The recommended [workflow](http://rypress.com/tutorials/git/rebasing) to contribute is:
+
+1. [Fork us](https://github.com/UnitexGramLab/unitex-core/fork)
+
+1. Clone your fork locally
+
+    ```
+    git clone https://github.com/YOUR_GITHUB_USERNAME/unitex-core.git
+    ```
+
+1. Create a local branch for your changes.
+
+    ```
+    git checkout -b my-changes master
+    ```
+
+1. For non-trivial changes, if it doesn't already exist, create a
+   [new issue](https://github.com/UnitexGramLab/unitex-core/issues/new)
+
+1. Edit files and compile your code
+
+1. Execute [`./unitex-core-test.sh -M1`](https://github.com/UnitexGramLab/unitex-core-tests)
+   to run non-regression and memory error detection tests
+
+1. Commit your code referring in the [commit message](https://help.github.com/articles/closing-issues-via-commit-messages) the issue you worked on
+
+1. Make sure your fork is up to date
+
+    ```
+    git checkout master
+    git pull upstream
+    ```
+
+1. [Rebase](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase-i) your local branch
+
+    ```
+    git checkout my-changes
+    git rebase master
+    ```
+
+1. Merge back into master
+
+    ```
+    git checkout master
+    git merge my-changes
+    ```
+
+1. Push your changes to your remote repository on GitHub
+
+    ```
+    git push
+    ```
+
+1. [Request a pull](https://github.com/UnitexGramLab/unitex-core/pulls).
+
+1. Give a brief description and [refer the issues](https://help.github.com/articles/autolinked-references-and-urls/#issues-and-pull-requests) in your pull request comment
+
+1. Finally, if your are developing or improving a new functionality or module, you can,
+   and should, contribute tests for it. To get further details check the
+   [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository.
     
 ## Documentation
 
@@ -58,11 +117,6 @@ Unitex Project-oriented IDE as "GramLab". If you are mentioning the
 distribution suite (Core, IDE, Linguistic Resources and others bundled
 tools) always use "Unitex/GramLab".
 
-## Contributing
-
-We welcome everyone to contribute to improve this project. Below are some of the things that you can do to contribute:
-
--  [Fork us](https://github.com/UnitexGramLab/gramlab-ide/fork) and [request a pull](https://github.com/UnitexGramLab/gramlab-ide/pulls) to the [develop branch](https://github.com/UnitexGramLab/gramlab-ide/tree/develop).
 
 ## License
 
