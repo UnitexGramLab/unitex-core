@@ -12,7 +12,7 @@ Unitex is the Natural Language Processing (NLP) engine of [Unitex/GramLab][unite
 
 We welcome everyone to contribute to improve the Unitex Core by [forking this repository](https://help.github.com/articles/fork-a-repo/)
 and [sending pull requests](https://help.github.com/articles/using-pull-requests/)
-with your changes. The recommended [workflow](http://rypress.com/tutorials/git/rebasing) to contribute is:
+with their changes. The recommended [workflow](http://rypress.com/tutorials/git/rebasing) to contribute is:
 
 1. [Fork us](https://github.com/UnitexGramLab/unitex-core/fork)
 
