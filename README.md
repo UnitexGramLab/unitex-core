@@ -22,7 +22,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
     git clone https://github.com/YOUR_GITHUB_USERNAME/unitex-core.git
     ```
 
-1. Create a local branch for your changes.
+1. Create a local branch for your changes
 
     ```
     git checkout -b my-changes master
@@ -31,7 +31,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 1. For non-trivial changes, if it doesn't already exist, create a
    [new issue](https://github.com/UnitexGramLab/unitex-core/issues/new)
 
-1. Edit files and compile your code following the *How to Build* instructions above.
+1. Edit files and compile your code following the *How to Build* instructions above
 
 1. Execute [`./unitex-core-test.sh -M1`](https://github.com/UnitexGramLab/unitex-core-tests#getting-started)
    to run non-regression and memory error detection tests. Note that is not necessary or even
@@ -69,13 +69,13 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
     git push
     ```
 
-1. [Request a pull](https://github.com/UnitexGramLab/unitex-core/pulls).
+1. [Request a pull](https://github.com/UnitexGramLab/unitex-core/pulls)
 
 1. Give a brief description and [refer the issues](https://help.github.com/articles/autolinked-references-and-urls/#issues-and-pull-requests) in your pull request comment
 
 1. Finally, if your are developing or improving a new functionality or module, you can,
    and should, contribute tests for it. To get further details check the
-   [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository.
+   [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository
     
 ## Documentation
 
