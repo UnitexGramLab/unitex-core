@@ -38,7 +38,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
    recommended to fork the [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository.
    In this case, since you need only to run the `unitex-core-test.sh` script, make sure only your local repository
    is up-to-date by [pulling](https://help.github.com/articles/fetching-a-remote/#pull) the latest
-   remote changes.
+   remote changes
 
 1. Commit your code referring in the [commit message](https://help.github.com/articles/closing-issues-via-commit-messages) the issue you worked on
 
@@ -71,7 +71,8 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 
 1. [Request a pull](https://github.com/UnitexGramLab/unitex-core/pulls)
 
-1. Give a brief description and [refer the issues](https://help.github.com/articles/autolinked-references-and-urls/#issues-and-pull-requests) in your pull request comment
+1. Give a brief description and [refer the issues](https://help.github.com/articles/autolinked-references-and-urls/#issues-and-pull-requests)
+   in your pull request comment
 
 1. Finally, if your are developing or improving a new functionality or module, you can,
    and should, contribute tests for it. To get further details check the
