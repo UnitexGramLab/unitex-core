@@ -31,7 +31,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 1. For non-trivial changes, if it doesn't already exist, create a
    [new issue](https://github.com/UnitexGramLab/unitex-core/issues/new)
 
-1. Edit files and [compile your code][#how-to-build]
+1. Edit files and [compile your code](#how-to-build)
 
 1. Execute [`./unitex-core-test.sh -M1`](https://github.com/UnitexGramLab/unitex-core-tests#getting-started)
    to run non-regression and memory error detection tests. Note that is not necessary or even
