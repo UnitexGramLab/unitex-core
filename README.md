@@ -80,10 +80,11 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
     
 ## Documentation
 
-User's Manual (in PDF format) is available in English and French (more
-translations are welcome). You can view and print them with Evince,
-downloadable [here](https://wiki.gnome.org/Apps/Evince/Downloads). The
-latest version of the User's Manual is accessible
+User's Manual (in PDF format) is available in English and French ([more
+translations are welcome](https://github.com/UnitexGramLab/unitex-doc-usermanual)).
+You can view and print them with Evince, downloadable
+[here](https://wiki.gnome.org/Apps/Evince/Downloads).
+The latest version of the User's Manual is accessible
 [here](http://releases.unitexgramlab.org/latest-stable/man/).
 
 ## Support
