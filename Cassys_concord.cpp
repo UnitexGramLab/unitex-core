@@ -203,7 +203,45 @@ locate_pos *read_concord_line(const unichar *line) {
 	return l;
 }
 
-
+void construct_istex_token(const char *text_name, VersatileEncodingConfig* vec,
+        const char* original_file) {
+    char text_name_without_extension[FILENAME_MAX];
+    char result_file[FILENAME_MAX];
+    text_name_without_extension[0] = '\0';
+    result_file[0] = '\0';
+    size_t size_buffer_line = 0;
+    unichar *line = NULL;
+    unichar *newline = NULL;
+    U_FILE *token_file = u_fopen(vec, text_name, U_READ);
+    remove_extension(original_file, text_name_without_extension);
+    sprintf(result_file,"%s_token.txt",text_name_without_extension);
+    U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
+    if(token_file != NULL && out_file != NULL) {
+        while(u_fgets_dynamic_buffer(&line, 
+                &size_buffer_line, token_file) != EOF) {
+            if(line !=NULL && line[0] == '{') {
+                int limit = u_strlen(line) - 1;
+                int pos = limit;
+                newline = (unichar*) malloc(sizeof(unichar)*(limit+2));
+                for(int k=limit; k>0; k--) {
+                    if(line[k] == '}') {
+                        pos = k;
+                        break;
+                    }
+                }
+                for(int i=0; i<pos+1; i++) {
+                    newline[i] = line[i];
+                }
+                newline[pos+1] = '\0';
+                u_fprintf(out_file,"%S\n",xmlizeConcordLine(newline));
+            }
+        }
+        free(line);
+        free(newline);
+        u_fclose(token_file);
+        u_fclose(out_file);
+    }
+}
 
 
 

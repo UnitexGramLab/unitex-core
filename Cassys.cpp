@@ -690,7 +690,7 @@ int main_Cassys(int argc,char* const argv[]) {
     int dump_graph = 0; // By default, don't build a .dot file.
     int display_perf = 0;
     int produce_offsets_file = 0;
-	int istex_param = 0;
+    int istex_param = 0;
 // define CASSYS_DEFAULT_TEMP_WORK_DIR with a default location (probably in virtual system file) to
 //  build a version of k6 which uses this temp location and perform cleanup
 #ifdef CASSYS_DEFAULT_TEMP_WORK_DIR
@@ -1104,15 +1104,15 @@ int main_Cassys(int argc,char* const argv[]) {
             break;
         }
         case 'x': {
-			if (options.vars()->optarg[0] != '\0') {
-				if(strcmp(options.vars()->optarg,"standoff")==0) {
-					istex_param = 2;
-				}
-				else if(strcmp(options.vars()->optarg,"token")==0) {
-					istex_param = 1;
-				}
-			}
-			else {
+            if (options.vars()->optarg[0] != '\0') {
+		if(strcmp(options.vars()->optarg,"standoff")==0) {
+                    istex_param = 2;
+		}
+		else if(strcmp(options.vars()->optarg,"token")==0) {
+                    istex_param = 1;
+		}
+            }
+            else {
                 error("You must specify an argument for istex\n");
                 free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
                 free_vector_ptr(concord_additional_args, free);
@@ -1122,9 +1122,9 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(morpho_dic);
                 free(textbuf);
                 return USAGE_ERROR_CODE;       				
-			}
-			break;
-		}
+            }
+            break;
+	}
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1182,7 +1182,7 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, produce_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
-        dump_graph, realign_token_graph_pointer, display_perf);
+        dump_graph, realign_token_graph_pointer, display_perf, istex_param);
 
     free_fifo(transducer_list);
     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1287,7 +1287,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     const char*negation_operator,
     VersatileEncodingConfig* vec,
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
-    int dump_graph, int realign_token_graph_pointer, int display_perf) {
+    int dump_graph, int realign_token_graph_pointer, int display_perf, int istex_param) {
 
     unsigned int time_tokenize = 0;
     unsigned int time_grf2fst2 = 0;
@@ -1665,8 +1665,14 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
         transducer_number++;
     }
-
-
+    
+    if(istex_param == 1) {
+        int itr = iteration;
+        if (iteration > 0)
+            itr--;
+        construct_istex_token(get_file_in_current_snt(text,transducer_number-1,
+                itr,"tok_by_alph",".txt"),vec,original_text);
+    }
     free_snt_files(snt_text_files);
 
     // create the concord file with XML
