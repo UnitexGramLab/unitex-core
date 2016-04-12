@@ -91,6 +91,9 @@ matrix:
       addons: *gcc5
     - os: osx
       osx_image: xcode6.4
+      compiler: clang
+    - os: osx
+      osx_image: xcode7
       compiler: clang      
   allow_failures:
     - os: osx      
