@@ -33,7 +33,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 
 1. Edit files and compile your code following the *How to Build* instructions above
 
-1. Execute [`./unitex-core-test.sh -M1`](https://github.com/UnitexGramLab/unitex-core-tests#getting-started)
+1. Execute [`./unitex-core-test.sh -p1 -M1`](https://github.com/UnitexGramLab/unitex-core-tests#getting-started)
    to run non-regression and memory error detection tests. Note that is not necessary or even
    recommended to fork the [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository.
    In this case, since you need only to run the `unitex-core-test.sh` script, make sure only your local repository
