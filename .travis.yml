@@ -1,9 +1,17 @@
 # add by martinec
+# =============================================================================
 # based on:
 # https://github.com/mapbox/protozero/blob/master/.travis.yml
 # https://github.com/dftlibs/xcfun/blob/master/.travis.yml
 # https://github.com/clMathLibraries/clBLAS/blob/master/.travis.yml
 # https://github.com/Automattic/_s/blob/master/.travis.yml
+# =============================================================================
+# - To install the Travis CI command line client, which requires
+#   Ruby 1.9.3 and RubyGems, type:
+#   $ gem install travis --no-rdoc --no-ri
+# - To run the command line lint tool, type:
+#   $ travis lint
+# =============================================================================
 
 # language: instructs travis what compilers && environment to set up in build matrix
 language: cpp
