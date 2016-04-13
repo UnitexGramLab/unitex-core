@@ -2015,7 +2015,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 					}
 
 					if (c == 0) {
-						fatal_error("Corrupted UTF8 text file containing null characters\n");
+						error("Corrupted UTF8 text file containing null characters\n");
 					}
 					 
 
