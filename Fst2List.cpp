@@ -1213,10 +1213,6 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
   ofNameTmp[0] = 0;
   switch (display_control) {
   case GRAPH: {
-    listOut = 0;
-    niveau_traite_mot = 1;
-    exploirerSubAuto(1); // mark loop path start nodes
-    prSubGrapheCycle();
     if (recursiveMode == LABEL) {
       error("warning:ignore the option -rl\r\n");
     }
@@ -1272,9 +1268,6 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
   case FULL:
     switch (traitAuto) {
     case SINGLE: {
-      listOut = 0;
-      exploirerSubAuto(1); // mark loop path start nodes
-      prSubGrapheCycle();
       makeOfileName(ofNameTmp, 0, 0);
 
       if (strcmp(ofnameOnly, MAGIC_OUT_STDOUT) == 0) {
@@ -1363,11 +1356,6 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
         if (!foutput) {
           fatal_error("Cannot open file %s\n", ofNameTmp);
         }
-        listOut = 0; // output disable
-
-        exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
-        prSubGrapheCycle();
-        CleanPathCounter();
         listOut = 1; // output enable
         exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
 
@@ -2218,8 +2206,8 @@ int main_Fst2List(int argc, char* const argv[]) {
       break;
     case 'V': only_verify_arguments = true;
               break;
-    case 'h': usage(); 
-              return SUCCESS_RETURN_CODE;      
+    case 'h': usage();
+              return SUCCESS_RETURN_CODE;
     case 'q': {
       char* arg;
       if (argv[iargIndex][2] == '\0') {
