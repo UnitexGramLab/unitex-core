@@ -1685,6 +1685,9 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     remove_extension(original_text, textbuf->text_name_without_extension);
     sprintf(textbuf->result_file_name_XML,"%s_csc.txt", textbuf->text_name_without_extension);
 
+    if(istex_param == 2) {
+        construct_istex_standoff(snt_files->concord_ind,vec,original_text);
+    }
     // make a copy of the last resulting text of the cascade in the file named _csc.txt
     // this result his in XML form
     get_path(text, textbuf->path);
