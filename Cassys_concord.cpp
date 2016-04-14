@@ -209,6 +209,13 @@ struct standOffInfo {
     struct hash_table *entList;
 };
 
+void free_standoff_info(standOffInfo *infos,int num) {
+    for(int i=0; i<num; i++) {
+        free(infos[i].subtype);
+        free(infos[i].type);
+        free_hash_table(infos[i].entList);
+    }
+}
 void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
     for(int i=0; i<num_info; i++) {
         int count = 0;
@@ -235,7 +242,6 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
 
 void getMetaInfo(unichar *e, unichar **s, unichar **t) {
     int entity_len = u_strlen(e);
-    u_printf(" %d ",entity_len);
     if(entity_len>2 && e[0]== '<' && e[entity_len-1]=='>') {
         int i=1;
         int t_start = i;
@@ -262,7 +268,7 @@ void getMetaInfo(unichar *e, unichar **s, unichar **t) {
             i++;
         }
         if(t_end == -1) {
-            t_end = entity_len;
+            t_end = i;
         }
         *t = (unichar*) malloc(sizeof(unichar)* (t_end-t_start+1));
         i=0;
@@ -280,53 +286,25 @@ void getMetaInfo(unichar *e, unichar **s, unichar **t) {
             (*s)[i] = '\0';
         }
     }
-    
 }
-void insertEntityList(standOffInfo **infos, int num_info, unichar *e,
+
+int findEntityList(standOffInfo *infos, int num, unichar *e,
         unichar *s, unichar *t) {
-    *infos = (standOffInfo*)realloc(*infos, (num_info + 1) * sizeof(standOffInfo));
-    infos[num_info]->entList = new_hash_table((HASH_FUNCTION)hash_unichar,
-                                    (EQUAL_FUNCTION)u_equal,(FREE_FUNCTION)free,
-                                    NULL,(KEYCOPY_FUNCTION)keycopy);
-    infos[num_info]->type = (unichar*)malloc(sizeof(unichar) * (u_strlen(t) + 1));
-    u_strcpy(infos[num_info]->type,t);
-    if(s !=NULL) {
-        infos[num_info]->subtype = (unichar*)malloc(sizeof(unichar) * (u_strlen(s) + 1));
-        u_strcpy(infos[num_info]->subtype,s);
-        get_value(infos[num_info]->entList,e,HT_INSERT_IF_NEEDED);
-    }
-}
-void updateEntityList(standOffInfo **infos, int *num, unichar *e,
-        unichar *s, unichar *t) {
-    int num_info = *num;
-    if(num_info == 0) {
-        insertEntityList(infos,num_info,e,s,t);
-        num_info = num_info + 1;
-        *num = num_info;
-        return;
-    }
     int found = -1;
-    for(int i=0; i<num_info; i++) {
-        if(u_strcmp(t,infos[i]->type) == 0) {
-            if(s==NULL && infos[i]->subtype==NULL) {
+    for(int i=0; i<num; i++) {
+        if(u_strcmp(t,infos[i].type) == 0) {
+            if(s==NULL && infos[i].subtype==NULL) {
                 found = i;
                 break;
             }
-            else if(s!=NULL && infos[i]->subtype != NULL && u_strcmp(s,infos[i]->subtype) == 0) {
+            else if(s!=NULL && infos[i].subtype != NULL 
+                    && u_strcmp(s,infos[i].subtype) == 0) {
                     found = i;
                     break;
             }
         }
     }
-    if(found > -1 && found<num_info) {
-        get_value(infos[found]->entList,e,HT_INSERT_IF_NEEDED);
-    }
-    else {
-        insertEntityList(infos,num_info,e,s,t);
-        num_info = num_info + 1;
-        *num = num_info;
-    }
-    
+    return found;
 }
 
 void construct_istex_standoff(const char *text_name, 
@@ -359,13 +337,27 @@ void construct_istex_standoff(const char *text_name,
                         entity[i] = line[k];
                     }
                     entity[limit-pos] = '\0';
-                    unichar *type;
-                    unichar *subtype;
+                    unichar *type = NULL;
+                    unichar *subtype= NULL;
                     getMetaInfo(entity,&subtype,&type);
-                    updateEntityList(&infos,&num_info,entity,subtype,type);
-                    u_printf("--- %d\n",num_info);
-                    if(infos != NULL) {
-                        u_printf("%S\n",infos[0].type);
+                    int found = findEntityList(infos,num_info,entity,subtype,type);
+                    if(found > -1 && found<num_info) {
+                        get_value(infos[found].entList,entity,HT_INSERT_IF_NEEDED);
+                    }
+                    else {
+                        infos = (standOffInfo*)realloc(infos, (num_info + 1) * sizeof(standOffInfo));
+                        infos[num_info].entList = new_hash_table((HASH_FUNCTION)hash_unichar,
+                                    (EQUAL_FUNCTION)u_equal,(FREE_FUNCTION)free,
+                                    NULL,(KEYCOPY_FUNCTION)keycopy);
+                        infos[num_info].type = (unichar*)malloc(sizeof(unichar) * (u_strlen(type) + 1));
+                        u_strcpy(infos[num_info].type,type);
+                        infos[num_info].subtype = NULL;
+                        if(subtype !=NULL) {
+                            infos[num_info].subtype = (unichar*)malloc(sizeof(unichar) * (u_strlen(subtype) + 1));
+                            u_strcpy(infos[num_info].subtype,subtype);
+                            get_value(infos[num_info].entList,entity,HT_INSERT_IF_NEEDED);
+                        }
+                        num_info++;
                     }
                     if(type!=NULL)
                         free(type);
@@ -381,7 +373,7 @@ void construct_istex_standoff(const char *text_name,
         sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
         U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
         print_standoff(out_file,infos,num_info);
-//        free_hash_table(persList);
+        free_standoff_info(infos,num_info);
     }
 }
 
