@@ -27,7 +27,7 @@
 
 #include "Cassys_concord.h"
 #include "Cassys_xml_output.h"
-
+#include "HashTable.h"
 #include "FIFO.h"
 #include "Snt.h"
 
@@ -203,7 +203,219 @@ locate_pos *read_concord_line(const unichar *line) {
 	return l;
 }
 
+struct standOffInfo {
+    unichar *type;
+    unichar *subtype;
+    struct hash_table *entList;
+};
 
+void free_standoff_info(standOffInfo *infos,int num) {
+    for(int i=0; i<num; i++) {
+        free(infos[i].subtype);
+        free(infos[i].type);
+        free_hash_table(infos[i].entList);
+    }
+}
+void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
+    for(int i=0; i<num_info; i++) {
+        int count = 0;
+        if(infos[i].entList->number_of_elements > 0) {
+            u_fprintf(out,"<ns:listAnnotation type=\"%S\"",infos[i].type); 
+            if(infos[i].subtype != NULL)
+                u_fprintf(out," subtype=\"%S\"",infos[i].subtype); 
+            u_fprintf(out,">\n");
+            for(int j=0; j<infos[i].entList->capacity 
+                    && count <infos[i].entList->number_of_elements; j++){
+                if(infos[i].entList->table[j] !=NULL) {
+                    if(infos[i].entList->table[j]->ptr_key !=NULL) {
+                        u_fprintf(out,"\t<ns:annotationGrp>\n");
+                        u_fprintf(out,"\t\t%S\n",infos[i].entList->table[j]->ptr_key);
+                        u_fprintf(out,"\t</ns:annotationGrp>\n");
+                        count++;
+                    }
+                }
+            }
+            u_fprintf(out,"</ns:listAnnotation>\n");
+        }
+    }
+}
+
+void getMetaInfo(unichar *e, unichar **s, unichar **t) {
+    int entity_len = u_strlen(e);
+    if(entity_len>2 && e[0]== '<' && e[entity_len-1]=='>') {
+        int i=1;
+        int t_start = i;
+        int t_end = -1;
+        int s_start = -1;
+        int s_end = -1;
+        int in_subt = 0;
+        while(i<entity_len && e[i]!='>') {
+            if(e[i]==' ' && t_end ==-1) {
+                t_end = i;
+                if(i+4<entity_len-1) {
+                    if(e[i+1]=='t' && e[i+2]=='y' && e[i+3]=='p' && e[i+4]=='e')
+                        in_subt=1;
+                }
+            }
+            else if(in_subt == 1 && e[i] =='"') {
+                if(s_start== -1)
+                    s_start = i+1;
+                else {
+                    s_end = i;
+                    in_subt = 0;
+                }
+            }
+            i++;
+        }
+        if(t_end == -1) {
+            t_end = i;
+        }
+        *t = (unichar*) malloc(sizeof(unichar)* (t_end-t_start+1));
+        i=0;
+        for(int j=t_start; j<t_end; j++,i++) {
+            (*t)[i] = e[j];
+        }
+        (*t)[i] = '\0';
+        
+        if(s_start>=0 && s_end>s_start) {
+            *s = (unichar*) malloc(sizeof(unichar)* (s_end-s_start+1));
+            i=0;
+            for(int j=s_start; j<s_end; j++,i++) {
+                (*s)[i] = e[j];
+            }
+            (*s)[i] = '\0';
+        }
+    }
+}
+
+int findEntityList(standOffInfo *infos, int num, unichar *e,
+        unichar *s, unichar *t) {
+    int found = -1;
+    for(int i=0; i<num; i++) {
+        if(u_strcmp(t,infos[i].type) == 0) {
+            if(s==NULL && infos[i].subtype==NULL) {
+                found = i;
+                break;
+            }
+            else if(s!=NULL && infos[i].subtype != NULL 
+                    && u_strcmp(s,infos[i].subtype) == 0) {
+                    found = i;
+                    break;
+            }
+        }
+    }
+    return found;
+}
+
+void construct_istex_standoff(const char *text_name, 
+        VersatileEncodingConfig* vec, const char* original_file) {
+    char text_name_without_extension[FILENAME_MAX];
+    char result_file[FILENAME_MAX];
+    text_name_without_extension[0] = '\0';
+    result_file[0] = '\0';
+    size_t size_buffer_line = 0;
+    unichar *line = NULL;
+    struct standOffInfo *infos = NULL;
+    int num_info = 0;
+    U_FILE *concord_file = u_fopen(vec, text_name, U_READ);
+    if(concord_file != NULL) {
+        while(u_fgets_dynamic_buffer(&line, &size_buffer_line, 
+                concord_file) != EOF) {
+            int limit = u_strlen(line);
+            if(line != NULL && limit > 2 &&
+                    line[limit - 1] == '>') {
+                int pos = -1;
+                for(int k = 0; k < limit; k++) {
+                    if(line[k] == '<') {
+                        pos = k;
+                        break;
+                    }
+                }
+                if (pos >= 0) {
+                    unichar *entity = (unichar*) malloc(sizeof(unichar)*limit);
+                    for(int k=pos,i=0; k<limit; k++,i++) {
+                        entity[i] = line[k];
+                    }
+                    entity[limit-pos] = '\0';
+                    unichar *type = NULL;
+                    unichar *subtype= NULL;
+                    getMetaInfo(entity,&subtype,&type);
+                    int found = findEntityList(infos,num_info,entity,subtype,type);
+                    if(found > -1 && found<num_info) {
+                        get_value(infos[found].entList,entity,HT_INSERT_IF_NEEDED);
+                    }
+                    else {
+                        infos = (standOffInfo*)realloc(infos, (num_info + 1) * sizeof(standOffInfo));
+                        infos[num_info].entList = new_hash_table((HASH_FUNCTION)hash_unichar,
+                                    (EQUAL_FUNCTION)u_equal,(FREE_FUNCTION)free,
+                                    NULL,(KEYCOPY_FUNCTION)keycopy);
+                        infos[num_info].type = (unichar*)malloc(sizeof(unichar) * (u_strlen(type) + 1));
+                        u_strcpy(infos[num_info].type,type);
+                        infos[num_info].subtype = NULL;
+                        if(subtype !=NULL) {
+                            infos[num_info].subtype = (unichar*)malloc(sizeof(unichar) * (u_strlen(subtype) + 1));
+                            u_strcpy(infos[num_info].subtype,subtype);
+                            get_value(infos[num_info].entList,entity,HT_INSERT_IF_NEEDED);
+                        }
+                        num_info++;
+                    }
+                    if(type!=NULL)
+                        free(type);
+                    if(subtype!=NULL)
+                        free(subtype);
+                    free(entity);
+                }
+            }
+        }
+        free(line);
+        u_fclose(concord_file);
+        remove_extension(original_file, text_name_without_extension);
+        sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
+        U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
+        print_standoff(out_file,infos,num_info);
+        free_standoff_info(infos,num_info);
+    }
+}
+
+void construct_istex_token(const char *text_name, VersatileEncodingConfig* vec,
+        const char* original_file) {
+    char text_name_without_extension[FILENAME_MAX];
+    char result_file[FILENAME_MAX];
+    text_name_without_extension[0] = '\0';
+    result_file[0] = '\0';
+    size_t size_buffer_line = 0;
+    unichar *line = NULL;
+    unichar *newline = NULL;
+    U_FILE *token_file = u_fopen(vec, text_name, U_READ);
+    remove_extension(original_file, text_name_without_extension);
+    sprintf(result_file,"%s_token.txt",text_name_without_extension);
+    U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
+    if(token_file != NULL && out_file != NULL) {
+        while(u_fgets_dynamic_buffer(&line, 
+                &size_buffer_line, token_file) != EOF) {
+            if(line !=NULL && line[0] == '{') {
+                int limit = u_strlen(line) - 1;
+                int pos = limit;
+                newline = (unichar*) malloc(sizeof(unichar)*(limit+2));
+                for(int k=limit; k>0; k--) {
+                    if(line[k] == '}') {
+                        pos = k;
+                        break;
+                    }
+                }
+                for(int i=0; i<pos+1; i++) {
+                    newline[i] = line[i];
+                }
+                newline[pos+1] = '\0';
+                u_fprintf(out_file,"%S\n",xmlizeConcordLine(newline));
+            }
+        }
+        free(line);
+        free(newline);
+        u_fclose(token_file);
+        u_fclose(out_file);
+    }
+}
 
 
 
