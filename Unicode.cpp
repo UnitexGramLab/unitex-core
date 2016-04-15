@@ -2014,12 +2014,6 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 						}
 					}
 
-					if (c == 0) {
-						error("Corrupted UTF8 text file containing null characters\n");
-					}
-					 
-
-
 					if (pos_in_unichar_line == size)
 					{
 						af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
