@@ -366,7 +366,8 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
     while(u_fgets_dynamic_buffer(&line, &size_buffer_line, dico) != EOF) {
         int line_len = u_strlen(line);
         for(int k = 0; k < num; k++) {
-        if (line != NULL && line[0] == '{' && line_len > u_strlen(infos[k].annotation)) {
+            int annot_len = u_strlen(infos[k].annotation);
+        if (line != NULL && line[0] == '{' && line_len > annot_len) {
             int j = 0;
             while(line[j] != '\0') {
             int i = 0;
