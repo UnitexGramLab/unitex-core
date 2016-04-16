@@ -22,3 +22,4 @@ ${gitignore_io}
 # List all other custom gitignore entries below:
 # =============================================================================
 .checkstyle
+unitex-core-tests/
