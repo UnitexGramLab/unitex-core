@@ -219,12 +219,13 @@ void free_standoff_info(standOffInfo *infos,int num) {
 void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
     for(int i=0; i<num_info; i++) {
         int count = 0;
+        int capacity = infos[i].entList->capacity;
         if(infos[i].entList->number_of_elements > 0) {
             u_fprintf(out,"<ns:listAnnotation type=\"%S\"",infos[i].type); 
             if(infos[i].subtype != NULL)
                 u_fprintf(out," subtype=\"%S\"",infos[i].subtype); 
             u_fprintf(out,">\n");
-            for(int j=0; j<infos[i].entList->capacity 
+            for(int j=0; j<capacity 
                     && count <infos[i].entList->number_of_elements; j++){
                 if(infos[i].entList->table[j] !=NULL) {
                     if(infos[i].entList->table[j]->ptr_key !=NULL) {
@@ -288,7 +289,7 @@ void getMetaInfo(unichar *e, unichar **s, unichar **t) {
     }
 }
 
-int findEntityList(standOffInfo *infos, int num, unichar *e,
+int findEntityList(standOffInfo *infos, int num,
         unichar *s, unichar *t) {
     int found = -1;
     for(int i=0; i<num; i++) {
@@ -340,7 +341,7 @@ void construct_istex_standoff(const char *text_name,
                     unichar *type = NULL;
                     unichar *subtype= NULL;
                     getMetaInfo(entity,&subtype,&type);
-                    int found = findEntityList(infos,num_info,entity,subtype,type);
+                    int found = findEntityList(infos,num_info,subtype,type);
                     if(found > -1 && found<num_info) {
                         get_value(infos[found].entList,entity,HT_INSERT_IF_NEEDED);
                     }
