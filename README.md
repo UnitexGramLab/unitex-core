@@ -22,11 +22,24 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
     git clone https://github.com/YOUR_GITHUB_USERNAME/unitex-core.git
     ```
 
+1. Configure the upstream remote. To do this, add the remote location of the main
+   `unitex-core` repository under the name `upstream`. This will allow you later
+   to keep your fork up to date.
+   
+    ```
+    git remote add upstream git://github.com/UnitexGramLab/unitex-core.git
+    ```    
+
 1. Create a local branch for your changes
 
     ```
     git checkout -b my-changes master
     ```
+
+   Use a short and descriptive name for your branch. If you are developing a new
+   feature or enhancement, name your branch as `feature/DESCRIPTIVE-NAME`, if
+   you are fixing a bug, name your branch as `bugfix/N` where `N` corresponds to
+   an [issue number](/issues), e.g. `bugfix/5`
 
 1. For non-trivial changes, if it doesn't already exist, create a
    [new issue](https://github.com/UnitexGramLab/unitex-core/issues/new)
@@ -46,7 +59,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 
     ```
     git checkout master
-    git pull upstream
+    git pull upstream master
     ```
 
 1. [Rebase](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase-i) your local branch
