@@ -33,7 +33,7 @@ namespace unitex {
 PRLG_DATA* new_PRLG_DATA(int offset,unichar* s) {
 PRLG_DATA* d=(PRLG_DATA*)malloc(sizeof(PRLG_DATA));
 if (d==NULL) {
-	fatal_alloc_error("new_PRLG_DATA");
+  fatal_alloc_error("new_PRLG_DATA");
 }
 d->offset=offset;
 d->data=u_strdup(s);
@@ -53,20 +53,20 @@ U_FILE* f=u_fopen(vec,filename,U_READ);
 if (f==NULL) return NULL;
 PRLG* p=(PRLG*)malloc(sizeof(PRLG));
 if (p==NULL) {
-	fatal_alloc_error("load_PRLG_data");
+  fatal_alloc_error("load_PRLG_data");
 }
 p->data=new_vector_ptr();
 p->max_width=0;
 Ustring* line=new_Ustring(1024);
 int offset,n;
 while (EOF!=readline(line,f)) {
-	if (1!=u_sscanf(line->str,"%d%n",&offset,&n)) {
-		fatal_error("Invalid line in PRLG file %s:\n%S\n",filename,line->str);
-	}
-	if (u_strlen(line)-n>p->max_width) {
-		p->max_width=u_strlen(line)-n;
-	}
-	vector_ptr_add(p->data,new_PRLG_DATA(offset,line->str+n));
+  if (1!=u_sscanf(line->str,"%d%n",&offset,&n)) {
+    fatal_error("Invalid line in PRLG file %s:\n%S\n",filename,line->str);
+  }
+  if (u_strlen(line)-n>p->max_width) {
+    p->max_width=u_strlen(line)-n;
+  }
+  vector_ptr_add(p->data,new_PRLG_DATA(offset,line->str+n));
 }
 free_Ustring(line);
 u_fclose(f);
@@ -92,8 +92,8 @@ free(p);
 int get_closest_offset(PRLG* p,int offset,int start,int end) {
 if (start>end) return end;
 if (start==end) {
-	if (get_offset(start)<=offset) return start;
-	return start-1;
+  if (get_offset(start)<=offset) return start;
+  return start-1;
 }
 int current=(start+end)/2;
 int current_offset=get_offset(current);

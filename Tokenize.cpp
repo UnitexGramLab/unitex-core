@@ -50,8 +50,8 @@ static void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
 static void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
 static void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
 static int tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,
-		vector_int*,vector_int*,
-		   int*,int*,int*,int*,U_FILE*,vector_offset*,int);
+    vector_int*,vector_int*,
+       int*,int*,int*,int*,U_FILE*,vector_offset*,int);
 static void save_new_line_positions(U_FILE*,vector_int*);
 static int load_token_file(char* filename, const VersatileEncodingConfig*,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
@@ -133,7 +133,7 @@ size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
 char* buffer_filename = (char*)malloc(step_filename_buffer * 8);
 
 if (buffer_filename == NULL) {
-	alloc_error("main_Tokenize");
+  alloc_error("main_Tokenize");
   return ALLOC_ERROR_CODE;
 }
 
@@ -292,21 +292,21 @@ if (enter==NULL) {
 }
 
 if (out_offsets[0]!='\0') {
-	f_out_offsets=u_fopen(&vec,out_offsets,U_WRITE);
-	if (f_out_offsets==NULL) {
-		error("Cannot create file %s\n",out_offsets);
+  f_out_offsets=u_fopen(&vec,out_offsets,U_WRITE);
+  if (f_out_offsets==NULL) {
+    error("Cannot create file %s\n",out_offsets);
     u_fclose(enter);
     u_fclose(out);
     free_alphabet(alph);
     u_fclose(text);
     free(buffer_filename); 
     return DEFAULT_ERROR_CODE;
-	}
-	/* We deal with offsets only if the program is expected to produce some */
-	if (in_offsets[0]!='\0') {
-		v_in_offsets=load_offsets(&vec,in_offsets);
-		if (v_in_offsets==NULL) {
-			error("Cannot load offset file %s\n",in_offsets);
+  }
+  /* We deal with offsets only if the program is expected to produce some */
+  if (in_offsets[0]!='\0') {
+    v_in_offsets=load_offsets(&vec,in_offsets);
+    if (v_in_offsets==NULL) {
+      error("Cannot load offset file %s\n",in_offsets);
       u_fclose(f_out_offsets);
       u_fclose(enter);
       u_fclose(out);
@@ -314,12 +314,12 @@ if (out_offsets[0]!='\0') {
       u_fclose(text);
       free(buffer_filename); 
       return DEFAULT_ERROR_CODE;
-		}
-	} else {
-		/* If there is no input offset file, we create an empty offset vector
-		 * in order to avoid testing whether the vector is NULL or not */
-		v_in_offsets=new_vector_offset(1);
-	}
+    }
+  } else {
+    /* If there is no input offset file, we create an empty offset vector
+     * in order to avoid testing whether the vector is NULL or not */
+    v_in_offsets=new_vector_offset(1);
+  }
 }
 
 vector_ptr* tokens=new_vector_ptr(4096);
@@ -382,7 +382,7 @@ int result_tokenization = tokenization(text,out,output,alph,tokens,hashtable,n_o
 u_printf((result_tokenization == 0) ? "\nDone.\n" : "\nTokenization error.\n");
 save_new_line_positions(enter,n_enter_pos);
 if (!save_snt_offsets(snt_offsets,snt_offsets_pos)) {
-	error("Cannot save snt offsets in file %s\n",snt_offsets_pos);
+  error("Cannot save snt offsets in file %s\n",snt_offsets_pos);
   u_fclose(output);
   free_hash_table(hashtable);
   free_vector_int(snt_offsets);
@@ -507,80 +507,80 @@ u_fprintf(f,"%d %d %d <%S>\n",n,start,end,s);
 
 
 static int save_token_offset(U_FILE* f,const unichar* s,int n,int start,int end,const vector_offset* v, int *index,
-		int *shift) {
+    int *shift) {
 if (f==NULL) return 0;
 for (;;) {
 if (*index==v->nbelems) {
-	/* If there is no more offsets to take into account, we just save the token */
-	save(f,s,n,start+*shift,end+*shift);
-	return 0;
+  /* If there is no more offsets to take into account, we just save the token */
+  save(f,s,n,start+*shift,end+*shift);
+  return 0;
 }
 Offsets x=v->tab[*index];
 Overlap o=overlap(x.new_start,x.new_end,start,end);
 switch (o) {
 case A_BEFORE_B: {
-	error("A_BEFORE_B: ");
-	error("shift=%d  token=<%S> start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",
-			*shift,s,start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
-	error("Unexpected A_BEFORE_B in save_token_offset\n");
-	return 1;
+  error("A_BEFORE_B: ");
+  error("shift=%d  token=<%S> start=%d end=%d    cur_offset[%d]=%d;%d => %d;%d\n",
+      *shift,s,start,end,*index,x.old_start,x.old_end,x.new_start,x.new_end);
+  error("Unexpected A_BEFORE_B in save_token_offset\n");
+  return 1;
 }
 case A_AFTER_B: {
-	//error("A_AFTER_B:\n");
-	save(f,s,n,start+*shift,end+*shift);
-	return 0;
+  //error("A_AFTER_B:\n");
+  save(f,s,n,start+*shift,end+*shift);
+  return 0;
 }
 case A_EQUALS_B: {
-	//error("A_EQUALS_B:\n");
-	save(f,s,n,x.old_start,x.old_end);
-	(*index)++;
-	(*shift)=x.old_end-end;
-	return 0;
+  //error("A_EQUALS_B:\n");
+  save(f,s,n,x.old_start,x.old_end);
+  (*index)++;
+  (*shift)=x.old_end-end;
+  return 0;
 }
 case A_BEFORE_B_OVERLAP: {
-	//error("A_BEFORE_B_OVERLAP:\n");
-	int j;
-	for (j=(*index)+1;j<v->nbelems && B_INCLUDES_A==overlap(v->tab[j].new_start,v->tab[j].new_end,start,end);j++) {}
-	j--;
-	int delta_end=end-v->tab[j].new_end;
-	int old_end=v->tab[j].old_end+delta_end;
-	save(f,s,n,x.old_start,old_end);
-	(*index)=j+1;
-	(*shift)=v->tab[j].old_end-end+delta_end;
-	return 0;
+  //error("A_BEFORE_B_OVERLAP:\n");
+  int j;
+  for (j=(*index)+1;j<v->nbelems && B_INCLUDES_A==overlap(v->tab[j].new_start,v->tab[j].new_end,start,end);j++) {}
+  j--;
+  int delta_end=end-v->tab[j].new_end;
+  int old_end=v->tab[j].old_end+delta_end;
+  save(f,s,n,x.old_start,old_end);
+  (*index)=j+1;
+  (*shift)=v->tab[j].old_end-end+delta_end;
+  return 0;
 }
 case A_AFTER_B_OVERLAP: {
-	//error("A_AFTER_B_OVERLAP:\n");
-	int delta=start-x.new_start;
-	save(f,s,n,x.old_start+delta,x.old_end);
-	return 0;
+  //error("A_AFTER_B_OVERLAP:\n");
+  int delta=start-x.new_start;
+  save(f,s,n,x.old_start+delta,x.old_end);
+  return 0;
 }
 case A_INCLUDES_B: {
-	//error("A_INCLUDES_B:\n");
-	save(f,s,n,x.old_start,x.old_end);
-	if (x.new_end==end) {
-		(*index)++;
-	}
-	(*shift)=x.old_end-end;
-	return 0;
+  //error("A_INCLUDES_B:\n");
+  save(f,s,n,x.old_start,x.old_end);
+  if (x.new_end==end) {
+    (*index)++;
+  }
+  (*shift)=x.old_end-end;
+  return 0;
 }
 case B_INCLUDES_A: {
-	//error("B_INCLUDES_A:\n");
-	int delta_start=start-x.new_start;
-	int old_start=x.old_start+delta_start;
-	int j;
-	Overlap tmp;
-	for (j=(*index)+1;j<v->nbelems &&
-		(B_INCLUDES_A==(tmp=overlap(v->tab[j].new_start,v->tab[j].new_end,start,end))
-			|| A_EQUALS_B==tmp
-			|| A_AFTER_B_OVERLAP==tmp);j++) {}
-	j--;
-	int delta_end=end-v->tab[j].new_end;
-	int old_end=v->tab[j].old_end+delta_end;
-	save(f,s,n,old_start,old_end);
-	(*index)=j+1;
-	(*shift)=v->tab[j].old_end-end+delta_end;
-	return 0;
+  //error("B_INCLUDES_A:\n");
+  int delta_start=start-x.new_start;
+  int old_start=x.old_start+delta_start;
+  int j;
+  Overlap tmp;
+  for (j=(*index)+1;j<v->nbelems &&
+    (B_INCLUDES_A==(tmp=overlap(v->tab[j].new_start,v->tab[j].new_end,start,end))
+      || A_EQUALS_B==tmp
+      || A_AFTER_B_OVERLAP==tmp);j++) {}
+  j--;
+  int delta_end=end-v->tab[j].new_end;
+  int old_end=v->tab[j].old_end+delta_end;
+  save(f,s,n,old_start,old_end);
+  (*index)=j+1;
+  (*shift)=v->tab[j].old_end-end+delta_end;
+  return 0;
 }
 }
 }
@@ -590,72 +590,72 @@ case B_INCLUDES_A: {
 #define TOKENIZE_WRITE_BUFFER_SIZE 0x80
 static void fast_fwrite_raw_flush(U_FILE* f, unsigned char*out_buffer, unsigned int* pos_out_buffer)
 {
-	if ((*pos_out_buffer) > 0)
-		fwrite(out_buffer, 4, *pos_out_buffer, f);
-	*pos_out_buffer = 0;
+  if ((*pos_out_buffer) > 0)
+    fwrite(out_buffer, 4, *pos_out_buffer, f);
+  *pos_out_buffer = 0;
 }
 
 static inline void fast_fwrite_raw(U_FILE* f, int n, unsigned char*out_buffer, unsigned int* pos_out_buffer, unsigned int size_out_buffer)
 {
-	if ((*pos_out_buffer) == size_out_buffer) {
-		fast_fwrite_raw_flush(f, out_buffer, pos_out_buffer);
-	}
-	*((int*)(out_buffer + ((*pos_out_buffer) * 4))) = n;
-	(*pos_out_buffer)++;
+  if ((*pos_out_buffer) == size_out_buffer) {
+    fast_fwrite_raw_flush(f, out_buffer, pos_out_buffer);
+  }
+  *((int*)(out_buffer + ((*pos_out_buffer) * 4))) = n;
+  (*pos_out_buffer)++;
 }
 
 #define TOKENIZE_GET_BUFFER_SIZE 0x200
 
 static inline int fast_u_fgetc_raw(U_FILE* f, unichar*buffer,unsigned int* pos_in_buffer, unsigned int* filled_in_buffer)
 {
-	for (;;)
-	{
-		if ((*pos_in_buffer) < (*filled_in_buffer))
-		{
-			int c = (int)*(buffer + (*pos_in_buffer));
-			(*pos_in_buffer)++;
-			return c;
-		}
+  for (;;)
+  {
+    if ((*pos_in_buffer) < (*filled_in_buffer))
+    {
+      int c = (int)*(buffer + (*pos_in_buffer));
+      (*pos_in_buffer)++;
+      return c;
+    }
 
-		*filled_in_buffer = 0;
-		*pos_in_buffer = 0;
-		int res = u_fget_unichars_raw(buffer, TOKENIZE_GET_BUFFER_SIZE, f);
-		if (res == 0)
-			return EOF;
-		if (res < 0)
-			return res;
-		*filled_in_buffer = res;
-	}
+    *filled_in_buffer = 0;
+    *pos_in_buffer = 0;
+    int res = u_fget_unichars_raw(buffer, TOKENIZE_GET_BUFFER_SIZE, f);
+    if (res == 0)
+      return EOF;
+    if (res < 0)
+      return res;
+    *filled_in_buffer = res;
+  }
 }
 
 static int enlarge_token_buffer_as_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed)
 {
-	if (size_needed <= (*buffer_size)) {
-		return SUCCESS_RETURN_CODE;
+  if (size_needed <= (*buffer_size)) {
+    return SUCCESS_RETURN_CODE;
   }
 
-	size_t buffer_new_size = *buffer_size;
-	while (size_needed > buffer_new_size) {
-		buffer_new_size *= 2;
+  size_t buffer_new_size = *buffer_size;
+  while (size_needed > buffer_new_size) {
+    buffer_new_size *= 2;
   }
 
-	unichar* new_token_buffer = (unichar*)realloc((void*)*token_buffer, buffer_new_size*sizeof(unichar));
-	if (new_token_buffer == NULL) {
-		alloc_error("enlarge_token_buffer_as_needed");
+  unichar* new_token_buffer = (unichar*)realloc((void*)*token_buffer, buffer_new_size*sizeof(unichar));
+  if (new_token_buffer == NULL) {
+    alloc_error("enlarge_token_buffer_as_needed");
     return ALLOC_ERROR_CODE;
-	}
+  }
 
-	*token_buffer = new_token_buffer;
-	*buffer_size = buffer_new_size;
+  *token_buffer = new_token_buffer;
+  *buffer_size = buffer_new_size;
 
   return SUCCESS_RETURN_CODE;
 }
 
 static inline int enlarge_token_buffer_if_needed(unichar** token_buffer, size_t *buffer_size, size_t size_needed) {
-	if (size_needed <= (*buffer_size)) {
-		return SUCCESS_RETURN_CODE;
+  if (size_needed <= (*buffer_size)) {
+    return SUCCESS_RETURN_CODE;
   }
-	return enlarge_token_buffer_as_needed(token_buffer, buffer_size, size_needed);
+  return enlarge_token_buffer_as_needed(token_buffer, buffer_size, size_needed);
 }
 
 #define TOKENIZE_ORIGINAL_TOKEN_BUFFER_SIZE 0x400
@@ -702,7 +702,7 @@ while ((c!=EOF) && (result == 0)) {
       ENTER=0;
       if (c==0x0d || c==0x0a) ENTER=1;
       // if the char is a separator, we jump all the separators
-	  while ((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) == ' ' || c == 0x0d || c == 0x0a || c == '\t') {
+    while ((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) == ' ' || c == 0x0d || c == 0x0a || c == '\t') {
         if (c==0x0d || c==0x0a) ENTER=1;
         COUNT++;
       }
@@ -710,9 +710,9 @@ while ((c!=EOF) && (result == 0)) {
       token_buffer[1]='\0';
       n=get_token_number(token_buffer,tokens,hashtable,n_occur);
       if (COUNT-current_pos!=1) {
-    	  /* If there is a shift with the .snt file */
-    	  add_snt_offsets(snt_offsets,*TOKENS_TOTAL,snt_offsets_shift,snt_offsets_shift+(COUNT-current_pos-1));
-    	  snt_offsets_shift+=(COUNT-current_pos-1);
+        /* If there is a shift with the .snt file */
+        add_snt_offsets(snt_offsets,*TOKENS_TOTAL,snt_offsets_shift,snt_offsets_shift+(COUNT-current_pos-1));
+        snt_offsets_shift+=(COUNT-current_pos-1);
       }
       result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
       /* If there is a \n, we note it */
@@ -720,22 +720,22 @@ while ((c!=EOF) && (result == 0)) {
          vector_int_add(n_enter_pos,*TOKENS_TOTAL);
       }
       (*TOKENS_TOTAL)++;
-	  fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
+    fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
    }
    else if (c=='{') {
      token_buffer[0]='{';
      int z=1;
      bool protected_char = false; // Cassys add
-	 while ((((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) != '}' && c
-					!= '{' && c != '\n') || protected_char)) {
-			protected_char = false; // Cassys add
-			if (c == '\\') { // Cassys add
-				protected_char = true; // Cassys add
-			} // Cassys add
-			enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z+2);
-			token_buffer[z++] = (unichar) c;
-			COUNT++;
-	}
+   while ((((c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) != '}' && c
+          != '{' && c != '\n') || protected_char)) {
+      protected_char = false; // Cassys add
+      if (c == '\\') { // Cassys add
+        protected_char = true; // Cassys add
+      } // Cassys add
+      enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, z+2);
+      token_buffer[z++] = (unichar) c;
+      COUNT++;
+  }
 
      if (c!='}') {
         // if the tag has no ending }
@@ -769,8 +769,8 @@ while ((c!=EOF) && (result == 0)) {
      COUNT++;
      result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,&shift);
      (*TOKENS_TOTAL)++;
-	 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
-	 c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
+   fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
+   c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
    }
    else {
       token_buffer[0]=(unichar)c;
@@ -780,14 +780,14 @@ while ((c!=EOF) && (result == 0)) {
          if (is_letter(token_buffer[0],alph)) (*WORDS_TOTAL)++;
          n=get_token_number(token_buffer,tokens,hashtable,n_occur);
          result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,
-        		 &shift);
+             &shift);
          (*TOKENS_TOTAL)++;
          if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
-		 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
-		 c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
+     fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
+     c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer);
       }
       else {
-		  while (EOF != (c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) && is_letter((unichar)c, alph)) {
+      while (EOF != (c = fast_u_fgetc_raw(f_read, read_buffer, &pos_in_buffer, &filled_in_buffer)) && is_letter((unichar)c, alph)) {
            enlarge_token_buffer_if_needed(&token_buffer, &token_buffer_size, n + 2);
            token_buffer[n++]=(unichar)c;
            COUNT++;
@@ -796,10 +796,10 @@ while ((c!=EOF) && (result == 0)) {
          token_buffer[n]='\0';
          n=get_token_number(token_buffer,tokens,hashtable,n_occur);
          result=save_token_offset(f_out_offsets,token_buffer,n,current_pos,COUNT,v_in_offsets,&offset_index,
-        		 &shift);
+             &shift);
          (*TOKENS_TOTAL)++;
          (*WORDS_TOTAL)++;
-		 fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
+     fast_fwrite_raw(coded_text, n, write_buffer, &pos_out_buffer, TOKENIZE_WRITE_BUFFER_SIZE);
       }
    }
 }
@@ -912,7 +912,7 @@ for (int i=0;i<tokens->nbelems;i++) {
 
 
 static void compute_statistics(U_FILE *f,vector_ptr* tokens,Alphabet* alph,
-		                int SENTENCES,int TOKENS_TOTAL,int WORDS_TOTAL,int DIGITS_TOTAL) {
+                    int SENTENCES,int TOKENS_TOTAL,int WORDS_TOTAL,int DIGITS_TOTAL) {
 int DIFFERENT_DIGITS=0;
 int DIFFERENT_WORDS=0;
 for (int i=0;i<tokens->nbelems;i++) {
@@ -923,8 +923,8 @@ for (int i=0;i<tokens->nbelems;i++) {
    if (is_letter(foo[0],alph)) DIFFERENT_WORDS++;
 }
 u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s\n",
-		SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,tokens->nbelems,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,
-		DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
+    SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,tokens->nbelems,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,
+    DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
 }
 
 

@@ -193,7 +193,7 @@ struct list_ustring* insert_at_end_of_list_with_latest(const unichar* s, struct 
   if ((*latest) == NULL) {
     *latest = new_list_ustring(s, prv_alloc);
     return *latest;
-  }	
+  }  
   (*latest)->next = new_list_ustring(s, prv_alloc);
   *latest = (*latest)->next;
   return l;

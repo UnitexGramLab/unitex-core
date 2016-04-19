@@ -104,7 +104,7 @@ static void usage_scores() {
       "the score, the better the hypothesis. Default values are:\n"
       "--scores=%d",N_SPSubOp,N_SPSubOp,0xE9,default_scores[0]);
   for (int i=1;i<N_SPSubOp;i++) {
-  	u_printf(",%d",default_scores[i]);
+    u_printf(",%d",default_scores[i]);
   }
   u_printf("\n\n");
 }
@@ -137,8 +137,8 @@ const struct option_TS lopts_SpellCheck[]= {
 
 int main_SpellCheck(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+  usage();
+  return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -156,7 +156,7 @@ config.max_SP_SUPPR=1;
 config.max_SP_SWAP=1;
 config.max_SP_CHANGE=1;
 for (int i=0;i<N_SPSubOp;i++) {
-	config.score[i]=default_scores[i];
+  config.score[i]=default_scores[i];
 }
 config.min_length1=4;
 config.min_length2=6;
@@ -170,119 +170,119 @@ UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_SpellCheck,lopts_SpellCheck,&index))) {
    switch(val) {
    case 's': {
-	   strcpy(snt,options.vars()->optarg);
-	   mode='s';
-	   break;
+     strcpy(snt,options.vars()->optarg);
+     mode='s';
+     break;
    }
    case 'f': {
-	   strcpy(txt,options.vars()->optarg);
-	   mode='f';
-	   break;
+     strcpy(txt,options.vars()->optarg);
+     mode='f';
+     break;
    }
    case 'o': {
-	   if (options.vars()->optarg!=NULL) {
-		   strcpy(output,options.vars()->optarg);
-	   }
-	   output_set=1;
-	   break;
+     if (options.vars()->optarg!=NULL) {
+       strcpy(output,options.vars()->optarg);
+     }
+     output_set=1;
+     break;
    }
    case 'I': {
-	   if (!strcmp(options.vars()->optarg,"D") || !strcmp(options.vars()->optarg,"M") || !strcmp(options.vars()->optarg,"U")) {
-		   config.input_op=options.vars()->optarg[0];
-	   } else {
+     if (!strcmp(options.vars()->optarg,"D") || !strcmp(options.vars()->optarg,"M") || !strcmp(options.vars()->optarg,"U")) {
+       config.input_op=options.vars()->optarg[0];
+     } else {
        error("Invalid argument %s for option --input-op: should in [DMU]\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 'O': {
-	   if (!strcmp(options.vars()->optarg,"O") || !strcmp(options.vars()->optarg,"A")) {
-		   output_op=options.vars()->optarg[0];
-	   } else {
-		   error("Invalid argument %s for option --output-op: should in [OA]\n",options.vars()->optarg);
+     if (!strcmp(options.vars()->optarg,"O") || !strcmp(options.vars()->optarg,"A")) {
+       output_op=options.vars()->optarg[0];
+     } else {
+       error("Invalid argument %s for option --output-op: should in [OA]\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 1: {
-	   config.keyboard=get_Keyboard(options.vars()->optarg);
-	   if (config.keyboard==NULL) {
-		   error("Invalid argument %s for option --keyboard:\nUse --show-keyboards to see possible values\n",options.vars()->optarg);
+     config.keyboard=get_Keyboard(options.vars()->optarg);
+     if (config.keyboard==NULL) {
+       error("Invalid argument %s for option --keyboard:\nUse --show-keyboards to see possible values\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 2: {
-	   print_available_keyboards(U_STDOUT);
-	   return SUCCESS_RETURN_CODE;
+     print_available_keyboards(U_STDOUT);
+     return SUCCESS_RETURN_CODE;
    }
    case 10: {
-	   if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_errors,&foo)) {
-		   error("Invalid argument %s for --max-errors: should be an integer >=0\n",options.vars()->optarg);
+     if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_errors,&foo)) {
+       error("Invalid argument %s for --max-errors: should be an integer >=0\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
        }
        break;
    }
    case 11: {
-	   if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_INSERT,&foo)) {
-		   error("Invalid argument %s for --max-insert: should be an integer >=0\n",options.vars()->optarg);
+     if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_INSERT,&foo)) {
+       error("Invalid argument %s for --max-insert: should be an integer >=0\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
        }
        break;
    }
    case 12: {
-	   if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_SUPPR,&foo)) {
-		   error("Invalid argument %s for --max-suppr: should be an integer >=0\n",options.vars()->optarg);
+     if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_SUPPR,&foo)) {
+       error("Invalid argument %s for --max-suppr: should be an integer >=0\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
        }
        break;
    }
    case 13: {
-	   if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_CHANGE,&foo)) {
-		   error("Invalid argument %s for --max-change: should be an integer >=0\n",options.vars()->optarg);
+     if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_CHANGE,&foo)) {
+       error("Invalid argument %s for --max-change: should be an integer >=0\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
        }
        break;
    }
    case 14: {
-	   if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_SWAP,&foo)) {
-		   error("Invalid argument %s for --max-swap: should be an integer >=0\n",options.vars()->optarg);
+     if (1!=sscanf(options.vars()->optarg,"%u%c",&config.max_SP_SWAP,&foo)) {
+       error("Invalid argument %s for --max-swap: should be an integer >=0\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
        }
        break;
    }
    case 20: {
-	   int* scores=config.score;
-	   if (N_SPSubOp!=sscanf(options.vars()->optarg,"%d,%d,%d,%d,%d,%d,%d,%d,%d%c",
-	   		scores,scores+1,scores+2,scores+3,scores+4,scores+5,
-	   		scores+6,scores+7,scores+8,&foo)) {
-		    error("Invalid argument %s for option --scores. See --help-scores\n",options.vars()->optarg);
+     int* scores=config.score;
+     if (N_SPSubOp!=sscanf(options.vars()->optarg,"%d,%d,%d,%d,%d,%d,%d,%d,%d%c",
+         scores,scores+1,scores+2,scores+3,scores+4,scores+5,
+         scores+6,scores+7,scores+8,&foo)) {
+        error("Invalid argument %s for option --scores. See --help-scores\n",options.vars()->optarg);
         return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 21: {
-	   usage_scores();
-	   return SUCCESS_RETURN_CODE;
+     usage_scores();
+     return SUCCESS_RETURN_CODE;
    }
    case 22: {
-	   if (3!=sscanf(options.vars()->optarg,"%u,%u,%u%c",
-	   		&config.min_length1,&config.min_length2,&config.min_length3,&foo)) {
-		    error("Invalid argument %s for option --min-lengths\n",options.vars()->optarg);
+     if (3!=sscanf(options.vars()->optarg,"%u,%u,%u%c",
+         &config.min_length1,&config.min_length2,&config.min_length3,&foo)) {
+        error("Invalid argument %s for option --min-lengths\n",options.vars()->optarg);
         return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 23: {
-	   if (!strcmp(options.vars()->optarg,"yes")) {
-		   config.allow_uppercase_initial=1;
-	   } else if (!strcmp(options.vars()->optarg,"no")) {
-		   config.allow_uppercase_initial=0;
-	   } else {
-		   error("Invalid argument %s for option --upper-initial\n",options.vars()->optarg);
+     if (!strcmp(options.vars()->optarg,"yes")) {
+       config.allow_uppercase_initial=1;
+     } else if (!strcmp(options.vars()->optarg,"no")) {
+       config.allow_uppercase_initial=0;
+     } else {
+       error("Invalid argument %s for option --upper-initial\n",options.vars()->optarg);
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
@@ -328,15 +328,15 @@ if (only_verify_arguments) {
 config.n_dics=argc-options.vars()->optind;
 config.dics=(Dictionary**)malloc(config.n_dics*sizeof(Dictionary*));
 if (config.dics==NULL) {
-	alloc_error("main_SpellCheck");
+  alloc_error("main_SpellCheck");
   return ALLOC_ERROR_CODE;
 }
 
 for (int i=0;i<config.n_dics;i++) {
-	config.dics[i]=new_Dictionary(&vec,argv[i+options.vars()->optind]);
-	if (config.dics[i]==NULL) {
-		error("Cannot load dictionary %s\n",argv[i+options.vars()->optind]);
-	}
+  config.dics[i]=new_Dictionary(&vec,argv[i+options.vars()->optind]);
+  if (config.dics[i]==NULL) {
+    error("Cannot load dictionary %s\n",argv[i+options.vars()->optind]);
+  }
 }
 
 config.out=U_STDOUT;
@@ -344,53 +344,53 @@ config.n_input_lines=0;
 config.n_output_lines=0;
 
 if (mode=='s') {
-	/* When working with a .snt, we actually want to work on its err file */
-	get_snt_path(snt,txt);
-	strcat(txt,"err");
-	/* the output must be dlf, and we note the number of lines in the existing
-	 * dlf file, if any */
-	get_snt_path(snt,output);
-	strcat(output,"dlf.n");
-	U_FILE* f=u_fopen(&vec,output,U_READ);
-	if (f!=NULL) {
-		u_fscanf(f,"%d",&(config.n_output_lines));
-		u_fclose(f);
-	}
-	get_snt_path(snt,output);
-	strcat(output,"dlf");
-	output_set=1;
-	/* and we force the values for -I and -O */
-	config.input_op='U';
-	output_op='A';
+  /* When working with a .snt, we actually want to work on its err file */
+  get_snt_path(snt,txt);
+  strcat(txt,"err");
+  /* the output must be dlf, and we note the number of lines in the existing
+   * dlf file, if any */
+  get_snt_path(snt,output);
+  strcat(output,"dlf.n");
+  U_FILE* f=u_fopen(&vec,output,U_READ);
+  if (f!=NULL) {
+    u_fscanf(f,"%d",&(config.n_output_lines));
+    u_fclose(f);
+  }
+  get_snt_path(snt,output);
+  strcat(output,"dlf");
+  output_set=1;
+  /* and we force the values for -I and -O */
+  config.input_op='U';
+  output_op='A';
 } else {
-	/* If mode=='f', we don't have anything to do since we already
-	 * defined the default output to stdout */
+  /* If mode=='f', we don't have anything to do since we already
+   * defined the default output to stdout */
 }
 
 if (output_set) {
-	if (output_op=='O') {
-		config.out=u_fopen(&vec,output,U_WRITE);
-	} else {
-		config.out=u_fopen(&vec,output,U_APPEND);
-	}
-	if (config.out==NULL) {
-		error("Cannot open output file %s\n",output);
+  if (output_op=='O') {
+    config.out=u_fopen(&vec,output,U_WRITE);
+  } else {
+    config.out=u_fopen(&vec,output,U_APPEND);
+  }
+  if (config.out==NULL) {
+    error("Cannot open output file %s\n",output);
     for (int i=0;i<config.n_dics;i++) {
       free_Dictionary(config.dics[i]);
     }
     free(config.dics);
     return DEFAULT_ERROR_CODE;
-	}
+  }
 }
 
 config.modified_input=NULL;
 char modified_input[FILENAME_MAX]="";
 if (config.input_op!='D') {
-	strcpy(modified_input,txt);
-	strcat(modified_input,".tmp");
-	config.modified_input=u_fopen(&vec,modified_input,U_WRITE);
-	if (config.modified_input==NULL) {
-		error("Cannot open tmp file %s\n",modified_input);
+  strcpy(modified_input,txt);
+  strcat(modified_input,".tmp");
+  config.modified_input=u_fopen(&vec,modified_input,U_WRITE);
+  if (config.modified_input==NULL) {
+    error("Cannot open tmp file %s\n",modified_input);
     if (config.out!=U_STDOUT) {
       u_fclose(config.out);
     }
@@ -399,12 +399,12 @@ if (config.input_op!='D') {
     }
     free(config.dics);
     return DEFAULT_ERROR_CODE;    
-	}
+  }
 }
 
 config.in=u_fopen(&vec,txt,U_READ);
 if (config.in==NULL) {
-	error("Cannot open file %s\n",txt);
+  error("Cannot open file %s\n",txt);
   u_fclose(config.modified_input);
   if (config.out!=U_STDOUT) {
     u_fclose(config.out);
@@ -442,22 +442,22 @@ free(config.dics);
 
 /* Finally, we update the dlf.n and err.n files if mode=='s' */
 if (mode=='s') {
-	get_snt_path(snt,output);
-	strcat(output,"err.n");
-	U_FILE* f=u_fopen(&vec,output,U_WRITE);
-	if (f!=NULL) {
-		u_fprintf(f,"%d",config.n_input_lines);
-		u_fclose(f);
-	}
-	if (config.input_op!='D') {
-		get_snt_path(snt,output);
-		strcat(output,"dlf.n");
-		U_FILE* fw=u_fopen(&vec,output,U_WRITE);
-		if (fw!=NULL) {
-			u_fprintf(fw,"%d",config.n_output_lines);
-			u_fclose(fw);
-		}
-	}
+  get_snt_path(snt,output);
+  strcat(output,"err.n");
+  U_FILE* f=u_fopen(&vec,output,U_WRITE);
+  if (f!=NULL) {
+    u_fprintf(f,"%d",config.n_input_lines);
+    u_fclose(f);
+  }
+  if (config.input_op!='D') {
+    get_snt_path(snt,output);
+    strcat(output,"dlf.n");
+    U_FILE* fw=u_fopen(&vec,output,U_WRITE);
+    if (fw!=NULL) {
+      u_fprintf(fw,"%d",config.n_output_lines);
+      u_fclose(fw);
+    }
+  }
 }
 
 return SUCCESS_RETURN_CODE;

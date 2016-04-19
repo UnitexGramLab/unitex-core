@@ -58,18 +58,18 @@ l_category_T* get_cat(struct l_morpho_t*,const unichar* val);
 /* (e.g. sing, pl, masc, etc.).                                                       */
 /* <E> is a special character meaning that the feature may have an empty value, e.g.  */
 /* the base form in gradation                                                         */
-/* E.g. for Polish:								      */
-/* 			Polish							      */
+/* E.g. for Polish:                      */
+/*       Polish                    */
 /*                      <CATEGORIES>                                                  */
-/* 			Nb:sing,pl		                 		      */
-/* 			Case:Nom,Gen,Dat,Acc,Inst,Loc,Voc			      */
-/* 			Gen:masc_pers,masc_anim,masc_inanim,fem,neu                   */
+/*       Nb:sing,pl                               */
+/*       Case:Nom,Gen,Dat,Acc,Inst,Loc,Voc            */
+/*       Gen:masc_pers,masc_anim,masc_inanim,fem,neu                   */
 /*                      Gr:<E>,aug,sup                                                */
 /*                      <CLASSES>                                                     */
 /*                      noun: (Nb,<var>),(Case,<var>),(Gen,<fixed>)                   */
 /*                      adj: (Nb,<var>),(Case,<var>),(Gen,<var>),(Gr,<var>)           */
 /*                      adv: (Gr,<var>)                                               */
-/* Fills out pL_MORPHO->L_CLASSES and pL_MORPHO->L_CATS.						      */
+/* Fills out pL_MORPHO->L_CLASSES and pL_MORPHO->L_CATS.                  */
 /* Returns 0 if success, 1 otherwise                                                  */
 int read_language_morpho(const VersatileEncodingConfig* vec,struct l_morpho_t* pL_MORPHO, const char *file) {
   //Initialise the symbol representing an empty morphological value
@@ -268,14 +268,14 @@ int read_class_line(struct l_morpho_t* pL_MORPHO,int class_no) {
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
       //Check if tmp contains an existing category
       for (c=0, found=0; c<pL_MORPHO->L_CATS.no_cats && !found; c++)
-	if (! u_strcmp(pL_MORPHO->L_CATS.cats[c].name,tmp))
-	  found = 1;
+  if (! u_strcmp(pL_MORPHO->L_CATS.cats[c].name,tmp))
+    found = 1;
       if (!found) {
-	      error("Undefined category in language morphology file: pL_MORPHO->line %d!\n", pL_MORPHO->line_no);
-	      return 1;
+        error("Undefined category in language morphology file: pL_MORPHO->line %d!\n", pL_MORPHO->line_no);
+        return 1;
       }
       else
-	pL_MORPHO->L_CLASSES.classes[class_no].cats[c_cnt].cat = &(pL_MORPHO->L_CATS.cats[c-1]);
+  pL_MORPHO->L_CLASSES.classes[class_no].cats[c_cnt].cat = &(pL_MORPHO->L_CATS.cats[c-1]);
 
       //Read the fixedness
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
@@ -287,13 +287,13 @@ int read_class_line(struct l_morpho_t* pL_MORPHO,int class_no) {
       line_pos = line_pos + l;
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
       if (!u_strcmp(tmp,"fixed"))
-	pL_MORPHO->L_CLASSES.classes[class_no].cats[c_cnt].fixed = 1;
+  pL_MORPHO->L_CLASSES.classes[class_no].cats[c_cnt].fixed = 1;
       else
-	if (!u_strcmp(tmp,"var"))
-	  pL_MORPHO->L_CLASSES.classes[class_no].cats[c_cnt].fixed = 0;
-	else {
-	  error("Undefined fixedness symbol in language morphology file: pL_MORPHO->line %d!\n", pL_MORPHO->line_no);
-	  return 1;
+  if (!u_strcmp(tmp,"var"))
+    pL_MORPHO->L_CLASSES.classes[class_no].cats[c_cnt].fixed = 0;
+  else {
+    error("Undefined fixedness symbol in language morphology file: pL_MORPHO->line %d!\n", pL_MORPHO->line_no);
+    return 1;
       }
       c_cnt++;
       line_pos++; //Omit the '>'
@@ -301,9 +301,9 @@ int read_class_line(struct l_morpho_t* pL_MORPHO,int class_no) {
       line_pos++; //Omit the ')'
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
       if (*line_pos == (char) '\n')
-	done = 1;
+  done = 1;
       else
-	line_pos++;  //Omit the ','
+  line_pos++;  //Omit the ','
     } while (!done);
   }
   pL_MORPHO->L_CLASSES.classes[class_no].no_cats = c_cnt;
@@ -312,7 +312,7 @@ int read_class_line(struct l_morpho_t* pL_MORPHO,int class_no) {
 
 /**************************************************************************************/
 /* Prints to the standard output the morphological system of the language             */
-/* as defined by pL_MORPHO->L_CLASSES.       		    			              */
+/* as defined by pL_MORPHO->L_CLASSES.                                   */
 /* Returns 0 on success, 1 otherwise.                                                 */
 int print_language_morpho(struct l_morpho_t* pL_MORPHO) {
 int c,v, cl;
@@ -458,7 +458,7 @@ l_category_T* get_cat(struct l_morpho_t* pL_MORPHO,const unichar* val) {
   for (c=0; c<pL_MORPHO->L_CATS.no_cats; c++)
     for (v=0; v<pL_MORPHO->L_CATS.cats[c].no_values; v++)
       if (!u_strcmp(val,pL_MORPHO->L_CATS.cats[c].values[v]))
-	return &(pL_MORPHO->L_CATS.cats[c]);
+  return &(pL_MORPHO->L_CATS.cats[c]);
   return NULL;
 }
 

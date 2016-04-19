@@ -976,7 +976,7 @@ struct couple* insert_string_thai(unichar* line, struct couple* couple,
     /* If we are at the end of the list, or if we have to insert */
     tmp = new_couple(line);
     if(tmp) {
-    	tmp->next = couple;
+      tmp->next = couple;
     }
     return tmp;
   }

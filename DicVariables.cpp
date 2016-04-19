@@ -39,9 +39,9 @@ if (tmp==NULL) {
 }
 tmp->name=u_strdup(name);
 if (must_clone) {
-	tmp->dic_entry=clone_dela_entry(dic_entry);
+  tmp->dic_entry=clone_dela_entry(dic_entry);
 } else {
-	tmp->dic_entry=dic_entry;
+  tmp->dic_entry=dic_entry;
 }
 tmp->next=next;
 return tmp;
@@ -85,9 +85,9 @@ while (*list!=NULL) {
       /* We have to free the previous value */
       free_dela_entry((*list)->dic_entry);
       if (must_clone) {
-    	  (*list)->dic_entry=clone_dela_entry(dic_entry);
+        (*list)->dic_entry=clone_dela_entry(dic_entry);
       } else {
-    	  (*list)->dic_entry=dic_entry;
+        (*list)->dic_entry=dic_entry;
       }
       return;
    }
@@ -129,10 +129,10 @@ return new_dic_variable(list->name,list->dic_entry,clone_dic_variable_list(list-
  */
 int same_dic_variables(struct dic_variable* backup,struct dic_variable* v) {
 while (backup!=NULL && v!=NULL) {
-	if (u_strcmp(backup->name,v->name)
-		|| !equal(backup->dic_entry,v->dic_entry)) return 0;
-	backup=backup->next;
-	v=v->next;
+  if (u_strcmp(backup->name,v->name)
+    || !equal(backup->dic_entry,v->dic_entry)) return 0;
+  backup=backup->next;
+  v=v->next;
 }
 
 return (backup==NULL && v==NULL);

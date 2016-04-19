@@ -40,7 +40,7 @@ return is_letter(c,alphabet);
 unichar Chinese_to_Hangul(unichar src,unichar* map) {
 unichar c=map[src];
 if (c!='\0') {
-	return c;
+  return c;
 }
 return src;
 }
@@ -56,7 +56,7 @@ return src;
 void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean,int only_syllables) {
 if (korean==NULL) {
    /* No Korean data? A simple copy will do. */
-	u_strcpy(dest,src);
+  u_strcpy(dest,src);
    return;
 }
 int ret;
@@ -107,7 +107,7 @@ for (int i=0;src[i]!='\0';i++) {
 }
 temp[j]='\0';
 if (j>1024) {
-	fatal_error("Token too long in Korean::Hanguls_to_Jamos\n");
+  fatal_error("Token too long in Korean::Hanguls_to_Jamos\n");
 }
 /* Then, we perform the syllable -> Jamo conversion */
 Hanguls_to_Jamos_internal(temp,dest,only_syllables);
@@ -121,13 +121,13 @@ Hanguls_to_Jamos_internal(temp,dest,only_syllables);
  */
 int single_HGJ_to_Jamos(unichar c,unichar* dest,Korean* korean) {
 if (u_is_Hangul_Compatility_Jamo(c) && korean!=NULL) {
-	int pos=korean->single_HCJ_to_Jamos(c,dest,0);
-	dest[pos]='\0';
-	return pos;
+  int pos=korean->single_HCJ_to_Jamos(c,dest,0);
+  dest[pos]='\0';
+  return pos;
 } else {
-	dest[0]=c;
-	dest[1]='\0';
-	return 1;
+  dest[0]=c;
+  dest[1]='\0';
+  return 1;
 }
 }
 
@@ -182,7 +182,7 @@ if (first!=0) {
    va_start(args,first);
    while ((d=va_arg(args,int))!=0) {
       result[n++]=(unichar)d;
-	  //if (n>2) error("[  %C  ] (%x)   ",d,d);
+    //if (n>2) error("[  %C  ] (%x)   ",d,d);
    }
    //error("\n");
    va_end(args);
@@ -351,7 +351,7 @@ for (int i=0;input[i]!='\0';i++) {
       continue;
    }*/
    if (c>=KR_HANGUL_SYL_START && c<=KR_HANGUL_SYL_END) {
-	   n=single_Hangul_to_Jamos(c,output,n);
+     n=single_Hangul_to_Jamos(c,output,n);
    }
    else if (!only_syllables && c>=KR_HCJ_START && c<=KR_HCJ_END) {
       n=single_HCJ_to_Jamos(c,output,n);
@@ -363,7 +363,7 @@ for (int i=0;input[i]!='\0';i++) {
 output[n]='\0';
 /*error("zzz depuis <%S> vers <",input);
 for (int i=0;output[i]!='\0';i++) {
-	error("%X ",output[i]);
+  error("%X ",output[i]);
 }
 error(">\n");*/
 return n;
@@ -393,146 +393,146 @@ int read_initial_consonants(unichar* input,int *pos_input,int *initial_consonant
 switch(input[*pos_input]) {
 /*case HCJ_KIYEOK:*/
 case SJ_IC_KIYEOK: {
-	*initial_consonant=0;
-	*hcj=HCJ_KIYEOK;
-	if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
-		*initial_consonant=1;
-		*hcj=HCJ_SSANGKIYEOK;
-		(*pos_input)++;
-	}
-	break;
+  *initial_consonant=0;
+  *hcj=HCJ_KIYEOK;
+  if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+    *initial_consonant=1;
+    *hcj=HCJ_SSANGKIYEOK;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGKIYEOK:*/
 case SJ_IC_SSANGKIYEOK: {
-	*initial_consonant=1;
-	*hcj=HCJ_SSANGKIYEOK;
-	break;
+  *initial_consonant=1;
+  *hcj=HCJ_SSANGKIYEOK;
+  break;
 }
 /*case HCJ_NIEUN:*/
 case SJ_IC_NIEUN: {
-	*initial_consonant=2;
-	*hcj=HCJ_NIEUN;
-	break;
+  *initial_consonant=2;
+  *hcj=HCJ_NIEUN;
+  break;
 }
 /*case HCJ_TIKEUT:*/
 case SJ_IC_TIKEUT: {
-	*initial_consonant=3;
-	*hcj=HCJ_TIKEUT;
-	if (/*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ input[(*pos_input)+1]==SJ_IC_TIKEUT) {
-		*initial_consonant=4;
-		*hcj=HCJ_SSANGTIKEUT;
-		(*pos_input)++;
-	}
-	break;
+  *initial_consonant=3;
+  *hcj=HCJ_TIKEUT;
+  if (/*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ input[(*pos_input)+1]==SJ_IC_TIKEUT) {
+    *initial_consonant=4;
+    *hcj=HCJ_SSANGTIKEUT;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGTIKEUT:*/
 case SJ_IC_SSANGTIKEUT: {
-	*initial_consonant=4;
-	*hcj=HCJ_SSANGTIKEUT;
-	break;
+  *initial_consonant=4;
+  *hcj=HCJ_SSANGTIKEUT;
+  break;
 }
 /*case HCJ_RIEUL:*/
 case SJ_IC_RIEUL: {
-	*initial_consonant=5;
-	*hcj=HCJ_RIEUL;
-	break;
+  *initial_consonant=5;
+  *hcj=HCJ_RIEUL;
+  break;
 }
 /*case HCJ_MIEUM:*/
 case SJ_IC_MIEUM: {
-	*initial_consonant=6;
-	*hcj=HCJ_MIEUM;
-	break;
+  *initial_consonant=6;
+  *hcj=HCJ_MIEUM;
+  break;
 }
 /*case HCJ_PIEUP:*/
 case SJ_IC_PIEUP: {
-	*initial_consonant=7;
-	*hcj=HCJ_PIEUP;
-	if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_IC_PIEUP) {
-		*initial_consonant=8;
-		*hcj=HCJ_SSANGPIEUP;
-		(*pos_input)++;
-	}
-	break;
+  *initial_consonant=7;
+  *hcj=HCJ_PIEUP;
+  if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_IC_PIEUP) {
+    *initial_consonant=8;
+    *hcj=HCJ_SSANGPIEUP;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGPIEUP:*/
 case SJ_IC_SSANGPIEUP: {
-	*initial_consonant=8;
-	*hcj=HCJ_SSANGPIEUP;
-	break;
+  *initial_consonant=8;
+  *hcj=HCJ_SSANGPIEUP;
+  break;
 }
 /*case HCJ_SIOS:*/
 case SJ_IC_SIOS: {
-	*initial_consonant=9;
-	*hcj=HCJ_SIOS;
-	if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_IC_SIOS) {
-		*initial_consonant=10;
-		*hcj=HCJ_SSANGSIOS;
-		(*pos_input)++;
-	}
-	break;
+  *initial_consonant=9;
+  *hcj=HCJ_SIOS;
+  if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_IC_SIOS) {
+    *initial_consonant=10;
+    *hcj=HCJ_SSANGSIOS;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGSIOS:*/
 case SJ_IC_SSANGSIOS: {
-	*initial_consonant=10;
-	*hcj=HCJ_SSANGSIOS;
-	break;
+  *initial_consonant=10;
+  *hcj=HCJ_SSANGSIOS;
+  break;
 }
 /*case HCJ_IEUNG:*/
 case SJ_IC_IEUNG: {
-	*initial_consonant=11;
-	*hcj=HCJ_IEUNG;
-	break;
+  *initial_consonant=11;
+  *hcj=HCJ_IEUNG;
+  break;
 }
 /*case HCJ_CIEUC:*/
 case SJ_IC_CIEUC: {
-	*initial_consonant=12;
-	*hcj=HCJ_CIEUC;
-	if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
-		*initial_consonant=13;
-		*hcj=HCJ_SSANGCIEUC;
-		(*pos_input)++;
-	}
-	break;
+  *initial_consonant=12;
+  *hcj=HCJ_CIEUC;
+  if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
+    *initial_consonant=13;
+    *hcj=HCJ_SSANGCIEUC;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGCIEUC:*/
 case SJ_IC_SSANGCIEUC: {
-	*initial_consonant=13;
-	*hcj=HCJ_SSANGCIEUC;
-	break;
+  *initial_consonant=13;
+  *hcj=HCJ_SSANGCIEUC;
+  break;
 }
 /*case HCJ_CHIEUCH:*/
 case SJ_IC_CHIEUCH: {
-	*initial_consonant=14;
-	*hcj=HCJ_CHIEUCH;
-	break;
+  *initial_consonant=14;
+  *hcj=HCJ_CHIEUCH;
+  break;
 }
 /*case HCJ_KHIEUKH:*/
 case SJ_IC_KHIEUKH: {
-	*initial_consonant=15;
-	*hcj=HCJ_KHIEUKH;
-	break;
+  *initial_consonant=15;
+  *hcj=HCJ_KHIEUKH;
+  break;
 }
 /*case HCJ_THIEUTH:*/
 case SJ_IC_THIEUTH: {
-	*initial_consonant=16;
-	*hcj=HCJ_THIEUTH;
-	break;
+  *initial_consonant=16;
+  *hcj=HCJ_THIEUTH;
+  break;
 }
 /*case HCJ_PHIEUPH:*/
 case SJ_IC_PHIEUPH: {
-	*initial_consonant=17;
-	*hcj=HCJ_PHIEUPH;
-	break;
+  *initial_consonant=17;
+  *hcj=HCJ_PHIEUPH;
+  break;
 }
 /*case HCJ_HIEUH:*/
 case SJ_IC_HIEUH: {
-	*initial_consonant=18;
-	*hcj=HCJ_HIEUH;
-	if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
-	   *initial_consonant=15;
-	   *hcj=HCJ_KHIEUKH;
-	   (*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
+  *initial_consonant=18;
+  *hcj=HCJ_HIEUH;
+  if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+     *initial_consonant=15;
+     *hcj=HCJ_KHIEUKH;
+     (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
       *initial_consonant=14;
       *hcj=HCJ_CHIEUCH;
       (*pos_input)++;
@@ -545,19 +545,19 @@ case SJ_IC_HIEUH: {
       *hcj=HCJ_PHIEUPH;
       (*pos_input)++;
    }
-	break;
+  break;
 }
 default: {
-	return KR_NO_MATCH;
+  return KR_NO_MATCH;
 }
 } /* End of switch */
 /* Now we check whether we are at the end of the  or at the end of the string */
 (*pos_input)++;
 if (input[*pos_input]=='\0') {
-	return KR_END_OF_STRING;
+  return KR_END_OF_STRING;
 }
 if (input[*pos_input]==KR_SYLLABLE_BOUND) {
-	return KR_END_OF_SYLLABLE;
+  return KR_END_OF_SYLLABLE;
 }
 /* If we have something else, we have a normal match */
 return KR_MATCH;
@@ -578,211 +578,211 @@ int read_vowels(unichar* input,int *pos_input,int *vowel,unichar *hcj) {
 switch(input[*pos_input]) {
 /*case HCJ_A:*/
 case SJ_A: {
-	*vowel=0;
-	*hcj=HCJ_A;
-	if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-		*vowel=1;
-		*hcj=HCJ_AE;
-		(*pos_input)++;
-	}
-	break;
+  *vowel=0;
+  *hcj=HCJ_A;
+  if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    *vowel=1;
+    *hcj=HCJ_AE;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_AE:*/
 case SJ_AE: {
-	*vowel=1;
-	*hcj=HCJ_AE;
-	break;
+  *vowel=1;
+  *hcj=HCJ_AE;
+  break;
 }
 /*case HCJ_EO:*/
 case SJ_EO: {
-	*vowel=4;
-	*hcj=HCJ_EO;
-	if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-		*vowel=5;
-		*hcj=HCJ_E;
-		(*pos_input)++;
-	}
-	break;
+  *vowel=4;
+  *hcj=HCJ_EO;
+  if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    *vowel=5;
+    *hcj=HCJ_E;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_E:*/
 case SJ_E: {
-	*vowel=5;
-	*hcj=HCJ_E;
-	break;
+  *vowel=5;
+  *hcj=HCJ_E;
+  break;
 }
 /*case HCJ_O:*/
 case SJ_O: {
-	*vowel=8;
-	*hcj=HCJ_O;
-	if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
-		*vowel=9;
-		*hcj=HCJ_WA;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-		*vowel=11;
-		*hcj=HCJ_OE;
-		(*pos_input)++;
-		if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
-			*vowel=10;
-			*hcj=HCJ_WAE;
-			(*pos_input)++;
-		}
-	}
-	break;
+  *vowel=8;
+  *hcj=HCJ_O;
+  if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
+    *vowel=9;
+    *hcj=HCJ_WA;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    *vowel=11;
+    *hcj=HCJ_OE;
+    (*pos_input)++;
+    if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+      *vowel=10;
+      *hcj=HCJ_WAE;
+      (*pos_input)++;
+    }
+  }
+  break;
 }
 /*case HCJ_WA:*/
 case SJ_WA: {
-	*vowel=9;
-	*hcj=HCJ_WA;
-	break;
+  *vowel=9;
+  *hcj=HCJ_WA;
+  break;
 }
 /*case HCJ_WAE:*/
 case SJ_WAE: {
-	*vowel=10;
-	*hcj=HCJ_WAE;
-	break;
+  *vowel=10;
+  *hcj=HCJ_WAE;
+  break;
 }
 /*case HCJ_OE:*/
 case SJ_OE: {
-	*vowel=11;
-	*hcj=HCJ_OE;
-	break;
+  *vowel=11;
+  *hcj=HCJ_OE;
+  break;
 }
 /*case HCJ_U:*/
 case SJ_U: {
-	*vowel=13;
-	*hcj=HCJ_U;
-	if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
-		*vowel=14;
-		*hcj=HCJ_WEO;
-		(*pos_input)++;
-		if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-			*vowel=15;
-			*hcj=HCJ_WE;
-			(*pos_input)++;
-		}
-	} else if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-		*vowel=16;
-		*hcj=HCJ_WI;
-		(*pos_input)++;
-	}
-	break;
+  *vowel=13;
+  *hcj=HCJ_U;
+  if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+    *vowel=14;
+    *hcj=HCJ_WEO;
+    (*pos_input)++;
+    if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+      *vowel=15;
+      *hcj=HCJ_WE;
+      (*pos_input)++;
+    }
+  } else if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    *vowel=16;
+    *hcj=HCJ_WI;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_WEO:*/
 case SJ_WEO: {
-	*vowel=14;
-	*hcj=HCJ_WEO;
-	break;
+  *vowel=14;
+  *hcj=HCJ_WEO;
+  break;
 }
 /*case HCJ_WE:*/
 case SJ_WE: {
-	*vowel=15;
-	*hcj=HCJ_WE;
-	break;
+  *vowel=15;
+  *hcj=HCJ_WE;
+  break;
 }
 /*case HCJ_WI:*/
 case SJ_WI: {
-	*vowel=16;
-	*hcj=HCJ_WI;
-	break;
+  *vowel=16;
+  *hcj=HCJ_WI;
+  break;
 }
 /*case HCJ_EU:*/
 case SJ_EU: {
-	*vowel=18;
-	*hcj=HCJ_EU;
-	if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-		*vowel=19;
-		*hcj=HCJ_YI;
-		(*pos_input)++;
-	}
-	break;
+  *vowel=18;
+  *hcj=HCJ_EU;
+  if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+    *vowel=19;
+    *hcj=HCJ_YI;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_YI:*/
 case SJ_YI: {
-	*vowel=19;
-	*hcj=HCJ_YI;
-	break;
+  *vowel=19;
+  *hcj=HCJ_YI;
+  break;
 }
 /*case HCJ_I:*/
 case SJ_I: {
-	*vowel=20;
-	*hcj=HCJ_I;
-	if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
-		*vowel=2;
-		*hcj=HCJ_YA;
-		(*pos_input)++;
-		if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-			*vowel=3;
-			*hcj=HCJ_YAE;
-			(*pos_input)++;
-		}
-	} else if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
-		*vowel=6;
-		*hcj=HCJ_YEO;
-		(*pos_input)++;
-		if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
-			*vowel=7;
-			*hcj=HCJ_YE;
-			(*pos_input)++;
-		}
-	} else if (/*input[(*pos_input)+1]==HCJ_O ||*/ input[(*pos_input)+1]==SJ_O) {
-		*vowel=12;
-		*hcj=HCJ_YO;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_U ||*/ input[(*pos_input)+1]==SJ_U) {
-		*vowel=17;
-		*hcj=HCJ_YU;
-		(*pos_input)++;
-	}
-	break;
+  *vowel=20;
+  *hcj=HCJ_I;
+  if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
+    *vowel=2;
+    *hcj=HCJ_YA;
+    (*pos_input)++;
+    if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+      *vowel=3;
+      *hcj=HCJ_YAE;
+      (*pos_input)++;
+    }
+  } else if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+    *vowel=6;
+    *hcj=HCJ_YEO;
+    (*pos_input)++;
+    if (/*input[(*pos_input)+1]==HCJ_I ||*/ input[(*pos_input)+1]==SJ_I) {
+      *vowel=7;
+      *hcj=HCJ_YE;
+      (*pos_input)++;
+    }
+  } else if (/*input[(*pos_input)+1]==HCJ_O ||*/ input[(*pos_input)+1]==SJ_O) {
+    *vowel=12;
+    *hcj=HCJ_YO;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_U ||*/ input[(*pos_input)+1]==SJ_U) {
+    *vowel=17;
+    *hcj=HCJ_YU;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_YA:*/
 case SJ_YA: {
-	*vowel=2;
-	*hcj=HCJ_YA;
-	break;
+  *vowel=2;
+  *hcj=HCJ_YA;
+  break;
 }
 /*case HCJ_YAE:*/
 case SJ_YAE: {
-	*vowel=3;
-	*hcj=HCJ_YAE;
-	break;
+  *vowel=3;
+  *hcj=HCJ_YAE;
+  break;
 }
 /*case HCJ_YEO:*/
 case SJ_YEO: {
-	*vowel=6;
-	*hcj=HCJ_YEO;
-	break;
+  *vowel=6;
+  *hcj=HCJ_YEO;
+  break;
 }
 /*case HCJ_YE:*/
 case SJ_YE: {
-	*vowel=7;
-	*hcj=HCJ_YE;
-	break;
+  *vowel=7;
+  *hcj=HCJ_YE;
+  break;
 }
 /*case HCJ_YO:*/
 case SJ_YO: {
-	*vowel=12;
-	*hcj=HCJ_YO;
-	break;
+  *vowel=12;
+  *hcj=HCJ_YO;
+  break;
 }
 /*case HCJ_YU:*/
 case SJ_YU: {
-	*vowel=17;
-	*hcj=HCJ_YU;
-	break;
+  *vowel=17;
+  *hcj=HCJ_YU;
+  break;
 }
 default: {
-	return KR_JAMO_ERROR;
+  return KR_JAMO_ERROR;
 }
 } /* End of switch */
 /* Now we check whether we are at the end of the syllable or at the end of the string */
 (*pos_input)++;
 if (input[*pos_input]=='\0') {
-	return KR_END_OF_STRING;
+  return KR_END_OF_STRING;
 }
 if (input[*pos_input]==KR_SYLLABLE_BOUND) {
-	return KR_END_OF_SYLLABLE;
+  return KR_END_OF_SYLLABLE;
 }
 /* If we have something else, we have a normal match */
 return KR_MATCH;
@@ -806,292 +806,292 @@ return KR_MATCH;
  *       produced by the library's Hangul->Jamo function
  */
 int read_final_consonants(unichar* input,int *pos_input,int *final_consonant, unichar *hcj,
-		                  int all_sequences) {
+                      int all_sequences) {
 switch(input[*pos_input]) {
 /*case HCJ_KIYEOK:*/
 case SJ_FC_KIYEOK:
 case SJ_IC_KIYEOK: {
-	*final_consonant=1;
-	*hcj=HCJ_KIYEOK;
-	if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_FC_KIYEOK ||
-		input[(*pos_input)+1]==SJ_IC_KIYEOK) {
-		*final_consonant=2;
-		*hcj=HCJ_SSANGKIYEOK;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
-			input[(*pos_input)+1]==SJ_IC_SIOS) {
-		*final_consonant=3;
-		*hcj=HCJ_KIYEOK_SIOS;
-		(*pos_input)++;
-	}
-	break;
+  *final_consonant=1;
+  *hcj=HCJ_KIYEOK;
+  if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_FC_KIYEOK ||
+    input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+    *final_consonant=2;
+    *hcj=HCJ_SSANGKIYEOK;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+      input[(*pos_input)+1]==SJ_IC_SIOS) {
+    *final_consonant=3;
+    *hcj=HCJ_KIYEOK_SIOS;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGKIYEOK:*/
 case SJ_FC_SSANGKIYEOK:
 case SJ_IC_SSANGKIYEOK: {
-	*final_consonant=2;
-	*hcj=HCJ_SSANGKIYEOK;
-	break;
+  *final_consonant=2;
+  *hcj=HCJ_SSANGKIYEOK;
+  break;
 }
 /*case HCJ_KIYEOK_SIOS:*/
 case SJ_FC_KIYEOK_SIOS: {
-	*final_consonant=3;
-	*hcj=HCJ_KIYEOK_SIOS;
-	break;
+  *final_consonant=3;
+  *hcj=HCJ_KIYEOK_SIOS;
+  break;
 }
 /*case HCJ_NIEUN:*/
 case SJ_FC_NIEUN:
 case SJ_IC_NIEUN: {
-	*final_consonant=4;
-	if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_FC_CIEUC ||
-		input[(*pos_input)+1]==SJ_IC_CIEUC) {
-		*final_consonant=5;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_HIEUH ||*/ input[(*pos_input)+1]==SJ_FC_HIEUH ||
-		input[(*pos_input)+1]==SJ_IC_HIEUH) {
-		*final_consonant=6;
-		(*pos_input)++;
-	}
-	break;
+  *final_consonant=4;
+  if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_FC_CIEUC ||
+    input[(*pos_input)+1]==SJ_IC_CIEUC) {
+    *final_consonant=5;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_HIEUH ||*/ input[(*pos_input)+1]==SJ_FC_HIEUH ||
+    input[(*pos_input)+1]==SJ_IC_HIEUH) {
+    *final_consonant=6;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_NIEUN_CIEUC:*/
 case SJ_FC_NIEUN_CIEUC: {
-	*final_consonant=5;
-	*hcj=HCJ_NIEUN_CIEUC;
-	break;
+  *final_consonant=5;
+  *hcj=HCJ_NIEUN_CIEUC;
+  break;
 }
 /*case HCJ_NIEUN_HIEUH:*/
 case SJ_FC_NIEUN_HIEUH: {
-	*final_consonant=6;
-	*hcj=HCJ_NIEUN_HIEUH;
-	break;
+  *final_consonant=6;
+  *hcj=HCJ_NIEUN_HIEUH;
+  break;
 }
 /*case HCJ_TIKEUT:*/
 case SJ_FC_TIKEUT:
 case SJ_IC_TIKEUT: {
-	*final_consonant=7;
-	*hcj=HCJ_TIKEUT;
-	if (all_sequences && /*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ (input[(*pos_input)+1]==SJ_FC_TIKEUT ||
-		input[(*pos_input)+1]==SJ_IC_TIKEUT)) {
-		(*pos_input)++;
-		*hcj=HCJ_SSANGTIKEUT;
-	}
-	break;
+  *final_consonant=7;
+  *hcj=HCJ_TIKEUT;
+  if (all_sequences && /*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ (input[(*pos_input)+1]==SJ_FC_TIKEUT ||
+    input[(*pos_input)+1]==SJ_IC_TIKEUT)) {
+    (*pos_input)++;
+    *hcj=HCJ_SSANGTIKEUT;
+  }
+  break;
 }
 /*case HCJ_SSANGTIKEUT:*/
 case SJ_IC_SSANGTIKEUT: {
-	if (all_sequences) {
-		*hcj=HCJ_SSANGTIKEUT;
-	}
-	break;
+  if (all_sequences) {
+    *hcj=HCJ_SSANGTIKEUT;
+  }
+  break;
 }
 /*case HCJ_RIEUL:*/
 case SJ_FC_RIEUL:
 case SJ_IC_RIEUL:{
-	*final_consonant=8;
-	*hcj=HCJ_RIEUL;
-	if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_FC_KIYEOK ||
-		input[(*pos_input)+1]==SJ_IC_KIYEOK) {
-		*final_consonant=9;
-		*hcj=HCJ_RIEUL_KIYEOK;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_MIEUM ||*/ input[(*pos_input)+1]==SJ_FC_MIEUM ||
-		input[(*pos_input)+1]==SJ_IC_MIEUM) {
-		*final_consonant=10;
-		*hcj=HCJ_RIEUL_MIEUM;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_FC_PIEUP ||
-		input[(*pos_input)+1]==SJ_IC_PIEUP) {
-		*final_consonant=11;
-		*hcj=HCJ_RIEUL_PIEUP;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
-		input[(*pos_input)+1]==SJ_IC_SIOS) {
-		*final_consonant=12;
-		*hcj=HCJ_RIEUL_SIOS;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_THIEUTH ||*/ input[(*pos_input)+1]==SJ_FC_THIEUTH ||
-		input[(*pos_input)+1]==SJ_IC_THIEUTH) {
-		*final_consonant=13;
-		*hcj=HCJ_RIEUL_THIEUTH;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_PHIEUPH ||*/ input[(*pos_input)+1]==SJ_FC_PHIEUPH ||
-		input[(*pos_input)+1]==SJ_IC_PHIEUPH) {
-		*final_consonant=14;
-		*hcj=HCJ_RIEUL_PHIEUPH;
-		(*pos_input)++;
-	} else if (/*input[(*pos_input)+1]==HCJ_HIEUH ||*/ input[(*pos_input)+1]==SJ_FC_HIEUH ||
-		input[(*pos_input)+1]==SJ_IC_HIEUH) {
-		*final_consonant=15;
-		*hcj=HCJ_RIEUL_HIEUH;
-		(*pos_input)++;
-	}
-	break;
+  *final_consonant=8;
+  *hcj=HCJ_RIEUL;
+  if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_FC_KIYEOK ||
+    input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+    *final_consonant=9;
+    *hcj=HCJ_RIEUL_KIYEOK;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_MIEUM ||*/ input[(*pos_input)+1]==SJ_FC_MIEUM ||
+    input[(*pos_input)+1]==SJ_IC_MIEUM) {
+    *final_consonant=10;
+    *hcj=HCJ_RIEUL_MIEUM;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_FC_PIEUP ||
+    input[(*pos_input)+1]==SJ_IC_PIEUP) {
+    *final_consonant=11;
+    *hcj=HCJ_RIEUL_PIEUP;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    input[(*pos_input)+1]==SJ_IC_SIOS) {
+    *final_consonant=12;
+    *hcj=HCJ_RIEUL_SIOS;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_THIEUTH ||*/ input[(*pos_input)+1]==SJ_FC_THIEUTH ||
+    input[(*pos_input)+1]==SJ_IC_THIEUTH) {
+    *final_consonant=13;
+    *hcj=HCJ_RIEUL_THIEUTH;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_PHIEUPH ||*/ input[(*pos_input)+1]==SJ_FC_PHIEUPH ||
+    input[(*pos_input)+1]==SJ_IC_PHIEUPH) {
+    *final_consonant=14;
+    *hcj=HCJ_RIEUL_PHIEUPH;
+    (*pos_input)++;
+  } else if (/*input[(*pos_input)+1]==HCJ_HIEUH ||*/ input[(*pos_input)+1]==SJ_FC_HIEUH ||
+    input[(*pos_input)+1]==SJ_IC_HIEUH) {
+    *final_consonant=15;
+    *hcj=HCJ_RIEUL_HIEUH;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_RIEUL_KIYEOK:*/
 case SJ_FC_RIEUL_KIYEOK: {
-	*final_consonant=9;
-	*hcj=HCJ_RIEUL_KIYEOK;
-	break;
+  *final_consonant=9;
+  *hcj=HCJ_RIEUL_KIYEOK;
+  break;
 }
 /*case HCJ_RIEUL_MIEUM:*/
 case SJ_FC_RIEUL_MIEUM: {
-	*final_consonant=10;
-	*hcj=HCJ_RIEUL_MIEUM;
-	break;
+  *final_consonant=10;
+  *hcj=HCJ_RIEUL_MIEUM;
+  break;
 }
 /*case HCJ_RIEUL_PIEUP:*/
 case SJ_FC_RIEUL_PIEUP: {
-	*final_consonant=11;
-	*hcj=HCJ_RIEUL_PIEUP;
-	break;
+  *final_consonant=11;
+  *hcj=HCJ_RIEUL_PIEUP;
+  break;
 }
 /*case HCJ_RIEUL_SIOS:*/
 case SJ_FC_RIEUL_SIOS: {
-	*final_consonant=12;
-	*hcj=HCJ_RIEUL_SIOS;
-	break;
+  *final_consonant=12;
+  *hcj=HCJ_RIEUL_SIOS;
+  break;
 }
 /*case HCJ_RIEUL_THIEUTH:*/
 case SJ_FC_RIEUL_THIEUTH: {
-	*final_consonant=13;
-	*hcj=HCJ_RIEUL_THIEUTH;
-	break;
+  *final_consonant=13;
+  *hcj=HCJ_RIEUL_THIEUTH;
+  break;
 }
 /*case HCJ_RIEUL_PHIEUPH:*/
 case SJ_FC_RIEUL_PHIEUPH: {
-	*final_consonant=14;
-	*hcj=HCJ_RIEUL_PHIEUPH;
-	break;
+  *final_consonant=14;
+  *hcj=HCJ_RIEUL_PHIEUPH;
+  break;
 }
 /*case HCJ_RIEUL_HIEUH:*/
 case SJ_FC_RIEUL_HIEUH: {
-	*final_consonant=15;
-	*hcj=HCJ_RIEUL_HIEUH;
-	break;
+  *final_consonant=15;
+  *hcj=HCJ_RIEUL_HIEUH;
+  break;
 }
 /*case HCJ_MIEUM:*/
 case SJ_FC_MIEUM:
 case SJ_IC_MIEUM: {
-	*final_consonant=16;
-	*hcj=HCJ_MIEUM;
-	break;
+  *final_consonant=16;
+  *hcj=HCJ_MIEUM;
+  break;
 }
 /*case HCJ_PIEUP:*/
 case SJ_FC_PIEUP:
 case SJ_IC_PIEUP: {
-	*final_consonant=17;
-	*hcj=HCJ_PIEUP;
-	if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
-		input[(*pos_input)+1]==SJ_IC_SIOS) {
-		*final_consonant=18;
-		*hcj=HCJ_PIEUP_SIOS;
-		(*pos_input)++;
-	} else if (all_sequences && /*input[(*pos_input)+1]==HCJ_PIEUP ||*/ (input[(*pos_input)+1]==SJ_FC_PIEUP ||
-		input[(*pos_input)+1]==SJ_IC_PIEUP)) {
-		*hcj=HCJ_SSANGPIEUP;
-		(*pos_input)++;
-	}
-	break;
+  *final_consonant=17;
+  *hcj=HCJ_PIEUP;
+  if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    input[(*pos_input)+1]==SJ_IC_SIOS) {
+    *final_consonant=18;
+    *hcj=HCJ_PIEUP_SIOS;
+    (*pos_input)++;
+  } else if (all_sequences && /*input[(*pos_input)+1]==HCJ_PIEUP ||*/ (input[(*pos_input)+1]==SJ_FC_PIEUP ||
+    input[(*pos_input)+1]==SJ_IC_PIEUP)) {
+    *hcj=HCJ_SSANGPIEUP;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_PIEUP_SIOS:*/
 case SJ_FC_PIEUP_SIOS: {
-	*final_consonant=18;
-	*hcj=HCJ_PIEUP_SIOS;
-	break;
+  *final_consonant=18;
+  *hcj=HCJ_PIEUP_SIOS;
+  break;
 }
 /*case HCJ_SIOS:*/
 case SJ_FC_SIOS:
 case SJ_IC_SIOS: {
-	*final_consonant=19;
-	*hcj=HCJ_SIOS;
-	if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
-		input[(*pos_input)+1]==SJ_IC_SIOS) {
-		*final_consonant=20;
-		*hcj=HCJ_SSANGSIOS;
-		(*pos_input)++;
-	}
-	break;
+  *final_consonant=19;
+  *hcj=HCJ_SIOS;
+  if (/*input[(*pos_input)+1]==HCJ_SIOS ||*/ input[(*pos_input)+1]==SJ_FC_SIOS ||
+    input[(*pos_input)+1]==SJ_IC_SIOS) {
+    *final_consonant=20;
+    *hcj=HCJ_SSANGSIOS;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGSIOS:*/
 case SJ_FC_SSANGSIOS:
 case SJ_IC_SSANGSIOS: {
-	*final_consonant=20;
-	*hcj=HCJ_SSANGSIOS;
-	break;
+  *final_consonant=20;
+  *hcj=HCJ_SSANGSIOS;
+  break;
 }
 /*case HCJ_IEUNG:*/
 case SJ_FC_IEUNG:
 case SJ_IC_IEUNG: {
-	*final_consonant=21;
-	*hcj=HCJ_IEUNG;
-	break;
+  *final_consonant=21;
+  *hcj=HCJ_IEUNG;
+  break;
 }
 /*case HCJ_CIEUC:*/
 case SJ_FC_CIEUC:
 case SJ_IC_CIEUC: {
-	*final_consonant=22;
-	*hcj=HCJ_CIEUC;
-	if (all_sequences && /*input[(*pos_input)+1]==HCJ_CIEUC ||*/ (input[(*pos_input)+1]==SJ_FC_CIEUC ||
-		input[(*pos_input)+1]==SJ_IC_CIEUC)) {
-		*hcj=HCJ_SSANGCIEUC;
-		(*pos_input)++;
-	}
-	break;
+  *final_consonant=22;
+  *hcj=HCJ_CIEUC;
+  if (all_sequences && /*input[(*pos_input)+1]==HCJ_CIEUC ||*/ (input[(*pos_input)+1]==SJ_FC_CIEUC ||
+    input[(*pos_input)+1]==SJ_IC_CIEUC)) {
+    *hcj=HCJ_SSANGCIEUC;
+    (*pos_input)++;
+  }
+  break;
 }
 /*case HCJ_SSANGCIEUC:*/
 case SJ_IC_SSANGCIEUC: {
-	if (all_sequences) {
-		*hcj=HCJ_SSANGCIEUC;
-	}
-	break;
+  if (all_sequences) {
+    *hcj=HCJ_SSANGCIEUC;
+  }
+  break;
 }
 /*case HCJ_CHIEUCH:*/
 case SJ_FC_CHIEUCH:
 case SJ_IC_CHIEUCH: {
-	*final_consonant=23;
-	*hcj=HCJ_CHIEUCH;
-	break;
+  *final_consonant=23;
+  *hcj=HCJ_CHIEUCH;
+  break;
 }
 /*case HCJ_KHIEUKH:*/
 case SJ_FC_KHIEUKH:
 case SJ_IC_KHIEUKH: {
-	*final_consonant=24;
-	*hcj=HCJ_KHIEUKH;
-	break;
+  *final_consonant=24;
+  *hcj=HCJ_KHIEUKH;
+  break;
 }
 /*case HCJ_THIEUTH:*/
 case SJ_FC_THIEUTH:
 case SJ_IC_THIEUTH: {
-	*final_consonant=25;
-	*hcj=HCJ_THIEUTH;
-	break;
+  *final_consonant=25;
+  *hcj=HCJ_THIEUTH;
+  break;
 }
 /*case HCJ_PHIEUPH:*/
 case SJ_FC_PHIEUPH:
 case SJ_IC_PHIEUPH: {
-	*final_consonant=26;
-	*hcj=HCJ_PHIEUPH;
-	break;
+  *final_consonant=26;
+  *hcj=HCJ_PHIEUPH;
+  break;
 }
 /*case HCJ_HIEUH:*/
 case SJ_FC_HIEUH:
 case SJ_IC_HIEUH: {
-	*final_consonant=27;
-	*hcj=HCJ_HIEUH;
-	break;
+  *final_consonant=27;
+  *hcj=HCJ_HIEUH;
+  break;
 }
 default: {
-	return KR_NO_MATCH;
+  return KR_NO_MATCH;
 }
 } /* End of switch */
 /* Now we check whether we are at the end of the syllable or at the end of the string */
 (*pos_input)++;
 if (input[*pos_input]=='\0') {
-	return KR_END_OF_STRING;
+  return KR_END_OF_STRING;
 }
 if (input[*pos_input]==KR_SYLLABLE_BOUND) {
-	return KR_END_OF_SYLLABLE;
+  return KR_END_OF_SYLLABLE;
 }
 /* If we have something else, we have a normal match. This may indicate that, after
  * the Jamo sequence, we have a non Korean character */
@@ -1109,14 +1109,14 @@ int foo;
 /* We try to read a vowel sequence */
 int ret=read_vowels(input,pos_input,&foo,hcj);
 if (ret!=KR_JAMO_ERROR) {
-	/* If a vowel sequence was found, we won */
-	return 1;
+  /* If a vowel sequence was found, we won */
+  return 1;
 }
 /* If not, we try to read a consonant sequence */
 ret=read_final_consonants(input,pos_input,&foo,hcj,1);
 if (ret!=KR_NO_MATCH) {
-	/* If a consonant sequence was found, we won */
-	return 1;
+  /* If a consonant sequence was found, we won */
+  return 1;
 }
 return 0;
 }
@@ -1132,8 +1132,8 @@ return 0;
  */
 int decode_one_Jamo_syllab(unichar* input,unichar* output,int *pos_input,int *pos_output) {
 if (input[*pos_input]=='\0') {
-	output[*pos_output]='\0';
-	return KR_END_OF_STRING;
+  output[*pos_output]='\0';
+  return KR_END_OF_STRING;
 }
 int old_pos_input=*pos_input;
 int old_pos_output=*pos_output;
@@ -1141,44 +1141,44 @@ int ret, initial_consonant, vowel, final_consonant;
 unichar hcj;
 if (input[*pos_input]==KR_SYLLABLE_BOUND) {
 
-	initial_consonant=11;
-	vowel=0;
-	final_consonant=0;
-	(*pos_input)++;
-	ret=read_initial_consonants(input,pos_input,&initial_consonant,&hcj);
-	if (ret==KR_END_OF_SYLLABLE || ret==KR_END_OF_STRING) {
-		/* If we have matched and finished, we return */
-		output[(*pos_output)++]=hcj;
-		return ret;
-	}
-	ret=read_vowels(input,pos_input,&vowel,&hcj);
-	if (ret==KR_JAMO_ERROR) {
-		/* If we can't read a vowel, then it means that the input Jamo syllable is
-		 * not correct. In such a case, we skip the syllable bound, so that
-		 * the next call to this function will read the input char by char */
-		*pos_input=old_pos_input+1;
-		*pos_output=old_pos_output;
-		return KR_END_OF_SYLLABLE;
-	}
-	if (ret!=KR_END_OF_SYLLABLE && ret != KR_END_OF_STRING) {
-		/* If we are not at the end of the sequence, we try to read
-		 * a final consonant sequence */
-		ret=read_final_consonants(input,pos_input,&final_consonant,&hcj,0);
-	}
-	int syllable=(initial_consonant*21+vowel)*28+final_consonant+0xAC00;
-	output[(*pos_output)++]=(unichar)syllable;
-	return KR_END_OF_SYLLABLE;
+  initial_consonant=11;
+  vowel=0;
+  final_consonant=0;
+  (*pos_input)++;
+  ret=read_initial_consonants(input,pos_input,&initial_consonant,&hcj);
+  if (ret==KR_END_OF_SYLLABLE || ret==KR_END_OF_STRING) {
+    /* If we have matched and finished, we return */
+    output[(*pos_output)++]=hcj;
+    return ret;
+  }
+  ret=read_vowels(input,pos_input,&vowel,&hcj);
+  if (ret==KR_JAMO_ERROR) {
+    /* If we can't read a vowel, then it means that the input Jamo syllable is
+     * not correct. In such a case, we skip the syllable bound, so that
+     * the next call to this function will read the input char by char */
+    *pos_input=old_pos_input+1;
+    *pos_output=old_pos_output;
+    return KR_END_OF_SYLLABLE;
+  }
+  if (ret!=KR_END_OF_SYLLABLE && ret != KR_END_OF_STRING) {
+    /* If we are not at the end of the sequence, we try to read
+     * a final consonant sequence */
+    ret=read_final_consonants(input,pos_input,&final_consonant,&hcj,0);
+  }
+  int syllable=(initial_consonant*21+vowel)*28+final_consonant+0xAC00;
+  output[(*pos_output)++]=(unichar)syllable;
+  return KR_END_OF_SYLLABLE;
 }
 /* We try to read a Jamo sequence that is not part of a syllable */
 if (read_jamos(input,pos_input,&hcj)) {
-	output[(*pos_output)++]=hcj;
-	if (input[*pos_input]=='\0') {
-		return KR_END_OF_STRING;
-	}
-	/* We return KR_END_OF_SYLLABLE either if there is actually one
-	 * or if there is something else after the Jamo sequence in the input, like a
-	 * latin character */
-	return KR_END_OF_SYLLABLE;
+  output[(*pos_output)++]=hcj;
+  if (input[*pos_input]=='\0') {
+    return KR_END_OF_STRING;
+  }
+  /* We return KR_END_OF_SYLLABLE either if there is actually one
+   * or if there is something else after the Jamo sequence in the input, like a
+   * latin character */
+  return KR_END_OF_SYLLABLE;
 }
 /* If we have a non Jamo character, we just output it */
 output[(*pos_output)++]=input[(*pos_input)++];
@@ -1197,7 +1197,7 @@ int res;
 while ((res=decode_one_Jamo_syllab(input,output,&pos_input,&pos_output))==KR_END_OF_SYLLABLE) {}
 output[pos_output]='\0';
 if (res==KR_JAMO_ERROR) {
-	return KR_JAMO_ERROR;
+  return KR_JAMO_ERROR;
 }
 return pos_output;
 }

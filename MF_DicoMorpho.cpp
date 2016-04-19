@@ -106,9 +106,9 @@ int d_init_morpho_equiv(const VersatileEncodingConfig* vec,struct l_morpho_t* pL
   while (EOF!=readline(line,ef)) {
     line_no++;
     if (line->str[0]!='\0' && d_read_line(pL_MORPHO,line->str,line_no)) {
-    	u_fclose(ef);
-    	free_Ustring(line);
-    	return 1;
+      u_fclose(ef);
+      free_Ustring(line);
+      return 1;
     }
   }
   free_Ustring(line);
@@ -265,8 +265,8 @@ f_morpho_T* d_get_feat_str(struct l_morpho_t* pL_MORPHO,unichar* feat_str) {
     found = 0;
     for (e=0; e<pL_MORPHO->D_MORPHO_EQUIV.no_equiv && !found; e++)
       if (pL_MORPHO->D_MORPHO_EQUIV.equiv[e].dico_feat == feat_str[f]) {
-	f_add_morpho(feat, pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.cat, pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.val);
-	found = 1;
+  f_add_morpho(feat, pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.cat, pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.val);
+  found = 1;
       }
     if (!found)
       return NULL;
@@ -300,9 +300,9 @@ unichar* d_get_str_feat(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat) {
     found = 0;
     for (ef=0; ef<pL_MORPHO->D_MORPHO_EQUIV.no_equiv && !found; ef++) {
       if ((feat->cats[f].cat == pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].cat.cat) && (feat->cats[f].val == pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].cat.val) ) {
-	tmp[c] = pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].dico_feat;
-	c++;
-	found = 1;
+  tmp[c] = pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].dico_feat;
+  c++;
+  found = 1;
       }
     }
     //If a feature was not found in equivalences and it is not empty

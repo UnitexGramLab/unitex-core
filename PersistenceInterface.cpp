@@ -42,88 +42,88 @@ namespace unitex {
 
 int standard_load_persistence_dictionary(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {
-	if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
-		return 0;
-	strcpy(persistent_filename_buffer,filename);
-	return load_persistent_dictionary(filename);
+  if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
+    return 0;
+  strcpy(persistent_filename_buffer,filename);
+  return load_persistent_dictionary(filename);
 }
 
 void standard_unload_persistence_dictionary(const char*filename)
 {
-	free_persistent_dictionary(filename);
+  free_persistent_dictionary(filename);
 }
 
 int standard_load_persistence_fst2(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {
-	if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
-		return 0;
-	strcpy(persistent_filename_buffer,filename);
-	return load_persistent_fst2(filename);
+  if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
+    return 0;
+  strcpy(persistent_filename_buffer,filename);
+  return load_persistent_fst2(filename);
 }
 
 void standard_unload_persistence_fst2(const char*filename)
 {
-	free_persistent_fst2(filename);
+  free_persistent_fst2(filename);
 }
 
 int standard_load_persistence_alphabet(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {
-	if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
-		return 0;
-	strcpy(persistent_filename_buffer,filename);
-	return load_persistent_alphabet(filename);
+  if ((persistent_filename_buffer == NULL) || (buffer_size <= strlen(filename)))
+    return 0;
+  strcpy(persistent_filename_buffer,filename);
+  return load_persistent_alphabet(filename);
 }
 
 void standard_unload_persistence_alphabet(const char*filename)
 {
-	free_persistent_alphabet(filename);
+  free_persistent_alphabet(filename);
 }
 
 #endif
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_load_dictionary(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {
-	return standard_load_persistence_dictionary(filename, persistent_filename_buffer, buffer_size);
+  return standard_load_persistence_dictionary(filename, persistent_filename_buffer, buffer_size);
 }
 
 UNITEX_FUNC void UNITEX_CALL persistence_public_unload_dictionary(const char*filename)
 {
-	return standard_unload_persistence_dictionary(filename);
+  return standard_unload_persistence_dictionary(filename);
 }
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_load_fst2(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {
-	return standard_load_persistence_fst2(filename, persistent_filename_buffer, buffer_size);
+  return standard_load_persistence_fst2(filename, persistent_filename_buffer, buffer_size);
 }
 
 UNITEX_FUNC void UNITEX_CALL persistence_public_unload_fst2(const char*filename)
 {
-	return standard_unload_persistence_fst2(filename);
+  return standard_unload_persistence_fst2(filename);
 }
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_load_alphabet(const char*filename,char* persistent_filename_buffer,size_t buffer_size)
 {
-	return standard_load_persistence_alphabet(filename, persistent_filename_buffer, buffer_size);
+  return standard_load_persistence_alphabet(filename, persistent_filename_buffer, buffer_size);
 }
 
 UNITEX_FUNC void UNITEX_CALL persistence_public_unload_alphabet(const char*filename)
 {
-	return standard_unload_persistence_alphabet(filename);
+  return standard_unload_persistence_alphabet(filename);
 }
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_fst2_filename(const char*filename)
 {
-	return is_abstract_or_persistent_fst2_filename(filename);
+  return is_abstract_or_persistent_fst2_filename(filename);
 }
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_dictionary_filename(const char*filename)
 {
-	return is_abstract_or_persistent_dictionary_filename(filename);
+  return is_abstract_or_persistent_dictionary_filename(filename);
 }
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_is_persisted_alphabet_filename(const char*filename)
 {
-	return is_abstract_or_persistent_alphabet_filename(filename);
+  return is_abstract_or_persistent_alphabet_filename(filename);
 }
 
 } // namespace unitex

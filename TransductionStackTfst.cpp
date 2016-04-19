@@ -46,9 +46,9 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
  */
 void push_input_char_tfst(Ustring* s,unichar c,int protect_dic_chars) {
 if (protect_dic_chars && (c==',' || c=='.')) {
-	/* We want to protect dots and commas because the Locate program can be used
-	 * by Dico to generate dictionary entries */
-	u_strcat(s,"\\");
+  /* We want to protect dots and commas because the Locate program can be used
+   * by Dico to generate dictionary entries */
+  u_strcat(s,"\\");
 }
 u_strcat(s,c);
 }
@@ -139,7 +139,7 @@ for (;;) {
  * not correctly defined).
  */
 int process_output_tfst(Ustring* stack,const unichar* s,struct locate_tfst_infos* p,
-		int capture_in_debug_mode) {
+    int capture_in_debug_mode) {
 int old_length=stack->len;
 int i=0;
 if (s==NULL) {
@@ -147,17 +147,17 @@ if (s==NULL) {
    return 1;
 }
 if (capture_in_debug_mode) {
-	/* If we have a capture in debug mode, we must skip the initial char #1 */
-	i++;
+  /* If we have a capture in debug mode, we must skip the initial char #1 */
+  i++;
 }
 while (s[i]!='\0') {
     if (s[i]==DEBUG_INFO_COORD_MARK) {
-    	/* If we have found the debug mark indicating the end of the real output,
-    	 * we rawly copy the end of the output without interpreting it,
-    	 * or return if we were in capture mode */
-    	if (capture_in_debug_mode) return 1;
-    	push_output_string_tfst(stack,s+i);
-    	return 1;
+      /* If we have found the debug mark indicating the end of the real output,
+       * we rawly copy the end of the output without interpreting it,
+       * or return if we were in capture mode */
+      if (capture_in_debug_mode) return 1;
+      push_output_string_tfst(stack,s+i);
+      return 1;
     }
 
    if (s[i]=='$') {
@@ -173,7 +173,7 @@ while (s[i]!='\0') {
       }
       name[l]='\0';
       if (s[i]!='$' && s[i]!='.') {
-    	 switch (p->variable_error_policy) {
+       switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: {
@@ -201,48 +201,48 @@ while (s[i]!='\0') {
             TfstTag* first_tag=NULL;
             TfstTag* last_tag=NULL;
             if (v==NULL) {
-            	/* We do nothing, since this normal variable may not exist */
+              /* We do nothing, since this normal variable may not exist */
             } else {
                first_tag=(TfstTag*)(p->tfst->tags->tab[v->start_in_tokens]);
                last_tag=(TfstTag*)(p->tfst->tags->tab[v->end_in_tokens]);
                if (v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
                   || !valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
-            	   /* If the variable is not defined properly */
-            	   if (field[0]=='S') {
-            		   /* $a.SET$ is false, we backtrack */
-            		   stack->len=old_length;
-            		   stack->str[old_length]='\0';
-            		   return 0;
-            	   } else {
-            		   /* $a.UNSET$ is true, we go on */
-            		   continue;
-            	   }
+                 /* If the variable is not defined properly */
+                 if (field[0]=='S') {
+                   /* $a.SET$ is false, we backtrack */
+                   stack->len=old_length;
+                   stack->str[old_length]='\0';
+                   return 0;
+                 } else {
+                   /* $a.UNSET$ is true, we go on */
+                   continue;
+                 }
                } else {
-            	   /* If the variable is correctly defined */
-            	   if (field[0]=='S') {
-            		   /* $a.SET$ is true, we go on */
-            		   continue;
-            	   } else {
-            		   /* $a.UNSET$ is false, we backtrack */
-            		   stack->len=old_length;
-            		   stack->str[old_length]='\0';
-            		   return 0;
-            	   }
+                 /* If the variable is correctly defined */
+                 if (field[0]=='S') {
+                   /* $a.SET$ is true, we go on */
+                   continue;
+                 } else {
+                   /* $a.UNSET$ is false, we backtrack */
+                   stack->len=old_length;
+                   stack->str[old_length]='\0';
+                   return 0;
+                 }
                }
             }
             /* If we arrive here, the variable was not a normal one, so we
              * try to match an output one */
             const Ustring* output=get_output_variable(p->output_variables,name);
             if (output==NULL) {
-            	/* We do nothing, since this output variable may not exist */
+              /* We do nothing, since this output variable may not exist */
             } else {
                if (output->len==0) {
                   /* If the variable is empty */
                   if (field[0]=='S') {
-                	  /* $a.SET$ is false, we backtrack */
-                	  stack->len=old_length;
-                	  stack->str[old_length]='\0';
-                	  return 0;
+                    /* $a.SET$ is false, we backtrack */
+                    stack->len=old_length;
+                    stack->str[old_length]='\0';
+                    return 0;
                   } else {
                      /* $a.UNSET$ is true, we go on */
                      continue;
@@ -250,126 +250,126 @@ while (s[i]!='\0') {
                } else {
                   /* If the variable is non empty */
                   if (field[0]=='S') {
-                	  /* $a.SET$ is true, we go on */
-                	  continue;
+                    /* $a.SET$ is true, we go on */
+                    continue;
                   } else {
-                	  /* $a.UNSET$ is false, we backtrack */
-                	  stack->len=old_length;
-                	  stack->str[old_length]='\0';
-                	  return 0;
+                    /* $a.UNSET$ is false, we backtrack */
+                    stack->len=old_length;
+                    stack->str[old_length]='\0';
+                    return 0;
                   }
                }
             }
          } else {
-        	 /* Here we deal with dictionary variable things like $a.CODE$ */
-        	 struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
-        	 if (entry==NULL) {
-        		 switch (p->variable_error_policy) {
-					 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
-					 case IGNORE_VARIABLE_ERRORS: continue;
-					 case BACKTRACK_ON_VARIABLE_ERRORS: {
-						 stack->len=old_length;
-						 stack->str[old_length]='\0';
-						 return 0;
-					 }
-        		 }
-        	 }
-        	 if (!u_strcmp(field,"INFLECTED")) {
-        		 /* We use push_input_string because it can protect special chars */
-        		 push_input_string_tfst(stack,entry->inflected,1);
-        	 } else if (!u_strcmp(field,"LEMMA")) {
-        		 push_input_string_tfst(stack,entry->lemma,1);
-        	 } else if (!u_strcmp(field,"CODE")) {
-        		 push_output_string_tfst(stack,entry->semantic_codes[0]);
-        		 for (int il=1;il<entry->n_semantic_codes;il++) {
-        			 push_output_char_tfst(stack,'+');
-        			 push_output_string_tfst(stack,entry->semantic_codes[il]);
-        		 }
-        		 for (int il=0;il<entry->n_inflectional_codes;il++) {
-        			 push_output_char_tfst(stack,':');
-        			 push_output_string_tfst(stack,entry->inflectional_codes[il]);
-        		 }
-        	 } else if (!u_strcmp(field,"CAT")) {
-        		 push_output_string_tfst(stack,entry->semantic_codes[0]);
-        		 for (int il=1;il<entry->n_semantic_codes;il++) {
-        			 push_output_char_tfst(stack,'+');
-        			 push_output_string_tfst(stack,entry->semantic_codes[il]);
-        		 }
-        	 } else if (!u_strcmp(field,"CODE.GRAM")) {
-        		 push_output_string_tfst(stack,entry->semantic_codes[0]);
-        	 } else if (!u_strcmp(field,"CODE.SEM")) {
-        		 push_output_string_tfst(stack,entry->semantic_codes[1]);
-        		 for (int il=2;il<entry->n_semantic_codes;il++) {
-        			 push_output_char_tfst(stack,'+');
-        			 push_output_string_tfst(stack,entry->semantic_codes[il]);
-        		 }
-        	 } else if (!u_strcmp(field,"CODE.FLEX")) {
-        		 for (int il=0;il<entry->n_inflectional_codes;il++) {
-        			 push_output_char_tfst(stack,':');
-        			 push_output_string_tfst(stack,entry->inflectional_codes[il]);
-        		 }
-        	 } else if (u_starts_with(field,"CODE.ATTR=")) {
-        		 unichar* attr_name=field+10;
-        		 int attr_len=u_strlen(attr_name);
-        		 int j;
-        		 for (j=0;j<entry->n_semantic_codes;j++) {
-        		    if (u_starts_with(entry->semantic_codes[j],attr_name)) {
-        		       if (entry->semantic_codes[j][attr_len]!='='
-        		          || entry->semantic_codes[j][attr_len+1]=='\0') {
-        		          continue;
-        		       }
-        		       push_output_string_tfst(stack,entry->semantic_codes[j]+attr_len+1);
-        		    }
-        		 }
-        		 if (j==entry->n_semantic_codes) {
-        		    /* If the attribute was not found, it's an error case */
-        		    switch (p->variable_error_policy) {
-        		       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name);
-        		       case IGNORE_VARIABLE_ERRORS: continue;
-        		       case BACKTRACK_ON_VARIABLE_ERRORS: {
-  						  stack->len=old_length;
-  						  stack->str[old_length]='\0';
-  						  return 0;
-  					   }
-        		    }
-        		 }
-        	 } else {
-        		 switch (p->variable_error_policy) {
-					 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
-					 case IGNORE_VARIABLE_ERRORS: continue;
-					 case BACKTRACK_ON_VARIABLE_ERRORS: {
-						 stack->len=old_length;
-						 stack->str[old_length]='\0';
-						 return 0;
-					 }
-        		 }
-        	 }
-        	 i++;
-        	 continue;
+           /* Here we deal with dictionary variable things like $a.CODE$ */
+           struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+           if (entry==NULL) {
+             switch (p->variable_error_policy) {
+           case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
+           case IGNORE_VARIABLE_ERRORS: continue;
+           case BACKTRACK_ON_VARIABLE_ERRORS: {
+             stack->len=old_length;
+             stack->str[old_length]='\0';
+             return 0;
+           }
+             }
+           }
+           if (!u_strcmp(field,"INFLECTED")) {
+             /* We use push_input_string because it can protect special chars */
+             push_input_string_tfst(stack,entry->inflected,1);
+           } else if (!u_strcmp(field,"LEMMA")) {
+             push_input_string_tfst(stack,entry->lemma,1);
+           } else if (!u_strcmp(field,"CODE")) {
+             push_output_string_tfst(stack,entry->semantic_codes[0]);
+             for (int il=1;il<entry->n_semantic_codes;il++) {
+               push_output_char_tfst(stack,'+');
+               push_output_string_tfst(stack,entry->semantic_codes[il]);
+             }
+             for (int il=0;il<entry->n_inflectional_codes;il++) {
+               push_output_char_tfst(stack,':');
+               push_output_string_tfst(stack,entry->inflectional_codes[il]);
+             }
+           } else if (!u_strcmp(field,"CAT")) {
+             push_output_string_tfst(stack,entry->semantic_codes[0]);
+             for (int il=1;il<entry->n_semantic_codes;il++) {
+               push_output_char_tfst(stack,'+');
+               push_output_string_tfst(stack,entry->semantic_codes[il]);
+             }
+           } else if (!u_strcmp(field,"CODE.GRAM")) {
+             push_output_string_tfst(stack,entry->semantic_codes[0]);
+           } else if (!u_strcmp(field,"CODE.SEM")) {
+             push_output_string_tfst(stack,entry->semantic_codes[1]);
+             for (int il=2;il<entry->n_semantic_codes;il++) {
+               push_output_char_tfst(stack,'+');
+               push_output_string_tfst(stack,entry->semantic_codes[il]);
+             }
+           } else if (!u_strcmp(field,"CODE.FLEX")) {
+             for (int il=0;il<entry->n_inflectional_codes;il++) {
+               push_output_char_tfst(stack,':');
+               push_output_string_tfst(stack,entry->inflectional_codes[il]);
+             }
+           } else if (u_starts_with(field,"CODE.ATTR=")) {
+             unichar* attr_name=field+10;
+             int attr_len=u_strlen(attr_name);
+             int j;
+             for (j=0;j<entry->n_semantic_codes;j++) {
+                if (u_starts_with(entry->semantic_codes[j],attr_name)) {
+                   if (entry->semantic_codes[j][attr_len]!='='
+                      || entry->semantic_codes[j][attr_len+1]=='\0') {
+                      continue;
+                   }
+                   push_output_string_tfst(stack,entry->semantic_codes[j]+attr_len+1);
+                }
+             }
+             if (j==entry->n_semantic_codes) {
+                /* If the attribute was not found, it's an error case */
+                switch (p->variable_error_policy) {
+                   case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name);
+                   case IGNORE_VARIABLE_ERRORS: continue;
+                   case BACKTRACK_ON_VARIABLE_ERRORS: {
+                stack->len=old_length;
+                stack->str[old_length]='\0';
+                return 0;
+               }
+                }
+             }
+           } else {
+             switch (p->variable_error_policy) {
+           case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
+           case IGNORE_VARIABLE_ERRORS: continue;
+           case BACKTRACK_ON_VARIABLE_ERRORS: {
+             stack->len=old_length;
+             stack->str[old_length]='\0';
+             return 0;
+           }
+             }
+           }
+           i++;
+           continue;
          }
       }
       i++;
       if (l==0) {
          /* Case of $$ in order to print a $ */
-     	   push_output_char_tfst(stack,'$');
+          push_output_char_tfst(stack,'$');
          continue;
       }
       struct transduction_variable* v=get_transduction_variable(p->input_variables,name);
       if (v==NULL) {
-       	  /* Not a normal one ? Maybe an output one */
-       	  const Ustring* output=get_output_variable(p->output_variables,name);
-       	  if (output==NULL) {
-       		  switch (p->variable_error_policy) {
-   				  case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
-   				  case IGNORE_VARIABLE_ERRORS: continue;
-   				  case BACKTRACK_ON_VARIABLE_ERRORS:
-					  stack->len=old_length;
-					  stack->str[old_length]='\0';
-					  return 0;
-       		  }
-       	  }
-       	  push_output_string_tfst(stack,output->str);
-       	  continue;
+           /* Not a normal one ? Maybe an output one */
+           const Ustring* output=get_output_variable(p->output_variables,name);
+           if (output==NULL) {
+             switch (p->variable_error_policy) {
+             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
+             case IGNORE_VARIABLE_ERRORS: continue;
+             case BACKTRACK_ON_VARIABLE_ERRORS:
+            stack->len=old_length;
+            stack->str[old_length]='\0';
+            return 0;
+             }
+           }
+           push_output_string_tfst(stack,output->str);
+           continue;
       }
       if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
@@ -429,25 +429,25 @@ if (output==NULL) return 1;
 Ustring* stack_foo=stack;
 int capture=capture_mode(p->output_variables);
 if (capture) {
-	stack_foo=new_Ustring(64);
-	if (p->debug) {
-		/* In debug mode, an output to be captured must still be
-		 * added to the normal stack, to trace the explored grammar
-		 * path. But, in this case, we remove the actual output part,
-		 * since no output is really produced there */
-		push_output_char_tfst(stack,DEBUG_INFO_OUTPUT_MARK);
-		int i;
-		for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++) {
-		}
-		push_output_string_tfst(stack,output+i);
-	}
+  stack_foo=new_Ustring(64);
+  if (p->debug) {
+    /* In debug mode, an output to be captured must still be
+     * added to the normal stack, to trace the explored grammar
+     * path. But, in this case, we remove the actual output part,
+     * since no output is really produced there */
+    push_output_char_tfst(stack,DEBUG_INFO_OUTPUT_MARK);
+    int i;
+    for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++) {
+    }
+    push_output_string_tfst(stack,output+i);
+  }
 }
 if (!process_output_tfst(stack_foo,output,p,capture && p->debug)) {
-	return 0;
+  return 0;
 }
 if (capture) {
-	*captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str);
-	free_Ustring(stack_foo);
+  *captured_chars=add_raw_string_to_output_variables(p->output_variables,stack_foo->str);
+  free_Ustring(stack_foo);
 }
 return 1;
 }

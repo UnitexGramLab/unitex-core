@@ -108,7 +108,7 @@ struct composition_rule {
 struct composition_rule* new_composition_rule ();
 void free_composition_rule (struct composition_rule*);
 struct composition_rule* copy_composition_rule (struct composition_rule*,
-						struct composition_rule*);
+            struct composition_rule*);
 // all rules of one lexicon entry are stored in a list
 struct rule_list {
   struct composition_rule* rule;
@@ -169,11 +169,11 @@ void free_all_dic_entries(vector_ptr*);
 // this function analyses russian compound words
 //
 void analyse_compounds(const Alphabet* alph,
-		       Dictionary* d,
-			   U_FILE* words,
-		       U_FILE* result,
-		       U_FILE* debug,
-		       U_FILE* new_unknown_words,struct utags UTAG)
+           Dictionary* d,
+         U_FILE* words,
+           U_FILE* result,
+           U_FILE* debug,
+           U_FILE* new_unknown_words,struct utags UTAG)
 {
    bool* prefix;
    bool* suffix;
@@ -190,15 +190,15 @@ void analyse_compounds(const Alphabet* alph,
 // this function reads words in the word file and try analyse them
 //
 void analyse_word_list(Dictionary* d,
-			       U_FILE* words,
-			       U_FILE* result,
-			       U_FILE* debug,
-			       U_FILE* new_unknown_words,
-			       const Alphabet* alph,
-			       const bool* prefix,const bool* suffix,
-			       struct utags UTAG,
-			       vector_ptr* rules,
-			       vector_ptr* entries)
+             U_FILE* words,
+             U_FILE* result,
+             U_FILE* debug,
+             U_FILE* new_unknown_words,
+             const Alphabet* alph,
+             const bool* prefix,const bool* suffix,
+             struct utags UTAG,
+             vector_ptr* rules,
+             vector_ptr* entries)
 {
   u_printf("Analysing russian unknown words...\n");
   int n=0;
@@ -251,10 +251,10 @@ int analyse_word(const unichar* mot,Dictionary* d,U_FILE* debug,U_FILE* result_f
   }
   struct decomposed_word_list* tmp = l;
   while ( tmp != NULL ) {
-	  if (debug!=NULL) {
-	     u_fprintf(debug,"%S = %S\n",mot,tmp->element->decomposition);
-	  }
-	  u_fprintf(result_file,"%S\n",tmp->element->dela_line);
+    if (debug!=NULL) {
+       u_fprintf(debug,"%S = %S\n",mot,tmp->element->decomposition);
+    }
+    u_fprintf(result_file,"%S\n",tmp->element->dela_line);
      tmp=tmp->suivant;
   }
   free_decomposed_word_list(l);
@@ -383,36 +383,36 @@ void parse_condition (const unichar* condition, pattern* patterns)
       pattern[0] = '\0';
       int k = 0;
       while (condition[i] != '>' && condition[i] != '\0') {
-	if (condition[i] == '+') { // grammatical code positive
-	  pattern[k] = '\0';
-	  save_pattern(&patterns[j++],YesNo,type,pattern);
-	  YesNo = 1;
-	  type = 'g';
-	  i++;
-	  k = 0;
-	}
-	else if (condition[i] == '-') { // grammatical code negative
-	  pattern[k] = '\0';
-	  save_pattern(&patterns[j++],YesNo,type,pattern);
-	  YesNo = 0;
-	  type = 'g';
-	  i++;
-	  k = 0;
-	}
-	else if (condition[i] == ':') { // flexional code
-	  pattern[k] = '\0';
-	  save_pattern(&patterns[j++],YesNo,type,pattern);
-	  YesNo = 1;
-	  type = 'f';
-	  i++;
-	  k = 0;
-	}
-	pattern[k++] = condition[i];
+  if (condition[i] == '+') { // grammatical code positive
+    pattern[k] = '\0';
+    save_pattern(&patterns[j++],YesNo,type,pattern);
+    YesNo = 1;
+    type = 'g';
+    i++;
+    k = 0;
+  }
+  else if (condition[i] == '-') { // grammatical code negative
+    pattern[k] = '\0';
+    save_pattern(&patterns[j++],YesNo,type,pattern);
+    YesNo = 0;
+    type = 'g';
+    i++;
+    k = 0;
+  }
+  else if (condition[i] == ':') { // flexional code
+    pattern[k] = '\0';
+    save_pattern(&patterns[j++],YesNo,type,pattern);
+    YesNo = 1;
+    type = 'f';
+    i++;
+    k = 0;
+  }
+  pattern[k++] = condition[i];
         i++;
       }
       if (pattern[0] != '\0')
-	pattern[k] = '\0';
-	save_pattern(&patterns[j++],YesNo,type,pattern);
+  pattern[k] = '\0';
+  save_pattern(&patterns[j++],YesNo,type,pattern);
     }
     else { // don't know if it is necessary to have concrete words or something else
     }
@@ -451,7 +451,7 @@ void free_composition_rule (struct composition_rule* t)
 }
 
 struct composition_rule* copy_composition_rule (struct composition_rule* a,
-						struct composition_rule* b)
+            struct composition_rule* b)
 {
   for (int i = 0; i < MAX_NUMBER_OF_COMPOSITION_RULES; i++) {
     u_strcpy(a->before[i].string, b->before[i].string);
@@ -550,32 +550,32 @@ void parse_then_code (const unichar* then_code, struct change_code* then)
       i++;
     if (then_code[i] == ';') {
       if (state == SUBSTR_ACT) {
- 	then->substr_act[k] = '\0';
-	k = 0;
-	state = UNDO_ACT;
+   then->substr_act[k] = '\0';
+  k = 0;
+  state = UNDO_ACT;
       }
       else if (state == SUBSTR_NEXT) {
- 	then->substr_next[k] = '\0';
-	k = 0;
-	state = UNDO_NEXT;
+   then->substr_next[k] = '\0';
+  k = 0;
+  state = UNDO_NEXT;
       }
     }
     else if (then_code[i] == '.') { // begin of codes
       if (state == SUBSTR_ACT) {
-	then->substr_act[k] = '\0';
-	k = 0;
+  then->substr_act[k] = '\0';
+  k = 0;
       }
       else if (state == SUBSTR_NEXT) {
-	then->substr_next[k] = '\0';
-	k = 0;
+  then->substr_next[k] = '\0';
+  k = 0;
       }
       else if (state == UNDO_ACT) {
-	then->undo_substr_act[k] = '\0';
-	k = 0;
+  then->undo_substr_act[k] = '\0';
+  k = 0;
       }
       else if (state == UNDO_NEXT) {
-	then->undo_substr_next[k] = '\0';
-	k = 0;
+  then->undo_substr_next[k] = '\0';
+  k = 0;
       }
       state = CODE;
     }
@@ -588,15 +588,15 @@ void parse_then_code (const unichar* then_code, struct change_code* then)
       i++;
       int j = 0;
       while (then_code[i] != '>')
-	then->repl[j++] = then_code[i++];
+  then->repl[j++] = then_code[i++];
       then->repl[j] = '\0';
     }
     else if (state == CODE && then_code[i] == '+') { // feature to be added
       i++;
       int j = 0;
       while (then_code[i] != '+' && then_code[i] != '-'
-	     && then_code[i] != '\0') {
-	then->add[j++] = then_code[i];
+       && then_code[i] != '\0') {
+  then->add[j++] = then_code[i];
         i++;
       }
       then->add[j] = '\0';
@@ -605,8 +605,8 @@ void parse_then_code (const unichar* then_code, struct change_code* then)
       i++;
       int j = 0;
       while (then_code[i] != '+' && then_code[i] != '-'
-	     && then_code[i] != '\0') {
-	then->del[j++] = then_code[i];
+       && then_code[i] != '\0') {
+  then->del[j++] = then_code[i];
         i++;
       }
       then->del[j] = '\0';
@@ -646,66 +646,66 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
   for (int i = 0; entry[i] != '\0'; i++) {
     if ( state != BEGIN ) { // inside a rule
       if (entry[i] == '\\')
-	i++; // unescaping escaped chars in rule
+  i++; // unescaping escaped chars in rule
       if (entry[i] == ')') {
-	// end of rule
- 	struct composition_rule* rule = new_composition_rule();
-	beforcond[bcpos] = '\0';
-	aftercond[acpos] = '\0';
-	then_code[tpos]  = '\0';
-	parse_condition(beforcond, rule->before);
-	parse_condition(aftercond, rule->after);
-	parse_then_code(then_code, &rule->then);
-	bcpos = acpos = tpos = 0;
-	if (actual_list_pos->rule != 0) { // not first rule
-	  struct rule_list* tmp = new_rule_list(rules);
-	  actual_list_pos->next = tmp;
-	  actual_list_pos = tmp;
-	}
-	actual_list_pos->rule = rule;
-	state = BEGIN;
+  // end of rule
+   struct composition_rule* rule = new_composition_rule();
+  beforcond[bcpos] = '\0';
+  aftercond[acpos] = '\0';
+  then_code[tpos]  = '\0';
+  parse_condition(beforcond, rule->before);
+  parse_condition(aftercond, rule->after);
+  parse_then_code(then_code, &rule->then);
+  bcpos = acpos = tpos = 0;
+  if (actual_list_pos->rule != 0) { // not first rule
+    struct rule_list* tmp = new_rule_list(rules);
+    actual_list_pos->next = tmp;
+    actual_list_pos = tmp;
+  }
+  actual_list_pos->rule = rule;
+  state = BEGIN;
       }
       else if (state == BEFORE_COND) {
-	// condition before
-	if (entry[i] == '#')
-	  state = AFTER_COND;
-	else
-	  beforcond[bcpos++] = entry[i];
+  // condition before
+  if (entry[i] == '#')
+    state = AFTER_COND;
+  else
+    beforcond[bcpos++] = entry[i];
       }
       else if (state == AFTER_COND) {
-	// condition after
-	if (entry[i] == '=')
-	  state = THEN;
-	else
-	  aftercond[acpos++] = entry[i];
+  // condition after
+  if (entry[i] == '=')
+    state = THEN;
+  else
+    aftercond[acpos++] = entry[i];
       }
       else if (state == THEN)
-	// then-code
-	then_code[tpos++] = entry[i];
+  // then-code
+  then_code[tpos++] = entry[i];
     }
     else { // not inside a rule
       if (entry[i] == '+') {
-	unichar tmp[MAX_DICT_LINE_LENGTH];
-	int j;
-	for (j = i+1; ((entry[j] != '+') &&
-		       (entry[j] != ':') &&
-		       (entry[j] != '(') &&
-		       (entry[j] != '\0')); j++)
-	  tmp[j-(i+1)] = entry[j];
-	tmp[j-(i+1)] = '\0';
-	if ((!u_strcmp(tmp, UTAG.PREFIX)) ||
-	    (!u_strcmp(tmp, UTAG.SUFFIX))) {
-	  i = j-1;
-	}
-	else if (!u_strcmp(tmp, UTAG.RULE)) {
-	  i = j; // including '('
-	  state = BEFORE_COND;
-	}
-	else {
-	  cleaned_entry[k++] = entry[i];
-	}
+  unichar tmp[MAX_DICT_LINE_LENGTH];
+  int j;
+  for (j = i+1; ((entry[j] != '+') &&
+           (entry[j] != ':') &&
+           (entry[j] != '(') &&
+           (entry[j] != '\0')); j++)
+    tmp[j-(i+1)] = entry[j];
+  tmp[j-(i+1)] = '\0';
+  if ((!u_strcmp(tmp, UTAG.PREFIX)) ||
+      (!u_strcmp(tmp, UTAG.SUFFIX))) {
+    i = j-1;
+  }
+  else if (!u_strcmp(tmp, UTAG.RULE)) {
+    i = j; // including '('
+    state = BEFORE_COND;
+  }
+  else {
+    cleaned_entry[k++] = entry[i];
+  }
       } else {
-	cleaned_entry[k++] = entry[i];
+  cleaned_entry[k++] = entry[i];
       }
     }
   }
@@ -718,9 +718,9 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
 
 
 int composition_rule_matches_entry (const struct pattern* rule,
-				     const struct dela_entry* d,U_FILE* 
+             const struct dela_entry* d,U_FILE* 
 #if DDEBUG > 1                         
-				     debug_file
+             debug_file
 #endif
                      ) {
   int ok = 1;
@@ -735,45 +735,45 @@ int composition_rule_matches_entry (const struct pattern* rule,
 #if DDEBUG > 1
     {
       if (rule[i].type == 'f')
-	u_strcat(tmp, ":");
+  u_strcat(tmp, ":");
       else if (rule[i].YesNo)
-	u_strcat(tmp, "+");
+  u_strcat(tmp, "+");
       else
-	u_strcat(tmp, "-");
+  u_strcat(tmp, "-");
       u_strcat(tmp, rule[i].string);
     }
 #endif
     if (rule[i].YesNo) { // rule '+' => pattern must be in entry, too
       if (rule[i].type == 'g') {
-	if (dic_entry_contain_gram_code(d,rule[i].string))
-	  continue; // rule matched, try next one
-	ok = 0;
+  if (dic_entry_contain_gram_code(d,rule[i].string))
+    continue; // rule matched, try next one
+  ok = 0;
       }
       else if (rule[i].type == 'f') {
-	if (dic_entry_contain_inflectional_code(d,rule[i].string)) {
-	  // rule matched, try next one, but mark flex codes as matched
-	  flex_code_already_matched = 2;
-	  continue;
-	}
-	else if (flex_code_already_matched == 2) {
-	  // no matter if any flex code already matched
-	  continue;
-	}
-	else {
-	  // no-matches before first match
-	  flex_code_already_matched = 0;
-	}
+  if (dic_entry_contain_inflectional_code(d,rule[i].string)) {
+    // rule matched, try next one, but mark flex codes as matched
+    flex_code_already_matched = 2;
+    continue;
+  }
+  else if (flex_code_already_matched == 2) {
+    // no matter if any flex code already matched
+    continue;
+  }
+  else {
+    // no-matches before first match
+    flex_code_already_matched = 0;
+  }
       }
     }
     else { // rule '-' => pattern must not be in entry
       if (rule[i].type == 'g') {
-	if (dic_entry_contain_gram_code(d,rule[i].string))
-	  ok = 0;
+  if (dic_entry_contain_gram_code(d,rule[i].string))
+    ok = 0;
       }
       else if (rule[i].type == 'f') {
-	// implemented although not possible in rule syntax
-	if (dic_entry_contain_inflectional_code(d,rule[i].string))
-	  ok = 0;
+  // implemented although not possible in rule syntax
+  if (dic_entry_contain_inflectional_code(d,rule[i].string))
+    ok = 0;
       }
     }
   }
@@ -816,7 +816,7 @@ void substring_operation (unichar* affix, const unichar* rule)
     i = 0; // now index of affix
     while (affix[i] != '\0') {
       if (i >= n)
-	new_affix[j++] = affix[i];
+  new_affix[j++] = affix[i];
       i++;
     }
     new_affix[j] = '\0';
@@ -910,21 +910,21 @@ codes[j]='\0';
 // this function explores the dictionary to decompose the word mot
 //
 void explore_state (int offset,
-		    unichar* current_component,
-		    int pos_in_current_component,
-		    const unichar* original_word,
-		    const unichar* remaining_word,
-		    int pos_in_remaining_word,
-		    const unichar* decomposition,
-		    const unichar* lemma_prefix,
-		    struct decomposed_word_list** L,
-		    int n_decomp,
-		    struct rule_list* rule_list_called,
-		    const struct dela_entry* dic_entr_called,
-		    Dictionary* d,
-		    const bool* prefix,const bool* suffix,const Alphabet* alphabet,
-		    U_FILE* debug_file,struct utags UTAG,
-		    vector_ptr* rules,vector_ptr* entries,Ustring* ustr,int base) {
+        unichar* current_component,
+        int pos_in_current_component,
+        const unichar* original_word,
+        const unichar* remaining_word,
+        int pos_in_remaining_word,
+        const unichar* decomposition,
+        const unichar* lemma_prefix,
+        struct decomposed_word_list** L,
+        int n_decomp,
+        struct rule_list* rule_list_called,
+        const struct dela_entry* dic_entr_called,
+        Dictionary* d,
+        const bool* prefix,const bool* suffix,const Alphabet* alphabet,
+        U_FILE* debug_file,struct utags UTAG,
+        vector_ptr* rules,vector_ptr* entries,Ustring* ustr,int base) {
 int final,n_transitions,inf_number;
 int z=save_output(ustr);
 offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
@@ -942,273 +942,273 @@ if (final) { // if we are in a terminal state
       struct list_ustring* l = d->inf->codes[inf_number];
       while ( l != 0 ) {
 
-//	int one_rule_already_matched = 0; // one rule matched each entry is enough
+//  int one_rule_already_matched = 0; // one rule matched each entry is enough
 
-	Ustring* entry=new_Ustring(MAX_DICT_LINE_LENGTH);
-	uncompress_entry(current_component, l->string, entry);
+  Ustring* entry=new_Ustring(MAX_DICT_LINE_LENGTH);
+  uncompress_entry(current_component, l->string, entry);
 
 #if DDEBUG > 0
-	{
-	  u_fprintf(debug_file,": %S\n",entry);
-	}
+  {
+    u_fprintf(debug_file,": %S\n",entry);
+  }
 #endif
 
-	struct dela_entry* dic_entr = new_dic_entry(entry->str,entries);
-	unichar lemma_prefix_new[MAX_DICT_LINE_LENGTH];
-	struct rule_list* rule_list_new = 0;
-	unichar next_remaining_word[MAX_WORD_LENGTH];
+  struct dela_entry* dic_entr = new_dic_entry(entry->str,entries);
+  unichar lemma_prefix_new[MAX_DICT_LINE_LENGTH];
+  struct rule_list* rule_list_new = 0;
+  unichar next_remaining_word[MAX_WORD_LENGTH];
 
-	struct rule_list* rule_list = 0;
-	if (prefix_is_valid(inf_number,prefix) || suffix_is_valid(inf_number,suffix))
-	  rule_list = parse_rules(entry->str,UTAG,rules);
-	else {
-	  rule_list = new_rule_list(rules);
-	  rule_list->rule = new_composition_rule();
-	}
-	// entry is now cleaned from rules for composition and derivation
+  struct rule_list* rule_list = 0;
+  if (prefix_is_valid(inf_number,prefix) || suffix_is_valid(inf_number,suffix))
+    rule_list = parse_rules(entry->str,UTAG,rules);
+  else {
+    rule_list = new_rule_list(rules);
+    rule_list->rule = new_composition_rule();
+  }
+  // entry is now cleaned from rules for composition and derivation
 
-	// log decomposition of word
-	// ("cleaned" entries for better overview)
-	unichar decomposition_new[MAX_DICT_LINE_LENGTH];
-	u_strcpy(decomposition_new, decomposition);
-	if (decomposition_new[0] != '\0') u_strcat(decomposition_new, " +++ ");
-	u_strcat(decomposition_new, entry->str);
+  // log decomposition of word
+  // ("cleaned" entries for better overview)
+  unichar decomposition_new[MAX_DICT_LINE_LENGTH];
+  u_strcpy(decomposition_new, decomposition);
+  if (decomposition_new[0] != '\0') u_strcat(decomposition_new, " +++ ");
+  u_strcat(decomposition_new, entry->str);
 
 
-	// loop on all composition_rules called
-	struct rule_list* called = rule_list_called;
-	do { // while ( rule_list* called != 0 )
+  // loop on all composition_rules called
+  struct rule_list* called = rule_list_called;
+  do { // while ( rule_list* called != 0 )
 
-// 	  if (one_rule_already_matched)
-// 	    break;
+//     if (one_rule_already_matched)
+//       break;
 
- 	  struct composition_rule* rule_called
-	    = ( called != 0 ) ? called->rule : 0; // may be undefined
+     struct composition_rule* rule_called
+      = ( called != 0 ) ? called->rule : 0; // may be undefined
 
-	  // loop on all actual composition_rules
-	  struct rule_list* r_list = rule_list;
- 	  while ( r_list != 0 ) {
+    // loop on all actual composition_rules
+    struct rule_list* r_list = rule_list;
+     while ( r_list != 0 ) {
 
-// 	    if (one_rule_already_matched)
-// 	      break;
+//       if (one_rule_already_matched)
+//         break;
 
-	    struct composition_rule* rule = r_list->rule; // ever defined, see upwards
+      struct composition_rule* rule = r_list->rule; // ever defined, see upwards
 
-	    if (remaining_word[pos_in_remaining_word]=='\0' &&
-		// we have explored the entire original word
-		((((dic_entr_called != 0) &&
-		   composition_rule_matches_entry(rule->before, dic_entr_called,debug_file))  &&
-		  ((rule_called != 0) &&
-		   composition_rule_matches_entry(rule_called->after, dic_entr,debug_file))) ||
-		 // and we have a valid right component, i.e. rules match
-		 ((dic_entr_called == 0) &&  // or a simple entry (i.e. no prefix),
-		  (! affix_is_valid(inf_number,prefix,suffix))) // but no affix
-		 )
-		)  {
+      if (remaining_word[pos_in_remaining_word]=='\0' &&
+    // we have explored the entire original word
+    ((((dic_entr_called != 0) &&
+       composition_rule_matches_entry(rule->before, dic_entr_called,debug_file))  &&
+      ((rule_called != 0) &&
+       composition_rule_matches_entry(rule_called->after, dic_entr,debug_file))) ||
+     // and we have a valid right component, i.e. rules match
+     ((dic_entr_called == 0) &&  // or a simple entry (i.e. no prefix),
+      (! affix_is_valid(inf_number,prefix,suffix))) // but no affix
+     )
+    )  {
 
-//	      one_rule_already_matched = 1;
+//        one_rule_already_matched = 1;
 
-	      unichar inflected[MAX_WORD_LENGTH];
-	      unichar lemma[MAX_WORD_LENGTH];
-	      unichar codes[MAX_DICT_LINE_LENGTH];
-	      tokenize_DELA_line_into_3_parts(entry->str, inflected, lemma, codes);
-	      free_Ustring(entry);
+        unichar inflected[MAX_WORD_LENGTH];
+        unichar lemma[MAX_WORD_LENGTH];
+        unichar codes[MAX_DICT_LINE_LENGTH];
+        tokenize_DELA_line_into_3_parts(entry->str, inflected, lemma, codes);
+        free_Ustring(entry);
 
-	      /* generating new lexicon entry */
-	      unichar new_dela_line[MAX_DICT_LINE_LENGTH];
+        /* generating new lexicon entry */
+        unichar new_dela_line[MAX_DICT_LINE_LENGTH];
 
-	      /* word form */
-	      u_strcpy(new_dela_line, original_word);
-	      u_strcat(new_dela_line, ",");
+        /* word form */
+        u_strcpy(new_dela_line, original_word);
+        u_strcat(new_dela_line, ",");
 
-	      /* lemma */                           // lemmatize word
-	      if (rule->then.repl[0] == '\0'	    // if there are no replace codes
-		  && (rule_called != 0              // either in actual nor in preceeding rule
-		      && rule_called->then.repl[0] == '\0')) {
-		u_strcat(new_dela_line, lemma_prefix);
-		unichar affix[MAX_WORD_LENGTH];
-		u_strcpy(affix, lemma);
-		substring_operation(affix, rule->then.substr_act);
-		if (rule_called != 0 && rule_called->then.undo_substr_next[0] != '\0')
-		  substring_operation(affix, rule_called->then.undo_substr_next);
-		u_strcat(new_dela_line, affix);
-	      } else {
-		u_strcat(new_dela_line, original_word);
-	      }
+        /* lemma */                           // lemmatize word
+        if (rule->then.repl[0] == '\0'      // if there are no replace codes
+      && (rule_called != 0              // either in actual nor in preceeding rule
+          && rule_called->then.repl[0] == '\0')) {
+    u_strcat(new_dela_line, lemma_prefix);
+    unichar affix[MAX_WORD_LENGTH];
+    u_strcpy(affix, lemma);
+    substring_operation(affix, rule->then.substr_act);
+    if (rule_called != 0 && rule_called->then.undo_substr_next[0] != '\0')
+      substring_operation(affix, rule_called->then.undo_substr_next);
+    u_strcat(new_dela_line, affix);
+        } else {
+    u_strcat(new_dela_line, original_word);
+        }
 
-	      /* codes */
-	      u_strcat(new_dela_line,".");
-	      if (rule->then.repl[0] != '\0') {            // replacing codes by
-		u_strcat(new_dela_line,rule->then.repl);   // suffix' ones
-	      }
-	      else if (rule_called == 0) { // prohibit SGV
-		u_strcat(new_dela_line,codes);
-	      }
-	      else if (rule_called->then.repl[0] != '\0') {
-		u_strcat(new_dela_line,rule_called->then.repl); // prefix' ones
-	      }
-	      // replace replaces all and blocks adding and deleting
-	      // maybe this is not optimal ???
-	      else {
-		if (rule_called->then.add[0] != '\0') {        // add codes
-		  if (!dic_entry_contain_gram_code(dic_entr, rule_called->then.add)) {
-		    bool done = 0;
-		    unichar tmp[MAX_COMPOSITION_RULE_LENGTH];
-		    int j = 0;
-		    for (int i = 0; codes[i] != '\0'; i++) {
-		      if (codes[i] == ':' && (!done)) {
-			tmp[j++] = '+';
-			tmp[j] = '\0';
-			u_strcat(new_dela_line,tmp);
-			u_strcat(new_dela_line,rule_called->then.add);
-			done = 1;
-			j = 0;
-		      }
-		      tmp[j++] = codes[i];
-		    }
-		    tmp[j] = '\0';
-		    u_strcat(new_dela_line,tmp);
-		    if (!done) {
-		      u_strcat(new_dela_line,"+");
-		      u_strcat(new_dela_line,rule_called->then.add);
-		    }
-		  } else {
-		    u_strcat(new_dela_line,codes);
-		  }
-		} else if (rule_called->then.del[0] != '\0') { // delete codes
+        /* codes */
+        u_strcat(new_dela_line,".");
+        if (rule->then.repl[0] != '\0') {            // replacing codes by
+    u_strcat(new_dela_line,rule->then.repl);   // suffix' ones
+        }
+        else if (rule_called == 0) { // prohibit SGV
+    u_strcat(new_dela_line,codes);
+        }
+        else if (rule_called->then.repl[0] != '\0') {
+    u_strcat(new_dela_line,rule_called->then.repl); // prefix' ones
+        }
+        // replace replaces all and blocks adding and deleting
+        // maybe this is not optimal ???
+        else {
+    if (rule_called->then.add[0] != '\0') {        // add codes
+      if (!dic_entry_contain_gram_code(dic_entr, rule_called->then.add)) {
+        bool done = 0;
+        unichar tmp[MAX_COMPOSITION_RULE_LENGTH];
+        int j = 0;
+        for (int i = 0; codes[i] != '\0'; i++) {
+          if (codes[i] == ':' && (!done)) {
+      tmp[j++] = '+';
+      tmp[j] = '\0';
+      u_strcat(new_dela_line,tmp);
+      u_strcat(new_dela_line,rule_called->then.add);
+      done = 1;
+      j = 0;
+          }
+          tmp[j++] = codes[i];
+        }
+        tmp[j] = '\0';
+        u_strcat(new_dela_line,tmp);
+        if (!done) {
+          u_strcat(new_dela_line,"+");
+          u_strcat(new_dela_line,rule_called->then.add);
+        }
+      } else {
+        u_strcat(new_dela_line,codes);
+      }
+    } else if (rule_called->then.del[0] != '\0') { // delete codes
 
-		} else {
-		  u_strcat(new_dela_line,codes);
-		}
-	      }
+    } else {
+      u_strcat(new_dela_line,codes);
+    }
+        }
 
 #if DDEBUG > 0
-	      {
+        {
             u_fprintf(debug_file,"= %S\n",new_dela_line);
-	      }
+        }
 #endif
 
-	      struct decomposed_word* wd = new_decomposed_word();
-	      wd->n_parts = n_decomp;
-	      u_strcpy(wd->decomposition,decomposition_new);
-	      u_strcpy(wd->dela_line,new_dela_line);
-	      struct decomposed_word_list* wdl=new_decomposed_word_list();
-	      // unshift actual decomposition to decomposition list L
-	      wdl->element = wd;
-	      wdl->suivant = (*L);
-	      (*L) = wdl;
+        struct decomposed_word* wd = new_decomposed_word();
+        wd->n_parts = n_decomp;
+        u_strcpy(wd->decomposition,decomposition_new);
+        u_strcpy(wd->dela_line,new_dela_line);
+        struct decomposed_word_list* wdl=new_decomposed_word_list();
+        // unshift actual decomposition to decomposition list L
+        wdl->element = wd;
+        wdl->suivant = (*L);
+        (*L) = wdl;
 
-	    } // end if end of word and valid right component
-	    else if
-	      // beginning or middle of word: explore the rest of the original word
-	      (prefix_is_valid(inf_number,prefix) &&
-	       check_is_valid(UTAG.PREFIX, dic_entr) &&
-	       // but only if the current component was a valid left one
-	       // we go on with the next component
-	       (
-		(n_decomp == 1) // prefix as first part of a word: no rule matching
-		||
-		(               // prefix in the middle of a word
-		 (rule_called &&
-		  composition_rule_matches_entry(rule_called->after, dic_entr,debug_file)) &&
-		 (dic_entr_called &&
-		  composition_rule_matches_entry(rule->before, dic_entr_called,debug_file))
-		)
-	       )) {
+      } // end if end of word and valid right component
+      else if
+        // beginning or middle of word: explore the rest of the original word
+        (prefix_is_valid(inf_number,prefix) &&
+         check_is_valid(UTAG.PREFIX, dic_entr) &&
+         // but only if the current component was a valid left one
+         // we go on with the next component
+         (
+    (n_decomp == 1) // prefix as first part of a word: no rule matching
+    ||
+    (               // prefix in the middle of a word
+     (rule_called &&
+      composition_rule_matches_entry(rule_called->after, dic_entr,debug_file)) &&
+     (dic_entr_called &&
+      composition_rule_matches_entry(rule->before, dic_entr_called,debug_file))
+    )
+         )) {
 
-//	      one_rule_already_matched = 1;
+//        one_rule_already_matched = 1;
 
-	      u_strcpy(lemma_prefix_new, lemma_prefix);
-	      unichar affix[MAX_WORD_LENGTH];
-	      u_strcpy(affix, current_component);
-	      if (rule_called != 0 && rule_called->then.undo_substr_next[0] != '\0') {
+        u_strcpy(lemma_prefix_new, lemma_prefix);
+        unichar affix[MAX_WORD_LENGTH];
+        u_strcpy(affix, current_component);
+        if (rule_called != 0 && rule_called->then.undo_substr_next[0] != '\0') {
             substring_operation(affix, rule_called->then.undo_substr_next);
             u_fprintf(debug_file,"yes\n");
-	      }
-	      substring_operation(affix, rule->then.substr_act);
-	      u_strcat(lemma_prefix_new, affix);
-	      int j = 0;
-	      for (int i = pos_in_remaining_word; remaining_word[i] != '\0'; i++) {
+        }
+        substring_operation(affix, rule->then.substr_act);
+        u_strcat(lemma_prefix_new, affix);
+        int j = 0;
+        for (int i = pos_in_remaining_word; remaining_word[i] != '\0'; i++) {
             next_remaining_word[j++] = remaining_word[i];
          }
-	      next_remaining_word[j] = '\0';
-	      if (rule->then.substr_next[0] != '\0') {
+        next_remaining_word[j] = '\0';
+        if (rule->then.substr_next[0] != '\0') {
             substring_operation(next_remaining_word, rule->then.substr_next);
 #if DDEBUG > 0
             {
                u_fprintf(debug_file,"| %S|%S\n",affix,next_remaining_word);
             }
 #endif
-	      }
+        }
 
 #if DDEBUG > 0
-	      {
+        {
             u_fprintf(debug_file,"- %S\n",entry);
-	      }
+        }
 #endif
-	      struct rule_list* tmp = new_rule_list(rules);
-	      tmp->rule = new_composition_rule();
-	      copy_composition_rule(tmp->rule, rule);
-	      tmp->next = 0;
-	      if ( rule_list_new == 0 ) {
+        struct rule_list* tmp = new_rule_list(rules);
+        tmp->rule = new_composition_rule();
+        copy_composition_rule(tmp->rule, rule);
+        tmp->next = 0;
+        if ( rule_list_new == 0 ) {
             rule_list_new = tmp;
-	      }
-	      else {
+        }
+        else {
             struct rule_list* trl = rule_list_new;
             while ( trl->next != 0 ) {
                trl=trl->next;
             }
             trl->next = tmp;
-	      }
+        }
 
-	    }
-	    else {
-	      // no valid suffix nor prefix
-	    }
+      }
+      else {
+        // no valid suffix nor prefix
+      }
 
-	    r_list = r_list->next;
-	  } // while ( rule_list* r_list != 0 )
+      r_list = r_list->next;
+    } // while ( rule_list* r_list != 0 )
 
-	  if ( called != 0 )
-	    called = called->next;
-	} while ( called != 0 );
+    if ( called != 0 )
+      called = called->next;
+  } while ( called != 0 );
 
-	// prefix found, try to decomposite rest of word
-	if ( rule_list_new != 0 && dic_entr != 0 ) {
-	  unichar next_component[MAX_WORD_LENGTH];
+  // prefix found, try to decomposite rest of word
+  if ( rule_list_new != 0 && dic_entr != 0 ) {
+    unichar next_component[MAX_WORD_LENGTH];
 #if DDEBUG > 0
-	  {
-	    u_fprintf(debug_file,"> %S\n",next_remaining_word);
-	  }
+    {
+      u_fprintf(debug_file,"> %S\n",next_remaining_word);
+    }
 #endif
-	  Ustring* foo=new_Ustring();
-	  explore_state(d->initial_state_offset,
-			next_component,
-			0,
-			original_word,
-			next_remaining_word,
-			0,
-			decomposition_new,
-			lemma_prefix_new,
-			L,
-			n_decomp+1,
-			rule_list_new,
-			dic_entr,
-			d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,foo,0);
-	  free_Ustring(foo);
-	}
-	else {
-// 	  free_dic_entry(dic_entr);
-// 	  free_rule_list(rule_list);
-	}
+    Ustring* foo=new_Ustring();
+    explore_state(d->initial_state_offset,
+      next_component,
+      0,
+      original_word,
+      next_remaining_word,
+      0,
+      decomposition_new,
+      lemma_prefix_new,
+      L,
+      n_decomp+1,
+      rule_list_new,
+      dic_entr,
+      d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,foo,0);
+    free_Ustring(foo);
+  }
+  else {
+//     free_dic_entry(dic_entr);
+//     free_rule_list(rule_list);
+  }
 
-	l = l->next;
+  l = l->next;
 
       } // end of while (token_list* l != 0)
 
     } // end of word length >= 1
   }
-	base=ustr->len;
+  base=ustr->len;
   if (remaining_word[pos_in_remaining_word]=='\0') {
     // if we have finished, we return
 //     free_dic_entry(dic_entr_called);
@@ -1219,23 +1219,23 @@ if (final) { // if we are in a terminal state
   unichar c;
   int adr;
   for (int i=0;i<n_transitions;i++) {
-	  offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
+    offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
     if (is_equal_or_uppercase(c,remaining_word[pos_in_remaining_word],alphabet)
-	|| is_equal_or_uppercase(remaining_word[pos_in_remaining_word],c,alphabet)) {
+  || is_equal_or_uppercase(remaining_word[pos_in_remaining_word],c,alphabet)) {
       current_component[pos_in_current_component] = c;
       explore_state(adr,
-		    current_component,
-		    pos_in_current_component+1,
-		    original_word,
-		    remaining_word,
-		    pos_in_remaining_word+1,
-		    decomposition,
-		    lemma_prefix,
-		    L,
-		    n_decomp,
-		    rule_list_called,
-		    dic_entr_called,
-		    d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,ustr,base);
+        current_component,
+        pos_in_current_component+1,
+        original_word,
+        remaining_word,
+        pos_in_remaining_word+1,
+        decomposition,
+        lemma_prefix,
+        L,
+        n_decomp,
+        rule_list_called,
+        dic_entr_called,
+        d,prefix,suffix,alphabet,debug_file,UTAG,rules,entries,ustr,base);
     }
     restore_output(z,ustr);
   }

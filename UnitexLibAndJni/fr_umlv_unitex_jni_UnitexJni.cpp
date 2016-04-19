@@ -68,8 +68,8 @@ using namespace logger;
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
      defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \
      defined(_M_X64) || defined(_M_X86) || defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
-	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
-	 defined(__LITTLE_ENDIAN__) \
+   defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
+   defined(__LITTLE_ENDIAN__) \
            ) && (!(defined(INTEL_X86_LIKE_LITTLE_ENDIAN))))
 #define INTEL_X86_LIKE_LITTLE_ENDIAN 1
 #endif
@@ -78,7 +78,7 @@ using namespace logger;
 static bool is_little_endian()
 {
 // printf("INTEL_X86_LIKE_LITTLE_ENDIAN is,");
-	return true;
+  return true;
 }
 #else
 static bool is_little_endian()
@@ -95,70 +95,70 @@ return little_endian;
 class jstringToCUtf
 {
 public:
-	jstringToCUtf();
-	~jstringToCUtf();
-	const char* initJString(JNIEnv *env,jstring jstr);
-	const char* getJString() ;
-	void clear();
+  jstringToCUtf();
+  ~jstringToCUtf();
+  const char* initJString(JNIEnv *env,jstring jstr);
+  const char* getJString() ;
+  void clear();
 private:
-	JNIEnv*env;
-	jstring jstr;
-	const char*c_str;
+  JNIEnv*env;
+  jstring jstr;
+  const char*c_str;
 };
 
 jstringToCUtf::jstringToCUtf() :
-	env(NULL),jstr(NULL),c_str(NULL)
+  env(NULL),jstr(NULL),c_str(NULL)
 {
 }
 
 const char* jstringToCUtf::initJString(JNIEnv *envSet,jstring jstrSet)
 {
-	clear();
-	env=envSet;
-	jstr=jstrSet;
-	c_str = env->GetStringUTFChars(jstr, 0);
-	return c_str;
+  clear();
+  env=envSet;
+  jstr=jstrSet;
+  c_str = env->GetStringUTFChars(jstr, 0);
+  return c_str;
 }
 
 const char* jstringToCUtf::getJString()
 {
-	return c_str;
+  return c_str;
 }
 
 void jstringToCUtf::clear()
 {
-	if (c_str != NULL)
-		env->ReleaseStringUTFChars(jstr, c_str);
-	c_str = NULL;
+  if (c_str != NULL)
+    env->ReleaseStringUTFChars(jstr, c_str);
+  c_str = NULL;
 }
 
 jstringToCUtf::~jstringToCUtf()
 {
-	clear();
+  clear();
 }
 
 static int countArgs(char** args)
 {
-	int count=0;
-	
-	char**tmp=args;
-	while ((*tmp) != NULL)
-	{
-		count++;
-		tmp++;
-	}
-	return count;
+  int count=0;
+  
+  char**tmp=args;
+  while ((*tmp) != NULL)
+  {
+    count++;
+    tmp++;
+  }
+  return count;
 }
 
 static void freeArgs(char**args)
 {
-	char** tmp=args;
-	while ((*tmp) != NULL)
-	{
-		free(*tmp);
-		tmp++;
-	}
-	free(args);
+  char** tmp=args;
+  while ((*tmp) != NULL)
+  {
+    free(*tmp);
+    tmp++;
+  }
+  free(args);
 }
 
 
@@ -181,7 +181,7 @@ size_t dwDestPos = 0;
         {
           isInQuote = !isInQuote;
           lpSrc++;
-		  continue;
+      continue;
         }
 
       if (((*lpSrc) == ' ') && (!isInQuote))
@@ -204,7 +204,7 @@ size_t dwDestPos = 0;
 static char**argsFromStrArray(JNIEnv* jenv, jobjectArray strArray)
 {
 int nSize = jenv->GetArrayLength(strArray);
-char **args=NULL;	
+char **args=NULL;  
     if (nSize>0)
         args = (char**)malloc((nSize+1) * sizeof(char*));
 
@@ -212,30 +212,30 @@ char **args=NULL;
     {
         int nbArgs = nSize;
         int i;
-	    for (i = 0; i < nbArgs; i++) {
-		    jstring jstr = (jstring)jenv->GetObjectArrayElement(strArray, i);
-		    const char* sz = jenv->GetStringUTFChars(jstr, NULL);
+      for (i = 0; i < nbArgs; i++) {
+        jstring jstr = (jstring)jenv->GetObjectArrayElement(strArray, i);
+        const char* sz = jenv->GetStringUTFChars(jstr, NULL);
 
-			// we can replace these line by mpszArgs[i] = strdup(sz) to not remove quote
-			size_t string_alloc_size = strlen(sz)+4;
-			args[i] = (char*)malloc(string_alloc_size+4);
-		    CopyStrArg(sz,args[i],string_alloc_size);
+      // we can replace these line by mpszArgs[i] = strdup(sz) to not remove quote
+      size_t string_alloc_size = strlen(sz)+4;
+      args[i] = (char*)malloc(string_alloc_size+4);
+        CopyStrArg(sz,args[i],string_alloc_size);
 
-			jenv->ReleaseStringUTFChars(jstr, sz);
-			/* explicitly releasing to assist garbage collection, though not required */
-			jenv->DeleteLocalRef(jstr);
-	    }
-		args[i] = NULL;
+      jenv->ReleaseStringUTFChars(jstr, sz);
+      /* explicitly releasing to assist garbage collection, though not required */
+      jenv->DeleteLocalRef(jstr);
+      }
+    args[i] = NULL;
     }
-	return args;
+  return args;
 }
 
 
 static char**argsFromJString(JNIEnv* jenv, jstring jstr)
 {
-	jstringToCUtf jtcu;
-	
-	const char*cmdLine=jtcu.initJString(jenv,jstr);
+  jstringToCUtf jtcu;
+  
+  const char*cmdLine=jtcu.initJString(jenv,jstr);
     size_t len_cmd_line=strlen(cmdLine);
 
     char* work_buf = (char*)malloc(len_cmd_line+0x10);
@@ -253,13 +253,13 @@ static char**argsFromJString(JNIEnv* jenv, jstring jstr)
         nb_args_found ++;
     }
 
-	char **args=NULL;
+  char **args=NULL;
     if (nb_args_found>0)
         args = (char**)malloc((nb_args_found+1) * sizeof(char*));
     else
         args = NULL;
 
-	if (args == NULL)
+  if (args == NULL)
     {
         free(work_buf);
         return NULL;
@@ -272,9 +272,9 @@ static char**argsFromJString(JNIEnv* jenv, jstring jstr)
         *work_buf=0;
         lpParcLine = CopyStrArg(lpParcLine, work_buf, len_cmd_line+8);
         args[i] = strdup(work_buf);
-		i++;
+    i++;
     }
-	args[i] = NULL;
+  args[i] = NULL;
 
     free(work_buf);
     return args;
@@ -288,10 +288,10 @@ static char**argsFromJString(JNIEnv* jenv, jstring jstr)
 JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool___3Ljava_lang_String_2
   (JNIEnv *jenv, jclass, jobjectArray strArray)
 {
-	char**args=argsFromStrArray(jenv, strArray);
-	jint retValue = (jint)main_UnitexTool_C(countArgs(args),args);
-	freeArgs(args);
-	return retValue;
+  char**args=argsFromStrArray(jenv, strArray);
+  jint retValue = (jint)main_UnitexTool_C(countArgs(args),args);
+  freeArgs(args);
+  return retValue;
 }
 
 /*
@@ -302,10 +302,10 @@ JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool___3Ljava
 JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool__Ljava_lang_String_2
   (JNIEnv *jenv, jclass, jstring jstr)
 {
-	char**args=argsFromJString(jenv, jstr);
-	jint retValue = (jint)main_UnitexTool_C(countArgs(args),args);
-	freeArgs(args);
-	return retValue;
+  char**args=argsFromJString(jenv, jstr);
+  jint retValue = (jint)main_UnitexTool_C(countArgs(args),args);
+  freeArgs(args);
+  return retValue;
 }
 
 /*
@@ -316,10 +316,10 @@ JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execUnitexTool__Ljava_l
 JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execRunLog___3Ljava_lang_String_2
   (JNIEnv *jenv, jclass, jobjectArray strArray)
 {
-	char**args=argsFromStrArray(jenv, strArray);
-	jint retValue = (jint)main_RunLog(countArgs(args),args);
-	freeArgs(args);
-	return retValue;
+  char**args=argsFromStrArray(jenv, strArray);
+  jint retValue = (jint)main_RunLog(countArgs(args),args);
+  freeArgs(args);
+  return retValue;
 }
 
 /*
@@ -330,10 +330,10 @@ JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execRunLog___3Ljava_lan
 JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_execRunLog__Ljava_lang_String_2
   (JNIEnv *jenv, jclass, jstring jstr)
 {
-	char**args=argsFromJString(jenv, jstr);
-	jint retValue = (jint)main_RunLog(countArgs(args),args);
-	freeArgs(args);
-	return retValue;
+  char**args=argsFromJString(jenv, jstr);
+  jint retValue = (jint)main_RunLog(countArgs(args),args);
+  freeArgs(args);
+  return retValue;
 }
 
 
@@ -363,7 +363,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_usingOffsetFile
 JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_numberAbstractFileSpaceInstalled
   (JNIEnv *, jclass)
 {
-	return (jint)GetNbAbstractFileSpaceInstalled();
+  return (jint)GetNbAbstractFileSpaceInstalled();
 }
 
 
@@ -375,14 +375,14 @@ JNIEXPORT jint JNICALL Java_fr_umlv_unitex_jni_UnitexJni_numberAbstractFileSpace
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2_3C
   (JNIEnv *env, jclass, jstring filename, jcharArray filedata)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
-	jsize len = env->GetArrayLength(filedata);
-	jchar * buffer=env->GetCharArrayElements(filedata,NULL);
-	
-	jboolean retValue= (WriteUnitexFile(jstc_filename.getJString(),buffer,len,NULL,0) == 0);
-	env->ReleaseCharArrayElements(filedata,buffer,0);
-	return retValue;
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
+  jsize len = env->GetArrayLength(filedata);
+  jchar * buffer=env->GetCharArrayElements(filedata,NULL);
+  
+  jboolean retValue= (WriteUnitexFile(jstc_filename.getJString(),buffer,len,NULL,0) == 0);
+  env->ReleaseCharArrayElements(filedata,buffer,0);
+  return retValue;
 }
 
 /*
@@ -393,14 +393,14 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2_3B
   (JNIEnv *env, jclass, jstring filename, jbyteArray filedata)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
-	jsize len = env->GetArrayLength(filedata);
-	jbyte * buffer=env->GetByteArrayElements(filedata,NULL);
-	
-	jboolean retValue= (WriteUnitexFile(jstc_filename.getJString(),buffer,len,NULL,0) == 0);
-	env->ReleaseByteArrayElements(filedata,buffer,0);
-	return retValue;
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
+  jsize len = env->GetArrayLength(filedata);
+  jbyte * buffer=env->GetByteArrayElements(filedata,NULL);
+  
+  jboolean retValue= (WriteUnitexFile(jstc_filename.getJString(),buffer,len,NULL,0) == 0);
+  env->ReleaseByteArrayElements(filedata,buffer,0);
+  return retValue;
 }
 
 
@@ -412,29 +412,29 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
 
-	jsize stringSize = env->GetStringLength(filecontent);
-	void* buffString = (void*)malloc(sizeof(jchar)*(stringSize+1));
-	unsigned char*buffBom = (unsigned char*)buffString;
-	*(buffBom++)=0xff;
-	*(buffBom++)=0xfe;
-	jchar* bufContent = (jchar*)buffBom;
-	env->GetStringRegion(filecontent,0,stringSize,bufContent);
+  jsize stringSize = env->GetStringLength(filecontent);
+  void* buffString = (void*)malloc(sizeof(jchar)*(stringSize+1));
+  unsigned char*buffBom = (unsigned char*)buffString;
+  *(buffBom++)=0xff;
+  *(buffBom++)=0xfe;
+  jchar* bufContent = (jchar*)buffBom;
+  env->GetStringRegion(filecontent,0,stringSize,bufContent);
 
-	if (!(is_little_endian()))
-	{
-		for (jsize j=0;j<stringSize;j++)
-		{
-			jchar c=*(bufContent+j);
-			*(((unsigned char*)(bufContent+j))+0) = (unsigned char)(c & 0xff);
-			*(((unsigned char*)(bufContent+j))+1) = (unsigned char)(c >> 8);
-		}
-	}
-	jboolean ret= (WriteUnitexFile(jstc_filename.getJString(),buffString,sizeof(jchar)*(stringSize+1),NULL,0) == 0);
-	free(buffString);
-	return ret;
+  if (!(is_little_endian()))
+  {
+    for (jsize j=0;j<stringSize;j++)
+    {
+      jchar c=*(bufContent+j);
+      *(((unsigned char*)(bufContent+j))+0) = (unsigned char)(c & 0xff);
+      *(((unsigned char*)(bufContent+j))+1) = (unsigned char)(c >> 8);
+    }
+  }
+  jboolean ret= (WriteUnitexFile(jstc_filename.getJString(),buffString,sizeof(jchar)*(stringSize+1),NULL,0) == 0);
+  free(buffString);
+  return ret;
 }
 
 
@@ -446,14 +446,14 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_appendUnitexFile
   (JNIEnv *env, jclass, jstring filename, jbyteArray filedata)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
-	jsize len = env->GetArrayLength(filedata);
-	jbyte * buffer=env->GetByteArrayElements(filedata,NULL);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
+  jsize len = env->GetArrayLength(filedata);
+  jbyte * buffer=env->GetByteArrayElements(filedata,NULL);
 
-	jboolean retValue= (AppendUnitexFile(jstc_filename.getJString(),buffer,len) == 0);
-	env->ReleaseByteArrayElements(filedata,buffer,0);
-	return retValue;
+  jboolean retValue= (AppendUnitexFile(jstc_filename.getJString(),buffer,len) == 0);
+  env->ReleaseByteArrayElements(filedata,buffer,0);
+  return retValue;
 }
 
 
@@ -461,46 +461,46 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_appendUnitexFile
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
 
-	jsize stringSize = env->GetStringLength(filecontent);
-	void* buffString = (void*)malloc(sizeof(jchar)*(stringSize+1));
-	unsigned char*buffBom = (unsigned char*)buffString;
-	*(buffBom++)=0xff-1;
-	*(buffBom++)=0xfe+1;
-	jchar* bufContent = (jchar*)buffBom;
-	env->GetStringRegion(filecontent,0,stringSize,bufContent);
+  jsize stringSize = env->GetStringLength(filecontent);
+  void* buffString = (void*)malloc(sizeof(jchar)*(stringSize+1));
+  unsigned char*buffBom = (unsigned char*)buffString;
+  *(buffBom++)=0xff-1;
+  *(buffBom++)=0xfe+1;
+  jchar* bufContent = (jchar*)buffBom;
+  env->GetStringRegion(filecontent,0,stringSize,bufContent);
 
-	if ((is_little_endian()))
-	{
-		for (jsize j=0;j<stringSize;j++)
-		{
-			jchar c=*(bufContent+j);
-			*(((unsigned char*)(bufContent+j))+1) = (unsigned char)(c & 0xff);
-			*(((unsigned char*)(bufContent+j))+0) = (unsigned char)(c >> 8);
-		}
-	}
-	jboolean ret= (WriteUnitexFile(jstc_filename.getJString(),buffString,sizeof(jchar)*(stringSize+1),NULL,0) == 0);
-	free(buffString);
-	return ret;
+  if ((is_little_endian()))
+  {
+    for (jsize j=0;j<stringSize;j++)
+    {
+      jchar c=*(bufContent+j);
+      *(((unsigned char*)(bufContent+j))+1) = (unsigned char)(c & 0xff);
+      *(((unsigned char*)(bufContent+j))+0) = (unsigned char)(c >> 8);
+    }
+  }
+  jboolean ret= (WriteUnitexFile(jstc_filename.getJString(),buffString,sizeof(jchar)*(stringSize+1),NULL,0) == 0);
+  free(buffString);
+  return ret;
 }
 */
 
 static jboolean doWriteUnitexFileUtf(JNIEnv* env,jstring filename,jstring filecontent,jboolean hasBom)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
 
-	
-	jstringToCUtf jstc_content;
-	jstc_content.initJString(env,filecontent);
+  
+  jstringToCUtf jstc_content;
+  jstc_content.initJString(env,filecontent);
 
-	const unsigned char UTF8BOM[3] = { 0xef,0xbb,0xbf };
+  const unsigned char UTF8BOM[3] = { 0xef,0xbb,0xbf };
 
-	jboolean ret= (WriteUnitexFile(jstc_filename.getJString(),UTF8BOM,hasBom ? 3:0,
-									jstc_content.getJString(),strlen(jstc_content.getJString())) == 0);
-	return ret;
+  jboolean ret= (WriteUnitexFile(jstc_filename.getJString(),UTF8BOM,hasBom ? 3:0,
+                  jstc_content.getJString(),strlen(jstc_content.getJString())) == 0);
+  return ret;
 }
 
 /*
@@ -511,7 +511,7 @@ static jboolean doWriteUnitexFileUtf(JNIEnv* env,jstring filename,jstring fileco
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf__Ljava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jclass, jstring filename, jstring filecontent)
 {
-	return doWriteUnitexFileUtf(env,filename,filecontent,JNI_FALSE);
+  return doWriteUnitexFileUtf(env,filename,filecontent,JNI_FALSE);
 }
 
 /*
@@ -522,7 +522,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf_
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf__Ljava_lang_String_2Ljava_lang_String_2Z
  (JNIEnv *env, jclass, jstring filename, jstring filecontent, jboolean has_bom)
 {
-	return doWriteUnitexFileUtf(env,filename,filecontent,has_bom);
+  return doWriteUnitexFileUtf(env,filename,filecontent,has_bom);
 }
 
 /*
@@ -533,16 +533,16 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFileUtf_
 JNIEXPORT jcharArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileDataChar
   (JNIEnv *env, jclass, jstring filename)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
 
     UNITEXFILEMAPPED *amf;
     const void*buffer;
     size_t size_file;
-	GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
-	jcharArray jarrRet=env->NewCharArray((jsize)size_file);
-	if (jarrRet != NULL)
-		env->SetCharArrayRegion(jarrRet,0,(jsize)size_file,(const jchar*)buffer);
+  GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
+  jcharArray jarrRet=env->NewCharArray((jsize)size_file);
+  if (jarrRet != NULL)
+    env->SetCharArrayRegion(jarrRet,0,(jsize)size_file,(const jchar*)buffer);
     CloseUnitexFileReadBuffer(amf, buffer, size_file);
     return jarrRet;
 }
@@ -555,16 +555,16 @@ JNIEXPORT jcharArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileData
 JNIEXPORT jbyteArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileData
   (JNIEnv *env, jclass, jstring filename)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
 
     UNITEXFILEMAPPED *amf;
     const void*buffer;
     size_t size_file;
-	GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
-	jbyteArray jarrRet=env->NewByteArray((jsize)size_file);
-	if (jarrRet != NULL)
-		env->SetByteArrayRegion(jarrRet,0,(jsize)size_file,(const jbyte*)buffer);
+  GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
+  jbyteArray jarrRet=env->NewByteArray((jsize)size_file);
+  if (jarrRet != NULL)
+    env->SetByteArrayRegion(jarrRet,0,(jsize)size_file,(const jbyte*)buffer);
     CloseUnitexFileReadBuffer(amf, buffer, size_file);
     return jarrRet;
 }
@@ -577,24 +577,24 @@ JNIEXPORT jbyteArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileData
 JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
   (JNIEnv *env, jclass, jstring filename)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
-	jstring jstrRet=NULL;
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
+  jstring jstrRet=NULL;
 
     UNITEXFILEMAPPED *amf;
     const void*buffer;
     size_t size_file;
-	GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
-	const unsigned char* bufchar=(const unsigned char*)buffer;
-	size_t size_bom=0;
-	bool is_utf16_native_endianess=false;
-	bool is_utf16_swap_endianess = false;
+  GetUnitexFileReadBuffer(jstc_filename.getJString(),&amf, &buffer,&size_file);
+  const unsigned char* bufchar=(const unsigned char*)buffer;
+  size_t size_bom=0;
+  bool is_utf16_native_endianess=false;
+  bool is_utf16_swap_endianess = false;
 
     if (size_file>1)
         if (((*(bufchar))==0xff) && ((*(bufchar+1))==0xfe))
         {
-			// little endian
-			is_utf16_native_endianess = is_little_endian();
+      // little endian
+      is_utf16_native_endianess = is_little_endian();
             is_utf16_swap_endianess = ! is_utf16_native_endianess;
             size_bom = 2;
         }
@@ -602,8 +602,8 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
     if (size_file>1)
         if (((*(bufchar))==0xfe) && ((*(bufchar+1))==0xff))
         {
-			// big endian
-			is_utf16_native_endianess = ! is_little_endian();
+      // big endian
+      is_utf16_native_endianess = ! is_little_endian();
             is_utf16_swap_endianess = ! is_utf16_native_endianess;
             size_bom = 2;
         }
@@ -614,35 +614,35 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
             size_bom = 3;
         }
 
-	if (is_utf16_native_endianess)
-	{
-		jstrRet = env->NewString((const jchar*)(bufchar+size_bom), (jsize)((size_file - size_bom) / sizeof(jchar)));
-	}
-	else
+  if (is_utf16_native_endianess)
+  {
+    jstrRet = env->NewString((const jchar*)(bufchar+size_bom), (jsize)((size_file - size_bom) / sizeof(jchar)));
+  }
+  else
     if (is_utf16_swap_endianess)
-	{
-		unsigned char* returnedUTF16buffer = (unsigned char*)malloc(size_file);
-		if (returnedUTF16buffer != NULL)
-		{
-			for (size_t i=0;i<size_file;i+=2)
-			{
-				unsigned char c1 = *(bufchar+i);
-				unsigned char c2 = *(bufchar+i+1);
-				*(returnedUTF16buffer+i) = c2;
-				*(returnedUTF16buffer+i+1) = c1;
-			}
-			jstrRet = env->NewString((const jchar*)(returnedUTF16buffer+size_bom), (jsize)((size_file - size_bom) / sizeof(jchar)));
-			free(returnedUTF16buffer);
-		}
-	}
-	else
-	{
-		char* stringUtf = (char*)malloc(size_file+1);
-		memcpy(stringUtf,bufchar+size_bom,size_file-size_bom);
-		*(stringUtf+size_file-size_bom)='\0';
-		jstrRet = env->NewStringUTF(stringUtf);
-		free(stringUtf);
-	}
+  {
+    unsigned char* returnedUTF16buffer = (unsigned char*)malloc(size_file);
+    if (returnedUTF16buffer != NULL)
+    {
+      for (size_t i=0;i<size_file;i+=2)
+      {
+        unsigned char c1 = *(bufchar+i);
+        unsigned char c2 = *(bufchar+i+1);
+        *(returnedUTF16buffer+i) = c2;
+        *(returnedUTF16buffer+i+1) = c1;
+      }
+      jstrRet = env->NewString((const jchar*)(returnedUTF16buffer+size_bom), (jsize)((size_file - size_bom) / sizeof(jchar)));
+      free(returnedUTF16buffer);
+    }
+  }
+  else
+  {
+    char* stringUtf = (char*)malloc(size_file+1);
+    memcpy(stringUtf,bufchar+size_bom,size_file-size_bom);
+    *(stringUtf+size_file-size_bom)='\0';
+    jstrRet = env->NewStringUTF(stringUtf);
+    free(stringUtf);
+  }
 
     CloseUnitexFileReadBuffer(amf, buffer, size_file);
     return jstrRet;
@@ -657,9 +657,9 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeUnitexFile
   (JNIEnv *env, jclass, jstring filename)
 {
-	jstringToCUtf jstc_filename;
-	jstc_filename.initJString(env,filename);
-	return (RemoveUnitexFile(jstc_filename.getJString()) == 0);
+  jstringToCUtf jstc_filename;
+  jstc_filename.initJString(env,filename);
+  return (RemoveUnitexFile(jstc_filename.getJString()) == 0);
 }
 
 
@@ -671,9 +671,9 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeUnitexFile
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_createUnitexFolder
   (JNIEnv *env, jclass, jstring foldername)
 {
-	jstringToCUtf jstc_foldername;
-	jstc_foldername.initJString(env,foldername);
-	return (CreateUnitexFolder(jstc_foldername.getJString()) == 0);
+  jstringToCUtf jstc_foldername;
+  jstc_foldername.initJString(env,foldername);
+  return (CreateUnitexFolder(jstc_foldername.getJString()) == 0);
 }
 
 
@@ -685,9 +685,9 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_createUnitexFolder
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeUnitexFolder
   (JNIEnv *env, jclass, jstring foldername)
 {
-	jstringToCUtf jstc_foldername;
-	jstc_foldername.initJString(env,foldername);
-	return (RemoveUnitexFolder(jstc_foldername.getJString()) == 0);
+  jstringToCUtf jstc_foldername;
+  jstc_foldername.initJString(env,foldername);
+  return (RemoveUnitexFolder(jstc_foldername.getJString()) == 0);
 }
 
 
@@ -699,11 +699,11 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeUnitexFolder
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_renameUnitexFile
   (JNIEnv *env, jclass, jstring filenameSrc, jstring filenameDst)
 {
-	jstringToCUtf jstc_filenameSrc;
-	jstc_filenameSrc.initJString(env,filenameSrc);
-	jstringToCUtf jstc_filenameDst;
-	jstc_filenameDst.initJString(env,filenameDst);
-	return (RenameUnitexFile(jstc_filenameSrc.getJString(),jstc_filenameDst.getJString()) == 0);
+  jstringToCUtf jstc_filenameSrc;
+  jstc_filenameSrc.initJString(env,filenameSrc);
+  jstringToCUtf jstc_filenameDst;
+  jstc_filenameDst.initJString(env,filenameDst);
+  return (RenameUnitexFile(jstc_filenameSrc.getJString(),jstc_filenameDst.getJString()) == 0);
 }
 
 
@@ -715,11 +715,11 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_renameUnitexFile
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_copyUnitexFile
   (JNIEnv *env, jclass, jstring filenameSrc, jstring filenameDst)
 {
-	jstringToCUtf jstc_filenameSrc;
-	jstc_filenameSrc.initJString(env,filenameSrc);
-	jstringToCUtf jstc_filenameDst;
-	jstc_filenameDst.initJString(env,filenameDst);
-	return (CopyUnitexFile(jstc_filenameSrc.getJString(),jstc_filenameDst.getJString()) == 0);
+  jstringToCUtf jstc_filenameSrc;
+  jstc_filenameSrc.initJString(env,filenameSrc);
+  jstringToCUtf jstc_filenameDst;
+  jstc_filenameDst.initJString(env,filenameDst);
+  return (CopyUnitexFile(jstc_filenameSrc.getJString(),jstc_filenameDst.getJString()) == 0);
 }
 
 
@@ -732,8 +732,8 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_unitexAbstractPathE
   (JNIEnv *env, jclass, jstring path)
 {
     jstringToCUtf jstc_path;
-	jstc_path.initJString(env, path);
-	return (UnitexAbstractPathExists(jstc_path.getJString()) != 0);
+  jstc_path.initJString(env, path);
+  return (UnitexAbstractPathExists(jstc_path.getJString()) != 0);
 }
 
 /*
@@ -744,8 +744,8 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_unitexAbstractPathE
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_setStdOutTrashMode
   (JNIEnv *, jclass, jboolean trashOutput)
 {
-	enum stdwrite_kind swk=stdwrite_kind_out;
-	return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? JNI_TRUE : JNI_FALSE;
+  enum stdwrite_kind swk=stdwrite_kind_out;
+  return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? JNI_TRUE : JNI_FALSE;
 }
 
 
@@ -757,8 +757,8 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_setStdOutTrashMode
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_setStdErrTrashMode
   (JNIEnv *, jclass, jboolean trashOutput)
 {
-	enum stdwrite_kind swk=stdwrite_kind_err;
-	return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? JNI_TRUE : JNI_FALSE;
+  enum stdwrite_kind swk=stdwrite_kind_err;
+  return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? JNI_TRUE : JNI_FALSE;
 }
 
 
@@ -773,34 +773,34 @@ static struct UniLoggerSpace * p_ule = NULL;
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_installLogger
   (JNIEnv *env, jclass, jstring foldername, jboolean store_file_out_content)
 {
-	jstringToCUtf jstc_foldername;
-	jstc_foldername.initJString(env,foldername);
+  jstringToCUtf jstc_foldername;
+  jstc_foldername.initJString(env,foldername);
 
-	if (p_ule)
-		return JNI_FALSE;
+  if (p_ule)
+    return JNI_FALSE;
 
-	p_ule= (struct UniLoggerSpace *)malloc(sizeof(struct UniLoggerSpace));
+  p_ule= (struct UniLoggerSpace *)malloc(sizeof(struct UniLoggerSpace));
     if (!p_ule)
-		return JNI_FALSE;
-	memset(p_ule,0,sizeof(struct UniLoggerSpace));
+    return JNI_FALSE;
+  memset(p_ule,0,sizeof(struct UniLoggerSpace));
 
-	p_ule->size_of_struct = sizeof(struct UniLoggerSpace);
-	p_ule->privateUnloggerData = NULL;
-	p_ule->szPathLog = strdup(jstc_foldername.getJString());
-	p_ule->szNameLog = NULL;
-	p_ule->store_file_out_content = store_file_out_content;
-	p_ule->store_list_file_out_content = 1;
-	p_ule->store_file_in_content = 1;
-	p_ule->store_list_file_in_content = 1;
-	p_ule->store_std_out_content = 0;
-	p_ule->store_std_err_content = 0;
-	p_ule->auto_increment_logfilename = 1;
+  p_ule->size_of_struct = sizeof(struct UniLoggerSpace);
+  p_ule->privateUnloggerData = NULL;
+  p_ule->szPathLog = strdup(jstc_foldername.getJString());
+  p_ule->szNameLog = NULL;
+  p_ule->store_file_out_content = store_file_out_content;
+  p_ule->store_list_file_out_content = 1;
+  p_ule->store_file_in_content = 1;
+  p_ule->store_list_file_in_content = 1;
+  p_ule->store_std_out_content = 0;
+  p_ule->store_std_err_content = 0;
+  p_ule->auto_increment_logfilename = 1;
 
-	if (0 != AddActivityLogger(p_ule))
-		return JNI_TRUE;
+  if (0 != AddActivityLogger(p_ule))
+    return JNI_TRUE;
 
-	free(p_ule);
-	return JNI_FALSE;
+  free(p_ule);
+  return JNI_FALSE;
 }
 
 
@@ -812,13 +812,13 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_installLogger
 JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_removeLogger
   (JNIEnv *, jclass)
 {
-	if (p_ule == NULL)
-		return JNI_FALSE;
-	RemoveActivityLogger(p_ule);
-	free((void*)(p_ule->szPathLog));
-	free(p_ule);
-	p_ule=NULL;
-	return JNI_TRUE;
+  if (p_ule == NULL)
+    return JNI_FALSE;
+  RemoveActivityLogger(p_ule);
+  free((void*)(p_ule->szPathLog));
+  free(p_ule);
+  p_ule=NULL;
+  return JNI_TRUE;
 }
 
 
@@ -878,32 +878,32 @@ return (jint)1;
 JNIEXPORT jobjectArray JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getFileList
 (JNIEnv *env, jclass , jstring filename)
 {
-	jstringToCUtf jstc_foldername;
-	jstc_foldername.initJString(env,filename);
+  jstringToCUtf jstc_foldername;
+  jstc_foldername.initJString(env,filename);
 
-	jclass cls = env->FindClass("java/lang/String");
+  jclass cls = env->FindClass("java/lang/String");
 
-	char**list=GetUnitexFileList(jstc_foldername.getJString());
-	if (list==NULL)
-		return env->NewObjectArray(0, cls, NULL);
+  char**list=GetUnitexFileList(jstc_foldername.getJString());
+  if (list==NULL)
+    return env->NewObjectArray(0, cls, NULL);
 
-	unsigned int nb_file = 0;
-	while ((*(list + nb_file))!=NULL)
-	{
-		nb_file ++;
-	}
+  unsigned int nb_file = 0;
+  while ((*(list + nb_file))!=NULL)
+  {
+    nb_file ++;
+  }
 
-	jobjectArray jarray = env->NewObjectArray((jsize)nb_file, cls, NULL);
-	unsigned int iter_file = 0;
-	while ((*(list + iter_file))!=NULL)
-	{
+  jobjectArray jarray = env->NewObjectArray((jsize)nb_file, cls, NULL);
+  unsigned int iter_file = 0;
+  while ((*(list + iter_file))!=NULL)
+  {
         jstring jstr = env->NewStringUTF(*(list + iter_file));
         env->SetObjectArrayElement(jarray, iter_file, jstr);
-		iter_file ++;
-	}
+    iter_file ++;
+  }
 
-	ReleaseUnitexFileList(jstc_foldername.getJString(),list);
-	return jarray;
+  ReleaseUnitexFileList(jstc_foldername.getJString(),list);
+  return jarray;
 }
 #endif
 
@@ -921,10 +921,10 @@ name.initJString(env,filename);
 size_t len_buffer=strlen(name.getJString())+0x200;
 char* persistent_filename=(char*)malloc(len_buffer+1);
 if (persistent_filename == NULL) {
-	return NULL;
+  return NULL;
 }
 if (standard_load_persistence_dictionary(name.getJString(),persistent_filename,len_buffer)) {
-	jret = env->NewStringUTF(persistent_filename);
+  jret = env->NewStringUTF(persistent_filename);
 }
 free(persistent_filename);
 return jret;
@@ -936,7 +936,7 @@ return jret;
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentDictionary
-	(JNIEnv* env, jclass, jstring filename) {
+  (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
 standard_unload_persistence_dictionary(name.getJString());
@@ -948,17 +948,17 @@ standard_unload_persistence_dictionary(name.getJString());
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentFst2
-	(JNIEnv* env, jclass, jstring filename) {
+  (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 jstring jret=NULL;
 name.initJString(env,filename);
 size_t len_buffer=strlen(name.getJString())+0x200;
 char* persistent_filename=(char*)malloc(len_buffer+1);
 if (persistent_filename == NULL) {
-	return NULL;
+  return NULL;
 }
 if (standard_load_persistence_fst2(name.getJString(),persistent_filename,len_buffer)) {
-	jret = env->NewStringUTF(persistent_filename);
+  jret = env->NewStringUTF(persistent_filename);
 }
 free(persistent_filename);
 return jret;
@@ -970,7 +970,7 @@ return jret;
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentFst2
-	(JNIEnv* env, jclass, jstring filename) {
+  (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
 standard_unload_persistence_fst2(name.getJString());
@@ -983,17 +983,17 @@ standard_unload_persistence_fst2(name.getJString());
  * Signature: (Ljava/lang/String;)Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_loadPersistentAlphabet
-	(JNIEnv* env, jclass, jstring filename) {
+  (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 jstring jret=NULL;
 name.initJString(env,filename);
 size_t len_buffer=strlen(name.getJString())+0x200;
 char* persistent_filename=(char*)malloc(len_buffer+1);
 if (persistent_filename == NULL) {
-	return NULL;
+  return NULL;
 }
 if (standard_load_persistence_alphabet(name.getJString(),persistent_filename,len_buffer)) {
-	jret = env->NewStringUTF(persistent_filename);
+  jret = env->NewStringUTF(persistent_filename);
 }
 free(persistent_filename);
 return jret;
@@ -1005,7 +1005,7 @@ return jret;
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT void JNICALL Java_fr_umlv_unitex_jni_UnitexJni_freePersistentAlphabet
-	(JNIEnv* env, jclass, jstring filename) {
+  (JNIEnv* env, jclass, jstring filename) {
 jstringToCUtf name;
 name.initJString(env,filename);
 standard_unload_persistence_alphabet(name.getJString());

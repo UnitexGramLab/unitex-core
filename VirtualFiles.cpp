@@ -50,18 +50,18 @@ static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * m
 * Description of a VFS inode.
 */
 typedef struct VFS_INODE_ {
-	struct VFS* vfs;
-	char* name;
-	void* ptr;
-	unsigned long size;
-	unsigned long capacity;
-	int open_in_write_mode;
-	/* How many open pointers have we on this inode ?
-	* If we don't know, we can't make remove operation safely */
-	int n_open;
-	int to_remove;
+  struct VFS* vfs;
+  char* name;
+  void* ptr;
+  unsigned long size;
+  unsigned long capacity;
+  int open_in_write_mode;
+  /* How many open pointers have we on this inode ?
+  * If we don't know, we can't make remove operation safely */
+  int n_open;
+  int to_remove;
 
-	struct VFS_INODE_* next;
+  struct VFS_INODE_* next;
 } VFS_INODE;
 
 
@@ -69,9 +69,9 @@ typedef struct VFS_INODE_ {
 * Description of a file pointer returned by our open.
 */
 typedef struct {
-	VFS_INODE* inode;
-	TYPEOPEN_MF open_type;
-	unsigned long pos;
+  VFS_INODE* inode;
+  TYPEOPEN_MF open_type;
+  unsigned long pos;
 } VFS_FILE;
 
 
@@ -79,9 +79,9 @@ typedef struct {
 * Description of the VFS space
 */
 struct VFS {
-	const char* pfx;
-	int default_block_size;
-	VFS_INODE* list;
+  const char* pfx;
+  int default_block_size;
+  VFS_INODE* list;
 };
 
 
@@ -92,38 +92,38 @@ static struct VFS VFS_id = { VIRTUAL_FILE_PFX, 4096, NULL };
 class InitVirtualFiles
 {
 public:
-	InitVirtualFiles();
-	~InitVirtualFiles();
-	inline SYNC_Mutex_OBJECT getMutex() { return mutex; };
-	void performInit();
-	void performUninit();
+  InitVirtualFiles();
+  ~InitVirtualFiles();
+  inline SYNC_Mutex_OBJECT getMutex() { return mutex; };
+  void performInit();
+  void performUninit();
 private:
-	SYNC_Mutex_OBJECT mutex;
-	bool init_done;
+  SYNC_Mutex_OBJECT mutex;
+  bool init_done;
 };
 
 InitVirtualFiles::InitVirtualFiles()
-	: mutex(NULL),init_done(false)
+  : mutex(NULL),init_done(false)
 {
-	performInit();
+  performInit();
 }
 
 InitVirtualFiles::~InitVirtualFiles()
 {
-	performUninit();
+  performUninit();
 }
 
 void InitVirtualFiles::performInit()
 {
 if (init_done) {
-	return;
+  return;
 }
 mutex = SyncBuildMutex();
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
 if (!AddAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
-	fatal_error("Cannot create virtual file system\n");
+  fatal_error("Cannot create virtual file system\n");
 }
 init_done = true;
 }
@@ -131,19 +131,19 @@ init_done = true;
 void InitVirtualFiles::performUninit()
 {
 if (!init_done) {
-	return;
+  return;
 }
 
 t_fileio_func_array_extensible my_VFS;
 fill_fileio_func_array_extensible(&my_VFS);
 
 if (!RemoveAbstractFileSpaceExtensible(&my_VFS, &VFS_id)) {
-	fatal_error("Cannot uninstall virtual file system\n");
+  fatal_error("Cannot uninstall virtual file system\n");
 }
 
 if (mutex != NULL) {
-	SyncDeleteMutex(mutex);
-	mutex = NULL;
+  SyncDeleteMutex(mutex);
+  mutex = NULL;
 }
 init_done = false;
 }
@@ -153,11 +153,11 @@ static InitVirtualFiles InitVirtualFilesInstance;
 // init_virtual_files is not a public api. it is here only for compatibility
 
 void init_virtual_files() {
-	return InitVirtualFilesInstance.performInit();
+  return InitVirtualFilesInstance.performInit();
 }
 
 void uninit_virtual_files() {
-	return InitVirtualFilesInstance.performUninit();
+  return InitVirtualFilesInstance.performUninit();
 }
 
 #define VFS_mutex (InitVirtualFilesInstance.getMutex())
@@ -179,11 +179,11 @@ static VFS_INODE* get_inode(VFS* vfs,const char* name) {
 SyncGetMutex(VFS_mutex);
 VFS_INODE* inode=vfs->list;
 while (inode!=NULL) {
-	if (!strcmp(inode->name,name)) {
-		SyncReleaseMutex(VFS_mutex);
-		return inode;
-	}
-	inode=inode->next;
+  if (!strcmp(inode->name,name)) {
+    SyncReleaseMutex(VFS_mutex);
+    return inode;
+  }
+  inode=inode->next;
 }
 SyncReleaseMutex(VFS_mutex);
 return NULL;
@@ -194,18 +194,18 @@ static VFS_INODE* create_inode(VFS* vfs,const char* name,TYPEOPEN_MF TypeOpen) {
 DISCARD_UNUSED_PARAMETER(TypeOpen)
 VFS_INODE* inode=(VFS_INODE*)malloc(sizeof(VFS_INODE));
 if (inode==NULL) {
-	fatal_alloc_error("create_inode");
+  fatal_alloc_error("create_inode");
 }
 inode->vfs=vfs;
 inode->name=strdup(name);
 if (inode->name==NULL) {
-	fatal_alloc_error("create_inode");
+  fatal_alloc_error("create_inode");
 }
 inode->size=0;
 inode->capacity=inode->vfs->default_block_size;
 inode->ptr=malloc(inode->capacity);
 if (inode->ptr==NULL) {
-	fatal_alloc_error("create_inode");
+  fatal_alloc_error("create_inode");
 }
 inode->open_in_write_mode=0;
 inode->n_open=0;
@@ -220,15 +220,15 @@ return inode;
 
 static VFS_INODE* remove_inode(VFS_INODE* list,VFS_INODE* inode) {
 if (list==NULL) {
-	return NULL;
+  return NULL;
 }
 if (list!=inode) {
-	list->next=remove_inode(list->next,inode);
-	return list;
+  list->next=remove_inode(list->next,inode);
+  return list;
 }
 VFS_INODE* next=list->next;
 if (inode->ptr!=NULL) {
-	free(inode->ptr);
+  free(inode->ptr);
 }
 free(inode->name);
 free(inode);
@@ -252,8 +252,8 @@ static int load_file_content(VFS_INODE* inode) {
 SyncGetMutex(VFS_mutex);
 FILE* f=real_fopen(inode->name+strlen(inode->vfs->pfx),"rb");
 if (f==NULL) {
-	SyncReleaseMutex(VFS_mutex);
-	return 0;
+  SyncReleaseMutex(VFS_mutex);
+  return 0;
 }
 fseek(f,0,SEEK_END);
 inode->size=ftell(f);
@@ -261,10 +261,10 @@ inode->capacity=inode->size;
 fseek(f,0,SEEK_SET);
 inode->ptr=malloc(inode->size);
 if (inode->ptr==NULL) {
-	fatal_alloc_error("load_file_content");
+  fatal_alloc_error("load_file_content");
 }
 if (inode->size!=(unsigned long)fread(inode->ptr,1,inode->size,f)) {
-	fatal_error("Error loading content of %s\n",inode->name);
+  fatal_error("Error loading content of %s\n",inode->name);
 }
 fclose(f);
 SyncReleaseMutex(VFS_mutex);
@@ -285,34 +285,34 @@ case OPEN_CREATE_MF: error("open CREATE: %s\n",name); break;
 VFS_INODE* inode=get_inode(vfs,name);
 int inode_created=0;
 if (inode==NULL) {
-	if (TypeOpen == OPEN_READ_MF) {
-		return NULL;
-	}
-	inode=create_inode(vfs,name,TypeOpen);
-	inode_created=1;
+  if (TypeOpen == OPEN_READ_MF) {
+    return NULL;
+  }
+  inode=create_inode(vfs,name,TypeOpen);
+  inode_created=1;
 }
 /* If an inode exists, we must test if there is a concurrent
  * write access on the file */
 if (TypeOpen!=OPEN_READ_MF) {
-	if (inode->open_in_write_mode) {
-		fatal_error("Cannot have a concurrent write access on virtual file %s\n",name);
-	} else {
-		inode->open_in_write_mode=1;
-	}
+  if (inode->open_in_write_mode) {
+    fatal_error("Cannot have a concurrent write access on virtual file %s\n",name);
+  } else {
+    inode->open_in_write_mode=1;
+  }
 }
 if (inode_created && TypeOpen!=OPEN_CREATE_MF) {
-	/* If we have to load the file content from disk, we do it */
-	if (!load_file_content(inode)) {
-		return NULL;
-	}
+  /* If we have to load the file content from disk, we do it */
+  if (!load_file_content(inode)) {
+    return NULL;
+  }
 }
 if (TypeOpen==OPEN_CREATE_MF) {
-	/* A created file must be truncated */
-	inode->size=0;
+  /* A created file must be truncated */
+  inode->size=0;
 }
 VFS_FILE* f=(VFS_FILE*)malloc(sizeof(VFS_FILE));
 if (f==NULL) {
-	fatal_alloc_error("my_fnc_memOpenLowLevel");
+  fatal_alloc_error("my_fnc_memOpenLowLevel");
 }
 f->inode=inode;
 f->open_type=TypeOpen;
@@ -329,12 +329,12 @@ size_t ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelRead(ABSTRACTFILE_PTR llFile, 
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 if (f->open_type==OPEN_CREATE_MF) {
-	/* Cannot read in write-only mode */
-	return 0;
+  /* Cannot read in write-only mode */
+  return 0;
 }
 unsigned int to_read=(unsigned int)(f->inode->size-f->pos);
 if (size<to_read) {
-	to_read=(unsigned int)size;
+  to_read=(unsigned int)size;
 }
 memcpy(Buf,((char*)f->inode->ptr)+f->pos,to_read);
 f->pos+=to_read;
@@ -349,24 +349,24 @@ size_t ABSTRACT_CALLBACK_UNITEX my_fnc_memLowLevelWrite(ABSTRACTFILE_PTR llFile,
 DISCARD_UNUSED_PARAMETER(privateSpacePtr)
 VFS_FILE* f=(VFS_FILE*)llFile;
 if (f->open_type==OPEN_READ_MF) {
-	/* Cannot write in read-only mode */
-	return 0;
+  /* Cannot write in read-only mode */
+  return 0;
 }
 if (f->pos+size>f->inode->capacity) {
-	/* We need to enlarge our buffer */
-	unsigned int n=(unsigned int)(f->inode->capacity);
-	if (n==0) n=1;
-	while (f->pos+size>n) n=n*2;
-	f->inode->ptr=realloc(f->inode->ptr,n);
-	if (f->inode->ptr==NULL) {
-		fatal_error("Cannot allocate buffer to write virtual file %s\n",f->inode->name);
-	}
-	f->inode->capacity=n;
+  /* We need to enlarge our buffer */
+  unsigned int n=(unsigned int)(f->inode->capacity);
+  if (n==0) n=1;
+  while (f->pos+size>n) n=n*2;
+  f->inode->ptr=realloc(f->inode->ptr,n);
+  if (f->inode->ptr==NULL) {
+    fatal_error("Cannot allocate buffer to write virtual file %s\n",f->inode->name);
+  }
+  f->inode->capacity=n;
 }
 memcpy((char*)(f->inode->ptr)+f->pos,Buf,size);
 f->pos+=(unsigned long)size;
 if (f->pos>f->inode->size) {
-	f->inode->size=f->pos;
+  f->inode->size=f->pos;
 }
 return size;
 }
@@ -386,8 +386,8 @@ case SEEK_END: new_pos=(int)(f->inode->size+Pos); break;
 }
 if (new_pos<0) return -1;
 if ((unsigned int)new_pos>f->inode->size) {
-	fatal_error("Nasty fseek beyond the end of virtual file %s is not permitted\n",f->inode->name);
-	return -1;
+  fatal_error("Nasty fseek beyond the end of virtual file %s is not permitted\n",f->inode->name);
+  return -1;
 }
 f->pos=new_pos;
 return 0;
@@ -404,14 +404,14 @@ VFS_INODE* inode=f->inode;
 (f->inode->n_open)--;
 /* We have to update the open_in_write_mode flag */
 if (f->open_type!=OPEN_READ_MF) {
-	/* As there should only be one file in write mode at the same time,
-	 * if the current one was, we reset the flag
-	 */
-	f->inode->open_in_write_mode=0;
+  /* As there should only be one file in write mode at the same time,
+   * if the current one was, we reset the flag
+   */
+  f->inode->open_in_write_mode=0;
 }
 free(f);
 if (inode->n_open==0 && inode->to_remove) {
-	delete_inode(inode);
+  delete_inode(inode);
 }
 return 0;
 }
@@ -447,7 +447,7 @@ if (!strcmp(_OldFilename,_NewFilename)) return 0;
 free(inode->name);
 inode->name=strdup(_NewFilename);
 if (inode->name==NULL) {
-	fatal_alloc_error("my_fnc_memFileRename");
+  fatal_alloc_error("my_fnc_memFileRename");
 }
 return 0;
 }
@@ -461,14 +461,14 @@ VFS_INODE* inode=get_inode((VFS*)privateSpacePtr,lpFileName);
 if (inode==NULL) return 1;
 inode->to_remove=1;
 if (inode->n_open==0) {
-	delete_inode(inode);
+  delete_inode(inode);
 }
 return 0;
 }
 
 
 const void* my_fnc_memFile_getMapPointer(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type /*len*/,int /*options*/,
-		afs_size_type /* value_for_options*/,void* /* privateSpacePtr */) {
+    afs_size_type /* value_for_options*/,void* /* privateSpacePtr */) {
 VFS_FILE* f=(VFS_FILE*)llFile;
 return ((char*)f->inode->ptr)+pos;
 }
@@ -480,45 +480,45 @@ char** VFS_ls() {
 VFS_INODE* inode=VFS_id.list;
 int n=0;
 while (inode!=NULL) {
-	n++;
-	inode=inode->next;
+  n++;
+  inode=inode->next;
 }
 n++;
 char** names=(char**)malloc(n*sizeof(char*));
 if (names==NULL) {
-	fatal_alloc_error("VFS_ls");
+  fatal_alloc_error("VFS_ls");
 }
 inode=VFS_id.list;
 n=0;
 while (inode!=NULL) {
-	names[n]=strdup(inode->name);
-	if (names[n]==NULL) {
-		fatal_alloc_error("VFS_ls");
-	}
-	n++;
-	inode=inode->next;
+  names[n]=strdup(inode->name);
+  if (names[n]==NULL) {
+    fatal_alloc_error("VFS_ls");
+  }
+  n++;
+  inode=inode->next;
 }
 names[n]=NULL;
 return names;
 }
 
 char** ABSTRACT_CALLBACK_UNITEX my_memFile_getList(void* /*privateSpacePtr*/) {
-	return VFS_ls();
+  return VFS_ls();
 }
 
 
 void ABSTRACT_CALLBACK_UNITEX my_memFile_releaseList(char**list,void* /*privateSpacePtr*/)
 {
-	if (list==NULL)
-		return;
+  if (list==NULL)
+    return;
 
-	char** list_walk=list;
-	while ((*list_walk)!=NULL)
-	{
-		free(*list_walk);
-		list_walk++;
-	}
-	free(list);
+  char** list_walk=list;
+  while ((*list_walk)!=NULL)
+  {
+    free(*list_walk);
+    list_walk++;
+  }
+  free(list);
 }
 
 /**
@@ -526,23 +526,23 @@ void ABSTRACT_CALLBACK_UNITEX my_memFile_releaseList(char**list,void* /*privateS
  */
 
 static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * my_VFS) {
-	memset(my_VFS, 0, sizeof(t_fileio_func_array_extensible));
-	my_VFS->size_func_array = sizeof(t_fileio_func_array_extensible);
-	my_VFS->fnc_is_filename_object = my_fnc_is_filename_object;
-	my_VFS->fnc_Init_FileSpace = NULL;
-	my_VFS->fnc_Uninit_FileSpace = NULL;
-	my_VFS->fnc_memOpenLowLevel = my_fnc_memOpenLowLevel;
-	my_VFS->fnc_memLowLevelWrite = my_fnc_memLowLevelWrite;
-	my_VFS->fnc_memLowLevelRead = my_fnc_memLowLevelRead;
-	my_VFS->fnc_memLowLevelSeek = my_fnc_memLowLevelSeek;
-	my_VFS->fnc_memLowLevelGetSize = my_fnc_memLowLevelGetSize;
-	my_VFS->fnc_memLowLevelTell = my_fnc_memLowLevelTell;
-	my_VFS->fnc_memLowLevelClose = my_fnc_memLowLevelClose;
-	my_VFS->fnc_memLowLevelSetSizeReservation = NULL;
-	my_VFS->fnc_memFileRemove = my_fnc_memFileRemove;
-	my_VFS->fnc_memFileRename = my_fnc_memFileRename;
-	my_VFS->fnc_memFile_getList = my_memFile_getList;
-	my_VFS->fnc_memFile_releaseList = my_memFile_releaseList;
+  memset(my_VFS, 0, sizeof(t_fileio_func_array_extensible));
+  my_VFS->size_func_array = sizeof(t_fileio_func_array_extensible);
+  my_VFS->fnc_is_filename_object = my_fnc_is_filename_object;
+  my_VFS->fnc_Init_FileSpace = NULL;
+  my_VFS->fnc_Uninit_FileSpace = NULL;
+  my_VFS->fnc_memOpenLowLevel = my_fnc_memOpenLowLevel;
+  my_VFS->fnc_memLowLevelWrite = my_fnc_memLowLevelWrite;
+  my_VFS->fnc_memLowLevelRead = my_fnc_memLowLevelRead;
+  my_VFS->fnc_memLowLevelSeek = my_fnc_memLowLevelSeek;
+  my_VFS->fnc_memLowLevelGetSize = my_fnc_memLowLevelGetSize;
+  my_VFS->fnc_memLowLevelTell = my_fnc_memLowLevelTell;
+  my_VFS->fnc_memLowLevelClose = my_fnc_memLowLevelClose;
+  my_VFS->fnc_memLowLevelSetSizeReservation = NULL;
+  my_VFS->fnc_memFileRemove = my_fnc_memFileRemove;
+  my_VFS->fnc_memFileRename = my_fnc_memFileRename;
+  my_VFS->fnc_memFile_getList = my_memFile_getList;
+  my_VFS->fnc_memFile_releaseList = my_memFile_releaseList;
 }
 
 /**
@@ -552,7 +552,7 @@ static void fill_fileio_func_array_extensible(t_fileio_func_array_extensible * m
 long VFS_size(const char* name) {
 VFS_INODE* inode=get_inode(&VFS_id,name);
 if (inode==NULL) {
-	return -1;
+  return -1;
 }
 return inode->size;
 }
@@ -567,7 +567,7 @@ return inode->size;
 void* VFS_content(const char* name) {
 VFS_INODE* inode=get_inode(&VFS_id,name);
 if (inode==NULL) {
-	return NULL;
+  return NULL;
 }
 return inode->ptr;
 }
@@ -580,7 +580,7 @@ return inode->ptr;
 int VFS_reload(const char* name) {
 VFS_INODE* inode=get_inode(&VFS_id,name);
 if (inode==NULL) {
-	return 0;
+  return 0;
 }
 return load_file_content(inode);
 }
@@ -596,11 +596,11 @@ if (inode==NULL) return 0;
 create_path_to_file(name+strlen(inode->vfs->pfx));
 FILE* f=real_fopen(name+strlen(inode->vfs->pfx),"wb");
 if (f==NULL) {
-	return 0;
+  return 0;
 }
 if (inode->size!=fwrite(inode->ptr,1,inode->size,f)) {
-	fclose(f);
-	return 0;
+  fclose(f);
+  return 0;
 }
 fclose(f);
 return 1;
@@ -616,7 +616,7 @@ my_fnc_memFileRemove(inode->name,&VFS_id);
 
 void VFS_reset() {
 while (VFS_id.list!=NULL) {
-	my_fnc_memFileRemove(VFS_id.list->name,&VFS_id);
+  my_fnc_memFileRemove(VFS_id.list->name,&VFS_id);
 }
 }
 

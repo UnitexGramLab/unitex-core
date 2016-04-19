@@ -507,7 +507,7 @@ while (partid!=-1 && u_fgets(line,MAXBUF,f)>0) {
             case PART_NUM:
                fatal_error("No section specified. (line '%S')\n", line);
 
-            default:	fatal_error("While parsing POS section: what am i doing here?\n");
+            default:  fatal_error("While parsing POS section: what am i doing here?\n");
          }
          pos_section->parts[partid]=tokens_list_append(pos_section->parts[partid],toks);
          break;

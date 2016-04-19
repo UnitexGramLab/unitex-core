@@ -32,9 +32,9 @@
 namespace unitex {
 
 int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
-		UnxmlizeOpts* options,unichar* bastien[],U_FILE* f_bastien);
+    UnxmlizeOpts* options,unichar* bastien[],U_FILE* f_bastien);
 int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
-		void* html_ctx);
+    void* html_ctx);
 
 
 /**
@@ -45,38 +45,38 @@ int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset
  * (i.e. skipping script code, replacing any tag by a space).
  */
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
-		unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation) {
+    unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation) {
 int c;
 int pos=0,new_pos=0;
 void* html_ctx=init_HTML_character_context();
 while ((c=u_fgetc_raw(input))!=EOF) {
-	int markup_malformation=0;
-	pos++;
-	if (c=='<') {
-		if (!skip_tag(input,output,&pos,&new_pos,offsets,options,bastien,f_bastien)) {
-			//free_HTML_character_context(html_ctx);
-			markup_malformation=1;
-		}
-	}
-	else if (c=='&') {
-		if (!decode_html_char(input,output,&pos,&new_pos,offsets,html_ctx)) {
-			//free_HTML_character_context(html_ctx);
-			markup_malformation=1;
-		}
-	} else {
-		u_fputc_raw((unichar)c,output);
-		new_pos++;
-	}
+  int markup_malformation=0;
+  pos++;
+  if (c=='<') {
+    if (!skip_tag(input,output,&pos,&new_pos,offsets,options,bastien,f_bastien)) {
+      //free_HTML_character_context(html_ctx);
+      markup_malformation=1;
+    }
+  }
+  else if (c=='&') {
+    if (!decode_html_char(input,output,&pos,&new_pos,offsets,html_ctx)) {
+      //free_HTML_character_context(html_ctx);
+      markup_malformation=1;
+    }
+  } else {
+    u_fputc_raw((unichar)c,output);
+    new_pos++;
+  }
 
-	if (markup_malformation!=0) {
-		if (tolerate_markup_malformation==0) {
-			free_HTML_character_context(html_ctx);
-			return 0;
-		} else {
-		  u_fputc_raw((unichar)c,output);
-		  new_pos++;
-		}
-	}
+  if (markup_malformation!=0) {
+    if (tolerate_markup_malformation==0) {
+      free_HTML_character_context(html_ctx);
+      return 0;
+    } else {
+      u_fputc_raw((unichar)c,output);
+      new_pos++;
+    }
+  }
 }
 free_HTML_character_context(html_ctx);
 return 1;
@@ -85,7 +85,7 @@ return 1;
 
 void write_offsets(vector_offset* offsets,int a,int b,int c,int d) {
 if (offsets!=NULL) {
-	vector_offset_add(offsets,a,b,c,d);
+  vector_offset_add(offsets,a,b,c,d);
 }
 }
 
@@ -97,26 +97,26 @@ if (offsets!=NULL) {
 int skip_comment(U_FILE* f,int *pos) {
 int c,state=0;
 while (state!=3) {
-	c=u_fgetc_raw(f);
-	if (c==EOF) return 0;
-	(*pos)++;
-	switch(state) {
-	case 0: {
-		if (c=='-') state=1;
-		break;
-	}
-	case 1: {
-		if (c=='-') state=2;
-		else state=0;
-		break;
-	}
-	case 2: {
-		if (c=='-') state=2;
-		else if (c=='>') state=3;
-		else state=0;
-		break;
-	}
-	}
+  c=u_fgetc_raw(f);
+  if (c==EOF) return 0;
+  (*pos)++;
+  switch(state) {
+  case 0: {
+    if (c=='-') state=1;
+    break;
+  }
+  case 1: {
+    if (c=='-') state=2;
+    else state=0;
+    break;
+  }
+  case 2: {
+    if (c=='-') state=2;
+    else if (c=='>') state=3;
+    else state=0;
+    break;
+  }
+  }
 }
 return 1;
 }
@@ -128,8 +128,8 @@ return 1;
  */
 int read(U_FILE* f,const char* seq) {
 while (*seq) {
-	if (u_fgetc_raw(f)!=*seq) return 0;
-	seq++;
+  if (u_fgetc_raw(f)!=*seq) return 0;
+  seq++;
 }
 return 1;
 }
@@ -141,9 +141,9 @@ return 1;
 int read2(U_FILE* f,const char* seq) {
 int c;
 while (*seq) {
-	c=u_fgetc_raw(f);
-	if (u_toupper((unichar)c)!=u_toupper(*seq)) return 0;
-	seq++;
+  c=u_fgetc_raw(f);
+  if (u_toupper((unichar)c)!=u_toupper(*seq)) return 0;
+  seq++;
 }
 return 1;
 }
@@ -157,143 +157,143 @@ return 1;
 int skip_cdata(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets) {
 int c,state=0;
 while (state!=3) {
-	c=u_fgetc_raw(f);
-	if (c==EOF) return 0;
-	(*pos)++;
-	switch (state) {
-	case 0: {
-		if (c==']') state=1;
-		else if (c=='&') state=4;
-		else {
-			u_fputc_raw((unichar)c,f_out);
-			(*new_pos)++;
-			state=0;
-		}
-		break;
-	}
-	case 1: {
-		if (c==']') state=2;
-		else if (c=='&') {
-			/* To come here, we had read a ] that will not be used as a
-			 * part of ]]> so we have to dump this char in the output file */
-			state=4;
-			u_fputc_raw(']',f_out);
-			(*new_pos)++;
-		}
-		else {
-			/* We have to save ]c */
-			u_fputc_raw(']',f_out);
-			u_fputc_raw((unichar)c,f_out);
-			(*new_pos)+=2;
-			state=0;
-		}
-		break;
-	}
-	case 2: {
-		if (c==']') {
-			/* This is the third ], we have to save one */
-			u_fputc_raw(']',f_out);
-			(*new_pos)++;
-			state=2;
-		}
-		else if (c=='&') {
-			/* We have ]] to save */
-			u_fputc_raw(']',f_out);
-			u_fputc_raw(']',f_out);
-			(*new_pos)+=2;
-			state=4;
-		}
-		else if (c=='>') state=3;
-		else {
-			/* We have ]]c to save */
-			u_fputc_raw(']',f_out);
-			u_fputc_raw(']',f_out);
-			u_fputc_raw((unichar)c,f_out);
-			(*new_pos)+=3;
-			state=0;
-		}
-		break;
-	}
-	case 4: {
-		if (c==']') {
-			/* We have & to save */
-			u_fputc_raw('&',f_out);
-			(*new_pos)++;
-			state=1;
-		}
-		else if (c=='&') {
-			/* We have & to save */
-			u_fputc_raw('&',f_out);
-			(*new_pos)++;
-			state=4;
-		}
-		else if (c=='g') state=5;
-		else {
-			/* We have &c to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw((unichar)c,f_out);
-			(*new_pos)+=2;
-			state=0;
-		}
-		break;
-	}
-	case 5: {
-		if (c==']') {
-			/* We have &g to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw('g',f_out);
-			(*new_pos)+=2;
-			state=1;
-		} else if (c=='&') {
-			/* We have &g to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw('g',f_out);
-			(*new_pos)+=2;
-			state=4;
-		} else if (c=='t') state=6;
-		else {
-			/* We have &g to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw('g',f_out);
-			(*new_pos)+=2;
-			state=0;
-		}
-		break;
-	}
-	case 6: {
-		if (c==']') {
-			/* We have &gt to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw('g',f_out);
-			u_fputc_raw('t',f_out);
-			(*new_pos)+=3;
-			state=1;
-		}
-		else if (c=='&') {
-			/* We have &gt to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw('g',f_out);
-			u_fputc_raw('t',f_out);
-			(*new_pos)+=3;
-			state=4;
-		} else if (c==';') {
-			/* We have to replace &gt; by > */
-			u_fputc_raw('>',f_out);
-			write_offsets(offsets,(*pos)-4,*pos,*new_pos,(*new_pos)+1);
-			(*new_pos)++;
-			state=0;
-		}
-		else {
-			/* We have &gt to save */
-			u_fputc_raw('&',f_out);
-			u_fputc_raw('g',f_out);
-			u_fputc_raw('t',f_out);
-			(*new_pos)+=3;
-			state=0;
-		}
-		break;
-	}
-	}
+  c=u_fgetc_raw(f);
+  if (c==EOF) return 0;
+  (*pos)++;
+  switch (state) {
+  case 0: {
+    if (c==']') state=1;
+    else if (c=='&') state=4;
+    else {
+      u_fputc_raw((unichar)c,f_out);
+      (*new_pos)++;
+      state=0;
+    }
+    break;
+  }
+  case 1: {
+    if (c==']') state=2;
+    else if (c=='&') {
+      /* To come here, we had read a ] that will not be used as a
+       * part of ]]> so we have to dump this char in the output file */
+      state=4;
+      u_fputc_raw(']',f_out);
+      (*new_pos)++;
+    }
+    else {
+      /* We have to save ]c */
+      u_fputc_raw(']',f_out);
+      u_fputc_raw((unichar)c,f_out);
+      (*new_pos)+=2;
+      state=0;
+    }
+    break;
+  }
+  case 2: {
+    if (c==']') {
+      /* This is the third ], we have to save one */
+      u_fputc_raw(']',f_out);
+      (*new_pos)++;
+      state=2;
+    }
+    else if (c=='&') {
+      /* We have ]] to save */
+      u_fputc_raw(']',f_out);
+      u_fputc_raw(']',f_out);
+      (*new_pos)+=2;
+      state=4;
+    }
+    else if (c=='>') state=3;
+    else {
+      /* We have ]]c to save */
+      u_fputc_raw(']',f_out);
+      u_fputc_raw(']',f_out);
+      u_fputc_raw((unichar)c,f_out);
+      (*new_pos)+=3;
+      state=0;
+    }
+    break;
+  }
+  case 4: {
+    if (c==']') {
+      /* We have & to save */
+      u_fputc_raw('&',f_out);
+      (*new_pos)++;
+      state=1;
+    }
+    else if (c=='&') {
+      /* We have & to save */
+      u_fputc_raw('&',f_out);
+      (*new_pos)++;
+      state=4;
+    }
+    else if (c=='g') state=5;
+    else {
+      /* We have &c to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw((unichar)c,f_out);
+      (*new_pos)+=2;
+      state=0;
+    }
+    break;
+  }
+  case 5: {
+    if (c==']') {
+      /* We have &g to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw('g',f_out);
+      (*new_pos)+=2;
+      state=1;
+    } else if (c=='&') {
+      /* We have &g to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw('g',f_out);
+      (*new_pos)+=2;
+      state=4;
+    } else if (c=='t') state=6;
+    else {
+      /* We have &g to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw('g',f_out);
+      (*new_pos)+=2;
+      state=0;
+    }
+    break;
+  }
+  case 6: {
+    if (c==']') {
+      /* We have &gt to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw('g',f_out);
+      u_fputc_raw('t',f_out);
+      (*new_pos)+=3;
+      state=1;
+    }
+    else if (c=='&') {
+      /* We have &gt to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw('g',f_out);
+      u_fputc_raw('t',f_out);
+      (*new_pos)+=3;
+      state=4;
+    } else if (c==';') {
+      /* We have to replace &gt; by > */
+      u_fputc_raw('>',f_out);
+      write_offsets(offsets,(*pos)-4,*pos,*new_pos,(*new_pos)+1);
+      (*new_pos)++;
+      state=0;
+    }
+    else {
+      /* We have &gt to save */
+      u_fputc_raw('&',f_out);
+      u_fputc_raw('g',f_out);
+      u_fputc_raw('t',f_out);
+      (*new_pos)+=3;
+      state=0;
+    }
+    break;
+  }
+  }
 }
 /* We have to write ]]> => nothing in the offsets */
 write_offsets(offsets,(*pos)-3,*pos,*new_pos,(*new_pos));
@@ -312,67 +312,67 @@ int tag_name_found=(bastien!=NULL)?0:-1;
 int tag_index=-1;
 int old_pos=*pos;
 while ((c=u_fgetc_raw(f))!='>') {
-	if (c==EOF) goto err;
-	(*pos)++;
-	if (c=='"') {
-		/* If we have to skip an attribute between double quotes */
-		empty(ustr);
-		while ((c=u_fgetc_raw(f))!='"') {
-			if (c==EOF) goto err;
-			u_strcat(ustr,(unichar)c);
-			(*pos)++;
-		}
-		if (tag_name_found==2) {
-			tag_name_found=3;
-			for (int i=tag_index;i<10;i++) {
-				free(bastien[i]);
-				bastien[i]=NULL;
-			}
-			bastien[tag_index]=u_strdup(ustr->str);
-			empty(ustr);
-			for (int i=0;i<10;i++) {
-				if (bastien[i]!=NULL) {
-					if (ustr->len!=0) {
-						u_strcat(ustr,'-');
-					}
-					u_strcat(ustr,bastien[i]);
-				}
-			}
-			u_fprintf(f_bastien,"%d %S\n",old_pos,ustr->str);
-		}
-		(*pos)++;
-		continue;
-	}
-	if (c=='\'') {
-		/* If we have to skip an attribute between single quotes */
-		while ((c=u_fgetc_raw(f))!='\'') {
-			if (c==EOF) goto err;
-			(*pos)++;
-		}
-		(*pos)++;
-		continue;
-	}
-	if (c!=' ' && c!='=') {
-		u_strcat(ustr,(unichar)c);
-	}
-	if (c==' ') {
-		if (tag_name_found==0) {
-			tag_name_found=1;
-			unichar z,foo;
-			if (1==u_sscanf(ustr->str,"R%C%C",&z,&foo) && z>='0' && z<='9') {
-				tag_index=z-'0';
-			}
-		}
-		empty(ustr);
-	}
-	if (c=='=') {
-		if (tag_name_found==1) {
-			if (!u_strcmp(ustr->str,"utxShort")) {
-				tag_name_found=2;
-			}
-		}
-		empty(ustr);
-	}
+  if (c==EOF) goto err;
+  (*pos)++;
+  if (c=='"') {
+    /* If we have to skip an attribute between double quotes */
+    empty(ustr);
+    while ((c=u_fgetc_raw(f))!='"') {
+      if (c==EOF) goto err;
+      u_strcat(ustr,(unichar)c);
+      (*pos)++;
+    }
+    if (tag_name_found==2) {
+      tag_name_found=3;
+      for (int i=tag_index;i<10;i++) {
+        free(bastien[i]);
+        bastien[i]=NULL;
+      }
+      bastien[tag_index]=u_strdup(ustr->str);
+      empty(ustr);
+      for (int i=0;i<10;i++) {
+        if (bastien[i]!=NULL) {
+          if (ustr->len!=0) {
+            u_strcat(ustr,'-');
+          }
+          u_strcat(ustr,bastien[i]);
+        }
+      }
+      u_fprintf(f_bastien,"%d %S\n",old_pos,ustr->str);
+    }
+    (*pos)++;
+    continue;
+  }
+  if (c=='\'') {
+    /* If we have to skip an attribute between single quotes */
+    while ((c=u_fgetc_raw(f))!='\'') {
+      if (c==EOF) goto err;
+      (*pos)++;
+    }
+    (*pos)++;
+    continue;
+  }
+  if (c!=' ' && c!='=') {
+    u_strcat(ustr,(unichar)c);
+  }
+  if (c==' ') {
+    if (tag_name_found==0) {
+      tag_name_found=1;
+      unichar z,foo;
+      if (1==u_sscanf(ustr->str,"R%C%C",&z,&foo) && z>='0' && z<='9') {
+        tag_index=z-'0';
+      }
+    }
+    empty(ustr);
+  }
+  if (c=='=') {
+    if (tag_name_found==1) {
+      if (!u_strcmp(ustr->str,"utxShort")) {
+        tag_name_found=2;
+      }
+    }
+    empty(ustr);
+  }
 }
 (*pos)++;
 free_Ustring(ustr);
@@ -395,54 +395,54 @@ return 0;
 int skip_script(U_FILE* f,int *pos) {
 int c,state=0;
 while (state!=9) {
-	c=u_fgetc_raw(f);
-	if (c==EOF) return 0;
-	(*pos)++;
-	switch(state) {
-		case 0: {
-		if (c=='<') state=1;
-		break;
-	}
-	case 1: {
-		if (c=='/') state=2;
-		else state=0;
-		break;
-	}
-	case 2: {
-		if (c=='s' || c=='S') state=3;
-		else state=0;
-		break;
-	}
-	case 3: {
-		if (c=='c' || c=='C') state=4;
-		else state=0;
-		break;
-	}
-	case 4: {
-		if (c=='r' || c=='R') state=5;
-		else state=0;
-		break;
-	}
-	case 5: {
-		if (c=='i' || c=='I') state=6;
-		else state=0;
-		break;
-	}
-	case 6: {
-		if (c=='p' || c=='P') state=7;
-		else state=0;
-		break;
-	}
-	case 7: {
-		if (c=='t' || c=='T') state=8;
-		else state=0;
-		break;
-	}
-	case 8: {
-		if (c=='>') state=9;
-		else state=0;
-		break;
-	}
+  c=u_fgetc_raw(f);
+  if (c==EOF) return 0;
+  (*pos)++;
+  switch(state) {
+    case 0: {
+    if (c=='<') state=1;
+    break;
+  }
+  case 1: {
+    if (c=='/') state=2;
+    else state=0;
+    break;
+  }
+  case 2: {
+    if (c=='s' || c=='S') state=3;
+    else state=0;
+    break;
+  }
+  case 3: {
+    if (c=='c' || c=='C') state=4;
+    else state=0;
+    break;
+  }
+  case 4: {
+    if (c=='r' || c=='R') state=5;
+    else state=0;
+    break;
+  }
+  case 5: {
+    if (c=='i' || c=='I') state=6;
+    else state=0;
+    break;
+  }
+  case 6: {
+    if (c=='p' || c=='P') state=7;
+    else state=0;
+    break;
+  }
+  case 7: {
+    if (c=='t' || c=='T') state=8;
+    else state=0;
+    break;
+  }
+  case 8: {
+    if (c=='>') state=9;
+    else state=0;
+    break;
+  }
 }
 }
 return 1;
@@ -456,79 +456,79 @@ return 1;
  * Returns 1 in case of success; 0 if the tag is malformed.
  */
 int skip_tag(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
-		UnxmlizeOpts* options,unichar* bastien[],U_FILE* f_bastien) {
+    UnxmlizeOpts* options,unichar* bastien[],U_FILE* f_bastien) {
 int old_pos=(*pos)-1;
 long current=ftell(f);
 /* We may read a comment */
 if (read(f,"!--")) {
-	(*pos)+=3;
-	if (!skip_comment(f,pos)) {
-		error("Invalid comment\n");
-		fseek(f,current,SEEK_SET);
-		return 0;
-	}
-	if (options->comments==UNXMLIZE_IGNORE) {
-		write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
-	} else {
-		/* We may have to replace comments by a space */
-		write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
-		(*new_pos)++;
-		u_fputc_raw(' ',f_out);
-	}
-	return 1;
+  (*pos)+=3;
+  if (!skip_comment(f,pos)) {
+    error("Invalid comment\n");
+    fseek(f,current,SEEK_SET);
+    return 0;
+  }
+  if (options->comments==UNXMLIZE_IGNORE) {
+    write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
+  } else {
+    /* We may have to replace comments by a space */
+    write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
+    (*new_pos)++;
+    u_fputc_raw(' ',f_out);
+  }
+  return 1;
 }
 fseek(f,current,SEEK_SET);
 /* Or a CDATA */
 if (read(f,"![CDATA[")) {
-	(*pos)+=8;
-	write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
-	if (!skip_cdata(f,f_out,pos,new_pos,offsets)) {
-		error("Invalid CDATA\n");
-		fseek(f,current,SEEK_SET);
-		return 0;
-	}
-	return 1;
+  (*pos)+=8;
+  write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
+  if (!skip_cdata(f,f_out,pos,new_pos,offsets)) {
+    error("Invalid CDATA\n");
+    fseek(f,current,SEEK_SET);
+    return 0;
+  }
+  return 1;
 }
 fseek(f,current,SEEK_SET);
 /* Or a html script code */
 if (options->scripts!=UNXMLIZE_DO_NOTHING) {
-	int ok=read2(f,"script ");
-	if (!ok) {
-		fseek(f,current,SEEK_SET);
-		ok=read2(f,"script>");
-	}
-	if (ok) {
-		(*pos)+=7;
-		if (!skip_script(f,pos)) {
-			error("Invalid script code\n");
-			fseek(f,current,SEEK_SET);
-			return 0;
-		}
-		if (options->scripts==UNXMLIZE_IGNORE) {
-			write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
-		} else {
-			/* We replace script sections by a space */
-			write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
-			(*new_pos)++;
-			u_fputc_raw(' ',f_out);
-		}
-		return 1;
-	}
+  int ok=read2(f,"script ");
+  if (!ok) {
+    fseek(f,current,SEEK_SET);
+    ok=read2(f,"script>");
+  }
+  if (ok) {
+    (*pos)+=7;
+    if (!skip_script(f,pos)) {
+      error("Invalid script code\n");
+      fseek(f,current,SEEK_SET);
+      return 0;
+    }
+    if (options->scripts==UNXMLIZE_IGNORE) {
+      write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
+    } else {
+      /* We replace script sections by a space */
+      write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
+      (*new_pos)++;
+      u_fputc_raw(' ',f_out);
+    }
+    return 1;
+  }
 }
 fseek(f,current,SEEK_SET);
 /* Or a normal tag */
 if (!skip_normal_tag(f,pos,bastien,f_bastien)) {
-	error("Invalid xml tag\n");
-	fseek(f,current,SEEK_SET);
-	return 0;
+  error("Invalid xml tag\n");
+  fseek(f,current,SEEK_SET);
+  return 0;
 }
 if (options->normal_tags==UNXMLIZE_IGNORE) {
-	write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
+  write_offsets(offsets,old_pos,*pos,*new_pos,*new_pos);
 } else {
-	/* We replace tags by a space */
-	write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
-	(*new_pos)++;
-	u_fputc_raw(' ',f_out);
+  /* We replace tags by a space */
+  write_offsets(offsets,old_pos,*pos,*new_pos,(*new_pos)+1);
+  (*new_pos)++;
+  u_fputc_raw(' ',f_out);
 }
 return 1;
 }
@@ -539,36 +539,36 @@ return 1;
  * like &gt; or &#206;
  */
 int decode_html_char(U_FILE* f,U_FILE* f_out,int *pos,int *new_pos,vector_offset* offsets,
-		void* html_ctx) {
+    void* html_ctx) {
 char tmp[32];
 int c,i=0;
 long current=ftell(f);
 while (i<32 && (c=u_fgetc_raw(f))!=';') {
-	if (c>255) {
-		/* Should not happen with valid html chars */
-		tmp[i]='\0';
-		error("Invalid html char: &%s%C;\n",tmp,c);
-		fseek(f,current,SEEK_SET);
-		return 0;
-	}
-	tmp[i++]=(char)c;
-	(*pos)++;
+  if (c>255) {
+    /* Should not happen with valid html chars */
+    tmp[i]='\0';
+    error("Invalid html char: &%s%C;\n",tmp,c);
+    fseek(f,current,SEEK_SET);
+    return 0;
+  }
+  tmp[i++]=(char)c;
+  (*pos)++;
 }
 if (i==32) {
-	/* Should not happen with valid html chars */
-	tmp[31]='\0';
-	error("Too long HTML character: %s\n",tmp);
-	error("This may come from an invalid & found in text instead of &amp;\n");
-	fseek(f,current,SEEK_SET);
-	return 0;
+  /* Should not happen with valid html chars */
+  tmp[31]='\0';
+  error("Too long HTML character: %s\n",tmp);
+  error("This may come from an invalid & found in text instead of &amp;\n");
+  fseek(f,current,SEEK_SET);
+  return 0;
 }
 (*pos)++;
 tmp[i]='\0';
 c=get_HTML_character(html_ctx,tmp,1);
 if (c<0) {
-	error("Invalid html character: &%s;\n",tmp);
-	fseek(f,current,SEEK_SET);
-	return 0;
+  error("Invalid html character: &%s;\n",tmp);
+  fseek(f,current,SEEK_SET);
+  return 0;
 }
 u_fputc_raw((unichar)c,f_out);
 write_offsets(offsets,(*pos)-(2+i),*pos,*new_pos,(*new_pos)+1);

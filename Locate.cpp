@@ -192,47 +192,47 @@ const struct option_TS lopts_Locate[]= {
 
 char** new_locate_trace_param()
 {
-	char** empty_list_param_trace = (char**)malloc(sizeof(char*));
-	if (empty_list_param_trace == NULL) {
-		alloc_error("new_locate_trace_param");
+  char** empty_list_param_trace = (char**)malloc(sizeof(char*));
+  if (empty_list_param_trace == NULL) {
+    alloc_error("new_locate_trace_param");
     return NULL;
-	}
-	*empty_list_param_trace = NULL;
-	return empty_list_param_trace;
+  }
+  *empty_list_param_trace = NULL;
+  return empty_list_param_trace;
 }
 
 char** add_locate_trace_param(char** list_param_trace, const char* add_param)
 {
-	size_t i = 0;
-	while ((*(list_param_trace + i)) != NULL)
-		i++;
+  size_t i = 0;
+  while ((*(list_param_trace + i)) != NULL)
+    i++;
 
-	char** new_list_param_trace = (char**)realloc(list_param_trace,sizeof(char*)*(i+2));
-	if (new_list_param_trace == NULL) {
-		alloc_error("add_locate_trace_param");
+  char** new_list_param_trace = (char**)realloc(list_param_trace,sizeof(char*)*(i+2));
+  if (new_list_param_trace == NULL) {
+    alloc_error("add_locate_trace_param");
     return NULL;
-	}
+  }
 
-	*(new_list_param_trace + i) = strdup(add_param);
-	if ((*(new_list_param_trace + i)) == NULL) {
-		alloc_error("add_locate_trace_param");
+  *(new_list_param_trace + i) = strdup(add_param);
+  if ((*(new_list_param_trace + i)) == NULL) {
+    alloc_error("add_locate_trace_param");
     return NULL;
-	}
+  }
 
-	*(new_list_param_trace + i + 1) = NULL;
+  *(new_list_param_trace + i + 1) = NULL;
 
-	return new_list_param_trace;
+  return new_list_param_trace;
 }
 
 void free_locate_trace_param(char** list_param_trace)
 {
-	size_t i = 0;
-	while ((*(list_param_trace + i)) != NULL)
-	{
-		free(*(list_param_trace + i));
-		i++;
-	}
-	free(list_param_trace);
+  size_t i = 0;
+  while ((*(list_param_trace + i)) != NULL)
+  {
+    free(*(list_param_trace + i));
+    i++;
+  }
+  free(list_param_trace);
 }
 
 
@@ -498,21 +498,21 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
              list_param_trace=add_locate_trace_param(list_param_trace,options.vars()->optarg);
              break;
    case 'v': {
-	   unichar* key=u_strdup(options.vars()->optarg);
-	   unichar* value=u_strchr(key,'=');
-	   if (value==NULL) {
-		   error("Invalid variable injection: %s\n",options.vars()->optarg);
+     unichar* key=u_strdup(options.vars()->optarg);
+     unichar* value=u_strchr(key,'=');
+     if (value==NULL) {
+       error("Invalid variable injection: %s\n",options.vars()->optarg);
        free_vector_ptr(injected_vars,free);
        free_locate_trace_param(list_param_trace);
        free(morpho_dic);
        return USAGE_ERROR_CODE;       
-	   }
-	   (*value)='\0';
-	   value++;
-	   value=u_strdup(value);
-	   vector_ptr_add(injected_vars,key);
-	   vector_ptr_add(injected_vars,value);
-	   break;
+     }
+     (*value)='\0';
+     value++;
+     value=u_strdup(value);
+     vector_ptr_add(injected_vars,key);
+     vector_ptr_add(injected_vars,value);
+     break;
    }
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Locate[index].name);
@@ -566,7 +566,7 @@ size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
 
 char* buffer_filename = (char*)malloc(step_filename_buffer * 6);
 if (buffer_filename == NULL) {
-	alloc_error("main_Locate");
+  alloc_error("main_Locate");
   free_vector_ptr(injected_vars,free);
   free_locate_trace_param(list_param_trace);
   free(morpho_dic);
@@ -697,8 +697,8 @@ if (negation_operator != NULL) {
 sprintf(tmp,"--text=%s",text_snt);
 add_argument(invoker,tmp);
 if (alphabet!=NULL && alphabet[0]!='\0') {
-	sprintf(tmp,"-a%s",alphabet);
-	add_argument(invoker,tmp);
+  sprintf(tmp,"-a%s",alphabet);
+  add_argument(invoker,tmp);
 }
 /* We set the match policy */
 switch(match_policy) {
@@ -714,24 +714,24 @@ switch (output_policy) {
 }
 /* We look for all the occurrences */
 if (n_matches_max==-1) {
-	add_argument(invoker,"--all");
+  add_argument(invoker,"--all");
 } else {
-	sprintf(tmp,"-n%d",n_matches_max);
-	add_argument(invoker,tmp);
+  sprintf(tmp,"-n%d",n_matches_max);
+  add_argument(invoker,tmp);
 }
 /* If needed, we add the -thai option */
 if (thai) {
    add_argument(invoker,"--thai");
 }
 if (md) {
-	add_argument(invoker,"-m");
-	add_argument(invoker,morpho_dic);
+  add_argument(invoker,"-m");
+  add_argument(invoker,morpho_dic);
 }
 if (protect_dic_chars) {
-	add_argument(invoker,"-p");
+  add_argument(invoker,"-p");
 }
 if (is_korean) {
-	add_argument(invoker,"-K");
+  add_argument(invoker,"-K");
 }
 if (arabic_rules && arabic_rules[0]!='\0') {
    sprintf(tmp,"--arabic_rules=%s",arabic_rules);

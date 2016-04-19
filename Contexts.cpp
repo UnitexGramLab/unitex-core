@@ -246,7 +246,7 @@ return contexts;
 struct list_context* new_list_context(int n,struct list_context* next,Abstract_allocator prv_alloc) {
 struct list_context* l=(struct list_context*)malloc_cb(sizeof(struct list_context),prv_alloc);
 if (l==NULL) {
-	fatal_alloc_error("new_list_context");
+  fatal_alloc_error("new_list_context");
 }
 l->n=n;
 l->output=NULL;
@@ -258,27 +258,27 @@ return l;
 
 void set_list_context_output(struct list_context* l, const unichar* output)
 {
-	if (l->output_allocated == NULL)
-	{
-		unsigned int len = u_strlen(output);
-		
-		if (len < (INTERNAL_OUTPUT_BUFFER_SIZE))
-		{
-			l->output = l->internal_output_buffer;
-			memcpy(l->internal_output_buffer, output, sizeof(unichar) * (len+1));
-			return ;
-		}
-		else
-		{
-			l->output = l->output_allocated = (unichar*)malloc(sizeof(unichar) * (len+1));
-			memcpy(l->output, output, sizeof(unichar) * (len+1));
-			return;
-		}
-	}
+  if (l->output_allocated == NULL)
+  {
+    unsigned int len = u_strlen(output);
+    
+    if (len < (INTERNAL_OUTPUT_BUFFER_SIZE))
+    {
+      l->output = l->internal_output_buffer;
+      memcpy(l->internal_output_buffer, output, sizeof(unichar) * (len+1));
+      return ;
+    }
+    else
+    {
+      l->output = l->output_allocated = (unichar*)malloc(sizeof(unichar) * (len+1));
+      memcpy(l->output, output, sizeof(unichar) * (len+1));
+      return;
+    }
+  }
 
-	free(l->output_allocated);
-	l->output_allocated = NULL;
-	set_list_context_output(l, output);
+  free(l->output_allocated);
+  l->output_allocated = NULL;
+  set_list_context_output(l, output);
 }
 
 /**

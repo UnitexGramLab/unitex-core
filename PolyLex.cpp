@@ -212,8 +212,8 @@ if (language==DUTCH || language==NORWEGIAN) {
    strcat(name_inf,"ForbiddenWords.txt");
    forbiddenWords=load_key_list(&vec,name_inf);
    if (forbiddenWords==NULL) {
-	   /* If there was no file, we don't want to block the process */
-	   forbiddenWords=new_string_hash(DONT_USE_VALUES);
+     /* If there was no file, we don't want to block the process */
+     forbiddenWords=new_string_hash(DONT_USE_VALUES);
    }
 }
 

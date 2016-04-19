@@ -56,7 +56,7 @@
 using namespace unitex;
 using namespace unitex::logger;
 
-const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\n"
+const char*  usage_RunLog_mini = "Usage: UnitexToolLogger RunLog [OPTIONS] <ulp>\n"
                                 "or \n"
                                 "Usage: UnitexToolLogger InstallLingResourcePackage [OPTIONS]\n"
                                 "or \n"

@@ -123,7 +123,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&i
                 return USAGE_ERROR_CODE;
              }
              p->output_text_file=strdup(options.vars()->optarg);
-			 p->output_text_file_is_temp=0;
+       p->output_text_file_is_temp=0;
              if (p->output_text_file==NULL) {
                 alloc_error("main_Fst2Txt");
                 free_fst2txt_parameters(p);
@@ -214,38 +214,38 @@ if (only_verify_arguments) {
 }
 
 if (out_offsets[0]!='\0') {
-	/* We deal with offsets only if the program is expected to produce some */
-	if (in_offsets[0]!='\0') {
-		p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
-		if (p->v_in_offsets==NULL) {
-			error("Cannot load offset file %s\n",in_offsets);
+  /* We deal with offsets only if the program is expected to produce some */
+  if (in_offsets[0]!='\0') {
+    p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
+    if (p->v_in_offsets==NULL) {
+      error("Cannot load offset file %s\n",in_offsets);
       free_fst2txt_parameters(p);
       return DEFAULT_ERROR_CODE;      
-		}
-	} else {
-		/* If there is no input offset file, we create an empty offset vector
-		 * in order to avoid testing whether the vector is NULL or not */
-		p->v_in_offsets=new_vector_offset(1);
-	}
-	p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
-	if (p->f_out_offsets==NULL) {
-		error("Cannot create file %s\n",out_offsets);
+    }
+  } else {
+    /* If there is no input offset file, we create an empty offset vector
+     * in order to avoid testing whether the vector is NULL or not */
+    p->v_in_offsets=new_vector_offset(1);
+  }
+  p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
+  if (p->f_out_offsets==NULL) {
+    error("Cannot create file %s\n",out_offsets);
     free_fst2txt_parameters(p);
     return DEFAULT_ERROR_CODE;     
-	}
+  }
 }
 
 if (p->output_text_file == NULL) {
-	char tmp[FILENAME_MAX];
-	remove_extension(p->input_text_file, tmp);
-	strcat(tmp, ".tmp");
-	p->output_text_file_is_temp=1;
-	p->output_text_file = strdup(tmp);
-	if (p->output_text_file == NULL) {
-		alloc_error("main_Fst2Txt");
-		free_fst2txt_parameters(p);
-		return ALLOC_ERROR_CODE;
-	}
+  char tmp[FILENAME_MAX];
+  remove_extension(p->input_text_file, tmp);
+  strcat(tmp, ".tmp");
+  p->output_text_file_is_temp=1;
+  p->output_text_file = strdup(tmp);
+  if (p->output_text_file == NULL) {
+    alloc_error("main_Fst2Txt");
+    free_fst2txt_parameters(p);
+    return ALLOC_ERROR_CODE;
+  }
 }
 p->fst_file=strdup(argv[options.vars()->optind]);
 if (p->fst_file==NULL) {

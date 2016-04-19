@@ -225,7 +225,7 @@ correct_word[0]='\0';
 struct german_word_decomposition_list* l=NULL;
 Ustring* ustr=new_Ustring();
 explore_state_german(d->initial_state_offset,correct_word,0,mot,0,decomposition,dela_line,&l,1,
-		left,right,alphabet,d,ustr,0);
+    left,right,alphabet,d,ustr,0);
 free_Ustring(ustr);
 if (l==NULL) {
    return 0;
@@ -408,7 +408,7 @@ if (original_word[pos_in_original_word]=='\0') {
 unichar c;
 int adr;
 for (int i=0;i<n_transitions;i++) {
-	offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
+  offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
   if (is_equal_or_uppercase(c,original_word[pos_in_original_word],alphabet)
       || is_equal_or_uppercase(original_word[pos_in_original_word],c,alphabet)) {
     current_component[pos_in_current_component]=c;

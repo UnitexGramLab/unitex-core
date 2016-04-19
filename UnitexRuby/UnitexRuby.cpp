@@ -78,8 +78,8 @@ using namespace logger;
 #if ((defined(WIN32) || defined(_WIN32) || defined (_WIN64) || defined (_M_IX86)  || \
      defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || \
      defined(_M_X64) || defined(_M_X86) || defined(TARGET_CPU_X86) || defined(TARGET_CPU_X86_64) || \
-	 defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
-	 defined(__LITTLE_ENDIAN__) \
+   defined(__arm__) || defined(_ARM_) || defined(__CC_ARM) || defined(_M_ARM) || defined(_M_ARMT) || \
+   defined(__LITTLE_ENDIAN__) \
            ) && (!(defined(INTEL_X86_LIKE_LITTLE_ENDIAN))))
 #define INTEL_X86_LIKE_LITTLE_ENDIAN 1
 #endif
@@ -90,7 +90,7 @@ using namespace logger;
 static bool is_little_endian()
 {
 // printf("INTEL_X86_LIKE_LITTLE_ENDIAN is,");
-	return true;
+  return true;
 }
 #else
 static bool is_little_endian()
@@ -257,13 +257,13 @@ static char**argsFromCmdLine( const char* cmdLine)
         nb_args_found ++;
     }
     
-	char **args=NULL;
+  char **args=NULL;
     if (nb_args_found>0)
         args = (char**)malloc((nb_args_found+1) * sizeof(char*));
     else
         args = NULL;
     
-	if (args == NULL)
+  if (args == NULL)
     {
         free(work_buf);
         return NULL;
@@ -276,9 +276,9 @@ static char**argsFromCmdLine( const char* cmdLine)
         *work_buf=0;
         lpParcLine = CopyStrArg(lpParcLine, work_buf, len_cmd_line+8);
         args[i] = strdup(work_buf);
-		i++;
+    i++;
     }
-	args[i] = NULL;
+  args[i] = NULL;
     
     free(work_buf);
     return args;
@@ -286,26 +286,26 @@ static char**argsFromCmdLine( const char* cmdLine)
 
 static int countArgs(char** args)
 {
-	int count=0;
-	
-	char**tmp=args;
-	while ((*tmp) != NULL)
-	{
-		count++;
-		tmp++;
-	}
-	return count;
+  int count=0;
+  
+  char**tmp=args;
+  while ((*tmp) != NULL)
+  {
+    count++;
+    tmp++;
+  }
+  return count;
 }
 
 static void freeArgs(char**args)
 {
-	char** tmp=args;
-	while ((*tmp) != NULL)
-	{
-		free(*tmp);
-		tmp++;
-	}
-	free(args);
+  char** tmp=args;
+  while ((*tmp) != NULL)
+  {
+    free(*tmp);
+    tmp++;
+  }
+  free(args);
 }
 
 
@@ -313,9 +313,9 @@ VALUE method_UnitexTool(VALUE self, VALUE r_args)
 {
     char* args_cstr = StringValueCStr(r_args);
     
-	char**args=argsFromCmdLine(args_cstr);
-	int retValue = (int)main_UnitexTool_C(countArgs(args),args);
-	freeArgs(args);
+  char**args=argsFromCmdLine(args_cstr);
+  int retValue = (int)main_UnitexTool_C(countArgs(args),args);
+  freeArgs(args);
     
     return INT2NUM(retValue);
 }
@@ -332,8 +332,8 @@ VALUE method_UnitexToolArray(VALUE self, VALUE r_args_array)
         args[i] = strdup(curArgs);
     }
     args[i] = NULL;
-	int retValue = (int)main_UnitexTool_C(countArgs(args),args);
-	freeArgs(args);
+  int retValue = (int)main_UnitexTool_C(countArgs(args),args);
+  freeArgs(args);
     
     return INT2NUM(retValue);
 }
@@ -419,16 +419,16 @@ VALUE method_numberAbstractFileSpaceInstalled(VALUE self)
 VALUE method_setStdOutTrashMode(VALUE self, VALUE isTrash)
 {
     int trashOutput = RTEST(isTrash);
-	enum stdwrite_kind swk=stdwrite_kind_out;
-	return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? Qtrue : Qfalse;
+  enum stdwrite_kind swk=stdwrite_kind_out;
+  return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? Qtrue : Qfalse;
 }
 
 
 VALUE method_setStdErrTrashMode(VALUE self, VALUE isTrash)
 {
     int trashOutput = RTEST(isTrash);
-	enum stdwrite_kind swk=stdwrite_kind_err;
-	return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? Qtrue : Qfalse;
+  enum stdwrite_kind swk=stdwrite_kind_err;
+  return (SetStdWriteCB(swk, trashOutput ? 1 : 0, NULL, NULL) == 1) ? Qtrue : Qfalse;
 }
 
 
@@ -570,7 +570,7 @@ VALUE method_getUnitexFileRaw(VALUE self, VALUE filename)
     UNITEXFILEMAPPED *amf = NULL;
     const void*buffer = 0;
     size_t size_file = 0;
-	GetUnitexFileReadBuffer(c_filename,&amf, &buffer,&size_file);
+  GetUnitexFileReadBuffer(c_filename,&amf, &buffer,&size_file);
     if (amf == NULL)
         return Qnil;
     
@@ -585,10 +585,10 @@ VALUE method_writeUnitexFileRaw(VALUE self, VALUE filename, VALUE string)
     char* c_filename = StringValueCStr(filename);
     char* c_string = StringValueCStr(string);
     
-	int ret = (WriteUnitexFile(c_filename,NULL,0,
+  int ret = (WriteUnitexFile(c_filename,NULL,0,
                                c_string,strlen(c_string)) == 0);
     
-	return ret ? Qtrue : Qfalse;
+  return ret ? Qtrue : Qfalse;
 }
 
 VALUE method_appendUnitexFileRaw(VALUE self, VALUE filename, VALUE string)
@@ -596,10 +596,10 @@ VALUE method_appendUnitexFileRaw(VALUE self, VALUE filename, VALUE string)
     char* c_filename = StringValueCStr(filename);
     char* c_string = StringValueCStr(string);
     
-	int ret = (AppendUnitexFile(c_filename,
+  int ret = (AppendUnitexFile(c_filename,
                                    c_string,strlen(c_string)) == 0);
     
-	return ret ? Qtrue : Qfalse;
+  return ret ? Qtrue : Qfalse;
 }
 
 
@@ -614,13 +614,13 @@ VALUE method_writeUnitexFileString(VALUE self, VALUE filename, VALUE string)
     const char *c_string = StringValueCStr(utf8_string);
     
     
-	const unsigned char UTF8BOM[3] = { 0xef,0xbb,0xbf };
+  const unsigned char UTF8BOM[3] = { 0xef,0xbb,0xbf };
     int hasBom = 1; // put 1 to write UTF8 bom
     
-	int ret = (WriteUnitexFile(c_filename, UTF8BOM, hasBom ? 3:0,
+  int ret = (WriteUnitexFile(c_filename, UTF8BOM, hasBom ? 3:0,
                                c_string, strlen(c_string)) == 0);
     
-	return ret ? Qtrue : Qfalse;
+  return ret ? Qtrue : Qfalse;
 }
 
 
@@ -630,11 +630,11 @@ VALUE method_getUnitexFileStringEncoded(VALUE self, VALUE filename)
     const void*buffer = 0;
     size_t size_file = 0;
     VALUE vret = Qnil;
-	size_t size_bom = 0;
+  size_t size_bom = 0;
     char* c_filename = StringValueCStr(filename);
     
-	GetUnitexFileReadBuffer(c_filename,&amf, &buffer,&size_file);
-	const unsigned char* bufchar=(const unsigned char*)buffer;
+  GetUnitexFileReadBuffer(c_filename,&amf, &buffer,&size_file);
+  const unsigned char* bufchar=(const unsigned char*)buffer;
     
     if (amf == NULL)
         return Qnil;
@@ -642,7 +642,7 @@ VALUE method_getUnitexFileStringEncoded(VALUE self, VALUE filename)
     if (size_file>1)
         if (((*(bufchar))==0xff) && ((*(bufchar+1))==0xfe))
         {
-			// utf-16 little endian
+      // utf-16 little endian
             size_bom = 2;
             
             vret = rb_external_str_new_with_enc((const char*)bufchar + size_bom, size_file - size_bom, rb_enc_find("UTF-16LE"));
@@ -652,7 +652,7 @@ VALUE method_getUnitexFileStringEncoded(VALUE self, VALUE filename)
     if (size_file>1)
         if (((*(bufchar))==0xfe) && ((*(bufchar+1))==0xff))
         {
-			// utf-16 big endian
+      // utf-16 big endian
             size_bom = 2;
             
             vret = rb_external_str_new_with_enc((const char*)bufchar + size_bom, size_file - size_bom, rb_enc_find("UTF-16BE"));
@@ -682,11 +682,11 @@ VALUE method_getUnitexFileString(VALUE self, VALUE filename)
     const void*buffer = 0;
     size_t size_file = 0;
     VALUE vret = Qnil;
-	size_t size_bom = 0;
+  size_t size_bom = 0;
     char* c_filename = StringValueCStr(filename);
     
-	GetUnitexFileReadBuffer(c_filename,&amf, &buffer,&size_file);
-	const unsigned char* bufchar=(const unsigned char*)buffer;
+  GetUnitexFileReadBuffer(c_filename,&amf, &buffer,&size_file);
+  const unsigned char* bufchar=(const unsigned char*)buffer;
     
     if (amf == NULL)
         return Qnil;
@@ -694,7 +694,7 @@ VALUE method_getUnitexFileString(VALUE self, VALUE filename)
     if (size_file>1)
         if (((*(bufchar))==0xff) && ((*(bufchar+1))==0xfe))
         {
-			// utf-16 little endian
+      // utf-16 little endian
             size_bom = 2;
             
             vret = rb_external_str_new_with_enc((const char*)bufchar + size_bom, size_file - size_bom, rb_enc_find("UTF-16LE"));
@@ -703,7 +703,7 @@ VALUE method_getUnitexFileString(VALUE self, VALUE filename)
     if (size_file>1)
         if (((*(bufchar))==0xfe) && ((*(bufchar+1))==0xff))
         {
-			// utf-16 big endian
+      // utf-16 big endian
             size_bom = 2;
             
             vret = rb_external_str_new_with_enc((const char*)bufchar + size_bom, size_file - size_bom, rb_enc_find("UTF-16BE"));
@@ -734,31 +734,31 @@ static struct UniLoggerSpace * p_ruby_ule = NULL;
 VALUE method_installLogger(VALUE self, VALUE foldername, VALUE v_store_file_out_content)
 {
     char* c_foldername = StringValueCStr(foldername);
-	if (p_ruby_ule)
-		return Qfalse;
+  if (p_ruby_ule)
+    return Qfalse;
     
-	p_ruby_ule= (struct UniLoggerSpace *)malloc(sizeof(struct UniLoggerSpace));
+  p_ruby_ule= (struct UniLoggerSpace *)malloc(sizeof(struct UniLoggerSpace));
     if (!p_ruby_ule)
-		return Qfalse;
-	memset(p_ruby_ule,0,sizeof(struct UniLoggerSpace));
+    return Qfalse;
+  memset(p_ruby_ule,0,sizeof(struct UniLoggerSpace));
     
-	p_ruby_ule->size_of_struct = sizeof(struct UniLoggerSpace);
-	p_ruby_ule->privateUnloggerData = NULL;
-	p_ruby_ule->szPathLog = strdup(c_foldername);
-	p_ruby_ule->szNameLog = NULL;
-	p_ruby_ule->store_file_out_content = RTEST(v_store_file_out_content) ? 1 : 0;
-	p_ruby_ule->store_list_file_out_content = 1;
-	p_ruby_ule->store_file_in_content = 1;
-	p_ruby_ule->store_list_file_in_content = 1;
-	p_ruby_ule->store_std_out_content = 0;
-	p_ruby_ule->store_std_err_content = 0;
-	p_ruby_ule->auto_increment_logfilename = 1;
+  p_ruby_ule->size_of_struct = sizeof(struct UniLoggerSpace);
+  p_ruby_ule->privateUnloggerData = NULL;
+  p_ruby_ule->szPathLog = strdup(c_foldername);
+  p_ruby_ule->szNameLog = NULL;
+  p_ruby_ule->store_file_out_content = RTEST(v_store_file_out_content) ? 1 : 0;
+  p_ruby_ule->store_list_file_out_content = 1;
+  p_ruby_ule->store_file_in_content = 1;
+  p_ruby_ule->store_list_file_in_content = 1;
+  p_ruby_ule->store_std_out_content = 0;
+  p_ruby_ule->store_std_err_content = 0;
+  p_ruby_ule->auto_increment_logfilename = 1;
     
-	if (0 != AddActivityLogger(p_ruby_ule))
-		return Qtrue;
+  if (0 != AddActivityLogger(p_ruby_ule))
+    return Qtrue;
     
-	free(p_ruby_ule);
-	return Qfalse;
+  free(p_ruby_ule);
+  return Qfalse;
 }
 
 
@@ -768,13 +768,13 @@ VALUE method_installLogger(VALUE self, VALUE foldername, VALUE v_store_file_out_
 
 VALUE method_removeLogger(VALUE self)
 {
-	if (p_ruby_ule == NULL)
-		return Qfalse;
-	RemoveActivityLogger(p_ruby_ule);
-	free((void*)(p_ruby_ule->szPathLog));
-	free(p_ruby_ule);
-	p_ruby_ule=NULL;
-	return Qtrue;
+  if (p_ruby_ule == NULL)
+    return Qfalse;
+  RemoveActivityLogger(p_ruby_ule);
+  free((void*)(p_ruby_ule->szPathLog));
+  free(p_ruby_ule);
+  p_ruby_ule=NULL;
+  return Qtrue;
 }
 
 
@@ -782,18 +782,18 @@ VALUE method_getFileList(VALUE self, VALUE foldername)
 {
     char* c_foldername = StringValueCStr(foldername);
 
-	char**list=GetUnitexFileList(c_foldername);
-	if (list==NULL)
-		return Qnil;
+  char**list=GetUnitexFileList(c_foldername);
+  if (list==NULL)
+    return Qnil;
     
     VALUE array = rb_ary_new();
-	unsigned int iter_file = 0;
-	while ((*(list + iter_file)) != NULL)
-	{
+  unsigned int iter_file = 0;
+  while ((*(list + iter_file)) != NULL)
+  {
         VALUE item = rb_str_new_cstr(*(list + iter_file));
         rb_ary_push(array, item);
-		iter_file ++;
-	}
+    iter_file ++;
+  }
     
     ReleaseUnitexFileList(c_foldername, list);
     
@@ -804,14 +804,14 @@ VALUE method_getFileList(VALUE self, VALUE foldername)
 
 
 struct UnitexRubyInitializer {
-	t_unitex_ruby_initializer_func_array func_array;
-	void* privateSpacePtr;
+  t_unitex_ruby_initializer_func_array func_array;
+  void* privateSpacePtr;
 } ;
 
 
 struct List_UnitexRubyInitializer {
-	UnitexRubyInitializer uri;
-	List_UnitexRubyInitializer* next;
+  UnitexRubyInitializer uri;
+  List_UnitexRubyInitializer* next;
 } ;
 
 
@@ -821,51 +821,51 @@ struct List_UnitexRubyInitializer* p_unitex_ruby_initializer_space_list = NULL;
 
 UNITEX_FUNC int UNITEX_CALL AddUnitexRubyInitializer(const t_unitex_ruby_initializer_func_array* func_array_param,void* privateSpacePtr)
 {
-	struct List_UnitexRubyInitializer* new_item;
-	new_item = (struct List_UnitexRubyInitializer*)malloc(sizeof(struct List_UnitexRubyInitializer));
-	if (new_item == NULL)
+  struct List_UnitexRubyInitializer* new_item;
+  new_item = (struct List_UnitexRubyInitializer*)malloc(sizeof(struct List_UnitexRubyInitializer));
+  if (new_item == NULL)
       return 0;
     new_item->uri.func_array.size_func_array = func_array_param->size_func_array;
     new_item->uri.func_array.fnc_unitex_ruby_initializer = func_array_param->fnc_unitex_ruby_initializer;
     new_item->uri.privateSpacePtr = privateSpacePtr;
     
-	new_item->next = NULL;
+  new_item->next = NULL;
     
-	if (p_unitex_ruby_initializer_space_list == NULL)
+  if (p_unitex_ruby_initializer_space_list == NULL)
       p_unitex_ruby_initializer_space_list = new_item;
-	else {
-		struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
-		while ((tmp->next) != NULL)
+  else {
+    struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
+    while ((tmp->next) != NULL)
           tmp = tmp->next;
-		tmp->next = new_item;
-	}
+    tmp->next = new_item;
+  }
     
-	return 1;
+  return 1;
 }
 
 UNITEX_FUNC int UNITEX_CALL RemoveUnitexRubyInitializer(const t_unitex_ruby_initializer_func_array* func_array_param,void* privateSpacePtr)
 {
-	struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
-	struct List_UnitexRubyInitializer* tmp_previous = NULL;
+  struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
+  struct List_UnitexRubyInitializer* tmp_previous = NULL;
     
-	while (tmp != NULL)
-	{
+  while (tmp != NULL)
+  {
         if ((tmp->uri.func_array.fnc_unitex_ruby_initializer == func_array_param->fnc_unitex_ruby_initializer) &&
             (tmp->uri.privateSpacePtr == privateSpacePtr))
-		{
-			if (tmp_previous == NULL)
+    {
+      if (tmp_previous == NULL)
               p_unitex_ruby_initializer_space_list = tmp->next;
-			else
+      else
               tmp_previous->next = tmp->next;
             
-			free(tmp);
-			return 1;
-		}
-		tmp_previous = tmp;
-		tmp = tmp->next;
-	}
+      free(tmp);
+      return 1;
+    }
+    tmp_previous = tmp;
+    tmp = tmp->next;
+  }
 
-	return 0;
+  return 0;
 }
 
 
@@ -877,52 +877,52 @@ extern "C" UNITEX_FUNC void Init_unitexruby()
 {
     UnitexRuby = rb_define_module("UnitexRuby");
     
-	rb_define_method(UnitexRuby, "UnitexTool", (t_r_method) &method_UnitexTool, 1);
-	rb_define_method(UnitexRuby, "UnitexToolArray", (t_r_method) &method_UnitexToolArray, 1);
+  rb_define_method(UnitexRuby, "UnitexTool", (t_r_method) &method_UnitexTool, 1);
+  rb_define_method(UnitexRuby, "UnitexToolArray", (t_r_method) &method_UnitexToolArray, 1);
     
-	rb_define_method(UnitexRuby, "getUnitexInfoString", (t_r_method) &method_getUnitexInfoString, 0);
-	rb_define_method(UnitexRuby, "getMajorVersionNumber", (t_r_method) &method_getMajorVersionNumber, 0);
-	rb_define_method(UnitexRuby, "getMinorVersionNumber", (t_r_method) &method_getMinorVersionNumber, 0);
-	rb_define_method(UnitexRuby, "usingOffsetFile", (t_r_method) &method_usingOffsetFile, 0);
-	rb_define_method(UnitexRuby, "numberAbstractFileSpaceInstalled", (t_r_method) &method_numberAbstractFileSpaceInstalled, 0);
-	rb_define_method(UnitexRuby, "getSvnRevisionNumber", (t_r_method) &method_getSvnRevisionNumber, 0);
-	rb_define_method(UnitexRuby, "setStdOutTrashMode", (t_r_method) &method_setStdOutTrashMode, 1);
-	rb_define_method(UnitexRuby, "setStdErrTrashMode", (t_r_method) &method_setStdErrTrashMode, 1);
-	rb_define_method(UnitexRuby, "loadPersistentDictionary", (t_r_method) &method_loadPersistentDictionary, 1);
-	rb_define_method(UnitexRuby, "loadPersistentFst2", (t_r_method) &method_loadPersistentFst2, 1);
-	rb_define_method(UnitexRuby, "loadPersistentAlphabet", (t_r_method) &method_loadPersistentAlphabet, 1);
-	rb_define_method(UnitexRuby, "freePersistentDictionary", (t_r_method) &method_freePersistentDictionary, 1);
-	rb_define_method(UnitexRuby, "freePersistentFst2", (t_r_method) &method_freePersistentFst2, 1);
-	rb_define_method(UnitexRuby, "freePersistentAlphabet", (t_r_method) &method_freePersistentAlphabet, 1);
-	rb_define_method(UnitexRuby, "copyUnitexFile", (t_r_method) &method_copyUnitexFile, 2);
-	rb_define_method(UnitexRuby, "renameUnitexFile", (t_r_method) &method_renameUnitexFile, 2);
-	rb_define_method(UnitexRuby, "unitexAbstractPathExists", (t_r_method) &method_unitexAbstractPathExists, 1);
-	rb_define_method(UnitexRuby, "removeUnitexFolder", (t_r_method) &method_removeUnitexFolder, 1);
-	rb_define_method(UnitexRuby, "createUnitexFolder", (t_r_method) &method_createUnitexFolder, 1);
-	rb_define_method(UnitexRuby, "removeUnitexFile", (t_r_method) &method_removeUnitexFile, 1);
-	rb_define_method(UnitexRuby, "getFileList", (t_r_method) &method_getFileList, 1);
-	rb_define_method(UnitexRuby, "getUnitexFileRaw", (t_r_method) &method_getUnitexFileRaw, 1);
-	rb_define_method(UnitexRuby, "writeUnitexFileRaw", (t_r_method) &method_writeUnitexFileRaw, 2);
-	rb_define_method(UnitexRuby, "appendUnitexFileRaw", (t_r_method) &method_appendUnitexFileRaw, 2);
-	rb_define_method(UnitexRuby, "installLogger", (t_r_method) &method_installLogger, 2);
-	rb_define_method(UnitexRuby, "removeLogger", (t_r_method) &method_removeLogger, 0);
+  rb_define_method(UnitexRuby, "getUnitexInfoString", (t_r_method) &method_getUnitexInfoString, 0);
+  rb_define_method(UnitexRuby, "getMajorVersionNumber", (t_r_method) &method_getMajorVersionNumber, 0);
+  rb_define_method(UnitexRuby, "getMinorVersionNumber", (t_r_method) &method_getMinorVersionNumber, 0);
+  rb_define_method(UnitexRuby, "usingOffsetFile", (t_r_method) &method_usingOffsetFile, 0);
+  rb_define_method(UnitexRuby, "numberAbstractFileSpaceInstalled", (t_r_method) &method_numberAbstractFileSpaceInstalled, 0);
+  rb_define_method(UnitexRuby, "getSvnRevisionNumber", (t_r_method) &method_getSvnRevisionNumber, 0);
+  rb_define_method(UnitexRuby, "setStdOutTrashMode", (t_r_method) &method_setStdOutTrashMode, 1);
+  rb_define_method(UnitexRuby, "setStdErrTrashMode", (t_r_method) &method_setStdErrTrashMode, 1);
+  rb_define_method(UnitexRuby, "loadPersistentDictionary", (t_r_method) &method_loadPersistentDictionary, 1);
+  rb_define_method(UnitexRuby, "loadPersistentFst2", (t_r_method) &method_loadPersistentFst2, 1);
+  rb_define_method(UnitexRuby, "loadPersistentAlphabet", (t_r_method) &method_loadPersistentAlphabet, 1);
+  rb_define_method(UnitexRuby, "freePersistentDictionary", (t_r_method) &method_freePersistentDictionary, 1);
+  rb_define_method(UnitexRuby, "freePersistentFst2", (t_r_method) &method_freePersistentFst2, 1);
+  rb_define_method(UnitexRuby, "freePersistentAlphabet", (t_r_method) &method_freePersistentAlphabet, 1);
+  rb_define_method(UnitexRuby, "copyUnitexFile", (t_r_method) &method_copyUnitexFile, 2);
+  rb_define_method(UnitexRuby, "renameUnitexFile", (t_r_method) &method_renameUnitexFile, 2);
+  rb_define_method(UnitexRuby, "unitexAbstractPathExists", (t_r_method) &method_unitexAbstractPathExists, 1);
+  rb_define_method(UnitexRuby, "removeUnitexFolder", (t_r_method) &method_removeUnitexFolder, 1);
+  rb_define_method(UnitexRuby, "createUnitexFolder", (t_r_method) &method_createUnitexFolder, 1);
+  rb_define_method(UnitexRuby, "removeUnitexFile", (t_r_method) &method_removeUnitexFile, 1);
+  rb_define_method(UnitexRuby, "getFileList", (t_r_method) &method_getFileList, 1);
+  rb_define_method(UnitexRuby, "getUnitexFileRaw", (t_r_method) &method_getUnitexFileRaw, 1);
+  rb_define_method(UnitexRuby, "writeUnitexFileRaw", (t_r_method) &method_writeUnitexFileRaw, 2);
+  rb_define_method(UnitexRuby, "appendUnitexFileRaw", (t_r_method) &method_appendUnitexFileRaw, 2);
+  rb_define_method(UnitexRuby, "installLogger", (t_r_method) &method_installLogger, 2);
+  rb_define_method(UnitexRuby, "removeLogger", (t_r_method) &method_removeLogger, 0);
 
     
 #ifndef RUBY_VINTAGE
-	rb_define_method(UnitexRuby, "writeUnitexFileString", (t_r_method) &method_writeUnitexFileString, 2);
-	rb_define_method(UnitexRuby, "getUnitexFileStringEncoded", (t_r_method) &method_getUnitexFileStringEncoded, 1);
-	rb_define_method(UnitexRuby, "getUnitexFileString", (t_r_method) &method_getUnitexFileString, 1);
-	rb_define_method(UnitexRuby, "getUniqueString", (t_r_method) &method_getUniqueString, 0);
+  rb_define_method(UnitexRuby, "writeUnitexFileString", (t_r_method) &method_writeUnitexFileString, 2);
+  rb_define_method(UnitexRuby, "getUnitexFileStringEncoded", (t_r_method) &method_getUnitexFileStringEncoded, 1);
+  rb_define_method(UnitexRuby, "getUnitexFileString", (t_r_method) &method_getUnitexFileString, 1);
+  rb_define_method(UnitexRuby, "getUniqueString", (t_r_method) &method_getUniqueString, 0);
 
 #endif
     
-	struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
+  struct List_UnitexRubyInitializer* tmp = p_unitex_ruby_initializer_space_list;
     
-	while (tmp != NULL)
-	{
+  while (tmp != NULL)
+  {
         (tmp->uri.func_array.fnc_unitex_ruby_initializer)(UnitexRuby, tmp->uri.privateSpacePtr);
-		tmp = tmp->next;
-	}
+    tmp = tmp->next;
+  }
 
 }
 

@@ -170,17 +170,17 @@ int respect_case=(line[0]=='@');
  */
 all_input[k++]=line[i++];
 while(line[i]!='\0' && !(line[i]=='/' && i>0 && line[i-1]!='\\')) {
-	all_input[k++]=line[i++];
+  all_input[k++]=line[i++];
 }
 all_input[k]='\0';
 /*
  * If we find an output, we copy it
  */
 if(line[i]=='/') {
-	i++;
-	while(line[i]!='\0') {
-		output[j++]=line[i++];
-	}
+  i++;
+  while(line[i]!='\0') {
+    output[j++]=line[i++];
+  }
 }
 /* Then, if there is an output, we have it, and if not, 'output'
  * contains an empty string */
@@ -198,28 +198,28 @@ filter[0] = '\0';
 i = 0; j = 0;
 /* We copy the real input into 'input' */
 while (all_input[i]!='\0' && (all_input[i]!='<' || all_input[i+1]!='<')) {
-	input[j++]=all_input[i++];
+  input[j++]=all_input[i++];
 }
 input[j]='\0';
 /* If something remains, we have a morphological filter */
 if (all_input[i]!='\0') {
-	j = 0;
-	/* We copy the "<<...>>"  sequence */
-	while (all_input[i]!='\0' && (all_input[i]!='>' || all_input[i+1]!='>')) {
-		filter[j++]=all_input[i++];
-	}
+  j = 0;
+  /* We copy the "<<...>>"  sequence */
+  while (all_input[i]!='\0' && (all_input[i]!='>' || all_input[i+1]!='>')) {
+    filter[j++]=all_input[i++];
+  }
     filter[j++]='>';filter[j++]='>';
     /* If something remains, then we have an optional part like "_f_",
      * and we add it to 'filter' */
     if (all_input[i]!='\0') {
-		i=i+2;
-		if (all_input[i]=='_') {
-			do {
-				filter[j++]=all_input[i++];
-			} while (all_input[i]!='\0' && all_input[i]!= '_');
-			filter[j++] = '_';
-		}
-	}
+    i=i+2;
+    if (all_input[i]=='_') {
+      do {
+        filter[j++]=all_input[i++];
+      } while (all_input[i]!='\0' && all_input[i]!= '_');
+      filter[j++] = '_';
+    }
+  }
     filter[j] = '\0';
 }
 /* If there is a morphological filter but no input ("%<<^in>>/PFX"), then
@@ -279,24 +279,24 @@ if (!u_strcmp(input,"{$}")) {
 int length=u_strlen(input);
 if (input[0]=='$' &&
     (input[length-1]=='(' || input[length-1]==')')) {
-	int output_var=(input[1]=='|');
+  int output_var=(input[1]=='|');
    tag->variable=u_strdup(&(input[1+output_var]),length-2-output_var,prv_alloc);
    if (!output_var) {
-	   fst2->input_variables=sorted_insert(tag->variable,fst2->input_variables,prv_alloc);
-	   if (input[length-1]=='(') {
-		   tag->type=BEGIN_VAR_TAG;
-	   }
-	   else {
-		   tag->type=END_VAR_TAG;
-	   }
+     fst2->input_variables=sorted_insert(tag->variable,fst2->input_variables,prv_alloc);
+     if (input[length-1]=='(') {
+       tag->type=BEGIN_VAR_TAG;
+     }
+     else {
+       tag->type=END_VAR_TAG;
+     }
    } else {
-	   fst2->output_variables=sorted_insert(tag->variable,fst2->output_variables,prv_alloc);
-	   if (input[length-1]=='(') {
-		   tag->type=BEGIN_OUTPUT_VAR_TAG;
-	   }
-	   else {
-		   tag->type=END_OUTPUT_VAR_TAG;
-	   }
+     fst2->output_variables=sorted_insert(tag->variable,fst2->output_variables,prv_alloc);
+     if (input[length-1]=='(') {
+       tag->type=BEGIN_OUTPUT_VAR_TAG;
+     }
+     else {
+       tag->type=END_OUTPUT_VAR_TAG;
+     }
    }
 }
 return tag;
@@ -319,7 +319,7 @@ u_fputs(tag->input,f);
 /* If any, we add the morphological filter: <A><<^pre>> */
 if (tag->morphological_filter!=NULL &&
    tag->morphological_filter[0]!='\0') {
-	u_fputs(tag->morphological_filter,f);
+  u_fputs(tag->morphological_filter,f);
 }
 /* If any, we add the output */
 if (tag->output!=NULL) {
@@ -358,26 +358,26 @@ if (fst2->tags==NULL) {
 }
 /* If the position in the file is not correct we exit */
 if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {
-	fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
+  fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
 }
 /* There cannot have no tag line, because by convention, every .fst2 file
  * must have "%<E>" as first tag. */
 while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
-	/* We read the line and copy it without the ending '\n' */
-	i=0;
-	do {
-		line[i++]=c;
-	} while ((c=(unichar)u_fgetc(f))!='\n');
-	/* And we read the first character of the next line */
-  	if (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {
-  		/* If the character is not an expected one we exit */
-  		fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
-  	}
-	line[i]='\0';
-	/* We create the tag and add it to the fst2 */
-	fst2->tags[current_tag]=create_tag(fst2,line,prv_alloc);
-	/* We do not forget to increase the tag counter */
-	current_tag++;
+  /* We read the line and copy it without the ending '\n' */
+  i=0;
+  do {
+    line[i++]=c;
+  } while ((c=(unichar)u_fgetc(f))!='\n');
+  /* And we read the first character of the next line */
+    if (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {
+      /* If the character is not an expected one we exit */
+      fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
+    }
+  line[i]='\0';
+  /* We create the tag and add it to the fst2 */
+  fst2->tags[current_tag]=create_tag(fst2,line,prv_alloc);
+  /* We do not forget to increase the tag counter */
+  current_tag++;
    if (current_tag==SIZE) {
       /* If necessary, we double the size of the array */
       SIZE=SIZE*2;
@@ -458,11 +458,11 @@ register int value;
 int negative_number;
 /* We ignore spaces */
 do {
-	c=(unichar)u_fgetc(f);
+  c=(unichar)u_fgetc(f);
 } while (c==' ');
 /* If 'c' is neither a digit nor a minus sign nor an end of line, we exit */
 if (((c<'0')||(c>'9'))&&(c!='-')&&(c!='\n')) {
-	fatal_error("Unexpected character in fst2: %c (read int 1)\n",c);
+  fatal_error("Unexpected character in fst2: %c (read int 1)\n",c);
 }
 if (c=='\n') {
   /* If we have an end of line */
@@ -480,7 +480,7 @@ if (c=='-') {
 /* We compute the value of the integer */
 value=c-'0';
 while(((c=(unichar)u_fgetc(f))>='0')&&(c<='9')) {
-	value=value*10+(c-'0');
+  value=value*10+(c-'0');
 }
 if (negative_number) value=-value;
 return value;
@@ -527,74 +527,74 @@ if (fst2->states==NULL) {
 }
 /* We read all the graphs that make the fst2 */
 for (i=0;i<fst2->number_of_graphs;i++) {
-	/* We read the graph number and the space after it */
+  /* We read the graph number and the space after it */
    u_fscanf(f,"%d ",&current_graph);
    /* And we make it positive */
    current_graph=current_graph*(-1);
-	/* We set the initial state of the graph */
-	fst2->initial_states[current_graph]=current_state;
-	int relative_state=0;
-	/*
-	 * We read the graph name
-	 */
-	unichar* graph_name=readline_safe(f);
-	if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
-		/* If we must read the graph either because it is the one we look for
-		 * or because we must read them all, then we initialize 'max_tag_number' */
-    	(*max_tag_number)=0;
-		/*
-		 * We save the graph name if needed
-		 */
-		if (read_names) {
-			fst2->graph_names[current_graph]=graph_name;
-		} else {
-			free(graph_name);
-		}
-		/*
-		 * We read the next char that must be 't' or ':' but not 'f', because
-		 * empty graphs are not allowed
-		 */
-		c=(unichar)u_fgetc(f);
-		if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c (read state)\n",c);}
-		/*
-		 * Then, we read the states of the graph, until we find a line beginning by 'f'.
-		 */
-		fst2->number_of_states_per_graphs[current_graph]=0;
-		while (c!='f') {
-			fst2->states[current_state]=new_Fst2State(prv_alloc);
-			fst2->number_of_states_per_graphs[current_graph]++;
-			/*
-			 * We set the finality and initiality bits of the state
-			 */
-			set_final_state(fst2->states[current_state],(c=='t'));
-			set_initial_state(fst2->states[current_state],(relative_state==0));
-			/*
-			 * We read the tag number
-			 */
-			tag_number=read_int(f,&end_of_line);
-			/*
-			 * We read transitions made of couple of integers (tag number/state number)
-			 * until we find an end of line
-			 */
-			while (!end_of_line) {
-				if (tag_number>(*max_tag_number)) {
-					/* We update the highest tag number */
-					(*max_tag_number)=tag_number;
-				}
-				/* We read the destination state number */
-				destination_state_number=read_int(f,&end_of_line);
-				if (end_of_line) {fatal_error("Missing state number in transition (graph %d, state %d)\n",current_graph,relative_state);}
-				/* We adjust the destination state number in order to make it global */
-				destination_state_number=destination_state_number+fst2->initial_states[current_graph];
-				/* We add the transition to the current state */
-				add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number,prv_alloc);
-				/* And we do not forget to read the next integer */
-				tag_number=read_int(f,&end_of_line);
-			}
-			if (((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f')) {
+  /* We set the initial state of the graph */
+  fst2->initial_states[current_graph]=current_state;
+  int relative_state=0;
+  /*
+   * We read the graph name
+   */
+  unichar* graph_name=readline_safe(f);
+  if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
+    /* If we must read the graph either because it is the one we look for
+     * or because we must read them all, then we initialize 'max_tag_number' */
+      (*max_tag_number)=0;
+    /*
+     * We save the graph name if needed
+     */
+    if (read_names) {
+      fst2->graph_names[current_graph]=graph_name;
+    } else {
+      free(graph_name);
+    }
+    /*
+     * We read the next char that must be 't' or ':' but not 'f', because
+     * empty graphs are not allowed
+     */
+    c=(unichar)u_fgetc(f);
+    if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c (read state)\n",c);}
+    /*
+     * Then, we read the states of the graph, until we find a line beginning by 'f'.
+     */
+    fst2->number_of_states_per_graphs[current_graph]=0;
+    while (c!='f') {
+      fst2->states[current_state]=new_Fst2State(prv_alloc);
+      fst2->number_of_states_per_graphs[current_graph]++;
+      /*
+       * We set the finality and initiality bits of the state
+       */
+      set_final_state(fst2->states[current_state],(c=='t'));
+      set_initial_state(fst2->states[current_state],(relative_state==0));
+      /*
+       * We read the tag number
+       */
+      tag_number=read_int(f,&end_of_line);
+      /*
+       * We read transitions made of couple of integers (tag number/state number)
+       * until we find an end of line
+       */
+      while (!end_of_line) {
+        if (tag_number>(*max_tag_number)) {
+          /* We update the highest tag number */
+          (*max_tag_number)=tag_number;
+        }
+        /* We read the destination state number */
+        destination_state_number=read_int(f,&end_of_line);
+        if (end_of_line) {fatal_error("Missing state number in transition (graph %d, state %d)\n",current_graph,relative_state);}
+        /* We adjust the destination state number in order to make it global */
+        destination_state_number=destination_state_number+fst2->initial_states[current_graph];
+        /* We add the transition to the current state */
+        add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number,prv_alloc);
+        /* And we do not forget to read the next integer */
+        tag_number=read_int(f,&end_of_line);
+      }
+      if (((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f')) {
             fatal_error("Unexpected character in fst2: %c\n",c);
-			}
-			current_state++;
+      }
+      current_state++;
          if (current_state==SIZE) {
             /* If necessary, we double the size of the state array */
             SIZE=SIZE*2;
@@ -603,22 +603,22 @@ for (i=0;i<fst2->number_of_graphs;i++) {
                fatal_alloc_error("read_fst2_states");
             }
          }
-			relative_state++;
-		}
-	}
-	else {
-		/*
-		 * If we do not need to read this graph, then we just go to the 'f' that
-		 * indicates the end of the graph. However, if the 'graph_names' array
-		 * exists, we set the name of the current graph to NULL, in order to
-		 * avoid memory error during the freeing of the fst2.
-		 */
-		if (read_names) {
-			fst2->graph_names[current_graph]=NULL;
-		}
-		while(((c=(unichar)u_fgetc(f))!='f')) {}
-	}
-	/* We read the space and the '\n' that follows the final 'f' */
+      relative_state++;
+    }
+  }
+  else {
+    /*
+     * If we do not need to read this graph, then we just go to the 'f' that
+     * indicates the end of the graph. However, if the 'graph_names' array
+     * exists, we set the name of the current graph to NULL, in order to
+     * avoid memory error during the freeing of the fst2.
+     */
+    if (read_names) {
+      fst2->graph_names[current_graph]=NULL;
+    }
+    while(((c=(unichar)u_fgetc(f))!='f')) {}
+  }
+  /* We read the space and the '\n' that follows the final 'f' */
    u_fgetc(f);
    u_fgetc(f);
 }
@@ -656,20 +656,20 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL,prv_alloc);
 Fst2* load_fst2(const VersatileEncodingConfig* vec,const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
 void* ptr=get_persistent_structure(filename);
 if (ptr!=NULL) {
-	return new_Fst2_clone((Fst2*)ptr);
+  return new_Fst2_clone((Fst2*)ptr);
 }
 U_FILE* f;
 f=u_fopen(vec,filename,U_READ);
 Fst2* fst2;
 if (f==NULL) {
-	error("Cannot open the file %s\n",filename);
-	return NULL;
+  error("Cannot open the file %s\n",filename);
+  return NULL;
 }
 int ret=load_fst2_from_file(f,read_names, &fst2, graph_number, prv_alloc);
 switch (ret) {
 case GRAPH_IS_EMPTY:
-	error("Graph %s is empty\n",filename);
-	return NULL;
+  error("Graph %s is empty\n",filename);
+  return NULL;
 }
 
 return fst2;
@@ -685,7 +685,7 @@ unichar debug;
 /* We read the number of graphs contained in the fst2 */
 u_fscanf(f,"%C%d\n",&debug,&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
-	return GRAPH_IS_EMPTY;
+  return GRAPH_IS_EMPTY;
 }
 fst2->debug=(debug=='d');
 /*
@@ -698,14 +698,14 @@ if (fst2->initial_states==NULL) {
    fatal_alloc_error("load_fst2_from_file");
 }
 for (int i=0;i<fst2->number_of_graphs+1;i++) {
-	fst2->initial_states[i]=0;
+  fst2->initial_states[i]=0;
 }
 fst2->number_of_states_per_graphs=(int*)malloc_cb((fst2->number_of_graphs+1)*sizeof(int),prv_alloc);
 if (fst2->number_of_states_per_graphs==NULL) {
    fatal_alloc_error("load_fst2_from_file");
 }
 for (int i=0;i<fst2->number_of_graphs+1;i++) {
-	fst2->number_of_states_per_graphs[i]=0;
+  fst2->number_of_states_per_graphs[i]=0;
 }
 
 /*
@@ -713,10 +713,10 @@ for (int i=0;i<fst2->number_of_graphs+1;i++) {
  * than above.
  */
 if (read_names) {
-	fst2->graph_names=(unichar**)malloc_cb((fst2->number_of_graphs+1)*sizeof(unichar*),prv_alloc);
-	if (fst2->graph_names==NULL) {
-	   fatal_alloc_error("load_fst2_from_file");
-	}
+  fst2->graph_names=(unichar**)malloc_cb((fst2->number_of_graphs+1)*sizeof(unichar*),prv_alloc);
+  if (fst2->graph_names==NULL) {
+     fatal_alloc_error("load_fst2_from_file");
+  }
 }
 /*
  * Then we read the states of the fst2
@@ -727,9 +727,9 @@ read_fst2_states(f,fst2,read_names,graph_number,&max_tag_number,prv_alloc);
  * And we read the tags
  */
 if (graph_number==NO_GRAPH_NUMBER_SPECIFIED) {
-	read_fst2_tags(f,fst2,prv_alloc);
+  read_fst2_tags(f,fst2,prv_alloc);
 } else {
-	read_fst2_tags(f,fst2,max_tag_number,prv_alloc);
+  read_fst2_tags(f,fst2,max_tag_number,prv_alloc);
 }
 u_fclose(f);
 *retval=fst2;
@@ -745,7 +745,7 @@ return load_fst2(vec,filename,read_names,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 }
 
 int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2,Abstract_allocator prv_alloc) {
-	return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
+  return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 
 }
 
@@ -773,7 +773,7 @@ if (e==NULL) {
 e->control=e->control & (0xFF-FST2_INITIAL_STATE_BIT_MASK);
 /* And we add it if necessary*/
 if (finality) {
-	e->control=e->control | FST2_INITIAL_STATE_BIT_MASK;
+  e->control=e->control | FST2_INITIAL_STATE_BIT_MASK;
 }
 }
 
@@ -804,7 +804,7 @@ if (e==NULL) {
 e->control=e->control & (0xFF-FST2_FINAL_STATE_BIT_MASK);
 /* And we add it if necessary*/
 if (finality) {
-	e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
+  e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
 }
 }
 
@@ -900,42 +900,42 @@ int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int 
 
 Fst2State new_Fst2State_clone(Fst2State Fst2StateSrc,Abstract_allocator prv_alloc)
 {
-	if (Fst2StateSrc == NULL)
-		return NULL;
+  if (Fst2StateSrc == NULL)
+    return NULL;
 
-	Fst2State Fst2dest=(fst2State*)malloc_cb(sizeof(fst2State),prv_alloc);
-	if (Fst2dest==NULL) {
-	   fatal_error("Not enough memory in new_Fst2State_clone\n");
-	}
-	Fst2dest->control = Fst2StateSrc->control;
-	Fst2dest->transitions = clone_transition_list(Fst2StateSrc->transitions,NULL,NULL,prv_alloc);
-	return Fst2dest;
+  Fst2State Fst2dest=(fst2State*)malloc_cb(sizeof(fst2State),prv_alloc);
+  if (Fst2dest==NULL) {
+     fatal_error("Not enough memory in new_Fst2State_clone\n");
+  }
+  Fst2dest->control = Fst2StateSrc->control;
+  Fst2dest->transitions = clone_transition_list(Fst2StateSrc->transitions,NULL,NULL,prv_alloc);
+  return Fst2dest;
 }
 
 Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc)
 {
-	if  (Fst2TagSrc==NULL)
-		return NULL;
+  if  (Fst2TagSrc==NULL)
+    return NULL;
 
 
-	Fst2Tag Fst2TagDest=(fst2Tag*)malloc_cb(sizeof(fst2Tag),prv_alloc);
-	Fst2TagDest->type = Fst2TagSrc->type;
-	Fst2TagDest->control = Fst2TagSrc->control;
+  Fst2Tag Fst2TagDest=(fst2Tag*)malloc_cb(sizeof(fst2Tag),prv_alloc);
+  Fst2TagDest->type = Fst2TagSrc->type;
+  Fst2TagDest->control = Fst2TagSrc->control;
 
     Fst2TagDest->input = u_strdup(Fst2TagSrc->input,prv_alloc);
     Fst2TagDest->morphological_filter = u_strdup(Fst2TagSrc->morphological_filter,prv_alloc);
     Fst2TagDest->output = u_strdup(Fst2TagSrc->output,prv_alloc);
-    Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable,prv_alloc);	 
+    Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable,prv_alloc);   
     Fst2TagDest->matching_tokens = clone(Fst2TagSrc->matching_tokens,prv_alloc);
 
-	Fst2TagDest->filter_number = Fst2TagSrc->filter_number;
-	Fst2TagDest->meta = Fst2TagSrc->meta;
-	Fst2TagDest->pattern = clone(Fst2TagSrc->pattern,prv_alloc);
-	Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
-	
-	Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
+  Fst2TagDest->filter_number = Fst2TagSrc->filter_number;
+  Fst2TagDest->meta = Fst2TagSrc->meta;
+  Fst2TagDest->pattern = clone(Fst2TagSrc->pattern,prv_alloc);
+  Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
+  
+  Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
 
-	return Fst2TagDest;
+  return Fst2TagDest;
 }
 
 
@@ -967,7 +967,7 @@ Fst2* fst2ret;
             fst2ret->states[i] = new_Fst2State_clone(fst2org->states[i],prv_alloc);
         }
 
-		fst2ret->tags = (Fst2Tag*)malloc_cb(sizeof(Fst2Tag)*fst2ret->number_of_tags,prv_alloc);
+    fst2ret->tags = (Fst2Tag*)malloc_cb(sizeof(Fst2Tag)*fst2ret->number_of_tags,prv_alloc);
         for (i=0;i<fst2org->number_of_tags;i++)
         {
             fst2ret->tags[i] = new_Fst2Tag_clone(fst2org->tags[i],prv_alloc);
@@ -1008,17 +1008,17 @@ Fst2* fst2ret;
           }
         }
 
-	    if (fst2org->input_variables!=NULL) {
-		    fst2ret->input_variables = clone(fst2org->input_variables,prv_alloc);
-		    if (fst2ret->input_variables == NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
-	    }
-	    if (fst2org->output_variables!=NULL) {
-		    fst2ret->output_variables = clone(fst2org->output_variables,prv_alloc);
-		    if (fst2ret->output_variables == NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
-	    }
+      if (fst2org->input_variables!=NULL) {
+        fst2ret->input_variables = clone(fst2org->input_variables,prv_alloc);
+        if (fst2ret->input_variables == NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
+      }
+      if (fst2org->output_variables!=NULL) {
+        fst2ret->output_variables = clone(fst2org->output_variables,prv_alloc);
+        if (fst2ret->output_variables == NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
+      }
 
     }
-	return fst2ret;
+  return fst2ret;
 }
 
 
@@ -1046,13 +1046,13 @@ free_Fst2(f);
  */
 int get_graph_index(Fst2* fst2,int n_state) {
 if (n_state<0 || n_state>=fst2->number_of_states) {
-	fatal_error("Internal error in get_graph_index\n");
+  fatal_error("Internal error in get_graph_index\n");
 }
 for (int i=1;i<=fst2->number_of_graphs;i++) {
-	if (n_state>=fst2->initial_states[i]
-	    && n_state<(fst2->initial_states[i]+fst2->number_of_states_per_graphs[i])) {
-		return i;
-	}
+  if (n_state>=fst2->initial_states[i]
+      && n_state<(fst2->initial_states[i]+fst2->number_of_states_per_graphs[i])) {
+    return i;
+  }
 }
 /* Should not happen */
 return -1;

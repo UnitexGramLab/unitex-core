@@ -66,9 +66,9 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElaps
     time_t t_end;
     time(&t_end);
     iRet = (unsigned int)(difftime(t_end,pBegin->t_start) * 1000);
-	*/
-	clock_t endTime=clock();
-	iRet= (int)((((double)(endTime-(pBegin->startTime))) / CLOCKS_PER_SEC) * 1000);
+  */
+  clock_t endTime=clock();
+  iRet= (int)((((double)(endTime-(pBegin->startTime))) / CLOCKS_PER_SEC) * 1000);
     if (destructObject != 0)
       free(pBegin);
 

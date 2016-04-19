@@ -71,8 +71,8 @@ void InstallLogger::LoadParamFile(const char* parameter_filename) {
         size_t size_param=0;
 
         if (af_fseek(af_fin, 0, SEEK_END) == 0)
-	    {
-		    size_param = af_ftell(af_fin);
+      {
+        size_param = af_ftell(af_fin);
             af_fseek(af_fin, 0, SEEK_SET);
         }
 
@@ -324,28 +324,28 @@ using namespace logger;
 
 UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLogger()
 {
-	InstallLogger* pInstallLogger = new InstallLogger();
-	return (INSTALLLOGGER)pInstallLogger;
+  InstallLogger* pInstallLogger = new InstallLogger();
+  return (INSTALLLOGGER)pInstallLogger;
 }
 
 UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromArgs(int argc, char* const argv[])
 {
-	InstallLogger* pInstallLogger = new InstallLogger(argc,argv);
-	return (INSTALLLOGGER)pInstallLogger;
+  InstallLogger* pInstallLogger = new InstallLogger(argc,argv);
+  return (INSTALLLOGGER)pInstallLogger;
 }
 
 UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromParamFile(const char* paramFileName)
 {
-	InstallLogger* pInstallLogger = new InstallLogger(paramFileName);
-	return (INSTALLLOGGER)pInstallLogger;
+  InstallLogger* pInstallLogger = new InstallLogger(paramFileName);
+  return (INSTALLLOGGER)pInstallLogger;
 }
 
 UNITEX_FUNC void UNITEX_CALL RemoveLoggerFromParamFile(INSTALLLOGGER logger)
 {
-	InstallLogger* pInstallLogger = (InstallLogger*)logger;
-	if (pInstallLogger != NULL) {
-		delete (pInstallLogger);
-	}
+  InstallLogger* pInstallLogger = (InstallLogger*)logger;
+  if (pInstallLogger != NULL) {
+    delete (pInstallLogger);
+  }
 }
 
 

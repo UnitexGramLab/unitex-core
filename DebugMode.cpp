@@ -56,33 +56,33 @@ Ustring* output=new_Ustring();
 Ustring* tmp=new_Ustring();
 int n_contexts=0;
 while (*s!='\0') {
-	/* Skipping char #1 */
-	s++;
-	while (*s!=DEBUG_INFO_COORD_MARK) {
-		if (print_output && n_contexts==0) u_strcat(output,*s);
-		s++;
-	}
-	/* Skipping everything until char #3 */
-	while (*(s++)!=DEBUG_INFO_INPUT_MARK) {
-	}
-	empty(tmp);
-	/* Skipping everything until char #4 */
-	while (*s!=DEBUG_INFO_END_MARK) {
-		u_strcat(tmp,*s);
-		s++;
-	}
-	if (!u_strcmp(tmp->str,"$*")) {
-		empty(output);
-	} else if (!u_strcmp(tmp->str,"$[") || !u_strcmp(tmp->str,"$![")) {
-		n_contexts++;
-	} else if (!u_strcmp(tmp->str,"$]")) {
-		n_contexts--;
-	}
-	s++;
-	while (*s!='\0' && *s!=DEBUG_INFO_OUTPUT_MARK) {
-		if (print_input && n_contexts==0) u_strcat(output,*s);
-		s++;
-	}
+  /* Skipping char #1 */
+  s++;
+  while (*s!=DEBUG_INFO_COORD_MARK) {
+    if (print_output && n_contexts==0) u_strcat(output,*s);
+    s++;
+  }
+  /* Skipping everything until char #3 */
+  while (*(s++)!=DEBUG_INFO_INPUT_MARK) {
+  }
+  empty(tmp);
+  /* Skipping everything until char #4 */
+  while (*s!=DEBUG_INFO_END_MARK) {
+    u_strcat(tmp,*s);
+    s++;
+  }
+  if (!u_strcmp(tmp->str,"$*")) {
+    empty(output);
+  } else if (!u_strcmp(tmp->str,"$[") || !u_strcmp(tmp->str,"$![")) {
+    n_contexts++;
+  } else if (!u_strcmp(tmp->str,"$]")) {
+    n_contexts--;
+  }
+  s++;
+  while (*s!='\0' && *s!=DEBUG_INFO_OUTPUT_MARK) {
+    if (print_input && n_contexts==0) u_strcat(output,*s);
+    s++;
+  }
 }
 u_fputs(output->str,f);
 free_Ustring(tmp);
@@ -98,14 +98,14 @@ void create_graph_call_debug_tag(unichar* dst,unichar* src,int graph_number,int 
 u_sprintf(dst,"<E>/%C",DEBUG_INFO_OUTPUT_MARK);
 int i;
 for (i=0;src[i]!=DEBUG_INFO_COORD_MARK;i++) {
-	if (src[i]=='\0') {
-		fatal_error("Debug output error in create_graph_call_debug_tag\n");
-	}
+  if (src[i]=='\0') {
+    fatal_error("Debug output error in create_graph_call_debug_tag\n");
+  }
 }
 int n=5;
 i--;
 do {
-	dst[n++]=src[++i];
+  dst[n++]=src[++i];
 } while (src[i]!=DEBUG_INFO_INPUT_MARK);
 dst[n++]=DEBUG_INFO_GRAPHCALL_MARK;
 dst[n++]=before_call?'<':'>';

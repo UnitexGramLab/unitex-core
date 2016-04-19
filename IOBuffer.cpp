@@ -47,5 +47,5 @@ using namespace unitex;
 
 UNITEX_FUNC void UNITEX_CALL SetUnitexBufferMode()
 {
-	setBufferMode();
+  setBufferMode();
 }

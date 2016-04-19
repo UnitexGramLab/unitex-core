@@ -142,7 +142,7 @@ int unif_desinstantiate(unif_vars_T* UNIF_VARS,unichar* var) {
   if (found) {
     free(UNIF_VARS->vars[v].id);
     for (w=v+1; w<UNIF_VARS->no_vars;w++)
-    	UNIF_VARS->vars[w-1] = UNIF_VARS->vars[w];
+      UNIF_VARS->vars[w-1] = UNIF_VARS->vars[w];
     UNIF_VARS->no_vars--;
   }
   return 0;

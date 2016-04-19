@@ -86,15 +86,15 @@ const unichar STRING_EMPTY[] = { 0 };
 
 static inline int string_contains_unichar(const unichar* s,unichar c) {
 for (;;) {
-	if ((*(s)) == c) return 1;
-	if ((*(s)) == 0) return 0;
-	if ((*(s + 1)) == c) return 1;
-	if ((*(s + 1)) == 0) return 0;
-	if ((*(s + 2)) == c) return 1;
-	if ((*(s + 2)) == 0) return 0;
-	if ((*(s + 3)) == c) return 1;
-	if ((*(s + 3)) == 0) return 0;
-	s += 4;
+  if ((*(s)) == c) return 1;
+  if ((*(s)) == 0) return 0;
+  if ((*(s + 1)) == c) return 1;
+  if ((*(s + 1)) == 0) return 0;
+  if ((*(s + 2)) == c) return 1;
+  if ((*(s + 2)) == 0) return 0;
+  if ((*(s + 3)) == c) return 1;
+  if ((*(s + 3)) == 0) return 0;
+  s += 4;
 }
 }
 
@@ -328,7 +328,7 @@ for (int i=0;s[i]!='\0';i++) {
       u_strcat(result,PROTECTION_CHAR);
       u_strcat(result,s[i]);
    } else {
-	   u_strcat(result,s[i]);
+     u_strcat(result,s[i]);
    }
 }
 return result->len-n;
@@ -344,18 +344,18 @@ int unprotect(const unichar* s,unichar* result,const unichar* chars_to_unprotect
 chars_to_unprotect = (chars_to_unprotect == NULL) ? STRING_EMPTY : chars_to_unprotect;
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
-	if (s[i]==PROTECTION_CHAR) {
-		if (s[i+1]=='\0') {
-			fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
-		}
-		if (!string_contains_unichar(chars_to_unprotect,s[i+1])) {
-			result[j++]=PROTECTION_CHAR;
-		}
-		result[j++]=s[i+1];
-		i++;
-	} else {
-		result[j++]=s[i];
-	}
+  if (s[i]==PROTECTION_CHAR) {
+    if (s[i+1]=='\0') {
+      fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
+    }
+    if (!string_contains_unichar(chars_to_unprotect,s[i+1])) {
+      result[j++]=PROTECTION_CHAR;
+    }
+    result[j++]=s[i+1];
+    i++;
+  } else {
+    result[j++]=s[i];
+  }
 }
 result[j]='\0';
 return j;
@@ -371,18 +371,18 @@ int unprotect(const unichar* s,Ustring* result,const unichar* chars_to_unprotect
 chars_to_unprotect = (chars_to_unprotect == NULL) ? STRING_EMPTY : chars_to_unprotect;
 int n=result->len;
 for (int i=0;s[i]!='\0';i++) {
-	if (s[i]==PROTECTION_CHAR) {
-		if (s[i+1]=='\0') {
-			fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
-		}
-		if (!string_contains_unichar(chars_to_unprotect,s[i+1])) {
-			u_strcat(result,PROTECTION_CHAR);
-		}
-		u_strcat(result,s[i+1]);
-		i++;
-	} else {
-		u_strcat(result,s[i]);
-	}
+  if (s[i]==PROTECTION_CHAR) {
+    if (s[i+1]=='\0') {
+      fatal_error("Unexpected %c at end of string in unprotect\n",PROTECTION_CHAR);
+    }
+    if (!string_contains_unichar(chars_to_unprotect,s[i+1])) {
+      u_strcat(result,PROTECTION_CHAR);
+    }
+    u_strcat(result,s[i+1]);
+    i++;
+  } else {
+    u_strcat(result,s[i]);
+  }
 }
 return result->len-n;
 }

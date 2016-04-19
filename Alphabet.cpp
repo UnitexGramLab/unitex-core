@@ -34,15 +34,15 @@ namespace unitex {
 #define ENLARGE_ARRAYCOLLECTION_FACTOR 0x10
 
 void enlarge_buffer_alphabet(Alphabet* alphabet) {
-	alphabet->i_nb_array_pos_allocated = alphabet->i_nb_array_pos_allocated * ENLARGE_ARRAYCOLLECTION_FACTOR;
-	if (alphabet->i_nb_array_pos_allocated > 0x10000)
-		alphabet->i_nb_array_pos_allocated = 0x10000;
+  alphabet->i_nb_array_pos_allocated = alphabet->i_nb_array_pos_allocated * ENLARGE_ARRAYCOLLECTION_FACTOR;
+  if (alphabet->i_nb_array_pos_allocated > 0x10000)
+    alphabet->i_nb_array_pos_allocated = 0x10000;
 
-	alphabet->t_array_collection=(unichar**)realloc(alphabet->t_array_collection,
-		                      alphabet->i_nb_array_pos_allocated*sizeof(unichar*));
-	if (alphabet->t_array_collection == NULL) {
-		fatal_alloc_error("enlarge_buffer_alphabet");
-	}
+  alphabet->t_array_collection=(unichar**)realloc(alphabet->t_array_collection,
+                          alphabet->i_nb_array_pos_allocated*sizeof(unichar*));
+  if (alphabet->t_array_collection == NULL) {
+    fatal_alloc_error("enlarge_buffer_alphabet");
+  }
 }
 
 
@@ -142,9 +142,9 @@ if (alphabet->korean_equivalent_syllable!=NULL) {
 
 int is_abstract_or_persistent_alphabet_filename(const char* filename)
 {
-	if (get_persistent_structure(filename))
-		return 1;
-	return 0;
+  if (get_persistent_structure(filename))
+    return 1;
+  return 0;
 }
 
 
@@ -156,7 +156,7 @@ int is_abstract_or_persistent_alphabet_filename(const char* filename)
 Alphabet* load_alphabet(const VersatileEncodingConfig* vec,const char* filename,int korean) {
 void* a=get_persistent_structure(filename);
 if (a!=NULL) {
-	return (Alphabet*)a;
+  return (Alphabet*)a;
 }
 U_FILE* f;
 f=u_fopen(vec,filename,U_READ);
@@ -169,8 +169,8 @@ unichar lower,upper;
 while ((c=u_fgetc(f))!=EOF) {
       upper=(unichar)c;
       if (upper=='\n') {
-    	  /* We skip empty lines */
-    	  continue;
+        /* We skip empty lines */
+        continue;
       }
       if (upper=='#') {
          // we are in the case of an interval #AZ -> [A..Z]
@@ -183,13 +183,13 @@ while ((c=u_fgetc(f))!=EOF) {
             return NULL;
          }
          for (c=lower;c<=upper;c++) {
-		   SET_CASE_FLAG_MACRO(c,alphabet,1|2);
+       SET_CASE_FLAG_MACRO(c,alphabet,1|2);
            add_letter_equivalence(alphabet,(unichar)c,(unichar)c);
          }
          u_fgetc(f); // reading the \n
       }
       else {
-		SET_CASE_FLAG_MACRO(upper,alphabet,1);
+    SET_CASE_FLAG_MACRO(upper,alphabet,1);
         lower=(unichar)u_fgetc(f);
         if (lower!='\n') {
           SET_CASE_FLAG_MACRO(lower,alphabet,2);
@@ -300,14 +300,14 @@ return is_equal_or_uppercase(a,b,alph);
 int is_equal_or_uppercase_qp(const unichar* a,const unichar* b,const Alphabet* alphabet) {
 int i=0,quotes=0;
 while (a[i] && b[i]) {
-	if (!test_qp(a[i],b[i],quotes,alphabet)) return 0;
-	if (a[i]=='"') {
-		quotes=!quotes;
-	} else if (a[i]=='\\') {
-		i++;
-		if (!test_qp(a[i],b[i],quotes,alphabet)) return 0;
-	}
-	i++;
+  if (!test_qp(a[i],b[i],quotes,alphabet)) return 0;
+  if (a[i]=='"') {
+    quotes=!quotes;
+  } else if (a[i]=='\\') {
+    i++;
+    if (!test_qp(a[i],b[i],quotes,alphabet)) return 0;
+  }
+  i++;
 }
 return (a[i]=='\0' && b[i]=='\0');
 }
@@ -510,14 +510,14 @@ while (src[i]!='\0') {
                  * uppercase variant of the letter */
                 dest[j++]=u_toupper(src[i]);
              } else {
-			 unichar* tbrowse = NULL;
-			 int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
-			 if (i_pos_in_array_of_string != 0)
-				 tbrowse = a->t_array_collection[i_pos_in_array_of_string];
-			 if (tbrowse != NULL)
-				 while ((*tbrowse) != '\0') {
-					 dest[j++]=*(tbrowse++);
-				 }
+       unichar* tbrowse = NULL;
+       int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
+       if (i_pos_in_array_of_string != 0)
+         tbrowse = a->t_array_collection[i_pos_in_array_of_string];
+       if (tbrowse != NULL)
+         while ((*tbrowse) != '\0') {
+           dest[j++]=*(tbrowse++);
+         }
              }
              if (!inside_a_set) dest[j++]=']';
              i++;
@@ -546,18 +546,18 @@ while (src[i]!='\0') {
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
              if (inside_a_set && src[i+1]=='-') {
-            	 /* Special case:
-            	  * if we had [a-d], we don't want to turn it into
-            	  * [aA-dD], but rather into [a-dA-D]. In such a case,
-            	  * we just use u_toupper
-            	  */
-            	 i=i+2;
-            	 dest[j++]='-';
-            	 dest[j++]=src[i++];
-            	 dest[j++]=u_toupper(dest[i-3]);
-            	 dest[j++]='-';
-            	 dest[j++]=u_toupper(src[i-1]);
-            	 continue;
+               /* Special case:
+                * if we had [a-d], we don't want to turn it into
+                * [aA-dD], but rather into [a-dA-D]. In such a case,
+                * we just use u_toupper
+                */
+               i=i+2;
+               dest[j++]='-';
+               dest[j++]=src[i++];
+               dest[j++]=u_toupper(dest[i-3]);
+               dest[j++]='-';
+               dest[j++]=u_toupper(src[i-1]);
+               continue;
              }
 
              if (a==NULL) {

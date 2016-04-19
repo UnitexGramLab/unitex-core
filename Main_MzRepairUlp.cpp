@@ -38,7 +38,7 @@
 using namespace unitex;
 
 #ifdef HAS_LOGGER_NAMESPACE
-	using namespace ::unitex::logger;
+  using namespace ::unitex::logger;
 #endif
 
 int main(int argc,char* argv[]) {

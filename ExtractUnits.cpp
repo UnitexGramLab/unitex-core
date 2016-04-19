@@ -59,7 +59,7 @@ current_end=-1;
 
 struct extract_buf_mapped* buffer=(struct extract_buf_mapped*)malloc(sizeof(struct extract_buf_mapped));
 if (buffer==NULL) {
-	fatal_alloc_error("new_buffer");
+  fatal_alloc_error("new_buffer");
 }
 buffer->amf=(snt);
 buffer->int_buffer_=(const int*)af_get_mapfile_pointer(buffer->amf);
@@ -76,7 +76,7 @@ while (buffer->pos < buffer->nb_item) {
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
       for (size_t i=0;i<buffer->size_current_item;i++) {
-		  u_fputs(tokens->token[buffer->int_buffer_[buffer->pos+i]],result);
+      u_fputs(tokens->token[buffer->int_buffer_[buffer->pos+i]],result);
       }
       u_fprintf(result,"\n");
    }

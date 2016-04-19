@@ -69,8 +69,8 @@ int f_change_morpho(struct l_morpho_t* pL_MORPHO,f_morpho_T *old_feat, f_morpho_
     found = 0;
     for (c_old=0; c_old<old_feat->no_cats && !found; c_old++)
       if (old_feat->cats[c_old].cat == new_feat->cats[c_new].cat) {
-	old_feat->cats[c_old].val = new_feat->cats[c_new].val;
-	found = 1;
+  old_feat->cats[c_old].val = new_feat->cats[c_new].val;
+  found = 1;
       }
     //If a category was not found in 'old_feat' but is admits and empty value
     //then it is added to 'old_feat' with the current value
@@ -105,7 +105,7 @@ int f_morpho_cmp(f_morpho_T* m1, f_morpho_T* m2) {
     c2=0; 
     while (c2<m2->no_cats && !found) {
       if ((m1->cats[c1].cat == m2->cats[c2].cat) && (m1->cats[c1].val == m2->cats[c2].val))
-	  found = 1;
+    found = 1;
       c2++;
     }
     //If the current category-value pair in m1 does not exist in m2 then m1 and m2 are not identical
@@ -175,8 +175,8 @@ int f_del_one_morpho(f_morpho_T *feat, l_category_T* cat) {
   for (c=0; c<feat->no_cats; c++)
     if (feat->cats[c].cat == cat) {   //Category 'cat' found in 'feat'.
       while (c < feat->no_cats - 1) {  //Shift the remaining cat-val pairs to the left.
-	feat->cats[c] = feat->cats[c+1];
-	c++;
+  feat->cats[c] = feat->cats[c+1];
+  c++;
       }
       feat->no_cats--;
       return 0;

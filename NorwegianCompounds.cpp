@@ -56,25 +56,25 @@ namespace unitex {
  * Norwegian unknown words.
  */
 struct norwegian_infos {
-	/* The norwegian alphabet */
-	const Alphabet* alphabet;
-	Dictionary* d;
-	/* The file where to read the words to analyze from */
-	U_FILE* unknown_word_list;
-	/* The file where new dictionary lines will be written */
-	U_FILE* output;
-	/* The file where to print information about the analysis */
-	U_FILE* info_output;
-	/* The file where to write words that cannot be analyzed as
-	 * compound words */
-	U_FILE* new_unknown_word_list;
-	/* Set of words that cannot be part of compound words */
-	struct string_hash* forbidden_words;
-	/* These arrays indicates for each INF code if it can be
-	 * viewed as a valid code for a left/right component of a
-	 * compound word. */
-	char* valid_left_component;
-	char* valid_right_component;
+  /* The norwegian alphabet */
+  const Alphabet* alphabet;
+  Dictionary* d;
+  /* The file where to read the words to analyze from */
+  U_FILE* unknown_word_list;
+  /* The file where new dictionary lines will be written */
+  U_FILE* output;
+  /* The file where to print information about the analysis */
+  U_FILE* info_output;
+  /* The file where to write words that cannot be analyzed as
+   * compound words */
+  U_FILE* new_unknown_word_list;
+  /* Set of words that cannot be part of compound words */
+  struct string_hash* forbidden_words;
+  /* These arrays indicates for each INF code if it can be
+   * viewed as a valid code for a left/right component of a
+   * compound word. */
+  char* valid_left_component;
+  char* valid_right_component;
 };
 
 
@@ -96,7 +96,7 @@ struct word_decomposition_list {
 void analyse_norwegian_unknown_words(struct norwegian_infos*);
 int analyse_norwegian_word(const unichar* word,struct norwegian_infos*);
 void explore_state(int,unichar*,int,const unichar*,int,const unichar*,const unichar*,
-					struct word_decomposition_list**,int,struct norwegian_infos*,Ustring*,int);
+          struct word_decomposition_list**,int,struct norwegian_infos*,Ustring*,int);
 void check_valid_right_component(char*,const struct INF_codes*);
 void check_valid_left_component(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line(const struct list_ustring*);
@@ -120,9 +120,9 @@ void free_word_decomposition_list(struct word_decomposition_list*);
  * This function analyzes a list of unknown Norwegian words.
  */
 void analyse_norwegian_unknown_words(const Alphabet* alphabet,Dictionary* d,
-								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
-								U_FILE* new_unknown_word_list,
-								struct string_hash* forbidden_words) {
+                U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
+                U_FILE* new_unknown_word_list,
+                struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
 struct norwegian_infos infos;
 infos.alphabet=alphabet;
@@ -134,7 +134,7 @@ infos.new_unknown_word_list=new_unknown_word_list;
 infos.forbidden_words=forbidden_words;
 infos.valid_left_component=(char*)malloc(sizeof(char)*(d->inf->N));
 if (infos.valid_left_component==NULL) {
-	fatal_alloc_error("analyse_norwegian_unknown_words");
+  fatal_alloc_error("analyse_norwegian_unknown_words");
 }
 infos.valid_right_component=(char*)malloc(sizeof(char)*(d->inf->N));
 if (infos.valid_right_component==NULL) {
@@ -170,10 +170,10 @@ for (int i=0;i<inf->N;i++) {
  */
 char check_valid_right_component_for_an_INF_line(const struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
-	if (check_valid_right_component_for_one_INF_code(INF_codes->string)) {
-		return 1;
-	}
-	INF_codes=INF_codes->next;
+  if (check_valid_right_component_for_one_INF_code(INF_codes->string)) {
+    return 1;
+  }
+  INF_codes=INF_codes->next;
 }
 return 0;
 }
@@ -198,10 +198,10 @@ for (int i=0;i<inf->N;i++) {
  */
 char check_valid_left_component_for_an_INF_line(const struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
-	if (check_valid_left_component_for_one_INF_code(INF_codes->string)) {
-		return 1;
-	}
-	INF_codes=INF_codes->next;
+  if (check_valid_left_component_for_one_INF_code(INF_codes->string)) {
+    return 1;
+  }
+  INF_codes=INF_codes->next;
 }
 return 0;
 }
@@ -245,19 +245,19 @@ void get_first_valid_left_component(struct list_ustring* INF_codes,unichar* code
 int tmp;
 code[0]='\0';
 while (INF_codes!=NULL) {
-	tmp=get_valid_left_component_type_for_one_INF_code(INF_codes->string);
-	if (tmp==N_SIA || tmp==N_SIE || tmp==N_SIG) {
-		/* If we find an N, then we return it */
-		u_strcpy(code,INF_codes->string);
-		return;
-	}
-	if (tmp!=INVALID_LEFT_COMPONENT) {
-		/* If we find a valid left component, then we copy it,
-		 * but we do not return now, since we can find later
-		 * a N that has an higher priority */
-		u_strcpy(code,INF_codes->string);
-	}
-	INF_codes=INF_codes->next;
+  tmp=get_valid_left_component_type_for_one_INF_code(INF_codes->string);
+  if (tmp==N_SIA || tmp==N_SIE || tmp==N_SIG) {
+    /* If we find an N, then we return it */
+    u_strcpy(code,INF_codes->string);
+    return;
+  }
+  if (tmp!=INVALID_LEFT_COMPONENT) {
+    /* If we find a valid left component, then we copy it,
+     * but we do not return now, since we can find later
+     * a N that has an higher priority */
+    u_strcpy(code,INF_codes->string);
+  }
+  INF_codes=INF_codes->next;
 }
 }
 
@@ -539,9 +539,9 @@ while (EOF!=readline(line,infos->unknown_word_list)) {
       * new unknown word file */
      u_fprintf(infos->new_unknown_word_list,"%S\n",line->str);
   } else {
-  		/* Otherwise, we increase the number of analyzed words */
-  		n++;
-  	}
+      /* Otherwise, we increase the number of analyzed words */
+      n++;
+    }
 }
 free_Ustring(line);
 u_printf("%d words decomposed as compound words\n",n);
@@ -567,8 +567,8 @@ Ustring* ustr=new_Ustring();
 explore_state(infos->d->initial_state_offset,correct_word,0,word,0,decomposition,dela_line,&l,1,infos,ustr,0);
 free_Ustring(ustr);
 if (l==NULL) {
-	/* If there is no decomposition, we return */
-	return 0;
+  /* If there is no decomposition, we return */
+  return 0;
 }
 /* Otherwise, we will choose the one to keep */
 struct word_decomposition_list* tmp=l;
@@ -580,59 +580,59 @@ int is_a_valid_right_A=0;
  * of components. By the way, we note if there is a minimal
  * analysis ending by a noun or an adjective. */
 while (tmp!=NULL) {
-	if (tmp->element->n_parts<=n) {
-		if (tmp->element->n_parts<n) {
-			/* If we change of component number, we reset the
-			 * 'is_a_valid_right_N' and 'is_a_valid_right_A' fields,
-			 * because they only concern the head word. */
-			is_a_valid_right_N=0;
-			is_a_valid_right_A=0;
-		}
-		n=tmp->element->n_parts;
-		if (tmp->element->is_a_valid_right_N) {
-			is_a_valid_right_N=1;
-		}
-		if (tmp->element->is_a_valid_right_A) {
-			is_a_valid_right_A=1;
-		}
-	}
-	tmp=tmp->next;
+  if (tmp->element->n_parts<=n) {
+    if (tmp->element->n_parts<n) {
+      /* If we change of component number, we reset the
+       * 'is_a_valid_right_N' and 'is_a_valid_right_A' fields,
+       * because they only concern the head word. */
+      is_a_valid_right_N=0;
+      is_a_valid_right_A=0;
+    }
+    n=tmp->element->n_parts;
+    if (tmp->element->is_a_valid_right_N) {
+      is_a_valid_right_N=1;
+    }
+    if (tmp->element->is_a_valid_right_A) {
+      is_a_valid_right_A=1;
+    }
+  }
+  tmp=tmp->next;
 }
 tmp=l;
 while (tmp!=NULL) {
-	if (n==tmp->element->n_parts) {
-		/* We only consider the words that have shortest decompositions.
-		 * The test (tmp->element->n_parts==1) is used to
-		 * match simple words that would have been wrongly considered
-		 * as unknown words. */
-		int OK=0;
-		if (tmp->element->n_parts==1) {
-			/* Simple words must be matched */
-			OK=1;
-		}
-		else if (is_a_valid_right_N) {
-			 	if (tmp->element->is_a_valid_right_N) {
-					/* We give priority to analysis that ends with a noun */
-					OK=1;
-			 	}
-			}
-		else if (is_a_valid_right_A) {
-				if (tmp->element->is_a_valid_right_A) {
-					/* Our second priority goes to analysis that ends with an adjective */
-					OK=1;
-				}
-			}
-		else OK=1;
-		/* We put a restriction on the grammatical code:
-		 * we don't produce a x<A> or x<V> analysis when a x<N> exists */
-		if (OK) {
-			if (infos->info_output!=NULL) {
-				u_fprintf(infos->info_output,"%S = %S\n",word,tmp->element->decomposition);
-			}
-			u_fprintf(infos->output,"%S\n",tmp->element->dela_line);
-		}
-	}
-	tmp=tmp->next;
+  if (n==tmp->element->n_parts) {
+    /* We only consider the words that have shortest decompositions.
+     * The test (tmp->element->n_parts==1) is used to
+     * match simple words that would have been wrongly considered
+     * as unknown words. */
+    int OK=0;
+    if (tmp->element->n_parts==1) {
+      /* Simple words must be matched */
+      OK=1;
+    }
+    else if (is_a_valid_right_N) {
+         if (tmp->element->is_a_valid_right_N) {
+          /* We give priority to analysis that ends with a noun */
+          OK=1;
+         }
+      }
+    else if (is_a_valid_right_A) {
+        if (tmp->element->is_a_valid_right_A) {
+          /* Our second priority goes to analysis that ends with an adjective */
+          OK=1;
+        }
+      }
+    else OK=1;
+    /* We put a restriction on the grammatical code:
+     * we don't produce a x<A> or x<V> analysis when a x<N> exists */
+    if (OK) {
+      if (infos->info_output!=NULL) {
+        u_fprintf(infos->info_output,"%S = %S\n",word,tmp->element->decomposition);
+      }
+      u_fprintf(infos->output,"%S\n",tmp->element->dela_line);
+    }
+  }
+  tmp=tmp->next;
 }
 free_word_decomposition_list(l);
 return 1;
@@ -687,10 +687,10 @@ return tmp;
 void free_word_decomposition_list(struct word_decomposition_list* l) {
 struct word_decomposition_list* tmp;
 while (l!=NULL) {
-	free_word_decomposition(l->element);
-	tmp=l->next;
-	free(l);
-	l=tmp;
+  free_word_decomposition(l->element);
+  tmp=l->next;
+  free(l);
+  l=tmp;
 }
 }
 
@@ -738,210 +738,210 @@ int final,n_transitions,inf_number;
 int z=save_output(ustr);
 offset=read_dictionary_state(infos->d,offset,&final,&n_transitions,&inf_number);
 if (final) {
-	/* If we are in a final state, we can set the end of our current component */
-	current_component[pos_in_current_component]='\0';
-	/* We do not consider words of length 1 */
-	if (pos_in_current_component>1) {
-		/* We don't consider components with a length of 1 */
-		if (word_to_analyze[pos_in_word_to_analyze]=='\0') {
-			/* If we have explored the entire original word */
-			if (get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX) {
-				/* And if we do not have forbidden word in last position */
-				struct list_ustring* l=infos->d->inf->codes[inf_number];
-				/* We will look at all the INF codes of the last component in order
-				 * to produce analysis */
-				while (l!=NULL) {
-					unichar* dec_ = dec_buffer;
-					u_strcpy(dec_,analysis);
-					if (dec_[0]!='\0') {
-						/* If we have already something in the analysis (i.e. if
-						 * we have not a simple word), we insert the concatenation
-						 * mark before the entry to come */
-						u_strcat(dec_," +++ ");
-					}
-					Ustring* entry=new_Ustring(4096);
-					/* We get the dictionary line that corresponds to the current INF code */
-					uncompress_entry(current_component,l->string,entry);
-					/* And we add it to the analysis */
-					u_strcat(dec_,entry->str);
-					unichar* new_dela_line = (unichar*)malloc(sizeof(unichar) * 4096);
-					if (new_dela_line == NULL) {
-						fatal_alloc_error("explore_state");
-					}
-					/* We copy the current output DELA line that contains
-					 * the concatenation of the previous components */
-					u_strcpy(new_dela_line,output_dela_line);
-					/* Then we tokenize the DELA line that corresponds the current INF
-					 * code in order to obtain its lemma and grammatical/inflectional
-					 * information */
-					struct dela_entry* tmp_entry=tokenize_DELAF_line(entry->str,1);
-					/* We concatenate the inflected form of the last component to
-					 * the output DELA line */
-					u_strcat(new_dela_line,tmp_entry->inflected);
-					/* We put the comma that separates the inflected form and the lemma */
-					u_strcat(new_dela_line,",");
-					/* And we build the lemma in the same way than the inflected form */
-					u_strcat(new_dela_line,output_dela_line);
-					u_strcat(new_dela_line,tmp_entry->lemma);
-					/* We put the dot that separates the the lemma and the grammatical/inflectional
-					 * information */
-					u_strcat(new_dela_line,".");
-					/* And finally we put the grammatical/inflectional information */
-					u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
-					int k;
-					for (k=1;k<tmp_entry->n_semantic_codes;k++) {
-						u_strcat(new_dela_line,"+");
-						u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
-					}
-					for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
-						u_strcat(new_dela_line,":");
-						u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
-					}
-					free_dela_entry(tmp_entry);
-					/*
-					 * Now we can build an analysis in the form of a word decomposition
-					 * structure, but only if the last component is a valid
-					 * right one or if it is a verb long enough, or if we find out
-					 * that the word to analyze was in fact a simple word
-					 * in the dictionary */
-					if (verb_of_more_than_4_letters(entry->str)
-						|| check_valid_right_component_for_one_INF_code(l->string)
-						|| number_of_components==1) {
-						/*
-						 * We set the number of components, the analysis, the actual
-						 * DELA line and information about
-						 */
-						struct word_decomposition* wd=new_word_decomposition();
-						wd->n_parts=number_of_components;
-						u_strcpy(wd->decomposition,dec_);
-						u_strcpy(wd->dela_line,new_dela_line);
-						wd->is_a_valid_right_N=check_N_right_component(l->string);
-						wd->is_a_valid_right_A=check_A_right_component(l->string);
-						/* Then we add the decomposition word structure to the list that
-						 * contains all the analysis for the word to analyze */
-						struct word_decomposition_list* wdl=new_word_decomposition_list();
-						wdl->element=wd;
-						wdl->next=(*L);
-						(*L)=wdl;
-					}
-					free_Ustring(entry);
-					free(new_dela_line);
-					/* We go on with the next INF code of the last component */
-					l=l->next;
-				}
-			}
-			/* If are at the end of the word to analyze, we have nothing more to do */
-			return;
-		} else {
-			/* If we are not at the end of the word to analyze, we must
-			 * 1) look if the current component is a valid left one
-			 * 2) look if it is not a forbidden component and
-			 * 3) explore the rest of the original word
-			 */
-			if (infos->valid_left_component[inf_number] &&
-				(get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX)) {
-				/* If we have a valid component, we look first if we are
-				 * in the case of a word ending by a double letter like "kupp" */
-				if (pos_in_current_component>2 &&
-					(current_component[pos_in_current_component-1]==current_component[pos_in_current_component-2])) {
-					/* If we have such a word, we add it to the current analysis,
-					 * putting "+++" if the current component is not the first one */
-					unichar* dec_ = dec_buffer;
-					u_strcpy(dec_,analysis);
-					if (dec_[0]!='\0') {
-						u_strcat(dec_," +++ ");
-					}
-					/* In order to print the component in the analysis, we arbitrary
-					 * take a valid left component among all those that are available
-					 * for the current component */
-					unichar* multi_buffer_alloc = (unichar*)malloc(sizeof(unichar)*4096*3);
-					if (multi_buffer_alloc==NULL) {
-					  fatal_alloc_error("explore_state");
-					}
+  /* If we are in a final state, we can set the end of our current component */
+  current_component[pos_in_current_component]='\0';
+  /* We do not consider words of length 1 */
+  if (pos_in_current_component>1) {
+    /* We don't consider components with a length of 1 */
+    if (word_to_analyze[pos_in_word_to_analyze]=='\0') {
+      /* If we have explored the entire original word */
+      if (get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX) {
+        /* And if we do not have forbidden word in last position */
+        struct list_ustring* l=infos->d->inf->codes[inf_number];
+        /* We will look at all the INF codes of the last component in order
+         * to produce analysis */
+        while (l!=NULL) {
+          unichar* dec_ = dec_buffer;
+          u_strcpy(dec_,analysis);
+          if (dec_[0]!='\0') {
+            /* If we have already something in the analysis (i.e. if
+             * we have not a simple word), we insert the concatenation
+             * mark before the entry to come */
+            u_strcat(dec_," +++ ");
+          }
+          Ustring* entry=new_Ustring(4096);
+          /* We get the dictionary line that corresponds to the current INF code */
+          uncompress_entry(current_component,l->string,entry);
+          /* And we add it to the analysis */
+          u_strcat(dec_,entry->str);
+          unichar* new_dela_line = (unichar*)malloc(sizeof(unichar) * 4096);
+          if (new_dela_line == NULL) {
+            fatal_alloc_error("explore_state");
+          }
+          /* We copy the current output DELA line that contains
+           * the concatenation of the previous components */
+          u_strcpy(new_dela_line,output_dela_line);
+          /* Then we tokenize the DELA line that corresponds the current INF
+           * code in order to obtain its lemma and grammatical/inflectional
+           * information */
+          struct dela_entry* tmp_entry=tokenize_DELAF_line(entry->str,1);
+          /* We concatenate the inflected form of the last component to
+           * the output DELA line */
+          u_strcat(new_dela_line,tmp_entry->inflected);
+          /* We put the comma that separates the inflected form and the lemma */
+          u_strcat(new_dela_line,",");
+          /* And we build the lemma in the same way than the inflected form */
+          u_strcat(new_dela_line,output_dela_line);
+          u_strcat(new_dela_line,tmp_entry->lemma);
+          /* We put the dot that separates the the lemma and the grammatical/inflectional
+           * information */
+          u_strcat(new_dela_line,".");
+          /* And finally we put the grammatical/inflectional information */
+          u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
+          int k;
+          for (k=1;k<tmp_entry->n_semantic_codes;k++) {
+            u_strcat(new_dela_line,"+");
+            u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
+          }
+          for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
+            u_strcat(new_dela_line,":");
+            u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
+          }
+          free_dela_entry(tmp_entry);
+          /*
+           * Now we can build an analysis in the form of a word decomposition
+           * structure, but only if the last component is a valid
+           * right one or if it is a verb long enough, or if we find out
+           * that the word to analyze was in fact a simple word
+           * in the dictionary */
+          if (verb_of_more_than_4_letters(entry->str)
+            || check_valid_right_component_for_one_INF_code(l->string)
+            || number_of_components==1) {
+            /*
+             * We set the number of components, the analysis, the actual
+             * DELA line and information about
+             */
+            struct word_decomposition* wd=new_word_decomposition();
+            wd->n_parts=number_of_components;
+            u_strcpy(wd->decomposition,dec_);
+            u_strcpy(wd->dela_line,new_dela_line);
+            wd->is_a_valid_right_N=check_N_right_component(l->string);
+            wd->is_a_valid_right_A=check_A_right_component(l->string);
+            /* Then we add the decomposition word structure to the list that
+             * contains all the analysis for the word to analyze */
+            struct word_decomposition_list* wdl=new_word_decomposition_list();
+            wdl->element=wd;
+            wdl->next=(*L);
+            (*L)=wdl;
+          }
+          free_Ustring(entry);
+          free(new_dela_line);
+          /* We go on with the next INF code of the last component */
+          l=l->next;
+        }
+      }
+      /* If are at the end of the word to analyze, we have nothing more to do */
+      return;
+    } else {
+      /* If we are not at the end of the word to analyze, we must
+       * 1) look if the current component is a valid left one
+       * 2) look if it is not a forbidden component and
+       * 3) explore the rest of the original word
+       */
+      if (infos->valid_left_component[inf_number] &&
+        (get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX)) {
+        /* If we have a valid component, we look first if we are
+         * in the case of a word ending by a double letter like "kupp" */
+        if (pos_in_current_component>2 &&
+          (current_component[pos_in_current_component-1]==current_component[pos_in_current_component-2])) {
+          /* If we have such a word, we add it to the current analysis,
+           * putting "+++" if the current component is not the first one */
+          unichar* dec_ = dec_buffer;
+          u_strcpy(dec_,analysis);
+          if (dec_[0]!='\0') {
+            u_strcat(dec_," +++ ");
+          }
+          /* In order to print the component in the analysis, we arbitrary
+           * take a valid left component among all those that are available
+           * for the current component */
+          unichar* multi_buffer_alloc = (unichar*)malloc(sizeof(unichar)*4096*3);
+          if (multi_buffer_alloc==NULL) {
+            fatal_alloc_error("explore_state");
+          }
 
-					unichar* sia_code = sia_code_buffer;
-					unichar* line = multi_buffer_alloc;
-					Ustring* entry=new_Ustring(4096);
-					get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
-					uncompress_entry(current_component,sia_code,entry);
-					u_strcat(dec_,entry->str);
-					free_Ustring(entry);
-					u_strcpy(line,output_dela_line);
-					u_strcat(line,current_component);
-					/* As we have a double letter at the end of the word,
-					 * we must remove a character */
-					line[u_strlen(line)-1]='\0';
-					unichar* temp = multi_buffer_alloc + 4096;
-					unichar* dec_temp = multi_buffer_alloc + 4096 + 4096;
-					u_strcpy(dec_temp,dec_);
-					/* Then, we explore the dictionary in order to analyze the
-					 * next component. We start at the root of the dictionary
-					 * (offset=4) and we go back one position in the word to analyze.
-					 * For instance, if we have "kupplaner", we read "kupp" and then
-					 * we try to analyze "planner". */
-					Ustring* foo=new_Ustring();
-					explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze-1,
-						dec_temp,line,L,number_of_components+1,infos,ustr,0,dec_buffer,sia_code_buffer);
-					free_Ustring(foo);
-					free(multi_buffer_alloc);
-				}
-				/* Now, we try to analyze the component normally, even if
-				 * it was ended by double letter, because we can have things
-				 * like "oppbrent = opp,.ADV +++ brent,brenne.V:K" */
-				unichar* dec_ = dec_buffer;
+          unichar* sia_code = sia_code_buffer;
+          unichar* line = multi_buffer_alloc;
+          Ustring* entry=new_Ustring(4096);
+          get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
+          uncompress_entry(current_component,sia_code,entry);
+          u_strcat(dec_,entry->str);
+          free_Ustring(entry);
+          u_strcpy(line,output_dela_line);
+          u_strcat(line,current_component);
+          /* As we have a double letter at the end of the word,
+           * we must remove a character */
+          line[u_strlen(line)-1]='\0';
+          unichar* temp = multi_buffer_alloc + 4096;
+          unichar* dec_temp = multi_buffer_alloc + 4096 + 4096;
+          u_strcpy(dec_temp,dec_);
+          /* Then, we explore the dictionary in order to analyze the
+           * next component. We start at the root of the dictionary
+           * (offset=4) and we go back one position in the word to analyze.
+           * For instance, if we have "kupplaner", we read "kupp" and then
+           * we try to analyze "planner". */
+          Ustring* foo=new_Ustring();
+          explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze-1,
+            dec_temp,line,L,number_of_components+1,infos,ustr,0,dec_buffer,sia_code_buffer);
+          free_Ustring(foo);
+          free(multi_buffer_alloc);
+        }
+        /* Now, we try to analyze the component normally, even if
+         * it was ended by double letter, because we can have things
+         * like "oppbrent = opp,.ADV +++ brent,brenne.V:K" */
+        unichar* dec_ = dec_buffer;
 
-				unichar* multi_buffer_alloc = (unichar*)malloc(sizeof(unichar) * 4096 * 3);
-				if (multi_buffer_alloc == NULL) {
-					fatal_alloc_error("explore_state");
-				}
-				unichar *line = multi_buffer_alloc;
-				u_strcpy(dec_,analysis);
-				if (dec_[0]!='\0') {
-					/* We add the "+++" mark if the current component is not the first one */
-					u_strcat(dec_," +++ ");
-				}
-				unichar* sia_code = sia_code_buffer;
-				Ustring* entry=new_Ustring(4096);
-				/* In order to print the component in the analysis, we arbitrary
-				 * take a valid left component among all those that are available
-				 * for the current component */
-				get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
-				uncompress_entry(current_component,sia_code,entry);
-				u_strcat(dec_,entry->str);
-				free_Ustring(entry);
-				u_strcpy(line,output_dela_line);
-				u_strcat(line,current_component);
-				unichar* temp = multi_buffer_alloc + 4096;
-				unichar* dec_temp = multi_buffer_alloc + 4096 + 4096;
-				u_strcpy(dec_temp,dec_);
-				/* Then, we explore the dictionary in order to analyze the
-				 * next component. We start at the root of the dictionary
-				 * (offset=4). */
-				Ustring* foo=new_Ustring();
-				explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
-					dec_temp,line,L,number_of_components+1,infos,foo,0,dec_buffer,sia_code_buffer);
-				free_Ustring(foo);
-				free(multi_buffer_alloc);
-			}
-		}
-	}
-	/* Once we have finished to deal with the current final dictionary node,
-	 * we go on because we may match a longer word */
-	base=ustr->len;
+        unichar* multi_buffer_alloc = (unichar*)malloc(sizeof(unichar) * 4096 * 3);
+        if (multi_buffer_alloc == NULL) {
+          fatal_alloc_error("explore_state");
+        }
+        unichar *line = multi_buffer_alloc;
+        u_strcpy(dec_,analysis);
+        if (dec_[0]!='\0') {
+          /* We add the "+++" mark if the current component is not the first one */
+          u_strcat(dec_," +++ ");
+        }
+        unichar* sia_code = sia_code_buffer;
+        Ustring* entry=new_Ustring(4096);
+        /* In order to print the component in the analysis, we arbitrary
+         * take a valid left component among all those that are available
+         * for the current component */
+        get_first_valid_left_component(infos->d->inf->codes[inf_number],sia_code);
+        uncompress_entry(current_component,sia_code,entry);
+        u_strcat(dec_,entry->str);
+        free_Ustring(entry);
+        u_strcpy(line,output_dela_line);
+        u_strcat(line,current_component);
+        unichar* temp = multi_buffer_alloc + 4096;
+        unichar* dec_temp = multi_buffer_alloc + 4096 + 4096;
+        u_strcpy(dec_temp,dec_);
+        /* Then, we explore the dictionary in order to analyze the
+         * next component. We start at the root of the dictionary
+         * (offset=4). */
+        Ustring* foo=new_Ustring();
+        explore_state(infos->d->initial_state_offset,temp,0,word_to_analyze,pos_in_word_to_analyze,
+          dec_temp,line,L,number_of_components+1,infos,foo,0,dec_buffer,sia_code_buffer);
+        free_Ustring(foo);
+        free(multi_buffer_alloc);
+      }
+    }
+  }
+  /* Once we have finished to deal with the current final dictionary node,
+   * we go on because we may match a longer word */
+  base=ustr->len;
 }
 /* We examine each transition that goes out from the node */
 unichar uc;
 int adr;
 for (int i=0;i<n_transitions;i++) {
-	offset=read_dictionary_transition(infos->d,offset,&uc,&adr,ustr);
-	if (is_equal_or_uppercase(uc,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
-		/* If the transition's letter is case compatible with the current letter of the
-		 * word to analyze, we follow it */
-		current_component[pos_in_current_component]=uc;
-		explore_state(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
-			analysis,output_dela_line,L,number_of_components,infos,ustr,base,dec_buffer,sia_code_buffer);
-	}
-	restore_output(z,ustr);
+  offset=read_dictionary_transition(infos->d,offset,&uc,&adr,ustr);
+  if (is_equal_or_uppercase(uc,word_to_analyze[pos_in_word_to_analyze],infos->alphabet)) {
+    /* If the transition's letter is case compatible with the current letter of the
+     * word to analyze, we follow it */
+    current_component[pos_in_current_component]=uc;
+    explore_state(adr,current_component,pos_in_current_component+1,word_to_analyze,pos_in_word_to_analyze+1,
+      analysis,output_dela_line,L,number_of_components,infos,ustr,base,dec_buffer,sia_code_buffer);
+  }
+  restore_output(z,ustr);
 }
 }
 
@@ -959,6 +959,6 @@ void explore_state(int offset,unichar* current_component,int pos_in_current_comp
                    word_to_analyze,pos_in_word_to_analyze,analysis,
                    output_dela_line,L,
                    number_of_components,infos,ustr,base,
-				   dec_buffer,sia_code_buffer);
+           dec_buffer,sia_code_buffer);
 }
 } // namespace unitex

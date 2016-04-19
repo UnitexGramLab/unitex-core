@@ -192,19 +192,19 @@ struct match_list* l=load_match_list(concord,NULL,NULL);
 u_fclose(concord);
 
 if (tok->SENTENCE_MARKER==-1) {
-	/* We have a special case when the text has not been
-	 * split into sentences: the result will be either an empty
-	 * file or the text itself
-	 */
-	if ((extract_matching_units && l==NULL) ||
+  /* We have a special case when the text has not been
+   * split into sentences: the result will be either an empty
+   * file or the text itself
+   */
+  if ((extract_matching_units && l==NULL) ||
        (!extract_matching_units && l!=NULL)) {
-		/* result = empty file */
-		u_fempty(&vec,output);
-		return SUCCESS_RETURN_CODE;
-	}
-	free_match_list(l);
-	af_copy(text_name,output);
-	return SUCCESS_RETURN_CODE;
+    /* result = empty file */
+    u_fempty(&vec,output);
+    return SUCCESS_RETURN_CODE;
+  }
+  free_match_list(l);
+  af_copy(text_name,output);
+  return SUCCESS_RETURN_CODE;
 }
 
 U_FILE* result=u_fopen(&vec,output,U_WRITE);

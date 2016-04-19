@@ -693,7 +693,7 @@ return ((path[0]>='a' && path[0]<='z') || (path[0]>='A' && path[0]<='Z'))
 #ifdef PREVENT_USING_METRO_INCOMPATIBLE_FUNCTION
 #include "DirHelper.h"
 static int create_path(const char* path) {
-	return mkDirPortable(path);
+  return mkDirPortable(path);
 }
 #else
 static int create_path(const char* path) {

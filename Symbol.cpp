@@ -982,7 +982,7 @@ for (i=1;i<entry->n_semantic_codes;i++) {
    } else {
       if (get_value_index(entry->semantic_codes[i],language->unknown_codes,DONT_INSERT)==-1) {
          error("Unknown semantic value '%S', will not be taken into account\n",entry->semantic_codes[i]);
-	      get_value_index(entry->semantic_codes[i],language->unknown_codes,INSERT_IF_NEEDED,NULL);
+        get_value_index(entry->semantic_codes[i],language->unknown_codes,INSERT_IF_NEEDED,NULL);
       }
    }
 }
@@ -1007,7 +1007,7 @@ if (entry->n_inflectional_codes==0) {
 }
 model=symbol;
 if (model->next!=NULL) {
-	fatal_error("load_dic_entry: symbol list should not happen\n");
+  fatal_error("load_dic_entry: symbol list should not happen\n");
 }
 symbol=NULL;
 for (i=0;i<entry->n_inflectional_codes;i++) {
@@ -1250,7 +1250,7 @@ while (buffer[position]=='+' || buffer[position]=='!') {
       /* If we have to set a semantic feature */
       feature_info_t* info=POS_get_semantic_feature_infos(POS,tmp);
       if (info!=NULL) {
-	      symbol->feature[info->CATid]=info->val;
+        symbol->feature[info->CATid]=info->val;
       } else {
          if (get_value_index(tmp,language->unknown_codes,DONT_INSERT)==-1) {
             /* If we haven't already encountered this unknown code, we can print
@@ -1373,7 +1373,7 @@ if (tag[0]=='<' && tag[1]!='\0') {
    /* If we have a tag like <xxxx>, we test if it's a special symbol */
    if (!u_strcmp(tag,"<E>")) return new_symbol(S_EPSILON,-1);
    if (!u_strcmp(tag,"<.>")) {
-	   fatal_error("Invalid ELAG tag <.>\n");
+     fatal_error("Invalid ELAG tag <.>\n");
    }
    if (!u_strcmp(tag,"<def>")) return SYMBOL_DEF;
    if (!u_strcmp(tag,"<!>")) return new_symbol(S_EXCLAM,-1);
@@ -1390,7 +1390,7 @@ if (tag[0]=='<' && tag[1]!='\0') {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
       free(buf);
 #endif
-	  return new_symbol(S_EXCLAM,-1); 
+    return new_symbol(S_EXCLAM,-1); 
   }
 
 
@@ -1400,7 +1400,7 @@ if (tag[0]=='<' && tag[1]!='\0') {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
       free(buf);
 #endif
-	  return new_symbol(S_EQUAL,-1); 
+    return new_symbol(S_EQUAL,-1); 
   }
 
 
@@ -1415,14 +1415,14 @@ if (tag[0]=='<' && tag[1]!='\0') {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
         free(buf);
 #endif
-		fatal_error("bad PUNC symbol '%S'\n", tag); 
-	}
+    fatal_error("bad PUNC symbol '%S'\n", tag); 
+  }
     if (buf[1] && buf[0] != '\\') { 
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
         free(buf);
 #endif
-		fatal_error("bad symbol '%S' (PONC too long)\n", tag); 
-	}
+    fatal_error("bad symbol '%S' (PONC too long)\n", tag); 
+  }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
       free(buf);
 #endif

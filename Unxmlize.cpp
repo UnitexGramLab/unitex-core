@@ -38,34 +38,34 @@
 namespace unitex {
 
 const char* usage_Unxmlize =
-		 "Usage: Unxmlize <file>\n"
-		 "\n"
-		 "  <file>: an unicode .xml or .html file to be processed\n"
-		 "\n"
-		 "OPTIONS:\n"
-		 "  -o TXT/--output=TXT: output file. By default, foo.xml => foo.txt\n"
-		 "  --input_offsets=XXX: base offset file to be used\n"
-		 "  --output_offsets=XXX: specifies the offset file to be produced\n"
-		 "  --PRLG=XXX: extracts to file XXX special information used in the\n"
-		 "              PRLG project on ancient Greek (requires --output_offsets)\n"
-		 "\n"
-		 "  -t/--html: consider the file as html file (disregard extension)\n"
-		 "  -x/--xml: consider the file as xml file (disregard extension)\n"
-		 "  -l/--tolerate: try tolerate somes markup langage malformation\n"
-		 "\n"
-		 "  --comments=IGNORE: every comment is removed (default)\n"
-		 "  --comments=SPACE: every comment is replaced by a single space\n"
-		 "  --scripts=IGNORE: every script block is removed\n"
-		 "  --scripts=SPACE: every comment is replaced by a single space (default for .html)\n"
-		 "    Note: by default, script tags are handled as normal tags (default for .xml)\n"
-		 "\n"
-		 "  --normal_tags=IGNORE: every other tag is removed (default for .xml)\n"
-		 "  --normal_tags=SPACE: every other tag is replaced by a single space(default for .html)\n"
+     "Usage: Unxmlize <file>\n"
+     "\n"
+     "  <file>: an unicode .xml or .html file to be processed\n"
+     "\n"
+     "OPTIONS:\n"
+     "  -o TXT/--output=TXT: output file. By default, foo.xml => foo.txt\n"
+     "  --input_offsets=XXX: base offset file to be used\n"
+     "  --output_offsets=XXX: specifies the offset file to be produced\n"
+     "  --PRLG=XXX: extracts to file XXX special information used in the\n"
+     "              PRLG project on ancient Greek (requires --output_offsets)\n"
+     "\n"
+     "  -t/--html: consider the file as html file (disregard extension)\n"
+     "  -x/--xml: consider the file as xml file (disregard extension)\n"
+     "  -l/--tolerate: try tolerate somes markup langage malformation\n"
+     "\n"
+     "  --comments=IGNORE: every comment is removed (default)\n"
+     "  --comments=SPACE: every comment is replaced by a single space\n"
+     "  --scripts=IGNORE: every script block is removed\n"
+     "  --scripts=SPACE: every comment is replaced by a single space (default for .html)\n"
+     "    Note: by default, script tags are handled as normal tags (default for .xml)\n"
+     "\n"
+     "  --normal_tags=IGNORE: every other tag is removed (default for .xml)\n"
+     "  --normal_tags=SPACE: every other tag is replaced by a single space(default for .html)\n"
      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
-		 "  -h/--help: this help\n"
-		 "\n"
-		 "Removes all xml tags from the given file to produce a text file that\n"
-		 "can be processed by Unitex.\n";
+     "  -h/--help: this help\n"
+     "\n"
+     "Removes all xml tags from the given file to produce a text file that\n"
+     "can be processed by Unitex.\n";
 
 
 static void usage() {
@@ -142,37 +142,37 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Unxmlize,lopts_Unxmlize,
                 strcpy(output_PRLG,options.vars()->optarg);
                 break;
    case 'c': {
-	   if (!strcmp(options.vars()->optarg,"IGNORE")) {
-		   comments=UNXMLIZE_IGNORE;
-	   } else if (!strcmp(options.vars()->optarg,"SPACE")) {
-		   comments=UNXMLIZE_REPLACE_BY_SPACE;
-	   } else {
-		   error("Invalid argument for option --comments\n");
+     if (!strcmp(options.vars()->optarg,"IGNORE")) {
+       comments=UNXMLIZE_IGNORE;
+     } else if (!strcmp(options.vars()->optarg,"SPACE")) {
+       comments=UNXMLIZE_REPLACE_BY_SPACE;
+     } else {
+       error("Invalid argument for option --comments\n");
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 's': {
-	   if (!strcmp(options.vars()->optarg,"IGNORE")) {
-		   scripts=UNXMLIZE_IGNORE;
-	   } else if (!strcmp(options.vars()->optarg,"SPACE")) {
-		   scripts=UNXMLIZE_REPLACE_BY_SPACE;
-	   } else {
-		   error("Invalid argument for option --scripts\n");
+     if (!strcmp(options.vars()->optarg,"IGNORE")) {
+       scripts=UNXMLIZE_IGNORE;
+     } else if (!strcmp(options.vars()->optarg,"SPACE")) {
+       scripts=UNXMLIZE_REPLACE_BY_SPACE;
+     } else {
+       error("Invalid argument for option --scripts\n");
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 'n': {
-	   if (!strcmp(options.vars()->optarg,"IGNORE")) {
-		   normal_tags=UNXMLIZE_IGNORE;
-	   } else if (!strcmp(options.vars()->optarg,"SPACE")) {
-		   normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
-	   } else {
-		   error("Invalid argument for option --normal_tags\n");
+     if (!strcmp(options.vars()->optarg,"IGNORE")) {
+       normal_tags=UNXMLIZE_IGNORE;
+     } else if (!strcmp(options.vars()->optarg,"SPACE")) {
+       normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
+     } else {
+       error("Invalid argument for option --normal_tags\n");
        return USAGE_ERROR_CODE;
-	   }
-	   break;
+     }
+     break;
    }
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
@@ -226,8 +226,8 @@ if (output[0]=='\0') {
 
 f_input=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (f_input==NULL) {
-	error("Cannot open file %s\n",argv[options.vars()->optind]);
-	return DEFAULT_ERROR_CODE;
+  error("Cannot open file %s\n",argv[options.vars()->optind]);
+  return DEFAULT_ERROR_CODE;
 }
 
 char extension[FILENAME_MAX];
@@ -243,13 +243,13 @@ if (force_xml!=0) {
 }
 
 if (consider_as_html!=0) {
-	opts.comments=UNXMLIZE_IGNORE;
-	opts.scripts=UNXMLIZE_REPLACE_BY_SPACE;
-	opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
+  opts.comments=UNXMLIZE_IGNORE;
+  opts.scripts=UNXMLIZE_REPLACE_BY_SPACE;
+  opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
 } else {
-	opts.comments=UNXMLIZE_IGNORE;
-	opts.scripts=UNXMLIZE_DO_NOTHING;
-	opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
+  opts.comments=UNXMLIZE_IGNORE;
+  opts.scripts=UNXMLIZE_DO_NOTHING;
+  opts.normal_tags=UNXMLIZE_REPLACE_BY_SPACE;
 }
 if (comments!=-1) {
   opts.comments=comments;
@@ -269,45 +269,45 @@ if (f_output==NULL) {
 }
 
 if (output_offsets[0]!='\0') {
-	if (input_offsets[0] != '\0') {
-		v_input_offsets = load_offsets(&vec, input_offsets);
-	}
-	f_offsets=u_fopen(&vec,output_offsets,U_WRITE);
-	if (f_offsets==NULL) {
-	  error("Cannot create offset file %s\n",output_offsets);
+  if (input_offsets[0] != '\0') {
+    v_input_offsets = load_offsets(&vec, input_offsets);
+  }
+  f_offsets=u_fopen(&vec,output_offsets,U_WRITE);
+  if (f_offsets==NULL) {
+    error("Cannot create offset file %s\n",output_offsets);
     free_vector_offset(v_input_offsets);
     u_fclose(f_output);
     u_fclose(f_input);
     return DEFAULT_ERROR_CODE;
-	}
-	offsets=new_vector_offset();
+  }
+  offsets=new_vector_offset();
 }
 unichar* PRLG_ptrs[10]={0,0,0,0,0,0,0,0,0,0};
 unichar** PRLG=NULL;
 U_FILE* f_PRLG=NULL;
 if (output_PRLG[0]!='\0') {
-	if (f_offsets==NULL) {
-		error("Cannot use the --PRLG option if --output_offsets is not used\n");
+  if (f_offsets==NULL) {
+    error("Cannot use the --PRLG option if --output_offsets is not used\n");
     free_vector_offset(offsets);
     free_vector_offset(v_input_offsets);
     u_fclose(f_output);
     u_fclose(f_input);
     return DEFAULT_ERROR_CODE;
-	}
-	PRLG=PRLG_ptrs;
-	f_PRLG=u_fopen(&vec,output_PRLG,U_WRITE);
-	if (f_offsets==NULL) {
-		error("Cannot create PRLG file %s\n",output_PRLG);
+  }
+  PRLG=PRLG_ptrs;
+  f_PRLG=u_fopen(&vec,output_PRLG,U_WRITE);
+  if (f_offsets==NULL) {
+    error("Cannot create PRLG file %s\n",output_PRLG);
     free_vector_offset(offsets);
     u_fclose(f_offsets);
     free_vector_offset(v_input_offsets);
     u_fclose(f_output);
     u_fclose(f_input);
     return DEFAULT_ERROR_CODE;
-	}
+  }
 }
 if (!unxmlize(f_input,f_output,offsets,&opts,PRLG,f_PRLG,tolerate_markup_malformation)) {
-	error("The input file was not a valid xml one. Operation aborted.\n");
+  error("The input file was not a valid xml one. Operation aborted.\n");
 
   for (int i=0;i<10;i++) {
     if (PRLG_ptrs[i]!=NULL) {
@@ -336,7 +336,7 @@ for (int i=0;i<10;i++) {
 }
 
 if (offsets!=NULL) {
-	process_offsets(v_input_offsets,offsets,f_offsets);
+  process_offsets(v_input_offsets,offsets,f_offsets);
 }
 
 u_fclose(f_PRLG);

@@ -73,14 +73,14 @@ MAPFILE* iomap_open_mapfile(const char*name,int /* option*/, size_t /*value_for_
     mfr->hFile = mfr->hMap = NULL;
 
 #ifdef UNITEX_USING_WINRT_API
-	WCHAR filenameW[FILENAME_MAX + 0x200 + 1];
-	MultiByteToWideChar(CP_ACP,0,name,-1,filenameW,FILENAME_MAX + 0x200);
-	WIN32_FILE_ATTRIBUTE_DATA fad;
-	GetFileAttributesExW(filenameW,GetFileExInfoStandard,&fad);
-	//mfr->len = fad.nFileSizeLow;
-	mfr->li_size.u.LowPart = fad.nFileSizeLow;
-	mfr->li_size.u.HighPart = fad.nFileSizeHigh;
-	mfr->hFile = CreateFile2(filenameW, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, /*FILE_FLAG_RANDOM_ACCESS,*/ NULL);
+  WCHAR filenameW[FILENAME_MAX + 0x200 + 1];
+  MultiByteToWideChar(CP_ACP,0,name,-1,filenameW,FILENAME_MAX + 0x200);
+  WIN32_FILE_ATTRIBUTE_DATA fad;
+  GetFileAttributesExW(filenameW,GetFileExInfoStandard,&fad);
+  //mfr->len = fad.nFileSizeLow;
+  mfr->li_size.u.LowPart = fad.nFileSizeLow;
+  mfr->li_size.u.HighPart = fad.nFileSizeHigh;
+  mfr->hFile = CreateFile2(filenameW, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, /*FILE_FLAG_RANDOM_ACCESS,*/ NULL);
     if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
         mfr->hMap = CreateFileMappingFromApp(mfr->hFile, NULL,
                         PAGE_READONLY, 0, NULL);

@@ -1060,8 +1060,8 @@ Transition* transition;
 typedef void (*free_list_int_func_t)(struct list_int*);
 free_list_int_func_t free_list_inst_func=free_list_int;
 struct hash_table* hash=new_hash_table((unsigned int (*)(const void*))hash_list_int,
-				(int (*)(const void*, const void*))equal_list_int,
-				(void (*)(void*))free_list_inst_func,NULL,NULL);
+        (int (*)(const void*, const void*))equal_list_int,
+        (void (*)(void*))free_list_inst_func,NULL,NULL);
 struct fifo* fifo=new_fifo();
 struct hash_table* transition_hash=new_hash_table();
 /* We start by creating the initial state of the new graph and inserting it
@@ -1261,7 +1261,7 @@ for (q=0;q<graph->number_of_states;q++) {
       old++;
    }
    if (oops==0) {
-	   fatal_error("Unexpected cyclic graph in topological_sort!\n");
+     fatal_error("Unexpected cyclic graph in topological_sort!\n");
    }
    renumber[old]=q;
    incoming[old]=-1;
@@ -1330,7 +1330,7 @@ for (Transition* t=graph->states[q1]->outgoing_transitions;t!=NULL;t=t->next) {
    number_of_paths[q1]=number_of_paths[q1]+number_of_paths[t->state_number];
    /* We use +1 because we must count the transition from q1 to t->state_number */
    if (min_path_length!=NULL &&
-		   (min_path_length[q1]==-1 || (min_path_length[t->state_number]+1)<min_path_length[q1])) {
+       (min_path_length[q1]==-1 || (min_path_length[t->state_number]+1)<min_path_length[q1])) {
       min_path_length[q1]=min_path_length[t->state_number]+1;
    }
    if (max_path_length!=NULL && (max_path_length[t->state_number]+1)>max_path_length[q1]) {
@@ -1476,7 +1476,7 @@ free_SingleGraph(B,NULL);
 
 void reverse_transition_lists(SingleGraph g) {
 for (int i=0;i<g->number_of_states;i++) {
-	g->states[i]->outgoing_transitions=reverse_list(g->states[i]->outgoing_transitions);
+  g->states[i]->outgoing_transitions=reverse_list(g->states[i]->outgoing_transitions);
 }
 }
 

@@ -114,7 +114,7 @@ while (EOF!=readline(tmp,f)) {
   i++;
   if (i>*NUMBER_OF_TEXT_TOKENS) {
      fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n"
-    		     "Last token loaded=%S\n",nom,*NUMBER_OF_TEXT_TOKENS,tmp);
+             "Last token loaded=%S\n",nom,*NUMBER_OF_TEXT_TOKENS,tmp);
   }
 }
 free_Ustring(tmp);

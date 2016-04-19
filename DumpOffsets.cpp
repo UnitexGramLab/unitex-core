@@ -516,7 +516,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             new_c = *(new_text + j);
                         }
                     }
-#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT					
+#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT          
                     else if(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') { //add the missing white spaces back
                         while(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') {
                             u_fputc_raw(old_c, f);
@@ -1082,13 +1082,13 @@ else {
 
 typedef struct
 {
-	char original_file[FILENAME_MAX];
-	char processed_file[FILENAME_MAX];
-	char output_file[FILENAME_MAX];
-	char preprocessed_offset[FILENAME_MAX];
-	char processed_offset[FILENAME_MAX];
-	char input_offsets[FILENAME_MAX];
-	char output_offsets[FILENAME_MAX];
+  char original_file[FILENAME_MAX];
+  char processed_file[FILENAME_MAX];
+  char output_file[FILENAME_MAX];
+  char preprocessed_offset[FILENAME_MAX];
+  char processed_offset[FILENAME_MAX];
+  char input_offsets[FILENAME_MAX];
+  char output_offsets[FILENAME_MAX];
 } UnPreprocessParam;
 
 
@@ -1096,39 +1096,39 @@ typedef struct
 
 int copy_chars_between_unicharfiles(U_FILE* input, U_FILE* output, int* pos_in, int* pos_out, int nb_needed, unichar* buffer, size_t size_buffer)
 {
-	int result = 0;
-	while (nb_needed > 0) {
-		int nb_this = (nb_needed < (int)(size_buffer-1)) ? nb_needed : (int)(size_buffer-1);
-		//int result_read = u_fread_raw(buffer, nb_this, input);
-		int result_read = u_fget_unichars_raw(buffer, nb_this, input);
-		if (result_read < 0) {
-			result_read = 0;
-		}
-		if (result_read >= (int)size_buffer)
-			result_read = (int)(size_buffer - 1);
-		*(buffer + result_read) = 0;
-		
-		if ((result_read>0) && (output != NULL)) {
-			u_fputs_raw(buffer, output);
-		}
-		result += result_read;
-		nb_needed -= result_read;
-		if ((result_read == 0) || (nb_needed == 0))
-			break;
-	}
-	if (pos_in != NULL) {
-		(*pos_in) += result;
-	}
-	if (pos_out != NULL) {
-		(*pos_out) += result;
-	}
-	return result;
+  int result = 0;
+  while (nb_needed > 0) {
+    int nb_this = (nb_needed < (int)(size_buffer-1)) ? nb_needed : (int)(size_buffer-1);
+    //int result_read = u_fread_raw(buffer, nb_this, input);
+    int result_read = u_fget_unichars_raw(buffer, nb_this, input);
+    if (result_read < 0) {
+      result_read = 0;
+    }
+    if (result_read >= (int)size_buffer)
+      result_read = (int)(size_buffer - 1);
+    *(buffer + result_read) = 0;
+    
+    if ((result_read>0) && (output != NULL)) {
+      u_fputs_raw(buffer, output);
+    }
+    result += result_read;
+    nb_needed -= result_read;
+    if ((result_read == 0) || (nb_needed == 0))
+      break;
+  }
+  if (pos_in != NULL) {
+    (*pos_in) += result;
+  }
+  if (pos_out != NULL) {
+    (*pos_out) += result;
+  }
+  return result;
 }
 
 
 int skip_chars_in_unicharfiles(U_FILE* input, int* pos_in, int nb_needed, unichar* buffer, size_t size_buffer)
 {
-	return copy_chars_between_unicharfiles(input, NULL, pos_in, NULL, nb_needed, buffer, size_buffer);
+  return copy_chars_between_unicharfiles(input, NULL, pos_in, NULL, nb_needed, buffer, size_buffer);
 }
 
 
@@ -1136,234 +1136,234 @@ int skip_chars_in_unicharfiles(U_FILE* input, int* pos_in, int nb_needed, unicha
 // if (*accumulated_skip) < 0, we do nothing
 int skip_chars_in_unicharfiles_as_possible(U_FILE* input, int* pos_in, int* accumulated_skip, unichar* buffer, size_t size_buffer)
 {
-	if ((*accumulated_skip) < 0)
-		return 0;
-	int result = copy_chars_between_unicharfiles(input, NULL, pos_in, NULL, *accumulated_skip, buffer, size_buffer);
-	(*accumulated_skip) -= result;
-	return result;
+  if ((*accumulated_skip) < 0)
+    return 0;
+  int result = copy_chars_between_unicharfiles(input, NULL, pos_in, NULL, *accumulated_skip, buffer, size_buffer);
+  (*accumulated_skip) -= result;
+  return result;
 }
 
 #define uprep_min(a,b) (((a)<(b)) ? (a) : (b))
 
 int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfig *vec)
 {
-	vector_offset* v_preprocessed_offset = NULL;
-	vector_offset* v_processed_offset = NULL;
-	vector_offset* v_modification_offset = NULL;
-	unichar buffer_for_copy[COPY_BUFFER_SIZE];
-	size_t buffer_for_copy_size = COPY_BUFFER_SIZE;
+  vector_offset* v_preprocessed_offset = NULL;
+  vector_offset* v_processed_offset = NULL;
+  vector_offset* v_modification_offset = NULL;
+  unichar buffer_for_copy[COPY_BUFFER_SIZE];
+  size_t buffer_for_copy_size = COPY_BUFFER_SIZE;
 
-	if (params->preprocessed_offset[0] != '\0') {
-		v_preprocessed_offset = load_offsets(vec, params->preprocessed_offset);
-		}
-
-
-	if (params->processed_offset[0] != '\0') {
-		v_processed_offset = load_offsets(vec, params->processed_offset);
-	}
-
-	U_FILE* f_input_original_file = u_fopen(vec, params->original_file, U_READ);
-	U_FILE* f_input_processed = u_fopen(vec, params->processed_file, U_READ);
-	U_FILE* f_output = NULL;
-
-	if ((v_preprocessed_offset == NULL) || (v_processed_offset == NULL) || (f_input_original_file == NULL) || (f_input_processed == NULL)) {
-		error("Cannot open source files\n");
-	}
-	else
-	{
-		if ((f_output = u_fopen(vec, params->output_file, U_WRITE)) == NULL) {
-			error("Cannot open output file files %s\n", params->output_file);
-		}
-	}
-
-	if (f_output == NULL) {
-		free_vector_offset(v_preprocessed_offset);
-		free_vector_offset(v_processed_offset);
-		u_fclose(f_input_original_file);
-		u_fclose(f_input_processed);
-		return DEFAULT_ERROR_CODE;
-	}
-
-	if (params->output_offsets[0] != '\0') {
-		v_modification_offset = new_vector_offset();
-	}
-
-	int pos_in_processed_offset = 0;
-	int pos_in_preprocessed_offset = 0;
-	int pos_in_original_file = 0;
-	int pos_in_preprocessed_file = 0;
-	int pos_in_processed_file = 0;
-	int pos_in_output = 0;
-	int delta_output_against_processed = 0;
-	int size_skip_original_for_ignored_offset = 0;
-
-	for (;;) 
-	{
-		// we search position in next change in processed_offset
-		int next_stop_processed = (pos_in_processed_offset >= v_processed_offset->nbelems) ?
-			-1 : v_processed_offset->tab[pos_in_processed_offset].old_start;
-
-		
-		// now, between pos_in_preprocessed_file and next_stop_preprocessed, we can integrate revert modification made by pre-processing
-
-		int next_stop_preprocessed = (pos_in_preprocessed_offset >= v_preprocessed_offset->nbelems) ?
-				-1 : v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
+  if (params->preprocessed_offset[0] != '\0') {
+    v_preprocessed_offset = load_offsets(vec, params->preprocessed_offset);
+    }
 
 
-		enum {
-			preprocess_next_action_skip_preprocess,
-			preprocess_next_action_apply_preprocess,
-			preprocess_next_action_apply_process,
-			preprocess_next_action_break,
-		} preprocess_next_action ;
-		
-		// if there is no more preprocess offset, just apply next process offset
-		if ((next_stop_processed == -1) && (next_stop_preprocessed == -1))
-		{
-			preprocess_next_action = preprocess_next_action_break;
-		}
-		else
-		if (next_stop_preprocessed == -1) {
-			preprocess_next_action = preprocess_next_action_apply_process;
-		}
-		else // if process offset is before next preprocess offset and doesn't overlap
-		if (v_processed_offset->tab[pos_in_processed_offset].old_end <= v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start) {
-			preprocess_next_action = preprocess_next_action_apply_process;
-		}
-		else // if process offset is after next preprocess offset and doesn't overlap
-		if (v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end <= v_processed_offset->tab[pos_in_processed_offset].old_start) {
-			preprocess_next_action = preprocess_next_action_apply_preprocess;
-		}
-		else {
-			preprocess_next_action = preprocess_next_action_skip_preprocess;
-		}
+  if (params->processed_offset[0] != '\0') {
+    v_processed_offset = load_offsets(vec, params->processed_offset);
+  }
+
+  U_FILE* f_input_original_file = u_fopen(vec, params->original_file, U_READ);
+  U_FILE* f_input_processed = u_fopen(vec, params->processed_file, U_READ);
+  U_FILE* f_output = NULL;
+
+  if ((v_preprocessed_offset == NULL) || (v_processed_offset == NULL) || (f_input_original_file == NULL) || (f_input_processed == NULL)) {
+    error("Cannot open source files\n");
+  }
+  else
+  {
+    if ((f_output = u_fopen(vec, params->output_file, U_WRITE)) == NULL) {
+      error("Cannot open output file files %s\n", params->output_file);
+    }
+  }
+
+  if (f_output == NULL) {
+    free_vector_offset(v_preprocessed_offset);
+    free_vector_offset(v_processed_offset);
+    u_fclose(f_input_original_file);
+    u_fclose(f_input_processed);
+    return DEFAULT_ERROR_CODE;
+  }
+
+  if (params->output_offsets[0] != '\0') {
+    v_modification_offset = new_vector_offset();
+  }
+
+  int pos_in_processed_offset = 0;
+  int pos_in_preprocessed_offset = 0;
+  int pos_in_original_file = 0;
+  int pos_in_preprocessed_file = 0;
+  int pos_in_processed_file = 0;
+  int pos_in_output = 0;
+  int delta_output_against_processed = 0;
+  int size_skip_original_for_ignored_offset = 0;
+
+  for (;;) 
+  {
+    // we search position in next change in processed_offset
+    int next_stop_processed = (pos_in_processed_offset >= v_processed_offset->nbelems) ?
+      -1 : v_processed_offset->tab[pos_in_processed_offset].old_start;
+
+    
+    // now, between pos_in_preprocessed_file and next_stop_preprocessed, we can integrate revert modification made by pre-processing
+
+    int next_stop_preprocessed = (pos_in_preprocessed_offset >= v_preprocessed_offset->nbelems) ?
+        -1 : v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
 
 
-		if (preprocess_next_action == preprocess_next_action_break)
-			break;
-
-		int first_stop;
-		if ((next_stop_processed != -1) && (next_stop_preprocessed != -1))
-			first_stop = (next_stop_processed < next_stop_preprocessed) ? next_stop_processed : next_stop_preprocessed;
-		else first_stop = (next_stop_preprocessed == -1) ? next_stop_processed : next_stop_preprocessed;
-
-		int until_first_stop = first_stop - pos_in_preprocessed_file;
-		// copy unmodified text before first stop from processed file
-		copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, until_first_stop, buffer_for_copy, buffer_for_copy_size);
-		pos_in_preprocessed_file += until_first_stop;
-
-		size_skip_original_for_ignored_offset += until_first_stop;
-
-		// test if there the next modification is a processed modification to keep
-		if (preprocess_next_action == preprocess_next_action_apply_process)
-		{
-			int size_old_in_process_modification = v_processed_offset->tab[pos_in_processed_offset].old_end - v_processed_offset->tab[pos_in_processed_offset].old_start;
-			int size_new_in_process_modification = v_processed_offset->tab[pos_in_processed_offset].new_end - v_processed_offset->tab[pos_in_processed_offset].new_start;
-
-			// copy next text from processed file
-			copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, size_new_in_process_modification, buffer_for_copy, buffer_for_copy_size);
-			pos_in_preprocessed_file += size_old_in_process_modification;
-			
-			size_skip_original_for_ignored_offset += size_old_in_process_modification;
-
-			pos_in_processed_offset++;
-		}
-		else
-		// test if there the next modification if a preprocessed modification which overlap and will be ignored
-		// if this test is true, we knwown that next_stop_processed > next_stop_preprocessed)
-
-		// we test if there is overlap. If there is overlap, we ignore preprocessed modification
-		if (preprocess_next_action == preprocess_next_action_skip_preprocess)
-		{
-			int size_old_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_start;
-			int size_new_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
-			size_skip_original_for_ignored_offset += size_old_in_preprocess_skip - size_new_in_preprocess_skip;
-
-			pos_in_preprocessed_offset++;
-		}
-		else // here if (preprocess_next_action == preprocess_next_action_apply_process)
-		{
-		// the modification is a preprocessed modification to keep
-
-			int size_old_in_preprocess_keep = v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_start;
-			int size_new_in_preprocess_keep = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
-
-			// copy text from first, original text to replace texte modified by preprocessing and still in processed file
-			if (v_modification_offset != NULL) vector_offset_add(v_modification_offset, 
-				pos_in_processed_file, pos_in_processed_file + size_new_in_preprocess_keep,
-				pos_in_processed_file + delta_output_against_processed, pos_in_processed_file + delta_output_against_processed + size_old_in_preprocess_keep);
-			delta_output_against_processed += (size_old_in_preprocess_keep - size_new_in_preprocess_keep);
-
-			skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
-			copy_chars_between_unicharfiles(f_input_original_file, f_output, &pos_in_original_file, &pos_in_output, size_old_in_preprocess_keep, buffer_for_copy, buffer_for_copy_size);
-
-			pos_in_preprocessed_file+=size_new_in_preprocess_keep;
-			skip_chars_in_unicharfiles(f_input_processed, &pos_in_processed_file, size_new_in_preprocess_keep, buffer_for_copy, buffer_for_copy_size);
-
-			pos_in_preprocessed_offset++;
-		}
-	}
-
-	// copy unmodified text after all offsets
-	for (;;)
-	{
-		int nb_copy_this = copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, (int)buffer_for_copy_size, buffer_for_copy, buffer_for_copy_size);
-		if (nb_copy_this == 0)
-			break;
-	}
-
-	if (v_modification_offset != NULL) {
-		vector_offset* v_input_offsets = NULL;
+    enum {
+      preprocess_next_action_skip_preprocess,
+      preprocess_next_action_apply_preprocess,
+      preprocess_next_action_apply_process,
+      preprocess_next_action_break,
+    } preprocess_next_action ;
+    
+    // if there is no more preprocess offset, just apply next process offset
+    if ((next_stop_processed == -1) && (next_stop_preprocessed == -1))
+    {
+      preprocess_next_action = preprocess_next_action_break;
+    }
+    else
+    if (next_stop_preprocessed == -1) {
+      preprocess_next_action = preprocess_next_action_apply_process;
+    }
+    else // if process offset is before next preprocess offset and doesn't overlap
+    if (v_processed_offset->tab[pos_in_processed_offset].old_end <= v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start) {
+      preprocess_next_action = preprocess_next_action_apply_process;
+    }
+    else // if process offset is after next preprocess offset and doesn't overlap
+    if (v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end <= v_processed_offset->tab[pos_in_processed_offset].old_start) {
+      preprocess_next_action = preprocess_next_action_apply_preprocess;
+    }
+    else {
+      preprocess_next_action = preprocess_next_action_skip_preprocess;
+    }
 
 
-		/* We deal with offsets only if we have to produce output offsets */
-		if (params->input_offsets[0] != '\0') {
-			v_input_offsets = load_offsets(vec, params->input_offsets);
-		}
-		U_FILE* f_output_offsets = u_fopen(vec, params->output_offsets, U_WRITE);
-		if (f_output_offsets == NULL) {
-			error("Cannot create offset file %s\n", params->output_offsets);				
-		}
-		else {
-			process_offsets(v_input_offsets, v_modification_offset, f_output_offsets);
-			u_fclose(f_output_offsets);
-		}
-		free_vector_offset(v_input_offsets);
-		free_vector_offset(v_modification_offset);
-	}
+    if (preprocess_next_action == preprocess_next_action_break)
+      break;
+
+    int first_stop;
+    if ((next_stop_processed != -1) && (next_stop_preprocessed != -1))
+      first_stop = (next_stop_processed < next_stop_preprocessed) ? next_stop_processed : next_stop_preprocessed;
+    else first_stop = (next_stop_preprocessed == -1) ? next_stop_processed : next_stop_preprocessed;
+
+    int until_first_stop = first_stop - pos_in_preprocessed_file;
+    // copy unmodified text before first stop from processed file
+    copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, until_first_stop, buffer_for_copy, buffer_for_copy_size);
+    pos_in_preprocessed_file += until_first_stop;
+
+    size_skip_original_for_ignored_offset += until_first_stop;
+
+    // test if there the next modification is a processed modification to keep
+    if (preprocess_next_action == preprocess_next_action_apply_process)
+    {
+      int size_old_in_process_modification = v_processed_offset->tab[pos_in_processed_offset].old_end - v_processed_offset->tab[pos_in_processed_offset].old_start;
+      int size_new_in_process_modification = v_processed_offset->tab[pos_in_processed_offset].new_end - v_processed_offset->tab[pos_in_processed_offset].new_start;
+
+      // copy next text from processed file
+      copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, size_new_in_process_modification, buffer_for_copy, buffer_for_copy_size);
+      pos_in_preprocessed_file += size_old_in_process_modification;
+      
+      size_skip_original_for_ignored_offset += size_old_in_process_modification;
+
+      pos_in_processed_offset++;
+    }
+    else
+    // test if there the next modification if a preprocessed modification which overlap and will be ignored
+    // if this test is true, we knwown that next_stop_processed > next_stop_preprocessed)
+
+    // we test if there is overlap. If there is overlap, we ignore preprocessed modification
+    if (preprocess_next_action == preprocess_next_action_skip_preprocess)
+    {
+      int size_old_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_start;
+      int size_new_in_preprocess_skip = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
+      size_skip_original_for_ignored_offset += size_old_in_preprocess_skip - size_new_in_preprocess_skip;
+
+      pos_in_preprocessed_offset++;
+    }
+    else // here if (preprocess_next_action == preprocess_next_action_apply_process)
+    {
+    // the modification is a preprocessed modification to keep
+
+      int size_old_in_preprocess_keep = v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].old_start;
+      int size_new_in_preprocess_keep = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
+
+      // copy text from first, original text to replace texte modified by preprocessing and still in processed file
+      if (v_modification_offset != NULL) vector_offset_add(v_modification_offset, 
+        pos_in_processed_file, pos_in_processed_file + size_new_in_preprocess_keep,
+        pos_in_processed_file + delta_output_against_processed, pos_in_processed_file + delta_output_against_processed + size_old_in_preprocess_keep);
+      delta_output_against_processed += (size_old_in_preprocess_keep - size_new_in_preprocess_keep);
+
+      skip_chars_in_unicharfiles_as_possible(f_input_original_file, &pos_in_original_file, &size_skip_original_for_ignored_offset, buffer_for_copy, buffer_for_copy_size);
+      copy_chars_between_unicharfiles(f_input_original_file, f_output, &pos_in_original_file, &pos_in_output, size_old_in_preprocess_keep, buffer_for_copy, buffer_for_copy_size);
+
+      pos_in_preprocessed_file+=size_new_in_preprocess_keep;
+      skip_chars_in_unicharfiles(f_input_processed, &pos_in_processed_file, size_new_in_preprocess_keep, buffer_for_copy, buffer_for_copy_size);
+
+      pos_in_preprocessed_offset++;
+    }
+  }
+
+  // copy unmodified text after all offsets
+  for (;;)
+  {
+    int nb_copy_this = copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, (int)buffer_for_copy_size, buffer_for_copy, buffer_for_copy_size);
+    if (nb_copy_this == 0)
+      break;
+  }
+
+  if (v_modification_offset != NULL) {
+    vector_offset* v_input_offsets = NULL;
 
 
-	u_fclose(f_output);
-	free_vector_offset(v_preprocessed_offset);
-	free_vector_offset(v_processed_offset);
-	u_fclose(f_input_original_file);
-	u_fclose(f_input_processed);
+    /* We deal with offsets only if we have to produce output offsets */
+    if (params->input_offsets[0] != '\0') {
+      v_input_offsets = load_offsets(vec, params->input_offsets);
+    }
+    U_FILE* f_output_offsets = u_fopen(vec, params->output_offsets, U_WRITE);
+    if (f_output_offsets == NULL) {
+      error("Cannot create offset file %s\n", params->output_offsets);        
+    }
+    else {
+      process_offsets(v_input_offsets, v_modification_offset, f_output_offsets);
+      u_fclose(f_output_offsets);
+    }
+    free_vector_offset(v_input_offsets);
+    free_vector_offset(v_modification_offset);
+  }
 
-	return SUCCESS_RETURN_CODE;
+
+  u_fclose(f_output);
+  free_vector_offset(v_preprocessed_offset);
+  free_vector_offset(v_processed_offset);
+  u_fclose(f_input_original_file);
+  u_fclose(f_input_processed);
+
+  return SUCCESS_RETURN_CODE;
 }
 
 
 const char* usage_UnPreprocess =
-	"Usage: usage_UnPreprocess [OPTIONS] <txt>\n" \
-	"\n" \
-	"  -r X/--original_file=X: name of corpus file before preprocessing\n" \
-	"  -p X/--preprocessed_file=X: name of corpus file after preprocessing\n" \
-	"  -d X/--processed_file=X: name of corpus file after complete processing\n" \
-	"  -f X/--preprocessed_offset=X: name of offset file about preprocessing step\n" \
-	"  -s X/--processed_offset=X: name of file file about processing step\n" \
-	"  --output_offsets = XXX: offset file to be produced between processed file and result.\n" \
-	"  <txt>: a modified version of processed file to be produced, where modification\n" \
-	"              made durring preprocessing step are reverted if possible.\n" \
-	"\n" \
-	"OPTIONS:\n" \
-	"\n" \
-	"\n" \
-	"" \
-	;
+  "Usage: usage_UnPreprocess [OPTIONS] <txt>\n" \
+  "\n" \
+  "  -r X/--original_file=X: name of corpus file before preprocessing\n" \
+  "  -p X/--preprocessed_file=X: name of corpus file after preprocessing\n" \
+  "  -d X/--processed_file=X: name of corpus file after complete processing\n" \
+  "  -f X/--preprocessed_offset=X: name of offset file about preprocessing step\n" \
+  "  -s X/--processed_offset=X: name of file file about processing step\n" \
+  "  --output_offsets = XXX: offset file to be produced between processed file and result.\n" \
+  "  <txt>: a modified version of processed file to be produced, where modification\n" \
+  "              made durring preprocessing step are reverted if possible.\n" \
+  "\n" \
+  "OPTIONS:\n" \
+  "\n" \
+  "\n" \
+  "" \
+  ;
 
 static void display_usage_UnPreprocess() {
-	display_copyright_notice();
-	u_printf(usage_UnPreprocess);
+  display_copyright_notice();
+  u_printf(usage_UnPreprocess);
 }
 
 const char* optstring_UnPreprocess = "h$:@:r:d:f:s:Vq:r:";
@@ -1439,7 +1439,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnPreprocess,lopts_UnPre
              }
              strcpy(params.input_offsets,options.vars()->optarg);
              break;
-			 
+       
    case '@': if (options.vars()->optarg[0]=='\0') {
               error("You must specify a non empty output offset file name\n");
               return USAGE_ERROR_CODE;
@@ -1478,20 +1478,20 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnPreprocess,lopts_UnPre
 
 
 if (options.vars()->optind != argc - 1) {
-	error("Invalid arguments: rerun with --help\n");
-	return USAGE_ERROR_CODE;
+  error("Invalid arguments: rerun with --help\n");
+  return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
-	// freeing all allocated memory 
-	return SUCCESS_RETURN_CODE;
+  // freeing all allocated memory 
+  return SUCCESS_RETURN_CODE;
 }
 
 strcpy(params.output_file, argv[options.vars()->optind]);
 
 int result = runUnPreprocess(&params, &vec);
 if (SUCCESS_RETURN_CODE == result) {
-	u_printf("UnPreprocess done.\n");
+  u_printf("UnPreprocess done.\n");
 }
 return result;
 }

@@ -79,8 +79,8 @@ do {
 // passed in parameter
 //
 void build_portuguese_normalization_grammar(const Alphabet* alph,struct match_list* list,
-											Dictionary* root_dic,
-											Dictionary* inflected_dic,
+                      Dictionary* root_dic,
+                      Dictionary* inflected_dic,
                                             const char* res_grf_name,
                                             const VersatileEncodingConfig* vec,
                                             struct normalization_tree* norm_tree,
@@ -160,8 +160,8 @@ while (s[i]==':') {
 // it returns i if i correct lines are produced, 0 else
 //
 int replace_match_output_by_normalization_line(struct match_list* L,const Alphabet* alph,
-												Dictionary* root_dic,
-												Dictionary* inflected_dic,
+                        Dictionary* root_dic,
+                        Dictionary* inflected_dic,
                                                 struct normalization_tree* norm_tree) {
 if (L->output==NULL) {
    return 0;
@@ -202,7 +202,7 @@ while (lemmas!=NULL) {
    // we get the inf number associated to this lemma in the inflected form dictionary
    Ustring* ustr=new_Ustring();
    int res=get_inf_number_for_token(inflected_dic->initial_state_offset,lemmas->string,0,entry,alph,
-		   inflected_dic,ustr);
+       inflected_dic,ustr);
    free_Ustring(ustr);
    if (res==-1) {
       return 0;
@@ -378,7 +378,7 @@ return 1;
 // this function look for the lemma corresponding to the radical
 //
 int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,const Alphabet* alph,
-						Dictionary* root_dic) {
+            Dictionary* root_dic) {
 unichar entry[1000];
 // we must use the entry variable because of the upper/lower case:
 // if the radical is Dir, we want it to be dir in order to get the correct form
@@ -413,10 +413,10 @@ return 1;
 // it returns this number on success, -1 else
 //
 int get_inf_number_for_token(int pos,const unichar* content,int string_pos,
-		unichar* entry,const Alphabet* ALPH,Dictionary* d,Ustring* ustr) {
+    unichar* entry,const Alphabet* ALPH,Dictionary* d,Ustring* ustr) {
 /* Ok, it's dirty to put this redundant test here, but this code is already awfully dirty anyway */
 if (d->type!=BIN_CLASSIC) {
-	fatal_error("get_inf_number_for_token: unsupported dictionary type\n");
+  fatal_error("get_inf_number_for_token: unsupported dictionary type\n");
 }
 int final,n_transitions,inf_number;
 pos=read_dictionary_state(d,pos,&final,&n_transitions,&inf_number);
@@ -432,18 +432,18 @@ unichar c;
 int adr;
 int z=save_output(ustr);
 for (int i=0;i<n_transitions;i++) {
-	pos=read_dictionary_transition(d,pos,&c,&adr,ustr);
+  pos=read_dictionary_transition(d,pos,&c,&adr,ustr);
   if (is_equal_or_uppercase(c,content[string_pos],ALPH)) {
      // we explore the rest of the dictionary only
      // if the dico char is compatible with the token char
      entry[string_pos]=c;
      inf_number=get_inf_number_for_token(adr,content,string_pos+1,entry,ALPH,d,ustr);
      if (inf_number!=-1) {
-    	 restore_output(z,ustr);
+       restore_output(z,ustr);
         return inf_number;
      }
   }
-	restore_output(z,ustr);
+  restore_output(z,ustr);
 }
 return -1;
 }

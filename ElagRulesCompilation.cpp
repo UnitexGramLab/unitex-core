@@ -509,11 +509,11 @@ for (e=1;e<automaton->number_of_states;e++) {
             }
          }
          if (c==nbConstraints) {
-	         if (++nbConstraints>=ELAG_MAX_CONSTRAINTS) {
+           if (++nbConstraints>=ELAG_MAX_CONSTRAINTS) {
                fatal_error("Too many constraints with same condition\n");
             }
-	         constraints[c]=t->state_number;
-	      }
+           constraints[c]=t->state_number;
+        }
       }
    }
 }

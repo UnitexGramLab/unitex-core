@@ -92,7 +92,7 @@ u_fprintf(f,"</table>\n</body>\n</html>\n");
  * those two concordances.
  */
 int diff(const VersatileEncodingConfig* vec,const char* in1,const char* in2,const char* out,
-		const char* font,int size,int diff_only) {
+    const char* font,int size,int diff_only) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);
@@ -147,17 +147,17 @@ return 1;
  * NOTE: the return value is different from look_for_same_outputs!
  */
 static int look_for_same_outputs_(struct match_list* m,
-							struct match_list* list) {
+              struct match_list* list) {
 struct match_list* head=list;
 while (list!=NULL && compare_matches(&(m->m),&(list->m))==A_EQUALS_B) {
-	if (!u_strcmp(m->output,list->output)) {
-		/* We have an identical match */
-		unichar* tmp=head->output;
-		head->output=list->output;
-		list->output=tmp;
-		return 1;
-	}
-	list=list->next;
+  if (!u_strcmp(m->output,list->output)) {
+    /* We have an identical match */
+    unichar* tmp=head->output;
+    head->output=list->output;
+    list->output=tmp;
+    return 1;
+  }
+  list=list->next;
 }
 return 0;
 }
@@ -182,7 +182,7 @@ return 0;
  * lists unmodified.
  */
 int look_for_same_outputs(struct match_list* list1,
-							struct match_list* list2) {
+              struct match_list* list2) {
 if (look_for_same_outputs_(list1,list2)) return 0;
 if (look_for_same_outputs_(list2,list1)) return 0;
 return 1;
@@ -257,7 +257,7 @@ while (!(list1==NULL && list2==NULL)) {
       case B_INCLUDES_A: {
          /* list1 is included in list2:
           * abcd,abcdef */
-    	 print_diff_matches(output,f1,f2,RED,list1->output,list2->output);
+       print_diff_matches(output,f1,f2,RED,list1->output,list2->output);
          list1=list1->next;
          list2=list2->next;
          break;
@@ -274,20 +274,20 @@ while (!(list1==NULL && list2==NULL)) {
       case A_EQUALS_B: {
          /* list1 == list2:
           * abcd,abcd */
-    	 int different_outputs=u_strcmp(list1->output,list2->output);
-    	 if (different_outputs) {
-    		 /* If there are matches with ambiguous outputs, we may find
-    		  * an exact match pair forward in the lists
-    		  */
-    		 different_outputs=look_for_same_outputs(list1,list2);
-    	 }
-    	 if (!diff_only || different_outputs) {
+       int different_outputs=u_strcmp(list1->output,list2->output);
+       if (different_outputs) {
+         /* If there are matches with ambiguous outputs, we may find
+          * an exact match pair forward in the lists
+          */
+         different_outputs=look_for_same_outputs(list1,list2);
+       }
+       if (!diff_only || different_outputs) {
             print_diff_matches(output,f1,f2,different_outputs?VIOLET:BLUE,list1->output,list2->output);
-    	 } else {
-    		 /* We have to skip the unused lines */
-    		 u_fskip_line(f1);
-    		 u_fskip_line(f2);
-    	 }
+       } else {
+         /* We have to skip the unused lines */
+         u_fskip_line(f1);
+         u_fskip_line(f2);
+       }
          list1=list1->next;
          list2=list2->next;
          break;
@@ -307,7 +307,7 @@ while (!(list1==NULL && list2==NULL)) {
  *            This is why there is the (++total>=60) hack.
  */
 void read_concordance_line(U_FILE* f,unichar* left,unichar* middle,unichar* right,unichar* indices,int
-		expected_match_length) {
+    expected_match_length) {
 int i,c;
 i=0;
 while ((c=u_fgetc(f))!='\t') {
@@ -322,9 +322,9 @@ while ((c=u_fgetc(f))!='\t') {
 middle[i]='\0';
 i=0;
 while ((c=u_fgetc(f))!='\t') {
-	if (++total>=60) {
-		c='\0';
-	}
+  if (++total>=60) {
+    c='\0';
+  }
    right[i++]=(unichar)c;
 }
 right[i]='\0';
@@ -343,7 +343,7 @@ static void adjust(unichar* src,unichar* dst,unichar* middle,int n) {
 u_strcpy(dst,src);
 int pos=u_strlen(dst);
 for (int i=0;i<n;i++) {
-	dst[pos++]=middle[i];
+  dst[pos++]=middle[i];
 }
 dst[pos]='\0';
 }
@@ -353,7 +353,7 @@ dst[pos]='\0';
  * 'output' in the given color.
  */
 void print_diff_matches(U_FILE* output,U_FILE* f1,U_FILE* f2,const char* color,
-		unichar* match1,unichar* match2) {
+    unichar* match1,unichar* match2) {
 unichar left1[MAX_CONTEXT_IN_UNITS];
 unichar middle1[MAX_CONTEXT_IN_UNITS];
 unichar right1[MAX_CONTEXT_IN_UNITS];
@@ -371,23 +371,23 @@ if (f2!=NULL) {
 if (match1!=NULL) u_strcpy(middle1,match1);
 if (match2!=NULL) u_strcpy(middle2,match2);
 if (!strcmp(color,RED)) {
-	/* If we have one match included in the another, we want to align
-	 * them. We do that by adjusting their left contexts */
-	int pos1,pos2;
-	u_sscanf(indices1,"%d",&pos1);
-	u_sscanf(indices2,"%d",&pos2);
-	if (pos1<pos2) {
-		adjust(left1,left2,middle1,pos2-pos1);
-	} else if (pos1>pos2) {
-		adjust(left2,left1,middle2,pos1-pos2);
-	} /*  Nothing to adjust if pos1==pos2 */
+  /* If we have one match included in the another, we want to align
+   * them. We do that by adjusting their left contexts */
+  int pos1,pos2;
+  u_sscanf(indices1,"%d",&pos1);
+  u_sscanf(indices2,"%d",&pos2);
+  if (pos1<pos2) {
+    adjust(left1,left2,middle1,pos2-pos1);
+  } else if (pos1>pos2) {
+    adjust(left2,left1,middle2,pos1-pos2);
+  } /*  Nothing to adjust if pos1==pos2 */
 }
 /* We print the line from the first file, if needed */
 u_fprintf(output,"<tr><td nowrap bgcolor=\"#FFE4C4\"><font color=\"%s\">",color);
 if (f1!=NULL) {
    u_fprintf(output,"%HS<a href=\"%S\" style=\"color:%s\">%HS</a>%HS",left1,indices1,color,middle1,right1);
 } else {
-	u_fprintf(output,"&nbsp;");
+  u_fprintf(output,"&nbsp;");
 }
 u_fprintf(output,"</font></td></tr>\n");
 u_fprintf(output,"<tr><td nowrap bgcolor=\"#90EE90\"><font color=\"%s\">",color);
@@ -395,7 +395,7 @@ u_fprintf(output,"<tr><td nowrap bgcolor=\"#90EE90\"><font color=\"%s\">",color)
 if (f2!=NULL) {
    u_fprintf(output,"%HS<a href=\"%S\" style=\"color:%s\">%HS</a>%HS",left2,indices2,color,middle2,right2);
 } else {
-	u_fprintf(output,"&nbsp;");
+  u_fprintf(output,"&nbsp;");
 }
 u_fprintf(output,"</font></td></tr>\n");
 }

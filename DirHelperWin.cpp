@@ -81,54 +81,54 @@ int rmDirPortable(const char* dirname)
 
 char** buildListFileInDiskDir(const char*dirname)
 {
-	HANDLE hFind;
-	WIN32_FIND_DATAA FindFileData;
+  HANDLE hFind;
+  WIN32_FIND_DATAA FindFileData;
 
-	char* dirnameWithSuffix = (char*)malloc(strlen(dirname) + 4);
-	if (dirnameWithSuffix == NULL)
-		return NULL;
-	strcpy(dirnameWithSuffix, dirname);
-	strcat(dirnameWithSuffix, "\\");
-	strcat(dirnameWithSuffix, "*");
+  char* dirnameWithSuffix = (char*)malloc(strlen(dirname) + 4);
+  if (dirnameWithSuffix == NULL)
+    return NULL;
+  strcpy(dirnameWithSuffix, dirname);
+  strcat(dirnameWithSuffix, "\\");
+  strcat(dirnameWithSuffix, "*");
 #ifdef UNITEX_USING_WINRT_API
-	hFind = FindFirstFileExA(dirnameWithSuffix, FindExInfoStandard, &FindFileData,
-		FindExSearchNameMatch, NULL, 0);
+  hFind = FindFirstFileExA(dirnameWithSuffix, FindExInfoStandard, &FindFileData,
+    FindExSearchNameMatch, NULL, 0);
 #else
-	hFind = FindFirstFileA(dirnameWithSuffix, &FindFileData);
+  hFind = FindFirstFileA(dirnameWithSuffix, &FindFileData);
 #endif
-	free(dirnameWithSuffix);
-	if ((hFind == NULL) || (hFind == INVALID_HANDLE_VALUE))
-		return NULL;
+  free(dirnameWithSuffix);
+  if ((hFind == NULL) || (hFind == INVALID_HANDLE_VALUE))
+    return NULL;
 
-	int count = 0;
-	char**ret = (char**)malloc(sizeof(char*));
-	if (ret == NULL)
-	{
-		FindClose(hFind);
-		return NULL;
-	}
-	*ret = NULL;
+  int count = 0;
+  char**ret = (char**)malloc(sizeof(char*));
+  if (ret == NULL)
+  {
+    FindClose(hFind);
+    return NULL;
+  }
+  *ret = NULL;
 
-	do
-	{
-		if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			continue;
-		char** newret = (char**)realloc(ret,sizeof(char*)*(count+2));
-		if (newret == NULL)
-		{
-			break;
-		}
-		ret = newret;
-		*(newret + count) = (char*)malloc(strlen(FindFileData.cFileName) + 1);
-		if ((*(newret + count)) == NULL)
-			break;
-		strcpy(*(newret + count), FindFileData.cFileName);
-		count++;
-		*(newret + count) = NULL;
-	}
-	while (FindNextFileA(hFind, &FindFileData) != 0);
+  do
+  {
+    if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+      continue;
+    char** newret = (char**)realloc(ret,sizeof(char*)*(count+2));
+    if (newret == NULL)
+    {
+      break;
+    }
+    ret = newret;
+    *(newret + count) = (char*)malloc(strlen(FindFileData.cFileName) + 1);
+    if ((*(newret + count)) == NULL)
+      break;
+    strcpy(*(newret + count), FindFileData.cFileName);
+    count++;
+    *(newret + count) = NULL;
+  }
+  while (FindNextFileA(hFind, &FindFileData) != 0);
 
 
-	FindClose(hFind);
-	return ret;
+  FindClose(hFind);
+  return ret;
 }

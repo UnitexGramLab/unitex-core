@@ -277,17 +277,17 @@ if (token[tmp]=='<') {
    }
    /* Now, we may have to read the extra information _f_ or _b_ */
    if (input[*pos]!='_') {
-	   return 1;
+     return 1;
    }
    token[(*pos_in_token)++]=input[(*pos)++];
    if (input[*pos]!='f' && input[*pos]!='b') {
-	  error("Invalid morphological filter option: should be _f_ or _b_\n");
-	  return 0;
+    error("Invalid morphological filter option: should be _f_ or _b_\n");
+    return 0;
    }
    token[(*pos_in_token)++]=input[(*pos)++];
    if (input[*pos]!='_') {
-	   error("Invalid morphological filter option: should be _f_ or _b_\n");
-	   return 0;
+     error("Invalid morphological filter option: should be _f_ or _b_\n");
+     return 0;
    }
    token[(*pos_in_token)++]=input[(*pos)++];
    return 1;

@@ -109,16 +109,16 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TrainingTagger,lopts_Tra
              strcpy(output,options.vars()->optarg);
              break;
    case 'b': binaries = 1;
-			 break;
+       break;
    case 'n': binaries = 0;
-			 break;
+       break;
    case 'a': break;
    case 'c': i_forms = 0;
-			 break;
+       break;
    case 'm': r_forms = 0;
-   			 break;
+          break;
    case 'S': semitic=1;
-   			 break;
+          break;
    case 'k': if (options.vars()->optarg[0]=='\0') {
                error("Empty input_encoding argument\n");
                return USAGE_ERROR_CODE;
@@ -169,19 +169,19 @@ if(output[0]=='\0'){
 char path[FILENAME_MAX],filename[FILENAME_MAX];
 get_path(text,path);
 if(strlen(path) == 0){
-	strcpy(path,".");
+  strcpy(path,".");
 }
 /* we create files which will contain statistics extracted from the tagged corpus */
 U_FILE* rforms_file = NULL, *iforms_file = NULL;
 if(r_forms == 1){
-	sprintf(filename,"%s_data_cat.dic",output);
-	new_file(path,filename,raw_forms);
-	rforms_file=u_fopen(&vec,raw_forms,U_WRITE);
+  sprintf(filename,"%s_data_cat.dic",output);
+  new_file(path,filename,raw_forms);
+  rforms_file=u_fopen(&vec,raw_forms,U_WRITE);
 }
 if(i_forms == 1){
-	sprintf(filename,"%s_data_morph.dic",output);
-	new_file(path,filename,inflected_forms);
-	iforms_file=u_fopen(&vec,inflected_forms,U_WRITE);
+  sprintf(filename,"%s_data_morph.dic",output);
+  new_file(path,filename,inflected_forms);
+  iforms_file=u_fopen(&vec,inflected_forms,U_WRITE);
 }
 
 u_printf("Gathering statistics from tagged corpus...\n");
@@ -191,31 +191,31 @@ do_training(input_text,rforms_file,iforms_file);
 u_fclose(input_text);
 char disclaimer[FILENAME_MAX];
 if(rforms_file != NULL){
-	u_fclose(rforms_file);
-	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,raw_forms,0);
-	strcpy(disclaimer,raw_forms);
-	remove_extension(disclaimer);
-	strcat(disclaimer,".txt");
-	create_disclaimer(&vec,disclaimer);
+  u_fclose(rforms_file);
+  pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,raw_forms,0);
+  strcpy(disclaimer,raw_forms);
+  remove_extension(disclaimer);
+  strcat(disclaimer,".txt");
+  create_disclaimer(&vec,disclaimer);
 }
 if(iforms_file != NULL){
-	u_fclose(iforms_file);
-	pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,inflected_forms,0);
-	strcpy(disclaimer,inflected_forms);
-	remove_extension(disclaimer);
-	strcat(disclaimer,".txt");
-	create_disclaimer(&vec,disclaimer);
+  u_fclose(iforms_file);
+  pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,inflected_forms,0);
+  strcpy(disclaimer,inflected_forms);
+  remove_extension(disclaimer);
+  strcat(disclaimer,".txt");
+  create_disclaimer(&vec,disclaimer);
 }
 
 /* we compress dictionaries if option is specified by user (output is ".bin") */
 if(binaries == 1){
 /* simple forms dictionary */
 if(r_forms == 1){
-	pseudo_main_Compress(&vec,0,semitic,raw_forms,1);
+  pseudo_main_Compress(&vec,0,semitic,raw_forms,1);
 }
 /* compound forms dictionary */
 if(i_forms == 1){
-	pseudo_main_Compress(&vec,0,semitic,inflected_forms,1);
+  pseudo_main_Compress(&vec,0,semitic,inflected_forms,1);
 }
 }
 

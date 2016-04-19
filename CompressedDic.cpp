@@ -43,16 +43,16 @@ static int read_bin_header(Dictionary*);
  */
 int isDictionaryNeedInf(const unsigned char* binData, size_t binSize)
 {
-	if (binSize<5) {
-		return 0;
-	}
-	Dictionary d;
-	d.bin=binData;
-	d.bin_size=(long)binSize;
-	if (!read_bin_header(&d)) {
-		return 0;
-	}
-	return  (d.type==BIN_CLASSIC) ? 1 : 0;
+  if (binSize<5) {
+    return 0;
+  }
+  Dictionary d;
+  d.bin=binData;
+  d.bin_size=(long)binSize;
+  if (!read_bin_header(&d)) {
+    return 0;
+  }
+  return  (d.type==BIN_CLASSIC) ? 1 : 0;
 }
 
 
@@ -62,36 +62,36 @@ int isDictionaryNeedInf(const unsigned char* binData, size_t binSize)
 Dictionary* new_Dictionary(const VersatileEncodingConfig* vec,const char* bin,const char* inf,Abstract_allocator prv_alloc) {
 void* ptr=get_persistent_structure(bin);
 if (ptr!=NULL) {
-	return (Dictionary*)ptr;
+  return (Dictionary*)ptr;
 }
 Dictionary* d=(Dictionary*)malloc_cb(sizeof(Dictionary),prv_alloc);
 if (d==NULL) {
-	fatal_alloc_error("new_Dictionary");
+  fatal_alloc_error("new_Dictionary");
 }
 d->bin=load_abstract_BIN_file(bin,&d->bin_size,&d->bin_free);
 if (d->bin==NULL) {
-	free_cb(d,prv_alloc);
-	return NULL;
+  free_cb(d,prv_alloc);
+  return NULL;
 }
 if (!read_bin_header(d)) {
-	free_abstract_BIN(d->bin,&d->bin_free);
-	free_cb(d,prv_alloc);
-	return NULL;
+  free_abstract_BIN(d->bin,&d->bin_free);
+  free_cb(d,prv_alloc);
+  return NULL;
 }
 d->inf=NULL;
 if (d->type==BIN_CLASSIC) {
-	if (inf==NULL) {
-		error("NULL .inf file in new_Dictionary\n");
-		free_abstract_BIN(d->bin,&d->bin_free);
-		free_cb(d,prv_alloc);
-		return NULL;
-	}
-	d->inf=load_abstract_INF_file(vec,inf,&d->inf_free);
-	if (d->inf==NULL) {
-		free_abstract_BIN(d->bin,&d->bin_free);
-		free_cb(d,prv_alloc);
-		return NULL;
-	}
+  if (inf==NULL) {
+    error("NULL .inf file in new_Dictionary\n");
+    free_abstract_BIN(d->bin,&d->bin_free);
+    free_cb(d,prv_alloc);
+    return NULL;
+  }
+  d->inf=load_abstract_INF_file(vec,inf,&d->inf_free);
+  if (d->inf==NULL) {
+    free_abstract_BIN(d->bin,&d->bin_free);
+    free_cb(d,prv_alloc);
+    return NULL;
+  }
 }
 return d;
 }
@@ -116,7 +116,7 @@ void free_Dictionary(Dictionary* d,Abstract_allocator prv_alloc) {
 if (d==NULL || is_persistent_structure(d)) return;
 if (d->bin!=NULL) free_abstract_BIN(d->bin,&d->bin_free);
 if (d->inf!=NULL) {
-	free_abstract_INF(d->inf,&d->inf_free);
+  free_abstract_INF(d->inf,&d->inf_free);
 }
 free_cb(d,prv_alloc);
 }
@@ -165,15 +165,15 @@ const unsigned char* bindata=bin+(*offset);
 unsigned char c0=bindata[0];
 if ((c0 & 0x80)==0)
 {
-	(*offset)++;
-	return (c0);
+  (*offset)++;
+  return (c0);
 }
 
 (*offset)+=(c0>>5)-2;
 return ((c0 & 0x80) == 0) ? ((int)c0) :
-		(int)(((c0 & 0x1f) | (((unsigned int)bindata[1])<<5) | (((unsigned int)bindata[2])<<13) |
-		                     (((unsigned int)bindata[3])<<21) | (((unsigned int)bindata[4])<<29))
-		  & mask_from_sizebits[c0>>5]);
+    (int)(((c0 & 0x1f) | (((unsigned int)bindata[1])<<5) | (((unsigned int)bindata[2])<<13) |
+                         (((unsigned int)bindata[3])<<21) | (((unsigned int)bindata[4])<<29))
+      & mask_from_sizebits[c0>>5]);
 }
 
 
@@ -184,16 +184,16 @@ return ((c0 & 0x80) == 0) ? ((int)c0) :
 int bin_get_value_variable_length(int value) {
 unsigned int uivalue=(unsigned int)value;
 if (uivalue == ((uivalue) & 0x7f)) {
-	return 1;
+  return 1;
 }
 if (uivalue == ((uivalue) & 0x1fff)) {
-	return 2;
+  return 2;
 }
 if (uivalue == ((uivalue) & 0x1fffff)) {
-	return 3;
+  return 3;
 }
 if (uivalue == ((uivalue) & 0x1fffffff)) {
-	return 4;
+  return 4;
 }
 return 5;
 }
@@ -203,30 +203,30 @@ static void bin_write_variable_length(unsigned char* bin,int value,int *offset) 
 unsigned char* bindata=bin+(*offset);
 unsigned int uivalue=(unsigned int)value;
 if (uivalue == ((uivalue) & 0x7f)) {
-	bindata[0]=(unsigned char)((uivalue));
-	(*offset)+=1;
-	return;
+  bindata[0]=(unsigned char)((uivalue));
+  (*offset)+=1;
+  return;
 }
 if (uivalue == ((uivalue) & 0x1fff)) {
-	bindata[1]=(unsigned char)((uivalue>>5));
-	bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0x80));
-	(*offset)+=2;
-	return;
+  bindata[1]=(unsigned char)((uivalue>>5));
+  bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0x80));
+  (*offset)+=2;
+  return;
 }
 if (uivalue == ((uivalue) & 0x1fffff)) {
-	bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xa0));
-	bindata[1]=(unsigned char)((uivalue>>5));
-	bindata[2]=(unsigned char)((uivalue>>13));
-	(*offset)+=3;
-	return;
+  bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xa0));
+  bindata[1]=(unsigned char)((uivalue>>5));
+  bindata[2]=(unsigned char)((uivalue>>13));
+  (*offset)+=3;
+  return;
 }
 if (uivalue == ((uivalue) & 0x1fffffff)) {
-	bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xc0));
-	bindata[1]=(unsigned char)((uivalue>>5));
-	bindata[2]=(unsigned char)((uivalue>>13));
-	bindata[3]=(unsigned char)((uivalue>>21));
-	(*offset)+=4;
-	return;
+  bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xc0));
+  bindata[1]=(unsigned char)((uivalue>>5));
+  bindata[2]=(unsigned char)((uivalue>>13));
+  bindata[3]=(unsigned char)((uivalue>>21));
+  (*offset)+=4;
+  return;
 }
 bindata[0]=(unsigned char)((uivalue & 0x1f)| ((unsigned char)0xe0));
 bindata[1]=(unsigned char)((uivalue>>5));
@@ -311,15 +311,15 @@ return NULL;
  */
 int read_dictionary_state(const Dictionary* d,int pos,int *final,int *n_transitions,int *code) {
 if (d->state_encoding==BIN_CLASSIC_STATE) {
-	*final=!(d->bin[pos] & 128);
-	*n_transitions=((d->bin[pos] & 127)<<8) | (d->bin[pos+1]);
-	pos=pos+2;
-	if (*final) {
-		*code=(d->inf_number_read_bin_func)(d->bin,&pos);
-	} else {
-		*code=-1;
-	}
-	return pos;
+  *final=!(d->bin[pos] & 128);
+  *n_transitions=((d->bin[pos] & 127)<<8) | (d->bin[pos+1]);
+  pos=pos+2;
+  if (*final) {
+    *code=(d->inf_number_read_bin_func)(d->bin,&pos);
+  } else {
+    *code=-1;
+  }
+  return pos;
 }
 
 if ((d->state_encoding==BIN_NEW_STATE) || (d->state_encoding==BIN_BIN2_STATE)) {
@@ -327,9 +327,9 @@ int value=bin_read_variable_length(d->bin,&pos);
 *final=value & 1;
 *n_transitions=value>>1;
 if (*final && d->state_encoding==BIN_NEW_STATE) {
-	*code=(d->inf_number_read_bin_func)(d->bin,&pos);
+  *code=(d->inf_number_read_bin_func)(d->bin,&pos);
 } else {
-	*code=-1;
+  *code=-1;
 }
 return pos;
 }
@@ -343,24 +343,24 @@ return 0;
  * finality and number of outgoing transitions. Updates the position.
  */
 void write_dictionary_state(unsigned char* bin,BinStateEncoding state_encoding,
-							t_fnc_bin_write_bytes inf_number_write_function,int *pos,int final,int n_transitions,int code) {
+              t_fnc_bin_write_bytes inf_number_write_function,int *pos,int final,int n_transitions,int code) {
 if (state_encoding==BIN_CLASSIC_STATE) {
-	int value=n_transitions & ((1<<15)-1);
-	if (!final) value=value | (1<<15);
-	bin_write_2bytes(bin,value,pos);
-	if (final) {
-		(*inf_number_write_function)(bin,code,pos);
-	}
-	return;
+  int value=n_transitions & ((1<<15)-1);
+  if (!final) value=value | (1<<15);
+  bin_write_2bytes(bin,value,pos);
+  if (final) {
+    (*inf_number_write_function)(bin,code,pos);
+  }
+  return;
 }
 if (state_encoding!=BIN_NEW_STATE && state_encoding!=BIN_BIN2_STATE) {
-	fatal_error("read_dictionary_state: unsupported state encoding\n");
+  fatal_error("read_dictionary_state: unsupported state encoding\n");
 }
 int value=(n_transitions<<1);
 if (final) value=value | 1;
 bin_write_variable_length(bin,value,pos);
 if (final && state_encoding==BIN_NEW_STATE) {
-	(*inf_number_write_function)(bin,code,pos);
+  (*inf_number_write_function)(bin,code,pos);
 }
 }
 
@@ -374,15 +374,15 @@ int read_dictionary_transition(const Dictionary* d,int pos,unichar *c,int *dest,
 *dest=(d->offset_read_bin_func)(d->bin,&pos);
 if (d->type==BIN_CLASSIC) return pos;
 if (d->type==BIN_BIN2) {
-	int is_output=(*dest) & 1;
-	(*dest)=(*dest)>>1;
-	if (is_output) {
-		int tmp;
-		while ((tmp=((d->char_read_bin_func)(d->bin,&pos)))!='\0') {
-			u_strcat(output,(unichar)tmp);
-		}
-	}
-	return pos;
+  int is_output=(*dest) & 1;
+  (*dest)=(*dest)>>1;
+  if (is_output) {
+    int tmp;
+    while ((tmp=((d->char_read_bin_func)(d->bin,&pos)))!='\0') {
+      u_strcat(output,(unichar)tmp);
+    }
+  }
+  return pos;
 }
 fatal_error("read_dictionary_state: unsupported dictionary type\n");
 return 0;
@@ -393,25 +393,25 @@ return 0;
  * Updates the position.
  */
 void write_dictionary_transition(unsigned char* bin,int *pos,t_fnc_bin_write_bytes char_write_function,
-								t_fnc_bin_write_bytes offset_write_function,unichar c,int dest,
-								BinType bin_type,unichar* output) {
+                t_fnc_bin_write_bytes offset_write_function,unichar c,int dest,
+                BinType bin_type,unichar* output) {
 (*char_write_function)(bin,c,pos);
 if (bin_type==BIN_CLASSIC) {
-	(*offset_write_function)(bin,dest,pos);
-	return;
+  (*offset_write_function)(bin,dest,pos);
+  return;
 }
 /* For .bin2, we have a bit to indicate whether there is an output or not */
 dest=dest<<1;
 if (output!=NULL && output[0]!='\0') {
-	dest=dest|1;
+  dest=dest|1;
 }
 (*offset_write_function)(bin,dest,pos);
 if (dest & 1) {
-	int i=-1;
-	do {
-		i++;
-		(*char_write_function)(bin,output[i],pos);
-	} while (output[i]!='\0');
+  int i=-1;
+  do {
+    i++;
+    (*char_write_function)(bin,output[i],pos);
+  } while (output[i]!='\0');
 }
 }
 
@@ -450,8 +450,8 @@ return -1;
 int bin_get_string_length(unichar* s,BinEncoding char_encoding) {
 int n=0,i=-1;
 do {
-	i++;
-	n+=bin_get_value_length(s[i],char_encoding);
+  i++;
+  n+=bin_get_value_length(s[i],char_encoding);
 } while (s[i]!='\0');
 return n;
 }
@@ -459,16 +459,16 @@ return n;
 int bin_get_string_length(unichar* s,t_fnc_bin_write_bytes char_encoding_func) {
 int n=0,i=-1;
 do {
-	i++;
-	n+=bin_get_value_length(s[i],char_encoding_func);
+  i++;
+  n+=bin_get_value_length(s[i],char_encoding_func);
 } while (s[i]!='\0');
 return n;
 }
 
 static void select_bin_read_function(Dictionary* d) {
-	d->inf_number_read_bin_func=get_bin_read_function_for_encoding(d->inf_number_encoding);
-	d->char_read_bin_func=get_bin_read_function_for_encoding(d->char_encoding);
-	d->offset_read_bin_func=get_bin_read_function_for_encoding(d->offset_encoding);
+  d->inf_number_read_bin_func=get_bin_read_function_for_encoding(d->inf_number_encoding);
+  d->char_read_bin_func=get_bin_read_function_for_encoding(d->char_encoding);
+  d->offset_read_bin_func=get_bin_read_function_for_encoding(d->offset_encoding);
 }
 
 /**
@@ -478,45 +478,45 @@ static void select_bin_read_function(Dictionary* d) {
  */
 static int read_bin_header(Dictionary* d) {
 if (d->bin[0]==0) {
-	/* Type 1: old style .bin/.inf dictionary */
-	d->initial_state_offset=4;
-	if (d->bin_size<d->initial_state_offset+2) {
-		/* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
-		error("Invalid .bin size\n");
-		return 0;
-	}
-	/* If we have an old style .bin */
-	d->type=BIN_CLASSIC;
-	d->state_encoding=BIN_CLASSIC_STATE;
-	d->inf_number_encoding=BIN_3BYTES;
-	d->char_encoding=BIN_2BYTES;
-	d->offset_encoding=BIN_3BYTES;
-	select_bin_read_function(d);
-	return 1;
+  /* Type 1: old style .bin/.inf dictionary */
+  d->initial_state_offset=4;
+  if (d->bin_size<d->initial_state_offset+2) {
+    /* The minimal empty dictionary is made of the header plus a 2 bytes empty state */
+    error("Invalid .bin size\n");
+    return 0;
+  }
+  /* If we have an old style .bin */
+  d->type=BIN_CLASSIC;
+  d->state_encoding=BIN_CLASSIC_STATE;
+  d->inf_number_encoding=BIN_3BYTES;
+  d->char_encoding=BIN_2BYTES;
+  d->offset_encoding=BIN_3BYTES;
+  select_bin_read_function(d);
+  return 1;
 }
 if (d->bin[0]==1) {
-	/* Type 2: modern style .bin/.inf dictionary with no limit on .bin size */
-	d->type=BIN_CLASSIC;
-	d->state_encoding=(BinStateEncoding)d->bin[1];
-	d->inf_number_encoding=(BinEncoding)d->bin[2];
-	d->char_encoding=(BinEncoding)d->bin[3];
-	d->offset_encoding=(BinEncoding)d->bin[4];
-	select_bin_read_function(d);
-	int offset=5;
-	d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
-	return 1;
+  /* Type 2: modern style .bin/.inf dictionary with no limit on .bin size */
+  d->type=BIN_CLASSIC;
+  d->state_encoding=(BinStateEncoding)d->bin[1];
+  d->inf_number_encoding=(BinEncoding)d->bin[2];
+  d->char_encoding=(BinEncoding)d->bin[3];
+  d->offset_encoding=(BinEncoding)d->bin[4];
+  select_bin_read_function(d);
+  int offset=5;
+  d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
+  return 1;
 }
 if (d->bin[0]==2) {
-	/* Type 3: .bin2 dictionary */
-	d->type=BIN_BIN2;
-	d->state_encoding=(BinStateEncoding)d->bin[1];
-	d->inf_number_encoding=(BinEncoding)d->bin[2];
-	d->char_encoding=(BinEncoding)d->bin[3];
-	d->offset_encoding=(BinEncoding)d->bin[4];
-	select_bin_read_function(d);
-	int offset=5;
-	d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
-	return 1;
+  /* Type 3: .bin2 dictionary */
+  d->type=BIN_BIN2;
+  d->state_encoding=(BinStateEncoding)d->bin[1];
+  d->inf_number_encoding=(BinEncoding)d->bin[2];
+  d->char_encoding=(BinEncoding)d->bin[3];
+  d->offset_encoding=(BinEncoding)d->bin[4];
+  select_bin_read_function(d);
+  int offset=5;
+  d->initial_state_offset=bin_read_4bytes(d->bin,&offset);
+  return 1;
 }
 error("Unknown dictionary type: %d\n",d->bin[0]);
 return 0;
@@ -527,8 +527,8 @@ return 0;
  * Writes the .bin header for a v2 .bin or a .bin2
  */
 void write_new_bin_header(BinType bin_type,unsigned char* bin,int *pos,BinStateEncoding state_encoding,
-		BinEncoding char_encoding,BinEncoding inf_number_encoding,
-		BinEncoding offset_encoding,int initial_state_offset) {
+    BinEncoding char_encoding,BinEncoding inf_number_encoding,
+    BinEncoding offset_encoding,int initial_state_offset) {
 bin[(*pos)++]=(bin_type==BIN_CLASSIC)?1:2;
 bin[(*pos)++]=(unsigned char)state_encoding;
 bin[(*pos)++]=(unsigned char)inf_number_encoding;
@@ -552,8 +552,8 @@ return s->len;
  */
 void restore_output(int n,Ustring* s) {
 if (s!=NULL && n!=-1) {
-	s->len=n;
-	s->str[n]='\0';
+  s->len=n;
+  s->str[n]='\0';
 }
 }
 
@@ -564,19 +564,19 @@ if (s!=NULL && n!=-1) {
  * if *inf_codes should be freed (.bin2), 0 if not (.bin).
  */
 int get_inf_codes(Dictionary* d,int inf_number,Ustring* output,struct list_ustring* *inf_codes,
-				int base) {
+        int base) {
 *inf_codes=NULL;
 if (d->type==BIN_CLASSIC) {
-	if (inf_number!=-1) {
-		*inf_codes=d->inf->codes[inf_number];
-	}
-	return 0;
+  if (inf_number!=-1) {
+    *inf_codes=d->inf->codes[inf_number];
+  }
+  return 0;
 }
 if (d->type!=BIN_BIN2) {
-	fatal_error("get_inf_codes: unsupported dictionary type\n");
+  fatal_error("get_inf_codes: unsupported dictionary type\n");
 }
 if (output!=NULL && output->str[base]!='\0') {
-	*inf_codes=tokenize_compressed_info(output->str+base);
+  *inf_codes=tokenize_compressed_info(output->str+base);
 }
 return 1;
 }

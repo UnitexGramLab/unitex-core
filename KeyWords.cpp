@@ -187,17 +187,17 @@ if (alph[0]!='\0') {
 
 strcpy(tokens,argv[(options.vars()->optind++)]);
 if (output[0]=='\0') {
-	get_path(tokens,output);
-	strcat(output,"keywords.txt");
+  get_path(tokens,output);
+  strcat(output,"keywords.txt");
 }
 struct string_hash_ptr* keywords=load_tokens_by_freq(tokens,&vec);
 filter_non_letter_keywords(keywords,alphabet);
 if (cdic[0]!='\0') {
-	load_compound_words(cdic,&vec,keywords);
+  load_compound_words(cdic,&vec,keywords);
 }
 
 for (;options.vars()->optind!=argc;(options.vars()->optind)++) {
-	filter_keywords_with_dic(keywords,argv[options.vars()->optind],&vec,alphabet);
+  filter_keywords_with_dic(keywords,argv[options.vars()->optind],&vec,alphabet);
 }
 merge_case_equivalent_unknown_words(keywords,alphabet);
 struct string_hash* forbidden_lemmas=compute_forbidden_lemmas(keywords,code);
@@ -207,7 +207,7 @@ vector_ptr* sorted=sort_keywords(keywords);
 U_FILE* f_output=u_fopen(&vec,output,U_WRITE);
 
 if (f_output==NULL) {
-	error("Cannot write in file %s\n",output);
+  error("Cannot write in file %s\n",output);
   free_vector_ptr(sorted,(void(*)(void*))free_KeyWord_list);
   free_string_hash_ptr(keywords,(void(*)(void*))free_KeyWord_list);
   free_alphabet(alphabet);
