@@ -33,7 +33,7 @@
 
 namespace unitex {
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
@@ -856,13 +856,13 @@ return 1;
 /**
  * Returns 1 if the given .fst2 corresponds to a valid sentence automaton; 0
  * otherwise. Following conditions must be true:
- * 
+ *
  * 1) there must be only one graph
  * 2) it must be acyclic
  * 3) there must not be any <E> transition with an ouput
  * 4) <E> must the only tag without output
  * 5) all other tags must have an ouput of the form w x y z f g, with
- *    w and y being integers >=0, and x, z, f and g being integers >=-1 
+ *    w and y being integers >=0, and x, z, f and g being integers >=-1
  */
 int valid_sentence_automaton_write_error(const VersatileEncodingConfig* vec,const char* name,U_FILE*) {
 struct FST2_free_info fst2_free;

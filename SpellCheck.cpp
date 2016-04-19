@@ -297,12 +297,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SpellCheck,lopts_SpellCh
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_SpellCheck[index].name);
-             return USAGE_ERROR_CODE;           
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;
@@ -317,7 +317,7 @@ if (options.vars()->optind==argc) {
 
 if (mode==0) {
   error("You must use either --snt or --file\n");
-  return USAGE_ERROR_CODE;  
+  return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
@@ -398,7 +398,7 @@ if (config.input_op!='D') {
       free_Dictionary(config.dics[i]);
     }
     free(config.dics);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 
@@ -408,7 +408,7 @@ if (config.in==NULL) {
   u_fclose(config.modified_input);
   if (config.out!=U_STDOUT) {
     u_fclose(config.out);
-  }  
+  }
   for (int i=0;i<config.n_dics;i++) {
     free_Dictionary(config.dics[i]);
   }

@@ -264,7 +264,7 @@ namespace UnitexNet
     return ret;
   }
 
-  bool Unitex::WriteUnitexFile(String^ filename, array<Byte>^ byteArray) 
+  bool Unitex::WriteUnitexFile(String^ filename, array<Byte>^ byteArray)
   {
     std::string stdFilename = clix::marshalString<clix::E_UTF8>(filename);
 
@@ -395,7 +395,7 @@ namespace UnitexNet
     const void* buffer;
     size_t size_file;
     GetUnitexFileReadBuffer(stdFilename.c_str(), &amf, &buffer, &size_file);
-    
+
     array<Byte>^ byteArray = gcnew array<Byte>(size_file);
     if (byteArray != nullptr) {
       IntPtr intPtr = IntPtr((unsigned char*) buffer);

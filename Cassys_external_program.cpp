@@ -274,7 +274,7 @@ int launch_grf2fst2_in_Cassys(const char *text_name, const char *alphabet_name, 
 
   sprintf(tmp,"--alphabet=%s",alphabet_name);
   add_argument(invoker,tmp);
-        
+
   int result = cassys_invoke(invoker, display_perf, time_elapsed);
   free_ProgramInvoker(invoker);
 
@@ -321,7 +321,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
         exit(1);
       }
       while (u_fgets_dynamic_buffer(&line, &size_buffer_line, concord) != EOF) {
-        
+
 
         brace_level = 0;
         i=0;
@@ -344,7 +344,7 @@ int launch_concord_in_Cassys(const char *text_name, const char *index_file, cons
 
   add_argument(invoker,index_file);
 
-    
+
     {
         tmp[0]=0;
         get_reading_encoding_text(tmp, SIZE_TMP_BUFFER,vec->mask_encoding_compatibility_input);

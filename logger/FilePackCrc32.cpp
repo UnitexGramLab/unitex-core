@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -67,7 +67,7 @@ namespace logger {
 
 /* uLong is 32 bits or more */
 /*
- typedef unsigned long  uLong; 
+ typedef unsigned long  uLong;
 */
 
 #ifdef NO_CONST_TABLE
@@ -140,7 +140,7 @@ const uLong dwCRCTable[256] =
  *
  *  OUTPUT      void
  * --------------------------------------------------------------------------
- *  COMMENTS    
+ *  COMMENTS
  * --------------------------------------------------------------------------
  */
 
@@ -156,8 +156,8 @@ static void InitializeCRCTable(void)
     for(j = 8; j > 0; j--)
     {
       if(dwCRC & 1)
-        dwCRC = (dwCRC >> 1) ^ CRC_POLYNOMIAL; 
-      else  
+        dwCRC = (dwCRC >> 1) ^ CRC_POLYNOMIAL;
+      else
         dwCRC >>= 1;
     }
     dwCRCTable[i] = dwCRC;
@@ -204,26 +204,26 @@ uLong crc32(uLong dwCRC, const void* pvBuffer, size_t cbBuffer)
 
     for(i = 0; i < dwHeight ; i++)
     {
-                        
+
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+0)))]);
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+1)))]);
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+2)))]);
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+3)))]);
-      
+
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+4)))]);
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+5)))]);
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+6)))]);
           dwCRC  = (dwCRC >> 8) ^ (dwCRCTable[(unsigned char)(((unsigned char)dwCRC ^ *(pb+7)))]);
 
           pb+=8;
-    }   
+    }
 
     for(i = 0; i < dwRest; i++)
     {
       dwTmp1 = (dwCRC >> 8) & 0x00FFFFFFL;
       dwTmp2 = dwCRCTable[((int)dwCRC ^ *pb++) & 0xFF];
       dwCRC  = dwTmp1 ^ dwTmp2;
-    }   
+    }
   }
 
   dwCRC ^= 0xffffffff;

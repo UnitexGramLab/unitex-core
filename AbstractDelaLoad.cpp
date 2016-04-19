@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -136,7 +136,7 @@ const AbstractDelaSpace * GetDelaSpaceForFileName(const char*name)
   {
     const AbstractDelaSpace * test_afs = &(tmp->afs);
     if (tmp->afs.func_array.fnc_is_filename_object(name,tmp->afs.privateSpacePtr) != 0)
-      return test_afs;    
+      return test_afs;
 
     tmp = tmp->next;
   }

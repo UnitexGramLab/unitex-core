@@ -74,7 +74,7 @@ free_cb(bit_array,prv_alloc);
 /**
  * Associates 'value' to the 'n'th element of the given bit array.
  * A fatal error will be raised if 'n' is not in the bounds
- * of the array or if 'value' is not compatible with the 
+ * of the array or if 'value' is not compatible with the
  * information length of the array.
  */
 void set_value(struct bit_array* array,int n,int value) {

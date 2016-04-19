@@ -141,11 +141,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&i
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_XMLizer[index].name);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 return USAGE_ERROR_CODE;
@@ -160,8 +160,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&i
              break;
    case '?': index==-1  ? error("Invalid option -%c\n",options.vars()->optopt) :
                           error("Invalid option --%s\n",options.vars()->optarg);
-             return USAGE_ERROR_CODE;             
-  
+             return USAGE_ERROR_CODE;
+
    }
    index=-1;
 }
@@ -247,7 +247,7 @@ int xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,i
   if (input == NULL) {
     error("Input file '%s' not found!\n", fin);
     return DEFAULT_ERROR_CODE;
-  }  
+  }
 
   U_FILE* output = u_fopen(UTF8, fout, U_WRITE);
   if (output == NULL) {

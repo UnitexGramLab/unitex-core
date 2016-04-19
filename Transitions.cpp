@@ -189,7 +189,7 @@ return transition;
 
 /**
  * Clones the given transition list. If 'renumber' is not NULL, it
- * is used to renumber destination states on the fly. If 
+ * is used to renumber destination states on the fly. If
  * 'clone_tag_label' is not NULL, it is used to clone the pointer
  * labels. If NULL, transitions are rawly copied with a memcpy.
  */ // WARNING : Callback "clone"

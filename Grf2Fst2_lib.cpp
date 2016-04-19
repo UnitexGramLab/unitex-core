@@ -71,7 +71,7 @@ static void reallocate_int_buffer(int** buffer, size_t *buffer_allocated_size, s
     return;
   }
   size_t new_alloc_size = around_needed_size(needed_size);
-  int* new_buffer = ((*buffer) == NULL) ? ((int*)malloc(new_alloc_size*sizeof(int))) : 
+  int* new_buffer = ((*buffer) == NULL) ? ((int*)malloc(new_alloc_size*sizeof(int))) :
                                         ((int*)realloc(*buffer, new_alloc_size*sizeof(int)));
   if (new_buffer == NULL) {
     fatal_alloc_error("reallocate_int_buffer");
@@ -1180,7 +1180,7 @@ if (transitions->nbelems==0) {
     * graph is cleaned, so it's not necessary to process it. */
    return;
 }
-int length = u_strlen(box_content); 
+int length = u_strlen(box_content);
 size_t working_buffer_size = (size_t)(length + 0x80);
 unichar input_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
 unichar* input = choose_allocated_or_stack_unichar_buffer(input_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, working_buffer_size);

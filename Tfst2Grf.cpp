@@ -108,7 +108,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
    case 'o': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty output name pattern\n");
                 free(fontname);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              output=strdup(options.vars()->optarg);
              if (output==NULL) {
@@ -120,7 +120,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
    case 'f': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty font name\n");
                 free(output);
-                return USAGE_ERROR_CODE; 
+                return USAGE_ERROR_CODE;
              }
              fontname=strdup(options.vars()->optarg);
              if (fontname==NULL) {
@@ -134,7 +134,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
                 error("Invalid font size: %s\n",options.vars()->optarg);
                 free(fontname);
                 free(output);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'k': if (options.vars()->optarg[0]=='\0') {
@@ -154,7 +154,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h': usage();
              free(fontname);
              free(output);
@@ -162,12 +162,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Tfst2Grf[index].name);
              free(fontname);
-             free(output);                         
+             free(output);
              return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free(fontname);
-             free(output); 
+             free(output);
              return USAGE_ERROR_CODE;
    }
    index=-1;
@@ -176,21 +176,21 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,
 if (SENTENCE==-1) {
   error("You must specify a sentence number\n");
   free(fontname);
-  free(output); 
-  return USAGE_ERROR_CODE;   
+  free(output);
+  return USAGE_ERROR_CODE;
 }
 
 if (options.vars()->optind!=argc-1) {
   error("Invalid arguments: rerun with --help\n");
   free(fontname);
-  free(output); 
+  free(output);
   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
-  // freeing all allocated memory 
+  // freeing all allocated memory
   free(fontname);
-  free(output);   
+  free(output);
   return SUCCESS_RETURN_CODE;
 }
 
@@ -223,8 +223,8 @@ if (fontname==NULL) {
    fontname=strdup("Times New Roman");
    if (fontname==NULL) {
       alloc_error("main_Tfst2Grf");
-      free(output); 
-      return ALLOC_ERROR_CODE;      
+      free(output);
+      return ALLOC_ERROR_CODE;
    }
 }
 
@@ -232,7 +232,7 @@ U_FILE* f=u_fopen(&vec,grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot open file %s\n",grf_name);
    free(fontname);
-   free(output); 
+   free(output);
    return DEFAULT_ERROR_CODE;
 }
 
@@ -241,7 +241,7 @@ if (txt==NULL) {
    error("Cannot open file %s\n",txt_name);
    u_fclose(f);
    free(fontname);
-   free(output); 
+   free(output);
    return DEFAULT_ERROR_CODE;
 }
 
@@ -251,7 +251,7 @@ if (tok==NULL) {
    u_fclose(f);
    u_fclose(txt);
    free(fontname);
-   free(output); 
+   free(output);
    return DEFAULT_ERROR_CODE;
 }
 
@@ -269,7 +269,7 @@ if (start==NULL) {
    u_fclose(tok);
    u_fclose(f);
    free(fontname);
-   free(output); 
+   free(output);
    return DEFAULT_ERROR_CODE;
 }
 

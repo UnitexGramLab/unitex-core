@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -37,7 +37,7 @@
    modified to create uncompressed zipfile without compression, without zLib
 
 
-   Written 1998-2005 Gilles Vollant 
+   Written 1998-2005 Gilles Vollant
    http://www.winimage.com/zLibDll/minizip.html
 
    Read zip.h - FilePack.h for more info
@@ -96,7 +96,7 @@ namespace logger {
 #endif
 /* compile with -Dlocal if your debugger can't find static symbols */
 
-# define VERSIONMADEBY   (0x0000) 
+# define VERSIONMADEBY   (0x0000)
 
 #ifndef Z_BUFSIZE
 #define Z_BUFSIZE (16384)

@@ -103,10 +103,10 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&i
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_TEI2Txt[index].name);
-             return USAGE_ERROR_CODE;               
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
-             return USAGE_ERROR_CODE;            
+             return USAGE_ERROR_CODE;
    }
    index=-1;
 }
@@ -135,17 +135,17 @@ static const char* body = "body";
 
 int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
   void* html_ctx = init_HTML_character_context();
-  if (html_ctx == NULL) { 
+  if (html_ctx == NULL) {
     alloc_error("tei2txt");
     return ALLOC_ERROR_CODE;
-  }  
+  }
 
   U_FILE* input = u_fopen(vec, fin, U_READ);
   if (input == NULL) {
     error("Input file '%s' not found!\n", fin);
     free_HTML_character_context(html_ctx);
     return DEFAULT_ERROR_CODE;
-  } 
+  }
 
   U_FILE* output = u_fopen(vec, fout, U_WRITE);
   if (output == NULL) {
@@ -180,15 +180,15 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
          }
       //u_printf("Current tag : <%S>\n", buffer);
 
-      if(!u_strcmp(buffer, body)) { 
+      if(!u_strcmp(buffer, body)) {
         break;
-      } else { 
+      } else {
         buffer[0] = '\0';
-      }  
+      }
     }
-  } else { 
+  } else {
     error("Empty TEI file %s\n", fin);
-  }  
+  }
 
   char schars[11];
 
@@ -204,9 +204,9 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
                inside_sentence=0;
         } else if(c == '&') {
           current_state = 3;
-        } else if (inside_sentence) { 
+        } else if (inside_sentence) {
           u_fputc(c, output);
-        }  
+        }
         break;
       }
       case 1: {
@@ -217,7 +217,7 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
             c = (unichar)i;
             if(c == '>') {
               break;
-            }  
+            }
           }
           current_state = 0;
         }
@@ -239,7 +239,7 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
             c = (unichar)i;
             if(c == '>') {
               break;
-            }  
+            }
           }
         }
         break;
@@ -283,7 +283,7 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
   u_fclose(input);
   free_HTML_character_context(html_ctx);
   u_printf("Done.\n");
-  
+
   return SUCCESS_RETURN_CODE;
 }
 

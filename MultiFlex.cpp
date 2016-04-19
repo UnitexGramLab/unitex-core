@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
- /* 
+ /*
   *Originally created by Agata Savary (savary@univ-tours.fr)
   */
 #include <stdio.h>
@@ -59,7 +59,7 @@ const char* usage_MultiFlex =
          "                          files and inflection graphs for single and compound words.\n"
          "  -K/--korean: tells MultiFlex that it works on Korean\n"
          "  -s/--only-simple-words: the program will consider compound words as errors\n"
-         "  -c/--only-compound-words: the program will consider simple words as errors\n"     
+         "  -c/--only-compound-words: the program will consider simple words as errors\n"
          "  -p DIR/--pkgdir=DIR: path of the default graph repository\n"
          "  -r XXX/--named_repositories=XXX: declaration of named repositories. XXX is\n"
          "                                   made of one or more X=Y sequences, separated by ;\n"
@@ -196,7 +196,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFle
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
              free(named);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free(named);
@@ -208,13 +208,13 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFle
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free(named);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (output[0]=='\0') {
    error("You must specify the output DELAF name\n");
    free(named);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
@@ -247,7 +247,7 @@ if (is_korean) {
    if (alph==NULL) {
       error("Cannot initialize Korean data with a NULL alphabet\n");
       free(named);
-      return DEFAULT_ERROR_CODE;      
+      return DEFAULT_ERROR_CODE;
    }
   korean=new Korean(alph);
 }

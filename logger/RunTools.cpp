@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -161,7 +161,7 @@ char** do_convert_command_line_synth_to_std_arg(const char*cmd_line_synth,
   strcpy(command_text, firstArg);
   memcpy(command_text + len_first_arg + 1, ptr_converted, size_file_converted + 1);
   free(ptr_converted);
-  
+
   char * walk = command_text;
   for (int i = 0; i < (iNbArgs+1); i++)
   {

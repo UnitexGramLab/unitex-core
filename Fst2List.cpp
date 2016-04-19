@@ -2218,8 +2218,8 @@ int main_Fst2List(int argc, char* const argv[]) {
       break;
     case 'V': only_verify_arguments = true;
               break;
-    case 'h': usage(); 
-              return SUCCESS_RETURN_CODE;      
+    case 'h': usage();
+              return SUCCESS_RETURN_CODE;
     case 'q': {
       char* arg;
       if (argv[iargIndex][2] == '\0') {

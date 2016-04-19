@@ -106,8 +106,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_CheckDic,lopts_CheckDic,
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
    case 'V': only_verify_arguments = true;
-             break;   
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 'r': strict_unprotected=1; break;
    case 't': strict_unprotected=0; break;
@@ -147,7 +147,7 @@ if (is_a_DELAF==-1 || options.vars()->optind!=argc-1) {
 }
 
 if (only_verify_arguments) {
-  // freeing all allocated memory 
+  // freeing all allocated memory
   return SUCCESS_RETURN_CODE;
 }
 
@@ -238,7 +238,7 @@ u_fclose(dic);
 u_fprintf(out,"-----------------------------------\n");
 u_fprintf(out,"-------------  Stats  -------------\n");
 u_fprintf(out,"-----------------------------------\n");
-if (skip_path != 0) { 
+if (skip_path != 0) {
     char filename_without_path[FILENAME_MAX];
     remove_path(argv[options.vars()->optind],filename_without_path);
     u_fprintf(out,"File: %s\n",filename_without_path);

@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -208,7 +208,7 @@ int get_allocator_flag(Abstract_allocator aa)
     if (aa != NULL)
     {
         if (aa->pub.fnc_get_flag_allocator != NULL)
-            ret = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);      
+            ret = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);
     }
     return ret;
 }
@@ -219,7 +219,7 @@ int get_allocator_creation_flag(Abstract_allocator aa)
     int ret=0;
     if (aa != NULL)
     {
-        ret = (aa->creation_flag);      
+        ret = (aa->creation_flag);
     }
     return ret;
 }
@@ -229,7 +229,7 @@ size_t get_allocator_expected_creation_size(Abstract_allocator aa)
     size_t ret=0;
     if (aa != NULL)
     {
-        ret = (aa->expected_creation_size);      
+        ret = (aa->expected_creation_size);
     }
     return ret;
 }
@@ -240,7 +240,7 @@ int get_allocator_statistic_info(Abstract_allocator aa,int iStatNum,size_t*p_val
     if (aa != NULL)
     {
         if (aa->pub.fnc_get_statistic_allocator_info != NULL)
-            ret = (aa->pub.fnc_get_statistic_allocator_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);   
+            ret = (aa->pub.fnc_get_statistic_allocator_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);
     }
     return ret;
 }

@@ -548,11 +548,11 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
        // <LEMMA> tag copies the whole lemma into the inflection stack
        for (int e=0;lemma[e]!='\0';e++) {
              p_SU_buf->stack[pos_inflected++] = lemma[e];
-       }  
-     } // In the semitic mode, deal with tags as <n> or <n.LEMMA>  
-       else if (p_multiFlex_ctx->semitic && 
-                2==u_sscanf(p_SU_buf->tag,"<%d%CLEMMA>%C", 
-                            &val, &tag_symbol ,&foo)   && 
+       }
+     } // In the semitic mode, deal with tags as <n> or <n.LEMMA>
+       else if (p_multiFlex_ctx->semitic &&
+                2==u_sscanf(p_SU_buf->tag,"<%d%CLEMMA>%C",
+                            &val, &tag_symbol ,&foo)   &&
                (tag_symbol == '>' || tag_symbol == '.')) {
          /* If we are in semitic mode, we must handle tags like <12> like references
           * to letters in the lemma. We must deal this way with values >9, because
@@ -569,7 +569,7 @@ int old_local_semantic_code_length=u_strlen(local_semantic_codes);
         } else {                 // tag_symbol == '.', tag == <n.LEMMA>
           for (int e = val; lemma[e] != '\0'; e++) {
             p_SU_buf->stack[pos_inflected++] = lemma[e];
-          }          
+          }
         }
      }
      /* Otherwise, we deal with the tag in the normal way */

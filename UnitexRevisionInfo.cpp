@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -33,7 +33,7 @@
  * SVN_NEW_REVISION : this is the SVN revision number at new hitHub svn https://github.com/UnitexGramLab/unitex-core
  * UNITEX_NEW_SVN_DIFFERENCE = 1632
  * SVN_REVISION was the svn revision from historic https://gforgeigm.univ-mlv.fr/svn/unitex/Unitex-C++
- * SVN_REVISION = SVN_NEW_REVISION + UNITEX_NEW_SVN_DIFFERENCE on version from new github server 
+ * SVN_REVISION = SVN_NEW_REVISION + UNITEX_NEW_SVN_DIFFERENCE on version from new github server
  * so "historic" SVN_REVISION value allow compare svn revision number between build made on old and new repository
  *
  */

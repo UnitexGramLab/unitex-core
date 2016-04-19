@@ -31,7 +31,7 @@ namespace unitex {
 
 /**
  * This function takes a text sequence and returns the list of its tokens.
- * 'mode' defines if the tokenization must be done character by character 
+ * 'mode' defines if the tokenization must be done character by character
  * or word by word. In that last case, a word is defined as a contiguous
  * sequence letters and the letters are defined by the given alphabet.
  */
@@ -122,7 +122,7 @@ return 0;
 /**
  * Returns 1 if the given sequence can be considered as a simple word;
  * 0 otherwise.
- * 
+ *
  * NOTE: with such a definition, a single char that is not a letter is not a simple word
  */
 int is_a_simple_word(const unichar* sequence,TokenizationPolicy tokenization_policy,const Alphabet* alphabet) {

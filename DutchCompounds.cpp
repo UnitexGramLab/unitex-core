@@ -32,7 +32,7 @@ namespace unitex {
 
 
 /* this define the maximum nomber of item in word_decomposition_list before abort an exploration */
-#ifndef MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE 
+#ifndef MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE
 #define MAX_NB_WORD_DECOMPOSITION_LIST_POSSIBLE (10000)
 #endif
 
@@ -439,7 +439,7 @@ namespace unitex {
   * returns 0 otherwise.
   */
   int analyse_dutch_word(const unichar* word, struct dutch_infos* infos) {
-    /* 
+    /*
     unichar decomposition[4096];
     unichar dela_line[4096];
     unichar correct_word[4096];*/
@@ -760,7 +760,7 @@ namespace unitex {
               free(temp);
               free_string_optional_buffer(&allocated_dec_temp);
               free_string_optional_buffer(&allocated_line);
-              
+
             }
             /* Now, we try to analyze the component normally */
             unichar* allocated_dec = NULL; const unichar* dec;
@@ -796,9 +796,9 @@ namespace unitex {
             explore_state_dutch (infos->d->initial_state_offset, temp, 0, word_to_analyze, pos_in_word_to_analyze,
               dec_temp, line, L, adp, number_of_components + 1, infos, foo, 0);
             free_string_optional_buffer(&allocated_dec_temp);
-            
+
             free_string_optional_buffer(&allocated_line);
-            
+
             free(temp);
             free_Ustring(foo);
           }

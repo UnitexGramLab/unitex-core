@@ -168,7 +168,7 @@ static int get_value_index_for_string_colon_string(const unichar* str1,const uni
      if (allocated_buffer==NULL) {
           fatal_alloc_error("get_value_index_for_string_colon_string");
      }
-   }   
+   }
    u_sprintf(tmp,"%S,%S",str1,str2);
    value=get_value_index(tmp,hash);
    if (allocated_buffer != NULL) {
@@ -342,10 +342,10 @@ if (a==NULL || a->node==NULL) {
  */
 static inline int compare_nodes(const struct dictionary_node_transition* a,const struct dictionary_node_transition* b) {
 /* If the nodes have not the same INF codes, they are different */
-    
+
     struct dictionary_node* a_node = a->node;
     struct dictionary_node* b_node = b->node;
-    
+
     if (a_node->single_INF_code_list!=b_node->single_INF_code_list) {
         if (a_node->single_INF_code_list!=NULL && b_node->single_INF_code_list==NULL) return -1;
         if (a_node->single_INF_code_list==NULL && b_node->single_INF_code_list!=NULL) return 1;
@@ -353,7 +353,7 @@ static inline int compare_nodes(const struct dictionary_node_transition* a,const
     if (a_node->single_INF_code_list!=NULL && b_node->single_INF_code_list!=NULL &&
             a_node->INF_code!=b_node->INF_code)
             return (a_node->INF_code - b_node->INF_code);
-     
+
 /* Then, we compare all the outgoing transitions, two by two */
 a=a_node->trans;
 b=b_node->trans;
@@ -368,7 +368,7 @@ while(a!=NULL && b!=NULL) {
    a=a->next;
    b=b->next;
 }
-if (a==b) { 
+if (a==b) {
    /* If a==b==NULL, the transition lists are equal, the nodes are equivalent */
    return 0;
 }
@@ -510,7 +510,7 @@ static int convert_list_to_array_size(unsigned int height,struct transition_list
 unsigned int size=0;
 struct transition_list* l=transitions_by_height[height];
 
-while (l!=NULL) {   
+while (l!=NULL) {
    size++;
    l=l->next;
 }

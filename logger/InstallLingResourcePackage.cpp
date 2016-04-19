@@ -256,7 +256,7 @@ namespace unitex {
                 case 'u': uninstall = 1; break;
                 case 'V': only_verify_arguments = true;
                           break;
-                case 'h': usage(); 
+                case 'h': usage();
                           return SUCCESS_RETURN_CODE;
                 case ':': index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
                                         error("Missing argument for option --%s\n", lopts_InstallLingResourcePackage[index].name);
@@ -272,7 +272,7 @@ namespace unitex {
                 error("Invalid arguments: rerun with --help\n");
                 return USAGE_ERROR_CODE;
             }*/
-            
+
             if (transform_path_separator == -1)
             {
                 /*

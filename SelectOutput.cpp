@@ -43,7 +43,7 @@ const char* usage_SelectOutput =
   "  -o [on/off]/--output=[on/off]: enable (on) or disable (off) standard output\n"
   "  -e [on/off]/--error=[on/off]: enable (on) or disable (off) error output\n"
   "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
-  "  -h/--help: this help\n"     
+  "  -h/--help: this help\n"
   "\n";
 
 
@@ -83,8 +83,8 @@ UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_SelectOutput,&index))) {
    switch(val) {
    case 'V': only_verify_arguments = true;
-             break;    
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 'e':
    case 'o':
@@ -99,14 +99,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
        {
            SetStdWriteCB(swk,1,NULL,NULL);
        }
-       else 
+       else
        {
            error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
            return USAGE_ERROR_CODE;
        }
        break;
      }
-   
+
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 return USAGE_ERROR_CODE;
@@ -121,7 +121,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
              break;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_SelectOutput[index].name);
-             return USAGE_ERROR_CODE;            
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;

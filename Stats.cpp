@@ -161,7 +161,7 @@ const struct option_TS lopts_Stats[]= {
   {"input_encoding",required_argument_TS,NULL,'k'},
   {"output_encoding",required_argument_TS,NULL,'q'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
-  {"help",no_argument_TS,NULL,'h'},      
+  {"help",no_argument_TS,NULL,'h'},
   {0, 0, 0, 0 }
  } ;
 
@@ -229,12 +229,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Stats,lopts_Stats,&index
             decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
             break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
-             return SUCCESS_RETURN_CODE;            
+             break;
+   case 'h': usage();
+             return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Stats[index].name);
-             return USAGE_ERROR_CODE;            
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;
@@ -262,12 +262,12 @@ strcat(tokens_txt,"tokens.txt");
 get_path(concord_ind,text_cod);
 strcat(text_cod,"text.cod");
 
-int return_value = concord_stats(output, 
+int return_value = concord_stats(output,
                                  mode,
                                  concord_ind,
                                  tokens_txt,
                                  text_cod,
-                                 alphabet, 
+                                 alphabet,
                                  &vec,
                                  leftContext,
                                  rightContext,
@@ -286,7 +286,7 @@ return return_value;
  * "space"-like and "regular" tokens to include.
  */
 int concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
-                  const char* alphabetName, 
+                  const char* alphabetName,
                   const VersatileEncodingConfig* vec,
                   int leftContext, int rightContext, int caseSensitive) {
   U_FILE* concord = u_fopen(vec, concordfname, U_READ);
@@ -299,10 +299,10 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
 
   if (tokens == NULL) {
     error("Error in build_counted_concord, tokens cannot be loaded!");
-    
+
     match_list* current_match = matches;
     struct match_list* next_match = NULL;
-    
+
     while(current_match != NULL) {
       next_match = current_match->next;
       free_match_list_element(current_match);
@@ -310,7 +310,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
     }
 
     u_fclose(cod);
-    
+
     if (outfile != U_STDOUT) {
       u_fclose(outfile);
     }
@@ -327,7 +327,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
         free_text_tokens(tokens);
         match_list* current_match = matches;
         struct match_list* next_match = NULL;
-        
+
         while(current_match != NULL) {
           next_match = current_match->next;
           free_match_list_element(current_match);
@@ -335,10 +335,10 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
         }
 
         u_fclose(cod);
-        
+
         if (outfile != U_STDOUT) {
           u_fclose(outfile);
-        }      
+        }
         return DEFAULT_ERROR_CODE;
      }
   }
@@ -354,8 +354,8 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
     vector_ptr* allMatches     = NULL;
     hash_table* countsPerMatch = NULL;
 
-    counted_concord_return_value = build_counted_concord(matches, 
-                                                         tokens, 
+    counted_concord_return_value = build_counted_concord(matches,
+                                                         tokens,
                                                          cod,
                                                          alphabet,
                                                          leftContext,
@@ -378,7 +378,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
       }
 
       u_fclose(cod);
-      
+
       if (outfile != U_STDOUT) {
         u_fclose(outfile);
       }
@@ -388,7 +388,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
 
     // now we sort
     sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_ptr, compare_ptr, countsPerMatch, NULL, -1);
-    
+
     // and then print
     for (i = 0; i < allMatches->nbelems ; i++) {
       hash_val = get_value(countsPerMatch, allMatches->tab[i], HT_DONT_INSERT);
@@ -405,7 +405,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
     vector_int* allMatches     = NULL;
     hash_table* countsPerMatch = NULL;
 
-    counted_collocates_return_value = build_counted_collocates(matches, 
+    counted_collocates_return_value = build_counted_collocates(matches,
                                                                tokens,
                                                                cod,
                                                                alphabet,
@@ -420,7 +420,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
     if(counted_concord_return_value != SUCCESS_RETURN_CODE) {
       free_alphabet(alphabet);
       free_text_tokens(tokens);
-      
+
       match_list* current_match     = matches;
       struct match_list* next_match = NULL;
 
@@ -431,7 +431,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
       }
 
       u_fclose(cod);
-      
+
       if (outfile != U_STDOUT) {
         u_fclose(outfile);
       }
@@ -482,7 +482,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
     if(counted_concord_return_value != SUCCESS_RETURN_CODE) {
       free_alphabet(alphabet);
       free_text_tokens(tokens);
-      
+
       match_list* current_match     = matches;
       struct match_list* next_match = NULL;
 
@@ -493,12 +493,12 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
       }
 
       u_fclose(cod);
-      
+
       if (outfile != U_STDOUT) {
         u_fclose(outfile);
       }
 
-      return counted_collocates_return_value;      
+      return counted_collocates_return_value;
     }
 
     // now we sort
@@ -551,7 +551,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
 
   match_list* current_match     = matches;
   struct match_list* next_match = NULL;
-  
+
   while(current_match != NULL) {
     next_match = current_match->next;
     free_match_list_element(current_match);
@@ -559,7 +559,7 @@ int concord_stats(const char* outfilename,int mode, const char *concordfname, co
   }
 
   u_fclose(cod);
-  
+
   if (outfile != U_STDOUT) {
     u_fclose(outfile);
   }
@@ -590,12 +590,12 @@ int build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod,
   long buff_start, buff_end;
 
   // we initialize buffer to encompass 4096 tokens from starting position
-  int get_buffer_return_value = get_buffer_around_token(cod, 
-                                                        &buffer, 
-                                                        0, 
-                                                        0, 
-                                                        STATS_BUFFER_LENGTH, 
-                                                        &buff_start, 
+  int get_buffer_return_value = get_buffer_around_token(cod,
+                                                        &buffer,
+                                                        0,
+                                                        0,
+                                                        STATS_BUFFER_LENGTH,
+                                                        &buff_start,
                                                         &buff_end);
   if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
     free(buffer);
@@ -696,7 +696,7 @@ int build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* c
   // we initialize buffer to encompass 4096 tokens from starting position
   int get_buffer_return_value = get_buffer_around_token(cod,
                                                         &buffer,
-                                                        0, 
+                                                        0,
                                                         0,
                                                         STATS_BUFFER_LENGTH,
                                                         &buff_start,
@@ -705,7 +705,7 @@ int build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* c
   if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
     free(buffer);
     return get_buffer_return_value;
-  }  
+  }
 
   any* hash_val = NULL;
   int hash_ret;
@@ -713,10 +713,10 @@ int build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* c
   int i;
 
   vector_int* allMatches        = new_vector_int();
-  hash_table* countPerCollocate = new_hash_table(hash_token_as_int, 
+  hash_table* countPerCollocate = new_hash_table(hash_token_as_int,
                                                  tokens_as_int_equal,
                                                  free_token_as_int,
-                                                 NULL, 
+                                                 NULL,
                                                  copy_token_as_int);
   vector_int* currentMatchList;
   vector_int* tmpMatchList;
@@ -732,7 +732,7 @@ int build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* c
 
   // for all matches, we form list of token IDs and check it against hash table
   while(current_match != NULL) {
-    currentMatchList = get_string_in_context_as_token_list(current_match, 
+    currentMatchList = get_string_in_context_as_token_list(current_match,
                                                            leftContext,
                                                            rightContext,
                                                            &buffer,
@@ -761,7 +761,7 @@ int build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* c
         free_vector_int(allMatches, NULL);
         free(buffer);
         return ALLOC_ERROR_CODE;
-      }      
+      }
 
       hash_val = get_value(countPerCollocate, currentKey, HT_INSERT_IF_NEEDED, &hash_ret);
 
@@ -894,10 +894,10 @@ int count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int c
   long bufferStart;
   long bufferEnd;
 
-  int get_buffer_return_value = get_buffer_around_token(cod, 
-                                                        &buffer, 
-                                                        0, 
-                                                        0, 
+  int get_buffer_return_value = get_buffer_around_token(cod,
+                                                        &buffer,
+                                                        0,
+                                                        0,
                                                         STATS_BUFFER_LENGTH,
                                                         &bufferStart,
                                                         &bufferEnd);
@@ -907,9 +907,9 @@ int count_collocates(U_FILE* cod, text_tokens* tokens, Alphabet* alphabet, int c
     return get_buffer_return_value;
   }
 
-  hash_table* ret = new_hash_table(hash_token_as_int, 
+  hash_table* ret = new_hash_table(hash_token_as_int,
                                    tokens_as_int_equal,
-                                   free_token_as_int, 
+                                   free_token_as_int,
                                    NULL,
                                    copy_token_as_int);
 
@@ -1057,7 +1057,7 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
                                                           bufferEnd);
       if(get_buffer_return_value != SUCCESS_RETURN_CODE) {
         return NULL;
-      }       
+      }
     }
 
     if (is_appropriate_token((*buffer)[endAt - *bufferStart], tokens)) {
@@ -1074,15 +1074,15 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 
     if (i < *bufferStart || i > *bufferEnd) {
       int get_buffer_around_token_return_value = get_buffer_around_token(source,
-                                                            buffer, 
-                                                            i, 
-                                                            0, 
+                                                            buffer,
+                                                            i,
+                                                            0,
                                                             STATS_BUFFER_LENGTH,
                                                             bufferStart,
                                                             bufferEnd);
       if(get_buffer_around_token_return_value != SUCCESS_RETURN_CODE) {
         return NULL;
-      }      
+      }
     }
 
     vector_int_add(res, (*buffer)[i - *bufferStart]);
@@ -1436,7 +1436,7 @@ unsigned int hash_token_as_int(const void* t) {
   if (!(token->CStag)) {
     return jenkins_one_at_a_time_hash_string_uppercase(token->tokens->token[token->tokenID], u_strlen(token->tokens->token[token->tokenID]), token->alphabet);
   }
-  
+
   return token->tokenID;
 }
 

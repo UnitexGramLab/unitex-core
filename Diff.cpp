@@ -268,7 +268,7 @@ while (!(list1==NULL && list2==NULL)) {
           * We consider that they are two distinct lines, and we
           * print the first */
          print_diff_matches(output,NULL,f2,GREEN,list1->output,list2->output);
-         list2=list2->next;         
+         list2=list2->next;
          break;
       }
       case A_EQUALS_B: {

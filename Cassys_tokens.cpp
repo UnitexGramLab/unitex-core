@@ -95,7 +95,7 @@ void cassys_tokens_2_graph_walk_for_subgraph(cassys_tokens_list *c, U_FILE *u, c
 
         u_fprintf(u, "\t_%08x -> _%08x [style=invis]\n", (unsigned int)(count++), 0);
       }
-    
+
 
     }
 
@@ -271,7 +271,7 @@ unichar *unprotect_lexical_tags(unichar *u){
 }
 
 
-cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const char *tokens_text_name, const char *text_cod_name, 
+cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig* vec, const char *tokens_text_name, const char *text_cod_name,
          struct text_tokens **tokens, const vector_int* uima_offset, cassys_tokens_allocation_tool * allocation_tool) {
 
   DISCARD_UNUSED_PARAMETER(uima_offset)

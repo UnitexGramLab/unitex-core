@@ -861,7 +861,7 @@ u_fclose(f);
  * don't have this content, graph negation operator is tilde
  *
  * LOAD_UNITEX_GRAPH_COMPATIBILITY_MODE is optional for performance issues on opening file
- * 
+ *
  */
 int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int *p_tilde_negation_operator) {
 #ifdef LOAD_UNITEX_GRAPH_COMPATIBILITY_MODE
@@ -894,7 +894,7 @@ int get_graph_compatibility_mode_by_file(const VersatileEncodingConfig* vec,int 
 
 
 /*******************************************************************/
-/* cloning 
+/* cloning
 */
 
 
@@ -925,14 +925,14 @@ Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc)
     Fst2TagDest->input = u_strdup(Fst2TagSrc->input,prv_alloc);
     Fst2TagDest->morphological_filter = u_strdup(Fst2TagSrc->morphological_filter,prv_alloc);
     Fst2TagDest->output = u_strdup(Fst2TagSrc->output,prv_alloc);
-    Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable,prv_alloc);   
+    Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable,prv_alloc);
     Fst2TagDest->matching_tokens = clone(Fst2TagSrc->matching_tokens,prv_alloc);
 
   Fst2TagDest->filter_number = Fst2TagSrc->filter_number;
   Fst2TagDest->meta = Fst2TagSrc->meta;
   Fst2TagDest->pattern = clone(Fst2TagSrc->pattern,prv_alloc);
   Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
-  
+
   Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
 
   return Fst2TagDest;
@@ -973,7 +973,7 @@ Fst2* fst2ret;
             fst2ret->tags[i] = new_Fst2Tag_clone(fst2org->tags[i],prv_alloc);
         }
 
-   
+
         fst2ret->initial_states=(int*)malloc_cb((fst2ret->number_of_graphs+1)*sizeof(int),prv_alloc);
         if (fst2ret->initial_states==NULL) {fatal_error("Not enough memory in new_Fst2_clone\n");}
 

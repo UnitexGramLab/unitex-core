@@ -60,7 +60,7 @@ void f_delete_morpho(f_morpho_T *feat) {
 // this category may admit an empty value. In this case the category is added to 'old_feat'.
 // e.g. if 'old_feat'={Gen=fem, Nb=sing} and 'new_feat'={Nb=pl, Gr=D} and Gr:<E>,D,A then
 // 'old_feat' becomes {Gen=fem, Nb=pl, Gr=D}. But if Gr:B,D,A than an error appears.
-// Returns 0 on success, 1 otherwise  
+// Returns 0 on success, 1 otherwise
 int f_change_morpho(struct l_morpho_t* pL_MORPHO,f_morpho_T *old_feat, f_morpho_T *new_feat) {
   int c_old, c_new;  //category indices in old_feat and in new_feat
   int found;
@@ -82,10 +82,10 @@ int f_change_morpho(struct l_morpho_t* pL_MORPHO,f_morpho_T *old_feat, f_morpho_
     if (!found)   //Error if the category to be changed does not appear in 'old_feat'
       return 1;
     */
-    
+
   }
   return 0;
-} 
+}
 
 ////////////////////////////////////////////
 // Compare two morphological descriptions
@@ -102,7 +102,7 @@ int f_morpho_cmp(f_morpho_T* m1, f_morpho_T* m2) {
   int found;  //Boolean saying if the current category-value in m1 has been found in m2
   for (c1=0; c1<m1->no_cats; c1++) {
     found = 0;
-    c2=0; 
+    c2=0;
     while (c2<m2->no_cats && !found) {
       if ((m1->cats[c1].cat == m2->cats[c2].cat) && (m1->cats[c1].val == m2->cats[c2].val))
     found = 1;
@@ -124,8 +124,8 @@ int f_morpho_cmp(f_morpho_T* m1, f_morpho_T* m2) {
 int f_add_morpho(f_morpho_T *feat, l_category_T *cat, int val) {
   int c;  //category index in feat
 
-  for (c=0; c<feat->no_cats; c++) 
-      if (feat->cats[c].cat == cat) 
+  for (c=0; c<feat->no_cats; c++)
+      if (feat->cats[c].cat == cat)
         return 1;      //Error if the category to be added already appears in old_cat
 
   //Check if there is enough space for a new category
@@ -211,7 +211,7 @@ for (c=0; c<feat->no_cats; c++) {
    i=feat->cats[c].val;
    u_printf("%S",feat->cats[c].cat->values[i]);    //Print the value
    if (c<feat->no_cats-1)  {
-      u_printf(";");    
+      u_printf(";");
    }
 }
 u_printf("}\n");
@@ -225,7 +225,7 @@ return 0;
 // Returns 0 on success, -1 on error
 int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2) {
   int c;  //category index in feat1 and feat2
-  
+
   if (!feat1) {
     feat1 = (f_morpho_T*) malloc(sizeof(f_morpho_T));
     if (!feat1)
@@ -235,7 +235,7 @@ int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2) {
   if (!feat2)
     return -1;
 
-  for (c=0; c<feat2->no_cats; c++)  
+  for (c=0; c<feat2->no_cats; c++)
     feat1->cats[c] = feat2->cats[c];  //Add new category-value pair
 
   feat1->no_cats = feat2->no_cats;

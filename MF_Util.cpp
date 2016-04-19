@@ -316,7 +316,7 @@ void u_tri_a(void *T, int *cnt, int len) {
 
 //////////////////////////////////////////////////////////
 // Add a new unichar string to the dynamic unichar table
-// while reallocating memory space and updating the 
+// while reallocating memory space and updating the
 // cardinality. Space for the new form must be allocated.
 // Returns 0 on success, 1 otherwise.
 int u_add_unitab_elem(unichar* form, unitab_t* tab) {

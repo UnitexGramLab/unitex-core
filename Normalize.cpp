@@ -138,8 +138,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Normalize,lopts_Normaliz
              strcpy(output_offsets,options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Normalize[index].name);
@@ -147,7 +147,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Normalize,lopts_Normaliz
              break;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
-             return USAGE_ERROR_CODE;  
+             return USAGE_ERROR_CODE;
              break;
    }
    index=-1;
@@ -159,7 +159,7 @@ if (options.vars()->optind!=argc-1) {
 }
 
 if (only_verify_arguments) {
-  // freeing all allocated memory 
+  // freeing all allocated memory
   return SUCCESS_RETURN_CODE;
 }
 
@@ -196,8 +196,8 @@ remove_extension(argv[options.vars()->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[options.vars()->optind]);
 
-int return_value = normalize(tmp_file, 
-                             dest_file, 
+int return_value = normalize(tmp_file,
+                             dest_file,
                              &vec,
                              mode,
                              convLFtoCRLF,

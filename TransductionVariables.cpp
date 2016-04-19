@@ -299,7 +299,7 @@ int suggest_size_backup_reserve(int size_one_backup,int is_first)
 
 /* we suggest several SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE because we want prevent malloc/free at each step */
 
-int suggested_size = size_one_backup * 
+int suggested_size = size_one_backup *
         (is_first ? SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE_FIRST : SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE);
 if (suggested_size > LIMIT_MAX_SUGGESTED_SIZE)
     suggested_size = LIMIT_MAX_SUGGESTED_SIZE;
@@ -374,7 +374,7 @@ r->array_int[OFFSET_SWAPPER+(r->pos_used * r->size_aligned)] = 1;
 return save;
 }
 
-    
+
 void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* rest)
 {
     r->pos_used --;

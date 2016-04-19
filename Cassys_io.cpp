@@ -124,7 +124,7 @@ void get_csc_path(const char* filename, char* result) {
 
   get_path(filename, result);
   remove_path_and_extension(filename, result + strlen(result));
-  
+
   strcat(result, CASSYS_DIRECTORY_EXTENSION);
 
   strcat(result, PATH_SEPARATOR_STRING);
@@ -139,7 +139,7 @@ void get_csc_wd_path(const char* filename, char* result) {
 
   get_path(filename, result);
   remove_path_and_extension(filename, result + strlen(result));
-  
+
   strcat(result, CASSYS_DIRECTORY_EXTENSION);
 
   strcat(result, PATH_SEPARATOR_STRING);
@@ -292,7 +292,7 @@ char* create_updated_graph_filename(const char *text,
 
   char working[FILENAME_MAX];
   sprintf(working, "%s%s%s%c%s_%d_%d_snt%c", path, canonical_text_name,
-    CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR, 
+    CASSYS_DIRECTORY_EXTENSION, PATH_SEPARATOR_CHAR,
     canonical_text_name, next_transducer_label, next_iteration, PATH_SEPARATOR_CHAR);
 
 

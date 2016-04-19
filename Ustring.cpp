@@ -290,7 +290,7 @@ void u_strcpy(Ustring* ustr,const unichar* str,unsigned int length) {
     for (unsigned int i=0;i<length;i++) {
        ustr->str[i]=str[i];
   }
-    
+
   ustr->str[newlen] = 0;
   ustr->len=newlen;
 }

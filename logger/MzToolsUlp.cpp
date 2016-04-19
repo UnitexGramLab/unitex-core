@@ -57,15 +57,15 @@ namespace logger {
 
 #define WRITE_8(buff, n) { \
   *((unsigned char*)(buff)) = (unsigned char) ((n) & 0xff); \
-} 
+}
 #define WRITE_16(buff, n)  { \
   WRITE_8((unsigned char*)(buff), n); \
   WRITE_8(((unsigned char*)(buff)) + 1, (n) >> 8); \
-} 
+}
 #define WRITE_32(buff, n)  { \
   WRITE_16((unsigned char*)(buff), (n) & 0xffff); \
   WRITE_16((unsigned char*)(buff) + 2, (n) >> 16); \
-} 
+}
 
 /*
 extern int ZEXPORT unzRepair(file, fileOut, fileOutTmp, nRecovered, bytesRecovered)

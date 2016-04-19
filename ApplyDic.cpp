@@ -250,7 +250,7 @@ while (l!=NULL) {
 
 /* display uncompress entry
  * function extracted from explore_bin_simple_words, because each recursive call
- * allocated 4096 unichar (and produce stack overflow) 
+ * allocated 4096 unichar (and produce stack overflow)
  */
 void display_uncompressed_entry(U_FILE* f,unichar* inflected,unichar* INF_code) {
 Ustring* s=new_Ustring(DIC_LINE_SIZE);
@@ -485,7 +485,7 @@ for (int i=0;i<n_transitions;i++) {
 }
 }
 
- 
+
 /**
  * This function looks for compound words in the text file set in 'info'.
  * When a compound word is found, the corresponding DELAF lines are saved in
@@ -515,7 +515,7 @@ u_printf("First block...              \r");
 while (current_start_pos<info->text_cod_size_nb_int) {/*
    if (!info->buffer->end_of_file
        && current_start_pos>(info->buffer->size-MARGIN_BEFORE_BUFFER_END)) {
-      // If we must change of block and if we can 
+      // If we must change of block and if we can
       u_printf("Block %d...              \r",++current_block);
       fill_buffer(info->buffer,current_start_pos,info->text_cod);
       current_start_pos=0;
@@ -868,7 +868,7 @@ while (l!=NULL) {
                if (export_to_morpho_dic) {
                   u_fprintf(info->morpho,"%S\n",l->output);
                }
-            }  
+            }
          }
       }
       else {
@@ -930,9 +930,9 @@ switch (compare_matches(&((*A)->m),&((*B)->m))) {
    case A_BEFORE_B:
    case A_BEFORE_B_OVERLAP:
    case A_INCLUDES_B: return -1;
-   
+
    case A_EQUALS_B: return u_strcmp((*A)->output,(*B)->output);
-   
+
    case A_AFTER_B:
    case A_AFTER_B_OVERLAP:
    case B_INCLUDES_A: return 1;

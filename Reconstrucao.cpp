@@ -114,7 +114,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reconstrucao,lopts_Recon
              break;
    case 'r': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty root dictionary file name\n");
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(root,options.vars()->optarg);
              break;
@@ -144,7 +144,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reconstrucao,lopts_Recon
              break;
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
@@ -155,8 +155,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reconstrucao,lopts_Recon
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;  
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Reconstrucao[index].name);

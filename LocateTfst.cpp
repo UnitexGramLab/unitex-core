@@ -192,14 +192,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
              if ((strcmp(options.vars()->optarg,"tilde")!=0) && (strcmp(options.vars()->optarg,"~")!=0)) {
                  error("You must specify a valid argument for negation operator\n");
                  free_vector_ptr(injected);
-                 return USAGE_ERROR_CODE;                 
+                 return USAGE_ERROR_CODE;
              }
              break;
    case 'n': if (1!=sscanf(options.vars()->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
                 error("Invalid search limit argument: %s\n",options.vars()->optarg);
                 free_vector_ptr(injected);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'S': match_policy=SHORTEST_MATCHES; break;
@@ -215,7 +215,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 1: tagging=1; break;
    case 2: single_tags_only=1; break;
@@ -223,14 +223,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 free_vector_ptr(injected);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
    case 'q': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_encoding argument\n");
                 free_vector_ptr(injected);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -240,7 +240,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
      if (value==NULL) {
        error("Invalid variable injection: %s\n",options.vars()->optarg);
        free_vector_ptr(injected);
-       return USAGE_ERROR_CODE;       
+       return USAGE_ERROR_CODE;
      }
      (*value)='\0';
      value++;

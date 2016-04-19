@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -134,7 +134,7 @@ const char* get_filename_to_copy(const char*filename,int skip_star)
 }
 
 
-/* 
+/*
  * Search possible position for filename on an argument
  *
  * "-a" : return -1 (no filename possible)
@@ -334,8 +334,8 @@ void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunP
     else
     {
         size_t len_FileAddRunPath = strlen(FileAddRunPath);
-        int iAddSeparator = 
-        (((*(FileAddRunPath + len_FileAddRunPath - 1)) == '\\') || ((*(FileAddRunPath + len_FileAddRunPath - 1)) == '/')) ? 
+        int iAddSeparator =
+        (((*(FileAddRunPath + len_FileAddRunPath - 1)) == '\\') || ((*(FileAddRunPath + len_FileAddRunPath - 1)) == '/')) ?
             0 : 1;
 
         memcpy(dest,arg,(size_t)PossiblePos);

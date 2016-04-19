@@ -157,7 +157,7 @@ if (only_verify_arguments) {
 
 strcpy(text,argv[options.vars()->optind]);
 U_FILE* input_text=u_fopen(&vec,text,U_READ);
-if (input_text==NULL) {   
+if (input_text==NULL) {
   error("cannot open file %s\n",text);
   return DEFAULT_ERROR_CODE;
 }

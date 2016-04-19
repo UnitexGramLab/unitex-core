@@ -116,7 +116,7 @@ int extract_cassys_generic_mark(const char *line) {
             if(line[i] != '\0' && line[i] == '@')
                 return 1;
         }
-        
+
         return 0;
 
 }
@@ -181,7 +181,7 @@ void translate_path_separator_to_native_in_filename(char* filename) {
     walk++;
   }
 }
- 
+
 
 struct transducer_name_and_mode_linked_list *load_transducer_list_file(const char *transducer_list_name, int translate_path_separator_to_native) {
 

@@ -120,7 +120,7 @@ for (;;)
 if (i>=MAX_TOKENS_BY_SENTENCE) {
    error("Sentence too long to be entirely displayed\n");
    /* We show the error and we read the sentence till its end in order
-    * to keep a valid sentence numerotation */  
+    * to keep a valid sentence numerotation */
    buffer->size_current_item=MAX_TOKENS_BY_SENTENCE;
    (*N_TOKENS_READ)=i;
    return;

@@ -24,7 +24,7 @@
 
 
 
-  
+
 #include "Af_stdio.h"
 #include "DirHelper.h"
 
@@ -55,7 +55,7 @@ namespace logger {
 #define PACK_WRITEBUFFERSIZE (65536)
 
 
-// return 1 if ok, 0 if error  
+// return 1 if ok, 0 if error
 static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const char* fileNameToRead,int quiet)
 {
     size_t size_buf=PACK_WRITEBUFFERSIZE;
@@ -95,7 +95,7 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
     if (fin==NULL)
     {
         err=ZIP_ERRNO;
-        
+
         free(buf);
         return 0;
     }
@@ -114,9 +114,9 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
                 if (size_read < size_buf)
                     if (af_feof(fin)==0)
                 {
-                    
+
                     error("error in reading %s\n",fileNameToRead);
-                    
+
                     err = ZIP_ERRNO;
                 }
 
@@ -125,11 +125,11 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
                     err = zipWriteInFileInZip (zf,buf,(unsigned int)size_read);
                     if (err<0)
                     {
-                        
+
                         error("error in writing %s in the zipfile\n",
                                          fileNameInArchive);
                     }
-                    else 
+                    else
                     {
                         size_done += (unsigned int)size_read;
                         crc = crc32(crc,buf,size_read);
@@ -148,7 +148,7 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
             else
             {
                 err = zipCloseFileInZip(zf);
-                
+
                 if (err!=ZIP_OK)
                     error("error in closing %s in the zipfile\n",
                                 fileNameInArchive);
@@ -197,7 +197,7 @@ int buildPackFile(const char* packFile,int append,const char* global_comment,
     {
         return 1;
     }
-    
+
 
   int retValue = 1;
 
@@ -212,7 +212,7 @@ int buildPackFile(const char* packFile,int append,const char* global_comment,
     {
       int i=0;
       while (*(listfile + i) != NULL)
-      {        
+      {
         retValue = addFileInPackFile(zf,
                    filterFileNameByJunkPrefix(*(listfile + i),junk_prefix,0),
                    *(listfile + i),quiet);

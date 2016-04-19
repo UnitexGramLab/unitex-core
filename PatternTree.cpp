@@ -141,7 +141,7 @@ while (list!=NULL) {
 
 
 /**
- * This function explores a pattern tree in order to find the node that 
+ * This function explores a pattern tree in order to find the node that
  * corresponds to the given gramatical codes, creating it if needed. Note
  * that the grammatical codes are supposed to be sorted.
  */

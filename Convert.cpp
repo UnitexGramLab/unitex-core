@@ -150,7 +150,7 @@ bool only_verify_arguments = false;
 UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&index))) {
    switch(val) {
-   case 'k': 
+   case 'k':
    case 's': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty source encoding\n");
                 free_encodings_context(encoding_ctx);
@@ -178,8 +178,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&i
    case 7: encode_control_characters=1; break;
 
 
-   case 'm': print_encoding_main_names(encoding_ctx); 
-             free_encodings_context(encoding_ctx); 
+   case 'm': print_encoding_main_names(encoding_ctx);
+             free_encodings_context(encoding_ctx);
              return SUCCESS_RETURN_CODE;
    case 'a': print_encoding_main_names(encoding_ctx);
              print_encoding_aliases(encoding_ctx);
@@ -194,14 +194,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&i
                 return USAGE_ERROR_CODE;
              }
              print_encoding_infos(encoding_ctx,options.vars()->optarg);
-             free_encodings_context(encoding_ctx); 
+             free_encodings_context(encoding_ctx);
              return SUCCESS_RETURN_CODE;
    case 'F': format=CONV_DELAF_FILE; break;
    case 'S': format=CONV_DELAS_FILE; break;
    case 'V': only_verify_arguments = true;
-             break;     
-   case 'h': usage(); 
-             free_encodings_context(encoding_ctx); 
+             break;
+   case 'h': usage();
+             free_encodings_context(encoding_ctx);
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Convert[index].name);
@@ -209,7 +209,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&i
              return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
-             free_encodings_context(encoding_ctx);                         
+             free_encodings_context(encoding_ctx);
              return USAGE_ERROR_CODE;
    }
    index=-1;
@@ -218,7 +218,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Convert,lopts_Convert,&i
 if (src[0]=='\0') {
   error("You must specify the source encoding\n");
   free_encodings_context(encoding_ctx);
-  return USAGE_ERROR_CODE;   
+  return USAGE_ERROR_CODE;
 }
 if (dest[0]=='\0') {
    strcpy(dest,"utf16-le");
@@ -226,30 +226,30 @@ if (dest[0]=='\0') {
 if (options.vars()->optind==argc) {
   error("Invalid arguments: rerun with --help\n");
   free_encodings_context(encoding_ctx);
-  return USAGE_ERROR_CODE;    
+  return USAGE_ERROR_CODE;
 }
 const struct encoding* src_encoding=get_encoding(encoding_ctx,src);
 if (src_encoding==NULL) {
   error("%s is not a valid encoding name\n",src);
   free_encodings_context(encoding_ctx);
-  return USAGE_ERROR_CODE;   
+  return USAGE_ERROR_CODE;
 }
 const struct encoding* dest_encoding=get_encoding(encoding_ctx,dest);
 if (dest_encoding==NULL) {
   error("%s is not a valid encoding name\n",dest);
   free_encodings_context(encoding_ctx);
-  return USAGE_ERROR_CODE;   
+  return USAGE_ERROR_CODE;
 }
 
 if ((output_mode == OUTPUT_EXPLICIT_FILENAME) && ((options.vars()->optind+1)!=argc)) {
   error("explicit output filename need exactly one input file\n");
   free_encodings_context(encoding_ctx);
-  return USAGE_ERROR_CODE;   
+  return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
   // freeing all allocated memory
-  free_encodings_context(encoding_ctx);  
+  free_encodings_context(encoding_ctx);
   return SUCCESS_RETURN_CODE;
 }
 
@@ -259,26 +259,26 @@ if (only_verify_arguments) {
  */
 U_FILE* input=NULL;
 U_FILE* output=NULL;
-int error_code=CONVERSION_OK;  
+int error_code=CONVERSION_OK;
 for (int i=options.vars()->optind;i<argc;i++) {
   /*
    * We set input and output file names according to the output mode
    */
   switch (output_mode) {
-    case OUTPUT_EXPLICIT_FILENAME: 
-          strcpy(input_name,argv[i]); 
+    case OUTPUT_EXPLICIT_FILENAME:
+          strcpy(input_name,argv[i]);
           break;
     case REPLACE_FILE:
           strcpy(input_name,argv[i]);
           add_suffix_to_file_name(output_name,input_name,"_TEMP");
           break;
-    case PREFIX_SRC: 
+    case PREFIX_SRC:
           strcpy(output_name,argv[i]);
           add_prefix_to_file_name(input_name,output_name,FX);
           af_remove(input_name);
           af_rename(argv[i],input_name);
           break;
-    case SUFFIX_SRC: 
+    case SUFFIX_SRC:
           strcpy(output_name,argv[i]);
           add_suffix_to_file_name(input_name,output_name,FX);
           af_remove(input_name);
@@ -333,7 +333,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
     u_fclose(input);
     u_fclose(output);
     switch(error_code) {
-    case CONVERSION_OK: 
+    case CONVERSION_OK:
           u_printf("%s converted\n",argv[i]);
           if (output_mode==REPLACE_FILE) {
             /* If we must replace the input file */
@@ -350,7 +350,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
           }
           break;
     case INPUT_FILE_NOT_IN_UTF16_LE:
-          error("Error: %s is not a Unicode Little-Endian file\n",argv[i]); 
+          error("Error: %s is not a Unicode Little-Endian file\n",argv[i]);
           free_encodings_context(encoding_ctx);
           return DEFAULT_ERROR_CODE;
     case INPUT_FILE_NOT_IN_UTF16_BE:
@@ -361,7 +361,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
           error("Error: %s is not a UTF8 file\n",argv[i]);
           free_encodings_context(encoding_ctx);
           return DEFAULT_ERROR_CODE;
-    default: 
+    default:
           error("Internal error in Convert\n");
           free_encodings_context(encoding_ctx);
           return DEFAULT_ERROR_CODE;

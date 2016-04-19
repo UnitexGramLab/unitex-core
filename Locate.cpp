@@ -294,7 +294,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(alph,options.vars()->optarg);
              break;
@@ -306,7 +306,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                     free_vector_ptr(injected_vars,free);
                     free_locate_trace_param(list_param_trace);
                     free(morpho_dic);
-                    return ALLOC_ERROR_CODE;                     
+                    return ALLOC_ERROR_CODE;
                   }
                 }
                 else
@@ -329,7 +329,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              selected_negation_operator=1;
              if ((strcmp(options.vars()->optarg,"minus")==0) || (strcmp(options.vars()->optarg,"-")==0)) {
@@ -358,7 +358,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'o': {
@@ -374,7 +374,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                         free_vector_ptr(injected_vars,free);
                         free_locate_trace_param(list_param_trace);
                         free(morpho_dic);
-                        return USAGE_ERROR_CODE;                        
+                        return USAGE_ERROR_CODE;
                     }
                 }
                 else
@@ -384,7 +384,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                         free_vector_ptr(injected_vars,free);
                         free_locate_trace_param(list_param_trace);
                         free(morpho_dic);
-                        return USAGE_ERROR_CODE;                        
+                        return USAGE_ERROR_CODE;
                     }
              }
              break;
@@ -394,7 +394,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case '@': if (1!=sscanf(options.vars()->optarg,"%d%c",&max_errors,&foo) || max_errors<=0) {
@@ -403,7 +403,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'C': if (1!=sscanf(options.vars()->optarg,"%d%c",&max_matches_per_subgraph,&foo) || max_matches_per_subgraph<=0) {
@@ -412,7 +412,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'P': if (1!=sscanf(options.vars()->optarg,"%d%c",&max_matches_at_token_pos,&foo) || max_matches_at_token_pos<=0) {
@@ -421,7 +421,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              break;
    case 'H': {
@@ -441,7 +441,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(dynamicSntDir,options.vars()->optarg);
              break;
@@ -455,7 +455,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
    case 'K': is_korean=1;
              break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h': usage();
              free_vector_ptr(injected_vars,free);
              free_locate_trace_param(list_param_trace);
@@ -466,7 +466,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
@@ -475,7 +475,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -484,7 +484,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(arabic_rules,options.vars()->optarg);
              break;
@@ -493,7 +493,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
                 free_vector_ptr(injected_vars,free);
                 free_locate_trace_param(list_param_trace);
                 free(morpho_dic);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              list_param_trace=add_locate_trace_param(list_param_trace,options.vars()->optarg);
              break;
@@ -505,7 +505,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
        free_vector_ptr(injected_vars,free);
        free_locate_trace_param(list_param_trace);
        free(morpho_dic);
-       return USAGE_ERROR_CODE;       
+       return USAGE_ERROR_CODE;
      }
      (*value)='\0';
      value++;
@@ -519,7 +519,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Locate,lopts_Locate,&ind
              free_vector_ptr(injected_vars,free);
              free_locate_trace_param(list_param_trace);
              free(morpho_dic);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free_vector_ptr(injected_vars,free);
@@ -539,7 +539,7 @@ if (options.vars()->optind!=argc-1) {
   free_vector_ptr(injected_vars,free);
   free_locate_trace_param(list_param_trace);
   free(morpho_dic);
-  return USAGE_ERROR_CODE;   
+  return USAGE_ERROR_CODE;
 }
 
 if (text[0]=='\0') {
@@ -547,14 +547,14 @@ if (text[0]=='\0') {
   free_vector_ptr(injected_vars,free);
   free_locate_trace_param(list_param_trace);
   free(morpho_dic);
-  return USAGE_ERROR_CODE; 
+  return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
   // freeing all allocated memory
   free_vector_ptr(injected_vars,free);
   free_locate_trace_param(list_param_trace);
-  free(morpho_dic);  
+  free(morpho_dic);
   return SUCCESS_RETURN_CODE;
 }
 
@@ -570,7 +570,7 @@ if (buffer_filename == NULL) {
   free_vector_ptr(injected_vars,free);
   free_locate_trace_param(list_param_trace);
   free(morpho_dic);
-  return ALLOC_ERROR_CODE;  
+  return ALLOC_ERROR_CODE;
 }
 
 char* staticSntDir = (buffer_filename + (step_filename_buffer * 0));

@@ -1122,7 +1122,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
           break;
         }
         { /* This block avoids visibility problem about 'z' */
-                    
+
 
           // local_is_not_a_digit_token return 1 if s is a digit sequence, 0 else
           if (!(pos2 + p->current_origin < p->buffer_size
@@ -1134,7 +1134,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
           /* If we have found a contiguous digit sequence */
 
           int z = pos2+1;
-          int pos_limit = p->buffer_size - p->current_origin; 
+          int pos_limit = p->buffer_size - p->current_origin;
 
           int next_pos_add = 0;
           while (z  < pos_limit
@@ -1282,7 +1282,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 struct opt_variable* output_variable_list = current_state->output_variable_starts;
 Ustring* recycle_Ustring=NULL;
 while (output_variable_list != NULL) {
-  
+
   if (recycle_Ustring==NULL) {
     recycle_Ustring=new_Ustring();
   }

@@ -264,12 +264,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 free(buffer_filename);
                 return USAGE_ERROR_CODE;
              }
-             if ((strcmp(options.vars()->optarg,"minus")!=0) && (strcmp(options.vars()->optarg,"-")!=0) && 
+             if ((strcmp(options.vars()->optarg,"minus")!=0) && (strcmp(options.vars()->optarg,"-")!=0) &&
                  (strcmp(options.vars()->optarg,"tilde")!=0) && (strcmp(options.vars()->optarg,"~")!=0)) {
                  error("You must specify a valid argument for negation operator\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;               
+                return USAGE_ERROR_CODE;
              }
              strcpy(negation_operator,options.vars()->optarg);
              break;
@@ -277,7 +277,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 error("You must specify a non empty text file name\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(text,options.vars()->optarg);
              break;
@@ -285,7 +285,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 error("You must specify a non empty alphabet name\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(alph,options.vars()->optarg);
              break;
@@ -296,7 +296,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                     alloc_error("main_Dico");
                     free(morpho_dic);
                     free(buffer_filename);
-                    return ALLOC_ERROR_CODE;                     
+                    return ALLOC_ERROR_CODE;
                   }
                 }
                 else
@@ -306,7 +306,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                      alloc_error("main_Dico");
                      free(morpho_dic);
                      free(buffer_filename);
-                     return ALLOC_ERROR_CODE; 
+                     return ALLOC_ERROR_CODE;
                     }
                     strcat(morpho_dic,";");
                     strcat(morpho_dic,options.vars()->optarg);
@@ -316,7 +316,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
    case 'K': is_korean=1;
              break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h': usage();
              free(morpho_dic);
              free(buffer_filename);
@@ -325,7 +325,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 error("You must specify a non empty arabic rule configuration file name\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(arabic_rules,options.vars()->optarg);
              break;
@@ -340,7 +340,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 error("You must specify a non empty output file name\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(raw_output,options.vars()->optarg);
              break;
@@ -348,7 +348,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                          error("Missing argument for option --%s\n",lopts_Dico[index].name);
              free(morpho_dic);
              free(buffer_filename);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free(morpho_dic);
@@ -358,7 +358,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 error("Empty input_encoding argument\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
@@ -366,7 +366,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Dico,lopts_Dico,&index))
                 error("Empty output_encoding argument\n");
                 free(morpho_dic);
                 free(buffer_filename);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -384,13 +384,13 @@ if (options.vars()->optind==argc) {
    error("Invalid arguments: rerun with --help\n");
    free(morpho_dic);
    free(buffer_filename);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
   // freeing all allocated memory
   free(morpho_dic);
-  free(buffer_filename);  
+  free(buffer_filename);
   return SUCCESS_RETURN_CODE;
 }
 
@@ -413,12 +413,12 @@ if (raw_output[0]!='\0') {
     free_alphabet(alphabet);
     free(morpho_dic);
     free(buffer_filename);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 if (f_raw_output!=NULL) {
   U_FILE* f_text=u_fopen(&vec,text,U_READ);
-  
+
   if ((*text)=='\0') {
     error("Cannot open text file %s\n",text);
     if (f_raw_output!=U_STDOUT) {
@@ -427,11 +427,11 @@ if (f_raw_output!=NULL) {
     free_alphabet(alphabet);
     free(morpho_dic);
     free(buffer_filename);
-    return DEFAULT_ERROR_CODE;     
+    return DEFAULT_ERROR_CODE;
   }
-  
+
   int ret_applic=raw_dic_application(&vec,f_text,f_raw_output,alphabet,options.vars()->optind,argv);
-  
+
   u_fclose(f_text);
   if (f_raw_output!=U_STDOUT) {
     u_fclose(f_raw_output);
@@ -473,7 +473,7 @@ if(snt_files_creation_error) {
   free_alphabet(alphabet);
   free(morpho_dic);
   free(buffer_filename);
-  return DEFAULT_ERROR_CODE;   
+  return DEFAULT_ERROR_CODE;
 }
 
 /* We remove the text morphological dictionary files, if any */
@@ -485,7 +485,7 @@ af_remove(snt_files->morpho_inf);
 struct text_tokens* tokens=load_text_tokens(&vec,snt_files->tokens_txt);
 if (tokens==NULL) {
    error("Cannot open token file %s\n",snt_files->tokens_txt);
-   free_snt_files(snt_files);  
+   free_snt_files(snt_files);
    free_alphabet(alphabet);
    free(morpho_dic);
    free(buffer_filename);
@@ -531,8 +531,8 @@ for (int priority=1;priority<4;priority++) {
             /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
- 
-            /* 
+
+            /*
              * We are using encoding preference
              */
             info->dlf=u_fopen(&vec,snt_files->dlf,U_APPEND);
@@ -541,7 +541,7 @@ for (int priority=1;priority<4;priority++) {
             /* Working... */
             if (dico_application(&vec,argv[i],info,priority) != 0) {
                 ret = 1;
-            }    
+            }
             /* Dumping and closing output files */
             save_unknown_words(info);
             u_fclose(info->dlf);
@@ -601,12 +601,12 @@ for (int priority=1;priority<4;priority++) {
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority,export_in_morpho_dic);
             if (export_in_morpho_dic==PRODUCE_MORPHO_DIC_NOW) {
-               // only if the local morphological dictionary isn't empty 
+               // only if the local morphological dictionary isn't empty
                if(get_file_size(info->morpho) > 0l) {
                   /* If we have to compress right now the local morphological dictionary,
                    * we must close it, sort it, call Compress and reopen it in append mode */
                   u_fclose(info->morpho);
-                  
+
                   pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
                                       snt_files->morpho_dic,1);
                   /* Then we compress it */
@@ -626,7 +626,7 @@ for (int priority=1;priority<4;priority++) {
                  free_alphabet(alphabet);
                  free(morpho_dic);
                  free(buffer_filename);
-                 return DEFAULT_ERROR_CODE;                  
+                 return DEFAULT_ERROR_CODE;
                }
             }
             /* We dump and close output files */
@@ -666,11 +666,11 @@ u_fclose(info->err);
 u_fclose(info->tags_err);
 
 if (info->morpho!=NULL) {
-   // only if morpho.dic isn't empty 
+   // only if morpho.dic isn't empty
    if(get_file_size(info->morpho) > 0l) {
       /* If we have produced a morpho.dic file, it's time to work with it */
       u_fclose(info->morpho);
-      
+
       /* We sort it to remove duplicates */
       pseudo_main_SortTxt(&vec,0,0,NULL,NULL,0,
                           snt_files->morpho_dic,1);

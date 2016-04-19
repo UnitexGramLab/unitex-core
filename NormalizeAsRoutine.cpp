@@ -120,7 +120,7 @@ while (s[*ptr]!='\0') {
          /* It must not appear at the end of the string */
          return P_BACKSLASH_AT_END;
       }
-      
+
       if ((s[(*ptr) + 1] != '\r') && (s[(*ptr)+1]!='\n')) {
          /* If there is a protection character (backslash) before end of line, we do like this is not a protection char */
      is_protection_char=1;

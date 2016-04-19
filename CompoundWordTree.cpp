@@ -123,7 +123,7 @@ node->count_reference++;
 }
 
 /**
- * Decrement the counter usage of a pointer to a node 
+ * Decrement the counter usage of a pointer to a node
  *  (a compound word tree whose root is 'node'.)
  * Frees the object from memory if counter became 0
  *
@@ -611,7 +611,7 @@ for (;;) {
       tmp=array[i];
       array[i]=array[j];
       array[j]=tmp;
-   } else 
+   } else
        break;
 }
 return j;

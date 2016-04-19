@@ -74,7 +74,7 @@ while (list!=NULL) {
 
 /**
  * Frees a FIFO. If it still contains elements, its linked list is freed.
- * 
+ *
  * WARNING: if the remaining elements have pointer values, these pointers
  * are not freed, so that it is the responsibility of the user to free this
  * memory.
@@ -114,7 +114,7 @@ f->input=f->input->next;
 }
 
 
-/** 
+/**
  * Takes a generic value from the given FIFO, or raises a fatal error
  * if the FIFO is empty.
  */
@@ -147,7 +147,7 @@ put_any(f,tmp);
 }
 
 
-/** 
+/**
  * Takes a pointer value from the given FIFO, or raises a fatal error
  * if the FIFO is empty.
  */
@@ -167,7 +167,7 @@ put_any(f,tmp);
 }
 
 
-/** 
+/**
  * Takes an integer value from the given FIFO, or raises a fatal error
  * if the FIFO is empty.
  */

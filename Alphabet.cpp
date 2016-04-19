@@ -29,7 +29,7 @@
 
 namespace unitex {
 
-// 0x400 in final release, good for all langage 
+// 0x400 in final release, good for all langage
 #define FIRST_SIZE_ARRAYCOLLECTION 0x400
 #define ENLARGE_ARRAYCOLLECTION_FACTOR 0x10
 
@@ -222,7 +222,7 @@ return load_alphabet(vec,filename,0);
  */
 int is_upper_of(unichar lower,unichar upper,const Alphabet* alphabet) {
 if (alphabet==NULL) {
-   return upper==u_toupper(lower);   
+   return upper==u_toupper(lower);
 }
 int i_pos_in_array_of_string = alphabet->pos_in_represent_list[lower];
 if (i_pos_in_array_of_string == 0) return 0;

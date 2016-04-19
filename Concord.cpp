@@ -290,7 +290,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
              if (ret==0 || ret==3 || (ret==2 && foo!='s') || concord_options->left_context<0) {
                 error("Invalid left context argument: %s\n",options.vars()->optarg);
                 free_conc_opt(concord_options);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              if (ret==2) {
                 concord_options->left_context_until_eos=1;
@@ -300,7 +300,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
              if (ret==0 || ret==3 || (ret==2 && foo!='s') || concord_options->right_context<0) {
                 error("Invalid right context argument: %s\n",options.vars()->optarg);
                 free_conc_opt(concord_options);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              if (ret==2) {
                 concord_options->right_context_until_eos=1;
@@ -343,26 +343,26 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
              if (options.vars()->optarg[0]=='\0') {
                 error("Empty glossanet script argument\n");
                 free_conc_opt(concord_options);
-                return USAGE_ERROR_CODE;                   
+                return USAGE_ERROR_CODE;
              }
              concord_options->script=strdup(options.vars()->optarg);
              if (concord_options->script==NULL) {
                 alloc_error("main_Concord");
                 free_conc_opt(concord_options);
-                return ALLOC_ERROR_CODE;                   
+                return ALLOC_ERROR_CODE;
              }
              break;
    case 'p': concord_options->result_mode=SCRIPT_;
              if (options.vars()->optarg[0]=='\0') {
                 error("Empty script argument\n");
                 free_conc_opt(concord_options);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              concord_options->script=strdup(options.vars()->optarg);
              if (concord_options->script==NULL) {
                 alloc_error("main_Concord");
                 free_conc_opt(concord_options);
-                return ALLOC_ERROR_CODE;                 
+                return ALLOC_ERROR_CODE;
              }
              break;
    case 'i': concord_options->result_mode=INDEX_; break;
@@ -378,7 +378,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
                 concord_options->original_file_offsets=1;
              }
              break;
-   case 'w': concord_options->result_mode=XML_WITH_HEADER_; 
+   case 'w': concord_options->result_mode=XML_WITH_HEADER_;
              if (options.vars()->optarg!=NULL) {
                 strcpy(offset_file, options.vars()->optarg);
                 concord_options->original_file_offsets = 1;
@@ -411,7 +411,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
    case 'a': if (options.vars()->optarg[0]=='\0') {
                 error("Empty alphabet argument\n");
                 free_conc_opt(concord_options);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              concord_options->sort_alphabet=strdup(options.vars()->optarg);
              if (concord_options->sort_alphabet==NULL) {
@@ -428,9 +428,9 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Concord,lopts_Concord,&i
              strcpy(concord_options->working_directory,options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h': usage();
-             free_conc_opt(concord_options); 
+             free_conc_opt(concord_options);
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Concord[index].name);
@@ -467,7 +467,7 @@ if (concord_options->fontname==NULL || concord_options->fontsize<=0) {
    if (concord_options->result_mode==HTML_ || concord_options->result_mode==GLOSSANET_) {
       error("The specified output mode is an HTML file: you must specify font parameters\n");
       free_conc_opt(concord_options);
-      return USAGE_ERROR_CODE;      
+      return USAGE_ERROR_CODE;
    }
 }
 
@@ -481,7 +481,7 @@ U_FILE* concor=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (concor==NULL) {
    error("Cannot open concordance index file %s\n",argv[options.vars()->optind]);
    free_conc_opt(concord_options);
-   return DEFAULT_ERROR_CODE;   
+   return DEFAULT_ERROR_CODE;
 }
 
 if (concord_options->working_directory[0]=='\0') {
@@ -529,7 +529,7 @@ else {
     free_snt_files(snt_files);
     u_fclose(concor);
     free_conc_opt(concord_options);
-    return ALLOC_ERROR_CODE;     
+    return ALLOC_ERROR_CODE;
   }
   n_enter_char=(int)fread(enter_pos,sizeof(int),size/sizeof(int),f_enter);
   if (n_enter_char!=(int)(size/sizeof(int))) {
@@ -545,7 +545,7 @@ else {
   }
   u_fclose(f_enter);
 }
-if (concord_options->result_mode==INDEX_ || concord_options->result_mode==UIMA_ || 
+if (concord_options->result_mode==INDEX_ || concord_options->result_mode==UIMA_ ||
     concord_options->result_mode==XML_ || concord_options->result_mode==XML_WITH_HEADER_ ||
     concord_options->result_mode==AXIS_) {
    /* We force some options for index, uima and axis files */
@@ -563,26 +563,26 @@ if (concord_options->result_mode==HTML_ || concord_options->result_mode==DIFF_ |
   concord_options->snt_offsets=load_snt_offsets(snt_files->snt_offsets_pos);
   if (concord_options->snt_offsets==NULL) {
     error("Cannot read snt offset file %s\n",snt_files->snt_offsets_pos);
-    free(enter_pos);    
+    free(enter_pos);
     free_text_tokens(tok);
     af_close_mapfile(text);
     free_snt_files(snt_files);
     u_fclose(concor);
     free_conc_opt(concord_options);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 if (offset_file[0]!='\0') {
   concord_options->uima_offsets=load_uima_offsets(&vec,offset_file);
   if (concord_options->uima_offsets==NULL) {
     error("Cannot read offset file %s\n",offset_file);
-    free(enter_pos); 
+    free(enter_pos);
     free_text_tokens(tok);
     af_close_mapfile(text);
     free_snt_files(snt_files);
     u_fclose(concor);
     free_conc_opt(concord_options);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 if (PRLG[0]!='\0') {
@@ -595,7 +595,7 @@ if (PRLG[0]!='\0') {
     free_snt_files(snt_files);
     u_fclose(concor);
     free_conc_opt(concord_options);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 if (concord_options->result_mode==CSV_) {

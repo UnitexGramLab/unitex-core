@@ -365,7 +365,7 @@ for (unsigned int i=0;i<nb_var;i++) {
   size_strings += len;
 }
 OutputVariablesBackup* backup=(OutputVariablesBackup*)malloc_cb(
-  v->unichars_offset + (size_strings * sizeof(unichar)) +    
+  v->unichars_offset + (size_strings * sizeof(unichar)) +
     ((nb_var+1) * ( sizeof(uint_pack_multibits)+sizeof(unichar))),prv_alloc);
 if (backup==NULL) {
    fatal_alloc_error("create_output_variable_backup");
@@ -383,7 +383,7 @@ for (unsigned int i = 0; i<(unsigned int)nb_var; i++) {
 *((unsigned int*)(((char*)backup) + OFFSET_NB_PENDING)) = nb_pending;
 
 unsigned int* string_index = (unsigned int*)(((char*)backup) + (v->string_index_offset));
- 
+
 if ((!nb_pending) && (!size_strings)) {
   *string_index = nb_var;
   *((unsigned int*)(((char*)backup) + OFFSET_NB_FILLED_STRING)) = 0;
@@ -486,7 +486,7 @@ int pos_in_index = 0;
 
 for (;;) {
   unsigned int cur_item_in_index = *(string_index + pos_in_index);
-  
+
   if (cur_item_in_index == nb_var)
     break;
 

@@ -43,7 +43,7 @@
 #endif
 
 namespace unitex {
-                            
+
 const char* usage_Compress =
 "Usage:\n"
 "  Compress [options] DICTIONARY\n"
@@ -118,7 +118,7 @@ static void usage() {
 static const size_t step_filename_buffer =
                     ((((DIC_WORD_SIZE * sizeof(unichar)) / 0x10) + 1) * 0x10);
 
-// function used to minimize a dictionary tree, i.e. to construct a minimal ADFA 
+// function used to minimize a dictionary tree, i.e. to construct a minimal ADFA
 typedef void(*minimize_func)(struct dictionary_node* root,
                              struct bit_array* used_inf_values,
                              Abstract_allocator prv_alloc);
@@ -150,9 +150,9 @@ static void write_INF_file_header(const VersatileEncodingConfig* vec,
 /**
  * @brief Builds a tree representation of a DELAF dictionary
  *
- * Builds a tree representation of a DELAF dictionary pointed by \a filename. 
- * The output \root structure represents the starting node of the dictionary 
- * being loaded. This function returns a succeed status if at least one entry 
+ * Builds a tree representation of a DELAF dictionary pointed by \a filename.
+ * The output \root structure represents the starting node of the dictionary
+ * being loaded. This function returns a succeed status if at least one entry
  * was processed, this is true even if the dictionary contains invalid entries
  *
  * @param[in] vec encoding I/O Configuration
@@ -165,7 +165,7 @@ static void write_INF_file_header(const VersatileEncodingConfig* vec,
  * @param[out] n_entries total entries processed without comments
  * @param[out] n_lines total lines scanned including comments
  * @param[out] n_line_errors total lines errors including comments
- * @param[out] n_file_includes total files included from \a filename 
+ * @param[out] n_file_includes total files included from \a filename
  * @return SUCCESS_RETURN_CODE or other status code. See Error.h for details
  * @author Cristian Martinez (based in a previous version of Sébastien Paumier)
  */
@@ -203,7 +203,7 @@ static int build_tree_from_dictionary(
     free(heap_buffer);
     return DEFAULT_ERROR_CODE;
   }
-  
+
   // filename is a directory not a plain text file
   if(is_directory(filename_as_char)) {
     error("%S: Is a directory\n", filename);
@@ -342,7 +342,7 @@ static int build_tree_from_dictionary(
 
       default:
         // if we have a line, we tokenize it
-        
+
         // reinitialize entry to NULL, in this way if replace_special_equal_signs()
         // fails, an error will be threw
         entry = NULL;
@@ -361,7 +361,7 @@ static int build_tree_from_dictionary(
                                        compress_tokenize_abstract_allocator);
         }
 
-        // if the entry is not well-formed throw an error indicating 
+        // if the entry is not well-formed throw an error indicating
         // the file name and the line number where the error happened
         if (entry == NULL) {
           error("%s:%d\n",
@@ -370,8 +370,8 @@ static int build_tree_from_dictionary(
           (*n_line_errors)++;
           // breaks switch
           break;
-        } 
-        
+        }
+
         // if the entry is well-formed
         // The unescaped = that were not in the inflected or lemma form must
         // be restored as real = character
@@ -521,7 +521,7 @@ static int build_tree_from_dictionary(
  * @param[out] n_lines total lines scanned including commentaries
  * @param[out] n_entries total entries processed without file commentaries
  * @return SUCCESS_RETURN_CODE or other status code. See Error.h for details
- * @author Cristian Martinez 
+ * @author Cristian Martinez
  */
 static int build_tree_from_dictionary_list(
                      const VersatileEncodingConfig* vec,
@@ -538,13 +538,13 @@ static int build_tree_from_dictionary_list(
                      Abstract_allocator compress_tokenize_abstract_allocator) {
   // number of entries that were processed in the file that is being read
   int current_file_total_entries      = 0;
-  
+
   // number of lines that were scanned in the file that is being read
   int current_file_total_lines        = 0;
-  
+
   // number of lines that were scanned in the file that is being read
   int current_file_total_line_errors  = 0;
-  
+
   // number of files that were included in the file that is being read
   int current_file_total_includes     = 0;
 
@@ -578,29 +578,29 @@ static int build_tree_from_dictionary_list(
        &current_file_total_includes,           // total includes
        compress_abstract_allocator,
        compress_tokenize_abstract_allocator);
-    
+
     // throw an error if there are not entries to process in this dictionary
-    if (return_value == SUCCESS_RETURN_CODE && 
-        current_file_total_includes == 0    && 
+    if (return_value == SUCCESS_RETURN_CODE &&
+        current_file_total_includes == 0    &&
         current_file_total_entries  == 0) {
       error("%S: Empty dictionary\n", current_dictionary->string);
-    }    
-    
+    }
+
     // update counters
     (*n_entries)     += current_file_total_entries;
     (*n_lines)       += current_file_total_lines;
     (*n_line_errors) += current_file_total_line_errors;
     (*n_files)++;
-    
+
     // get the next filename to be processed
     current_dictionary = current_dictionary->next;
   }  // while (current_dictionary != NULL)
-  
+
   // succeed only if there are entries to process
   if(return_value == SUCCESS_RETURN_CODE && *n_entries <= 0) {
     return DEFAULT_ERROR_CODE;
   }
-  
+
   return return_value;
 }
 
@@ -680,7 +680,7 @@ static int create_and_save_inf(const VersatileEncodingConfig* vec,
 }
 
 /**
- * @brief Minimizes and save a DELAF dictionary tree into a classic bin file 
+ * @brief Minimizes and save a DELAF dictionary tree into a classic bin file
  *
  * @param[in] vec encoding I/O Configuration for the \a output_inf file
  * @param[in] bin_filename null-terminated string, with the output .bin filename
@@ -894,12 +894,12 @@ while (EOF != (val = options.parse_long(argc, argv, optstring_Compress, lopts_Co
     case  1 : // this is according to the "Standards for Command Line Interfaces"
               // https://goo.gl/7UgLC8
               u_printf("Compress (Unitex) %s\n",get_unitex_semver_string());
-              return SUCCESS_RETURN_CODE;          
-    case  2 : new_style_bin = 1; bin_type = BIN_BIN2;    break;    
+              return SUCCESS_RETURN_CODE;
+    case  2 : new_style_bin = 1; bin_type = BIN_BIN2;    break;
     case  3 : new_style_bin = 0; bin_type = BIN_CLASSIC; break;
     case  4 : new_style_bin = 1; bin_type = BIN_CLASSIC; break;
     case 'V': only_verify_arguments = true;
-              break;    
+              break;
     case 'h': usage();
               free(buffer_filename);
               return SUCCESS_RETURN_CODE;
@@ -909,7 +909,7 @@ while (EOF != (val = options.parse_long(argc, argv, optstring_Compress, lopts_Co
                 return USAGE_ERROR_CODE;
               }
               strcpy(output_type, options.vars()->optarg);
-              break;              
+              break;
     case 'o': if (options.vars()->optarg[0] == '\0') {
                 error("You must specify a non empty output\n");
                 free(buffer_filename);
@@ -940,7 +940,7 @@ while (EOF != (val = options.parse_long(argc, argv, optstring_Compress, lopts_Co
                error("Missing argument for option -%c\n",  options.vars()->optopt) :
                error("Missing argument for option --%s\n", lopts_Compress[index].name);
               free(buffer_filename);
-              return USAGE_ERROR_CODE;              
+              return USAGE_ERROR_CODE;
     case '?': index == -1 ? error("Invalid option -%c\n", options.vars()->optopt) :
                             error("Invalid option --%s\n", options.vars()->optarg);
               free(buffer_filename);
@@ -967,7 +967,7 @@ if (options.vars()->optind != argc-1 && bin_filename[0] == '\0') {
 if (output_type[0] != '\0') {
   if      (strcmp(output_type,"bin1") == 0) {
     new_style_bin = 1;
-    bin_type = BIN_CLASSIC;  
+    bin_type = BIN_CLASSIC;
   }
   else if (strcmp(output_type,"bin2") == 0) {
     new_style_bin = 1;
@@ -1006,7 +1006,7 @@ list_ustring_ptr dictionary_list = NULL;
 
 // insert in the list all filenames that were passed as argument
 for (; options.vars()->optind != argc; (options.vars()->optind)++) {
-  // to prevent including a file repeatedly, we only stored resolved filenames 
+  // to prevent including a file repeatedly, we only stored resolved filenames
   // @see get_real_path for more information
   if (get_real_path(argv[options.vars()->optind],
                    resolved_filename) == SUCCESS_RETURN_CODE) {
@@ -1094,7 +1094,7 @@ if (return_value == SUCCESS_RETURN_CODE) {
                        &bin_size,        // size of the resulting .bin file
                        compress_abstract_allocator);
       break;
-    // .bin2 style, with outputs included in the transducer 
+    // .bin2 style, with outputs included in the transducer
     case BIN_BIN2:
       return_value = minimize_and_save_tree_as_bin_two(
                        bin_filename,     // output .bin filename

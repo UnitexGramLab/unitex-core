@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -579,7 +579,7 @@ const struct utility_item utility_array[]=
   { "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,
 #endif
 
-  { "", 0, NULL, NULL, NULL, NULL} 
+  { "", 0, NULL, NULL, NULL, NULL}
 };
 
 
@@ -661,7 +661,7 @@ int GetNumberOfTool()
 {
   int i=0;
   while (utility_array[i].len_name > 0)
-  {    
+  {
     i++;
   }
   return i;
@@ -719,7 +719,7 @@ void list_unused_option_letter()
 }
 
 const char* usage_UnitexTool_prefix =
-    "Usage: UnitexTool <Utility> [OPTIONS]\n" 
+    "Usage: UnitexTool <Utility> [OPTIONS]\n"
               "where OPTIONS can be -h/--help to display help\n"
              "and Utility is from this list :\n";
 
@@ -844,7 +844,7 @@ static int UnitexTool_several_info_ignore_stack_option(int argc,char* const argv
       unitexTool_run_in_thread_infos infos;
       unitexTool_run_in_thread_infos* pinfos = &infos;
       const char* stack_size_option = firstArg + 13;
-      
+
       char cSuffix = 0;
       char foo = 0;
       unsigned int stack_size = 0;
@@ -912,14 +912,14 @@ static int UnitexTool_several_info_ignore_stack_option(int argc,char* const argv
   ptia->argcpos = 0;
   ptia->nbargs = 0;
   ptia->ret = 0;
-  
+
 
 #ifdef DEBUG
   int icount;
   for (icount=0;icount<argc;icount++) u_printf("%s ",argv[icount]);
   u_printf("\n");
 #endif
-  
+
   if (argc <= pos)
   {
     unitex_tool_usage(1,1);

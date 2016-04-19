@@ -170,7 +170,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnpackFile,lopts_UnpackF
                break;
      case 'V': only_verify_arguments = true;
              break;
-     case 'h': usage();  
+     case 'h': usage();
                return SUCCESS_RETURN_CODE;
      case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                            error("Missing argument for option --%s\n",lopts_UnpackFile[index].name);
