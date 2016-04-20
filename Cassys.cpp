@@ -427,7 +427,7 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                     }
                     else if(line[x] != '\\') {
                         annot = -1;
-                        if(line[x] == '}' && start > 0) {
+                        if(x == j-1 && start > 0) {
                             int matches = 0;
                             unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
                             int z = 0;
