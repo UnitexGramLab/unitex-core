@@ -72,8 +72,8 @@ const struct option_TS lopts_SelectOutput[] = {
  */
 int main_SelectOutput(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+    usage();
+    return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -88,24 +88,24 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
              return SUCCESS_RETURN_CODE;
    case 'e':
    case 'o':
-	   {
-		   enum stdwrite_kind swk = (val == 'o') ? stdwrite_kind_out : stdwrite_kind_err;
-		   if (strcmp(options.vars()->optarg,"on") == 0)
-		   {
-		       SetStdWriteCB(swk,0,NULL,NULL);
-		   }
-		   else
-		   if (strcmp(options.vars()->optarg,"off") == 0)
-		   {
-		       SetStdWriteCB(swk,1,NULL,NULL);
-		   }
-		   else
-		   {
-		       error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
-		       return USAGE_ERROR_CODE;
-		   }
-		   break;
-	   }
+       {
+           enum stdwrite_kind swk = (val == 'o') ? stdwrite_kind_out : stdwrite_kind_err;
+           if (strcmp(options.vars()->optarg,"on") == 0)
+           {
+               SetStdWriteCB(swk,0,NULL,NULL);
+           }
+           else
+           if (strcmp(options.vars()->optarg,"off") == 0)
+           {
+               SetStdWriteCB(swk,1,NULL,NULL);
+           }
+           else
+           {
+               error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
+           }
+           break;
+       }
 
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
@@ -136,7 +136,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
   }
 
 
-	return SUCCESS_RETURN_CODE;
+    return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

@@ -72,7 +72,7 @@ Fst2* fst2=load_abstract_fst2(vec,name,1,&fst2_free);
 char name_without_path[FILENAME_MAX];
 remove_path(name,name_without_path);
 if (fst2==NULL) {
-	error("Cannot load graph %s\n",name);
+    error("Cannot load graph %s\n",name);
     if (ferr != NULL)
         u_fprintf(ferr,"Cannot load graph %s\n",name);
     return 0;

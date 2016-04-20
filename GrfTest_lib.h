@@ -36,12 +36,12 @@ namespace unitex {
 #define GRF_UNIT_TEST_PFX "@TEST:"
 
 typedef struct {
-	unichar* text;
-	int start,end;
-	int must_match;
-	OutputPolicy output_policy;
-	MatchPolicy match_policy;
-	unichar* expected_output;
+    unichar* text;
+    int start,end;
+    int must_match;
+    OutputPolicy output_policy;
+    MatchPolicy match_policy;
+    unichar* expected_output;
 } GrfUnitTest;
 
 

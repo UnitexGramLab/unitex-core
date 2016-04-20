@@ -88,26 +88,26 @@ enum tag_type {
  * This structure represents a tag of a .fst2 file.
  */
 struct fst2Tag {
-	/* Field used to indicate the nature of the tag */
+    /* Field used to indicate the nature of the tag */
    enum tag_type type;
 
-	/* This control byte is used to set information about the tag with
-	 * bit masks. The meaning of these tags can be found in LocateConstants.h
-	 *
-	 * This field is also used in the Grf2Fst2 program in order to mark the
-	 * tags that can match the empty word <E>.
-	 */
-	unsigned char control;
+    /* This control byte is used to set information about the tag with
+     * bit masks. The meaning of these tags can be found in LocateConstants.h
+     *
+     * This field is also used in the Grf2Fst2 program in order to mark the
+     * tags that can match the empty word <E>.
+     */
+    unsigned char control;
 
-	/*
-	 * 'input' represents the input part of a tag, that is to say without
-	 * its morphological filter and output if any.
-	 * Example: "<V:P><<^in>>/[V]" => input="<V:P>"
-	 *
-	 * NOTE: if the input only contains a morphological filter like "<<^in>>",
-	 *       the default sequence "<TOKEN>" will be copied in the 'input' field.
-	 */
-	unichar* input;
+    /*
+     * 'input' represents the input part of a tag, that is to say without
+     * its morphological filter and output if any.
+     * Example: "<V:P><<^in>>/[V]" => input="<V:P>"
+     *
+     * NOTE: if the input only contains a morphological filter like "<<^in>>",
+     *       the default sequence "<TOKEN>" will be copied in the 'input' field.
+     */
+    unichar* input;
 
    /*
     * If a tag contains a morphological filter, it is copied into this field
@@ -144,19 +144,19 @@ struct fst2Tag {
     unichar* variable;
 
    /*
-	 * This field represents the list of the numbers of the tokens that this tag
-	 * can match.
-	 */
-	struct list_int* matching_tokens;
+     * This field represents the list of the numbers of the tokens that this tag
+     * can match.
+     */
+    struct list_int* matching_tokens;
 
-	/*
-	 * If the tag can match one or several compound words, a compound pattern is
-	 * created, and this field is used to store the number of this compound
-	 * pattern. Note that if a tag ("<Einstein>") can match both simple ("Einstein")
-	 * and compound ("Albert Einstein") words, simple words will be handled as
-	 * tokens, and compound words will be handled via a compound pattern.
-	 */
-	int compound_pattern;
+    /*
+     * If the tag can match one or several compound words, a compound pattern is
+     * created, and this field is used to store the number of this compound
+     * pattern. Note that if a tag ("<Einstein>") can match both simple ("Einstein")
+     * and compound ("Albert Einstein") words, simple words will be handled as
+     * tokens, and compound words will be handled via a compound pattern.
+     */
+    int compound_pattern;
 };
 typedef struct fst2Tag* Fst2Tag;
 
@@ -165,15 +165,15 @@ typedef struct fst2Tag* Fst2Tag;
  * This structure represents a state of a .fst2 file.
  */
 struct fst2State {
-	/* This control byte is used to set information about the state with
-	 * bit masks. The two lowest bits are reserved to mark initial and final
-	 * states. This field can also be used to mark states when exploring a fst2. For
-	 * instance, it is used for cycle detection in the Grf2Fst2 program.
-	 */
-	unsigned char control;
+    /* This control byte is used to set information about the state with
+     * bit masks. The two lowest bits are reserved to mark initial and final
+     * states. This field can also be used to mark states when exploring a fst2. For
+     * instance, it is used for cycle detection in the Grf2Fst2 program.
+     */
+    unsigned char control;
 
-	/* Transitions outgoing from this state */
-	Transition* transitions;
+    /* Transitions outgoing from this state */
+    Transition* transitions;
 };
 typedef struct fst2State* Fst2State;
 
@@ -182,7 +182,7 @@ typedef struct fst2State* Fst2State;
  * This structure represent a fst2.
  */
 struct fst2 {
-	/* Array that contains all the states of the fst2 */
+    /* Array that contains all the states of the fst2 */
     Fst2State* states;
 
     /* Array that contains all the tags of the fst2 */

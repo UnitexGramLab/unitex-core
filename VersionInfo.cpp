@@ -273,14 +273,14 @@ if (do_json_info) {
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_user_friendly_info) {
     char buf[0x200]="";
-	strcpy(buf, get_unitex_verbose_version_string());
+    strcpy(buf, get_unitex_verbose_version_string());
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_semver_info) {
     char buf[0x200]="";
-	strcpy(buf,get_unitex_semver_string());
+    strcpy(buf,get_unitex_semver_string());
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_copyright_only) {
-	get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+    get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
 }
 else if (do_revision_only) {
     u_sprintf(DisplayText,"%d",revision);
@@ -290,12 +290,12 @@ else if (do_version_only) {
 }
 else {
     if (revision == -1) {
-		get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+        get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
         u_sprintf(DisplayText+u_strlen(DisplayText),"\nUnitex Version: %u.%u\n",
                 unitexMajorVersion,unitexMinorVersion);
     }
     else {
-		get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+        get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
         u_sprintf(DisplayText+u_strlen(DisplayText),"\nUnitex Version: %u.%u\nUnitex SVN revision: %d\n",
                 unitexMajorVersion,unitexMinorVersion,revision);
     }

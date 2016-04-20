@@ -89,7 +89,7 @@ int readline_keep_CR(Ustring*,U_FILE*);
 int readline(Ustring*,U_FILE*);
 unichar* readline_safe(U_FILE* f);
 
-    
+
 void u_strcpy(Ustring* ustr,const unichar* str,unsigned int length);
 
 /* Inline implementations */
@@ -125,9 +125,9 @@ return s->len;
 
 static inline unichar* free_Ustring_get_str(Ustring*s)
 {
-	unichar*str = s->str;
-	free(s);
-	return str;
+    unichar*str = s->str;
+    free(s);
+    return str;
 }
 
 
@@ -160,7 +160,7 @@ u_strcat(ustr,(char*)str,(int)strlen(str));
  * Copies 'src' content in to the given Ustring, whose previous content
  * is lost.
  */
-    
+
 static inline void u_strcpy(Ustring* dest,const unichar* str) {
 if (dest==NULL) {
    fatal_error("NULL Ustring error in u_strcpy\n");

@@ -19,18 +19,18 @@
  *
  */
 /**
- * @file     UnitexString.h  
- * @brief    Implements the Unitex::UnitexString class, a wrapper around Unitex 
+ * @file     UnitexString.h
+ * @brief    Implements the Unitex::UnitexString class, a wrapper around Unitex
  *           unicode strings data types and functions
- * 
+ *
  * @author   cristian.martinez@univ-paris-est.fr (martinec)
- *          
+ *
  * @note     Use cpplint.py tool to detect style errors:
  *           `curl -L http://goo.gl/O1I32H -o cpplint.py ; chmod +x cpplint.py ;
  *           ./cpplint.py UnitexString.h`
- *          
+ *
  * @date     November 2014
- * 
+ *
  * This file was contributed as part of the [DataMaTex](http://unitex.amabis.fr)
  * project developed by [Amabis SARL](http://www.amabis.fr) with the collaboration
  * of the [LIGM](http://infolingu.univ-mlv.fr/). For further information on this,
@@ -64,12 +64,12 @@ namespace unitex {
 /* ************************************************************************** */
 /**
  * @class    UnitexString
- * 
- * @brief    A class wrapper (RAII) around Unitex unicode strings data types and 
+ *
+ * @brief    A class wrapper (RAII) around Unitex unicode strings data types and
  *           functions
- * 
+ *
  * @details  This class is build upon the next data types :
- * 
+ *
  * @code{.cpp}
  *           const char            // character
  *           const char*           // string
@@ -78,11 +78,11 @@ namespace unitex {
  *           const Ustring*        // string
  *           const UnitexString&   // string
  * @endcode
- * 
+ *
  * @defgroup UnitexString UnitexString
- * @ingroup  Unicode 
- * 
- * @see      Ustring.h 
+ * @ingroup  Unicode
+ *
+ * @see      Ustring.h
  * @see      Unicode.h
  */
 class UnitexString {
@@ -95,7 +95,7 @@ class UnitexString {
 
   /**
    * @brief  Unitex unicode elemental type
-   * 
+   *
    * unichar is the type of a unicode character. Note that it is a 16-bits type,
    * so that it cannot handle characters >= 0xFFFF. Such characters, theoretically
    * represented with low and high surrogate characters are not handled by Unitex
@@ -104,7 +104,7 @@ class UnitexString {
 
   /**
    * @brief  Read/Write reference to a unichar character
-   * 
+   *
    * @see    value_type
    */
   typedef unichar& reference;
@@ -131,7 +131,7 @@ class UnitexString {
 
   /**
    * @brief  Read/Write unichar pointer used as iterator
-   * 
+   *
    */
   typedef unichar* iterator;
 
@@ -146,19 +146,19 @@ class UnitexString {
   /// @{
 
   /**
-   * @brief  Returned by functions when they fail, literally indicates past 
+   * @brief  Returned by functions when they fail, literally indicates past
    *         the end
    */
   static const size_type  npos = static_cast<size_type>(-1);
 
   /**
    * @brief  Max buffer size
-   * 
-   * Max buffer size, expressed in number of characters, used in 
+   *
+   * Max buffer size, expressed in number of characters, used in
    * UnitexString::format and UnitexString::append_format functions
-   * 
+   *
    * @see    format
-   * @see    append_format 
+   * @see    append_format
    */
   static const size_type  kMaxBufferSize = 1024;
 
@@ -167,8 +167,8 @@ class UnitexString {
   // Constructors
   /**
    * @brief  Default constructor
-   * 
-   * Allocates and initializes an empty string, with a length of zero 
+   *
+   * Allocates and initializes an empty string, with a length of zero
    * characters
    */
   UnitexString() :
@@ -177,9 +177,9 @@ class UnitexString {
 
   /**
    * @brief  Copy constructor
-   * 
+   *
    * Constructs string as copy of a string
-   * 
+   *
    * @param  string Source string
    */
   UnitexString(const UnitexString& string) :
@@ -188,11 +188,11 @@ class UnitexString {
 
   /**
    * @brief  Substring constructor
-   * 
-   * Copies the portion of str that begins at the character position pos and 
-   * spans n characters, or until the end of str, if either str is too short 
+   *
+   * Copies the portion of str that begins at the character position pos and
+   * spans n characters, or until the end of str, if either str is too short
    * or if n is UnitexString::npos
-   * 
+   *
    * @param  string Source string
    * @param  pos    Index of first character to copy from
    * @param  n      Number of characters to copy (default remainder)
@@ -211,10 +211,10 @@ class UnitexString {
 
   /**
    * @brief  Constructor from c-string
-   * 
-   * Allocates and initializes a string from a null-terminated character 
+   *
+   * Allocates and initializes a string from a null-terminated character
    * sequence (C-string)
-   * 
+   *
    * @param  string A null-terminated character sequence (C-string)
    */
   /*explicit*/ UnitexString(const char* string) :                   // NOLINT
@@ -223,10 +223,10 @@ class UnitexString {
   }
 
   /**
-   * @brief  Constructor from c-buffer 
-   * 
+   * @brief  Constructor from c-buffer
+   *
    * Copies  the first n chars from the array of characters pointed by string
-   * 
+   *
    * @param  string A null-terminated character sequence (C-string)
    * @param  n      Number of characters to copy
    */
@@ -237,13 +237,13 @@ class UnitexString {
 
   /**
    * @brief  Fill constructor from char
-   * 
+   *
    * Fills the string with n consecutive copies of character c
-   * 
+   *
    * @param  n         Number of characters to fill
-   * @param  character Character to fill the string with. Each of the n 
-   *                   characters in the string will be initialized to a 
-   *                   copy of this value. 
+   * @param  character Character to fill the string with. Each of the n
+   *                   characters in the string will be initialized to a
+   *                   copy of this value.
    */
   UnitexString(size_type n, char character) :
       data_(new_Ustring(n)) {
@@ -259,11 +259,11 @@ class UnitexString {
 
   /**
    * @brief  Range constructor from C-string iterators
-   * 
-   * Copies the sequence of characters in the range [first,last), in the 
-   * same order, including the character pointed by first but not the 
+   *
+   * Copies the sequence of characters in the range [first,last), in the
+   * same order, including the character pointed by first but not the
    * character pointed by last.
-   * 
+   *
    * @param  first  Input iterator (C-string) to the initial position in a range
    * @param  last   Input iterator (C-string) to the final position in a range
    */
@@ -278,11 +278,11 @@ class UnitexString {
   }
 
   /**
-   * @brief  Constructor from unitex unichar 
-   * 
-   * Allocates and initializes a string from a null-terminated character 
+   * @brief  Constructor from unitex unichar
+   *
+   * Allocates and initializes a string from a null-terminated character
    * sequence (unichar-string)
-   * 
+   *
    * @param  string A null-terminated character sequence (unichar-string)
    */
   explicit UnitexString(const unichar* string) :
@@ -291,9 +291,9 @@ class UnitexString {
 
   /**
    * @brief  Constructor from unichar buffer
-   * 
+   *
    * Copies the first n chars from the array of characters pointed by string
-   * 
+   *
    * @param  string A null-terminated character sequence (unichar-string)
    * @param  n      Number of characters to copy
    */
@@ -304,13 +304,13 @@ class UnitexString {
 
   /**
    * @brief  Fill constructor from unichar
-   * 
+   *
    * Fills the string with n consecutive copies of character c (unichar)
-   * 
+   *
    * @param  n         Number of characters to fill
-   * @param  character Character to fill the string with. Each of the n 
-   *                   characters in the string will be initialized to a 
-   *                   copy of this value. 
+   * @param  character Character to fill the string with. Each of the n
+   *                   characters in the string will be initialized to a
+   *                   copy of this value.
    */
   UnitexString(size_type n, unichar character) :
       data_(new_Ustring(n)) {
@@ -326,11 +326,11 @@ class UnitexString {
 
   /**
    * @brief  Range constructor from unichar-string iterators
-   * 
-   * Copies the sequence of characters in the range [first,last), in the 
-   * same order, including the character pointed by first but not the 
+   *
+   * Copies the sequence of characters in the range [first,last), in the
+   * same order, including the character pointed by first but not the
    * character pointed by last.
-   * 
+   *
    * @param  first  Input iterator (unichar) to the initial position in a range
    * @param  last   Input iterator (unichar) to the final position in a range
    */
@@ -345,11 +345,11 @@ class UnitexString {
   }
 
   /**
-   * @brief  Constructor from unitex Ustring 
-   * 
-   * Allocates and initializes a string from a null-terminated character 
+   * @brief  Constructor from unitex Ustring
+   *
+   * Allocates and initializes a string from a null-terminated character
    * sequence (Ustring-string)
-   * 
+   *
    * @param  string A null-terminated character sequence (Ustring-string)
    */
   explicit UnitexString(const Ustring* string) :
@@ -358,9 +358,9 @@ class UnitexString {
 
   /**
    * @brief  Constructor from Ustring buffer
-   * 
+   *
    * Copies the first n chars from the array of characters pointed by string
-   * 
+   *
    * @param  string A null-terminated character sequence (Ustring-string)
    * @param  n      Number of characters to copy
    */
@@ -373,7 +373,7 @@ class UnitexString {
 
   /**
    * @brief  Destroys the string object
-   * 
+   *
    * Free the memory allocated to the internal string
    */
   ~UnitexString() {
@@ -385,9 +385,9 @@ class UnitexString {
 
   /**
    * @brief  Return iterator to beginning
-   * 
+   *
    * Returns an iterator pointing to the first character of the string
-   * 
+   *
    * @return An iterator to the beginning of the string
    */
   iterator begin() {
@@ -396,9 +396,9 @@ class UnitexString {
 
   /**
    * @brief  Return constant iterator to beginning
-   * 
+   *
    * Returns a constant iterator pointing to the first character of the string
-   * 
+   *
    * @return A constant iterator to the beginning of the string
    */
   const_iterator begin() const {
@@ -407,10 +407,10 @@ class UnitexString {
 
   /**
    * @brief  Return constant iterator to beginning
-   * 
+   *
    * Returns a constant iterator pointing to the first character of the string.
    * This is an alias of UnitexString::begin
-   * 
+   *
    * @return A constant iterator to the beginning of the string
    */
   const_iterator cbegin() const {
@@ -418,12 +418,12 @@ class UnitexString {
   }
 
   /**
-   * @brief  Returns an iterator pointing to the past-the-end character of 
+   * @brief  Returns an iterator pointing to the past-the-end character of
    * the string
-   * 
-   * The past-the-end character is a theoretical character that would follow 
+   *
+   * The past-the-end character is a theoretical character that would follow
    * the last character in the string. It shall not be dereferenced
-   * 
+   *
    * @return An iterator to the past-the-end of the string
    */
   iterator end() {
@@ -433,10 +433,10 @@ class UnitexString {
   /**
    * @brief  Returns a constant iterator pointing to the past-the-end character
    *  of  the string
-   * 
-   * The past-the-end character is a theoretical character that would follow 
+   *
+   * The past-the-end character is a theoretical character that would follow
    * the last character in the string. It shall not be dereferenced
-   * 
+   *
    * @return A constant iterator to the past-the-end of the string
    */
   const_iterator end() const {
@@ -446,11 +446,11 @@ class UnitexString {
   /**
    * @brief  Returns a constant iterator pointing to the past-the-end character
    *  of  the string
-   * 
-   * The past-the-end character is a theoretical character that would follow 
-   * the last character in the string. It shall not be dereferenced. This is an 
+   *
+   * The past-the-end character is a theoretical character that would follow
+   * the last character in the string. It shall not be dereferenced. This is an
    * alias of UnitexString::end
-   * 
+   *
    * @return A constant iterator to the past-the-end of the string
    */
   const_iterator cend() const {
@@ -461,9 +461,9 @@ class UnitexString {
 
   /**
    * @brief  String assignment from char
-   * 
+   *
    * Assigns a new value to the string, replacing its current contents
-   * 
+   *
    * @param  rhs    A character. The string value is set to a single copy of this
    *                character (the string length becomes 1).
    * @return *this
@@ -476,10 +476,10 @@ class UnitexString {
 
   /**
    * @brief  String assignment from a C-string
-   * 
+   *
    * Assigns a new value to the string, replacing its current contents
-   * 
-   * @param  rhs    A null-terminated character sequence (C-string). The sequence 
+   *
+   * @param  rhs    A null-terminated character sequence (C-string). The sequence
    *                is copied as the new value for the string.
    * @return *this
    */
@@ -490,9 +490,9 @@ class UnitexString {
 
   /**
    * @brief  String assignment from unichar
-   * 
+   *
    * Assigns a new value to the string, replacing its current contents
-   * 
+   *
    * @param  rhs    A character. The string value is set to a single copy of this
    *                character (the string length becomes 1).
    * @return *this
@@ -505,10 +505,10 @@ class UnitexString {
 
   /**
    * @brief  String assignment from a unichar-string
-   * 
+   *
    * Assigns a new value to the string, replacing its current contents
-   * 
-   * @param  rhs    A Unitex unichar-string. The sequence  is copied as the new 
+   *
+   * @param  rhs    A Unitex unichar-string. The sequence  is copied as the new
    *                value for the string.
    * @return *this
    */
@@ -521,10 +521,10 @@ class UnitexString {
 
   /**
    * @brief  String assignment from a Ustring-string
-   * 
+   *
    * Assigns a new value to the string, replacing its current contents
-   * 
-   * @param  rhs    A Unitex Ustring-string. The sequence  is copied as the new 
+   *
+   * @param  rhs    A Unitex Ustring-string. The sequence  is copied as the new
    *                value for the string.
    * @return *this
    */
@@ -537,10 +537,10 @@ class UnitexString {
 
   /**
    * @brief  String assignment from a UnitexString object
-   * 
+   *
    * Assigns a new value to the string, replacing its current contents
-   * 
-   * @param  rhs  A null-terminated character sequence (C-string). The sequence 
+   *
+   * @param  rhs  A null-terminated character sequence (C-string). The sequence
    *              is copied as the new value for the string.
    * @return *this
    */
@@ -552,11 +552,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from char
-   * 
-   * Extends the string by appending an additional character at the end of its 
+   *
+   * Extends the string by appending an additional character at the end of its
    * current value
-   * 
-   * @param  rhs    A character, which is appended to the current value of 
+   *
+   * @param  rhs    A character, which is appended to the current value of
    *                the string
    * @return *this
    */
@@ -566,11 +566,11 @@ class UnitexString {
 
   /**
    * @brief Append to string from a C-string
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
-   * @param  rhs    A null-terminated character sequence (C-string). The 
+   *
+   * @param  rhs    A null-terminated character sequence (C-string). The
    *                sequence is appended to the current value of the string
    * @return *this
    */
@@ -580,11 +580,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from unichar
-   * 
-   * Extends the string by appending an additional character at the end of its 
+   *
+   * Extends the string by appending an additional character at the end of its
    * current value
-   * 
-   * @param  rhs    A character, which is appended to the current value of 
+   *
+   * @param  rhs    A character, which is appended to the current value of
    *                the string
    * @return *this
    */
@@ -594,11 +594,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a unichar-string
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
-   * @param  rhs    A Unitex unichar-string. The sequence is appended to the 
+   *
+   * @param  rhs    A Unitex unichar-string. The sequence is appended to the
    *                current value of the string
    * @return *this
    */
@@ -608,11 +608,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a Ustring-string
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
-   * @param  rhs    A Unitex Ustring-string. The sequence is appended to the 
+   *
+   * @param  rhs    A Unitex Ustring-string. The sequence is appended to the
    *                current value of the string
    * @return *this
    */
@@ -622,10 +622,10 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a UnitexString object
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
+   *
    * @param  rhs    A UnitexString object, whose value is copied at the end
    * @return *this
    */
@@ -637,13 +637,13 @@ class UnitexString {
 
   /**
    * @brief  Get character of string
-   * 
+   *
    * Returns a reference to the character at position index in the string
-   * 
+   *
    * @param  index  Value with the position of a character within the string
    * @return a UnitexString::reference
-   * 
-   * @attention This function doesn't check bounds, unlike UnitexString::at() 
+   *
+   * @attention This function doesn't check bounds, unlike UnitexString::at()
    * method.
    */
   reference operator[] (size_type index) {
@@ -652,16 +652,16 @@ class UnitexString {
 
   /**
    * @brief  Get character of string
-   * 
-   * Returns a constant reference to the character at position index in 
+   *
+   * Returns a constant reference to the character at position index in
    * the string
-   * 
+   *
    * @param  index  Value with the position of a character within the string
    * @return a UnitexString::const_reference
-   * 
-   * @attention This function doesn't check bounds, unlike UnitexString::at() 
+   *
+   * @attention This function doesn't check bounds, unlike UnitexString::at()
    * method.
-   */  
+   */
   const_reference operator[] (size_type index) const {
     return *(begin() + index);
   }
@@ -670,7 +670,7 @@ class UnitexString {
 
   /**
    * @brief  Test equivalence of C-string and UnitexString
-   *  
+   *
    * @param  rhs    A null-terminated character sequence (C-string)
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
@@ -680,7 +680,7 @@ class UnitexString {
 
   /**
    * @brief  Test equivalence of unichar-string and UnitexString
-   *  
+   *
    * @param  rhs    A Unitex unichar-string
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
@@ -690,7 +690,7 @@ class UnitexString {
 
   /**
    * @brief  Test equivalence of Ustring-string and UnitexString
-   *  
+   *
    * @param  rhs    A Unitex Ustring-string
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
@@ -700,7 +700,7 @@ class UnitexString {
 
   /**
    * @brief  Test equivalence between two UnitexString objects
-   *  
+   *
    * @param  rhs    A UnitexString object
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
@@ -712,7 +712,7 @@ class UnitexString {
 
   /**
    * @brief  Test difference of C-string and UnitexString
-   *  
+   *
    * @param  rhs    A null-terminated character sequence (C-string)
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
@@ -722,7 +722,7 @@ class UnitexString {
 
   /**
    * @brief  Test difference of unichar-string and UnitexString
-   *  
+   *
    * @param  rhs    A Unitex unichar-string
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
@@ -732,7 +732,7 @@ class UnitexString {
 
   /**
    * @brief  Test difference of Ustring-string and UnitexString
-   *  
+   *
    * @param  rhs    A Unitex Ustring-string
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
@@ -742,7 +742,7 @@ class UnitexString {
 
   /**
    * @brief  Test difference between two UnitexString objects
-   *  
+   *
    * @param  rhs    A UnitexString object
    * @return True if this->compare(rhs) != 0.  False otherwise
    */
@@ -754,21 +754,21 @@ class UnitexString {
 
   /**
    * @brief  This function formats a list of arguments to a UnitexString
-   * 
+   *
    * @param  format C-string that contains the text to be written to stdout.
-   *                It supports all the printf format options plus some 
-   *                extensions described in unitex::u_vsprintf 
-   * @param  ...    (additional arguments) Depending on the format string, the 
-   *                function may expect a sequence of additional arguments, 
-   *                each containing a value to be used to replace a format 
-   *                specifier in the format string. There should be at least 
-   *                as many of these arguments as the number of values 
-   *                specified in the format specifiers.                
-   * @return an UnitexString object              
-   *                
+   *                It supports all the printf format options plus some
+   *                extensions described in unitex::u_vsprintf
+   * @param  ...    (additional arguments) Depending on the format string, the
+   *                function may expect a sequence of additional arguments,
+   *                each containing a value to be used to replace a format
+   *                specifier in the format string. There should be at least
+   *                as many of these arguments as the number of values
+   *                specified in the format specifiers.
+   * @return an UnitexString object
+   *
    * @see    unitex::u_vsprintf  in Unicode.h for supported @e format options
-   * 
-   * @note   Buffer is limit to kMaxBufferSize (1024) unicode characters    
+   *
+   * @note   Buffer is limit to kMaxBufferSize (1024) unicode characters
    */
   // UNITEX_PARAMS_NON_NULL
   // UNITEX_PRINTF_LIKE_FORMAT_CHECK(1,2)
@@ -793,9 +793,9 @@ class UnitexString {
 
   /**
    * @brief  Get character in string
-   * 
-   * Returns a reference to the character at position @e pos in the string 
-   * 
+   *
+   * Returns a reference to the character at position @e pos in the string
+   *
    * @param  pos    The position of the character to access
    * @return Read/write reference to the character
    */
@@ -808,10 +808,10 @@ class UnitexString {
 
   /**
    * @brief  Get character in string
-   * 
-   * Returns a constant reference to the character at position @e pos in 
-   * the string 
-   * 
+   *
+   * Returns a constant reference to the character at position @e pos in
+   * the string
+   *
    * @param  pos    The position of the character to access
    * @return Read-only (const) reference to the character.
    */
@@ -822,8 +822,8 @@ class UnitexString {
 
   /**
    * @brief  Get the first character in string
-   * 
-   * @return The character at position @e 0 in the string 
+   *
+   * @return The character at position @e 0 in the string
    */
   unichar front() const {
     assert(!this->is_empty());
@@ -832,8 +832,8 @@ class UnitexString {
 
   /**
    * @brief  Get the last character in string
-   * 
-   * @return The character at position @e length-1 in the string 
+   *
+   * @return The character at position @e length-1 in the string
    */
   unichar back() const {
     assert(!this->is_empty());
@@ -842,12 +842,12 @@ class UnitexString {
 
   /**
    * @brief  Resize string
-   * 
+   *
    * Resizes the the string to a length of @a size characters.
    * The buffer size is never decreased
-   * 
+   *
    * @param  size   New string length, expressed in number of characters
-   * 
+   *
    * @attention     You cannot set a size<1
    */
   void resize(size_type size) {
@@ -856,7 +856,7 @@ class UnitexString {
 
   /**
    * @brief  Return length of string
-   * 
+   *
    * Returns the length of the string, in terms of number of characters
    */
   size_type length() const {
@@ -865,7 +865,7 @@ class UnitexString {
 
   /**
    * @brief  Return length of string
-   * 
+   *
    * Returns the length of the string, in terms of number of characters
    */
   size_type size() const {
@@ -874,7 +874,7 @@ class UnitexString {
 
   /**
    * @brief  Return length of string
-   * 
+   *
    * Returns the length of the string, in terms of bytes.
    */
   size_type bytes() const {
@@ -883,9 +883,9 @@ class UnitexString {
 
   /**
    * @brief  Truncates string to the given length
-   * 
+   *
    * Restricts the maximum length of the string
-   * 
+   *
    * @param  length The length of the string, in terms of number of characters
    */
   void truncate(size_type length) {
@@ -894,14 +894,14 @@ class UnitexString {
 
   /**
    * @brief  Generate substring
-   *  
+   *
    * Returns a newly constructed string object with its value initialized
    * to a copy of a substring of this object
-   * 
+   *
    * @param  pos    Position of the first character to be copied as a substring
-   * @param  len    Number of characters to include in the substring (if the 
+   * @param  len    Number of characters to include in the substring (if the
    *                string is shorter, as many characters as possible are used).
-   *                A value of string::npos indicates all characters until the 
+   *                A value of string::npos indicates all characters until the
    *                end of the string
    * @return        A UnitexString object with a substring of this object
    */
@@ -918,8 +918,8 @@ class UnitexString {
 
   /**
    * @brief  Return size of allocated storage
-   * 
-   * Returns the size of the storage space currently allocated for the string, 
+   *
+   * Returns the size of the storage space currently allocated for the string,
    * expressed in terms of bytes.
    */
   size_type capacity() const {
@@ -928,17 +928,17 @@ class UnitexString {
 
   /**
    * @brief  Request a change in capacity
-   * 
+   *
    * Requests that the string capacity be adapted to a planned change in size
    * to a length of *up to* n characters.
-   * 
-   * @param  n      Planned length for the string, expressed in number of 
+   *
+   * @param  n      Planned length for the string, expressed in number of
    *                characters
-   * 
-   * @note          The resulting string capacity may be equal or greater 
-   *                than @e n. Notice also that in all other cases, the buffer 
+   *
+   * @note          The resulting string capacity may be equal or greater
+   *                than @e n. Notice also that in all other cases, the buffer
    *                size is never decreased
-   */  
+   */
   void reserve(size_type n = 0) {
     unitex::resize(data_, data_->len + n);
   }
@@ -948,14 +948,14 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a C-string
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
-   * @param  string A null-terminated character sequence (C-string). The 
+   *
+   * @param  string A null-terminated character sequence (C-string). The
    *                sequence is appended to the current value of the string
    * @return *this
-   */  
+   */
   UnitexString& append(const char* string) {
     unitex::u_strcat(data_, string);
     return *this;
@@ -963,15 +963,15 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a C-substring
-   * 
+   *
    * Appends a copy of the first @e n characters in the array of characters
    * pointed by a string const char*
-   * 
+   *
    * @param  string Pointer to an array of characters (C-string)
    * @param  n      Number of characters to copy
-   * 
+   *
    * @return *this
-   */    
+   */
   UnitexString& append(const char* string, size_type n) {
     unitex::u_strcat(data_, string, n);
     return *this;
@@ -979,11 +979,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from unichar
-   * 
-   * Extends the string by appending an additional character at the end of its 
+   *
+   * Extends the string by appending an additional character at the end of its
    * current value
-   * 
-   * @param  character Unitex unichar character, which is appended to the 
+   *
+   * @param  character Unitex unichar character, which is appended to the
    *                   current value of the string
    * @return *this
    */
@@ -994,11 +994,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a unichar-string
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
-   * @param  string A Unitex unichar-string. The sequence is appended to the 
+   *
+   * @param  string A Unitex unichar-string. The sequence is appended to the
    *                current value of the string
    * @return *this
    */
@@ -1009,15 +1009,15 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a unichar-substring
-   * 
+   *
    * Appends a copy of the first n characters in the array of characters
    * pointed by a string const unichar*
-   * 
+   *
    * @param  string Pointer to an array of characters (unichar-string)
    * @param  n      Number of characters to copy
-   * 
+   *
    * @return *this
-   */      
+   */
   UnitexString& append(const unichar* string, size_type n) {
     unitex::u_strcat(data_, string, n);
     return *this;
@@ -1025,11 +1025,11 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a Ustring-string
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
-   * @param  string A Unitex Ustring-string. The sequence is appended to the 
+   *
+   * @param  string A Unitex Ustring-string. The sequence is appended to the
    *                current value of the string
    * @return *this
    */
@@ -1040,25 +1040,25 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a Ustring-substring
-   * 
+   *
    * Appends a copy of the first n characters in the array of characters
    * pointed by a string const Ustring*
-   * 
+   *
    * @param  string Pointer to an array of characters (Ustring-string)
    * @param  n      Number of characters to copy
-   * 
+   *
    * @return *this
-   */      
+   */
   UnitexString& append(const Ustring* string, size_type n) {
     return this->append(string, n);
   }
 
   /**
    * @brief  Append to string from a UnitexString object
-   * 
-   * Extends the string by appending additional characters at the end of its 
+   *
+   * Extends the string by appending additional characters at the end of its
    * current value
-   * 
+   *
    * @param  string A UnitexString object, whose value is copied at the end
    * @return *this
    */
@@ -1068,15 +1068,15 @@ class UnitexString {
 
   /**
    * @brief  Append to string from a UnitexString object
-   * 
+   *
    * Appends a copy of the first n characters in the array of characters
    * pointed by a UnitexString object
-   * 
+   *
    * @param  string UnitexString object, whose value is copied at the end
    * @param  n      Number of characters to copy
-   * 
+   *
    * @return *this
-   */     
+   */
   UnitexString& append(const UnitexString& string, size_type n) {
     return this->append(string.data_, n);
   }
@@ -1084,25 +1084,25 @@ class UnitexString {
 
   /**
    * @brief  This function append a formated list of arguments to a UnitexString
-   * 
-   * Formats a list of arguments and append the final result to the underline 
+   *
+   * Formats a list of arguments and append the final result to the underline
    * string returning the UnitexString object
-   * 
+   *
    * @param  format C-string that contains the text to be written to stdout.
-   *                It supports all the printf format options plus some 
-   *                extensions described in unitex::u_vsprintf 
-   * @param  ...    (additional arguments) Depending on the format string, the 
-   *                function may expect a sequence of additional arguments, 
-   *                each containing a value to be used to replace a format 
-   *                specifier in the format string. There should be at least 
-   *                as many of these arguments as the number of values 
-   *                specified in the format specifiers.                
-   * @return *this              
-   *                
+   *                It supports all the printf format options plus some
+   *                extensions described in unitex::u_vsprintf
+   * @param  ...    (additional arguments) Depending on the format string, the
+   *                function may expect a sequence of additional arguments,
+   *                each containing a value to be used to replace a format
+   *                specifier in the format string. There should be at least
+   *                as many of these arguments as the number of values
+   *                specified in the format specifiers.
+   * @return *this
+   *
    * @see    UnitexString::format(const char* format, ...)
-   * 
-   * @note   Buffer is limit to kMaxBufferSize (1024) unicode characters    
-   */  
+   *
+   * @note   Buffer is limit to kMaxBufferSize (1024) unicode characters
+   */
   // UNITEX_PARAMS_NON_NULL
   UnitexString& append_format(const char* format, ...) {
     va_list args;
@@ -1124,8 +1124,8 @@ class UnitexString {
   }
 
   /**
-   * @brief  Lowercase the characters in the string 
-   * @return *this 
+   * @brief  Lowercase the characters in the string
+   * @return *this
    */
   UnitexString& tolower() {
     unitex::u_tolower(data_->str);
@@ -1153,9 +1153,9 @@ class UnitexString {
 
   /**
    * @brief  Append character to string
-   * 
+   *
    * Appends character c to the end of the string, increasing its length by one
-   * 
+   *
    * @param  character Character added to the string
    */
   void push_back(const unichar character) {
@@ -1171,18 +1171,18 @@ class UnitexString {
 
   /**
    * @brief  Compare to a C-string
-   *  
+   *
    * @param  string A null-terminated character sequence (C-string)
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings:
    *         -  0 : They compare equal
-   *         - <0 : Either the value of the first character that does not match 
-   *                is lower in the compared string, or all compared characters 
+   *         - <0 : Either the value of the first character that does not match
+   *                is lower in the compared string, or all compared characters
    *                match but the compared string is shorter
-   *         - >0 : Either the value of the first character that does not match 
-   *                is greater in the compared string, or all compared characters 
-   *                match but the compared string is longer.       
-   * 
+   *         - >0 : Either the value of the first character that does not match
+   *                is greater in the compared string, or all compared characters
+   *                match but the compared string is longer.
+   *
    * @note   Null strings are allowed
    */
   int compare(const char* string) const {
@@ -1191,11 +1191,11 @@ class UnitexString {
 
   /**
    * @brief  Compare to a unichar-string
-   *  
+   *
    * @param  string A Unitex unichar-string
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings.
-   * 
+   *
    * @see    UnitexString::compare(const char* string) const
    */
   int compare(const unichar* string) const {
@@ -1204,11 +1204,11 @@ class UnitexString {
 
   /**
    * @brief  Compare to a Ustring-string
-   *  
+   *
    * @param  string A Unitex Ustring-string
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings.
-   * 
+   *
    * @see    UnitexString::compare(const char* string) const
    */
   int compare(const Ustring* string) const {
@@ -1217,11 +1217,11 @@ class UnitexString {
 
   /**
    * @brief  Compare to a UnitexString object
-   *  
+   *
    * @param  string A UnitexString object
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings.
-   * 
+   *
    * @see    UnitexString::compare(const char* string) const
    */
   int compare(const UnitexString& string) const {
@@ -1230,18 +1230,18 @@ class UnitexString {
 
   /**
    * @brief  Case insensitive compare to a C-string
-   *  
+   *
    * @param  string A null-terminated character sequence (C-string)
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings:
    *         -  0 : They compare equal
-   *         - <0 : Either the value of the first character that does not match 
-   *                is lower in the compared string, or all compared characters 
+   *         - <0 : Either the value of the first character that does not match
+   *                is lower in the compared string, or all compared characters
    *                match but the compared string is shorter
-   *         - >0 : Either the value of the first character that does not match 
-   *                is greater in the compared string, or all compared characters 
-   *                match but the compared string is longer.       
-   * 
+   *         - >0 : Either the value of the first character that does not match
+   *                is greater in the compared string, or all compared characters
+   *                match but the compared string is longer.
+   *
    * @note   Null strings are allowed
    */
   int icompare(const char* string) const {
@@ -1250,11 +1250,11 @@ class UnitexString {
 
   /**
    * @brief  Case insensitive compare to a unichar-string
-   *  
+   *
    * @param  string A Unitex unichar-string
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings.
-   * 
+   *
    * @see    UnitexString::icompare(const char* string) const
    */
   int icompare(const unichar* string) const {
@@ -1263,11 +1263,11 @@ class UnitexString {
 
   /**
    * @brief  Case insensitive compare to a Ustring-string
-   *  
+   *
    * @param  string A Unitex Ustring-string
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings.
-   * 
+   *
    * @see    UnitexString::icompare(const char* string) const
    */
   int icompare(const Ustring* string) const {
@@ -1276,11 +1276,11 @@ class UnitexString {
 
   /**
    * @brief  Case insensitive compare to a UnitexString object
-   *  
+   *
    * @param  string A UnitexString object
-   * @return Returns a signed integral indicating the relation between 
+   * @return Returns a signed integral indicating the relation between
    *         the strings.
-   * 
+   *
    * @see    UnitexString::icompare(const char* string) const
    */
   int icompare(const UnitexString& string) const {
@@ -1289,9 +1289,9 @@ class UnitexString {
 
   /**
    * @brief  Get unichar-string equivalent
-   * 
+   *
    * @return A pointer to the underlying built-in unichar
-   * 
+   *
    * @attention The caller should not delete the return value
    */
   const unichar* c_unichar() const {
@@ -1303,8 +1303,8 @@ class UnitexString {
   /**
    * @brief  Implicit conversion from UnitexString to the underlying unichar
    *         buffer
-   * 
-   * @see  c_unichar() const  
+   *
+   * @see  c_unichar() const
    */
   // UNITEX_EXPLICIT_CONVERSIONS
   operator const unichar*() const {
@@ -1313,9 +1313,9 @@ class UnitexString {
 
   /**
    * @brief  Get string data
-   * 
+   *
    * @return A pointer to the underlying built-in unichar
-   * 
+   *
    * @attention The caller should not delete the return value
    */
   const unichar* data() const {
@@ -1324,9 +1324,9 @@ class UnitexString {
 
   /**
    * @brief  Get Ustring-string equivalent
-   * 
+   *
    * @return A pointer to the underlying built-in Ustring
-   * 
+   *
    * @attention The caller should not delete the return value
    */
   const Ustring* c_ustring() const {
@@ -1336,8 +1336,8 @@ class UnitexString {
   /**
    * @brief  Implicit conversion from UnitexString to the underlying Ustring
    * object
-   * 
-   * @see  c_ustring() const  
+   *
+   * @see  c_ustring() const
    */
   // UNITEX_EXPLICIT_CONVERSIONS
   operator const Ustring*() const {
@@ -1346,9 +1346,9 @@ class UnitexString {
 
   /**
    * @brief  Test whether the string is NULL
-   * 
+   *
    * @return True if the string is NULL. False otherwise
-   * 
+   *
    * @note   NULL and the empty string are different
    */
   bool is_null() const {
@@ -1357,15 +1357,15 @@ class UnitexString {
 
   /**
    * @brief  Test whether the string is empty
-   * 
+   *
    * @return True if the string is empty. False otherwise
-   * 
+   *
    * Returns whether the string is empty (i.e. whether its length is 0).
-   * 
-   * @note   This differs from unitex::empty() function in Ustring.h. Note also 
+   *
+   * @note   This differs from unitex::empty() function in Ustring.h. Note also
    *         that NULL and the empty string are different.
-   *         
-   * @see    is_null() const         
+   *
+   * @see    is_null() const
    */
   bool is_empty() const {
     return (!is_null() && length() == 0);
@@ -1373,10 +1373,10 @@ class UnitexString {
 
   /**
    * @brief  Clear string
-   * 
+   *
    * Erases the contents of the string, which becomes an empty string
    * (with a length of 0 characters).
-   * 
+   *
    * @note   The capacity of the internal buffer remains unchanged
    */
   void clear() {
@@ -1385,11 +1385,11 @@ class UnitexString {
 
   /**
    * @brief  Swap string values
-   * 
+   *
    * Exchanges the content of the container by the content of string,
    * which is another UnitexString object.
-   * 
-   * @param  string Another UnitexString object, whose value is swapped with 
+   *
+   * @param  string Another UnitexString object, whose value is swapped with
    *                that of this string
    */
   void swap(UnitexString& string) {
@@ -1404,7 +1404,7 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a char and a UnitexString object
-   * 
+   *
    * @param  lhs    A UnitexString object
    * @param  rhs    A char whose value will be concatenated to lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
@@ -1416,7 +1416,7 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a UnitexString object and a char
-   * 
+   *
    * @param  lhs    A char
    * @param  rhs    A UnitexString object whose value will be concatenated to lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
@@ -1428,9 +1428,9 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a C-string and a UnitexString object
-   * 
+   *
    * @param  lhs    A UnitexString object
-   * @param  rhs    A null-terminated character sequence (C-string) whose value 
+   * @param  rhs    A null-terminated character sequence (C-string) whose value
    *                will be concatenated to lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
@@ -1441,7 +1441,7 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a unichar-string and a UnitexString object
-   * 
+   *
    * @param  lhs    A UnitexString object
    * @param  rhs    A Unitex unichar-string whose value will be concatenated to
    *                lhs
@@ -1453,8 +1453,8 @@ class UnitexString {
   }
 
   /**
-   * @brief  Concatenate a UnitexString object and a unichar-string 
-   * 
+   * @brief  Concatenate a UnitexString object and a unichar-string
+   *
    * @param  lhs    A Unitex unichar-string
    * @param  rhs    A UnitexString object whose value will be concatenated to
    *                lhs
@@ -1466,10 +1466,10 @@ class UnitexString {
   }
 
   /**
-   * @brief  Concatenate a C-string and a UnitexString object 
-   * 
+   * @brief  Concatenate a C-string and a UnitexString object
+   *
    * @param  lhs    A null-terminated character sequence (C-string)
-   * @param  rhs    A UnitexString object whose value will be concatenated to 
+   * @param  rhs    A UnitexString object whose value will be concatenated to
    *                lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
@@ -1480,10 +1480,10 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a unichar-string and a UnitexString object
-   * 
+   *
    * @param  lhs    A UnitexString object
-   * @param  rhs    A Unitex unichar-string whose value will be concatenated to 
-   *                lhs 
+   * @param  rhs    A Unitex unichar-string whose value will be concatenated to
+   *                lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
   friend UnitexString operator+(const UnitexString& lhs,
@@ -1493,10 +1493,10 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a UnitexString object and a unichar-string
-   * 
-   * @param  lhs    A Unitex unichar-string 
-   * @param  rhs    A UnitexString object whose value will be concatenated to 
-   *                lhs 
+   *
+   * @param  lhs    A Unitex unichar-string
+   * @param  rhs    A UnitexString object whose value will be concatenated to
+   *                lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
   friend UnitexString operator+(const unichar* lhs,
@@ -1506,10 +1506,10 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a Ustring-string and a UnitexString object
-   * 
+   *
    * @param  lhs    A UnitexString object
-   * @param  rhs    A Unitex Ustring-string whose value will be concatenated to 
-   *                lhs 
+   * @param  rhs    A Unitex Ustring-string whose value will be concatenated to
+   *                lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
   friend UnitexString operator+(const UnitexString& lhs,
@@ -1519,10 +1519,10 @@ class UnitexString {
 
   /**
    * @brief  Concatenate a UnitexString object and a Ustring-string
-   * 
-   * @param  lhs    A Unitex Ustring-string 
-   * @param  rhs    A UnitexString object whose value will be concatenated to 
-   *                lhs 
+   *
+   * @param  lhs    A Unitex Ustring-string
+   * @param  rhs    A UnitexString object whose value will be concatenated to
+   *                lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
   friend UnitexString operator+(const Ustring* lhs,
@@ -1533,10 +1533,10 @@ class UnitexString {
   // concatenation const UnitexString&
   /**
    * @brief  Concatenate two UnitexString objects
-   * 
+   *
    * @param  lhs    A UnitexString object
-   * @param  rhs    A UnitexString object whose value will be concatenated to 
-   *                lhs 
+   * @param  rhs    A UnitexString object whose value will be concatenated to
+   *                lhs
    * @return A UnitexString whose value is the concatenation of lhs and rhs
    */
   friend UnitexString operator+(const UnitexString& lhs,
@@ -1575,10 +1575,10 @@ class UnitexString {
 
   /**
    * @brief  Swap two values T
-   * 
+   *
    * Exchanges the values of a and b
-   * 
-   * @param  a,b Two objects, whose contents are swapped 
+   *
+   * @param  a,b Two objects, whose contents are swapped
    */
   template<class T>
   void swap(T& a, T& b) {
@@ -1601,11 +1601,11 @@ class UnitexString {
 
 /**
  * @brief    Is less than string comparison
- * 
- * Return True either the value of the first character that does not match is 
- * lower in the compared string, or all compared characters match but the 
+ *
+ * Return True either the value of the first character that does not match is
+ * lower in the compared string, or all compared characters match but the
  * compared string is shorter.
- *  
+ *
  * @param    lhs    A UnitexString object
  * @param    rhs    A UnitexString object
  * @return   True if lhs.compare(rhs) < 0. False otherwise
@@ -1616,11 +1616,11 @@ inline bool operator<(const UnitexString& lhs, const UnitexString& rhs) {
 
 /**
  * @brief    Is less than or equal string comparison
- * 
- * Return True either the value of the first character that does not match is 
- * lower in the compared string, all compared characters match but the 
+ *
+ * Return True either the value of the first character that does not match is
+ * lower in the compared string, all compared characters match but the
  * compared string is shorter, or the string compare is equal
- *  
+ *
  * @param    lhs    A UnitexString object
  * @param    rhs    A UnitexString object
  * @return   True if lhs.compare(rhs) <= 0. False otherwise
@@ -1631,11 +1631,11 @@ inline bool operator<=(const UnitexString& lhs, const UnitexString& rhs) {
 
 /**
  * @brief    Is greater than string comparison
- * 
- * Return True Either the value of the first character that does not match is 
- * greater in the compared string, or all compared characters match but the 
+ *
+ * Return True Either the value of the first character that does not match is
+ * greater in the compared string, or all compared characters match but the
  * compared string is longer.
- *  
+ *
  * @param    lhs    A UnitexString object
  * @param    rhs    A UnitexString object
  * @return   True if lhs.compare(rhs) > 0. False otherwise
@@ -1646,11 +1646,11 @@ inline bool operator>(const UnitexString& lhs, const UnitexString& rhs) {
 
 /**
  * @brief    Is greater than or equal string comparison
- * 
- * Return True Either the value of the first character that does not match is 
- * greater in the compared string, all compared characters match but the 
- * compared string is longer, or the string compare is equal 
- *  
+ *
+ * Return True Either the value of the first character that does not match is
+ * greater in the compared string, all compared characters match but the
+ * compared string is longer, or the string compare is equal
+ *
  * @param    lhs    A UnitexString object
  * @param    rhs    A UnitexString object
  * @return   True if lhs.compare(rhs) >= 0. False otherwise
@@ -1661,7 +1661,7 @@ inline bool operator>=(const UnitexString& lhs, const UnitexString& rhs) {
 
 /**
  * @brief    Exchanges the values of two UnitexString objects
- *  
+ *
  * @param    a,b Two UnitexString objects, whose contents are swapped
  */
 inline void swap(UnitexString& a, UnitexString& b) {                // NOLINT

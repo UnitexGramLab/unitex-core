@@ -65,7 +65,7 @@ while (trans!=NULL) {
          free_symbols(POS[i]);
       }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-	  free(POS);
+      free(POS);
 #endif
       return NULL;
    }

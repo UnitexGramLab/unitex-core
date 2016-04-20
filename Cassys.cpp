@@ -1114,12 +1114,12 @@ int main_Cassys(int argc,char* const argv[]) {
         }
         case 'x': {
             if (options.vars()->optarg[0] != '\0') {
-		if(strcmp(options.vars()->optarg,"standoff")==0) {
+        if(strcmp(options.vars()->optarg,"standoff")==0) {
                     istex_param = 2;
-		}
-		else if(strcmp(options.vars()->optarg,"token")==0) {
+        }
+        else if(strcmp(options.vars()->optarg,"token")==0) {
                     istex_param = 1;
-		}
+        }
             }
             else {
                 error("You must specify an argument for istex\n");
@@ -1133,7 +1133,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 return USAGE_ERROR_CODE;
             }
             break;
-	}
+    }
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1807,12 +1807,12 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 (p_locate_perf_info + loop_display_perf)->name);
     }
 
-	if (p_locate_perf_info != NULL) {
-		for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
-			free((p_locate_perf_info + loop_display_perf)->name);
+    if (p_locate_perf_info != NULL) {
+        for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
+            free((p_locate_perf_info + loop_display_perf)->name);
         }
-		free(p_locate_perf_info);
-	}
+        free(p_locate_perf_info);
+    }
 
     return SUCCESS_RETURN_CODE;
 }

@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -41,7 +41,7 @@
 #define UNITEX_HAVING_OFFSET_FILE 1
 
 #define UNITEX_HAVING_MINI_PERSISTANCE 1
-	
+
 #ifndef UNITEX_HAVING_PERSISTANCE_INTERFACE
 #define UNITEX_HAVING_PERSISTANCE_INTERFACE 1
 #endif
@@ -64,10 +64,10 @@ int main_UnitexTool_single(int argc,char* const argv[]);
 
 
 struct pos_tools_in_arg {
-	int tool_number;
-	int argcpos;
-	int nbargs;
-	int ret;
+    int tool_number;
+    int argcpos;
+    int nbargs;
+    int ret;
 } ;
 
 int UnitexTool_several_info(int argc,char* const argv[],int* p_number_done,struct pos_tools_in_arg* ptia);

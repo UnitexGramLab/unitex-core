@@ -59,18 +59,18 @@ namespace logger {
 static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const char* fileNameToRead,int quiet)
 {
     size_t size_buf=PACK_WRITEBUFFERSIZE;
-	uLong crc = 0;
-	uLong size_done = 0;
+    uLong crc = 0;
+    uLong size_done = 0;
     char* buf = (char*)malloc(size_buf);
 
-	if ((*fileNameInArchive) == '*')
-		fileNameInArchive++;
-	else
-	if (((*fileNameInArchive) == '$') ||
-		(((*fileNameInArchive) >= 'A') && ((*fileNameInArchive) <= 'Z')) ||
-		(((*fileNameInArchive) >= 'z') && ((*fileNameInArchive) <= 'z')))
-		if ((*(fileNameInArchive+1)) == ':')
-			fileNameInArchive+=2;
+    if ((*fileNameInArchive) == '*')
+        fileNameInArchive++;
+    else
+    if (((*fileNameInArchive) == '$') ||
+        (((*fileNameInArchive) >= 'A') && ((*fileNameInArchive) <= 'Z')) ||
+        (((*fileNameInArchive) >= 'z') && ((*fileNameInArchive) <= 'z')))
+        if ((*(fileNameInArchive+1)) == ':')
+            fileNameInArchive+=2;
 
     zip_fileinfo zi;
 
@@ -88,8 +88,8 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
     ABSTRACTFILE*fin;
     int err;
 
-	if (quiet != 0)
-		u_printf("packing %s to %s...",fileNameToRead,fileNameInArchive);
+    if (quiet != 0)
+        u_printf("packing %s to %s...",fileNameToRead,fileNameInArchive);
 
     fin = af_fopen(fileNameToRead,"rb");
     if (fin==NULL)
@@ -157,99 +157,99 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
     af_fclose(fin);
     free(buf);
 
-	if (quiet != 0)
-		u_printf(" done\n");
+    if (quiet != 0)
+        u_printf(" done\n");
 
     return (err == ZIP_OK) ? 1 : 0;
 }
 
 static const char* filterFileNameByJunkPrefix(const char* filename, const char* junk_prefix, int nb_char_remove_end_prefix)
 {
-	if (junk_prefix == NULL)
-		return filename;
+    if (junk_prefix == NULL)
+        return filename;
 
-	if ((*junk_prefix) == '\0')
-		return filename;
+    if ((*junk_prefix) == '\0')
+        return filename;
 
-	size_t len_prefix = strlen(junk_prefix);
-	size_t len_filename = strlen(filename);
+    size_t len_prefix = strlen(junk_prefix);
+    size_t len_filename = strlen(filename);
 
-	if (((int)len_prefix) < nb_char_remove_end_prefix)
-		return filename;
+    if (((int)len_prefix) < nb_char_remove_end_prefix)
+        return filename;
 
-	if (len_filename < (len_prefix - nb_char_remove_end_prefix))
-		return filename;
+    if (len_filename < (len_prefix - nb_char_remove_end_prefix))
+        return filename;
 
-	if (memcmp(filename,junk_prefix,len_prefix - nb_char_remove_end_prefix) == 0)
-		return filename + len_prefix - nb_char_remove_end_prefix;
-	else
-		return filename;
+    if (memcmp(filename,junk_prefix,len_prefix - nb_char_remove_end_prefix) == 0)
+        return filename + len_prefix - nb_char_remove_end_prefix;
+    else
+        return filename;
 }
 
 
 int buildPackFile(const char* packFile,int append,const char* global_comment,
                   const char* file_or_prefix_to_add,int add_one_file_only,const char* junk_prefix,
-				  int quiet)
+                  int quiet)
 {
-	// append_status can be APPEND_STATUS_CREATE
-	zipFile zf=zipOpen(packFile,(append != 0) ?  APPEND_STATUS_ADDINZIP : APPEND_STATUS_CREATE);
+    // append_status can be APPEND_STATUS_CREATE
+    zipFile zf=zipOpen(packFile,(append != 0) ?  APPEND_STATUS_ADDINZIP : APPEND_STATUS_CREATE);
     if (zf==NULL)
     {
         return 1;
     }
 
 
-	int retValue = 1;
+    int retValue = 1;
 
-	if (add_one_file_only != 0)
-		retValue = addFileInPackFile(zf,
-		                   filterFileNameByJunkPrefix(file_or_prefix_to_add,junk_prefix,0),
-						   file_or_prefix_to_add,quiet);
-	else
-	{
-		char ** listfile = af_get_list_file(file_or_prefix_to_add);
-		if (listfile != NULL)
-		{
-			int i=0;
-			while (*(listfile + i) != NULL)
-			{
-				retValue = addFileInPackFile(zf,
-								   filterFileNameByJunkPrefix(*(listfile + i),junk_prefix,0),
-								   *(listfile + i),quiet);
+    if (add_one_file_only != 0)
+        retValue = addFileInPackFile(zf,
+                           filterFileNameByJunkPrefix(file_or_prefix_to_add,junk_prefix,0),
+                           file_or_prefix_to_add,quiet);
+    else
+    {
+        char ** listfile = af_get_list_file(file_or_prefix_to_add);
+        if (listfile != NULL)
+        {
+            int i=0;
+            while (*(listfile + i) != NULL)
+            {
+                retValue = addFileInPackFile(zf,
+                                   filterFileNameByJunkPrefix(*(listfile + i),junk_prefix,0),
+                                   *(listfile + i),quiet);
 
-				if (retValue == 0)
-					break;
+                if (retValue == 0)
+                    break;
 
-				i++;
-			}
+                i++;
+            }
 
-			af_release_list_file(file_or_prefix_to_add,listfile);
-		}
-	}
+            af_release_list_file(file_or_prefix_to_add,listfile);
+        }
+    }
 
-	zipClose(zf,global_comment);
-	return retValue;
+    zipClose(zf,global_comment);
+    return retValue;
 }
 
 
 UNITEX_FUNC int UNITEX_CALL CreateUnitexPackOneFile(const char* packFile,int append_status,
-														const char* file_to_include, const char* junk_prefix,
-														const char* global_comment)
+                                                        const char* file_to_include, const char* junk_prefix,
+                                                        const char* global_comment)
 {
-	int quiet = 1;
-	return buildPackFile( packFile,append_status,  global_comment,
+    int quiet = 1;
+    return buildPackFile( packFile,append_status,  global_comment,
                   file_to_include,1, junk_prefix,
-				  quiet);
+                  quiet);
 }
 
 UNITEX_FUNC int UNITEX_CALL CreateUnitexPackMultiFile(const char* packFile,int append_status,
-														const char* file_to_include, const char* junk_prefix,
-														const char* global_comment)
+                                                        const char* file_to_include, const char* junk_prefix,
+                                                        const char* global_comment)
 {
-	int quiet = 1;
-	return buildPackFile( packFile,append_status,  global_comment,
+    int quiet = 1;
+    return buildPackFile( packFile,append_status,  global_comment,
                   file_to_include,0, junk_prefix,
-				  quiet);
+                  quiet);
 }
 
 } // namespace logger

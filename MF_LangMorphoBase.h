@@ -36,10 +36,10 @@
 namespace unitex {
 
 /**
- * 
- * This library is used to parse the "Morphology" file that is 
+ *
+ * This library is used to parse the "Morphology" file that is
  * supposed to be in the same directory than the inflection graphs.
- * 
+ *
  */
 
 
@@ -59,9 +59,9 @@ namespace unitex {
 #define MAX_MORPHO_NAME 20
 
 //Structure for an inflection category (cf Inflection/Morphology file)
-//e.g. for English 
+//e.g. for English
 //          name = "Nb"  (number inflection)
-//          no_values = 2 
+//          no_values = 2
 //          values = ["sing","pl"] (singular, plural)
 typedef struct {
   unichar* name;
@@ -76,13 +76,13 @@ typedef struct {
 } l_cats_T;
 
 //Structure for an inflection class (cf Inflection/Morphology file)
-//e.g. for Polish 
+//e.g. for Polish
 //          name = "noun"
-//          no_cats = 3 
+//          no_cats = 3
 //          cats = ((Nb,0),(Case,0),(Gen,1))  // a Polish noun HAS a gender and INFLECTS IN number and case
 typedef struct {
-  unichar* name;   
-  int no_cats; 
+  unichar* name;
+  int no_cats;
   struct {
     l_category_T* cat;
     int fixed;

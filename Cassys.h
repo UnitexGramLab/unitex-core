@@ -80,13 +80,13 @@ int main_Cassys(int argc,char* const argv[]);
  * return 0 if correct
  */
 int cascade(const char* text, int in_place, int must_create_directory, int must_do_cleanup, const char* tmp_work_dir,
-	fifo* transducer_list, const char *alphabet,
-	const char*name_input_offsets_file, int produce_offsets_file, const char* name_uima_offsets_file,
-	const char*negation_operator,
-	VersatileEncodingConfig*, 
-	const char *morpho_dic,
-	vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
-	int dump_graph, int realign_token_graph_pointer, int display_perf, int param);
+    fifo* transducer_list, const char *alphabet,
+    const char*name_input_offsets_file, int produce_offsets_file, const char* name_uima_offsets_file,
+    const char*negation_operator,
+    VersatileEncodingConfig*,
+    const char *morpho_dic,
+    vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
+    int dump_graph, int realign_token_graph_pointer, int display_perf, int param);
 
 
 

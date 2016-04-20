@@ -69,7 +69,7 @@ for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) 
          index=state_set_array_add(ARRAY,T->destination);
       }
       if (T->label->next!=NULL) {
-    	  fatal_error("elag_determinize: symbol list error should not happen\n");
+          fatal_error("elag_determinize: symbol list error should not happen\n");
       }
       add_outgoing_transition(q,T->label,index);
    }

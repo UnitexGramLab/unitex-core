@@ -34,7 +34,7 @@ namespace unitex {
 
 /**
  * This library provides implementations of autoresizable arrays:
- * 
+ *
  * - vector_ptr:    data type=void*
  * - vector_int:    data type=int
  * - vector_float:  data type=float
@@ -187,7 +187,7 @@ if (dst==NULL) return;
 dst->nbelems=0;
 if (src==NULL) return;
 for (int i=0;i<src->nbelems;i++) {
-	vector_int_add(dst,src->tab[i],prv_alloc);
+    vector_int_add(dst,src->tab[i],prv_alloc);
 }
 }
 
@@ -196,7 +196,7 @@ inline vector_int* vector_int_dup(vector_int* src,Abstract_allocator prv_alloc=N
 if (src==NULL) return NULL;
 vector_int* dst=new_vector_int(src->nbelems,prv_alloc);
 for (int i=0;i<src->nbelems;i++) {
-	vector_int_add(dst,src->tab[i],prv_alloc);
+    vector_int_add(dst,src->tab[i],prv_alloc);
 }
 return dst;
 }
@@ -302,7 +302,7 @@ return vec->nbelems-1;
 
 inline int vector_int_contains(vector_int* v,int n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return i;
+    if (v->tab[i]==n) return i;
 }
 return -1;
 }
@@ -310,7 +310,7 @@ return -1;
 
 inline int vector_float_contains(vector_float* v,float n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return i;
+    if (v->tab[i]==n) return i;
 }
 return -1;
 }
@@ -318,7 +318,7 @@ return -1;
 
 inline int vector_double_contains(vector_double* v,double n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return i;
+    if (v->tab[i]==n) return i;
 }
 return -1;
 }
@@ -326,7 +326,7 @@ return -1;
 
 inline int vector_ptr_contains(vector_ptr* v,void* n) {
 for (int i=0;i<v->nbelems;i++) {
-	if (v->tab[i]==n) return i;
+    if (v->tab[i]==n) return i;
 }
 return -1;
 }
@@ -334,28 +334,28 @@ return -1;
 
 inline void vector_int_add_if_absent(vector_int* vec,int data) {
 if (-1==vector_int_contains(vec,data)) {
-	vector_int_add(vec,data);
+    vector_int_add(vec,data);
 }
 }
 
 
 inline void vector_float_add_if_absent(vector_float* vec,float data) {
 if (-1==vector_float_contains(vec,data)) {
-	vector_float_add(vec,data);
+    vector_float_add(vec,data);
 }
 }
 
 
 inline void vector_double_add_if_absent(vector_double* vec,double data) {
 if (-1==vector_double_contains(vec,data)) {
-	vector_double_add(vec,data);
+    vector_double_add(vec,data);
 }
 }
 
 
 inline void vector_ptr_add_if_absent(vector_ptr* vec,void* data) {
 if (-1==vector_ptr_contains(vec,data)) {
-	vector_ptr_add(vec,data);
+    vector_ptr_add(vec,data);
 }
 }
 
@@ -405,7 +405,7 @@ return 1;
 inline int vector_int_equals(vector_int* a,vector_int* b) {
 if (a->nbelems!=b->nbelems) return 0;
 for (int i=0;i<a->nbelems;i++) {
-	if (a->tab[i]!=b->tab[i]) return 0;
+    if (a->tab[i]!=b->tab[i]) return 0;
 }
 return 1;
 }
@@ -417,7 +417,7 @@ return 1;
 inline int vector_float_equals(vector_float* a,vector_float* b) {
 if (a->nbelems!=b->nbelems) return 0;
 for (int i=0;i<a->nbelems;i++) {
-	if (a->tab[i]!=b->tab[i]) return 0;
+    if (a->tab[i]!=b->tab[i]) return 0;
 }
 return 1;
 }
@@ -429,7 +429,7 @@ return 1;
 inline int vector_double_equals(vector_double* a,vector_double* b) {
 if (a->nbelems!=b->nbelems) return 0;
 for (int i=0;i<a->nbelems;i++) {
-	if (a->tab[i]!=b->tab[i]) return 0;
+    if (a->tab[i]!=b->tab[i]) return 0;
 }
 return 1;
 }
@@ -441,7 +441,7 @@ return 1;
 inline int vector_ptr_equals(vector_ptr* a,vector_ptr* b) {
 if (a->nbelems!=b->nbelems) return 0;
 for (int i=0;i<a->nbelems;i++) {
-	if (a->tab[i]!=b->tab[i]) return 0;
+    if (a->tab[i]!=b->tab[i]) return 0;
 }
 return 1;
 }

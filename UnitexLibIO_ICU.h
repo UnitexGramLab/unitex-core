@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -29,7 +29,7 @@
  *
  */
 
-/* these sample function uses UnitexLibIO to read and write UnitexFile 
+/* these sample function uses UnitexLibIO to read and write UnitexFile
   (in virtual file system or hard disk) from/to icu UnicodeString */
 
 
@@ -45,10 +45,10 @@
 extern "C" {
 #endif
 
-	// note : uima c++ user can uses UnicodeStringRef
-	UNITEX_FUNC int UNITEX_CALL WriteUnicodeUnitexFile(const char*, icu::UnicodeString const& uString);
+    // note : uima c++ user can uses UnicodeStringRef
+    UNITEX_FUNC int UNITEX_CALL WriteUnicodeUnitexFile(const char*, icu::UnicodeString const& uString);
 
-	UNITEX_FUNC int UNITEX_CALL GetUnicodeStringFromUnitexFile(const char* filename, icu::UnicodeString& uString);
+    UNITEX_FUNC int UNITEX_CALL GetUnicodeStringFromUnitexFile(const char* filename, icu::UnicodeString& uString);
 
 #ifdef __cplusplus
 }

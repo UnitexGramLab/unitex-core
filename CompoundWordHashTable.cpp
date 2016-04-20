@@ -74,7 +74,7 @@ if (hash_table==NULL) {
 }
 hash_table->size = 1;
 while (hash_table->size < size)
-	hash_table->size *= 2;
+    hash_table->size *= 2;
 
 hash_table->hash_blocks=(struct tct_hash_block*)malloc(get_tct_hash_block_item_size_array(size));
 hash_table->token_array_standard_base_memory_nb_item_for_each_block=tct_hash_block_size;
@@ -163,7 +163,7 @@ if ((block->size) == token_array_base_memory_nb_item_size) {
   if (factor < 4) factor=4;
   int* new_array=(int*)malloc(block->size*sizeof(int)*factor);
   for (int i=0;i<block->length;i++) {
-	  new_array[i]=block->token_array[i];
+      new_array[i]=block->token_array[i];
   }
   block->token_array=new_array;
 }
@@ -230,7 +230,7 @@ while (i<block_length) {
     * to put 'i' on the first cell after the -1 and priority of the previous
     * token sequence. */
    while (i<block_length && tokens[i]!=-1) {
-	   i++;
+       i++;
    }
    i=i+2;
    if (i==block_length) return -1;

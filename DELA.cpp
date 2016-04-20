@@ -132,18 +132,18 @@ static struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_a
 struct dela_entry* res;
 int i,val;
 if (line==NULL) {
-	if (!verbose) error("Internal NULL error in tokenize_DELAF_line\n");
+    if (!verbose) error("Internal NULL error in tokenize_DELAF_line\n");
    else (*verbose)=P_NULL_STRING;
-	return NULL;
+    return NULL;
 }
 unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(line)),prv_alloc);
 if (temp==NULL) {
-	fatal_alloc_error("tokenize_DELAF_line");
+    fatal_alloc_error("tokenize_DELAF_line");
 }
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
-	fatal_alloc_error("tokenize_DELAF_line");
+    fatal_alloc_error("tokenize_DELAF_line");
 }
 res->inflected=NULL;
 res->lemma=NULL;
@@ -210,13 +210,13 @@ if (line[i]=='\0') {
    goto error;
 }
 if (temp[0]=='\0') {
-	/* If the lemma is empty like in "eat,.V:W", it is supposed to be
-	 * the same as the inflected form. */
-	res->lemma=u_strdup(res->inflected,prv_alloc);
+    /* If the lemma is empty like in "eat,.V:W", it is supposed to be
+     * the same as the inflected form. */
+    res->lemma=u_strdup(res->inflected,prv_alloc);
 }
 else {
-	/* Otherwise, we copy it */
-	res->lemma=u_strdup(temp,prv_alloc);
+    /* Otherwise, we copy it */
+    res->lemma=u_strdup(temp,prv_alloc);
 }
 /*
  * We read the grammatical code
@@ -240,7 +240,7 @@ res->semantic_codes[0]=u_strdup(temp,prv_alloc);
  * Now we read the other gramatical and semantic codes if any
  */
 while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
-	i++;
+    i++;
    val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
@@ -255,13 +255,13 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
       goto error;
    }
    res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
-	(res->n_semantic_codes)++;
+    (res->n_semantic_codes)++;
 }
 /*
  * Then we read the inflectional codes if any
  */
 while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
-	i++;
+    i++;
    val=parse_string(line,&i,temp,P_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
@@ -276,7 +276,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
       goto error;
    }
    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
-	(res->n_inflectional_codes)++;
+    (res->n_inflectional_codes)++;
 }
 /* Finally we check if there is a comment */
 if (line[i]=='/' && !comments_allowed) {
@@ -371,16 +371,16 @@ struct dela_entry* tokenize_DELAF_line_opt(const unichar* line,Abstract_allocato
 struct dela_entry* res;
 unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(line)),prv_alloc);
 if (temp==NULL) {
-	fatal_alloc_error("tokenize_DELAF_line");
+    fatal_alloc_error("tokenize_DELAF_line");
 }
 int i,j;
 if (line==NULL) {
-	fatal_error("Internal NULL error in tokenize_DELAF_line\n");
+    fatal_error("Internal NULL error in tokenize_DELAF_line\n");
 }
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
-	fatal_error("Not enough memory in tokenize_DELA_line\n");
+    fatal_error("Not enough memory in tokenize_DELA_line\n");
 }
 res->inflected=NULL;
 res->lemma=NULL;
@@ -396,23 +396,23 @@ res->filter_codes[0]=NULL;
 i=0;
 j=0;
 while (line[i]!='\0' && line[i]!=',') {
-	/* If there is a backslash, we must unprotect a character */
-	if (line[i]=='\\') {
-		i++;
-		/* If the backslash is at the end of line, it's an error */
-		if (line[i]=='\0') {
-			fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-		}
-		else if (line[i]=='=') {
-			temp[j++]='\\';
-		}
-	}
-	temp[j++]=line[i++];
+    /* If there is a backslash, we must unprotect a character */
+    if (line[i]=='\\') {
+        i++;
+        /* If the backslash is at the end of line, it's an error */
+        if (line[i]=='\0') {
+            fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+        }
+        else if (line[i]=='=') {
+            temp[j++]='\\';
+        }
+    }
+    temp[j++]=line[i++];
 }
 temp[j]='\0';
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
-	fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+    fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
 }
 res->inflected=u_strdup(temp,prv_alloc);
 /*
@@ -421,31 +421,31 @@ res->inflected=u_strdup(temp,prv_alloc);
 i++;
 j=0;
 while (line[i]!='\0' && line[i]!='.') {
-	/* If there is a backslash, we must unprotect a character */
-	if (line[i]=='\\') {
-		i++;
-		/* If the backslash is at the end of line, it's an error */
-		if (line[i]=='\0') {
-			fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-		} else if (line[i]=='=') {
-			temp[j++]='\\';
-		}
-	}
-	temp[j++]=line[i++];
+    /* If there is a backslash, we must unprotect a character */
+    if (line[i]=='\\') {
+        i++;
+        /* If the backslash is at the end of line, it's an error */
+        if (line[i]=='\0') {
+            fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+        } else if (line[i]=='=') {
+            temp[j++]='\\';
+        }
+    }
+    temp[j++]=line[i++];
 }
 temp[j]='\0';
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
-	fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+    fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
 }
 if (j==0) {
-	/* If the lemma is empty like in "eat,.V:W", it is supposed to be
-	 * the same as the inflected form. */
-	res->lemma=u_strdup(res->inflected,prv_alloc);
+    /* If the lemma is empty like in "eat,.V:W", it is supposed to be
+     * the same as the inflected form. */
+    res->lemma=u_strdup(res->inflected,prv_alloc);
 }
 else {
-	/* Otherwise, we copy it */
-	res->lemma=u_strdup(temp,prv_alloc);
+    /* Otherwise, we copy it */
+    res->lemma=u_strdup(temp,prv_alloc);
 }
 /*
  * We read the grammatical code
@@ -453,15 +453,15 @@ else {
 i++;
 j=0;
 while (line[i]!='\0' && line[i]!='+' && line[i]!='/' && line[i]!=':') {
-	/* If there is a backslash, we must unprotect a character */
-	if (line[i]=='\\') {
-		i++;
-		/* If the backslash is at the end of line, it's an error */
-		if (line[i]=='\0') {
-			fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-		}
-	}
-	temp[j++]=line[i++];
+    /* If there is a backslash, we must unprotect a character */
+    if (line[i]=='\\') {
+        i++;
+        /* If the backslash is at the end of line, it's an error */
+        if (line[i]=='\0') {
+            fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+        }
+    }
+    temp[j++]=line[i++];
 }
 temp[j]='\0';
 res->semantic_codes[0]=u_strdup(temp,prv_alloc);
@@ -469,43 +469,43 @@ res->semantic_codes[0]=u_strdup(temp,prv_alloc);
  * Now we read the other grammatical and semantic codes if any
  */
 while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
-	i++;
-	j=0;
-	while (line[i]!='\0' && line[i]!='+' && line[i]!=':' && line[i]!='/') {
-		/* If there is a backslash, we must unprotect a character */
-		if (line[i]=='\\') {
-			i++;
-			/* If the backslash is at the end of line, it's an error */
-			if (line[i]=='\0') {
-				fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-			}
-		}
-		temp[j++]=line[i++];
-	}
-	temp[j]='\0';
-	res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
-	(res->n_semantic_codes)++;
+    i++;
+    j=0;
+    while (line[i]!='\0' && line[i]!='+' && line[i]!=':' && line[i]!='/') {
+        /* If there is a backslash, we must unprotect a character */
+        if (line[i]=='\\') {
+            i++;
+            /* If the backslash is at the end of line, it's an error */
+            if (line[i]=='\0') {
+                fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+            }
+        }
+        temp[j++]=line[i++];
+    }
+    temp[j]='\0';
+    res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
+    (res->n_semantic_codes)++;
 }
 /*
  * Then we read the inflectional codes if any
  */
 while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
-	i++;
-	j=0;
-	while (line[i]!='\0' && line[i]!=':' && line[i]!='/') {
-		/* If there is a backslash, we must unprotect a character */
-		if (line[i]=='\\') {
-			i++;
-			/* If the backslash is at the end of line, it's an error */
-			if (line[i]=='\0') {
-				fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
-			}
-		}
-		temp[j++]=line[i++];
-	}
-	temp[j]='\0';
-	res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
-	(res->n_inflectional_codes)++;
+    i++;
+    j=0;
+    while (line[i]!='\0' && line[i]!=':' && line[i]!='/') {
+        /* If there is a backslash, we must unprotect a character */
+        if (line[i]=='\\') {
+            i++;
+            /* If the backslash is at the end of line, it's an error */
+            if (line[i]=='\0') {
+                fatal_error("***Dictionary error: incorrect line\n_%S_\n",line);
+            }
+        }
+        temp[j++]=line[i++];
+    }
+    temp[j]='\0';
+    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
+    (res->n_inflectional_codes)++;
 }
 free_cb(temp,prv_alloc);
 return res;
@@ -519,10 +519,10 @@ return res;
  * the tag.
  */
 struct dela_entry* tokenize_tag_token(const unichar* tag,
-					int emit_error,Abstract_allocator prv_alloc) {
+                    int emit_error,Abstract_allocator prv_alloc) {
 if (tag==NULL || tag[0]!='{') {
-	error("Internal error in tokenize_tag_token\n");
-	return NULL;
+    error("Internal error in tokenize_tag_token\n");
+    return NULL;
 }
 /* We copy the tag content without the round brackets in a string. We
  * must take care not to unprotect chars during this operation, since
@@ -534,7 +534,7 @@ if (tag==NULL || tag[0]!='{') {
 int i=1;
 unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(tag)),prv_alloc);
 if (temp==NULL) {
-	fatal_alloc_error("tokenize_DELAF_line");
+    fatal_alloc_error("tokenize_DELAF_line");
 }
 int val=parse_string(tag,&i,temp,P_CLOSING_ROUND_BRACKET,P_EMPTY,NULL);
 if (tag[i]!='}' || val!=P_OK) {
@@ -566,7 +566,7 @@ if (line==NULL) {
 }
 unichar* temp=(unichar*)malloc_cb(sizeof(unichar)*(1+u_strlen(line)),prv_alloc);
 if (temp==NULL) {
-	fatal_alloc_error("tokenize_DELAF_line");
+    fatal_alloc_error("tokenize_DELAF_line");
 }
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
@@ -628,13 +628,13 @@ res->semantic_codes[0]=u_strdup(temp,prv_alloc);
  * Now we read the filters if any
  */
 if (line[i] == '!' && line[i+1] == '[') {//Negative filter
-	/* Initialization of the result structure */
-	res->filter_polarity = 0;
-	i=i+2; //we skip !
+    /* Initialization of the result structure */
+    res->filter_polarity = 0;
+    i=i+2; //we skip !
 }
 else if (line[i] == '[' ) {//Positive filter
-	res->filter_polarity = 1;
-	i++;
+    res->filter_polarity = 1;
+    i++;
 }
 /*
  * Now we read the list of filters
@@ -893,43 +893,43 @@ token[j]='\0';
  * consider letters before 'b'.
  */
 static void explore_semitic_tokens(const unichar* inflected,const unichar* lemma,unichar* result,
-		unichar* tmp_result,int *min_full_letters,int n_full_letters,
-		int pos_in_inflected,int pos_in_tmp_result) {
+        unichar* tmp_result,int *min_full_letters,int n_full_letters,
+        int pos_in_inflected,int pos_in_tmp_result) {
 if (*lemma=='\0') {
-	/* If we have finished to explore the lemma */
-	if ((*min_full_letters)==-1 || n_full_letters<*min_full_letters) {
-		/* If we have a best result than the current one, or if it's the first one */
-		tmp_result[pos_in_tmp_result]='\0';
-		u_strcpy(result,tmp_result);
-		*min_full_letters=n_full_letters;
-	}
-	return;
+    /* If we have finished to explore the lemma */
+    if ((*min_full_letters)==-1 || n_full_letters<*min_full_letters) {
+        /* If we have a best result than the current one, or if it's the first one */
+        tmp_result[pos_in_tmp_result]='\0';
+        u_strcpy(result,tmp_result);
+        *min_full_letters=n_full_letters;
+    }
+    return;
 }
 /* We will look for the first letter of lemma. We don't go over position 9,
  * because we only want to use 1 digit to represent position in consonant
  * skeleton, which is reasonable. */
 for (int i=pos_in_inflected;i<10 && inflected[i]!='\0';i++) {
-	if (*lemma==inflected[i]) {
-		tmp_result[pos_in_tmp_result]=(unichar)(i+'0');
-		explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
-				min_full_letters,n_full_letters,i+1,pos_in_tmp_result+1);
-		if (*min_full_letters==0) {
-			/* If we have a perfect consonant skeleton, we can stop */
-			return;
-		}
-	}
+    if (*lemma==inflected[i]) {
+        tmp_result[pos_in_tmp_result]=(unichar)(i+'0');
+        explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
+                min_full_letters,n_full_letters,i+1,pos_in_tmp_result+1);
+        if (*min_full_letters==0) {
+            /* If we have a perfect consonant skeleton, we can stop */
+            return;
+        }
+    }
 }
 /* And finally, we will act as the letter is absent, because the letter may be
  * there but at an irrelevant place like 'h' for lemma="hbc" and inflected="abcdefgh".
  * In such a case, "7bc" would be a worse solution than "h12".
  */
 if (n_full_letters==*min_full_letters) {
-	/* No need to produce a worse solution than the current one */
-	return;
+    /* No need to produce a worse solution than the current one */
+    return;
 }
 tmp_result[pos_in_tmp_result]=*lemma;
 explore_semitic_tokens(inflected,lemma+1,result,tmp_result,
-		min_full_letters,n_full_letters+1,pos_in_inflected,pos_in_tmp_result+1);
+        min_full_letters,n_full_letters+1,pos_in_inflected,pos_in_tmp_result+1);
 }
 
 /**
@@ -967,7 +967,7 @@ if (!u_strcmp(e->inflected,e->lemma)) {
 int n_inflected=get_number_of_tokens(e->inflected);
 int n_lemma=get_number_of_tokens(e->lemma);
 if (n_inflected!=n_lemma
-		|| is_str_mono_unichar_string(e->inflected,' ') ||  is_str_mono_unichar_string(e->inflected,'-')) {
+        || is_str_mono_unichar_string(e->inflected,' ') ||  is_str_mono_unichar_string(e->inflected,'-')) {
    /* If the 2 strings have not the same number of tokens,
     * we rawly consider them as two big tokens. However,
     * we put the prefix "_" in order to indicate that we have
@@ -987,17 +987,17 @@ unichar tmp_lemma[DIC_WORD_SIZE];
 unichar tmp_compressed[DIC_WORD_SIZE];
 result[0]='\0';
 if (semitic) {
-	/* We use "__" as a marker to indicate that semitic compression has been used */
-	u_strcpy(result,"__");
+    /* We use "__" as a marker to indicate that semitic compression has been used */
+    u_strcpy(result,"__");
 }
 for (int i=0;i<n_inflected;i++) {
    /* Tokens are compressed one by one */
    get_token(e->inflected,tmp_inflected,&pos_inflected);
    get_token(e->lemma,tmp_lemma,&pos_lemma);
    if (semitic) {
-	   semitic_token_compression(tmp_inflected,tmp_lemma,tmp_compressed);
+       semitic_token_compression(tmp_inflected,tmp_lemma,tmp_compressed);
    } else {
-	   get_compressed_token(tmp_inflected,tmp_lemma,tmp_compressed);
+       get_compressed_token(tmp_inflected,tmp_lemma,tmp_compressed);
    }
    u_strcat(result,tmp_compressed);
 }
@@ -1019,17 +1019,17 @@ u_strcpy(tmp,inflected);
 int size=u_strlen(tmp);
 int i=0;
 for (;compress_info[i]!='\0';i++) {
-	if (compress_info[i]>='0' && compress_info[i]<='9') {
-		/* If we have a consonant number */
-		int n=compress_info[i]-'0';
-		if (n>=size) {
-			error("compress info=<%S>\n",compress_info);
-			fatal_error("rebuild_token_semitic: consonant number #%d out of form <%S> of size %d\n",n,tmp,size);
-		}
-		inflected[i]=tmp[n];
-	} else {
-		inflected[i]=compress_info[i];
-	}
+    if (compress_info[i]>='0' && compress_info[i]<='9') {
+        /* If we have a consonant number */
+        int n=compress_info[i]-'0';
+        if (n>=size) {
+            error("compress info=<%S>\n",compress_info);
+            fatal_error("rebuild_token_semitic: consonant number #%d out of form <%S> of size %d\n",n,tmp,size);
+        }
+        inflected[i]=tmp[n];
+    } else {
+        inflected[i]=compress_info[i];
+    }
 }
 inflected[i]='\0';
 }
@@ -1044,7 +1044,7 @@ inflected[i]='\0';
  */
 void rebuild_token(unichar* inflected,unichar* compress_info) {
 if (inflected[0]=='\0') {
-	fatal_error("Unexpected empty inflected form in rebuild_token\n");
+    fatal_error("Unexpected empty inflected form in rebuild_token\n");
 }
 int n=0;
 int i,pos=0;
@@ -1074,7 +1074,7 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
  */
 void uncompress_entry(const unichar* inflected,const unichar* INF_code,Ustring* result) {
 if (inflected[0]=='\0') {
-	fatal_error("Unexpected empty inflected form in uncompress_entry\n");
+    fatal_error("Unexpected empty inflected form in uncompress_entry\n");
 }
 unsigned int n;
 int pos;
@@ -1103,7 +1103,7 @@ if (INF_code[0]=='_' && !semitic) {
    u_strcat(result,inflected);
    /* But we start copying the code at position length-n */
    if (n>result->len) {
-	   fatal_error("Unexpected problem in uncompress_entry: inflected=<%S> inf=<%S>\n",inflected,INF_code);
+       fatal_error("Unexpected problem in uncompress_entry: inflected=<%S> inf=<%S>\n",inflected,INF_code);
    }
    truncate(result,result->len-n);
 
@@ -1143,9 +1143,9 @@ while (INF_code[pos]!='.') {
       }
       tmp_entry[j]='\0';
       if (semitic) {
-    	  rebuild_token_semitic(tmp_entry,tmp);
+          rebuild_token_semitic(tmp_entry,tmp);
       } else {
-    	  rebuild_token(tmp_entry,tmp);
+          rebuild_token(tmp_entry,tmp);
       }
       j=0;
       /* Once we have rebuilt the token, we protect in it the following chars: . + \ /
@@ -1168,9 +1168,9 @@ while (INF_code[pos]!='\0') {
 void uncompress_entry_and_print(unichar* content,struct list_ustring* tmp,U_FILE* output) {
 Ustring* s=new_Ustring(DIC_WORD_SIZE);
 while (tmp!=NULL) {
-	uncompress_entry(content,tmp->string,s);
-	u_fprintf(output,"%S\n",s->str);
-	tmp=tmp->next;
+    uncompress_entry(content,tmp->string,s);
+    u_fprintf(output,"%S\n",s->str);
+    tmp=tmp->next;
 }
 free_Ustring(s);
 }
@@ -1202,9 +1202,9 @@ if (final) {
 /* Nevermind the state finality, we explore all the reachable states */
 int adr;
 for (int i=0;i<n_transitions;i++) {
-	pos=read_dictionary_transition(d,pos,&(content[string_pos]),&adr,ustr);
-	explore_all_paths(adr,content,string_pos+1,d,output,ustr,base);
-	restore_output(z,ustr);
+    pos=read_dictionary_transition(d,pos,&(content[string_pos]),&adr,ustr);
+    explore_all_paths(adr,content,string_pos+1,d,output,ustr,base);
+    restore_output(z,ustr);
 }
 }
 
@@ -1459,15 +1459,15 @@ return 0;
  */
 int contains_unprotected_equal_sign(const unichar* s) {
 for (;;) {
-	if (*(s+0)==0) return 0;
-	if (*(s+0)==1) return 1;
-	if (*(s+1)==0) return 0;
-	if (*(s+1)==1) return 1;
-	if (*(s+2)==0) return 0;
-	if (*(s+2)==1) return 1;
-	if (*(s+3)==0) return 0;
-	if (*(s+3)==1) return 1;
-	s+=4;
+    if (*(s+0)==0) return 0;
+    if (*(s+0)==1) return 1;
+    if (*(s+1)==0) return 0;
+    if (*(s+1)==1) return 1;
+    if (*(s+2)==0) return 0;
+    if (*(s+2)==1) return 1;
+    if (*(s+3)==0) return 0;
+    if (*(s+3)==1) return 1;
+    s+=4;
 }
 }
 
@@ -1479,15 +1479,15 @@ for (;;) {
  */
 void replace_unprotected_equal_sign(unichar* s,unichar c) {
 for (;;) {
-	if (*(s+0)==0) return ;
-	if (*(s+0)==1) *(s+0) = c;
-	if (*(s+1)==0) return ;
-	if (*(s+1)==1) *(s+1) = c;
-	if (*(s+2)==0) return ;
-	if (*(s+2)==1) *(s+2) = c;
-	if (*(s+3)==0) return ;
-	if (*(s+3)==1) *(s+3) = c;
-	s+=4;
+    if (*(s+0)==0) return ;
+    if (*(s+0)==1) *(s+0) = c;
+    if (*(s+1)==0) return ;
+    if (*(s+1)==1) *(s+1) = c;
+    if (*(s+2)==0) return ;
+    if (*(s+2)==1) *(s+2) = c;
+    if (*(s+3)==0) return ;
+    if (*(s+3)==1) *(s+3) = c;
+    s+=4;
 }
 }
 
@@ -1780,7 +1780,7 @@ return -1;
  */
 int get_inf_code_exact_match(Dictionary* d,unichar* str) {
 if (d->type!=BIN_CLASSIC) {
-	fatal_error("get_inf_code_exact_match: unsupported dictionary type\n");
+    fatal_error("get_inf_code_exact_match: unsupported dictionary type\n");
 }
 return explore_for_exact_match(d->bin,d->initial_state_offset,str,0);
 }
@@ -1794,10 +1794,10 @@ return explore_for_exact_match(d->bin,d->initial_state_offset,str,0);
 void debug_print_entry(struct dela_entry* e) {
 error("%S,%S.%S",e->inflected,e->lemma,e->semantic_codes[0]);
 for (int i=1;i<e->n_semantic_codes;i++) {
-	error("+%S",e->semantic_codes[i]);
+    error("+%S",e->semantic_codes[i]);
 }
 for (int i=0;i<e->n_inflectional_codes;i++) {
-	error(":%S",e->inflectional_codes[i]);
+    error(":%S",e->inflectional_codes[i]);
 }
 }
 
@@ -1822,12 +1822,12 @@ escape(e->lemma,s,P_DOT);
 u_strcat(s,".");
 escape(e->semantic_codes[0],s,P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
 for (int i=1;i<e->n_semantic_codes;i++) {
-	u_strcat(s,"+");
-	escape(e->semantic_codes[i],s,P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
+    u_strcat(s,"+");
+    escape(e->semantic_codes[i],s,P_PLUS_COMMA_COLON_SLASH_BACKSLASH);
 }
 for (int i=0;i<e->n_inflectional_codes;i++) {
-	u_strcat(s,":");
-	escape(e->inflectional_codes[i],s,P_COLON_SLASH_BACKSLASH);
+    u_strcat(s,":");
+    escape(e->inflectional_codes[i],s,P_COLON_SLASH_BACKSLASH);
 }
 }
 
@@ -1843,16 +1843,16 @@ for (int i=0;i<e->n_inflectional_codes;i++) {
 int replace_special_equal_signs(unichar* s) {
 int i=0;
 while (s[i]!='\0') {
-	if (s[i]==PROTECTION_CHAR) {
-		if (s[i+1]=='\0') {
-			error("Unexpected \\ at end of string in replace_special_equal_signs\n");
-			return DEFAULT_ERROR_CODE;
-		}
-		i=i+2;
-	} else {
-		if (s[i]=='=') s[i]=1;
-		i++;
-	}
+    if (s[i]==PROTECTION_CHAR) {
+        if (s[i+1]=='\0') {
+            error("Unexpected \\ at end of string in replace_special_equal_signs\n");
+            return DEFAULT_ERROR_CODE;
+        }
+        i=i+2;
+    } else {
+        if (s[i]=='=') s[i]=1;
+        i++;
+    }
 }
 return SUCCESS_RETURN_CODE;
 }

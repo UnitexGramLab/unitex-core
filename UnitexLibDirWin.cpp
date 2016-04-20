@@ -53,13 +53,13 @@
 #ifdef UNITEX_USING_WINRT_API
 #include <strsafe.h>
 static BOOL IsDotsW(const WCHAR* str) {
-	if ((*str)!='.')
-		return FALSE;
-	if ((*str)=='\0')
-		return TRUE;
-	if ((*(str+1))=='.')
-		if ((*(str+2))=='\0')
-			return TRUE;
+    if ((*str)!='.')
+        return FALSE;
+    if ((*str)=='\0')
+        return TRUE;
+    if ((*(str+1))=='.')
+        if ((*(str+2))=='\0')
+            return TRUE;
     return FALSE;
 }
 
@@ -88,7 +88,7 @@ BOOL DeleteDirectoryW(const WCHAR* sPath) {
     while(bSearch) { // until we finds an entry
         if(FindNextFileW(hFind,&FindFileData)) {
             if(IsDotsW(FindFileData.cFileName)) continue;
-			StringCchCatW(FileName,MAX_PATH+0x200,FindFileData.cFileName);
+            StringCchCatW(FileName,MAX_PATH+0x200,FindFileData.cFileName);
             //strcat(FileName,FindFileData.cFileName);
             if((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 
@@ -99,7 +99,7 @@ BOOL DeleteDirectoryW(const WCHAR* sPath) {
                 }
                 RemoveDirectoryW(FileName); // remove the empty directory
                 //strcpy(FileName,DirPath);
-				StringCchCopyW(FileName,MAX_PATH+0x200,DirPath);
+                StringCchCopyW(FileName,MAX_PATH+0x200,DirPath);
             }
             else {
 
@@ -108,7 +108,7 @@ BOOL DeleteDirectoryW(const WCHAR* sPath) {
                     return FALSE;
                 }
                 //strcpy(FileName,DirPath);
-				StringCchCopyW(FileName,MAX_PATH+0x200,DirPath);
+                StringCchCopyW(FileName,MAX_PATH+0x200,DirPath);
             }
         }
         else {
@@ -131,9 +131,9 @@ BOOL DeleteDirectoryW(const WCHAR* sPath) {
 
 
 BOOL DeleteDirectory(const char* sPath) {
-	WCHAR filenameW[FILENAME_MAX + 0x200 + 1];
-	MultiByteToWideChar(CP_ACP,0,sPath,-1,filenameW,FILENAME_MAX + 0x200);
-	return DeleteDirectoryW(filenameW);
+    WCHAR filenameW[FILENAME_MAX + 0x200 + 1];
+    MultiByteToWideChar(CP_ACP,0,sPath,-1,filenameW,FILENAME_MAX + 0x200);
+    return DeleteDirectoryW(filenameW);
 }
 #else
 

@@ -58,7 +58,7 @@ namespace unitex {
 
             int install_ling_resource_package(const char* package_name, const char* prefix_destination,
                 int folder_separator_transformation,
-				int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet, int keep_persisted_file,
+                int persist_file, int persist_graph, int persist_dictionary, int persist_alphabet, int keep_persisted_file,
                 char*** file_list, char*** persist_graph_list, char*** persist_dictionary_list, char*** persist_alphabet_list);
 
             UNITEX_FUNC int UNITEX_CALL InstallLingResourcePackage(const char* package_name, const char* prefix_destination,
@@ -68,12 +68,12 @@ namespace unitex {
 
 
             int uninstall_ling_resource_package(const char* package_name, const char* prefix_destination,
-				int persist_file, int folder_separator_transformation,
-				int persist_graph, int persist_dictionary, int persist_alphabet, int kept_persisted_file);
+                int persist_file, int folder_separator_transformation,
+                int persist_graph, int persist_dictionary, int persist_alphabet, int kept_persisted_file);
 
             UNITEX_FUNC int UNITEX_CALL UninstallLingResourcePackage(const char* package_name, const char* prefix_destination,
-				int persist_file, int folder_separator_transformation,
-				int persist_graph, int persist_dictionary, int persist_alphabet, int kept_persisted_file);
+                int persist_file, int folder_separator_transformation,
+                int persist_graph, int persist_dictionary, int persist_alphabet, int kept_persisted_file);
 
 
             int uninstall_ling_resource_package_by_list(char** file_list,
@@ -103,7 +103,7 @@ namespace unitex {
 
             UNITEX_FUNC char** UNITEX_CALL ReadListFilesFromFile(const char* filein_name);
 
-			char** read_list_files_from_file(const char* filein_name);
+            char** read_list_files_from_file(const char* filein_name);
 
             void free_list_files_from_file(char**list);
 

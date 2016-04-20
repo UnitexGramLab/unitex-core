@@ -30,7 +30,7 @@ namespace unitex {
 extern "C" {
 #endif
 
-	
+
 int standard_load_persistence_dictionary(const char*filename,char* persistent_filename_buffer,size_t buffer_size);
 void standard_unload_persistence_dictionary(const char*filename);
 
@@ -57,18 +57,18 @@ void standard_unload_persistence_alphabet(const char*filename);
    example:
 
    const char *automatonOriginalString = "/Users/foo/myres/graphs/test.fst2";
-   
-		char PersistedFileName[0x200] = "";
-		if (persistence_public_load_fst2(automatonOriginalString, PersistedFileName, sizeof(PersistedFileName)-1) == 0) {
-			printf("Error while persisting FST2 %s", automatonOriginalString);
-			return false;
-		}
+
+        char PersistedFileName[0x200] = "";
+        if (persistence_public_load_fst2(automatonOriginalString, PersistedFileName, sizeof(PersistedFileName)-1) == 0) {
+            printf("Error while persisting FST2 %s", automatonOriginalString);
+            return false;
+        }
 
 
-		// Do a lot of work, several locate using PersistedFileName as graph
+        // Do a lot of work, several locate using PersistedFileName as graph
 
-		// when you application will free all memory
-		persistence_public_unload_fst2(PersistedFileName);
+        // when you application will free all memory
+        persistence_public_unload_fst2(PersistedFileName);
    */
 
 UNITEX_FUNC int UNITEX_CALL persistence_public_load_dictionary(const char*filename,char* persistent_filename_buffer,size_t buffer_size);

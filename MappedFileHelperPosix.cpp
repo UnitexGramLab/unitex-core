@@ -69,9 +69,9 @@ MAPFILE* iomap_open_mapfile(const char*name,int /* option*/, size_t /*value_for_
         free(mfr);
         return NULL;
     }
-	fseek(mfr->f,0,SEEK_END);
+    fseek(mfr->f,0,SEEK_END);
     mfr->filesize=ftell(mfr->f);
-	fseek(mfr->f,0,SEEK_SET);
+    fseek(mfr->f,0,SEEK_SET);
 
     return (MAPFILE*)mfr;
 }

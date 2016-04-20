@@ -227,7 +227,7 @@ if (word_array->element[token_number]==NULL) {
 }
 unichar* s=NULL;
 if (output!=NULL && output->len!=0) {
-	s=output->str;
+    s=output->str;
 }
 word_array->element[token_number]->list=get_offset(offset,word_array->element[token_number]->list,content,base,s);
 }
@@ -283,14 +283,14 @@ if (token[pos]=='\0') {
    inflected[pos]='\0';
    if (final) {
       /* If the node is final */
-	   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected,0,NULL);
+       if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected,0,NULL);
       int p=0;
       if (info->simple_word!=NULL) p=get_value(info->simple_word,token_number);
       if (p==0 || p==priority) {
          /* We save the token only if it has not already been matched by
           * dictionary with a greater priority. Moreover, we indicate that
           * this token is part of a word and that it has been processed. */
-    	  if (info->part_of_a_word!=NULL) set_value(info->part_of_a_word,token_number,1);
+          if (info->part_of_a_word!=NULL) set_value(info->part_of_a_word,token_number,1);
          if (info->simple_word!=NULL) set_value(info->simple_word,token_number,priority);
          /* We get the INF codes */
          struct list_ustring* head;
@@ -298,10 +298,10 @@ if (token[pos]=='\0') {
          struct list_ustring* tmp=head;
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
-        	 if (info->dic_name[0]!='\0') {
-        		u_fprintf(info->dlf,"%s\n",info->dic_name);
-        		info->dic_name[0]='\0';
-        	 }
+             if (info->dic_name[0]!='\0') {
+                u_fprintf(info->dlf,"%s\n",info->dic_name);
+                info->dic_name[0]='\0';
+             }
              display_uncompressed_entry(info->dlf,inflected,tmp->string);
              tmp=tmp->next;
          }
@@ -309,8 +309,8 @@ if (token[pos]=='\0') {
          base=ustr->len;
       }
    } else {
-	   /* The node is not final */
-	   if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected,base,ustr);
+       /* The node is not final */
+       if (info->word_array!=NULL) add_offset_for_token(info->word_array,token_number,offset,inflected,base,ustr);
    }
    /* If we are at the end of the token, there is no need to look at the
     * outgoing transitions */
@@ -319,7 +319,7 @@ if (token[pos]=='\0') {
 }
 /* If we are in a final node */
 if (final) {
-	base=ustr->len;
+    base=ustr->len;
 }
 offset=new_offset;
 unichar c;
@@ -327,7 +327,7 @@ int offset_dest;
 for (int i=0;i<n_transitions;i++) {
    /* For each outgoing transition, we look if the transition character is
     * compatible with the token's one */
-	offset=read_dictionary_transition(info->d,offset,&c,&offset_dest,ustr);
+    offset=read_dictionary_transition(info->d,offset,&c,&offset_dest,ustr);
     if (is_equal_or_uppercase(c,token[pos],info->alphabet)) {
       /* We copy the transition character so that 'inflected' will contain
        * the exact inflected form */
@@ -409,7 +409,7 @@ if (current_token[pos_in_current_token]=='\0') {
    /* And we add the current offset to the node list */
    if (final) {
       /* If this node is final */
-	   trans->node->list=get_offset(offset,trans->node->list,inflected,0,NULL);
+       trans->node->list=get_offset(offset,trans->node->list,inflected,0,NULL);
       token_sequence[pos_token_sequence]=-1;
       /* We look if the compound word has already been matched */
       int w=was_already_in_tct_hash(token_sequence,info->tct_h,priority);
@@ -432,7 +432,7 @@ if (current_token[pos_in_current_token]=='\0') {
          while (tmp!=NULL) {
             /* For each compressed code of the INF line, we save the corresponding
              * DELAF line in 'info->dlc' */
-        	uncompress_entry(inflected,tmp->string,line_buf);
+            uncompress_entry(inflected,tmp->string,line_buf);
             u_fprintf(info->dlc,"%S\n",line_buf->str);
             tmp=tmp->next;
          }
@@ -440,14 +440,14 @@ if (current_token[pos_in_current_token]=='\0') {
       }
       base=ustr->len;
    } else {
-	   /* The node is not final */
-	   trans->node->list=get_offset(offset,trans->node->list,inflected,base,ustr->str);
+       /* The node is not final */
+       trans->node->list=get_offset(offset,trans->node->list,inflected,base,ustr->str);
    }
    pos_offset++;
    /* Then, we go on with the next token in the text, so we update 'current_token',
     * but only if we haven't reached the end of the text buffer */
    if (current_start_pos+pos_offset >= info->text_cod_size_nb_int) {
-	   restore_output(z,ustr);
+       restore_output(z,ustr);
       return;
    }
    current_token=info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]];
@@ -462,11 +462,11 @@ if (current_token[pos_in_current_token]=='\0') {
  * reached the end of the current token. */
 if (current_token[pos_in_current_token]=='\0') {
    restore_output(z,ustr);
-	return;
+    return;
 }
 /* If we are in a final node */
 if (final) {
-	base=ustr->len;
+    base=ustr->len;
 }
 unichar c;
 int adr;
@@ -555,7 +555,7 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
       }
       struct offset_list* l=w->list;
 
-	  if (current_start_pos+pos_offset < info->text_cod_size_nb_int) {
+      if (current_start_pos+pos_offset < info->text_cod_size_nb_int) {
         while (l!=NULL) {
            /* If there are dictionary nodes to explore, we do so. For each node
             * we copy into 'entry' the sequence of character that leads to it in
@@ -566,7 +566,7 @@ while (current_start_pos<info->text_cod_size_nb_int) {/*
              pos_offset,token_sequence,current_token_in_compound,priority,current_start_pos,line_buf,ustr,l->base);
            l=l->next;
         }
-	  }
+      }
    }
    current_start_pos++;
 }
@@ -593,9 +593,9 @@ for (int i=0;i<info->tokens->N;i++) {
           info->UNKNOWN_WORDS=info->UNKNOWN_WORDS+info->n_occurrences[i];
           u_fprintf(info->err,"%S\n",info->tokens->token[i]);
           if (!get_value(info->part_of_a_word2,i)) {
-        	  if (info->tags_err!=NULL) {
-        		  u_fprintf(info->tags_err,"%S\n",info->tokens->token[i]);
-        	  }
+              if (info->tags_err!=NULL) {
+                  u_fprintf(info->tags_err,"%S\n",info->tokens->token[i]);
+              }
           }
       }
       else {
@@ -641,7 +641,7 @@ info->part_of_a_word2=new_bit_array(tokens->N,ONE_BIT);
 info->simple_word=new_bit_array(tokens->N,TWO_BITS);
 info->n_occurrences=(int*)malloc(tokens->N*sizeof(int));
 if (info->part_of_a_word==NULL || info->part_of_a_word2==NULL
-		|| info->simple_word==NULL || info->n_occurrences==NULL) {
+        || info->simple_word==NULL || info->n_occurrences==NULL) {
    fatal_alloc_error("init_dico_application");
 }
 for (int j=0;j<tokens->N;j++) {
@@ -678,7 +678,7 @@ free(info->n_occurrences);
 free_tct_hash(info->tct_h);
 free_tct_hash(info->tct_h_tags_ind);
 for (int i=0;i<info->n_tag_sequences;i++) {
-	free_match_list_element(info->tag_sequences[i]);
+    free_match_list_element(info->tag_sequences[i]);
 }
 free_Dictionary(info->d);
 free(info->tag_sequences);
@@ -698,8 +698,8 @@ remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
 info->d=new_Dictionary(vec,name_bin,name_inf);
 if (info->d==NULL) {
-	error("Cannot open dictionary %s\n",name_bin);
-	return 1;
+    error("Cannot open dictionary %s\n",name_bin);
+    return 1;
 }
 info->word_array=new_word_struct_array(info->tokens->N);
 /* And then we look simple and then compound words.
@@ -761,25 +761,25 @@ int add_tag_sequence(struct dico_application_info* info,struct match_list* match
 int foo[3]={match->m.start_pos_in_token,match->m.end_pos_in_token,-1};
 int w=was_already_in_tct_hash(foo,info->tct_h_tags_ind,priority);
 if (w!=0 && w!=priority) {
-	/* If the match has already been processed
-	 * with a greater priority, we skip it */
-	return 0;
+    /* If the match has already been processed
+     * with a greater priority, we skip it */
+    return 0;
 }
 /* And we note that the match has been taken into account
  * with that priority */
 add_tct_token_sequence(foo,info->tct_h_tags_ind,priority);
 if (info->n_tag_sequences==info->tag_sequences_capacity) {
    /* If we have to enlarge the array, doubling its capacity */
-	if (info->tag_sequences_capacity==0) {
-		info->tag_sequences_capacity=32;
-	}
-	else {
-		info->tag_sequences_capacity=2*info->tag_sequences_capacity;
-	}
-	info->tag_sequences=(struct match_list**)realloc(info->tag_sequences,info->tag_sequences_capacity*sizeof(struct match_list*));
-	if (info->tag_sequences==NULL) {
-	   fatal_alloc_error("add_tag_sequence");
-	}
+    if (info->tag_sequences_capacity==0) {
+        info->tag_sequences_capacity=32;
+    }
+    else {
+        info->tag_sequences_capacity=2*info->tag_sequences_capacity;
+    }
+    info->tag_sequences=(struct match_list**)realloc(info->tag_sequences,info->tag_sequences_capacity*sizeof(struct match_list*));
+    if (info->tag_sequences==NULL) {
+       fatal_alloc_error("add_tag_sequence");
+    }
 }
 info->tag_sequences[(info->n_tag_sequences)++]=match;
 return 1;
@@ -788,11 +788,11 @@ return 1;
 
 void check_tag_sequence_validity(unichar* s,Alphabet* alph) {
 if (s==NULL || s[0]=='\0') {
-	fatal_error("Invalid tag sequence: %S\n",s);
+    fatal_error("Invalid tag sequence: %S\n",s);
 }
 vector_ptr* v=tokenize_normalization_output(s,alph);
 if (v==NULL) {
-	fatal_error("Invalid tag sequence: %S\n",s);
+    fatal_error("Invalid tag sequence: %S\n",s);
 }
 free_vector_ptr(v,(void(*)(void*))free_output_info);
 }
@@ -824,25 +824,25 @@ merge_dic_locate_results_abstract_allocator=create_abstract_allocator("merge_dic
                                                         0);
 while (l!=NULL) {
    if (l->output!=NULL && l->output[0]=='/') {
-	   /* If we have a tag sequence to be used at the time of
-	    * building the text automaton */
-	   check_tag_sequence_validity(l->output+1,info->alphabet);
-	   /* If the tag sequence is not valid, a fatal error will be raised */
-	   if (add_tag_sequence(info,l,priority)) {
-		   /* If we have found and handled a valid tag sequence, we process
-			* the next match in the list, AND WE DON'T FREE THE CURRENT
-			* MATCH, since it's now in a pointer array. */
-		   for (int i=l->m.start_pos_in_token;i<=l->m.end_pos_in_token;i++) {
-			   set_value(info->part_of_a_word2,info->text_cod_buf[i],1);
-		   }
-		   l=l->next;
-	   } else {
-		   /* The match was already there, we have to free it */
-		   struct match_list* tmp=l->next;
-		   free_match_list_element(l);
-		   l=tmp;
-	   }
-	   continue;
+       /* If we have a tag sequence to be used at the time of
+        * building the text automaton */
+       check_tag_sequence_validity(l->output+1,info->alphabet);
+       /* If the tag sequence is not valid, a fatal error will be raised */
+       if (add_tag_sequence(info,l,priority)) {
+           /* If we have found and handled a valid tag sequence, we process
+            * the next match in the list, AND WE DON'T FREE THE CURRENT
+            * MATCH, since it's now in a pointer array. */
+           for (int i=l->m.start_pos_in_token;i<=l->m.end_pos_in_token;i++) {
+               set_value(info->part_of_a_word2,info->text_cod_buf[i],1);
+           }
+           l=l->next;
+       } else {
+           /* The match was already there, we have to free it */
+           struct match_list* tmp=l->next;
+           free_match_list_element(l);
+           l=tmp;
+       }
+       continue;
    }
    /* We test if the match is a valid dictionary entry */
    struct dela_entry* entry=tokenize_DELAF_line(l->output, 1, merge_dic_locate_results_abstract_allocator);
@@ -854,9 +854,9 @@ while (l!=NULL) {
          if (token_number==-1) {
             /* If we find in the dictionary a token that is not in the text,
              * we fail */
-        	 error("Ignoring line because the inflected form does not appear in the text:\n%S\n",l->output);
+             error("Ignoring line because the inflected form does not appear in the text:\n%S\n",l->output);
          } else {
-        	int p=get_value(info->simple_word,token_number);
+            int p=get_value(info->simple_word,token_number);
             if (p==0 || p==priority) {
                /* We save the simple word only if it hasn't already been processed with
                 * a greater priority */
@@ -875,22 +875,22 @@ while (l!=NULL) {
          /* If it is a compound word, we turn it into a token sequence
           * ended by -1 */
          if (build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds)) {
-        	 int w=was_already_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
-        	 if (w==0 || w==priority) {
-        		 /* We save the compound word only if it hasn't already been processed
-        		  * with a greater priority */
-        		 for (int k=0;token_tab_coumpounds[k]!=-1;k++) {
-        			 /* If we have matched a compound word, then all its part all not
-        			  * unknown words */
-        			 set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
-        		 }
-        		 /* We save it to the DLC */
-        		 u_fprintf(info->dlc,"%S\n",l->output);
-        		 /* If needed, we save it to the morpho.dic file */
-        		 if (export_to_morpho_dic) {
-        			 u_fprintf(info->morpho,"%S\n",l->output);
-        		 }
-        	 }
+             int w=was_already_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
+             if (w==0 || w==priority) {
+                 /* We save the compound word only if it hasn't already been processed
+                  * with a greater priority */
+                 for (int k=0;token_tab_coumpounds[k]!=-1;k++) {
+                     /* If we have matched a compound word, then all its part all not
+                      * unknown words */
+                     set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
+                 }
+                 /* We save it to the DLC */
+                 u_fprintf(info->dlc,"%S\n",l->output);
+                 /* If needed, we save it to the morpho.dic file */
+                 if (export_to_morpho_dic) {
+                     u_fprintf(info->morpho,"%S\n",l->output);
+                 }
+             }
          }
       }
       /* Finally, we free the entry */

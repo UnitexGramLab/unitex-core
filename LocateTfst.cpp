@@ -176,7 +176,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
              strcpy(alphabet,options.vars()->optarg);
              break;
    case 'K': is_korean=1;
-   	   	   	  match_word_boundaries=0;
+              match_word_boundaries=0;
               break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
    case 'g': if (options.vars()->optarg[0]=='\0') {
@@ -235,19 +235,19 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_LocateTfst,lopts_LocateT
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'v': {
-	   unichar* key=u_strdup(options.vars()->optarg);
-	   unichar* value=u_strchr(key,'=');
-	   if (value==NULL) {
-		   error("Invalid variable injection: %s\n",options.vars()->optarg);
+       unichar* key=u_strdup(options.vars()->optarg);
+       unichar* value=u_strchr(key,'=');
+       if (value==NULL) {
+           error("Invalid variable injection: %s\n",options.vars()->optarg);
        free_vector_ptr(injected);
        return USAGE_ERROR_CODE;
-	   }
-	   (*value)='\0';
-	   value++;
-	   value=u_strdup(value);
-	   vector_ptr_add(injected,key);
-	   vector_ptr_add(injected,value);
-	   break;
+       }
+       (*value)='\0';
+       value++;
+       value=u_strdup(value);
+       vector_ptr_add(injected,key);
+       vector_ptr_add(injected,value);
+       break;
    }
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);

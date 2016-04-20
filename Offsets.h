@@ -54,10 +54,10 @@ namespace unitex {
  */
 
 typedef struct {
-	int old_start;
-	int old_end;
-	int new_start;
-	int new_end;
+    int old_start;
+    int old_end;
+    int new_start;
+    int new_end;
 } Offsets;
 
 
@@ -123,7 +123,7 @@ return vec->nbelems-1;
 
 vector_offset* load_offsets(const VersatileEncodingConfig*,const char*);
 void process_offsets(const vector_offset* old_offsets, const vector_offset* new_offsets,
-		U_FILE* f);
+        U_FILE* f);
 vector_offset* modified_offsets_to_common(const vector_offset* offsets, int old_size, int new_size);
 vector_offset* common_offsets_to_modified(const vector_offset* offsets, int old_size, int new_size);
 vector_offset* process_common_offsets(const vector_offset* old_offsets, const vector_offset* new_offsets);
@@ -142,25 +142,25 @@ typedef vector_int vector_uima_offset;
 vector_uima_offset* load_uima_offsets(const VersatileEncodingConfig*,const char* name);
 
 inline int uima_offset_token_start_pos(const vector_uima_offset* v,int token) {
-	return ((const vector_int*) v)->tab[token * 2];
+    return ((const vector_int*) v)->tab[token * 2];
 }
 
 inline int uima_offset_token_end_pos(const vector_uima_offset* v, int token) {
-	return ((const vector_int*) v)->tab[(token * 2)+1];
+    return ((const vector_int*) v)->tab[(token * 2)+1];
 }
 
 inline int uima_offset_tokens_count(const vector_uima_offset* v) {
-	return (((const vector_int*)v)->nbelems) / 2;
+    return (((const vector_int*)v)->nbelems) / 2;
 }
 
 inline void free_uima_offsets(vector_uima_offset* v) {
-	free_vector_int((vector_int*)v);
+    free_vector_int((vector_int*)v);
 }
 typedef struct {
-	int position_to_translate; // in
-	int sort_order; // in
-	int translated_position; // out
-	int translation_pos_in_common; // out
+    int position_to_translate; // in
+    int sort_order; // in
+    int translated_position; // out
+    int translation_pos_in_common; // out
 } offset_translation;
 
 void translate_offset(offset_translation* ofs, int nb_translations, const vector_offset* offsets, int revert);

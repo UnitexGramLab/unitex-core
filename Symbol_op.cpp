@@ -779,10 +779,10 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
       for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fix�e != b->traits[idx] */
 
-	if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
+    if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
-	templat->feature[idx] = (char)v;
-	concat_symbols(end, dup_symbol(templat), & end);
+    templat->feature[idx] = (char)v;
+    concat_symbols(end, dup_symbol(templat), & end);
       }
 
       /* on fixe la valeur a b->traits[idx] et on continue */
@@ -1303,7 +1303,7 @@ return res.next;
 
 
 symbol_t * minus_symbol(language_t* language,const symbol_t * b) {
-	return LEXIC_minus_symbol(language,b);
+    return LEXIC_minus_symbol(language,b);
 }
 
 

@@ -33,7 +33,7 @@
 namespace unitex {
 
 /**
- * This library provides functions and types for manipulating 
+ * This library provides functions and types for manipulating
  * automaton transitions that can be tagged either by integers
  * or by pointers.
  */
@@ -55,20 +55,20 @@ struct transition_ {
    union {
       /* Number of the transition tag */
       int tag_number;
-      
+
       /* Pointer label */
       symbol_t* label;
    };
-   
+
    /*
     * Number of the state pointed by the transition. Note that, in a fst2, this
     * number is ABSOLUTE. For instance, if the subgraph number 3 starts
     * at the state number 45, the 6th state of this subgraph will have the
     * number 45+6=51.
-    * 
+    *
     */
    int state_number;
-   
+
    /* Next transition of the list */
    struct transition_* next;
 };

@@ -38,7 +38,7 @@ namespace unitex {
 struct buffer* new_buffer(int capacity,BufferType type) {
 struct buffer* buffer=(struct buffer*)malloc(sizeof(struct buffer));
 if (buffer==NULL) {
-	fatal_alloc_error("new_buffer");
+    fatal_alloc_error("new_buffer");
 }
 buffer->type=type;
 switch (type) {
@@ -73,13 +73,13 @@ struct buffer* new_buffer_for_file(BufferType type,U_FILE* fileread,int capacity
 int item_size=1;
 switch (type) {
    case INTEGER_BUFFER:
-	   item_size = sizeof(int);
-	   break;
+       item_size = sizeof(int);
+       break;
    case UNICHAR_BUFFER:
        int is_UTF16 = u_is_UTF16(fileread);
        if ((is_UTF16 == UTF16_LITTLE_ENDIAN_FILE) || (is_UTF16 == UTF16_BIG_ENDIAN_FILE))
            item_size = sizeof(unichar);
-	   break;
+       break;
 }
 long save_pos=ftell(fileread);
 fseek(fileread,0,SEEK_END);
@@ -87,7 +87,7 @@ long file_size=ftell(fileread);
 fseek(fileread,save_pos,SEEK_SET);
 int capacity=(int)((file_size/item_size)+0x10);
 if ((capacity_limit != 0) && (capacity>capacity_limit)) {
-	capacity=capacity_limit;
+    capacity=capacity_limit;
 }
 return new_buffer(capacity,type);
 }
@@ -201,25 +201,25 @@ return fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,0,f);
 
 
 int fill_buffer(struct buffer* buffer, int pos, U_FILE* f) {
-	return fill_buffer(buffer, pos, 0, f);
+    return fill_buffer(buffer, pos, 0, f);
 }
 
 
 int fill_buffer_raw(struct buffer* buffer, U_FILE* f) {
-	return fill_buffer(buffer, buffer->MAXIMUM_BUFFER_SIZE, 1, f);
+    return fill_buffer(buffer, buffer->MAXIMUM_BUFFER_SIZE, 1, f);
 }
 
 
 int fill_buffer_raw(struct buffer* buffer, int pos, U_FILE* f) {
-	return fill_buffer(buffer, pos, 1, f);
+    return fill_buffer(buffer, pos, 1, f);
 }
 
 int fill_buffer_keepCR_option(struct buffer* buffer, int pos, int keep_cr, U_FILE* f) {
-	return fill_buffer(buffer, pos, keep_cr, f);
+    return fill_buffer(buffer, pos, keep_cr, f);
 }
 
 int fill_buffer_keepCR_option(struct buffer* buffer, int keep_cr, U_FILE* f) {
-	return fill_buffer(buffer, buffer->MAXIMUM_BUFFER_SIZE, keep_cr, f);
+    return fill_buffer(buffer, buffer->MAXIMUM_BUFFER_SIZE, keep_cr, f);
 }
 
 

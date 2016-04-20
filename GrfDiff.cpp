@@ -86,8 +86,8 @@ const struct option_TS lopts_GrfDiff[] = {
  */
 int main_GrfDiff(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+    usage();
+    return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -102,8 +102,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&i
    case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 1: {
-	   strcpy(output,options.vars()->optarg);
-	   break;
+       strcpy(output,options.vars()->optarg);
+       break;
    }
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
@@ -139,13 +139,13 @@ if (only_verify_arguments) {
 
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
-	/* Since the output is supposed to be a diff-like one, there is no point
-	 * in outputing in a variable encoding, so we force UTF8 */
-	f=u_fopen(UTF8,output,U_WRITE);
-	if (f==NULL) {
-		error("Cannot create file %s\n",output);
+    /* Since the output is supposed to be a diff-like one, there is no point
+     * in outputing in a variable encoding, so we force UTF8 */
+    f=u_fopen(UTF8,output,U_WRITE);
+    if (f==NULL) {
+        error("Cannot create file %s\n",output);
     return DEFAULT_ERROR_CODE;
-	}
+    }
 }
 
 Grf* a=load_Grf(&vec,argv[options.vars()->optind]);
@@ -158,7 +158,7 @@ if (a==NULL) {
 
 Grf* b=load_Grf(&vec,argv[options.vars()->optind+1]);
 if (b==NULL) {
-	free_Grf(a);
+    free_Grf(a);
   if (f!=U_STDOUT) {
     u_fclose(f);
   }

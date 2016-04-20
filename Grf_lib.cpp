@@ -82,7 +82,7 @@ grf->metadata=new_vector_ptr(1);
 grf->n_states=0;
 grf->states=NULL;
 if (create_default_header) {
-	set_default_header_values(grf);
+    set_default_header_values(grf);
 }
 return grf;
 }
@@ -147,7 +147,7 @@ free(s);
 void free_Grf(Grf* grf) {
 if (grf==NULL) return;
 for (int i=0;i<grf->n_states;i++) {
-	free_GrfState(grf->states[i]);
+    free_GrfState(grf->states[i]);
 }
 free_vector_ptr(grf->metadata,free);
 free(grf->states);
@@ -160,13 +160,13 @@ free(grf);
  */
 int add_GrfState(Grf* grf,GrfState* s) {
 if (grf==NULL || s==NULL) {
-	fatal_error("Unexpected NULL error in add_GrfState\n");
+    fatal_error("Unexpected NULL error in add_GrfState\n");
 }
 int n=grf->n_states;
 (grf->n_states)++;
 grf->states=(GrfState**)realloc(grf->states,grf->n_states*sizeof(GrfState*));
 if (grf->states==NULL) {
-	fatal_alloc_error("add_GrfState");
+    fatal_alloc_error("add_GrfState");
 }
 grf->states[n]=s;
 return n;
@@ -203,21 +203,21 @@ static int read_grf_state(U_FILE* f,Ustring* line,int n,Grf* grf) {
 if (EOF==readline(line,f) || line->len < 2) return 0;
 unsigned int pos=0;
 if (line->str[pos]=='s') {
-	/* Old stuff: s at line start used to mean that the box was selected.
-	 * We can ignore this */
-	pos++;
+    /* Old stuff: s at line start used to mean that the box was selected.
+     * We can ignore this */
+    pos++;
 }
 if (line->str[pos]!='"') return 0;
 unsigned int start_pos=pos;
 pos++;
 while (pos<line->len && line->str[pos]!='"') {
-	if (line->str[pos]=='\\') pos++;
-	pos++;
+    if (line->str[pos]=='\\') pos++;
+    pos++;
 }
 if (++pos>=line->len) {
-	/* Reached the end of line ? It's an error. We use a ++ since
-	 * a valid grf line should always have a space after the box content */
-	return 0;
+    /* Reached the end of line ? It's an error. We use a ++ since
+     * a valid grf line should always have a space after the box content */
+    return 0;
 }
 unichar c=line->str[pos];
 if (c!=' ') return 0;
@@ -229,18 +229,18 @@ pos++;
 int shift;
 int n_transitions;
 if (3!=u_sscanf(line->str+pos,"%d%d%d%n",
-		&(grf->states[n]->x),
-		&(grf->states[n]->y),
-		&n_transitions,
-		&shift)) return 0;
+        &(grf->states[n]->x),
+        &(grf->states[n]->y),
+        &n_transitions,
+        &shift)) return 0;
 pos=pos+shift;
 int dest;
 for (int i=0;i<n_transitions;i++) {
-	if (1!=u_sscanf(line->str+pos,"%d%n",
-			&dest,
-			&shift)) return 0;
-	vector_int_add(grf->states[n]->transitions,dest);
-	pos=pos+shift;
+    if (1!=u_sscanf(line->str+pos,"%d%n",
+            &dest,
+            &shift)) return 0;
+    vector_int_add(grf->states[n]->transitions,dest);
+    pos=pos+shift;
 }
 return 1;
 }
@@ -258,18 +258,18 @@ return 1;
  */
 static int read_metadata(Ustring* line,U_FILE* f,Grf* grf) {
 while (EOF!=readline(line,f)) {
-	if (!u_strcmp(line->str,"#")) return 1;
-	unichar* value=u_strchr(line->str,'=');
-	if (value==NULL) return 0;
-	*value='\0';
-	value++;
-	for (int i=0;i<grf->metadata->nbelems;i=i+2) {
-		if (!u_strcmp((unichar*)(grf->metadata->tab[i]),line->str)) {
-			return 0;
-		}
-	}
-	vector_ptr_add(grf->metadata,u_strdup(line->str));
-	vector_ptr_add(grf->metadata,u_strdup(value));
+    if (!u_strcmp(line->str,"#")) return 1;
+    unichar* value=u_strchr(line->str,'=');
+    if (value==NULL) return 0;
+    *value='\0';
+    value++;
+    for (int i=0;i<grf->metadata->nbelems;i=i+2) {
+        if (!u_strcmp((unichar*)(grf->metadata->tab[i]),line->str)) {
+            return 0;
+        }
+    }
+    vector_ptr_add(grf->metadata,u_strdup(line->str));
+    vector_ptr_add(grf->metadata,u_strdup(value));
 }
 return 0;
 }
@@ -284,9 +284,9 @@ if (f==NULL) return NULL;
 Ustring* line=new_Ustring();
 Grf* grf=new_Grf();
 if (EOF==readline(line,f)/* || u_strcmp(line->str,"#Unigraph")*/) {
-	/* The test has been removed because of backward compatibility problems
-	 * with old graphs starting with old header lines */
-	goto error;
+    /* The test has been removed because of backward compatibility problems
+     * with old graphs starting with old header lines */
+    goto error;
 }
 if (!read_grf_header_line(f,line,grf->size)) goto error;
 if (!read_grf_header_line(f,line,grf->font)) goto error;
@@ -309,12 +309,12 @@ if (!read_metadata(line,f,grf)) goto error;
 if (!read_grf_n_states(f,line,&(grf->n_states))) goto error;
 grf->states=(GrfState**)calloc(grf->n_states,sizeof(GrfState*));
 if (grf->states==NULL) {
-	fatal_alloc_error("load_Grf");
+    fatal_alloc_error("load_Grf");
 }
 for (int i=0;i<grf->n_states;i++) {
-	if (!read_grf_state(f,line,i,grf)) {
-		goto error;
-	}
+    if (!read_grf_state(f,line,i,grf)) {
+        goto error;
+    }
 }
 goto end;
 error:
@@ -350,17 +350,17 @@ u_fprintf(f,"%S\n",grf->drst);
 u_fprintf(f,"%S\n",grf->fits);
 u_fprintf(f,"%S\n",grf->porient);
 for (int i=0;i<grf->metadata->nbelems;i=i+2) {
-	u_fprintf(f,"%S=%S\n",grf->metadata->tab[i],grf->metadata->tab[i+1]);
+    u_fprintf(f,"%S=%S\n",grf->metadata->tab[i],grf->metadata->tab[i+1]);
 }
 u_fprintf(f,"#\n");
 u_fprintf(f,"%d\n",grf->n_states);
 for (int i=0;i<grf->n_states;i++) {
-	u_fprintf(f,"%S %d %d %d ",grf->states[i]->box_content,grf->states[i]->x,grf->states[i]->y,
-			grf->states[i]->transitions->nbelems);
-	for (int j=0;j<grf->states[i]->transitions->nbelems;j++) {
-		u_fprintf(f,"%d ",grf->states[i]->transitions->tab[j]);
-	}
-	u_fprintf(f,"\n");
+    u_fprintf(f,"%S %d %d %d ",grf->states[i]->box_content,grf->states[i]->x,grf->states[i]->y,
+            grf->states[i]->transitions->nbelems);
+    for (int j=0;j<grf->states[i]->transitions->nbelems;j++) {
+        u_fprintf(f,"%d ",grf->states[i]->transitions->tab[j]);
+    }
+    u_fprintf(f,"\n");
 }
 }
 
@@ -402,7 +402,7 @@ u_strcpy(dst->drst,src->drst);
 u_strcpy(dst->fits,src->fits);
 u_strcpy(dst->porient,src->porient);
 for (int i=0;i<src->metadata->nbelems;i++) {
-	vector_ptr_add(dst->metadata,u_strdup((unichar*)(src->metadata->tab[i])));
+    vector_ptr_add(dst->metadata,u_strdup((unichar*)(src->metadata->tab[i])));
 }
 }
 
@@ -412,16 +412,16 @@ for (int i=0;i<src->metadata->nbelems;i++) {
  */
 void cpy_grf_states(Grf* dst,Grf* src) {
 if (dst->states!=NULL)  {
-	for (int i=0;i<dst->n_states;i++) {
-		free_GrfState(dst->states[i]);
-	}
-	free(dst->states);
+    for (int i=0;i<dst->n_states;i++) {
+        free_GrfState(dst->states[i]);
+    }
+    free(dst->states);
 }
 dst->n_states=src->n_states;
 dst->states=(GrfState**)malloc(dst->n_states*sizeof(GrfState*));
 if (dst->states==NULL) fatal_alloc_error("cmp_grf_states");
 for (int i=0;i<dst->n_states;i++) {
-	dst->states[i]=cpy_grf_state(src->states[i]);
+    dst->states[i]=cpy_grf_state(src->states[i]);
 }
 }
 
@@ -443,18 +443,18 @@ return dst;
  */
 static int read_sequence(unichar stop,unichar* content,int *pos,Ustring* tmp) {
 while (content[*pos]!='\0' && content[*pos]!=stop) {
-	if (content[*pos]=='\\') {
-		u_strcat(tmp,'\\');
-		(*pos)++;
-		if (content[*pos]=='\0') return 0;
-	}
-	u_strcat(tmp,content[*pos]);
-	(*pos)++;
+    if (content[*pos]=='\\') {
+        u_strcat(tmp,'\\');
+        (*pos)++;
+        if (content[*pos]=='\0') return 0;
+    }
+    u_strcat(tmp,content[*pos]);
+    (*pos)++;
 }
 if (content[*pos]==stop) {
-	(*pos)++;
-	u_strcat(tmp,stop);
-	return 1;
+    (*pos)++;
+    u_strcat(tmp,stop);
+    return 1;
 }
 return 0;
 }
@@ -467,33 +467,33 @@ return 0;
 static int read_quoted_sequence(unichar* content,int *pos,Ustring* tmp) {
 int state=0;
 while (content[*pos]!='\0') {
-	unichar c=content[*pos];
-	u_strcat(tmp,c);
-	switch(state) {
-	case 0: {
-		if (c=='\\') state=1;
-		break;
-	}
-	case 1: {
-		if (c=='"') {
-			(*pos)++;
-			return 1;
-		}
-		if (c=='\\') state=2;
-		else state=0;
-		break;
-	}
-	case 2: {
-		if (c=='\\') state=3;
-		else state=0;
-		break;
-	}
-	case 3: {
-		state=0;
-		break;
-	}
-	}
-	(*pos)++;
+    unichar c=content[*pos];
+    u_strcat(tmp,c);
+    switch(state) {
+    case 0: {
+        if (c=='\\') state=1;
+        break;
+    }
+    case 1: {
+        if (c=='"') {
+            (*pos)++;
+            return 1;
+        }
+        if (c=='\\') state=2;
+        else state=0;
+        break;
+    }
+    case 2: {
+        if (c=='\\') state=3;
+        else state=0;
+        break;
+    }
+    case 3: {
+        state=0;
+        break;
+    }
+    }
+    (*pos)++;
 }
 return 0;
 }
@@ -508,30 +508,30 @@ return 0;
 static int read_box_line(vector_ptr* v,unichar* content,int *pos,Ustring* tmp) {
 empty(tmp);
 while (content[*pos]!='\0' && content[*pos]!='/' && content[*pos]!='+') {
-	switch (content[*pos]) {
-	case '<': if (!read_sequence('>',content,pos,tmp)) return 0; break;
-	case '{': if (!read_sequence('}',content,pos,tmp)) return 0; break;
-	case '\\': {
-		u_strcat(tmp,'\\');
-		(*pos)++;
-		if (content[*pos]=='\0') {
-			return 0;
-		}
-		u_strcat(tmp,content[*pos]);
-		(*pos)++;
-		if (content[(*pos)-1]=='"' && ((*pos)-3<0 || content[(*pos)-3]!='\\')) {
-			/* If we have just read \" (and not \\\") then the box line contains
-			 * a double quoted sequence that we have to read */
-			if (!read_quoted_sequence(content,pos,tmp)) return 0;
-		}
-		break;
-	}
-	default: u_strcat(tmp,content[*pos]); (*pos)++; break;
-	}
+    switch (content[*pos]) {
+    case '<': if (!read_sequence('>',content,pos,tmp)) return 0; break;
+    case '{': if (!read_sequence('}',content,pos,tmp)) return 0; break;
+    case '\\': {
+        u_strcat(tmp,'\\');
+        (*pos)++;
+        if (content[*pos]=='\0') {
+            return 0;
+        }
+        u_strcat(tmp,content[*pos]);
+        (*pos)++;
+        if (content[(*pos)-1]=='"' && ((*pos)-3<0 || content[(*pos)-3]!='\\')) {
+            /* If we have just read \" (and not \\\") then the box line contains
+             * a double quoted sequence that we have to read */
+            if (!read_quoted_sequence(content,pos,tmp)) return 0;
+        }
+        break;
+    }
+    default: u_strcat(tmp,content[*pos]); (*pos)++; break;
+    }
 }
 vector_ptr_add(v,u_strdup(tmp->str));
 if (content[*pos]=='+') {
-	(*pos)++;
+    (*pos)++;
 }
 return 1;
 }
@@ -551,8 +551,8 @@ if (s[pos++]!='$') return 0;
 if (s[pos]=='|') pos++;
 while (is_variable_char(s[pos])) pos++;
 if (!is_variable_char(s[pos-1])) {
-	/* Empty variable  name ? */
-	return 0;
+    /* Empty variable  name ? */
+    return 0;
 }
 if (s[pos]!='(' && s[pos]!=')') return 0;
 return s[pos+1]=='\0';
@@ -576,26 +576,26 @@ int l=u_strlen(content);
 /* We remove the ending double quote */
 content[l-1]='\0';
 if (!u_strcmp(content+1,"$<") || !u_strcmp(content+1,"$>")
-	|| !u_strcmp(content+1,"$[") || !u_strcmp(content+1,"$![") || !u_strcmp(content+1,"$]")
-	|| is_variable_box(content+1)) {
-	vector_ptr_add(v,u_strdup(content+1));
-	content[l-1]='"';
-	return v;
+    || !u_strcmp(content+1,"$[") || !u_strcmp(content+1,"$![") || !u_strcmp(content+1,"$]")
+    || is_variable_box(content+1)) {
+    vector_ptr_add(v,u_strdup(content+1));
+    content[l-1]='"';
+    return v;
 }
 Ustring* s=new_Ustring();
 int pos=1;
 while (content[pos]!='\0') {
-	if (content[pos]=='/') {
-		/* If we have found the output, we can copy it rawly and finish */
-		vector_ptr_add(v,u_strdup(content+pos));
-		break;
-	}
-	if (!read_box_line(v,content,&pos,s)) {
-		free_Ustring(s);
-		free_vector_ptr(v,free);
-		content[l-1]='"';
-		return NULL;
-	}
+    if (content[pos]=='/') {
+        /* If we have found the output, we can copy it rawly and finish */
+        vector_ptr_add(v,u_strdup(content+pos));
+        break;
+    }
+    if (!read_box_line(v,content,&pos,s)) {
+        free_Ustring(s);
+        free_vector_ptr(v,free);
+        content[l-1]='"';
+        return NULL;
+    }
 }
 content[l-1]='"';
 free_Ustring(s);
@@ -609,26 +609,26 @@ return v;
 ReverseTransitions* compute_reverse_transitions(Grf* g) {
 ReverseTransitions* reverse=(ReverseTransitions*)malloc(sizeof(ReverseTransitions));
 if (reverse==NULL) {
-	fatal_alloc_error("compute_reverse_transitions");
+    fatal_alloc_error("compute_reverse_transitions");
 }
 reverse->n=g->n_states;
 reverse->t=(vector_int**)malloc(g->n_states*sizeof(vector_int*));
 if (reverse->t==NULL) {
-	fatal_alloc_error("compute_reverse_transitions");
+    fatal_alloc_error("compute_reverse_transitions");
 }
 for (int i=0;i<g->n_states;i++) {
-	reverse->t[i]=new_vector_int(1);
+    reverse->t[i]=new_vector_int(1);
 }
 for (int i=0;i<g->n_states;i++) {
-	GrfState* s=g->states[i];
-	for (int j=0;j<s->transitions->nbelems;j++) {
-		if ((s->transitions->tab[j] < 0) || (s->transitions->tab[j] >= reverse->n)) {
-		  error("Invalid GRF file : invalid transition number %d\n", s->transitions->tab[j]);
-		} else
-		{
-		  vector_int_add(reverse->t[s->transitions->tab[j]],i);
-		}
-	}
+    GrfState* s=g->states[i];
+    for (int j=0;j<s->transitions->nbelems;j++) {
+        if ((s->transitions->tab[j] < 0) || (s->transitions->tab[j] >= reverse->n)) {
+          error("Invalid GRF file : invalid transition number %d\n", s->transitions->tab[j]);
+        } else
+        {
+          vector_int_add(reverse->t[s->transitions->tab[j]],i);
+        }
+    }
 }
 return reverse;
 }
@@ -637,7 +637,7 @@ return reverse;
 void free_ReverseTransitions(ReverseTransitions* r) {
 if (r==NULL) return;
 for (int i=0;i<r->n;i++) {
-	free_vector_int(r->t[i]);
+    free_vector_int(r->t[i]);
 }
 free(r->t);
 free(r);
@@ -674,7 +674,7 @@ return vector_int_equals_disorder(r->t[a],r->t[b]);
  */
 int have_same_transitions(Grf* grf,int a,int b,ReverseTransitions* r) {
 return have_same_outgoing_transitions(grf,a,b)
-	&& have_same_incoming_transitions(a,b,r);
+    && have_same_incoming_transitions(a,b,r);
 }
 
 

@@ -111,7 +111,7 @@ int f_print_morpho(f_morpho_T *feat);
 // If feat1 does not have its space allocated it is allocated first and then filled with a copy feat2
 // Returns 0 on success, -1 on error
 int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2);
-  
+
 } // namespace unitex
 
 #endif

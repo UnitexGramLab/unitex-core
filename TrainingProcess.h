@@ -50,9 +50,9 @@ namespace unitex {
 #define MAX_TAGGED_CORPUS_LINE 20000
 
 struct corpus_entry{
-	unichar* word;
-	unichar* pos_code;
-	unichar* overall_codes;
+    unichar* word;
+    unichar* pos_code;
+    unichar* overall_codes;
 };
 
 void create_disclaimer(const VersatileEncodingConfig* vec,const char* file);

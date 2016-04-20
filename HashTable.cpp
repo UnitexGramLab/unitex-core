@@ -36,9 +36,9 @@ namespace unitex {
  * set the capacity of hash table, verify we have a power of two
  */
 static void set_hash_capacity(struct hash_table* h,unsigned int capacity_set) {
-	h->capacity = 1;
-	while (h->capacity < capacity_set)
-		h->capacity *= 2;
+    h->capacity = 1;
+    while (h->capacity < capacity_set)
+        h->capacity *= 2;
 }
 
 

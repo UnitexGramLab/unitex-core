@@ -35,57 +35,57 @@ namespace unitex {
 
 
 typedef struct {
-	unichar* box_content;
-	int x,y;
-	vector_int* transitions;
+    unichar* box_content;
+    int x,y;
+    vector_int* transitions;
 
-	/* This information is useful when manipulating sentence grfs */
-	int rank;
+    /* This information is useful when manipulating sentence grfs */
+    int rank;
 
-	/* box_number is used for artificial box duplication when
-	 * specifying something like [2;4] to indicate that the given
-	 * box can match 2, 3 or 4 times. In such a case, we will expend this
-	 * request by creating all the boxes as a human would have created them
-	 * by hand, but for consistency in debug mode, we want all those
-	 * boxes to be considered as the original unique one in the grf. So,
-	 * artificial boxes will have a number that is not their index in the
-	 * state array of the grf object.
-	 */
-	int box_number;
+    /* box_number is used for artificial box duplication when
+     * specifying something like [2;4] to indicate that the given
+     * box can match 2, 3 or 4 times. In such a case, we will expend this
+     * request by creating all the boxes as a human would have created them
+     * by hand, but for consistency in debug mode, we want all those
+     * boxes to be considered as the original unique one in the grf. So,
+     * artificial boxes will have a number that is not their index in the
+     * state array of the grf object.
+     */
+    int box_number;
 } GrfState;
 
 
 typedef struct {
-	/* For the header part, we rawly store line contents, since
-	 * there is no need to analyse them */
-	unichar size[GRF_HEADER_LINE_SIZE];
-	unichar font[GRF_HEADER_LINE_SIZE];
-	unichar ofont[GRF_HEADER_LINE_SIZE];
-	unichar bcolor[GRF_HEADER_LINE_SIZE];
-	unichar fcolor[GRF_HEADER_LINE_SIZE];
-	unichar acolor[GRF_HEADER_LINE_SIZE];
-	unichar scolor[GRF_HEADER_LINE_SIZE];
-	unichar ccolor[GRF_HEADER_LINE_SIZE];
-	unichar dboxes[GRF_HEADER_LINE_SIZE];
-	unichar dframe[GRF_HEADER_LINE_SIZE];
-	unichar ddate[GRF_HEADER_LINE_SIZE];
-	unichar dfile[GRF_HEADER_LINE_SIZE];
-	unichar ddir[GRF_HEADER_LINE_SIZE];
-	unichar drig[GRF_HEADER_LINE_SIZE];
-	unichar drst[GRF_HEADER_LINE_SIZE];
-	unichar fits[GRF_HEADER_LINE_SIZE];
-	unichar porient[GRF_HEADER_LINE_SIZE];
+    /* For the header part, we rawly store line contents, since
+     * there is no need to analyse them */
+    unichar size[GRF_HEADER_LINE_SIZE];
+    unichar font[GRF_HEADER_LINE_SIZE];
+    unichar ofont[GRF_HEADER_LINE_SIZE];
+    unichar bcolor[GRF_HEADER_LINE_SIZE];
+    unichar fcolor[GRF_HEADER_LINE_SIZE];
+    unichar acolor[GRF_HEADER_LINE_SIZE];
+    unichar scolor[GRF_HEADER_LINE_SIZE];
+    unichar ccolor[GRF_HEADER_LINE_SIZE];
+    unichar dboxes[GRF_HEADER_LINE_SIZE];
+    unichar dframe[GRF_HEADER_LINE_SIZE];
+    unichar ddate[GRF_HEADER_LINE_SIZE];
+    unichar dfile[GRF_HEADER_LINE_SIZE];
+    unichar ddir[GRF_HEADER_LINE_SIZE];
+    unichar drig[GRF_HEADER_LINE_SIZE];
+    unichar drst[GRF_HEADER_LINE_SIZE];
+    unichar fits[GRF_HEADER_LINE_SIZE];
+    unichar porient[GRF_HEADER_LINE_SIZE];
 
-	vector_ptr* metadata;
+    vector_ptr* metadata;
 
-	int n_states;
-	GrfState** states;
+    int n_states;
+    GrfState** states;
 } Grf;
 
 
 typedef struct {
-	int n;
-	vector_int** t;
+    int n;
+    vector_int** t;
 } ReverseTransitions;
 
 

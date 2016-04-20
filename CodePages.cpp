@@ -66,14 +66,14 @@ namespace unitex {
 
 
 struct encodings_context {
-	/* Array of all encodings */
-	struct encoding** encodings;
-	/* Size of in 'encodings' */
-	int number_of_encodings;
-	/* Root of the encoding name tree */
-	struct search_tree_node* encoding_names;
-	/* context of html function */
-	void* character_context;
+    /* Array of all encodings */
+    struct encoding** encodings;
+    /* Size of in 'encodings' */
+    int number_of_encodings;
+    /* Root of the encoding name tree */
+    struct search_tree_node* encoding_names;
+    /* context of html function */
+    void* character_context;
 } ;
 
 /**
@@ -811,10 +811,10 @@ unicode[0xff]=0x0138;
 void init_uni2asc_code_page_array(unsigned char* ascii_dest,unichar* unicode_dest) {
 int i;
 for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
-	ascii_dest[i]='?';
+    ascii_dest[i]='?';
 }
 for (i=0;i<256;i++) {
-	ascii_dest[unicode_dest[i]]=(unsigned char)i;
+    ascii_dest[unicode_dest[i]]=(unsigned char)i;
 }
 }
 
@@ -1171,13 +1171,13 @@ return (int)af_fwrite(&c,1,1,f);
 
 int write_one_char(unichar c,const void* encoding_ctx,ABSTRACTFILE* f,const struct encoding* encoding,unsigned char* ascii_dest) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
-	return write_1_byte_character(ascii_dest[c],f);
+    return write_1_byte_character(ascii_dest[c],f);
 } else {
-	if (encoding->output_function != NULL) {
-	  return encoding->output_function(c,f);
-	}
-	else {
-		return encoding->output_function_ctx(c,f,encoding_ctx);
+    if (encoding->output_function != NULL) {
+      return encoding->output_function(c,f);
+    }
+    else {
+        return encoding->output_function_ctx(c,f,encoding_ctx);
     }
 }
 }
@@ -1192,8 +1192,8 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  */
 void write_integer(int n,const void* encoding_ctx,ABSTRACTFILE* f,const struct encoding* encoding,unsigned char* ascii_dest) {
 if (n<10) {
-	write_one_char((unichar)('0'+n),encoding_ctx,f,encoding,ascii_dest);
-	return;
+    write_one_char((unichar)('0'+n),encoding_ctx,f,encoding,ascii_dest);
+    return;
 }
 write_integer(n/10,encoding_ctx,f,encoding,ascii_dest);
 write_one_char('0'+n%10,encoding_ctx,f,encoding,ascii_dest);
@@ -1209,53 +1209,53 @@ write_one_char('0'+n%10,encoding_ctx,f,encoding,ascii_dest);
  *
  */
 void html_characters_encoding(unichar c,const void* encoding_ctx,const struct encoding* encoding,ABSTRACTFILE* f,
-			int encode_all_characters,int encode_HTML_control_characters,
-			unsigned char* ascii_dest) {
+            int encode_all_characters,int encode_HTML_control_characters,
+            unsigned char* ascii_dest) {
 /* First, we check if we have an HTML control character */
 if (is_HTML_control_character(c)) {
-	/* If necessary, we encode it in HTML */
-	if (encode_HTML_control_characters) {
-		write_one_char('&',encoding_ctx,f,encoding,ascii_dest);
-		switch (c) {
-			case '<': write_one_char('l',encoding_ctx,f,encoding,ascii_dest);
-			          write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
-			          break;
-			case '>': write_one_char('g',encoding_ctx,f,encoding,ascii_dest);
-			          write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
-			          break;
-			case '&': write_one_char('a',encoding_ctx,f,encoding,ascii_dest);
-			          write_one_char('m',encoding_ctx,f,encoding,ascii_dest);
-			          write_one_char('p',encoding_ctx,f,encoding,ascii_dest);
-			          break;
-			case '\'': write_one_char('q',encoding_ctx,f,encoding,ascii_dest);
-			           write_one_char('u',encoding_ctx,f,encoding,ascii_dest);
-			           write_one_char('o',encoding_ctx,f,encoding,ascii_dest);
-			           write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
-			           break;
-			default: error("Internal error in html_characters_encoding:\n");
-					fatal_error("inconsistency about HTML characters\n");
-		}
-		write_one_char(';',encoding_ctx,f,encoding,ascii_dest);
-		return;
-	}
-	/* Otherwise, we just print it, but only if it is supported by the encoding */
-	if (encoding->can_be_encoded_function(c,ascii_dest)) {
-	   write_one_char(c,encoding_ctx,f,encoding,ascii_dest);
-	} else {
-		/* If the control character can not be encoded as it, we
-		 * print the default character '?' */
-		write_one_char('?',encoding_ctx,f,encoding,ascii_dest);
-	}
-	return;
+    /* If necessary, we encode it in HTML */
+    if (encode_HTML_control_characters) {
+        write_one_char('&',encoding_ctx,f,encoding,ascii_dest);
+        switch (c) {
+            case '<': write_one_char('l',encoding_ctx,f,encoding,ascii_dest);
+                      write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
+                      break;
+            case '>': write_one_char('g',encoding_ctx,f,encoding,ascii_dest);
+                      write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
+                      break;
+            case '&': write_one_char('a',encoding_ctx,f,encoding,ascii_dest);
+                      write_one_char('m',encoding_ctx,f,encoding,ascii_dest);
+                      write_one_char('p',encoding_ctx,f,encoding,ascii_dest);
+                      break;
+            case '\'': write_one_char('q',encoding_ctx,f,encoding,ascii_dest);
+                       write_one_char('u',encoding_ctx,f,encoding,ascii_dest);
+                       write_one_char('o',encoding_ctx,f,encoding,ascii_dest);
+                       write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
+                       break;
+            default: error("Internal error in html_characters_encoding:\n");
+                    fatal_error("inconsistency about HTML characters\n");
+        }
+        write_one_char(';',encoding_ctx,f,encoding,ascii_dest);
+        return;
+    }
+    /* Otherwise, we just print it, but only if it is supported by the encoding */
+    if (encoding->can_be_encoded_function(c,ascii_dest)) {
+       write_one_char(c,encoding_ctx,f,encoding,ascii_dest);
+    } else {
+        /* If the control character can not be encoded as it, we
+         * print the default character '?' */
+        write_one_char('?',encoding_ctx,f,encoding,ascii_dest);
+    }
+    return;
 }
 /* Here, we have to deal with a normal character */
 if (!encoding->can_be_encoded_function(c,ascii_dest) && encode_all_characters) {
-	/* If the character can not be encoded as it, we encode it like &#1200; */
-	write_one_char('&',encoding_ctx,f,encoding,ascii_dest);
-	write_one_char('#',encoding_ctx,f,encoding,ascii_dest);
-	write_integer(c,encoding_ctx,f,encoding,ascii_dest);
-	write_one_char(';',encoding_ctx,f,encoding,ascii_dest);
-	return;
+    /* If the character can not be encoded as it, we encode it like &#1200; */
+    write_one_char('&',encoding_ctx,f,encoding,ascii_dest);
+    write_one_char('#',encoding_ctx,f,encoding,ascii_dest);
+    write_integer(c,encoding_ctx,f,encoding,ascii_dest);
+    write_one_char(';',encoding_ctx,f,encoding,ascii_dest);
+    return;
 }
 /* Otherwise, we just print the character */
 write_one_char(c,encoding_ctx,f,encoding,ascii_dest);
@@ -1287,14 +1287,14 @@ html_characters_encoding(c,encoding_ctx,encoding,f,1,1,ascii_dest);
  */
 int read_one_char(const void* encoding_ctx,ABSTRACTFILE* input,const struct encoding* encoding,unichar* unicode_src) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
-	return read_1_byte_character(input,unicode_src);
+    return read_1_byte_character(input,unicode_src);
 
 } else {
-	if (encoding->input_function != NULL) {
-	  return encoding->input_function(input);
-	}
-	else {
-		return encoding->input_function_ctx(input,encoding_ctx);
+    if (encoding->input_function != NULL) {
+      return encoding->input_function(input);
+    }
+    else {
+        return encoding->input_function_ctx(input,encoding_ctx);
     }
 }
 }
@@ -1305,62 +1305,62 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  * with the output encoder. All other chars are UTF16LE encoded.
  */
 int transliterate_delaf(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFILE* output,
-		    const struct encoding* input_encoding,
-			const struct encoding* output_encoding,
-			unichar* unicode_src) {
+            const struct encoding* input_encoding,
+            const struct encoding* output_encoding,
+            unichar* unicode_src) {
 int c;
 for (;;) {
-	while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
-		if (c=='\n') {
-			break;
-		}
-		if (c=='\\') {
-			u_fputc_UTF16LE('\\',output);
-			c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
-			if (c==EOF) break;
-			if (c=='\n') {
-				/* It would be an error */
-				break;
-			}
-		}
-		/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
-		write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
-	}
-	if (c==EOF) break;
-	if (c=='\n') {
-		u_fputc_UTF16LE('\n',output);
-		break;
-	}
-	u_fputc_UTF16LE(',',output);
-	/* Now, we look for the lemma */
-	while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!='.') {
-		if (c=='\n') {
-			break;
-		}
-		if (c=='\\') {
-			u_fputc_UTF16LE('\\',output);
-			c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
-			if (c==EOF) break;
-			if (c=='\n') {
-				/* It would be an error */
-				break;
-			}
-		}
-		/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
-		write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
-	}
-	if (c==EOF) break;
-	if (c=='\n') {
-		u_fputc_UTF16LE('\n',output);
-		break;
-	}
-	u_fputc_UTF16LE('.',output);
-	/* And we just copy the remaining chars */
-	while ((c=u_fgetc_UTF16LE(input))!=EOF) {
-		u_fputc_UTF16LE((unichar)c,output);
-		if (c=='\n') break;
-	}
-	if (c==EOF) break;
+    while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
+        if (c=='\n') {
+            break;
+        }
+        if (c=='\\') {
+            u_fputc_UTF16LE('\\',output);
+            c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
+            if (c==EOF) break;
+            if (c=='\n') {
+                /* It would be an error */
+                break;
+            }
+        }
+        /* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
+        write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
+    }
+    if (c==EOF) break;
+    if (c=='\n') {
+        u_fputc_UTF16LE('\n',output);
+        break;
+    }
+    u_fputc_UTF16LE(',',output);
+    /* Now, we look for the lemma */
+    while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!='.') {
+        if (c=='\n') {
+            break;
+        }
+        if (c=='\\') {
+            u_fputc_UTF16LE('\\',output);
+            c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
+            if (c==EOF) break;
+            if (c=='\n') {
+                /* It would be an error */
+                break;
+            }
+        }
+        /* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
+        write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
+    }
+    if (c==EOF) break;
+    if (c=='\n') {
+        u_fputc_UTF16LE('\n',output);
+        break;
+    }
+    u_fputc_UTF16LE('.',output);
+    /* And we just copy the remaining chars */
+    while ((c=u_fgetc_UTF16LE(input))!=EOF) {
+        u_fputc_UTF16LE((unichar)c,output);
+        if (c=='\n') break;
+    }
+    if (c==EOF) break;
 }
 return CONVERSION_OK;
 }
@@ -1371,41 +1371,41 @@ return CONVERSION_OK;
  * with the output encoder. All other chars are UTF16LE encoded.
  */
 int transliterate_delas(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFILE* output,
-		    const struct encoding* input_encoding,
-			const struct encoding* output_encoding,
-			unichar* unicode_src) {
-	int c;
-	for (;;) {
-		while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
-			if (c=='\n') {
-				break;
-			}
-			if (c=='\\') {
-				u_fputc_UTF16LE('\\',output);
-				c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
-				if (c==EOF) break;
-				if (c=='\n') {
-					/* It would be an error */
-					break;
-				}
-			}
-			/* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
-			write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
-		}
-		if (c==EOF) break;
-		if (c=='\n') {
-			u_fputc_UTF16LE('\n',output);
-			break;
-		}
-		u_fputc_UTF16LE(',',output);
-		/* And we just copy the remaining chars */
-		while ((c=u_fgetc_UTF16LE(input))!=EOF) {
-			u_fputc_UTF16LE((unichar)c,output);
-			if (c=='\n') break;
-		}
-		if (c==EOF) break;
-	}
-	return CONVERSION_OK;
+            const struct encoding* input_encoding,
+            const struct encoding* output_encoding,
+            unichar* unicode_src) {
+    int c;
+    for (;;) {
+        while ((c=read_one_char(encoding_ctx,input,input_encoding,unicode_src))!=EOF && c!=',') {
+            if (c=='\n') {
+                break;
+            }
+            if (c=='\\') {
+                u_fputc_UTF16LE('\\',output);
+                c=read_one_char(encoding_ctx,input,input_encoding,unicode_src);
+                if (c==EOF) break;
+                if (c=='\n') {
+                    /* It would be an error */
+                    break;
+                }
+            }
+            /* Last parameter is NULL since transliteration is supposed to produce UTF16LE */
+            write_one_char((unichar)c,encoding_ctx,output,output_encoding,NULL);
+        }
+        if (c==EOF) break;
+        if (c=='\n') {
+            u_fputc_UTF16LE('\n',output);
+            break;
+        }
+        u_fputc_UTF16LE(',',output);
+        /* And we just copy the remaining chars */
+        while ((c=u_fgetc_UTF16LE(input))!=EOF) {
+            u_fputc_UTF16LE((unichar)c,output);
+            if (c=='\n') break;
+        }
+        if (c==EOF) break;
+    }
+    return CONVERSION_OK;
 }
 
 
@@ -1429,7 +1429,7 @@ int transliterate_delas(const void* encoding_ctx,ABSTRACTFILE* input,ABSTRACTFIL
  *      of being encoded as any other character
  */
 int convert(const void* encoding_ctx,U_FILE* input,U_FILE* output,const struct encoding* input_encoding,
-			const struct encoding* output_encoding,
+            const struct encoding* output_encoding,
             int decode_HTML_normal_characters,int decode_HTML_control_characters,
             int encode_all_characters,int encode_HTML_control_characters,
             int format) {
@@ -1443,30 +1443,30 @@ unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 switch(input_encoding->type) {
-	/* For UTF, we need to read the 2 or 3 BYTE ORDER MASK header */
+    /* For UTF, we need to read the 2 or 3 BYTE ORDER MASK header */
     /* for E_UTF_xx, we accept if there is no BOM */
     /* for E_UTF_xx_BOM, we don't accept if there is no BOM */
-	case E_UTF16_LE:
+    case E_UTF16_LE:
     case E_UTF16_LE_BOM:
-		tmp=u_fgetc_UTF16LE(input->f);
-		if (tmp!=U_BYTE_ORDER_MARK) {
+        tmp=u_fgetc_UTF16LE(input->f);
+        if (tmp!=U_BYTE_ORDER_MARK) {
             if (input_encoding->type == E_UTF16_LE_BOM)
-			  return INPUT_FILE_NOT_IN_UTF16_LE;
+              return INPUT_FILE_NOT_IN_UTF16_LE;
             else
               af_fseek(input->f,0,0);
-		}
-		break;
+        }
+        break;
 
-	case E_UTF16_BE:
+    case E_UTF16_BE:
     case E_UTF16_BE_BOM:
-		tmp=u_fgetc_UTF16BE(input->f);
-		if (tmp!=U_BYTE_ORDER_MARK) {
+        tmp=u_fgetc_UTF16BE(input->f);
+        if (tmp!=U_BYTE_ORDER_MARK) {
             if (input_encoding->type == E_UTF16_BE_BOM)
-			  return INPUT_FILE_NOT_IN_UTF16_BE;
+              return INPUT_FILE_NOT_IN_UTF16_BE;
             else
               af_fseek(input->f,0,0);
-		}
-		break;
+        }
+        break;
 
     case E_UTF8_BOM:
     case E_UTF8:
@@ -1481,14 +1481,14 @@ switch(input_encoding->type) {
             if (bom_present==0)
             {
             if (input_encoding->type == E_UTF8_BOM)
-			  return INPUT_FILE_NOT_IN_UTF8;
+              return INPUT_FILE_NOT_IN_UTF8;
             else
                 af_fseek(input->f,0,0);
             }
-		}
-		break;
-	case E_ONE_BYTE_ENCODING: input_encoding->init_function(unicode_src);
-		break;
+        }
+        break;
+    case E_ONE_BYTE_ENCODING: input_encoding->init_function(unicode_src);
+        break;
 }
 /*
  * If necessary, we write the UTF16 2-byte header to the destination file.
@@ -1497,104 +1497,104 @@ switch(input_encoding->type) {
  */
 switch(output_encoding->type) {
     case E_UTF16_LE_BOM:
-	case E_UTF16_LE: u_fputc_UTF16LE(U_BYTE_ORDER_MARK,output->f); break;
+    case E_UTF16_LE: u_fputc_UTF16LE(U_BYTE_ORDER_MARK,output->f); break;
     case E_UTF16_BE_BOM:
-	case E_UTF16_BE: u_fputc_UTF16BE(U_BYTE_ORDER_MARK,output->f); break;
+    case E_UTF16_BE: u_fputc_UTF16BE(U_BYTE_ORDER_MARK,output->f); break;
     case E_UTF8_BOM: u_fputc_UTF8(U_BYTE_ORDER_MARK,output->f); break;
-	case E_ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
-							init_uni2asc_code_page_array(ascii_dest,unicode_dest);
-							break;
+    case E_ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
+                            init_uni2asc_code_page_array(ascii_dest,unicode_dest);
+                            break;
 }
 if (format==CONV_DELAF_FILE) {
-	return transliterate_delaf(encoding_ctx,input->f,output->f,input_encoding,output_encoding,unicode_src);
+    return transliterate_delaf(encoding_ctx,input->f,output->f,input_encoding,output_encoding,unicode_src);
 }
 if (format==CONV_DELAS_FILE) {
-	return transliterate_delas(encoding_ctx,input->f,output->f,input_encoding,output_encoding,unicode_src);
+    return transliterate_delas(encoding_ctx,input->f,output->f,input_encoding,output_encoding,unicode_src);
 }
 /* We choose the function that will be used to encode HTML characters
  * if necessary */
 if (encode_all_characters)
-	if (encode_HTML_control_characters)
-		z=f11;
-	else z=f10;
+    if (encode_HTML_control_characters)
+        z=f11;
+    else z=f10;
 else if (encode_HTML_control_characters)
-		z=f01;
-	else z=f00;
+        z=f01;
+    else z=f00;
 /* Then we read all the characters from the input file and we encode them */
 while ((tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src))!=EOF) {
    if (!decode_HTML_normal_characters || tmp!='&') {
-		/* If we do not need to decode HTML normal characters like &#eacute;
-		 * or if we do not have '&', we can print the character to the output */
-		z((unichar)tmp,encoding_ctx,output_encoding,output->f,ascii_dest);
-	} else {
-		/* We read everything until we find the ';' character */
-		char temp[257];
-		int i=0;
-		do {
-			tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src);
-			if (tmp==EOF) {
-				/* If we find an unexpected end of file, we raise an error */
-				return ERROR_IN_HTML_CHARACTER_NAME;
-			}
-			if (tmp>0x7F) {
-				/* If the character is not an ascii one, it is an error */
-				i=-1;
-				break;
-			}
-			temp[i++]=(char)tmp;
-		} while (tmp!=';' && i<256);
-		if (i==-1) {
-			/* If the character declaration contains a non ascii character,
-			 * we print an error message and we write '?' to the output. */
-			error("Non ASCII character in a HTML character declaration of the form &......;\n");
-			z('?',encoding_ctx,output_encoding,output->f,ascii_dest);
-		} else if (i==1) {
-			/* If we have an empty code '&;' we print an error message and
-			 * we print nothing to the output. */
-			 error("Empty HTML code &;\n");
-		}
-		else if (tmp!=';' && i==256) {
-			/* If the HTML character if too long, we print an error message
-			 * and print '?' in the output. */
-			 error("Too long HTML character of the form &........;\n");
-			 z('?',encoding_ctx,output_encoding,output->f,ascii_dest);
-		} else {
-			temp[i-1]='\0';
-			/* Now, temp contains "#228" or "eacute". We look for the associated
-			 * code and we print it to the output if any; otherwise, we print
-			 * the '?' character. */
-			i=get_HTML_character(ectx->character_context,temp,decode_HTML_control_characters);
-			switch (i) {
-				case UNKNOWN_CHARACTER: z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
-				case MALFORMED_HTML_CODE: error("Malformed HTML character declaration &%s;\n",temp);
-									z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
-				case DO_NOT_DECODE_CHARACTER:
-					/* If we have a control character that we must not decode like '&gt;',
-					 * we print it as it to the output */
-					 z('&',encoding_ctx,output_encoding,output->f,ascii_dest);
-					 for (int j=0;temp[j]!='\0';j++) {
-					 	z(temp[j],encoding_ctx,output_encoding,output->f,ascii_dest);
-					 }
-					 z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
-					 break;
-				default: if (!is_HTML_control_character((unichar)i) || decode_HTML_control_characters) {
-							/* If we have a normal character or if we can
-							 * encode control characters, then we print it */
-							z((unichar)i,encoding_ctx,output_encoding,output->f,ascii_dest);
-						} else {
-							/* If we have a control character and if we can not decode it,
-							 * then we copy the string representation that was in
-							 * the input */
-							z('&',encoding_ctx,output_encoding,output->f,ascii_dest);
-							for (int j=0;temp[j]!='\0';j++) {
-								z(temp[j],encoding_ctx,output_encoding,output->f,ascii_dest);
-							}
-							z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
-					 		break;
-						}
-			}
-		}
-	}
+        /* If we do not need to decode HTML normal characters like &#eacute;
+         * or if we do not have '&', we can print the character to the output */
+        z((unichar)tmp,encoding_ctx,output_encoding,output->f,ascii_dest);
+    } else {
+        /* We read everything until we find the ';' character */
+        char temp[257];
+        int i=0;
+        do {
+            tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src);
+            if (tmp==EOF) {
+                /* If we find an unexpected end of file, we raise an error */
+                return ERROR_IN_HTML_CHARACTER_NAME;
+            }
+            if (tmp>0x7F) {
+                /* If the character is not an ascii one, it is an error */
+                i=-1;
+                break;
+            }
+            temp[i++]=(char)tmp;
+        } while (tmp!=';' && i<256);
+        if (i==-1) {
+            /* If the character declaration contains a non ascii character,
+             * we print an error message and we write '?' to the output. */
+            error("Non ASCII character in a HTML character declaration of the form &......;\n");
+            z('?',encoding_ctx,output_encoding,output->f,ascii_dest);
+        } else if (i==1) {
+            /* If we have an empty code '&;' we print an error message and
+             * we print nothing to the output. */
+             error("Empty HTML code &;\n");
+        }
+        else if (tmp!=';' && i==256) {
+            /* If the HTML character if too long, we print an error message
+             * and print '?' in the output. */
+             error("Too long HTML character of the form &........;\n");
+             z('?',encoding_ctx,output_encoding,output->f,ascii_dest);
+        } else {
+            temp[i-1]='\0';
+            /* Now, temp contains "#228" or "eacute". We look for the associated
+             * code and we print it to the output if any; otherwise, we print
+             * the '?' character. */
+            i=get_HTML_character(ectx->character_context,temp,decode_HTML_control_characters);
+            switch (i) {
+                case UNKNOWN_CHARACTER: z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
+                case MALFORMED_HTML_CODE: error("Malformed HTML character declaration &%s;\n",temp);
+                                    z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
+                case DO_NOT_DECODE_CHARACTER:
+                    /* If we have a control character that we must not decode like '&gt;',
+                     * we print it as it to the output */
+                     z('&',encoding_ctx,output_encoding,output->f,ascii_dest);
+                     for (int j=0;temp[j]!='\0';j++) {
+                        z(temp[j],encoding_ctx,output_encoding,output->f,ascii_dest);
+                     }
+                     z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
+                     break;
+                default: if (!is_HTML_control_character((unichar)i) || decode_HTML_control_characters) {
+                            /* If we have a normal character or if we can
+                             * encode control characters, then we print it */
+                            z((unichar)i,encoding_ctx,output_encoding,output->f,ascii_dest);
+                        } else {
+                            /* If we have a control character and if we can not decode it,
+                             * then we copy the string representation that was in
+                             * the input */
+                            z('&',encoding_ctx,output_encoding,output->f,ascii_dest);
+                            for (int j=0;temp[j]!='\0';j++) {
+                                z(temp[j],encoding_ctx,output_encoding,output->f,ascii_dest);
+                            }
+                            z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
+                            break;
+                        }
+            }
+        }
+    }
 }
 return CONVERSION_OK;
 }
@@ -1668,7 +1668,7 @@ return 0;
 void strtolower(char* s) {
 if (s==NULL) return;
 for (int i=0;s[i];i++) {
-	if (s[i]>='A' && s[i]<='Z') s[i]=s[i]+32; /* 32 = 'a'-'A' */
+    if (s[i]>='A' && s[i]<='Z') s[i]=s[i]+32; /* 32 = 'a'-'A' */
 }
 }
 
@@ -1694,35 +1694,35 @@ if (name==NULL) {
 struct encoding* encoding=new_encoding();
 encoding->type=E_ONE_BYTE_ENCODING;
 if ((encoding->name=strdup(name))==NULL) {
-	fatal_alloc_error("install_one_byte_encoding");
+    fatal_alloc_error("install_one_byte_encoding");
 }
 strtolower(encoding->name);
 if (init_function==NULL) {
-	fatal_error("NULL init_function error in install_one_byte_encoding\n");
+    fatal_error("NULL init_function error in install_one_byte_encoding\n");
 }
 encoding->init_function=init_function;
 if (usage_function==NULL) {
-	fatal_error("NULL usage_function error in install_one_byte_encoding\n");
+    fatal_error("NULL usage_function error in install_one_byte_encoding\n");
 }
 encoding->usage_function=usage_function;
 encoding->can_be_encoded_function=can_encode;
 encoding->input_function=NULL;
 encoding->output_function=NULL;
 if (aliases==NULL) {
-	/* If there is no aliases, we can return */
+    /* If there is no aliases, we can return */
 }
 int i=0;
 while (aliases[i]!=NULL) {
-	encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
-	if (encoding->aliases==NULL) {
-	   fatal_alloc_error("install_one_byte_encoding");
-	}
-	encoding->aliases[i]=strdup(aliases[i]);
-	strtolower(encoding->aliases[i]);
-	if (encoding->aliases[i]==NULL) {
-	   fatal_alloc_error("install_one_byte_encoding");
-	}
-	i++;
+    encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
+    if (encoding->aliases==NULL) {
+       fatal_alloc_error("install_one_byte_encoding");
+    }
+    encoding->aliases[i]=strdup(aliases[i]);
+    strtolower(encoding->aliases[i]);
+    if (encoding->aliases[i]==NULL) {
+       fatal_alloc_error("install_one_byte_encoding");
+    }
+    i++;
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
@@ -1736,12 +1736,12 @@ ectx->encodings[ectx->number_of_encodings]=encoding;
  * operation will raise a fatal error if the given encoding name is already
  * in the encoding name tree. */
 if (!insert_string(&ectx->encoding_names,name,ectx->number_of_encodings)) {
-	fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",name);
+    fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",name);
 }
 for (i=0;i<encoding->number_of_aliases;i++) {
-	if (!insert_string(&ectx->encoding_names,encoding->aliases[i],ectx->number_of_encodings)) {
-		fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",encoding->aliases[i]);
-	}
+    if (!insert_string(&ectx->encoding_names,encoding->aliases[i],ectx->number_of_encodings)) {
+        fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",encoding->aliases[i]);
+    }
 }
 /* And finally, we do not forget to increase the number of encodings */
 ectx->number_of_encodings++;
@@ -1761,12 +1761,12 @@ ectx->number_of_encodings++;
  * We consider that a multi-bytes encoding can encode any character.
  */
 void install_multi_bytes_encoding_ctxfunc(void* ctx,const char* name,int type,
-								int (*input_function)(ABSTRACTFILE*),
-								int (*input_function_ctx)(ABSTRACTFILE*,const void*),
-								int (*output_function)(unichar,ABSTRACTFILE*),
-								int (*output_function_ctx)(unichar,ABSTRACTFILE*,const void*),
-								void (*usage_function)(void),
-								const char** aliases) {
+                                int (*input_function)(ABSTRACTFILE*),
+                                int (*input_function_ctx)(ABSTRACTFILE*,const void*),
+                                int (*output_function)(unichar,ABSTRACTFILE*),
+                                int (*output_function_ctx)(unichar,ABSTRACTFILE*,const void*),
+                                void (*usage_function)(void),
+                                const char** aliases) {
 struct encodings_context* ectx=(struct encodings_context*)ctx;
 if (name==NULL) {
    fatal_error("NULL name error in install_multi_bytes_encoding\n");
@@ -1775,23 +1775,23 @@ if (name==NULL) {
 struct encoding* encoding=new_encoding();
 encoding->type=type;
 if ((encoding->name=strdup(name))==NULL) {
-	fatal_alloc_error("install_multi_bytes_encoding");
+    fatal_alloc_error("install_multi_bytes_encoding");
 }
 strtolower(encoding->name);
 if ((input_function==NULL) && (input_function_ctx==NULL)) {
-	fatal_error("NULL input_function error in install_multi_bytes_encoding_ctxfunc\n");
+    fatal_error("NULL input_function error in install_multi_bytes_encoding_ctxfunc\n");
 }
 encoding->input_function=input_function;
 encoding->input_function_ctx=input_function_ctx;
 
 if ((output_function==NULL) && (output_function_ctx==NULL)) {
-	fatal_error("NULL output_function error in install_multi_bytes_encoding_ctxfunc\n");
+    fatal_error("NULL output_function error in install_multi_bytes_encoding_ctxfunc\n");
 }
 encoding->output_function=output_function;
 encoding->output_function_ctx=output_function_ctx;
 
 if (usage_function==NULL) {
-	fatal_error("NULL usage_function error in install_multi_bytes_encoding_ctxfunc\n");
+    fatal_error("NULL usage_function error in install_multi_bytes_encoding_ctxfunc\n");
 }
 encoding->usage_function=usage_function;
 /*
@@ -1800,19 +1800,19 @@ encoding->usage_function=usage_function;
 encoding->can_be_encoded_function=can_always_encode;
 int i=0;
 if (aliases!=NULL) {
-	/* If there are aliases, we take care of them */
-	while (aliases[i]!=NULL) {
-		encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
-		if (encoding->aliases==NULL) {
-		fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
-		}
-		encoding->aliases[i]=strdup(aliases[i]);
-		strtolower(encoding->aliases[i]);
-		if (encoding->aliases[i]==NULL) {
-		fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
-		}
-		i++;
-	}
+    /* If there are aliases, we take care of them */
+    while (aliases[i]!=NULL) {
+        encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
+        if (encoding->aliases==NULL) {
+        fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
+        }
+        encoding->aliases[i]=strdup(aliases[i]);
+        strtolower(encoding->aliases[i]);
+        if (encoding->aliases[i]==NULL) {
+        fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
+        }
+        i++;
+    }
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
@@ -1826,12 +1826,12 @@ ectx->encodings[ectx->number_of_encodings]=encoding;
  * operation will raise a fatal error if the given encoding name is already
  * in the encoding name tree. */
 if (!insert_string(&ectx->encoding_names,name,ectx->number_of_encodings)) {
-	fatal_error("Internal error in install_multi_bytes_encoding_ctxfunc: encoding name %s already used\n",name);
+    fatal_error("Internal error in install_multi_bytes_encoding_ctxfunc: encoding name %s already used\n",name);
 }
 for (i=0;i<encoding->number_of_aliases;i++) {
-	if (!insert_string(&ectx->encoding_names,encoding->aliases[i],ectx->number_of_encodings)) {
-		fatal_error("Internal error in install_multi_bytes_encoding_ctxfunc: encoding name %s already used\n",encoding->aliases[i]);
-	}
+    if (!insert_string(&ectx->encoding_names,encoding->aliases[i],ectx->number_of_encodings)) {
+        fatal_error("Internal error in install_multi_bytes_encoding_ctxfunc: encoding name %s already used\n",encoding->aliases[i]);
+    }
 }
 /* And finally, we do not forget to increase the number of encodings */
 ectx->number_of_encodings++;
@@ -1841,15 +1841,15 @@ ectx->number_of_encodings++;
 /* same as install_multi_bytes_encoding_ctxfunc but without specify context in/out function
  */
 void install_multi_bytes_encoding(void*encoding_ctx,const char* name,int type,
-								int (*input_function)(ABSTRACTFILE*),
-								int (*output_function)(unichar,ABSTRACTFILE*),
-								void (*usage_function)(void),
-								const char** aliases)
+                                int (*input_function)(ABSTRACTFILE*),
+                                int (*output_function)(unichar,ABSTRACTFILE*),
+                                void (*usage_function)(void),
+                                const char** aliases)
 {
     install_multi_bytes_encoding_ctxfunc(encoding_ctx,name,type,
-								input_function,NULL,
-								output_function,NULL,
-								usage_function,aliases);
+                                input_function,NULL,
+                                output_function,NULL,
+                                usage_function,aliases);
 }
 
 
@@ -1932,8 +1932,8 @@ install_one_byte_encoding(ctx,"ms-windows-1250",init_windows_1250,usage_windows_
 const char* aliases_windows_1251[4]={"windows-1251","windows1251","cyrillic",NULL};
 install_one_byte_encoding(ctx,"ms-windows-1251",init_windows_1251,usage_windows_1251,aliases_windows_1251);
 const char* aliases_windows_1252[10]={"windows-1252","windows1252","french","english",
-								"german","spanish","portuguese","italian",
-								"norwegian",NULL};
+                                "german","spanish","portuguese","italian",
+                                "norwegian",NULL};
 install_one_byte_encoding(ctx,"ms-windows-1252",init_windows_1252,usage_windows_1252,aliases_windows_1252);
 const char* aliases_windows_1253[4]={"windows-1253","windows1253","greek",NULL};
 install_one_byte_encoding(ctx,"ms-windows-1253",init_windows_1253,usage_windows_1253,aliases_windows_1253);
@@ -1981,7 +1981,7 @@ free(ectx);
 void print_encoding_main_names(const void* encoding_ctx) {
 const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 for (int i=0;i<ectx->number_of_encodings;i++) {
-	u_printf("%s\n",ectx->encodings[i]->name);
+    u_printf("%s\n",ectx->encodings[i]->name);
 }
 }
 
@@ -1993,9 +1993,9 @@ for (int i=0;i<ectx->number_of_encodings;i++) {
 void print_encoding_aliases(const void* encoding_ctx) {
 const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 for (int i=0;i<ectx->number_of_encodings;i++) {
-	for (int j=0;j<ectx->encodings[i]->number_of_aliases;j++) {
-		u_printf("%s\n",ectx->encodings[i]->aliases[j]);
-	}
+    for (int j=0;j<ectx->encodings[i]->number_of_aliases;j++) {
+        u_printf("%s\n",ectx->encodings[i]->aliases[j]);
+    }
 }
 }
 
@@ -2006,11 +2006,11 @@ for (int i=0;i<ectx->number_of_encodings;i++) {
 void print_encoding_infos(const struct encoding* encoding) {
 u_printf("Main name = %s\n",encoding->name);
 if (encoding->number_of_aliases>0) {
-	u_printf("Alias%s =",(encoding->number_of_aliases==1)?"":"es");
-	for (int i=0;i<encoding->number_of_aliases;i++) {
-		u_printf(" %s",encoding->aliases[i]);
-	}
-	u_printf("\n");
+    u_printf("Alias%s =",(encoding->number_of_aliases==1)?"":"es");
+    for (int i=0;i<encoding->number_of_aliases;i++) {
+        u_printf(" %s",encoding->aliases[i]);
+    }
+    u_printf("\n");
 }
 encoding->usage_function();
 }
@@ -2024,8 +2024,8 @@ encoding->usage_function();
 void print_encoding_infos(const void* encoding_ctx,const char* name) {
 const struct encoding* encoding=get_encoding(encoding_ctx,name);
 if (encoding==NULL) {
-	error("%s is not a valid encoding name\n",name);
-	return;
+    error("%s is not a valid encoding name\n",name);
+    return;
 }
 print_encoding_infos(encoding);
 }
@@ -2037,8 +2037,8 @@ print_encoding_infos(encoding);
 void print_information_for_all_encodings(const void* encoding_ctx) {
 const struct encodings_context* ectx=(const struct encodings_context*)encoding_ctx;
 for (int i=0;i<ectx->number_of_encodings;i++) {
-	print_encoding_infos(ectx->encodings[i]);
-	u_printf("\n");
+    print_encoding_infos(ectx->encodings[i]);
+    u_printf("\n");
 }
 }
 
@@ -2054,7 +2054,7 @@ strcpy(name_in_lower,name);
 strtolower(name_in_lower);
 int encoding_number;
 if (!get_string_number(ectx->encoding_names,name_in_lower,&encoding_number)) {
-	return NULL;
+    return NULL;
 }
 return ectx->encodings[encoding_number];
 }

@@ -39,13 +39,13 @@ namespace unitex {
 #define UNXMLIZE_DO_NOTHING 2
 
 typedef struct {
-	char comments;
-	char scripts;
-	char normal_tags;
+    char comments;
+    char scripts;
+    char normal_tags;
 } UnxmlizeOpts;
 
 int unxmlize(U_FILE* input,U_FILE* output,vector_offset* offsets,UnxmlizeOpts* options,
-		unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation);
+        unichar* bastien[],U_FILE* f_bastien, int tolerate_markup_malformation);
 
 } // namespace unitex
 

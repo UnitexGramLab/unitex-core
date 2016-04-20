@@ -174,17 +174,17 @@ unichar** create_jamo_tags(Korean* korean,struct string_hash* tokens) {
 unichar** res=(unichar**)malloc(tokens->size*sizeof(unichar*));
 unichar foo[1024];
 for (int i=0;i<tokens->size;i++) {
-	if (!u_strcmp(tokens->value[i],"{S}")) {
-		res[i]=u_strdup("{S}");
-	} else {
-	   Hanguls_to_Jamos(tokens->value[i],foo,korean,0);
-	   res[i]=u_strdup(foo);
-	   /*error("<%S> (%x) => \n",tokens->value[i],tokens->value[i][0]);
-	   for (int j=0;foo[j]!=0;j++) {
-		   error("[ %C %x] ",foo[j],foo[j]);
-	   }
-	   error("\n");*/
-	}
+    if (!u_strcmp(tokens->value[i],"{S}")) {
+        res[i]=u_strdup("{S}");
+    } else {
+       Hanguls_to_Jamos(tokens->value[i],foo,korean,0);
+       res[i]=u_strdup(foo);
+       /*error("<%S> (%x) => \n",tokens->value[i],tokens->value[i][0]);
+       for (int j=0;foo[j]!=0;j++) {
+           error("[ %C %x] ",foo[j],foo[j]);
+       }
+       error("\n");*/
+    }
 }
 return res;
 }
@@ -208,26 +208,26 @@ U_FILE* info;
 struct locate_parameters* p=new_locate_parameters();
 
 if (stack_max>0) {
-	p->stack_max = stack_max;
+    p->stack_max = stack_max;
 }
 
 if (max_matches_at_token_pos>0) {
-	p->max_matches_at_token_pos = max_matches_at_token_pos;
+    p->max_matches_at_token_pos = max_matches_at_token_pos;
 }
 
 if (max_matches_per_subgraph>0) {
-	p->max_matches_per_subgraph = max_matches_per_subgraph;
+    p->max_matches_per_subgraph = max_matches_per_subgraph;
 }
 
 if (max_errors>0) {
-	p->max_errors = max_errors;
+    p->max_errors = max_errors;
 }
 
 size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
 char* buffer_filename = (char*)malloc(step_filename_buffer * 3);
 if (buffer_filename == NULL)
 {
-	fatal_alloc_error("locate_pattern");
+    fatal_alloc_error("locate_pattern");
 }
 
 p->text_cod=af_open_mapfile(text_cod,MAPFILE_OPTION_READ,0);
@@ -267,7 +267,7 @@ char* morpho_bin = (buffer_filename + (step_filename_buffer * 2));
 strcpy(morpho_bin,dynamicDir);
 strcat(morpho_bin,"morpho.bin");
 if (arabic_rules!=NULL && arabic_rules[0]!='\0') {
-	load_arabic_typo_rules(vec,arabic_rules,&(p->arabic));
+    load_arabic_typo_rules(vec,arabic_rules,&(p->arabic));
 }
 out=u_fopen(vec,concord,U_WRITE);
 if (out==NULL) {
@@ -304,9 +304,9 @@ extract_semantic_codes(vec,dlf,semantic_codes);
 extract_semantic_codes(vec,dlc,semantic_codes);
 
 if (is_cancelling_requested() != 0) {
-	   error("user cancel request.\n");
-	   free_alphabet(p->alphabet);
-	   free_string_hash(semantic_codes);
+       error("user cancel request.\n");
+       free_alphabet(p->alphabet);
+       free_string_hash(semantic_codes);
        af_release_mapfile_pointer(p->text_cod,p->buffer);
        af_close_mapfile(p->text_cod);
        free_stack_unichar(p->stack);
@@ -314,8 +314,8 @@ if (is_cancelling_requested() != 0) {
        if (info!=NULL) u_fclose(info);
        u_fclose(out);
        free(buffer_filename);
-	   return 0;
-	}
+       return 0;
+    }
 
 u_printf("Loading fst2...\n");
 struct FST2_free_info fst2load_free;
@@ -334,17 +334,17 @@ if (fst2load==NULL) {
    return 0;
 }
 if (fst2load->debug) {
-	/* If Locate uses a debug fst2, we force the output mode to MERGE,
-	 * we allow ambiguous outputs and we write graph names into the
-	 * concordance file */
-	p->output_policy=MERGE_OUTPUTS;
-	p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
-	p->debug=1;
-	u_fprintf(out,"#D\n");
-	u_fprintf(out,"%d\n",fst2load->number_of_graphs);
-	for (int i=0;i<fst2load->number_of_graphs;i++) {
-		u_fprintf(out,"%S\n",fst2load->graph_names[i+1]);
-	}
+    /* If Locate uses a debug fst2, we force the output mode to MERGE,
+     * we allow ambiguous outputs and we write graph names into the
+     * concordance file */
+    p->output_policy=MERGE_OUTPUTS;
+    p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+    p->debug=1;
+    u_fprintf(out,"#D\n");
+    u_fprintf(out,"%d\n",fst2load->number_of_graphs);
+    for (int i=0;i<fst2load->number_of_graphs;i++) {
+        u_fprintf(out,"%S\n",fst2load->graph_names[i+1]);
+    }
 }
 switch(p->real_output_policy) {
    case IGNORE_OUTPUTS: u_fprintf(out,"#I\n"); break;
@@ -417,7 +417,7 @@ Abstract_allocator locate_work_abstract_allocator = locate_abstract_allocator;
 p->match_cache=(LocateCache*)malloc_cb(p->tokens->size * sizeof(LocateCache),locate_work_abstract_allocator);
 memset(p->match_cache,0,p->tokens->size * sizeof(LocateCache));
 if (p->match_cache==NULL) {
-	fatal_alloc_error("locate_pattern");
+    fatal_alloc_error("locate_pattern");
 }
 
 #ifdef REGEX_FACADE_ENGINE
@@ -514,8 +514,8 @@ locate_recycle_locate_trace_info_allocator=create_abstract_allocator("locate_pat
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->input_variables,p->output_variables,p->fst2,locate_abstract_allocator);
 if (is_korean) {
-	p->korean=new Korean(p->alphabet);
-	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
+    p->korean=new Korean(p->alphabet);
+    p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
 }
 p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 
@@ -540,10 +540,10 @@ if (info!=NULL) u_fclose(info);
 u_fclose(out);
 
 if (p->match_cache!=NULL) {
-	for (int i=0;i<p->tokens->size;i++) {
-		free_LocateCache(p->match_cache[i],locate_work_abstract_allocator);
-	}
-	free_cb(p->match_cache,locate_work_abstract_allocator);
+    for (int i=0;i<p->tokens->size;i++) {
+        free_LocateCache(p->match_cache[i],locate_work_abstract_allocator);
+    }
+    free_cb(p->match_cache,locate_work_abstract_allocator);
 }
 int free_abstract_allocator_item=(get_allocator_cb_flag(locate_abstract_allocator) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
 
@@ -573,15 +573,15 @@ morphlogical_content_buffer_recycle_abstract_allocator=NULL;
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);
 if (p->korean!=NULL) {
-	delete p->korean;
+    delete p->korean;
 }
 if (p->jamo_tags!=NULL) {
-	/* jamo tags must be freed before tokens, because we need to know how
-	 * many jamo tags there are, and this number is the number of tokens */
-	for (int i=0;i<p->tokens->size;i++) {
-		free(p->jamo_tags[i]);
-	}
-	free(p->jamo_tags);
+    /* jamo tags must be freed before tokens, because we need to know how
+     * many jamo tags there are, and this number is the number of tokens */
+    for (int i=0;i<p->tokens->size;i++) {
+        free(p->jamo_tags[i]);
+    }
+    free(p->jamo_tags);
 }
 free_string_hash(p->tokens);
 free_lemma_node(root);
@@ -595,7 +595,7 @@ free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
 #endif
 for (int i=0;i<p->n_morpho_dics;i++) {
-	free_Dictionary(p->morpho_dic[i]);
+    free_Dictionary(p->morpho_dic[i]);
    /*free_abstract_INF(p->morpho_dic_inf[i],&(p->morpho_dic_inf_free[i]));
    free_abstract_BIN(p->morpho_dic_bin[i],&(p->morpho_dic_bin_free[i]));*/
 }
@@ -896,7 +896,7 @@ while (EOF!=readline(line,f)) {
    free_list_int(ptr_copy,load_dic_list_int_recycle_abstract_allocator);
    if (!is_a_simple_word(entry->inflected,parameters->tokenization_policy,alphabet)) {
       /* If the inflected form is a compound word */
-	  if (is_DIC_pattern || is_CDIC_pattern) {
+      if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
           * must note that all compound words can be matched by them */
          add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy);

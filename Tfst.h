@@ -107,19 +107,19 @@ typedef struct {
 
    /* The boundings of the sentence area covered by the tag */
    /* Special information for Korean transitions
-    * 
-    * In a Korean word, a character represents a syllable, which may contains several 
+    *
+    * In a Korean word, a character represents a syllable, which may contains several
     * logical letters. Note that these information must always be set to values
     * between 0 and MAX_LETTERS, where MAX_LETTERS is the maximum number of logical
     * letters in the last syllabic character of the input of the transition.
     * For instance, let us assume that (abc) stands for one syllabic character made of
     * 3 logical letters a, b and c. Then, for the following input:
-    * 
+    *
     *    {(fg)(fda) (zegd)(ddz),.XXX}
-    * 
+    *
     * we would have end_pos_letter=2, because the 'z' of '(ddz)' is the third logical letter.
-    * In the same way, let us assume that the initial '(fg)' is actually the end of a syllable 
-    * in the text like '(afg)'. In that case, we would have start_pos_letter=1, because 'f' is 
+    * In the same way, let us assume that the initial '(fg)' is actually the end of a syllable
+    * in the text like '(afg)'. In that case, we would have start_pos_letter=1, because 'f' is
     * the second logical letter of '(afg)'.
     */
    Match m;
@@ -130,7 +130,7 @@ Tfst* open_text_automaton(const VersatileEncodingConfig*,const char* tfst);
 void close_text_automaton(Tfst* tfst);
 void load_sentence(Tfst* tfst,int n);
 void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* tind,unichar** tags,int n_tags,
-							struct hash_table* form_frequencies);
+                            struct hash_table* form_frequencies);
 
 TfstTag* new_TfstTag(TfstTagType);
 void free_TfstTag(TfstTag*);

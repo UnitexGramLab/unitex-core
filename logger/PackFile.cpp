@@ -74,7 +74,7 @@ extern const char* usage_PackFile;
 
 int buildPackFile(const char* packFile,int append_status,const char* global_comment,
                   const char* file_or_prefix_to_add,int add_one_file_only,const char* junk_prefix,
-				  int quiet);*/
+                  int quiet);*/
 
 
 const char* usage_PackFile =
@@ -206,16 +206,16 @@ if (only_verify_arguments) {
 }
 
 int retValue = buildPackFile(ulpFile,append,
-	                           global_comment,
+                               global_comment,
                              include_filename,
                              add_one_file_only,
                              junk_prefix,
-				                     quiet);
+                                     quiet);
 if (retValue == 0) {
-	error("Error creating %s\n", ulpFile);
-	return DEFAULT_ERROR_CODE;
+    error("Error creating %s\n", ulpFile);
+    return DEFAULT_ERROR_CODE;
 } else {
-	return SUCCESS_RETURN_CODE;
+    return SUCCESS_RETURN_CODE;
 }
 
 }

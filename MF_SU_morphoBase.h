@@ -59,9 +59,9 @@ typedef struct  {
 /////////////////////////////////////////////////
 //Structure for the lemma of a single word
 typedef struct {
-  unichar* unit;		//e.g. "vif"
-  l_class_T *cl;	        //e.g. adj
-  char *paradigm;		//e.g. A41
+  unichar* unit;        //e.g. "vif"
+  l_class_T *cl;            //e.g. adj
+  char *paradigm;       //e.g. A41
 } SU_lemma_T;
 
 /////////////////////////////////////////////////
@@ -83,7 +83,7 @@ typedef struct {
   //  SU_unit_T type;        //word or sep
   SU_lemma_T *lemma;     //lemma and its info; empty for a separator
   f_morpho_T* feat;    //the form's morphology, e.g. {Gen=fem; Nb=sing; Case=I}
-  //  int form_nr;   	 //identifier of the form in the list of all inflected forms of the lemma; irrelevant for a separator
+  //  int form_nr;       //identifier of the form in the list of all inflected forms of the lemma; irrelevant for a separator
 } SU_id_T;
 
 } // namespace unitex

@@ -49,10 +49,10 @@ int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,int pos,struct node* n);
 
 
 MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
-								const char* equivalencesTxt,
-								VersatileEncodingConfig* vec,Korean* korean,
-								const char* pkgdir,const char* named_repositories,
-								GraphRecompilationPolicy graph_recompilation_policy) {
+                                const char* equivalencesTxt,
+                                VersatileEncodingConfig* vec,Korean* korean,
+                                const char* pkgdir,const char* named_repositories,
+                                GraphRecompilationPolicy graph_recompilation_policy) {
 MultiFlex_ctx* ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
 if (ctx==NULL) {
    fatal_alloc_error("new_MultiFlex_ctx");
@@ -68,35 +68,35 @@ if (ctx->pL_MORPHO == NULL) {
 }
 ctx->vec=vec;
 if (morphologyTxt!=NULL && morphologyTxt[0]!='\0'
-		&& 0!=read_language_morpho(vec,ctx->pL_MORPHO,morphologyTxt)) {
+        && 0!=read_language_morpho(vec,ctx->pL_MORPHO,morphologyTxt)) {
    error("read_language_morpho error\n");
    ctx->config_files_status=CONFIG_FILES_ERROR;
 }
 if (ctx->config_files_status!=CONFIG_FILES_ERROR
-		&& equivalencesTxt!=NULL && equivalencesTxt[0]!='\0'
-		&& 0!=d_init_morpho_equiv(vec,ctx->pL_MORPHO,equivalencesTxt)) {
-	   error("d_init_morpho_equiv error\n");
-	   ctx->config_files_status=CONFIG_FILES_ERROR;
+        && equivalencesTxt!=NULL && equivalencesTxt[0]!='\0'
+        && 0!=d_init_morpho_equiv(vec,ctx->pL_MORPHO,equivalencesTxt)) {
+       error("d_init_morpho_equiv error\n");
+       ctx->config_files_status=CONFIG_FILES_ERROR;
 }
 ctx->graph_recompilation_policy = graph_recompilation_policy;
 ctx->semitic=0;
 ctx->pkgdir=NULL;
 if (pkgdir!=NULL) {
-	ctx->pkgdir=strdup(pkgdir);
-	if (ctx->pkgdir==NULL) {
-		fatal_alloc_error("new_MultiFlex_ctx");
-	}
+    ctx->pkgdir=strdup(pkgdir);
+    if (ctx->pkgdir==NULL) {
+        fatal_alloc_error("new_MultiFlex_ctx");
+    }
 }
 ctx->named_repositories=NULL;
 if (named_repositories!=NULL) {
-	ctx->named_repositories=strdup(named_repositories);
-	if (ctx->named_repositories==NULL) {
-	   fatal_alloc_error("new_MultiFlex_ctx");
-	}
+    ctx->named_repositories=strdup(named_repositories);
+    if (ctx->named_repositories==NULL) {
+       fatal_alloc_error("new_MultiFlex_ctx");
+    }
 }
 ctx->korean=korean;
 if (ctx->config_files_status!=CONFIG_FILES_ERROR) {
-	d_init_class_equiv(ctx->pL_MORPHO,&(ctx->D_CLASS_EQUIV));
+    d_init_class_equiv(ctx->pL_MORPHO,&(ctx->D_CLASS_EQUIV));
 }
 ctx->n_filter_codes=0;
 ctx->filter_codes=NULL;
@@ -275,7 +275,7 @@ if (flex[pos]=='\0') {
            /* Following the GraphRecompilationPolicy, if there is no .fst2 file,
             * of a one than is older than the corresponding .grf, we try to compile it */
            pseudo_main_Grf2Fst2(p_multiFlex_ctx->vec,grf,1,NULL,1,0,p_multiFlex_ctx->pkgdir,
-        		   p_multiFlex_ctx->named_repositories,0);
+                   p_multiFlex_ctx->named_repositories,0);
         }
         p_multiFlex_ctx->fst2[p_multiFlex_ctx->n_fst2]=load_abstract_fst2(p_multiFlex_ctx->vec,s,1,&(p_multiFlex_ctx->fst2_free[p_multiFlex_ctx->n_fst2]));
         n->final=p_multiFlex_ctx->n_fst2;

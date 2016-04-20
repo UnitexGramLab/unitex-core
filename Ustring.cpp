@@ -177,7 +177,7 @@ ustr->size=buffer_size;
  */
 void truncate(Ustring* ustr,unsigned int length) {
 if (length>ustr->len) {
-	fatal_error("Cannot truncate Ustring of length %u to greater size %u\n",ustr->len,length);
+    fatal_error("Cannot truncate Ustring of length %u to greater size %u\n",ustr->len,length);
 }
 ustr->len=length;
 ustr->str[length]='\0';
@@ -217,11 +217,11 @@ ustr->len=newlen;
 void u_strcat(Ustring* ustr,unichar c) {
 unsigned int newlen=ustr->len+1;
 if (ustr->size<newlen+1) {
-	/* If necessary, we enlarge the internal buffer */
-	unsigned int n=ustr->size;
-	if (n==0) n=1;
+    /* If necessary, we enlarge the internal buffer */
+    unsigned int n=ustr->size;
+    if (n==0) n=1;
     while (n<=newlen+1) {
-    	n=n*2;
+        n=n*2;
     }
     resize(ustr,n);
 }
@@ -243,8 +243,8 @@ if (str==NULL || str[0]=='\0' || length==0) {
 unsigned int newlen=ustr->len+length;
 if (ustr->size<newlen+1) {
    /* If necessary, we enlarge the internal buffer */
-	unsigned int n=ustr->size;
-	if (n==0) n=1;
+    unsigned int n=ustr->size;
+    if (n==0) n=1;
    while (n<=newlen+1) {
        n=n*2;
    }
@@ -374,8 +374,8 @@ Ustring* s=new_Ustring();
 int ret=readline(s,f);
 unichar* result=NULL;
 if (ret!=EOF) {
-	result=s->str;
-	s->str=NULL;
+    result=s->str;
+    s->str=NULL;
 }
 free_Ustring(s);
 return result;

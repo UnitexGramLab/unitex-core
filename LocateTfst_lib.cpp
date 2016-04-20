@@ -50,8 +50,8 @@ namespace unitex {
 
 
 void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
-		          int current_state_in_fst2,int graph_depth,
-		          struct tfst_match* match_element_list,
+                  int current_state_in_fst2,int graph_depth,
+                  struct tfst_match* match_element_list,
                 struct tfst_match_list** LIST,
                 struct locate_tfst_infos* infos,
                 int pos_pending_in_fst2_tag,
@@ -83,23 +83,23 @@ int morphological_filter_is_ok(const unichar* content,Fst2Tag grammar_tag,const 
  */
 Ustring* get_debug_output_in_context(struct tfst_match* match_element_list,struct locate_tfst_infos* infos) {
 if (match_element_list==NULL) {
-	return new_Ustring();
+    return new_Ustring();
 }
 Ustring* s=get_debug_output_in_context(match_element_list->next,infos);
 Transition* t=match_element_list->fst2_transition;
 u_strcat(s,infos->fst2->tags[t->tag_number]->output);
 struct list_int* l=match_element_list->text_tag_numbers;
 if (l!=NULL) {
-	TfstTag* tag=(TfstTag*)(infos->tfst->tags->tab[l->n]);
-	if (tag->content[0]!='{' || tag->content[1]=='\0') {
-		/* Untagged token ? */
-		u_strcat(s,tag->content);
-	} else {
-		/* Real tag ? We only take the inflected form */
-		struct dela_entry* d=tokenize_tag_token(tag->content,1);
-		u_strcat(s,d->inflected);
-		free_dela_entry(d);
-	}
+    TfstTag* tag=(TfstTag*)(infos->tfst->tags->tab[l->n]);
+    if (tag->content[0]!='{' || tag->content[1]=='\0') {
+        /* Untagged token ? */
+        u_strcat(s,tag->content);
+    } else {
+        /* Real tag ? We only take the inflected form */
+        struct dela_entry* d=tokenize_tag_token(tag->content,1);
+        u_strcat(s,d->inflected);
+        free_dela_entry(d);
+    }
 }
 return s;
 }
@@ -112,20 +112,20 @@ return s;
 int locate_tfst(const char* text,const char* grammar,const char* alphabet,const char* output,
                 const VersatileEncodingConfig* vec,
                 MatchPolicy match_policy,
-		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
-		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,
-		          int tilde_negation_operator,vector_ptr* injected_vars,int tagging,
-		          int single_tags_only,int match_word_boundaries) {
+                  OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
+                  VariableErrorPolicy variable_error_policy,int search_limit,int is_korean,
+                  int tilde_negation_operator,vector_ptr* injected_vars,int tagging,
+                  int single_tags_only,int match_word_boundaries) {
 Tfst* tfst=open_text_automaton(vec,text);
 if (tfst==NULL) {
-	return 0;
+    return 0;
 }
 struct FST2_free_info fst2_free;
 struct locate_tfst_infos infos;
 infos.fst2=load_abstract_fst2(vec,grammar,1,&fst2_free);
 if (infos.fst2==NULL) {
-	close_text_automaton(tfst);
-	return 0;
+    close_text_automaton(tfst);
+    return 0;
 }
 infos.tagging=tagging;
 infos.tfst=tfst;
@@ -138,57 +138,57 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
     * in Alphabet.cpp) */
    infos.alphabet=load_alphabet(vec,alphabet,is_korean);
    if (infos.alphabet==NULL) {
-	   close_text_automaton(tfst);
-	   free_abstract_Fst2(infos.fst2,&fst2_free);
-	   error("Cannot load alphabet file: %s\n",alphabet);
-	   return 0;
+       close_text_automaton(tfst);
+       free_abstract_Fst2(infos.fst2,&fst2_free);
+       error("Cannot load alphabet file: %s\n",alphabet);
+       return 0;
    }
 }
 infos.output=u_fopen(vec,output,U_WRITE);
 if (infos.output==NULL) {
-	close_text_automaton(tfst);
-	free_abstract_Fst2(infos.fst2,&fst2_free);
-	free_alphabet(infos.alphabet);
-	error("Cannot open %s\n",output);
-	return 0;
+    close_text_automaton(tfst);
+    free_abstract_Fst2(infos.fst2,&fst2_free);
+    free_alphabet(infos.alphabet);
+    error("Cannot open %s\n",output);
+    return 0;
 }
 infos.real_output_policy=output_policy;
 infos.output_policy=output_policy;
 infos.debug=0;
 if (infos.fst2->debug) {
-	/* If LocateTfst uses a debug fst2, we force the output mode to MERGE,
-	 * we allow ambiguous outputs and we write graph names into the
-	 * concordance file */
-	if (tagging) {
-		fatal_error("--tagging option cannot be used with a debug-compiled .fst2\n");
-	}
-	infos.output_policy=MERGE_OUTPUTS;
-	infos.ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
-	infos.debug=1;
-	u_fprintf(infos.output,"#D\n");
-	u_fprintf(infos.output,"%d\n",infos.fst2->number_of_graphs);
-	for (int i=0;i<infos.fst2->number_of_graphs;i++) {
-		u_fprintf(infos.output,"%S\n",infos.fst2->graph_names[i+1]);
-	}
+    /* If LocateTfst uses a debug fst2, we force the output mode to MERGE,
+     * we allow ambiguous outputs and we write graph names into the
+     * concordance file */
+    if (tagging) {
+        fatal_error("--tagging option cannot be used with a debug-compiled .fst2\n");
+    }
+    infos.output_policy=MERGE_OUTPUTS;
+    infos.ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+    infos.debug=1;
+    u_fprintf(infos.output,"#D\n");
+    u_fprintf(infos.output,"%d\n",infos.fst2->number_of_graphs);
+    for (int i=0;i<infos.fst2->number_of_graphs;i++) {
+        u_fprintf(infos.output,"%S\n",infos.fst2->graph_names[i+1]);
+    }
 }
 if (tagging) {
-	u_fprintf(infos.output,"#X\n");
+    u_fprintf(infos.output,"#X\n");
 } else {
-	switch (infos.real_output_policy) {
-	case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
-	case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
-	case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
-	default: break;
+    switch (infos.real_output_policy) {
+    case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
+    case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
+    case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
+    default: break;
 }
 }
 #ifdef REGEX_FACADE_ENGINE
 infos.filters=new_FilterSet(infos.fst2,infos.alphabet);
 infos.matches=NULL;
 if (infos.filters==NULL) {
-	close_text_automaton(tfst);
-	free_abstract_Fst2(infos.fst2,&fst2_free);
-	free_alphabet(infos.alphabet);
-	u_fclose(infos.output);
+    close_text_automaton(tfst);
+    free_abstract_Fst2(infos.fst2,&fst2_free);
+    free_alphabet(infos.alphabet);
+    u_fclose(infos.output);
     error("Cannot compile filter(s)\n");
    return 0;
 }
@@ -214,32 +214,32 @@ infos.contexts=compute_contexts(infos.fst2);
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
    if (i%100==0) {
-		u_printf("\rSentence %d/%d...",i,tfst->N);
-	}
+        u_printf("\rSentence %d/%d...",i,tfst->N);
+    }
    load_sentence(tfst,i);
-	compute_token_contents(tfst);
-	if (infos.korean!=NULL) {
-	   compute_jamo_tfst_tags(&infos);
-	}
-	infos.matches=NULL;
-	prepare_cache_for_new_sentence(infos.cache,tfst->tags->nbelems);
+    compute_token_contents(tfst);
+    if (infos.korean!=NULL) {
+       compute_jamo_tfst_tags(&infos);
+    }
+    infos.matches=NULL;
+    prepare_cache_for_new_sentence(infos.cache,tfst->tags->nbelems);
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-	int* visits=(int*)malloc(sizeof(int)*(1+tfst->automaton->number_of_states));
+    int* visits=(int*)malloc(sizeof(int)*(1+tfst->automaton->number_of_states));
 #else
-	int visits[tfst->automaton->number_of_states];
+    int visits[tfst->automaton->number_of_states];
 #endif
-	/* Within a sentence graph, we try to match from any state */
-	for (int j=0;j<tfst->automaton->number_of_states;j++) {
-	   for (int k=0;k<tfst->automaton->number_of_states;k++) {
-	      visits[k]=0;
-	   }
-	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL,NULL,tilde_negation_operator);
-	}
+    /* Within a sentence graph, we try to match from any state */
+    for (int j=0;j<tfst->automaton->number_of_states;j++) {
+       for (int k=0;k<tfst->automaton->number_of_states;k++) {
+          visits[k]=0;
+       }
+       explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL,NULL,tilde_negation_operator);
+    }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-	free(visits);
+    free(visits);
 #endif
-	save_tfst_matches(&infos);
-	clear_dic_variable_list(&(infos.dic_variables));
+    save_tfst_matches(&infos);
+    clear_dic_variable_list(&(infos.dic_variables));
 }
 u_printf("\rDone.                                    \n");
 /* We save some infos */
@@ -248,16 +248,16 @@ get_path(output,concord_tfst_n);
 strcat(concord_tfst_n,"concord_tfst.n");
 U_FILE* f=u_fopen(vec,concord_tfst_n,U_WRITE);
 if (f==NULL) {
-	error("Cannot save information in %s\n",concord_tfst_n);
+    error("Cannot save information in %s\n",concord_tfst_n);
 } else {
-	u_fprintf(f,"%d match%s",infos.number_of_matches,(infos.number_of_matches<=1)?"":"es");
-	if ((infos.number_of_outputs != infos.number_of_matches)
-	       && (infos.number_of_outputs != 0))
-	     {
-	       u_fprintf(f,"(%d output%s)\n",infos.number_of_outputs,(infos.number_of_outputs<=1)?"":"s");
-	     }
-	u_fprintf(f,"\n");
-	u_fclose(f);
+    u_fprintf(f,"%d match%s",infos.number_of_matches,(infos.number_of_matches<=1)?"":"es");
+    if ((infos.number_of_outputs != infos.number_of_matches)
+           && (infos.number_of_outputs != 0))
+         {
+           u_fprintf(f,"(%d output%s)\n",infos.number_of_outputs,(infos.number_of_outputs<=1)?"":"s");
+         }
+    u_fprintf(f,"\n");
+    u_fclose(f);
 }
 u_printf("%d match%s",infos.number_of_matches,(infos.number_of_matches<=1)?"":"es");
 if ((infos.number_of_outputs != infos.number_of_matches)
@@ -420,8 +420,8 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
  * Explores in parallel the tfst and the fst2.
  */
 void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
-		          int current_state_in_fst2,int graph_depth,
-		          struct tfst_match* match_element_list,
+                  int current_state_in_fst2,int graph_depth,
+                  struct tfst_match* match_element_list,
                 struct tfst_match_list* *LIST,
                 struct locate_tfst_infos* infos,
                 /* This is used for Korean only when a fst2 tag contains a token that
@@ -447,9 +447,9 @@ if (current_pending_fst2_transition!=NULL && current_pending_tfst_transition!=NU
 
 /* CASE 1: if we have not finished to explore a fst2 tag in the grammar */
 if (current_pending_fst2_transition!=NULL) {
-	if (infos->match_word_boundaries) {
-		return;
-	}
+    if (infos->match_word_boundaries) {
+        return;
+    }
    struct tfst_match* list=NULL;
    Transition* text_transition=tfst->automaton->states[current_state_in_tfst]->outgoing_transitions;
    /* For a given tag in the grammar, we test all the transitions in the
@@ -514,9 +514,9 @@ if (current_pending_fst2_transition!=NULL) {
 
 /* CASE 2: if we have not finished to explore a tfst tag */
 if (current_pending_tfst_transition!=NULL) {
-	if (infos->match_word_boundaries) {
-		return;
-	}
+    if (infos->match_word_boundaries) {
+        return;
+    }
    Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
    Transition* grammar_transition=current_state_in_grammar->transitions;
    struct tfst_match* list=NULL;
@@ -604,13 +604,13 @@ if (is_final_state(current_state_in_grammar)) {
    if (graph_depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
       if (match_element_list!=NULL) {
-    	  add_tfst_match(infos,match_element_list);
+          add_tfst_match(infos,match_element_list);
       }
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
-	   if (match_element_list!=NULL) {
-		  (*LIST)=add_match_in_list((*LIST),match_element_list);
-	   }
+       if (match_element_list!=NULL) {
+          (*LIST)=add_match_in_list((*LIST),match_element_list);
+       }
    }
 }
 
@@ -633,15 +633,15 @@ while (grammar_transition!=NULL) {
           * we decrease its 'pointed_by' variable that was previously increased
           * in the 'add_match_in_list' function */
          if (list_for_subgraph->match!=NULL) {
-        	 (list_for_subgraph->match->pointed_by)--;
-        	 explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
+             (list_for_subgraph->match->pointed_by)--;
+             explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
                            graph_depth,list_for_subgraph->match,LIST,infos,-1,-1,NULL,NULL,ctx,tilde_negation_operator);
-        	 /* Finally, we remove, if necessary, the list of match element
-        	  * that was used for storing the subgraph match. This cleaning
-        	  * will only free elements that are not involved in others
-        	  * matches, that is to say element with pointed_by=0 */
-        	 clean_tfst_match_list(list_for_subgraph->match,match_element_list);
+             /* Finally, we remove, if necessary, the list of match element
+              * that was used for storing the subgraph match. This cleaning
+              * will only free elements that are not involved in others
+              * matches, that is to say element with pointed_by=0 */
+             clean_tfst_match_list(list_for_subgraph->match,match_element_list);
          }
          free(list_for_subgraph);
          list_for_subgraph=tmp;
@@ -667,7 +667,7 @@ while (grammar_transition!=NULL) {
             Transition* states=context->positive_mark[n_ctxt+1];
             struct tfst_match* debug_match_element=match_element_list;
             if (infos->debug && c->output!=NULL) {
-            	debug_match_element=new_debug_tfst_match(c->output,match_element_list);
+                debug_match_element=new_debug_tfst_match(c->output,match_element_list);
             }
             while (states!=NULL) {
                explore_tfst(visits,tfst,current_state_in_tfst,states->state_number,
@@ -675,7 +675,7 @@ while (grammar_transition!=NULL) {
                states=states->next;
             }
             if (debug_match_element!=match_element_list) {
-            	free_tfst_match(debug_match_element);
+                free_tfst_match(debug_match_element);
             }
          }
          free_list_context(c);
@@ -721,9 +721,9 @@ while (grammar_transition!=NULL) {
        * and we return */
       ctx->n=1;
       if (infos->debug && ctx->output==NULL) {
-    	  Ustring* output=get_debug_output_in_context(match_element_list,infos);
-    	  set_list_context_output(ctx,output->str);
-    	  free_Ustring(output);
+          Ustring* output=get_debug_output_in_context(match_element_list,infos);
+          set_list_context_output(ctx,output->str);
+          free_Ustring(output);
       }
       return;
       /* End of $] case */
@@ -731,31 +731,31 @@ while (grammar_transition!=NULL) {
       /* Normal case (not a subgraph call) */
       struct tfst_match* list=NULL;
       Transition* text_transition=tfst->automaton->states[current_state_in_tfst]->outgoing_transitions;
-	  if (text_transition==NULL) {
-    	  /* If there is no transition, it should mean that we are on the final state, but
-    	   * even here, some special transitions may match */
-    	  if (!u_strcmp(infos->fst2->tags[e]->input,"<E>")) {
-    		  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
-    		              grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
-    	  }
-    	  else if (!u_strcmp(infos->fst2->tags[e]->input,"{$}")) {
-    		  /* {$} may match only if we are in the final state of the last sentence */
-    		  if (is_final_state(tfst->automaton->states[current_state_in_tfst])
-    				  && tfst->current_sentence==tfst->N) {
-    			  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
-    			      		              grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
-    		  }
-    	  }
+      if (text_transition==NULL) {
+          /* If there is no transition, it should mean that we are on the final state, but
+           * even here, some special transitions may match */
+          if (!u_strcmp(infos->fst2->tags[e]->input,"<E>")) {
+              list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
+                          grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
+          }
+          else if (!u_strcmp(infos->fst2->tags[e]->input,"{$}")) {
+              /* {$} may match only if we are in the final state of the last sentence */
+              if (is_final_state(tfst->automaton->states[current_state_in_tfst])
+                      && tfst->current_sentence==tfst->N) {
+                  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
+                                          grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
+              }
+          }
       }
       /* {^} can be tested without considering text transitions */
-	  if (!u_strcmp(infos->fst2->tags[e]->input,"{^}")) {
-		  /* {^} may match only if we are in the initial state of the first sentence */
-		  if (is_initial_state(tfst->automaton->states[current_state_in_tfst])
-				  && tfst->current_sentence==1) {
-			  list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
-			      		              grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
-		  }
-	  }
+      if (!u_strcmp(infos->fst2->tags[e]->input,"{^}")) {
+          /* {^} may match only if we are in the initial state of the first sentence */
+          if (is_initial_state(tfst->automaton->states[current_state_in_tfst])
+                  && tfst->current_sentence==1) {
+              list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
+                                      grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
+          }
+      }
       /* For a given tag in the grammar, we test all the transitions in the
        * text automaton, and we note all the states we can reach */
       while (text_transition!=NULL) {
@@ -814,7 +814,7 @@ while (grammar_transition!=NULL) {
          list->next=match_element_list;
          /* match_element_list is pointed by one more element */
          if (match_element_list!=NULL) {
-        	   (match_element_list->pointed_by)++;
+               (match_element_list->pointed_by)++;
          }
          Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
          int dest_state_in_fst2=(list->pos_kr!=-1)?-1:grammar_transition->state_number;
@@ -850,7 +850,7 @@ if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
    || grammar_tag->type==TEXT_START_TAG
    || grammar_tag->type==TEXT_END_TAG) {
    /* A context should not start or end within a text tag, so we fail here */
-	return NO_MATCH_STATUS;
+    return NO_MATCH_STATUS;
 }
 
 /* We start by looking at special fst2 tags */
@@ -938,20 +938,20 @@ if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='
    unichar* jamo_fst2;
    struct dela_entry* my_entry=NULL;
    if (infos->korean) {
-	   jamo_tfst=infos->jamo_tfst_tags[tfst_tag_index];
-	   jamo_fst2=infos->jamo_fst2_tags[fst2_tag_index];
+       jamo_tfst=infos->jamo_tfst_tags[tfst_tag_index];
+       jamo_fst2=infos->jamo_fst2_tags[fst2_tag_index];
    } else {
-	   if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
-	         /* text={toto,tutu.XXX} */
-		  my_entry=tokenize_tag_token(text_tag->content,1);
-	   	  if (my_entry==NULL) {
-	   		  fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
-	   	  }
-	   	  jamo_tfst=my_entry->inflected;
-	   } else {
-		   jamo_tfst=text_tag->content;
-	   }
-	   jamo_fst2=grammar_tag->input;
+       if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
+             /* text={toto,tutu.XXX} */
+          my_entry=tokenize_tag_token(text_tag->content,1);
+          if (my_entry==NULL) {
+              fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
+          }
+          jamo_tfst=my_entry->inflected;
+       } else {
+           jamo_tfst=text_tag->content;
+       }
+       jamo_fst2=grammar_tag->input;
    }
    int k=(*pos_pending_fst2_tag);
    int j=(*pos_pending_tfst_tag!=-1)?(*pos_pending_tfst_tag):0;
@@ -966,10 +966,10 @@ if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='
          continue;
       }
       if ((grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK && jamo_fst2[k]!=jamo_tfst[j])
-    		  || !is_equal_or_uppercase(jamo_fst2[k],jamo_tfst[j],infos->alphabet)) {
+              || !is_equal_or_uppercase(jamo_fst2[k],jamo_tfst[j],infos->alphabet)) {
          /* If a character doesn't match */
          //error("match failed between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
-    	 if (my_entry!=NULL) free_dela_entry(my_entry);
+         if (my_entry!=NULL) free_dela_entry(my_entry);
          return NO_MATCH_STATUS;
       }
       k++;
@@ -1006,10 +1006,10 @@ struct dela_entry* text_entry=NULL;
 
 int pos_in_tfst_input = (*pos_pending_tfst_tag)!=-1 ? (*pos_pending_tfst_tag) : 0;
 if (pos_in_tfst_input!=0 && text_tag->content[0]=='{') {
-	   /* pos_in_tfst_input contains a value that is relative to the whole tag like {toto,tutu.XXX},
-	    * so we have to substract 1 to start on the inflected form
-	    */
-	   pos_in_tfst_input--;
+       /* pos_in_tfst_input contains a value that is relative to the whole tag like {toto,tutu.XXX},
+        * so we have to substract 1 to start on the inflected form
+        */
+       pos_in_tfst_input--;
 }
 
 
@@ -1028,24 +1028,24 @@ if (is_letter(grammar_tag->input[0],infos->alphabet)) {
       }
    } else if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
       /* text={toto,tutu.XXX} */
-	  text_entry=tokenize_tag_token(text_tag->content,1);
-	  if (text_entry==NULL) {
-		  fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
-	  }
-	  if (grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK) {
+      text_entry=tokenize_tag_token(text_tag->content,1);
+      if (text_entry==NULL) {
+          fatal_error("NULL text_entry error in match_between_text_and_grammar_tags\n");
+      }
+      if (grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK) {
          /* If we must respect case */
-		 if (!u_strcmp(grammar_tag->input,text_entry->inflected+pos_in_tfst_input)) {
-			 goto ok_match;
-		 } else {
-			 goto no_match;
-		 }
+         if (!u_strcmp(grammar_tag->input,text_entry->inflected+pos_in_tfst_input)) {
+             goto ok_match;
+         } else {
+             goto no_match;
+         }
       } else {
          /* If case does not matter */
-    	 if (is_equal_or_uppercase(grammar_tag->input,text_entry->inflected+pos_in_tfst_input,infos->alphabet)) {
-    		 goto ok_match;
-    	 } else {
-    		 goto no_match;
-    	 }
+         if (is_equal_or_uppercase(grammar_tag->input,text_entry->inflected+pos_in_tfst_input,infos->alphabet)) {
+             goto ok_match;
+         } else {
+             goto no_match;
+         }
       }
    }
    return NO_MATCH_STATUS;
@@ -1064,16 +1064,16 @@ if (grammar_tag->input[0]=='{' && u_strcmp(grammar_tag->input,"{S}")) {
       /* We allow case variations on the inflected form :
        * if there is "{tutu,toto.XXX}" in the grammar, we want it
        * to match "{Tutu,toto.XXX}" in the text automaton */
-	  goto no_match;
+      goto no_match;
    }
    if (u_strcmp(grammar_entry->lemma,text_entry->lemma)) {
       /* If lemmas are different,we don't match */
-	  goto no_match;
+      goto no_match;
    }
    if (!same_codes(grammar_entry,text_entry)) {
       /* If grammatical, semantical and inflectional informations
        * are different we don't match*/
-	  goto no_match;
+      goto no_match;
    }
    goto ok_match;
 }
@@ -1082,10 +1082,10 @@ if (grammar_tag->input[0]=='{' && u_strcmp(grammar_tag->input,"{S}")) {
  * We want to match something like "<....>". The
  * <E> case has already been handled in text independent matchings */
 if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
-	/* We tokenize the text tag, if we have one */
-	if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
-	   text_entry=tokenize_tag_token(text_tag->content,1);
-	}
+    /* We tokenize the text tag, if we have one */
+    if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
+       text_entry=tokenize_tag_token(text_tag->content,1);
+    }
    if (!u_strcmp(grammar_tag->input,"<MOT>") || !u_strcmp(grammar_tag->input,"<WORD>")) {
       /* <MOT> matches a sequence of letters or a tag like {tutu,toto.XXX}, even
        * if 'tutu' is not made of characters,
@@ -1094,7 +1094,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
        * {préciser,.V:W}
        * <WORD> can also be used instead of <MOT> */
       if ((is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet) || text_entry!=NULL)
-    		  && !((*pos_pending_tfst_tag)>0)) {
+              && !((*pos_pending_tfst_tag)>0)) {
          goto ok_match;
       }
       goto no_match;
@@ -1104,7 +1104,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
        <!WORD> matches the opposite of <WORD>*/
       if (!is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet)
           && text_entry==NULL) {
-    	  goto ok_match;
+          goto ok_match;
       }
       goto no_match;
    }
@@ -1232,7 +1232,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    int ok=is_entry_compatible_with_pattern(text_entry,pattern);
    free_pattern(pattern);
    if ((ok && !negation) || (!ok && negation)) {
-	   goto ok_match;
+       goto ok_match;
    }
    goto no_match;
 }
@@ -1249,7 +1249,7 @@ return NO_MATCH_STATUS;
 ok_match:
 /* We test the morphological filter, if any */
 if (!morphological_filter_is_ok((text_entry!=NULL)?text_entry->inflected:text_tag->content,grammar_tag,infos)) {
-	goto no_match;
+    goto no_match;
 }
 ret_value=OK_MATCH_STATUS;
 goto clean;
@@ -1296,17 +1296,17 @@ return pattern;
  */
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag) {
 if (tag->m.start_pos_in_char==0) {
-	/* The tag starts exactly at the beginning of a token, so we just
-	 * have to look if the previous token was ending with a space. By convention,
-	 * we say that the token #0 has no space on its left */
-	if (tag->m.start_pos_in_token==0) {
-		return 0;
-	}
-	int size_of_previous=tfst->token_sizes->tab[tag->m.start_pos_in_token-1];
-	return tfst->token_content[tag->m.start_pos_in_token-1][size_of_previous-1]==' ';
+    /* The tag starts exactly at the beginning of a token, so we just
+     * have to look if the previous token was ending with a space. By convention,
+     * we say that the token #0 has no space on its left */
+    if (tag->m.start_pos_in_token==0) {
+        return 0;
+    }
+    int size_of_previous=tfst->token_sizes->tab[tag->m.start_pos_in_token-1];
+    return tfst->token_content[tag->m.start_pos_in_token-1][size_of_previous-1]==' ';
 } else {
-	/* The tag is in the middle of a token */
-	return tfst->token_content[tag->m.start_pos_in_token][tag->m.start_pos_in_char-1]==' ';
+    /* The tag is in the middle of a token */
+    return tfst->token_content[tag->m.start_pos_in_token][tag->m.start_pos_in_char-1]==' ';
 }
 }
 
@@ -1317,7 +1317,7 @@ if (tag->m.start_pos_in_char==0) {
  */
 int morphological_filter_is_ok(const unichar* content,Fst2Tag grammar_tag,const struct locate_tfst_infos* infos) {
 if (grammar_tag->filter_number==-1) {
-	return 1;
+    return 1;
 }
 #ifdef REGEX_FACADE_ENGINE
 return string_match_filter(infos->filters,content,grammar_tag->filter_number);

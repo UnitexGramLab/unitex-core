@@ -263,7 +263,7 @@ while (trans!=NULL) {
  * Tokens are represented by integers.
  */
 struct normalization_tree* load_normalization_fst2(const VersatileEncodingConfig* vec,const char* grammar,
-		const Alphabet* alph,struct text_tokens* tok) {
+        const Alphabet* alph,struct text_tokens* tok) {
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(vec,grammar,0,&fst2_free);
 if (fst2==NULL) {

@@ -36,10 +36,10 @@
 namespace unitex {
 
 /**
- * 
- * This library is used to parse the "Morphology" file that is 
+ *
+ * This library is used to parse the "Morphology" file that is
  * supposed to be in the same directory than the inflection graphs.
- * 
+ *
  */
 
 
@@ -78,24 +78,24 @@ struct l_morpho_t* init_langage_morph();
 /* (e.g. sing, pl, masc, etc.).                                                       */
 /* <E> is a special character meaning that the feature may have an empty value, e.g.  */
 /* the base form in gradation                                                         */
-/* E.g. for Polish:								      */
-/* 			Polish							      */
+/* E.g. for Polish:                                   */
+/*          Polish                                */
 /*                      <CATEGORIES>                                                  */
-/* 			Nb:sing,pl		                 		      */
-/* 			Case:Nom,Gen,Dat,Acc,Inst,Loc,Voc			      */
-/* 			Gen:masc_pers,masc_anim,masc_inanim,fem,neu                   */
+/*          Nb:sing,pl                                    */
+/*          Case:Nom,Gen,Dat,Acc,Inst,Loc,Voc                 */
+/*          Gen:masc_pers,masc_anim,masc_inanim,fem,neu                   */
 /*                      Gr:<E>,aug,sup                                                */
 /*                      <CLASSES>                                                     */
 /*                      noun: (Nb,<var>),(Case,<var>),(Gen,<fixed>)                   */
 /*                      adj: (Nb,<var>),(Case,<var>),(Gen,<var>),(Gr,<var>)           */
 /*                      adv: (Gr,<var>)                                               */
-/* Fills out L_CLASSES and L_CATS.						      */
+/* Fills out L_CLASSES and L_CATS.                            */
 /* Returns 0 if success, 1 otherwise                                                  */
 int read_language_morpho(const VersatileEncodingConfig*,struct l_morpho_t*, const char *file);
 
 /**************************************************************************************/
 /* Prints to the standard output the morphological system of the language             */
-/* as defined by L_CLASSES.       		    			              */
+/* as defined by L_CLASSES.                                           */
 /* Returns 0 on success, 1 otherwise.                                                 */
 int print_language_morpho(struct l_morpho_t*);
 

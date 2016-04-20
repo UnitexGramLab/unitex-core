@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -59,7 +59,7 @@ extern "C" {
  */
 
 
-/* there fopen callback are called when an Unitex tool open a file 
+/* there fopen callback are called when an Unitex tool open a file
  *  In the Unitex context, MODE is one of these value :
  *   - "rb" : open the file in read only mode
  *   - "wb" : open the file in write only mode (the previous file is erased, if exist)
@@ -126,35 +126,35 @@ typedef struct
 
 typedef struct
 {
-	unsigned int size_struct;
+    unsigned int size_struct;
 
-	t_fnc_Init_Logger fnc_Init_Logger;
-	t_fnc_Uninit_Logger fnc_Uninit_Logger;
+    t_fnc_Init_Logger fnc_Init_Logger;
+    t_fnc_Uninit_Logger fnc_Uninit_Logger;
 
-	t_fnc_before_af_fopen fnc_before_af_fopen;
-	t_fnc_after_af_fopen  fnc_after_af_fopen;
+    t_fnc_before_af_fopen fnc_before_af_fopen;
+    t_fnc_after_af_fopen  fnc_after_af_fopen;
 
-	t_fnc_before_af_fclose fnc_before_af_fclose;
-	t_fnc_after_af_fclose fnc_after_af_fclose;
+    t_fnc_before_af_fclose fnc_before_af_fclose;
+    t_fnc_after_af_fclose fnc_after_af_fclose;
 
-	t_fnc_before_af_rename fnc_before_af_rename;
-	t_fnc_after_af_rename fnc_after_af_rename;
+    t_fnc_before_af_rename fnc_before_af_rename;
+    t_fnc_after_af_rename fnc_after_af_rename;
 
-	t_fnc_before_af_copy fnc_before_af_copy;
-	t_fnc_after_af_copy fnc_after_af_copy;
+    t_fnc_before_af_copy fnc_before_af_copy;
+    t_fnc_after_af_copy fnc_after_af_copy;
 
-	t_fnc_before_af_remove fnc_before_af_remove;
-	t_fnc_after_af_remove fnc_after_af_remove;
+    t_fnc_before_af_remove fnc_before_af_remove;
+    t_fnc_after_af_remove fnc_after_af_remove;
 
-	t_fnc_before_calling_tool fnc_before_calling_tool;
-	t_fnc_after_calling_tool fnc_after_calling_tool;
+    t_fnc_before_calling_tool fnc_before_calling_tool;
+    t_fnc_after_calling_tool fnc_after_calling_tool;
 
-	t_fnc_LogOutWrite fnc_LogOutWrite;
-	t_fnc_LogErrWrite fnc_LogErrWrite;
+    t_fnc_LogOutWrite fnc_LogOutWrite;
+    t_fnc_LogErrWrite fnc_LogErrWrite;
 
 
-	t_fnc_before_af_remove_folder fnc_before_af_remove_folder;
-	t_fnc_after_af_remove_folder fnc_after_af_remove_folder;
+    t_fnc_before_af_remove_folder fnc_before_af_remove_folder;
+    t_fnc_after_af_remove_folder fnc_after_af_remove_folder;
 } t_logger_func_array_ex_1;
 
 /* these functions respectively add and remove logger.

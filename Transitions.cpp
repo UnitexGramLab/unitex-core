@@ -276,21 +276,21 @@ while (src!=NULL) {
 
 static void reverse_list(Transition* t,Transition* *first,Transition* *last) {
 if (t==NULL) {
-	*first=*last=NULL;
-	return;
+    *first=*last=NULL;
+    return;
 }
 if (t->next==NULL) {
-	*first=*last=t;
-	(*first)->next=(*last)->next=NULL;
-	return;
+    *first=*last=t;
+    (*first)->next=(*last)->next=NULL;
+    return;
 }
 if (t->next->next==NULL) {
-	/* If there are only two elements, we swap them */
-	(*last)=t;
-	(*first)=t->next;
-	(*first)->next=(*last);
-	(*last)->next=NULL;
-	return;
+    /* If there are only two elements, we swap them */
+    (*last)=t;
+    (*first)=t->next;
+    (*first)->next=(*last);
+    (*last)->next=NULL;
+    return;
 }
 reverse_list(t->next,first,last);
 (*last)->next=t;

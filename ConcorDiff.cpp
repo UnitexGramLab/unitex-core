@@ -75,8 +75,8 @@ const struct option_TS lopts_ConcorDiff[]= {
 
 int main_ConcorDiff(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+    usage();
+    return SUCCESS_RETURN_CODE;
 }
 
 int val,index=-1;

@@ -45,7 +45,7 @@ struct DLC_tree_node* new_DLC_tree_node() {
 struct DLC_tree_node* n;
 n=(struct DLC_tree_node*)malloc(sizeof(struct DLC_tree_node));
 if (n==NULL) {
-	fatal_alloc_error("new_DLC_tree_node");
+    fatal_alloc_error("new_DLC_tree_node");
 }
 n->patterns=NULL;
 n->number_of_patterns=0;
@@ -66,7 +66,7 @@ struct DLC_tree_transition* new_DLC_tree_transition() {
 struct DLC_tree_transition* t;
 t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
 if (t==NULL) {
-	fatal_alloc_error("new_DLC_tree_transition");
+    fatal_alloc_error("new_DLC_tree_transition");
 }
 t->token_sequence=NULL;
 t->node=NULL;
@@ -86,7 +86,7 @@ return t;
 struct DLC_tree_info* new_DLC_tree(int number_of_tokens) {
 struct DLC_tree_info* DLC_tree=(struct DLC_tree_info*)malloc(sizeof(struct DLC_tree_info));
 if (DLC_tree==NULL) {
-	fatal_alloc_error("new_DLC_tree");
+    fatal_alloc_error("new_DLC_tree");
 }
 DLC_tree->root=new_DLC_tree_node();
 DLC_tree->index=(struct DLC_tree_node**)malloc(number_of_tokens*sizeof(struct DLC_tree_node*));
@@ -94,7 +94,7 @@ if (DLC_tree->index==NULL) {
    fatal_alloc_error("new_DLC_tree");
 }
 for (int i=0;i<number_of_tokens;i++) {
-	DLC_tree->index[i]=NULL;
+    DLC_tree->index[i]=NULL;
 }
 return DLC_tree;
 }
@@ -107,11 +107,11 @@ return DLC_tree;
 void free_DLC_tree_transitions(struct DLC_tree_transition* transitions) {
 struct DLC_tree_transition* tmp;
 while (transitions!=NULL) {
-	decrement_reference_DLC_tree_node(transitions->node);
-	if (transitions->token_sequence!=NULL) free(transitions->token_sequence);
-	tmp=transitions->next;
-	free(transitions);
-	transitions=tmp;
+    decrement_reference_DLC_tree_node(transitions->node);
+    if (transitions->token_sequence!=NULL) free(transitions->token_sequence);
+    tmp=transitions->next;
+    free(transitions);
+    transitions=tmp;
 }
 }
 
@@ -142,9 +142,9 @@ free_DLC_tree_transitions(node->transitions);
 if (node->destination_tokens!=NULL) free(node->destination_tokens);
 if (node->destination_nodes!=NULL) {
     for (int i=0;i<node->number_of_transitions;i++) {
-				decrement_reference_DLC_tree_node(node->destination_nodes[i]);
-	}
-	free(node->destination_nodes);
+                decrement_reference_DLC_tree_node(node->destination_nodes[i]);
+    }
+    free(node->destination_nodes);
 }
 free(node);
 }
@@ -250,10 +250,10 @@ int stop=0;
 /* We parse the list until we have found the pattern or the place
  * to insert the pattern */
 while (!stop && previous->next!=NULL) {
-	/* If we find the pattern in the list, we have nothing to do */
-	if (previous->next->n==pattern) return;
-	else if (previous->next->n<pattern) previous=previous->next;
-	else stop=1;
+    /* If we find the pattern in the list, we have nothing to do */
+    if (previous->next->n==pattern) return;
+    else if (previous->next->n<pattern) previous=previous->next;
+    else stop=1;
 }
 /* If must insert the pattern */
 previous->next=head_insert(pattern,previous->next);
@@ -310,11 +310,11 @@ int stop=0;
 /* We parse the list until we have found the node or the place
  * to insert the node */
 while (!stop && previous->next!=NULL) {
-	/* If we find the node, we return it */
+    /* If we find the node, we return it */
    compare=compare_IntSequence(previous->next->token_sequence,token_sequence);
-	if (compare==0) return previous->next->node;
-	else if (compare<0) previous=previous->next;
-	else stop=1;
+    if (compare==0) return previous->next->node;
+    else if (compare<0) previous=previous->next;
+    else stop=1;
 }
 /* We return if the function must not create the node */
 if (!create_if_necessary) return NULL;
@@ -350,7 +350,7 @@ return l->node;
  * 'DLC_tree' represents the tree and the compound word index.
  */
 void associate_pattern_to_compound_word(int* token_list,int pos,struct DLC_tree_node* node,
-				int pattern,struct DLC_tree_info* DLC_tree) {
+                int pattern,struct DLC_tree_info* DLC_tree) {
 if (token_list[pos]==END_TOKEN_LIST) {
    /* If we are at the end of the token list, we
     * add the pattern number to the current node */
@@ -390,9 +390,9 @@ associate_pattern_to_compound_word(token_list,pos,ptr,pattern,DLC_tree);
  * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
  */
 void add_compound_word_with_no_pattern(const unichar* word,const Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
+                            struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
 add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
-							tokenization_mode);
+                            tokenization_mode);
 }
 
 
@@ -401,7 +401,7 @@ add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
  * number 'pattern'.
  */
 void add_compound_word_with_pattern(const unichar* word,int pattern,const Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
+                            struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
 associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree);
@@ -447,7 +447,7 @@ return 0;
  * 'DLC_tree' represents the tree and the compound word index.
  */
 int conditional_insertion_in_DLC_tree_node(int* token_list,int pos,struct DLC_tree_node* node,
-										int pattern1,int pattern2) {
+                                        int pattern1,int pattern2) {
 if (token_list[pos]==END_TOKEN_LIST) {
    /* If we are at the end of the token list */
    return conditional_pattern_insertion(node,pattern1,pattern2);
@@ -488,7 +488,7 @@ return 0;
  * non-zero value.
  */
 int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,const Alphabet* alph,
-						struct string_hash* tok,struct DLC_tree_info* infos,TokenizationPolicy tokenization_mode) {
+                        struct string_hash* tok,struct DLC_tree_info* infos,TokenizationPolicy tokenization_mode) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
 return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);

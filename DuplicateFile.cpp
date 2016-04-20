@@ -82,27 +82,27 @@ const struct option_TS lopts_DuplicateFile[]= {
 
 static int mkDirRecursiveIfNeeded(const char* dir_name)
 {
-	int res_mk = mkDirPortable(dir_name);
-	if (res_mk == 0)
-		return 0;
+    int res_mk = mkDirPortable(dir_name);
+    if (res_mk == 0)
+        return 0;
 
-	int len_dir = (int)strlen(dir_name);
-	int last_separator = -1;
-	for (int i = 0;i < len_dir;i++) {
-		if ((*(dir_name + i) == '\\') || (*(dir_name + i) == '/'))
-			last_separator = i;
-	}
+    int len_dir = (int)strlen(dir_name);
+    int last_separator = -1;
+    for (int i = 0;i < len_dir;i++) {
+        if ((*(dir_name + i) == '\\') || (*(dir_name + i) == '/'))
+            last_separator = i;
+    }
 
-	if (last_separator == -1)
-		return res_mk;
+    if (last_separator == -1)
+        return res_mk;
 
-	char* up_dir_name = (char*)malloc(last_separator + 1);
-	memcpy(up_dir_name, dir_name, last_separator);
-	*(up_dir_name + last_separator) = '\0';
-	mkDirRecursiveIfNeeded(up_dir_name);
-	free(up_dir_name);
+    char* up_dir_name = (char*)malloc(last_separator + 1);
+    memcpy(up_dir_name, dir_name, last_separator);
+    *(up_dir_name + last_separator) = '\0';
+    mkDirRecursiveIfNeeded(up_dir_name);
+    free(up_dir_name);
 
-	return mkDirPortable(dir_name);
+    return mkDirPortable(dir_name);
 }
 
 
@@ -199,8 +199,8 @@ if (input_file != NULL) {
     u_printf("make dir %s\n", output_file);
     result = mkDirPortable(output_file);
 } else if (do_make_dir_parent != 0) {
-	u_printf("make dir %s with parent\n", output_file);
-	result = mkDirRecursiveIfNeeded(output_file);
+    u_printf("make dir %s with parent\n", output_file);
+    result = mkDirRecursiveIfNeeded(output_file);
 } else {
     if (do_recursive_delete == 0) {
         u_printf("remove file %s\n",output_file);

@@ -39,8 +39,8 @@ namespace unitex {
 /**
  * \brief Calls the 'locate' program
  *
- *	The locate program is called with the options '--longest_match' and '--all'. References of to the occurrences
- *	found are saved in a file 'concord.ind'
+ *  The locate program is called with the options '--longest_match' and '--all'. References of to the occurrences
+ *  found are saved in a file 'concord.ind'
  *
  * \param text_name target text
  * \param transducer transducer to apply
@@ -84,9 +84,9 @@ int launch_concord_in_Cassys(const char *text_name,
 /**
  * \brief Calls the program 'tokenize'
  *
- *	The program is called with the option 'word_by_word. The results of this program are the two files
- *	'tokens.txt' which contains all the tokens of 'text' and 'tokens.cod' which contains the text coded with
- *	'tokens.txt'.
+ *  The program is called with the option 'word_by_word. The results of this program are the two files
+ *  'tokens.txt' which contains all the tokens of 'text' and 'tokens.cod' which contains the text coded with
+ *  'tokens.txt'.
  *
  * \param text_name target text
  * \param file name of the alphabet of the target text

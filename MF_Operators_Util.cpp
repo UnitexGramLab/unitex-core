@@ -259,12 +259,12 @@ unsigned int mode=0;
        //if (VERBOSE) error("***DEBUT***\n");
       if (get_var_op(var_name,etiq,&pos_pattern)) {
     //if (VERBOSE) error("GET Variable name  : %S\n",var_name);
-	 if (is_var_op(etiq,pos_pattern-1) || etiq[pos_pattern-1] == '<') {
+     if (is_var_op(etiq,pos_pattern-1) || etiq[pos_pattern-1] == '<') {
          // si <$  ou <$1$  ou (POUND?) $ ....on capte le contenu de la variable
              (*pos)--;
              var_end = *pos;
              if (var_name[0] == '$' ) {pos_match = var_end-1;}
-	     else { pos_match = -1; *pos = 0;}
+         else { pos_match = -1; *pos = 0;}
      // if (VERBOSE) error("pos_match = %d var_end = %d \n",pos_match,var_end);
              init_var(var_name,Variables,pile,pos_match + 1,var_end);
              ind = get_indice_var_op(var_name);
@@ -273,7 +273,7 @@ unsigned int mode=0;
             if (*pos == -1) *pos = 0;
             retour = 1;
           }
-	 else {var_precede = 1;}
+     else {var_precede = 1;}
 
       pos_pattern--;
       }
@@ -292,7 +292,7 @@ unsigned int mode=0;
          var_end = *pos;
          retour = get_pos_factor(pile,pos,facteur,match_type,&pos_match);
          if (mode == PROTEGE)  (*pos) = tmp_pos;
-	 if (retour == 0) { *pos = init_pos; return retour;}
+     if (retour == 0) { *pos = init_pos; return retour;}
      //if (VERBOSE) error("RETOUR %d pos:%d match_type:%d facteur:%s pos_match %d\n",retour,*pos,match_type,facteur,pos_match);
          if (var_precede) {
             init_var(var_name,Variables,pile,pos_match + 1,var_end);

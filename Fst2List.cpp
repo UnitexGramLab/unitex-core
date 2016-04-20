@@ -2144,7 +2144,7 @@ int main_Fst2List(int argc, char* const argv[]) {
           case '\\':
             wp++;
             if (*wp == '\0') {
-            	// TODO(jhondoe) Put an error message here
+                // TODO(jhondoe) Put an error message here
               error("");
               return DEFAULT_ERROR_CODE;
             }
@@ -2181,7 +2181,7 @@ int main_Fst2List(int argc, char* const argv[]) {
           if (*wp == '\\') {
             wp++;
             if (*wp == '\0') {
-            	// TODO(jhondoe) Put an error message here
+                // TODO(jhondoe) Put an error message here
               error("");
               return DEFAULT_ERROR_CODE;
             }

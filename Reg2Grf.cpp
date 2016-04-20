@@ -106,8 +106,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&i
                 error("You must specify a non empty output filename\n");
                 return USAGE_ERROR_CODE;
              }
-			 strcpy(grf_name, options.vars()->optarg);
-			 break;
+             strcpy(grf_name, options.vars()->optarg);
+             break;
    case 'V': only_verify_arguments = true;
              break;
    case 'h': usage();
@@ -153,7 +153,7 @@ if (grf_name[0] == '\0') {
 }
 
 if (!reg2grf(exp,grf_name,&vec)) {
-	free(exp);
+    free(exp);
   return DEFAULT_ERROR_CODE;
 }
 

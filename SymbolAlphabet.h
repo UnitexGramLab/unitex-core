@@ -35,7 +35,7 @@ namespace unitex {
 
 /**
  * This library is used to manage an alphabet made of Elag symbols.
- * 
+ *
  */
 
 

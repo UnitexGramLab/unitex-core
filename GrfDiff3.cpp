@@ -82,8 +82,8 @@ const struct option_TS lopts_GrfDiff3[]= {
  */
 int main_GrfDiff3(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+    usage();
+    return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -100,12 +100,12 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff3,lopts_GrfDiff3,
      case 'h': usage();
                return SUCCESS_RETURN_CODE;
      case 1: {
-  	   strcpy(output,options.vars()->optarg);
-  	   break;
+       strcpy(output,options.vars()->optarg);
+       break;
      }
      case 2: {
-  	   strcpy(conflicts,options.vars()->optarg);
-  	   break;
+       strcpy(conflicts,options.vars()->optarg);
+       break;
      }
      case 3: only_cosmetics=1; break;
      case 'k': if (options.vars()->optarg[0]=='\0') {
@@ -142,24 +142,24 @@ if (only_verify_arguments) {
 
 U_FILE* f=U_STDOUT;
 if (output[0]!='\0') {
-	f=u_fopen(&vec,output,U_WRITE);
-	if (f==NULL) {
-		error("Cannot create file %s\n",output);
+    f=u_fopen(&vec,output,U_WRITE);
+    if (f==NULL) {
+        error("Cannot create file %s\n",output);
     return DEFAULT_ERROR_CODE;
-	}
+    }
 }
 
 U_FILE* f_conflicts=NULL;
 if (conflicts[0]!='\0') {
-	/* There is no point in encoding the conflict file in UTF16 */
-	f_conflicts=u_fopen(UTF8,conflicts,U_WRITE);
-	if (f_conflicts==NULL) {
+    /* There is no point in encoding the conflict file in UTF16 */
+    f_conflicts=u_fopen(UTF8,conflicts,U_WRITE);
+    if (f_conflicts==NULL) {
     error("Cannot create file %s\n",conflicts);
     if (f!=U_STDOUT) {
      u_fclose(f);
     }
     return DEFAULT_ERROR_CODE;
-	}
+    }
 }
 
 Grf* mine=load_Grf(&vec,argv[options.vars()->optind]);
@@ -174,7 +174,7 @@ if (mine==NULL) {
 
 Grf* base=load_Grf(&vec,argv[options.vars()->optind+1]);
 if (base==NULL) {
-	free_Grf(mine);
+    free_Grf(mine);
   u_fclose(f_conflicts);
   if (f!=U_STDOUT) {
    u_fclose(f);
@@ -185,7 +185,7 @@ if (base==NULL) {
 Grf* other=load_Grf(&vec,argv[options.vars()->optind+2]);
 if (other==NULL) {
   free_Grf(base);
-	free_Grf(mine);
+    free_Grf(mine);
   u_fclose(f_conflicts);
   if (f!=U_STDOUT) {
    u_fclose(f);
@@ -196,19 +196,19 @@ if (other==NULL) {
 int res=diff3(f,f_conflicts,mine,base,other,only_cosmetics);
 
 if (f!=U_STDOUT) {
-	u_fclose(f);
-	if (res!=0) {
-		/* If the diff3 failed, we must remove the file */
-		af_remove(output);
-	}
+    u_fclose(f);
+    if (res!=0) {
+        /* If the diff3 failed, we must remove the file */
+        af_remove(output);
+    }
 }
 
 if (f_conflicts!=NULL) {
-	u_fclose(f_conflicts);
-	if (res==0) {
-		/* If the diff3 succeeded, we must remove the file */
-		af_remove(conflicts);
-	}
+    u_fclose(f_conflicts);
+    if (res==0) {
+        /* If the diff3 succeeded, we must remove the file */
+        af_remove(conflicts);
+    }
 }
 
 free_Grf(mine);

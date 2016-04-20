@@ -529,20 +529,20 @@ for (int i=0;i<input->tfst->automaton->number_of_states;i++) {
    SingleGraphState state=input->tfst->automaton->states[i];
    Transition* t=state->outgoing_transitions;
    while (t!=NULL) {
-	   /* We constructs the symbol list corresponding to the transition tag number */
-	  TfstTag* tag=(TfstTag*)input->tfst->tags->tab[t->tag_number];
-	  symbol_t* symbols=load_text_symbol(input->language,tag->content,t->tag_number);
-	  t->label=symbols;
-	  /* And we replace a single transition with a symbol list by several transitions
-	   * with one symbol each */
-	  if (t->label!=NULL) {
-		  while (t->label->next!=NULL) {
-			  Transition* foo=new_Transition_no_dup(t->label->next,t->state_number,t->next);
-			  t->label->next=NULL;
-			  t->next=foo;
-			  t=t->next;
-		  }
-	  }
+       /* We constructs the symbol list corresponding to the transition tag number */
+      TfstTag* tag=(TfstTag*)input->tfst->tags->tab[t->tag_number];
+      symbol_t* symbols=load_text_symbol(input->language,tag->content,t->tag_number);
+      t->label=symbols;
+      /* And we replace a single transition with a symbol list by several transitions
+       * with one symbol each */
+      if (t->label!=NULL) {
+          while (t->label->next!=NULL) {
+              Transition* foo=new_Transition_no_dup(t->label->next,t->state_number,t->next);
+              t->label->next=NULL;
+              t->next=foo;
+              t=t->next;
+          }
+      }
       t=t->next;
    }
    state->outgoing_transitions=filter_NULL_symbols(state->outgoing_transitions);

@@ -73,7 +73,7 @@ if (t==NULL) {
    return 0;
 }
 if (n%3!=0) {
-	fatal_error("Invalid array size %d in find_snt_shift_by_dichotomy\n",n);
+    fatal_error("Invalid array size %d in find_snt_shift_by_dichotomy\n",n);
 }
 if (n==0) {
    return 0;
@@ -86,15 +86,15 @@ start_position=0;
 while (start_position<=n) {
    middle_position=(start_position+n)/2;
    if (t[3*middle_position]==a) {
-	   /* If we have an exact hit for the token at pos #a, then it's not
-	    * the shift after this token that we have to take into account,
-	    * but the shift before it */
-	   return t[3*middle_position+1];
+       /* If we have an exact hit for the token at pos #a, then it's not
+        * the shift after this token that we have to take into account,
+        * but the shift before it */
+       return t[3*middle_position+1];
    }
    if (t[3*middle_position]<a) {
       start_position=middle_position+1;
    } else {
-	   n=middle_position-1;
+       n=middle_position-1;
    }
 }
 return t[3*n+2];

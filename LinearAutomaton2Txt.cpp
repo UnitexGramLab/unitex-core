@@ -65,7 +65,7 @@ return LINEAR_AUTOMATON;
 
 void insert_separators(U_FILE* f,TfstTag* current,TfstTag* next) {
 if (current->m.end_pos_in_token!=next->m.start_pos_in_token-1) {
-	u_fprintf(f," ");
+    u_fprintf(f," ");
 }
 }
 
@@ -108,7 +108,7 @@ for (int sentence=1;sentence<=tfst->N;sentence++) {
             return sentence;
          }
          TfstTag* tag=(TfstTag*)(tfst->tags->tab[l->tag_number]);
-		 u_fputs(tag->content,f);
+         u_fputs(tag->content,f);
          state=tfst->automaton->states[l->state_number];
          l=state->outgoing_transitions;
          if (l!=NULL) insert_separators(f,tag,(TfstTag*)(tfst->tags->tab[l->tag_number]));

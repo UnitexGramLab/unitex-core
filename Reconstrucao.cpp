@@ -238,8 +238,8 @@ strcat(root_inf_file,".inf");
 u_printf("Loading radical form dictionary...\n");
 Dictionary* root_dic=new_Dictionary(&vec,root,root_inf_file);
 if ((*root)=='\0') {
-	free_alphabet(alph);
-	return DEFAULT_ERROR_CODE;
+    free_alphabet(alph);
+    return DEFAULT_ERROR_CODE;
 }
 
 u_printf("Loading inflected form dictionary...\n");
@@ -248,9 +248,9 @@ remove_extension(dictionary,inflected_inf_file);
 strcat(inflected_inf_file,".inf");
 Dictionary* inflected_dic=new_Dictionary(&vec,dictionary,inflected_inf_file);
 if (inflected_dic==NULL) {
-	free_Dictionary(root_dic);
-	free_alphabet(alph);
-	return DEFAULT_ERROR_CODE;
+    free_Dictionary(root_dic);
+    free_alphabet(alph);
+    return DEFAULT_ERROR_CODE;
 }
 
 u_printf("Loading pronoun rewriting rule grammar...\n");

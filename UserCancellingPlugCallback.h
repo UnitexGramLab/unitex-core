@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -56,7 +56,7 @@ extern "C" {
  */
 
 
-/* there fopen callback are called when an Unitex tool open a file 
+/* there fopen callback are called when an Unitex tool open a file
  *  In the Unitex context, MODE is one of these value :
  *   - "rb" : open the file in read only mode
  *   - "wb" : open the file in write only mode (the previous file is erased, if exist)

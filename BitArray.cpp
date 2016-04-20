@@ -39,7 +39,7 @@ namespace unitex {
 struct bit_array* new_bit_array(int number_of_elements,InfoLength info_length,Abstract_allocator prv_alloc) {
 struct bit_array* bit_array=(struct bit_array*)malloc_cb(sizeof(struct bit_array),prv_alloc);
 if (bit_array==NULL) {
-	fatal_alloc_error("new_bit_array");
+    fatal_alloc_error("new_bit_array");
 }
 if (number_of_elements<0) {
    fatal_error("Invalid number of elements (%d) in new_bit_array\n",number_of_elements);
@@ -53,7 +53,7 @@ switch(info_length) {
 bit_array->size_in_bytes=(number_of_elements/bit_array->divider)+1;
 bit_array->array=(unsigned char*)malloc_cb(sizeof(unsigned char)*(bit_array->size_in_bytes),prv_alloc);
 if (bit_array->array==NULL) {
-	fatal_alloc_error("new_bit_array");
+    fatal_alloc_error("new_bit_array");
 }
 memset(bit_array->array,0,sizeof(unsigned char)*(bit_array->size_in_bytes));
 bit_array->info_length=info_length;

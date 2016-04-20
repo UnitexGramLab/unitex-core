@@ -33,7 +33,7 @@
 namespace unitex {
 
 /**
- * This structure stores the information needed to deal with 
+ * This structure stores the information needed to deal with
  * the context marks $[ $![ and $]
  * If fst2 state has a transition with a positive context start mark $[, we compute
  * one time for all where the associated context end marks are. This is useful to
@@ -43,7 +43,7 @@ namespace unitex {
 struct opt_contexts {
    /* This is an array used to store both the positive context start marks and
     * their associated ending context marks.
-    * 
+    *
     * positive_mark[i] will contain the context transition and positive_mark[i+1] will
     * contain the context end transitions. */
    Transition** positive_mark;
@@ -64,12 +64,12 @@ struct opt_contexts {
 
 #define INTERNAL_OUTPUT_BUFFER_SIZE 0x20
 struct list_context {
-	int n;
-	unichar* output_allocated;
-	unichar* output;
-	struct list_context* next;
+    int n;
+    unichar* output_allocated;
+    unichar* output;
+    struct list_context* next;
 
-	unichar internal_output_buffer[INTERNAL_OUTPUT_BUFFER_SIZE];
+    unichar internal_output_buffer[INTERNAL_OUTPUT_BUFFER_SIZE];
 };
 
 void get_reachable_closing_context_marks(Fst2*,int,Transition**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);

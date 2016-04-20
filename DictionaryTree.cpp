@@ -35,7 +35,7 @@ namespace unitex {
 struct dictionary_node* new_dictionary_node(Abstract_allocator prv_alloc) {
 struct dictionary_node* a=(struct dictionary_node*)malloc_cb(sizeof(struct dictionary_node),prv_alloc);
 if (a==NULL) {
-	fatal_alloc_error("new_dictionary_node");
+    fatal_alloc_error("new_dictionary_node");
 }
 a->single_INF_code_list=NULL;
 a->offset=-1;
@@ -53,7 +53,7 @@ return a;
 static inline struct dictionary_node_transition* new_dictionary_node_transition(Abstract_allocator prv_alloc) {
 struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc_cb(sizeof(struct dictionary_node_transition),prv_alloc);
 if (t==NULL) {
-	fatal_alloc_error("new_dictionary_node_transition");
+    fatal_alloc_error("new_dictionary_node_transition");
 }
 t->letter='\0';
 t->output=NULL;
@@ -72,10 +72,10 @@ if (a==NULL) return;
 if (get_allocator_cb_flag(prv_alloc) & AllocatorGetFlagAutoFreePresent) return;
 
 if (a->incoming>1) {
-	/* We don't free a state that is still pointed by someone else
-	 * in order to avoid double freeing problems. */
+    /* We don't free a state that is still pointed by someone else
+     * in order to avoid double freeing problems. */
    (a->incoming)--;
-	return;
+    return;
 }
 free_list_int(a->single_INF_code_list,prv_alloc);
 free_dictionary_node_transition(a->trans,prv_alloc);
@@ -146,8 +146,8 @@ return tmp->next;
  * 'add_entry_to_dictionary_tree'.
  */
 struct info {
-	unichar* INF_code;
-	struct string_hash* INF_code_list;
+    unichar* INF_code;
+    struct string_hash* INF_code_list;
 };
 
 
@@ -164,10 +164,10 @@ static int get_value_index_for_string_colon_string(const unichar* str1,const uni
    unichar*tmp=tmp_default;
    int nb_unichar_buffer=u_strlen(str1)+u_strlen(str2)+2;
    if (nb_unichar_buffer>DEFAULT_TMP_GET_VALUE_INDEX_BUFFER_SIZE) {
-	   tmp=allocated_buffer=(unichar*)malloc(sizeof(unichar*)*nb_unichar_buffer);
-	   if (allocated_buffer==NULL) {
+       tmp=allocated_buffer=(unichar*)malloc(sizeof(unichar*)*nb_unichar_buffer);
+       if (allocated_buffer==NULL) {
           fatal_alloc_error("get_value_index_for_string_colon_string");
-	   }
+       }
    }
    u_sprintf(tmp,"%S,%S",str1,str2);
    value=get_value_index(tmp,hash);
@@ -205,7 +205,7 @@ if (inflected[pos]=='\0') {
    }
    /* Otherwise, we add it to the INF code list */
    node->single_INF_code_list=head_insert(N,node->single_INF_code_list,prv_alloc);
-	/* And we update the global INF line for this node */
+    /* And we update the global INF line for this node */
    node->INF_code=get_value_index_for_string_colon_string(infos->INF_code_list->value[node->INF_code],infos->INF_code,infos->INF_code_list);
    return;
 }
@@ -305,17 +305,17 @@ unsigned int H=sort_by_height(root,transitions_by_height,used_inf_values,prv_all
 
 unsigned int nb=0;
 for (unsigned int k1=0;k1<=H;k1++) {
-	unsigned int nbcur = convert_list_to_array_size(k1,transitions_by_height);
-	if (nbcur>nb) {
-		nb = nbcur;
-	}
+    unsigned int nbcur = convert_list_to_array_size(k1,transitions_by_height);
+    if (nbcur>nb) {
+        nb = nbcur;
+    }
 }
 init_minimize_arrays_dictionary_node_transition(&transitions,nb);
 float z;
 for (unsigned int k=0;k<=H;k++) {
    int size=convert_list_to_array(k,transitions_by_height,transitions,nb,prv_alloc);
    for (int l=0;l<size;l++) {
-	   check_nodes(transitions[l]);
+       check_nodes(transitions[l]);
    }
    quicksort(0,size-1,transitions);
    merge(size,transitions,prv_alloc);
@@ -435,13 +435,13 @@ free(transitions);
  * The function returns the height of the given node.
  */
 static int sort_by_height(struct dictionary_node* n,struct transition_list** transitions_by_height,
-					struct bit_array* used_inf_values,Abstract_allocator prv_alloc) {
+                    struct bit_array* used_inf_values,Abstract_allocator prv_alloc) {
 if (n==NULL) {
    fatal_error("NULL error in sort_by_height\n");
 }
 /* We mark used INF codes */
 if (n->single_INF_code_list!=NULL) {
-	set_value(used_inf_values,n->INF_code,1);
+    set_value(used_inf_values,n->INF_code,1);
 }
 if (n->trans==NULL) {
    /* If the node is a leaf, we have nothing to do */
@@ -593,12 +593,12 @@ while (i<size) {
  */
 static void get_longest_common_prefix(Ustring* pfx,unichar* s) {
 if (s==NULL) {
-	empty(pfx);
-	return;
+    empty(pfx);
+    return;
 }
 int i=0;
 while (pfx->str[i]==s[i] && s[i]!='\0') {
-	i++;
+    i++;
 }
 pfx->len=i;
 pfx->str[i]='\0';
@@ -613,7 +613,7 @@ pfx->str[i]='\0';
 static void remove_prefix(int n,unichar* s) {
 if (n==0) return;
 for (int i=n;s[i-1]!='\0';i++) {
-	s[i-n]=s[i];
+    s[i-n]=s[i];
 }
 }
 
@@ -622,55 +622,55 @@ for (int i=n;s[i-1]!='\0';i++) {
  * This function moves outputs from final nodes to transitions leading to final nodes.
  */
 static void subsequential_to_normal_transducer(struct dictionary_node* root,
-		struct dictionary_node* node,
-		struct string_hash* inf_codes,
-		int pos,unichar* z,
-		Ustring* normalizedOutput) {
+        struct dictionary_node* node,
+        struct string_hash* inf_codes,
+        int pos,unichar* z,
+        Ustring* normalizedOutput) {
 struct dictionary_node_transition* tmp=node->trans;
 int prefix_set=0;
 Ustring* prefix=new_Ustring();
 while (tmp!=NULL) {
-	z[pos]=tmp->letter;
-	z[pos+1]='\0';
-	subsequential_to_normal_transducer(root,tmp->node,inf_codes,pos+1,z,normalizedOutput);
-	/* First, if the destination state is final, we place its output on the output
-	 * of the current transition */
+    z[pos]=tmp->letter;
+    z[pos+1]='\0';
+    subsequential_to_normal_transducer(root,tmp->node,inf_codes,pos+1,z,normalizedOutput);
+    /* First, if the destination state is final, we place its output on the output
+     * of the current transition */
 
-	if (tmp->node->single_INF_code_list!=NULL) {
-		//error("<%S>: output=<%S>\n",z,normalizedOutput->str);
-		tmp->output=u_strdup(inf_codes->value[tmp->node->INF_code]);
-	}
-	if (normalizedOutput->len!=0) {
-		/* Then, we add the normalized output obtained recursively, if any */
-		//error("<%S>: moving normalized output <%S>\n",z,normalizedOutput->str);
-		if (tmp->output==NULL) {
-			tmp->output=u_strdup(normalizedOutput->str);
-		} else {
-			tmp->output=(unichar*)realloc(tmp->output,sizeof(unichar)*(1+normalizedOutput->len+u_strlen(tmp->output)));
-		}
-	}
-	if (!prefix_set) {
-		prefix_set=1;
-		u_strcpy(prefix,tmp->output);
-	} else {
-		get_longest_common_prefix(prefix,tmp->output);
-	}
-	tmp=tmp->next;
+    if (tmp->node->single_INF_code_list!=NULL) {
+        //error("<%S>: output=<%S>\n",z,normalizedOutput->str);
+        tmp->output=u_strdup(inf_codes->value[tmp->node->INF_code]);
+    }
+    if (normalizedOutput->len!=0) {
+        /* Then, we add the normalized output obtained recursively, if any */
+        //error("<%S>: moving normalized output <%S>\n",z,normalizedOutput->str);
+        if (tmp->output==NULL) {
+            tmp->output=u_strdup(normalizedOutput->str);
+        } else {
+            tmp->output=(unichar*)realloc(tmp->output,sizeof(unichar)*(1+normalizedOutput->len+u_strlen(tmp->output)));
+        }
+    }
+    if (!prefix_set) {
+        prefix_set=1;
+        u_strcpy(prefix,tmp->output);
+    } else {
+        get_longest_common_prefix(prefix,tmp->output);
+    }
+    tmp=tmp->next;
 }
 if (node==root || node->single_INF_code_list!=NULL) {
-	/* If we are in the initial state or a final one, we let the transitions as they are, since
-	 * their outputs can not move more to the left */
-	z[pos]='\0';
-	free_Ustring(prefix);
-	empty(normalizedOutput);
-	return;
+    /* If we are in the initial state or a final one, we let the transitions as they are, since
+     * their outputs can not move more to the left */
+    z[pos]='\0';
+    free_Ustring(prefix);
+    empty(normalizedOutput);
+    return;
 }
 tmp=node->trans;
 while (tmp!=NULL) {
-	//error("prefix removal: <%S> => ",tmp->output);
-	remove_prefix(prefix->len,tmp->output);
-	//error("<%S>\n",tmp->output);
-	tmp=tmp->next;
+    //error("prefix removal: <%S> => ",tmp->output);
+    remove_prefix(prefix->len,tmp->output);
+    //error("<%S>\n",tmp->output);
+    tmp=tmp->next;
 }
 z[pos]='\0';
 u_strcpy(normalizedOutput,prefix);

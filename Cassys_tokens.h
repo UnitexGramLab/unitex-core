@@ -44,30 +44,30 @@ namespace unitex {
  *
  */
 typedef struct cassys_tokens_list{
-	/**
-	 * Current token of the text
-	 */
-	unichar *token;
+    /**
+     * Current token of the text
+     */
+    unichar *token;
 
-	/**
-	 * The label of the transducer that added the token to the text. The id 0 means token from the initial text.
-	 */
-	int transducer_id;
+    /**
+     * The label of the transducer that added the token to the text. The id 0 means token from the initial text.
+     */
+    int transducer_id;
 
-	/**
-	 * The iteration that added the token to the text
-	 */
-	int iteration;
+    /**
+     * The iteration that added the token to the text
+     */
+    int iteration;
 
-	/**
-	 * The next token of the text.
-	 */
-	struct cassys_tokens_list *next_token;
+    /**
+     * The next token of the text.
+     */
+    struct cassys_tokens_list *next_token;
 
-	/**
-	 * If not NULL, beginning of an output found by a transducer.
-	 */
-	struct cassys_tokens_list *output;
+    /**
+     * If not NULL, beginning of an output found by a transducer.
+     */
+    struct cassys_tokens_list *output;
 }cassys_tokens_list;
 
 
@@ -78,14 +78,14 @@ typedef struct cassys_tokens_list{
 */
 
 typedef struct cassys_tokens_allocation_tool_item{
-	cassys_tokens_list* tokens_list_item;
-	struct cassys_tokens_allocation_tool_item* next;
+    cassys_tokens_list* tokens_list_item;
+    struct cassys_tokens_allocation_tool_item* next;
 }cassys_tokens_allocation_tool_item;
 
 typedef struct cassys_tokens_allocation_tool{
-	struct cassys_tokens_allocation_tool_item* first_item;
-	Abstract_allocator allocator_tokens_list;
-	int must_free_tokens_list;
+    struct cassys_tokens_allocation_tool_item* first_item;
+    Abstract_allocator allocator_tokens_list;
+    int must_free_tokens_list;
 } cassys_tokens_allocation_tool;
 
 /**
@@ -115,7 +115,7 @@ cassys_tokens_list *cassys_load_text(const VersatileEncodingConfig*,const char *
          struct text_tokens **tokens, const vector_int* uima_offset, cassys_tokens_allocation_tool * allocation_tool);
 
 cassys_tokens_list *add_replaced_text(const char *text, cassys_tokens_list *list, int previous_transducer, int previous_iteration,
-		 int transducer_id, int iteration, const char *alphabet, const VersatileEncodingConfig*, cassys_tokens_allocation_tool * allocation_tool);
+         int transducer_id, int iteration, const char *alphabet, const VersatileEncodingConfig*, cassys_tokens_allocation_tool * allocation_tool);
 
 //void free_cassys_tokens_list(cassys_tokens_list *l);
 

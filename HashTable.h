@@ -46,7 +46,7 @@ namespace unitex {
  * associated to a cell of the hash table in case of collision. 'value' is
  * the value associated to the element. It is the responsability of the user
  * to know if 'value' must must interpreted as an int, a pointer, etc.
- * 
+ *
  * Note that the order of the elements in the list is undefined and may vary
  * when resizing the hash table.
  */

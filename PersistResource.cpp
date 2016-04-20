@@ -133,71 +133,71 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_PersistResource,lopts_Pe
 }
 
 if ((res_graph+res_alphabet+res_dico) != 1) {
-	error("Invalid arguments: rerun with --help\n");
-	return USAGE_ERROR_CODE;
+    error("Invalid arguments: rerun with --help\n");
+    return USAGE_ERROR_CODE;
 }
 
 if ((output_file!=NULL) && (unpersist!=0)) {
-	error("Invalid arguments: rerun with --help\n");
-	return USAGE_ERROR_CODE;
+    error("Invalid arguments: rerun with --help\n");
+    return USAGE_ERROR_CODE;
 }
 
 if (options.vars()->optind!=argc-1) {
-	error("Invalid arguments: rerun with --help\n");
-	return USAGE_ERROR_CODE;
+    error("Invalid arguments: rerun with --help\n");
+    return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
-	// freeing all allocated memory
-	return SUCCESS_RETURN_CODE;
+    // freeing all allocated memory
+    return SUCCESS_RETURN_CODE;
 }
 
 resource_file = argv[options.vars()->optind];
 size_t size_buf_persisted_filename = strlen(resource_file) + 0x200;
 char* buf_persisted_filename = (char*)malloc(size_buf_persisted_filename +1);
 if (buf_persisted_filename == NULL) {
-	alloc_error("PersistResource's main");
-	return ALLOC_ERROR_CODE;
+    alloc_error("PersistResource's main");
+    return ALLOC_ERROR_CODE;
 }
 *buf_persisted_filename='\0';
 if (unpersist == 0) {
-	int result = 0;
-	if (res_alphabet)
-		result = standard_load_persistence_alphabet(resource_file, buf_persisted_filename, size_buf_persisted_filename);
-	if (res_graph)
-		result = standard_load_persistence_fst2(resource_file, buf_persisted_filename, size_buf_persisted_filename);
-	if (res_dico)
-		result = standard_load_persistence_dictionary(resource_file, buf_persisted_filename, size_buf_persisted_filename);
-	if (result && verbose)
-		u_printf("Success on persist %s resource %s to persisted name %s\n", resource_type, resource_file, buf_persisted_filename);
-	if (!result)
-		error("The %s resource %s cannnot be persisted\n", resource_type, resource_file);
+    int result = 0;
+    if (res_alphabet)
+        result = standard_load_persistence_alphabet(resource_file, buf_persisted_filename, size_buf_persisted_filename);
+    if (res_graph)
+        result = standard_load_persistence_fst2(resource_file, buf_persisted_filename, size_buf_persisted_filename);
+    if (res_dico)
+        result = standard_load_persistence_dictionary(resource_file, buf_persisted_filename, size_buf_persisted_filename);
+    if (result && verbose)
+        u_printf("Success on persist %s resource %s to persisted name %s\n", resource_type, resource_file, buf_persisted_filename);
+    if (!result)
+        error("The %s resource %s cannnot be persisted\n", resource_type, resource_file);
 
 
-	if (result && (output_file != NULL)) {
-		U_FILE* text = u_fopen(&vec, output_file, U_WRITE);
-		if (text == NULL) {
-			error("Cannot create text file %s\n", output_file);
-			free(buf_persisted_filename);
-			return DEFAULT_ERROR_CODE;
-		}
-		u_fprintf(text, "%s", buf_persisted_filename);
-		u_fclose(text);
-	}
+    if (result && (output_file != NULL)) {
+        U_FILE* text = u_fopen(&vec, output_file, U_WRITE);
+        if (text == NULL) {
+            error("Cannot create text file %s\n", output_file);
+            free(buf_persisted_filename);
+            return DEFAULT_ERROR_CODE;
+        }
+        u_fprintf(text, "%s", buf_persisted_filename);
+        u_fclose(text);
+    }
 
-	free(buf_persisted_filename);
-	return result ? SUCCESS_RETURN_CODE : DEFAULT_ERROR_CODE;
+    free(buf_persisted_filename);
+    return result ? SUCCESS_RETURN_CODE : DEFAULT_ERROR_CODE;
 }
 else
 {
-	if (res_alphabet)
-		standard_unload_persistence_alphabet(resource_file);
-	if (res_graph)
-		standard_unload_persistence_fst2(resource_file);
-	if (res_dico)
-		standard_unload_persistence_dictionary(resource_file);
-	u_printf("The %s resource %s unpersisted\n", resource_type, resource_file);
-	return SUCCESS_RETURN_CODE;
+    if (res_alphabet)
+        standard_unload_persistence_alphabet(resource_file);
+    if (res_graph)
+        standard_unload_persistence_fst2(resource_file);
+    if (res_dico)
+        standard_unload_persistence_dictionary(resource_file);
+    u_printf("The %s resource %s unpersisted\n", resource_type, resource_file);
+    return SUCCESS_RETURN_CODE;
 }
 
 }

@@ -123,7 +123,7 @@ if (only_verify_arguments) {
 
 if(output[0]=='\0') {
   remove_extension(argv[options.vars()->optind],output);
-	strcat(output,".txt");
+    strcat(output,".txt");
 }
 
 int return_value = tei2txt(argv[options.vars()->optind],output,&vec);
@@ -134,72 +134,72 @@ return return_value;
 static const char* body = "body";
 
 int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
-	void* html_ctx = init_HTML_character_context();
-	if (html_ctx == NULL) {
+    void* html_ctx = init_HTML_character_context();
+    if (html_ctx == NULL) {
     alloc_error("tei2txt");
     return ALLOC_ERROR_CODE;
   }
 
-	U_FILE* input = u_fopen(vec, fin, U_READ);
-	if (input == NULL) {
+    U_FILE* input = u_fopen(vec, fin, U_READ);
+    if (input == NULL) {
     error("Input file '%s' not found!\n", fin);
     free_HTML_character_context(html_ctx);
     return DEFAULT_ERROR_CODE;
   }
 
-	U_FILE* output = u_fopen(vec, fout, U_WRITE);
-	if (output == NULL) {
+    U_FILE* output = u_fopen(vec, fout, U_WRITE);
+    if (output == NULL) {
     error("Cannot open output file '%s'!\n", fout);
     u_fclose(input);
     free_HTML_character_context(html_ctx);
     return DEFAULT_ERROR_CODE;
-	}
+    }
 
-	unichar buffer[5000];
+    unichar buffer[5000];
 
-	int i, j, k;
-	unichar c;
-	if((i = u_fgetc(input)) != EOF) {
-		c = (unichar)i;
+    int i, j, k;
+    unichar c;
+    if((i = u_fgetc(input)) != EOF) {
+        c = (unichar)i;
 
-		for (;;) {
-			while(c != '<' && (i = u_fgetc(input)) != EOF) {
-				c = (unichar)i;
+        for (;;) {
+            while(c != '<' && (i = u_fgetc(input)) != EOF) {
+                c = (unichar)i;
       }
 
-			j = 0;
-			while((i = u_fgetc(input)) != EOF && (c = (unichar)i) != ' '
+            j = 0;
+            while((i = u_fgetc(input)) != EOF && (c = (unichar)i) != ' '
                && (c = (unichar)i) != '\t' && (c = (unichar)i) != '\n'
                && (c = (unichar)i) != '>') {
-				buffer[j++] = c;
-			}
-			buffer[j] = '\0';
+                buffer[j++] = c;
+            }
+            buffer[j] = '\0';
          if (c!='>') {
             /* We do this because we can find <body ...> */
             while((i = u_fgetc(input)) != EOF && (c = (unichar)i) != '>') {}
          }
-			//u_printf("Current tag : <%S>\n", buffer);
+            //u_printf("Current tag : <%S>\n", buffer);
 
-			if(!u_strcmp(buffer, body)) {
+            if(!u_strcmp(buffer, body)) {
         break;
       } else {
         buffer[0] = '\0';
       }
-		}
-	} else {
+        }
+    } else {
     error("Empty TEI file %s\n", fin);
   }
 
-	char schars[11];
+    char schars[11];
 
   int first_sentence=1;
-	int current_state = 0;
+    int current_state = 0;
   int inside_sentence=0;
-	while ((i = u_fgetc(input)) != EOF) {
-		c = (unichar)i;
-		switch (current_state) {
-			case 0: {
-				if(c == '<') {
+    while ((i = u_fgetc(input)) != EOF) {
+        c = (unichar)i;
+        switch (current_state) {
+            case 0: {
+                if(c == '<') {
                current_state = 1;
                inside_sentence=0;
         } else if(c == '&') {
@@ -207,24 +207,24 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
         } else if (inside_sentence) {
           u_fputc(c, output);
         }
-				break;
-			}
-			case 1: {
-				if(c == 's' || c == 'S') {
+                break;
+            }
+            case 1: {
+                if(c == 's' || c == 'S') {
           current_state = 2;
-				} else {
-					while((i = u_fgetc(input)) != EOF) {
-						c = (unichar)i;
-						if(c == '>') {
+                } else {
+                    while((i = u_fgetc(input)) != EOF) {
+                        c = (unichar)i;
+                        if(c == '>') {
               break;
             }
-					}
-					current_state = 0;
-				}
-				break;
-			}
-			case 2: {
-				if(c == ' ' || c == '>') {
+                    }
+                    current_state = 0;
+                }
+                break;
+            }
+            case 2: {
+                if(c == ' ' || c == '>') {
           current_state = 0;
           inside_sentence=1;
           if (!first_sentence) {
@@ -233,56 +233,56 @@ int tei2txt(char *fin, char *fout, const VersatileEncodingConfig* vec) {
           } else {
              first_sentence=0;
           }
-				}
-				if(c != '>') {
-					while((i = u_fgetc(input)) != EOF) {
-						c = (unichar)i;
-						if(c == '>') {
+                }
+                if(c != '>') {
+                    while((i = u_fgetc(input)) != EOF) {
+                        c = (unichar)i;
+                        if(c == '>') {
               break;
             }
-					}
-				}
-				break;
-			}
-			case 3: {
-				j = 0;
-				while(c != ';' && (i = u_fgetc(input)) != EOF) {
-					//u_printf("Current S-character: %C\n", c);
-					schars[j++] = (char)c;
-					c = (unichar)i;
-				}
-				schars[j] = '\0';
-				//u_printf("Current S-chain: %S\n", schars);
+                    }
+                }
+                break;
+            }
+            case 3: {
+                j = 0;
+                while(c != ';' && (i = u_fgetc(input)) != EOF) {
+                    //u_printf("Current S-character: %C\n", c);
+                    schars[j++] = (char)c;
+                    c = (unichar)i;
+                }
+                schars[j] = '\0';
+                //u_printf("Current S-chain: %S\n", schars);
 
-				k = get_HTML_character(html_ctx,schars, 1);
-				switch (k) {
-					case UNKNOWN_CHARACTER: {
-						u_fputc('?', output);
-						break;
-					}
-					case MALFORMED_HTML_CODE: {
-						error("Malformed HTML character declaration &%s;\n", schars);
-						u_fputc('?', output);
-						break;
-					}
-					default: {
-						c = (unichar)k;
-						u_fputc(c, output);
-						break;
-					}
-				}
+                k = get_HTML_character(html_ctx,schars, 1);
+                switch (k) {
+                    case UNKNOWN_CHARACTER: {
+                        u_fputc('?', output);
+                        break;
+                    }
+                    case MALFORMED_HTML_CODE: {
+                        error("Malformed HTML character declaration &%s;\n", schars);
+                        u_fputc('?', output);
+                        break;
+                    }
+                    default: {
+                        c = (unichar)k;
+                        u_fputc(c, output);
+                        break;
+                    }
+                }
 
-				schars[0] = '\0';
-				current_state = 0;
-				break;
-			}
-		}
-	}
+                schars[0] = '\0';
+                current_state = 0;
+                break;
+            }
+        }
+    }
 
-	u_fclose(output);
-	u_fclose(input);
+    u_fclose(output);
+    u_fclose(input);
   free_HTML_character_context(html_ctx);
-	u_printf("Done.\n");
+    u_printf("Done.\n");
 
   return SUCCESS_RETURN_CODE;
 }

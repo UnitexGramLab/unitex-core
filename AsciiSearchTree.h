@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-  
+
 #ifndef AsciiSearchTreeH
 #define AsciiSearchTreeH
 
@@ -30,7 +30,7 @@ namespace unitex {
 
 /**
  * This structure is used to integer values associated to strings.
- * 
+ *
  * - 'c' is the character of the node
  * - 'is_final' is null if the node is not a final one and non null otherwise
  * - 'value' is the value associated to the string represented by this nod
@@ -39,12 +39,12 @@ namespace unitex {
  * - 'right' is the tree of all strings that start with a letter > 'c'
  */
 struct search_tree_node {
-	char c;
-	char is_final;
-	int value;
-	struct search_tree_node* left;
-	struct search_tree_node* middle;
-	struct search_tree_node* right;
+    char c;
+    char is_final;
+    int value;
+    struct search_tree_node* left;
+    struct search_tree_node* middle;
+    struct search_tree_node* right;
 };
 
 

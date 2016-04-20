@@ -257,7 +257,7 @@ int SearchFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn,unsi
 {
     unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileToWrite);
     unsigned int i;
-	int len_fn = (int)strlen(fn);
+    int len_fn = (int)strlen(fn);
     for (i=0;i<nbItem;i++)
     {
         const struct FileToWriteInfoItem* pFrif = (const struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,i);
@@ -267,14 +267,14 @@ int SearchFileInFileToWriteArray(struct ExecutionLogging* pEL,const char*fn,unsi
                 *pos=i;
             return 1;
         }
-		if (is_folder) {
-			int len_cur = (int)strlen(pFrif->FileName);
-			if ((len_cur > len_fn) && (memcmp(pFrif->FileName, fn, len_fn) == 0)) {
-				if (pos != NULL)
-					*pos = i;
-				return 1;
-			}
-		}
+        if (is_folder) {
+            int len_cur = (int)strlen(pFrif->FileName);
+            if ((len_cur > len_fn) && (memcmp(pFrif->FileName, fn, len_fn) == 0)) {
+                if (pos != NULL)
+                    *pos = i;
+                return 1;
+            }
+        }
     }
     return 0;
 }
@@ -312,18 +312,18 @@ unsigned int GetNbFileToWrite(struct ExecutionLogging* pEL)
 static void RemoveFileFileOnWriteArray(struct ExecutionLogging* pEL,const char*fn, int is_folder)
 {
     unsigned int pos;
-	for (;;)
-	{
-		if (SearchFileInFileToWriteArray(pEL, fn, &pos, is_folder) == 0)
-			return;
+    for (;;)
+    {
+        if (SearchFileInFileToWriteArray(pEL, fn, &pos, is_folder) == 0)
+            return;
 
-		struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite, pos);
-		free((void*)pFrif->FileName);
+        struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite, pos);
+        free((void*)pFrif->FileName);
 
-		DeleteItemPtrArrayExpanding(pEL->pAE_FileToWrite, pos);
-		if (is_folder == 0)
-			return;
-	}
+        DeleteItemPtrArrayExpanding(pEL->pAE_FileToWrite, pos);
+        if (is_folder == 0)
+            return;
+    }
 }
 
 void CleanFileWriteArray(struct ExecutionLogging* pEL)
@@ -586,7 +586,7 @@ static struct ExecutionLogging* BuildAllocInitExecutionLoggingForIncrementedNumb
 
             if (af_fseek(af_fin, 0, SEEK_END) == 0)
             {
-	            size_num_file = af_ftell(af_fin);
+                size_num_file = af_ftell(af_fin);
                 af_fseek(af_fin, 0, SEEK_SET);
             }
 
@@ -1205,12 +1205,12 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_remove(const char* name,int res
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_remove_folder(const char* name, int result, void* privateLoggerPtr)
 {
-	struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
-	if (pEL == NULL)
-		return;
+    struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
-	if (result == 0)
-		RemoveFileFileOnWriteArray(pEL, name, 1);
+    if (result == 0)
+        RemoveFileFileOnWriteArray(pEL, name, 1);
 }
 
 
@@ -1262,8 +1262,8 @@ const t_logger_func_array_ex_1 logger_func_array =
     UniLogger_LogErrWrite,//t_fnc_LogErrWrite fnc_LogErrWrite;
 
 
-	NULL, //t_fnc_before_af_remove fnc_before_af_remove;
-	UniLogger_after_af_remove_folder //t_fnc_after_af_remove fnc_after_af_remove;
+    NULL, //t_fnc_before_af_remove fnc_before_af_remove;
+    UniLogger_after_af_remove_folder //t_fnc_after_af_remove fnc_after_af_remove;
 } ;
 
 

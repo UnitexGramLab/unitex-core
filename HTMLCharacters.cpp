@@ -49,13 +49,13 @@ struct HTML_character_context {
 
 void* init_HTML_character_context()
 {
-	struct HTML_character_context* html_ctx = (struct HTML_character_context*)malloc(sizeof(struct HTML_character_context));
-	if (html_ctx==NULL)
-		fatal_alloc_error("init_HTML_character_context");
+    struct HTML_character_context* html_ctx = (struct HTML_character_context*)malloc(sizeof(struct HTML_character_context));
+    if (html_ctx==NULL)
+        fatal_alloc_error("init_HTML_character_context");
 
-	html_ctx->control_characters = init_control_characters();
-	html_ctx->normal_characters = init_normal_characters();
-	return html_ctx;
+    html_ctx->control_characters = init_control_characters();
+    html_ctx->normal_characters = init_normal_characters();
+    return html_ctx;
 }
 
 void free_HTML_character_context(void* html_ctx)
@@ -378,13 +378,13 @@ return -1;
 int analyse_hexadecimal_code(const char* sequence) {
 int value=0;
 for (int i=0;sequence[i]!='\0';i++) {
-	if (sequence[i]>='0' && sequence[i]<='9') {
-		value=value*16+(sequence[i]-'0');
-	} else if (sequence[i]>='a' && sequence[i]<='f') {
-		value=value*16+(sequence[i]-'a'+10);
-	} else if (sequence[i]>='A' && sequence[i]<='F') {
-		value=value*16+(sequence[i]-'A'+10);
-	} else return MALFORMED_HTML_CODE;
+    if (sequence[i]>='0' && sequence[i]<='9') {
+        value=value*16+(sequence[i]-'0');
+    } else if (sequence[i]>='a' && sequence[i]<='f') {
+        value=value*16+(sequence[i]-'a'+10);
+    } else if (sequence[i]>='A' && sequence[i]<='F') {
+        value=value*16+(sequence[i]-'A'+10);
+    } else return MALFORMED_HTML_CODE;
 }
 return value;
 }
@@ -398,10 +398,10 @@ return value;
 int analyse_decimal_code(const char* sequence) {
 int value=0;
 for (int i=0;sequence[i]!='\0';i++) {
-	if (sequence[i]>='0' && sequence[i]<='9') {
-		value=value*10+(sequence[i]-'0');
-	}
-	else return MALFORMED_HTML_CODE;
+    if (sequence[i]>='0' && sequence[i]<='9') {
+        value=value*10+(sequence[i]-'0');
+    }
+    else return MALFORMED_HTML_CODE;
 }
 return value;
 }
@@ -426,35 +426,35 @@ return value;
 int get_HTML_character(const void* html_ctx,const char* sequence,int decode_control_character) {
 const struct HTML_character_context* html_context=(const HTML_character_context*)html_ctx;
 if (sequence==NULL || sequence[0]=='\0') {
-	fatal_error("Internal error in get_HTML_character\n");
+    fatal_error("Internal error in get_HTML_character\n");
 }
 int value;
 if (sequence[0]!='#') {
-	/* If we have a character name */
-	value=get_normal_character_number(html_context,sequence);
-	if (value!=-1) return value;
-	/* If the character is not in the normal character set, we
-	 * look in the control character set. */
-	value=get_control_character_number(html_context,sequence);
-	if (value==-1) {
-		/* If the character is not a control character, then we
-		 * say that it is an unknown character. */
-		 return UNKNOWN_CHARACTER;
-	}
-	/* If the character is a control one, we return its value
-	 * only if we are allowed to decode it. */
-	if (decode_control_character) {
-		return value;
-	}
-	return DO_NOT_DECODE_CHARACTER;
+    /* If we have a character name */
+    value=get_normal_character_number(html_context,sequence);
+    if (value!=-1) return value;
+    /* If the character is not in the normal character set, we
+     * look in the control character set. */
+    value=get_control_character_number(html_context,sequence);
+    if (value==-1) {
+        /* If the character is not a control character, then we
+         * say that it is an unknown character. */
+         return UNKNOWN_CHARACTER;
+    }
+    /* If the character is a control one, we return its value
+     * only if we are allowed to decode it. */
+    if (decode_control_character) {
+        return value;
+    }
+    return DO_NOT_DECODE_CHARACTER;
 }
 if (sequence[1]=='x') {
-	/* If we have an hexadecimal integer */
-	return analyse_hexadecimal_code(&(sequence[2]));
+    /* If we have an hexadecimal integer */
+    return analyse_hexadecimal_code(&(sequence[2]));
 }
 if (sequence[1]>='0' && sequence[1]<='9') {
-	/* If we have a decimal integer */
-	return analyse_decimal_code(&(sequence[1]));
+    /* If we have a decimal integer */
+    return analyse_decimal_code(&(sequence[1]));
 }
 /* If the sequence is an invalid integer declaration like '#' or '#a', it is an error */
 return MALFORMED_HTML_CODE;

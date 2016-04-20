@@ -20,22 +20,22 @@ namespace unitex {
 namespace logger {
 extern "C" {
 #endif
- 
+
 
 
 int buildPackFile(const char* packFile,int append_status,const char* global_comment,
                   const char* file_or_prefix_to_add,int add_one_file_only,const char* junk_prefix,
-				  int quiet);
+                  int quiet);
 
 
 
 UNITEX_FUNC int UNITEX_CALL CreateUnitexPackOneFile(const char* packFile,int append_status,
-														const char* file_to_include, const char* junk_prefix,
-														const char* global_comment);
+                                                        const char* file_to_include, const char* junk_prefix,
+                                                        const char* global_comment);
 
 UNITEX_FUNC int UNITEX_CALL CreateUnitexPackMultiFile(const char* packFile,int append_status,
-														const char* file_to_include, const char* junk_prefix,
-														const char* global_comment);
+                                                        const char* file_to_include, const char* junk_prefix,
+                                                        const char* global_comment);
 
 
 #ifdef __cplusplus
@@ -45,9 +45,9 @@ UNITEX_FUNC int UNITEX_CALL CreateUnitexPackMultiFile(const char* packFile,int a
 #endif
 
 
- 
 
- 
+
+
 
 #endif
 

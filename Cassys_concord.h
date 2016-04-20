@@ -45,36 +45,36 @@ namespace unitex {
  */
 typedef struct locate_pos{
 
-	/**
-	 * position in token of the first token located by a transducer
-	 */
-	long token_start_offset;
+    /**
+     * position in token of the first token located by a transducer
+     */
+    long token_start_offset;
 
-	/**
-	 * position in character of the first character in the first token located by a transducer
-	 */
-	long character_start_offset;
+    /**
+     * position in character of the first character in the first token located by a transducer
+     */
+    long character_start_offset;
 
-	/**
-	 * used for thai. Not used by cassys
-	 */
-	long logical_start_offset;
+    /**
+     * used for thai. Not used by cassys
+     */
+    long logical_start_offset;
 
-	/**
-	 * position in token of the last token located by a transducer
-	 */
-	long token_end_offset;
+    /**
+     * position in token of the last token located by a transducer
+     */
+    long token_end_offset;
 
-	/**
-	 * position in character of the last character in the last token located by a transducer
-	 */
-	long character_end_offset;
+    /**
+     * position in character of the last character in the last token located by a transducer
+     */
+    long character_end_offset;
 
-	/**
-	 * used for thai. Not used by cassys
-	 */
-	long logical_end_offset;
-	unichar *label;
+    /**
+     * used for thai. Not used by cassys
+     */
+    long logical_end_offset;
+    unichar *label;
 }locate_pos;
 
 

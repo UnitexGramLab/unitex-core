@@ -119,11 +119,11 @@ tfst->current_sentence=NO_SENTENCE_LOADED;
 free(tfst->text);
 tfst->text=NULL;
 if (tfst->token_content!=NULL) {
-	for (int i=0;i<tfst->tokens->nbelems;i++) {
-		free(tfst->token_content[i]);
-	}
-	free(tfst->token_content);
-	tfst->token_content=NULL;
+    for (int i=0;i<tfst->tokens->nbelems;i++) {
+        free(tfst->token_content[i]);
+    }
+    free(tfst->token_content);
+    tfst->token_content=NULL;
 }
 free_vector_int(tfst->tokens);
 tfst->tokens=NULL;
@@ -383,7 +383,7 @@ if (4!=fwrite(t,1,4,tind)) {
  * WARNING: if tags are provided, they are supposed to be \n terminated !
  */
 void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* out_tind,unichar** tags,int n_tags,
-							struct hash_table* form_frequencies) {
+                            struct hash_table* form_frequencies) {
 if (tfst==NULL) {
    fatal_error("NULL tfst in save_current_sentence\n");
 }
@@ -408,11 +408,11 @@ if (tags==NULL && tfst->tags->nbelems==0) {
 
 /* We compute form frequencies */
 if (form_frequencies!=NULL) {
-	if (tags!=NULL) {
-	   compute_form_frequencies(tfst->automaton,tags,n_tags,form_frequencies);
-	} else {
-	   compute_form_frequencies(tfst->automaton,(TfstTag**)(tfst->tags->tab),form_frequencies);
-	}
+    if (tags!=NULL) {
+       compute_form_frequencies(tfst->automaton,tags,n_tags,form_frequencies);
+    } else {
+       compute_form_frequencies(tfst->automaton,(TfstTag**)(tfst->tags->tab),form_frequencies);
+    }
 }
 
 /* First, we update the offset index in the .tind file */
@@ -451,7 +451,7 @@ u_fprintf(out_tfst,"f\n");
 if (tags!=NULL) {
    /* If there is a tag array, we use it */
    for (int i=0;i<n_tags;i++) {
-	   u_fputs(tags[i],out_tfst);
+       u_fputs(tags[i],out_tfst);
    }
 } else {
    for (int i=0;i<tfst->tags->nbelems;i++) {
@@ -504,24 +504,24 @@ fatal_error("Invalid tag type %d in TfstTag_to_string\n",t->type);
  */
 void compute_token_contents(Tfst* t) {
 if (t==NULL) {
-	fatal_error("NULL error in compute_token_contents\n");
+    fatal_error("NULL error in compute_token_contents\n");
 }
 if (t->current_sentence==NO_SENTENCE_LOADED) {
-	fatal_error("Cannot compute token contents when no sentence is loaded\n");
+    fatal_error("Cannot compute token contents when no sentence is loaded\n");
 }
 t->token_content=(unichar**)malloc(t->token_sizes->nbelems*sizeof(unichar*));
 if (t->token_content==NULL) {
-	fatal_alloc_error("compute_token_contents");
+    fatal_alloc_error("compute_token_contents");
 }
 unichar tmp[4096];
 int j,pos=0;
 for (int i=0;i<t->token_sizes->nbelems;i++) {
-	for (j=0;j<t->token_sizes->tab[i];j++) {
-		tmp[j]=t->text[pos];
-		pos++;
-	}
-	tmp[j]='\0';
-	t->token_content[i]=u_strdup(tmp);
+    for (j=0;j<t->token_sizes->tab[i];j++) {
+        tmp[j]=t->text[pos];
+        pos++;
+    }
+    tmp[j]='\0';
+    t->token_content[i]=u_strdup(tmp);
 }
 }
 

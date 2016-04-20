@@ -43,16 +43,16 @@ typedef enum length_ InfoLength;
 
 
 /**
- * This structure represents a bit array. This can be used for encoding 1-bit, 2-bits 
- * or 4-bits information without wasting space. Its is defined by the number of 
- * elements to be encoded, the actual size in bytes of the array and the length (1, 2 or 4 bits) 
+ * This structure represents a bit array. This can be used for encoding 1-bit, 2-bits
+ * or 4-bits information without wasting space. Its is defined by the number of
+ * elements to be encoded, the actual size in bytes of the array and the length (1, 2 or 4 bits)
  * of one information. 'divider' is the divider that corresponds to the length. Its possible
  * values are respectively 8, 4 and 2.
  */
 struct bit_array {
-	int size_in_elements;
+    int size_in_elements;
    int size_in_bytes;
-	unsigned char* array;
+    unsigned char* array;
    InfoLength info_length;
    int divider;
 };

@@ -196,7 +196,7 @@ return u_fputc_raw(f->enc,c,f->f);
 
 int u_fputc_conv_lf_to_crlf_option(Encoding, unichar, ABSTRACTFILE*, int);
 int u_fputc_conv_lf_to_crlf_option(unichar c, U_FILE* f, int conv_lf_to_crlf_option) {
-	return u_fputc_conv_lf_to_crlf_option(f->enc, c, f->f, conv_lf_to_crlf_option);
+    return u_fputc_conv_lf_to_crlf_option(f->enc, c, f->f, conv_lf_to_crlf_option);
 }
 
 int u_fputc(Encoding,unichar,ABSTRACTFILE*);
@@ -235,21 +235,21 @@ static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF);
 
 void u_fputs_raw(Encoding, const unichar*, ABSTRACTFILE*);
 void u_fputs_raw(const unichar* t, U_FILE* f) {
-	fwriteString(f, t, 0);
-	//u_fputs_raw(f->enc, t, f->f);
+    fwriteString(f, t, 0);
+    //u_fputs_raw(f->enc, t, f->f);
 }
 
 void u_fputs(Encoding, const unichar*, ABSTRACTFILE*);
 void u_fputs(const unichar* t, U_FILE* f) {
-	fwriteString(f, t, 1);
-	//u_fputs(f->enc, t, f->f);
+    fwriteString(f, t, 1);
+    //u_fputs(f->enc, t, f->f);
 }
 
 
 void u_fputs_conv_lf_to_crlf_option(Encoding, const unichar*, ABSTRACTFILE*, int);
 void u_fputs_conv_lf_to_crlf_option(const unichar*t, U_FILE* f, int conv_lf_to_crlf_option) {
-	fwriteString(f, t, conv_lf_to_crlf_option);
-	//return u_fputs_conv_lf_to_crlf_option(f->enc, t, f->f, conv_lf_to_crlf_option);
+    fwriteString(f, t, conv_lf_to_crlf_option);
+    //return u_fputs_conv_lf_to_crlf_option(f->enc, t, f->f, conv_lf_to_crlf_option);
 }
 
 int u_fgets(Encoding,unichar*,ABSTRACTFILE*);
@@ -572,8 +572,8 @@ int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char
             {
                 *p_bom = write_encoding_item_list[i].bom;
                 *p_encoding = write_encoding_item_list[i].encoding;
-				if ((*p_encoding) == PLATFORM_DEPENDENT_UTF16)
-					*p_encoding = is_platform_little_endian() ? UTF16_LE : BIG_ENDIAN_UTF16;
+                if ((*p_encoding) == PLATFORM_DEPENDENT_UTF16)
+                    *p_encoding = is_platform_little_endian() ? UTF16_LE : BIG_ENDIAN_UTF16;
                 free(lower_encoding_text);
                 return 1;
             }
@@ -594,14 +594,14 @@ int get_writing_encoding_text(char* text_encoding,size_t size_text_buffer,Encodi
     {
         case UTF16_LE : result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom"; break;
         case BIG_ENDIAN_UTF16 : result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom"; break;
-		case PLATFORM_DEPENDENT_UTF16 :
-			{
-				if (is_platform_little_endian())
-					result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom";
-				else
-					result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom";
-				break;
-			}
+        case PLATFORM_DEPENDENT_UTF16 :
+            {
+                if (is_platform_little_endian())
+                    result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom";
+                else
+                    result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom";
+                break;
+            }
         case UTF8 : result = (bom == 1) ? "utf8-bom" : "utf8-no-bom"; break;
         case ASCII : result = "ascii"; break;
     }
@@ -713,7 +713,7 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
  */
 U_FILE* u_fopen_internal(Encoding encoding,int is_BOM,const char* name,OpenMode MODE,int MASK_ENCODING_COMPATIBILITY) {
 if (name==NULL) {
-	fatal_error("NULL file name in u_fopen\n");
+    fatal_error("NULL file name in u_fopen\n");
 }
 ABSTRACTFILE* f;
 if (MODE==U_APPEND || MODE==U_MODIFY) {
@@ -816,7 +816,7 @@ U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
 }
 
 U_FILE* u_fopen(const VersatileEncodingConfig* cfg,const char* name,OpenMode MODE) {
-	return u_fopen_internal(cfg->encoding_output,cfg->bom_output,name,MODE,cfg->mask_encoding_compatibility_input);
+    return u_fopen_internal(cfg->encoding_output,cfg->bom_output,name,MODE,cfg->mask_encoding_compatibility_input);
 }
 
 /*
@@ -1053,12 +1053,12 @@ switch(encoding) {
    case PLATFORM_DEPENDENT_UTF16: return is_platform_little_endian() ?
                              u_fgetc_UTF16LE_raw(f) : u_fgetc_UTF16BE_raw(f);
    case ASCII: {
-	   unsigned char c;
-	   if (af_fread(&c,1,1,f)==1)
-		   return (int)c;
-	   else
-		   return EOF;
-			   }
+       unsigned char c;
+       if (af_fread(&c,1,1,f)==1)
+           return (int)c;
+       else
+           return EOF;
+               }
 }
 return EOF;
 }
@@ -1099,7 +1099,7 @@ if (c==0x0D) {
        * is a trick in order to avoid reading a character made of several bytes
        * that we should put back to the file. */
       if (af_fread(&c,1,1,f)!=1)
-		  c=EOF;
+          c=EOF;
    } else {
       c=u_fgetc_raw(encoding,f);
    }
@@ -1289,10 +1289,10 @@ return u_fputc_raw(encoding,c,f);
 
 
 int u_fputc_conv_lf_to_crlf_option(Encoding encoding, unichar c, ABSTRACTFILE* f, int conv_lf_to_crlf_option) {
-	if ((c == '\n') && (conv_lf_to_crlf_option!=0)) {
-		if (!u_fputc_raw(encoding, 0x0D, f)) return 0;
-	}
-	return u_fputc_raw(encoding, c, f);
+    if ((c == '\n') && (conv_lf_to_crlf_option!=0)) {
+        if (!u_fputc_raw(encoding, 0x0D, f)) return 0;
+    }
+    return u_fputc_raw(encoding, c, f);
 }
 
 /**
@@ -1423,15 +1423,15 @@ return N;
 
 /*
 void u_fputs_raw(Encoding encoding, const unichar* s, ABSTRACTFILE* f) {
-	int i = 0;
-	while (s[i] != '\0')
-		u_fputc_raw(encoding, (unichar)((unsigned char)s[i++]), f);
+    int i = 0;
+    while (s[i] != '\0')
+        u_fputc_raw(encoding, (unichar)((unsigned char)s[i++]), f);
 }
 
 void u_fputs(Encoding encoding, const unichar* s, ABSTRACTFILE* f) {
-	int i = 0;
-	while (s[i] != '\0')
-		u_fputc(encoding, (unichar)((unsigned char)s[i++]), f);
+    int i = 0;
+    while (s[i] != '\0')
+        u_fputc(encoding, (unichar)((unsigned char)s[i++]), f);
 }
 */
 /**
@@ -1477,7 +1477,7 @@ return i;
 /**
   * this function act as u_fgets(encoding,line,f) if i_size==0 and
   *          like u_fgets(encoding,line,size,f) if i_size==1 and
-  *	optimized by reading several char at same time in a buffer
+  * optimized by reading several char at same time in a buffer
   */
 
 
@@ -1544,7 +1544,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                     unichar c;
                     c = (unichar)((((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)])) ;
                     if (c==0) {
-                    	fatal_error("Corrupted UTF16 text file containing null characters\n");
+                        fatal_error("Corrupted UTF16 text file containing null characters\n");
                     }
                     if (!(((c==0x0d) && (treat_CR_as_LF == 0))))
                     {
@@ -1610,7 +1610,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                     c = (((unichar)tab_in[(i)])) ;
 
                     if (c==0) {
-                    	fatal_error("Corrupted ASCII text file containing null characters\n");
+                        fatal_error("Corrupted ASCII text file containing null characters\n");
                     }
 
                     if (!(((c==0x0d) && (treat_CR_as_LF == 0))))
@@ -1705,7 +1705,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                           }
 
                           if (c==0) {
-                          	fatal_error("Corrupted UTF8 text file containing null characters\n");
+                            fatal_error("Corrupted UTF8 text file containing null characters\n");
                           }
 
                     if (!((c==0x0d) && (treat_CR_as_LF == 0)))
@@ -1762,34 +1762,34 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 #define START_SIZE_DYNAMIC_BUFFER 512
 int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_size, ABSTRACTFILE* f, int treat_CR_as_LF)
 {
-	if (((*line) == NULL) || ((*buffer_size) == 0))
-	{
-		*buffer_size += START_SIZE_DYNAMIC_BUFFER;
-		*line = (unichar*)malloc(sizeof(unichar) * ((*buffer_size) + 1));
+    if (((*line) == NULL) || ((*buffer_size) == 0))
+    {
+        *buffer_size += START_SIZE_DYNAMIC_BUFFER;
+        *line = (unichar*)malloc(sizeof(unichar) * ((*buffer_size) + 1));
 
-		if ((*line) == NULL){
-			fatal_alloc_error("u_fgets_dynamic_buffer");
-		}
-	}
+        if ((*line) == NULL){
+            fatal_alloc_error("u_fgets_dynamic_buffer");
+        }
+    }
 
-	**line = 0;
-	int pos = 0;
-	for (;;)
-	{
-		int read_possible = (int)(*buffer_size) - pos;
-		int nb_read = u_fgets_buffered(encoding, (*line)+pos, 2, (int)read_possible, f, treat_CR_as_LF);
-		if (nb_read == EOF)
-			return (pos == 0) ? EOF : pos;
-		pos += nb_read;
-		*((*line) + pos) = 0;
-		if (nb_read != (read_possible - 1))
-			return pos;
-		(*buffer_size) *= 2;
-		*line = (unichar*)realloc(*line, sizeof(unichar) * ((*buffer_size) + 1));
-		if ((*line) == NULL){
-			fatal_alloc_error("u_fgets_dynamic_buffer");
-		}
-	}
+    **line = 0;
+    int pos = 0;
+    for (;;)
+    {
+        int read_possible = (int)(*buffer_size) - pos;
+        int nb_read = u_fgets_buffered(encoding, (*line)+pos, 2, (int)read_possible, f, treat_CR_as_LF);
+        if (nb_read == EOF)
+            return (pos == 0) ? EOF : pos;
+        pos += nb_read;
+        *((*line) + pos) = 0;
+        if (nb_read != (read_possible - 1))
+            return pos;
+        (*buffer_size) *= 2;
+        *line = (unichar*)realloc(*line, sizeof(unichar) * ((*buffer_size) + 1));
+        if ((*line) == NULL){
+            fatal_alloc_error("u_fgets_dynamic_buffer");
+        }
+    }
 }
 
 
@@ -1803,7 +1803,7 @@ int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_siz
  * NOTE: there is no overflow control!
  */
 int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
-	return u_fgets_buffered(encoding,line,0,0,f,0);
+    return u_fgets_buffered(encoding,line,0,0,f,0);
 }
 
 
@@ -1849,7 +1849,7 @@ return u_fgets_buffered(encoding,line,1,size,f,1);
  * option limit2 by Gilles Vollant
  */
 int u_fgets_limit2(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
-	return u_fgets_buffered(encoding,line,2,size,f,0);
+    return u_fgets_buffered(encoding,line,2,size,f,0);
 }
 
 
@@ -1915,156 +1915,156 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
  unsigned char tab_in[BUFFER_IN_CACHE_SIZE_FGET_CHAR];
 
  switch (encoding) {
-	case UTF16_LE:
-	case BIG_ENDIAN_UTF16:
-	{
-		int hibytepos = (encoding == UTF16_LE) ? 1 : 0;
+    case UTF16_LE:
+    case BIG_ENDIAN_UTF16:
+    {
+        int hibytepos = (encoding == UTF16_LE) ? 1 : 0;
 
-		int size_to_do = size;
-		int size_done = 0;
-		for (;;)
-		{
-			if (size_to_do == 0)
-				return size_done;
-			int try_size = size_to_do;
-			if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2))
-				try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2);
-			size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size * 2, f);
-			if ((read_bytes_in_file <= 0) || (read_bytes_in_file == ((size_t)EOF)))
-			{
-				if (size_done > 0)
-					return size_done;
-				else
-					return (int)read_bytes_in_file;
-			}
-			if (read_bytes_in_file > 0)
-			{
-				int nb_unichar_read = (int)read_bytes_in_file / 2;
-				for (int i = 0; i < nb_unichar_read; i++) {
+        int size_to_do = size;
+        int size_done = 0;
+        for (;;)
+        {
+            if (size_to_do == 0)
+                return size_done;
+            int try_size = size_to_do;
+            if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2))
+                try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR / 2);
+            size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size * 2, f);
+            if ((read_bytes_in_file <= 0) || (read_bytes_in_file == ((size_t)EOF)))
+            {
+                if (size_done > 0)
+                    return size_done;
+                else
+                    return (int)read_bytes_in_file;
+            }
+            if (read_bytes_in_file > 0)
+            {
+                int nb_unichar_read = (int)read_bytes_in_file / 2;
+                for (int i = 0; i < nb_unichar_read; i++) {
 
-					unichar c = (unichar)((((unichar)tab_in[(i * 2) + hibytepos]) << 8) | (tab_in[(i * 2) + (1 - hibytepos)]));
+                    unichar c = (unichar)((((unichar)tab_in[(i * 2) + hibytepos]) << 8) | (tab_in[(i * 2) + (1 - hibytepos)]));
 
-					*(buffer + size_done + i) = c;
+                    *(buffer + size_done + i) = c;
 
-				}
-				size_done += nb_unichar_read;
-				size_to_do -= nb_unichar_read;
+                }
+                size_done += nb_unichar_read;
+                size_to_do -= nb_unichar_read;
 
-			}
-		}
-	}
-
-
-	case UTF8:
-	{
+            }
+        }
+    }
 
 
-		size_t pos_already_read_in_disk = 0;
-		int pos_in_unichar_line = 0;
-
-		for (;;)
-		{
-			size_t size_to_read_binary = BUFFER_IN_CACHE_SIZE_FGET_CHAR - pos_already_read_in_disk;
-
-			size_t read_binary_in_file = 0;
-			if (size_to_read_binary>0)
-				read_binary_in_file = af_fread(&tab_in[pos_already_read_in_disk], 1, (size_t)size_to_read_binary, f);
-			if ((read_binary_in_file <= 0) || (read_binary_in_file == ((size_t)EOF)))
-			{
-				if (pos_in_unichar_line == 0)
-					return EOF;
-				else
-				{
-					return pos_in_unichar_line;
-				}
-			}
-			read_binary_in_file += pos_already_read_in_disk;
-
-			if (read_binary_in_file > 0)
-			{
-				int i;
-				pos_already_read_in_disk = 0;
-				for (i = 0; i<(int)read_binary_in_file;)
-				{
-					unichar c;
-					unsigned char ch = tab_in[i];
-					int nbbyte = GetUtf8Size(ch);
-
-					if (i + nbbyte >(int)read_binary_in_file)
-					{
-						pos_already_read_in_disk = read_binary_in_file - i;
-						int j;
-						for (j = 0; j<(int)pos_already_read_in_disk; j++)
-							tab_in[j] = tab_in[i + j];
-						break;
-					}
-
-					c = ((unichar)ch) & GetUtf8Mask(ch);
-					int nbbyte_loop = nbbyte;
-
-					if (nbbyte_loop>0) {
-						int i_in_char = 0;
-						for (;;)
-						{
-							nbbyte_loop--;
-							if (nbbyte_loop == 0)
-								break;
-							i_in_char++;
-							c = (unichar)((c << 6) | ((tab_in[i + i_in_char]) & 0x3F));
-						}
-					}
-
-					if (pos_in_unichar_line == size)
-					{
-						af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
-
-						return pos_in_unichar_line;
-					}
-
-					buffer[pos_in_unichar_line++] = c;
-
-					i += nbbyte;
-				}
-			}
-		}
-	}
+    case UTF8:
+    {
 
 
-	default:
-	case ASCII:
-	{
-		int size_to_do = size;
-		int size_done = 0;
-		for (;;)
-		{
-			if (size_to_do == 0)
-				return size_done;
-			int try_size = size_to_do;
-			if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR))
-				try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR);
-			size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size, f);
-			if ((read_bytes_in_file <= 0) || (read_bytes_in_file == ((size_t)EOF)))
-			{
-				if (size_done > 0)
-					return size_done;
-				else
-					return (int)read_bytes_in_file;
-			}
+        size_t pos_already_read_in_disk = 0;
+        int pos_in_unichar_line = 0;
 
-			if (read_bytes_in_file > 0)
-			{
-				int nb_unichar_read = (int)read_bytes_in_file;
-				for (int i = 0; i < nb_unichar_read; i++) {
+        for (;;)
+        {
+            size_t size_to_read_binary = BUFFER_IN_CACHE_SIZE_FGET_CHAR - pos_already_read_in_disk;
 
-					unichar c = (unichar)tab_in[i];
+            size_t read_binary_in_file = 0;
+            if (size_to_read_binary>0)
+                read_binary_in_file = af_fread(&tab_in[pos_already_read_in_disk], 1, (size_t)size_to_read_binary, f);
+            if ((read_binary_in_file <= 0) || (read_binary_in_file == ((size_t)EOF)))
+            {
+                if (pos_in_unichar_line == 0)
+                    return EOF;
+                else
+                {
+                    return pos_in_unichar_line;
+                }
+            }
+            read_binary_in_file += pos_already_read_in_disk;
 
-					*(buffer + size_done + i) = c;
-				}
-				size_done += nb_unichar_read;
-				size_to_do -= nb_unichar_read;
-			}
-		}
-	}
+            if (read_binary_in_file > 0)
+            {
+                int i;
+                pos_already_read_in_disk = 0;
+                for (i = 0; i<(int)read_binary_in_file;)
+                {
+                    unichar c;
+                    unsigned char ch = tab_in[i];
+                    int nbbyte = GetUtf8Size(ch);
+
+                    if (i + nbbyte >(int)read_binary_in_file)
+                    {
+                        pos_already_read_in_disk = read_binary_in_file - i;
+                        int j;
+                        for (j = 0; j<(int)pos_already_read_in_disk; j++)
+                            tab_in[j] = tab_in[i + j];
+                        break;
+                    }
+
+                    c = ((unichar)ch) & GetUtf8Mask(ch);
+                    int nbbyte_loop = nbbyte;
+
+                    if (nbbyte_loop>0) {
+                        int i_in_char = 0;
+                        for (;;)
+                        {
+                            nbbyte_loop--;
+                            if (nbbyte_loop == 0)
+                                break;
+                            i_in_char++;
+                            c = (unichar)((c << 6) | ((tab_in[i + i_in_char]) & 0x3F));
+                        }
+                    }
+
+                    if (pos_in_unichar_line == size)
+                    {
+                        af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
+
+                        return pos_in_unichar_line;
+                    }
+
+                    buffer[pos_in_unichar_line++] = c;
+
+                    i += nbbyte;
+                }
+            }
+        }
+    }
+
+
+    default:
+    case ASCII:
+    {
+        int size_to_do = size;
+        int size_done = 0;
+        for (;;)
+        {
+            if (size_to_do == 0)
+                return size_done;
+            int try_size = size_to_do;
+            if (try_size > (BUFFER_IN_CACHE_SIZE_FGET_CHAR))
+                try_size = (BUFFER_IN_CACHE_SIZE_FGET_CHAR);
+            size_t read_bytes_in_file = af_fread(&tab_in[0], 1, (size_t)try_size, f);
+            if ((read_bytes_in_file <= 0) || (read_bytes_in_file == ((size_t)EOF)))
+            {
+                if (size_done > 0)
+                    return size_done;
+                else
+                    return (int)read_bytes_in_file;
+            }
+
+            if (read_bytes_in_file > 0)
+            {
+                int nb_unichar_read = (int)read_bytes_in_file;
+                for (int i = 0; i < nb_unichar_read; i++) {
+
+                    unichar c = (unichar)tab_in[i];
+
+                    *(buffer + size_done + i) = c;
+                }
+                size_done += nb_unichar_read;
+                size_to_do -= nb_unichar_read;
+            }
+        }
+    }
  }
 }
 
@@ -2073,56 +2073,56 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
  *
  */
 size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_t * p_size_this_string_written,
-	const unsigned char*src, size_t buf_size)
+    const unsigned char*src, size_t buf_size)
 {
-	unichar*write_content_walk_buf = dest;
-	const unsigned char*src_walk = src;
-	size_t size_this_string_written = 0;
-	size_t nb_utf8_bytes = 0;
-	for (;;)
-	{
-		if ((src_walk == NULL) || (buf_size == 0))
-			return 0;
-		unsigned char ch = *(src_walk++);
-		buf_size--;
-		nb_utf8_bytes++;
+    unichar*write_content_walk_buf = dest;
+    const unsigned char*src_walk = src;
+    size_t size_this_string_written = 0;
+    size_t nb_utf8_bytes = 0;
+    for (;;)
+    {
+        if ((src_walk == NULL) || (buf_size == 0))
+            return 0;
+        unsigned char ch = *(src_walk++);
+        buf_size--;
+        nb_utf8_bytes++;
 
-		unichar c;
+        unichar c;
 
-		if ((ch & 0x80) == 0)
-		{
-			c = ch;
-		}
-		else
-		{
-			c = ch & GetUtf8Mask(ch);
-			int nbbyte = GetUtf8Size(ch);
-			if (((int)buf_size) + 1 < nbbyte)
-				return 0;
+        if ((ch & 0x80) == 0)
+        {
+            c = ch;
+        }
+        else
+        {
+            c = ch & GetUtf8Mask(ch);
+            int nbbyte = GetUtf8Size(ch);
+            if (((int)buf_size) + 1 < nbbyte)
+                return 0;
 
-			for (;;)
-			{
-				nbbyte--;
-				if (nbbyte == 0)
-					break;
+            for (;;)
+            {
+                nbbyte--;
+                if (nbbyte == 0)
+                    break;
 
-				c = (c << 6) | ((*(src_walk++)) & 0x3F);
-				buf_size--;
-				nb_utf8_bytes++;
-			}
-		}
+                c = (c << 6) | ((*(src_walk++)) & 0x3F);
+                buf_size--;
+                nb_utf8_bytes++;
+            }
+        }
 
-		if ((write_content_walk_buf != NULL) && (size_this_string_written<nb_unichar_alloc_walk))
-			*(write_content_walk_buf + size_this_string_written) = c;
-		size_this_string_written++;
+        if ((write_content_walk_buf != NULL) && (size_this_string_written<nb_unichar_alloc_walk))
+            *(write_content_walk_buf + size_this_string_written) = c;
+        size_this_string_written++;
 
-		if (c == 0)
-		{
-			if (p_size_this_string_written != NULL)
-				*p_size_this_string_written = size_this_string_written;
-			return nb_utf8_bytes;
-		}
-	}
+        if (c == 0)
+        {
+            if (p_size_this_string_written != NULL)
+                *p_size_this_string_written = size_this_string_written;
+            return nb_utf8_bytes;
+        }
+    }
 }
 
 
@@ -2131,7 +2131,7 @@ size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_
  */
 int u_fget_unichars_raw(unichar* buffer, int size, U_FILE* f)
 {
-	return u_fget_unichars_raw(f->enc, buffer, size, f->f);
+    return u_fget_unichars_raw(f->enc, buffer, size, f->f);
 }
 
 
@@ -2199,23 +2199,23 @@ int BuildEncodedOutForUnicharString(Encoding encoding,const unichar *pc,Buffer_O
 
            case PLATFORM_DEPENDENT_UTF16:
                {
-				   if (is_platform_little_endian())
-				   {
+                   if (is_platform_little_endian())
+                   {
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
-				   }
-				   else
-				   {
+                   }
+                   else
+                   {
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
-				   }
+                   }
                    break;
                }
 
            case BINARY:
            {
-        	   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c);
-        	   break;
+               pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c);
+               break;
            }
 
            case UTF8:
@@ -2293,22 +2293,22 @@ static int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_
 
            case PLATFORM_DEPENDENT_UTF16:
                {
-				   if (is_platform_little_endian())
-				   {
+                   if (is_platform_little_endian())
+                   {
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
-				   }
-				   else
-				   {
+                   }
+                   else
+                   {
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                      pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
-				   }
+                   }
                    break;
                }
 
            case BINARY: {
-        	   pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char)c;
-        	   break;
+               pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char)c;
+               break;
            }
 
            case UTF8:
@@ -2350,18 +2350,18 @@ static int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_
 
 static void fwriteString(U_FILE* f, const unichar* us, int convLFtoCRLF)
 {
-	Encoding encoding = f->enc;
-	Buffer_Out BufOut;
-	ClearBufferOut(&BufOut);
+    Encoding encoding = f->enc;
+    Buffer_Out BufOut;
+    ClearBufferOut(&BufOut);
 
-	if (us != NULL) {
-		BuildEncodedOutForUnicharString(encoding, us, &BufOut, convLFtoCRLF, f->f);
-		FlushBufferOut(&BufOut, f->f);
-	}
-	else {
-		BuildEncodedOutForCharString(encoding, "(null)", &BufOut, convLFtoCRLF, f->f);
-		FlushBufferOut(&BufOut, f->f);
-	}
+    if (us != NULL) {
+        BuildEncodedOutForUnicharString(encoding, us, &BufOut, convLFtoCRLF, f->f);
+        FlushBufferOut(&BufOut, f->f);
+    }
+    else {
+        BuildEncodedOutForCharString(encoding, "(null)", &BufOut, convLFtoCRLF, f->f);
+        FlushBufferOut(&BufOut, f->f);
+    }
 }
 
 
@@ -2421,11 +2421,11 @@ while (*format) {
          case 'U': {
             int (*XXXize)(const unichar*,unichar*);
             if (*format=='H') {
-            	XXXize=htmlize;
+                XXXize=htmlize;
             } else {
-            	XXXize=URLize;
+                XXXize=URLize;
             }
-        	/* If we have a '%H' (or '%U'), it means that we have to print HTML things (or URLs) */
+            /* If we have a '%H' (or '%U'), it means that we have to print HTML things (or URLs) */
             format++;
             if (*format=='C' || *format=='c') {
                /* If we have to print a HTML character */
@@ -2649,11 +2649,11 @@ while (*format) {
          case 'U': {
             int (*XXXize)(const unichar*,unichar*);
             if (*format=='H') {
-            	XXXize=htmlize;
+                XXXize=htmlize;
             } else {
-            	XXXize=URLize;
+                XXXize=URLize;
             }
-        	/* If we have a '%H', it means that we have to print HTML things */
+            /* If we have a '%H', it means that we have to print HTML things */
             format++;
             if (*format=='S') {
                /* If we have to print a HTML string */
@@ -3296,16 +3296,16 @@ return (i-1);
 * Unicode version of strlen, count the number of char after LF to CRLF conversion
 */
 unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF) {
-	int i = 0;
-	int nbLF = 0;
-	for (;;)
-	{
-		unichar c = s[i];
-		nbLF += (c == '\n') ? 1 : 0;
-		if (c == 0)
-			return i + ((convLFtoCRLF != 0) ? nbLF : 0);
-		i++;
-	}
+    int i = 0;
+    int nbLF = 0;
+    for (;;)
+    {
+        unichar c = s[i];
+        nbLF += (c == '\n') ? 1 : 0;
+        if (c == 0)
+            return i + ((convLFtoCRLF != 0) ? nbLF : 0);
+        i++;
+    }
 }
 
 
@@ -3473,13 +3473,13 @@ const unichar *s2=src;
 register unichar c;
 /* First we go at the end of the destination string */
 do {
-	c=*s1++;
+    c=*s1++;
 } while (c!=(unichar)'\0');
 s1-=2;
 /* And we concatenate the 'src' string */
 do {
-	c=*s2++;
-	*++s1=c;
+    c=*s2++;
+    *++s1=c;
 } while (c!=(unichar)'\0');
 return dest;
 }
@@ -3509,33 +3509,33 @@ if ((a!=NULL) && (b!=NULL)) {
     for(;;) {
        a_c=(unichar)*(a_p);
        b_c=(unichar)*(b_p);
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=(unichar)*(a_p+1);
        b_c=(unichar)*(b_p+1);
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=(unichar)*(a_p+2);
        b_c=(unichar)*(b_p+2);
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=(unichar)*(a_p+3);
        b_c=(unichar)*(b_p+3);
        a_p+=4;
-	   b_p+=4;
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       b_p+=4;
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
     } ;
 } else {
   if (a==NULL) {
@@ -3560,33 +3560,33 @@ if ((a!=NULL) && (b!=NULL)) {
     for(;;) {
        a_c=fast_u_toupper((unichar)*(a_p));
        b_c=fast_u_toupper((unichar)*(b_p));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=fast_u_toupper((unichar)*(a_p+1));
        b_c=fast_u_toupper((unichar)*(b_p+1));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=fast_u_toupper((unichar)*(a_p+2));
        b_c=fast_u_toupper((unichar)*(b_p+2));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=fast_u_toupper((unichar)*(a_p+3));
        b_c=fast_u_toupper((unichar)*(b_p+3));
        a_p+=4;
-	   b_p+=4;
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       b_p+=4;
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
     } ;
 } else {
   if (a==NULL) {
@@ -3603,10 +3603,10 @@ if ((a!=NULL) && (b!=NULL)) {
  */
 int u_strncmp(const unichar* s1, const unichar* s2, size_t n)
 {
-	while (n--)
-		if ((*(s1++)) != (*(s2++)))
-		return (int)(*(const unichar*)(s1 - 1) - *(const unichar*)(s2 - 1));
-	return 0;
+    while (n--)
+        if ((*(s1++)) != (*(s2++)))
+        return (int)(*(const unichar*)(s1 - 1) - *(const unichar*)(s2 - 1));
+    return 0;
 }
 
 
@@ -3618,43 +3618,43 @@ int u_strncmp(const unichar* s1, const unichar* s2, size_t n)
  *
  */
 unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
+    unichar**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
 {
-	size_t add_string_len = u_strlen(add_string);
-	size_t buffer_size_needed = add_string_len + 1;
-	if (len != NULL)
-		*len = add_string_len;
+    size_t add_string_len = u_strlen(add_string);
+    size_t buffer_size_needed = add_string_len + 1;
+    if (len != NULL)
+        *len = add_string_len;
 
-	if ((*allocated_buffer) == NULL)
-	{
-		if ((add_string_len + 1) < original_buffer_size)
-		{
-			memcpy(original_buffer, add_string, (add_string_len + 1) * sizeof(unichar));
-			return original_buffer;
-		}
-		else
-		{
-			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
-			if ((*allocated_buffer) == NULL) {
-				fatal_alloc_error("u_strcpy_optional_buffer");
-			}
+    if ((*allocated_buffer) == NULL)
+    {
+        if ((add_string_len + 1) < original_buffer_size)
+        {
+            memcpy(original_buffer, add_string, (add_string_len + 1) * sizeof(unichar));
+            return original_buffer;
+        }
+        else
+        {
+            *allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+            if ((*allocated_buffer) == NULL) {
+                fatal_alloc_error("u_strcpy_optional_buffer");
+            }
 
-			memcpy((*allocated_buffer), add_string, (add_string_len + 1) * sizeof(unichar));
-			return *allocated_buffer;
-		}
-	}
-	else
-	{
-		free_cb(*allocated_buffer, prv_alloc);
+            memcpy((*allocated_buffer), add_string, (add_string_len + 1) * sizeof(unichar));
+            return *allocated_buffer;
+        }
+    }
+    else
+    {
+        free_cb(*allocated_buffer, prv_alloc);
 
-		*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
-		if ((*allocated_buffer) == NULL) {
-			fatal_alloc_error("u_strcpy_optional_buffer");
-		}
+        *allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+        if ((*allocated_buffer) == NULL) {
+            fatal_alloc_error("u_strcpy_optional_buffer");
+        }
 
-		memcpy((*allocated_buffer), add_string, (add_string_len + 1) * sizeof(unichar));
-		return *allocated_buffer;
-	}
+        memcpy((*allocated_buffer), add_string, (add_string_len + 1) * sizeof(unichar));
+        return *allocated_buffer;
+    }
 }
 
 
@@ -3663,43 +3663,43 @@ unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buf
  */
 
 unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const char* add_string, size_t* len, Abstract_allocator prv_alloc)
+    unichar**allocated_buffer, const char* add_string, size_t* len, Abstract_allocator prv_alloc)
 {
-	size_t add_string_len = strlen(add_string);
-	size_t buffer_size_needed = add_string_len + 1;
-	if (len != NULL)
-		*len = add_string_len;
+    size_t add_string_len = strlen(add_string);
+    size_t buffer_size_needed = add_string_len + 1;
+    if (len != NULL)
+        *len = add_string_len;
 
-	if ((*allocated_buffer) == NULL)
-	{
-		if ((add_string_len + 1) < original_buffer_size)
-		{
-			u_strcpy(original_buffer, add_string);
-			return original_buffer;
-		}
-		else
-		{
-			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
-			if ((*allocated_buffer) == NULL) {
-				fatal_alloc_error("u_strcpy_optional_buffer");
-			}
+    if ((*allocated_buffer) == NULL)
+    {
+        if ((add_string_len + 1) < original_buffer_size)
+        {
+            u_strcpy(original_buffer, add_string);
+            return original_buffer;
+        }
+        else
+        {
+            *allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+            if ((*allocated_buffer) == NULL) {
+                fatal_alloc_error("u_strcpy_optional_buffer");
+            }
 
-			u_strcpy((*allocated_buffer), add_string);
-			return *allocated_buffer;
-		}
-	}
-	else
-	{
-		free_cb(*allocated_buffer, prv_alloc);
+            u_strcpy((*allocated_buffer), add_string);
+            return *allocated_buffer;
+        }
+    }
+    else
+    {
+        free_cb(*allocated_buffer, prv_alloc);
 
-		*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
-		if ((*allocated_buffer) == NULL) {
-			fatal_alloc_error("u_strcpy_optional_buffer");
-		}
+        *allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+        if ((*allocated_buffer) == NULL) {
+            fatal_alloc_error("u_strcpy_optional_buffer");
+        }
 
-		u_strcpy((*allocated_buffer), add_string);
-		return *allocated_buffer;
-	}
+        u_strcpy((*allocated_buffer), add_string);
+        return *allocated_buffer;
+    }
 }
 
 
@@ -3707,46 +3707,46 @@ unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buf
  * append a string in the same way
  */
 unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
+    unichar**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc)
 {
-	const unichar* current_buffer = ((*allocated_buffer) != NULL) ? (*allocated_buffer) : original_buffer;
-	size_t current_string_len = u_strlen(current_buffer);
-	size_t add_string_len = u_strlen(add_string);
-	size_t buffer_size_needed = current_string_len + add_string_len + 1;
-	if (len != NULL)
-		*len = current_string_len + add_string_len;
+    const unichar* current_buffer = ((*allocated_buffer) != NULL) ? (*allocated_buffer) : original_buffer;
+    size_t current_string_len = u_strlen(current_buffer);
+    size_t add_string_len = u_strlen(add_string);
+    size_t buffer_size_needed = current_string_len + add_string_len + 1;
+    if (len != NULL)
+        *len = current_string_len + add_string_len;
 
-	if ((*allocated_buffer) == NULL)
-	{
-		if ((current_string_len + add_string_len + 1) < original_buffer_size)
-		{
-			memcpy(original_buffer + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
-			return original_buffer;
-		}
-		else
-		{
-			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
-			if ((*allocated_buffer) == NULL) {
-				fatal_alloc_error("u_strcat_optional_buffer");
-			}
+    if ((*allocated_buffer) == NULL)
+    {
+        if ((current_string_len + add_string_len + 1) < original_buffer_size)
+        {
+            memcpy(original_buffer + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
+            return original_buffer;
+        }
+        else
+        {
+            *allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+            if ((*allocated_buffer) == NULL) {
+                fatal_alloc_error("u_strcat_optional_buffer");
+            }
 
-			memcpy((*allocated_buffer), original_buffer, current_string_len * sizeof(unichar));
-			memcpy((*allocated_buffer) + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
-			return *allocated_buffer;
-		}
-	}
-	else
-	{
-		*allocated_buffer = (unichar*)realloc_cb((*allocated_buffer),
-			(current_string_len + 1) * sizeof(unichar),
-			buffer_size_needed * sizeof(unichar), prv_alloc);
-		if ((*allocated_buffer) == NULL) {
-			fatal_alloc_error("u_strcat_optional_buffer");
-		}
+            memcpy((*allocated_buffer), original_buffer, current_string_len * sizeof(unichar));
+            memcpy((*allocated_buffer) + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
+            return *allocated_buffer;
+        }
+    }
+    else
+    {
+        *allocated_buffer = (unichar*)realloc_cb((*allocated_buffer),
+            (current_string_len + 1) * sizeof(unichar),
+            buffer_size_needed * sizeof(unichar), prv_alloc);
+        if ((*allocated_buffer) == NULL) {
+            fatal_alloc_error("u_strcat_optional_buffer");
+        }
 
-		memcpy((*allocated_buffer) + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
-		return *allocated_buffer;
-	}
+        memcpy((*allocated_buffer) + current_string_len, add_string, (add_string_len + 1) * sizeof(unichar));
+        return *allocated_buffer;
+    }
 }
 
 
@@ -3754,46 +3754,46 @@ unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buf
 * append a string in the same way
 */
 unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const char* add_string, size_t* len, Abstract_allocator prv_alloc)
+    unichar**allocated_buffer, const char* add_string, size_t* len, Abstract_allocator prv_alloc)
 {
-	const unichar* current_buffer = ((*allocated_buffer) != NULL) ? (*allocated_buffer) : original_buffer;
-	size_t current_string_len = u_strlen(current_buffer);
-	size_t add_string_len = strlen(add_string);
-	size_t buffer_size_needed = current_string_len + add_string_len + 1;
-	if (len != NULL)
-		*len = current_string_len + add_string_len;
+    const unichar* current_buffer = ((*allocated_buffer) != NULL) ? (*allocated_buffer) : original_buffer;
+    size_t current_string_len = u_strlen(current_buffer);
+    size_t add_string_len = strlen(add_string);
+    size_t buffer_size_needed = current_string_len + add_string_len + 1;
+    if (len != NULL)
+        *len = current_string_len + add_string_len;
 
-	if ((*allocated_buffer) == NULL)
-	{
-		if ((current_string_len + add_string_len + 1) < original_buffer_size)
-		{
-			u_strcpy(original_buffer + current_string_len, add_string);
-			return original_buffer;
-		}
-		else
-		{
-			*allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
-			if ((*allocated_buffer) == NULL) {
-				fatal_alloc_error("u_strcat_optional_buffer");
-			}
+    if ((*allocated_buffer) == NULL)
+    {
+        if ((current_string_len + add_string_len + 1) < original_buffer_size)
+        {
+            u_strcpy(original_buffer + current_string_len, add_string);
+            return original_buffer;
+        }
+        else
+        {
+            *allocated_buffer = (unichar*)malloc_cb(buffer_size_needed * sizeof(unichar), prv_alloc);
+            if ((*allocated_buffer) == NULL) {
+                fatal_alloc_error("u_strcat_optional_buffer");
+            }
 
-			memcpy((*allocated_buffer), original_buffer, current_string_len * sizeof(unichar));
-			u_strcpy((*allocated_buffer) + current_string_len, add_string);
-			return *allocated_buffer;
-		}
-	}
-	else
-	{
-		*allocated_buffer = (unichar*)realloc_cb((*allocated_buffer),
-			(current_string_len + 1) * sizeof(unichar),
-			buffer_size_needed * sizeof(unichar), prv_alloc);
-		if ((*allocated_buffer) == NULL) {
-			fatal_alloc_error("u_strcat_optional_buffer");
-		}
+            memcpy((*allocated_buffer), original_buffer, current_string_len * sizeof(unichar));
+            u_strcpy((*allocated_buffer) + current_string_len, add_string);
+            return *allocated_buffer;
+        }
+    }
+    else
+    {
+        *allocated_buffer = (unichar*)realloc_cb((*allocated_buffer),
+            (current_string_len + 1) * sizeof(unichar),
+            buffer_size_needed * sizeof(unichar), prv_alloc);
+        if ((*allocated_buffer) == NULL) {
+            fatal_alloc_error("u_strcat_optional_buffer");
+        }
 
-		u_strcpy((*allocated_buffer) + current_string_len, add_string);
-		return *allocated_buffer;
-	}
+        u_strcpy((*allocated_buffer) + current_string_len, add_string);
+        return *allocated_buffer;
+    }
 }
 
 
@@ -3802,10 +3802,10 @@ unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buf
  */
 void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator prv_alloc)
 {
-	if ((*allocated_buffer) != NULL) {
-		free_cb(*allocated_buffer, prv_alloc);
-		*allocated_buffer = NULL;
-	}
+    if ((*allocated_buffer) != NULL) {
+        free_cb(*allocated_buffer, prv_alloc);
+        *allocated_buffer = NULL;
+    }
 }
 
 
@@ -3822,33 +3822,33 @@ if ((a!=NULL) && (b!=NULL)) {
     for(;;) {
        a_c=(unichar)*(a_p);
        b_c=(unichar)((unsigned char)*(b_p));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=(unichar)*(a_p+1);
        b_c=(unichar)((unsigned char)*(b_p+1));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=(unichar)*(a_p+2);
        b_c=(unichar)((unsigned char)*(b_p+2));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=(unichar)*(a_p+3);
        b_c=(unichar)((unsigned char)*(b_p+3));
        a_p+=4;
-	   b_p+=4;
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       b_p+=4;
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
     } ;
 } else {
   if (a==NULL) {
@@ -3873,33 +3873,33 @@ if ((a!=NULL) && (b!=NULL)) {
     for(;;) {
        a_c=fast_u_toupper((unichar)*(a_p));
        b_c=fast_u_toupper((unichar)((unsigned char)*(b_p)));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=fast_u_toupper((unichar)*(a_p+1));
        b_c=fast_u_toupper((unichar)((unsigned char)*(b_p+1)));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=fast_u_toupper((unichar)*(a_p+2));
        b_c=fast_u_toupper((unichar)((unsigned char)*(b_p+2)));
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
 
        a_c=fast_u_toupper((unichar)*(a_p+3));
        b_c=fast_u_toupper((unichar)((unsigned char)*(b_p+3)));
        a_p+=4;
-	   b_p+=4;
-	   if (a_c=='\0')
-		   return -b_c;
-	   if (a_c-b_c!=0)
-		   return (a_c-b_c);
+       b_p+=4;
+       if (a_c=='\0')
+           return -b_c;
+       if (a_c-b_c!=0)
+           return (a_c-b_c);
     } ;
 } else {
   if (a==NULL) {
@@ -3915,56 +3915,56 @@ if ((a!=NULL) && (b!=NULL)) {
  * Unicode version of strtok_r.
  */
 unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr) {
-	int i = 0;
-	int len = (int)u_strlen(delim);
+    int i = 0;
+    int len = (int)u_strlen(delim);
 
 
-	/* if the original string has nothing left */
-	if (!str && !(*saveptr))
-		return NULL;
+    /* if the original string has nothing left */
+    if (!str && !(*saveptr))
+        return NULL;
 
-	/* initialize the sp during the first call */
-	if (str && !(*saveptr))
-		(*saveptr) = str;
+    /* initialize the sp during the first call */
+    if (str && !(*saveptr))
+        (*saveptr) = str;
 
-	/* find the start of the substring, skip delim */
-	unichar* p_start = (*saveptr);
-	for (;;) {
-		for (i = 0; i < len; i++) {
-			if (*p_start == delim[i]) {
-				p_start++;
-				break;
-			}
-		}
+    /* find the start of the substring, skip delim */
+    unichar* p_start = (*saveptr);
+    for (;;) {
+        for (i = 0; i < len; i++) {
+            if (*p_start == delim[i]) {
+                p_start++;
+                break;
+            }
+        }
 
-		if (i == len) {
-			(*saveptr) = p_start;
-			break;
-		}
-	}
+        if (i == len) {
+            (*saveptr) = p_start;
+            break;
+        }
+    }
 
-	/* return NULL if nothing left */
-	if (*(*saveptr) == '\0') {
-		(*saveptr) = NULL;
-		return (*saveptr);
-	}
+    /* return NULL if nothing left */
+    if (*(*saveptr) == '\0') {
+        (*saveptr) = NULL;
+        return (*saveptr);
+    }
 
-	/* find the end of the substring, and
-	replace the delimiter with null */
-	while (*(*saveptr) != '\0') {
-		for (i = 0; i < len; i++) {
-			if (*(*saveptr) == delim[i]) {
-				*(*saveptr) = '\0';
-				break;
-			}
-		}
+    /* find the end of the substring, and
+    replace the delimiter with null */
+    while (*(*saveptr) != '\0') {
+        for (i = 0; i < len; i++) {
+            if (*(*saveptr) == delim[i]) {
+                *(*saveptr) = '\0';
+                break;
+            }
+        }
 
-		(*saveptr)++;
-		if (i < len)
-			break;
-	}
+        (*saveptr)++;
+        if (i < len)
+            break;
+    }
 
-	return p_start;
+    return p_start;
 }
 
 
@@ -3972,51 +3972,51 @@ unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr) {
  * Returns 1 if a is the same as b; 0 otherwise.
  */
 int u_equal(const unichar* a, const unichar* b) {
-	if ((a != NULL) && (b != NULL)) {
-		const unichar *a_p = a;
-		const unichar *b_p = b;
-		unichar a_c;
-		unichar b_c;
+    if ((a != NULL) && (b != NULL)) {
+        const unichar *a_p = a;
+        const unichar *b_p = b;
+        unichar a_c;
+        unichar b_c;
 
-		for (;;) {
-			a_c = (unichar)*(a_p);
-			b_c = (unichar)*(b_p);
-			if (a_c == '\0')
-				return (b_c == '\0') ? 1 : 0;
-			if (a_c - b_c != 0)
-				return 0;
+        for (;;) {
+            a_c = (unichar)*(a_p);
+            b_c = (unichar)*(b_p);
+            if (a_c == '\0')
+                return (b_c == '\0') ? 1 : 0;
+            if (a_c - b_c != 0)
+                return 0;
 
-			a_c = (unichar)*(a_p + 1);
-			b_c = (unichar)*(b_p + 1);
-			if (a_c == '\0')
-				return (b_c == '\0') ? 1 : 0;
-			if (a_c - b_c != 0)
-				return 0;
+            a_c = (unichar)*(a_p + 1);
+            b_c = (unichar)*(b_p + 1);
+            if (a_c == '\0')
+                return (b_c == '\0') ? 1 : 0;
+            if (a_c - b_c != 0)
+                return 0;
 
-			a_c = (unichar)*(a_p + 2);
-			b_c = (unichar)*(b_p + 2);
-			if (a_c == '\0')
-				return (b_c == '\0') ? 1 : 0;
-			if (a_c - b_c != 0)
-				return 0;
+            a_c = (unichar)*(a_p + 2);
+            b_c = (unichar)*(b_p + 2);
+            if (a_c == '\0')
+                return (b_c == '\0') ? 1 : 0;
+            if (a_c - b_c != 0)
+                return 0;
 
-			a_c = (unichar)*(a_p + 3);
-			b_c = (unichar)*(b_p + 3);
-			a_p += 4;
-			b_p += 4;
-			if (a_c == '\0')
-				return (b_c == '\0') ? 1 : 0;
-			if (a_c - b_c != 0)
-				return 0;
-		};
-	}
-	else {
-		if (a == NULL) {
-			if (b == NULL) return 1;
-			return 0;
-		}
-		return 0;
-	}
+            a_c = (unichar)*(a_p + 3);
+            b_c = (unichar)*(b_p + 3);
+            a_p += 4;
+            b_p += 4;
+            if (a_c == '\0')
+                return (b_c == '\0') ? 1 : 0;
+            if (a_c - b_c != 0)
+                return 0;
+        };
+    }
+    else {
+        if (a == NULL) {
+            if (b == NULL) return 1;
+            return 0;
+        }
+        return 0;
+    }
 }
 
 
@@ -4236,9 +4236,9 @@ return NULL;
  */
 int u_strrchr(const unichar* s,unichar t){
 for(int i=u_strlen(s)-1;i>0;i--){
-	if(s[i]==t){
-		return i;
-	}
+    if(s[i]==t){
+        return i;
+    }
 }
 return -1;
 }
@@ -4300,33 +4300,33 @@ if ((a!=NULL) && (b!=NULL)) {
     for(;;) {
        a_c=(unichar)*(a_p);
        b_c=(unichar)((unichar)*(b_p));
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
 
        a_c=(unichar)*(a_p+1);
        b_c=(unichar)((unichar)*(b_p+1));
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
 
        a_c=(unichar)*(a_p+2);
        b_c=(unichar)((unichar)*(b_p+2));
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
 
        a_c=(unichar)*(a_p+3);
        b_c=(unichar)((unichar)*(b_p+3));
        a_p+=4;
-	   b_p+=4;
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       b_p+=4;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
     } ;
 } else {
   if (b!=NULL) {
@@ -4350,33 +4350,33 @@ if ((a!=NULL) && (b!=NULL)) {
     for(;;) {
        a_c=(unichar)*(a_p);
        b_c=(unichar)((unsigned char)*(b_p));
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
 
        a_c=(unichar)*(a_p+1);
        b_c=(unichar)((unsigned char)*(b_p+1));
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
 
        a_c=(unichar)*(a_p+2);
        b_c=(unichar)((unsigned char)*(b_p+2));
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
 
        a_c=(unichar)*(a_p+3);
        b_c=(unichar)((unsigned char)*(b_p+3));
        a_p+=4;
-	   b_p+=4;
-	   if (b_c=='\0')
-		   return 1;
-	   if (a_c != b_c)
-		   return 0;
+       b_p+=4;
+       if (b_c=='\0')
+           return 1;
+       if (a_c != b_c)
+           return 0;
     } ;
 } else {
   if (b!=NULL) {
@@ -4489,7 +4489,7 @@ void u_to_char_n(char* dest, const unichar* src, unsigned int n) {
 void u_chomp_new_line(unichar* s) {
 int l=u_strlen(s);
 if (l>0 && s[l-1]=='\n') {
-	s[l-1]='\0';
+    s[l-1]='\0';
 }
 }
 
@@ -4646,12 +4646,12 @@ if (src==NULL) {
 }
 int pos=0;
 for (int i=0;src[i]!='\0';i++) {
-	if (u_is_ASCII_alphanumeric(src[i])) {
-		dst[pos++]=src[i];
-	} else {
-		int n=u_sprintf(&(dst[pos]),"%%%X",src[i]);
-		pos=pos+n;
-	}
+    if (u_is_ASCII_alphanumeric(src[i])) {
+        dst[pos++]=src[i];
+    } else {
+        int n=u_sprintf(&(dst[pos]),"%%%X",src[i]);
+        pos=pos+n;
+    }
 }
 dst[pos]='\0';
 return pos;
@@ -4844,40 +4844,40 @@ return (c>=0x0386 && c<=0x03F5 && c!=0x0387 && c!=0x038B
 //------Beginning of Hyungue's inserts--------------
 
 //
-//	return true if c is a korean syllalbe
+//  return true if c is a korean syllalbe
 //
 int u_is_Hangul(unichar c)
 {
-	return( (c >= 0xac00) && (c<= 0xd7a3));
+    return( (c >= 0xac00) && (c<= 0xd7a3));
 }
 //
-//	return true if c is a korean ideograme
+//  return true if c is a korean ideograme
 //
 
 int u_is_CJK_Unified_Ideograph(unichar c)
 {
-	return( (c>= 0x4e00) && (c <= 0x9fff));
+    return( (c>= 0x4e00) && (c <= 0x9fff));
 }
 int u_is_CJK_compatibility_ideograph(unichar c)
 {
-	return( (c>= 0xf900) && (c <= 0xfaff));
+    return( (c>= 0xf900) && (c <= 0xfaff));
 }
 //
-//	return true if c is a character of the alphabet coreen
-//	when characters of this zone exit in the korean text
-//	these is symbols
+//  return true if c is a character of the alphabet coreen
+//  when characters of this zone exit in the korean text
+//  these is symbols
 //
 int u_is_Hangul_Compatility_Jamo(unichar c)
 {
-	return( (c>= 0x3130) && (c <= 0x3163));
+    return( (c>= 0x3130) && (c <= 0x3163));
 }
 //
-//	return true
-//	these charcters of this zone can not existe in the korean text
+//  return true
+//  these charcters of this zone can not existe in the korean text
 //
 int u_is_Hangul_Jamo(unichar c)
 {
-	return( (c>= 0x1100) && (c <= 0x11FF));
+    return( (c>= 0x1100) && (c <= 0x11FF));
 }
 
 int u_is_Hangul_Jamo_initial_consonant(unichar c)
@@ -5085,17 +5085,17 @@ return (c>=0x0E01 && c<=0x0E39 && c!=0x0E3F) ||
 
 // returns true if c is a greek extended letter
 //
-int u_is_greek_extended_letter(unichar c) {							//$CD:20021115
-return (c>=0x1F00 && c<=0x1F15) || (c>=0x1F18 && c<=0x1F1D) ||		//$CD:20021115
-       (c>=0x1F20 && c<=0x1F45) || (c>=0x1F48 && c<=0x1F4D) ||		//$CD:20021115
-       (c>=0x1F50 && c<=0x1F57) || 									//$CD:20021115
-        c==0x1F59 || c==0x1F5B || c==0x1F5D || 						//$CD:20021115
-       (c>=0x1F5F && c<=0x1F7D) || (c>=0x1F80 && c<=0x1FB4) ||		//$CD:20021115
-       (c>=0x1FB6 && c<=0x1FBC) || (c>=0x1FC2 && c<=0x1FC4) ||		//$CD:20021115
-       (c>=0x1FC6 && c<=0x1FCC) || (c>=0x1FD0 && c<=0x1FD3) ||		//$CD:20021115
-       (c>=0x1FD6 && c<=0x1FDB) || (c>=0x1FE0 && c<=0x1FEC) ||		//$CD:20021115
-       (c>=0x1FF2 && c<=0x1FF4) || (c>=0x1FF6 && c<=0x1FFC);		//$CD:20021115
-}																	//$CD:20021115
+int u_is_greek_extended_letter(unichar c) {                         //$CD:20021115
+return (c>=0x1F00 && c<=0x1F15) || (c>=0x1F18 && c<=0x1F1D) ||      //$CD:20021115
+       (c>=0x1F20 && c<=0x1F45) || (c>=0x1F48 && c<=0x1F4D) ||      //$CD:20021115
+       (c>=0x1F50 && c<=0x1F57) ||                                  //$CD:20021115
+        c==0x1F59 || c==0x1F5B || c==0x1F5D ||                      //$CD:20021115
+       (c>=0x1F5F && c<=0x1F7D) || (c>=0x1F80 && c<=0x1FB4) ||      //$CD:20021115
+       (c>=0x1FB6 && c<=0x1FBC) || (c>=0x1FC2 && c<=0x1FC4) ||      //$CD:20021115
+       (c>=0x1FC6 && c<=0x1FCC) || (c>=0x1FD0 && c<=0x1FD3) ||      //$CD:20021115
+       (c>=0x1FD6 && c<=0x1FDB) || (c>=0x1FE0 && c<=0x1FEC) ||      //$CD:20021115
+       (c>=0x1FF2 && c<=0x1FF4) || (c>=0x1FF6 && c<=0x1FFC);        //$CD:20021115
+}                                                                   //$CD:20021115
 
 
 //
@@ -5124,11 +5124,11 @@ return u_is_basic_latin_letter(c)
        || u_is_malayalam_letter(c)
        || u_is_sinhala_letter(c)
        || u_is_thai_letter(c)
-       || u_is_greek_extended_letter(c)	//$CD:20021115
+       || u_is_greek_extended_letter(c) //$CD:20021115
 //---------Beginning of Hyungue's inserts--------
        || u_is_Hangul(c)
-	   || u_is_CJK_Unified_Ideograph(c)
-	   || u_is_CJK_compatibility_ideograph(c)
+       || u_is_CJK_Unified_Ideograph(c)
+       || u_is_CJK_compatibility_ideograph(c)
 //---------End of Hyungue's inserts--------
        ;
 }
@@ -7963,14 +7963,14 @@ unichar u_deaccentuate (unichar c) {
 
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 unichar u_toupper (unichar c) {
-	return upperChar[c];
+    return upperChar[c];
 }
 
 void u_toupper (unichar* s) {
 if (s==NULL) return;
 while (*s!='\0') {
-	*s=upperChar[*s];
-	s++;
+    *s=upperChar[*s];
+    s++;
 }
 }
 
@@ -7979,12 +7979,12 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	c = *(s++);
-	unichar cu = upperChar[c];
-	if (c != cu) {
-		*(s-1) = cu;
-		is_modified = 1;
-	}
+    c = *(s++);
+    unichar cu = upperChar[c];
+    if (c != cu) {
+        *(s-1) = cu;
+        is_modified = 1;
+    }
 } while(c!='\0');
 return is_modified;
 }
@@ -7994,8 +7994,8 @@ return is_modified;
 void u_toupper (unichar* s) {
 if (s==NULL) return;
 while (*s!='\0') {
-	*s=u_toupper(*s);
-	s++;
+    *s=u_toupper(*s);
+    s++;
 }
 }
 
@@ -8004,12 +8004,12 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	c = *(s++);
-	unichar cu = u_toupper(c);
-	if (c != cu) {
-		*(s-1) = cu;
-		is_modified = 1;
-	}
+    c = *(s++);
+    unichar cu = u_toupper(c);
+    if (c != cu) {
+        *(s-1) = cu;
+        is_modified = 1;
+    }
 } while(c!='\0');
 return is_modified;
 }
@@ -8017,15 +8017,15 @@ return is_modified;
 
 #ifdef CASE_CONVERSION_BY_TAB_LOWER
 unichar u_tolower (unichar c) {
-	return lowerChar[c];
+    return lowerChar[c];
 }
 
 
 void u_tolower (unichar* s) {
 if (s==NULL) return;
 while (*s!='\0') {
-	*s=lowerChar[*s];
-	s++;
+    *s=lowerChar[*s];
+    s++;
 }
 }
 
@@ -8034,12 +8034,12 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	c = *(s++);
-	unichar cu = lowerChar[c];
-	if (c != cu) {
-		*(s-1) = cu;
-		is_modified = 1;
-	}
+    c = *(s++);
+    unichar cu = lowerChar[c];
+    if (c != cu) {
+        *(s-1) = cu;
+        is_modified = 1;
+    }
 } while(c!='\0');
 return is_modified;
 }
@@ -8049,8 +8049,8 @@ return is_modified;
 void u_tolower (unichar* s) {
 if (s==NULL) return;
 while (*s!='\0') {
-	*s=u_tolower(*s);
-	s++;
+    *s=u_tolower(*s);
+    s++;
 }
 }
 
@@ -8059,12 +8059,12 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	c = *(s++);
-	unichar cu = u_tolower(c);
-	if (c != cu) {
-		*(s-1) = cu;
-		is_modified = 1;
-	}
+    c = *(s++);
+    unichar cu = u_tolower(c);
+    if (c != cu) {
+        *(s-1) = cu;
+        is_modified = 1;
+    }
 } while(c!='\0');
 return is_modified;
 }
@@ -8072,14 +8072,14 @@ return is_modified;
 
 #ifdef CASE_DEACCENTUATE_BY_TAB
 unichar u_deaccentuate (unichar c) {
-	return deaccentuateChar[c];
+    return deaccentuateChar[c];
 }
 
 void u_deaccentuate(unichar* s) {
 if (s==NULL) return;
 while (*s!='\0') {
-	*s=deaccentuateChar[*s];
-	s++;
+    *s=deaccentuateChar[*s];
+    s++;
 }
 }
 
@@ -8088,12 +8088,12 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	c = *(s++);
-	unichar cu = deaccentuateChar[c];
-	if (c != cu) {
-		*(s-1) = cu;
-		is_modified = 1;
-	}
+    c = *(s++);
+    unichar cu = deaccentuateChar[c];
+    if (c != cu) {
+        *(s-1) = cu;
+        is_modified = 1;
+    }
 } while(c!='\0');
 return is_modified;
 }
@@ -8103,8 +8103,8 @@ return is_modified;
 void u_deaccentuate(unichar* s) {
 if (s==NULL) return;
 while (*s!='\0') {
-	*s=u_deaccentuate(*s);
-	s++;
+    *s=u_deaccentuate(*s);
+    s++;
 }
 }
 
@@ -8113,12 +8113,12 @@ if (s==NULL) return 0;
 int is_modified = 0;
 unichar c = '\0';
 do {
-	c = *(s++);
-	unichar cu = u_deaccentuate(c);
-	if (c != cu) {
-		*(s-1) = cu;
-		is_modified = 1;
-	}
+    c = *(s++);
+    unichar cu = u_deaccentuate(c);
+    if (c != cu) {
+        *(s-1) = cu;
+        is_modified = 1;
+    }
 } while(c!='\0');
 return is_modified;
 }

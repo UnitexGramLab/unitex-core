@@ -42,9 +42,9 @@ namespace unitex {
 ////////////////////////////////////////////
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
-// Returns 0 on success, 1 otherwise.   
+// Returns 0 on success, 1 otherwise.
 int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
-		MU_lemma_T* lemma, MU_forms_T* forms);
+        MU_lemma_T* lemma, MU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms
@@ -54,7 +54,7 @@ void MU_delete_inflection(MU_forms_T* forms);
 ////////////////////////////////////////////
 // Returns the word form's identifier on the basis of the form, its lemma, its inflection paradigm, and its inflection features.
 // MU_form : form and its inflection features, e.g. ["mémoires vives",{Gen=fem,Nb=pl]
-// MU_lemma : lemma and its inflection paradigm, 
+// MU_lemma : lemma and its inflection paradigm,
 //                e.g. [[[word,"mémoires",->[mémoire],2],[sep," "],[word,"vives",->[vif],4]],noun,NC76,{"Conc"},"computing"]
 // Returns the pointer to the forms identifier on success (e.g. ->([mémoire vive,noun,NC76,{"Conc"},"computing"],2)), NULL otherwise.
 MU_id_T*  MU_get_id(MU_f_T* MU_form, MU_lemma_T* MU_lemma);

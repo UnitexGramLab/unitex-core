@@ -182,8 +182,8 @@ static inline int* create_variable_backup_using_reserve(const Variables* v,varia
 /* DIRTY==0 mean :
    - there is a least one backup
    - there is no modification made on the variable array since last backup
-   - the last used array is not a "swapper" 
-    so we can reuse the backup previously made !  
+   - the last used array is not a "swapper"
+    so we can reuse the backup previously made !
  */
 if (r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0)
 {
@@ -227,7 +227,7 @@ return (r->pos_used == 0) ? 1 : 0;
  * the function below are replaced by macro for performance
  */
 /*
-  
+
 int get_dirty(variable_backup_memory_reserve* r) ;
 void set_dirty(variable_backup_memory_reserve* r,int d) ;
 

@@ -182,18 +182,18 @@ while (list!=NULL && list!=limit && list->pointed_by==0) {
  * of the tfst_match.
  */
 struct tfst_simple_match_list* new_tfst_simple_match_list(struct tfst_simple_match_list* e,
-		                                                  struct tfst_simple_match_list* next) {
+                                                          struct tfst_simple_match_list* next) {
 struct tfst_simple_match_list* m=(struct tfst_simple_match_list*)malloc(sizeof(struct tfst_simple_match_list));
 if (m==NULL) {
-	fatal_alloc_error("new_tfst_simple_match_list");
+    fatal_alloc_error("new_tfst_simple_match_list");
 }
 memcpy(m,e,sizeof(struct tfst_simple_match_list));
 if (m->output!=NULL) {
-	/* If there was an output, we have to clone it */
-	m->output=u_strdup(m->output);
+    /* If there was an output, we have to clone it */
+    m->output=u_strdup(m->output);
 }
 if (m->match!=NULL) {
-	(m->match->pointed_by)++;
+    (m->match->pointed_by)++;
 }
 m->next=next;
 return m;
@@ -206,10 +206,10 @@ return m;
  */
 void free_tfst_simple_match_list(struct tfst_simple_match_list* m) {
 if (m==NULL) {
-	return;
+    return;
 }
 if (m->match!=NULL) {
-	(m->match->pointed_by)--;
+    (m->match->pointed_by)--;
 }
 free(m->output);
 free(m);
@@ -282,16 +282,16 @@ struct list_int* tags=first_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
    if (tags->n!=-1) {
       /* We only consider tags that are not text independent */
-	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	   if (e->m.end_pos_in_token==-1 || e->m.end_pos_in_token<t->m.end_pos_in_token
-	       || e->m.end_pos_in_char<t->m.end_pos_in_char
-	       || e->m.end_pos_in_letter<t->m.end_pos_in_letter) {
-		   e->m.end_pos_in_token=t->m.end_pos_in_token;
-		   e->m.end_pos_in_char=t->m.end_pos_in_char;
-		   e->m.end_pos_in_letter=t->m.end_pos_in_letter;
-	   }
+       TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
+       if (e->m.end_pos_in_token==-1 || e->m.end_pos_in_token<t->m.end_pos_in_token
+           || e->m.end_pos_in_char<t->m.end_pos_in_char
+           || e->m.end_pos_in_letter<t->m.end_pos_in_letter) {
+           e->m.end_pos_in_token=t->m.end_pos_in_token;
+           e->m.end_pos_in_char=t->m.end_pos_in_char;
+           e->m.end_pos_in_letter=t->m.end_pos_in_letter;
+       }
    }
-	tags=tags->next;
+    tags=tags->next;
 }
 
 /* Then, we locate the last element in order to get information about the start offset */
@@ -303,11 +303,11 @@ if (last_text_dependent_tag==NULL) {
 }
 e->start=last_text_dependent_tag->source_state_text;
 if (infos->single_tags_only &&
-	(last_text_dependent_tag->source_state_text!=first_text_dependent_tag->source_state_text
-			|| last_text_dependent_tag->dest_state_text!=first_text_dependent_tag->dest_state_text)) {
-	/* In lemmatize mode, we only allow results that match one single text tag */
-	e->m.end_pos_in_token=-1;
-	return;
+    (last_text_dependent_tag->source_state_text!=first_text_dependent_tag->source_state_text
+            || last_text_dependent_tag->dest_state_text!=first_text_dependent_tag->dest_state_text)) {
+    /* In lemmatize mode, we only allow results that match one single text tag */
+    e->m.end_pos_in_token=-1;
+    return;
 }
 e->m.start_pos_in_token=-1;
 e->m.start_pos_in_char=-1;
@@ -316,16 +316,16 @@ tags=last_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
    if (tags->n!=-1) {
       /* We only consider tags that are not text independent */
-	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	   if (e->m.start_pos_in_token==-1 || e->m.start_pos_in_token>t->m.start_pos_in_token
-	       || e->m.start_pos_in_char>t->m.start_pos_in_char
-	       || e->m.start_pos_in_letter>t->m.start_pos_in_letter) {
-		   e->m.start_pos_in_token=t->m.start_pos_in_token;
-		   e->m.start_pos_in_char=t->m.start_pos_in_char;
-		   e->m.start_pos_in_letter=t->m.start_pos_in_letter;
-	   }
+       TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
+       if (e->m.start_pos_in_token==-1 || e->m.start_pos_in_token>t->m.start_pos_in_token
+           || e->m.start_pos_in_char>t->m.start_pos_in_char
+           || e->m.start_pos_in_letter>t->m.start_pos_in_letter) {
+           e->m.start_pos_in_token=t->m.start_pos_in_token;
+           e->m.start_pos_in_char=t->m.start_pos_in_char;
+           e->m.start_pos_in_letter=t->m.start_pos_in_letter;
+       }
    }
-	tags=tags->next;
+    tags=tags->next;
 }
 /* Finally, we adjust offsets with the base offset of the current sentence */
 e->m.start_pos_in_token+=infos->tfst->offset_in_tokens;
@@ -370,68 +370,68 @@ dest->output=u_strdup(src->output);
  */
 struct tfst_simple_match_list* add_element_to_list(struct locate_tfst_infos* p,struct tfst_simple_match_list* list,struct tfst_simple_match_list* e) {
 if (list==NULL) {
-	/* We can always add a match to the empty list */
-	return new_tfst_simple_match_list(e,NULL);
+    /* We can always add a match to the empty list */
+    return new_tfst_simple_match_list(e,NULL);
 }
 switch (compare_matches(&(list->m),&(e->m))) {
    case A_BEFORE_B:
    case A_BEFORE_B_OVERLAP: {
-	   /* If the candidate starts after the end of the current match, then we have to go on,
-	    * no matter the mode (shortest, longest or all matches) */
-	   list->next=add_element_to_list(p,list->next,e);
-	   return list;
+       /* If the candidate starts after the end of the current match, then we have to go on,
+        * no matter the mode (shortest, longest or all matches) */
+       list->next=add_element_to_list(p,list->next,e);
+       return list;
    }
 
    case A_INCLUDES_B: {
-	   if (p->match_policy==SHORTEST_MATCHES) {
-		   /* e must replace the current match in the list */
-		   replace_match(list,e);
-		   return list;
-	   } else if (p->match_policy==LONGEST_MATCHES) {
-		   /* Our match is shorter than a match in the list, we discard it */
-		   return list;
-	   } else {
-		   list->next=add_element_to_list(p,list->next,e);
-		   return list;
-	   }
+       if (p->match_policy==SHORTEST_MATCHES) {
+           /* e must replace the current match in the list */
+           replace_match(list,e);
+           return list;
+       } else if (p->match_policy==LONGEST_MATCHES) {
+           /* Our match is shorter than a match in the list, we discard it */
+           return list;
+       } else {
+           list->next=add_element_to_list(p,list->next,e);
+           return list;
+       }
    }
 
    case A_EQUALS_B: {
-	   /* In any mode we replace the existing match by the new one, except if we allow
-	    * ambiguous outputs */
-	   if (u_strcmp(list->output,e->output)) {
-		   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-			   list=new_tfst_simple_match_list(e,list);
-			   return list;
-		   } else {
-				/* If we don't allow ambiguous outputs, we have to print an error message */
-				error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",list->output,e->output);
-		   }
-	   }
-	   replace_match(list,e);
-	   return list;
+       /* In any mode we replace the existing match by the new one, except if we allow
+        * ambiguous outputs */
+       if (u_strcmp(list->output,e->output)) {
+           if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
+               list=new_tfst_simple_match_list(e,list);
+               return list;
+           } else {
+                /* If we don't allow ambiguous outputs, we have to print an error message */
+                error("Unexpected ambiguous outputs:\n<%S>\n<%S>\n",list->output,e->output);
+           }
+       }
+       replace_match(list,e);
+       return list;
    }
 
    case B_INCLUDES_A: {
-	   if (p->match_policy==SHORTEST_MATCHES) {
-		   /* Our match is longer than a match in the list, we discard it */
-		   return list;
-   	   } else if (p->match_policy==LONGEST_MATCHES) {
-   		   /* e must replace the current match in the list */
-   		   replace_match(list,e);
-   		   return list;
-   	   } else {
-   		   list->next=add_element_to_list(p,list->next,e);
-   		   return list;
-   	   }
+       if (p->match_policy==SHORTEST_MATCHES) {
+           /* Our match is longer than a match in the list, we discard it */
+           return list;
+       } else if (p->match_policy==LONGEST_MATCHES) {
+           /* e must replace the current match in the list */
+           replace_match(list,e);
+           return list;
+       } else {
+           list->next=add_element_to_list(p,list->next,e);
+           return list;
+       }
    }
 
    case A_AFTER_B:
    case A_AFTER_B_OVERLAP: {
-	   /* If the candidate ends before the start of the current match, then we have to insert it
-	    * no matter the mode (shortest, longest or all matches) */
-	   list=new_tfst_simple_match_list(e,list);
-	   return list;
+       /* If the candidate ends before the start of the current match, then we have to insert it
+        * no matter the mode (shortest, longest or all matches) */
+       list=new_tfst_simple_match_list(e,list);
+       return list;
    }
 }
 /* Should not arrive here */
@@ -460,7 +460,7 @@ int is_capture_variable(unichar* output,unichar* name) {
 if (output==NULL || output[0]!='$' || output[1]!=':') return 0;
 int i=2,j=0;
 while (is_variable_char(output[i])) {
-	name[j++]=output[i++];
+    name[j++]=output[i++];
 }
 if (output[i]!='$' || output[i+1]!='\0') return 0;
 name[j]='\0';
@@ -474,35 +474,35 @@ return 1;
  * policy is IGNORE_VARIABLE_ERROR.
  */
 int do_variable_capture(int tfst_tag_number, int fst2_tag_number,
-		struct locate_tfst_infos* infos, unichar* name) {
+        struct locate_tfst_infos* infos, unichar* name) {
 if (tfst_tag_number == -1) {
-	/* If we have a text independent match like <E>/$:X$, it's an error case */
-	switch (infos->variable_error_policy) {
-		case EXIT_ON_VARIABLE_ERRORS:
-			fatal_error(
-				"Should not have capture variable $:%S$ associated to text independent input %S\n",
-				name, infos->fst2->tags[fst2_tag_number]->input);
-		case IGNORE_VARIABLE_ERRORS: return 1;
-		case BACKTRACK_ON_VARIABLE_ERRORS: return 0;
-	}
+    /* If we have a text independent match like <E>/$:X$, it's an error case */
+    switch (infos->variable_error_policy) {
+        case EXIT_ON_VARIABLE_ERRORS:
+            fatal_error(
+                "Should not have capture variable $:%S$ associated to text independent input %S\n",
+                name, infos->fst2->tags[fst2_tag_number]->input);
+        case IGNORE_VARIABLE_ERRORS: return 1;
+        case BACKTRACK_ON_VARIABLE_ERRORS: return 0;
+    }
 }
 TfstTag* tag = (TfstTag*) (infos->tfst->tags->tab[tfst_tag_number]);
 if (tag->content[0] != '{' || tag->content[1] == '\0') {
-	/* If we have a non tagged token like "foo" */
-	switch (infos->variable_error_policy) {
-		case EXIT_ON_VARIABLE_ERRORS:
-			fatal_error(
-				"Should not have capture variable $:%S$ associated to a tag that may capture untagged tokens: %S\n",
-				name, infos->fst2->tags[fst2_tag_number]->input);
-		case IGNORE_VARIABLE_ERRORS: return 1;
-		case BACKTRACK_ON_VARIABLE_ERRORS: return 0;
-	}
+    /* If we have a non tagged token like "foo" */
+    switch (infos->variable_error_policy) {
+        case EXIT_ON_VARIABLE_ERRORS:
+            fatal_error(
+                "Should not have capture variable $:%S$ associated to a tag that may capture untagged tokens: %S\n",
+                name, infos->fst2->tags[fst2_tag_number]->input);
+        case IGNORE_VARIABLE_ERRORS: return 1;
+        case BACKTRACK_ON_VARIABLE_ERRORS: return 0;
+    }
 }
 /* We can capture the tag */
 struct dela_entry* e=tokenize_tag_token(tag->content,1);
 if (e==NULL) {
-	/* Should not happen */
-	fatal_error("Unexpected tag tokenization error in do_variable_capture for tag:\n%S\n",tag->content);
+    /* Should not happen */
+    fatal_error("Unexpected tag tokenization error in do_variable_capture for tag:\n%S\n",tag->content);
 }
 set_dic_variable(name,e,&(infos->dic_variables),0);
 return 1;
@@ -534,12 +534,12 @@ if (item==NULL) {
    fatal_error("Unexpected NULL item in explore_match_for_MERGE_mode\n");
 }
 if (item->debug_output!=NULL) {
-	/* If we have a debug output, we deal it */
-	u_strcat(s,item->debug_output);
-	explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_text_dependent_tfst_tag,var_starts);
-	s->len=len;
-	s->str[len]='\0';
-	return;
+    /* If we have a debug output, we deal it */
+    u_strcat(s,item->debug_output);
+    explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_text_dependent_tfst_tag,var_starts);
+    s->len=len;
+    s->str[len]='\0';
+    return;
 }
 
 
@@ -550,9 +550,9 @@ int capture;
 struct dela_entry* old_value_dela=NULL;
 capture=is_capture_variable(output,name);
 if (capture) {
-	/* If we have a capture variable $:X$, we must save the previous value
-	 * for this dictionary variable */
-	old_value_dela=clone_dela_entry(get_dic_variable(name,infos->dic_variables));
+    /* If we have a capture variable $:X$, we must save the previous value
+     * for this dictionary variable */
+    old_value_dela=clone_dela_entry(get_dic_variable(name,infos->dic_variables));
 }
 
 Match saved_element=element->m;
@@ -566,25 +566,25 @@ while (text_tags!=NULL) {
    captured_chars=0;
    /* We deal with the fst2 tag output, if any */
    if (item->first_time) {
-	   /* We only have to process the output only once,
-	    * since it will have the same effect on all tfst tags.
-	    *
-	    * Example: the fst2 tag "cybercrime/ZZ" may match the two tfst tags "cyber" and
-	    * "crime", but we must process the "ZZ" output only before the first tfst tag "cyber" */
-	   if (capture) {
-		   /* If we have a capture variable, then we have to check whether the tfst tag
-	   	    * is a tagged token or not */
-	   	   int tfst_tag_number=text_tags->n;
-	   	   int fst2_tag_number=item->fst2_transition->tag_number;
-	   	   if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
-	   		   goto restore_dic_variable;
-	   	   }
-	   } else if (!deal_with_output_tfst(s,output,infos,&captured_chars)) {
+       /* We only have to process the output only once,
+        * since it will have the same effect on all tfst tags.
+        *
+        * Example: the fst2 tag "cybercrime/ZZ" may match the two tfst tags "cyber" and
+        * "crime", but we must process the "ZZ" output only before the first tfst tag "cyber" */
+       if (capture) {
+           /* If we have a capture variable, then we have to check whether the tfst tag
+            * is a tagged token or not */
+           int tfst_tag_number=text_tags->n;
+           int fst2_tag_number=item->fst2_transition->tag_number;
+           if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
+               goto restore_dic_variable;
+           }
+       } else if (!deal_with_output_tfst(s,output,infos,&captured_chars)) {
          /* We do not take into account matches with variable errors if the
           * process_output_for_tfst_match function has decided that backtracking
           * was necessary, either because of a variable error of because of a
           * $a.SET$ or $a.UNSET$ test */
-		  goto restore_dic_variable;
+          goto restore_dic_variable;
       }
    }
    int last_tag=last_text_dependent_tfst_tag;
@@ -596,17 +596,17 @@ while (text_tags!=NULL) {
           /* If we an output variable start $|a( */
           int var_index=get_value_index(fst2_tag->variable,infos->output_variables->variable_index);
 
-		  Ustring* old_value = new_Ustring();
-		  swap_output_variable_content(infos->output_variables, var_index, old_value);
-		  // now old_value contain the backup
+          Ustring* old_value = new_Ustring();
+          swap_output_variable_content(infos->output_variables, var_index, old_value);
+          // now old_value contain the backup
 
           set_output_variable_pending(infos->output_variables,fst2_tag->variable);
           explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
           unset_output_variable_pending(infos->output_variables,fst2_tag->variable);
 
-		  // restore the good content from backup
-		  swap_output_variable_content(infos->output_variables, var_index, old_value);
-		  free_Ustring(old_value);
+          // restore the good content from backup
+          swap_output_variable_content(infos->output_variables, var_index, old_value);
+          free_Ustring(old_value);
 
           goto restore_dic_variable;
       } else if (fst2_tag->type==END_OUTPUT_VAR_TAG) {
@@ -674,7 +674,7 @@ while (text_tags!=NULL) {
           * with special value -1 */
          goto restore_dic_variable;
       } else if (fst2_tag->type==BEGIN_POSITIVE_CONTEXT_TAG) {
-    	  fatal_error("problem $[\n");
+          fatal_error("problem $[\n");
       }
    } else {
       current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
@@ -718,7 +718,7 @@ while (text_tags!=NULL) {
       /* Here we have to insert the text that is between current_start and current_end,
        * and then, the ouput of the fst2 transition */
       if (infos->output_policy==MERGE_OUTPUTS) {
-    	  insert_text_interval_tfst(infos,s,previous_start_token,previous_start_char,
+          insert_text_interval_tfst(infos,s,previous_start_token,previous_start_char,
                  current_tag->m.end_pos_in_token,current_tag->m.end_pos_in_char);
       }
    }
@@ -752,9 +752,9 @@ restore_dic_variable:
 /* We redo this about output variables here, since we may have jumped here directly */
 remove_chars_from_output_variables(infos->output_variables,captured_chars);
 if (capture) {
-	/* If we have a capture variable $:X$, we must restore the previous value
-	 * for this dictionary variable */
-	set_dic_variable(name,old_value_dela,&(infos->dic_variables),0);
+    /* If we have a capture variable $:X$, we must restore the previous value
+     * for this dictionary variable */
+    set_dic_variable(name,old_value_dela,&(infos->dic_variables),0);
 }
 }
 
@@ -765,7 +765,7 @@ if (capture) {
  * The output(s) is(are) then used to add matches to the infos->matches list.
  */
 void explore_match_to_get_outputs(struct locate_tfst_infos* infos,struct tfst_match* m,
-		                          struct tfst_simple_match_list* element) {
+                                  struct tfst_simple_match_list* element) {
 /* As m is a reversed list, we first need to get its elements in the right order */
 vector_ptr* items=new_vector_ptr(16);
 fill_vector(items,m);
@@ -794,10 +794,10 @@ if (element.m.end_pos_in_token==-1) {
 //error("match from token %d.%d to %d.%d\n",element.m.start_pos_in_token,element.m.start_pos_in_char,
 //      element.m.end_pos_in_token,element.m.end_pos_in_char);
 if (infos->output_policy==IGNORE_OUTPUTS) {
-	/* The simplest case */
-	infos->matches=add_element_to_list(infos,infos->matches,&element);
+    /* The simplest case */
+    infos->matches=add_element_to_list(infos,infos->matches,&element);
 } else {
-	explore_match_to_get_outputs(infos,m,&element);
+    explore_match_to_get_outputs(infos,m,&element);
 }
 }
 
@@ -813,14 +813,14 @@ void save_tfst_matches(struct locate_tfst_infos* p) {
 struct tfst_simple_match_list* l=p->matches;
 struct tfst_simple_match_list* ptr;
 if (p->number_of_matches==p->search_limit) {
-	/* If we have reached the limit, then we must free all the remaining matches */
-	while (l!=NULL) {
-		ptr=l;
-		l=l->next;
-		free_tfst_simple_match_list(ptr);
-	}
-	p->matches=NULL;
-	return;
+    /* If we have reached the limit, then we must free all the remaining matches */
+    while (l!=NULL) {
+        ptr=l;
+        l=l->next;
+        free_tfst_simple_match_list(ptr);
+    }
+    p->matches=NULL;
+    return;
 }
 U_FILE* f=p->output;
 if (l==NULL) return;
@@ -828,17 +828,17 @@ u_fprintf(f,"%d.%d.%d %d.%d.%d",l->m.start_pos_in_token,l->m.start_pos_in_char,
       l->m.start_pos_in_letter,l->m.end_pos_in_token,
       l->m.end_pos_in_char,l->m.end_pos_in_letter);
 if (l->output!=NULL) {
-	/* If there is an output */
-	u_fprintf(f," ");
-	if (p->tagging) {
-		/* In tagging mode, we add the sentence number as well as
-		 * the start and end states in the .tfst of the match */
-		u_fprintf(f,"%d %d %d:",p->tfst->current_sentence,l->start,l->end);
-	}
-	if (p->debug) {
-		save_real_output_from_debug(f,p->output_policy,l->output);
-	}
-	u_fputs(l->output,f);
+    /* If there is an output */
+    u_fprintf(f," ");
+    if (p->tagging) {
+        /* In tagging mode, we add the sentence number as well as
+         * the start and end states in the .tfst of the match */
+        u_fprintf(f,"%d %d %d:",p->tfst->current_sentence,l->start,l->end);
+    }
+    if (p->debug) {
+        save_real_output_from_debug(f,p->output_policy,l->output);
+    }
+    u_fputs(l->output,f);
 }
 u_fprintf(f,"\n");
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
@@ -846,14 +846,14 @@ if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
    if (!(p->start_position_last_printed_match_token == l->m.start_pos_in_token
          && p->start_position_last_printed_match_char == l->m.start_pos_in_char
          && p->start_position_last_printed_match_letter == l->m.start_pos_in_letter
-	      && p->end_position_last_printed_match_token == l->m.end_pos_in_token
-	      && p->end_position_last_printed_match_char == l->m.end_pos_in_char
-	      && p->end_position_last_printed_match_letter == l->m.end_pos_in_letter)) {
-	   (p->number_of_matches)++;
+          && p->end_position_last_printed_match_token == l->m.end_pos_in_token
+          && p->end_position_last_printed_match_char == l->m.end_pos_in_char
+          && p->end_position_last_printed_match_letter == l->m.end_pos_in_letter)) {
+       (p->number_of_matches)++;
    }
 } else {
-	/* If we don't allow ambiguous outputs, we count the matches */
-	(p->number_of_matches)++;
+    /* If we don't allow ambiguous outputs, we count the matches */
+    (p->number_of_matches)++;
 }
 p->start_position_last_printed_match_token=l->m.start_pos_in_token;
 p->end_position_last_printed_match_token=l->m.end_pos_in_token;
@@ -862,15 +862,15 @@ p->end_position_last_printed_match_char=l->m.end_pos_in_char;
 p->start_position_last_printed_match_letter=l->m.start_pos_in_letter;
 p->end_position_last_printed_match_letter=l->m.end_pos_in_letter;
 if (p->number_of_matches==p->search_limit) {
-	/* If we have reached the search limitation, we free the remaining
-	 * matches and return */
-	while (l!=NULL) {
-		ptr=l;
-		l=l->next;
-		free_tfst_simple_match_list(ptr);
-	}
-	p->matches=NULL;
-	return;
+    /* If we have reached the search limitation, we free the remaining
+     * matches and return */
+    while (l!=NULL) {
+        ptr=l;
+        l=l->next;
+        free_tfst_simple_match_list(ptr);
+    }
+    p->matches=NULL;
+    return;
 }
 ptr=l->next;
 free_tfst_simple_match_list(l);
