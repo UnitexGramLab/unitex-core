@@ -103,7 +103,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TfstTag,lopts_TfstTag,&i
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_TfstTag[index].name);
@@ -233,7 +233,7 @@ return SUCCESS_RETURN_CODE;
  * The match list is freed by this function.
  */
 static int process(Tfst* in,Tfst* out,struct match_list* matches) {
-int process_matches_return_value = SUCCESS_RETURN_CODE; 
+int process_matches_return_value = SUCCESS_RETURN_CODE;
 u_fprintf(out->tfst,"%010d\n",out->N);
 for (int i=1;i<=in->N;i++) {
 	load_sentence(in,i);

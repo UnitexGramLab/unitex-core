@@ -408,7 +408,7 @@ const struct write_encoding_item write_encoding_item_list[] =
     { "utf16le", 7, UTF16_LE, 2 },
     { "utf16le-no-bom", 14, UTF16_LE, 0 },
     { "utf16le-bom", 11, UTF16_LE, 1 },
-	
+
     { "utf-16-platform", 15, PLATFORM_DEPENDENT_UTF16, 2 },
     { "utf-16-platform-no-bom", 22, PLATFORM_DEPENDENT_UTF16, 0 },
     { "utf-16-platform-bom", 19, PLATFORM_DEPENDENT_UTF16, 1 },
@@ -469,7 +469,7 @@ char *strdup_lower_case(const char* text)
 int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const char* encoding_text)
 {
     char* lower_encoding_text=strdup_lower_case(encoding_text);
-    int ret=0;   
+    int ret=0;
     char * cur_encoding_text = lower_encoding_text;
     char * next_encoding_text;
     int mask_encoding_compatibility = 0;
@@ -502,7 +502,7 @@ int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const c
                     ret = 1;
                     mask_encoding_compatibility = mask_encoding_compatibility | reading_encoding_item_list[i].encoding_flag;
                     break;
-                }           
+                }
 
             i++;
         }
@@ -633,7 +633,7 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
         if ((MASK_ENCODING_COMPATIBILITY & UTF16_LE_BOM_POSSIBLE) != 0)
             if ((tab[0] == 0xff) && (tab[1]==0xfe))
             {
-                af_fseek(f,0,0);            
+                af_fseek(f,0,0);
                 *encoding=UTF16_LE;
                 *is_BOM=1;
                 return 1;
@@ -844,7 +844,7 @@ U_FILE* u_fopen_creating_versatile_encoding(Encoding encoding,int write_bom,cons
 
 
 /**
- * Before writing a file, predict the planned size in bytes of file for optimization. 
+ * Before writing a file, predict the planned size in bytes of file for optimization.
  */
 void u_fsetsizereservation_by_bytes(U_FILE*f, long size_planned)
 {
@@ -1050,7 +1050,7 @@ switch(encoding) {
    case UTF16_LE: return u_fgetc_UTF16LE_raw(f);
    case BIG_ENDIAN_UTF16: return u_fgetc_UTF16BE_raw(f);
    case UTF8: return u_fgetc_UTF8_raw(f);
-   case PLATFORM_DEPENDENT_UTF16: return is_platform_little_endian() ? 
+   case PLATFORM_DEPENDENT_UTF16: return is_platform_little_endian() ?
                              u_fgetc_UTF16LE_raw(f) : u_fgetc_UTF16BE_raw(f);
    case ASCII: {
 	   unsigned char c;
@@ -1608,7 +1608,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                  {
                     unichar c;
                     c = (((unichar)tab_in[(i)])) ;
-                    
+
                     if (c==0) {
                     	fatal_error("Corrupted ASCII text file containing null characters\n");
                     }
@@ -1754,7 +1754,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
  *   unichar* line = NULL;
  *   size_t size_buffer_line = 0;
  *   int len_read; while ((len_read=u_fgets_dynamic_buffer(&line, &size_buffer_line,f)) != EOF) { work on line }
- *    or 
+ *    or
  *   while (u_fgets_dynamic_buffer(&line, &size_buffer_line,f) != EOF) { work on line }
  *   and at end, at same time than u_close(f)
  *   if (line != NULL) free(line);
@@ -1945,7 +1945,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 					unichar c = (unichar)((((unichar)tab_in[(i * 2) + hibytepos]) << 8) | (tab_in[(i * 2) + (1 - hibytepos)]));
 
 					*(buffer + size_done + i) = c;
-				
+
 				}
 				size_done += nb_unichar_read;
 				size_to_do -= nb_unichar_read;
@@ -1954,7 +1954,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 		}
 	}
 
-	
+
 	case UTF8:
 	{
 
@@ -2017,12 +2017,12 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
 					if (pos_in_unichar_line == size)
 					{
 						af_fseek(f, -1 * (long)(read_binary_in_file - i), SEEK_CUR);
-							
+
 						return pos_in_unichar_line;
 					}
 
 					buffer[pos_in_unichar_line++] = c;
-					 
+
 					i += nbbyte;
 				}
 			}
@@ -2189,7 +2189,7 @@ int BuildEncodedOutForUnicharString(Encoding encoding,const unichar *pc,Buffer_O
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    break;
                }
-			   
+
            case BIG_ENDIAN_UTF16:
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
@@ -3322,7 +3322,7 @@ do {
 } while (c!='\0');
 return s;
 }*/
-    
+
 unichar* u_strcpy(unichar* dst,const unichar* src)
 {
     unichar *s = dst; // backup pointer to start of destination string
@@ -3333,42 +3333,42 @@ unichar* u_strcpy(unichar* dst,const unichar* src)
         *dst = c0;
         if (c0 == '\0')
             break;
-        
+
         unichar c1 = *(src+1);
         *(dst+1) = c1;
         if (c1 == '\0')
             break;
-        
+
         unichar c2 = *(src+2);
         *(dst+2) = c2;
         if (c2 == '\0')
             break;
-        
+
         unichar c3 = *(src+3);
         *(dst+3) = c3;
         if (c3 == '\0')
             break;
-        
+
         unichar c4 = *(src+4);
         *(dst+4) = c4;
         if (c4 == '\0')
             break;
-        
+
         unichar c5 = *(src+5);
         *(dst+5) = c5;
         if (c5 == '\0')
             break;
-        
+
         unichar c6 = *(src+6);
         *(dst+6) = c6;
         if (c6 == '\0')
             break;
-        
+
         unichar c7 = *(src+7);
         *(dst+7) = c7;
         if (c7 == '\0')
             break;
-        
+
         src += 8;
         dst += 8;
     }
@@ -4190,7 +4190,7 @@ return NULL;
  */
 const unichar* u_strchr(const unichar* s,unichar c) {
 if (s==NULL) return NULL;
-while ((*s)) {	
+while ((*s)) {
    if (*s==c) {
      return s;
    }
@@ -4202,7 +4202,7 @@ return NULL;
 
 unichar* u_strchr(unichar* s,unichar c) {
 if (s==NULL) return NULL;
-while ((*s)) {	
+while ((*s)) {
    if (*s==c) {
      return s;
    }
@@ -4447,7 +4447,7 @@ int u_substr(const unichar *str, const unichar *target) {
  *
  * Author: Sébastien Paumier
  * Modified by Sébastian Nagel
- * Modified by Cristian Martinez 
+ * Modified by Cristian Martinez
  */
 void u_to_char(char *dest,unichar *src) {
   // C-style reinterpret cast, @see http://stackoverflow.com/a/5042335/2042871
@@ -4497,20 +4497,20 @@ if (l>0 && s[l-1]=='\n') {
 #ifndef NO_CPP_TEMPLATE_SUPPORT
 /**
  * @brief  Converts all non-ASCII Unicode characters to Unicode escape-sequences
- * 
+ *
  * Gets the numeric Unicode code point of each character between U+0080 (128)
- * and U+FFFF (65535) and escape it using its 4-digit hexadecimal value 
+ * and U+FFFF (65535) and escape it using its 4-digit hexadecimal value
  * prefixed with \u. Resulting escape sequences are in the form \u[a-f0-9]{4}
- * e.g. "Fran\u00e7ais" for "Français" 
- * 
- * @remark 
- *      Notice that unichar is for now a 16-bits type and pairs of surrogate  
- *      code points are not handled by Unitex. If this changes in the future, 
- *      this function should be updated.  
- * 
+ * e.g. "Fran\u00e7ais" for "Français"
+ *
+ * @remark
+ *      Notice that unichar is for now a 16-bits type and pairs of surrogate
+ *      code points are not handled by Unitex. If this changes in the future,
+ *      this function should be updated.
+ *
  * @see http://tools.ietf.org/html/rfc5137
- * @see http://billposer.org/Software/ListOfRepresentations.html 
- * 
+ * @see http://billposer.org/Software/ListOfRepresentations.html
+ *
  * @param[in] source unichar string to be escaped
  * @param[out] destination array where the escaped string is to be copied
  * @return the length of the destination string
@@ -4519,20 +4519,20 @@ template <typename T>
 int u_escape(const unichar* source, T* destination) {
   if (!source) {
      fatal_error("NULL error in ASCIIize\n");
-  }   
-  
+  }
+
   const unichar* it = source;
   int pos = 0;
-  
+
   // loop till the end of string
-  while (*it != '\0') { 
+  while (*it != '\0') {
     // ASCII characters are lower than 0x7f and will not be escaped
-    if(*it <= 0x7F) {                            
+    if(*it <= 0x7F) {
       destination[pos++] = (T)*it;
-    } 
-    // 2-bytes unicode codepoints 
+    }
+    // 2-bytes unicode codepoints
     else {
-      // Parse code point hex nibbles 
+      // Parse code point hex nibbles
       // e.g. for U+2764
       //   -----------------------------------------------------------------
       //   |       2       |       7       |       6       |       4       |
@@ -4544,8 +4544,8 @@ int u_escape(const unichar* source, T* destination) {
       T nibble_1h = (*it >> 4)  & 0x0F;
       T nibble_2l = (*it >> 8)  & 0x0F;
       T nibble_2h = (*it >> 12) & 0x0F;
-      
-      // Build the escape sequence as \u[a-f0-9]{4} 
+
+      // Build the escape sequence as \u[a-f0-9]{4}
       // e.g. \u2764
       destination[pos++] = '\\';
       destination[pos++] = 'u';
@@ -4554,20 +4554,20 @@ int u_escape(const unichar* source, T* destination) {
       destination[pos++] = nibble_1h + (nibble_1h < 0x0A ? '0' : 'W');
       destination[pos++] = nibble_1l + (nibble_1l < 0x0A ? '0' : 'W');
     }
-    
+
     // advance the character pointer
     ++it;
-  }  
-  
+  }
+
   // indicate the end of the string
   destination[pos] = '\0';
-  
+
   // return the length of the destination string
   return pos;
 }
 
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
-// destination is a unichar buffer 
+// destination is a unichar buffer
 template int u_escape(const unichar* source, unichar* destination);
 
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
@@ -4579,11 +4579,11 @@ template int u_escape(const unichar* source, char* destination);
 
 /**
  * @brief JSON-escapes a unichar string
- * 
- * JSON-escapes a source string before copy it into destination 
- * this function conforms with "The application/json Media Type 
- * for JavaScript Object Notation (JSON)" RFC 4627. 
- * 
+ *
+ * JSON-escapes a source string before copy it into destination
+ * this function conforms with "The application/json Media Type
+ * for JavaScript Object Notation (JSON)" RFC 4627.
+ *
  * @param[in]  source unichar string to be escaped
  * @param[out] destination unichar array where the escaped string is to be copied
  * @return the length of the destination string
@@ -4591,18 +4591,18 @@ template int u_escape(const unichar* source, char* destination);
 int JSONize(const unichar* source,unichar* destination) {
   if (!source) {
      fatal_error("NULL error in JSONize\n");
-  }  
- 
+  }
+
   const unichar* it = source;
   int pos = 0;
 
 // U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
-// into a destination unichar buffer, then it increments the pos variable by 
-// the length of the literal. In this case the length is computed at compile 
-// time       
+// into a destination unichar buffer, then it increments the pos variable by
+// the length of the literal. In this case the length is computed at compile
+// time
 #define U_STRCPY_LITERAL(destination, pos, literal) \
         u_strcpy(&*(destination+pos),literal);      \
-        pos+=sizeof(literal)-1  
+        pos+=sizeof(literal)-1
   // loop till the end of string
   while (*it != '\0') {
     switch(*it) {
@@ -4616,17 +4616,17 @@ int JSONize(const unichar* source,unichar* destination) {
       case '\t': U_STRCPY_LITERAL(destination,pos,"\\t");     break;
       case '&':  U_STRCPY_LITERAL(destination,pos,"\\u0026"); break;
       case '<':  U_STRCPY_LITERAL(destination,pos,"\\u003C"); break;
-      case '>':  U_STRCPY_LITERAL(destination,pos,"\\u003E"); break; 
+      case '>':  U_STRCPY_LITERAL(destination,pos,"\\u003E"); break;
       default :  destination[pos++] = *it;
     }
     // advance the character pointer
     ++it;
   }
-// undefines U_STRCPY_LITERAL macro right before we use them   
-#undef U_STRCPY_LITERAL     
+// undefines U_STRCPY_LITERAL macro right before we use them
+#undef U_STRCPY_LITERAL
   // indicate the end of the string
   destination[pos] = '\0';
-  
+
   // return the length of the destination string
   return pos;
 }

@@ -51,7 +51,7 @@ int get_node(MultiFlex_ctx* p_multiFlex_ctx,char* flex,int pos,struct node* n);
 MultiFlex_ctx* new_MultiFlex_ctx(const char* inflection_dir,const char* morphologyTxt,
 								const char* equivalencesTxt,
 								VersatileEncodingConfig* vec,Korean* korean,
-								const char* pkgdir,const char* named_repositories, 
+								const char* pkgdir,const char* named_repositories,
 								GraphRecompilationPolicy graph_recompilation_policy) {
 MultiFlex_ctx* ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
 if (ctx==NULL) {
@@ -204,25 +204,25 @@ return tmp;
 
 
 /**
- * Returns 0 if  
+ * Returns 0 if
  *  -  The .grf or the .fst2 uses an installed abstract filespace; or
- *  -  The .grf file does not exists; or    
+ *  -  The .grf file does not exists; or
  *  -  GraphRecompilationPolicy is NEVER_RECOMPILE
- * Returns 1 if 
+ * Returns 1 if
  *  - fst2 file does not exists; or
  *  - GraphRecompilationPolicy is :
  *      ALWAYS_RECOMPILE or
- *      ONLY_OUT_OF_DATE and the .grf exists and is more recent than the .fst2    
+ *      ONLY_OUT_OF_DATE and the .grf exists and is more recent than the .fst2
  */
 int must_compile_grf(char* grf,char* fst2, GraphRecompilationPolicy graph_recompilation_policy) {
-  // if the fst2 or the grf uses an installed abstract filespace, 
+  // if the fst2 or the grf uses an installed abstract filespace,
   // there is nothing to compile
-  if ((is_filename_in_abstract_file_space(fst2) != 0) || 
+  if ((is_filename_in_abstract_file_space(fst2) != 0) ||
       (is_filename_in_abstract_file_space(grf)  != 0)) {
       /* abstract ? no compare, no recompile*/
       return 0;
   }
-  
+
   // if .grf does not exits, there is nothing to compile
   if (!fexists(grf)) {
      /* No .grf? We fail */
@@ -243,8 +243,8 @@ int must_compile_grf(char* grf,char* fst2, GraphRecompilationPolicy graph_recomp
     case ONLY_OUT_OF_DATE : recompilation_status = (get_file_date(grf) >= get_file_date(fst2)); break;
     //   NEVER_RECOMPILE
     default               : break;
-  }  
-  
+  }
+
   // return 0 otherwise
   return recompilation_status;
 }
@@ -272,7 +272,7 @@ if (flex[pos]=='\0') {
         new_file(p_multiFlex_ctx->inflection_directory,flex,grf);
         strcat(grf,".grf");
         if (must_compile_grf(grf,s,p_multiFlex_ctx->graph_recompilation_policy)) {
-           /* Following the GraphRecompilationPolicy, if there is no .fst2 file, 
+           /* Following the GraphRecompilationPolicy, if there is no .fst2 file,
             * of a one than is older than the corresponding .grf, we try to compile it */
            pseudo_main_Grf2Fst2(p_multiFlex_ctx->vec,grf,1,NULL,1,0,p_multiFlex_ctx->pkgdir,
         		   p_multiFlex_ctx->named_repositories,0);

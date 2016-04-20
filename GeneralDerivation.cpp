@@ -718,8 +718,8 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
 
 
 int composition_rule_matches_entry (const struct pattern* rule,
-				     const struct dela_entry* d,U_FILE* 
-#if DDEBUG > 1                         
+				     const struct dela_entry* d,U_FILE*
+#if DDEBUG > 1
 				     debug_file
 #endif
                      ) {

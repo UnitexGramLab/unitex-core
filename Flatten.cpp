@@ -157,7 +157,7 @@ switch (flatten_fst2(origin,depth,temp,&vec,RTN)) {
    case EQUIVALENT_RTN:
       u_printf("The resulting grammar is an equivalent FST2 (RTN).\n");
       break;
-   default: 
+   default:
       error("Internal state error in Flatten's main\n");
       free_abstract_Fst2(origin,&fst2_free);
       return DEFAULT_ERROR_CODE;

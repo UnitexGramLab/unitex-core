@@ -402,7 +402,7 @@ while (EOF!=(line_length=u_fgets2(temp,f))) {
       else if (pos==0 && temp[pos]=='\0') {
          /* Empty line */
     	  continue;
-      }    
+      }
       else if (pos==0) {
          /* If the line starts with the separator */
          error("Line with empty key:\n<%S>\n",temp);
@@ -410,7 +410,7 @@ while (EOF!=(line_length=u_fgets2(temp,f))) {
       else if (pos>=line_length) {
         /* If the line doesn't have a separator */
         error("Line without separator:\n<%S>\n",temp);
-      }        
+      }
       else {
          /* We jump over the separator */
          pos++;

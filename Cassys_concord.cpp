@@ -221,11 +221,11 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
         int count = 0;
         int capacity = infos[i].entList->capacity;
         if(infos[i].entList->number_of_elements > 0) {
-            u_fprintf(out,"<ns:listAnnotation type=\"%S\"",infos[i].type); 
+            u_fprintf(out,"<ns:listAnnotation type=\"%S\"",infos[i].type);
             if(infos[i].subtype != NULL)
-                u_fprintf(out," subtype=\"%S\"",infos[i].subtype); 
+                u_fprintf(out," subtype=\"%S\"",infos[i].subtype);
             u_fprintf(out,">\n");
-            for(int j=0; j<capacity 
+            for(int j=0; j<capacity
                     && count <infos[i].entList->number_of_elements; j++){
                 if(infos[i].entList->table[j] !=NULL) {
                     if(infos[i].entList->table[j]->ptr_key !=NULL) {
@@ -277,7 +277,7 @@ void getMetaInfo(unichar *e, unichar **s, unichar **t) {
             (*t)[i] = e[j];
         }
         (*t)[i] = '\0';
-        
+
         if(s_start>=0 && s_end>s_start) {
             *s = (unichar*) malloc(sizeof(unichar)* (s_end-s_start+1));
             i=0;
@@ -298,7 +298,7 @@ int findEntityList(standOffInfo *infos, int num,
                 found = i;
                 break;
             }
-            else if(s!=NULL && infos[i].subtype != NULL 
+            else if(s!=NULL && infos[i].subtype != NULL
                     && u_strcmp(s,infos[i].subtype) == 0) {
                     found = i;
                     break;
@@ -308,7 +308,7 @@ int findEntityList(standOffInfo *infos, int num,
     return found;
 }
 
-void construct_istex_standoff(const char *text_name, 
+void construct_istex_standoff(const char *text_name,
         VersatileEncodingConfig* vec, const char* original_file) {
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
@@ -320,7 +320,7 @@ void construct_istex_standoff(const char *text_name,
     int num_info = 0;
     U_FILE *concord_file = u_fopen(vec, text_name, U_READ);
     if(concord_file != NULL) {
-        while(u_fgets_dynamic_buffer(&line, &size_buffer_line, 
+        while(u_fgets_dynamic_buffer(&line, &size_buffer_line,
                 concord_file) != EOF) {
             int limit = u_strlen(line);
             if(line != NULL && limit > 2 &&
@@ -392,7 +392,7 @@ void construct_istex_token(const char *text_name, VersatileEncodingConfig* vec,
     sprintf(result_file,"%s_token.txt",text_name_without_extension);
     U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
     if(token_file != NULL && out_file != NULL) {
-        while(u_fgets_dynamic_buffer(&line, 
+        while(u_fgets_dynamic_buffer(&line,
                 &size_buffer_line, token_file) != EOF) {
             if(line !=NULL && line[0] == '{') {
                 int limit = u_strlen(line) - 1;

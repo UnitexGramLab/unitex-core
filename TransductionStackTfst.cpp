@@ -99,7 +99,7 @@ u_strcat(stack,s);
 
 
 /**
- * Inserts the text interval defined by the parameters into the given string. 
+ * Inserts the text interval defined by the parameters into the given string.
  */
 void insert_text_interval_tfst(struct locate_tfst_infos* infos,Ustring* s,int start_token,int start_char,
                                int end_token,int end_char) {
@@ -107,7 +107,7 @@ void insert_text_interval_tfst(struct locate_tfst_infos* infos,Ustring* s,int st
 if (start_token>end_token || (start_token==end_token && start_char>end_char)) {
    /* In Korean, when we have a match made of several TfstTags containing less than
     * a character (for instance, a logical letter), then we can arrive here with a
-    * start position that has already been increased of 1 since the last TfstTag 
+    * start position that has already been increased of 1 since the last TfstTag
     * was dealt with. So, we can have things like 0.2 -> 0.1 and such things must
     * be ignored */
    return;

@@ -30,14 +30,14 @@ namespace unitex {
 
 size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar)
 {
-    return AroundAllocAlign(sizeof(struct parsing_info)) + 
+    return AroundAllocAlign(sizeof(struct parsing_info)) +
            AroundAllocAlign(get_expected_variable_backup_size_in_byte_for_nb_variable(nbvar)) +
            AroundAllocAlign(sizeof(unichar)*(SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC+1));
 }
 
 size_t get_prefered_allocator_item_size_for_variable(Variables* v)
 {
-    return AroundAllocAlign(sizeof(struct parsing_info)) + 
+    return AroundAllocAlign(sizeof(struct parsing_info)) +
            AroundAllocAlign(get_variable_backup_size_in_byte(v)) +
            AroundAllocAlign(sizeof(unichar)*(SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC+1));
 }
@@ -475,7 +475,7 @@ return list;
 
 
 
-												
+
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
 												struct parsing_allocator* pa) {
@@ -494,7 +494,7 @@ for (;;) {
     // If the morphological match is already in the list, we do nothing.
     // Note that this may occur when we don't take DELAF entries into account
     // (i.e. dic_entry==NULL)
-   break;   
+   break;
   }
   lnext=&(lcur->next);
 }

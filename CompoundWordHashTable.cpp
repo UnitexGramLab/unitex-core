@@ -48,7 +48,7 @@ int size=hash_table->size;
 if (hash_table->hash_blocks==NULL) {
   fatal_alloc_error("initialize_hash_blocks");
 }
-   
+
 if (hash_table->token_array_base_memory_alloc==NULL) {
   fatal_alloc_error("initialize_hash_blocks");
 }
@@ -57,7 +57,7 @@ for (int i=0;i<size;i++) {
    block=(hash_table->hash_blocks+i);
    block->size=block_size;
    block->token_array=(hash_table->token_array_base_memory_alloc) + (i*hash_table->token_array_standard_base_memory_nb_item_for_each_block);
-   block->length=0;   
+   block->length=0;
 }
 }
 
@@ -125,7 +125,7 @@ free(hash_table);
 int tct_length(int* token_sequence) {
 int i;
 for (i=0;token_sequence[i]!=-1;i++) {}
-return i+1; 
+return i+1;
 }
 
 
@@ -181,7 +181,7 @@ if (block->token_array==NULL) {
  * Adds a token sequence ended by -1 to the given hash table.
  * An integer representing the given priority is added after the -1 in
  * the token sequence stored in the hash table.
- * 
+ *
  * Example: (574,1,5,1,575,-1) 2 => the (574,1,5,1,575,-1,2) array will be stored
  */
 void add_tct_token_sequence(int* token_seq,struct tct_hash* hash_table,int priority) {
@@ -218,11 +218,11 @@ int tct_match(struct tct_hash_block* block,int* token_sequence) {
 int i=0;
 int j=0;
 int block_length=block->length;
-int* tokens=block->token_array; 
+int* tokens=block->token_array;
 while (i<block_length) {
    j=0;
    while (i+j<block_length && tokens[i+j]==token_sequence[j]) {
-      if (token_sequence[j]==-1) return i; 
+      if (token_sequence[j]==-1) return i;
       j++;
    }
    /* If the current sequence in the token array has not matched,
@@ -234,7 +234,7 @@ while (i<block_length) {
    }
    i=i+2;
    if (i==block_length) return -1;
-} 
+}
 return -1;
 }
 
@@ -264,9 +264,9 @@ return 0;
  * the given text tokens. The result is an integer sequence that is
  * stored in 'token_sequence'. Each integer represents a token number,
  * and the sequence is ended by -1.
- * 
+ *
  * Example: "sans raison" may be turned into (121,1,1643,-1)
- * 
+ *
  * WARNING: every token of the compound word is supposed to be present
  *          in the given text tokens.
  */

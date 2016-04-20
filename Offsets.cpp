@@ -265,7 +265,7 @@ vector_offset* common_offsets_to_modified(const vector_offset* common_offsets, i
 
 		if ((modified_offset.old_end > modified_offset.old_start) ||
 			(modified_offset.new_end > modified_offset.new_start)) {
-			vector_offset_add(modifed_vector_offset, modified_offset);			
+			vector_offset_add(modifed_vector_offset, modified_offset);
 		}
 		latest_common = current_common;
 	}
@@ -431,7 +431,7 @@ vector_offset* process_offsets(const vector_offset* first_offsets, const vector_
 
 	int size_possible_file_0 = size_possible_file_1 - global_shift_first;
 	int size_possible_file_2 = size_possible_file_1 + global_shift_second;
-	
+
 	// if we add the same positive integer to size_possible_file_0, size_possible_file_1, size_possible_file_2
 	// the merged_modified result will be the same
 	vector_offset* first_offset_common = modified_offsets_to_common(first_offsets, size_possible_file_0, size_possible_file_1);
@@ -773,7 +773,7 @@ if ((nb_translations == 0) || (ofs == NULL)) {
 }
 int i;
 int sorted_by_position = 1;
-for (i = 1;i < nb_translations;i++) 
+for (i = 1;i < nb_translations;i++)
 	if (((ofs + i)->position_to_translate) < ((ofs + i - 1)->position_to_translate)) {
 		sorted_by_position = 0;
 		break;

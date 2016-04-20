@@ -30,7 +30,7 @@ namespace unitex {
 
 /**
  * This function put the standard output stream in unbufferized mode, so
- * that if a graphical interface listen to this stream, it will be 
+ * that if a graphical interface listen to this stream, it will be
  * synchronous. We also put the standard input stream in the same
  * mode, in order to apply our own scanf functions.
  */

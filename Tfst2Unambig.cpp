@@ -89,7 +89,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2
              output=strdup(options.vars()->optarg);
              if (output==NULL) {
                 alloc_error("main_Tfst2Unambig");
-                return ALLOC_ERROR_CODE;                
+                return ALLOC_ERROR_CODE;
              }
              break;
    case 'k': if (options.vars()->optarg[0]=='\0') {
@@ -102,14 +102,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2
    case 'q': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_encoding argument\n");
                 free(output);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
              break;
    case 'h': usage();
-             free(output); 
+             free(output);
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Tfst2Unambig[index].name);
@@ -133,7 +133,7 @@ if (options.vars()->optind!=argc-1) {
 if (output==NULL) {
    error("You must specify an output text file\n");
    free(output);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {

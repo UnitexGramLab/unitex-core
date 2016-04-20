@@ -34,7 +34,7 @@
 
 namespace unitex {
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
@@ -1386,21 +1386,21 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   /* special EXCLAM symbol */
 
-  if (*buf == '!' && buf[1] == 0) { 
+  if (*buf == '!' && buf[1] == 0) {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
       free(buf);
 #endif
-	  return new_symbol(S_EXCLAM,-1); 
+	  return new_symbol(S_EXCLAM,-1);
   }
 
 
   /* special EQUAL symbol */
 
-  if (*buf == '=' && buf[1] == 0) { 
+  if (*buf == '=' && buf[1] == 0) {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
       free(buf);
 #endif
-	  return new_symbol(S_EQUAL,-1); 
+	  return new_symbol(S_EQUAL,-1);
   }
 
 
@@ -1411,17 +1411,17 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   if (u_strchr(PUNC_TAB, *buf)) {
 
-    if (*buf == '\\' && (! buf[1] || buf[2])) { 
+    if (*buf == '\\' && (! buf[1] || buf[2])) {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
         free(buf);
 #endif
-		fatal_error("bad PUNC symbol '%S'\n", tag); 
+		fatal_error("bad PUNC symbol '%S'\n", tag);
 	}
-    if (buf[1] && buf[0] != '\\') { 
+    if (buf[1] && buf[0] != '\\') {
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
         free(buf);
 #endif
-		fatal_error("bad symbol '%S' (PONC too long)\n", tag); 
+		fatal_error("bad symbol '%S' (PONC too long)\n", tag);
 	}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
       free(buf);

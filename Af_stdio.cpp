@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -63,7 +63,7 @@ struct List_AbstractFileSpace* p_abstract_file_space_list=NULL;
 
 
 static void FillFuncArrayExtensibleFromFuncArrayExtensible(t_fileio_func_array_extensible *func_array_extensible_res,
-	                                                       const t_fileio_func_array_extensible* func_array_extensible_src) 
+	                                                       const t_fileio_func_array_extensible* func_array_extensible_src)
 {
     memset(func_array_extensible_res,0,sizeof(t_fileio_func_array_extensible));
 	size_t copy_size = (func_array_extensible_src->size_func_array < sizeof(t_fileio_func_array_extensible)) ?
@@ -162,7 +162,7 @@ const AbstractFileSpace * GetFileSpaceForFileName(const char*name)
 	{
 		const AbstractFileSpace * test_afs = &(tmp->afs);
 		if (tmp->afs.func_array.fnc_is_filename_object(name,tmp->afs.privateSpacePtr) != 0)
-			return test_afs;		
+			return test_afs;
 
 		tmp = tmp->next;
 	}
@@ -258,7 +258,7 @@ struct stdwrite_param* get_std_write_param(ABSTRACTFILE*stream)
 	return NULL;
 }
 
-UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutput, 
+UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutput,
 										t_fnc_stdOutWrite fnc_stdOutWrite,void* privatePtr)
 {
 	if ((swk != stdwrite_kind_out) && (swk != stdwrite_kind_err))
@@ -268,7 +268,7 @@ UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutpu
 	{
 		(*(stdwrite_setparam[swk].fnc_stdOutWrite))(NULL,0,stdwrite_setparam[swk].privatePtr);
 	}
-	
+
 	stdwrite_setparam[swk].trashOutput = trashOutput;
 	stdwrite_setparam[swk].fnc_stdOutWrite = fnc_stdOutWrite;
 	stdwrite_setparam[swk].privatePtr = privatePtr;
@@ -276,7 +276,7 @@ UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutpu
 	return 1;
 }
 
-UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOutput, 
+UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOutput,
 										t_fnc_stdOutWrite* p_fnc_stdOutWrite,void** p_privatePtr)
 {
 	if ((swk != stdwrite_kind_out) && (swk != stdwrite_kind_err))
@@ -326,7 +326,7 @@ UNITEX_FUNC int UNITEX_CALL SetStdInCB(t_fnc_stdIn fnc_stdInRead,void* privatePt
 	{
 		(*(stdin_param.fnc_stdIn))(NULL,0,stdin_param.privatePtr);
 	}
-	
+
 	stdin_param.fnc_stdIn = fnc_stdInRead;
 	stdin_param.privatePtr = privatePtr;
 
@@ -346,7 +346,7 @@ UNITEX_FUNC int UNITEX_CALL GetStdInCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_pri
 
 
 /*
- * is_filename_in_abstract_file_space return 
+ * is_filename_in_abstract_file_space return
        0 if a filename is a file opened with fopen
        1 if a filename use an installed abstract filespace
  */
@@ -406,7 +406,7 @@ ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE)
         else
         {
           if ((*(MODE))=='a')
-              (*(pafs->func_array.fnc_memLowLevelSeek))(vf->fabstr,0,SEEK_END,pafs->privateSpacePtr);        
+              (*(pafs->func_array.fnc_memLowLevelSeek))(vf->fabstr,0,SEEK_END,pafs->privateSpacePtr);
         }
 	}
 	return (ABSTRACTFILE*)vf;
@@ -501,7 +501,7 @@ char *af_fgets(char * _Buf, int count, ABSTRACTFILE * stream)
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	if (p_abfr->afs == NULL)
 		return fgets(_Buf,count,p_abfr->f);
-	else { 
+	else {
 		char* retval = _Buf;
 		char* pointer = _Buf;
 
@@ -525,7 +525,7 @@ char *af_fgets(char * _Buf, int count, ABSTRACTFILE * stream)
             }
 			*pointer = '\0';
         }
-		return retval;	
+		return retval;
 	}
 }
 
@@ -720,14 +720,14 @@ void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, const void* buf, size
 
 /* when we create a new file, before write into, we can set the filesize,
    (if we known the size of result file)
-   like the chsize or _chsize . This can help to avoid fragmentation or 
+   like the chsize or _chsize . This can help to avoid fragmentation or
    rewrite the File allocation table often, by example */
 void af_setsizereservation(ABSTRACTFILE* stream, long size_planned)
 {
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	if (p_abfr->afs != NULL)
 		if (p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation != NULL)
-			(*(p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation))(p_abfr->fabstr, size_planned,p_abfr->afs->privateSpacePtr);	
+			(*(p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation))(p_abfr->fabstr, size_planned,p_abfr->afs->privateSpacePtr);
 }
 
 
@@ -736,7 +736,7 @@ char** af_get_list_file(const char*name)
 {
 	const AbstractFileSpace * pafs ;
 	pafs = GetFileSpaceForFileName(name);
-	 
+
 	if (pafs == NULL)
 	{
 		return buildListFileInDiskDir(name);
@@ -759,7 +759,7 @@ char** af_get_list_file(const char*name)
 					if (!strncmp(name, all_files[i], name_length)) {
 						keep[i] = 1;
 						nb_files_to_keep++;
-					} 
+					}
 				}
 			}
 			char** files = (char**)malloc((nb_files_to_keep + 1) * sizeof(char*));
@@ -771,7 +771,7 @@ char** af_get_list_file(const char*name)
 				}
 			}
 			files[nb_files_to_keep] = NULL;
-			free(keep);			
+			free(keep);
 
 			if ((pafs->func_array.fnc_memFile_releaseList != NULL) && (all_files!=NULL)) {
 				(*(pafs->func_array.fnc_memFile_releaseList))(all_files,pafs->privateSpacePtr);
@@ -853,13 +853,13 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
         af_fclose(vfRead);
         free(szBuffer);
         return 1;
-    }    
+    }
 
     af_setsizereservation(vfWrite, size_to_do);
 
     if (af_fseek(vfRead, 0, SEEK_SET) != 0)
 	{
-        af_fclose(vfWrite);        
+        af_fclose(vfWrite);
         af_fclose(vfRead);
         free(szBuffer);
         return -1;
@@ -875,7 +875,7 @@ int af_copy_unlogged(const char* srcFile, const char* dstFile)
         if (iReadDone == 0)
             break;
         iWriteDone = (int)af_fwrite(szBuffer,1,iReadDone,vfWrite);
-        if (iWriteDone != iReadDone) { 
+        if (iWriteDone != iReadDone) {
             ret_in_error = 1;
             break;
         }
@@ -989,7 +989,7 @@ int af_remove_folder(const char*folderName)
 	int retValue ;
 	if (Call_logger_need_log_af_remove() == 0)
 		return af_remove_folder_unlogged(folderName);
-	 
+
 	Call_logger_fnc_before_af_remove_folder(folderName);
 	char*folderNameStar = (char*)malloc(strlen(folderName) + 4);
 	if (folderNameStar == NULL)
@@ -1002,7 +1002,7 @@ int af_remove_folder(const char*folderName)
 
 	int retValue1 = af_remove(folderNameStar);
 	free(folderNameStar);
-	 
+
 	if (is_filename_in_abstract_file_space(folderName) == 0)
 		retValue3 = RemoveFileSystemFolder(folderName);
 

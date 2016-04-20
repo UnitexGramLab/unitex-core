@@ -43,7 +43,7 @@
 
 namespace unitex {
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
  see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
@@ -309,7 +309,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 	p->explore_depth ++ ;
     /*
 	if (depth == 0) {
-		// We reset if this is first call to 'locate' from a given position in the text 
+		// We reset if this is first call to 'locate' from a given position in the text
 		p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
 	}*/
 
@@ -503,13 +503,13 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 		}
 		/* We restore the original dic variables */
 		p->dic_variables=dic_variables_backup;
-		if (save_previous_ptr_var != NULL) { 
+		if (save_previous_ptr_var != NULL) {
 			restore_variable_array(p->input_variables, p->backup_memory_reserve,
 			                          save_previous_ptr_var);
 			save_previous_ptr_var = NULL;
 		}
 
-        
+
 		if (var_backup!=NULL) {
 				int reserve_freeable = free_variable_backup_using_reserve(
 						p->backup_memory_reserve);
@@ -1473,7 +1473,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 		} else {
 			/* If we have to check the pattern */
 
-			
+
 			Abstract_allocator explore_dic_in_morpho_mode_standard_abstract_allocator=NULL;
 			explore_dic_in_morpho_mode_standard_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_standard",
                                                                   AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
@@ -1511,7 +1511,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
 			pos_offset++;
 			int token_number = (((int)(pos_offset + p->current_origin + 1)) <= (int)(p->buffer_size)) ?
 				p->buffer[pos_offset + p->current_origin] : -1;
-			
+
 			if (token_number == -1 || token_number == p->STOP) {
 				/* Remember 1) that we must not be out of the array's bounds and
 				 *          2) that the token {STOP} must never be matched */

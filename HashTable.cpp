@@ -227,8 +227,8 @@ while (list!=NULL) {
    }
 }
 }
- 
- 
+
+
 /**
  * Frees all the memory associated to the given hash table.
  */
@@ -344,7 +344,7 @@ return NULL;
  * This function inserts a key in the given table, resizing it if needed.
  * It returns a pointer on the virgin value associated to the key. No
  * test is performed to check if the key is already present in the table.
- * 
+ *
  * Note that it is the responsability of the caller to initialize
  * properly this value.
  */
@@ -367,10 +367,10 @@ return &(h->table[cell_index]->value);
  * to the table if necessary. In that case, (*ret) will contain HT_KEY_ADDED
  * and the returned value will be a virgin one to be set by the caller.
  * If the key is already in the table, (*ret) is set to HT_KEY_ALREADY_THERE.
- * 
+ *
  * Returns a pointer on the struct any that contains the value, or NULL if
  * the key is not in the table and if 'insert_policy' is set to HT_DONT_INSERT.
- * 
+ *
  * Note that you can associate a NULL value to a key. In that case, the returned
  * struct any will have its _ptr field set to NULL.
  */
@@ -426,7 +426,7 @@ return NULL;
  * This function inserts a key in the given table, resizing it if needed.
  * It returns a pointer on the virgin value associated to the key. No
  * test is performed to check if the key is already present in the table.
- * 
+ *
  * Note that it is the responsability of the caller to initialize
  * properly this value.
  */
@@ -449,10 +449,10 @@ return &(h->table[cell_index]->value);
  * to the table if necessary. In that case, (*ret) will contain HT_KEY_ADDED
  * and the returned value will be a virgin one to be set by the caller.
  * If the key is already in the table, (*ret) is set to HT_KEY_ALREADY_THERE.
- * 
+ *
  * Returns a pointer on the struct any that contains the value, or NULL if
  * the key is not in the table and if 'insert_policy' is set to HT_DONT_INSERT.
- * 
+ *
  * Note that you can associate a NULL value to a key. In that case, the returned
  * struct any will have its _ptr field set to NULL.
  */
@@ -483,10 +483,10 @@ return value;
  * If 'insert_policy' is set to HT_INSERT_IF_NEEDED, the key will be added
  * to the table if necessary. In that case, the returned value will be a virgin
  * one to be set by the caller.
- * 
+ *
  * Returns a pointer on the struct any that contains the value, or NULL if
  * the key is not in the table and if 'insert_policy' is set to HT_DONT_INSERT.
- * 
+ *
  * Note that you can associate a NULL value to a key. In that case, the returned
  * struct any will have its _ptr field set to NULL.
  */
@@ -502,10 +502,10 @@ return get_value(h,key,insert_policy,&i);
  * If 'insert_policy' is set to HT_INSERT_IF_NEEDED, the key will be added
  * to the table if necessary. In that case, the returned value will be a virgin
  * one to be set by the caller.
- * 
+ *
  * Returns a pointer on the struct any that contains the value, or NULL if
  * the key is not in the table and if 'insert_policy' is set to HT_DONT_INSERT.
- * 
+ *
  * Note that you can associate a NULL value to a key. In that case, the returned
  * struct any will have its _ptr field set to NULL.
  */

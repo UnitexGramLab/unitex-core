@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -110,7 +110,7 @@ const void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
 }
 
 void iomap_release_mapfile_pointer(MAPFILE *mf, const void*buf, size_t sizemap)
-{    
+{
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return ;

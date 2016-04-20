@@ -52,7 +52,7 @@ return tree;
  * This function inserts a string in the tree whose root is 'node'. 'position' is the current
  * position in the string. If the string is already associated to a value, 0 is returned;
  * 1 otherwise.
- * 
+ *
  * IMPORTANT: this function assumes that the given string is neither NULL
  *            nor empty
  */
@@ -66,7 +66,7 @@ if ((*node)==NULL) {
 if (string[position+1]=='\0' && string[position]==(*node)->c) {
 	/* If we are at the end of the string on the correct node */
 	if ((*node)->is_final) {
-		/* If the string is already associated to a value, 
+		/* If the string is already associated to a value,
 		 * then we raise a fatal error. */
 		 return 0;
 	}
@@ -118,7 +118,7 @@ int get_string_number(const struct search_tree_node* node,const char* string,int
 if (node==NULL) {
 	/* If we find a NULL node, it means that the tree does not
 	 * contain the string, so we return 0. */
-	return 0;	
+	return 0;
 }
 if (string[position]==node->c && string[position+1]=='\0') {
 	/* If we are on the node with the correct letter, and if we are

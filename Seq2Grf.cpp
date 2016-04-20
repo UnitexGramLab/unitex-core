@@ -173,7 +173,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Seq2Grf,lopts_Seq2Grf,&i
       break;
     }
     case 'V': only_verify_arguments = true;
-      break;    
+      break;
     case 'h': {
       usage();
       return SUCCESS_RETURN_CODE;
@@ -489,9 +489,9 @@ while (EOF!=readline(line,f)) {
     }
   }
   if (first_on_this_line) {
-    if (seq->len!=0) { 
+    if (seq->len!=0) {
       u_strcat(seq,"\n");
-    }  
+    }
     first_on_this_line=0;
   }
   u_strcat(seq,line->str+line_start);

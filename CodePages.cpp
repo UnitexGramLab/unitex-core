@@ -1469,7 +1469,7 @@ switch(input_encoding->type) {
 		break;
 
     case E_UTF8_BOM:
-    case E_UTF8: 
+    case E_UTF8:
         {
             unsigned char utf8_bom[3];
             int bom_present=0;
@@ -1729,7 +1729,7 @@ encoding->number_of_aliases=i;
 ectx->encodings=(struct encoding**)realloc(ectx->encodings,(ectx->number_of_encodings+1)*sizeof(struct encoding*));
 if (ectx->encodings==NULL) {
    fatal_alloc_error("install_one_byte_encoding");
-} 
+}
 ectx->encodings[ectx->number_of_encodings]=encoding;
 /* Then we insert the encoding name and its aliases in the encoding name tree,
  * associating them to the corresponding index in 'encodings'. The insertion

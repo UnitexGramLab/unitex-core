@@ -374,7 +374,7 @@ if (is_cancelling_requested() != 0) {
    free(buffer_filename);
    return 0;
 }
-	
+
 p->tags=p->fst2->tags;
 #ifdef REGEX_FACADE_ENGINE
 p->filters=new_FilterSet(p->fst2,p->alphabet);

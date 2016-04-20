@@ -1233,12 +1233,12 @@ if (f==NULL) return;
 int i;
 struct dela_entry* entry;
 Ustring* line=new_Ustring(DIC_LINE_SIZE);
-    
+
 Abstract_allocator extract_semantic_codes_abstract_allocator=NULL;
 extract_semantic_codes_abstract_allocator=create_abstract_allocator("extract_semantic_codes",
                                                                   AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
                                                                   0);
-    
+
 while (EOF!=readline(line,f)) {
    /* NOTE: DLF and DLC files are not supposed to contain comment
     *       lines, but we test them, just in the case */
@@ -1293,7 +1293,7 @@ if (entry!=NULL) {
    for (i=0;i<entry->n_inflectional_codes;i++) {
       get_value_index(entry->inflectional_codes[i],inflectional_codes);
    }
-   
+
    int simple_entry;
    if (alph2!=NULL) {
       simple_entry=is_sequence_of_letters((is_a_DELAF)?entry->inflected:entry->lemma,alph2);
@@ -1846,7 +1846,7 @@ while (s[i]!='\0') {
 	if (s[i]==PROTECTION_CHAR) {
 		if (s[i+1]=='\0') {
 			error("Unexpected \\ at end of string in replace_special_equal_signs\n");
-			return DEFAULT_ERROR_CODE; 
+			return DEFAULT_ERROR_CODE;
 		}
 		i=i+2;
 	} else {

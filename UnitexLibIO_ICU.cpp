@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -35,13 +35,13 @@
 #include <stdlib.h>
 
 
-// uima c++ users can replace UnicodeString by UnicodeStringRef 
+// uima c++ users can replace UnicodeString by UnicodeStringRef
 /**
  * Write an Unitex file content (to system filesystem or filespace)
  * it write from two buffer (prefix and suffix). This is useful for writing both header and footer (or BOM and text...)
  */
 	UNITEX_FUNC int UNITEX_CALL WriteUnicodeUnitexFile(const char*filename, icu::UnicodeString const& uString)
-	{		
+	{
 		UChar uBom = 0xfeff;
 
 		const UChar * uBuffer = uString.getBuffer();
@@ -51,7 +51,7 @@
 
 		return result;
 	}
- 
+
 
 #define GetUtf8_Size(ch)  \
 	(((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? 1 : \
@@ -78,7 +78,7 @@
 		for (;;)
 		{
 			if ((src_walk==NULL) || (buf_size==0))
-			{				
+			{
 				if (p_size_this_string_written!=NULL)
 					*p_size_this_string_written = size_this_string_written;
 				return 0;
@@ -207,11 +207,11 @@
 				{
 					size_t len_buf_UChar = bufferSize+1+1;
 					UChar* stringUChar = new UChar[len_buf_UChar + 1];
-				
+
 
 					size_t nb_written = 0;
 					unpack_utf8_string(stringUChar,len_buf_UChar,&nb_written,bufchar + size_bom, bufferSize - size_bom);
-		
+
 
 					uString.setTo((const UChar*)stringUChar, nb_written);
 					delete [] stringUChar;
@@ -220,7 +220,7 @@
 			CloseUnitexFileReadBuffer(pFileHandle, buffer, bufferSize);
 			return 1;
 		}
-		
+
 		return 0;
 	}
 

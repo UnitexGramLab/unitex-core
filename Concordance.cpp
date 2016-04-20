@@ -1201,16 +1201,16 @@ while (matches!=NULL) {
 	}
 	position_in_chars=start_pos_char;
 	position_in_tokens=start_pos;
-	
+
 	if (matches->m.start_pos_in_token<matches->m.end_pos_in_token) {
-	   /* If the match is made of several tokens, we must set end_pos_in_char 
+	   /* If the match is made of several tokens, we must set end_pos_in_char
 	    * to the beginning of the next token */
 	   int start_of_first_token=start_pos_char;
 	   start_pos_char=start_of_first_token+matches->m.start_pos_in_char;
-	   
+
 	   end_pos_char=start_of_first_token;
 	   end_from_eos=start_from_eos;
-	   
+
 	   /* We update 'end_pos_char' in the same way */
 	   for (int z=start_pos;z<end_pos;z++) {
 	      int token_size=0;
@@ -1223,13 +1223,13 @@ while (matches!=NULL) {
 	   end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
 	   end_from_eos=end_from_eos+matches->m.end_pos_in_char+1;
 	} else {
-	   /* If we work on just one token, we can set directly start_pos_in_char 
+	   /* If we work on just one token, we can set directly start_pos_in_char
 	    * and end_pos_in_char. DO NOT SWAP THE FOLLOWING LINES! */
 	   end_pos_char=start_pos_char+matches->m.end_pos_in_char+1;
 	   start_pos_char=start_pos_char+matches->m.start_pos_in_char;
 	   end_from_eos=start_from_eos+matches->m.end_pos_in_char+1;
 	}
-	
+
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,options,token_length,buffer);
 	extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->output,middle,tokens,buffer);

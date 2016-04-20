@@ -181,7 +181,7 @@ static unichar* read_text_file(U_FILE* f, int* filesize){
         alloc_error("read_text_file");
         return NULL;
     }
-    
+
     int size_read;
     int pos_in_text = 0;
     do {
@@ -201,7 +201,7 @@ static unichar* read_text_file(U_FILE* f, int* filesize){
         pos_in_text += size_read;
         *(text + pos_in_text) = '\0';
     } while (size_read != 0);
-    
+
     *filesize = pos_in_text;
     return text;
 }
@@ -492,7 +492,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             while(old_c != new_c) {
                                 u_fputc_raw(old_c, f);
                                 i++;
-                                if (i >= old_end) { 
+                                if (i >= old_end) {
                                     error("End of old text reached in denormalize!!\n");
                                     break;
                                 }
@@ -516,7 +516,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                             new_c = *(new_text + j);
                         }
                     }
-#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT					
+#ifdef NEW_DENORMALIZE_FIX_EXPERIMENT
                     else if(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') { //add the missing white spaces back
                         while(old_c ==' ' || old_c =='\t' || old_c =='\n' || old_c =='\r') {
                             u_fputc_raw(old_c, f);
@@ -544,7 +544,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                 }
             }
 #ifdef NEW_DENORMALIZE_FIX_EXPERIMENT
-            else if(new_c !='<' && i < old_end) { 
+            else if(new_c !='<' && i < old_end) {
                 if(new_c=='{') {
                     /* check if it is annotation in raw format
                      If yes then preference is given to the new text*/
@@ -559,7 +559,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         }
                         look_ahead++;
                     }
-                 
+
 
                     if(look_ahead == new_end && *(new_text+look_ahead-1) == '}') {
                         look_ahead += 1;
@@ -579,9 +579,9 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         old_c = *(old_text + i);
                     }
                 }
-                /*we know that characters don't match and the new text 
+                /*we know that characters don't match and the new text
                  * is not the start of a tag so we give preference to the
-                 * old text 
+                 * old text
                  */
                 while(i < old_end && old_c != new_c) {
                     u_fputc_raw(old_c, f);
@@ -599,8 +599,8 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                 }
                 look_ahead++;
                 new_c = *(new_text + look_ahead);
-                if(new_c != old_c) { 
-                //if the text after the tag is not same then print old text first    
+                if(new_c != old_c) {
+                //if the text after the tag is not same then print old text first
                     while(old_c != new_c && i < old_end) {
                         u_fputc_raw(old_c, f);
                         i++;
@@ -1107,7 +1107,7 @@ int copy_chars_between_unicharfiles(U_FILE* input, U_FILE* output, int* pos_in, 
 		if (result_read >= (int)size_buffer)
 			result_read = (int)(size_buffer - 1);
 		*(buffer + result_read) = 0;
-		
+
 		if ((result_read>0) && (output != NULL)) {
 			u_fputs_raw(buffer, output);
 		}
@@ -1197,13 +1197,13 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 	int delta_output_against_processed = 0;
 	int size_skip_original_for_ignored_offset = 0;
 
-	for (;;) 
+	for (;;)
 	{
 		// we search position in next change in processed_offset
 		int next_stop_processed = (pos_in_processed_offset >= v_processed_offset->nbelems) ?
 			-1 : v_processed_offset->tab[pos_in_processed_offset].old_start;
 
-		
+
 		// now, between pos_in_preprocessed_file and next_stop_preprocessed, we can integrate revert modification made by pre-processing
 
 		int next_stop_preprocessed = (pos_in_preprocessed_offset >= v_preprocessed_offset->nbelems) ?
@@ -1216,7 +1216,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 			preprocess_next_action_apply_process,
 			preprocess_next_action_break,
 		} preprocess_next_action ;
-		
+
 		// if there is no more preprocess offset, just apply next process offset
 		if ((next_stop_processed == -1) && (next_stop_preprocessed == -1))
 		{
@@ -1263,7 +1263,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 			// copy next text from processed file
 			copy_chars_between_unicharfiles(f_input_processed, f_output, &pos_in_processed_file, &pos_in_output, size_new_in_process_modification, buffer_for_copy, buffer_for_copy_size);
 			pos_in_preprocessed_file += size_old_in_process_modification;
-			
+
 			size_skip_original_for_ignored_offset += size_old_in_process_modification;
 
 			pos_in_processed_offset++;
@@ -1289,7 +1289,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 			int size_new_in_preprocess_keep = v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_end - v_preprocessed_offset->tab[pos_in_preprocessed_offset].new_start;
 
 			// copy text from first, original text to replace texte modified by preprocessing and still in processed file
-			if (v_modification_offset != NULL) vector_offset_add(v_modification_offset, 
+			if (v_modification_offset != NULL) vector_offset_add(v_modification_offset,
 				pos_in_processed_file, pos_in_processed_file + size_new_in_preprocess_keep,
 				pos_in_processed_file + delta_output_against_processed, pos_in_processed_file + delta_output_against_processed + size_old_in_preprocess_keep);
 			delta_output_against_processed += (size_old_in_preprocess_keep - size_new_in_preprocess_keep);
@@ -1322,7 +1322,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
 		}
 		U_FILE* f_output_offsets = u_fopen(vec, params->output_offsets, U_WRITE);
 		if (f_output_offsets == NULL) {
-			error("Cannot create offset file %s\n", params->output_offsets);				
+			error("Cannot create offset file %s\n", params->output_offsets);
 		}
 		else {
 			process_offsets(v_input_offsets, v_modification_offset, f_output_offsets);
@@ -1439,7 +1439,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnPreprocess,lopts_UnPre
              }
              strcpy(params.input_offsets,options.vars()->optarg);
              break;
-			 
+
    case '@': if (options.vars()->optarg[0]=='\0') {
               error("You must specify a non empty output offset file name\n");
               return USAGE_ERROR_CODE;
@@ -1460,7 +1460,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnPreprocess,lopts_UnPre
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h': display_usage_UnPreprocess();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
@@ -1469,7 +1469,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnPreprocess,lopts_UnPre
              break;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
-             return USAGE_ERROR_CODE;  
+             return USAGE_ERROR_CODE;
              break;
    }
    index = -1;
@@ -1483,7 +1483,7 @@ if (options.vars()->optind != argc - 1) {
 }
 
 if (only_verify_arguments) {
-	// freeing all allocated memory 
+	// freeing all allocated memory
 	return SUCCESS_RETURN_CODE;
 }
 

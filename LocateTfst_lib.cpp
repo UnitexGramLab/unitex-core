@@ -36,7 +36,7 @@
 
 namespace unitex {
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
@@ -304,7 +304,7 @@ if (!is_korean) {
 infos->korean=new Korean(infos->alphabet);
 infos->n_jamo_tfst_tags=0;
 infos->jamo_tfst_tags=NULL;
-/* We also initializes the Chinese -> Hangul table */ 
+/* We also initializes the Chinese -> Hangul table */
 infos->n_jamo_fst2_tags=infos->fst2->number_of_tags;
 infos->jamo_fst2_tags=(unichar**)malloc(sizeof(unichar*)*infos->n_jamo_fst2_tags);
 if (infos->jamo_fst2_tags==NULL) {
@@ -425,8 +425,8 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                 struct tfst_match_list* *LIST,
                 struct locate_tfst_infos* infos,
                 /* This is used for Korean only when a fst2 tag contains a token that
-                 * can match several boxes in the tfst. 'pos_kr_in_fst2_tag' represents 
-                 * the current position in the current fst2 tag, or -1 if unused. 
+                 * can match several boxes in the tfst. 'pos_kr_in_fst2_tag' represents
+                 * the current position in the current fst2 tag, or -1 if unused.
                  * 'current_kr_fst2_transition' is the current fst2 transition being explored if
                  * 'pos_kr_in_fst2_tag' is not -1; null otherwise. */
                 int pos_pending_in_fst2_tag,
@@ -539,7 +539,7 @@ if (current_pending_tfst_transition!=NULL) {
                grammar_transition,pos_pending_fst2,current_pending_tfst_transition->tag_number,1);
       }
       else if (result==TEXT_INDEPENDENT_MATCH || result==PARTIAL_MATCH_STATUS) {
-         /* If we have a match independent of the text automaton (i.e. <E>) 
+         /* If we have a match independent of the text automaton (i.e. <E>)
           * or that does not consume all the tfst tag, we go on */
          struct tfst_match* foo=insert_in_tfst_matches(NULL,current_state_in_tfst,current_state_in_tfst,
                                       grammar_transition,pos_pending_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
@@ -556,7 +556,7 @@ if (current_pending_tfst_transition!=NULL) {
             foo->next=NULL;
             if (match_element_list!=NULL) {(match_element_list->pointed_by)--;}
             free_tfst_match(foo);
-         } 
+         }
       }
       grammar_transition=grammar_transition->next;
    }
@@ -600,7 +600,7 @@ if (is_final_state(current_state_in_grammar)) {
        * looking for a context, it's an error because every
        * opened context must be closed before the end of the graph. */
       fatal_error("ERROR: unclosed context\n");
-   }   
+   }
    if (graph_depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
       if (match_element_list!=NULL) {
@@ -761,7 +761,7 @@ while (grammar_transition!=NULL) {
       while (text_transition!=NULL) {
          int pos_pending_fst2=-1;
          int pos_pending_tfst=-1;
-         
+
          int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
                                                  infos->fst2->tags[grammar_transition->tag_number],
                                                  text_transition->tag_number,
@@ -778,7 +778,7 @@ while (grammar_transition!=NULL) {
                  grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
          } else if (result==PARTIAL_MATCH_STATUS) {
             /* If the fst2 tag was entirely consumed, but not the tfst one,
-             * we must go on. At the opposite of a partial fst2 tag, we don't 
+             * we must go on. At the opposite of a partial fst2 tag, we don't
              * add a normal partial match to 'list', because this must only be done when
              * a tfst tag has matched, and this is not the case here. We add a
              * text independent match, just in order to use the output associated to
@@ -869,7 +869,7 @@ if (grammar_tag->type==BEGIN_VAR_TAG
    return TEXT_INDEPENDENT_MATCH;
 }
 
-/* Here we test the special case of the " " and # tags that are contextual matches, and 
+/* Here we test the special case of the " " and # tags that are contextual matches, and
  * for this reason, that cannot be cached */
 if (!u_strcmp(grammar_tag->input," ")) {
    if ((*pos_pending_tfst_tag)==-1 && is_space_on_the_left_in_tfst(tfst,text_tag)) {
@@ -910,10 +910,10 @@ return result;
 
 /**
  * This function tests if a text tag can be matched by a grammar tag.
- * 
+ *
  * WARNING: as we use a cache that is supposed to be context independent, no
  *          context dependent operation must be done here. Contextual
- *          operations like # or " " must be handled in 
+ *          operations like # or " " must be handled in
  *          'match_between_text_and_grammar_tags'
  */
 int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
@@ -983,7 +983,7 @@ if (/*infos->korean &&*/ (*pos_pending_fst2_tag!=-1 || (grammar_tag->input[0]!='
       return OK_MATCH_STATUS;
    }
    if (jamo_fst2[k]=='\0') {
-      /* If we are at the end of the fst2 tag but not at the end of the tfst tag, 
+      /* If we are at the end of the fst2 tag but not at the end of the tfst tag,
        * it's a partial match */
       (*pos_pending_fst2_tag)=-1;
       (*pos_pending_tfst_tag)=j;
@@ -1100,7 +1100,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       goto no_match;
    }
    if (!u_strcmp(grammar_tag->input,"<!MOT>") || !u_strcmp(grammar_tag->input,"<!WORD>")) {
-      /* <!MOT> matches the opposite of <MOT> 
+      /* <!MOT> matches the opposite of <MOT>
        <!WORD> matches the opposite of <WORD>*/
       if (!is_letter(text_tag->content[pos_in_tfst_input],infos->alphabet)
           && text_entry==NULL) {

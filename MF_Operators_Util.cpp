@@ -47,7 +47,7 @@ int i,res;
         i++;
     }
 
-    if (p_multiFlex_ctx->filter_polarity) 
+    if (p_multiFlex_ctx->filter_polarity)
       return res;
 
     return (1-res);

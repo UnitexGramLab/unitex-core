@@ -107,10 +107,10 @@ char* to_unix_path_separators(char* file_path) {
 
   // pointer to the first occurrence of '\'
   char* it_current = strchr(file_path, '\\');
-  
+
   // return when there are nothing to do
   if (it_current == NULL) return file_path;
-  
+
   // pointer to the next character after the first '\'
   char* it_next    = it_current + 1;
 
@@ -122,14 +122,14 @@ char* to_unix_path_separators(char* file_path) {
     }
     ++it_current;
   }
-  
+
   // conserve UNC paths
-  if(file_path[0] && file_path[0] == '/' && 
+  if(file_path[0] && file_path[0] == '/' &&
      file_path[1] && file_path[1] == '/') {
      file_path[0] = '\\';
      file_path[1] = '\\';
   }
-  
+
   // remove trailing slashes
   if (file_path[1] && *(it_current-1) == '/') {
     while (*(it_current-1) == '/') {
@@ -138,12 +138,12 @@ char* to_unix_path_separators(char* file_path) {
     }
     // put back a single slash if file_path is now empty
     if(file_path[0] == '\0') {
-       file_path[0]  = '/'; 
+       file_path[0]  = '/';
     }
   }
 
   // put a trailing slash to DRIVE:/, e.g. 'c:/'
-  if (file_path[1] == ':' && 
+  if (file_path[1] == ':' &&
       file_path[2] == '\0') {
       file_path[2]  = '/';
       file_path[3]  = '\0';
@@ -164,10 +164,10 @@ char* to_windows_path_separators(char* file_path) {
 
   // pointer to the first occurrence of '\'
   char* it_current = strchr(file_path, '/');
-  
+
   // return when there are nothing to do
   if (it_current == NULL) return file_path;
-  
+
   // convert '/' to '\'
   while (*it_current != '\0') {
     if (*it_current  == '/') {
@@ -186,14 +186,14 @@ char* to_windows_path_separators(char* file_path) {
  *
  * @param[in,out] filename null-terminated string, with a filename to convert
  * @return returns a pointer to the \file_path C string
- * @author Cristian Martinez 
+ * @author Cristian Martinez
  */
 char* to_native_path_separators(char* file_path) {
 #ifdef _NOT_UNDER_WINDOWS
   return to_unix_path_separators(file_path);
 #else   // under Windows
   return to_windows_path_separators(file_path);
-#endif  // #ifdef _NOT_UNDER_WINDOWS  
+#endif  // #ifdef _NOT_UNDER_WINDOWS
 }
 
 /**
@@ -210,30 +210,30 @@ UnitexFileType get_file_type(const char* filename) {
   if (is_filename_in_abstract_file_space(filename)) {
     return FILE_ABST;
   }
-  
-  // by default the file type is unknown 
+
+  // by default the file type is unknown
   UnitexFileType file_type = FILE_UNK;
-  
+
 #ifndef _MSC_VER
   struct stat info;
-  
+
   // return information about filename
   int status = stat(filename,&info);
-  
+
   // on error, stat returns a non zero value
   if (status < 0) {
     // no such file or directory
-    if      (errno == ENOENT || 
+    if      (errno == ENOENT ||
              errno == ENOTDIR)      return FILE_NOT_FOUND;
     // permission denied
     else if (errno == EACCES)       return FUNC_EACCES;
     // other stat() error
     else                            return FUNC_ERROR;
   }  // if (status < 0)
-  
+
   if       (S_ISDIR (info.st_mode)) file_type = FILE_DIR;
   else if  (S_ISREG (info.st_mode)) file_type = FILE_REG;
-# ifdef _NOT_UNDER_WINDOWS  
+# ifdef _NOT_UNDER_WINDOWS
   else if  (S_ISCHR (info.st_mode)) file_type = FILE_CHR;
   else if  (S_ISBLK (info.st_mode)) file_type = FILE_BLK;
   else if  (S_ISLNK (info.st_mode)) file_type = FILE_LNK;
@@ -242,7 +242,7 @@ UnitexFileType get_file_type(const char* filename) {
 # endif  // _NOT_UNDER_WINDOWS
 #else  // under a non-POSIX system
   wchar_t w_filename[FILENAME_MAX + 1] = {0};
-  
+
   // get the required size, in characters, for the wide string buffer output
   int length = MultiByteToWideChar(CP_ACP,    // Windows ANSI code page
                                    0,         // no flags for conversion type
@@ -253,33 +253,33 @@ UnitexFileType get_file_type(const char* filename) {
 
   // maps filename string to w_filename wide character string
   MultiByteToWideChar(CP_ACP,                 // Windows ANSI code page
-                      0,                      // no flags for conversion type 
+                      0,                      // no flags for conversion type
                       filename,               // string to convert
-                      -1,                     // filename is null-terminated 
+                      -1,                     // filename is null-terminated
                       w_filename,             // wide string buffer output
                       length);                // size of the buffer output
 
-  // retrieves file system attributes for a specified file or directory 
+  // retrieves file system attributes for a specified file or directory
   DWORD dwAttribute =  GetFileAttributesW(w_filename);
-  
+
   // on error, dwAttribute is 0xFFFFFFFF
   if (dwAttribute == INVALID_FILE_ATTRIBUTES) {
     DWORD lastError = GetLastError();
-    
+
     // no such file or directory
-    if      (lastError == ERROR_FILE_NOT_FOUND || 
+    if      (lastError == ERROR_FILE_NOT_FOUND ||
              lastError == ERROR_PATH_NOT_FOUND)   return FILE_NOT_FOUND;
     // permission denied
-    else if (lastError == ERROR_ACCESS_DENIED)       
+    else if (lastError == ERROR_ACCESS_DENIED)
                                                   return FUNC_EACCES;
     // other stat() error
     else                                          return FUNC_ERROR;
   }  // if (status < 0)
-  
+
        if ((dwAttribute &  FILE_ATTRIBUTE_DIRECTORY) != 0) file_type = FILE_DIR;
   else if ((dwAttribute &  FILE_ATTRIBUTE_ARCHIVE)   != 0) file_type = FILE_REG;
 #endif  // _MSC_VER
-  
+
   // return main file type
   return file_type;
 }
@@ -314,7 +314,7 @@ int is_regular_file(const char* filename) {
  * @author Cristian Martinez
  */
 int is_abstract_file(const char* filename) {
-  return (get_file_type(filename)  == FILE_ABST);  
+  return (get_file_type(filename)  == FILE_ABST);
 }
 
 /**
@@ -325,13 +325,13 @@ int is_abstract_file(const char* filename) {
  * @author Cristian Martinez
  */
 int is_unknown_file(const char* filename) {
-  return (get_file_type(filename)  == FILE_UNK);  
+  return (get_file_type(filename)  == FILE_UNK);
 }
 
 /**
  * @brief Unitex implementation of realpath()
  *
- * Derives from the pathname pointed to by filename, an absolute pathname that 
+ * Derives from the pathname pointed to by filename, an absolute pathname that
  * names the same file, whose resolution does not involve ".", "..", or symbolic
  * links
  *
@@ -350,22 +350,22 @@ int get_real_path(const char* filename, char* resolved_name) {
  if (filename[0]=='\0') {
   return DEFAULT_ERROR_CODE;
  }
- 
+
  // get the file type
  UnitexFileType file_type = get_file_type(filename);
- 
- // if get_file_type() fails or the file doesn't exist 
+
+ // if get_file_type() fails or the file doesn't exist
  if(file_type <= FILE_NOT_FOUND) {
    return DEFAULT_ERROR_CODE;
  }
- 
+
  // if the file is under the abstract file layer, the name
  // is already resolved
  if(file_type == FILE_ABST) {
   strncpy(resolved_name, filename, FILENAME_MAX);
   return SUCCESS_RETURN_CODE;
  }
- 
+
  // default value to be returned by this function
  int return_code = DEFAULT_ERROR_CODE;
 
@@ -380,7 +380,7 @@ int get_real_path(const char* filename, char* resolved_name) {
 #else   // under Windows
  wchar_t w_filename[FILENAME_MAX + 1] = {0};  // wide string filename
  wchar_t w_buffer[FILENAME_MAX + 1]   = {0};  // wide string resolved filename
- 
+
  // get the required size, in characters, for the wide string buffer output
  int length = MultiByteToWideChar(CP_ACP,     // Windows ANSI code page
                                   0,          // no flags for conversion type
@@ -391,7 +391,7 @@ int get_real_path(const char* filename, char* resolved_name) {
 
  // maps filename C string to w_filename wide character string
  MultiByteToWideChar(CP_ACP,                  // Windows ANSI code page
-                     0,                       // no flags for conversion type 
+                     0,                       // no flags for conversion type
                      filename,                // string to convert
                      -1,                      // filename is null-terminated
                      w_filename,              // wide string buffer output
@@ -400,11 +400,11 @@ int get_real_path(const char* filename, char* resolved_name) {
  // try to get the resolved filename
  if (_wfullpath(w_buffer, w_filename, FILENAME_MAX)) {
   WideCharToMultiByte(CP_ACP,                 // Windows ANSI code page
-                      0,                      // no flags for conversion type 
+                      0,                      // no flags for conversion type
                       w_buffer,               // string to convert
                       -1,                     // w_buffer is null-terminated
                       buffer,                 // C string buffer output
-                      FILENAME_MAX,           // size of the buffer output  
+                      FILENAME_MAX,           // size of the buffer output
                       NULL,                   // use the system default character
                       NULL);                  // parameter can be set to NULL
   return_code = SUCCESS_RETURN_CODE;
@@ -416,7 +416,7 @@ int get_real_path(const char* filename, char* resolved_name) {
  if(return_code == SUCCESS_RETURN_CODE) {
    strncpy(resolved_name, buffer, FILENAME_MAX);
  }
- 
+
  return return_code;
 }
 
@@ -593,13 +593,13 @@ return 1;
  * @brief Checks whether a file or directory exists
  * @param filename null-terminated string, with a filename to check
  * @return 1 if the given file or directory exists; 0 otherwise
- * @see http://stackoverflow.com/a/12774387/2042871 
+ * @see http://stackoverflow.com/a/12774387/2042871
  * @see get_file_type
  * @author Cristian Martinez
  */
 int file_exists(const char* filename) {
   // This is different than the af_fopen() approach implemented in
-  // fexists(). Under POSIX systems, get_file_type() uses stat() to 
+  // fexists(). Under POSIX systems, get_file_type() uses stat() to
   // check if the file exists, in Windows, it uses GetFileAttributes().
   // Hence, this function could return 1 (file exists) even if the file
   // isn't readable. Besides that, this is reported to be faster than

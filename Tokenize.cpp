@@ -198,7 +198,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tokenize,lopts_Tokenize,
              strcpy(out_offsets,options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
+             break;
    case 'h': usage();
              free(buffer_filename);
              return SUCCESS_RETURN_CODE;
@@ -217,7 +217,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Tokenize,lopts_Tokenize,
 if (options.vars()->optind!=argc-1) {
   error("Invalid arguments: rerun with --help\n");
   free(buffer_filename);
-  return USAGE_ERROR_CODE;   
+  return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
@@ -259,7 +259,7 @@ text=u_fopen(&vec,argv[options.vars()->optind],U_READ);
 if (text==NULL) {
   error("Cannot open text file %s\n",argv[options.vars()->optind]);
   free(buffer_filename);
-  return DEFAULT_ERROR_CODE;   
+  return DEFAULT_ERROR_CODE;
 }
 
 if (alphabet[0]!='\0') {
@@ -277,7 +277,7 @@ if (out==NULL) {
    error("Cannot create file %s\n",text_cod);
    free_alphabet(alph);
    u_fclose(text);
-   free(buffer_filename); 
+   free(buffer_filename);
    return DEFAULT_ERROR_CODE;
 }
 
@@ -287,7 +287,7 @@ if (enter==NULL) {
    u_fclose(out);
    free_alphabet(alph);
    u_fclose(text);
-   free(buffer_filename); 
+   free(buffer_filename);
    return DEFAULT_ERROR_CODE;
 }
 
@@ -299,7 +299,7 @@ if (out_offsets[0]!='\0') {
     u_fclose(out);
     free_alphabet(alph);
     u_fclose(text);
-    free(buffer_filename); 
+    free(buffer_filename);
     return DEFAULT_ERROR_CODE;
 	}
 	/* We deal with offsets only if the program is expected to produce some */
@@ -312,7 +312,7 @@ if (out_offsets[0]!='\0') {
       u_fclose(out);
       free_alphabet(alph);
       u_fclose(text);
-      free(buffer_filename); 
+      free(buffer_filename);
       return DEFAULT_ERROR_CODE;
 		}
 	} else {
@@ -346,9 +346,9 @@ if (token_file[0]!='\0') {
    u_fclose(out);
    free_alphabet(alph);
    u_fclose(text);
-   free(buffer_filename); 
+   free(buffer_filename);
    return DEFAULT_ERROR_CODE;
-  } 
+  }
 }
 
 output=u_fopen(&vec,tokens_txt,U_WRITE);
@@ -365,7 +365,7 @@ if (output==NULL) {
    u_fclose(out);
    free_alphabet(alph);
    u_fclose(text);
-   free(buffer_filename); 
+   free(buffer_filename);
    return DEFAULT_ERROR_CODE;
 }
 u_fprintf(output,"0000000000\n");
@@ -390,13 +390,13 @@ if (!save_snt_offsets(snt_offsets,snt_offsets_pos)) {
   free_vector_int(n_occur);
   free_vector_ptr(tokens,free);
   free_vector_offset(v_in_offsets);
-  u_fclose(f_out_offsets);  
+  u_fclose(f_out_offsets);
   u_fclose(enter);
   u_fclose(out);
   free_alphabet(alph);
   u_fclose(text);
-  free(buffer_filename); 
-  return DEFAULT_ERROR_CODE;  
+  free(buffer_filename);
+  return DEFAULT_ERROR_CODE;
 }
 
 u_fclose(output);

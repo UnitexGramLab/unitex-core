@@ -511,7 +511,7 @@ return 1;
 
 /**
  * Explores all the partial matches to produce outputs in MERGE or REPLACE mode.
- * 
+ *
  * If *var_starts!=NULL, it means that there are pending $var_start( tags
  * that wait for being taken into account when a text dependent tag is found.
  */
@@ -616,7 +616,7 @@ while (text_tags!=NULL) {
           set_output_variable_pending(infos->output_variables,fst2_tag->variable);
           goto restore_dic_variable;
       } else if (fst2_tag->type==BEGIN_VAR_TAG) {
-         /* If we have a variable start tag $a(, we add it to our 
+         /* If we have a variable start tag $a(, we add it to our
           * variable tag list */
          struct transduction_variable* v=get_transduction_variable(infos->input_variables,fst2_tag->variable);
          int old_value=v->start_in_tokens;
@@ -631,7 +631,7 @@ while (text_tags!=NULL) {
          free_list_pointer(*var_starts);
          (*var_starts)=NULL;
          v->start_in_tokens=old_value;
-         /* If we have a $a( tag, we know that we can only have just one text tag 
+         /* If we have a $a( tag, we know that we can only have just one text tag
           * with special value -1 */
          goto restore_dic_variable;
       } else if (fst2_tag->type==END_VAR_TAG) {
@@ -651,7 +651,7 @@ while (text_tags!=NULL) {
             goto restore_dic_variable;
          }
       } else if (fst2_tag->type==LEFT_CONTEXT_TAG) {
-         /* If we have found a $* tag, we must reset the stack string and the 
+         /* If we have found a $* tag, we must reset the stack string and the
           * start position, so we save them */
          unichar* old_stack=u_strdup(s->str);
          int old_pos_token=element->m.start_pos_in_token;
@@ -660,17 +660,17 @@ while (text_tags!=NULL) {
          /* We set the new values */
          empty(s);
          element->m.start_pos_in_token=LEFT_CONTEXT_PENDING;
-         /* We must reset last_tag to -1, because is not, we will have an 
+         /* We must reset last_tag to -1, because is not, we will have an
           * extra space on the left of the match */
          explore_match_for_MERGE_or_REPLACE_mode(infos,element,items,current_item+1,s,-1,var_starts);
-         
+
          /* And we restore previous values */
          element->m.start_pos_in_token=old_pos_token;
          element->m.start_pos_in_char=old_pos_char;
          element->m.start_pos_in_letter=old_pos_letter;
          u_strcpy(s,old_stack);
          free(old_stack);
-         /* If we have a $* tag, we know that we can only have just one text tag 
+         /* If we have a $* tag, we know that we can only have just one text tag
           * with special value -1 */
          goto restore_dic_variable;
       } else if (fst2_tag->type==BEGIN_POSITIVE_CONTEXT_TAG) {
@@ -681,7 +681,7 @@ while (text_tags!=NULL) {
       /* We update the last tag */
       last_tag=text_tags->n;
       /* If the current text tag is not a text independent one */
-      
+
       /* If there are some pending $a( tags, we set them to the current tag */
       if (var_starts!=NULL) {
          struct list_pointer* ptr=(*var_starts);
@@ -691,7 +691,7 @@ while (text_tags!=NULL) {
             ptr=ptr->next;
          }
       }
-      int previous_start_token,previous_start_char; 
+      int previous_start_token,previous_start_char;
       if (last_text_dependent_tfst_tag!=-1) {
          /* If the item is not the first, we must insert the original text that is
           * between the end of the previous merged text and the beginning of the
@@ -738,7 +738,7 @@ while (text_tags!=NULL) {
    free_list_pointer(ptr2);
    if (infos->ambiguous_output_policy==IGNORE_AMBIGUOUS_OUTPUTS) {
       /* If we don't want ambiguous outputs, then the first path is
-       * enough for our purpose */ 
+       * enough for our purpose */
       goto restore_dic_variable;
    }
    text_tags=text_tags->next;

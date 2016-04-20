@@ -216,7 +216,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_VersionInfo[index].name);
@@ -345,11 +345,11 @@ else {
 
 free(DisplayText);
 
-// FIXME(gvollant) To conform with the C/C++ standard, isn't a good idea to 
+// FIXME(gvollant) To conform with the C/C++ standard, isn't a good idea to
 // return a custom integer equal to get_unitex_revision() here
 // An exit value greater than 255 returns an exit code modulo 256
 // see http://www.tldp.org/LDP/abs/html/exitcodes.html#AEN23629
-return retValue; 
+return retValue;
 }
 
 } // namespace unitex

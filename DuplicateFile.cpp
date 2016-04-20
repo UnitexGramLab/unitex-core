@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -133,18 +133,18 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_DuplicateFile,lopts_Dupl
                 error("Empty input argument\n");
                 return USAGE_ERROR_CODE;
              }
-             input_file = options.vars()->optarg; 
+             input_file = options.vars()->optarg;
              break;
    case 'm': if (options.vars()->optarg[0]=='\0') {
                 error("Empty move argument\n");
                 return USAGE_ERROR_CODE;
              }
-             input_file = options.vars()->optarg; 
-             do_move=1; 
+             input_file = options.vars()->optarg;
+             do_move=1;
              break;
    case 'V': only_verify_arguments = true;
-             break;   
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt):
                          error("Missing argument for option --%s\n",lopts_DuplicateFile[index].name);

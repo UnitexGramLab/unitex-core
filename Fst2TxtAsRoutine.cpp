@@ -835,7 +835,7 @@ static void scan_graph(
 				}
 			} else if ((contenu_len_possible_match == 5 // <MOT> <WORD>
 						&& !u_trymatch_superfast5(contenu, ETIQ_MOT_LN5))
-					|| (contenu_len_possible_match == 6 // 
+					|| (contenu_len_possible_match == 6 //
 						&& !u_trymatch_superfast6(contenu, ETIQ_WORD_LN6))) {
 				// case of transition by any sequence of letters
 				if (!end_of_text) {

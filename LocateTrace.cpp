@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -85,7 +85,7 @@ UNITEX_FUNC int UNITEX_CALL SetLocateTraceInfo(const t_locate_trace_func_array* 
 	memset(&cur_locate_trace_func_array,0,sizeof(t_locate_trace_func_array_ex));
 	size_t size_struct = sizeof(t_locate_trace_func_array_ex);
 	size_t size_struct_param = func_array->size_struct;
-	memcpy(&cur_locate_trace_func_array,func_array,(size_struct < size_struct_param) ? size_struct : size_struct_param);    
+	memcpy(&cur_locate_trace_func_array,func_array,(size_struct < size_struct_param) ? size_struct : size_struct_param);
     privatePtrGlobal = privatePtrGlobalSet;
     return 1;
 }

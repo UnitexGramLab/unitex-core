@@ -98,8 +98,8 @@ UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&index))) {
    switch(val) {
    case 'V': only_verify_arguments = true;
-             break;    
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 1: {
 	   strcpy(output,options.vars()->optarg);
@@ -119,7 +119,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfDiff,lopts_GrfDiff,&i
              break;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_GrfDiff[index].name);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;

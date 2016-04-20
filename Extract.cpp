@@ -50,7 +50,7 @@ const char* usage_Extract =
          "  -i X/--index=X: the .ind file that describes the concordance. By default,\n"
          "                  X is the concord.ind file located in the text directory.\n"
          "  -o OUT/--output=OUT: the text file where the units will be stored\n"
-         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"         
+         "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
          "  -h/--help: this help\n"
          "\n"
          "\nExtract all the units that contain (or not) any part of a utterance. The\n"
@@ -108,8 +108,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Extract,lopts_Extract,&i
              strcpy(concord_ind,options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Extract[index].name);
@@ -171,7 +171,7 @@ if (concord_ind[0]=='\0') {
       free_text_tokens(tok);
       af_close_mapfile(text);
       free_snt_files(snt_files);
-      return DEFAULT_ERROR_CODE;   
+      return DEFAULT_ERROR_CODE;
    }
    remove_extension(text_name,concord_ind);
    strcat(concord_ind,"_snt");

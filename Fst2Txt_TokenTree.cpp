@@ -66,7 +66,7 @@ free_cb(t,prv_alloc);
 
 /**
  * This function adds the given token to the given token tree, if not already
- * present. Then, it adds the given transition to its transition list. 
+ * present. Then, it adds the given transition to its transition list.
  */
 void add_tag(unichar* token,int tag_number,int dest_state,struct fst2txt_token_tree* tree, Abstract_allocator prv_alloc) {
 int n=get_value_index(token,tree->hash);

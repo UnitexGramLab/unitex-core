@@ -145,7 +145,7 @@ list_ustring *cassys_tokenize(const unichar* text) {
 		#define DEFAULT_TOKEN_BUFFER_SIZE (0x40)
 
 		unichar default_token_buffer[DEFAULT_TOKEN_BUFFER_SIZE];
-		
+
 		unichar *token = ((token_size + 1) < DEFAULT_TOKEN_BUFFER_SIZE) ? default_token_buffer : (unichar*)malloc(sizeof(unichar)*(token_size+1));
 		if(token == NULL){
 			fatal_error("malloc cassys_tokenize\n");

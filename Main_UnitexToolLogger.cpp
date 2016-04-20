@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -99,7 +99,7 @@ if (argc>3) {
             }
         }
     }
-    
+
     if (skip_arg == 0) {
         pInstallLogger = new InstallLogger();
     }
@@ -116,14 +116,14 @@ if ((argc-skip_arg)>1) {
         return_value = main_UnpackFile(argc-(skip_arg+1),argv+skip_arg+1);
     }
 
- 
+
     if (strcmp(argv[1+skip_arg],"PackFile")==0)
     {
         done = 1;
         return_value = main_PackFile(argc-(skip_arg+1),argv+skip_arg+1);
     }
 
- 
+
     if (strcmp(argv[1+skip_arg],"InstallLingResourcePackage")==0)
     {
         done = 1;

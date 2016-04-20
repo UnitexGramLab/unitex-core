@@ -261,7 +261,7 @@ void set_list_context_output(struct list_context* l, const unichar* output)
 	if (l->output_allocated == NULL)
 	{
 		unsigned int len = u_strlen(output);
-		
+
 		if (len < (INTERNAL_OUTPUT_BUFFER_SIZE))
 		{
 			l->output = l->internal_output_buffer;

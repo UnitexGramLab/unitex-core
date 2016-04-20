@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -35,7 +35,7 @@
    files using zlib + zip or unzip API
 
 
-   Written 1998-2005 Gilles Vollant 
+   Written 1998-2005 Gilles Vollant
    http://www.winimage.com/zLibDll/minizip.html
 */
 
