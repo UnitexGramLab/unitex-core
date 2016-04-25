@@ -72,10 +72,10 @@ namespace unitex {
  * Once we have replaced tokens by all their case equivalents, we obtain the following
  * arrays:
  *
- * destination_tokens	destination_nodes
- * THE					   47,129
- * The					   47,129
- * the					   47
+ * destination_tokens   destination_nodes
+ * THE                     47,129
+ * The                     47,129
+ * the                     47
  */
 struct DLC_tree_node {
     /*
@@ -86,41 +86,41 @@ struct DLC_tree_node {
      */
 
     unsigned int count_reference;
-	/*
-	 * 'patterns' is the list of the numbers of all the patterns that
-	 * can match the compound words corresponding to this node.
-	 */
-	struct list_int* patterns;
-	/*
-	 * 'number_of_patterns' is the length of the list 'patterns'
-	 */
-	int number_of_patterns;
-	/*
-	 * For optimization reasons, the list 'patterns' is replaced
-	 * by the sorted array 'array_of_patterns' before being used
-	 * in the locate.
-	 */
-	int* array_of_patterns;
-	/*
-	 * 'transitions' is the list of transitions that outgo from
-	 * this node. NOTE: transitions are supposed to be sorted
-	 * by token numbers.
-	 */
-	struct DLC_tree_transition* transitions;
-	/*
-	 * WARNING: 'number_of_transitions' is NOT the length of the list
+    /*
+     * 'patterns' is the list of the numbers of all the patterns that
+     * can match the compound words corresponding to this node.
+     */
+    struct list_int* patterns;
+    /*
+     * 'number_of_patterns' is the length of the list 'patterns'
+     */
+    int number_of_patterns;
+    /*
+     * For optimization reasons, the list 'patterns' is replaced
+     * by the sorted array 'array_of_patterns' before being used
+     * in the locate.
+     */
+    int* array_of_patterns;
+    /*
+     * 'transitions' is the list of transitions that outgo from
+     * this node. NOTE: transitions are supposed to be sorted
+     * by token numbers.
+     */
+    struct DLC_tree_transition* transitions;
+    /*
+     * WARNING: 'number_of_transitions' is NOT the length of the list
     *          'transitions', but the size of the 'destination_tokens'
     *          and 'destination_nodes' arrays.
-	 */
-	int number_of_transitions;
-	/*
-	 * Sorted array of tokens, including case equivalents. See comment above.
-	 */
-	int* destination_tokens;
-	/*
-	 * Sorted array of nodes. See comment above.
-	 */
-	struct DLC_tree_node** destination_nodes;
+     */
+    int number_of_transitions;
+    /*
+     * Sorted array of tokens, including case equivalents. See comment above.
+     */
+    int* destination_tokens;
+    /*
+     * Sorted array of nodes. See comment above.
+     */
+    struct DLC_tree_node** destination_nodes;
 };
 
 
@@ -135,12 +135,12 @@ typedef int* IntSequence;
  * This structure represent a list of transitions in a compound word tree.
  */
 struct DLC_tree_transition {
-	/* The number of the token */
-	IntSequence token_sequence;
-	/* The destination node */
-	struct DLC_tree_node* node;
-	/* The following element of the list */
-	struct DLC_tree_transition* next;
+    /* The number of the token */
+    IntSequence token_sequence;
+    /* The destination node */
+    struct DLC_tree_node* node;
+    /* The following element of the list */
+    struct DLC_tree_transition* next;
 };
 
 
@@ -150,8 +150,8 @@ struct DLC_tree_transition {
  * words that begin by a given token.
  */
 struct DLC_tree_info {
-	struct DLC_tree_node* root;
-	struct DLC_tree_node** index;
+    struct DLC_tree_node* root;
+    struct DLC_tree_node** index;
 };
 
 

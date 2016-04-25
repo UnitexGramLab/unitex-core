@@ -38,7 +38,7 @@ namespace unitex {
  * and Ullman. This idea of this algorithm is to take a deterministic
  * automaton and to find out which states can be merged.
  * The color flavor of this implementation is dued to Eric Laporte.
- * 
+ *
  * Author: Eric Laporte
  * Cleaned and commented by Sébastien Paumier
  */

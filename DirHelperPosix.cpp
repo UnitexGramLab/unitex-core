@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -79,41 +79,41 @@ int rmDirPortable(const char* dirname)
 
 char** buildListFileInDiskDir(const char*dirname)
 {
-	DIR *dir;
-	struct dirent *ent;
-	dir = opendir(dirname);
+    DIR *dir;
+    struct dirent *ent;
+    dir = opendir(dirname);
 
 
-	if (dir == NULL)
-		return NULL;
+    if (dir == NULL)
+        return NULL;
 
-	int count = 0;
-	char**ret = (char**)malloc(sizeof(char*));
-	if (ret == NULL)
-	{
-		closedir(dir);
-		return NULL;
-	}
-	*ret = NULL;
+    int count = 0;
+    char**ret = (char**)malloc(sizeof(char*));
+    if (ret == NULL)
+    {
+        closedir(dir);
+        return NULL;
+    }
+    *ret = NULL;
 
-	while ((ent = readdir(dir)) != NULL)
-	{
-		if (ent->d_type == DT_DIR)
-			continue;
-		char** newret = (char**)realloc(ret, sizeof(char*)*(count + 2));
-		if (newret == NULL)
-		{
-			break;
-		}
-		ret = newret;
-		*(newret + count) = (char*)malloc(strlen(ent->d_name) + 1);
-		if ((*(newret + count)) == NULL)
-			break;
-		strcpy(*(newret + count), ent->d_name);
-		count++;
-		*(newret + count) = NULL;
-	}
+    while ((ent = readdir(dir)) != NULL)
+    {
+        if (ent->d_type == DT_DIR)
+            continue;
+        char** newret = (char**)realloc(ret, sizeof(char*)*(count + 2));
+        if (newret == NULL)
+        {
+            break;
+        }
+        ret = newret;
+        *(newret + count) = (char*)malloc(strlen(ent->d_name) + 1);
+        if ((*(newret + count)) == NULL)
+            break;
+        strcpy(*(newret + count), ent->d_name);
+        count++;
+        *(newret + count) = NULL;
+    }
 
-	closedir(dir);
-	return ret;
+    closedir(dir);
+    return ret;
 }

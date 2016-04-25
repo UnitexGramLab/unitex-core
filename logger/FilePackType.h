@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -53,7 +53,7 @@ typedef unsigned char  Bytef;  /* 8 bits */
 typedef void *voidp;
 typedef void *voidpf;
 
-#define z_off_t size_t 
+#define z_off_t size_t
 
 
 

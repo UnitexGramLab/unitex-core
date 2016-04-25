@@ -23,7 +23,7 @@
  */
 
 /****************************************************************/
-/* Operations sur des chaines de caracteres			*/
+/* Operations sur des chaines de caracteres         */
 /****************************************************************/
 
 #include <stdio.h>
@@ -41,9 +41,9 @@
 namespace unitex {
 
 /****************************************************************/
-/* Verifier si le caractere c a un correspondant parmi les 	*/
-/* elements de la chaine qui ne sont pas encore marqu�s dans 	*/
-/* "where". Si oui, inscrire 1 dans "where" a la position du	*/
+/* Verifier si le caractere c a un correspondant parmi les  */
+/* elements de la chaine qui ne sont pas encore marqu�s dans  */
+/* "where". Si oui, inscrire 1 dans "where" a la position du    */
 /* correspondant et returner cette position. Sinon retourner -1.*/
 int u_member(unichar c, const unichar *str, int *where) {
 
@@ -62,7 +62,7 @@ int u_member(unichar c, const unichar *str, int *where) {
 /****************************************************************/
 
 /****************************************************************/
-/* Retourner 1 si str1 contient str2, sinon 0.			*/
+/* Retourner 1 si str1 contient str2, sinon 0.          */
 int u_contient(const unichar *str1, const unichar *str2) {
 
    unsigned int len, i;
@@ -73,7 +73,7 @@ int u_contient(const unichar *str1, const unichar *str2) {
       return (0);
 
    /*Initialiser le tableau d'elements de str1, qui ont des*/
-   /*correspondants dans str2				*/
+   /*correspondants dans str2               */
    for (i=0; i<u_strlen(str1); i++)
       where[i] = 0;
    for (i=u_strlen(str1); i<MAX_STR_LEN; i++)
@@ -93,7 +93,7 @@ int u_contient(const unichar *str1, const unichar *str2) {
 /****************************************************************/
 
 /****************************************************************/
-/* Retourner 1 si str1 est une permutation de str2, sinon 0.  	*/
+/* Retourner 1 si str1 est une permutation de str2, sinon 0.    */
 int u_is_permut(const unichar *str1, const unichar *str2) {
 
    /*Si longeurs differentes - ce ne sont pas des permutations*/
@@ -107,7 +107,7 @@ int u_is_permut(const unichar *str1, const unichar *str2) {
 /****************************************************************/
 
 /****************************************************************/
-/* Verifier si la chaine unicode str contient le caractere c.	*/
+/* Verifier si la chaine unicode str contient le caractere c.   */
 int u_is_in(unichar c, const unichar *str) {
 
    while (*str != 0) {
@@ -120,7 +120,7 @@ int u_is_in(unichar c, const unichar *str) {
 /****************************************************************/
 
 /****************************************************************/
-/* Verifier si la chaine char str contient le caractere c.	*/
+/* Verifier si la chaine char str contient le caractere c.  */
 int u_is_in_char(unichar c, const char *str) {
 
    while (*str != 0) {
@@ -275,7 +275,7 @@ int u_scan_while_char(unichar *dest, const unichar *source, int max,
 /****************************************************************/
 
 /****************************************************************/
-/* Trier un tableau de chaines de charact�res et enlever les	*/
+/* Trier un tableau de chaines de charact�res et enlever les  */
 /* doublons (bubble sort). len = longeur d'un �l�ment du tableau*/
 void u_tri_a(void *T, int *cnt, int len) {
    int i, j;
@@ -316,7 +316,7 @@ void u_tri_a(void *T, int *cnt, int len) {
 
 //////////////////////////////////////////////////////////
 // Add a new unichar string to the dynamic unichar table
-// while reallocating memory space and updating the 
+// while reallocating memory space and updating the
 // cardinality. Space for the new form must be allocated.
 // Returns 0 on success, 1 otherwise.
 int u_add_unitab_elem(unichar* form, unitab_t* tab) {

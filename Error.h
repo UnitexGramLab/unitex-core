@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-/* ************************************************************************** */ 
+/* ************************************************************************** */
 #ifndef ErrorH
 #define ErrorH
 /* ************************************************************************** */
@@ -31,11 +31,11 @@
 namespace unitex {
 
 /**
- * Like EXIT_SUCCESS: expands to a system-dependent integral expression that, 
- * when used as the argument for function return, signifies that the 
+ * Like EXIT_SUCCESS: expands to a system-dependent integral expression that,
+ * when used as the argument for function return, signifies that the
  * function was successful
  */
-#define SUCCESS_RETURN_CODE EXIT_SUCCESS  
+#define SUCCESS_RETURN_CODE EXIT_SUCCESS
 
 /**
  * Like EXIT_FAILURE: expands to a system-dependent integral expression that,
@@ -82,5 +82,5 @@ void fatal_assert(int condition, const char*, ...);
 
 
 } // namespace unitex
-/* ************************************************************************** */ 
+/* ************************************************************************** */
 #endif  // ErrorH

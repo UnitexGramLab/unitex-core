@@ -59,8 +59,8 @@ while (ptr!=NULL) {
       switch (tag->type) {
          /* If we have a morphological mode end mark */
          case END_MORPHO_TAG: {
-        	 add_transition_if_not_present(list,ptr->tag_number,ptr->state_number,prv_alloc);
-        	 break;
+             add_transition_if_not_present(list,ptr->tag_number,ptr->state_number,prv_alloc);
+             break;
          }
          /* If we an another type of transition, we follow it */
          default: look_for_closing_morphological_mode(fst2,ptr->state_number,list,marker,nesting_level,prv_alloc);
@@ -68,7 +68,7 @@ while (ptr!=NULL) {
    }
    else {
       /* If we have a graph call, we follow it */
-	   look_for_closing_morphological_mode(fst2,ptr->state_number,list,marker,nesting_level,prv_alloc);
+       look_for_closing_morphological_mode(fst2,ptr->state_number,list,marker,nesting_level,prv_alloc);
    }
    ptr=ptr->next;
 }
@@ -350,8 +350,8 @@ return ptr;
 
 void foo(Transition* list) {
 while (list!=NULL) {
-	error("(%d,%d) ",list->tag_number,list->state_number);
-	list=list->next;
+    error("(%d,%d) ",list->tag_number,list->state_number);
+    list=list->next;
 }
 error("\n");
 }
@@ -379,15 +379,15 @@ error("LIST BEFORE: ");
 foo(ptr->transition);
 // Then, we add the transitions to the meta
 if (ptr->transition==NULL) {
-	// No transition yet ? Easy!
-	ptr->transition=transitions;
+    // No transition yet ? Easy!
+    ptr->transition=transitions;
 } else {
-	// We look for the last element
-	Transition* tmp=ptr->transition;
-	while (tmp->next!=NULL) {
-		tmp=tmp->next;
-	}
-	tmp->next=transitions;
+    // We look for the last element
+    Transition* tmp=ptr->transition;
+    while (tmp->next!=NULL) {
+        tmp=tmp->next;
+    }
+    tmp->next=transitions;
 }
 error("LIST AFTER: ");
 foo(ptr->transition);
@@ -401,7 +401,7 @@ return ptr;
  * Allocates, initializes and returns a new optimized variable.
  */
 static struct opt_variable* new_opt_variable(int variable_number,Transition* transition,
-										Abstract_allocator prv_alloc) {
+                                        Abstract_allocator prv_alloc) {
 struct opt_variable* v;
 v=(struct opt_variable*)malloc_cb(sizeof(struct opt_variable),prv_alloc);
 if (v==NULL) {
@@ -435,7 +435,7 @@ while (list!=NULL) {
  * given variable, because it cannot happen if the grammar is deterministic.
  */
 static void add_input_variable(Variables* var,unichar* variable,Transition* transition,
-		struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
+        struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
 int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition,prv_alloc);
 v->next=(*variable_list);
@@ -449,7 +449,7 @@ v->next=(*variable_list);
  * given variable, because it cannot happen if the grammar is deterministic.
  */
 void add_output_variable(OutputVariables* var,unichar* variable,Transition* transition,
-		struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
+        struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
 int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition,prv_alloc);
 v->next=(*variable_list);
@@ -499,7 +499,7 @@ state->contexts->end_mark=new_Transition(transition->tag_number,transition->stat
  * This function optimizes the given transition.
  */
 static void optimize_transition(Variables* v,OutputVariables* output,Fst2* fst2,Transition* transition,
-						OptimizedFst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
+                        OptimizedFst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (transition->tag_number<0) {
    /* If the transition is a graph call */
    add_graph_call(transition,&(state->graph_calls),prv_alloc);
@@ -522,58 +522,58 @@ switch (tag->type) {
    case PATTERN_NUMBER_TAG: add_pattern(tag->pattern_number,transition,&(state->patterns),negation,prv_alloc);
                             return;
    case META_TAG: {
-	   add_meta(tag->meta,transition,&(state->metas),negation,prv_alloc);
-	   add_meta(tag->meta,transition,&(state->unoptimized_metas),negation,prv_alloc);
+       add_meta(tag->meta,transition,&(state->metas),negation,prv_alloc);
+       add_meta(tag->meta,transition,&(state->unoptimized_metas),negation,prv_alloc);
        return;
    }
    case BEGIN_VAR_TAG: {
-	   add_input_variable(v,tag->variable,transition,&(state->input_variable_starts),prv_alloc);
-	   add_input_variable(v,tag->variable,transition,&(state->unoptimized_input_variable_starts),prv_alloc);
+       add_input_variable(v,tag->variable,transition,&(state->input_variable_starts),prv_alloc);
+       add_input_variable(v,tag->variable,transition,&(state->unoptimized_input_variable_starts),prv_alloc);
        return;
    }
    case END_VAR_TAG: {
-	   add_input_variable(v,tag->variable,transition,&(state->input_variable_ends),prv_alloc);
-	   add_input_variable(v,tag->variable,transition,&(state->unoptimized_input_variable_ends),prv_alloc);
+       add_input_variable(v,tag->variable,transition,&(state->input_variable_ends),prv_alloc);
+       add_input_variable(v,tag->variable,transition,&(state->unoptimized_input_variable_ends),prv_alloc);
        return;
    }
    case BEGIN_OUTPUT_VAR_TAG: {
-	   add_output_variable(output,tag->variable,transition,&(state->output_variable_starts),prv_alloc);
-	   add_output_variable(output,tag->variable,transition,&(state->unoptimized_output_variable_starts),prv_alloc);
+       add_output_variable(output,tag->variable,transition,&(state->output_variable_starts),prv_alloc);
+       add_output_variable(output,tag->variable,transition,&(state->unoptimized_output_variable_starts),prv_alloc);
        return;
    }
    case END_OUTPUT_VAR_TAG: {
-	   add_output_variable(output,tag->variable,transition,&(state->output_variable_ends),prv_alloc);
-	   add_output_variable(output,tag->variable,transition,&(state->unoptimized_output_variable_ends),prv_alloc);
+       add_output_variable(output,tag->variable,transition,&(state->output_variable_ends),prv_alloc);
+       add_output_variable(output,tag->variable,transition,&(state->unoptimized_output_variable_ends),prv_alloc);
        return;
    }
    case BEGIN_POSITIVE_CONTEXT_TAG: add_positive_context(fst2,state,transition,prv_alloc); return;
    case BEGIN_NEGATIVE_CONTEXT_TAG: add_negative_context(fst2,state,transition,prv_alloc); return;
    case END_CONTEXT_TAG: add_end_context(state,transition,prv_alloc); return;
    case LEFT_CONTEXT_TAG: {
-	   add_meta(META_LEFT_CONTEXT,transition,&(state->metas),0,prv_alloc);
-	   add_meta(META_LEFT_CONTEXT,transition,&(state->unoptimized_metas),0,prv_alloc);
-	   return;
+       add_meta(META_LEFT_CONTEXT,transition,&(state->metas),0,prv_alloc);
+       add_meta(META_LEFT_CONTEXT,transition,&(state->unoptimized_metas),0,prv_alloc);
+       return;
    }
    case BEGIN_MORPHO_TAG: {
-	   struct opt_meta* new_meta=add_meta(META_BEGIN_MORPHO,transition,&(state->metas),0,prv_alloc);
-	   get_reachable_closing_morphological_mode(fst2,transition->state_number,&(new_meta->morphological_mode_ends),prv_alloc);
-	   add_meta(META_BEGIN_MORPHO,transition,&(state->unoptimized_metas),0,prv_alloc);
-	   return;
+       struct opt_meta* new_meta=add_meta(META_BEGIN_MORPHO,transition,&(state->metas),0,prv_alloc);
+       get_reachable_closing_morphological_mode(fst2,transition->state_number,&(new_meta->morphological_mode_ends),prv_alloc);
+       add_meta(META_BEGIN_MORPHO,transition,&(state->unoptimized_metas),0,prv_alloc);
+       return;
    }
    case END_MORPHO_TAG: {
-	   add_meta(META_END_MORPHO,transition,&(state->metas),0,prv_alloc);
-	   add_meta(META_END_MORPHO,transition,&(state->unoptimized_metas),0,prv_alloc);
-	   return;
+       add_meta(META_END_MORPHO,transition,&(state->metas),0,prv_alloc);
+       add_meta(META_END_MORPHO,transition,&(state->unoptimized_metas),0,prv_alloc);
+       return;
    }
    case TEXT_START_TAG: {
-	   add_meta(META_TEXT_START,transition,&(state->metas),0,prv_alloc);
-	   add_meta(META_TEXT_START,transition,&(state->unoptimized_metas),0,prv_alloc);
-	   return;
+       add_meta(META_TEXT_START,transition,&(state->metas),0,prv_alloc);
+       add_meta(META_TEXT_START,transition,&(state->unoptimized_metas),0,prv_alloc);
+       return;
    }
    case TEXT_END_TAG: {
-	   add_meta(META_TEXT_END,transition,&(state->metas),0,prv_alloc);
-	   add_meta(META_TEXT_END,transition,&(state->unoptimized_metas),0,prv_alloc);
-	   return;
+       add_meta(META_TEXT_END,transition,&(state->metas),0,prv_alloc);
+       add_meta(META_TEXT_END,transition,&(state->unoptimized_metas),0,prv_alloc);
+       return;
    }
    default: fatal_error("Unexpected transition tag type in optimize_transition\n");
 }
@@ -691,7 +691,7 @@ free_cb(state,prv_alloc);
  * was NULL.
  */
 static OptimizedFst2State optimize_state(Variables* v,OutputVariables* output,Fst2* fst2,Fst2State state,
-									Fst2Tag* tags,Abstract_allocator prv_alloc) {
+                                    Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state(prv_alloc);
 new_state->control=state->control;
@@ -734,16 +734,16 @@ static inline int is_useless_state(OptimizedFst2State s) {
 fatal_assert(s==NULL,"NULL error in is_useless_state\n");
 
 return !(s->control&1)
-		&& s->graph_calls==NULL
-		&& s->metas==NULL
-		&& s->patterns==NULL
-		&& s->compound_patterns==NULL
-		&& s->number_of_tokens==0
-		&& s->input_variable_starts==NULL
-		&& s->input_variable_ends==NULL
-		&& s->output_variable_starts==NULL
-		&& s->output_variable_ends==NULL
-		&& (s->contexts==NULL || (s->contexts->non_NULL_positive_transitions==0 && s->contexts->size_negative==0 && s->contexts->end_mark==NULL));
+        && s->graph_calls==NULL
+        && s->metas==NULL
+        && s->patterns==NULL
+        && s->compound_patterns==NULL
+        && s->number_of_tokens==0
+        && s->input_variable_starts==NULL
+        && s->input_variable_ends==NULL
+        && s->output_variable_starts==NULL
+        && s->output_variable_ends==NULL
+        && (s->contexts==NULL || (s->contexts->non_NULL_positive_transitions==0 && s->contexts->size_negative==0 && s->contexts->end_mark==NULL));
 }
 
 
@@ -762,21 +762,21 @@ return is_useless_state(initial);
  * to a state that has no outgoing transitions.
  */
 static int remove_useless_graph_calls(struct opt_graph_call* *l,OptimizedFst2State* optimized_states,Fst2* fst2,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_graph_call* *tmp=l;
 while ((*tmp)!=NULL) {
-	if (empty_graph((*tmp)->graph_number,optimized_states,fst2)
-			|| is_useless_state(optimized_states[(*tmp)->transition->state_number])) {
-		/* We remove the graph call */
-		removed=1;
-		struct opt_graph_call* current=(*tmp);
-		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_graph_call(current,prv_alloc);
-	} else {
-		tmp=&((*tmp)->next);
-	}
+    if (empty_graph((*tmp)->graph_number,optimized_states,fst2)
+            || is_useless_state(optimized_states[(*tmp)->transition->state_number])) {
+        /* We remove the graph call */
+        removed=1;
+        struct opt_graph_call* current=(*tmp);
+        (*tmp)=current->next;
+        current->next=NULL;
+        free_opt_graph_call(current,prv_alloc);
+    } else {
+        tmp=&((*tmp)->next);
+    }
 }
 return removed;
 }
@@ -809,11 +809,11 @@ return l;
  */
 static int can_safely_remove_morphological_mode_start(Transition* morphological_mode_ends,OptimizedFst2State* optimized_states) {
 while (morphological_mode_ends!=NULL) {
-	OptimizedFst2State dest=optimized_states[morphological_mode_ends->state_number];
-	if (!is_useless_state(dest)) {
-		return 0;
-	}
-	morphological_mode_ends=morphological_mode_ends->next;
+    OptimizedFst2State dest=optimized_states[morphological_mode_ends->state_number];
+    if (!is_useless_state(dest)) {
+        return 0;
+    }
+    morphological_mode_ends=morphological_mode_ends->next;
 }
 return 1;
 }
@@ -823,39 +823,39 @@ return 1;
  * Removes the useless metas, i.e. metas to a state that has no outgoing transitions.
  */
 static int remove_useless_metas(struct opt_meta* *l,OptimizedFst2State* optimized_states,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_meta* *tmp=l;
 while ((*tmp)!=NULL) {
-	if ((*tmp)->meta==META_BEGIN_MORPHO &&
-			!can_safely_remove_morphological_mode_start((*tmp)->morphological_mode_ends,optimized_states)) {
-		/* We must not remove the $< meta, even if there is no outgoing transition. The reason
-		 * is that the optimization may remove transitions inside the morphological mode zone
-		 * in the graph, and that we should ignore it when entering the morphological mode
-		 * using the original unoptimized fst2. For instance, if we want to match the word
-		 * "prefix" with:
-		 *
-		 *  $<  -->  "pre"  -->  "fix"  -->  $>
-		 *
-		 * the graph would be erroneousnly emptied if the text does not contain both "pre" and
-		 * "fix" as tokens.
-		 *
-		 * The only case where we can safely remove a $< meta is when all the matching $> metas
-		 * have themselves no outgoing transitions anymore.
-		 */
-		tmp=&((*tmp)->next);
-		continue;
-	}
-	(*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
-	if ((*tmp)->transition==NULL) {
-		removed=1;
-		struct opt_meta* current=(*tmp);
-		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_meta(current,prv_alloc);
-	} else {
-		tmp=&((*tmp)->next);
-	}
+    if ((*tmp)->meta==META_BEGIN_MORPHO &&
+            !can_safely_remove_morphological_mode_start((*tmp)->morphological_mode_ends,optimized_states)) {
+        /* We must not remove the $< meta, even if there is no outgoing transition. The reason
+         * is that the optimization may remove transitions inside the morphological mode zone
+         * in the graph, and that we should ignore it when entering the morphological mode
+         * using the original unoptimized fst2. For instance, if we want to match the word
+         * "prefix" with:
+         *
+         *  $<  -->  "pre"  -->  "fix"  -->  $>
+         *
+         * the graph would be erroneousnly emptied if the text does not contain both "pre" and
+         * "fix" as tokens.
+         *
+         * The only case where we can safely remove a $< meta is when all the matching $> metas
+         * have themselves no outgoing transitions anymore.
+         */
+        tmp=&((*tmp)->next);
+        continue;
+    }
+    (*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
+    if ((*tmp)->transition==NULL) {
+        removed=1;
+        struct opt_meta* current=(*tmp);
+        (*tmp)=current->next;
+        current->next=NULL;
+        free_opt_meta(current,prv_alloc);
+    } else {
+        tmp=&((*tmp)->next);
+    }
 }
 return removed;
 }
@@ -868,17 +868,17 @@ static int remove_useless_patterns(struct opt_pattern* *l,OptimizedFst2State* op
 int removed=0;
 struct opt_pattern* *tmp=l;
 while ((*tmp)!=NULL) {
-	(*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
-	if ((*tmp)->transition==NULL) {
-		/* We remove the pattern */
-		removed=1;
-		struct opt_pattern* current=(*tmp);
-		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_pattern(current,prv_alloc);
-	} else {
-		tmp=&((*tmp)->next);
-	}
+    (*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
+    if ((*tmp)->transition==NULL) {
+        /* We remove the pattern */
+        removed=1;
+        struct opt_pattern* current=(*tmp);
+        (*tmp)=current->next;
+        current->next=NULL;
+        free_opt_pattern(current,prv_alloc);
+    } else {
+        tmp=&((*tmp)->next);
+    }
 }
 return removed;
 }
@@ -888,21 +888,21 @@ return removed;
  * Removes the useless variables, i.e. variables to a state that has no outgoing transitions.
  */
 static int remove_useless_variables(struct opt_variable* *l,OptimizedFst2State* optimized_states,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_variable* *tmp=l;
 while ((*tmp)!=NULL) {
-	(*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
-	if ((*tmp)->transition==NULL) {
-		/* We remove the variable */
-		removed=1;
-		struct opt_variable* current=(*tmp);
-		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_variable(current,prv_alloc);
-	} else {
-		tmp=&((*tmp)->next);
-	}
+    (*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
+    if ((*tmp)->transition==NULL) {
+        /* We remove the variable */
+        removed=1;
+        struct opt_variable* current=(*tmp);
+        (*tmp)=current->next;
+        current->next=NULL;
+        free_opt_variable(current,prv_alloc);
+    } else {
+        tmp=&((*tmp)->next);
+    }
 }
 return removed;
 }
@@ -912,28 +912,28 @@ return removed;
  * Removes the useless contexts, i.e. contexts to a state that has no outgoing transitions.
  */
 static int remove_useless_contexts(struct opt_contexts* c,OptimizedFst2State* optimized_states,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 if (c==NULL) return 0;
 int removed=0;
 /* We filter the positive contexts */
 for (int i=0;i<c->size_positive;i+=2) {
-	/* We have two transitions to consider: the one outgoing from the context mark, and
-	 * the one pointing to the state after the end context mark. If either of those transitions
-	 * points to a useless states, we can remove both.
-	 */
-	if (c->positive_mark[i]==NULL || c->positive_mark[i+1]==NULL) {
-		continue;
-	}
-	int dest1=c->positive_mark[i]->state_number;
-	int dest2=c->positive_mark[i+1]->state_number;
-	if (is_useless_state(optimized_states[dest1]) || is_useless_state(optimized_states[dest2])) {
-		free_Transition_list(c->positive_mark[i],prv_alloc);
-		free_Transition_list(c->positive_mark[i+1],prv_alloc);
-		c->positive_mark[i]=NULL;
-		c->positive_mark[i+1]=NULL;
-		c->non_NULL_positive_transitions-=2;
-		removed=1;
-	}
+    /* We have two transitions to consider: the one outgoing from the context mark, and
+     * the one pointing to the state after the end context mark. If either of those transitions
+     * points to a useless states, we can remove both.
+     */
+    if (c->positive_mark[i]==NULL || c->positive_mark[i+1]==NULL) {
+        continue;
+    }
+    int dest1=c->positive_mark[i]->state_number;
+    int dest2=c->positive_mark[i+1]->state_number;
+    if (is_useless_state(optimized_states[dest1]) || is_useless_state(optimized_states[dest2])) {
+        free_Transition_list(c->positive_mark[i],prv_alloc);
+        free_Transition_list(c->positive_mark[i+1],prv_alloc);
+        c->positive_mark[i]=NULL;
+        c->positive_mark[i+1]=NULL;
+        c->non_NULL_positive_transitions-=2;
+        removed=1;
+    }
 }
 /* We don't filter the negative contexts, because inside a negative context,
  * a failure to match is significant. So, if we have a token 'foo' that cannot
@@ -943,12 +943,12 @@ for (int i=0;i<c->size_positive;i+=2) {
 
 /* Finally, we filter the end context mark, if any */
 if (c->end_mark!=NULL) {
-	int dest=c->end_mark->state_number;
-	if (is_useless_state(optimized_states[dest])) {
-		free_Transition_list(c->end_mark,prv_alloc);
-		c->end_mark=NULL;
-		removed=1;
-	}
+    int dest=c->end_mark->state_number;
+    if (is_useless_state(optimized_states[dest])) {
+        free_Transition_list(c->end_mark,prv_alloc);
+        c->end_mark=NULL;
+        removed=1;
+    }
 }
 return removed;
 }
@@ -958,23 +958,23 @@ return removed;
  * Removes the useless tokens, i.e. tokens to a state that has no outgoing transitions.
  */
 static int remove_useless_tokens(OptimizedFst2State state,OptimizedFst2State* optimized_states,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 int removed=0;
 struct opt_token* *tmp=&(state->token_list);
 while ((*tmp)!=NULL) {
-	/* For each token, we have to filter its whole transition list */
-	(*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
-	if ((*tmp)->transition==NULL) {
-		/* We remove the token if all its transitions have been removed */
-		removed=1;
-		state->number_of_tokens--;
-		struct opt_token* current=(*tmp);
-		(*tmp)=current->next;
-		current->next=NULL;
-		free_opt_token(current,prv_alloc);
-	} else {
-		tmp=&((*tmp)->next);
-	}
+    /* For each token, we have to filter its whole transition list */
+    (*tmp)->transition=filter_transitions((*tmp)->transition,optimized_states,prv_alloc);
+    if ((*tmp)->transition==NULL) {
+        /* We remove the token if all its transitions have been removed */
+        removed=1;
+        state->number_of_tokens--;
+        struct opt_token* current=(*tmp);
+        (*tmp)=current->next;
+        current->next=NULL;
+        free_opt_token(current,prv_alloc);
+    } else {
+        tmp=&((*tmp)->next);
+    }
 }
 return removed;
 }
@@ -985,13 +985,13 @@ return removed;
  * otherwise.
  */
 static int remove_useless_transitions(OptimizedFst2State s,OptimizedFst2State* optimized_states,Fst2* fst2,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 return remove_useless_graph_calls(&(s->graph_calls),optimized_states,fst2,prv_alloc)
-		+ remove_useless_metas(&(s->metas),optimized_states,prv_alloc)
-		+ remove_useless_patterns(&(s->patterns),optimized_states,prv_alloc)
-		+ remove_useless_patterns(&(s->compound_patterns),optimized_states,prv_alloc)
-		+ remove_useless_variables(&(s->input_variable_starts),optimized_states,prv_alloc)
-		+ remove_useless_variables(&(s->input_variable_ends),optimized_states,prv_alloc)
+        + remove_useless_metas(&(s->metas),optimized_states,prv_alloc)
+        + remove_useless_patterns(&(s->patterns),optimized_states,prv_alloc)
+        + remove_useless_patterns(&(s->compound_patterns),optimized_states,prv_alloc)
+        + remove_useless_variables(&(s->input_variable_starts),optimized_states,prv_alloc)
+        + remove_useless_variables(&(s->input_variable_ends),optimized_states,prv_alloc)
         + remove_useless_variables(&(s->output_variable_starts),optimized_states,prv_alloc)
         + remove_useless_variables(&(s->output_variable_ends),optimized_states,prv_alloc)
         + remove_useless_contexts(s->contexts,optimized_states,prv_alloc)
@@ -1005,27 +1005,27 @@ return remove_useless_graph_calls(&(s->graph_calls),optimized_states,fst2,prv_al
  * Returns 1 the graph becomes empty; 0 otherwise.
  */
 static int remove_useless_lexical_transitions(Fst2* fst2,int graph,OptimizedFst2State* optimized_states,
-							Abstract_allocator prv_alloc) {
+                            Abstract_allocator prv_alloc) {
 int initial=fst2->initial_states[graph];
 int last=initial+fst2->number_of_states_per_graphs[graph]-1;
 int cleaning_to_do=1;
 if (empty_graph(graph,optimized_states,fst2)) {
-	/* If the graph is already empty, there is nothing to report */
-	return 0;
+    /* If the graph is already empty, there is nothing to report */
+    return 0;
 }
 while (cleaning_to_do) {
-	cleaning_to_do=0;
-	for (int i=initial;i<=last;i++) {
-		OptimizedFst2State s=optimized_states[i];
-		int removed=remove_useless_transitions(s,optimized_states,fst2,prv_alloc);
-		if (removed && !cleaning_to_do) {
-			/* This state may now be useless */
-			if (is_useless_state(s)) {
-				/* If this is the case, we will have another round to do on this graph */
-				cleaning_to_do=1;
-			}
-		}
-	}
+    cleaning_to_do=0;
+    for (int i=initial;i<=last;i++) {
+        OptimizedFst2State s=optimized_states[i];
+        int removed=remove_useless_transitions(s,optimized_states,fst2,prv_alloc);
+        if (removed && !cleaning_to_do) {
+            /* This state may now be useless */
+            if (is_useless_state(s)) {
+                /* If this is the case, we will have another round to do on this graph */
+                cleaning_to_do=1;
+            }
+        }
+    }
 }
 return empty_graph(graph,optimized_states,fst2);
 }
@@ -1037,7 +1037,7 @@ return empty_graph(graph,optimized_states,fst2);
  * optimized states.
  */
 OptimizedFst2State* build_optimized_fst2_states(Variables* v,OutputVariables* output,Fst2* fst2,
-		Abstract_allocator prv_alloc) {
+        Abstract_allocator prv_alloc) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc_cb(fst2->number_of_states*sizeof(OptimizedFst2State),prv_alloc);
 if (optimized_states==NULL) {
    fatal_alloc_error("build_optimized_fst2_states");
@@ -1054,22 +1054,22 @@ for (int i=0;i<fst2->number_of_states;i++) {
 
    if (pos_in_current_graph >= *((fst2->number_of_states_per_graphs)+num_current_graph))
    {
-	   num_current_graph++;
-	   pos_in_current_graph=0;
+       num_current_graph++;
+       pos_in_current_graph=0;
    }
 }
 
 #ifdef AGGRESSIVE_OPTIMIZATION
 int n_graphs_emptied;
 do {
-	n_graphs_emptied=0;
-	for (int i=1;i<=fst2->number_of_graphs;i++) {
-		n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
-	}
+    n_graphs_emptied=0;
+    for (int i=1;i<=fst2->number_of_graphs;i++) {
+        n_graphs_emptied+=remove_useless_lexical_transitions(fst2,i,optimized_states,prv_alloc);
+    }
 } while (n_graphs_emptied!=0);
 /* Finally, we convert token lists to sorted array suitable for binary search */
 for (int i=0;i<fst2->number_of_states;i++) {
-	token_list_2_token_array(optimized_states[i],prv_alloc);
+    token_list_2_token_array(optimized_states[i],prv_alloc);
 }
 #endif // AGGRESSIVE_OPTIMIZATION
 

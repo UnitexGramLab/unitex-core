@@ -38,11 +38,11 @@ namespace unitex {
 
 
 typedef struct locate_cache {
-	struct locate_cache* left;
-	struct locate_cache* middle;
-	struct locate_cache* right;
-	int token;
-	struct match_list* matches;
+    struct locate_cache* left;
+    struct locate_cache* middle;
+    struct locate_cache* right;
+    int token;
+    struct match_list* matches;
 }* LocateCache;
 
 

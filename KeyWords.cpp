@@ -111,14 +111,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_KeyWords,lopts_KeyWords,
    case 'a': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty alphabet file name\n");
                 free(code);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(alph,options.vars()->optarg);
              break;
    case 'f': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty forbidden code\n");
                 free(code);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              free(code);
              code=u_strdup(options.vars()->optarg);
@@ -126,7 +126,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_KeyWords,lopts_KeyWords,
    case 'c': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty file name\n");
                 free(code);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              strcpy(cdic,options.vars()->optarg);
              break;
@@ -138,14 +138,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_KeyWords,lopts_KeyWords,
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 free(code);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
    case 'q': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_encoding argument\n");
                 free(code);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -181,23 +181,23 @@ if (alph[0]!='\0') {
   if (alphabet==NULL) {
     error("Cannot load alphabet file %s\n",alph);
     free(code);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 
 strcpy(tokens,argv[(options.vars()->optind++)]);
 if (output[0]=='\0') {
-	get_path(tokens,output);
-	strcat(output,"keywords.txt");
+    get_path(tokens,output);
+    strcat(output,"keywords.txt");
 }
 struct string_hash_ptr* keywords=load_tokens_by_freq(tokens,&vec);
 filter_non_letter_keywords(keywords,alphabet);
 if (cdic[0]!='\0') {
-	load_compound_words(cdic,&vec,keywords);
+    load_compound_words(cdic,&vec,keywords);
 }
 
 for (;options.vars()->optind!=argc;(options.vars()->optind)++) {
-	filter_keywords_with_dic(keywords,argv[options.vars()->optind],&vec,alphabet);
+    filter_keywords_with_dic(keywords,argv[options.vars()->optind],&vec,alphabet);
 }
 merge_case_equivalent_unknown_words(keywords,alphabet);
 struct string_hash* forbidden_lemmas=compute_forbidden_lemmas(keywords,code);
@@ -207,12 +207,12 @@ vector_ptr* sorted=sort_keywords(keywords);
 U_FILE* f_output=u_fopen(&vec,output,U_WRITE);
 
 if (f_output==NULL) {
-	error("Cannot write in file %s\n",output);
+    error("Cannot write in file %s\n",output);
   free_vector_ptr(sorted,(void(*)(void*))free_KeyWord_list);
   free_string_hash_ptr(keywords,(void(*)(void*))free_KeyWord_list);
   free_alphabet(alphabet);
   free(code);
-  return DEFAULT_ERROR_CODE;  
+  return DEFAULT_ERROR_CODE;
 }
 
 dump_keywords(sorted,f_output);

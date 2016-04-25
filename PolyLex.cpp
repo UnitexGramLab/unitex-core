@@ -157,8 +157,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_PolyLex,lopts_PolyLex,&i
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_PolyLex[index].name);
@@ -212,8 +212,8 @@ if (language==DUTCH || language==NORWEGIAN) {
    strcat(name_inf,"ForbiddenWords.txt");
    forbiddenWords=load_key_list(&vec,name_inf);
    if (forbiddenWords==NULL) {
-	   /* If there was no file, we don't want to block the process */
-	   forbiddenWords=new_string_hash(DONT_USE_VALUES);
+       /* If there was no file, we don't want to block the process */
+       forbiddenWords=new_string_hash(DONT_USE_VALUES);
    }
 }
 
@@ -276,14 +276,14 @@ if ((*info)!='\0') {
 struct utags UTAG;
 
 switch(language) {
-  case DUTCH: 
+  case DUTCH:
     analyse_dutch_unknown_words(alph,
                                 d,
                                 words,
                                 res,
                                 debug,
                                 new_unknown_words,
-                                forbiddenWords); 
+                                forbiddenWords);
     break;
   case GERMAN:
     analyse_german_compounds(alph,
@@ -291,7 +291,7 @@ switch(language) {
                              words,
                              res,
                              debug,
-                             new_unknown_words); 
+                             new_unknown_words);
     break;
   case NORWEGIAN:
     analyse_norwegian_unknown_words(alph,
@@ -300,7 +300,7 @@ switch(language) {
                                     res,
                                     debug,
                                     new_unknown_words,
-                                    forbiddenWords); 
+                                    forbiddenWords);
     break;
   case RUSSIAN:
      init_russian(&UTAG);

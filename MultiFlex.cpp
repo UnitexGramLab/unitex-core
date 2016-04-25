@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
- /* 
+ /*
   *Originally created by Agata Savary (savary@univ-tours.fr)
   */
 #include <stdio.h>
@@ -57,14 +57,14 @@ const char* usage_MultiFlex =
          "  -a ALPH/--alphabet=ALPH: the alphabet file \n"
          "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
          "                          files and inflection graphs for single and compound words.\n"
-	       "  -K/--korean: tells MultiFlex that it works on Korean\n"
-		     "  -s/--only-simple-words: the program will consider compound words as errors\n"
-		     "  -c/--only-compound-words: the program will consider simple words as errors\n"     
+           "  -K/--korean: tells MultiFlex that it works on Korean\n"
+             "  -s/--only-simple-words: the program will consider compound words as errors\n"
+             "  -c/--only-compound-words: the program will consider simple words as errors\n"
          "  -p DIR/--pkgdir=DIR: path of the default graph repository\n"
          "  -r XXX/--named_repositories=XXX: declaration of named repositories. XXX is\n"
-		     "                                   made of one or more X=Y sequences, separated by ;\n"
-		     "                                   where X is the name of the repository denoted by\n"
-		     "                                   the pathname Y. You can use this option several times\n"
+             "                                   made of one or more X=Y sequences, separated by ;\n"
+             "                                   where X is the name of the repository denoted by\n"
+             "                                   the pathname Y. You can use this option several times\n"
          " Graph recompilation options:\n"
          "  -f/--always-recompile-graphs:        forces graph recompiling even if the fst is up to date\n"
          "  -n/--never-recompile-graphs:         avoids graph recompiling even if the fst is not up to date\n"
@@ -176,7 +176,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFle
                      return ALLOC_ERROR_CODE;
                   }
              } else {
-            	   char* more_names = (char*)realloc((void*)named,strlen(named)+strlen(options.vars()->optarg)+2);
+                   char* more_names = (char*)realloc((void*)named,strlen(named)+strlen(options.vars()->optarg)+2);
                  if (more_names) {
                   named = more_names;
                  } else {
@@ -196,7 +196,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFle
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
              free(named);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free(named);
@@ -208,13 +208,13 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_MultiFlex,lopts_MultiFle
 if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free(named);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (output[0]=='\0') {
    error("You must specify the output DELAF name\n");
    free(named);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
@@ -247,9 +247,9 @@ if (is_korean) {
    if (alph==NULL) {
       error("Cannot initialize Korean data with a NULL alphabet\n");
       free(named);
-      return DEFAULT_ERROR_CODE;      
+      return DEFAULT_ERROR_CODE;
    }
-	korean=new Korean(alph);
+    korean=new Korean(alph);
 }
 MultiFlex_ctx* p_multiFlex_ctx=new_MultiFlex_ctx(config_dir,
                                                  morphology,
@@ -275,7 +275,7 @@ free_alphabet(alph);
 free_MultiFlex_ctx(p_multiFlex_ctx);
 
 if (korean!=NULL) {
-	delete korean;
+    delete korean;
 }
 
 u_printf("Done.\n");

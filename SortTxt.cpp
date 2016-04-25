@@ -285,18 +285,18 @@ int pseudo_main_SortTxt(const VersatileEncodingConfig* vec, int duplicates,
 }
 
 const char* optstring_SortTxt = ":ndr:o:l:tfVhk:q:";
-const struct option_TS lopts_SortTxt[] = { 
-  { "no_duplicates", no_argument_TS, NULL, 'n' }, 
-  { "duplicates", no_argument_TS, NULL, 'd' }, 
-  { "reverse", no_argument_TS, NULL, 'r' }, 
-  { "sort_order", required_argument_TS, NULL, 'o' }, 
-  { "line_info", required_argument_TS, NULL, 'l' }, 
-  { "thai", no_argument_TS, NULL, 't' }, 
+const struct option_TS lopts_SortTxt[] = {
+  { "no_duplicates", no_argument_TS, NULL, 'n' },
+  { "duplicates", no_argument_TS, NULL, 'd' },
+  { "reverse", no_argument_TS, NULL, 'r' },
+  { "sort_order", required_argument_TS, NULL, 'o' },
+  { "line_info", required_argument_TS, NULL, 'l' },
+  { "thai", no_argument_TS, NULL, 't' },
   { "factorize_inflectional_codes", no_argument_TS, NULL, 'f' },
-  { "input_encoding", required_argument_TS, NULL, 'k' }, 
+  { "input_encoding", required_argument_TS, NULL, 'k' },
   { "output_encoding", required_argument_TS, NULL, 'q' },
   { "only_verify_arguments",no_argument_TS,NULL,'V'},
-  {"help", no_argument_TS, NULL, 'h' }, { NULL, no_argument_TS, NULL, 0 } 
+  {"help", no_argument_TS, NULL, 'h' }, { NULL, no_argument_TS, NULL, 0 }
 };
 
 int main_SortTxt(int argc, char* const argv[]) {
@@ -353,7 +353,7 @@ int main_SortTxt(int argc, char* const argv[]) {
       inf->factorize_inflectional_codes = 1;
       break;
     case 'V': only_verify_arguments = true;
-      break;      
+      break;
     case 'h':
       usage();
       free_sort_infos(inf);
@@ -376,7 +376,7 @@ int main_SortTxt(int argc, char* const argv[]) {
       decode_writing_encoding_parameter(&(vec.encoding_output),
           &(vec.bom_output), options.vars()->optarg);
       break;
-    case ':': 
+    case ':':
         index == -1 ? error("Missing argument for option -%c\n", options.vars()->optopt) :
                       error("Missing argument for option --%s\n",lopts_SortTxt[index].name);
         free_sort_infos(inf);
@@ -393,7 +393,7 @@ int main_SortTxt(int argc, char* const argv[]) {
   if (options.vars()->optind != argc - 1) {
     error("Invalid arguments: rerun with --help\n");
     free_sort_infos(inf);
-    return USAGE_ERROR_CODE;    
+    return USAGE_ERROR_CODE;
   }
 
   if (only_verify_arguments) {
@@ -414,7 +414,7 @@ int main_SortTxt(int argc, char* const argv[]) {
   if (inf->f == NULL) {
     error("Cannot open file %s\n", argv[options.vars()->optind]);
     free_sort_infos(inf);
-    return DEFAULT_ERROR_CODE; 
+    return DEFAULT_ERROR_CODE;
   }
 
   inf->f_out = u_fopen(&vec, new_name, U_WRITE);
@@ -448,7 +448,7 @@ int main_SortTxt(int argc, char* const argv[]) {
   af_remove(argv[options.vars()->optind]);
   af_rename(new_name, argv[options.vars()->optind]);
   free_sort_infos(inf);
-  
+
   u_printf("Done.\n");
   return SUCCESS_RETURN_CODE;
 }
@@ -976,7 +976,7 @@ struct couple* insert_string_thai(unichar* line, struct couple* couple,
     /* If we are at the end of the list, or if we have to insert */
     tmp = new_couple(line);
     if(tmp) {
-    	tmp->next = couple;
+        tmp->next = couple;
     }
     return tmp;
   }

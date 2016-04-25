@@ -47,7 +47,7 @@
 #endif
 
 #ifdef _NOT_UNDER_WINDOWS
-  #include <unistd.h>  // access() 
+  #include <unistd.h>  // access()
 #else
 // Exclude some of the less frequently used APIs in Windows.h
 # ifndef WIN32_LEAN_AND_MEAN
@@ -65,7 +65,7 @@ namespace unitex {
 
 /**
  * Unitex FileTypes returned by get_file_type() function
- * FUNC_ERROR and FUNC_EACCES are used as function status values. 
+ * FUNC_ERROR and FUNC_EACCES are used as function status values.
  * FILE_NOT_FOUND, FILE_ABST, FILE_DIR, FILE_REG and FILE_UNK are
  * available on all the supported operating systems. The remaining
  * types are only available on POSIX-compliant systems

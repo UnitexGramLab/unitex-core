@@ -34,7 +34,7 @@ struct transduction_variable* v=get_transduction_variable(p->input_variables,nam
 if (v==NULL || v->start_in_tokens==UNDEF_VAR_BOUND || v->end_in_tokens==UNDEF_VAR_BOUND
     || v->start_in_tokens>v->end_in_tokens
     || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars!=-1 && v->end_in_chars<v->start_in_chars)) {
- 	return NULL;
+    return NULL;
 }
 Ustring* res=new_Ustring(128);
 /* Case 1: start and end in the same token*/
@@ -42,22 +42,22 @@ if (v->start_in_tokens==v->end_in_tokens-1) {
    unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
    int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
    for (int k=v->start_in_chars;k<=last;k++) {
-	   u_strcat(res,tok[k]);
+       u_strcat(res,tok[k]);
    }
 } else {
-	/* Case 2: first we deal with first token */
-	unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
-	u_strcat(res,tok+v->start_in_chars);
-	/* Then we copy all tokens until the last one */
-	for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
-		u_strcat(res,p->tokens->value[p->buffer[k+p->current_origin]]);
-	}
-	/* Finally, we copy the last token */
-	tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
-	int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
-	for (int k=0;k<=last;k++) {
-		u_strcat(res,tok[k]);
-	}
+    /* Case 2: first we deal with first token */
+    unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+    u_strcat(res,tok+v->start_in_chars);
+    /* Then we copy all tokens until the last one */
+    for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
+        u_strcat(res,p->tokens->value[p->buffer[k+p->current_origin]]);
+    }
+    /* Finally, we copy the last token */
+    tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+    int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+    for (int k=0;k<=last;k++) {
+        u_strcat(res,tok[k]);
+    }
 }
 return res;
 }
@@ -71,9 +71,9 @@ return new_Ustring(res->str);
 
 
 unichar* get_output_variable_content_str(const unichar* name, struct locate_parameters* p) {
-	const Ustring* res = get_output_variable(p->output_variables, name);
-	if (res == NULL) return NULL;
-	return res->str;
+    const Ustring* res = get_output_variable(p->output_variables, name);
+    if (res == NULL) return NULL;
+    return res->str;
 }
 
 
@@ -85,9 +85,9 @@ return new_Ustring(entry->inflected);
 
 
 unichar* get_dic_variable_content_str(const unichar* name, struct locate_parameters* p) {
-	struct dela_entry* entry = get_dic_variable(name, p->dic_variables);
-	if (entry == NULL) return NULL;
-	return entry->inflected;
+    struct dela_entry* entry = get_dic_variable(name, p->dic_variables);
+    if (entry == NULL) return NULL;
+    return entry->inflected;
 }
 
 /**
@@ -96,8 +96,8 @@ unichar* get_dic_variable_content_str(const unichar* name, struct locate_paramet
  */
 Ustring* get_var_content(unichar* name,struct locate_parameters* p) {
 if (name[0]=='#') {
-	/* The user asked for a constant string */
-	return new_Ustring(name+1);
+    /* The user asked for a constant string */
+    return new_Ustring(name+1);
 }
 Ustring* res=get_variable_content(name,p);
 if (res!=NULL) return res;
@@ -108,19 +108,19 @@ return get_dic_variable_content_Ustring(name,p);
 
 
 unichar* get_var_content_str(const unichar* name, struct locate_parameters* p, int*free_needed) {
-	*free_needed = 0;
-	if (name[0] == '#') {
-		/* The user asked for a constant string */
-		return (unichar*)name + 1;
-	}
-	Ustring* res = get_variable_content(name, p);
-	if (res != NULL) {
-		*free_needed = 1;
-		return free_Ustring_get_str(res);
-	}
-	unichar* str = get_output_variable_content_str(name, p);
-	if (str != NULL) return str;
-	return get_dic_variable_content_str(name, p);
+    *free_needed = 0;
+    if (name[0] == '#') {
+        /* The user asked for a constant string */
+        return (unichar*)name + 1;
+    }
+    Ustring* res = get_variable_content(name, p);
+    if (res != NULL) {
+        *free_needed = 1;
+        return free_Ustring_get_str(res);
+    }
+    unichar* str = get_output_variable_content_str(name, p);
+    if (str != NULL) return str;
+    return get_dic_variable_content_str(name, p);
 }
 
 
@@ -137,19 +137,19 @@ int compare_variables(const unichar* var1,const unichar* var2,struct locate_para
 int free_v1;
 unichar* v1=get_var_content_str(var1,p,&free_v1);
 if (!v1) {
-	return VAR_CMP_ERROR;
+    return VAR_CMP_ERROR;
 }
 int free_v2;
 unichar* v2=get_var_content_str(var2,p,&free_v2);
 if (!v2) {
-	if (free_v1) free(v1);
-	return VAR_CMP_ERROR;
+    if (free_v1) free(v1);
+    return VAR_CMP_ERROR;
 }
 int ret=case_matters?u_strcmp(v1,v2):u_strcmp_ignore_case(v1,v2);
 if (free_v1) free(v1);
 if (free_v2) free(v2);
 if (ret==0) {
-	return VAR_CMP_EQUAL;
+    return VAR_CMP_EQUAL;
 }
 return VAR_CMP_DIFF;
 }
@@ -160,19 +160,19 @@ DISCARD_UNUSED_PARAMETER(case_matters)
 int free_v1;
 unichar* v1 = get_var_content_str(var1, p, &free_v1);
 if (!v1) {
-	return VAR_CMP_ERROR;
+    return VAR_CMP_ERROR;
 }
 int free_v2;
 unichar* v2 = get_var_content_str(var2, p, &free_v2);
 if (!v2) {
-	if (free_v1) free(v1);
-	return VAR_CMP_ERROR;
+    if (free_v1) free(v1);
+    return VAR_CMP_ERROR;
 }
 int ret=u_substr(v1,v2);
 if (free_v1) free(v1);
 if (free_v2) free(v2);
 if (ret != 0) {
-	return VAR_CMP_EQUAL;
+    return VAR_CMP_EQUAL;
 }
 return VAR_CMP_DIFF;
 }

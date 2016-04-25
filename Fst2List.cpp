@@ -2144,7 +2144,7 @@ int main_Fst2List(int argc, char* const argv[]) {
           case '\\':
             wp++;
             if (*wp == '\0') {
-            	// TODO(jhondoe) Put an error message here
+                // TODO(jhondoe) Put an error message here
               error("");
               return DEFAULT_ERROR_CODE;
             }
@@ -2181,7 +2181,7 @@ int main_Fst2List(int argc, char* const argv[]) {
           if (*wp == '\\') {
             wp++;
             if (*wp == '\0') {
-            	// TODO(jhondoe) Put an error message here
+                // TODO(jhondoe) Put an error message here
               error("");
               return DEFAULT_ERROR_CODE;
             }
@@ -2218,8 +2218,8 @@ int main_Fst2List(int argc, char* const argv[]) {
       break;
     case 'V': only_verify_arguments = true;
               break;
-    case 'h': usage(); 
-              return SUCCESS_RETURN_CODE;      
+    case 'h': usage();
+              return SUCCESS_RETURN_CODE;
     case 'q': {
       char* arg;
       if (argv[iargIndex][2] == '\0') {

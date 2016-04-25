@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -72,15 +72,15 @@ private:
 extern "C" {
 #endif
 
-	struct _INSTALL_LOGGER {
-		void* dummy;
-	};
-	typedef struct _INSTALL_LOGGER* INSTALLLOGGER;
+    struct _INSTALL_LOGGER {
+        void* dummy;
+    };
+    typedef struct _INSTALL_LOGGER* INSTALLLOGGER;
 
-	UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLogger();
-	UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromArgs(int argc, char* const argv[]);
-	UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromParamFile(const char* paramFileName);
-	UNITEX_FUNC void UNITEX_CALL RemoveLoggerFromParamFile(INSTALLLOGGER);
+    UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLogger();
+    UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromArgs(int argc, char* const argv[]);
+    UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromParamFile(const char* paramFileName);
+    UNITEX_FUNC void UNITEX_CALL RemoveLoggerFromParamFile(INSTALLLOGGER);
 
 #ifdef __cplusplus
 }

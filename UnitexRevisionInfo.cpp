@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -33,7 +33,7 @@
  * SVN_NEW_REVISION : this is the SVN revision number at new hitHub svn https://github.com/UnitexGramLab/unitex-core
  * UNITEX_NEW_SVN_DIFFERENCE = 1632
  * SVN_REVISION was the svn revision from historic https://gforgeigm.univ-mlv.fr/svn/unitex/Unitex-C++
- * SVN_REVISION = SVN_NEW_REVISION + UNITEX_NEW_SVN_DIFFERENCE on version from new github server 
+ * SVN_REVISION = SVN_NEW_REVISION + UNITEX_NEW_SVN_DIFFERENCE on version from new github server
  * so "historic" SVN_REVISION value allow compare svn revision number between build made on old and new repository
  *
  */
@@ -72,55 +72,55 @@ const char* UnitexRevisionConstant = "Unitex version unknown";
 
 
 const char* get_unitex_verbose_version_string() {
-	return UnitexRevisionConstant;
+    return UnitexRevisionConstant;
 }
 
 
 const char* get_unitex_semver_string() {
-	// with this code, you can enter under Windows type UnitexToolLogger.exe | find "semver="
-	const char* include_semver_in_binary = "\n\0semver=" UNITEX_SEMVER_STRING "\0\n";
-	return include_semver_in_binary + 9;
+    // with this code, you can enter under Windows type UnitexToolLogger.exe | find "semver="
+    const char* include_semver_in_binary = "\n\0semver=" UNITEX_SEMVER_STRING "\0\n";
+    return include_semver_in_binary + 9;
 }
 
 UNITEX_FUNC const char* UNITEX_CALL GetUnitexSemVerString() {
-	return get_unitex_semver_string();
+    return get_unitex_semver_string();
 }
 
 int get_unitex_revision()
 {
-	return (int)SVN_REVISION;
+    return (int)SVN_REVISION;
 }
 
 int get_unitex_new_revision()
 {
-	return (int)SVN_NEW_REVISION;
+    return (int)SVN_NEW_REVISION;
 }
 
 #ifdef GIT_HEAD_REVISION
-	#define GIT_REVISION_STRING GIT_HEAD_REVISION
+    #define GIT_REVISION_STRING GIT_HEAD_REVISION
 #else
-	#define GIT_REVISION_STRING ""
+    #define GIT_REVISION_STRING ""
 #endif
 
 const char* get_unitex_core_git_revision()
 {
-	return GIT_REVISION_STRING;
+    return GIT_REVISION_STRING;
 }
 
 
 UNITEX_FUNC int UNITEX_CALL GetUnitexRevision()
 {
-	return get_unitex_revision();
+    return get_unitex_revision();
 }
 
 UNITEX_FUNC int UNITEX_CALL GetUnitexNewRevision()
 {
-	return get_unitex_new_revision();
+    return get_unitex_new_revision();
 }
 
 UNITEX_FUNC const char* UNITEX_CALL GetUnitexCoreGitRevision()
 {
-	return get_unitex_core_git_revision();
+    return get_unitex_core_git_revision();
 }
 
 void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number)
@@ -139,59 +139,59 @@ unsigned int unitexMinorVersion = UNITEX_MINOR_VERSION_NUMBER;
 unsigned int unitexMinorVersion = 1;
 #endif
 
-	if (major_version_number != NULL) {
-		*major_version_number = unitexMajorVersion;
-	}
+    if (major_version_number != NULL) {
+        *major_version_number = unitexMajorVersion;
+    }
 
-	if (minor_version_number != NULL) {
-		*minor_version_number = unitexMinorVersion;
-	}
+    if (minor_version_number != NULL) {
+        *minor_version_number = unitexMinorVersion;
+    }
 }
 
 
 size_t get_unitex_version_revision_xml_string(char* string, size_t buflen)
 {
-	const char* xmlStringRevision = "\0<UnitexRevision>" STRINGIZE(SVN_REVISION) "</UnitexRevision>\0";
-	const char* xmlStringNewRevision = "\0<UnitexNewRevision>" STRINGIZE(SVN_NEW_REVISION) "</UnitexNewRevision>\0";
+    const char* xmlStringRevision = "\0<UnitexRevision>" STRINGIZE(SVN_REVISION) "</UnitexRevision>\0";
+    const char* xmlStringNewRevision = "\0<UnitexNewRevision>" STRINGIZE(SVN_NEW_REVISION) "</UnitexNewRevision>\0";
 
 #ifdef GIT_HEAD_REVISION
-	const char* xmlStringGitHeadRevision = "\0<UnitexGitHead>" GIT_HEAD_REVISION "</UnitexGitHead>\0";
+    const char* xmlStringGitHeadRevision = "\0<UnitexGitHead>" GIT_HEAD_REVISION "</UnitexGitHead>\0";
 #else
-	const char* xmlStringGitHeadRevision = "\0<UnitexGitHead></UnitexGitHead>\0";
+    const char* xmlStringGitHeadRevision = "\0<UnitexGitHead></UnitexGitHead>\0";
 #endif
 
 #if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined(UNITEX_MINOR_VERSION_NUMBER)
-	const char* xmlStringVersion = "\0<UnitexMajorVersion>"  STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "</UnitexMajorVersion>" \
-		"<UnitexMinorVersion>"  STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "</UnitexMinorVersion>" \
-		"\0";
+    const char* xmlStringVersion = "\0<UnitexMajorVersion>"  STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER) "</UnitexMajorVersion>" \
+        "<UnitexMinorVersion>"  STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) "</UnitexMinorVersion>" \
+        "\0";
 #else
-	const char* xmlStringVersion = "\0<UnitexMajorVersion>x</UnitexMajorVersion>"
-		"<UnitexMinorVersion>x</UnitexMinorVersion>\0";
+    const char* xmlStringVersion = "\0<UnitexMajorVersion>x</UnitexMajorVersion>"
+        "<UnitexMinorVersion>x</UnitexMinorVersion>\0";
 #endif
 
-	const char* xmlStringSemVer = "\0<UnitexSemVer>" UNITEX_SEMVER_STRING "</UnitexSemVer>";
+    const char* xmlStringSemVer = "\0<UnitexSemVer>" UNITEX_SEMVER_STRING "</UnitexSemVer>";
 
-	const char* usableXmlStringRevision = xmlStringRevision + 1;
-	const char* usableXmlStringNewRevision = xmlStringNewRevision + 1;
-	const char* usableXmlStringGitHead = xmlStringGitHeadRevision + 1;
-	const char* usableXmlStringVersion = xmlStringVersion + 1;
-	const char* usableXmlStringSemVer = xmlStringSemVer + 1;
-	size_t len = strlen(usableXmlStringRevision)+strlen(usableXmlStringNewRevision)+strlen(usableXmlStringGitHead)+
-		strlen(usableXmlStringVersion)+strlen(usableXmlStringSemVer)+(5*strlen("\n"));
-	if (buflen > len) {
-		strcpy(string, usableXmlStringVersion);
-		strcat(string, "\n");
-		strcat(string, usableXmlStringRevision);
-		strcat(string, "\n");
-		strcat(string, usableXmlStringNewRevision);
-		strcat(string, "\n");
-		strcat(string, usableXmlStringGitHead);
-		strcat(string, "\n");
-		strcat(string, usableXmlStringSemVer);
-		strcat(string, "\n");
-	}
+    const char* usableXmlStringRevision = xmlStringRevision + 1;
+    const char* usableXmlStringNewRevision = xmlStringNewRevision + 1;
+    const char* usableXmlStringGitHead = xmlStringGitHeadRevision + 1;
+    const char* usableXmlStringVersion = xmlStringVersion + 1;
+    const char* usableXmlStringSemVer = xmlStringSemVer + 1;
+    size_t len = strlen(usableXmlStringRevision)+strlen(usableXmlStringNewRevision)+strlen(usableXmlStringGitHead)+
+        strlen(usableXmlStringVersion)+strlen(usableXmlStringSemVer)+(5*strlen("\n"));
+    if (buflen > len) {
+        strcpy(string, usableXmlStringVersion);
+        strcat(string, "\n");
+        strcat(string, usableXmlStringRevision);
+        strcat(string, "\n");
+        strcat(string, usableXmlStringNewRevision);
+        strcat(string, "\n");
+        strcat(string, usableXmlStringGitHead);
+        strcat(string, "\n");
+        strcat(string, usableXmlStringSemVer);
+        strcat(string, "\n");
+    }
 
-	return len + 1;
+    return len + 1;
 }
 
 
@@ -199,39 +199,39 @@ size_t get_unitex_version_revision_json_string(char* string, size_t buflen)
 {
 
 #ifdef GIT_HEAD_REVISION
-	#define JSON_GIT ", \"UnitexGitHead\":\"" GIT_HEAD_REVISION "\""
+    #define JSON_GIT ", \"UnitexGitHead\":\"" GIT_HEAD_REVISION "\""
 #else
-	#define JSON_GIT ", \"UnitexGitHead\":\"" "\""
+    #define JSON_GIT ", \"UnitexGitHead\":\"" "\""
 #endif
 
 #if defined(UNITEX_MAJOR_VERSION_NUMBER) && defined(UNITEX_MINOR_VERSION_NUMBER) && defined (SVN_REVISION)
-	const char* jsonString = "\0{\"UnitexMajorVersion\":" STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER)
-		", \"UnitexMinorVersion\":" STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) \
-		", \"UnitexRevision\":" STRINGIZE(SVN_REVISION) \
-		", \"UnitexNewRevision\":" STRINGIZE(SVN_NEW_REVISION) \
-		JSON_GIT \
-		", \"UnitexSemVer\":\"" UNITEX_SEMVER_STRING "\"}";
+    const char* jsonString = "\0{\"UnitexMajorVersion\":" STRINGIZE(UNITEX_MAJOR_VERSION_NUMBER)
+        ", \"UnitexMinorVersion\":" STRINGIZE(UNITEX_MINOR_VERSION_NUMBER) \
+        ", \"UnitexRevision\":" STRINGIZE(SVN_REVISION) \
+        ", \"UnitexNewRevision\":" STRINGIZE(SVN_NEW_REVISION) \
+        JSON_GIT \
+        ", \"UnitexSemVer\":\"" UNITEX_SEMVER_STRING "\"}";
 #else
-	const char* jsonString = "\0{\"UnitexMajorVersion\":-1, \"UnitexMinorVersion\":-1, \"UnitexRevision\":-1, \"UnitexSemVer\":\"" UNITEX_SEMVER_STRING "\"}";
+    const char* jsonString = "\0{\"UnitexMajorVersion\":-1, \"UnitexMinorVersion\":-1, \"UnitexRevision\":-1, \"UnitexSemVer\":\"" UNITEX_SEMVER_STRING "\"}";
 #endif
 
-	const char* usableStringRevision = jsonString + 1;
+    const char* usableStringRevision = jsonString + 1;
 
-	size_t len = strlen(usableStringRevision);
-	if (buflen > len) {
-		strcpy(string, usableStringRevision);
-	}
+    size_t len = strlen(usableStringRevision);
+    if (buflen > len) {
+        strcpy(string, usableStringRevision);
+    }
 
-	return len + 1;
+    return len + 1;
 }
 
 
 UNITEX_FUNC void UNITEX_CALL GetUnitexVersion(unsigned int* major_version_number, unsigned int* minor_version_number)
 {
-	char bufXml[0x200];
-	get_unitex_version_revision_xml_string(bufXml, sizeof(bufXml));
+    char bufXml[0x200];
+    get_unitex_version_revision_xml_string(bufXml, sizeof(bufXml));
 
-	get_unitex_version(major_version_number, minor_version_number);
+    get_unitex_version(major_version_number, minor_version_number);
 }
 
 } // namespace unitex

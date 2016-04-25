@@ -41,10 +41,10 @@ namespace unitex {
 
 
 struct cassys_pattern {
-	unichar *form;
-	unichar *lem;
-	list_ustring *code;
-	list_ustring *inflection;
+    unichar *form;
+    unichar *lem;
+    list_ustring *code;
+    list_ustring *inflection;
 };
 
 
@@ -73,7 +73,7 @@ int end_of_lexical_tag(const unichar *text);
 list_ustring *cassys_tokenize(const unichar* text);
 
 unichar* cassys_pattern_2_lexical_tag(struct cassys_pattern *cp,
-		bool to_protect) ;
+        bool to_protect) ;
 unichar *unprotect_lexical_tag(const unichar *text);
 
 unichar *protect_lexical_tag(const unichar *text, bool b);

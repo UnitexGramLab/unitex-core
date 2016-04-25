@@ -39,11 +39,11 @@
 namespace unitex {
 
 void build_portuguese_normalization_grammar(const Alphabet*,struct match_list*,
-											Dictionary*,Dictionary*,
+                                            Dictionary*,Dictionary*,
                                             const char*, const VersatileEncodingConfig*,
                                             struct normalization_tree*, struct normalization_tree* nasal_norm_tree);
 int replace_match_output_by_normalization_line(struct match_list*,const Alphabet*,
-												Dictionary*,Dictionary*,
+                                                Dictionary*,Dictionary*,
                                                 struct normalization_tree*);
 int tokenize_portuguese_match(const unichar*,unichar*,unichar*,unichar*,unichar*);
 int get_radical_lemma(unichar*,struct list_ustring**,const Alphabet*,Dictionary*);

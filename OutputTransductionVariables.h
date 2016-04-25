@@ -41,8 +41,8 @@ namespace unitex {
  * exploring a grammar
  */
 typedef struct output_var_list {
-	Ustring* var;
-	struct output_var_list* next;
+    Ustring* var;
+    struct output_var_list* next;
 } OutputVarList;
 
 

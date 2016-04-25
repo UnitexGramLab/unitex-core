@@ -52,40 +52,40 @@ return tree;
  * This function inserts a string in the tree whose root is 'node'. 'position' is the current
  * position in the string. If the string is already associated to a value, 0 is returned;
  * 1 otherwise.
- * 
+ *
  * IMPORTANT: this function assumes that the given string is neither NULL
  *            nor empty
  */
 int insert_string(struct search_tree_node* *node,const char* string,int position,
                                   int value) {
 if ((*node)==NULL) {
-	/* If we need to allocate the tree node */
-	(*node)=new_search_tree();
-	(*node)->c=string[position];
+    /* If we need to allocate the tree node */
+    (*node)=new_search_tree();
+    (*node)->c=string[position];
 }
 if (string[position+1]=='\0' && string[position]==(*node)->c) {
-	/* If we are at the end of the string on the correct node */
-	if ((*node)->is_final) {
-		/* If the string is already associated to a value, 
-		 * then we raise a fatal error. */
-		 return 0;
-	}
-	(*node)->is_final=1;
-	(*node)->value=value;
-	return 1;
+    /* If we are at the end of the string on the correct node */
+    if ((*node)->is_final) {
+        /* If the string is already associated to a value,
+         * then we raise a fatal error. */
+         return 0;
+    }
+    (*node)->is_final=1;
+    (*node)->value=value;
+    return 1;
 }
 /* If we are not at the end of the string */
 if (string[position]==(*node)->c) {
-	/* If the current node is tagged by the current letter, then
-	 * we increase the position in the string and we explore the
-	 * 'middle' tree. */
-	 return insert_string(&((*node)->middle),string,position+1,value);
+    /* If the current node is tagged by the current letter, then
+     * we increase the position in the string and we explore the
+     * 'middle' tree. */
+     return insert_string(&((*node)->middle),string,position+1,value);
 }
 if (string[position]<(*node)->c) {
-	/* If the current node is tagged by a letter that is greater than
-	 * the current letter, we look for the good node in the 'left' tree, but
-	 * we do not modify the position in the string. */
-	 return insert_string(&((*node)->left),string,position,value);
+    /* If the current node is tagged by a letter that is greater than
+     * the current letter, we look for the good node in the 'left' tree, but
+     * we do not modify the position in the string. */
+     return insert_string(&((*node)->left),string,position,value);
 }
 /* Finally, if the current node is tagged by a that is lower than
  * the current letter, we look for the good node in the 'right' tree, but
@@ -101,7 +101,7 @@ return insert_string(&((*node)->right),string,position,value);
  */
 int insert_string(struct search_tree_node* *root,const char* string,int value) {
 if (string==NULL || string[0]=='\0') {
-	fatal_error("NULL or empty string in insert_string\n");
+    fatal_error("NULL or empty string in insert_string\n");
 }
 return insert_string(root,string,0,value);
 }
@@ -116,28 +116,28 @@ return insert_string(root,string,0,value);
  */
 int get_string_number(const struct search_tree_node* node,const char* string,int position,int *result) {
 if (node==NULL) {
-	/* If we find a NULL node, it means that the tree does not
-	 * contain the string, so we return 0. */
-	return 0;	
+    /* If we find a NULL node, it means that the tree does not
+     * contain the string, so we return 0. */
+    return 0;
 }
 if (string[position]==node->c && string[position+1]=='\0') {
-	/* If we are on the node with the correct letter, and if we are
-	 * at the end of the string, and if the node is final, then we
-	 * store the associated value and we return 1; otherwise we return 0. */
-	if (!node->is_final) return 0;
-	(*result)=node->value;
-	return 1;
+    /* If we are on the node with the correct letter, and if we are
+     * at the end of the string, and if the node is final, then we
+     * store the associated value and we return 1; otherwise we return 0. */
+    if (!node->is_final) return 0;
+    (*result)=node->value;
+    return 1;
 }
 if (string[position]==node->c) {
-	/* If have the correct letter but we are not at the end of the string,
-	 * then we explore the next letter in the 'middle' tree. */
-	return get_string_number(node->middle,string,position+1,result);
+    /* If have the correct letter but we are not at the end of the string,
+     * then we explore the next letter in the 'middle' tree. */
+    return get_string_number(node->middle,string,position+1,result);
 }
 if (string[position]<node->c) {
-	/* If the current node is tagged by a letter that is greater than
-	 * the current letter, we look for the good node in the 'left' tree, but
-	 * we do not modify the position in the string. */
-	return get_string_number(node->left,string,position,result);
+    /* If the current node is tagged by a letter that is greater than
+     * the current letter, we look for the good node in the 'left' tree, but
+     * we do not modify the position in the string. */
+    return get_string_number(node->left,string,position,result);
 }
 /* Finally, if the current node is tagged by a that is greater than
  * the current letter, we look for the good node in the 'right' tree, but
@@ -154,7 +154,7 @@ return get_string_number(node->right,string,position,result);
  */
 int get_string_number(const struct search_tree_node* root,const char* string,int *result) {
 if (string==NULL || string[0]=='\0') {
-	fatal_error("NULL or empty string in get_string_number\n");
+    fatal_error("NULL or empty string in get_string_number\n");
 }
 return get_string_number(root,string,0,result);
 }
@@ -165,13 +165,13 @@ return get_string_number(root,string,0,result);
  */
 void free_search_tree_node(struct search_tree_node* root)
 {
-	if (root != NULL)
-	{
-		free_search_tree_node(root->left);
-		free_search_tree_node(root->middle);
-		free_search_tree_node(root->right);
-		free(root);
-	}
+    if (root != NULL)
+    {
+        free_search_tree_node(root->left);
+        free_search_tree_node(root->middle);
+        free_search_tree_node(root->right);
+        free(root);
+    }
 }
 
 } // namespace unitex

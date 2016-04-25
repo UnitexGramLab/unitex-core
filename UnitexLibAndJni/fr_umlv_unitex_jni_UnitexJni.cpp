@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -140,7 +140,7 @@ jstringToCUtf::~jstringToCUtf()
 static int countArgs(char** args)
 {
 	int count=0;
-	
+
 	char**tmp=args;
 	while ((*tmp) != NULL)
 	{
@@ -204,7 +204,7 @@ size_t dwDestPos = 0;
 static char**argsFromStrArray(JNIEnv* jenv, jobjectArray strArray)
 {
 int nSize = jenv->GetArrayLength(strArray);
-char **args=NULL;	
+char **args=NULL;
     if (nSize>0)
         args = (char**)malloc((nSize+1) * sizeof(char*));
 
@@ -234,7 +234,7 @@ char **args=NULL;
 static char**argsFromJString(JNIEnv* jenv, jstring jstr)
 {
 	jstringToCUtf jtcu;
-	
+
 	const char*cmdLine=jtcu.initJString(jenv,jstr);
     size_t len_cmd_line=strlen(cmdLine);
 
@@ -379,7 +379,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 	jstc_filename.initJString(env,filename);
 	jsize len = env->GetArrayLength(filedata);
 	jchar * buffer=env->GetCharArrayElements(filedata,NULL);
-	
+
 	jboolean retValue= (WriteUnitexFile(jstc_filename.getJString(),buffer,len,NULL,0) == 0);
 	env->ReleaseCharArrayElements(filedata,buffer,0);
 	return retValue;
@@ -397,7 +397,7 @@ JNIEXPORT jboolean JNICALL Java_fr_umlv_unitex_jni_UnitexJni_writeUnitexFile__Lj
 	jstc_filename.initJString(env,filename);
 	jsize len = env->GetArrayLength(filedata);
 	jbyte * buffer=env->GetByteArrayElements(filedata,NULL);
-	
+
 	jboolean retValue= (WriteUnitexFile(jstc_filename.getJString(),buffer,len,NULL,0) == 0);
 	env->ReleaseByteArrayElements(filedata,buffer,0);
 	return retValue;
@@ -492,7 +492,7 @@ static jboolean doWriteUnitexFileUtf(JNIEnv* env,jstring filename,jstring fileco
 	jstringToCUtf jstc_filename;
 	jstc_filename.initJString(env,filename);
 
-	
+
 	jstringToCUtf jstc_content;
 	jstc_content.initJString(env,filecontent);
 
@@ -598,7 +598,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
             is_utf16_swap_endianess = ! is_utf16_native_endianess;
             size_bom = 2;
         }
-    
+
     if (size_file>1)
         if (((*(bufchar))==0xfe) && ((*(bufchar+1))==0xff))
         {
@@ -607,7 +607,7 @@ JNIEXPORT jstring JNICALL Java_fr_umlv_unitex_jni_UnitexJni_getUnitexFileString
             is_utf16_swap_endianess = ! is_utf16_native_endianess;
             size_bom = 2;
         }
-    
+
     if (size_file>2)
         if (((*(bufchar))==0xef) && ((*(bufchar+1))==0xbb) && ((*(bufchar+2))==0xbf))
         {

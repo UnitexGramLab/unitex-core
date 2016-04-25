@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-  
+
 #ifndef MatchH
 #define MatchH
 
@@ -40,7 +40,7 @@ typedef struct {
    int end_pos_in_token;
 
    /* Those fields are used for Korean
-    * xxx_char=offset of the char in the token 
+    * xxx_char=offset of the char in the token
     * xxx_letter=offset of the logical letter in the char */
    int start_pos_in_char;
    int end_pos_in_char;

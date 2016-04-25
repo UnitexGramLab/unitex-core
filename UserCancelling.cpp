@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -44,14 +44,14 @@
 namespace unitex {
 
 struct UserCancellingInfo {
-	t_user_cancelling_func_array func_array;
-	void* privateCancelPtr;
+    t_user_cancelling_func_array func_array;
+    void* privateCancelPtr;
 } ;
 
 
 struct List_UserCancellingInfo {
-	UserCancellingInfo lgi;
-	List_UserCancellingInfo* next;
+    UserCancellingInfo lgi;
+    List_UserCancellingInfo* next;
 } ;
 
 
@@ -61,58 +61,58 @@ struct List_UserCancellingInfo* p_user_cancelling_info_list=NULL;
 
 UNITEX_FUNC int UNITEX_CALL AddUserCancellingInfo(const t_user_cancelling_func_array* func_array,void* privateCancelPtr)
 {
-	struct List_UserCancellingInfo* new_item;
+    struct List_UserCancellingInfo* new_item;
     if (func_array->fnc_is_cancelling == NULL)
         return 0;
 
-	new_item = (struct List_UserCancellingInfo*)malloc(sizeof(struct UserCancellingInfo));
-	if (new_item == NULL)
-		return 0;
+    new_item = (struct List_UserCancellingInfo*)malloc(sizeof(struct UserCancellingInfo));
+    if (new_item == NULL)
+        return 0;
 
-	new_item->lgi.func_array = *func_array;
-	new_item->lgi.privateCancelPtr = privateCancelPtr;
-	new_item->next = NULL;
+    new_item->lgi.func_array = *func_array;
+    new_item->lgi.privateCancelPtr = privateCancelPtr;
+    new_item->next = NULL;
 
-	if (p_user_cancelling_info_list == NULL)
-		p_user_cancelling_info_list = new_item;
-	else {
-		struct List_UserCancellingInfo* tmp = p_user_cancelling_info_list;
-		while ((tmp->next) != NULL)
-			tmp = tmp->next;
-		tmp->next = new_item;
-	}
+    if (p_user_cancelling_info_list == NULL)
+        p_user_cancelling_info_list = new_item;
+    else {
+        struct List_UserCancellingInfo* tmp = p_user_cancelling_info_list;
+        while ((tmp->next) != NULL)
+            tmp = tmp->next;
+        tmp->next = new_item;
+    }
 
-	if ((new_item->lgi.func_array.fnc_Init_User_Cancelling) != NULL)
-		(*(new_item->lgi.func_array.fnc_Init_User_Cancelling))(new_item->lgi.privateCancelPtr);
+    if ((new_item->lgi.func_array.fnc_Init_User_Cancelling) != NULL)
+        (*(new_item->lgi.func_array.fnc_Init_User_Cancelling))(new_item->lgi.privateCancelPtr);
 
-	return 1;
+    return 1;
 }
 
 UNITEX_FUNC int UNITEX_CALL RemoveUserCancellingInfo(const t_user_cancelling_func_array* func_array,void* privateCancelPtr)
 {
-	struct List_UserCancellingInfo* tmp = p_user_cancelling_info_list;
-	struct List_UserCancellingInfo* tmp_previous = NULL;
+    struct List_UserCancellingInfo* tmp = p_user_cancelling_info_list;
+    struct List_UserCancellingInfo* tmp_previous = NULL;
 
-	while (tmp != NULL)
-	{
-		if ((memcmp(&tmp->lgi.func_array,func_array,sizeof(t_user_cancelling_func_array))==0) &&
-			(tmp->lgi.privateCancelPtr == privateCancelPtr))
-		{
-			if (tmp_previous == NULL)
-				p_user_cancelling_info_list = tmp->next;
-			else
-				tmp_previous->next = tmp->next;
+    while (tmp != NULL)
+    {
+        if ((memcmp(&tmp->lgi.func_array,func_array,sizeof(t_user_cancelling_func_array))==0) &&
+            (tmp->lgi.privateCancelPtr == privateCancelPtr))
+        {
+            if (tmp_previous == NULL)
+                p_user_cancelling_info_list = tmp->next;
+            else
+                tmp_previous->next = tmp->next;
 
-			if ((tmp->lgi.func_array.fnc_Uninit_User_Cancelling) != NULL)
-				(*(tmp->lgi.func_array.fnc_Uninit_User_Cancelling))(tmp->lgi.privateCancelPtr);
+            if ((tmp->lgi.func_array.fnc_Uninit_User_Cancelling) != NULL)
+                (*(tmp->lgi.func_array.fnc_Uninit_User_Cancelling))(tmp->lgi.privateCancelPtr);
 
-			free(tmp);
-			return 1;
-		}
-		tmp_previous = tmp;
-		tmp = tmp->next;
-	}
-	return 0;
+            free(tmp);
+            return 1;
+        }
+        tmp_previous = tmp;
+        tmp = tmp->next;
+    }
+    return 0;
 }
 
 
@@ -120,23 +120,23 @@ UNITEX_FUNC int UNITEX_CALL GetNbUserCancellingInfoInstalled()
 {
     int count=0;
     struct List_UserCancellingInfo* tmp = p_user_cancelling_info_list;
-	while (tmp != NULL)
-	{
+    while (tmp != NULL)
+    {
         count++;
-		tmp = tmp->next;
-	}
-	return count;
+        tmp = tmp->next;
+    }
+    return count;
 }
 
 int is_cancelling_requested()
 {
     struct List_UserCancellingInfo* tmp = p_user_cancelling_info_list;
-	while (tmp != NULL)
-	{
+    while (tmp != NULL)
+    {
         if (((*(tmp->lgi.func_array.fnc_is_cancelling))(tmp->lgi.privateCancelPtr)) != 0)
             return 1;
         tmp = tmp->next;
-	}
+    }
     return 0;
 }
 

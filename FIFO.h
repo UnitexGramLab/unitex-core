@@ -42,9 +42,9 @@ struct fifo_list {
 /**
  * This structure is used to handle generic FIFO. We represent it with a
  * linked list as follows:
- * 
+ *
  * output -->  ......... --> input --> NULL
- * 
+ *
  */
 struct fifo {
    struct fifo_list* input;

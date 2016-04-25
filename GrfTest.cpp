@@ -175,7 +175,7 @@ UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfTest,lopts_GrfTest,&index))) {
    switch(val) {
    case 'V': only_verify_arguments = true;
-             break;    
+             break;
    case 'h': usage();
              return_value = SUCCESS_RETURN_CODE;
              goto end;
@@ -189,7 +189,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfTest,lopts_GrfTest,&i
                 if (dic_list==NULL) {
                   alloc_error("main_GrfTest");
                   return_value = USAGE_ERROR_CODE;
-                  goto end;                  
+                  goto end;
                 }
                 if ((*dic_list) != '\0') {
                   strcat(dic_list, ";");
@@ -210,7 +210,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_GrfTest,lopts_GrfTest,&i
    case 'q': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_encoding argument\n");
                 return_value = USAGE_ERROR_CODE;
-                goto end;                
+                goto end;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -245,7 +245,7 @@ if (options.vars()->optind==argc) {
   /* If there is no .grf we report no error, in order not
    * to block test procedures if the program is called with *.grf
    * on an empty directory */
-  return_value = SUCCESS_RETURN_CODE; 
+  return_value = SUCCESS_RETURN_CODE;
   goto end;
 }
 
@@ -266,7 +266,7 @@ if (output[0]!='\0') {
   if (f_output==NULL) {
     error("Cannot open output file %s\n",output);
     return_value = DEFAULT_ERROR_CODE;
-    goto end;    
+    goto end;
   }
 }
 char txt[FILENAME_MAX];
@@ -409,7 +409,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
     if (f==NULL) {
       error("Cannot create file %s\n",txt);
       return_value = DEFAULT_ERROR_CODE;
-      goto end;      
+      goto end;
     }
     u_fputs(t->text,f);
     u_fclose(f);
@@ -425,7 +425,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
       error("The following command has failed for graph %s:\n%s\n",argv[i],line);
       free_command_line_alloc(line);
       return_value = DEFAULT_ERROR_CODE;
-      goto end;      
+      goto end;
     }
     if (invoker_Dico!=NULL) {
       if (invoke(invoker_Dico)) {
@@ -433,7 +433,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
         error("The following command has failed for graph %s:\n%s\n",argv[i],line);
         free_command_line_alloc(line);
         return_value = DEFAULT_ERROR_CODE;
-        goto end;        
+        goto end;
       }
     }
     /* We have to adjust Locate parameters for the current test */
@@ -444,17 +444,17 @@ for (int i=options.vars()->optind;i<argc;i++) {
     default: {
       error("Internal error: invalid output policy in unit test\n");
       return_value = DEFAULT_ERROR_CODE;
-      goto end;      
+      goto end;
      }
     }
     switch(t->match_policy) {
       case SHORTEST_MATCHES: add_argument(invoker_Locate,"-S"); break;
       case LONGEST_MATCHES: add_argument(invoker_Locate,"-L"); break;
       case ALL_MATCHES: add_argument(invoker_Locate,"-A"); break;
-      default: { 
+      default: {
         error("Internal error: invalid match policy in unit test\n");
         return_value = DEFAULT_ERROR_CODE;
-        goto end;   
+        goto end;
       }
     }
     if (invoke(invoker_Locate)) {
@@ -462,7 +462,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
       error("The following command has failed for graph %s:\n%s\n",argv[i],line);
       free_command_line_alloc(line);
       return_value = DEFAULT_ERROR_CODE;
-      goto end;      
+      goto end;
     }
     /* And we clean Locate parameters for the next test */
     remove_last_argument(invoker_Locate);
@@ -472,7 +472,7 @@ for (int i=options.vars()->optind;i<argc;i++) {
       error("The following command has failed for graph %s:\n%s\n",argv[i],line);
       free_command_line_alloc(line);
       return_value = DEFAULT_ERROR_CODE;
-      goto end;      
+      goto end;
     }
     if (!check_test_results(t,concord,argv[i],f_output)) return_value=DEFAULT_ERROR_CODE;
   }

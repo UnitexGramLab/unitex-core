@@ -30,14 +30,14 @@ namespace unitex {
 
 size_t get_prefered_allocator_item_size_for_nb_variable(int nbvar)
 {
-    return AroundAllocAlign(sizeof(struct parsing_info)) + 
+    return AroundAllocAlign(sizeof(struct parsing_info)) +
            AroundAllocAlign(get_expected_variable_backup_size_in_byte_for_nb_variable(nbvar)) +
            AroundAllocAlign(sizeof(unichar)*(SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC+1));
 }
 
 size_t get_prefered_allocator_item_size_for_variable(Variables* v)
 {
-    return AroundAllocAlign(sizeof(struct parsing_info)) + 
+    return AroundAllocAlign(sizeof(struct parsing_info)) +
            AroundAllocAlign(get_variable_backup_size_in_byte(v)) +
            AroundAllocAlign(sizeof(unichar)*(SIZE_RESERVE_NB_UNICHAR_STACK_INSAMEALLOC+1));
 }
@@ -82,7 +82,7 @@ struct parsing_info* new_parsing_info(int pos_in_tokens,int pos_in_chars,int sta
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_int_jamo,
                                       vector_int* insertions,int weight,
-									  struct parsing_allocator* pa) {
+                                      struct parsing_allocator* pa) {
 struct parsing_info* info;
 unsigned char*buf;
 buf=(unsigned char*)malloc_cb(get_prefered_allocator_item_size_for_variable(v),pa->prv_alloc_recycle);
@@ -128,10 +128,10 @@ info->jamo=jamo;
 info->pos_in_jamo=pos_int_jamo;
 info->insertions=NULL;
 if (insertions!=NULL && insertions->nbelems!=0) {
-	info->insertions=new_vector_int(insertions->nbelems,pa->prv_alloc_vector_int_inside_token);
-	vector_int_copy(info->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
+    info->insertions=new_vector_int(insertions->nbelems,pa->prv_alloc_vector_int_inside_token);
+    vector_int_copy(info->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
 } else {
-	info->insertions=new_vector_int(1, pa->prv_alloc_vector_int_inside_token);
+    info->insertions=new_vector_int(1, pa->prv_alloc_vector_int_inside_token);
 }
 return info;
 }
@@ -167,14 +167,14 @@ while (list!=NULL) {
  * have the same weight.
  */
 static void filter_lesser_weights(int weight,struct parsing_info* *list,
-									struct parsing_allocator* pa) {
+                                    struct parsing_allocator* pa) {
 if (*list==NULL || (*list)->weight>=weight) return;
 struct parsing_info* tmp;
 while (*list!=NULL) {
-	tmp=*list;
-	(*list)=(*list)->next;
-	tmp->next=NULL;
-	free_parsing_info(tmp,pa);
+    tmp=*list;
+    (*list)=(*list)->next;
+    tmp->next=NULL;
+    free_parsing_info(tmp,pa);
 }
 }
 
@@ -198,13 +198,13 @@ if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,sta
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
 if (list->pos_in_tokens==pos
-	&& list->pos_in_chars==pos_in_token
-	&& list->state_number==state
-	&& list->jamo==jamo /* We can because we only work on pointers on unique elements */
-	&& list->pos_in_jamo==pos_in_jamo
-	&& same_input_variables(list->input_variable_backup,v)
-	&& same_output_variables(list->output_variable_backup,output_var)
-	&& same_dic_variables(list->dic_variable_backup,v2)) {
+    && list->pos_in_chars==pos_in_token
+    && list->state_number==state
+    && list->jamo==jamo /* We can because we only work on pointers on unique elements */
+    && list->pos_in_jamo==pos_in_jamo
+    && same_input_variables(list->input_variable_backup,v)
+    && same_output_variables(list->output_variable_backup,output_var)
+    && same_dic_variables(list->dic_variable_backup,v2)) {
    list->stack_pointer=stack_pointer;
    /* We update the stack value */
    update_parsing_info_stack(list,stack);
@@ -232,13 +232,13 @@ if (list->pos_in_tokens==pos
    list->left_ctx_shift=left_ctx_shift;
    list->left_ctx_base=left_ctx_base;
    if (insertions!=NULL && insertions->nbelems!=0) {
-	   if (list->insertions==NULL) {
-		   list->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
-	   }
-	   vector_int_copy(list->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
+       if (list->insertions==NULL) {
+           list->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
+       }
+       vector_int_copy(list->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
    } else {
-	   /* We always need such a vector, even empty */
-	   if (list->insertions==NULL) list->insertions=new_vector_int(1, pa->prv_alloc_vector_int_inside_token);
+       /* We always need such a vector, even empty */
+       if (list->insertions==NULL) list->insertions=new_vector_int(1, pa->prv_alloc_vector_int_inside_token);
    }
    return list;
 }
@@ -258,7 +258,7 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          unichar* jamo,int pos_in_jamo,
                                          vector_int* insertions,
                                          int weight, struct parsing_allocator* pa) {
-	filter_lesser_weights(weight,&list,pa);
+    filter_lesser_weights(weight,&list,pa);
 if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
@@ -271,8 +271,8 @@ if ((list->pos_in_tokens==pos) /* If the length is the same... */
     && list->jamo==jamo /* See comment in insert_if_absent*/
     && list->pos_in_jamo==pos_in_jamo
     && same_input_variables(list->input_variable_backup,v)
-	&& same_output_variables(list->output_variable_backup,output_var)
-	&& same_dic_variables(list->dic_variable_backup,v2)) {
+    && same_output_variables(list->output_variable_backup,output_var)
+    && same_dic_variables(list->dic_variable_backup,v2)) {
     /* then we overwrite the current list element */
    list->stack_pointer=stack_pointer;
 
@@ -297,10 +297,10 @@ if ((list->pos_in_tokens==pos) /* If the length is the same... */
       fatal_error("Unexpected non NULL dic_entry in insert_if_different\n");
    }
    if (insertions!=NULL && insertions->nbelems!=0) {
-	   if (list->insertions==NULL) {
-		   list->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
-	   }
-	   vector_int_copy(list->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
+       if (list->insertions==NULL) {
+           list->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
+       }
+       vector_int_copy(list->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
    }
    return list;
 }
@@ -318,9 +318,9 @@ return list;
  */
 struct parsing_info* insert_morphological_match(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
-												struct parsing_allocator* pa) {
+                                                struct parsing_allocator* pa) {
 if (list==NULL) return new_parsing_info(pos_in_tokens,pos_in_chars,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
-		jamo,pos_in_jamo,NULL,-1,pa);
+        jamo,pos_in_jamo,NULL,-1,pa);
 if (list->pos_in_tokens==pos_in_tokens && list->pos_in_chars==pos_in_chars && list->state_number==state
     && list->dic_entry==dic_entry
     && list->jamo==jamo /* See comment in insert_if_absent*/
@@ -354,14 +354,14 @@ for (;;) {
   struct parsing_info*lcur=*lnext;
 
   if (lcur==NULL) {
-	  *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+      *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
-	  break;
+      break;
   }
   if (lcur->pos_in_chars==pos && lcur->pos_in_tokens==pos_in_token && lcur->state_number==state
-	&& lcur->jamo==jamo // We can because we only work on pointers on unique elements
-	&& lcur->pos_in_jamo==pos_in_jamo) {
+    && lcur->jamo==jamo // We can because we only work on pointers on unique elements
+    && lcur->pos_in_jamo==pos_in_jamo) {
    lcur->stack_pointer=stack_pointer;
    // We update the stack value
    update_parsing_info_stack(lcur,stack);
@@ -389,13 +389,13 @@ for (;;) {
    lcur->left_ctx_shift=left_ctx_shift;
    lcur->left_ctx_base=left_ctx_base;
    if (insertions!=NULL && insertions->nbelems!=0) {
-	   if (lcur->insertions==NULL) {
-		   lcur->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
-	   }
-	   vector_int_copy(lcur->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
+       if (lcur->insertions==NULL) {
+           lcur->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
+       }
+       vector_int_copy(lcur->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
    } else {
-	   // We always need such a vector, even empty
-	   if (lcur->insertions==NULL) lcur->insertions=new_vector_int(1, pa->prv_alloc_vector_int_inside_token);
+       // We always need such a vector, even empty
+       if (lcur->insertions==NULL) lcur->insertions=new_vector_int(1, pa->prv_alloc_vector_int_inside_token);
    }
    break;
    }
@@ -415,16 +415,16 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          unichar* jamo,int pos_in_jamo,
                                          vector_int* insertions,
                                          int weight, struct parsing_allocator* pa) {
-	filter_lesser_weights(weight,&list,pa);
+    filter_lesser_weights(weight,&list,pa);
 
 struct parsing_info**lnext=&list;
 for (;;) {
   struct parsing_info*lcur=*lnext;
   if ((lcur)==NULL) {
-	  *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+      *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
-	  break;
+      break;
   }
 
 if ((lcur->pos_in_chars==pos) // If the length is the same...
@@ -459,10 +459,10 @@ if ((lcur->pos_in_chars==pos) // If the length is the same...
       fatal_error("Unexpected non NULL dic_entry in insert_if_different\n");
    }
    if (insertions!=NULL && insertions->nbelems!=0) {
-	   if (lcur->insertions==NULL) {
-		   lcur->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
-	   }
-	   vector_int_copy(list->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
+       if (lcur->insertions==NULL) {
+           lcur->insertions=new_vector_int(insertions->nbelems, pa->prv_alloc_vector_int_inside_token);
+       }
+       vector_int_copy(list->insertions,insertions, pa->prv_alloc_vector_int_inside_token);
    }
    break;
 }
@@ -475,17 +475,17 @@ return list;
 
 
 
-												
+
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
-												struct parsing_allocator* pa) {
+                                                struct parsing_allocator* pa) {
 struct parsing_info**lnext=&list;
 for (;;) {
   struct parsing_info*lcur=*lnext;
   if ((lcur)==NULL) {
-		*lnext=new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
-		  jamo,pos_in_jamo,NULL,-1,pa);
-		break;
+        *lnext=new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
+          jamo,pos_in_jamo,NULL,-1,pa);
+        break;
   }
   if (lcur->pos_in_chars ==pos && lcur->pos_in_tokens==pos_in_token && lcur->state_number==state
     && lcur->dic_entry==dic_entry
@@ -494,7 +494,7 @@ for (;;) {
     // If the morphological match is already in the list, we do nothing.
     // Note that this may occur when we don't take DELAF entries into account
     // (i.e. dic_entry==NULL)
-   break;   
+   break;
   }
   lnext=&(lcur->next);
 }

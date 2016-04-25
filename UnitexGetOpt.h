@@ -49,7 +49,7 @@
 
 namespace unitex {
 #endif
-    
+
 /**
  * struct option, no_argument, required_argument and optional_argument may already
  * have been defined if someone use both libunitex.so and the original getopt.
@@ -68,7 +68,7 @@ namespace unitex {
  */
 struct option_TS {
    const char *name;  // the name of the option
-   int  has_arg;      // no_argument_TS, required_argument_TS or optional_argument_TS 
+   int  has_arg;      // no_argument_TS, required_argument_TS or optional_argument_TS
    int *flag;         // If flag is a null pointer, val is a value which identifies
                       // this option. If not, it is the address of an int variable
                       // which is the flag for this option
@@ -102,29 +102,29 @@ int getopt_long_only_TS(int, char *const *, const char *, const struct option_TS
 /* ************************************************************************** */
 /**
  * @class    UnitexGetOpt
- * 
+ *
  * @brief    A class wrapper (RAII) around Unitex's thread-safe getopt functions
- * 
+ *
  * @author   cristian.martinez@univ-paris-est.fr (martinec)
  * @date     July 2015
  */
 class UnitexGetOpt {
  public :
- 
+
   // Constructor
   /**
    * @brief  Default constructor
-   * 
+   *
    * Allocates and initializes an empty OptVars struct
    */
   UnitexGetOpt() :
     data_(new_OptVars()) {
   }
-  
+
   // Destructor
   /**
    * @brief  Destroys the object
-   * 
+   *
    * Free the memory allocated to the internal OptVars struct
    */
   ~UnitexGetOpt() {
@@ -137,18 +137,18 @@ class UnitexGetOpt {
 
   /**
    * @brief  Thread safe version of getopt
-   * 
+   *
    * Parse argc/argv argument vector
-   */   
+   */
   int parse(int nargc, char* const* nargv, const char* options) const {
-    return getopt_TS(nargc, nargv, options, data_); 
+    return getopt_TS(nargc, nargv, options, data_);
   }
 
   /**
    * @brief  Thread safe version of getopt_long
-   * 
+   *
    * Parse argc/argv argument vector
-   */   
+   */
   int parse_long(int nargc,
                   char* const* nargv,
                   const char*  options,
@@ -156,27 +156,27 @@ class UnitexGetOpt {
                   int* idx) const {
     return getopt_long_TS(nargc, nargv, options, long_options, idx, data_);
   }
-                 
+
   /**
    * @brief  Thread safe version of getopt_long_only
-   * 
+   *
    * Parse argc/argv argument vector
-   */   
+   */
   int parse_long_only(int nargc,
                   char* const* nargv,
                   const char*  options,
                   const struct option_TS* long_options,
                   int* idx) const {
     return getopt_long_only_TS(nargc, nargv, options, long_options, idx, data_);
-  }  
+  }
 
   // Element access
 
   /**
    * @brief  Get the underline OptVars structure
-   * 
+   *
    * @return A pointer to the underlying OptVars structure
-   * 
+   *
    * @attention The caller should not delete the return value
    */
   OptVars* vars() const {
@@ -186,16 +186,16 @@ class UnitexGetOpt {
   /**
    * @brief  Implicit conversion from UnitexGetOpt to the underlying OptVars
    * object
-   * 
-   * @see  c_optvars() const  
+   *
+   * @see  c_optvars() const
    */
   // UNITEX_EXPLICIT_CONVERSIONS
   operator OptVars*() const {
     return data_;
-  }  
-  
+  }
+
  private :
- 
+
   // Methods
   /**
    * @brief  Free the memory allocated to the internal OptVars
@@ -205,12 +205,12 @@ class UnitexGetOpt {
     free_OptVars(data_);
   }
 
-  // Data Members (except static const data members) 
+  // Data Members (except static const data members)
   /**
    * @brief  underline OptVars container
    */
   OptVars* data_;
-};  // class UnitexGetOpt  
+};  // class UnitexGetOpt
 /* ************************************************************************** */
 #endif
 

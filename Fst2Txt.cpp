@@ -57,7 +57,7 @@ const char* usage_Fst2Txt =
          "  --output_offsets=XXX: offset file to be produced\n"
          "\n"
          "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
-         "  -h/--help: this help\n"         
+         "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text. The text file is modified.\n";
 
@@ -123,7 +123,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&i
                 return USAGE_ERROR_CODE;
              }
              p->output_text_file=strdup(options.vars()->optarg);
-			 p->output_text_file_is_temp=0;
+             p->output_text_file_is_temp=0;
              if (p->output_text_file==NULL) {
                 alloc_error("main_Fst2Txt");
                 free_fst2txt_parameters(p);
@@ -133,13 +133,13 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&i
    case 'a': if (options.vars()->optarg[0]=='\0') {
                 error("You must specify a non empty alphabet file name\n");
                 free_fst2txt_parameters(p);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              p->alphabet_file=strdup(options.vars()->optarg);
              if (p->alphabet_file==NULL) {
                alloc_error("main_Fst2Txt");
                free_fst2txt_parameters(p);
-               return ALLOC_ERROR_CODE;               
+               return ALLOC_ERROR_CODE;
              }
              break;
    case 'M': p->output_policy=MERGE_OUTPUTS; break;
@@ -156,32 +156,32 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&i
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Fst2Txt[index].name);
              free_fst2txt_parameters(p);
-             return USAGE_ERROR_CODE; 
+             return USAGE_ERROR_CODE;
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 free_fst2txt_parameters(p);
-                return USAGE_ERROR_CODE;                 
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(p->vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
    case 'q': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_encoding argument\n");
                 free_fst2txt_parameters(p);
-                return USAGE_ERROR_CODE; 
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(p->vec.encoding_output),&(p->vec.bom_output),options.vars()->optarg);
              break;
    case '$': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_offsets argument\n");
                 free_fst2txt_parameters(p);
-                return USAGE_ERROR_CODE; 
+                return USAGE_ERROR_CODE;
              }
              strcpy(in_offsets,options.vars()->optarg);
              break;
    case '@': if (options.vars()->optarg[0]=='\0') {
                 error("Empty output_offsets argument\n");
                 free_fst2txt_parameters(p);
-                return USAGE_ERROR_CODE; 
+                return USAGE_ERROR_CODE;
              }
              strcpy(out_offsets,options.vars()->optarg);
              break;
@@ -204,7 +204,7 @@ if (options.vars()->optind!=argc-1) {
 if (p->input_text_file==NULL) {
    error("You must specify the text file\n");
    free_fst2txt_parameters(p);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
@@ -214,44 +214,44 @@ if (only_verify_arguments) {
 }
 
 if (out_offsets[0]!='\0') {
-	/* We deal with offsets only if the program is expected to produce some */
-	if (in_offsets[0]!='\0') {
-		p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
-		if (p->v_in_offsets==NULL) {
-			error("Cannot load offset file %s\n",in_offsets);
+    /* We deal with offsets only if the program is expected to produce some */
+    if (in_offsets[0]!='\0') {
+        p->v_in_offsets=load_offsets(&(p->vec),in_offsets);
+        if (p->v_in_offsets==NULL) {
+            error("Cannot load offset file %s\n",in_offsets);
       free_fst2txt_parameters(p);
-      return DEFAULT_ERROR_CODE;      
-		}
-	} else {
-		/* If there is no input offset file, we create an empty offset vector
-		 * in order to avoid testing whether the vector is NULL or not */
-		p->v_in_offsets=new_vector_offset(1);
-	}
-	p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
-	if (p->f_out_offsets==NULL) {
-		error("Cannot create file %s\n",out_offsets);
+      return DEFAULT_ERROR_CODE;
+        }
+    } else {
+        /* If there is no input offset file, we create an empty offset vector
+         * in order to avoid testing whether the vector is NULL or not */
+        p->v_in_offsets=new_vector_offset(1);
+    }
+    p->f_out_offsets=u_fopen(&(p->vec),out_offsets,U_WRITE);
+    if (p->f_out_offsets==NULL) {
+        error("Cannot create file %s\n",out_offsets);
     free_fst2txt_parameters(p);
-    return DEFAULT_ERROR_CODE;     
-	}
+    return DEFAULT_ERROR_CODE;
+    }
 }
 
 if (p->output_text_file == NULL) {
-	char tmp[FILENAME_MAX];
-	remove_extension(p->input_text_file, tmp);
-	strcat(tmp, ".tmp");
-	p->output_text_file_is_temp=1;
-	p->output_text_file = strdup(tmp);
-	if (p->output_text_file == NULL) {
-		alloc_error("main_Fst2Txt");
-		free_fst2txt_parameters(p);
-		return ALLOC_ERROR_CODE;
-	}
+    char tmp[FILENAME_MAX];
+    remove_extension(p->input_text_file, tmp);
+    strcat(tmp, ".tmp");
+    p->output_text_file_is_temp=1;
+    p->output_text_file = strdup(tmp);
+    if (p->output_text_file == NULL) {
+        alloc_error("main_Fst2Txt");
+        free_fst2txt_parameters(p);
+        return ALLOC_ERROR_CODE;
+    }
 }
 p->fst_file=strdup(argv[options.vars()->optind]);
 if (p->fst_file==NULL) {
    alloc_error("main_Fst2Txt");
    free_fst2txt_parameters(p);
-   return ALLOC_ERROR_CODE;   
+   return ALLOC_ERROR_CODE;
 }
 
 int result=main_fst2txt(p);

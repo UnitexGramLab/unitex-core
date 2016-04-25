@@ -58,12 +58,12 @@ static inline void resize(struct stack_unichar* stack,int minimum_new_size) {
 int new_size=stack->capacity;
 if (new_size==0) new_size=1;
 while (new_size<minimum_new_size) {
-	new_size=new_size*2;
+    new_size=new_size*2;
 }
 if (new_size==stack->capacity) return;
 stack->stack=(unichar*)realloc(stack->stack,new_size*sizeof(unichar));
 if (stack->stack==NULL) {
-	fatal_alloc_error("resize");
+    fatal_alloc_error("resize");
 }
 stack->capacity=new_size;
 }
@@ -73,7 +73,7 @@ if (stack==NULL) {
    fatal_error_NULL_push();
 }
 if (stack->stack_pointer==stack->capacity-1) {
-	resize(stack,stack->capacity+1);
+    resize(stack,stack->capacity+1);
 }
 stack->stack[++(stack->stack_pointer)]=c;
 }

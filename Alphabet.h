@@ -31,12 +31,12 @@
 namespace unitex {
 
 struct alphabet_ {
-	
+
   //unichar* t[0x10000]; // obsolete
   // t['e']= "E{E+'}" where {E+'} stands for the unicode
                        // character representing the E with accent
   //char t2[0x10000]; // obsolete
-  
+
   int i_last_array_pos_used;
   int i_nb_array_pos_allocated;
   unichar** t_array_collection;
@@ -65,7 +65,7 @@ struct alphabet_ {
   // remember : (c >> 2) == (c / 4)
   //            (c & 3)  == (c % 4)
   //            (x << 1) == (x * 2)
-  
+
   /* This array is only used for Korean alphabets, because it is useful to
    * know for a given Chinese character its Hangul syllable equivalent */
   unichar* korean_equivalent_syllable;
@@ -77,16 +77,16 @@ typedef struct alphabet_ Alphabet;
 #define SHIFT_BIT(c) (((c) & 3) << 1)
 
 #define SET_CASE_FLAG_MACRO(c,alphabet,value) \
-	            ((alphabet)->array_case_flags[ARRAY_ITEM(c)] |= ((value) << SHIFT_BIT(c)))
+                ((alphabet)->array_case_flags[ARRAY_ITEM(c)] |= ((value) << SHIFT_BIT(c)))
 
 #define CASE_FLAG_MACRO(c,alphabet) \
-	            ((((alphabet)->array_case_flags[ARRAY_ITEM(c)]) >> SHIFT_BIT(c)) & 3)
+                ((((alphabet)->array_case_flags[ARRAY_ITEM(c)]) >> SHIFT_BIT(c)) & 3)
 
 #define IS_LOWER_MACRO(c,alphabet) \
-	            ((CASE_FLAG_MACRO(c,alphabet)) & 2)
+                ((CASE_FLAG_MACRO(c,alphabet)) & 2)
 
 #define IS_UPPER_MACRO(c,alphabet) \
-	            ((CASE_FLAG_MACRO(c,alphabet)) & 1)
+                ((CASE_FLAG_MACRO(c,alphabet)) & 1)
 
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*);
 Alphabet* load_alphabet(const VersatileEncodingConfig*,const char*,int);

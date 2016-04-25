@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -53,36 +53,36 @@ namespace unitex {
 
 
 #ifdef __cplusplus
-	extern "C" {
+    extern "C" {
 #endif
 
-		// function export api
+        // function export api
 
 
 #ifdef __cplusplus
-	} // extern "C"
+    } // extern "C"
 #endif
 
 
 
 
-	extern const char* optstring_UniRunScript;
-	extern const struct option_TS lopts_UniRunScript[];
-	extern const char* usage_UniRunScript;
+    extern const char* optstring_UniRunScript;
+    extern const struct option_TS lopts_UniRunScript[];
+    extern const char* usage_UniRunScript;
 
-	int main_UniRunScript(int argc, char* const argv[]);
+    int main_UniRunScript(int argc, char* const argv[]);
 
 
-	extern const char* optstring_UniBatchRunScript;
-	extern const struct option_TS lopts_UniBatchRunScript[];
-	extern const char* usage_UniBatchRunScript;
+    extern const char* optstring_UniBatchRunScript;
+    extern const struct option_TS lopts_UniBatchRunScript[];
+    extern const char* usage_UniBatchRunScript;
 
-	int main_UniBatchRunScript(int argc, char* const argv[]);
+    int main_UniBatchRunScript(int argc, char* const argv[]);
 
 
 #ifdef __cplusplus
-	//        } // extern "C"
-	//    } // namespace logger
+    //        } // extern "C"
+    //    } // namespace logger
 } // namespace unitex
 #endif
 

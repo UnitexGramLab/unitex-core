@@ -27,9 +27,9 @@
  * in the form of POSIX regular expressions. Such filters can be used in
  * Locate grammars (example: <<able$>> = something that ends with "able").
  * These filters are manipulated with the TRE regular expression library:
- * 
+ *
  * http://laurikari.net/tre/
- * 
+ *
  * The integration of these filters in Unitex has been made by
  * Claude Devis (devis@tedm.ucl.ac.be).
  */
@@ -72,7 +72,7 @@ typedef struct {
    int size;
    MorphoFilter* filter;
 } FilterSet;
-               
+
 
 /**
  * This structure is used to know for each token of a text if it verifies or
@@ -83,12 +83,12 @@ typedef struct {
    int size;
    /* Each filter is associated to a bit array so that (filter #x)->bit[y]=1 means
     * that the filter number x can match the token number y.
-    * 
+    *
     * Note that a bit array can be NULL if the filter matches no token at all. */
    struct bit_array** matching_tokens;
 } FilterMatchIndex;
-                       
-                                                                       
+
+
 FilterSet* new_FilterSet(Fst2*,Alphabet*);
 void free_FilterSet(FilterSet*);
 

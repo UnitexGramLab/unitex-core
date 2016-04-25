@@ -39,7 +39,7 @@
 namespace unitex {
 
 /*
- * This is the structure that holds 
+ * This is the structure that holds
  *  - The strings that each token represent (unichar **token)
  *  - The biggest token id                  (int N)
  *  - The token id of the sentence marker   (int SENTENCE_MARKER)

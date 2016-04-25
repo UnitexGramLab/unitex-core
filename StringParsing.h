@@ -31,7 +31,7 @@
 
 namespace unitex {
 
-/** 
+/**
  * Here are the error codes used for string parsing. Some of them like
  * P_UNEXPECTED_COMMENT are specially designed for errors in DELA lines.
  */

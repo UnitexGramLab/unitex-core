@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -45,20 +45,20 @@ using namespace unitex;
 
 struct INF_free_info
 {
-	void *func_free_inf;
-	void *private_ptr;
-	void *privateSpacePtr;
-	int must_be_free;
+    void *func_free_inf;
+    void *private_ptr;
+    void *privateSpacePtr;
+    int must_be_free;
 } ;
 
 const struct INF_free_info INF_free_info_init={NULL,NULL,NULL,1};
 
 struct BIN_free_info
 {
-	void *func_free_bin;
-	void *private_ptr;
-	void *privateSpacePtr;
-	int must_be_free;
+    void *func_free_bin;
+    void *private_ptr;
+    void *privateSpacePtr;
+    int must_be_free;
 } ;
 
 const struct BIN_free_info BIN_free_info_init={NULL,NULL,NULL,1};

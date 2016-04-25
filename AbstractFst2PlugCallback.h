@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -66,7 +66,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_fst2)(Fst2* fst2,str
 
 typedef struct
 {
-	size_t size_func_array;
+    size_t size_func_array;
     t_fnc_is_filename_Fst2Space_object fnc_is_filename_object;
 
     t_fnc_Init_Fst2Space fnc_Init_Fst2Space;

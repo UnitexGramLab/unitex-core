@@ -63,33 +63,33 @@ namespace unitex {
  * This structure represents a one byte encoding.
  */
 struct encoding {
-	/* The type defines if we have a one byte encoding,
-	 * a UTF-16 one, a UTF-8 one, etc. */
-	int type;
-	/* Main name of the encoding ("iso-8859-1") */
-	char* name;
-	/* Other names for this encoding ("latin1","latin-1") */
-	char** aliases;
-	/* Size of 'aliases' */
-	int number_of_aliases;
+    /* The type defines if we have a one byte encoding,
+     * a UTF-16 one, a UTF-8 one, etc. */
+    int type;
+    /* Main name of the encoding ("iso-8859-1") */
+    char* name;
+    /* Other names for this encoding ("latin1","latin-1") */
+    char** aliases;
+    /* Size of 'aliases' */
+    int number_of_aliases;
 
-	/* The code page initialization function for this encoding.
-	 * This function is used only if the encoding type is ON_BYTE_ENCODING */
-	void (*init_function)(unichar*);
-	/*
-	 * If the encoding type is not ON_BYTE_ENCODING, we must define
-	 * an input and output function.
-	 */
-	int (*input_function)(ABSTRACTFILE*);
-	int (*output_function)(unichar,ABSTRACTFILE*);
+    /* The code page initialization function for this encoding.
+     * This function is used only if the encoding type is ON_BYTE_ENCODING */
+    void (*init_function)(unichar*);
+    /*
+     * If the encoding type is not ON_BYTE_ENCODING, we must define
+     * an input and output function.
+     */
+    int (*input_function)(ABSTRACTFILE*);
+    int (*output_function)(unichar,ABSTRACTFILE*);
 
-	int (*input_function_ctx)(ABSTRACTFILE*,const void*);
-	int (*output_function_ctx)(unichar,ABSTRACTFILE*,const void*);
+    int (*input_function_ctx)(ABSTRACTFILE*,const void*);
+    int (*output_function_ctx)(unichar,ABSTRACTFILE*,const void*);
 
-	/* The usage function for this encoding */
-	void (*usage_function)(void);
-	/* This function returns 1 if the given char can be encoded with this encoding */
-	int (*can_be_encoded_function)(unichar,const unsigned char*);
+    /* The usage function for this encoding */
+    void (*usage_function)(void);
+    /* This function returns 1 if the given char can be encoded with this encoding */
+    int (*can_be_encoded_function)(unichar,const unsigned char*);
 };
 
 

@@ -73,7 +73,7 @@ const struct option_TS lopts_BuildKrMwuDic[]= {
   {"output",required_argument_TS,NULL,'o'},
   {"directory",required_argument_TS,NULL,'d'},
   {"alphabet",required_argument_TS,NULL,'a'},
-  {"binary",required_argument_TS,NULL,'b'},      
+  {"binary",required_argument_TS,NULL,'b'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
   {"help",no_argument_TS,NULL,'h'},
   {"always-recompile-graphs",no_argument_TS,NULL,'f'},
@@ -140,7 +140,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_BuildKrMwuDic,lopts_Buil
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 'f': graph_recompilation_policy = ALWAYS_RECOMPILE; break;
    case 'n': graph_recompilation_policy = NEVER_RECOMPILE;  break;
@@ -188,7 +188,7 @@ if (dic_bin[0]=='\0') {
 }
 
 if (only_verify_arguments) {
-  // freeing all allocated memory 
+  // freeing all allocated memory
   return SUCCESS_RETURN_CODE;
 }
 
@@ -201,7 +201,7 @@ if (delas==NULL) {
 U_FILE* grf=u_fopen(&vec,output,U_WRITE);
 if (grf==NULL) {
    error("Cannot open %s\n",output);
-   u_fclose(delas);  
+   u_fclose(delas);
    return DEFAULT_ERROR_CODE;
 }
 

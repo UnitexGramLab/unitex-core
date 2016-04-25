@@ -75,8 +75,8 @@ const struct option_TS lopts_ConcorDiff[]= {
 
 int main_ConcorDiff(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+    usage();
+    return SUCCESS_RETURN_CODE;
 }
 
 int val,index=-1;
@@ -108,7 +108,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ConcorDiff,lopts_ConcorD
                 error("You must specify a non empty font name\n");
                 free(font);
                 free(out);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              font=strdup(options.vars()->optarg);
              if (font==NULL) {
@@ -129,7 +129,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ConcorDiff,lopts_ConcorD
              break;
    case 'd': diff_only=1; break;
    case 'V': only_verify_arguments = true;
-             break;   
+             break;
    case 'h': usage();
              free(font);
              free(out);
@@ -156,7 +156,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_ConcorDiff,lopts_ConcorD
                error("Empty output_encoding argument\n");
                free(font);
                free(out);
-               return USAGE_ERROR_CODE;                
+               return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -172,7 +172,7 @@ if (out==NULL) {
 if (font==NULL) {
    error("You must specify the font to use\n");
    free(out);
-   return USAGE_ERROR_CODE;   
+   return USAGE_ERROR_CODE;
 }
 if (size==0) {
    error("You must specify the font size to use\n");
@@ -193,7 +193,7 @@ if (only_verify_arguments) {
   free(font);
   free(out);
   return SUCCESS_RETURN_CODE;
-}             
+}
 
 diff(&vec,argv[options.vars()->optind],argv[options.vars()->optind+1],out,font,size,diff_only);
 

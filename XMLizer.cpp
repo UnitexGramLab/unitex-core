@@ -141,11 +141,11 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&i
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_XMLizer[index].name);
-             return USAGE_ERROR_CODE;                         
+             return USAGE_ERROR_CODE;
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 return USAGE_ERROR_CODE;
@@ -160,8 +160,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_XMLizer,lopts_XMLizer,&i
              break;
    case '?': index==-1  ? error("Invalid option -%c\n",options.vars()->optopt) :
                           error("Invalid option --%s\n",options.vars()->optarg);
-             return USAGE_ERROR_CODE;             
-  
+             return USAGE_ERROR_CODE;
+
    }
    index=-1;
 }
@@ -229,7 +229,7 @@ free_fst2txt_parameters(p);
 
 if (output[0]=='\0') {
   remove_extension(input,output);
-	strcat(output,".xml");
+    strcat(output,".xml");
 }
 
 int return_value = xmlize(&vec,snt,output,output_style);
@@ -243,144 +243,144 @@ return return_value;
 
 
 int xmlize(const VersatileEncodingConfig* vec,const char* fin,const char* fout,int ouput_style) {
-	U_FILE* input = u_fopen(vec, fin, U_READ);
-	if (input == NULL) {
+    U_FILE* input = u_fopen(vec, fin, U_READ);
+    if (input == NULL) {
     error("Input file '%s' not found!\n", fin);
     return DEFAULT_ERROR_CODE;
-  }  
+  }
 
-	U_FILE* output = u_fopen(UTF8, fout, U_WRITE);
-	if (output == NULL) {
+    U_FILE* output = u_fopen(UTF8, fout, U_WRITE);
+    if (output == NULL) {
     error("Cannot open output file '%s'!\n", fout);
-		u_fclose(input);
+        u_fclose(input);
     return DEFAULT_ERROR_CODE;
-	} else // FIXME(johndoe) put breaks
+    } else // FIXME(johndoe) put breaks
 
-	if(ouput_style==XML) {
-	   u_fprintf(output, xml_open);
-	}
-	else {
-	   u_fprintf(output, tei_open);
-	}
+    if(ouput_style==XML) {
+       u_fprintf(output, xml_open);
+    }
+    else {
+       u_fprintf(output, tei_open);
+    }
 
   int sentence_count = 1;
   int sentence_count_relative = 1;
   int paragraph_count = 1;
 
-	u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
+    u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
 
-	int current_state = 0;
-	unichar c;
-	int i;
-	while ((i = u_fgetc(input)) != EOF) {
-		c = (unichar)i;
-		switch (current_state) {
-			case 0: {
-				if ( c == '{') current_state = 1;
-				else if(c == '&') u_fprintf(output, "&amp;");
-				else if(c == '<') u_fprintf(output, "&lt;");
-				else if(c == '>') u_fprintf(output, "&gt;");
-				else u_fputc(c, output);
-				break;
-			}
-			case 1: {
-				if (c == 'S') current_state = 2;
-				else {
-					u_fputc('{', output);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-			case 2: {
-				if (c == '}') current_state = 3;
-				else {
-					u_fputc('{', output);
-					u_fputc('S', output);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-			case 3: {
-				if (c == '{') current_state = 4;
-				else if (c == '\n' || c == ' ' || c == '\t') {
-					u_fputc(c, output);
-					current_state = 3;
-				}
-				else {
-					u_fprintf(output, "</s><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-			case 4: {
-				if (c == 'S') current_state = 7;
-				else if (c == 'P') current_state = 5;
-				else {
-					u_fputc('{', output);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-			case 5: {
-				if (c == '}') {
-					u_fprintf(output, "</s></p>\n");
-					paragraph_count++;
-					sentence_count_relative=1;
-					current_state = 6;
-				} else {
-					u_fputc('{', output);
-					u_fputc('P', output);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-			case 6: {
-				if (c == '\n' || c == ' ' || c == '\t') u_fputc(c, output);
-				else {
-					u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-			case 7: {
-				if (c == '}') {
-					current_state = 3;
-				}
-				else {
-					u_fputc('{', output);
-					u_fputc('S', output);
-					u_fputc(c, output);
-					current_state = 0;
-				}
-				break;
-			}
-		}
-	}
+    int current_state = 0;
+    unichar c;
+    int i;
+    while ((i = u_fgetc(input)) != EOF) {
+        c = (unichar)i;
+        switch (current_state) {
+            case 0: {
+                if ( c == '{') current_state = 1;
+                else if(c == '&') u_fprintf(output, "&amp;");
+                else if(c == '<') u_fprintf(output, "&lt;");
+                else if(c == '>') u_fprintf(output, "&gt;");
+                else u_fputc(c, output);
+                break;
+            }
+            case 1: {
+                if (c == 'S') current_state = 2;
+                else {
+                    u_fputc('{', output);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+            case 2: {
+                if (c == '}') current_state = 3;
+                else {
+                    u_fputc('{', output);
+                    u_fputc('S', output);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+            case 3: {
+                if (c == '{') current_state = 4;
+                else if (c == '\n' || c == ' ' || c == '\t') {
+                    u_fputc(c, output);
+                    current_state = 3;
+                }
+                else {
+                    u_fprintf(output, "</s><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+            case 4: {
+                if (c == 'S') current_state = 7;
+                else if (c == 'P') current_state = 5;
+                else {
+                    u_fputc('{', output);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+            case 5: {
+                if (c == '}') {
+                    u_fprintf(output, "</s></p>\n");
+                    paragraph_count++;
+                    sentence_count_relative=1;
+                    current_state = 6;
+                } else {
+                    u_fputc('{', output);
+                    u_fputc('P', output);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+            case 6: {
+                if (c == '\n' || c == ' ' || c == '\t') u_fputc(c, output);
+                else {
+                    u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+            case 7: {
+                if (c == '}') {
+                    current_state = 3;
+                }
+                else {
+                    u_fputc('{', output);
+                    u_fputc('S', output);
+                    u_fputc(c, output);
+                    current_state = 0;
+                }
+                break;
+            }
+        }
+    }
 
-	if (current_state == 3) {
-		//...
-	} else if (current_state == 6) {
-		//...
-	} else {
-		u_fprintf(output, "</s></p>\n");
-	}
+    if (current_state == 3) {
+        //...
+    } else if (current_state == 6) {
+        //...
+    } else {
+        u_fprintf(output, "</s></p>\n");
+    }
 
-	if(ouput_style==XML) {
-	   u_fprintf(output, xml_close);
-	}
-	else {
-	   u_fprintf(output, tei_close);
-	}
+    if(ouput_style==XML) {
+       u_fprintf(output, xml_close);
+    }
+    else {
+       u_fprintf(output, tei_close);
+    }
 
-	u_fclose(input);
-	u_fclose(output);
-	u_printf("Done.\n");
+    u_fclose(input);
+    u_fclose(output);
+    u_printf("Done.\n");
   return SUCCESS_RETURN_CODE;
 }
 

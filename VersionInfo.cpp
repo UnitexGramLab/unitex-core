@@ -216,7 +216,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_VersionInfo[index].name);
@@ -273,14 +273,14 @@ if (do_json_info) {
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_user_friendly_info) {
     char buf[0x200]="";
-	strcpy(buf, get_unitex_verbose_version_string());
+    strcpy(buf, get_unitex_verbose_version_string());
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_semver_info) {
     char buf[0x200]="";
-	strcpy(buf,get_unitex_semver_string());
+    strcpy(buf,get_unitex_semver_string());
     u_sprintf(DisplayText,"%s", buf);
 } else if (do_copyright_only) {
-	get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+    get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
 }
 else if (do_revision_only) {
     u_sprintf(DisplayText,"%d",revision);
@@ -290,12 +290,12 @@ else if (do_version_only) {
 }
 else {
     if (revision == -1) {
-		get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+        get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
         u_sprintf(DisplayText+u_strlen(DisplayText),"\nUnitex Version: %u.%u\n",
                 unitexMajorVersion,unitexMinorVersion);
     }
     else {
-		get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
+        get_copyright_notice(DisplayText, MAX_SIZE_DISPLAY_TEXT);
         u_sprintf(DisplayText+u_strlen(DisplayText),"\nUnitex Version: %u.%u\nUnitex SVN revision: %d\n",
                 unitexMajorVersion,unitexMinorVersion,revision);
     }
@@ -345,11 +345,11 @@ else {
 
 free(DisplayText);
 
-// FIXME(gvollant) To conform with the C/C++ standard, isn't a good idea to 
+// FIXME(gvollant) To conform with the C/C++ standard, isn't a good idea to
 // return a custom integer equal to get_unitex_revision() here
 // An exit value greater than 255 returns an exit code modulo 256
 // see http://www.tldp.org/LDP/abs/html/exitcodes.html#AEN23629
-return retValue; 
+return retValue;
 }
 
 } // namespace unitex

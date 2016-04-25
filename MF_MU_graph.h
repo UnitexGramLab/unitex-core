@@ -45,7 +45,7 @@ namespace unitex {
 
 /////////////////////////////////////////////////
 // Possible types for a value description
-// e.g. Gen=fem is a constant description, 
+// e.g. Gen=fem is a constant description,
 //      Gen=$g1 is a description containing a unification variable
 //      Gen==$g1 is a description containing an inheritance variable
 typedef enum {cnst, unif_var, inherit_var} MU_graph_value_T;
@@ -59,7 +59,7 @@ typedef struct {
     int value;             //category's value (e.g. fem): index of val in the domain of 'cat'
     unichar* unif_var;     //e.g. g1
     unichar* inherit_var;  //e.g. g1
-  } val;  
+  } val;
 } MU_graph_category_T;
 
 /////////////////////////////////////////////////
@@ -71,7 +71,7 @@ typedef struct {
 
 /////////////////////////////////////////////////
 // Possible types for a graphical unit reference in a node
-// e.g. "of" is a reference to a constant unit, 
+// e.g. "of" is a reference to a constant unit,
 //      $2 is a reference to a variable (here representing the 2nd constituent of the MWU's lemma)
 typedef enum {cst,var} MU_graph_u_T;
 
@@ -107,25 +107,25 @@ typedef struct {
 /////////////////////////////////////////////////
 
 /////////////////////////////////////////////////
-// Explores the inflection transducer of the MU-lemma 'MU_lemma' 
+// Explores the inflection transducer of the MU-lemma 'MU_lemma'
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
 // (initially, 'forms' does not have its space allocated).
-//Returns 0 on success, 1 otherwise. 
+//Returns 0 on success, 1 otherwise.
 int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,
-		MU_lemma_T* MU_lemma, MU_forms_T* forms);
+        MU_lemma_T* MU_lemma, MU_forms_T* forms);
 
 /////////////////////////////////////////////////
-// Creates a MU_graph label from two strings.    
+// Creates a MU_graph label from two strings.
 // We suppose that MU_label already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
 
 /////////////////////////////////////////////////
-// Prints a MU_graph label.    
+// Prints a MU_graph label.
 void MU_graph_print_label(MU_graph_label_T* MU_label);
 
 /////////////////////////////////////////////////
-// Liberates the memory allocated for a MU_graph label.    
+// Liberates the memory allocated for a MU_graph label.
 void MU_graph_free_label(MU_graph_label_T* MU_label);
 
 } // namespace unitex

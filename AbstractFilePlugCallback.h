@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -113,7 +113,7 @@ typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memLowLevelSetSizeReservation)(ABST
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFileRemove)(const char* lpFileName,void* privateSpacePtr);
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFileRename)(const char * _OldFilename, const char * _NewFilename,void* privateSpacePtr);
 
-/* get a read only pointer on a portion of a file, from pos to pos+len (file mapped io logic). Can 
+/* get a read only pointer on a portion of a file, from pos to pos+len (file mapped io logic). Can
         be NULL if the file space don't support this function (but Unitex will use more CPU time and memory */
 typedef const void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_getMapPointer)(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type len,int options,afs_size_type value_for_options,void* privateSpacePtr);
 

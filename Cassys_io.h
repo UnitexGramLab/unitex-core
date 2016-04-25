@@ -99,13 +99,13 @@ void get_csc_wd_path(const char* filename, char* result);
  * \param[in] next_transducer_label
  */
 char* create_labeled_files_and_directory(
-		const char *text,
-		int previous_transducer_label,
-		int next_transducer_label,
-		int previous_iteration,
-		int next_iteration,
-		int must_create_directory,
-		int must_copy_file) ;
+        const char *text,
+        int previous_transducer_label,
+        int next_transducer_label,
+        int previous_iteration,
+        int next_iteration,
+        int must_create_directory,
+        int must_copy_file) ;
 
 
 //int copy_directory_snt_item(const char*dest_snt_dir,const char*src_snd_dir,const char*filename,int mandatory);
@@ -123,15 +123,15 @@ int copy_directory_snt_content(const char *dest, const char *src, int contain_ma
 
 
 char* create_updated_graph_filename(const char *text,
-	int next_transducer_label,
-	int next_iteration,
-	const char* graph_name,
-	const char* ext);
+    int next_transducer_label,
+    int next_iteration,
+    const char* graph_name,
+    const char* ext);
 
 char* get_file_in_current_snt(const char *text,
-	int next_transducer_label,
-	int next_iteration,
-	const char* file_name,
+    int next_transducer_label,
+    int next_iteration,
+    const char* file_name,
         const char* ext);
 
 /**

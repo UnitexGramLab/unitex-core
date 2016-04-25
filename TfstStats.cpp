@@ -29,7 +29,7 @@
 
 namespace unitex {
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
@@ -38,7 +38,7 @@ namespace unitex {
 
 static void compute_form_frequencies(SingleGraph g,void** tags,int tfst_tags,struct hash_table* hash);
 static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,double freq,
-									void** tags,int tfst_tags,struct hash_table* form_frequencies);
+                                    void** tags,int tfst_tags,struct hash_table* form_frequencies);
 
 /**
  * Computes the form frequencies for the given sentence automaton as follows:
@@ -49,7 +49,7 @@ static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizin
  * 'hash' is supposed to be a hash table associating double values to strings.
  */
 void compute_form_frequencies(SingleGraph g,TfstTag** tags,
-								struct hash_table* form_frequencies) {
+                                struct hash_table* form_frequencies) {
   compute_form_frequencies(g,(void**)tags,1,form_frequencies);
 }
 
@@ -66,40 +66,40 @@ void compute_form_frequencies(SingleGraph g,TfstTag** tags,
  * that only contains the tag contents.
  */
 void compute_form_frequencies(SingleGraph g,const unichar* const* string_tags,int n_string_tags,
-								struct hash_table* form_frequencies) {
+                                struct hash_table* form_frequencies) {
 unichar** tags=(unichar**)calloc(n_string_tags,sizeof(unichar*));
 if (tags==NULL) {
-	fatal_alloc_error("compute_form_frequencies");
+    fatal_alloc_error("compute_form_frequencies");
 }
 
 Ustring* foo=new_Ustring(64);
 tags[0]=u_strdup("<E>");
 
 for (int i=1;i<n_string_tags;i++) {
-	const unichar* s=string_tags[i];
-	int n_at=0;
-	/* We look for the second '@' */
-	while ((*s)!='\0' && n_at!=2) {
-		if ((*s)=='@') n_at++;
-		s++;
-	}
-	if ((*s)=='\0') {
-		fatal_error("Invalid tfst tag %S in compute_form_frequencies\n",string_tags[i]);
-	}
-	empty(foo);
-	while ((*s)!='\0' && (*s)!='\n') {
-		u_strcat(foo,(*s));
-		s++;
-	}
-	if ((*s)=='\0') {
-		fatal_error("Invalid tfst tag %S in compute_form_frequencies\n",string_tags[i]);
-	}
-	tags[i]=u_strdup(foo->str);
+    const unichar* s=string_tags[i];
+    int n_at=0;
+    /* We look for the second '@' */
+    while ((*s)!='\0' && n_at!=2) {
+        if ((*s)=='@') n_at++;
+        s++;
+    }
+    if ((*s)=='\0') {
+        fatal_error("Invalid tfst tag %S in compute_form_frequencies\n",string_tags[i]);
+    }
+    empty(foo);
+    while ((*s)!='\0' && (*s)!='\n') {
+        u_strcat(foo,(*s));
+        s++;
+    }
+    if ((*s)=='\0') {
+        fatal_error("Invalid tfst tag %S in compute_form_frequencies\n",string_tags[i]);
+    }
+    tags[i]=u_strdup(foo->str);
 }
 free_Ustring(foo);
 compute_form_frequencies(g,(void**)tags,0,form_frequencies);
 for (int i=0;i<n_string_tags;i++) {
-	free(tags[i]);
+    free(tags[i]);
 }
 free(tags);
 }
@@ -180,9 +180,9 @@ while (q2<g->number_of_states-1) {
  * can explore the subautomata between factorizing states in order to compute
  * form frequencies */
 for (int i=0;i<g->number_of_states;i++) {
-	if (factorizing[i]) {
-		explore_for_form_frequencies(g,i,factorizing,(double)(1./number_of_paths[i]),tags,tfst_tags,form_frequencies);
-	}
+    if (factorizing[i]) {
+        explore_for_form_frequencies(g,i,factorizing,(double)(1./number_of_paths[i]),tags,tfst_tags,form_frequencies);
+    }
 }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 free(direct);
@@ -197,31 +197,31 @@ free(number_of_paths);
  * transition we go through, we add 'freq' to its tag frequency.
  */
 static int explore_for_form_frequencies(SingleGraph g,int state,char* factorizing,double freq,
-									void** tags,int tfst_tags,struct hash_table* form_frequencies) {
+                                    void** tags,int tfst_tags,struct hash_table* form_frequencies) {
 Transition* t=g->states[state]->outgoing_transitions;
 int n=0,foo;
 while (t!=NULL) {
-	int ret;
-	unichar* content;
-	if (tfst_tags) {
-		TfstTag* tmp=(TfstTag*)(tags[t->tag_number]);
-		content=tmp->content;
-	} else {
-		content=(unichar*)(tags[t->tag_number]);
-	}
-	struct any* value=get_value(form_frequencies,content,HT_INSERT_IF_NEEDED,&ret);
-	if (ret!=HT_KEY_ALREADY_THERE) {
-		value->_double=0;
-	}
-	if (!factorizing[t->state_number]) {
-		foo=explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,tfst_tags,form_frequencies);
-		n=n+foo;
-		value->_double=value->_double+freq*foo;
-	} else {
-		value->_double=value->_double+freq;
-		n++;
-	}
-	t=t->next;
+    int ret;
+    unichar* content;
+    if (tfst_tags) {
+        TfstTag* tmp=(TfstTag*)(tags[t->tag_number]);
+        content=tmp->content;
+    } else {
+        content=(unichar*)(tags[t->tag_number]);
+    }
+    struct any* value=get_value(form_frequencies,content,HT_INSERT_IF_NEEDED,&ret);
+    if (ret!=HT_KEY_ALREADY_THERE) {
+        value->_double=0;
+    }
+    if (!factorizing[t->state_number]) {
+        foo=explore_for_form_frequencies(g,t->state_number,factorizing,freq,tags,tfst_tags,form_frequencies);
+        n=n+foo;
+        value->_double=value->_double+freq*foo;
+    } else {
+        value->_double=value->_double+freq;
+        n++;
+    }
+    t=t->next;
 }
 return n;
 }
@@ -233,11 +233,11 @@ static const double cte_double_b = (double)atof("0.66666\x00\nb");
 
 static inline int compare_freq_then_name(double freq_a,  const unichar * name_a, double freq_b,const unichar* name_b)
 {
-	if ((freq_a*cte_double_a) < (freq_b*cte_double_b))
-		return -1;
-	if ((freq_a*cte_double_a) > (freq_b*cte_double_b))
-		return 1;
-	return -u_strcmp(name_a, name_b);
+    if ((freq_a*cte_double_a) < (freq_b*cte_double_b))
+        return -1;
+    if ((freq_a*cte_double_a) > (freq_b*cte_double_b))
+        return 1;
+    return -u_strcmp(name_a, name_b);
 }
 
 static int partition_for_quicksort_by_frequence(int m, int n,vector_ptr* tags,vector_double* freq) {
@@ -332,18 +332,18 @@ vector_ptr* tags=new_vector_ptr(4096);
 vector_double* freq=new_vector_double(4096);
 /* First, we build vectors from the hash table content */
 for (unsigned int i=0;i<form_frequencies->capacity;i++) {
-	struct hash_list* l=form_frequencies->table[i];
-	while (l!=NULL) {
-		vector_ptr_add(tags,l->ptr_key);
-		vector_double_add(freq,l->value._double);
-		l=l->next;
-	}
+    struct hash_list* l=form_frequencies->table[i];
+    while (l!=NULL) {
+        vector_ptr_add(tags,l->ptr_key);
+        vector_double_add(freq,l->value._double);
+        l=l->next;
+    }
 }
 if (by_freq!=NULL) {
-	sort_and_save_by_freq(by_freq,tags,freq);
+    sort_and_save_by_freq(by_freq,tags,freq);
 }
 if (by_alph!=NULL) {
-	sort_and_save_by_alph(by_alph,tags,freq);
+    sort_and_save_by_alph(by_alph,tags,freq);
 }
 free_vector_ptr(tags,NULL);
 free_vector_double(freq);

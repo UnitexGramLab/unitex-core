@@ -64,10 +64,10 @@ return new_LocateTfstTagMatchingCache(DEFAULT_CACHE_SIZE,n_fst2_tags);
 
 /**
  * Creates a cache with a size that is estimated with the formula:
- * 
- * f(n_sentences*4): 
- *    4 is empirically a good value 
- *    f(x) = closer power of 2 greater than x 
+ *
+ * f(n_sentences*4):
+ *    4 is empirically a good value
+ *    f(x) = closer power of 2 greater than x
  */
 LocateTfstTagMatchingCache* new_LocateTfstTagMatchingCache(int n_sentences,int n_fst2_tags) {
 int size=estimate_number_of_tfs_tags(n_sentences);
@@ -85,7 +85,7 @@ return cache;
 
 
 /**
- * Estimates the number of TfstTag. 
+ * Estimates the number of TfstTag.
  */
 static int estimate_number_of_tfs_tags(int n) {
 n=n*4;
@@ -191,7 +191,7 @@ static int get_tfst_tag_index(unichar* s,LocateTfstTagMatchingCache* cache) {
 int ret;
 struct any* value=get_value(cache->table,s,HT_INSERT_IF_NEEDED,&ret);
 if (ret==HT_KEY_ADDED) {
-   /* If we had not already this tag, we insert it */ 
+   /* If we had not already this tag, we insert it */
    value->_int=cache->elements->nbelems;
    vector_ptr_add(cache->elements,new_element_array(cache->n_fst2_tags));
 }
@@ -201,7 +201,7 @@ return value->_int;
 
 /**
  * Returns the cached result for the given match, or UNKNOWN_MATCH_STATUS
- * if it has not been computed yet.  
+ * if it has not been computed yet.
  */
 int get_cached_result(LocateTfstTagMatchingCache* cache,
                       unichar* tfst_tag,int fst2_tag_index,
@@ -233,7 +233,7 @@ return UNKNOWN_MATCH_STATUS;
 
 /**
  * Sets the given result in the cache. This function is not supposed to be called
- * if the result is already in the cache. 
+ * if the result is already in the cache.
  */
 void set_cached_result(LocateTfstTagMatchingCache* cache,
                       int tfst_tag_index,int fst2_tag_index,

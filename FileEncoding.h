@@ -69,13 +69,13 @@ typedef enum {
 #define VEC_DEFAULT {DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT,DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT}
 
 typedef struct {
-	/* Describes the encodings that are supported in input files */
-	int mask_encoding_compatibility_input;
-	/* Encoding output for file creation */
-	Encoding encoding_output;
-	/* Do we need to write BOM when creating a file ?
-	 * 0=no 1=yes 2=yes for UTF16LE and UTF16BE */
-	int bom_output;
+    /* Describes the encodings that are supported in input files */
+    int mask_encoding_compatibility_input;
+    /* Encoding output for file creation */
+    Encoding encoding_output;
+    /* Do we need to write BOM when creating a file ?
+     * 0=no 1=yes 2=yes for UTF16LE and UTF16BE */
+    int bom_output;
 } VersatileEncodingConfig;
 
 } // namespace unitex

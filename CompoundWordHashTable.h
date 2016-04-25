@@ -23,14 +23,14 @@
 #define CompoundWordHashTableH
 
 /**
- * 
+ *
  * This library provides functions for manipulating compound words seen as
  * token sequences. Such compound words are stored into a hash table.
- * 
+ *
  * Author: Alexis Neme
  * Modified by: Sébastien Paumier
  */
- 
+
 #include "Unicode.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -51,7 +51,7 @@ namespace unitex {
  * For instance, if a block contains sequences for the compound words
  * "black box" and "black humor", respectively with priorities 2 and 3, the
  * token array may be:
- * 
+ *
  * (40,2,13,-1,2,40,2,125,-1,3)
  */
 struct tct_hash_block {
@@ -67,16 +67,16 @@ struct tct_hash_block {
 struct tct_hash {
    /* The size of the table, i.e. the size of the 'hash_blocks' array */
    int size;
-   
+
    /* The array of hash blocks */
-   struct tct_hash_block*	hash_blocks;
+   struct tct_hash_block*   hash_blocks;
    int* token_array_base_memory_alloc;
    int token_array_standard_base_memory_nb_item_for_each_block;
 };
 
 
-struct tct_hash* new_tct_hash();  
-struct tct_hash* new_tct_hash(int,int);  
+struct tct_hash* new_tct_hash();
+struct tct_hash* new_tct_hash(int,int);
 void free_tct_hash(struct tct_hash*);
 int was_already_in_tct_hash(int*,struct tct_hash*,int);
 int build_token_sequence(unichar*,struct text_tokens*,int*);

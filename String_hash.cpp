@@ -205,66 +205,66 @@ int get_value_index_(const unichar* key,int pos,struct string_hash_tree_node* no
                     struct string_hash* hash,int insert_policy,const unichar* value) {
 
 for (;;) {
-	if (node==NULL) {
-	   fatal_error("NULL error in get_value_index\n");
-	}
-	if (key[pos]=='\0') {
-	   /* If we are at the end of the key */
-	   if (insert_policy==DONT_INSERT) {
-		  /* If we just consult the string_hash with no insert, we just
-		   * have to return the value_index of the node */
-		  return node->value_index;
-	   }
-	   if (node->value_index!=NO_VALUE_INDEX) {
-		  /* If the key already exists, we return its value index */
-		  return node->value_index;
-	   }
-	   /* Here, we have to build a new value index */
-	   if (hash->capacity==DONT_USE_VALUES) {
-		  /* If don't uses the 'value' array, there is no limitation */
-		  node->value_index=hash->size;
-		  (hash->size)++;
-	   } else {
-		 /* Otherwise: if there is a maximum capacity */
-		 if (hash->size==hash->capacity) {
-		   /* We check if we have reached the end of the 'value' array */
-		   if (hash->bound_policy==DONT_ENLARGE) {
-			 /* If we can't enlarge the 'value' array, we fail */
-			 fatal_error("Too much elements in a non extensible array in get_value_index\n");
-		   }
-		   /* If we can enlarge the 'value' array, we do it, doubling its capacity */
-		   hash->capacity=2*hash->capacity;
-		   hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
-		   if (hash->value==NULL) {
-			 fatal_alloc_error("get_value_index");
-		   }
-		 }
-		 node->value_index=hash->size;
-		 (hash->size)++;
-		 /* u_strdup is supposed to return NULL if 'value' is NULL */
-		 hash->value[node->value_index]=u_strdup(value);
-	   }
-	   return node->value_index;
-	}
+    if (node==NULL) {
+       fatal_error("NULL error in get_value_index\n");
+    }
+    if (key[pos]=='\0') {
+       /* If we are at the end of the key */
+       if (insert_policy==DONT_INSERT) {
+          /* If we just consult the string_hash with no insert, we just
+           * have to return the value_index of the node */
+          return node->value_index;
+       }
+       if (node->value_index!=NO_VALUE_INDEX) {
+          /* If the key already exists, we return its value index */
+          return node->value_index;
+       }
+       /* Here, we have to build a new value index */
+       if (hash->capacity==DONT_USE_VALUES) {
+          /* If don't uses the 'value' array, there is no limitation */
+          node->value_index=hash->size;
+          (hash->size)++;
+       } else {
+         /* Otherwise: if there is a maximum capacity */
+         if (hash->size==hash->capacity) {
+           /* We check if we have reached the end of the 'value' array */
+           if (hash->bound_policy==DONT_ENLARGE) {
+             /* If we can't enlarge the 'value' array, we fail */
+             fatal_error("Too much elements in a non extensible array in get_value_index\n");
+           }
+           /* If we can enlarge the 'value' array, we do it, doubling its capacity */
+           hash->capacity=2*hash->capacity;
+           hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
+           if (hash->value==NULL) {
+             fatal_alloc_error("get_value_index");
+           }
+         }
+         node->value_index=hash->size;
+         (hash->size)++;
+         /* u_strdup is supposed to return NULL if 'value' is NULL */
+         hash->value[node->value_index]=u_strdup(value);
+       }
+       return node->value_index;
+    }
 
-	/* If we are not at the end of the key, we look for the transition to follow */
-	struct string_hash_tree_transition* t=get_transition(key[pos],node->trans);
-	if (t==NULL) {
-	   /* If there is no suitable transition */
-	   if (insert_policy==DONT_INSERT) {
-		  /* If we just look, then we say that we have not found the key */
-		  return NO_VALUE_INDEX;
-	   }
-	   /* Otherwise, we create a transition */
-	   t=new_string_hash_tree_transition(hash);
-	   t->letter=key[pos];
-	   t->next=node->trans;
-	   t->node=new_string_hash_tree_node(hash);
-	   node->trans=t;
-	}
+    /* If we are not at the end of the key, we look for the transition to follow */
+    struct string_hash_tree_transition* t=get_transition(key[pos],node->trans);
+    if (t==NULL) {
+       /* If there is no suitable transition */
+       if (insert_policy==DONT_INSERT) {
+          /* If we just look, then we say that we have not found the key */
+          return NO_VALUE_INDEX;
+       }
+       /* Otherwise, we create a transition */
+       t=new_string_hash_tree_transition(hash);
+       t->letter=key[pos];
+       t->next=node->trans;
+       t->node=new_string_hash_tree_node(hash);
+       node->trans=t;
+    }
 
-	pos++;
-	node=t->node;
+    pos++;
+    node=t->node;
 }
 }
 
@@ -339,16 +339,16 @@ return hash;
 static void normalize_CR_LF(unichar* s) {
 int i=0,j=0;
 while (s[i]!='\0') {
-	if (s[i]=='\\') {
-		switch (s[i+1]) {
-		case '\0': fatal_error("Unexpected backslash at end of line in normalize_CR_LF\n");
-		case 'r': s[j++]=0x0D; i+=2; break;
-		case 'n': s[j++]=0x0A; i+=2; break;
-		default: s[j++]=s[i+1]; i+=2; break;
-		}
-	} else {
-		s[j++]=s[i++];
-	}
+    if (s[i]=='\\') {
+        switch (s[i+1]) {
+        case '\0': fatal_error("Unexpected backslash at end of line in normalize_CR_LF\n");
+        case 'r': s[j++]=0x0D; i+=2; break;
+        case 'n': s[j++]=0x0A; i+=2; break;
+        default: s[j++]=s[i+1]; i+=2; break;
+        }
+    } else {
+        s[j++]=s[i++];
+    }
 }
 s[j]='\0';
 }
@@ -401,8 +401,8 @@ while (EOF!=(line_length=u_fgets2(temp,f))) {
       }
       else if (pos==0 && temp[pos]=='\0') {
          /* Empty line */
-    	  continue;
-      }    
+          continue;
+      }
       else if (pos==0) {
          /* If the line starts with the separator */
          error("Line with empty key:\n<%S>\n",temp);
@@ -410,7 +410,7 @@ while (EOF!=(line_length=u_fgets2(temp,f))) {
       else if (pos>=line_length) {
         /* If the line doesn't have a separator */
         error("Line without separator:\n<%S>\n",temp);
-      }        
+      }
       else {
          /* We jump over the separator */
          pos++;
@@ -418,12 +418,12 @@ while (EOF!=(line_length=u_fgets2(temp,f))) {
           * defined in the file */
          value[0]='\0';
          if(P_BACKSLASH_AT_END==parse_string(temp,&pos,value,P_EMPTY,P_EMPTY,to_keep_protected)) {
-        	 error("Backslash at end of line:\n<%S>\n",temp);
+             error("Backslash at end of line:\n<%S>\n",temp);
          }
          else {
             /* If we have a valid (key,value) pair, we insert it into the string_hash */
-        	normalize_CR_LF(value);
-        	normalize_CR_LF(key);
+            normalize_CR_LF(value);
+            normalize_CR_LF(key);
             get_value_index(key,hash,INSERT_IF_NEEDED,value);
          }
       }

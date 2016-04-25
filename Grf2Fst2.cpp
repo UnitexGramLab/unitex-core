@@ -259,8 +259,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
    case 'd': strcpy(infos->repository,options.vars()->optarg); break;
    case 1: infos->debug=1; break;
    case 'V': only_verify_arguments = true;
-             break;   
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_Grf2Fst2[index].name);
@@ -271,7 +271,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
                 error("Empty input_encoding argument\n");
                 free(named);
                 free_compilation_info(infos);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(infos->vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
@@ -279,7 +279,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
                 error("Empty output_encoding argument\n");
                 free(named);
                 free_compilation_info(infos);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(infos->vec.encoding_output),&(infos->vec.bom_output),options.vars()->optarg);
              break;
@@ -316,13 +316,13 @@ if (options.vars()->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    free(named);
    free_compilation_info(infos);
-   return USAGE_ERROR_CODE;  
+   return USAGE_ERROR_CODE;
 }
 
 if (only_verify_arguments) {
   // freeing all allocated memory
   free(named);
-  free_compilation_info(infos);  
+  free_compilation_info(infos);
   return SUCCESS_RETURN_CODE;
 }
 
@@ -334,7 +334,7 @@ if (alph[0]!='\0') {
   if (infos->alphabet==NULL) {
     error("Cannot load alphabet file %s\n",alph);
     free_compilation_info(infos);
-    return DEFAULT_ERROR_CODE;    
+    return DEFAULT_ERROR_CODE;
   }
 }
 
@@ -347,7 +347,7 @@ if ((infos->fst2=u_fopen(&(infos->vec),fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
    free_alphabet(infos->alphabet);
    free_compilation_info(infos);
-   return DEFAULT_ERROR_CODE; 
+   return DEFAULT_ERROR_CODE;
 }
 u_fprintf(infos->fst2,"0000000000\n");
 int result=compile_grf(argv[options.vars()->optind],infos);

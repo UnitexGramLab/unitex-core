@@ -338,7 +338,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                     infos[num_info].annotation[k] = lines[annot_pos][j];
                 infos[num_info].annotation[k] = '\0';
                 //end extract tag information
-                
+
                 num_info++;
             }
             num_lines++;
@@ -356,7 +356,7 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
         entity_string[i] = NULL;
     U_FILE *dico = u_fopen(vec, token_list, U_READ); //token list in the current _snt folder
     if(dico == NULL)
-        dico = u_fopen(vec, token_list_backup, U_READ);   //token list in the previous _snt folder 
+        dico = u_fopen(vec, token_list_backup, U_READ);   //token list in the previous _snt folder
     if(dico != NULL && infos != NULL) {
     int * num_entity = (int*)malloc(sizeof(int)*(num+1));
     for(int i = 0; i < num; i++)
@@ -379,7 +379,7 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 if(line[j]=='\\' && j+1<line_len) { //in case the annotation is protected
                     if(infos[k].annotation[i] == line[j+1])
                         j++;
-                } 
+                }
             }
             if(infos[k].annotation[i] == '\0') {
                 int reverse_i =  j; //We will go in reverse to find the entity
@@ -396,7 +396,7 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                         num_paren++;
                     }
                     reverse_i--;
-                } 
+                }
                 int start = 0;
                 int end = 0;
                 int annot_start = 0;
@@ -731,7 +731,7 @@ int main_Cassys(int argc,char* const argv[]) {
         alloc_error("main_Cassys");
         free_vector_ptr(tokenize_additional_args, free);
         free(temp_work_dir);
-        free(textbuf);        
+        free(textbuf);
         return ALLOC_ERROR_CODE;
     }
 
@@ -741,7 +741,7 @@ int main_Cassys(int argc,char* const argv[]) {
         free_vector_ptr(locate_additional_args, free);
         free_vector_ptr(tokenize_additional_args, free);
         free(temp_work_dir);
-        free(textbuf);        
+        free(textbuf);
         return ALLOC_ERROR_CODE;
     }
 
@@ -758,7 +758,7 @@ int main_Cassys(int argc,char* const argv[]) {
                                           lopts_Cassys, &index))) {
         switch (val) {
         case 'V': only_verify_arguments = true;
-                  break;        
+                  break;
         case 'h': usage();
                   free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
                   free_vector_ptr(concord_additional_args, free);
@@ -777,7 +777,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_reading_encoding_parameter(&(vec.mask_encoding_compatibility_input),options.vars()->optarg);
              break;
@@ -790,7 +790,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              decode_writing_encoding_parameter(&(vec.encoding_output),&(vec.bom_output),options.vars()->optarg);
              break;
@@ -804,7 +804,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
             }
 
             get_extension(options.vars()->optarg, textbuf->extension_text_name);
@@ -818,7 +818,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
             }
 
             strcpy(textbuf->text_file_name, options.vars()->optarg);
@@ -836,7 +836,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
             } else {
                 strcpy(textbuf->transducer_list_file_name, options.vars()->optarg);
                 has_transducer_list = true;
@@ -853,7 +853,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
             } else {
                 strcpy(textbuf->transducer_filename_prefix, options.vars()->optarg);
                 has_transducer_list = true;
@@ -870,7 +870,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
             } else {
                 transducer_name_and_mode_linked_list_arg=add_transducer_linked_list_new_name(transducer_name_and_mode_linked_list_arg,options.vars()->optarg);
             }
@@ -886,7 +886,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
             } else {
                 set_last_transducer_linked_list_mode_by_string(transducer_name_and_mode_linked_list_arg,options.vars()->optarg);
             }
@@ -956,7 +956,7 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;                
+                return USAGE_ERROR_CODE;
              }
              if ((strcmp(options.vars()->optarg,"minus")!=0) && (strcmp(options.vars()->optarg,"-")!=0) &&
                  (strcmp(options.vars()->optarg,"tilde")!=0) && (strcmp(options.vars()->optarg,"~")!=0))
@@ -1019,7 +1019,7 @@ int main_Cassys(int argc,char* const argv[]) {
                         free_vector_ptr(tokenize_additional_args, free);
                         free(morpho_dic);
                         free(textbuf);
-                        return ALLOC_ERROR_CODE;                      
+                        return ALLOC_ERROR_CODE;
                     }
 
             }
@@ -1037,7 +1037,7 @@ int main_Cassys(int argc,char* const argv[]) {
                         free_vector_ptr(tokenize_additional_args, free);
                         free(temp_work_dir);
                         free(textbuf);
-                        return ALLOC_ERROR_CODE; 
+                        return ALLOC_ERROR_CODE;
                     }
                 } else {
                     char* more_morpho_dics = (char*) realloc((void*) morpho_dic, strlen(
@@ -1053,7 +1053,7 @@ int main_Cassys(int argc,char* const argv[]) {
                         free(temp_work_dir);
                         free(morpho_dic);
                         free(textbuf);
-                        return ALLOC_ERROR_CODE; 
+                        return ALLOC_ERROR_CODE;
                     }
                     strcat(morpho_dic, ";");
                     strcat(morpho_dic, options.vars()->optarg);
@@ -1072,7 +1072,7 @@ int main_Cassys(int argc,char* const argv[]) {
                     free_vector_ptr(tokenize_additional_args, free);
                     free(temp_work_dir);
                     free(textbuf);
-                    return ALLOC_ERROR_CODE; 
+                    return ALLOC_ERROR_CODE;
                 }
                 vector_ptr_add(tokenize_additional_args, locate_arg);
             }
@@ -1089,7 +1089,7 @@ int main_Cassys(int argc,char* const argv[]) {
                     free_vector_ptr(tokenize_additional_args, free);
                     free(temp_work_dir);
                     free(textbuf);
-                    return ALLOC_ERROR_CODE; 
+                    return ALLOC_ERROR_CODE;
                 }
                 vector_ptr_add(locate_additional_args, locate_arg);
             }
@@ -1106,7 +1106,7 @@ int main_Cassys(int argc,char* const argv[]) {
                     free_vector_ptr(tokenize_additional_args, free);
                     free(temp_work_dir);
                     free(textbuf);
-                    return ALLOC_ERROR_CODE; 
+                    return ALLOC_ERROR_CODE;
                 }
                 vector_ptr_add(concord_additional_args, concord_arg);
             }
@@ -1114,12 +1114,12 @@ int main_Cassys(int argc,char* const argv[]) {
         }
         case 'x': {
             if (options.vars()->optarg[0] != '\0') {
-		if(strcmp(options.vars()->optarg,"standoff")==0) {
+        if(strcmp(options.vars()->optarg,"standoff")==0) {
                     istex_param = 2;
-		}
-		else if(strcmp(options.vars()->optarg,"token")==0) {
+        }
+        else if(strcmp(options.vars()->optarg,"token")==0) {
                     istex_param = 1;
-		}
+        }
             }
             else {
                 error("You must specify an argument for istex\n");
@@ -1130,10 +1130,10 @@ int main_Cassys(int argc,char* const argv[]) {
                 free(temp_work_dir);
                 free(morpho_dic);
                 free(textbuf);
-                return USAGE_ERROR_CODE;       				
+                return USAGE_ERROR_CODE;
             }
             break;
-	}
+    }
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1164,7 +1164,7 @@ int main_Cassys(int argc,char* const argv[]) {
     }
 
     if(command_line_errors || only_verify_arguments) {
-        // freeing all allocated memory 
+        // freeing all allocated memory
         free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
         free_vector_ptr(concord_additional_args, free);
         free_vector_ptr(locate_additional_args, free);
@@ -1172,13 +1172,13 @@ int main_Cassys(int argc,char* const argv[]) {
         free(temp_work_dir);
         free(morpho_dic);
         free(textbuf);
-        
+
         if (command_line_errors) {
           return USAGE_ERROR_CODE;
         }
 
-        return SUCCESS_RETURN_CODE;  
-    } 
+        return SUCCESS_RETURN_CODE;
+    }
 
     // Load the list of transducers from the file transducer list and stores it in a list
     //struct fifo *transducer_list = load_transducer(transducer_list_file_name);
@@ -1201,7 +1201,7 @@ int main_Cassys(int argc,char* const argv[]) {
     free(temp_work_dir);
     free(morpho_dic);
     free(textbuf);
-       
+
     return return_value;
 }
 
@@ -1495,7 +1495,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 free((p_locate_perf_info + loop_display_perf)->name);
             }
             free(p_locate_perf_info);
-            return DEFAULT_ERROR_CODE;           
+            return DEFAULT_ERROR_CODE;
         }
 
         for (iteration = 0; current_transducer->repeat_mode == INFINITY || iteration < current_transducer->repeat_mode; iteration++) {
@@ -1674,7 +1674,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
 
         transducer_number++;
     }
-    
+
     if(istex_param == 1) {
         int itr = iteration;
         if (iteration > 0)
@@ -1807,12 +1807,12 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
                 (p_locate_perf_info + loop_display_perf)->name);
     }
 
-	if (p_locate_perf_info != NULL) {
-		for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
-			free((p_locate_perf_info + loop_display_perf)->name);
+    if (p_locate_perf_info != NULL) {
+        for (unsigned int loop_display_perf = 0; loop_display_perf < nb_perf_info; loop_display_perf++) {
+            free((p_locate_perf_info + loop_display_perf)->name);
         }
-		free(p_locate_perf_info);
-	}
+        free(p_locate_perf_info);
+    }
 
     return SUCCESS_RETURN_CODE;
 }

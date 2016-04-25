@@ -103,7 +103,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_TfstTag,lopts_TfstTag,&i
              break;
    case 'V': only_verify_arguments = true;
              break;
-   case 'h': usage(); 
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_TfstTag[index].name);
@@ -132,7 +132,7 @@ if (only_verify_arguments) {
 
 U_FILE* f=u_fopen(&vec,ind,U_READ);
 if (f==NULL) {
-	error("Cannot load ind file %s\n",ind);
+    error("Cannot load ind file %s\n",ind);
   return DEFAULT_ERROR_CODE;
 }
 
@@ -140,7 +140,7 @@ unichar header;
 struct match_list* matches=load_match_list(f,NULL,&header);
 u_fclose(f);
 if (header!='X') {
-	error("Invalid ind file %s\n",ind);
+    error("Invalid ind file %s\n",ind);
   return DEFAULT_ERROR_CODE;
 }
 
@@ -152,23 +152,23 @@ strcat(in_tind,".tind");
 char out_tfst[FILENAME_MAX];
 char out_tind[FILENAME_MAX];
 if (output[0]!='\0') {
-	strcpy(out_tfst,output);
-	remove_extension(output,out_tind);
-	strcat(out_tind,".tind");
+    strcpy(out_tfst,output);
+    remove_extension(output,out_tind);
+    strcat(out_tind,".tind");
 } else {
-	strcpy(out_tfst,"tmp__.tfst");
-	strcpy(out_tind,"tmp__.tind");
+    strcpy(out_tfst,"tmp__.tfst");
+    strcpy(out_tind,"tmp__.tind");
 }
 
 U_FILE* f_out_tfst=u_fopen(&vec,out_tfst,U_WRITE);
 if (f_out_tfst==NULL) {
-	error("Cannot create %s\n",out_tfst);
+    error("Cannot create %s\n",out_tfst);
   return DEFAULT_ERROR_CODE;
 }
 
 U_FILE* f_out_tind=u_fopen(&vec,out_tind,U_WRITE);
 if (f_out_tind==NULL) {
-	error("Cannot create %s\n",out_tind);
+    error("Cannot create %s\n",out_tind);
   u_fclose(f_out_tfst);
   return DEFAULT_ERROR_CODE;
 }
@@ -181,11 +181,11 @@ int return_value = process(input_tfst,output_tfst,matches);
 close_text_automaton(input_tfst);
 close_text_automaton(output_tfst);
 if (output[0]=='\0') {
-	/* If we wanted to replace the given text automaton, we do it now */
-	::remove(in_tfst);
-	::remove(in_tind);
-	::rename(out_tfst,in_tfst);
-	::rename(out_tind,in_tind);
+    /* If we wanted to replace the given text automaton, we do it now */
+    ::remove(in_tfst);
+    ::remove(in_tind);
+    ::rename(out_tfst,in_tfst);
+    ::rename(out_tind,in_tind);
 }
 
 u_printf("Done.\n");
@@ -196,34 +196,34 @@ static int process_matches(Tfst* in,struct match_list* *matches) {
 int sentence,start,end,pos;
 int epsilon=0;
 while (*matches!=NULL) {
-	if ((*matches)->output==NULL) {
-		error("Unexpected NULL output in process_matches\n");
+    if ((*matches)->output==NULL) {
+        error("Unexpected NULL output in process_matches\n");
     return DEFAULT_ERROR_CODE;
-	}
-	if (3!=u_sscanf((*matches)->output,"%d %d %d:%n",&sentence,&start,&end,&pos)) {
-		error("Invalid tagging output in process_matches:\n_%S_\n",(*matches)->output);
+    }
+    if (3!=u_sscanf((*matches)->output,"%d %d %d:%n",&sentence,&start,&end,&pos)) {
+        error("Invalid tagging output in process_matches:\n_%S_\n",(*matches)->output);
     return DEFAULT_ERROR_CODE;
-	}
-	if (sentence!=in->current_sentence) break;
-	unichar* s=(*matches)->output+pos;
-	struct match_list* tmp=(*matches);
-	if (!u_strcmp(s,"<E>")) {
-		/* We add an epsilon transition */
-		add_outgoing_transition(in->automaton->states[start],0,end);
-		epsilon=1;
-	} else {
-		/* We have to create a new tag */
-		TfstTag* tag=new_TfstTag(T_STD);
-		tag->content=u_strdup(s);
-		tag->m=tmp->m;
-		int index=vector_ptr_add(in->tags,tag);
-		add_outgoing_transition(in->automaton->states[start],index,end);
-	}
-	(*matches)=(*matches)->next;
-	free_match_list_element(tmp);
+    }
+    if (sentence!=in->current_sentence) break;
+    unichar* s=(*matches)->output+pos;
+    struct match_list* tmp=(*matches);
+    if (!u_strcmp(s,"<E>")) {
+        /* We add an epsilon transition */
+        add_outgoing_transition(in->automaton->states[start],0,end);
+        epsilon=1;
+    } else {
+        /* We have to create a new tag */
+        TfstTag* tag=new_TfstTag(T_STD);
+        tag->content=u_strdup(s);
+        tag->m=tmp->m;
+        int index=vector_ptr_add(in->tags,tag);
+        add_outgoing_transition(in->automaton->states[start],index,end);
+    }
+    (*matches)=(*matches)->next;
+    free_match_list_element(tmp);
 }
 if (epsilon) {
-	remove_epsilon_transitions(in->automaton,0);
+    remove_epsilon_transitions(in->automaton,0);
 }
 return SUCCESS_RETURN_CODE;
 }
@@ -233,18 +233,18 @@ return SUCCESS_RETURN_CODE;
  * The match list is freed by this function.
  */
 static int process(Tfst* in,Tfst* out,struct match_list* matches) {
-int process_matches_return_value = SUCCESS_RETURN_CODE; 
+int process_matches_return_value = SUCCESS_RETURN_CODE;
 u_fprintf(out->tfst,"%010d\n",out->N);
 for (int i=1;i<=in->N;i++) {
-	load_sentence(in,i);
-	/* We reverse transitions to have an identical output if the sentence is
-	 * not modified */
-	reverse_transition_lists(in->automaton);
-	process_matches_return_value = process_matches(in,&matches);
+    load_sentence(in,i);
+    /* We reverse transitions to have an identical output if the sentence is
+     * not modified */
+    reverse_transition_lists(in->automaton);
+    process_matches_return_value = process_matches(in,&matches);
   if(process_matches_return_value != SUCCESS_RETURN_CODE) {
     return process_matches_return_value;
   }
-	save_current_sentence(in,out->tfst,out->tind,NULL,0,NULL);
+    save_current_sentence(in,out->tfst,out->tind,NULL,0,NULL);
 }
 return SUCCESS_RETURN_CODE;
 }

@@ -44,10 +44,10 @@ typedef regmatch_t regex_regmatch_t ;
 
 int regex_facade_regcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags);
 size_t regex_facade_regerror(int errcode, const regex_facade_regex_t *preg, char *errbuf,
-	 size_t errbuf_size);
+     size_t errbuf_size);
 void regex_facade_regfree(regex_facade_regex_t *preg);
 int regex_facade_regexec(const regex_facade_regex_t *preg, const unichar_regex *string,
-	 size_t nmatch, regex_regmatch_t pmatch[], int eflags);
+     size_t nmatch, regex_regmatch_t pmatch[], int eflags);
 
 int check_regex_lib_in_unitex();
 
@@ -55,10 +55,10 @@ int check_regex_lib_in_unitex();
 /*
 UNITEX_FUNC int UNITEX_CALL RegexFacadeRegcomp(regex_facade_regex_t *preg, const unichar_regex *regex, int cflags);
 UNITEX_FUNC size_t UNITEX_CALL RegexFacadeRegerror(int errcode, const regex_facade_regex_t *preg, char *errbuf,
-	size_t errbuf_size);
+    size_t errbuf_size);
 UNITEX_FUNC void UNITEX_CALL RegexFacadeRegfree(regex_facade_regex_t *preg);
 UNITEX_FUNC int UNITEX_CALL RegexFacadeRegexec(const regex_facade_regex_t *preg, const unichar_regex *string,
-	size_t nmatch, regex_regmatch_t pmatch[], int eflags);
+    size_t nmatch, regex_regmatch_t pmatch[], int eflags);
 */
 
 UNITEX_FUNC int UNITEX_CALL CheckRegexLibInUnitex();
@@ -80,7 +80,7 @@ namespace unitex {
 void w_strcpy(unichar_regex* target, const unichar* source);
 void w_strcpy(unichar_regex** target, size_t *buffer_size, const unichar* source);
 unichar_regex* w_strcpy_optional_buffer(unichar_regex * original_buffer, size_t original_buffer_size,
-	unichar_regex**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc);
+    unichar_regex**allocated_buffer, const unichar* add_string, size_t* len, Abstract_allocator prv_alloc);
 void free_wstring_optional_buffer(unichar_regex** allocated_buffer, Abstract_allocator prv_alloc);
 
 unichar_regex* regex_facade_strcpy(unichar_regex* dest,const unichar* src);

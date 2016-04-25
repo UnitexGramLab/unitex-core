@@ -61,40 +61,40 @@ struct transducer_name_and_mode_linked_list
  */
 
 typedef struct transducer{
-	char *transducer_file_name;
-	OutputPolicy output_policy;
-	int repeat_mode;
-	int generic_graph;
+    char *transducer_file_name;
+    OutputPolicy output_policy;
+    int repeat_mode;
+    int generic_graph;
 }transducer;
 
 
 struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(
-			struct transducer_name_and_mode_linked_list *current_list,
-			const char*filename);
+            struct transducer_name_and_mode_linked_list *current_list,
+            const char*filename);
 
 struct transducer_name_and_mode_linked_list* add_transducer_linked_list_new_name(
-		struct transducer_name_and_mode_linked_list *current_list,
-		const char*filename,
-		int repeat_mode,
-		int generic_graph);
+        struct transducer_name_and_mode_linked_list *current_list,
+        const char*filename,
+        int repeat_mode,
+        int generic_graph);
 
 void set_last_transducer_linked_list_mode(
-		struct transducer_name_and_mode_linked_list *current_list,
-		OutputPolicy mode);
+        struct transducer_name_and_mode_linked_list *current_list,
+        OutputPolicy mode);
 
 void set_last_transducer_linked_list_mode_by_string(
-		struct transducer_name_and_mode_linked_list *current_list,
-		const char*option_name);
+        struct transducer_name_and_mode_linked_list *current_list,
+        const char*option_name);
 
 void free_transducer_name_and_mode_linked_list(
-		struct transducer_name_and_mode_linked_list *list);
+        struct transducer_name_and_mode_linked_list *list);
 
 struct transducer_name_and_mode_linked_list *load_transducer_list_file(
-		const char *transducer_list_name, int translate_path_separator_to_native);
+        const char *transducer_list_name, int translate_path_separator_to_native);
 
 struct fifo *load_transducer_from_linked_list(
-		const struct transducer_name_and_mode_linked_list *list,
-		const char*transducer_filename_prefix);
+        const struct transducer_name_and_mode_linked_list *list,
+        const char*transducer_filename_prefix);
 
 /**
  * \brief returns a fifo containing the list of transducers to be applied in the cascade

@@ -36,7 +36,7 @@ namespace unitex {
 /* Every character or string that comes from the input text must be
  * pushed with the following functions, because some characters like dots
  * and commas may have to be protected when they come from the input. This
- * is useful when LocateTfst is invoked (one day maybe) from the Dico program 
+ * is useful when LocateTfst is invoked (one day maybe) from the Dico program
  * in order to avoid producing bad lines like:
  *
  *    3,14,PI.NUM   ==>  should be:  3\,14,PI.NUM

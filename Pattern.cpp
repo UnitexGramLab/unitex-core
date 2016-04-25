@@ -85,7 +85,7 @@ if (s[i]!='\0') {
 }
 /* If we have no grammatical codes, we can't decide */
 if (semantic_codes==NULL) {
-	return AMBIGUOUS_PATTERN;
+    return AMBIGUOUS_PATTERN;
 }
 /* Otherwise, we test if the string is a grammatical or semantic code */
 if (get_value_index(s,semantic_codes,DONT_INSERT)!=-1) {
@@ -141,13 +141,13 @@ do {
    switch(codes[pos]) {
       case '+': pos++; minus=0; break;
       case '~': if (tilde_negation_operator) {
-                  pos++; minus=1; 
+                  pos++; minus=1;
                 }
                 else
                     minus = 0;
                 break;
       case '-': if (!tilde_negation_operator) {
-                  pos++; minus=1; 
+                  pos++; minus=1;
                 }
                 else
                     minus = 0;
@@ -341,22 +341,22 @@ return 0;
  * Returns a clone of the pattern.
  */
 struct pattern* clone(const struct pattern* src,Abstract_allocator prv_alloc) {
-	struct pattern* dst;
+    struct pattern* dst;
 
-	if (src == NULL)
-		return NULL;
+    if (src == NULL)
+        return NULL;
 
-	dst=(struct pattern*)malloc_cb(sizeof(struct pattern),prv_alloc);
-	if (dst==NULL) {
-	   fatal_error("Not enough memory in new_pattern_ByCopy\n");
-	}
-	dst->inflected=u_strdup(src->inflected,prv_alloc);
-	dst->lemma=u_strdup(src->lemma,prv_alloc);
-	dst->grammatical_codes=clone(src->grammatical_codes,prv_alloc);
-	dst->inflectional_codes=clone(src->inflectional_codes,prv_alloc);
-	dst->forbidden_codes=clone(src->forbidden_codes,prv_alloc);
-	dst->type=src->type;
-	return dst;
+    dst=(struct pattern*)malloc_cb(sizeof(struct pattern),prv_alloc);
+    if (dst==NULL) {
+       fatal_error("Not enough memory in new_pattern_ByCopy\n");
+    }
+    dst->inflected=u_strdup(src->inflected,prv_alloc);
+    dst->lemma=u_strdup(src->lemma,prv_alloc);
+    dst->grammatical_codes=clone(src->grammatical_codes,prv_alloc);
+    dst->inflectional_codes=clone(src->inflectional_codes,prv_alloc);
+    dst->forbidden_codes=clone(src->forbidden_codes,prv_alloc);
+    dst->type=src->type;
+    return dst;
 }
 
 } // namespace unitex

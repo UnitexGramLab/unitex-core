@@ -41,7 +41,7 @@ namespace unitex {
 
 
 int normalize(const char*, const char*, const VersatileEncodingConfig*, int, int, const char*,
-		vector_offset*,int);
+        vector_offset*,int);
 
 } // namespace unitex
 

@@ -74,7 +74,7 @@ void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int*,st
  * The logical XOR.
  */
 static inline int XOR(int a, int b) {
-	return (a && !b) || (!a && b);
+    return (a && !b) || (!a && b);
 }
 
 } // namespace unitex

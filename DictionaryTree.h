@@ -41,40 +41,40 @@ namespace unitex {
  * Dominique Revuz's algorithm.
  */
 struct dictionary_node {
-	/*
-	 * 'trans' is the list of the transitions outgoing from this node.
-	 */
-	struct dictionary_node_transition* trans;
-	/*
-	 * 'n_trans' stands for the number of transitions outgoing from this node. It is
-	 * equivalent the size of the list 'trans', but it is cached for efficiency
-	 * reasons.
-	 */
-	int n_trans;
-	/*
-	 * 'single_INF_code_list' is a list that contains the numbers of all the single
-	 * INF codes that are associated with this node.
-	 */
-	struct list_int* single_INF_code_list;
-	/*
-	 * 'INF_code' is a value representing the final INF line number associated
-	 * with this dictionary node. This INF code correspond to the union of all
-	 * the single INF codes of this node, separated with commas:
-	 * 
-	 * .DET:ms,.A:ms
-	 *
-	 * WARNING: this field has sense only if 'single_INF_code_list' is not NULL
-	 */
-	int INF_code;
-	/*
-	 * 'offset' is used to give to this node an address in the .BIN file
-	 */
-	int offset;
-	/*
-	 * Number of incoming transitions. It is used to know when a state can actually
-	 * be freed.
-	 */
-	int incoming;
+    /*
+     * 'trans' is the list of the transitions outgoing from this node.
+     */
+    struct dictionary_node_transition* trans;
+    /*
+     * 'n_trans' stands for the number of transitions outgoing from this node. It is
+     * equivalent the size of the list 'trans', but it is cached for efficiency
+     * reasons.
+     */
+    int n_trans;
+    /*
+     * 'single_INF_code_list' is a list that contains the numbers of all the single
+     * INF codes that are associated with this node.
+     */
+    struct list_int* single_INF_code_list;
+    /*
+     * 'INF_code' is a value representing the final INF line number associated
+     * with this dictionary node. This INF code correspond to the union of all
+     * the single INF codes of this node, separated with commas:
+     *
+     * .DET:ms,.A:ms
+     *
+     * WARNING: this field has sense only if 'single_INF_code_list' is not NULL
+     */
+    int INF_code;
+    /*
+     * 'offset' is used to give to this node an address in the .BIN file
+     */
+    int offset;
+    /*
+     * Number of incoming transitions. It is used to know when a state can actually
+     * be freed.
+     */
+    int incoming;
 };
 
 
@@ -96,7 +96,7 @@ struct dictionary_node_transition {
 void free_dictionary_node(struct dictionary_node*,Abstract_allocator);
 void free_dictionary_node_transition(struct dictionary_node_transition*,Abstract_allocator);
 void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,struct string_hash*,
-		int,Abstract_allocator);
+        int,Abstract_allocator);
 struct dictionary_node* new_dictionary_node(Abstract_allocator);
 
 void minimize_tree(struct dictionary_node*,struct bit_array*,Abstract_allocator);

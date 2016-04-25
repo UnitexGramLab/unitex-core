@@ -66,7 +66,7 @@ extern const char* usage_MzRepairUlp;
 const char* usage_MzRepairUlp =
          "Usage : MzRepairUlp [OPTIONS] <ulpfile>\n"
          "\n"
-		     "  <ulpfile>: a corrupted ulp file (often, a crashing log)\n"
+             "  <ulpfile>: a corrupted ulp file (often, a crashing log)\n"
          "\n"
          "OPTIONS:\n"
          "  -o X/--output=X: uses X as filename for fixed .ulp file (<ulpfile>.repair by default)\n"
@@ -169,13 +169,13 @@ if (only_verify_arguments) {
 const char* ulpFile=argv[options.vars()->optind];
 
 if (outputFile[0]=='\0') {
-	strcpy(outputFile,ulpFile);
-	strcat(outputFile,".repair");
+    strcpy(outputFile,ulpFile);
+    strcat(outputFile,".repair");
 }
 
 if (tempFile[0]=='\0') {
-	strcpy(tempFile,outputFile);
-	strcat(tempFile,".build");
+    strcpy(tempFile,outputFile);
+    strcat(tempFile,".build");
 }
 
 int retRepair=0;
@@ -184,15 +184,15 @@ uLong bytesRecovered=0;
 
 retRepair=ulpRepair(ulpFile,(const char*)outputFile,(const char*)tempFile,&nRecovered,&bytesRecovered);
 if ((retRepair!=0)) {
-	if ((verbose==1) || (quiet == 0)) {
-		u_printf("error in UlpRepair from %s to %s : return value = %d",ulpFile,outputFile,retRepair);
-	}
+    if ((verbose==1) || (quiet == 0)) {
+        u_printf("error in UlpRepair from %s to %s : return value = %d",ulpFile,outputFile,retRepair);
+    }
 }
 
 if (retRepair==0) {
-	if ((verbose==1) && (quiet == 0)) {
-		u_printf("success in UlpRepair from %s to %s : return value = %d",ulpFile,outputFile,retRepair);
-	}
+    if ((verbose==1) && (quiet == 0)) {
+        u_printf("success in UlpRepair from %s to %s : return value = %d",ulpFile,outputFile,retRepair);
+    }
 }
 return retRepair;
 }

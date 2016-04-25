@@ -43,7 +43,7 @@ const char* usage_SelectOutput =
   "  -o [on/off]/--output=[on/off]: enable (on) or disable (off) standard output\n"
   "  -e [on/off]/--error=[on/off]: enable (on) or disable (off) error output\n"
   "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
-  "  -h/--help: this help\n"     
+  "  -h/--help: this help\n"
   "\n";
 
 
@@ -72,8 +72,8 @@ const struct option_TS lopts_SelectOutput[] = {
  */
 int main_SelectOutput(int argc,char* const argv[]) {
 if (argc==1) {
-	usage();
-	return SUCCESS_RETURN_CODE;
+    usage();
+    return SUCCESS_RETURN_CODE;
 }
 
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -83,30 +83,30 @@ UnitexGetOpt options;
 while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_SelectOutput,&index))) {
    switch(val) {
    case 'V': only_verify_arguments = true;
-             break;    
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case 'e':
    case 'o':
-	   {
-		   enum stdwrite_kind swk = (val == 'o') ? stdwrite_kind_out : stdwrite_kind_err;
-		   if (strcmp(options.vars()->optarg,"on") == 0)
-		   {
-		       SetStdWriteCB(swk,0,NULL,NULL);
-		   }
-		   else
-		   if (strcmp(options.vars()->optarg,"off") == 0)
-		   {
-		       SetStdWriteCB(swk,1,NULL,NULL);
-		   }
-		   else 
-		   {
-		       error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
-		       return USAGE_ERROR_CODE;
-		   }
-		   break;
-	   }
-   
+       {
+           enum stdwrite_kind swk = (val == 'o') ? stdwrite_kind_out : stdwrite_kind_err;
+           if (strcmp(options.vars()->optarg,"on") == 0)
+           {
+               SetStdWriteCB(swk,0,NULL,NULL);
+           }
+           else
+           if (strcmp(options.vars()->optarg,"off") == 0)
+           {
+               SetStdWriteCB(swk,1,NULL,NULL);
+           }
+           else
+           {
+               error("Invalid option --%s, must be 'on' or 'off'\n",options.vars()->optarg);
+               return USAGE_ERROR_CODE;
+           }
+           break;
+       }
+
    case 'k': if (options.vars()->optarg[0]=='\0') {
                 error("Empty input_encoding argument\n");
                 return USAGE_ERROR_CODE;
@@ -121,7 +121,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
              break;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_SelectOutput[index].name);
-             return USAGE_ERROR_CODE;            
+             return USAGE_ERROR_CODE;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              return USAGE_ERROR_CODE;
@@ -136,7 +136,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_SelectOutput,lopts_Selec
   }
 
 
-	return SUCCESS_RETURN_CODE;
+    return SUCCESS_RETURN_CODE;
 }
 
 } // namespace unitex

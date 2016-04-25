@@ -1,0 +1,58 @@
+# Unitex/GramLab code formatting styles
+# This file is for unifying the coding style for different editors and IDEs
+# see http://editorconfig.org for information about how to use it
+# add by martinec
+
+# top-most EditorConfig file
+root = true
+
+# default settings
+[*]
+charset = utf-8
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+
+# C++ Files
+[*.{c,cpp,h,c.in,h.in,cpp.in}]
+curly_bracket_next_line = true
+indent_brace_style = 1TBS
+trim_trailing_whitespace = true
+end_of_line = lf
+
+#[{*.java,*.xml,*.js,*.css]
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Makefiles
+[{Makefile, Makefile.am}]
+indent_style = tab
+indent_size = 4
+
+# VS studio files
+[*.{sln,user,csproj,props,vcproj,vcxproj,vcxproj.filters}]
+end_of_line = crlf
+indent_size = 2
+
+# Markdown
+[*.{md,md.in}]
+trim_trailing_whitespace = false
+
+# Unix shell scripts
+[*.sh]
+end_of_line = lf
+
+# Windows shell scripts
+[*.{cmd, bat}]
+end_of_line = crlf
+
+# CI configuration
+[{.appveyor.yml,.travis.yml}]
+indent_style = space
+indent_size = 2
+
+# Some things to ignore
+[{misc,vendor,build}/**]
+insert_final_newline = ignore
+trim_trailing_whitespace = ignore
+end_of_line = ignore

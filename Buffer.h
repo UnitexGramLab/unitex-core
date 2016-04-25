@@ -46,12 +46,12 @@ typedef enum buffer_type_ BufferType;
  */
 struct buffer {
    BufferType type;
-	int MAXIMUM_BUFFER_SIZE;
+    int MAXIMUM_BUFFER_SIZE;
    union {
-	   int* int_buffer;
+       int* int_buffer;
       unichar* unichar_buffer;
    };
-	int size;
+    int size;
    int end_of_file;
 };
 

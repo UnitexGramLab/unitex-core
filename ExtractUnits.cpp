@@ -59,7 +59,7 @@ current_end=-1;
 
 struct extract_buf_mapped* buffer=(struct extract_buf_mapped*)malloc(sizeof(struct extract_buf_mapped));
 if (buffer==NULL) {
-	fatal_alloc_error("new_buffer");
+    fatal_alloc_error("new_buffer");
 }
 buffer->amf=(snt);
 buffer->int_buffer_=(const int*)af_get_mapfile_pointer(buffer->amf);
@@ -76,7 +76,7 @@ while (buffer->pos < buffer->nb_item) {
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
       for (size_t i=0;i<buffer->size_current_item;i++) {
-		  u_fputs(tokens->token[buffer->int_buffer_[buffer->pos+i]],result);
+          u_fputs(tokens->token[buffer->int_buffer_[buffer->pos+i]],result);
       }
       u_fprintf(result,"\n");
    }
@@ -120,7 +120,7 @@ for (;;)
 if (i>=MAX_TOKENS_BY_SENTENCE) {
    error("Sentence too long to be entirely displayed\n");
    /* We show the error and we read the sentence till its end in order
-    * to keep a valid sentence numerotation */  
+    * to keep a valid sentence numerotation */
    buffer->size_current_item=MAX_TOKENS_BY_SENTENCE;
    (*N_TOKENS_READ)=i;
    return;

@@ -170,7 +170,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_UnpackFile,lopts_UnpackF
                break;
      case 'V': only_verify_arguments = true;
              break;
-     case 'h': usage();  
+     case 'h': usage();
                return SUCCESS_RETURN_CODE;
      case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                            error("Missing argument for option --%s\n",lopts_UnpackFile[index].name);
@@ -206,17 +206,17 @@ if (only_verify_arguments) {
 
 int retValue = 0;
 if (list != 0) {
-	retValue = do_list_file_in_pack_archive_to_file(ulpFile,outputList,list_only_filename);
+    retValue = do_list_file_in_pack_archive_to_file(ulpFile,outputList,list_only_filename);
 } else {
-	if (selectFile[0] != '\0') {
-		retValue = do_extract_from_pack_archive_onefile(ulpFile,junk_path_in_pack_archive,outputDir,selectFile,transform_path_separator,quiet);
+    if (selectFile[0] != '\0') {
+        retValue = do_extract_from_pack_archive_onefile(ulpFile,junk_path_in_pack_archive,outputDir,selectFile,transform_path_separator,quiet);
   } else {
-		retValue = do_extract_from_pack_archive(ulpFile,junk_path_in_pack_archive,outputDir,transform_path_separator,quiet);
+        retValue = do_extract_from_pack_archive(ulpFile,junk_path_in_pack_archive,outputDir,transform_path_separator,quiet);
   }
 }
 
 if (retValue != UNZ_OK) {
-	error("error in processing %s",ulpFile);
+    error("error in processing %s",ulpFile);
 }
 
 return retValue;

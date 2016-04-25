@@ -74,7 +74,7 @@ extern const char* usage_PackFile;
 
 int buildPackFile(const char* packFile,int append_status,const char* global_comment,
                   const char* file_or_prefix_to_add,int add_one_file_only,const char* junk_prefix,
-				  int quiet);*/
+                  int quiet);*/
 
 
 const char* usage_PackFile =
@@ -90,7 +90,7 @@ const char* usage_PackFile =
          "  -g X/--global=X: uses X as archive global comment (cosmetic)\n"
          "  -j X/--junk_prefix=X: remove X at the beginning in the stored filename\n"
          "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
-         "  -h/--help: this help\n"         
+         "  -h/--help: this help\n"
          "\n";
 
 static void usage() {
@@ -170,8 +170,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_PackFile,lopts_PackFile,
              decode_writing_encoding_parameter(&encoding_output,&bom_output,options.vars()->optarg);
              break;
    case 'V': only_verify_arguments = true;
-             break;             
-   case 'h': usage(); 
+             break;
+   case 'h': usage();
              return SUCCESS_RETURN_CODE;
    case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                          error("Missing argument for option --%s\n",lopts_PackFile[index].name);
@@ -206,16 +206,16 @@ if (only_verify_arguments) {
 }
 
 int retValue = buildPackFile(ulpFile,append,
-	                           global_comment,
+                               global_comment,
                              include_filename,
                              add_one_file_only,
                              junk_prefix,
-				                     quiet);
+                                     quiet);
 if (retValue == 0) {
-	error("Error creating %s\n", ulpFile);
-	return DEFAULT_ERROR_CODE;
+    error("Error creating %s\n", ulpFile);
+    return DEFAULT_ERROR_CODE;
 } else {
-	return SUCCESS_RETURN_CODE;
+    return SUCCESS_RETURN_CODE;
 }
 
 }

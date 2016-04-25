@@ -68,10 +68,10 @@ void reset_Variables(Variables* v) {
 if (v==NULL) return;
 int n=v->variable_index->size;
 for (int i=0;i<n;i++) {
-	   v->variables[i].start_in_tokens=UNDEF_VAR_BOUND;
-	   v->variables[i].end_in_tokens=UNDEF_VAR_BOUND;
-	   v->variables[i].start_in_chars=UNDEF_VAR_BOUND;
-	   v->variables[i].end_in_chars=UNDEF_VAR_BOUND;
+       v->variables[i].start_in_tokens=UNDEF_VAR_BOUND;
+       v->variables[i].end_in_tokens=UNDEF_VAR_BOUND;
+       v->variables[i].start_in_chars=UNDEF_VAR_BOUND;
+       v->variables[i].end_in_chars=UNDEF_VAR_BOUND;
 }
 }
 
@@ -242,7 +242,7 @@ if (backup!=NULL) free_cb(backup,prv_alloc_recycle);
  */
 void install_variable_backup(Variables* v,const int* backup) {
 if (backup==NULL) {
-	fatal_error("NULL error in install_variable_backup\n");
+    fatal_error("NULL error in install_variable_backup\n");
 }
 int l=v->variable_index->size;
 
@@ -257,7 +257,7 @@ memcpy((void*)(&(v->variables[0])),(const void*)&backup[0],sizeof(int)*NB_INT_BY
  */
 void update_variable_backup(int* backup,const Variables* v) {
 if (backup==NULL) {
-	fatal_error("NULL error in install_variable_backup\n");
+    fatal_error("NULL error in install_variable_backup\n");
 }
 int l=0;
 if (v!=NULL)
@@ -299,7 +299,7 @@ int suggest_size_backup_reserve(int size_one_backup,int is_first)
 
 /* we suggest several SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE because we want prevent malloc/free at each step */
 
-int suggested_size = size_one_backup * 
+int suggested_size = size_one_backup *
         (is_first ? SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE_FIRST : SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE);
 if (suggested_size > LIMIT_MAX_SUGGESTED_SIZE)
     suggested_size = LIMIT_MAX_SUGGESTED_SIZE;
@@ -374,7 +374,7 @@ r->array_int[OFFSET_SWAPPER+(r->pos_used * r->size_aligned)] = 1;
 return save;
 }
 
-    
+
 void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* rest)
 {
     r->pos_used --;
@@ -390,7 +390,7 @@ void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* 
 int same_input_variables(int* input_variable_backup,Variables* v) {
 int* tmp=(int*)v->variables;
 for (int i=0;i<v->variable_index->size;i++) {
-	if (tmp[i]!=input_variable_backup[i]) return 0;
+    if (tmp[i]!=input_variable_backup[i]) return 0;
 }
 return 1;
 }

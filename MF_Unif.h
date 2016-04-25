@@ -41,29 +41,29 @@
 namespace unitex {
 
 ////////////////////////////////////////////
-// Initializes the set of instantiations. 
+// Initializes the set of instantiations.
 int unif_init_vars(unif_vars_T* UNIF_VARS);
 
 ////////////////////////////////////////////
-// Prints the set of instantiations. 
+// Prints the set of instantiations.
 int unif_print_vars(unif_vars_T* UNIF_VARS);
 
 //////////////////////////////////////////////////////////////
-// Liberates the space allocated for the set of instantiations. 
+// Liberates the space allocated for the set of instantiations.
 int unif_free_vars(unif_vars_T* UNIF_VARS);
 
 //////////////////////////////////////////////////////////////////////////////////
-// Instantiates the unification variable "var" to category "cat" and value "val". 
+// Instantiates the unification variable "var" to category "cat" and value "val".
 int unif_instantiate(unif_vars_T* UNIF_VARS,unichar* var, l_category_T* cat, unichar* val);
 
 //////////////////////////////////////////////////////////////////////////////////
 // If variable "var" already instantiated, returns -1. Otherwise,
-// instantiates the unification variable "var" to category "cat" and value whole index in the domain of "cat" is "val". 
+// instantiates the unification variable "var" to category "cat" and value whole index in the domain of "cat" is "val".
 // Returns 1 or -1 in case of error, 0 otherwise.
 int unif_instantiate_index(unif_vars_T* UNIF_VARS,unichar* var, l_category_T* cat, int val);
 
 //////////////////////////////////////////////////////////////////////////////////
-// Desinstantiates the unification variable "var". 
+// Desinstantiates the unification variable "var".
 int unif_desinstantiate(unif_vars_T* UNIF_VARS,unichar* var);
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -71,22 +71,22 @@ int unif_desinstantiate(unif_vars_T* UNIF_VARS,unichar* var);
 int unif_instantiated(unif_vars_T* UNIF_VARS,unichar* var);
 
 //////////////////////////////////////////////////////////////////////////////////
-// If the unification variable "var" is instantiated returns its value, 
+// If the unification variable "var" is instantiated returns its value,
 // otherwise returns NULL.
 unichar* unif_get_val(unif_vars_T* UNIF_VARS,unichar* var);
 
 //////////////////////////////////////////////////////////////////////////////////
-// If the unification variable "var" is instantiated returns its index 
+// If the unification variable "var" is instantiated returns its index
 // in the domain of its category otherwise returns -1.
 int unif_get_val_index(unif_vars_T* UNIF_VARS,unichar* var);
 
 //////////////////////////////////////////////////////////////////////////////////
-// If the unification variable "var" is instantiated returns its index 
+// If the unification variable "var" is instantiated returns its index
 // in the domain of its category otherwise returns -1.
 int unif_get_val_index(unif_vars_T* UNIF_VARS,unichar* var);
 
 //////////////////////////////////////////////////////////////////////////////////
-// If the unification variable "var" is instantiated returns its category, 
+// If the unification variable "var" is instantiated returns its category,
 // otherwisz returns NULL..
 l_category_T* unif_get_cat(unif_vars_T* UNIF_VARS,unichar* var);
 

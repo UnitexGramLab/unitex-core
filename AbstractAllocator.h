@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -68,7 +68,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_delete_abstract_allocator)(struct 
 
 typedef struct tag_abstract_allocator_info_public_with_allocator
 {
-	size_t size_abstract_allocator_info_size;
+    size_t size_abstract_allocator_info_size;
     fnc_alloc_t fnc_alloc;
     fnc_realloc_t fnc_realloc;
     fnc_free_t fnc_free;
@@ -80,7 +80,7 @@ typedef struct tag_abstract_allocator_info_public_with_allocator
 
 typedef struct tag_abstract_allocator
 {
-	size_t size_abstract_allocator;
+    size_t size_abstract_allocator;
     abstract_allocator_info_public_with_allocator pub;
 
     /* only for delete */
@@ -120,8 +120,8 @@ typedef abstract_allocator* Abstract_allocator;
 /*
  create_abstract_allocator is used when an function need an allocator
  creator is a string with the name of caller
- creationFlagAllocator : can contain a AllocatorCreationFlag* value 
- expected_size_item : if non zero, the size of item which be allocated. 
+ creationFlagAllocator : can contain a AllocatorCreationFlag* value
+ expected_size_item : if non zero, the size of item which be allocated.
  This mean we will always request object of same size
  */
 

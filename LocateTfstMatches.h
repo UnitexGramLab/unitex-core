@@ -44,20 +44,20 @@ namespace unitex {
  * how many times a tfst_match is referenced.
  */
 struct tfst_match {
-	/* If this field is non NULL, then all other fields other than 'next'
-	 * are not to be taken into account */
-	unichar* debug_output;
+    /* If this field is non NULL, then all other fields other than 'next'
+     * are not to be taken into account */
+    unichar* debug_output;
 
    int source_state_text;
    int dest_state_text;
    Transition* fst2_transition;
-   
+
    /* This field is used when 1) a fst2 tag is consumed by several TfstTag and 2) outputs
     * are used. In such a case, we don't want to consider the fst2 tag output more than
     * once, so we use this field to know if it's the first time we use this transition
     * or not */
    int first_time;
-   
+
    int pos_kr;
    int pointed_by;
    struct list_int* text_tag_numbers;
@@ -87,13 +87,13 @@ struct tfst_match_list {
  * in a similar way that 'struct match_list'.
  */
 struct tfst_simple_match_list {
-	struct tfst_match* match;
-	Match m;
-	/* start and end are the tfst states that bound the match */
-	int start;
-	int end;
-	unichar* output;
-	struct tfst_simple_match_list* next;
+    struct tfst_match* match;
+    Match m;
+    /* start and end are the tfst states that bound the match */
+    int start;
+    int end;
+    unichar* output;
+    struct tfst_simple_match_list* next;
 };
 
 

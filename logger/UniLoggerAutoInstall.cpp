@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -63,7 +63,7 @@ namespace logger {
 
 void InstallLogger::LoadParamFile(const char* parameter_filename) {
     init_done = 0;
-    
+
     ABSTRACTFILE *af_fin = af_fopen_unlogged((parameter_filename != NULL) ?
                                 parameter_filename : "unitex_logging_parameters.txt","rb");
     if (af_fin!=NULL)
@@ -71,8 +71,8 @@ void InstallLogger::LoadParamFile(const char* parameter_filename) {
         size_t size_param=0;
 
         if (af_fseek(af_fin, 0, SEEK_END) == 0)
-	    {
-		    size_param = af_ftell(af_fin);
+        {
+            size_param = af_ftell(af_fin);
             af_fseek(af_fin, 0, SEEK_SET);
         }
 
@@ -80,7 +80,7 @@ void InstallLogger::LoadParamFile(const char* parameter_filename) {
         *(param+size_param)=0;
         if (af_fread(param,1,size_param,af_fin) == size_param)
         {
-            
+
             int write_file_out=0;
             char*szPath = (char*)malloc(size_param+1);
             *szPath=0;
@@ -105,7 +105,7 @@ void InstallLogger::LoadParamFile(const char* parameter_filename) {
                 free(szPath);
         }
         af_fclose(af_fin);
-        free(param);        
+        free(param);
     }
 }
 
@@ -206,7 +206,7 @@ InstallLogger::InstallLogger(int argc,char* const argv[]) :
                  break;
        case ':': index==-1 ? error("Missing argument for option -%c\n",options.vars()->optopt) :
                              error("Missing argument for option --%s\n",lopts_CreateLog[index].name);
-                 return;            
+                 return;
        case 'k': if (options.vars()->optarg[0]=='\0') {
                     error("Empty input_encoding argument\n");
                     return;
@@ -237,14 +237,14 @@ InstallLogger::InstallLogger(int argc,char* const argv[]) :
                  }
                  ule.szNameLog = strdup(options.vars()->optarg);
                  break;
-     
+
        case 'd': if (options.vars()->optarg[0]=='\0') {
                     error("You must specify a non empty directory\n");
                     return;
                  }
                  if (ule.szPathLog != NULL) {
                      free((void*)ule.szPathLog);
-                 }    
+                 }
                  ule.szPathLog = strdup(options.vars()->optarg);
                  break;
 
@@ -324,28 +324,28 @@ using namespace logger;
 
 UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLogger()
 {
-	InstallLogger* pInstallLogger = new InstallLogger();
-	return (INSTALLLOGGER)pInstallLogger;
+    InstallLogger* pInstallLogger = new InstallLogger();
+    return (INSTALLLOGGER)pInstallLogger;
 }
 
 UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromArgs(int argc, char* const argv[])
 {
-	InstallLogger* pInstallLogger = new InstallLogger(argc,argv);
-	return (INSTALLLOGGER)pInstallLogger;
+    InstallLogger* pInstallLogger = new InstallLogger(argc,argv);
+    return (INSTALLLOGGER)pInstallLogger;
 }
 
 UNITEX_FUNC INSTALLLOGGER UNITEX_CALL BuildLoggerFromParamFile(const char* paramFileName)
 {
-	InstallLogger* pInstallLogger = new InstallLogger(paramFileName);
-	return (INSTALLLOGGER)pInstallLogger;
+    InstallLogger* pInstallLogger = new InstallLogger(paramFileName);
+    return (INSTALLLOGGER)pInstallLogger;
 }
 
 UNITEX_FUNC void UNITEX_CALL RemoveLoggerFromParamFile(INSTALLLOGGER logger)
 {
-	InstallLogger* pInstallLogger = (InstallLogger*)logger;
-	if (pInstallLogger != NULL) {
-		delete (pInstallLogger);
-	}
+    InstallLogger* pInstallLogger = (InstallLogger*)logger;
+    if (pInstallLogger != NULL) {
+        delete (pInstallLogger);
+    }
 }
 
 

@@ -90,8 +90,8 @@ typedef uint16_t unichar;
  * This structure is used to represent a file with its encoding.
  */
 typedef struct {
-	ABSTRACTFILE* f;
-	Encoding enc;
+    ABSTRACTFILE* f;
+    Encoding enc;
 } U_FILE;
 
 
@@ -270,13 +270,13 @@ unichar* u_strcat(unichar*,const unichar*);
 unichar* u_strcat(unichar*,const char*);
 
 unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const unichar* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
+    unichar**allocated_buffer, const unichar* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
 unichar* u_strcpy_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const char* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
+    unichar**allocated_buffer, const char* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
 unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const unichar* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
+    unichar**allocated_buffer, const unichar* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
 unichar* u_strcat_optional_buffer(unichar * original_buffer, size_t original_buffer_size,
-	unichar**allocated_buffer, const char* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
+    unichar**allocated_buffer, const char* add_string, size_t* len = NULL, Abstract_allocator prv_alloc = NULL);
 void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator prv_alloc = NULL);
 
 int is_str_mono_unichar_string(const unichar*, unichar);
@@ -314,11 +314,11 @@ unichar* u_strdup(const char* str,Abstract_allocator prv_alloc);
 unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);
 
 size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_t * p_size_this_string_written,
-	const unsigned char*src, size_t buf_size);
+    const unsigned char*src, size_t buf_size);
 
 // define NO_CPP_TEMPLATE_SUPPORT if you archeological C++ compiler don't support template
 #ifndef NO_CPP_TEMPLATE_SUPPORT
-template <typename T> 
+template <typename T>
 int u_escape(const unichar* source, T* destination);
 #endif
 
@@ -360,7 +360,7 @@ int u_is_kannada_letter(unichar);
 int u_is_malayalam_letter(unichar);
 int u_is_sinhala_letter(unichar);
 int u_is_thai_letter(unichar);
-int u_is_greek_extended_letter(unichar);	//$CD:20021115
+int u_is_greek_extended_letter(unichar);    //$CD:20021115
 //--------Beginning of Hyungue's inserts------------------
 int u_is_Hangul(unichar c);
 int u_is_CJK_Unified_Ideograph(unichar c);

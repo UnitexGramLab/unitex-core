@@ -37,16 +37,16 @@ namespace unitex {
  * corpus.
  */
 typedef struct {
-	int offset;
-	unichar* data;
+    int offset;
+    unichar* data;
 } PRLG_DATA;
 
 
 typedef struct {
-	/* The data */
-	vector_ptr* data;
-	/* The width of the largest data, that will be used for alignment purpose */
-	int max_width;
+    /* The data */
+    vector_ptr* data;
+    /* The width of the largest data, that will be used for alignment purpose */
+    int max_width;
 } PRLG;
 
 

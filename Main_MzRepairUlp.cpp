@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -38,7 +38,7 @@
 using namespace unitex;
 
 #ifdef HAS_LOGGER_NAMESPACE
-	using namespace ::unitex::logger;
+    using namespace ::unitex::logger;
 #endif
 
 int main(int argc,char* argv[]) {

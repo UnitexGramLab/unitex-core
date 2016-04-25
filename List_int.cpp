@@ -75,10 +75,10 @@ free_list_int(head,STANDARD_ALLOCATOR);
 /**
  * Inserts a value in a sorted list, if not already present. The
  * element that contains the value is returned.
- * 
+ *
  * NOTE: in the general case, a struct list_int is not supposed
  *       to be sorted.
- * 
+ *
  * Time-critical function: the iterative implementation is faster!
  */
 struct list_int* sorted_insert(int value,struct list_int* l,Abstract_allocator prv_alloc) {
@@ -103,14 +103,14 @@ for (tmp=l; tmp!=NULL; tmp=tmp->next) {
     return l;
   }
   last=tmp;
-} 
+}
 /* value not found in the list and there is no bigger element in the
    list: insert at the end of the list */
 tmp2=new_list_int(value,prv_alloc);
 last->next = tmp2;
 return l;
 }
-/* 
+/*
 struct list_int* sorted_insert(int value,struct list_int* l) {
 struct list_int* tmp;
 if (l==NULL) {
@@ -216,7 +216,7 @@ return a;
 
 
 /**
- * This function puts in 'a' the merge of 'a' and 'b'. The merge result 
+ * This function puts in 'a' the merge of 'a' and 'b'. The merge result
  * is returned. 'b' is not modified.
  */
 struct list_int* sorted_merge(struct list_int* a,struct list_int* b,Abstract_allocator prv_alloc) {

@@ -62,9 +62,9 @@ typedef struct  {
 //Structure for the lemma of a MWU
 typedef struct {
   int no_units;
-  SU_id_T* units[MAX_UNITS];	//e.g. pointer to "vive" in the paadigm of "vif"
-  l_class_T *cl;	        //e_.g. adj
-  char *paradigm;		//e.g. N41
+  SU_id_T* units[MAX_UNITS];    //e.g. pointer to "vive" in the paadigm of "vif"
+  l_class_T *cl;            //e_.g. adj
+  char *paradigm;       //e.g. N41
 } MU_lemma_T;
 
 /////////////////////////////////////////////////
@@ -74,7 +74,7 @@ typedef struct {
   unichar* form;         // the textual form, e.g. "pommes de terre"
   MU_lemma_T *MU_lemma; //lemma and its info
   f_morpho_T* feat;   //the form's morphology, e.g. {Gen=fem; Nb=pl; Case=I}
-  //  int form_nr;   	//ordinal number of the form in the list of all inflected forms of the lemma
+  //  int form_nr;      //ordinal number of the form in the list of all inflected forms of the lemma
 } MU_id_T;
 
 } // namespace unitex

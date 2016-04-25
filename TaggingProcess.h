@@ -62,12 +62,12 @@ namespace unitex {
  * of the best predecessor).
  */
 struct matrix_entry {
-	struct dela_entry* tag;
-	unichar* tag_code;
-	int predecessor;
-	int tag_number;
-	int state_number;
-	float partial_prob;
+    struct dela_entry* tag;
+    unichar* tag_code;
+    int predecessor;
+    int tag_number;
+    int state_number;
+    float partial_prob;
 };
 
 void compute_tag_code(struct dela_entry*,unichar*,int);

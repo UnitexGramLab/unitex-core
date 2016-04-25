@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -45,7 +45,7 @@ extern "C" {
 
 //int af_remove_folder(const char*name);
 int RemoveFileSystemFolder(const char*foldername);
-    
+
 #ifdef __cplusplus
 }
 #endif

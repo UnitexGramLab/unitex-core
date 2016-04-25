@@ -1,0 +1,61 @@
+# Unitex/GramLab clang-format code formatting styles
+# clang-format is a tool for re-formatting C++ code
+# This file contains clang-format (>= v3.8) customizations
+# for the Unitex/GramLab C++ Core. To test type in a
+# terminal, e.g.: `clang-format -style=file foo.cpp`
+# @see clang.llvm.org/docs/ClangFormat.html  for
+# further information about how to use `clang-format`
+
+# Starting Unitex/GramLab v3.2, we will start to follow
+# the Google C++ Style Guide. This only applies for new
+# code files (i.e not for legacy sources previous to the
+# v3.2-alpha). For more information about the C++ guide
+# @see https://google.github.io/styleguide/cppguide.html
+BasedOnStyle: Google
+IndentWidth: 2
+
+# Extra customizations
+# @see http://goo.gl/om1VOJ
+
+# The column limit
+#ColumnLimit: 82
+
+# The penalty for each character outside of the column limit
+#PenaltyExcessCharacter: 1
+
+# The penalty for each line break introduced inside a string literal
+#PenaltyBreakString: 50
+
+# The maximum number of consecutive empty lines to keep
+MaxEmptyLinesToKeep: 3
+
+# Allows contracting simple braced statements to a single line
+AllowShortBlocksOnASingleLine: true
+
+# `if (a) return;` can not be put on a single line
+AllowShortIfStatementsOnASingleLine: false
+
+# `while (true) continue;` can not be put on a single line
+AllowShortLoopsOnASingleLine: false
+
+# Analyze first the formatted file for the most common alignment
+# of & and \*, then use PointerAlignment below as fallback
+DerivePointerAlignment: true
+
+# The & and * alignment style: align pointer to the right
+PointerAlignment: Left
+
+# `int f() { return 0; }` can not be put on a single line
+AllowShortFunctionsOnASingleLine: false
+
+# Starting clang-format v3.8, not attempt to re-flow comments
+ReflowComments: false
+
+# Aligns consecutive assignments
+AlignConsecutiveAssignments: true
+
+# Indent only in inner namespaces (nested in other namespaces)
+NamespaceIndentation: Inner
+
+# Align parameters on the open bracket
+AlignAfterOpenBracket: Align

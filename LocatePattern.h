@@ -70,23 +70,23 @@ struct locate_parameters ;
 
 struct locate_trace_info
 {
-	int size_struct_locate_trace_info;
-	int is_on_morphlogical;
+    int size_struct_locate_trace_info;
+    int is_on_morphlogical;
 
-	OptimizedFst2State current_state;
+    OptimizedFst2State current_state;
 
-	int current_state_index;
-	int pos_in_tokens;
-	int pos_in_chars;
+    int current_state_index;
+    int pos_in_tokens;
+    int pos_in_chars;
 
-	int n_matches;
-	struct parsing_info** matches; /* current match list. Irrelevant if graph_depth==0 */
-	struct list_context* ctx; /* information about the current context, if any */
-	struct locate_parameters* p; /* miscellaneous parameters needed by the function */
-	unichar* jamo;
-	int pos_in_jamo;
+    int n_matches;
+    struct parsing_info** matches; /* current match list. Irrelevant if graph_depth==0 */
+    struct list_context* ctx; /* information about the current context, if any */
+    struct locate_parameters* p; /* miscellaneous parameters needed by the function */
+    unichar* jamo;
+    int pos_in_jamo;
 
-	int step_number;
+    int step_number;
 } ;
 
 typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_locate_trace_step)
@@ -126,7 +126,7 @@ struct locate_parameters {
    Variables* input_variables;
    OutputVariables* output_variables;
 
-   
+
    int graph_depth;
    int explore_depth;
 
@@ -214,7 +214,7 @@ struct locate_parameters {
 
    int is_in_cancel_state;
    int is_in_trace_state;
-	
+
    /* The token buffer used to parse the text. This is a pointer
     * that must be initialized after mapping the 'text.cod' file */
    int buffer_size;
@@ -362,7 +362,7 @@ struct locate_parameters {
 /* #define STACK_MAX 1000 The maximal size of recursive calls of the
                           function parcourir_opt =~ the maximal number
                           of tokens to be recognized in one match */
-   int stack_max;   
+   int stack_max;
 
 
 /* #define MAX_MATCHES_AT_TOKEN_POS 400 The maximal number of matches

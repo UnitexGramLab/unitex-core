@@ -83,25 +83,25 @@ namespace unitex {
  * semantic_codes[0] = "N"   semantic_codes[1] = "PR"
  * n_inflectional_codes: 1
  * inflectional_codes[0] = "ms"
- * n_filter_codes:	5
+ * n_filter_codes:  5
  * filter_codes[0] = "Kfs"
  */
 
 struct dela_entry {
-	unichar* inflected;
-	unichar* lemma;
-	/* Number of grammatical and semantic codes.
-	 * By convention, the first is supposed to be the
-	 * grammatical category of the entry. */
-	unsigned char n_semantic_codes;
-	unsigned char n_inflectional_codes;
-	unsigned char n_filter_codes;
-	unsigned char filter_polarity;
-	/* filter_polarity = 1 for positive filter
-	   filter_polarity = 0 for negative filter */
-	unichar* semantic_codes[MAX_SEMANTIC_CODES];
-	unichar* inflectional_codes[MAX_INFLECTIONAL_CODES];
-	unichar* filter_codes[MAX_FILTERS];
+    unichar* inflected;
+    unichar* lemma;
+    /* Number of grammatical and semantic codes.
+     * By convention, the first is supposed to be the
+     * grammatical category of the entry. */
+    unsigned char n_semantic_codes;
+    unsigned char n_inflectional_codes;
+    unsigned char n_filter_codes;
+    unsigned char filter_polarity;
+    /* filter_polarity = 1 for positive filter
+       filter_polarity = 0 for negative filter */
+    unichar* semantic_codes[MAX_SEMANTIC_CODES];
+    unichar* inflectional_codes[MAX_INFLECTIONAL_CODES];
+    unichar* filter_codes[MAX_FILTERS];
 };
 
 

@@ -71,11 +71,11 @@ return l;
 void free_match_list_element(struct match_list* l,Abstract_allocator prv_alloc) {
   if (l==NULL) {
     return;
-  }  
+  }
   if (l->output!=NULL) {
     free_cb(l->output,prv_alloc);
   }
-    
+
   free_cb(l,prv_alloc);
 
   // protecting against dangling pointer bugs

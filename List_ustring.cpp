@@ -108,7 +108,7 @@ free_cb(element,prv_alloc);
 /**
  * Inserts a value in a sorted list, if not already present. The
  * element that contains the value is returned.
- * 
+ *
  * NOTE: in the general case, a struct list_ustring is not supposed
  *       to be sorted.
  */
@@ -193,7 +193,7 @@ struct list_ustring* insert_at_end_of_list_with_latest(const unichar* s, struct 
   if ((*latest) == NULL) {
     *latest = new_list_ustring(s, prv_alloc);
     return *latest;
-  }	
+  }
   (*latest)->next = new_list_ustring(s, prv_alloc);
   *latest = (*latest)->next;
   return l;
@@ -206,7 +206,7 @@ struct list_ustring* insert_at_end_of_list_with_latest(const char* s, struct lis
   if ((*latest) == NULL) {
     *latest = new_list_ustring(s, prv_alloc);
     return *latest;
-  } 
+  }
   (*latest)->next = new_list_ustring(s, prv_alloc);
   *latest = (*latest)->next;
   return l;
@@ -217,7 +217,7 @@ struct list_ustring* insert_at_end_of_list_with_latest(const char* s, struct lis
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
 int is_in_list(const unichar* value,
-               const struct list_ustring* l, 
+               const struct list_ustring* l,
                unichar_unichar_comparator compare) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
@@ -233,7 +233,7 @@ return 0;
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
 int is_in_list(const char* value,
-               const struct list_ustring* l, 
+               const struct list_ustring* l,
                unichar_char_comparator compare) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
@@ -252,7 +252,7 @@ return 0;
  * same order.
  */
 int equal(const struct list_ustring* a,
-          const struct list_ustring* b, 
+          const struct list_ustring* b,
           unichar_unichar_comparator compare) {
 while ((a!=NULL) && (b!=NULL)) {
    if (compare(a->string,b->string)) {

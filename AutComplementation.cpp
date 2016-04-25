@@ -30,7 +30,7 @@
 
 namespace unitex {
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
@@ -65,7 +65,7 @@ while (trans!=NULL) {
          free_symbols(POS[i]);
       }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-	  free(POS);
+      free(POS);
 #endif
       return NULL;
    }

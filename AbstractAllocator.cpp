@@ -20,7 +20,7 @@
  */
 
 /*
- * File created and contributed by Gilles Vollant (Ergonotics SAS) 
+ * File created and contributed by Gilles Vollant (Ergonotics SAS)
  * as part of an UNITEX optimization and reliability effort
  *
  * additional information: http://www.ergonotics.com/unitex-contribution/
@@ -43,14 +43,14 @@
 //namespace unitex {
 
 struct AllocatorSpace {
-	t_allocator_func_array func_array;
-	void* privateAllocatorSpacePtr;
+    t_allocator_func_array func_array;
+    void* privateAllocatorSpacePtr;
 } ;
 
 
 struct List_AllocatorSpace {
-	AllocatorSpace aas;
-	List_AllocatorSpace* next;
+    AllocatorSpace aas;
+    List_AllocatorSpace* next;
 } ;
 
 
@@ -60,55 +60,55 @@ struct List_AllocatorSpace* p_allocator_info_list=NULL;
 
 UNITEX_FUNC int UNITEX_CALL AddAllocatorSpace(const t_allocator_func_array* func_array,void* privateAllocatorSpacePtr)
 {
-	struct List_AllocatorSpace* new_item;
-	new_item = (struct List_AllocatorSpace*)malloc(sizeof(struct List_AllocatorSpace));
-	if (new_item == NULL)
-		return 0;
+    struct List_AllocatorSpace* new_item;
+    new_item = (struct List_AllocatorSpace*)malloc(sizeof(struct List_AllocatorSpace));
+    if (new_item == NULL)
+        return 0;
 
-	new_item->aas.func_array = *func_array;
-	new_item->aas.privateAllocatorSpacePtr = privateAllocatorSpacePtr;
-	new_item->next = NULL;
+    new_item->aas.func_array = *func_array;
+    new_item->aas.privateAllocatorSpacePtr = privateAllocatorSpacePtr;
+    new_item->next = NULL;
 
-	if (p_allocator_info_list == NULL)
-		p_allocator_info_list = new_item;
-	else {
-		struct List_AllocatorSpace* tmp = p_allocator_info_list;
-		while ((tmp->next) != NULL)
-			tmp = tmp->next;
-		tmp->next = new_item;
-	}
+    if (p_allocator_info_list == NULL)
+        p_allocator_info_list = new_item;
+    else {
+        struct List_AllocatorSpace* tmp = p_allocator_info_list;
+        while ((tmp->next) != NULL)
+            tmp = tmp->next;
+        tmp->next = new_item;
+    }
 
-	if ((new_item->aas.func_array.fnc_Init_AllocatorSpace) != NULL)
-		(*(new_item->aas.func_array.fnc_Init_AllocatorSpace))(new_item->aas.privateAllocatorSpacePtr);
+    if ((new_item->aas.func_array.fnc_Init_AllocatorSpace) != NULL)
+        (*(new_item->aas.func_array.fnc_Init_AllocatorSpace))(new_item->aas.privateAllocatorSpacePtr);
 
-	return 1;
+    return 1;
 }
 
 UNITEX_FUNC int UNITEX_CALL RemoveAllocatorSpace(const t_allocator_func_array* func_array,void* privateAllocatorSpacePtr)
 {
-	struct List_AllocatorSpace* tmp = p_allocator_info_list;
-	struct List_AllocatorSpace* tmp_previous = NULL;
+    struct List_AllocatorSpace* tmp = p_allocator_info_list;
+    struct List_AllocatorSpace* tmp_previous = NULL;
 
-	while (tmp != NULL)
-	{
-		if ((memcmp(&tmp->aas.func_array,func_array,sizeof(t_allocator_func_array))==0) &&
-			(tmp->aas.privateAllocatorSpacePtr == privateAllocatorSpacePtr))
-		{
-			if (tmp_previous == NULL)
-				p_allocator_info_list = tmp->next;
-			else
-				tmp_previous->next = tmp->next;
+    while (tmp != NULL)
+    {
+        if ((memcmp(&tmp->aas.func_array,func_array,sizeof(t_allocator_func_array))==0) &&
+            (tmp->aas.privateAllocatorSpacePtr == privateAllocatorSpacePtr))
+        {
+            if (tmp_previous == NULL)
+                p_allocator_info_list = tmp->next;
+            else
+                tmp_previous->next = tmp->next;
 
-			if ((tmp->aas.func_array.fnc_Uninit_AllocatorSpace) != NULL)
-				(*(tmp->aas.func_array.fnc_Uninit_AllocatorSpace))(tmp->aas.privateAllocatorSpacePtr);
+            if ((tmp->aas.func_array.fnc_Uninit_AllocatorSpace) != NULL)
+                (*(tmp->aas.func_array.fnc_Uninit_AllocatorSpace))(tmp->aas.privateAllocatorSpacePtr);
 
-			free(tmp);
-			return 1;
-		}
-		tmp_previous = tmp;
-		tmp = tmp->next;
-	}
-	return 0;
+            free(tmp);
+            return 1;
+        }
+        tmp_previous = tmp;
+        tmp = tmp->next;
+    }
+    return 0;
 }
 
 
@@ -116,23 +116,23 @@ UNITEX_FUNC int UNITEX_CALL GetNbAllocatorSpaceInstalled()
 {
     int count=0;
     struct List_AllocatorSpace* tmp = p_allocator_info_list;
-	while (tmp != NULL)
-	{
+    while (tmp != NULL)
+    {
         count++;
-		tmp = tmp->next;
-	}
-	return count;
+        tmp = tmp->next;
+    }
+    return count;
 }
 
 const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
-	const struct List_AllocatorSpace* tmp = p_allocator_info_list;
-	const AllocatorSpace * best_aas = NULL;
-	int best_priority = 0;
+    const struct List_AllocatorSpace* tmp = p_allocator_info_list;
+    const AllocatorSpace * best_aas = NULL;
+    int best_priority = 0;
 
-	while (tmp != NULL)
-	{
-		const AllocatorSpace * test_aas = &(tmp->aas);
+    while (tmp != NULL)
+    {
+        const AllocatorSpace * test_aas = &(tmp->aas);
 
         int cur_priority = tmp->aas.func_array.fnc_is_param_allocator_compatible(creator,flagAllocator,expected_size_item,private_create_ptr,tmp->aas.privateAllocatorSpacePtr) ;
 
@@ -142,9 +142,9 @@ const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllo
             best_priority = cur_priority;
         }
 
-		tmp = tmp->next;
-	}
-	return best_aas;
+        tmp = tmp->next;
+    }
+    return best_aas;
 }
 
 
@@ -162,7 +162,7 @@ Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocato
         return NULL;
     }
 
-	aas->size_abstract_allocator = sizeof(abstract_allocator);
+    aas->size_abstract_allocator = sizeof(abstract_allocator);
     aas->fnc_delete_abstract_allocator = p_func_array->fnc_delete_abstract_allocator;
     aas->privateAllocatorSpacePtr = privateAllocatorSpacePtr;
     aas->creation_flag = creation_flagAllocator;
@@ -208,7 +208,7 @@ int get_allocator_flag(Abstract_allocator aa)
     if (aa != NULL)
     {
         if (aa->pub.fnc_get_flag_allocator != NULL)
-            ret = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);      
+            ret = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);
     }
     return ret;
 }
@@ -219,7 +219,7 @@ int get_allocator_creation_flag(Abstract_allocator aa)
     int ret=0;
     if (aa != NULL)
     {
-        ret = (aa->creation_flag);      
+        ret = (aa->creation_flag);
     }
     return ret;
 }
@@ -229,7 +229,7 @@ size_t get_allocator_expected_creation_size(Abstract_allocator aa)
     size_t ret=0;
     if (aa != NULL)
     {
-        ret = (aa->expected_creation_size);      
+        ret = (aa->expected_creation_size);
     }
     return ret;
 }
@@ -240,23 +240,23 @@ int get_allocator_statistic_info(Abstract_allocator aa,int iStatNum,size_t*p_val
     if (aa != NULL)
     {
         if (aa->pub.fnc_get_statistic_allocator_info != NULL)
-            ret = (aa->pub.fnc_get_statistic_allocator_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);   
+            ret = (aa->pub.fnc_get_statistic_allocator_info)(iStatNum,p_value,aa->pub.abstract_allocator_ptr);
     }
     return ret;
 }
 
 int clean_allocator(Abstract_allocator aa)
 {
-	int flag=0;
+    int flag=0;
     if (aa != NULL)
     {
         if (aa->pub.fnc_get_flag_allocator != NULL)
             flag = (aa->pub.fnc_get_flag_allocator)(aa->pub.abstract_allocator_ptr);
-		if ((flag & AllocatorCleanPresent) != 0)
-			if (aa->pub.fnc_clean_allocator != NULL) {
-				(aa->pub.fnc_clean_allocator)(aa->pub.abstract_allocator_ptr);
-				return 1;
-			}
+        if ((flag & AllocatorCleanPresent) != 0)
+            if (aa->pub.fnc_clean_allocator != NULL) {
+                (aa->pub.fnc_clean_allocator)(aa->pub.abstract_allocator_ptr);
+                return 1;
+            }
     }
     return 0;
 }

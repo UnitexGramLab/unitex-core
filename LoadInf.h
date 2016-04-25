@@ -35,19 +35,19 @@ namespace unitex {
  * This structure is used to store all the INF codes of an .inf file.
  */
 struct INF_codes {
-	/* Array containing for each line of the .inf file the reversed list of its
-	 * components. For instance, if the first line contains:
-	 *
-	 * .N+NA+z1:fs,.N+Loc:fs
-	 *
-	 * codes[0] will contain the following list:
-	 *
-	 *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
-	 *
-	 */
-	struct list_ustring** codes;
-	/* Number of lines in the .inf file */
-	int N;
+    /* Array containing for each line of the .inf file the reversed list of its
+     * components. For instance, if the first line contains:
+     *
+     * .N+NA+z1:fs,.N+Loc:fs
+     *
+     * codes[0] will contain the following list:
+     *
+     *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
+     *
+     */
+    struct list_ustring** codes;
+    /* Number of lines in the .inf file */
+    int N;
 };
 
 

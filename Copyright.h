@@ -50,7 +50,7 @@
 #ifdef UNITEX_CORE_VERSION_GIT_COMMIT_HASH
 #define GIT_HEAD_STRING_AND_QUOTE(s) "\""#s"\""
 #define GIT_HEAD_REVISION GIT_HEAD_STRING_AND_QUOTE(UNITEX_CORE_VERSION_GIT_COMMIT_HASH)
-#endif	
+#endif
 #endif
 #endif
 
@@ -95,11 +95,11 @@ namespace unitex {
 /* ************************************************************************** */
 /**
  * @brief Defines a canonical copyright notice
- * 
- * This format is intend to be compliant with the Semantic Versioning scheme 
+ *
+ * This format is intend to be compliant with the Semantic Versioning scheme
  * VERSION = MAJOR.MINOR.PATCH('-'SUFFIX)? and with the information string
  * of the "Standards for Command Line Interfaces"
- * 
+ *
  * @see http://semver.org/spec/v2.0.0.html
  * @see https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
  * @author Cristian Martinez

@@ -56,7 +56,7 @@ struct constraint_list {
  * constraint is made of an optional inflected form, an optional lemma, an optional list
  * of forbidden grammatical/semantic codes and an optional list of inflectional codes.
  * Each such constraint is associated to a unique pattern number.
- * 
+ *
  * The following structure defines a node of a pattern tree.
  */
 struct pattern_node {

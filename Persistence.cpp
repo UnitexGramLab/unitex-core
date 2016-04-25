@@ -36,20 +36,20 @@
 namespace unitex {
 
 typedef struct PS_ {
-	char* name;
-	void* ptr;
-	struct PS_* next;
+    char* name;
+    void* ptr;
+    struct PS_* next;
 } PersistentStructure;
 
 
 class PersistenceMutexContainer
 {
 public:
-	PersistenceMutexContainer();
-	~PersistenceMutexContainer();
-	inline SYNC_Mutex_OBJECT getMutex() { return mutex; }
+    PersistenceMutexContainer();
+    ~PersistenceMutexContainer();
+    inline SYNC_Mutex_OBJECT getMutex() { return mutex; }
 private:
-	SYNC_Mutex_OBJECT mutex ;
+    SYNC_Mutex_OBJECT mutex ;
 };
 
 PersistenceMutexContainer::PersistenceMutexContainer() :
@@ -59,8 +59,8 @@ PersistenceMutexContainer::PersistenceMutexContainer() :
 
 PersistenceMutexContainer::~PersistenceMutexContainer()
 {
-	SyncDeleteMutex(mutex);
-	mutex = NULL;
+    SyncDeleteMutex(mutex);
+    mutex = NULL;
 }
 
 static PersistenceMutexContainer PersistenceMutexContainerInstance;
@@ -76,16 +76,16 @@ static PersistentStructure* list=NULL;
 void* get_persistent_structure(const char* filename) {
 SyncGetMutex(Persistence_Mutex);
 if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
-	filename=filename+strlen(VIRTUAL_FILE_PFX);
+    filename=filename+strlen(VIRTUAL_FILE_PFX);
 }
 PersistentStructure* tmp=list;
 void* res=NULL;
 while (tmp!=NULL) {
-	if (!strcmp(tmp->name,filename)) {
-		res=tmp->ptr;
-		break;
-	}
-	tmp=tmp->next;
+    if (!strcmp(tmp->name,filename)) {
+        res=tmp->ptr;
+        break;
+    }
+    tmp=tmp->next;
 }
 SyncReleaseMutex(Persistence_Mutex);
 return res;
@@ -95,13 +95,13 @@ return res;
 static PersistentStructure* remove_filename(PersistentStructure* l,const char* filename) {
 if (l==NULL) return NULL;
 if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
-	filename=filename+strlen(VIRTUAL_FILE_PFX);
+    filename=filename+strlen(VIRTUAL_FILE_PFX);
 }
 if (!strcmp(l->name,filename)) {
-	PersistentStructure* next=l->next;
-	free(l->name);
-	free(l);
-	return next;
+    PersistentStructure* next=l->next;
+    free(l->name);
+    free(l);
+    return next;
 }
 l->next=remove_filename(l->next,filename);
 return l;
@@ -115,20 +115,20 @@ return l;
 void set_persistent_structure(const char* filename,void* ptr) {
 SyncGetMutex(Persistence_Mutex);
 if (strstr(filename,VIRTUAL_FILE_PFX)==filename) {
-	filename=filename+strlen(VIRTUAL_FILE_PFX);
+    filename=filename+strlen(VIRTUAL_FILE_PFX);
 }
 if (ptr==NULL) {
-	list=remove_filename(list,filename);
-	SyncReleaseMutex(Persistence_Mutex);
-	return;
+    list=remove_filename(list,filename);
+    SyncReleaseMutex(Persistence_Mutex);
+    return;
 }
 PersistentStructure* tmp=(PersistentStructure*)malloc(sizeof(PersistentStructure));
 if (tmp==NULL) {
-	fatal_alloc_error("set_persistent_structure");
+    fatal_alloc_error("set_persistent_structure");
 }
 tmp->name=strdup(filename);
 if (tmp->name==NULL) {
-	fatal_alloc_error("set_persistent_structure");
+    fatal_alloc_error("set_persistent_structure");
 }
 tmp->ptr=ptr;
 tmp->next=list;
@@ -144,11 +144,11 @@ SyncGetMutex(Persistence_Mutex);
 int res=0;
 PersistentStructure* tmp=list;
 while (tmp!=NULL) {
-	if (tmp->ptr==ptr) {
-		res=1;
-		break;
-	}
-	tmp=tmp->next;
+    if (tmp->ptr==ptr) {
+        res=1;
+        break;
+    }
+    tmp=tmp->next;
 }
 SyncReleaseMutex(Persistence_Mutex);
 return res;

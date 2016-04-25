@@ -91,16 +91,16 @@ if (opt_name==NULL) {
 }
 int size=2+(int)strlen(opt_name)+1;
 if (opt_value!=NULL) {
-	size=size+1+(int)strlen(opt_value);
+    size=size+1+(int)strlen(opt_value);
 }
 char* tmp=(char*)malloc(size*sizeof(char));
 if (tmp==NULL) {
    fatal_alloc_error("add_long_option");
 }
 if (opt_value==NULL) {
-	sprintf(tmp,"--%s",opt_name);
+    sprintf(tmp,"--%s",opt_name);
 } else {
-	sprintf(tmp,"--%s=%s",opt_name,opt_value);
+    sprintf(tmp,"--%s=%s",opt_name,opt_value);
 }
 vector_ptr_add(invoker->args,tmp);
 }
@@ -111,7 +111,7 @@ vector_ptr_add(invoker->args,tmp);
  */
 void remove_last_argument(ProgramInvoker* invoker) {
 if (invoker->args->nbelems==0) {
-	fatal_error("remove_last_argument: cannot remove an argument from an empty invoker\n");
+    fatal_error("remove_last_argument: cannot remove an argument from an empty invoker\n");
 }
 free(invoker->args->tab[--(invoker->args->nbelems)]);
 invoker->args->tab[invoker->args->nbelems]=NULL;
@@ -131,18 +131,18 @@ int argc=invoker->args->nbelems;
  * the arguments to be reordered by getopt */
 char** argv=(char**)malloc((argc+1)*sizeof(char*));
 if (argv==NULL) {
-	fatal_alloc_error("invoke");
+    fatal_alloc_error("invoke");
 }
 for (int i=0;i<argc;i++) {
-	argv[i]=strdup((char*)(invoker->args->tab[i]));
-	if (argv[i]==NULL) {
-		fatal_alloc_error("invoke");
-	}
+    argv[i]=strdup((char*)(invoker->args->tab[i]));
+    if (argv[i]==NULL) {
+        fatal_alloc_error("invoke");
+    }
 }
 argv[argc]=NULL;
 int ret=invoker->main(argc,argv);
 for (int i=0;i<argc;i++) {
-	free(argv[i]);
+    free(argv[i]);
 }
 free(argv);
 return ret;
@@ -175,21 +175,21 @@ strcat(line,protection);
  */
 static int arg_need_protection(const char* arg)
 {
-	for (;;)
-	{
-		char c = *(arg++);
-		if (c == '\0')
-			return 0;
-		if ((c == '-') || (c == ',') || (c == '/') || (c == '_'))
-			continue;
-		if ((c >= 'A') && (c <= 'Z'))
-			continue;
-		if ((c >= 'a') && (c <= 'z'))
-			continue;
-		if ((c >= '0') && (c <= '9'))
-			continue;
-		return 1;
-	}
+    for (;;)
+    {
+        char c = *(arg++);
+        if (c == '\0')
+            return 0;
+        if ((c == '-') || (c == ',') || (c == '/') || (c == '_'))
+            continue;
+        if ((c >= 'A') && (c <= 'Z'))
+            continue;
+        if ((c >= 'a') && (c <= 'z'))
+            continue;
+        if ((c >= '0') && (c <= '9'))
+            continue;
+        return 1;
+    }
 }
 
 
@@ -238,7 +238,7 @@ return line;
  * free a command line allocated memory buffer.
  */
 void free_command_line_alloc(char* line) {
-	free(line);
+    free(line);
 }
 
 
@@ -251,7 +251,7 @@ va_list list;
 va_start(list,name);
 char* arg;
 while ((arg=va_arg(list,char*))!=NULL) {
-	add_argument(invoker,arg);
+    add_argument(invoker,arg);
 }
 va_end(list);
 int ret=invoke(invoker);

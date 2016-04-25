@@ -52,7 +52,7 @@ void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,Mul
 int tokens_to_dela_entries(vector_ptr* line_tokens,struct dela_entry** entries,int *n_entries,Ustring* foo,int line_number);
 struct string_hash* get_codes_from_inf(const struct INF_codes* inf);
 int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
-					struct string_hash* dic_codes,Ustring* foo,int line_number);
+                    struct string_hash* dic_codes,Ustring* foo,int line_number);
 
 /**
  * Builds the .grf dictionary corresponding to the given Korean compound DELAS.
@@ -91,14 +91,14 @@ while (EOF!=readline(line,delas)) {
       entries[i]=NULL;
    }
    int OK=tokens_to_dela_entries(line_tokens,entries,&n_parts,foo,line_number)
-		   && upgrade_entries(entries,n_parts,d,dic_codes,foo,line_number);
+           && upgrade_entries(entries,n_parts,d,dic_codes,foo,line_number);
    if (OK) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
       produce_mwu_entries(grf,n_parts,entries,ctx,state_index,
             &current_state,end_state,&line_grf,subgraphs,&subgraph_Y);
    } else {
-	   n_errors++;
+       n_errors++;
    }
    /* We free the tokens as well as the 'part' and 'entries' tab */
    free_vector_ptr(line_tokens,free);
@@ -108,7 +108,7 @@ while (EOF!=readline(line,delas)) {
 }
 free_Ustring(line);
 if (n_errors>0) {
-	error("%d error%s found\n",n_errors,(n_errors>1)?"s":"");
+    error("%d error%s found\n",n_errors,(n_errors>1)?"s":"");
 }
 write_grf_end_things(grf,offset,start_state_offset,current_state,state_index);
 free_vector_int(state_index);
@@ -136,11 +136,11 @@ while (line[pos]!='\0') {
    parse_string(line,&pos,temp,P_TAB,P_EMPTY,NULL);
    vector_ptr_add(parts,u_strdup(temp));
    if (temp[0]!='\0') {
-	   u_strcat(foo,temp);
-	   u_strcat(foo,' ');
+       u_strcat(foo,temp);
+       u_strcat(foo,' ');
    }
    if (line[pos]=='\0') {
-	   break;
+       break;
    }
    pos++;
 }
@@ -248,11 +248,11 @@ for (int i=0;i<n_parts-1;i++) {
 int x=n_parts-1;
 for (int i = 0; i < forms.no_forms; i++,(*line)++) {
    (*current_state)++;
-	unichar tmp[1024];
-	/* We have to convert to Hangul the result of the inflection process that may have
-	 * produced a combination of Hangul and Jamos */
-	convert_jamo_to_hangul(forms.forms[i].form,tmp,ctx->korean);
-	Hanguls_to_Jamos(tmp,inflected_jamo,ctx->korean,0);
+    unichar tmp[1024];
+    /* We have to convert to Hangul the result of the inflection process that may have
+     * produced a combination of Hangul and Jamos */
+    convert_jamo_to_hangul(forms.forms[i].form,tmp,ctx->korean);
+    Hanguls_to_Jamos(tmp,inflected_jamo,ctx->korean,0);
    u_fprintf(grf,"\"%S\" %d %d 1 %d \n",inflected_jamo,200+x*500,20+(*line)*50,(*current_state));
    /* We must backtrack to add the transition to this state */
    fseek(grf,foo_offset,SEEK_SET);
@@ -381,8 +381,8 @@ int next(int *pos,unichar** tab,int max) {
 if (*pos==max) return 0;
 (*pos)++;
 while ((*pos)<max) {
-	if (tab[*pos][0]!='\0') return 1;
-	(*pos)++;
+    if (tab[*pos][0]!='\0') return 1;
+    (*pos)++;
 }
 return 0;
 }
@@ -399,7 +399,7 @@ return 0;
  * Returns 1 in case of success; 0 otherwise.
  */
 int tokens_to_dela_entries(vector_ptr* tokens,struct dela_entry** entries,int *n_entries,
-							Ustring* foo,int line_number) {
+                            Ustring* foo,int line_number) {
 (*n_entries)=0;
 int n=tokens->nbelems;
 if (n<=1) return 0;
@@ -408,47 +408,47 @@ unichar** tok=(unichar**)(tokens->tab);
 if (!next(&pos,tok,n)) return 0;
 Ustring* line=new_Ustring(64);
 for (;;) {
-	empty(line);
-	/* Matching { */
-	if (u_strcmp(tok[pos],"{")) {
-		goto err;
-	}
-	if (!next(&pos,tok,n)) goto err;
-	/* Matching inflected part */
-	if (!u_strcmp(tok[pos],"}")) {
-		goto err;
-	}
-	u_strcat(line,tok[pos]);
-	u_strcat(line,",");
-	if (!next(&pos,tok,n)) goto err;
-	/* Matching lemma part */
-	u_strcat(line,tok[pos]);
-	u_strcat(line,".");
-	if (!next(&pos,tok,n)) goto err;
-	/* Matching code part */
-	u_strcat(line,tok[pos]);
-	if (!next(&pos,tok,n)) goto err;
-	while (u_strcmp(tok[pos],"}")) {
-		u_strcat(line,"+");
-		u_strcat(line,tok[pos]);
-		if (!next(&pos,tok,n)) goto err;
-	}
-	/* Now, we can build the dic entry */
-	struct dela_entry* entry=tokenize_DELAF_line(line->str);
-	if (entry==NULL) goto err;
-	if (*n_entries==MAX_PARTS) {
-		fatal_error("Too many dic entries in tokens_to_dela_entries\n");
-	}
-	entries[(*n_entries)++]=entry;
-	if (entry->n_inflectional_codes!=0) {
-		error("Error at line %d: %S\n",line_number,foo->str);
-		error("Unexpected inflectional code(s)\n");
-		goto err_no_msg;
-	}
-	if (!next(&pos,tok,n)) {
-		/* If we have finished, we exit the loop */
-		break;
-	}
+    empty(line);
+    /* Matching { */
+    if (u_strcmp(tok[pos],"{")) {
+        goto err;
+    }
+    if (!next(&pos,tok,n)) goto err;
+    /* Matching inflected part */
+    if (!u_strcmp(tok[pos],"}")) {
+        goto err;
+    }
+    u_strcat(line,tok[pos]);
+    u_strcat(line,",");
+    if (!next(&pos,tok,n)) goto err;
+    /* Matching lemma part */
+    u_strcat(line,tok[pos]);
+    u_strcat(line,".");
+    if (!next(&pos,tok,n)) goto err;
+    /* Matching code part */
+    u_strcat(line,tok[pos]);
+    if (!next(&pos,tok,n)) goto err;
+    while (u_strcmp(tok[pos],"}")) {
+        u_strcat(line,"+");
+        u_strcat(line,tok[pos]);
+        if (!next(&pos,tok,n)) goto err;
+    }
+    /* Now, we can build the dic entry */
+    struct dela_entry* entry=tokenize_DELAF_line(line->str);
+    if (entry==NULL) goto err;
+    if (*n_entries==MAX_PARTS) {
+        fatal_error("Too many dic entries in tokens_to_dela_entries\n");
+    }
+    entries[(*n_entries)++]=entry;
+    if (entry->n_inflectional_codes!=0) {
+        error("Error at line %d: %S\n",line_number,foo->str);
+        error("Unexpected inflectional code(s)\n");
+        goto err_no_msg;
+    }
+    if (!next(&pos,tok,n)) {
+        /* If we have finished, we exit the loop */
+        break;
+    }
 }
 free_Ustring(line);
 return 1;
@@ -471,44 +471,44 @@ Ustring* tmp=new_Ustring(32);
 unichar* s;
 int pos;
 for (int i=0;i<inf->N;i++) {
-	l=inf->codes[i];
-	while (l!=NULL) {
-		s=l->string;
-		pos=0;
-		/* First, we locate the . */
-		while (s[pos]!='.' && s[pos]!='\0') {
-			if (s[pos]=='\\') {
-				pos++;
-				if (s[pos]=='\0') {
-					fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
-				}
-			}
-			pos++;
-		}
-		if (s[pos]=='\0') {
-			fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
-		}
-		/* Then, we read all codes */
-		while (s[pos]=='.' || s[pos]=='+') {
-			empty(tmp);
-			pos++;
-			while (s[pos]!='+'  && s[pos]!=':' && s[pos]!='\0') {
-				if (s[pos]=='\\') {
-					pos++;
-					if (s[pos]=='\0') {
-						fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
-					}
-				}
-				u_strcat(tmp,s[pos]);
-				pos++;
-			}
-			if (tmp->len==0) {
-				fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
-			}
-			get_value_index(tmp->str,h);
-		}
-		l=l->next;
-	}
+    l=inf->codes[i];
+    while (l!=NULL) {
+        s=l->string;
+        pos=0;
+        /* First, we locate the . */
+        while (s[pos]!='.' && s[pos]!='\0') {
+            if (s[pos]=='\\') {
+                pos++;
+                if (s[pos]=='\0') {
+                    fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
+                }
+            }
+            pos++;
+        }
+        if (s[pos]=='\0') {
+            fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
+        }
+        /* Then, we read all codes */
+        while (s[pos]=='.' || s[pos]=='+') {
+            empty(tmp);
+            pos++;
+            while (s[pos]!='+'  && s[pos]!=':' && s[pos]!='\0') {
+                if (s[pos]=='\\') {
+                    pos++;
+                    if (s[pos]=='\0') {
+                        fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
+                    }
+                }
+                u_strcat(tmp,s[pos]);
+                pos++;
+            }
+            if (tmp->len==0) {
+                fatal_error("Parse error in get_codes_from_inf for inf code %S\n",s);
+            }
+            get_value_index(tmp->str,h);
+        }
+        l=l->next;
+    }
 }
 free_Ustring(tmp);
 return h;
@@ -523,20 +523,20 @@ return h;
  */
 int are_compatible(struct dela_entry* e,struct dela_entry* dic,struct string_hash* dic_codes) {
 if (!u_starts_with(dic->semantic_codes[0],e->semantic_codes[0])) {
-	return 0;
+    return 0;
 }
 unichar c=dic->semantic_codes[0][u_strlen(e->semantic_codes[0])];
 if (c!='\0' && !u_is_digit(c)) {
-	/* If the codes are not exactly the same, then we look for
-	 * a digit to avoid that A may match ADV, for instance */
-	return 0;
+    /* If the codes are not exactly the same, then we look for
+     * a digit to avoid that A may match ADV, for instance */
+    return 0;
 }
 for (int i=1;i<e->n_semantic_codes;i++) {
-	if (-1!=get_value_index(e->semantic_codes[i],dic_codes)) {
-		if (!dic_entry_contain_gram_code(dic,e->semantic_codes[i])) {
-			return 0;
-		}
-	}
+    if (-1!=get_value_index(e->semantic_codes[i],dic_codes)) {
+        if (!dic_entry_contain_gram_code(dic,e->semantic_codes[i])) {
+            return 0;
+        }
+    }
 }
 return 1;
 }
@@ -549,22 +549,22 @@ void upgrade_entry(struct dela_entry* e,struct dela_entry* dic) {
 free(e->semantic_codes[0]);
 e->semantic_codes[0]=u_strdup(dic->semantic_codes[0]);
 for (int i=1;i<dic->n_semantic_codes;i++) {
-	if (!dic_entry_contain_gram_code(e,dic->semantic_codes[i])) {
-		e->semantic_codes[(e->n_semantic_codes)++]=u_strdup(dic->semantic_codes[i]);
-	}
+    if (!dic_entry_contain_gram_code(e,dic->semantic_codes[i])) {
+        e->semantic_codes[(e->n_semantic_codes)++]=u_strdup(dic->semantic_codes[i]);
+    }
 }
 /* Finally, we have to test whether the grammatical code has been duplicated or not */
 for (int i=1;i<e->n_semantic_codes;i++) {
-	if (!u_strcmp(e->semantic_codes[0],e->semantic_codes[i])) {
-		/* We remove the #i and shift the remaining codes */
-		free(e->semantic_codes[i]);
-		while (i<e->n_semantic_codes-1) {
-			e->semantic_codes[i]=e->semantic_codes[i+1];
-			i++;
-		}
-		(e->n_semantic_codes)--;
-		break;
-	}
+    if (!u_strcmp(e->semantic_codes[0],e->semantic_codes[i])) {
+        /* We remove the #i and shift the remaining codes */
+        free(e->semantic_codes[i]);
+        while (i<e->n_semantic_codes-1) {
+            e->semantic_codes[i]=e->semantic_codes[i+1];
+            i++;
+        }
+        (e->n_semantic_codes)--;
+        break;
+    }
 }
 }
 
@@ -572,15 +572,15 @@ for (int i=1;i<e->n_semantic_codes;i++) {
  * For each dic entry, this function looks up in the bin dictionary
  * to try to expand its codes. For instance, if we have an entry like
  *
- * 	ABC,.X+Y
+ *  ABC,.X+Y
  *
  * and if the binary dic contains:
  *
- * 	ABC,X08+W+Z
+ *  ABC,X08+W+Z
  *
  * then we want to obtain:
  *
- * 	ABC,X08+Y+W+Z
+ *  ABC,X08+Y+W+Z
  *
  * Note that the grammatical code (the first one) may be replaced by a longer version if found
  * in the bin dictionary. To be considered, a binary entry must contains all codes of the
@@ -591,63 +591,63 @@ for (int i=1;i<e->n_semantic_codes;i++) {
  * otherwise it returns 1.
  */
 int upgrade_entries(struct dela_entry** entries,int n_entries,Dictionary* d,
-		            struct string_hash* dic_codes,
-					Ustring* debug,int line_number) {
+                    struct string_hash* dic_codes,
+                    Ustring* debug,int line_number) {
 Ustring* line=new_Ustring(4096);
 int OK=1;
 for (int i=0;i<n_entries;i++) {
-	struct dela_entry* e=entries[i];
-	int inf_code=get_inf_code_exact_match(d,e->inflected);
-	if (inf_code==-1) {
-		/* No expansion to perform if the entry is not in the bin dictionary */
-		continue;
-	}
-	/* Now, we uncompress all the entries found in the bin */
-	vector_ptr* bin_entries=new_vector_ptr(8);
-	struct list_ustring* l=d->inf->codes[inf_code];
-	while (l!=NULL) {
-		uncompress_entry(e->inflected,l->string,line);
-		struct dela_entry* foo=tokenize_DELAF_line(line->str);
-		if (foo==NULL) {
-			error("Error at line %d: %S\n",line_number,debug->str);
-			fatal_error("Internal error in upgrade_entries\n");
-		}
-		vector_ptr_add(bin_entries,foo);
-		l=l->next;
-	}
-	/* Now, we count how many bin entries are compatible with the current one */
-	unsigned int n_compatibles=0;
-	for (int k=0;k<bin_entries->nbelems;k++) {
-		if (are_compatible(e,(struct dela_entry*)(bin_entries->tab[k]),dic_codes)) {
-			n_compatibles++;
-		}
-	}
-	if (n_compatibles>1) {
-		OK=0;
-		error("Error at line %d: %S\n",line_number,debug->str);
-		error("Cause: several possibilities for entry {");
-		debug_print_entry(e);
-		error("}:\n");
-		for (int k=0;k<bin_entries->nbelems;k++) {
-			if (are_compatible(e,(struct dela_entry*)(bin_entries->tab[k]),dic_codes)) {
-				debug_println_entry((struct dela_entry*)(bin_entries->tab[k]));
-			}
-		}
-	} else if (n_compatibles==1) {
-		for (int k=0;k<bin_entries->nbelems;k++) {
-			if (are_compatible(e,(struct dela_entry*)(bin_entries->tab[k]),dic_codes)) {
-				/* We have found the only matching one, we expand it */
-				upgrade_entry(e,(struct dela_entry*)(bin_entries->tab[k]));
-			}
-		}
-	} else {
-		/* If there is no compatible entry, we don't have to expand anything */
-	}
-	/* Don't forget to free bin entries */
-	for (int k=0;k<bin_entries->nbelems;k++) {
-		free_dela_entry((struct dela_entry*)(bin_entries->tab[k]));
-	}
-	free_vector_ptr(bin_entries,NULL);
+    struct dela_entry* e=entries[i];
+    int inf_code=get_inf_code_exact_match(d,e->inflected);
+    if (inf_code==-1) {
+        /* No expansion to perform if the entry is not in the bin dictionary */
+        continue;
+    }
+    /* Now, we uncompress all the entries found in the bin */
+    vector_ptr* bin_entries=new_vector_ptr(8);
+    struct list_ustring* l=d->inf->codes[inf_code];
+    while (l!=NULL) {
+        uncompress_entry(e->inflected,l->string,line);
+        struct dela_entry* foo=tokenize_DELAF_line(line->str);
+        if (foo==NULL) {
+            error("Error at line %d: %S\n",line_number,debug->str);
+            fatal_error("Internal error in upgrade_entries\n");
+        }
+        vector_ptr_add(bin_entries,foo);
+        l=l->next;
+    }
+    /* Now, we count how many bin entries are compatible with the current one */
+    unsigned int n_compatibles=0;
+    for (int k=0;k<bin_entries->nbelems;k++) {
+        if (are_compatible(e,(struct dela_entry*)(bin_entries->tab[k]),dic_codes)) {
+            n_compatibles++;
+        }
+    }
+    if (n_compatibles>1) {
+        OK=0;
+        error("Error at line %d: %S\n",line_number,debug->str);
+        error("Cause: several possibilities for entry {");
+        debug_print_entry(e);
+        error("}:\n");
+        for (int k=0;k<bin_entries->nbelems;k++) {
+            if (are_compatible(e,(struct dela_entry*)(bin_entries->tab[k]),dic_codes)) {
+                debug_println_entry((struct dela_entry*)(bin_entries->tab[k]));
+            }
+        }
+    } else if (n_compatibles==1) {
+        for (int k=0;k<bin_entries->nbelems;k++) {
+            if (are_compatible(e,(struct dela_entry*)(bin_entries->tab[k]),dic_codes)) {
+                /* We have found the only matching one, we expand it */
+                upgrade_entry(e,(struct dela_entry*)(bin_entries->tab[k]));
+            }
+        }
+    } else {
+        /* If there is no compatible entry, we don't have to expand anything */
+    }
+    /* Don't forget to free bin entries */
+    for (int k=0;k<bin_entries->nbelems;k++) {
+        free_dela_entry((struct dela_entry*)(bin_entries->tab[k]));
+    }
+    free_vector_ptr(bin_entries,NULL);
 }
 free_Ustring(line);
 return OK;

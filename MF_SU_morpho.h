@@ -47,13 +47,13 @@ namespace unitex {
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
-		SU_id_T* SU_id,f_morpho_T* feat,
-		SU_forms_T* forms);
+        SU_id_T* SU_id,f_morpho_T* feat,
+        SU_forms_T* forms);
 
 /* This prototype has been added in order to deal with simple words */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,
-		unichar* lemma,
-		char* inflection_code,SU_forms_T* forms);
+        unichar* lemma,
+        char* inflection_code,SU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms
@@ -133,20 +133,20 @@ int SU_delete_lemma(SU_lemma_T* l);
 // COMMENT CONCERNING THE UNIQUE IDENTIFICATION OF SINGLE WORD FORMS
 //
 // In order to uniquely identify a word form four elements are necessary:
-//	- the form  (e.g. "rekami")
-//	- its lemma (e.g. "reka")
-//	- its inflection paradigm (e.g. N56)
-//	- its inflection features (e.g. {Gen=fem,Nb=pl,Case=Inst}
+//  - the form  (e.g. "rekami")
+//  - its lemma (e.g. "reka")
+//  - its inflection paradigm (e.g. N56)
+//  - its inflection features (e.g. {Gen=fem,Nb=pl,Case=Inst}
 // Note that omitting one of these elements may introduce ambiguities from the morphological point of view.
 // Examples :
-//	1) If the form itself is missing, an ambiguity may exist between variants corresponding to the same inflection features
-//	   e.g. given only the lemma "reka", the paradigm N56, and the features {Gen=fem,Nb=pl,Case=Inst}), we may not distinguish
-// 	   between "rekami" and "rekoma"
-//	2) If the lemma is missing we may not lemmatize the form (unless the paradigm allows to do that on the basis of the 3 elements).
+//  1) If the form itself is missing, an ambiguity may exist between variants corresponding to the same inflection features
+//     e.g. given only the lemma "reka", the paradigm N56, and the features {Gen=fem,Nb=pl,Case=Inst}), we may not distinguish
+//     between "rekami" and "rekoma"
+//  2) If the lemma is missing we may not lemmatize the form (unless the paradigm allows to do that on the basis of the 3 elements).
 //         A certain form may be identical for two different lemmas.
-//	3) If the inflection paradigm is missing we may not produce other inflected forms.
-//	4) If the inflection features are missing there may be an ambiguity in case of homographs e.g. "rece" may be both
-//	   {Gen=fem,Nb=pl,Case=Nom} and {Gen=fem,Nb=pl,Case=Acc}
+//  3) If the inflection paradigm is missing we may not produce other inflected forms.
+//  4) If the inflection features are missing there may be an ambiguity in case of homographs e.g. "rece" may be both
+//     {Gen=fem,Nb=pl,Case=Nom} and {Gen=fem,Nb=pl,Case=Acc}
 //
 // A UNIQUE identification of a form in the set of all inflected forms
 

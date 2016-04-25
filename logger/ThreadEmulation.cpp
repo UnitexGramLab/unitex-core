@@ -33,7 +33,7 @@ namespace ThreadEmulation
     static map<HANDLE, PendingThreadInfo> pendingThreads;
     static mutex pendingThreadsLock;
 
-    
+
     // Thread local storage.
     typedef vector<void*> ThreadLocalData;
 
@@ -99,7 +99,7 @@ namespace ThreadEmulation
         // the caller is responsible for closing the handle returned by CreateThread,
         // and they may do that before or after the thread has finished running.
         HANDLE completionEvent;
-        
+
         if (!DuplicateHandle(GetCurrentProcess(), threadHandle, GetCurrentProcess(), &completionEvent, 0, false, DUPLICATE_SAME_ACCESS))
         {
             CloseHandle(threadHandle);
@@ -127,7 +127,7 @@ namespace ThreadEmulation
                 // Start the thread immediately.
                 StartThread(lpStartAddress, lpParameter, completionEvent, 0);
             }
-    
+
             return threadHandle;
         }
         catch (...)
@@ -210,7 +210,7 @@ namespace ThreadEmulation
                 return;
 
             HANDLE previousEvent = InterlockedCompareExchangePointerRelease(&singletonEvent, sleepEvent, nullptr);
-            
+
             if (previousEvent)
             {
                 // Back out if multiple threads try to demand create at the same time.
@@ -227,7 +227,7 @@ namespace ThreadEmulation
     DWORD WINAPI TlsAlloc()
     {
         lock_guard<mutex> lock(tlsAllocationLock);
-        
+
         // Can we reuse a previously freed TLS slot?
         if (!freeTlsIndices.empty())
         {
@@ -298,7 +298,7 @@ namespace ThreadEmulation
             try
             {
                 threadData = new ThreadLocalData(dwTlsIndex + 1, nullptr);
-                
+
                 lock_guard<mutex> lock(tlsAllocationLock);
 
                 allThreadData.insert(threadData);

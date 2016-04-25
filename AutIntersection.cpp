@@ -166,7 +166,7 @@ for (Transition* transA=A->states[q1]->outgoing_transitions;transA!=NULL;transA=
    int found=0;
    for (Transition* transB=B->states[q2]->outgoing_transitions;transB!=NULL;transB=transB->next) {
       if (symbol_in_symbol(transA->label,transB->label)) {
-     	 if (found) {
+         if (found) {
             fatal_error("intersect_states_text_grammar: non deterministic automaton\n");
          }
          found=1;

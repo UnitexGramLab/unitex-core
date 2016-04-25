@@ -36,10 +36,10 @@ namespace unitex {
  * the associated final node contains a list of all the inflected forms
  * that correspond to this lemma. For instance, if the text simple word
  * dictionary contains the following lines:
- * 
+ *
  * �tres,�tre.N:mp
  * suis,�tre.V:P1s
- * 
+ *
  * then the liste "�tres", "suis" will be associated to the lemma "�tre".
  */
 struct lemma_node {

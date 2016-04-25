@@ -24,7 +24,7 @@
 
 /**
  * This library provides functions for tokenizing text.
- * 
+ *
  */
 
 #include "Unicode.h"
