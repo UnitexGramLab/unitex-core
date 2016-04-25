@@ -242,8 +242,6 @@ int normalize(const char *fin, const char *fout, const VersatileEncodingConfig* 
 
     /* We define some things that will be used for parsing the buffer */
 
-    static const unichar stop_chars[] = { '{', '}', 0 };
-    static const unichar forbidden_chars[] = { '\n', 0 };
     static const unichar open_bracket[] = { '{', 0 };
     static const unichar close_bracket[] = { '}', 0 };
     static const unichar empty_string[] = { 0 };
