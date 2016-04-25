@@ -40,7 +40,7 @@ namespace unitex {
 const char
     * usage_Fst2List =
         "Usage:\n"
-          "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
+          "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-d] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"
           " fname : name of the input file name with extension \".fst2\"\r\n"
           " -S : write path on standard output\r\n"
           " -o outFile : if this option and -S not exist, save paths at \"file\"lst.txt\r\n"
@@ -60,7 +60,8 @@ const char
           "       default value is \'s\'\r\n"
           " -ss \"stop\" : set \"str\" as the mark of stop exploitation at \"<stop>\" \r\n"
           "                    default null\r\n"
-          " -m  : mode special for description with alphabet\r\n"
+          " -m : mode special for description with alphabet\r\n"
+          " -d : disable loop check: faster execution at the cost of information about loops\r\n"
           " -v : verbose mode  default null\r\n"
           " -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n"
           " -V/--only-verify-arguments: only verify arguments syntax and exit\r\n"
@@ -178,6 +179,7 @@ public:
   autoType automateMode;
   int listOut;
   int verboseMode;
+  int enableLoopCheck;
   //  int control_char; // control the output for control_chars <>
 #define  PATH_QUEUE_MAX  1024
   struct pathAndEti pathEtiQ[PATH_QUEUE_MAX];
@@ -274,7 +276,7 @@ public:
   CFstApp() :
     a(0), fst2_free(FST2_free_info_init), foutput(0),
         prMode(PR_SEPARATION), automateMode(AUTOMODE), listOut(0),
-        verboseMode(0), pathEtiQidx(0),
+        verboseMode(0), enableLoopCheck(1), pathEtiQidx(0),
 
         CautoDepth(0),
 
@@ -1213,10 +1215,13 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
   ofNameTmp[0] = 0;
   switch (display_control) {
   case GRAPH: {
-    listOut = 0;
-    niveau_traite_mot = 1;
-    exploirerSubAuto(1); // mark loop path start nodes
-    prSubGrapheCycle();
+    if (enableLoopCheck) {
+      listOut = 0;
+      niveau_traite_mot = 1;
+      exploirerSubAuto(1); // mark loop path start nodes
+      prSubGrapheCycle();
+    }
+
     if (recursiveMode == LABEL) {
       error("warning:ignore the option -rl\r\n");
     }
@@ -1272,11 +1277,12 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
   case FULL:
     switch (traitAuto) {
     case SINGLE: {
-      listOut = 0;
-      exploirerSubAuto(1); // mark loop path start nodes
-      prSubGrapheCycle();
+      if (enableLoopCheck) {
+        listOut = 0;
+        exploirerSubAuto(1); // mark loop path start nodes
+        prSubGrapheCycle();
+      }
       makeOfileName(ofNameTmp, 0, 0);
-
       if (strcmp(ofnameOnly, MAGIC_OUT_STDOUT) == 0) {
         foutput = U_STDOUT;
       }
@@ -1363,11 +1369,12 @@ int CFstApp::getWordsFromGraph(int &changeStrToIdx,
         if (!foutput) {
           fatal_error("Cannot open file %s\n", ofNameTmp);
         }
-        listOut = 0; // output disable
-
-        exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
-        prSubGrapheCycle();
-        CleanPathCounter();
+        if (enableLoopCheck) {
+          listOut = 0; // output disable
+          exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
+          prSubGrapheCycle();
+          CleanPathCounter();
+        }
         listOut = 1; // output enable
         exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
 
@@ -2016,6 +2023,8 @@ int main_Fst2List(int argc, char* const argv[]) {
         return USAGE_ERROR_CODE;
       }
       break;
+    case 'd':
+      aa.enableLoopCheck = false;
     case 'S':
       ofilename = new char[strlen(MAGIC_OUT_STDOUT) + 1];
       strcpy(ofilename, MAGIC_OUT_STDOUT);
