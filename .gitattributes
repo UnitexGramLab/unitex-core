@@ -9,7 +9,7 @@
 
 # for the next files NOT found below, normalize CRLF into LF
 *.gitattributes text
-.gitignore      text
+*.gitignore     text -crlf
 *.md            text
 
 # lines below are from C++.gitattributes
