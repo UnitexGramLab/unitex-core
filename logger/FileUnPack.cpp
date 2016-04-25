@@ -41,6 +41,12 @@
 
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
 
+#ifdef _MSC_VER
+# pragma warning( push )
+// result of 32-bit shift implicitly converted to 64 bits
+// https://msdn.microsoft.com/en-us/library/ke55d167.aspx
+# pragma warning(disable:4334)
+#endif // _MSC_VER
 
 // portion from tinfl.c from https://code.google.com/p/miniz/ / https://github.com/richgel999/miniz
 
@@ -642,11 +648,10 @@ For more information, please refer to <http://unlicense.org/>
 
 /************************************************************/
 
-
-
-
-
-
+// #pragma warning( disable : 4334)
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif // _MSC_VER
 
 #include <stdio.h>
 #include <stdlib.h>
