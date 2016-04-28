@@ -16,24 +16,24 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 
 1. [Fork us](https://github.com/UnitexGramLab/unitex-core/fork)
 
-1. Clone your fork locally
+1. **Clone** your fork locally
 
     ```
     git clone https://github.com/YOUR_GITHUB_USERNAME/unitex-core.git
     ```
 
-1. Configure the upstream remote. To do this, add the remote location of the main
+1. Configure the **upstream** remote. To do this, add the remote location of the main
    `unitex-core` repository under the name `upstream`. This will allow you later
    to keep your fork up to date
-   
+
     ```
     git remote add upstream git://github.com/UnitexGramLab/unitex-core.git
-    ```    
+    ```
 
-1. Create a local branch for your changes
+1. Create a local **branch** for your changes
 
     ```
-    git checkout -b my-changes master
+    git checkout -b my-changes origin/master
     ```
 
    Use a short and descriptive name for your branch. If you are developing a new
@@ -43,47 +43,55 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
    e.g. `bugfix/5`
 
 1. For non-trivial changes, if it doesn't already exist, create a
-   [new issue](https://github.com/UnitexGramLab/unitex-core/issues/new)
+   [**new issue**](https://github.com/UnitexGramLab/unitex-core/issues/new)
 
-1. Edit files and compile your code following the *How to Build* instructions above
+1. Edit files and **compile** your code following the *How to Build* instructions above
 
 1. Execute [`./unitex-core-test.sh -p1 -M1`](https://github.com/UnitexGramLab/unitex-core-tests#getting-started)
-   to run non-regression and memory error detection tests. Note that is not necessary or even
+   to run non-regression and memory error detection **tests**. Note that is not necessary or even
    recommended to fork the [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository.
    In this case, since you need only to run the `unitex-core-test.sh` script, make sure only your local repository
    is up-to-date by [pulling](https://help.github.com/articles/fetching-a-remote/#pull) the latest
    remote changes
 
-1. Commit your code referring in the [commit message](https://help.github.com/articles/closing-issues-via-commit-messages) the issue you worked on
+1. Make sure git knows your name and email address, e.g.
 
-1. Make sure your fork is up to date
+    ```
+    git config --global user.name "John Doe"
+    git config --global user.email "john.doe@example.org"
+    ```
+
+1. **Commit** your code referring in the [commit message](https://help.github.com/articles/closing-issues-via-commit-messages)
+   the issue you worked on
+
+1. Make sure your fork is **up to date**
 
     ```
     git checkout master
     git pull upstream master
     ```
 
-1. [Rebase](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase-i) your local branch
+1. [**Rebase**](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase-i) your local branch
 
     ```
     git checkout my-changes
     git rebase master
     ```
 
-1. Merge back into master
+1. **Merge** back into master
 
     ```
     git checkout master
     git merge my-changes
     ```
 
-1. Push your changes to your remote repository on GitHub
+1. **Push** your changes to your remote repository on GitHub
 
     ```
-    git push
+    git push origin
     ```
 
-1. [Request a pull](https://github.com/UnitexGramLab/unitex-core/pulls)
+1. Go to ``https://github.com/YOUR_GITHUB_USERNAME/unitex-core`` and [Request a pull](https://github.com/UnitexGramLab/unitex-core/pulls)
 
 1. Give a brief description and [refer the issues](https://help.github.com/articles/autolinked-references-and-urls/#issues-and-pull-requests)
    in your pull request comment
@@ -91,7 +99,7 @@ with their changes. The recommended [workflow](http://rypress.com/tutorials/git/
 1. Finally, if your are developing or improving a new functionality or module, you can,
    and should, contribute tests for it. To get further details check the
    [unitex-core-tests](https://github.com/UnitexGramLab/unitex-core-tests) repository
-    
+
 ## Documentation
 
 User's Manual (in PDF format) is available in English and French ([more
@@ -142,7 +150,7 @@ tools) always use "Unitex/GramLab".
 
 <a href="/LICENSE"><img height="48" align="left" src="http://www.gnu.org/graphics/empowered-by-gnu.svg"></a>
 
-This program is licensed under the [GNU Lesser General Public License version 2.1](/LICENSE). 
+This program is licensed under the [GNU Lesser General Public License version 2.1](/LICENSE).
 Contact unitex-devel@univ-mlv.fr for further inquiries.
 
 --
