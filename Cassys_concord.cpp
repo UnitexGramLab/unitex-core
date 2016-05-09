@@ -28,6 +28,7 @@
 #include "Cassys_concord.h"
 #include "Cassys_xml_output.h"
 #include "HashTable.h"
+#include "String_hash.h"
 #include "FIFO.h"
 #include "Snt.h"
 
@@ -207,6 +208,7 @@ struct standOffInfo {
     unichar *type;
     unichar *subtype;
     struct hash_table *entList;
+    struct string_hash* entity_count;
 };
 
 void free_standoff_info(standOffInfo *infos,int num) {
@@ -214,6 +216,7 @@ void free_standoff_info(standOffInfo *infos,int num) {
         free(infos[i].subtype);
         free(infos[i].type);
         free_hash_table(infos[i].entList);
+        free_string_hash(infos[i].entity_count);
     }
 }
 void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
@@ -231,6 +234,20 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
                     if(infos[i].entList->table[j]->ptr_key !=NULL) {
                         u_fprintf(out,"\t<ns:annotationGrp>\n");
                         u_fprintf(out,"\t\t%S\n",infos[i].entList->table[j]->ptr_key);
+                        u_fprintf(out,"\t\t\t<fs type=\"statistics\">\n");
+                        u_fprintf(out,"\t\t\t\t<f name=\"frequency\">\n");
+                        u_fprintf(out,"\t\t\t\t\t<numeric>");
+                        int idx = get_value_index((const unichar *)(infos[i].entList->table[j]->ptr_key),infos[i].entity_count,DONT_INSERT);
+                        if (idx>-1) {
+                            int count_len = u_strlen(infos[i].entity_count->value[idx]);
+                            u_fprintf(out,"%d",count_len);
+                        }
+                        else {
+                            u_fprintf(out,"1");
+                        }
+                        u_fprintf(out,"</numeric>\n");
+                        u_fprintf(out,"\t\t\t\t</f>\n");
+                        u_fprintf(out,"\t\t\t</fs>\n");
                         u_fprintf(out,"\t</ns:annotationGrp>\n");
                         count++;
                     }
@@ -344,6 +361,19 @@ void construct_istex_standoff(const char *text_name,
                     int found = findEntityList(infos,num_info,subtype,type);
                     if(found > -1 && found<num_info) {
                         get_value(infos[found].entList,entity,HT_INSERT_IF_NEEDED);
+                        int idx = get_value_index(entity,infos[found].entity_count,DONT_INSERT);
+                        if(idx == -1) {
+                            unichar *count = (unichar*)malloc(sizeof(unichar) * 3);
+                            count[0] = '1';
+                            count[1] = '\0';
+                            get_value_index(entity,infos[found].entity_count,INSERT_IF_NEEDED,count);
+                        }
+                        else {
+                            int count_len = u_strlen(infos[found].entity_count->value[idx]);
+                            infos[found].entity_count->value[idx] = (unichar*)realloc(infos[found].entity_count->value[idx],sizeof(unichar)*(count_len + 2));
+                            infos[found].entity_count->value[idx][count_len]='1';
+                            infos[found].entity_count->value[idx][count_len+1]='\0';
+                        }
                     }
                     else {
                         infos = (standOffInfo*)realloc(infos, (num_info + 1) * sizeof(standOffInfo));
@@ -353,6 +383,13 @@ void construct_istex_standoff(const char *text_name,
                         infos[num_info].type = (unichar*)malloc(sizeof(unichar) * (u_strlen(type) + 1));
                         u_strcpy(infos[num_info].type,type);
                         infos[num_info].subtype = NULL;
+                        infos[num_info].entity_count = NULL;
+                        infos[num_info].entity_count = new_string_hash();
+                        unichar *count = (unichar*)malloc(sizeof(unichar) * 3);
+                        count[0] = '1';
+                        count[1] = '\0';
+                        get_value_index(entity,infos[num_info].entity_count,INSERT_IF_NEEDED,count);
+                        free(count);
                         if(subtype !=NULL) {
                             infos[num_info].subtype = (unichar*)malloc(sizeof(unichar) * (u_strlen(subtype) + 1));
                             u_strcpy(infos[num_info].subtype,subtype);

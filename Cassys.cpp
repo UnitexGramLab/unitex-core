@@ -75,7 +75,7 @@ const struct option_TS lopts_Cassys[] = {
   {"input_offsets",required_argument_TS,NULL,'$'},
   {"produce_offsets_file",no_argument_TS,NULL,'O'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
-  {"istex",required_argument_TS,NULL,'x'},
+  {"istex",no_argument_TS,NULL,'x'},
   {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -1113,27 +1113,9 @@ int main_Cassys(int argc,char* const argv[]) {
             break;
         }
         case 'x': {
-            if (options.vars()->optarg[0] != '\0') {
-        if(strcmp(options.vars()->optarg,"standoff")==0) {
-                    istex_param = 2;
-        }
-        else if(strcmp(options.vars()->optarg,"token")==0) {
-                    istex_param = 1;
-        }
-            }
-            else {
-                error("You must specify an argument for istex\n");
-                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
-                free_vector_ptr(concord_additional_args, free);
-                free_vector_ptr(locate_additional_args, free);
-                free_vector_ptr(tokenize_additional_args, free);
-                free(temp_work_dir);
-                free(morpho_dic);
-                free(textbuf);
-                return USAGE_ERROR_CODE;
-            }
+            istex_param = 1;
             break;
-    }
+        }
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1675,13 +1657,6 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
         transducer_number++;
     }
 
-    if(istex_param == 1) {
-        int itr = iteration;
-        if (iteration > 0)
-            itr--;
-        construct_istex_token(get_file_in_current_snt(text,transducer_number-1,
-                itr,"tok_by_alph",".txt"),vec,original_text);
-    }
     free_snt_files(snt_text_files);
 
     // create the concord file with XML
@@ -1694,7 +1669,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     remove_extension(original_text, textbuf->text_name_without_extension);
     sprintf(textbuf->result_file_name_XML,"%s_csc.txt", textbuf->text_name_without_extension);
 
-    if(istex_param == 2) {
+    if(istex_param == 1) {
         construct_istex_standoff(snt_files->concord_ind,vec,original_text);
     }
     // make a copy of the last resulting text of the cascade in the file named _csc.txt
