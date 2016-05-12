@@ -13,14 +13,20 @@ indent_size = 2
 indent_style = space
 insert_final_newline = true
 
-# C++ Files
+# C++ files
 [*.{c,cpp,h,c.in,h.in,cpp.in}]
 curly_bracket_next_line = true
 indent_brace_style = 1TBS
 trim_trailing_whitespace = true
 end_of_line = lf
 
-#[{*.java,*.xml,*.js,*.css]
+# Java files
+[*.{java,java.in,mf,mf.in}]
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Extra files
+[*.{xml,js,css}]
 trim_trailing_whitespace = true
 insert_final_newline = true
 
@@ -47,7 +53,7 @@ end_of_line = lf
 end_of_line = crlf
 
 # CI configuration
-[{.appveyor.yml,.travis.yml}]
+[{.appveyor.yml,.travis.yml,.pullapprove.yml}]
 indent_style = space
 indent_size = 2
 
