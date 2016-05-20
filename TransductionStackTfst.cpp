@@ -298,11 +298,13 @@ while (s[i]!='\0') {
              } else if (!u_strcmp(field,"CODE.GRAM")) {
                  push_output_string_tfst(stack,entry->semantic_codes[0]);
              } else if (!u_strcmp(field,"CODE.SEM")) {
-                 push_output_string_tfst(stack,entry->semantic_codes[1]);
-                 for (int il=2;il<entry->n_semantic_codes;il++) {
-                     push_output_char_tfst(stack,'+');
-                     push_output_string_tfst(stack,entry->semantic_codes[il]);
-                 }
+                if (entry->n_semantic_codes > 1) {
+                  push_output_string_tfst(stack,entry->semantic_codes[1]);
+                  for (int il=2;il<entry->n_semantic_codes;il++) {
+                    push_output_char_tfst(stack,'+');
+                    push_output_string_tfst(stack,entry->semantic_codes[il]);
+                  }
+                }
              } else if (!u_strcmp(field,"CODE.FLEX")) {
                  for (int il=0;il<entry->n_inflectional_codes;il++) {
                      push_output_char_tfst(stack,':');
