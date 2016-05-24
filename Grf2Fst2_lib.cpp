@@ -191,6 +191,7 @@ vector_int_add(infos->part_of_precompiled_fst2,0);
 infos->current_saved_graph=0;
 infos->check_outputs=0;
 infos->strict_tokenization=0;
+infos->graph_output=new_string_hash();
 return infos;
 }
 
@@ -205,6 +206,7 @@ free_string_hash(infos->graph_names);
 free_string_hash(infos->tags);
 free_vector_int(infos->renumber);
 free_vector_int(infos->part_of_precompiled_fst2);
+free_string_hash(infos->graph_output);
 free(infos);
 }
 
@@ -800,7 +802,7 @@ return 0;
 static int* token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
                                               struct compilation_info* infos,
                                               int *n_tokens,int current_graph,int must_add_token_to_debug,
-                                              int must_keep_output) {
+                                              int must_keep_output, int is_first) {
 int* i_tokens = NULL;
 size_t size_alloc_i_token=0;
 reallocate_int_buffer(&i_tokens, &size_alloc_i_token, 1);
@@ -813,6 +815,29 @@ if (is_empty(u_tokens)) {
 *n_tokens=0;
 unichar* token=(unichar*)take_ptr(u_tokens);
 unichar tmp_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
+    if(is_first == 1) {
+        int idx = get_value_index(infos->graph_names->value[current_graph],infos->graph_output,DONT_INSERT,NULL);
+        if (idx < 0) {
+            int j;
+            idx = get_longest_key_index(infos->graph_names->value[current_graph],&j,infos->graph_output);
+        }
+        if (idx>=0) {
+            int output_len = u_strlen(infos->graph_output->value[idx]) + 1;
+            unichar *new_output = (unichar*) malloc(sizeof(unichar) * output_len);
+            u_strcpy(new_output,infos->graph_output->value[idx]);
+            if(output == NULL || output[0]=='\0' ) {
+                output = (unichar*) malloc(sizeof(unichar) * output_len);
+            }
+            else {
+                int new_output_len =  u_strlen(output) + output_len;
+                new_output = (unichar*) realloc(new_output,sizeof(unichar) * new_output_len);
+                u_strcat(new_output,output);
+                output = (unichar*) malloc(sizeof(unichar) * new_output_len);
+            }
+            u_strcpy(output,new_output);
+            free(new_output);
+        }
+    }
 int is_an_output=(output!=NULL && output[0]!='\0');
 if (!must_keep_output && is_an_output && !u_strcmp(token,"<E>") && output[1]==DEBUG_INFO_COORD_MARK) {
     /* We don't want to produce debug outputs for <E> that had no actual
@@ -833,8 +858,10 @@ if (token[0]==':' && token[1]!='\0') {
         free_choosen_allocated_or_stack_unichar_buffer(tmp,tmp_stack);
     }
     else if (is_an_output) {
-      error("WARNING in %S: ignoring output associated to subgraph call %S\n",
-            infos->graph_names->value[current_graph],token);
+         // store ouput of the sub graph for later
+        get_value_index(token+1,infos->graph_output,output);
+/*      error("WARNING in %S: ignoring output associated to subgraph call %S\n",
+            infos->graph_names->value[current_graph],token);*/
    }
    if (!is_empty(u_tokens)) {
       fatal_error("%S: unexpected token after subgraph call in token_sequence_2_integer_sequence\n",
@@ -991,14 +1018,14 @@ if (infos->strict_tokenization) {
 int* sequence_ent;
 int n_tokens;
 if (!infos->debug) {
-    sequence_ent=token_sequence_2_integer_sequence(sequence,output,infos,&n_tokens,n,1,0);
+    sequence_ent=token_sequence_2_integer_sequence(sequence,output,infos,&n_tokens,n,1,0,state->is_first);
 } else {
     unichar output2stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
     // added debug info take less than 80 unichar
     unichar*output2 = choose_allocated_or_stack_unichar_buffer(output2stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE, u_strlen(output) + 0x80);
     u_strcpy(output2,output);
     add_debug_infos(output2,n,state->box_number,line);
-    sequence_ent=token_sequence_2_integer_sequence(sequence,output2,infos,&n_tokens,n,1,0);
+    sequence_ent=token_sequence_2_integer_sequence(sequence,output2,infos,&n_tokens,n,1,0,state->is_first);
     free_choosen_allocated_or_stack_unichar_buffer(output2, output2stack);
 }
 free_fifo(sequence);
@@ -1014,26 +1041,26 @@ free_reallocate_int_buffer(&sequence_ent);
 static void process_variable_or_context(SingleGraph graph,const unichar* input,
                                         vector_int* transitions,
                                         int current_state,struct compilation_info* infos,
-                                        int current_graph,unichar* debug_output) {
+                                        int current_graph,unichar* debug_output,int is_first) {
 struct fifo* tmp=new_fifo();
 int token[2];
 int i;
 int n=0;
 if (debug_output[0]!='\0' && u_strcmp(input,"$]")) {
     put_ptr(tmp,u_strdup("<E>"));
-    int* i_token1=token_sequence_2_integer_sequence(tmp,debug_output,infos,&i,current_graph,0,1);
+    int* i_token1=token_sequence_2_integer_sequence(tmp,debug_output,infos,&i,current_graph,0,1,is_first);
     *(token + n) = *i_token1;
     n++;
     free_reallocate_int_buffer(&i_token1);
 }
 put_ptr(tmp,u_strdup(input));
-int* i_token2=token_sequence_2_integer_sequence(tmp,NULL,infos,&i,current_graph,0,0);
+int* i_token2=token_sequence_2_integer_sequence(tmp,NULL,infos,&i,current_graph,0,0,is_first);
 *(token + n) = *i_token2;
 n++;
 free_reallocate_int_buffer(&i_token2);
 if (debug_output[0]!='\0' && !u_strcmp(input,"$]")) {
     put_ptr(tmp,u_strdup("<E>"));
-    int* i_token3=token_sequence_2_integer_sequence(tmp,debug_output,infos,&i,current_graph,0,1);
+    int* i_token3=token_sequence_2_integer_sequence(tmp,debug_output,infos,&i,current_graph,0,1,is_first);
     *(token + n) = *i_token3;
     n++;
     free_reallocate_int_buffer(&i_token3);
@@ -1214,7 +1241,7 @@ if ((length>2 && box_content[0]=='$' &&
        debug_output[size]=DEBUG_INFO_END_MARK;
        debug_output[size+1]='\0';
    }
-   process_variable_or_context(graph,input,transitions,current_state,infos,n,debug_output);
+   process_variable_or_context(graph,input,transitions,current_state,infos,n,debug_output,state->is_first);
    free_choosen_allocated_or_stack_unichar_buffer(input,input_stack);
    free_choosen_allocated_or_stack_unichar_buffer(debug_output, debug_output_stack);
    return;
@@ -1522,6 +1549,26 @@ for (i=0;i<grf->n_states;i++) {
        grf->states[i]->transitions->tab[x]=grf->states[i]->transitions->tab[y];
        grf->states[i]->transitions->tab[y]=tmp;
    }
+    if(grf->states[i]->box_number == 0) { // this is start box
+        for (int x=0,y=grf->states[i]->transitions->nbelems;x<y;x++) {
+            int next_box = grf->states[i]->transitions->tab[x];
+            int length = u_strlen(grf->states[next_box]->box_content);
+            if (length>3 && (grf->states[next_box]->box_content)[1]=='$') {
+                if ((grf->states[next_box]->box_content)[length-2]=='('
+                    || !u_strcmp(grf->states[next_box]->box_content,"\"$[\"")
+                    || !u_strcmp(grf->states[next_box]->box_content,"\"$<\""))
+                    {
+                        for(int m=0,n=grf->states[next_box]->transitions->nbelems;m<n;m++) {
+                            int second_box = grf->states[next_box]->transitions->tab[m]; 
+                            grf->states[second_box]->is_first = 1;
+                        }
+                    }
+            }
+            else {
+                grf->states[next_box]->is_first = 1;
+            }
+        }
+    }
    process_grf_state(grf->states[i]->box_content+1,grf->states[i]->transitions,graph,i,n,infos,grf->states[i]);
 }
 free_Grf(grf);
