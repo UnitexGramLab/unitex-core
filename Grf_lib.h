@@ -52,6 +52,13 @@ typedef struct {
      * state array of the grf object.
      */
     int box_number;
+
+    /* is_first is used to identify if the box is first one after the start
+     * 1 is for yes
+     * -1 is for no
+     * 0 is for contexte
+     */
+    int is_first;
 } GrfState;
 
 

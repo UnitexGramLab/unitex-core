@@ -219,7 +219,16 @@ void free_standoff_info(standOffInfo *infos,int num) {
         free_string_hash(infos[i].entity_count);
     }
 }
-void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
+void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* lang) {
+    char* output_lang = NULL;
+    if (lang == NULL || strcmp("",lang) == 0) {
+        output_lang = (char *)malloc(sizeof(char)*3);
+        output_lang[0]='\0';
+    }
+    else {
+        output_lang = (char *)malloc(sizeof(char)*(strlen(lang) + 14));
+        sprintf(output_lang," xml:lang=\"%s\"",lang);
+    }
     for(int i=0; i<num_info; i++) {
         int count = 0;
         int capacity = infos[i].entList->capacity;
@@ -227,7 +236,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
             u_fprintf(out,"<ns:listAnnotation type=\"%S\"",infos[i].type);
             if(infos[i].subtype != NULL)
                 u_fprintf(out," subtype=\"%S\"",infos[i].subtype);
-            u_fprintf(out,">\n");
+            u_fprintf(out,"%s>\n",output_lang);
             for(int j=0; j<capacity
                     && count <infos[i].entList->number_of_elements; j++){
                 if(infos[i].entList->table[j] !=NULL) {
@@ -256,6 +265,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info) {
             u_fprintf(out,"</ns:listAnnotation>\n");
         }
     }
+    free(output_lang);
 }
 
 void getMetaInfo(unichar *e, unichar **s, unichar **t) {
@@ -326,7 +336,7 @@ int findEntityList(standOffInfo *infos, int num,
 }
 
 void construct_istex_standoff(const char *text_name,
-        VersatileEncodingConfig* vec, const char* original_file) {
+        VersatileEncodingConfig* vec, const char* original_file, const char* lang) {
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
     text_name_without_extension[0] = '\0';
@@ -410,7 +420,7 @@ void construct_istex_standoff(const char *text_name,
         remove_extension(original_file, text_name_without_extension);
         sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
         U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
-        print_standoff(out_file,infos,num_info);
+        print_standoff(out_file,infos,num_info,lang);
         free_standoff_info(infos,num_info);
     }
 }
