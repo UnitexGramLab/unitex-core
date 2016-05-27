@@ -75,7 +75,8 @@ const struct option_TS lopts_Cassys[] = {
   {"input_offsets",required_argument_TS,NULL,'$'},
   {"produce_offsets_file",no_argument_TS,NULL,'O'},
   {"only_verify_arguments",no_argument_TS,NULL,'V'},
-  {"istex",no_argument_TS,NULL,'x'},
+  {"standoff",no_argument_TS,NULL,'x'},
+  {"lang",required_argument_TS,NULL,'A'},
   {"help", no_argument_TS,NULL,'h'}
 };
 
@@ -651,6 +652,7 @@ typedef struct {
     char name_input_offsets_file[FILENAME_MAX];
     char transducer_filename_prefix[FILENAME_MAX];
     char extension_text_name[FILENAME_MAX];
+    char language[FILENAME_MAX];
 } Cassys_text_buffer;
 
 typedef struct {
@@ -752,6 +754,7 @@ int main_Cassys(int argc,char* const argv[]) {
     textbuf->transducer_filename_prefix[0]='\0';
     textbuf->name_uima_offsets_file[0] = '\0';
     textbuf->name_input_offsets_file[0] = '\0';
+    textbuf->language[0] = '\0';
     bool only_verify_arguments = false;
     UnitexGetOpt options;
     while (EOF != (val=options.parse_long(argc, argv, optstring_Cassys,
@@ -1116,6 +1119,22 @@ int main_Cassys(int argc,char* const argv[]) {
             istex_param = 1;
             break;
         }
+        case 'A': {
+            if (options.vars()->optarg[0] == '\0') {
+                error("Command line error : Empty language argument\n");
+                free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
+                free_vector_ptr(concord_additional_args, free);
+                free_vector_ptr(locate_additional_args, free);
+                free_vector_ptr(tokenize_additional_args, free);
+                free(temp_work_dir);
+                free(morpho_dic);
+                free(textbuf);
+                return USAGE_ERROR_CODE;
+            } else {
+                strcpy(textbuf->language, options.vars()->optarg);
+            }
+            break;
+        } 
         default :{
             error("Invalid option : %c\n",val);
             free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1173,7 +1192,7 @@ int main_Cassys(int argc,char* const argv[]) {
         transducer_list, textbuf->alphabet_file_name, textbuf->name_input_offsets_file, produce_offsets_file, textbuf->name_uima_offsets_file, negation_operator,
         &vec, morpho_dic,
         tokenize_additional_args, locate_additional_args, concord_additional_args,
-        dump_graph, realign_token_graph_pointer, display_perf, istex_param);
+        dump_graph, realign_token_graph_pointer, display_perf, istex_param, textbuf->language);
 
     free_fifo(transducer_list);
     free_transducer_name_and_mode_linked_list(transducer_name_and_mode_linked_list_arg);
@@ -1278,7 +1297,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     const char*negation_operator,
     VersatileEncodingConfig* vec,
     const char *morpho_dic, vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
-    int dump_graph, int realign_token_graph_pointer, int display_perf, int istex_param) {
+    int dump_graph, int realign_token_graph_pointer, int display_perf, int istex_param, const char* lang) {
 
     unsigned int time_tokenize = 0;
     unsigned int time_grf2fst2 = 0;
@@ -1670,7 +1689,7 @@ int cascade(const char* original_text, int in_place, int must_create_directory, 
     sprintf(textbuf->result_file_name_XML,"%s_csc.txt", textbuf->text_name_without_extension);
 
     if(istex_param == 1) {
-        construct_istex_standoff(snt_files->concord_ind,vec,original_text);
+        construct_istex_standoff(snt_files->concord_ind,vec,original_text,lang);
     }
     // make a copy of the last resulting text of the cascade in the file named _csc.txt
     // this result his in XML form

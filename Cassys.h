@@ -86,7 +86,7 @@ int cascade(const char* text, int in_place, int must_create_directory, int must_
     VersatileEncodingConfig*,
     const char *morpho_dic,
     vector_ptr* tokenize_args, vector_ptr* locate_args, vector_ptr* concord_args,
-    int dump_graph, int realign_token_graph_pointer, int display_perf, int param);
+    int dump_graph, int realign_token_graph_pointer, int display_perf, int param, const char* lang);
 
 
 
