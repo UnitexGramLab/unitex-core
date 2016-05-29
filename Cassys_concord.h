@@ -114,7 +114,7 @@ void construct_xml_concord(const char *text_name, VersatileEncodingConfig* vec);
 
 void construct_istex_token(const char *, VersatileEncodingConfig*, const char*);
 
-void construct_istex_standoff(const char *, VersatileEncodingConfig*, const char*);
+void construct_istex_standoff(const char *, VersatileEncodingConfig*, const char*, const char*);
 }
 
 
