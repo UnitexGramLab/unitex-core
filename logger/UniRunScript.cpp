@@ -294,11 +294,31 @@ static char* substitueInLine(const char* line, char*** variable_list, int assign
       const char* end_var = strchr(line + i + 1, '}');
       if (end_var != NULL)
       {
+        int skip_path_separator = 0;
         size_t len_search_variable = (size_t)(end_var - (line + i + 1));
+        size_t skip_prefix_size = 0;
+        // if we have {/VARIABLE_NAME}, we remove the path component of a pathname
+        if (*(line + i + 1) == '/') {
+          skip_prefix_size = 1;
+          skip_path_separator = 1;
+        }
 
         const char* value_variable = NULL;
         if (len_search_variable != 0)
-          value_variable = search_value_for_variable(*variable_list, line + i + 1, len_search_variable);
+          value_variable = search_value_for_variable(*variable_list, line + i + 1 + skip_prefix_size, len_search_variable - skip_prefix_size);
+        if ((value_variable != NULL) && (skip_path_separator))
+        {
+          const char* browse_variable_content = value_variable;
+          for (;;) {
+            char c2 = *browse_variable_content;
+            if (c2 == '\0')
+              break;
+            if ((c2 == '/') || (c2 == '\\'))
+              value_variable = browse_variable_content + 1;
+            browse_variable_content++;
+          }
+        }
+
         if (value_variable != NULL)
         {
           addTextInDynamicString(&build_string, &pos, &allocated, len_line, value_variable);
@@ -319,8 +339,109 @@ static char* substitueInLine(const char* line, char*** variable_list, int assign
   return build_string;
 }
 
+static char* ConvertUnicharToUtf8(const unichar* line, int len_line)
+{
+    int pos = 0;
+    int utf8_size = 0;
+    for (;;)
+    {
+        if ((len_line != -1) && (pos >= len_line))
+            break;
+        unichar c = *(line + pos);
+        if (c == 0) break;
+        if (c <= 0x7F) utf8_size += 1;
+        else if (c <= 0x7FF) utf8_size += 2;
+        else utf8_size += 3;
 
-static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scriptFileName, char** users_variables_param, int transform_path_separator) {
+    pos++;
+    }
+
+    char* str = (char*)malloc(utf8_size + 1);
+    if (str == NULL) {
+        alloc_error("ConvertToUtf8");
+        return NULL;
+    }
+
+    unsigned char* browse_str = (unsigned char*)str;
+    pos = 0;
+    for (;;) {
+        if ((len_line != -1) && (pos >= len_line))
+            break;
+        unichar c = *(line + pos);
+        if (c == 0) break;
+        if (c<=0x7F) *(browse_str++) = (unsigned char)c;
+        else if (c <= 0x7FF) {
+            *(browse_str++) = (unsigned char)(0xC0 | (c >> 6));
+            *(browse_str++) = (unsigned char)(0x80 | (c & 0x3F));
+        }
+        else {
+            *(browse_str++) = (unsigned char)(0xE0 | (c >> 12));
+            *(browse_str++) = (unsigned char)(0x80 | ((c >> 6) & 0x3F));
+            *(browse_str++) = (unsigned char)(0x80 | (c & 0x3F));
+        }
+    pos++;
+    }
+  *(browse_str) = '\0';
+    return str;
+}
+
+
+
+
+
+static unichar* load_file_in_memory(const char* filename, VersatileEncodingConfig *vec) {
+    unichar *line = NULL;
+    size_t size_buffer_line = 0;
+    unichar* content;
+    size_t size_content_filled = 0;
+
+    content = (unichar*)malloc(sizeof(unichar));
+    if (content == NULL) {
+        alloc_error("load_file_in_memory");
+        return NULL;
+    }
+    *content = 0;
+    U_FILE *uread = u_fopen(vec, filename, U_READ);
+    if (uread==NULL)    {
+        free(content);
+        return NULL;
+    }
+    if (uread != NULL) {
+        while (u_fgets_dynamic_buffer(&line, &size_buffer_line, uread) != EOF) {
+            size_t new_line_size = u_strlen(line);
+            unichar* new_content = (unichar*)realloc(content, (size_content_filled + new_line_size + 1) * sizeof(unichar));
+            if (content == NULL) {
+                free(content);
+                u_fclose(uread);
+                if (line != NULL)
+                    free(line);
+                return NULL;
+            }
+            content = new_content;
+            u_strcpy(new_content + size_content_filled, line);
+            size_content_filled += new_line_size;
+        }
+        if (line != NULL)
+            free(line);
+        u_fclose(uread);
+    }
+
+    return content;
+}
+
+
+static char* load_file_in_utf8_memory(const char* filename, VersatileEncodingConfig *vec) {
+    unichar* unicontent = load_file_in_memory(filename, vec);
+    if (unicontent == NULL) {
+        return NULL;
+    }
+    char* utf8content = ConvertUnicharToUtf8(unicontent, -1);
+    free(unicontent);
+    return utf8content;
+}
+
+
+static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scriptFileName, char** users_variables_param, int transform_path_separator, int transform_path_separator_content) {
   char ** Lines = (char**)malloc(sizeof(char*));
   if (Lines == NULL) {
     alloc_error("ReadScriptFile");
@@ -366,18 +487,9 @@ static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scr
       len_line -- ;
     }
 
-    size_t skip = 0;
-    for (;;) {
-      if (skip >= len_line)
-        break;
-      if ((*(line + skip) != '\t') && (*(line + skip) != ' '))
-        break;
-      skip ++ ;
-    }
+    char* charline = ConvertUnicharToUtf8(line, (int)(len_line));
 
-    char* charline = (char*)malloc((len_line - skip) + 1);
     if (charline == NULL) {
-      alloc_error("ReadScriptFile");
       free(line);
       u_fclose(dest_read_script);
       free_users_variable(users_variables);
@@ -385,14 +497,10 @@ static char** ReadScriptFile(const VersatileEncodingConfig* vec, const char* scr
       return NULL;
     }
 
-    for (size_t i = 0; i < (len_line - skip); i++) {
-      *(charline + i) = (char)*(line + skip + i);
-    }
-
-    *(charline + (len_line - skip)) = '\0';
-
     char* reworked = substitueInLine(charline, &users_variables, 1);
-    transform_fileName_separator(reworked, transform_path_separator);
+    if (transform_path_separator_content) {
+        transform_fileName_separator(reworked, transform_path_separator);
+    }
 
     char** more_Lines = (char**)realloc(Lines, sizeof(char*) * (nbLines + 2));
     if (more_Lines != NULL) {
@@ -433,46 +541,68 @@ static void freeScriptFile(char** list) {
 }
 
 
-int run_scriptfile(const VersatileEncodingConfig* vec, const char*scriptFileName, char**users_variables, int verbose) {
-  char** lines = ReadScriptFile(vec, scriptFileName, users_variables, UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM);
+int run_scriptfile(const VersatileEncodingConfig* vec, const char*scriptFileName, char**users_variables, int do_run, int transform_path_separator_content, const char*output_translated_script_filename, int verbose) {
+  char** lines = ReadScriptFile(vec, scriptFileName, users_variables, UNPACKFILE_LIST_FOLDER_SEPARATOR_TRANSFORMATION_PLATFORM, transform_path_separator_content);
 
   if (lines == NULL) {
       error("Error in reading script file %s\n",scriptFileName);
       return DEFAULT_ERROR_CODE;
   }
 
-  int i = 0;
-  for (;;)
-  {
-    const char* curLine = *(lines + i);
-    if (curLine == NULL)
-      break;
-
-    if (((*curLine) != '#') && ((*curLine) != '\0'))
+  ABSTRACTFILE* fOut = NULL;
+  if ((output_translated_script_filename != NULL) && ((*output_translated_script_filename) != '\0')) {
+    fOut = af_fopen_unlogged(output_translated_script_filename, "wb");
+  }
+  if (fOut != NULL) {
+    int i = 0;
+    for (;;)
     {
-      int argc = 0;
-      char** argv = do_convert_command_line_synth_to_std_arg(curLine, strlen(curLine), &argc);
-
-      if (argc > 1)
-      {
-        if (verbose)
-          u_printf("Running: %s\n", curLine);
-
-        //int ret_tool = main_UnitexTool_C_internal(argc, (char**)argv);
-        int ret_tool = 0;
-        int command_found = -1;
-        run_command_direct(argc-1, argv+1, &command_found, &ret_tool);
-
-        if (verbose && (!command_found))
-          u_printf("Command %s not found\n", argv[0]);
-
-        if (verbose)
-          u_printf("Running result: %d\n\n", ret_tool);
-      }
-
-      free_std_arg_converted(argv);
+      const char* curLine = *(lines + i);
+      if (curLine == NULL)
+        break;
+      af_fwrite(curLine, strlen(curLine), 1, fOut);
+      af_fwrite("\n", 1, 1, fOut);
+      i++;
     }
-    i++;
+    af_fclose(fOut);
+  }
+
+  if (do_run) {
+    int i = 0;
+    for (;;)
+    {
+      const char* curLine = *(lines + i);
+      if (curLine == NULL)
+        break;
+
+      while (((*curLine) == '\t') || ((*curLine) == ' ')) curLine++;
+
+      if (((*curLine) != '#') && ((*curLine) != '\0'))
+      {
+        int argc = 0;
+        char** argv = do_convert_command_line_synth_to_std_arg(curLine, strlen(curLine), &argc);
+
+        if (argc > 1)
+        {
+          if (verbose)
+            u_printf("Running: %s\n", curLine);
+
+          //int ret_tool = main_UnitexTool_C_internal(argc, (char**)argv);
+          int ret_tool = 0;
+          int command_found = -1;
+          run_command_direct(argc - 1, argv + 1, &command_found, &ret_tool);
+
+          if (verbose && (!command_found))
+            u_printf("Command %s not found\n", argv[0]);
+
+          if (verbose)
+            u_printf("Running result: %d\n\n", ret_tool);
+        }
+
+        free_std_arg_converted(argv);
+      }
+      i++;
+    }
   }
 
   freeScriptFile(lines);
@@ -487,6 +617,10 @@ const char* usage_UniRunScript =
 "\n"
 "OPTIONS:\n"
 "  -a X/--variable=X=Y: uses X as variable with Y content\n"
+"  -c X/--variable_file_content=X=Y: uses X as variable with reading file Y content\n"
+"  -o X/--output_script=X: dump the script content after replacing variable to file\n"
+"  -T/--no_translate_separator: don't translate path separator in variable content\n"
+"  -R/--no_run: don't run the script\n"
 "  -v/--verbose: emit message when running\n"
 "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
 "  -h/--help: this help\n"
@@ -499,9 +633,12 @@ static void usage() {
 }
 
 
-const char* optstring_UniRunScript = ":Vhk:q:a:v";
+const char* optstring_UniRunScript = ":VTRhk:q:o:c:a:v";
 const struct option_TS lopts_UniRunScript[] = {
   { "variable", required_argument_TS, NULL, 'a' },
+  { "variable_file_content", required_argument_TS, NULL, 'c' },
+  { "no_translate_separator", no_argument_TS, NULL, 'T' },
+  { "no_run", no_argument_TS, NULL, 'R' },
   { "verbose", no_argument_TS, NULL, 'v' },
   { "input_encoding", required_argument_TS, NULL, 'k' },
   { "output_encoding", required_argument_TS, NULL, 'q' },
@@ -519,7 +656,10 @@ int main_UniRunScript(int argc, char* const argv[]) {
   int verbose = 0;
   VersatileEncodingConfig vec = VEC_DEFAULT;
   int val, index = -1;
+  int translate_separator_variable = 1;
+  int do_run = 1;
   char unique_string[UNIQUE_STRING_FOR_POINTER_MAX_SIZE];
+  char output_translated_script_filename[0x400] = "";
   fill_unique_string_for_pointer((const void*)&verbose, unique_string);
   char** users_variables = build_empty_users_variables();
   users_variables = insert_variable_and_value(users_variables, "UNIQUE_VALUE", unique_string);
@@ -530,6 +670,7 @@ int main_UniRunScript(int argc, char* const argv[]) {
     case 'v': verbose = 1;
               break;
     case 'a':
+    case 'c':
     {
       if (options.vars()->optarg[0] == '\0') {
         error("You must specify a non empty variable\n");
@@ -547,20 +688,47 @@ int main_UniRunScript(int argc, char* const argv[]) {
       char* new_var_name = rework_var_assign;
 
       char * pos_equal = strchr(rework_var_assign, '=');
-      const char * new_var_content = "";
+      const char * new_var_param = "";
       if (pos_equal != NULL)
       {
-        new_var_content = pos_equal + 1;
+        new_var_param = pos_equal + 1;
         *pos_equal = '\0';
       }
 
-      users_variables = insert_variable_and_value(users_variables, new_var_name, new_var_content);
+      if (val == 'a') {
+        users_variables = insert_variable_and_value(users_variables, new_var_name, new_var_param);
+      }
+      else {
+        char* new_var_content = load_file_in_utf8_memory(new_var_param, &vec);
+        if (new_var_content == NULL) {
+          error("Error getting file %s content\n", new_var_param);
+          free_users_variable(users_variables);
+          return DEFAULT_ERROR_CODE;
+        }
+        users_variables = insert_variable_and_value(users_variables, new_var_name, new_var_content);
+        free(new_var_content);
+      }
+
       free(rework_var_assign);
 
       break;
     }
 
+        case 'o': if (options.vars()->optarg[0] == '\0') {
+                        error("You must specify a non empty output filename\n");
+                        free_users_variable(users_variables);
+                        return USAGE_ERROR_CODE;
+                    }
+                  strcpy(output_translated_script_filename, options.vars()->optarg);
+                  break;
 
+
+
+        case 'T': translate_separator_variable = 0;
+            break;
+
+        case 'R': do_run = 0;
+            break;
     case 'k': if (options.vars()->optarg[0] == '\0') {
                 error("Empty input_encoding argument\n");
                 free_users_variable(users_variables);
@@ -606,7 +774,7 @@ int main_UniRunScript(int argc, char* const argv[]) {
 
   const char* scriptFile = argv[options.vars()->optind];
 
-  int retvalue = run_scriptfile(&vec, scriptFile, users_variables, verbose);
+  int retvalue = run_scriptfile(&vec, scriptFile, users_variables, do_run, translate_separator_variable, output_translated_script_filename, verbose);
 
   free_users_variable(users_variables);
   return retvalue;
@@ -732,7 +900,7 @@ static void SYNC_CALLBACK_UNITEX ThreadFuncBatch(void* privateDataPtr, unsigned 
 
             const char* scriptFile = buf_cmd_line;
             current_job->thread_num = (int)iNumThread;
-            int retvalue = run_scriptfile(config_batch->vec, scriptFile, users_variables, config_batch->verbose_when_run);
+            int retvalue = run_scriptfile(config_batch->vec, scriptFile, users_variables, 1,1,NULL, config_batch->verbose_when_run);
             free_users_variable(users_variables);
             current_job->result = retvalue;
 
