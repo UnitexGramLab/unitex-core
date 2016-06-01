@@ -551,7 +551,7 @@ int run_scriptfile(const VersatileEncodingConfig* vec, const char*scriptFileName
 
   ABSTRACTFILE* fOut = NULL;
   if ((output_translated_script_filename != NULL) && ((*output_translated_script_filename) != '\0')) {
-    fOut = af_fopen_unlogged(output_translated_script_filename, "wb");
+    fOut = af_fopen(output_translated_script_filename, "wb");
   }
   if (fOut != NULL) {
     int i = 0;
