@@ -33,7 +33,7 @@
 namespace unitex {
 
 #define MAX_DEPTH 300
-#define MOT_BUFFER_TOKEN_SIZE (1000)
+#define MOT_BUFFER_TOKEN_SIZE (32768)
 
 #define CAPACITY_LIMIT 16384
 #define MINIMAL_SIZE_PRELOADED_TEXT (2048+1)
@@ -77,6 +77,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 
 
     p->fst2txt_abstract_allocator = create_abstract_allocator("fst2txt_fst2",AllocatorCreationFlagAutoFreePrefered);
+    p->fst2txt_abstract_allocator_mot_token = create_abstract_allocator("fst2txt_fst2_mot_token", AllocatorFreeOnlyAtAllocatorDelete | AllocatorTipGrowingOftenRecycledObject);
 
     p->pa.prv_alloc_vector_int_inside_token = create_abstract_allocator("fst2_txt_inside_token", AllocatorCreationFlagAutoFreePrefered);
     p->pa.prv_alloc_recycle = create_abstract_allocator("fst2_txt_recycle",
@@ -137,6 +138,7 @@ struct fst2txt_parameters* new_fst2txt_parameters() {
     p->f_output = NULL;
     p->fst2 = NULL;
     p->fst2txt_abstract_allocator = NULL;
+    p->fst2txt_abstract_allocator_mot_token = NULL;
     p->pa.prv_alloc_backup_growing_recycle = NULL;
     p->pa.prv_alloc_recycle = NULL;
     p->pa.prv_alloc_vector_int_inside_token = NULL;
@@ -206,6 +208,7 @@ void free_fst2txt_parameters(struct fst2txt_parameters* p) {
     u_fclose(p->f_out_offsets);
 
     close_abstract_allocator(p->fst2txt_abstract_allocator);
+    close_abstract_allocator(p->fst2txt_abstract_allocator_mot_token);
     close_abstract_allocator(p->pa.prv_alloc_vector_int_inside_token);
     close_abstract_allocator(p->pa.prv_alloc_recycle);
     close_abstract_allocator(p->pa.prv_alloc_backup_growing_recycle);
@@ -310,6 +313,10 @@ void emit_output(struct fst2txt_parameters* p, unichar* s, int pos) {
 
 
 static void parse_text(struct fst2txt_parameters* p) {
+    unichar * mot_token_buffer = (unichar * )malloc(sizeof(unichar) * MOT_BUFFER_TOKEN_SIZE);
+    if (mot_token_buffer == NULL) {
+      fatal_alloc_error("parse_text\n");
+    }
     fill_buffer(p->text_buffer, p->text_buffer->MAXIMUM_BUFFER_SIZE, p->keepCR, p->f_input);
     int debut = p->fst2->initial_states[1];
     p->variables = new_Variables(p->fst2->input_variables);
@@ -351,7 +358,6 @@ static void parse_text(struct fst2txt_parameters* p) {
         else if (!within_tag && (p->buffer[p->current_origin] != ' '
             || p->space_policy == START_WITH_SPACE)) {
             // we don't start a match on a space
-            unichar mot_token_buffer[MOT_BUFFER_TOKEN_SIZE];
             scan_graph(0, debut, 0, 0, NULL, mot_token_buffer, p);
         }
         if (p->output_policy == MERGE_OUTPUTS) {
@@ -444,6 +450,7 @@ static void parse_text(struct fst2txt_parameters* p) {
     u_printf("\r                           \n");
     free_Variables(p->variables);
     p->variables = NULL;
+    free(mot_token_buffer);
 }
 
 
@@ -698,7 +705,7 @@ static void scan_graph(
                     // we allocate a new mot_token_buffer for the scan_graph recursion because we need preserve current
                     // token=mot_token_buffer
                     mot_token_new_recurse_buffer = (unichar*) malloc_cb(
-                            MOT_BUFFER_TOKEN_SIZE * sizeof(unichar),p->fst2txt_abstract_allocator);
+                            MOT_BUFFER_TOKEN_SIZE * sizeof(unichar),p->fst2txt_abstract_allocator_mot_token);
                     if (mot_token_new_recurse_buffer == NULL) {
                         fatal_alloc_error("scan_graph");
                     }
@@ -725,7 +732,7 @@ static void scan_graph(
                     free_cb(TMP,p->fst2txt_abstract_allocator);
                 }
                 if (mot_token_new_recurse_buffer != NULL) {
-                    free_cb(mot_token_new_recurse_buffer,p->fst2txt_abstract_allocator);
+                    free_cb(mot_token_new_recurse_buffer,p->fst2txt_abstract_allocator_mot_token);
                 }
             }
         }
