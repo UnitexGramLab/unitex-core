@@ -52,6 +52,9 @@ const char* usage_VersionInfo =
          "  -c/--copyright: display only copyright text\n"
          "  -v/--version: display only version number\n"
          "  -r/--revision: display only SVN revision number (if available)\n"
+         "  -n/--newrevision: display only SVN new revision number (if available)\n"
+         "  -g/--git: display only git hash (if available)\n"
+         "  -b/--build_date: display only build date (if available)\n"
          "  -p/--platform: platform info\n"
          "  -m/--compiler: compiler used to build unitex info\n"
          "  -j/--json: revision and version on json string\n"
@@ -67,11 +70,14 @@ static void usage() {
   u_printf(usage_VersionInfo);
 }
 
-const char* optstring_VersionInfo=":VhmcRrvpjxsuo:k:q:";
+const char* optstring_VersionInfo=":VhmcRrvpjxsubngo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
   {"copyright",no_argument_TS,NULL,'c'},
   {"version",no_argument_TS,NULL,'v'},
   {"revision",no_argument_TS,NULL,'r'},
+  {"build_date",no_argument_TS,NULL,'b'},
+  {"newrevision",no_argument_TS,NULL,'n'},
+  {"git",no_argument_TS,NULL,'g'},
   {"platform",no_argument_TS,NULL,'p'},
   {"compiler",no_argument_TS,NULL,'m'},
   {"xml",no_argument_TS,NULL,'x'},
@@ -173,6 +179,19 @@ static void fill_compiler_info(unichar* s) {
 }
 
 
+
+#ifdef __DATE__
+static const char * get_build_date()
+{
+    return __DATE__;
+}
+#else
+static const char * get_build_date()
+{
+    return("date not available");
+}
+#endif
+
 int main_VersionInfo(int argc,char* const argv[]) {
     /*
 if (argc==1) {
@@ -190,8 +209,11 @@ int do_platform_info=0;
 int do_compiler_info=0;
 int do_xml_info=0;
 int do_json_info=0;
-int do_semver_info = 0;
-int do_user_friendly_info = 0;
+int do_semver_info=0;
+int do_user_friendly_info=0;
+int do_build_date_only=0;
+int do_new_revision_only=0;
+int do_git_only=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
 int val,index=-1;
 bool only_verify_arguments = false;
@@ -200,6 +222,9 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
    switch(val) {
    case 'c': do_copyright_only=1; break;
    case 'r': do_revision_only=1; break;
+   case 'b': do_build_date_only = 1; break;
+   case 'n': do_new_revision_only = 1; break;
+   case 'g': do_git_only = 1; break;
    case 'R': retValue = get_unitex_revision(); break;
    case 'v': do_version_only=1; break;
    case 'p': do_platform_info = 1; break;
@@ -236,9 +261,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
    index=-1;
 }
 
-if (((do_revision_only!=0) && (do_version_only!=0)) ||
-    ((do_copyright_only!=0) && (do_version_only!=0)) ||
-    ((do_revision_only!=0) && (do_copyright_only!=0))) {
+if ((do_revision_only + do_version_only + do_copyright_only + do_build_date_only + do_new_revision_only + do_git_only)>1) {
    error("Incompatible arguments: rerun with --help\n");
    return USAGE_ERROR_CODE;
 }
@@ -257,6 +280,8 @@ if (DisplayText == NULL) {
 }
 
 int revision = get_unitex_revision();
+int new_revision = get_unitex_new_revision();
+const char* git_revision=get_unitex_core_git_revision();
 
 unsigned int unitexMajorVersion = 0;
 unsigned int unitexMinorVersion = 0;
@@ -284,6 +309,15 @@ if (do_json_info) {
 }
 else if (do_revision_only) {
     u_sprintf(DisplayText,"%d",revision);
+}
+else if (do_new_revision_only) {
+    u_sprintf(DisplayText,"%d",new_revision);
+}
+else if (do_git_only) {
+    u_sprintf(DisplayText,"%s",git_revision);
+}
+else if (do_build_date_only) {
+    u_sprintf(DisplayText,"%s", get_build_date());
 }
 else if (do_version_only) {
     u_sprintf(DisplayText,"%u.%u",unitexMajorVersion,unitexMinorVersion);
