@@ -43,7 +43,9 @@ namespace unitex {
 #endif
 
 int get_unitex_revision();
+int get_unitex_new_revision();
 void get_unitex_version(unsigned int* major_version_number, unsigned int* minor_version_number);
+const char* get_unitex_core_git_revision();
 const char* get_unitex_semver_string();
 size_t get_unitex_version_revision_xml_string(char* string, size_t buflen);
 size_t get_unitex_version_revision_json_string(char* string, size_t buflen);
