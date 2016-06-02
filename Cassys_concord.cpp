@@ -71,7 +71,7 @@ struct fifo *read_concord_file(const char *concord_file_name, const VersatileEnc
     }
 
     if (u_fgets_dynamic_buffer(&line, &size_buffer_line, concord_desc_file) == EOF){
-        fatal_error("Malformed concordance file %s",concord_file_name);
+        error("Malformed concordance file %s",concord_file_name);
     }
 
     while (u_fgets_dynamic_buffer(&line, &size_buffer_line, concord_desc_file) != EOF){
@@ -485,7 +485,7 @@ void construct_istex_token(const char *text_name, VersatileEncodingConfig* vec,
 
 void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
         int number_of_transducer, int iteration,
-    VersatileEncodingConfig* vec){
+    VersatileEncodingConfig* vec) {
 
     u_printf("Construct cascade concord\n");
 
@@ -500,7 +500,11 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
     u_printf("Concord File %s successfully opened\n",snt_file->concord_ind);
 
     if (list == NULL) {
-        fatal_error("empty text");
+        error("empty text");
+
+        u_fclose(concord_desc_file);
+        free(snt_file);
+        return;
     }
 
     u_fprintf(concord_desc_file,"#M\n");
@@ -596,7 +600,6 @@ void construct_cascade_concord(cassys_tokens_list *list, const char *text_name,
 
     u_fclose(concord_desc_file);
     free(snt_file);
-
 }
 
 
