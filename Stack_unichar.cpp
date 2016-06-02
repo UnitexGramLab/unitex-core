@@ -115,8 +115,8 @@ void push_array(struct stack_unichar* stack,const unichar *array,unsigned int si
 if (stack==NULL) {
    fatal_error("NULL error in push_array\n");
 }
-if ((stack->stack_pointer + (int)size) >= stack->capacity) {
-   resize(stack,stack->stack_pointer + (int)size);
+if ((stack->stack_pointer + (int)size + 1) >= stack->capacity) {
+   resize(stack,stack->stack_pointer + (int)size + 1);
 }
 
 unsigned int i;
