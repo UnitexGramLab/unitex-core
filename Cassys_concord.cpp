@@ -336,7 +336,7 @@ int findEntityList(standOffInfo *infos, int num,
 }
 
 void construct_istex_standoff(const char *text_name,
-        VersatileEncodingConfig* vec, const char* original_file, const char* lang) {
+        VersatileEncodingConfig* vec, const char* original_file, const char* lang, const char* stdoff_file) {
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
     text_name_without_extension[0] = '\0';
@@ -420,7 +420,23 @@ void construct_istex_standoff(const char *text_name,
         remove_extension(original_file, text_name_without_extension);
         sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
         U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
+        if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0) {
+            unichar *line = NULL;
+            size_t size_buffer_line = 0;
+            U_FILE *header_file = u_fopen(vec,stdoff_file,U_READ);
+            if(header_file != NULL) {
+                u_fprintf(out_file,"<ns:standOff>\n");
+                while(u_fgets_dynamic_buffer(&line, &size_buffer_line, header_file) != EOF) {
+                    u_fprintf(out_file,"%S\n",line);
+                }
+                u_fclose(header_file);
+                free(line);
+            }
+        }
         print_standoff(out_file,infos,num_info,lang);
+        if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0)
+            u_fprintf(out_file,"</ns:standOff>\n");
+        u_fclose(out_file);
         free_standoff_info(infos,num_info);
     }
 }
