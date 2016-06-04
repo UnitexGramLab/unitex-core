@@ -109,7 +109,7 @@ int start,end,start_char,end_char,start_letter,end_letter;
 Ustring* line=new_Ustring();
 char is_an_output;
 /* We read the header */
-unichar foo;
+unichar foo=0;
 if (header==NULL) {
   header=&foo;
 }
