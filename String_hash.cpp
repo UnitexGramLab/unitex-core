@@ -274,7 +274,7 @@ for (;;) {
  * tolerates values, 'value' will be associated to the given key if the key is
  * not already present in the string_hash.
  */
-int get_value_index(const unichar* key,struct string_hash* hash,int insert_policy,unichar* value) {
+int get_value_index(const unichar* key,struct string_hash* hash,int insert_policy,const unichar* value) {
 return get_value_index_(key,0,hash->root,hash,insert_policy,value);
 }
 
@@ -301,7 +301,7 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
  * Returns the index value associated to the given key, inserting it if needed.
  * In that case, the key itself will be used as value.
  */
-int get_value_index(const unichar* key,struct string_hash* hash,unichar* value) {
+int get_value_index(const unichar* key,struct string_hash* hash,const unichar* value) {
 return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,value);
 }
 
