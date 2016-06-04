@@ -29,14 +29,14 @@ git:
 
 # Save common build configurations as shortcuts, so we can reference them later.
 addons_shortcuts:
-  addons_clang35: &clang35
-    apt:
-      sources:    [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
-      packages:   [ 'clang-3.5', 'cmake', 'cppcheck', 'valgrind' ]
-  addons_clang38: &clang38
-    apt:
-      sources:    [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise' ]
-      packages:   [ 'clang-3.8', 'cmake', 'cppcheck', 'valgrind' ]
+  #addons_clang35: &clang35
+    #apt:
+      #sources:    [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+      #packages:   [ 'clang-3.5', 'cmake', 'cppcheck', 'valgrind' ]
+  #addons_clang38: &clang38
+    #apt:
+      #sources:    [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise' ]
+      #packages:   [ 'clang-3.8', 'cmake', 'cppcheck', 'valgrind' ]
   addons_gcc49:   &gcc47
     apt:
       sources:    [ 'ubuntu-toolchain-r-test' ]
@@ -59,16 +59,16 @@ matrix:
   # the build to finish as soon as possible
   fast_finish: true
   include:
-    - os: linux
-      dist: trusty
-      compiler: "clang"
-      env: CXX=clang++-3.5
-      addons: *clang35
-    - os: linux
-      dist: trusty
-      compiler: "clang"
-      env: CXX=clang++-3.8
-      addons: *clang38
+    #- os: linux
+      #dist: trusty
+      #compiler: "clang"
+      #env: CXX=clang++-3.5
+      #addons: *clang35
+    #- os: linux
+      #dist: trusty
+      #compiler: "clang"
+      #env: CXX=clang++-3.8
+      #addons: *clang38
     - os: linux
       dist: trusty
       compiler: "gcc"
