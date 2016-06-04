@@ -218,7 +218,9 @@ void free_standoff_info(standOffInfo *infos,int num) {
         free_hash_table(infos[i].entList);
         free_string_hash(infos[i].entity_count);
     }
+    free(infos);
 }
+
 void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* lang) {
     char* output_lang = NULL;
     if (lang == NULL || strcmp("",lang) == 0) {
@@ -373,7 +375,7 @@ void construct_istex_standoff(const char *text_name,
                         get_value(infos[found].entList,entity,HT_INSERT_IF_NEEDED);
                         int idx = get_value_index(entity,infos[found].entity_count,DONT_INSERT);
                         if(idx == -1) {
-                            unichar *count = (unichar*)malloc(sizeof(unichar) * 3);
+                            unichar count[2];
                             count[0] = '1';
                             count[1] = '\0';
                             get_value_index(entity,infos[found].entity_count,INSERT_IF_NEEDED,count);
@@ -421,16 +423,16 @@ void construct_istex_standoff(const char *text_name,
         sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
         U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
         if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0) {
-            unichar *line = NULL;
-            size_t size_buffer_line = 0;
+            unichar *line_2 = NULL;
+            size_t size_buffer_line_2 = 0;
             U_FILE *header_file = u_fopen(vec,stdoff_file,U_READ);
             if(header_file != NULL) {
                 u_fprintf(out_file,"<ns:standOff>\n");
-                while(u_fgets_dynamic_buffer(&line, &size_buffer_line, header_file) != EOF) {
-                    u_fprintf(out_file,"%S\n",line);
+                while(u_fgets_dynamic_buffer(&line_2, &size_buffer_line_2, header_file) != EOF) {
+                    u_fprintf(out_file,"%S\n",line_2);
                 }
                 u_fclose(header_file);
-                free(line);
+                free(line_2);
             }
         }
         print_standoff(out_file,infos,num_info,lang);
