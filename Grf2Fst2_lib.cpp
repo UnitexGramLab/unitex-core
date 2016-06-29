@@ -1463,15 +1463,30 @@ for (int i=0;i<fst2->number_of_graphs;i++) {
 free_Ustring(ustr);
 }
 
-int check_loop(Grf *g, int i, int top) {
-    u_printf("In test_crap for %d\n",i);
+int is_visited(int *visit_list, int len, int i) {
+    if (visit_list == NULL)
+        return 0;
+    for (int j = 0; j < len; j++) {
+        if (visit_list[j] == i)
+            return 1;
+    }
+    return 0;
+}
+
+int check_loop(Grf *g, int i, int top, int *visited,int *len) {
     for (int x=0,y=g->states[i]->transitions->nbelems;x<y;x++) {
         int next_box = g->states[i]->transitions->tab[x];
-        int trans = vector_int_contains(g->states[next_box]->transitions,top);
-        u_printf("%S %d\n",g->states[next_box]->box_content,trans);
-        if (trans == 1)
-            return 1;
-        return check_loop(g,next_box,top);
+        if (next_box !=i) {
+            if(1 == vector_int_contains(g->states[next_box]->transitions,top)) 
+                return 1;
+            if(is_visited(visited,*len,next_box) == 0) {
+                //visited = (int*) realloc(visited, (*len + 1)*sizeof(int));
+                visited[*len] = next_box;
+                *len = *len + 1;
+                if(1== check_loop(g,next_box,top,visited, len))
+                    return 1;
+            }
+        }
     }
     return -1;
 }
@@ -1590,8 +1605,13 @@ for (i=0;i<grf->n_states;i++) {
                 grf->states[next_box]->has_loop = vector_int_contains(grf->states[next_box]->transitions,next_box);
                 grf->states[next_box]->is_first = 1;
                 if (grf->states[next_box]->has_loop != 1) {
-                    grf->states[next_box]->has_loop = check_loop(grf,next_box,next_box);
-                }
+                    //int *visited = NULL;
+                    int visited[50];
+                    int length = 0;
+                    grf->states[next_box]->has_loop = check_loop(grf,next_box,next_box, visited,&length);
+                    //if (visited != NULL)
+                      //  free(visited);
+                } 
             }
         }
     }
