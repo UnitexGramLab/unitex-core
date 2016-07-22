@@ -31,6 +31,7 @@
 #include "String_hash.h"
 #include "FIFO.h"
 #include "Snt.h"
+#include "UnitexRevisionInfo.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -223,6 +224,7 @@ void free_standoff_info(standOffInfo *infos,int num) {
 
 void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* lang) {
     char* output_lang = NULL;
+    const char* semver = get_unitex_semver_string();
     if (lang == NULL || strcmp("",lang) == 0) {
         output_lang = (char *)malloc(sizeof(char)*3);
         output_lang[0]='\0';
@@ -235,16 +237,33 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
         int count = 0;
         int capacity = infos[i].entList->capacity;
         if(infos[i].entList->number_of_elements > 0) {
-            u_fprintf(out,"<ns:listAnnotation type=\"%S\"",infos[i].type);
+            u_fprintf(out,"<listAnnotation type=\"%S\"",infos[i].type);
             if(infos[i].subtype != NULL)
                 u_fprintf(out," subtype=\"%S\"",infos[i].subtype);
-            u_fprintf(out,"%s>\n",output_lang);
+            u_fprintf(out," %s>\n",output_lang);
             for(int j=0; j<capacity
                     && count <infos[i].entList->number_of_elements; j++){
                 if(infos[i].entList->table[j] !=NULL) {
                     if(infos[i].entList->table[j]->ptr_key !=NULL) {
-                        u_fprintf(out,"\t<ns:annotationGrp>\n");
-                        u_fprintf(out,"\t\t%S\n",infos[i].entList->table[j]->ptr_key);
+                        int term_len = u_strlen((const unichar *)infos[i].entList->table[j]->ptr_key);
+                        unichar *term = (unichar *)malloc(sizeof(unichar)*term_len);
+                        u_strcpy(term,(const unichar *)infos[i].entList->table[j]->ptr_key);
+                        u_fprintf(out,"\t<annotationBlock corresp=\"text\" xmls=\"https://wwww.tei-c.org/ns/1.0\">\n");
+                        u_fprintf(out,"\t\t<%S ",infos[i].type);
+                        if(infos[i].subtype != NULL)
+                            u_fprintf(out,"type=\"%S\" ",infos[i].subtype);
+                        u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"http://%S",semver,infos[i].type);
+                        if(infos[i].subtype != NULL)
+                            u_fprintf(out,"-%S",infos[i].subtype);
+                        u_fprintf(out,"-entity.lod.istex.fr>\n");
+                        u_fprintf(out,"\t\t\t<term>");
+                        int k=0;
+                        for(; k<term_len && term[k]!='>'; k++)
+                            ;
+                        k += 1;
+                        for(;k<term_len && term[k]!='<'; k++)
+                            u_fprintf(out,"%C",term[k]);
+                        u_fprintf(out,"</term>\n");
                         u_fprintf(out,"\t\t\t<fs type=\"statistics\">\n");
                         u_fprintf(out,"\t\t\t\t<f name=\"frequency\">\n");
                         u_fprintf(out,"\t\t\t\t\t<numeric>");
@@ -259,12 +278,13 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         u_fprintf(out,"</numeric>\n");
                         u_fprintf(out,"\t\t\t\t</f>\n");
                         u_fprintf(out,"\t\t\t</fs>\n");
-                        u_fprintf(out,"\t</ns:annotationGrp>\n");
+                        u_fprintf(out,"\t\t</%S>\n",infos[i].type);
+                        u_fprintf(out,"\t</annotationBlock>\n");
                         count++;
                     }
                 }
             }
-            u_fprintf(out,"</ns:listAnnotation>\n");
+            u_fprintf(out,"</listAnnotation>\n");
         }
     }
     free(output_lang);
@@ -427,7 +447,7 @@ void construct_istex_standoff(const char *text_name,
             size_t size_buffer_line_2 = 0;
             U_FILE *header_file = u_fopen(vec,stdoff_file,U_READ);
             if(header_file != NULL) {
-                u_fprintf(out_file,"<ns:standOff>\n");
+                u_fprintf(out_file,"<standOff>\n");
                 while(u_fgets_dynamic_buffer(&line_2, &size_buffer_line_2, header_file) != EOF) {
                     u_fprintf(out_file,"%S\n",line_2);
                 }
@@ -437,7 +457,7 @@ void construct_istex_standoff(const char *text_name,
         }
         print_standoff(out_file,infos,num_info,lang);
         if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0)
-            u_fprintf(out_file,"</ns:standOff>\n");
+            u_fprintf(out_file,"</standOff>\n");
         u_fclose(out_file);
         free_standoff_info(infos,num_info);
     }
