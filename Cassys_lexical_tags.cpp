@@ -741,6 +741,15 @@ int get_form_lemma_separator_position(unichar *text){
         if(text[i]==',' && brace_level == 1 && i+1<size-1 && text[i+1]=='.'){
             break;
         }
+        else if (text[i]==',' && brace_level == 1) {
+            int y = i+1;
+            while(y<size-1 && text[y] !='.') {
+                y++;
+            }
+            if(y >= size-1)
+                i = 1;
+            break;
+        }
     }
     return i;
 
