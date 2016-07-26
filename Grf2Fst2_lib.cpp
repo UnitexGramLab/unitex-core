@@ -1584,7 +1584,7 @@ for (i=0;i<grf->n_states;i++) {
        grf->states[i]->transitions->tab[x]=grf->states[i]->transitions->tab[y];
        grf->states[i]->transitions->tab[y]=tmp;
    }
-    if(grf->states[i]->box_number == 0) { // this is start box
+    if(grf->states[i]->box_number == 0 && n > 0) { // this is start box
         for (int x=0,y=grf->states[i]->transitions->nbelems;x<y;x++) {
             int next_box = grf->states[i]->transitions->tab[x];
             int length = u_strlen(grf->states[next_box]->box_content);
