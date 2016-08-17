@@ -93,7 +93,6 @@
 
 # export ignores
 .appveyor.yml   export-ignore
-/bin            export-ignore
 .clang-format   export-ignore
 .editorconfig   export-ignore
 .gitattributes  export-ignore
