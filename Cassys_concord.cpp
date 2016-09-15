@@ -246,7 +246,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                 if(infos[i].entList->table[j] !=NULL) {
                     if(infos[i].entList->table[j]->ptr_key !=NULL) {
                         int term_len = u_strlen((const unichar *)infos[i].entList->table[j]->ptr_key);
-                        unichar *term = (unichar *)malloc(sizeof(unichar)*term_len);
+                        unichar *term = (unichar *)malloc(sizeof(unichar)*(term_len+1));
                         u_strcpy(term,(const unichar *)infos[i].entList->table[j]->ptr_key);
                         u_fprintf(out,"\t<annotationBlock corresp=\"text\" xmls=\"https://wwww.tei-c.org/ns/1.0\">\n");
                         u_fprintf(out,"\t\t<%S ",infos[i].type);
