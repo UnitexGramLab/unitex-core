@@ -281,6 +281,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         u_fprintf(out,"\t\t</%S>\n",infos[i].type);
                         u_fprintf(out,"\t</annotationBlock>\n");
                         count++;
+                        free(term);
                     }
                 }
             }
