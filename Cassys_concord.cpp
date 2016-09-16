@@ -255,7 +255,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"http://%S",semver,infos[i].type);
                         if(infos[i].subtype != NULL)
                             u_fprintf(out,"-%S",infos[i].subtype);
-                        u_fprintf(out,"-entity.lod.istex.fr>\n");
+                        u_fprintf(out,"-entity.lod.istex.fr\">\n");
                         u_fprintf(out,"\t\t\t<term>");
                         int k=0;
                         for(; k<term_len && term[k]!='>'; k++)
