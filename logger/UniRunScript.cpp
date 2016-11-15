@@ -211,11 +211,13 @@ static char** insert_variable_and_value(char** variable_list, const char* var_na
   return new_variable_list;
 }
 
-static void addTextInDynamicString(char** dyn_string, size_t *pos, size_t *allocated, size_t buffer_margin, const char* add_str) {
+static void addTextInDynamicString(char** dyn_string, size_t *pos, size_t *allocated, size_t buffer_margin, const char* add_str, int limit_size=-1) {
   if (add_str == NULL) {
     add_str = "";
   }
   size_t len_add = strlen(add_str);
+  if ((limit_size != -1) && (limit_size < ((int)len_add)))
+    len_add = (size_t)limit_size;
   size_t needed_size = (*pos) + len_add + buffer_margin + 1;
   if (needed_size >= (*allocated)) {
     size_t new_allocated_size = 1;
@@ -295,12 +297,24 @@ static char* substitueInLine(const char* line, char*** variable_list, int assign
       if (end_var != NULL)
       {
         int skip_path_separator = 0;
+        int skip_extension = 0;
         size_t len_search_variable = (size_t)(end_var - (line + i + 1));
         size_t skip_prefix_size = 0;
+
         // if we have {/VARIABLE_NAME}, we remove the path component of a pathname
-        if (*(line + i + 1) == '/') {
-          skip_prefix_size = 1;
-          skip_path_separator = 1;
+        // if we have {.VARIABLE_NAME}, we remove the extension component of a pathname
+        for (;;) {
+          if (*(line + skip_prefix_size + i + 1) == '/') {
+            skip_prefix_size ++;
+            skip_path_separator = 1;
+          } else
+          if (*(line + skip_prefix_size + i + 1) == '.') {
+            skip_prefix_size ++;
+            skip_extension = 1;
+          } else
+          {
+            break;
+          }
         }
 
         const char* value_variable = NULL;
@@ -319,9 +333,26 @@ static char* substitueInLine(const char* line, char*** variable_list, int assign
           }
         }
 
+        int limit_size = -1;
+        if ((value_variable != NULL) && (skip_extension))
+        {
+          int browse_value_pos=0;
+          for (;;)
+          {
+            char c2 = (*(value_variable + browse_value_pos));
+            if (c2 == '\0')
+              break;
+            if (c2 == '.') {
+              limit_size = browse_value_pos;
+              break;
+            }
+            browse_value_pos++;
+          }
+        }
+
         if (value_variable != NULL)
         {
-          addTextInDynamicString(&build_string, &pos, &allocated, len_line, value_variable);
+          addTextInDynamicString(&build_string, &pos, &allocated, len_line, value_variable, limit_size);
           is_variable = 1;
           i = (end_var - line);
         }
