@@ -47,8 +47,8 @@ namespace unitex {
 
 const unichar P_CASSYS_PROTECTED_CHARS[] ={'\\',',','.',':','+',0};
 
-const unichar LEM_OPENING[] = {'<','l','e','m','>',0};
-const unichar LEM_CLOSING[] = {'<','/','l','e','m','>',0};
+const unichar LEM_OPENING[] = {'<','l','e','m','m','a','>',0};
+const unichar LEM_CLOSING[] = {'<','/','l','e','m','m','a','>',0};
 
 const unichar FORM_OPENING[] = {'<','f','o','r','m','>',0};
 const unichar FORM_CLOSING[] = {'<','/','f','o','r','m','>',0};

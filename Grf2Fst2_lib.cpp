@@ -1495,7 +1495,7 @@ int check_loop(Grf *g, int i, int top, int *visited,int *len) {
  * This function compiles the graph number #n and saves its states into the
  * output .fst2.
  */
-static int compile_grf(int n,struct compilation_info* infos) {
+static int compile_grf(int n,struct compilation_info* infos,int clean) {
 int i;
 char called_from[FILENAME_MAX]="";
 char name[FILENAME_MAX];
@@ -1577,6 +1577,65 @@ graph->number_of_states=grf->n_states;
 for (i=0;i<grf->n_states;i++) {
    /* process_grf_state expect a box content without the surround double quotes */
    grf->states[i]->box_content[u_strlen(grf->states[i]->box_content)-1]='\0';
+   if(clean == 1) {
+       unichar input[MAX_GRF_BOX_CONTENT];
+       unichar output[MAX_GRF_BOX_CONTENT];
+       split_input_output(grf->states[i]->box_content,input,output);
+       // If a box does not contain output then replace it by epsilon
+       // unless there are subgraphs
+       int start = 1;
+       int in_Token = 0;
+       int end = u_strlen(grf->states[i]->box_content);
+       int found = 0;
+       if (u_strlen(output) == 0 && u_strcmp(input+1,EPSILON) != 0) {
+           int add = 0;
+           // Search for subgraphs
+           for(int i = 1; i<end; i++) {
+               if(input[i] == '<' && input[i-1] != '\\') {
+                   in_Token = 1;
+               } else if(input[i] == '>' && input[i-1] != '\\') {
+                   in_Token = 0;
+               } else if(input[i] == ':' && input[i-1] != '\\' and in_Token == 0) {
+                    found = 1;
+                    if (add == 1) {
+                        input[start++] = '+';
+                    }
+                    while(i < end && input[i] !='+') {
+                        input[start++] = input[i++];
+                    }
+                    add = 1;
+               }
+           }
+           if (found == 1) {
+               input[start] = '\0';
+               u_strcpy(grf->states[i]->box_content,input);
+           }
+           else {
+            u_strcpy(grf->states[i]->box_content+1,EPSILON);
+           }
+       } else if (u_strlen(output) > 0 && u_strcmp(input+1,EPSILON) != 0) {
+            for(int i = 1; i<end; i++) {
+                if(input[i] == '<' && input[i-1] != '\\') {
+                    in_Token = 1;
+                } else if(input[i] == '>' && input[i-1] != '\\') {
+                    in_Token = 0;
+                } else if(input[i] == ':' && input[i-1] != '\\' and in_Token == 0) {
+                    found = 1;
+                    break;
+                }   
+            }   
+            if (found == 0) {
+                input[1] = 'X';
+                input[2] = '/';
+                input[3] = '\0';
+                u_strcpy(grf->states[i]->box_content,input);
+                u_strcat(grf->states[i]->box_content,output);
+/*                for(int i=3,j=0; i<end && output[j] !='\0'; ) {
+                    grf->states[i]->box_content + i++ = output[j++]
+                } */
+            }
+       }
+   }
    /* To preserve previous behavior (for log consistency), we mirror the
     * transition list */
    for (int x=0,y=grf->states[i]->transitions->nbelems-1;x<y;x++,y--) {
@@ -1686,12 +1745,12 @@ get_value_index(temp3,infos->graph_names);
  * This is the main function that takes a main graph and compiles it.
  * It returns 1 in case of success; 0 otherwise.
  */
-int compile_grf(char* main_graph,struct compilation_info* infos) {
+int compile_grf(char* main_graph,struct compilation_info* infos,int clean) {
 int current_graph=1;
 int result;
 extract_path_and_main_graph(main_graph,infos);
 do {
-   result=compile_grf(current_graph,infos);
+   result=compile_grf(current_graph,infos, clean);
    if (result==0 && current_graph==1) {
       /* If the main graph has been emptied, then the compilation has failed */
       return 0;
