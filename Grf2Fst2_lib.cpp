@@ -1590,18 +1590,18 @@ for (i=0;i<grf->n_states;i++) {
        if (u_strlen(output) == 0 && u_strcmp(input+1,EPSILON) != 0) {
            int add = 0;
            // Search for subgraphs
-           for(int i = 1; i<end; i++) {
-               if(input[i] == '<' && input[i-1] != '\\') {
+           for(int j = 1; j<end; j++) {
+               if(input[j] == '<' && input[j-1] != '\\') {
                    in_Token = 1;
-               } else if(input[i] == '>' && input[i-1] != '\\') {
+               } else if(input[j] == '>' && input[j-1] != '\\') {
                    in_Token = 0;
-               } else if(input[i] == ':' && input[i-1] != '\\' and in_Token == 0) {
+               } else if(input[j] == ':' && input[j-1] != '\\' && in_Token == 0) {
                     found = 1;
                     if (add == 1) {
                         input[start++] = '+';
                     }
-                    while(i < end && input[i] !='+') {
-                        input[start++] = input[i++];
+                    while(j < end && input[j] !='+') {
+                        input[start++] = input[j++];
                     }
                     add = 1;
                }
@@ -1614,12 +1614,12 @@ for (i=0;i<grf->n_states;i++) {
             u_strcpy(grf->states[i]->box_content+1,EPSILON);
            }
        } else if (u_strlen(output) > 0 && u_strcmp(input+1,EPSILON) != 0) {
-            for(int i = 1; i<end; i++) {
-                if(input[i] == '<' && input[i-1] != '\\') {
+            for(int j = 1; j<end; j++) {
+                if(input[j] == '<' && input[j-1] != '\\') {
                     in_Token = 1;
-                } else if(input[i] == '>' && input[i-1] != '\\') {
+                } else if(input[j] == '>' && input[j-1] != '\\') {
                     in_Token = 0;
-                } else if(input[i] == ':' && input[i-1] != '\\' and in_Token == 0) {
+                } else if(input[j] == ':' && input[j-1] != '\\' && in_Token == 0) {
                     found = 1;
                     break;
                 }   
