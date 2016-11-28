@@ -314,7 +314,7 @@ grfInfo *extract_info(unichar **lines, int *num_annot, int total_lines, int *loc
                                         infos[num_info].accept[accept_cnt][n++] = temp_annot[j];
                                     }
                                 infos[num_info].accept[accept_cnt][n] = '\0';
-                                prev = k;
+                                prev = k+1;
                                 accept_cnt++;
                             }
                         }
@@ -384,11 +384,10 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
             }
             if(infos[k].annotation[i] == '\0') {
                 int reverse_i =  j; //We will go in reverse to find the entity
-                int stop = 0;
-                int num_paren = 0;
-                while(reverse_i >=0 && stop == 0) {
-                    if(line[reverse_i] =='{' && num_paren == 0) {
-                        stop = 1;
+                int num_paren = 1;
+                while(reverse_i >= 0) {
+                    if(line[reverse_i] =='{' && num_paren == 1) {
+                        break;
                     }
                     else if(line[reverse_i] =='{' && num_paren > 0 ) {
                         num_paren--;
@@ -398,11 +397,11 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                     }
                     reverse_i--;
                 }
-                int start = 0;
+                reverse_i++;
+                int start = reverse_i;
                 int end = 0;
                 int annot_start = 0;
                 int annot = -1;
-                int found = -1; //to track the first annotation in case of multiple annotations
                 unichar *prev_char = NULL;
                 unichar *entity_whole = NULL; // test on reverse_i is a quick fix to pass valgrind validation
                 for(int x = (reverse_i > 0) ? reverse_i : 0; x < j; x++) {
@@ -419,16 +418,15 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                     }
                     else if(line[x] == ',') {
                         annot = 0;
-                        if (found == -1) //when we find "," for the first time that is the
-                            end = x;    // end of the entity
+                        end = x;
                     }
                     else if(annot == 0 && line[x] == '.') {
                         annot = -1;
                         annot_start = x + 1;
                     }
-                    else if(line[x] != '\\') {
-                        annot = -1;
-                        if(x == j-1 && start > 0) {
+                    else if(line[x] == '\\' || line[x] == '+' || line[x] == '}') {
+                        if(annot_start > 0 && start > 0) {
+                            annot = -1;
                             int matches = 0;
                             unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
                             int z = 0;
@@ -487,15 +485,13 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                                 u_strcat(entity_whole,prev_char);
                                 u_strcat(entity_whole,entity);
                                 }
-
                                 if(entity != NULL)
                                 free(entity);
                                 start = -1;
-                                found = 1;
                             }
                             if(annot_ != NULL)
                                 free(annot_);
-                            found = 0;
+                            annot_start = -1;
                         }
                     }
                 }

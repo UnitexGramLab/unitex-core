@@ -70,6 +70,7 @@ const char* usage_Grf2Fst2 =
      "                            'let pi=3.14' will be tokenized as:\n"
      "                            'let' space 'pi' # '=' # '3' # '.' # '1' # '4'\n"
      "  -V/--only-verify-arguments: only verify arguments syntax and exit\n"
+     " -C/--clean: compile only with outputs\n"
      "  -h/--help: this help\n"
      "\n"
      "Compiles the grammar <grf> and saves the result in a FST2 file\n"
@@ -136,7 +137,7 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":yntsa:d:ecVho:k:q:r:vS";
+const char* optstring_Grf2Fst2=":yntsa:d:ecVho:k:q:r:vS:C";
 const struct option_TS lopts_Grf2Fst2[]= {
   {"loop_check",no_argument_TS,NULL,'y'},
   {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -155,6 +156,7 @@ const struct option_TS lopts_Grf2Fst2[]= {
   {"named_repositories",required_argument_TS,NULL,'r'},
   {"check_variables",no_argument_TS,NULL,'v'},
   {"strict_tokenization",no_argument_TS,NULL,'S'},
+  {"clean",no_argument_TS,NULL,'C'},
   {NULL,no_argument_TS,NULL,0}
 };
 
@@ -231,6 +233,7 @@ int val,index=-1;
 fst2_file_name[0]='\0';
 bool only_verify_arguments = false;
 UnitexGetOpt options;
+int clean=0;
 
 while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index))) {
    switch(val) {
@@ -303,6 +306,8 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,
              break;
    case 'v': infos->check_outputs=1; break;
    case 'S': infos->strict_tokenization=1; break;
+   case 'C': clean=1;
+             break;
    case '?': index==-1 ? error("Invalid option -%c\n",options.vars()->optopt) :
                          error("Invalid option --%s\n",options.vars()->optarg);
              free(named);
@@ -350,7 +355,7 @@ if ((infos->fst2=u_fopen(&(infos->vec),fst2_file_name,U_WRITE))==NULL) {
    return DEFAULT_ERROR_CODE;
 }
 u_fprintf(infos->fst2,"0000000000\n");
-int result=compile_grf(argv[options.vars()->optind],infos);
+int result=compile_grf(argv[options.vars()->optind],infos,clean);
 if (result==0) {
    error("Compilation has failed\n");
    u_fclose(infos->fst2);
