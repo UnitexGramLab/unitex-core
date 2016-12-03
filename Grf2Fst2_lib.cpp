@@ -1578,8 +1578,16 @@ for (i=0;i<grf->n_states;i++) {
    /* process_grf_state expect a box content without the surround double quotes */
    grf->states[i]->box_content[u_strlen(grf->states[i]->box_content)-1]='\0';
    if(clean == 1) {
-       unichar input[MAX_GRF_BOX_CONTENT];
-       unichar output[MAX_GRF_BOX_CONTENT];
+       unichar* input=(unichar*)malloc(MAX_GRF_BOX_CONTENT*sizeof(unichar));
+       if (input == NULL) {
+         fatal_alloc_error("compile_grf");
+       }
+
+       unichar* output=(unichar*)malloc(MAX_GRF_BOX_CONTENT*sizeof(unichar));
+       if (output == NULL) {
+         fatal_alloc_error("compile_grf");
+       }
+
        split_input_output(grf->states[i]->box_content,input,output);
        // If a box does not contain output then replace it by epsilon
        // unless there are subgraphs
@@ -1635,6 +1643,8 @@ for (i=0;i<grf->n_states;i++) {
                 } */
             }
        }
+       free(output);
+       free(input);
    }
    /* To preserve previous behavior (for log consistency), we mirror the
     * transition list */
@@ -1646,13 +1656,13 @@ for (i=0;i<grf->n_states;i++) {
     if(grf->states[i]->box_number == 0 && n > 0) { // this is start box
         for (int x=0,y=grf->states[i]->transitions->nbelems;x<y;x++) {
             int next_box = grf->states[i]->transitions->tab[x];
-            int length = u_strlen(grf->states[next_box]->box_content);
-            if (length>3 && (grf->states[next_box]->box_content)[1]=='$') {
-                if ((grf->states[next_box]->box_content)[length-2]=='('
+            int length_ = u_strlen(grf->states[next_box]->box_content);
+            if (length_>3 && (grf->states[next_box]->box_content)[1]=='$') {
+                if ((grf->states[next_box]->box_content)[length_-2]=='('
                     || !u_strcmp(grf->states[next_box]->box_content,"\"$[\"")
                     || !u_strcmp(grf->states[next_box]->box_content,"\"$<\""))
                 {
-                    for(int m=0,n=grf->states[next_box]->transitions->nbelems;m<n;m++) {
+                    for(int m=0,n_=grf->states[next_box]->transitions->nbelems;m<n_;m++) {
                         int second_box = grf->states[next_box]->transitions->tab[m];
                         grf->states[second_box]->is_first = 1;
                         grf->states[second_box]->has_loop =
