@@ -306,7 +306,7 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
  * Computes the absolute path of the graph #n, taking into account references
  * to the graph repository, if any.
  */
-static void get_absolute_name(int *called_from,char* name,int n,struct compilation_info* infos) {
+static void get_absolute_name(int *called_from,char* name,int n,const struct compilation_info* infos) {
 unichar temp[FILENAME_MAX];
 /* offset is the position where to start replacing ':' by '/' or '\' */
 int offset;
@@ -1414,7 +1414,7 @@ free_ReverseTransitions(reverse);
  * We have to copy the given fst2 as some graphs in the current .fst2
  * being saved.
  */
-static void save_compiled_fst2(char* name,Fst2* fst2,struct compilation_info* infos) {
+static void save_compiled_fst2(char* name,Fst2* fst2,const struct compilation_info* infos) {
 Ustring* ustr=new_Ustring();
 int n=infos->current_saved_graph;
 for (int i=0;i<fst2->number_of_graphs;i++) {
@@ -1574,20 +1574,26 @@ for (i=0;i<grf->n_states;i++) {
    graph->states[i]=new_SingleGraphState();
 }
 graph->number_of_states=grf->n_states;
+
+
+unichar* input = NULL;
+unichar* output = NULL;
+if (clean == 1) {
+  input = (unichar*)malloc(MAX_GRF_BOX_CONTENT * sizeof(unichar));
+  if (input == NULL) {
+    fatal_alloc_error("compile_grf");
+  }
+
+  output = (unichar*)malloc(MAX_GRF_BOX_CONTENT * sizeof(unichar));
+  if (output == NULL) {
+    fatal_alloc_error("compile_grf");
+  }
+}
+
 for (i=0;i<grf->n_states;i++) {
    /* process_grf_state expect a box content without the surround double quotes */
    grf->states[i]->box_content[u_strlen(grf->states[i]->box_content)-1]='\0';
    if(clean == 1) {
-       unichar* input=(unichar*)malloc(MAX_GRF_BOX_CONTENT*sizeof(unichar));
-       if (input == NULL) {
-         fatal_alloc_error("compile_grf");
-       }
-
-       unichar* output=(unichar*)malloc(MAX_GRF_BOX_CONTENT*sizeof(unichar));
-       if (output == NULL) {
-         fatal_alloc_error("compile_grf");
-       }
-
        split_input_output(grf->states[i]->box_content,input,output);
        // If a box does not contain output then replace it by epsilon
        // unless there are subgraphs
@@ -1643,8 +1649,6 @@ for (i=0;i<grf->n_states;i++) {
                 } */
             }
        }
-       free(output);
-       free(input);
    }
    /* To preserve previous behavior (for log consistency), we mirror the
     * transition list */
@@ -1686,6 +1690,14 @@ for (i=0;i<grf->n_states;i++) {
     }
    process_grf_state(grf->states[i]->box_content+1,grf->states[i]->transitions,graph,i,n,infos,grf->states[i]);
 }
+
+if (input != NULL) {
+  free(input);
+}
+if (output != NULL) {
+  free(output);
+}
+
 free_Grf(grf);
 /* Once we have loaded the graph, we process it. */
 set_initial_state(graph->states[0]);
