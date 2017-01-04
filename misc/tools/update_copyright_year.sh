@@ -2,7 +2,7 @@
 # =============================================================================
 # Unitex/GramLab Update Copyright Year
 # =============================================================================
-# Copyright (C) 2016 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+# Copyright (C) 2017 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
