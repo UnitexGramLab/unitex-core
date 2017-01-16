@@ -452,7 +452,10 @@ int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unicha
 /////////////////////////////////////////////////////////////////////////////////
 // Scans semantic codes (e.g. "+Hum+z1") from a DELAC entry. 'line' is non terminated by a newline.
 // The function allocates space for codes scanned. It must be liberated by the calling function.
-// Returns the length of the scanned sequence, -1 if a format error occured, -2 if a memory allocation problem occured.
+// Returns the length of the scanned sequence,
+//  0 if no semantic codes were found,
+// -1 if a format error occurred,
+// -2 if a memory allocation problem occurred
 int DLC_scan_codes(unichar* codes[MAX_CODES], unichar* line) {
     int l; //length of the scanned sequence
     int pos; //position of the current character in line
@@ -485,7 +488,7 @@ int DLC_scan_codes(unichar* codes[MAX_CODES], unichar* line) {
         }
     }
     codes[c] = NULL;
-    return pos-1;
+    return pos > 0 ? pos-1 : 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
