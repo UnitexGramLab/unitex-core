@@ -1774,16 +1774,22 @@ int u_fgets_dynamic_buffer(Encoding encoding, unichar** line, size_t* buffer_siz
 
     **line = 0;
     int pos = 0;
+    long start_current_line = af_ftell(f);
     for (;;)
     {
-        int read_possible = (int)(*buffer_size) - pos;
-        int nb_read = u_fgets_buffered(encoding, (*line)+pos, 2, (int)read_possible, f, treat_CR_as_LF);
+        int read_possible = (int)(*buffer_size);
+        int nb_read = u_fgets_buffered(encoding, (*line), 2, (int)read_possible, f, treat_CR_as_LF);
         if (nb_read == EOF)
             return (pos == 0) ? EOF : pos;
-        pos += nb_read;
+        pos = nb_read;
         *((*line) + pos) = 0;
         if (nb_read != (read_possible - 1))
             return pos;
+        if (af_fseek(f, start_current_line, SEEK_SET) != 0)
+        {
+          fatal_error("u_fgets_dynamic_buffer seek error\n");
+          return EOF;
+        }
         (*buffer_size) *= 2;
         *line = (unichar*)realloc(*line, sizeof(unichar) * ((*buffer_size) + 1));
         if ((*line) == NULL){
