@@ -403,7 +403,7 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
         if(idx!=NO_VALUE_INDEX && replacements->value[idx][0]== new_c) {
             u_fputc_raw(old_c, f);
             i++;
-            j++;
+            j += u_strlen(replacements->value[idx]);
             old_c = *(old_text + i);
             new_c = *(new_text + j);
         }
@@ -455,7 +455,9 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
                         }
                     }
                     else if(old_c ==' ' && new_c=='<') {
-                        while(j+1<new_end && !(new_c== '>' && *(new_text + j + 1) ==' ')) {
+                        while(j+1<new_end && !(new_c== '>' && 
+                                    (*(new_text + j + 1) ==' ' ||
+                                     *(new_text + j + 1) =='\n'))) {
                             u_fputc_raw(new_c, f);
                             j++;
                             new_c = *(new_text + j);
@@ -592,15 +594,17 @@ static int DenormalizeSequence_new(U_FILE* f,const unichar* old_text, int old_te
             else if(new_c =='<') {
                 /* Most likely it is a tag*/
                 int look_ahead = j;
-                while(look_ahead < new_end && new_c !='>') {
+                while(new_c == '<') {
+                    while(look_ahead < new_end && new_c !='>') {
                     // Go to the end of the tag
+                        look_ahead++;
+                        new_c = *(new_text + look_ahead);
+                    }
                     look_ahead++;
                     new_c = *(new_text + look_ahead);
                 }
-                look_ahead++;
-                new_c = *(new_text + look_ahead);
-                if(new_c != old_c) {
-                //if the text after the tag is not same then print old text first
+                if(new_c != old_c && old_c != ' ') {
+                //if the text after the tag(s) is not same then print old text first
                     while(old_c != new_c && i < old_end) {
                         u_fputc_raw(old_c, f);
                         i++;
