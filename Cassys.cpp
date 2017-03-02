@@ -404,6 +404,30 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 int annot = -1;
                 unichar *prev_char = NULL;
                 unichar *entity_whole = NULL; // test on reverse_i is a quick fix to pass valgrind validation
+                if (infos[k].ignore == NULL && infos[k].accept == NULL) {
+                    end = j-annot_len;
+                    entity_whole = (unichar*) malloc(sizeof(unichar) * (end - reverse_i+1));
+                    int entity_i = 0; 
+                    for(int x = (reverse_i > 0) ? reverse_i : 0; x < end; x++) {
+                        if (line[x] == '\\' || line[x] == '{' || line[x] == '}')
+                            ;
+                        else if (line[x] == ',') {
+                            if ((x + 1 < end && line[x + 1] == '.') ||
+                                (x + 2 < end && line[x + 1] == '\\' && line[x + 2] == '.')) {
+                                while(x < end && line[x] != '}')
+                                    x++;
+                            }
+                            else {
+                                entity_whole[entity_i++] = line[x];
+                            }
+                        }
+                        else {
+                                entity_whole[entity_i++] = line[x];
+                        }
+                    }
+                    entity_whole[entity_i] = '\0';
+                }
+                else {
                 for(int x = (reverse_i > 0) ? reverse_i : 0; x < j; x++) {
                     if(line[x] == '{') {
                         start = x+1;
@@ -494,6 +518,7 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                             annot_start = -1;
                         }
                     }
+                }
                 }
                 if(entity_whole != NULL) {
                     int entity_len = u_strlen(entity_whole);
