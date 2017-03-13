@@ -252,9 +252,14 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         u_fprintf(out,"\t\t<%S ",infos[i].type);
                         if(infos[i].subtype != NULL)
                             u_fprintf(out,"type=\"%S\" ",infos[i].subtype);
-                        u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"http://%S",semver,infos[i].type);
+                        unichar *type_lower;
+                        type_lower = (unichar *)malloc(sizeof(unichar) * (u_strlen(infos[i].type) + 1));
+                        u_strcpy(type_lower, infos[i].type);
+                        u_tolower(type_lower);
+                        u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"http://%S",semver, type_lower);
+                        free(type_lower);
                         if(infos[i].subtype != NULL)
-                            u_fprintf(out,"-%S",infos[i].subtype);
+                            u_fprintf(out,"%S",infos[i].subtype);
                         u_fprintf(out,"-entity.lod.istex.fr\">\n");
                         u_fprintf(out,"\t\t\t<term>");
                         int k=0;
