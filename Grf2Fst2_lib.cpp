@@ -1678,12 +1678,14 @@ for (i=0;i<grf->n_states;i++) {
                 grf->states[next_box]->has_loop = vector_int_contains(grf->states[next_box]->transitions,next_box);
                 grf->states[next_box]->is_first = 1;
                 if (grf->states[next_box]->has_loop != 1) {
-                    //int *visited = NULL;
-                    int visited[50];
+                    // Assigning with twice the potential max size of states
+                    int *visited = (int*)malloc(2*grf->n_states*sizeof(int));
+                    if (visited == NULL) {
+                      fatal_alloc_error("compile_grf");
+                    }
                     int length = 0;
                     grf->states[next_box]->has_loop = check_loop(grf,next_box,next_box, visited,&length);
-                    //if (visited != NULL)
-                      //  free(visited);
+                    free(visited);
                 }
             }
         }
