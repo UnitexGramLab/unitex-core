@@ -1477,7 +1477,7 @@ int check_loop(Grf *g, int i, int top, int *visited,int *len) {
     for (int x=0,y=g->states[i]->transitions->nbelems;x<y;x++) {
         int next_box = g->states[i]->transitions->tab[x];
         if (next_box !=i) {
-            if(1 == vector_int_contains(g->states[next_box]->transitions,top)) 
+            if(1 == vector_int_contains(g->states[next_box]->transitions,top))
                 return 1;
             if(is_visited(visited,*len,next_box) == 0) {
                 //visited = (int*) realloc(visited, (*len + 1)*sizeof(int));
@@ -1636,8 +1636,8 @@ for (i=0;i<grf->n_states;i++) {
                 } else if(input[j] == ':' && input[j-1] != '\\' && in_Token == 0) {
                     found = 1;
                     break;
-                }   
-            }   
+                }
+            }
             if (found == 0) {
                 input[1] = 'X';
                 input[2] = '/';
@@ -1684,7 +1684,7 @@ for (i=0;i<grf->n_states;i++) {
                     grf->states[next_box]->has_loop = check_loop(grf,next_box,next_box, visited,&length);
                     //if (visited != NULL)
                       //  free(visited);
-                } 
+                }
             }
         }
     }
