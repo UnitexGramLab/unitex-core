@@ -271,7 +271,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         u_fprintf(out,"</term>\n");
                         u_fprintf(out,"\t\t\t<fs type=\"statistics\">\n");
                         u_fprintf(out,"\t\t\t\t<f name=\"frequency\">\n");
-                        u_fprintf(out,"\t\t\t\t\t<numeric>");
+                        u_fprintf(out,"\t\t\t\t\t<numeric value=\"");
                         int idx = get_value_index((const unichar *)(infos[i].entList->table[j]->ptr_key),infos[i].entity_count,DONT_INSERT);
                         if (idx>-1) {
                             int count_len = u_strlen(infos[i].entity_count->value[idx]);
@@ -280,7 +280,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         else {
                             u_fprintf(out,"1");
                         }
-                        u_fprintf(out,"</numeric>\n");
+                        u_fprintf(out,"\"/>\n");
                         u_fprintf(out,"\t\t\t\t</f>\n");
                         u_fprintf(out,"\t\t\t</fs>\n");
                         u_fprintf(out,"\t\t</%S>\n",infos[i].type);
