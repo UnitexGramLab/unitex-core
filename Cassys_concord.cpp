@@ -248,7 +248,7 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         int term_len = u_strlen((const unichar *)infos[i].entList->table[j]->ptr_key);
                         unichar *term = (unichar *)malloc(sizeof(unichar)*(term_len+1));
                         u_strcpy(term,(const unichar *)infos[i].entList->table[j]->ptr_key);
-                        u_fprintf(out,"\t<annotationBlock corresp=\"text\">\n");
+                        u_fprintf(out,"\t<annotationBlock corresp=\"text\" xmls=\"https://wwww.tei-c.org/ns/1.0\">\n");
                         u_fprintf(out,"\t\t<%S ",infos[i].type);
                         if(infos[i].subtype != NULL)
                             u_fprintf(out,"type=\"%S\" ",infos[i].subtype);
@@ -256,11 +256,11 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         type_lower = (unichar *)malloc(sizeof(unichar) * (u_strlen(infos[i].type) + 1));
                         u_strcpy(type_lower, infos[i].type);
                         u_tolower(type_lower);
-                        u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"https://%S",semver, type_lower);
+                        u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"http://%S",semver, type_lower);
                         free(type_lower);
                         if(infos[i].subtype != NULL)
                             u_fprintf(out,"%S",infos[i].subtype);
-                        u_fprintf(out,"-entity.data.istex.fr\">\n");
+                        u_fprintf(out,"-entity.lod.istex.fr\">\n");
                         u_fprintf(out,"\t\t\t<term>");
                         int k=0;
                         for(; k<term_len && term[k]!='>'; k++)
