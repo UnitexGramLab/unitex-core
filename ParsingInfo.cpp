@@ -179,7 +179,7 @@ while (*list!=NULL) {
 }
 
 
-// disable experimental but slower not recurive insert
+// disable experimental recursive insert
 // #define DONT_USE_RECURSIVE_INSERT 1
 #ifndef DONT_USE_RECURSIVE_INSERT
 
@@ -187,18 +187,18 @@ while (*list!=NULL) {
  * Inserts an element in the given information list only if there is no element
  * with same end position of match.
  */
-struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
+struct parsing_info* insert_if_absent(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
                                       unichar* stack,Variables* v,OutputVariables* output_var,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
                                       vector_int* insertions,
                                       int weight,struct parsing_allocator* pa) {
 filter_lesser_weights(weight,&list,pa);
-if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+if (list==NULL) return new_parsing_info(pos_in_tokens,pos_in_chars,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
-if (list->pos_in_tokens==pos
-    && list->pos_in_chars==pos_in_token
+if (list->pos_in_tokens==pos_in_tokens
+    && list->pos_in_chars==pos_in_chars
     && list->state_number==state
     && list->jamo==jamo /* We can because we only work on pointers on unique elements */
     && list->pos_in_jamo==pos_in_jamo
@@ -242,7 +242,7 @@ if (list->pos_in_tokens==pos
    }
    return list;
 }
-list->next=insert_if_absent(pos,pos_in_token,state,list->next,stack_pointer,stack,v,output_var,v2,
+list->next=insert_if_absent(pos_in_tokens,pos_in_chars,state,list->next,stack_pointer,stack,v,output_var,v2,
                             left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,pa);
 return list;
 }
@@ -251,7 +251,7 @@ return list;
 /**
  * Inserts an element in the given information list only if there is no element
  * with position and same stack. */
-struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
+struct parsing_info* insert_if_different(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
                                          unichar* stack,Variables* v,OutputVariables* output_var,
                                          struct dic_variable* v2,
                                          int left_ctx_shift,int left_ctx_base,
@@ -259,11 +259,11 @@ struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,stru
                                          vector_int* insertions,
                                          int weight, struct parsing_allocator* pa) {
     filter_lesser_weights(weight,&list,pa);
-if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+if (list==NULL) return new_parsing_info(pos_in_tokens,pos_in_chars,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
-if ((list->pos_in_tokens==pos) /* If the length is the same... */
-    && (list->pos_in_chars==pos_in_token)
+if ((list->pos_in_tokens==pos_in_tokens) /* If the length is the same... */
+    && (list->pos_in_chars==pos_in_chars)
     && (list->state_number==state)
     && !(u_strcmp(list->stack,stack)) /* ...and if the stack content too */
     && list->left_ctx_shift==left_ctx_shift
@@ -305,7 +305,7 @@ if ((list->pos_in_tokens==pos) /* If the length is the same... */
    return list;
 }
 /* Otherwise, we look in the rest of the list */
-list->next=insert_if_different(pos,pos_in_token,state,list->next,stack_pointer,stack,v,output_var,v2,
+list->next=insert_if_different(pos_in_tokens,pos_in_chars,state,list->next,stack_pointer,stack,v,output_var,v2,
                                left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,weight,pa);
 return list;
 }
@@ -338,9 +338,9 @@ return list;
 
 #else
 
-// experimental no recursive code. To be check for performance and reliability. Seem slower !
+// Experimental no recursive code. To be check for reliability
 
-struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
+struct parsing_info* insert_if_absent(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
                                       unichar* stack,Variables* v,OutputVariables* output_var,
                                       struct dic_variable* v2,
                                       int left_ctx_shift,int left_ctx_base,unichar* jamo,int pos_in_jamo,
@@ -354,14 +354,19 @@ for (;;) {
   struct parsing_info*lcur=*lnext;
 
   if (lcur==NULL) {
-      *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+      *lnext=new_parsing_info(pos_in_tokens,pos_in_chars,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
       break;
   }
-  if (lcur->pos_in_chars==pos && lcur->pos_in_tokens==pos_in_token && lcur->state_number==state
-    && lcur->jamo==jamo // We can because we only work on pointers on unique elements
-    && lcur->pos_in_jamo==pos_in_jamo) {
+  if (lcur->pos_in_tokens==pos_in_tokens
+      && lcur->pos_in_chars==pos_in_chars
+      && lcur->state_number==state
+      && lcur->jamo==jamo /* We can because we only work on pointers on unique elements */
+      && lcur->pos_in_jamo==pos_in_jamo
+      && same_input_variables(lcur->input_variable_backup,v)
+      && same_output_variables(lcur->output_variable_backup,output_var)
+      && same_dic_variables(lcur->dic_variable_backup,v2)) {
    lcur->stack_pointer=stack_pointer;
    // We update the stack value
    update_parsing_info_stack(lcur,stack);
@@ -408,7 +413,7 @@ return list;
 
 
 
-struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
+struct parsing_info* insert_if_different(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,int stack_pointer,
                                          unichar* stack,Variables* v,OutputVariables* output_var,
                                          struct dic_variable* v2,
                                          int left_ctx_shift,int left_ctx_base,
@@ -421,21 +426,24 @@ struct parsing_info**lnext=&list;
 for (;;) {
   struct parsing_info*lcur=*lnext;
   if ((lcur)==NULL) {
-      *lnext=new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,output_var,NULL,v2,
+      *lnext=new_parsing_info(pos_in_tokens,pos_in_chars,state,stack_pointer,stack,v,output_var,NULL,v2,
                                         left_ctx_shift,left_ctx_base,jamo,pos_in_jamo,insertions,
                                         weight,pa);
       break;
   }
 
-if ((lcur->pos_in_chars==pos) // If the length is the same...
-    && (lcur->pos_in_tokens==pos_in_token)
-    && (lcur->state_number==state)
-    && !(u_strcmp(lcur->stack,stack)) // ...and if the stack content too
-    && lcur->left_ctx_shift==left_ctx_shift
-    && lcur->left_ctx_base==left_ctx_base
-    && lcur->jamo==jamo // See comment in insert_if_absent
-    && lcur->pos_in_jamo==pos_in_jamo) {
-    // then we overwrite the current list element
+if ((lcur->pos_in_tokens==pos_in_tokens) /* If the length is the same... */
+   && (lcur->pos_in_chars==pos_in_chars)
+   && (lcur->state_number==state)
+   && !(u_strcmp(lcur->stack,stack)) /* ...and if the stack content too */
+   && lcur->left_ctx_shift==left_ctx_shift
+   && lcur->left_ctx_base==left_ctx_base
+   && lcur->jamo==jamo /* See comment in insert_if_absent*/
+   && lcur->pos_in_jamo==pos_in_jamo
+   && same_input_variables(lcur->input_variable_backup,v)
+   && same_output_variables(lcur->output_variable_backup,output_var)
+   && same_dic_variables(lcur->dic_variable_backup,v2)) {
+	/* then we overwrite the current lcur element */
    lcur->stack_pointer=stack_pointer;
 
    int v_variable_index_size=0;
@@ -476,21 +484,21 @@ return list;
 
 
 
-struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
+struct parsing_info* insert_morphological_match(int pos_in_tokens,int pos_in_chars,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry,unichar* jamo,int pos_in_jamo,
                                                 struct parsing_allocator* pa) {
 struct parsing_info**lnext=&list;
 for (;;) {
   struct parsing_info*lcur=*lnext;
   if ((lcur)==NULL) {
-        *lnext=new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
+        *lnext=new_parsing_info(pos_in_tokens,pos_in_chars,state,-1,NULL,NULL,NULL,dic_entry,NULL,-1,-1,
           jamo,pos_in_jamo,NULL,-1,pa);
         break;
   }
-  if (lcur->pos_in_chars ==pos && lcur->pos_in_tokens==pos_in_token && lcur->state_number==state
-    && lcur->dic_entry==dic_entry
-    && lcur->jamo==jamo // See comment in insert_if_absent
-    && lcur->pos_in_jamo==pos_in_jamo) {
+  if (lcur->pos_in_tokens==pos_in_tokens && lcur->pos_in_chars==pos_in_chars && lcur->state_number==state
+      && lcur->dic_entry==dic_entry
+      && lcur->jamo==jamo /* See comment in insert_if_absent*/
+      && lcur->pos_in_jamo==pos_in_jamo) {
     // If the morphological match is already in the list, we do nothing.
     // Note that this may occur when we don't take DELAF entries into account
     // (i.e. dic_entry==NULL)
