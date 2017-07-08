@@ -388,11 +388,25 @@ void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* 
  * values.
  */
 int same_input_variables(int* input_variable_backup,Variables* v) {
-int* tmp=(int*)v->variables;
-for (int i=0;i<v->variable_index->size;i++) {
-    if (tmp[i]!=input_variable_backup[i]) return 0;
-}
-return 1;
+  // Variables is a structure to associate ranges to variable names,
+  // it has two members: variable_index and variables. The variables
+  // member is a structure used to define the range of a variable, it
+  // has 4 members: start_in_tokens, end_in_tokens, start_in_chars and
+  // end_in_chars. The next loop compares all the 4 members of
+  // input_variable_backup and (int*)v->variables
+  int* variables = (int*)v->variables;
+  int number_of_members = NB_INT_BY_VARIABLES * v->variable_index->size;
+  for (int i = 0; i < number_of_members; i+=NB_INT_BY_VARIABLES) {
+	// start_in_tokens: same position of the first token
+	if (variables [i]   != input_variable_backup[i])   return 0;
+	// end_in_tokens: same  position after the last token
+	if (variables [i+1] != input_variable_backup[i+1]) return 0;
+	// start_in_chars: same starting position in chars in the first token
+	if (variables [i+2] != input_variable_backup[i+2]) return 0;
+	// end_in_chars: same ending position in chars in the last token
+	if (variables [i+3] != input_variable_backup[i+3]) return 0;
+  }
+  return 1;
 }
 
 } // namespace unitex
