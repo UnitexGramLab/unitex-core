@@ -36,6 +36,7 @@
 #include "UserCancelling.h"
 #include "CompressedDic.h"
 #include "Contexts.h"
+#include "DebugMode.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -99,6 +100,83 @@ static int is_morpho_variable_output(unichar* s, unichar* var_name) {
     }
     var_name[j] = '\0';
     return (i != 1 && s[i] == '$' && s[i + 1] == '\0');
+}
+
+/**
+ * This function tests if s is of the form OUTPUT_MARK$foo$COORD_MARK and
+ * stores the substring foo on var_name
+ *
+ * A debug-mode output tag belonging to a fst2 as the following form:
+ * OUTPUT_MARK output COORD_MARK graph:box:line INPUT_MARK input END_MARK
+ *
+ * Returns 1 if the given string is of the form OUTPUT_MARK$foo$COORD_MARK
+ * where foo is a valid variable name; 0 otherwise.
+ *
+ * @see is_debug_mode_capture_variable()
+ */
+static int is_debug_mode_morpho_variable_output(unichar* s, unichar* var_name) {
+	// test if the string begins by OUTPUT_MARK$
+	if (!(s    != NULL &&
+		  s[0] == DEBUG_INFO_OUTPUT_MARK &&
+		  s[1] == '$')) return 0;
+
+	// stores foo on var_name
+	int i, j = 0;
+    for (i = 2; s[i] != '$' &&
+                s[i] != DEBUG_INFO_COORD_MARK &&
+				s[i] != '\0'; ++i) {
+        if (!is_variable_char(s[i])) return 0;
+        var_name[j++] = s[i];
+    }
+
+    // var_name is a null-terminated string
+    var_name[j] = '\0';
+
+    // return true only when len(foo) > 0 and the next two chars are
+    // $COORD_MARK
+    return (i != 2 && s[i] == '$' && s[i + 1] == DEBUG_INFO_COORD_MARK);
+}
+
+/**
+ * Given a debug-mode output tag in s, this function pushes s into p->stack
+ * without the output part
+ *
+ * If s is a debug-mode output tag of the form:
+ * OUTPUT_MARK output COORD_MARK graph:box:line INPUT_MARK input END_MARK
+ *
+ * this function pushes the next sequence into p->stack
+ * OUTPUT_MARK COORD_MARK graph:box:line INPUT_MARK input END_MARK
+ *
+ * This function is necessary to keep the debug output tag in the stack
+ * and hence be able to trace the explored grammar paths
+ *
+ * Returns 1 if the stack was modified; 0 otherwise
+ *
+ * @see push_debug_mode_tfst_tag_without_output()
+ */
+static int push_debug_mode_tag_without_output(unichar* s,
+		                                      struct locate_parameters* p) {
+	// if we are not on the debug mode then return immediately
+	if (!p->debug) return 0;
+
+	// test if the string begins by OUTPUT_MARK
+	if (!(s    != NULL &&
+		  s[0] == DEBUG_INFO_OUTPUT_MARK)) return 0;
+
+	// skip the output part
+	int i = 0;
+	for (i = 2; s[i] != DEBUG_INFO_COORD_MARK &&
+		        s[i] != '\0'; ++i) continue;
+
+	// if s doesn't have a COORD_MARK then return immediately
+	if (s[i] != DEBUG_INFO_COORD_MARK) return 0;
+
+	// push OUTPUT_MARK
+	push_output_char(p->stack, DEBUG_INFO_OUTPUT_MARK);
+	// push COORD_MARK graph:box:line INPUT_MARK input END_MARK
+	push_output_string(p->stack, s+i);
+
+	return 1;
 }
 
 /**
@@ -615,10 +693,20 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 #else
                 unichar var_name[len_var_name + 1];
 #endif
-                int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
-                        && !capture_mode(p->output_variables)
-                        && is_morpho_variable_output(
-                                p->tags[t->tag_number]->output, var_name));
+                int save_dic_entry = 0;
+
+                if (p->output_policy != IGNORE_OUTPUTS &&
+                    !capture_mode(p->output_variables)) {
+                  if (p->debug == 0) {
+                    save_dic_entry = is_morpho_variable_output(
+                                        p->tags[t->tag_number]->output,
+                                        var_name);
+                } else {
+                    save_dic_entry = is_debug_mode_morpho_variable_output(
+                                        p->tags[t->tag_number]->output,
+                                        var_name);
+                  }
+                }
                 /*explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L2, NULL,
                         save_dic_entry, jamo, pos_in_jamo);*/
                 /* In order to make the cache system work, we always have to save dic entries */
@@ -653,11 +741,18 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                          *          make a difference if a variable with the same
                          *          name was declared before entering the morphological mode */
                         captured_chars=0;
-                        if (!save_dic_entry && p->output_policy != IGNORE_OUTPUTS) {
+                        if(p->output_policy != IGNORE_OUTPUTS) {
+                          if (!save_dic_entry) {
                             if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
-                                break;
+                              break;
                             }
+                          } else if (p->debug & save_dic_entry) {
+                            if (!push_debug_mode_tag_without_output(p->tags[t->tag_number]->output,p)) {
+                              break;
+                            }
+                          }
                         }
+
                         if (p->output_policy == MERGE_OUTPUTS) {
                             push_input_string(p->stack, content1,
                                     p->protect_dic_chars);
@@ -1181,8 +1276,15 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 unichar var_name[len_var_name + 1];
 #endif
 
-                int save_dic_entry = (p->output_policy != IGNORE_OUTPUTS
-                        && is_morpho_variable_output(tag->output, var_name));
+                int save_dic_entry = 0;
+
+                if (p->output_policy != IGNORE_OUTPUTS) {
+                  if (p->debug == 0) {
+                    save_dic_entry = is_morpho_variable_output(tag->output, var_name);
+                  } else {
+                    save_dic_entry = is_debug_mode_morpho_variable_output(tag->output, var_name);
+                  }
+                }
 
                 /*explore_dic_in_morpho_mode(p, pos_in_tokens, pos_in_chars, &L,
                         tag->pattern, save_dic_entry, jamo, pos_in_jamo);*/
@@ -1223,11 +1325,18 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                          *          make a difference if a variable with the same
                          *          name was declared before entering the morphological mode */
                         captured_chars=0;
-                        if (!save_dic_entry && p->output_policy != IGNORE_OUTPUTS) {
+                        if(p->output_policy != IGNORE_OUTPUTS) {
+                          if (!save_dic_entry) {
                             if (!deal_with_output(tag->output,p,&captured_chars)) {
-                                continue;
+                              continue;
                             }
+                          } else if (p->debug & save_dic_entry) {
+                            if (!push_debug_mode_tag_without_output(tag->output,p)) {
+                              continue;
+                            }
+                          }
                         }
+
                         if (p->output_policy == MERGE_OUTPUTS) {
                             push_input_string(p->stack, content2,
                                     p->protect_dic_chars);
