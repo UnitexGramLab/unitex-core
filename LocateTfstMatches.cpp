@@ -836,7 +836,7 @@ if (l->output!=NULL) {
         u_fprintf(f,"%d %d %d:",p->tfst->current_sentence,l->start,l->end);
     }
     if (p->debug) {
-        save_real_output_from_debug(f,p->output_policy,l->output);
+        save_real_output_from_debug(f,p->real_output_policy,l->output);
     }
     u_fputs(l->output,f);
 }
