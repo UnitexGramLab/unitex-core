@@ -456,7 +456,7 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
 /**
  * Returns 1 if output is of the form $:XYZ$ and saves XYZ in name; 0 otherwise.
  */
-int is_capture_variable(unichar* output,unichar* name) {
+static int is_capture_variable(unichar* output,unichar* name) {
 if (output==NULL || output[0]!='$' || output[1]!=':') return 0;
 int i=2,j=0;
 while (is_variable_char(output[i])) {
@@ -467,6 +467,83 @@ name[j]='\0';
 return 1;
 }
 
+/**
+ * This function tests if s is of the form OUTPUT_MARK$:foo$COORD_MARK and
+ * stores the substring foo on var_name
+ *
+ * A debug-mode output tag belonging to a fst2 as the following form:
+ * OUTPUT_MARK output COORD_MARK graph:box:line INPUT_MARK input END_MARK
+ *
+ * Returns 1 if the given string is of the form OUTPUT_MARK$:foo$COORD_MARK
+ * where foo is a valid variable name; 0 otherwise.
+ *
+ * @see is_debug_mode_morpho_variable_output()
+ */
+static int is_debug_mode_capture_variable(unichar* s, unichar* var_name) {
+	// test if the string begins by OUTPUT_MARK$
+	if (!(s    != NULL &&
+		  s[0] == DEBUG_INFO_OUTPUT_MARK &&
+		  s[1] == '$' &&
+		  s[2] == ':' )) return 0;
+
+	// stores foo on var_name
+	int i, j = 0;
+    for (i = 3; s[i] != '$' &&
+                s[i] != DEBUG_INFO_COORD_MARK &&
+				s[i] != '\0'; ++i) {
+        if (!is_variable_char(s[i])) return 0;
+        var_name[j++] = s[i];
+    }
+
+    // var_name is a null-terminated string
+    var_name[j] = '\0';
+
+    // return true only when len(foo) > 0 and the next two chars are
+    // $COORD_MARK
+    return (i != 3 && s[i] == '$' && s[i + 1] == DEBUG_INFO_COORD_MARK);
+}
+
+/**
+ * Given a debug-mode output tfst tag in s, this function pushes s into stack
+ * without the output part
+ *
+ * If s is a debug-mode output tag of the form:
+ * OUTPUT_MARK output COORD_MARK graph:box:line INPUT_MARK input END_MARK
+ *
+ * this function pushes the next sequence into p->stack
+ * OUTPUT_MARK COORD_MARK graph:box:line INPUT_MARK input END_MARK
+ *
+ * This function is necessary to keep the debug output tag in the stack
+ * and hence be able to trace the explored grammar paths
+ *
+ * Returns 1 if the stack was modified; 0 otherwise
+ *
+ * @see push_debug_mode_tag_without_output()
+ */
+static int push_debug_mode_tfst_tag_without_output(Ustring* stack,
+		const unichar* s, const struct locate_tfst_infos* p) {
+	// if we are not on the debug mode then return immediately
+	if (!p->debug) return 0;
+
+	// test if the string begins by OUTPUT_MARK
+	if (!(s    != NULL &&
+		  s[0] == DEBUG_INFO_OUTPUT_MARK)) return 0;
+
+	// skip the output part
+	int i = 0;
+	for (i = 2; s[i] != DEBUG_INFO_COORD_MARK &&
+		        s[i] != '\0'; ++i) continue;
+
+	// if s doesn't have a COORD_MARK then return immediately
+	if (s[i] != DEBUG_INFO_COORD_MARK) return 0;
+
+	// push OUTPUT_MARK
+	push_output_char_tfst(stack, DEBUG_INFO_OUTPUT_MARK);
+	// push COORD_MARK graph:box:line INPUT_MARK input END_MARK
+	push_output_string_tfst(stack, s+i);
+
+	return 1;
+}
 
 /**
  * Performs the variable capture. Returns 1 in case of success; 0 otherwise.
@@ -546,9 +623,15 @@ if (item->debug_output!=NULL) {
 unichar* output=infos->fst2->tags[item->fst2_transition->tag_number]->output;
 
 unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
-int capture;
+int capture = 0;
 struct dela_entry* old_value_dela=NULL;
-capture=is_capture_variable(output,name);
+
+if (infos->debug == 0) {
+   capture = is_capture_variable(output,name);
+} else {
+   capture = is_debug_mode_capture_variable(output,name);
+}
+
 if (capture) {
     /* If we have a capture variable $:X$, we must save the previous value
      * for this dictionary variable */
@@ -578,6 +661,12 @@ while (text_tags!=NULL) {
            int fst2_tag_number=item->fst2_transition->tag_number;
            if (!do_variable_capture(tfst_tag_number,fst2_tag_number,infos,name)) {
                goto restore_dic_variable;
+           }
+           // If we are on debug mode and have captured a variable, it is necessary
+           // to keep the debug output tag on the stack to be able to trace the
+           // explored grammar
+           if (infos->debug) {
+               push_debug_mode_tfst_tag_without_output(s,output,infos);
            }
        } else if (!deal_with_output_tfst(s,output,infos,&captured_chars)) {
          /* We do not take into account matches with variable errors if the
