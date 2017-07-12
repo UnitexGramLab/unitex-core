@@ -35,6 +35,7 @@
 #include "RegExFacade.h"
 #include "UnitexRevisionInfo.h"
 #include "UnitexGetOpt.h"
+#include "Version.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -55,6 +56,7 @@ const char* usage_VersionInfo =
          "  -n/--newrevision: display only SVN new revision number (if available)\n"
          "  -g/--git: display only git hash (if available)\n"
          "  -b/--build_date: display only build date (if available)\n"
+         "  -B/--build_date_yyyy_mm_dd: display only build date (if available) in the format YYYY-MM-DD\n"
          "  -p/--platform: platform info\n"
          "  -m/--compiler: compiler used to build unitex info\n"
          "  -j/--json: revision and version on json string\n"
@@ -70,12 +72,13 @@ static void usage() {
   u_printf(usage_VersionInfo);
 }
 
-const char* optstring_VersionInfo=":VhmcRrvpjxsubngo:k:q:";
+const char* optstring_VersionInfo=":VhmcRrvpjxsubBngo:k:q:";
 const struct option_TS lopts_VersionInfo[]= {
   {"copyright",no_argument_TS,NULL,'c'},
   {"version",no_argument_TS,NULL,'v'},
   {"revision",no_argument_TS,NULL,'r'},
   {"build_date",no_argument_TS,NULL,'b'},
+  {"build_date_yyyy_mm_dd",no_argument_TS,NULL,'B'},
   {"newrevision",no_argument_TS,NULL,'n'},
   {"git",no_argument_TS,NULL,'g'},
   {"platform",no_argument_TS,NULL,'p'},
@@ -192,6 +195,29 @@ static const char * get_build_date()
 }
 #endif
 
+#if (defined(UNITEX_VERSION_BUILD_YEAR) &&\
+        defined(UNITEX_VERSION_BUILD_MONTH) &&\
+        defined(UNITEX_VERSION_BUILD_DAY))
+
+const char buildDateYYYYMMDD[] =
+{
+  UNITEX_VERSION_BUILD_YEAR[0], UNITEX_VERSION_BUILD_YEAR[1],
+  UNITEX_VERSION_BUILD_YEAR[2], UNITEX_VERSION_BUILD_YEAR[3],
+  '-',
+  UNITEX_VERSION_BUILD_MONTH[0], UNITEX_VERSION_BUILD_MONTH[1],
+  '-',
+  UNITEX_VERSION_BUILD_DAY[0], UNITEX_VERSION_BUILD_DAY[1],
+  '\0'
+};
+
+static const char * get_build_dateYYYYMMDD() {
+    return buildDateYYYYMMDD;
+}
+#else
+static const char * get_build_dateYYYYMMDD() {
+    return("date not available");
+}
+#endif
 int main_VersionInfo(int argc,char* const argv[]) {
     /*
 if (argc==1) {
@@ -212,6 +238,7 @@ int do_json_info=0;
 int do_semver_info=0;
 int do_user_friendly_info=0;
 int do_build_date_only=0;
+int do_build_date_yyyymmdd=0;
 int do_new_revision_only=0;
 int do_git_only=0;
 VersatileEncodingConfig vec=VEC_DEFAULT;
@@ -223,6 +250,7 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_VersionInfo,lopts_Versio
    case 'c': do_copyright_only=1; break;
    case 'r': do_revision_only=1; break;
    case 'b': do_build_date_only = 1; break;
+   case 'B': do_build_date_yyyymmdd = 1; break;
    case 'n': do_new_revision_only = 1; break;
    case 'g': do_git_only = 1; break;
    case 'R': retValue = get_unitex_revision(); break;
@@ -318,6 +346,9 @@ else if (do_git_only) {
 }
 else if (do_build_date_only) {
     u_sprintf(DisplayText,"%s", get_build_date());
+}
+else if (do_build_date_yyyymmdd) {
+    u_sprintf(DisplayText, "%s", get_build_dateYYYYMMDD());
 }
 else if (do_version_only) {
     u_sprintf(DisplayText,"%u.%u",unitexMajorVersion,unitexMinorVersion);
