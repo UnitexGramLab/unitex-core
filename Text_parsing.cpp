@@ -2159,8 +2159,10 @@ static struct match_list* save_matches(struct match_list* l, int current_positio
         U_FILE* f, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 struct match_list* ptr;
 
-if (l == NULL)
-    return NULL;
+    if (l == NULL) {
+        return NULL;
+    }
+
     if (l->m.end_pos_in_token < current_position) {
         /* we can save the match (necessary for SHORTEST_MATCHES: there
          * may be no shorter match) */
