@@ -19,16 +19,17 @@
  *
  */
 /**
- * @file      keywords.h
- * @brief     Portable standard language keywords
+ * @file      extension.h
+ * @brief     GCC `__extension__` alternate keyword
  *
  * @author    cristian.martinez@univ-paris-est.fr (martinec)
  *
  * @attention Do not include this file directly, rather include the
- *            base/common.h header file to gain this file's functionality
+ *            base/compiler/common.h header file to gain this file's
+ *            functionality
  *
  * @note      Use cpplint.py tool to detect style errors:
- *            `cpplint.py --linelength=120 cpu.h`
+ *            `cpplint.py --linelength=120 extension.h`
  *
  * @date      February 2015
  *
@@ -38,20 +39,18 @@
  * please contact unitex-ws@amabis.fr
  */
 /* ************************************************************************** */
-#ifndef UNITEX_BASE_COMPILER_KEYWORDS_H_                            // NOLINT
-#define UNITEX_BASE_COMPILER_KEYWORDS_H_                            // NOLINT
+#ifndef UNITEX_BASE_COMPILER_KEYWORD_EXTENSION_H_                     // NOLINT
+#define UNITEX_BASE_COMPILER_KEYWORD_EXTENSION_H_                     // NOLINT
 /* ************************************************************************** */
-#include "base/compiler/keyword/alignof.h"
-#include "base/compiler/keyword/constexpr.h"
-#include "base/compiler/keyword/eq_default.h"
-#include "base/compiler/keyword/eq_delete.h"
-#include "base/compiler/keyword/explicit.h"
-#include "base/compiler/keyword/extension.h"
-#include "base/compiler/keyword/final.h"
-#include "base/compiler/keyword/noexcept.h"
-#include "base/compiler/keyword/nullptr.h"
-#include "base/compiler/keyword/override.h"
-#include "base/compiler/keyword/static_assert.h"
-#include "base/compiler/keyword/thread_local.h"
+#include "base/compiler/version.h"   // UNITEX_COMPILER_IS
 /* ************************************************************************** */
-#endif  // UNITEX_BASE_COMPILER_KEYWORDS_H_                         // NOLINT
+/**
+ * @brief  GCC `__extension__` alternate keyword
+ */
+#if UNITEX_COMPILER_IS(GCC)   // GNU Compiler
+# define UNITEX_EXTENSION   __extension__
+#else
+# define UNITEX_EXTENSION
+#endif  //  UNITEX_COMPILER_IS(GCC)
+/* ************************************************************************** */
+#endif  // UNITEX_BASE_COMPILER_KEYWORD_EXTENSION_H_                  // NOLINT
