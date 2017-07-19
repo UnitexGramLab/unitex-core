@@ -41,6 +41,8 @@
 
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
 
+#include "base/vendor/pstdint.h"  // uint64_t
+
 #ifdef _MSC_VER
 # pragma warning( push )
 // result of 32-bit shift implicitly converted to 64 bits
@@ -68,7 +70,7 @@ typedef signed short mz_int16;
 typedef unsigned short mz_uint16;
 typedef unsigned int mz_uint32;
 typedef unsigned int mz_uint;
-typedef unsigned long long mz_uint64;
+typedef uint64_t mz_uint64;
 
 #if defined(_M_IX86) || defined(_M_X64)
 // Set MINIZ_USE_UNALIGNED_LOADS_AND_STORES to 1 if integer loads and stores to unaligned addresses are acceptable on the target platform (slightly faster).
