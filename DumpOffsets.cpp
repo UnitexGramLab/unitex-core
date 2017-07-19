@@ -1218,7 +1218,7 @@ int runUnPreprocess(const UnPreprocessParam*params, const VersatileEncodingConfi
             preprocess_next_action_skip_preprocess,
             preprocess_next_action_apply_preprocess,
             preprocess_next_action_apply_process,
-            preprocess_next_action_break,
+            preprocess_next_action_break
         } preprocess_next_action ;
 
         // if there is no more preprocess offset, just apply next process offset
