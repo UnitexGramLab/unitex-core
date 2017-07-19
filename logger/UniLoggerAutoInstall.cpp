@@ -81,7 +81,7 @@ void InstallLogger::LoadParamFile(const char* parameter_filename) {
         if (af_fread(param,1,size_param,af_fin) == size_param)
         {
 
-            int write_file_out=0;
+            unsigned int write_file_out=0;
             char*szPath = (char*)malloc(size_param+1);
             *szPath=0;
             sscanf(param,"%s\n%u",szPath,&write_file_out);
