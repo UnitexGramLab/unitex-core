@@ -106,7 +106,7 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
     if (err==0)
     {
         size_t size_read;
-        if (err == ZIP_OK)
+        if (err == ZIP_OK) {
             do
             {
                 err = ZIP_OK;
@@ -153,6 +153,7 @@ static int addFileInPackFile(zipFile zf,const char* fileNameInArchive, const cha
                     error("error in closing %s in the zipfile\n",
                                 fileNameInArchive);
             }
+       }
     }
     af_fclose(fin);
     free(buf);
