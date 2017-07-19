@@ -159,13 +159,14 @@ while (EOF!=(val=options.parse_long(argc,argv,optstring_Untokenize,lopts_Untoken
                         return USAGE_ERROR_CODE;
                     }
                 }
-                else
+                else {
                     if (1!=sscanf(options.vars()->optarg,"%d%c",&range_start,&foo) || (range_start < -1)) {
                         /* foo is used to check that the search limit is not like "45gjh" */
                         error("Invalid stop count argument: %s\n",options.vars()->optarg);
                         return USAGE_ERROR_CODE;
                     }
                     use_range=1;
+               }
              }
              break;
    case 'V': only_verify_arguments = true;
