@@ -41,6 +41,8 @@
 
 #if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
 
+#include "base/vendor/pstdint.h"  // uint64_t
+
 #ifdef _MSC_VER
 # pragma warning( push )
 // result of 32-bit shift implicitly converted to 64 bits
@@ -68,7 +70,7 @@ typedef signed short mz_int16;
 typedef unsigned short mz_uint16;
 typedef unsigned int mz_uint32;
 typedef unsigned int mz_uint;
-typedef unsigned long long mz_uint64;
+typedef uint64_t mz_uint64;
 
 #if defined(_M_IX86) || defined(_M_X64)
 // Set MINIZ_USE_UNALIGNED_LOADS_AND_STORES to 1 if integer loads and stores to unaligned addresses are acceptable on the target platform (slightly faster).
@@ -351,7 +353,10 @@ tinfl_status tinfl_decompress(tinfl_decompressor *r, const mz_uint8 *pIn_buf_nex
             {
                 mz_uint8 *p = r->m_tables[0].m_code_size; mz_uint i;
                 r->m_table_sizes[0] = 288; r->m_table_sizes[1] = 32; TINFL_MEMSET(r->m_tables[1].m_code_size, 5, 32);
-                for (i = 0; i <= 143; ++i) *p++ = 8; for (; i <= 255; ++i) *p++ = 9; for (; i <= 279; ++i) *p++ = 7; for (; i <= 287; ++i) *p++ = 8;
+                for (i = 0; i <= 143; ++i) { *p++ = 8; }
+                for (; i <= 255; ++i)      { *p++ = 9; }
+                for (; i <= 279; ++i)      { *p++ = 7; }
+                for (; i <= 287; ++i)      { *p++ = 8; }
             }
             else
             {

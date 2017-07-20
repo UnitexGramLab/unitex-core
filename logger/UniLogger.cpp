@@ -694,7 +694,7 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
     if (err==0)
     {
         size_t size_read;
-        if (err == ZIP_OK)
+        if (err == ZIP_OK) {
             do
             {
                 err = ZIP_OK;
@@ -742,6 +742,7 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
                                 filenameinzip);
                                 */
             }
+       }
     }
     af_fclose_unlogged(fin);
     free(buf);

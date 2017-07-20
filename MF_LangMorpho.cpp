@@ -268,8 +268,9 @@ int read_class_line(struct l_morpho_t* pL_MORPHO,int class_no) {
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
       //Check if tmp contains an existing category
       for (c=0, found=0; c<pL_MORPHO->L_CATS.no_cats && !found; c++)
-    if (! u_strcmp(pL_MORPHO->L_CATS.cats[c].name,tmp))
-      found = 1;
+      if (! u_strcmp(pL_MORPHO->L_CATS.cats[c].name,tmp)) {
+        found = 1;
+      }
       if (!found) {
           error("Undefined category in language morphology file: pL_MORPHO->line %d!\n", pL_MORPHO->line_no);
           return 1;
