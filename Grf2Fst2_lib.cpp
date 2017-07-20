@@ -52,6 +52,10 @@ namespace unitex {
 #define EMPTY_GRAPH 1
 #define NON_EMPTY_GRAPH 2
 
+/* Length of an empty double quoted sequence passed as input
+ * if   \"foo\" is a double quoted sequence with length 7,
+ * then \"\"    is an empty double quoted sequence with length 4 */
+#define EMPTY_DOUBLE_QUOTED_SEQUENCE_LENGTH 4
 
 static size_t around_needed_size(size_t needed_size) {
     size_t alloc_size = 256;
@@ -613,12 +617,20 @@ return 0;
 static void get_double_quoted_sequence(const unichar* input,int *pos,
                                 struct fifo* tokens,
                                 struct compilation_info* infos) {
-(*pos)++;
+int sequence_start = (*pos)++;
 unichar tmp_stack[DEFAULT_UNICHAR_TMP_BUFFER_SIZE];
 unichar* tmp=choose_allocated_or_stack_unichar_buffer(tmp_stack, DEFAULT_UNICHAR_TMP_BUFFER_SIZE,u_strlen(input)+0x80);
 while (!get_double_quoted_token(input,pos,tmp,infos) && input[*pos]!='\0') {
    put_ptr(tokens,u_strdup(tmp));
 }
+
+int sequence_length = *pos - sequence_start + 1;
+
+/* If we have an empty double quoted sequence, then replaced it by <E> */
+if (sequence_length == EMPTY_DOUBLE_QUOTED_SEQUENCE_LENGTH) {
+   put_ptr(tokens,u_strdup("<E>"));
+}
+
 free_choosen_allocated_or_stack_unichar_buffer(tmp,tmp_stack);
 }
 
