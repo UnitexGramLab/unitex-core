@@ -52,17 +52,6 @@ typedef struct {
      * state array of the grf object.
      */
     int box_number;
-
-    /* is_first is used to identify if the box is first one after the start
-     * 1 is for yes
-     * -1 is for no
-     * 0 is for context
-     */
-    int is_first;
-    /* if the box has a self loop
-     * 1 is for yes
-     */
-    int has_loop;
 } GrfState;
 
 
