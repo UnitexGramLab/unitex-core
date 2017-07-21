@@ -71,7 +71,10 @@ p->DLC_tree=NULL;
 p->optimized_states=NULL;
 p->fst2=NULL;
 p->tokens=NULL;
+p->enter_pos=NULL;
+p->enter_pos_filename=NULL;
 p->current_origin=-1;
+p->last_origin=-1;
 p->max_count_call=0;
 p->max_count_call_warning=0;
 p->buffer=NULL;
@@ -93,6 +96,7 @@ p->input_variables=NULL;
 p->output_variables=NULL;
 p->nb_output_variables=0;
 p->stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
+p->elg_stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 p->alphabet=NULL;
 p->morpho_dic=NULL;
 p->morpho_dic_inf_free=NULL;
@@ -134,6 +138,7 @@ p->backup_memory_reserve=NULL;
 p->cached_match_vector=new_vector_ptr(16);
 p->fnc_locate_trace_step=NULL;
 p->private_param_locate_trace=NULL;
+p->lti= NULL;
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 p->is_in_cancel_state = 0;
 p->is_in_trace_state = 0;
@@ -146,6 +151,12 @@ p->stack_max=STACK_MAX;
 p->max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;
 p->max_matches_per_subgraph=MAX_MATCHES_PER_SUBGRAPH;
 p->max_errors=MAX_ERRORS;
+
+p->elg = new vm();
+p->elg->restart();
+
+p->pos_in_tokens = -1;
+p->pos_in_chars = -1;
 
 return p;
 }
@@ -189,6 +200,12 @@ for (int i=0;i<tokens->size;i++) {
 return res;
 }
 
+//    0 continue
+// != 0 fail
+int ABSTRACT_CALLBACK_UNITEX locate_trace(const struct locate_trace_info* locate_info,
+                                         void* private_param) {
+  return 0;
+}
 
 
 int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name,const char* dlf,const char* dlc,const char* err,
@@ -201,7 +218,7 @@ int locate_pattern(const char* text_cod,const char* tokens,const char* fst2_name
                    int is_korean,int max_count_call,int max_count_call_warning,
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
                    char* arabic_rules,int tilde_negation_operator,int useLocateCache,int allow_trace,char* const trace_params[],
-                   vector_ptr* injected_vars) {
+                   vector_ptr* injected_vars,const char* enter_pos) {
 
 U_FILE* out;
 U_FILE* info;
@@ -254,6 +271,7 @@ p->max_count_call = max_count_call;
 p->max_count_call_warning = max_count_call_warning;
 p->token_filename = tokens;
 p->graph_filename = fst2_name;
+p->enter_pos_filename = enter_pos;
 char* concord = (buffer_filename + (step_filename_buffer * 0));
 char* concord_info = (buffer_filename + (step_filename_buffer * 1));
 
@@ -275,6 +293,7 @@ if (out==NULL) {
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
    free_stack_unichar(p->stack);
+   free_stack_unichar(p->elg_stack);
    free_locate_parameters(p);
    u_fclose(out);
    free(buffer_filename);
@@ -292,6 +311,7 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
       af_release_mapfile_pointer(p->text_cod,p->buffer);
       af_close_mapfile(p->text_cod);
       free_stack_unichar(p->stack);
+      free_stack_unichar(p->elg_stack);
       free_locate_parameters(p);
       if (info!=NULL) u_fclose(info);
       u_fclose(out);
@@ -310,6 +330,7 @@ if (is_cancelling_requested() != 0) {
        af_release_mapfile_pointer(p->text_cod,p->buffer);
        af_close_mapfile(p->text_cod);
        free_stack_unichar(p->stack);
+       free_stack_unichar(p->elg_stack);
        free_locate_parameters(p);
        if (info!=NULL) u_fclose(info);
        u_fclose(out);
@@ -327,6 +348,7 @@ if (fst2load==NULL) {
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
    free_stack_unichar(p->stack);
+   free_stack_unichar(p->elg_stack);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
@@ -368,6 +390,7 @@ if (is_cancelling_requested() != 0) {
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
    free_stack_unichar(p->stack);
+   free_stack_unichar(p->elg_stack);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
@@ -385,6 +408,7 @@ if (p->filters==NULL) {
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
    free_stack_unichar(p->stack);
+   free_stack_unichar(p->elg_stack);
    free_locate_parameters(p);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
@@ -412,6 +436,38 @@ if (p->tokens==NULL) {
    free(buffer_filename);
    return 0;
 }
+
+if(enter_pos) {
+ ABSTRACTMAPFILE* af_enter_pos = af_open_mapfile(enter_pos,MAPFILE_OPTION_READ,0);
+ if (af_enter_pos!=NULL) {
+   const int* enter_pos =(const int*)af_get_mapfile_pointer(af_enter_pos);
+   if (enter_pos != NULL) {
+     int enter_pos_size = af_get_mapfile_size(af_enter_pos)/sizeof(int);
+     p->enter_pos = new_bit_array(p->buffer_size,ONE_BIT);
+     for (int i=0; i<enter_pos_size ; ++i) {
+       set_value(p->enter_pos,enter_pos[i],1);
+     }
+     af_release_mapfile_pointer(af_enter_pos,enter_pos);
+     af_close_mapfile(af_enter_pos);
+   }
+ } else {
+   error("Cannot load enter.pos list %s\n",enter_pos);
+   free_alphabet(p->alphabet);
+   free_string_hash(semantic_codes);
+   free_string_hash(p->tokens);
+   free_Fst2(p->fst2,locate_abstract_allocator);
+   close_abstract_allocator(locate_abstract_allocator);
+   free_locate_parameters(p);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
+   if (info!=NULL) u_fclose(info);
+   u_fclose(out);
+   free(buffer_filename);
+   return 0;
+ }
+
+}
+
 Abstract_allocator locate_work_abstract_allocator = locate_abstract_allocator;
 
 p->match_cache=(LocateCache*)malloc_cb(p->tokens->size * sizeof(LocateCache),locate_work_abstract_allocator);
@@ -527,11 +583,32 @@ p->al.prv_alloc_recycle_morphlogical_content_buffer=morphlogical_content_buffer_
 p->al.pa.prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocator;
 p->al.prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
 p->al.prv_alloc_context=locate_recycle_context_abstract_allocator;
+
+p->fnc_locate_trace_step = locate_trace;
+p->lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
+p->lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
+p->lti->is_on_morphlogical=0;
+p->lti->pos_in_tokens=-1;
+p->lti->current_state=NULL;
+p->lti->current_state_index=0;
+p->lti->pos_in_chars=0;
+p->lti->matches=NULL;
+p->lti->n_matches=0;
+p->lti->ctx=NULL;
+p->lti->p=p;
+p->lti->step_number=-1;
+p->lti->jamo=NULL;
+p->lti->pos_in_jamo=0;
+
 launch_locate(out,text_size,info,p);
+
 if (allow_trace!=0) {
    close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
 }
+
+free_cb(p->lti,p->al.prv_alloc_trace_info_allocator);
 free_bit_array(p->failfast);
+free_bit_array(p->enter_pos);
 free_Variables(p->input_variables);
 free_OutputVariables(p->output_variables);
 af_release_mapfile_pointer(p->text_cod,p->buffer);
@@ -551,6 +628,7 @@ if (free_abstract_allocator_item) {
   free_optimized_states(p->optimized_states,p->fst2->number_of_states,locate_abstract_allocator);
 }
 free_stack_unichar(p->stack);
+free_stack_unichar(p->elg_stack);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */
@@ -584,6 +662,7 @@ if (p->jamo_tags!=NULL) {
     free(p->jamo_tags);
 }
 free_string_hash(p->tokens);
+
 free_lemma_node(root);
 free(p->token_control);
 for (int i=0;i<n_text_tokens;i++) {
@@ -602,6 +681,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
 free(p->morpho_dic);
 free(p->morpho_dic_inf_free);
 free(p->morpho_dic_bin_free);
+delete p->elg;
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
 #endif

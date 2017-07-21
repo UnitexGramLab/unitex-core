@@ -43,6 +43,7 @@
 // C system files                  (try to order the includes alphabetically)
 #include <cstddef>                 // ptrdiff_t
 #include <cwchar>                  // wcslen
+#include <cassert>                 // assert
 /* ************************************************************************** */
 // C++ system files                (try to order the includes alphabetically)
 

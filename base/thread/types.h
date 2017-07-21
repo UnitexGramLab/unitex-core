@@ -45,6 +45,7 @@
 // Unitex headers
 #include "base/thread/model.h"       // UNITEX_USE_*_THREADS
 #include "base/macro/helpers.h"      // UNITEX_DISALLOW_COPY_AND_ASSIGN
+#include "base/unicode/unicode.h"    // unichar
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */

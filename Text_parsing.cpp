@@ -45,7 +45,7 @@ namespace unitex {
 static int binary_search(int, int*, int);
 static int find_compound_word(int, int, struct DLC_tree_info*,
         struct locate_parameters*);
-static unichar* get_token_sequence(struct locate_parameters*, int, int);
+unichar* get_token_sequence(struct locate_parameters*, int, int);
 void shift_variable_bounds(Variables*, int);
 static void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
 static void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
@@ -103,6 +103,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     OptimizedFst2State initial_state =
             p->optimized_states[p->fst2->initial_states[1]];
     p->current_origin = 0;
+	p->last_origin = 0;
     int n_read = 0;
     int unite;
     clock_t startTime = clock();
@@ -253,6 +254,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                     clear_dic_variable_list(&(p->dic_variables));
                 }
             }
+            p->last_origin = p->current_origin;
         }
         reset_Variables(p->input_variables);
         p->match_list = save_matches(p->match_list,p->current_origin, out, p, p->al.prv_alloc_generic);
@@ -433,34 +435,30 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         else
         {
             if ((p->fnc_locate_trace_step != NULL)) {
-                locate_trace_info* lti;
-                lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
-                if (lti==NULL) {
-                    fatal_alloc_error("locate");
-                }
-                lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
-                lti->is_on_morphlogical = 0;
+                p->lti->is_on_morphlogical = 0;
 
-                lti->pos_in_tokens=pos;
+                p->lti->pos_in_tokens=pos;
 
-                lti->current_state=current_state;
+                p->lti->current_state=current_state;
 
-                lti->current_state_index=0;
-                lti->pos_in_chars=0;
+                p->lti->current_state_index=0;
+                p->lti->pos_in_chars=0;
 
-                lti->matches=matches;
-                lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
-                lti->ctx=ctx;
-                lti->p=p;
+                p->lti->matches=matches;
+                p->lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
+                p->lti->ctx=ctx;
+                //p->lti->p=p;
 
-                lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+                p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
 
-                lti->jamo=NULL;
-                lti->pos_in_jamo=0;
+                p->lti->jamo=NULL;
+                p->lti->pos_in_jamo=0;
 
-                p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-                free_cb(lti,p->al.prv_alloc_trace_info_allocator);
+                p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(p->lti,p->private_param_locate_trace);
             }
+
+            p->pos_in_tokens=pos;
+            p->pos_in_chars=0;
 
             if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
                 if ((p->max_count_call) > 0) {
@@ -1807,7 +1805,7 @@ static int find_compound_word(int pos, int pattern_number,
 /**
  * Returns a string corresponding to the tokens in the range [start;end].
  */
-static unichar* get_token_sequence(struct locate_parameters*p,
+unichar* get_token_sequence(struct locate_parameters*p,
         int start, int end) {
     unichar* recyclable_buffer = p->recyclable_unichar_buffer;
     unichar* recyclable_buffer_limit = recyclable_buffer + p->size_recyclable_unichar_buffer ;

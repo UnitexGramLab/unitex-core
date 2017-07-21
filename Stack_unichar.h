@@ -51,6 +51,7 @@ int is_full(const struct stack_unichar*);
 void fatal_error_NULL_push();
 void fatal_error_full_stack_push();
 void push_array(struct stack_unichar*,const unichar*,unsigned int);
+void push_array(struct stack_unichar*, const char*, unsigned int);
 unichar pop(struct stack_unichar*);
 
 

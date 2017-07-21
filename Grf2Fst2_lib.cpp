@@ -1115,6 +1115,13 @@ if (*s=='\0') {
     /* $a$ is fine */
     return;
 }
+
+// martinec 07/09/16
+if (*s=='@') {
+	/* $@ is fine */
+	return;
+}
+
 if (*s!='.') {
     char name[FILENAME_MAX];
     get_absolute_name(NULL,name,current_graph,infos);
@@ -1190,6 +1197,7 @@ fatal_error("Graph %s: invalid $...$ sequence in output:\n$%S$\n",name,ptr);
 static void check_output_validity(int current_graph,struct compilation_info* infos,
                                     unichar* output) {
 if (output[0]=='\0') return;
+if (output[0]=='$' && output[1]=='@') return;
 int i=0;
 Ustring* foo=new_Ustring();
 while (output[i]!='\0') {

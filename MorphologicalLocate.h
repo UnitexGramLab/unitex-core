@@ -52,6 +52,24 @@ void enter_morphological_mode(/*int graph_depth, */ /* 0 means that we are in th
             //,variable_backup_memory_reserve* backup_reserve
 );
 
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+    int pos_in_token, struct parsing_info* *matches,
+    struct pattern* pattern, int save_dela_entry, unichar* jamo,
+    int pos_in_jamo);
+
+void explore_dic_in_morpho_mode_with_token(
+        struct locate_parameters* p,
+        const unichar* token,
+        int pos_in_token,
+        struct parsing_info* *matches,
+        struct pattern* pattern,
+        int save_dic_entry,
+        unichar* jamo,
+        int pos_in_jamo);
+
+void get_content(unichar* content, struct locate_parameters* p, int pos,
+    int pos_in_token, int pos2, int pos_in_token2);
+
 } // namespace unitex
 
 #endif

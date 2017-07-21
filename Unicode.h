@@ -33,6 +33,15 @@
 
 #include "AbstractAllocator.h"
 
+#include "base/macro/helper/test.h"
+#include "base/compiler/attributes.h"
+
+#define UNITEX_USE_BASE_UNICODE 1
+
+#if UNITEX_USE(BASE_UNICODE)
+#include "base/unicode/unicode.h"
+#endif
+
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
@@ -78,6 +87,7 @@ typedef enum {
 #define UTF16_BIG_ENDIAN_FILE 3
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * This is the type of a unicode character. Note that it is a 16-bits type,
  * so that it cannot handle characters >= 0xFFFF. Such characters, theoretically
@@ -85,6 +95,7 @@ typedef enum {
  */
 typedef uint16_t unichar;
 
+#endif
 
 /**
  * This structure is used to represent a file with its encoding.
@@ -259,7 +270,11 @@ int u_sscanf(unichar*,const char*,...);
 int u_vsscanf(unichar*,const char*,va_list);
 
 /* ------------------- String functions ------------------- */
+#if !UNITEX_USE(BASE_UNICODE)
 unsigned int u_strlen(const unichar*);
+#else
+size_t u_strlen(const unichar* s);
+#endif
 unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
@@ -284,7 +299,11 @@ int is_str_mono_unichar_string(const unichar*, unichar);
 int u_strcmp(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
 int u_strncmp(const unichar*, const unichar*,size_t num);
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp_ignore_case(const unichar*, const unichar*);
+#else
+#define u_strcmp_ignore_case u_stricmp
+#endif
 int u_strcmp_ignore_case(const unichar*, const char*);
 unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr);
 int u_equal(const unichar*, const unichar*);
@@ -336,7 +355,9 @@ unsigned int hash_unichar(unichar*);
 
 
 /* ------------------- Character functions ------------------- */
+#if !UNITEX_USE(BASE_UNICODE)
 int u_is_digit(unichar);
+#endif
 int u_is_basic_latin_letter(unichar);
 int u_is_ASCII_alphanumeric(unichar);
 int u_is_latin1_supplement_letter(unichar);
@@ -372,7 +393,9 @@ int u_is_Hangul_Jamo_final_consonant(unichar c);
 int u_is_Hangul_Jamo_consonant(unichar c);
 int u_is_Hangul_Jamo_medial_vowel(unichar c);
 //--------End of Hyungue's inserts----------------
+#if !UNITEX_USE(BASE_UNICODE)
 int u_is_letter(unichar);
+#endif
 int u_is_word(const unichar*);
 int u_are_digits(const unichar*);
 
@@ -387,9 +410,42 @@ void u_deaccentuate(unichar* s);
 int u_toupper_ismodified (unichar* s);
 int u_tolower_ismodified (unichar* s);
 int u_deaccentuate_ismodified(unichar* s);
+#if !UNITEX_USE(BASE_UNICODE)
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
 unichar u_deaccentuate(unichar);
+#else
+UNITEX_FORCE_INLINE
+unichar u_toupper(unichar c) {
+  const u_info_t* u_info = u_info(c);
+
+  int index = u_info->variant[U_CASE_UPPER];
+
+  if (UNITEX_LIKELY(!u_has_flag_upper_expands(u_info))) {
+    return c + index;
+  }
+
+  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];
+}
+
+UNITEX_FORCE_INLINE
+unichar u_tolower(unichar c) {
+  const u_info_t* u_info = u_info(c);
+
+  int index = u_info->variant[U_CASE_LOWER];
+
+  if (UNITEX_LIKELY(!u_has_flag_upper_expands(u_info))) {
+    return c + index;
+  }
+
+  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];
+}
+UNITEX_FORCE_INLINE
+unichar u_deaccentuate(unichar c) {
+  unichar unnacent = u_info(c)->variant[U_CHAR_UNACCENT];
+  return UNITEX_UNLIKELY(unnacent>0) ? unnacent : c;
+}
+#endif
 // end of Sebastian Nagel's functions
 
 } // namespace unitex

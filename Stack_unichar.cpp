@@ -125,6 +125,18 @@ for (i=0;i<size;i++) {
 }
 }
 
+void push_array(struct stack_unichar* stack, const char* array, unsigned int size) {
+  if (stack==NULL) {
+    fatal_error("NULL error in push_array\n");
+  }
+  if ((stack->stack_pointer + (int)size + 1) >= stack->capacity) {
+    resize(stack,stack->stack_pointer + (int)size + 1);
+  }
+  for (unsigned int i=0; i<size; ++i) {
+    stack->stack[++(stack->stack_pointer)] = (unichar) *(array+i);
+  }
+}
+
 
 /**
  * Pops and returns the top element of the stack.

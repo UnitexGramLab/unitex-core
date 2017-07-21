@@ -38,6 +38,8 @@
 
 namespace unitex {
 
+#define MAX_TOKEN_LENGTH 4096
+
 struct list_ustring* tokenize(const unichar*,TokenizationPolicy,const Alphabet*);
 struct list_ustring* tokenize_char_by_char(const unichar*);
 struct list_ustring* tokenize_word_by_word(const unichar*,const Alphabet*);

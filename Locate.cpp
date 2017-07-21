@@ -18,6 +18,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <string>
+//#include <time.h>
+//#include <boost/log/common.hpp>
+//#include <boost/log/core.hpp>
+//#include <boost/log/sources/global_logger_storage.hpp>
+//#include <boost/log/sources/logger.hpp>
+//#include <boost/log/sources/basic_logger.hpp>
+//#include <boost/log/sources/threading_models.hpp>
+//#include <boost/log/sources/severity_logger.hpp>
+//#include <thread>         // std::thread
+//#include <mutex>          // std::mutex
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +56,11 @@
 #include "Locate.h"
 #include "Error.h"
 #include "UnitexGetOpt.h"
+#include "Persistence.h"
+#include "PersistenceInterface.h"
+
+//#define  UNITEX_MSGLOGGER_SINGLE_THREADED
+#include "MsgLogger.h"
 #include "ProgramInvoker.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -236,11 +255,315 @@ void free_locate_trace_param(char** list_param_trace)
 }
 
 
+//void mytest (int& testref, int* testptr){
+//  u_printf("Address ref: %p\n", (void *)testref);
+//  u_printf("Address ptr: %p\n", (void *)testptr);
+//
+//}
+
 /*
  * This function behaves in the same way that a main one, except that it does
  * not invoke the setBufferMode function.
  */
+
+
+
+//BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(my_logger, boost::log::sources::logger_mt);
+//struct my_logger {
+//    static inline MsgLogger& get() {
+//      return MsgLogger::get();
+//    }
+//};
+
+MsgLogger& msg_log2 = MsgLogger::get(); //uncomment.this
+//MsgLogger& msg_logger()
+//{
+//  static MsgLogger* msg_logger = MsgLogger::get();
+//  return *msg_logger;
+//}
+
+//void print_block (int n, char c) {
+//  MsgLogGuard guard_this;
+//  // critical section (exclusive access to std::cout signaled by locking mtx):
+//  for (int i=0; i<n; ++i) { u_printf("%c", c); }
+//  u_printf("\n");
+//  msg_log2.print_id();
+//}
+
+//  std::thread th1 (print_block,50,'*');
+//  std::thread th2 (print_block,50,'$');
+//  std::thread th3 (print_block,50,'x');
+//
+//  th1.join();
+//  th2.join();
+//  th3.join();
+//  return 0;
+
+// TODO(martinec) put this in Unicode.h:44
+// #pragma GCC poison printf scanf fopen
+//_Pragma("message(\"message0 __LINE__ \")")
+
+int is_separators(unichar c) {
+return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
+}
+
 int main_Locate(int argc,char* const argv[]) {
+////  const u_info_t* t = u_info(0x0340);
+//////  u_printf("%C%d\n", (unichar) t->variant[U_CHAR_UNACCENT],1);
+//      unichar A[] = { 'x', 0x1E9E, 's', 0 };
+////    static const unichar Z[] = { 'x', 's', 'S', 0x00DF, 0 };
+////    static const unichar T[] = { 0x0130, 0 };
+//      UnitexString B("Hello World");
+//      unichar* test = u_strdup(B.c_unichar());
+//      u_tolower(A);
+//      u_printf("%S\n", A);
+////    int x = u_stricmp(Z, A);
+
+//    const u_info_t* res = u_lookup(0xD804);
+//    int x = u_has_flag_space(0xD804);
+//    for(unichar i=0; i<0xFFFF; i++) {
+//      if(is_separators(i)) {
+//        u_printf("u:%d\n", i);
+//      }
+//      if(u_has_flag_space(i)) {
+//        u_printf("n:%d\n", i);
+//      }
+//    }
+
+//  UNITEX_DEBUG_BREAKPOINT();
+//  //MsgLogMessageDetails x;
+//#define STEST UNITEX_IS_EMPTY(3)
+////x = "time_stamp";
+msg_log2.params.message_details  = MsgLogMessageDetails::kFlagFullDetails;
+////msg_log2.params.message_details |= MsgLogMessageDetails::TimeElapsed;
+//  //0x%08lX
+//   uint8_t z = binary(10101010);
+//   int x = util::popcount(z);
+//   u_printf("ConfisssssSssssssgsds%S\n%S\n%S\n%S\n%S\n'%d'\n%d\n'%s'\n",
+//           info::host::operating_system_identifier().c_unichar(),
+//           info::host::kernel_identifier().c_unichar(),
+//           info::build::unitex_identifier().c_unichar(),
+//           info::build::compiler_identifier().c_unichar(),
+//           info::target::operating_system_identifier().c_unichar(),
+//           UNITEX_base_version(),
+//           STEST,
+//           UNITEX_base_version_string()  // Expands to "YES"
+//           );
+//IF(NOT(XXX))(1,NOP(XXX))
+
+//const char* transducer_realname           = "/home/adverick/Projects/PRJ-SMS/Alignment/Emoticons/graph/emoticon_tagger.fst2";
+//char transducer_virtualname[FILENAME_MAX] = {};
+
+//bool transducer_loaded = persistence_public_load_fst2(transducer_realname,
+                                                      //transducer_virtualname,
+                                                      //FILENAME_MAX * sizeof(char) - 1);
+
+//if(!transducer_loaded) {
+  //// transducer wasn't loaded
+//}
+//int test =  is_filename_in_abstract_file_space(transducer_virtualname);
+//void* test_ptr = get_persistent_structure(transducer_virtualname);
+
+//bool transducer_still_loaded = is_persistent_filename(transducer_virtualname);
+//// unload transducer
+//persistence_public_unload_fst2(transducer_virtualname);
+//transducer_still_loaded = is_persistent_filename(transducer_virtualname);
+
+
+  Chrono a = Chrono::now();
+
+//
+//// UNITEX_MSGLOGGER_DEBUG_BREAKPOINT();
+//
+//
+////  return 0;
+//
+//if(argc >= 1) {
+//msg_log2.params.message_details =  argv[1];
+//} else {
+// msg_log2.params.message_details =  MsgLogMessageDetails::kFlagFullDetails;
+// msg_log2.params.message_details |= MsgLogMessageDetails::TimeElapsed;
+//}
+//
+//
+//
+//
+//
+//msg_log2.log(SeverityLevel::Panic, MsgLogString::format("This is %d panic message", 1), UNITEX_MSGLOGGER_FILE_NAME, UNITEX_FILE_LINE, UNITEX_MSGLOGGER_FUNCTION_NAME);
+////msg_log2.log(SeverityLevel::Info, "This is a info message");
+//
+////return 0;
+////int len = 0;
+////u_scanf("%d", &len);
+////
+////char buf[len];
+////
+////size_t taille = sizeof(buf)/sizeof(buf[0]);
+////
+////if(taille){
+////  x = "ts";
+////}
+//
+//SeverityLevel y;
+//
+//y = SeverityLevel::Panic;
+//
+//
+//if(y >= SeverityLevel::Panic) {
+//}
+//
+////return 0;
+//
+//
+//
+//
+//  //  msg_logger().params.severity_level = SeverityLevel::Panic;
+////MsgLogger* msg_log2 = MsgLogger::get();
+//Time a(Time::gettimeofday());
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//
+//int64_t min = TIME_T_MIN;
+//int64_t max = TIME_T_MAX;
+//
+//u_printf("%d\n", min );
+//u_printf("%d\n", max );
+//
+////unichar buf[50];
+////struct tm timeinfo = a.local();
+////time_t time_x;
+////time (&time_x);
+//////localtime_r(&time, &tm_time_);
+////localtime_r(&time_x, &timeinfo);
+////u_printf ("Current local time and date: %s", asctime_r(&timeinfo, buf));
+////time_t time_x = a;
+////localtime_r(&time_x, &timeinfo);
+//
+//
+//u_printf (";Unitex Message Loggger %S", a.as_string().c_unichar());
+//u_printf (";Unitex Message Loggger %S\n", a.as_timestamp().c_unichar());
+//
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//assert (&msg_log2.get() != NULL );
+//msg_log2.params.severity_level = SeverityLevel::Panic;
+//
+//MsgLogger& msg_log3 = MsgLogger::get();
+//msg_log3.params.severity_level = SeverityLevel::Panic;
+//
+////u_printf("hello world :%u\n",syscall(__NR_gettid));
+////u_printf("hello world :%u\n",getpid());
+////u_printf("hello world :%u\n",(pid_t)(uintptr_t)pthread_self());
+//
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//MsgLogString sA ("Hello");
+//
+//u_printf("A %S\n", sA.c_unichar());
+//
+//MsgLogString sB ("World");
+//
+//u_printf("B %S\n", sB.c_unichar());
+//
+//sA.swap(sB);
+//
+//u_printf("A %S\n", sA.c_unichar());
+//u_printf("B %S\n", sB.c_unichar());
+//
+//sA.swap(sA);
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//
+//u_printf("A %S\n", sA.c_unichar());
+//u_printf("B %S\n", sB.c_unichar());
+//
+//
+//
+//
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//
+//MsgLogString sZ(10, unichar(345));
+//MsgLogString sC(sA,0,sA.length());
+//MsgLogString sD(sA.c_unichar() + 2, sA.c_unichar() + 11);
+//MsgLogString sE(sA,0,8);
+//MsgLogString sF(sA,2,10);
+//MsgLogString sG(sA,0,100);
+//
+//u_printf("%S\n", sA.c_unichar());
+//
+//u_printf("%S\n", sB.c_unichar());
+//
+//u_printf("%S\n", sC.c_unichar());
+//
+//u_printf(">>%S\n", sD.c_unichar());
+//
+//u_printf("%S\n", sE.c_unichar());
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//u_printf("%S\n", sF.c_unichar());
+//
+//u_printf("%S\n", sG.c_unichar());
+//
+//
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//MsgLogString K;
+//
+//K = K + 'A';
+//K = 'A' + K;
+//
+////K.append_format("[%12.f]", a.elapsed(Time::now()).as_microseconds());
+//K.append(' ');
+//K.append_format("%s", msg_log2.params.severity_level.name());
+//
+//u_printf("%S\n", K.c_unichar());
+//
+//MsgLogString Z(K.c_unichar());
+//
+//u_printf("%S\n", Z.c_unichar());
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+//
+//u_printf("[%12.0f] milliseconds in %s messages : %d\n", 0.0, msg_log2.params.severity_level.name(),
+//         msg_log2.stats.get_message_count(msg_log2.params.severity_level));
+//u_printf("[%12.f]\n", a.elapsed(Time::now()).as_microseconds());
+////msg_log2->log(SeverityLevel::Panic);
+//
+////int x = 5;
+////mytest(x,&x);
+//
+////msg_log->severity_level = SeverityLevel::Panic;
+//////MsgLogger* msg_log2 = MsgLogger::get();
+//////msg_log.output_file  = "/home/adverick/Downloads/scify/testy.txt";
+////MsgLogger* msg_log2 = MsgLogger::get();
+////msg_log2->severity_level = SeverityLevel::Panic;
+//
+////MsgLogFile fp;
+//
+////if (fp == U_STDERR) {
+////  if (msg_log->severity_level) {
+////  }
+////}
+//
+//
+////  a.elapsed(Time::now()).as_microseconds(),  %15.f |
+
+
+
+////
+//Chrono time = Chrono::now();
+//
+//u_printf("==%S== (%s %s)%s [%S | %-12.0f %s:%0.4d] %s\n",
+//                          msg_log2.thread_name().c_unichar(),
+//                          SeverityLevel::Critical.alias(),
+//                          SeverityLevel::Critical.name(),
+//                          " ",
+//                          time.as_timestamp().c_unichar(),
+//                          a.elapsed(time).as_microseconds(),
+//                          "s",
+//                          UNITEX_FILE_LINE,
+//                          "Working..."
+//                          );
+
+//
+//// (II) [         22 fr_umlv_unitex_jni_UnitexJni.cpp:0452]
+//
+//
+////return 0;
+
 if (argc==1) {
    usage();
    return SUCCESS_RETURN_CODE;
@@ -564,7 +887,7 @@ if (selected_negation_operator==0) {
 
 size_t step_filename_buffer = (((FILENAME_MAX / 0x10) + 1) * 0x10);
 
-char* buffer_filename = (char*)malloc(step_filename_buffer * 6);
+char* buffer_filename = (char*)malloc(step_filename_buffer * 7);
 if (buffer_filename == NULL) {
     alloc_error("main_Locate");
   free_vector_ptr(injected_vars,free);
@@ -579,6 +902,7 @@ char* text_cod = (buffer_filename + (step_filename_buffer * 2));
 char* dlf = (buffer_filename + (step_filename_buffer * 3));
 char* dlc = (buffer_filename + (step_filename_buffer * 4));
 char* err = (buffer_filename + (step_filename_buffer * 5));
+char* enter_pos = (buffer_filename + (step_filename_buffer * 6));
 
 get_snt_path(text,staticSntDir);
 if (dynamicSntDir[0]=='\0') {
@@ -599,6 +923,9 @@ strcat(dlc,"dlc");
 
 strcpy(err,staticSntDir);
 strcat(err,"err");
+
+strcpy(enter_pos,staticSntDir);
+strcat(enter_pos,"enter.pos");
 
 int OK=locate_pattern(text_cod,
                tokens_txt,
@@ -637,6 +964,22 @@ free_vector_ptr(injected_vars,free);
 free_locate_trace_param(list_param_trace);
 free(morpho_dic);
 
+
+Chrono time = Chrono::now();
+
+u_printf("==%S== (%s %s)%s [%S | %-12.0f %s:%0.4d] %s\n",
+                          msg_log2.thread_name().c_unichar(),
+                          SeverityLevel::Info.alias(),
+                          SeverityLevel::Info.name(),
+                          "     ",
+                          time.as_timestamp().c_unichar(),
+                          a.elapsed(time).as_microseconds(),
+                          "s",
+                          UNITEX_FILE_LINE,
+                          "Working..."
+                          );
+
+u_printf("Time elapsed : %15.f\n", a.elapsed(time).as_microseconds());
 return (!OK);
 }
 

@@ -48,6 +48,7 @@
 #include "Vector.h"
 #include "MappedFileHelper.h"
 #include "Arabic.h"
+#include "Stack_unichar.h"
 
 
 #ifndef HAS_UNITEX_NAMESPACE
@@ -56,8 +57,7 @@
 
 namespace unitex {
 
-
-
+class vm;
 
 struct counting_step_st
 {
@@ -205,8 +205,16 @@ struct locate_parameters {
    /* The text tokens */
    struct string_hash* tokens;
 
+   /* The text newlines */
+   // TODO(martinec) Implement as a sparse bitset instead
+   struct bit_array* enter_pos;
+   const char* enter_pos_filename;
+
    /* Current origin position in the token buffer */
    int current_origin;
+
+   /* Current origin position in the token buffer */
+   int last_origin;
 
    /* the maximum number of locate call for each token */
    int max_count_call;
@@ -344,6 +352,7 @@ struct locate_parameters {
    /* Arabic typographic rule configuration */
    ArabicTypoRules arabic;
 
+   locate_trace_info* lti;
    t_fnc_locate_trace_step fnc_locate_trace_step;
    void*private_param_locate_trace;
 
@@ -386,6 +395,13 @@ struct locate_parameters {
    int graph_depth_backup_nested;
 
    const char* graph_filename;
+
+   vm* elg;
+   struct stack_unichar* elg_stack;
+   // position in the token buffer, relative to the current origin
+   int pos_in_tokens;
+   // position in the token in characters
+   int pos_in_chars;
 };
 
 
@@ -394,7 +410,7 @@ int locate_pattern(const char*,const char*,const char*,const char*,const char*,c
                    SpacePolicy,int,const char*,AmbiguousOutputPolicy,
                    VariableErrorPolicy,int,int,int,int,
                    int stack_max, int max_matches_at_token_pos,int max_matches_per_subgraph,int max_errors,
-                   char*,int,int,int,char* const [],vector_ptr*);
+                   char*,int,int,int,char* const [],vector_ptr*,const char* enter_pos = NULL);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(const unichar*,const Alphabet*,struct string_hash*,TokenizationPolicy);
@@ -402,4 +418,5 @@ void compute_token_controls(const VersatileEncodingConfig*,Alphabet*,const char*
 
 } // namespace unitex
 
+#include "ELG.h"
 #endif

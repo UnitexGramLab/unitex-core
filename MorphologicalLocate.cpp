@@ -37,6 +37,7 @@
 #include "CompressedDic.h"
 #include "Contexts.h"
 #include "DebugMode.h"
+#include "MorphologicalLocate.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -54,7 +55,7 @@ static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing
         struct list_context*, struct locate_parameters*,
         unichar*, int, unichar*);
 int input_is_token(Fst2Tag tag);
-static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
         int pos_in_token, struct parsing_info* *matches,
         struct pattern* pattern, int save_dela_entry, unichar* jamo,
         int pos_in_jamo);
@@ -64,7 +65,7 @@ int is_entry_compatible_with_pattern(const struct dela_entry* entry,
 /**
  * Stores in 'content' the string corresponding to the given range.
  */
-static void get_content(unichar* content, struct locate_parameters* p, int pos,
+void get_content(unichar* content, struct locate_parameters* p, int pos,
         int pos_in_token, int pos2, int pos_in_token2) {
     int i = 0;
     unichar* current_token =
@@ -315,34 +316,29 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         else
         {
             if ((p->fnc_locate_trace_step != NULL)) {
-                locate_trace_info* lti;
-                lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
-                if (lti==NULL) {
-                    fatal_alloc_error("morphological_locate");
-                }
-                lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
-                lti->is_on_morphlogical = 1;
+                p->lti->is_on_morphlogical = 1;
 
-                lti->pos_in_tokens=pos_in_tokens;
+                p->lti->pos_in_tokens=pos_in_tokens;
 
-                lti->current_state=NULL;
+                p->lti->current_state=NULL;
 
-                lti->current_state_index=current_state_index;
-                lti->pos_in_chars=pos_in_chars;
+                p->lti->current_state_index=current_state_index;
+                p->lti->pos_in_chars=pos_in_chars;
 
-                lti->matches=matches;
-                lti->n_matches=n_matches;
-                lti->ctx=ctx;
-                lti->p=p;
+                p->lti->matches=matches;
+                p->lti->n_matches=n_matches;
+                p->lti->ctx=ctx;
 
-                lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+                p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
 
-                lti->jamo=jamo;
-                lti->pos_in_jamo=pos_in_jamo;
+                p->lti->jamo=jamo;
+                p->lti->pos_in_jamo=pos_in_jamo;
 
-                p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-                free_cb(lti,p->al.prv_alloc_trace_info_allocator);
+//              p->lti->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
             }
+
+			p->pos_in_tokens=pos_in_tokens;
+			p->pos_in_chars=pos_in_chars;
 
             if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
                 if ((p->max_count_call) > 0) {
@@ -2239,7 +2235,7 @@ offset=read_dictionary_state(d,offset,&final,&n_transitions,&inf_number);
  * anything found in the dictionary will do. It is used to represent the <DIC>
  * pattern.
  */
-static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
+void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
         int pos_in_token, struct parsing_info* *matches,
         struct pattern* pattern, int save_dic_entry, unichar* jamo,
         int pos_in_jamo) {
@@ -2273,6 +2269,162 @@ static void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
     free_Ustring(ustr);
     free_Ustring(line_buffer);
     free(buffer_line_buffer_inflected);
+}
+
+
+/**
+ * Tries to find something in the dictionary that match both text content and
+ * given pattern. This version of the function handles the all languages but Arabic.
+ */
+void explore_dic_in_morpho_mode_standard_with_token(
+        struct locate_parameters* p,
+        Dictionary* d,
+        int offset,
+        const unichar* current_token,
+        unichar* inflected,
+        int pos_in_current_token,
+        int pos_in_inflected,
+        struct parsing_info* *matches,
+        struct pattern* pattern,
+        int save_dic_entry,
+        unichar* jamo,
+        int pos_in_jamo,
+        Ustring *line_buffer,
+        Ustring* ustr,
+        int base) {
+
+int is_final_state;
+int n_transitions;
+int inf_number;
+int z=save_output(ustr);
+
+offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number);
+
+  if (is_final_state) {
+    //error("\narriba!\n\n\n");
+    /* If this node is final, we get the INF line number */
+    inflected[pos_in_inflected] = '\0';
+    if (pattern == NULL && !save_dic_entry) {
+      /* If any word will do with no entry saving */
+      if (current_token[pos_in_current_token] == '\0') {
+        (*matches) = insert_morphological_match(-1,
+            pos_in_current_token, -1, (*matches), NULL, jamo,
+            pos_in_jamo, &p->al.pa);
+      }
+    } else {
+      /* If we have to check the pattern */
+
+
+      Abstract_allocator explore_dic_in_morpho_mode_standard_abstract_allocator=NULL;
+      explore_dic_in_morpho_mode_standard_abstract_allocator=create_abstract_allocator("explore_dic_in_morpho_mode_standard",
+                                                                  AllocatorFreeOnlyAtAllocatorDelete|AllocatorTipGrowingOftenRecycledObject,
+                                                                  0);
+
+
+      struct list_ustring* tmp = d->inf->codes[inf_number];
+      while (tmp != NULL) {
+        /* For each compressed code of the INF line, we save the corresponding
+         * DELAF line in 'info->dlc' */
+        uncompress_entry(inflected, tmp->string, line_buffer);
+        //error("\non decompresse la ligne _%S_\n",line_buffer->str);
+        struct dela_entry* dela_entry = tokenize_DELAF_line_opt(line_buffer->str, explore_dic_in_morpho_mode_standard_abstract_allocator);
+        if (dela_entry != NULL
+            && (pattern == NULL
+                || is_entry_compatible_with_pattern(dela_entry,
+                    pattern))) {
+          //error("et ca matche!!\n");
+          if (current_token[pos_in_current_token] == '\0') {
+          (*matches) = insert_morphological_match(-1,
+              pos_in_current_token, -1, (*matches),
+              save_dic_entry ? dela_entry : NULL, jamo,
+              pos_in_jamo, &p->al.pa);
+          }
+        }
+        free_dela_entry(dela_entry, explore_dic_in_morpho_mode_standard_abstract_allocator);
+        tmp = tmp->next;
+      }
+      close_abstract_allocator(explore_dic_in_morpho_mode_standard_abstract_allocator);
+    }
+    // Once we have finished to deal with the current final dictionary node,
+    // we go on because we may match a longer word
+    base=ustr->len;
+  }
+
+  // explore all others reachable states
+  // i.e. going on with the next letter
+  // i.e  examine each transition that goes out from the node
+  unichar c;
+  int adr;
+  for (int i = 0; i < n_transitions; ++i) {
+    offset=read_dictionary_transition(d,offset,&c,&adr,ustr);
+    if (is_equal_or_uppercase(c, current_token[pos_in_current_token], p->alphabet)) {
+      // If the transition's letter is case compatible with the current letter
+      // of the word to analyze, copy it in inflected and follow it
+      inflected[pos_in_inflected] = c;
+      explore_dic_in_morpho_mode_standard_with_token(p, d, adr,
+          current_token, inflected, pos_in_current_token + 1,
+          pos_in_inflected + 1, matches, pattern,
+          save_dic_entry, jamo, pos_in_jamo, line_buffer, ustr, base);
+    }
+    restore_output(z,ustr);
+  }
+}
+
+/**
+ * This function tries to find something in p's morphological dictionary that
+ * matches the given token and pattern. If 'pattern' is NULL, anything found
+ * in the dictionary will do. It is used to represent the <DIC> pattern.
+ */
+void explore_dic_in_morpho_mode_with_token(
+        struct locate_parameters* p,
+        const unichar* token,
+        int pos_in_token,
+        struct parsing_info* *matches,
+        struct pattern* pattern,
+        int save_dic_entry,
+        unichar* jamo,
+        int pos_in_jamo) {
+  unichar* buffer_line_buffer_inflected;
+  buffer_line_buffer_inflected = (unichar*) malloc(sizeof(unichar) * (4096
+      + DIC_LINE_SIZE));
+  if (buffer_line_buffer_inflected == NULL) {
+    fatal_alloc_error("explore_dic_in_morpho_mode");
+  }
+  unichar* inflected = buffer_line_buffer_inflected;
+  Ustring* line_buffer=new_Ustring(4096);
+  Ustring* ustr=new_Ustring();
+  for (int i = 0; i < p->n_morpho_dics; i++) {
+    if (p->morpho_dic[i] != NULL) {
+      /* Can't match anything in an empty dictionary */
+      if (p->arabic.rules_enabled) {
+// TODO(martinec) Complete the arabic implementation
+//        explore_dic_in_morpho_mode_arabic_with_token(p, p->morpho_dic[i],
+//            p->morpho_dic[i]->initial_state_offset,
+//            token,
+//            inflected, pos_in_token, 0, pos, matches, pattern,
+//            save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0', ustr,0);
+      } else {
+        explore_dic_in_morpho_mode_standard_with_token(
+            p, p->morpho_dic[i],
+            p->morpho_dic[i]->initial_state_offset,
+            token,
+            inflected,
+            pos_in_token,
+            0,
+            matches,
+            pattern,
+            save_dic_entry,
+            jamo,
+            pos_in_jamo,
+            line_buffer,
+            ustr,
+            0);
+      }
+    }
+  }
+  free_Ustring(ustr);
+  free_Ustring(line_buffer);
+  free(buffer_line_buffer_inflected);
 }
 
 } // namespace unitex

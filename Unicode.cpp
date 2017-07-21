@@ -31,6 +31,8 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+#define UNITEX_USE_BASE_UNICODE 1
+
 namespace unitex {
 
 
@@ -58,8 +60,10 @@ namespace unitex {
 #define CASE_CONVERSION_BY_TAB_LOWER 1
 #endif
 
+#if !UNITEX_USE(BASE_UNICODE)
 /* This array is a bit array used to define characters that are letters */
 static unsigned char tab_is_letter[8192];
+#endif
 
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 static unichar upperChar[0x10000];
@@ -1481,6 +1485,7 @@ return i;
   */
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 #define GetUtf8Size(ch)  \
         (((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? 1 : \
         (((((unsigned char)(ch)) & ((unsigned char)0xe0))==((unsigned char)0xc0)) ? 2 : \
@@ -1497,6 +1502,10 @@ return i;
         (((((unsigned char)(ch)) & ((unsigned char)0xfc))==((unsigned char)0xf8)) ? ((unsigned char)0x03) : \
         (((((unsigned char)(ch)) & ((unsigned char)0xfe))==((unsigned char)0xfc)) ? ((unsigned char)0x01) : 0))))))
 
+#else
+#define GetUtf8Size(c) kUTF8ByteInfo[kUTF8ByteInfoIndex[static_cast<uint8_t>(c)]].width
+#define GetUtf8Mask(c) kUTF8ByteInfo[kUTF8ByteInfoIndex[static_cast<uint8_t>(c)]].mask
+#endif
 
 #define BUFFER_IN_CACHE_SIZE (0x100)
 
@@ -1678,7 +1687,8 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                  {
                     unichar c;
                           unsigned char ch=tab_in[i];
-                          int nbbyte=GetUtf8Size(ch);
+                          int index=kUTF8ByteInfoIndex[static_cast<uint8_t>(ch)];
+                          int nbbyte=kUTF8ByteInfo[index].width;
 
                           if (i+nbbyte > (int)read_binary_in_file)
                           {
@@ -1689,7 +1699,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                               break;
                           }
 
-                          c=((unichar)ch) & GetUtf8Mask(ch);
+                          c=((unichar)ch) & kUTF8ByteInfo[index].mask;
                           int nbbyte_loop=nbbyte;
 
                           if (nbbyte_loop>0) {
@@ -1994,7 +2004,8 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
                 {
                     unichar c;
                     unsigned char ch = tab_in[i];
-                    int nbbyte = GetUtf8Size(ch);
+					int index=kUTF8ByteInfoIndex[static_cast<uint8_t>(ch)];
+					int nbbyte=kUTF8ByteInfo[index].width;
 
                     if (i + nbbyte >(int)read_binary_in_file)
                     {
@@ -2005,7 +2016,7 @@ int u_fget_unichars_raw(Encoding encoding, unichar* buffer, int size, ABSTRACTFI
                         break;
                     }
 
-                    c = ((unichar)ch) & GetUtf8Mask(ch);
+					c=((unichar)ch) & kUTF8ByteInfo[index].mask;
                     int nbbyte_loop = nbbyte;
 
                     if (nbbyte_loop>0) {
@@ -2800,9 +2811,13 @@ return (c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F');
 /**
  * Returns a non-zero value if 'c' is a separator; 0 otherwise.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int is_separator(unichar c) {
 return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
 }
+#else
+#define is_separator(c) u_has_flag_space(c)
+#endif
 
 
 /**
@@ -3291,12 +3306,19 @@ while (s[i]!='\0') {
 /**
  * Unicode version of strlen.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 unsigned int u_strlen(const unichar* s) {
 register int i=0;
 while (s[i++]) {}
 return (i-1);
 }
-
+#else
+size_t u_strlen(const unichar* s) {
+  register const unichar *it;
+  for (it = s; *it; ++it) {}
+  return (it - s);
+}
+#endif
 
 /**
 * Unicode version of strlen, count the number of char after LF to CRLF conversion
@@ -3313,6 +3335,7 @@ unsigned int u_strlenWithConvLFtoCRLF(const unichar* s, int convLFtoCRLF) {
         i++;
     }
 }
+
 
 
 /**
@@ -3556,6 +3579,7 @@ if ((a!=NULL) && (b!=NULL)) {
 /**
  * Unicode version of strcmp that tolerates NULL strings and ignores case.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp_ignore_case(const unichar* a,const unichar* b) {
 if ((a!=NULL) && (b!=NULL)) {
     const unichar *a_p=a;
@@ -3602,7 +3626,7 @@ if ((a!=NULL) && (b!=NULL)) {
   return -1;
   }
 }
-
+#endif
 
 /**
  * unicode version of strncmp
@@ -4790,9 +4814,11 @@ return code;
 //
 // unicode version of isdigit
 //
+#if !UNITEX_USE(BASE_UNICODE)
 int u_is_digit(unichar c) {
 return (c>='0' && c<='9');
 }
+#endif
 
 
 //
@@ -5108,7 +5134,8 @@ return (c>=0x1F00 && c<=0x1F15) || (c>=0x1F18 && c<=0x1F1D) ||      //$CD:200211
 // returns true if c is a letter in a naive way
 //
 int u_is_letter_internal(unichar c) {
-return u_is_basic_latin_letter(c)
+#if !UNITEX_USE(BASE_UNICODE)
+  return u_is_basic_latin_letter(c)
        || u_is_latin1_supplement_letter(c)
        || u_is_latin_extendedA_letter(c)
        || u_is_latin_extendedB_letter(c)
@@ -5137,9 +5164,13 @@ return u_is_basic_latin_letter(c)
        || u_is_CJK_compatibility_ideograph(c)
 //---------End of Hyungue's inserts--------
        ;
+#else
+  return u_has_flag_letter(c);
+#endif
 }
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * Initializes the array : bit i = 1 if i is a letter, 0 otherwise.
  */
@@ -5172,12 +5203,16 @@ for (i=0;i<=0xFFFF;i++) {
 
 return 1;
 }
+#endif
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 // this line is used to initialize automatically the unicode table
 char foo=(char)(init_unicode_table()/*+make_CR()*/);
+#endif
 
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * Returns a non zero value if 'c' is a letter looking up at the unicode table;
  * 0 otherwise.
@@ -5186,6 +5221,7 @@ int u_is_letter(unichar c) {
 return (int)(tab_is_letter[c/8] & (1<<(c%8)));
 }
 
+#endif
 
 /**
  * This function returns 1 if the given string is only made of letters.
@@ -5292,6 +5328,7 @@ Since Unicode code points > 0xffff can't be used with Unitex,
 they are skipped from the table.
 *************************************************************/
 
+#if !UNITEX_USE(BASE_UNICODE)
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 static unichar u_toupper_switch (unichar c) {
 #else
@@ -7966,6 +8003,7 @@ unichar u_deaccentuate (unichar c) {
   return r;
 }
 
+#endif
 
 #ifdef CASE_CONVERSION_BY_TAB_UPPER
 unichar u_toupper (unichar c) {

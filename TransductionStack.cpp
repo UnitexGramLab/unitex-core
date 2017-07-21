@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
  *
  */
-
+#include <lua.hpp>
 #include <stdio.h>
 #include "TransductionStack.h"
 #include "Error.h"
@@ -28,7 +28,7 @@
 #include "OutputTransductionVariables.h"
 #include "VariableUtils.h"
 #include "DebugMode.h"
-#include "Stack_unichar.h"
+//#include "Stack_unichar.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -37,6 +37,7 @@
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 10000;
+//static const char* UNITEX_SCRIPT_PATH = "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 
 /**
  * This function returns a non zero value if c can be a part of a variable name;
@@ -81,6 +82,19 @@ for (i=0;s[i]!='\0';i++) {
 }
 }
 
+/**
+ * Pushes the given string to the output, if not NULL.
+ */
+void push_input_string(struct stack_unichar* stack,const char* s,int protect_dic_chars) {
+int i;
+if (s==NULL) {
+   return;
+}
+for (i=0;s[i]!='\0';i++) {
+    push_input_char(stack,s[i],protect_dic_chars);
+}
+}
+
 
 /**
  * Pushes the given string to the output, if not NULL, in the limit of 'length' chars.
@@ -103,6 +117,48 @@ void push_output_string(struct stack_unichar* stack,unichar* s) {
 push_input_string(stack,s,0);
 }
 
+/**
+ * Pushes the given string to the output, if not NULL.
+ */
+void push_output_string(struct stack_unichar* stack,const char* s) {
+push_input_string(stack,s,0);
+}
+
+//// A RAII class to make sure lua state gets closed when exceptions are thrown
+//class LuaClose {
+//    lua_State* L;
+//public:
+//    LuaClose(lua_State* state) : L(state) {}
+//    ~LuaClose() {
+//        lua_close(L);
+//    }
+//};
+
+
+
+// A RAII class to make sure stack_unichar gets closed when exceptions are thrown
+class StackClose {
+    struct stack_unichar* stack;
+public:
+    StackClose(struct stack_unichar* stack) : stack(stack) {}
+    ~StackClose() {
+      free_stack_unichar(stack);
+    }
+};
+
+//// traceback function taken straight out of luajit.c
+//static int traceback(lua_State *L)
+//{
+//    if (!lua_isstring(L, 1)) { /* Non-string error object? Try metamethod. */
+//        if (lua_isnoneornil(L, 1) ||
+//                !luaL_callmeta(L, 1, "__tostring") ||
+//                !lua_isstring(L, -1))
+//            return 1;  /* Return non-string error object. */
+//        lua_remove(L, 1);  /* Replace object by result of __tostring metamethod. */
+//    }
+//    luaL_traceback(L, L, lua_tostring(L, 1), 1);
+//    return 1;
+//}
 
 /**
  * This function processes the given output string.
@@ -125,6 +181,15 @@ if (s==NULL) {
    /* We do nothing if there is no output */
    return 1;
 }
+
+//u_printf("######/[%S]\n",s);
+unichar function_name[MAX_TRANSDUCTION_VAR_LENGTH]   = {0};
+unichar variable_name[MAX_TRANSDUCTION_VAR_LENGTH]   = {0};
+char char_function_name[MAX_TRANSDUCTION_VAR_LENGTH] = {0};
+char char_parameter_stack[4096*6] = {0};
+/* This is the stack used to process outputs */
+struct stack_unichar* parameter_stack = new_stack_unichar(4096);
+StackClose stack_closer(parameter_stack);
 
 for (;;) {
     /* First, we push all chars before '\0' or '$' */
@@ -152,8 +217,355 @@ for (;;) {
     }
     /* Now we are sure to have s[i1]=='$' */
     {
-      /* Case of a variable name */
-      unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
+/* ************************************************************************** */
+      /* Case of an external script call $@foo()$ */
+      if (s[i1+1]=='@') {
+        int name_length=0;
+        i1 = i1+2 ;
+        function_name[0] = '\0';
+        while (is_variable_char(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
+           function_name[name_length++]=s[i1++];
+        }
+        if (name_length>=MAX_TRANSDUCTION_VAR_LENGTH) {
+           fatal_error("Too long function name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
+        }
+        function_name[name_length]='\0';
+//        u_printf("%S\n",function_name);
+
+        if (s[i1]!='(') {
+          fatal_error("Function error: missing open parenthesis after @%S\n",function_name);
+        }
+
+        i1++;
+
+//        // create a new lua environment
+//        lua_State* L = luaL_newstate();
+//
+//        // make sure it gets closed even when exception is thrown
+//        LuaClose closer(L);
+//
+//        // load the standard library
+//        luaL_openlibs(L);
+//
+//        // add the traceback function to the stack
+//        lua_pushcfunction(L, traceback);
+
+        // load the file, compile it as a function,
+        // and push the compiled function onto the lua stack
+        char_function_name[0] = '\0';
+//        char char_script_name[MAX_TRANSDUCTION_VAR_LENGTH] = {};
+//        char char_script_file[MAX_TRANSDUCTION_VAR_LENGTH] = {};
+
+        u_encode_utf8(function_name,char_function_name);
+//        strcat(char_script_name,char_function_name);
+//        strcat(char_script_name,".upp");
+//        strcat(char_script_file,UNITEX_SCRIPT_PATH);
+//        strcat(char_script_file,char_script_name);
+
+//        //  priming run: loads and runs script's main function, i.e. loadfile + lua_pcall
+//        if (luaL_dofile(L, char_script_file)) {
+//            fatal_error("Error calling @%S: %s\n",function_name,lua_tostring(L, -1));
+//        }
+//
+//        //  tell what function to run
+//        lua_getglobal(L, char_function_name);
+//        if(!lua_isfunction(L,-1)){
+//          lua_pop(L,1);
+//          fatal_error("Error loading @%S, function doesn't exists\n",function_name);
+//        }
+
+        p->elg->load(char_function_name);
+
+        variable_name[0] = '\0';
+        int16_t variable_lenght = 0;
+
+        // reset parameter_stack
+        int16_t script_params_count = 0;
+        empty(parameter_stack);
+        char_parameter_stack[0] = '\0';
+
+        bool   is_null_param  = false;
+
+        struct transduction_variable* v=NULL;
+
+
+        // Save function params
+        read_script_param:
+
+        /* First, we push all chars before '\0' or '$' or ',' or ')'*/
+
+//        for (int ww=0; ww < p->buffer_size;++ww) {
+//          u_printf("%S\n",p->tokens->value[p->buffer[ww]]);
+//        }
+
+        char_to_push_count=0;
+        while ((s[i1+char_to_push_count]!='\0') && (s[i1+char_to_push_count]!='$')
+            && (s[i1+char_to_push_count]!=')')  && (s[i1+char_to_push_count]!=',')) {
+            char_to_push_count++;
+        }
+
+        switch(s[i1]) {
+          case '$':
+            ++i1;
+            switch(s[i1]) {
+              case '$':
+                push_array(parameter_stack,&s[i1],1);
+              break;
+              case '{':
+                ++i1;
+                variable_lenght = 0;
+                while (is_variable_char(s[i1]) && variable_lenght<MAX_TRANSDUCTION_VAR_LENGTH) {
+                  variable_name[variable_lenght++]=s[i1++];
+                }
+                if (variable_lenght >= MAX_TRANSDUCTION_VAR_LENGTH) {
+                   fatal_error("Too long variable name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
+                }
+                if(s[i1] != '}') {
+                  fatal_error("Scripting variable %S without closing braces calling @%S\n",variable_name,function_name);
+                }
+                ++i1;
+                variable_name[variable_lenght]='\0';
+
+                /* ************************************************************************** */
+                /* Case of a script variable like ${a} that can be either a normal one or an output one */
+                v=get_transduction_variable(p->input_variables,variable_name);
+                if (v==NULL) {
+                  /* Not a normal one ? Maybe an output one */
+                  const Ustring* output=get_output_variable(p->output_variables,variable_name);
+                  // output variable doesn't exist
+                  if (output==NULL) {
+//                    switch (p->variable_error_policy) {
+//                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",variable_name); break;
+//                    case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
+//                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+//                    }
+                    // 01.08.15 : to handle nil params
+                    // if the referenced variable is part of other arguments
+                    // e.g func(a,b${c},d)
+                    if(!is_empty(parameter_stack)) {
+                      push_output_string(parameter_stack,"");
+                      is_null_param = false;
+                    } else {
+                      // isolated parameter treat as nil
+                      is_null_param = true;
+                    }
+                  } else {
+                    // 10.09.16 : fix a bug when dealing with a null parameter
+                    // after an argument
+                    // e.g func(a,${b},c) with b => nil
+                    if(output->str && (*output->str) != U_NULL ) {
+                      push_output_string(parameter_stack,output->str);
+                      is_null_param = false;
+                    } else {
+                      // isolated parameter treat as nil
+                      is_null_param = true;
+                    }
+                  }
+
+                } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
+                  // 01.08.15 : to handle nil params
+//                   switch (p->variable_error_policy) {
+//                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",variable_name); break;
+//                      case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
+//                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+//                   }
+                  // 01.08.15 : to handle nil params
+                  // if the referenced variable is part of other arguments
+                  // e.g func(a,b${c},d)
+                  if(!is_empty(parameter_stack)) {
+                    push_output_string(parameter_stack,"");
+                    is_null_param = false;
+                  } else {
+                    is_null_param = true;
+                  }
+                } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
+                   switch (p->variable_error_policy) {
+                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",variable_name); break;
+                      case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                   }
+                } else if (v->start_in_tokens>v->end_in_tokens
+                    || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
+                   switch (p->variable_error_policy) {
+                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",variable_name); break;
+                      case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                   }
+                } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
+                   if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {
+                     error("Output warning: end variable position after end of text for variable $%S$\n",variable_name);
+                     /*error("start=%d  end=%d   origin=%d   buffer size=%d\n",v->start_in_tokens,v->end_in_tokens,p->current_origin,p->buffer_size);
+                     for (int i=p->current_origin;i<p->buffer_size;i++) {
+                       error("%S",p->tokens->value[p->buffer[i]]);
+                     }
+                     error("\n");*/
+                    }
+                   switch (p->variable_error_policy) {
+                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",variable_name); break;
+                      case IGNORE_VARIABLE_ERRORS:  /* same as BACKTRACK_ON_VARIABLE_ERRORS */
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                   }
+                } else {
+                  /* If the normal variable definition is correct */
+                  /* Case 1: start and end in the same token*/
+                  if (v->start_in_tokens==v->end_in_tokens-1) {
+                    unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+                    int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+                    for (int k=v->start_in_chars;k<=last;k++) {
+                      push_input_char(parameter_stack,tok[k],p->protect_dic_chars);
+                    }
+                  } else if (v->start_in_tokens==v->end_in_tokens) {
+                    /* If the variable is empty, do nothing */
+                  } else {
+                    /* Case 2: first we deal with first token */
+                    unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
+                    push_input_string(parameter_stack,tok+v->start_in_chars,p->protect_dic_chars);
+                    /* Then we copy all tokens until the last one */
+                      for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
+                        push_input_string(parameter_stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
+                      }
+
+                      /* Finally, we copy the last token */
+
+                      if ((v->end_in_tokens-1+p->current_origin) < 0) {
+                        error("v->end_in_tokens-1+p->current_origin is below 0\n");
+                        error("start=%d  end=%d\n",v->start_in_tokens,v->end_in_tokens);
+                      }
+                      else {
+                        tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
+                        int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
+                        for (int k=0;k<=last;k++) {
+                          push_input_char(parameter_stack,tok[k],p->protect_dic_chars);
+                        }
+                      }
+                  }
+                }
+                /* ************************************************************************** */
+              break;
+              default:
+               fatal_error("Output error: bad parameter calling @%S\n",function_name);
+               break;
+            }
+            break;
+          case ',':
+            // 1O.09.16
+            // Fix to allow empty arguments f(a,,b)
+            if(is_empty(parameter_stack)) {
+              is_null_param = true;
+            }
+          case ')':
+            // case of an defined variable
+            if(!is_empty(parameter_stack)) {
+              // TODO(martinec) handle nil(pushnil), number (pushnumber),
+              // integer(lua_pushinteger), string (lua_pushstring)
+              parameter_stack->stack[parameter_stack->stack_pointer+1]='\0';
+              // 12.09.16 add u_encode_utf8 to allow send unicode chars
+              int char_parameter_stack_length = u_encode_utf8(parameter_stack->stack,char_parameter_stack);
+//              u_printf("%s\n",char_parameter_stack);
+//              lua_pushlstring(L,char_parameter_stack,char_parameter_stack_length);
+              p->elg->push(char_parameter_stack,char_parameter_stack_length);
+              empty(parameter_stack);
+              char_parameter_stack[0] = '\0';
+              ++script_params_count;
+            } else  if(is_null_param) {
+//              lua_pushnil(L);
+              p->elg->push();
+              is_null_param = false;
+              ++script_params_count;
+            }
+
+            if (s[i1]==')') {
+              ++i1;
+              goto script_call;
+            }
+
+            ++i1;
+            break;
+          case '\0':
+            fatal_error("Output error: missing closing parenthesis after script @%S call \n",function_name);
+            break;
+          default:
+            if (char_to_push_count!=0) {
+                push_array(parameter_stack,&s[i1],char_to_push_count);
+                i1+=char_to_push_count;
+            }
+            break;
+        }
+
+        goto read_script_param;
+        script_call:
+
+        // 17.06.16: send locate params
+//        lua_pushlightuserdata(L,p);
+        p->elg->push(p);
+//        lua_setglobal(L, "u_params");
+        p->elg->setglobal(ELG_GLOBAL_LOCATE_PARAMS);
+//        ++script_params_count;
+
+        if(!p->elg->call(char_function_name,script_params_count,stack)) {
+          stack->stack_pointer=old_stack_pointer;
+          return 0;
+        }
+
+//        /* do the call (script_params_count arguments, 1 result (boolean or string)) */
+//        if (lua_pcall(L, script_params_count, 1, 0) != 0) {
+//            fatal_error("Error calling @%S: %s\n",function_name,lua_tostring(L, -1));
+//        }
+//
+//        /* retrieve boolean or string result */
+//        if (!(lua_type(L, -1) == LUA_TBOOLEAN ||
+//              lua_type(L, -1) == LUA_TSTRING  ||
+//              lua_type(L, -1) == LUA_TNUMBER)) {
+//          fatal_error("Error calling @%S, function  must return a boolean, a number, or a string value\n",function_name,lua_tostring(L, -1));
+//        }
+//
+//        if(lua_type(L, -1) == LUA_TBOOLEAN) {
+//          bool continue_to_explore = lua_toboolean(L, -1);
+//
+//          /* Remove the boolean returned from the top of the stack. */
+//          lua_pop(L, 1);
+//
+//          if(!continue_to_explore) {
+//             stack->stack_pointer=old_stack_pointer;
+//             return 0;
+//           } else {
+//             continue;
+//           }
+//        }
+//
+//        if (lua_type(L, -1) != LUA_TSTRING &&
+//            lua_type(L, -1) != LUA_TNUMBER) {
+//          fatal_error("Error calling @%S, function  must return a number or a string\n",function_name,lua_tostring(L, -1));
+//        }
+//
+//        if (lua_type(L, -1) == LUA_TSTRING) {
+//          push_output_string(stack,lua_tostring(L, -1));
+//        }else{
+//          // convert the number to
+//          char buffer[LUAI_MAXNUMBER2STR];
+//          lua_number2str(buffer, lua_tonumber(L, -1));
+//          push_output_string(stack,buffer);
+//        }
+//
+//
+//        /* Remove the returned value from the top of the stack. */
+//        lua_pop(L, 1);
+
+
+        // Closing function
+        if(s[i1]!='$') {
+          fatal_error("Output error: missing closing $ after closing parentheses ) for function @%S\n",function_name); break;
+        }
+
+        ++i1;
+        continue;
+        }
+
+        //unichar parameter[MAX_TRANSDUCTION_VAR_LENGTH];
+//      push_array(stack,&s[i1],parameter_length);
+//      i1+=parameter_length;
+
+/* ************************************************************************** */
       int l=0;
       if (s[i1+1]=='{') {
           /* If we have a weight of the form ${n}$ */
@@ -165,10 +577,12 @@ for (;;) {
               fatal_error("Output error: invalid weight definition %S\n",s+i1);
           }
           i1+=l+2;
-          p->weight=weight;
+	  p->weight= weight; //p->weight == - 1 ? weight : p->weight + weight;
           continue;
       }
       i1++;
+      /* Case of a variable name */
+      unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
       while (is_variable_char(s[i1]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
          name[l++]=s[i1++];
       }
@@ -896,6 +1310,7 @@ for (;;) {
       }
    }
 }
+return 0;
 }
 
 
