@@ -56,6 +56,10 @@
 #define ELG_GLOBAL_CONSTANT             "uConstant"
 #define ELG_GLOBAL_STRING               "uString"
 /* ************************************************************************** */
+#define ELG_GLOBAL_ENVIRONMENT          "uEnvironment"
+#define ELG_ENVIRONMENT_LOADED          "uLoaded"
+#define ELG_ENVIRONMENT_CALLED          "uCalled"
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
@@ -74,10 +78,10 @@ struct locate_parameters* get_locate_params(lua_State * L) {
   return p;
 }
 
-void set_locate_params(lua_State * L, struct locate_parameters* p) {
-  lua_pushlightuserdata(L, p);
-  lua_setglobal(L, ELG_GLOBAL_LOCATE_PARAMS);
-}
+//void set_locate_params(lua_State * L, struct locate_parameters* p) {
+//  lua_pushlightuserdata(L, p);
+//  lua_setglobal(L, ELG_GLOBAL_LOCATE_PARAMS);
+//}
 
 /* ************************************************************************** */
 }    // namespace elg::{unnamed}

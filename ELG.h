@@ -43,7 +43,7 @@ static const char* UNITEX_SCRIPT_PATH =
 class vm {
  public:
   vm(void)
-      : L(NULL) {
+      : L(NULL), env(0) {
   }
 
   virtual ~vm(void) {
@@ -156,11 +156,31 @@ class vm {
       lua_setglobal(L, ELG_GLOBAL_MATCH);
 
       //uString
-      lua_newtable(L);
       // [-0, +1] > (+1)
+      lua_newtable(L);
       set("format", elg::string::format);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_STRING);
+
+      // uEnvironment
+      // [-0, +1] > (+1)
+      lua_newtable(L);
+      unitex::elg::stack_dump(L,"lua_getfield");
+      // uLoaded
+      // [-0, +1] > (+2)
+      lua_newtable(L);
+      // [-1, +0] > (+1)
+      lua_setfield(L, -2,  ELG_ENVIRONMENT_LOADED);
+      unitex::elg::stack_dump(L,"lua_getfield");
+      // uCalled
+      // [-0, +1] > (+2)
+      lua_newtable(L);
+      // [-1, +0] > (+1)
+      lua_setfield(L, -2,  ELG_ENVIRONMENT_CALLED);
+      unitex::elg::stack_dump(L,"lua_getfield");
+      // [-1, +0] > (+0)
+      lua_setglobal(L, ELG_GLOBAL_ENVIRONMENT);
+      unitex::elg::stack_dump(L,"lua_getfield");
 
       //uMisc
       // isWindows
@@ -177,13 +197,53 @@ class vm {
 
   void stop() {
     if (is_running()) {
+      lua_gc(L, LUA_GCCOLLECT, 0);
       lua_close(L);
       L = NULL;
     }
   }
 
+  void clean(int top = 0) {
+    int n = lua_gettop(L);
+    if (top >= 0) {
+      lua_pop(L, n - top);
+    } else {
+      lua_pop(L, n + top);
+    }
+  }
+
   bool is_running() {
     return L;
+  }
+
+  // [-0, +0]
+  void add_environment(const char* environment_name) {
+    // save environment name
+    // [-0, +1] > (+2)
+    lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // the ELG_GLOBAL_ENVIRONMENT table should be at the top of the stack
+    luaL_checktype(L, -1, LUA_TTABLE);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // get ELG_ENVIRONMENT_LOADED
+    lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // put the key
+    lua_pushinteger(L,++env);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // put the environment name
+    lua_pushstring(L, environment_name);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // set uEnvironment.uLoaded[i] = environment_name
+    lua_settable(L,-3);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // [n-1, 0] > (+1)
+    clean(-1);
+  }
+
+  bool unload(const char* function_name) {
+//    luaL_unref(L, LUA_REGISTRYINDEX, 0);
+    return true;
   }
 
 //     bool load(const char* function_name) {
@@ -289,6 +349,8 @@ class vm {
 
       // do t[k] = v, where t is the value at index -2 in the stack
       // and v is the value at the top of the stack, i.e.
+      // __index is a versatile metamethod that allows us to use _G as
+      // a "fallback" table if a key in the environment table doesn't exist
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "__index");
       unitex::elg::stack_dump(L,"lua_setfield");
@@ -296,15 +358,18 @@ class vm {
       // pops the table from the stack and sets it as the new metatable
       // for the value at the index -2
       // now the global table is the metatable
+      // setmetatable({}, {__index=_G})
       // [-1, +0] > (+2)
       lua_setmetatable(L, -2);
       unitex::elg::stack_dump(L,"lua_setmetatable");
 
       // [-0, +1] > (+3)
+      // duplicate environment table
       lua_pushvalue(L, -1);
       unitex::elg::stack_dump(L,"lua_setmetatable");
 
       // [-0, +1] > (+4)
+      // duplicate environment table
       lua_pushvalue(L, -1);
       unitex::elg::stack_dump(L,"lua_setmetatable");
 
@@ -369,7 +434,9 @@ class vm {
         lua_pop(L, 1); // pop the function name
       }
 
-      unitex::elg::stack_dump(L,"lua_getfield");
+      // push ...
+      add_environment(environment_name);
+
     }  // if (!lua_istable(L,-1))
 
     // using the script environment
@@ -563,6 +630,7 @@ class vm {
 
  protected:
   lua_State* L;
+  int env;
 };
 /* ************************************************************************** */
 }      // namespace unitex
