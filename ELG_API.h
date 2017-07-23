@@ -45,8 +45,9 @@
 #include "TransductionStack.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
-#define ELG_FUNCTION_LOAD_NAME          "load"
-#define ELG_FUNCTION_UNLOAD_NAME        "unload"
+#define ELG_FUNCTION_ON_LOAD_NAME       "onLoad"
+#define ELG_FUNCTION_ON_UNLOAD_NAME     "onUnload"
+#define ELG_FUNCTION_ON_FAIL_NAME       "onFail"
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
 #define ELG_GLOBAL_TOKEN                "uToken"
@@ -71,6 +72,11 @@ struct locate_parameters* get_locate_params(lua_State * L) {
   lua_pop(L, 1);
 
   return p;
+}
+
+void set_locate_params(lua_State * L, struct locate_parameters* p) {
+  lua_pushlightuserdata(L, p);
+  lua_setglobal(L, ELG_GLOBAL_LOCATE_PARAMS);
 }
 
 /* ************************************************************************** */

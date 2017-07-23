@@ -36,6 +36,8 @@
 // Project's .h files. (order the includes alphabetically)
 #include "uString/uString.h"
 /* ************************************************************************** */
+#define ELG_LIBRARY_NAME  "elg"
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
@@ -44,7 +46,17 @@ namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
 int openlibs(lua_State *L) {
+  // create the module table
+  // [-0, +1] > (+1)
+  lua_newtable(L);
+  unitex::elg::stack_dump(L,"lua_getfield");
+  // [-0+n, +1+n] > (+1)
+  // ustring module
   ustring::luaopen_ustring(L);
+  unitex::elg::stack_dump(L,"lua_getfield");
+  // [-1, +0] > (+0)
+  lua_setglobal(L, ELG_LIBRARY_NAME);
+  unitex::elg::stack_dump(L,"lua_getfield");
   return 1;
 }
 /* ************************************************************************** */

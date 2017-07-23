@@ -34,6 +34,7 @@
 #include <lua.hpp>
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
+#include "ELG_API.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -62,7 +63,15 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 };
 /* ************************************************************************** */
 int luaopen_ustring(lua_State *L) {
-  luaL_register(L, "ustring", lua_lib);
+  // create the module table
+  lua_newtable(L);
+  unitex::elg::stack_dump(L,"lua_getfield");
+  // register functions into the module table
+  luaL_register(L, NULL, lua_lib);
+  unitex::elg::stack_dump(L,"lua_getfield");
+  // add functions table to the module
+  lua_setfield(L, -2,  "ustring");
+  unitex::elg::stack_dump(L,"lua_getfield");
   return 1;
 }
 /* ************************************************************************** */

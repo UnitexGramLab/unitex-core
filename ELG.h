@@ -33,7 +33,7 @@
 #include "ELG_API.h"
 #include "ELGLib/debug.h"
 // commented on 23/07/17. Do not preserve stack
-//#include "ELGLib/ELGLib.h"
+#include "ELGLib/ELGLib.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -72,7 +72,7 @@ class vm {
   // [-0, +0] > (+0)
   // create a new Lua environment
   // load the standard library
-  // load the elg libraries
+  // load the elg library
   // setup the panic handler
   // run the initialization script
   // register custom constants and functions
@@ -95,11 +95,12 @@ class vm {
       // load the standard library
       // [-0, +0] > (+0)
       luaL_openlibs(L);
+      unitex::elg::stack_dump(L,"lua_getfield");
 
-      // load the elg libraries
+      // load the elg library
       // [-0, +0]
-      // commented on 23/07/17. Do not preserve stack
-      // elg::openlibs(L);
+      elg::openlibs(L);
+      unitex::elg::stack_dump(L,"lua_getfield");
 
       // setup the panic handler
       // [-0, +0] > (+0)
@@ -213,7 +214,7 @@ class vm {
   // in:             (+0)
   // out: [-0, +2] > (+2)
   bool load(const char* function_name) {
-    //>>> unitex::elg::stack_dump(L);
+    unitex::elg::stack_dump(L);
 
     // prepare script environment_name
     char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
@@ -232,7 +233,7 @@ class vm {
     // "foo" where foo is the environment name
     // [-0, +1] > (+1)
     lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-    //>>> unitex::elg::stack_dump(L,"lua_getfield");
+    unitex::elg::stack_dump(L,"lua_getfield");
 
     // if the retrieved value is not the script environment, then
     // load once the file with the extended function implementations
@@ -241,7 +242,7 @@ class vm {
       // of the stack
       // [-1, +0] > (+0)
       lua_pop(L, 1);
-      //>>> unitex::elg::stack_dump(L,"lua_pop");
+      unitex::elg::stack_dump(L,"lua_pop");
 
       // prepare script_name and script_file variables
       char script_name[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
@@ -264,19 +265,19 @@ class vm {
                     lua_tostring(L, -1));
       }
 
-      //>>> unitex::elg::stack_dump(L,"luaL_loadfile");
+      unitex::elg::stack_dump(L,"luaL_loadfile");
       // create a new empty table and pushes it onto the stack
       // we will use this table to holds the environment of the script
       // [-0, +1] > (+2)
       lua_newtable(L);
-      //>>> unitex::elg::stack_dump(L,"lua_newtable");
+      unitex::elg::stack_dump(L,"lua_newtable");
 
       // create another new empty table and pushes it onto the stack
       // we will use this table to holds the global table and use then
       // as fallback
       // [-0, +1] > (+3)
       lua_newtable(L);
-      //>>> unitex::elg::stack_dump(L,"lua_newtable");
+      unitex::elg::stack_dump(L,"lua_newtable");
 
       // now we try to inherit the global table
 
@@ -284,20 +285,20 @@ class vm {
       // which holds all the global variables defined on L
       // [-0, +1] > (+4)
       lua_getglobal(L, "_G");
-      //>>> unitex::elg::stack_dump(L,"lua_getglobal");
+      unitex::elg::stack_dump(L,"lua_getglobal");
 
       // do t[k] = v, where t is the value at index -2 in the stack
       // and v is the value at the top of the stack, i.e.
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "__index");
-      //>>> unitex::elg::stack_dump(L,"lua_setfield");
+      unitex::elg::stack_dump(L,"lua_setfield");
 
       // pops the table from the stack and sets it as the new metatable
       // for the value at the index -2
       // now the global table is the metatable
       // [-1, +0] > (+2)
       lua_setmetatable(L, -2);
-      //>>> unitex::elg::stack_dump(L,"lua_setmetatable");
+      unitex::elg::stack_dump(L,"lua_setmetatable");
 
       // [-0, +1] > (+3)
       lua_pushvalue(L, -1);
@@ -311,17 +312,17 @@ class vm {
       // using _S(elf) as key
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "_S");
-
+      unitex::elg::stack_dump(L,"lua_setfield");
       // register the script environment on the registry using the
       // environment_name as key
       // [-1, +0] > (+2)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
-      //>>> unitex::elg::stack_dump(L,"lua_setfield");
+      unitex::elg::stack_dump(L,"lua_setfield");
 
       // retrieve the script environment from the register
       // [-0, +1] > (+2)
       // lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-      //>>> unitex::elg::stack_dump(L,"lua_getfield");
+      unitex::elg::stack_dump(L,"lua_getfield");
 
       // in Lua functions, upvalues are the external local variables that
       // the function uses, and that are consequently included in its closure
@@ -334,7 +335,7 @@ class vm {
                     lua_tostring(L, -1));
       }
 
-      //>>> unitex::elg::stack_dump(L,"lua_setupvalue");
+      unitex::elg::stack_dump(L,"lua_setupvalue");
 
       //  priming run: loads and runs script's main function
       // [-1, +0] > (+0)
@@ -342,23 +343,26 @@ class vm {
         fatal_error("Error calling @%s: %s\n", function_name,
                     lua_tostring(L, -1));
       }
-      //>>> unitex::elg::stack_dump(L,"lua_pcall");
+      unitex::elg::stack_dump(L,"lua_pcall");
 
       // retrieve the script environment from the register
       // [-0, +1] > (+1)
       lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
       unitex::elg::stack_dump(L,"lua_getfield");
 
+      // if there are an onLoad() function, then run it
       // [-0, +1] > (+2)
-      lua_getfield(L, -1, ELG_FUNCTION_LOAD_NAME);
+      lua_getfield(L, -1, ELG_FUNCTION_ON_LOAD_NAME);
       unitex::elg::stack_dump(L,"lua_getfield");
       if( lua_isfunction(L, -1) ) {
+//        push(p);
+//        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
         // [-1, +0] > (+1)
         if (lua_pcall(L, 0, 0, 0) != 0) {
           lua_remove (L, -2); // remove environment
-          //>>> unitex::elg::stack_dump(L);
+          unitex::elg::stack_dump(L);
           fatal_error("Error loading @%s: %s:%s\n", function_name,
-                      ELG_FUNCTION_LOAD_NAME,
+                      ELG_FUNCTION_ON_LOAD_NAME,
                       lua_tostring(L, -1));
         }
       } else {
@@ -372,7 +376,7 @@ class vm {
     // get the extended function to run
     // [-0, +1] > (+2)
     lua_getfield(L, -1, function_name);
-    //>>> unitex::elg::stack_dump(L,"lua_getfield");
+    unitex::elg::stack_dump(L,"lua_getfield");
     if (!lua_isfunction(L, -1)) {
       lua_pop(L, 2); // pop the environment + returned field
       fatal_error("Error loading @%s, function doesn't exists\n",
@@ -389,7 +393,7 @@ class vm {
   //  0 : step back
   //  1 : step forward
   int call(const char* function_name, int nargs, struct stack_unichar* stack) {
-    //>>> unitex::elg::stack_dump(L);
+    unitex::elg::stack_dump(L);
     int retval = 1;
 
     // do the call (lua_State *L, int nargs, int nresults, int errfunc)
@@ -399,11 +403,11 @@ class vm {
     // [-(n + 1), +1] > (+2) 1:environment, 2:returned value
     if (lua_pcall(L, nargs, 1, 0) != 0) {
       lua_remove (L, -2); // remove environment
-      //>>> unitex::elg::stack_dump(L);
+      unitex::elg::stack_dump(L);
       fatal_error("Error calling @%s: %s\n", function_name,
                   lua_tostring(L, -1));
     }
-    //>>> unitex::elg::stack_dump(L);
+    unitex::elg::stack_dump(L);
     int type = lua_type(L, -1);
 
     // retrieve boolean or string result
@@ -461,7 +465,6 @@ class vm {
 
     // remove the returned value from the top of the stack
     lua_pop(L, 1);
-    //>>> unitex::elg::stack_dump(L);
     unitex::elg::stack_dump(L);
     // remove the environment
     lua_pop(L, 1);
