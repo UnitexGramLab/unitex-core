@@ -98,7 +98,7 @@ void stack_dump(lua_State *L,
 		const char *meta = "(no mt)", *metastr = "(no__tostring)";
 		char *s;
 
-		u_printf("(stack %d/%d %s) ", i, i-top-1, tn);
+		u_printf("\n(stack %d/%d %s) ", i, i-top-1, tn);
 		switch (t)
 		{
 			case LUA_TNIL:
