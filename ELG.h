@@ -107,8 +107,9 @@ class vm {
       lua_atpanic(L, panic);
 
       // add the traceback function to the stack
+      // only Lua 5.1 interpreter ?
       // [-0, +1] > (+1)
-      lua_pushcfunction(L, trace);
+      // lua_pushcfunction(L, trace);
 
       // run the initialization script
       // custom classes are not available right now from here
@@ -242,7 +243,8 @@ class vm {
     // if the retrieved value is not the script environment, then
     // load once the file with the extended function implementations
     if (!lua_istable(L, -1)) {
-      // pop the the LUA_TNIL at the top of the stack
+      // pop the previous result (normally a LUA_TNIL) from the top
+      // of the stack
       // [-1, +0] > (+1)
       lua_pop(L, 1);
       unitex::elg::stack_dump(L,"lua_pop");
@@ -259,12 +261,15 @@ class vm {
       strcat(script_file, UNITEX_SCRIPT_PATH);
       strcat(script_file, script_name);
 
+      // check if script_file exists
+
       // load the script as a Lua chunk; it does not run it
       // [-0, +1] > (+2)
       if (luaL_loadfile(L, script_file)) {
         fatal_error("Error loading @%s: %s\n", script_file,
                     lua_tostring(L, -1));
       }
+
       unitex::elg::stack_dump(L,"luaL_loadfile");
       // create a new empty table and pushes it onto the stack
       // we will use this table to holds the ENV for the script
@@ -300,8 +305,8 @@ class vm {
       lua_setmetatable(L, -2);
       unitex::elg::stack_dump(L,"lua_setmetatable");
 
-      // register the script environment on the registry using the function
-      // name as key
+      // register the script environment on the registry using the
+      // environment_name as key
       // [-1, +0] > (+2)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
       unitex::elg::stack_dump(L,"lua_setfield");
@@ -317,8 +322,8 @@ class vm {
       // (L, 1, 1) = L, points to the closure in the stack,
       // [-1, +0] > (+1)
       if (lua_setfenv(L, 1) == 0) {
-        luaL_error(L, LUA_QL("setfenv")
-                      " cannot change environment of given object");
+        fatal_error("Error calling @%s: %s\n", function_name,
+                    lua_tostring(L, -1));
       }
 
       unitex::elg::stack_dump(L,"lua_setupvalue");
@@ -365,7 +370,8 @@ class vm {
     //                the original error message
     // [-(n + 1), +1] > (+3)
     if (lua_pcall(L, nargs, 1, 0) != 0) {
-      lua_remove (L, -2); // remove table
+//      lua_remove (L, -2); // remove table
+      unitex::elg::stack_dump(L);
       fatal_error("Error calling @%s: %s\n", function_name,
                   lua_tostring(L, -1));
     }
