@@ -222,25 +222,88 @@ void free_standoff_info(standOffInfo *infos,int num) {
     free(infos);
 }
 
-void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* lang) {
-    char* output_lang = NULL;
-    const char* semver = get_unitex_semver_string();
-    if (lang == NULL || strcmp("",lang) == 0) {
-        output_lang = (char *)malloc(sizeof(char)*3);
-        output_lang[0]='\0';
+/**
+ * \brief Replaces pre-defined variables in a file by the values obtained from
+ * concord.ind
+ *
+ * \param[in] out is the output file, xml_line is the line containing the
+ * variable, rest the are the value of the variables to be replaced
+ *
+ * \return 
+ */
+void replace_variable(U_FILE *out, unichar *xml_line, unichar *type, unichar *subtype, unichar *term , \
+        unichar *typelower, int count) {
+    const unichar VAR_TYPE[] = { 'T', 'Y', 'P', 'E',  0 };
+    const unichar VAR_SUBTYPE[] = { 'S', 'U', 'B', 'T', 'Y', 'P', 'E',  0 };
+    const unichar VAR_COUNT[] = { 'C', 'O', 'U', 'N', 'T',  0 };
+    const unichar VAR_TYPELOWER[] = { 'T', 'Y', 'P', 'E', 'L', 'O', 'W', 'E', 'R', 0 };
+    const unichar VAR_TERM[] = { 'T', 'E',  'R', 'M', 0 };
+    unichar *variable = (unichar *) malloc(sizeof(unichar) * u_strlen(xml_line));
+    int skip = -1;
+    for (int i = 0; xml_line[i] != '\0'; i++) {
+        if (xml_line[i] == '{') {
+            int end = i + 1;
+            int idx = 0;
+            while (xml_line[end] != '}' && xml_line[end] != '\0') {
+                variable[idx++] = xml_line[end];
+                end++;
+             }
+             variable[idx] = '\0';
+             i = end;
+             if (u_strcmp(variable, VAR_TYPE) == 0) {
+                u_fprintf(out,"%S", type);
+             }
+             else if (u_strcmp(variable, VAR_SUBTYPE) == 0 ) {
+                 if (subtype != NULL) {
+                     u_fprintf(out,"%S", subtype);
+                 }
+                 else if (skip > 0) {
+                     fseek(out, skip  - (end - idx) + 2, SEEK_CUR);
+                     while (!(xml_line[i] == '>' && xml_line[i-1] == '>')) {
+                         i++;
+                     }
+                     skip = -1;
+                 }
+             }
+             else if (u_strcmp(variable, VAR_COUNT) == 0 && count > 0) {
+                 u_fprintf(out,"%d", count);
+             }
+             else if (u_strcmp(variable, VAR_TYPELOWER) == 0 && typelower != NULL) {
+                 u_fprintf(out,"%S", typelower);
+             }
+             else if (u_strcmp(variable, VAR_TERM) == 0 && term != NULL) {
+                int k=0;
+                int term_len = u_strlen(term);
+                for(; k<term_len && term[k]!='>'; k++)
+                    ;
+                k += 1;
+                for(;k<term_len && term[k]!='<'; k++)
+                    u_fprintf(out,"%C",term[k]);
+             }
+        }
+        else if (xml_line[i] == '<' && xml_line[i+1] == '<') {
+            skip = i;
+            i++;
+        }
+        else if (skip > -1 && xml_line[i] == '>' && xml_line[i+1] == '>') {
+            skip = -1;
+            i++;
+        }
+        else { 
+            u_fprintf(out,"%C",xml_line[i]);
+        }
     }
-    else {
-        output_lang = (char *)malloc(sizeof(char)*(strlen(lang) + 14));
-        sprintf(output_lang," xml:lang=\"%s\"",lang);
-    }
+    u_fprintf(out," \n");
+    free(variable);
+}
+
+void print_standoff(U_FILE *out,standOffInfo *infos, int num_info, unichar *list_line, unichar *end_line, \
+        unichar **block, int block_size, unichar **rest, int rest_size) {
     for(int i=0; i<num_info; i++) {
         int count = 0;
         int capacity = infos[i].entList->capacity;
         if(infos[i].entList->number_of_elements > 0) {
-            u_fprintf(out,"<listAnnotation type=\"%S\"",infos[i].type);
-            if(infos[i].subtype != NULL)
-                u_fprintf(out," subtype=\"%S\"",infos[i].subtype);
-            u_fprintf(out," %s>\n",output_lang);
+            replace_variable(out, list_line, infos[i].type, infos[i].subtype, NULL, NULL, 0);
             for(int j=0; j<capacity
                     && count <infos[i].entList->number_of_elements; j++){
                 if(infos[i].entList->table[j] !=NULL) {
@@ -248,52 +311,30 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info,const char* la
                         int term_len = u_strlen((const unichar *)infos[i].entList->table[j]->ptr_key);
                         unichar *term = (unichar *)malloc(sizeof(unichar)*(term_len+1));
                         u_strcpy(term,(const unichar *)infos[i].entList->table[j]->ptr_key);
-                        u_fprintf(out,"\t<annotationBlock corresp=\"text\">\n");
-                        u_fprintf(out,"\t\t<%S ",infos[i].type);
-                        if(infos[i].subtype != NULL)
-                            u_fprintf(out,"type=\"%S\" ",infos[i].subtype);
                         unichar *type_lower;
                         type_lower = (unichar *)malloc(sizeof(unichar) * (u_strlen(infos[i].type) + 1));
                         u_strcpy(type_lower, infos[i].type);
                         u_tolower(type_lower);
-                        u_fprintf(out,"change=\"#Unitex-%s\" resp=\"istex-rd\" scheme=\"https://%S",semver, type_lower);
-                        free(type_lower);
-                        if(infos[i].subtype != NULL)
-                            u_fprintf(out,"%S",infos[i].subtype);
-                        u_fprintf(out,"-entity.data.istex.fr\">\n");
-                        u_fprintf(out,"\t\t\t<term>");
-                        int k=0;
-                        for(; k<term_len && term[k]!='>'; k++)
-                            ;
-                        k += 1;
-                        for(;k<term_len && term[k]!='<'; k++)
-                            u_fprintf(out,"%C",term[k]);
-                        u_fprintf(out,"</term>\n");
-                        u_fprintf(out,"\t\t\t<fs type=\"statistics\">\n");
-                        u_fprintf(out,"\t\t\t\t<f name=\"frequency\">\n");
-                        u_fprintf(out,"\t\t\t\t\t<numeric value=\"");
                         int idx = get_value_index((const unichar *)(infos[i].entList->table[j]->ptr_key),infos[i].entity_count,DONT_INSERT);
+                        int count_len = 1;
                         if (idx>-1) {
-                            int count_len = u_strlen(infos[i].entity_count->value[idx]);
-                            u_fprintf(out,"%d",count_len);
+                            count_len = u_strlen(infos[i].entity_count->value[idx]);
                         }
-                        else {
-                            u_fprintf(out,"1");
+                        for (int block_i = 0; block_i < block_size; block_i++) {
+                            replace_variable(out, block[block_i], infos[i].type, infos[i].subtype, term, type_lower, count_len);
                         }
-                        u_fprintf(out,"\"/>\n");
-                        u_fprintf(out,"\t\t\t\t</f>\n");
-                        u_fprintf(out,"\t\t\t</fs>\n");
-                        u_fprintf(out,"\t\t</%S>\n",infos[i].type);
-                        u_fprintf(out,"\t</annotationBlock>\n");
                         count++;
+                        free(type_lower);
                         free(term);
                     }
                 }
             }
-            u_fprintf(out,"</listAnnotation>\n");
+            u_fprintf(out,"%S\n", end_line);
         }
     }
-    free(output_lang);
+    for (int rest_i = 0; rest_i < rest_size; rest_i++) {
+        u_fprintf(out,"%S\n", rest[rest_i]);
+    }
 }
 
 void getMetaInfo(unichar *e, unichar **s, unichar **t) {
@@ -448,22 +489,76 @@ void construct_istex_standoff(const char *text_name,
         remove_extension(original_file, text_name_without_extension);
         sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
         U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
+        unichar *list_line = NULL;
+        unichar **block = NULL;
+        unichar *end = NULL;
+        unichar **rest = NULL;
+        int block_size = 0;
+        int rest_size = 0;
         if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0) {
             unichar *line_2 = NULL;
             size_t size_buffer_line_2 = 0;
             U_FILE *header_file = u_fopen(vec,stdoff_file,U_READ);
             if(header_file != NULL) {
-                u_fprintf(out_file,"<standOff>\n");
+                const unichar LINE_COMMAND[] = { '#', 'L', 'I', 'N', 'E',  0 };
+                const unichar BLOCK_COMMAND[] = { '#', 'B', 'L', 'O', 'C', 'K',  0 };
+                const unichar END_COMMAND[] = { '#', 'E', 'N', 'D',  0 };
+                const unichar REST_COMMAND[] = { '#', 'R', 'E', 'S', 'T', 0 };
+                int copy_line = 0;
+                int copy_block = 0;
+                int copy_end_line = 0;
+                int copy_rest = 0;
                 while(u_fgets_dynamic_buffer(&line_2, &size_buffer_line_2, header_file) != EOF) {
-                    u_fprintf(out_file,"%S\n",line_2);
+                    if(line_2[0] == '#') {
+                        if(u_strcmp(line_2, LINE_COMMAND) == 0) {
+                            copy_line = 1;
+                        }
+                        else if (u_strcmp(line_2, BLOCK_COMMAND) == 0) {
+                            copy_block = 1;
+                        }
+                        else if (u_strcmp(line_2, END_COMMAND) == 0) {
+                            copy_end_line = 1;
+                            copy_block = 0;
+                        }
+                        else if (u_strcmp(line_2, REST_COMMAND) == 0) {
+                            copy_rest = 1;
+                        }
+                    }
+                    else if (copy_line == 1) {
+                        list_line = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
+                        u_strcpy(list_line, line_2);
+                        copy_line = 0;
+                    } 
+                    else if (copy_end_line == 1) {
+                        end = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
+                        u_strcpy(end, line_2);
+                        copy_end_line = 0;
+                    }
+                    else if (copy_block == 1) {
+                        block = (unichar**) realloc(block, (block_size + 1) * sizeof(unichar*));
+                        block[block_size] = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
+                        u_strcpy(block[block_size], line_2);
+                        block_size++ ;
+                    }
+                    else if (copy_rest == 1) {
+                        rest = (unichar**) realloc(rest, (rest_size + 1) * sizeof(unichar*));
+                        rest[rest_size] = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
+                        u_strcpy(rest[rest_size], line_2);
+                        rest_size++ ;
+                    } 
+                    else {
+                        u_fprintf(out_file,"%S\n",line_2);
+                    }
                 }
                 u_fclose(header_file);
                 free(line_2);
             }
         }
-        print_standoff(out_file,infos,num_info,lang);
-        if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0)
-            u_fprintf(out_file,"</standOff>\n");
+        print_standoff(out_file, infos, num_info, list_line, end, block, block_size, rest, rest_size);
+        free(list_line);
+        free(block);
+        free(end);
+        free(rest);
         u_fclose(out_file);
         free_standoff_info(infos,num_info);
     }
