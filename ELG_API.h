@@ -45,6 +45,8 @@
 #include "TransductionStack.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
+#define ELG_FUNCTION_LOAD_NAME          "load"
+#define ELG_FUNCTION_UNLOAD_NAME        "unload"
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
 #define ELG_GLOBAL_TOKEN                "uToken"
