@@ -44,19 +44,21 @@ namespace ustring {
 namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-int format(lua_State* L) {
+/* static */ int format(lua_State* L) {
   // get locate params
   struct locate_parameters* p = get_locate_params(L);
   if(p) {
     lua_pushstring(L,"Hello World");
+    // the number of results is equal to 1
+    return 1;
   }
-  return 1;
+  // the number of results is equal to 0
+  return 0;
 }
 /* ************************************************************************** */
-static luaL_Reg lua_lib[] =
-{
-    {"format", elg::ustring::format},
-    {NULL, NULL}
+/* static */ const struct luaL_Reg lua_lib[] = {
+  {"format", elg::ustring::format},
+  {NULL, NULL}
 };
 /* ************************************************************************** */
 int luaopen_ustring(lua_State *L) {

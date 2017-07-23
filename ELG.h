@@ -22,148 +22,174 @@
 #define ELG_H_
 /* ************************************************************************** */
 // .h source file
-
 /* ************************************************************************** */
 // C system files (order the includes alphabetically)
-
 /* ************************************************************************** */
 // C++ system files (order the includes alphabetically)
-
 /* ************************************************************************** */
 // Other libraries' .h files (order the includes alphabetically)
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 #include "ELG_API.h"
-#include "ELGLib/ELGLib.h"
+#include "ELGLib/debug.h"
+// commented on 23/07/17. Do not preserve stack
+//#include "ELGLib/ELGLib.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
-static const char* UNITEX_SCRIPT_PATH = "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
+static const char* UNITEX_SCRIPT_PATH =
+    "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 /* ************************************************************************** */
 class vm {
-  public:
-     vm (void) : L(NULL) {
-     }
+ public:
+  vm(void)
+      : L(NULL) {
+  }
 
-     virtual ~vm (void) {
-       stop();
-     }
+  virtual ~vm(void) {
+    stop();
+  }
 
-     // traceback function taken straight out of luajit.c
-     static int trace(lua_State* L) {
-       if (!lua_isstring(L, 1)) { /* Non-string error object? Try metamethod. */
-           if (lua_isnoneornil(L, 1) ||
-               !luaL_callmeta(L, 1, "__tostring") ||
-               !lua_isstring(L, -1))
-               return 1;  /* Return non-string error object. */
-           lua_remove(L, 1);  /* Replace object by result of __tostring metamethod. */
-       }
-       luaL_traceback(L, L, lua_tostring(L, 1), 1);
-       return 1;
-     }
+  // traceback function taken straight out of luajit.c
+  static int trace(lua_State* L) {
+    if (!lua_isstring(L, 1)) { /* Non-string error object? Try metamethod. */
+      if (lua_isnoneornil(L, 1) || !luaL_callmeta(L, 1, "__tostring")
+          || !lua_isstring(L, -1))
+        return 1; /* Return non-string error object. */
+      lua_remove(L, 1); /* Replace object by result of __tostring metamethod. */
+    }
+    luaL_traceback(L, L, lua_tostring(L, 1), 1);
+    return 1;
+  }
 
-     // panic handler
-     static int panic(lua_State* L) {
-       const char* error = lua_tostring(L, 1);
-       fatal_error("Panic from Lua runtime %s\n",error);
-       return 0;
-     }
+  // panic handler
+  static int panic(lua_State* L) {
+    const char* error = lua_tostring(L, 1);
+    fatal_error("Panic from Lua runtime %s\n", error);
+    return 0;
+  }
 
-     bool restart() {
-       bool retval = false;
+  // [-0, +0] > (+0)
+  // create a new Lua environment
+  // load the standard library
+  // load the elg libraries
+  // setup the panic handler
+  // add the traceback function to the stack
+  // run the initialization script
+  // register custom constants and functions
+  // returns true if success; false otherwise
+  // the top of the stack is the traceback function
+  // [-1, +0] > (+1)
+  bool restart() {
+    bool retval = false;
 
-       if(is_running()) {
-         stop();
-       }
+    if (is_running()) {
+      stop();
+    }
 
-       // create a new Lua environment
-       if ((L = luaL_newstate()) == NULL) {
-         fatal_error("Failed to create a new Lua environment\n");
-       }
+    // create a new Lua environment
+    if ((L = luaL_newstate()) == NULL) {
+      fatal_error("Failed to create a new Lua environment\n");
+    }
 
-       if(is_running()) {
-         // load the standard library
-         luaL_openlibs(L);
+    if (is_running()) {
+      // load the standard library
+      // [-0, +0] > (+0)
+      luaL_openlibs(L);
 
-         // load the elg library
-         elg::luaopen_elglib(L);
+      // load the elg libraries
+      // [-0, +0]
+      // commented on 23/07/17. Do not preserve stack
+      // elg::openlibs(L);
 
-         // setup the panic handler
-         lua_atpanic(L, panic);
+      // setup the panic handler
+      // [-0, +0] > (+0)
+      lua_atpanic(L, panic);
 
-         // add the traceback function to the stack
-         lua_pushcfunction(L, trace);
+      // add the traceback function to the stack
+      // [-0, +1] > (+1)
+      lua_pushcfunction(L, trace);
 
-         // run the initialization script
-         // custom classes are not available right now from here
-         // FIXME(martinec) Remove the hard-coded path
-         if (luaL_dofile(L, "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/init.upp")) {
-           fatal_error("Error running the initialization script: %s\n", lua_tostring(L, -1));
-         }
+      // run the initialization script
+      // custom classes are not available right now from here
+      // FIXME(martinec) Remove the hard-coded path
+      // [-0, +0] > (+1)
+      if (luaL_dofile(L,"/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/init.upp")) {
+        fatal_error("Error running the initialization script: %s\n",
+                    lua_tostring(L, -1));
+      }
 
-         // -------------------------------------------------------------------
-         // register custom classes
-         // -------------------------------------------------------------------
+      // -------------------------------------------------------------------
+      // register custom classes
+      // -------------------------------------------------------------------
 
-         // Constants
-         lua_newtable(L);
-         set("API_VERSION",      "0.1.0");
-         lua_setglobal(L, ELG_GLOBAL_CONSTANT);
+      // Constants
+      // [-0, +1] > (+2)
+      lua_newtable(L);
+      set("API_VERSION", "0.1.0");
+      // [-1, +0] > (+1)
+      lua_setglobal(L, ELG_GLOBAL_CONSTANT);
 
-         // Functions
+      // Functions
 
-         //uToken
-         lua_newtable(L);
-         set("current",          elg::token::current);
-         set("previous",         elg::token::previous);
-         set("next",             elg::token::next);
-         set("at",               elg::token::at);
-         set("pos",              elg::token::pos);
-         set("is_space",         elg::token::is_space);
-         lua_setglobal(L, ELG_GLOBAL_TOKEN);
+      //uToken
+      // [-0, +1] > (+2)
+      lua_newtable(L);
+      set("current", elg::token::current);
+      set("previous", elg::token::previous);
+      set("next", elg::token::next);
+      set("at", elg::token::at);
+      set("pos", elg::token::pos);
+      set("is_space", elg::token::is_space);
+      // [-1, +0] > (+1)
+      lua_setglobal(L, ELG_GLOBAL_TOKEN);
 
-         //uMatch
-         lua_newtable(L);
-         set("begin",            elg::match::begin);
-         set("fend",             elg::match::end);
-         set("length",           elg::match::length);
-         set("content",          elg::match::content);
-         set("start_with_space", elg::match::start_with_space);
-         set("start_sentence",   elg::match::start_sentence);
-         set("end_sentence",     elg::match::end_sentence);
-         set("start_newline",    elg::match::start_newline);
-         set("end_newline",      elg::match::end_newline);
-         lua_setglobal(L, ELG_GLOBAL_MATCH);
+      //uMatch
+      // [-0, +1] > (+2)
+      lua_newtable(L);
+      set("begin", elg::match::begin);
+      set("fend", elg::match::end);
+      set("length", elg::match::length);
+      set("content", elg::match::content);
+      set("start_with_space", elg::match::start_with_space);
+      set("start_sentence", elg::match::start_sentence);
+      set("end_sentence", elg::match::end_sentence);
+      set("start_newline", elg::match::start_newline);
+      set("end_newline", elg::match::end_newline);
+      // [-1, +0] > (+1)
+      lua_setglobal(L, ELG_GLOBAL_MATCH);
 
-         //uString
-         lua_newtable(L);
-         set("format",           elg::string::format);
-         lua_setglobal(L, ELG_GLOBAL_STRING);
+      //uString
+      lua_newtable(L);
+      // [-0, +1] > (+2)
+      set("format", elg::string::format);
+      // [-1, +0] > (+1)
+      lua_setglobal(L, ELG_GLOBAL_STRING);
 
-         //uMisc
-         // isWindows
+      //uMisc
+      // isWindows
 
-         // -------------------------------------------------------------------
-         // end of register custom classes
-         // -------------------------------------------------------------------
+      // -------------------------------------------------------------------
+      // end of register custom classes
+      // -------------------------------------------------------------------
 
-         // successful restart
-         retval = true;
-       }
+      // successful restart
+      retval = true;
+    }
+    unitex::elg::stack_dump(L,"OOPPPEENN");
+    return retval;
+  }
 
-       return retval;
-     }
+  void stop() {
+    if (is_running()) {
+      lua_close(L);
+      L = NULL;
+    }
+  }
 
-     void stop() {
-       if (is_running()) {
-         lua_close (L);
-         L = NULL;
-       }
-     }
-
-     bool is_running() {
-       return L;
-     }
+  bool is_running() {
+    return L;
+  }
 
 //     bool load(const char* function_name) {
 //       char script_name[MAX_TRANSDUCTION_VAR_LENGTH] = {};
@@ -189,167 +215,216 @@ class vm {
 //       return true;
 //     }
 
-     // 05/09/16 load once
-     bool load(const char* function_name) {
-       // get the script environment from the register
-       lua_getfield(L, LUA_REGISTRYINDEX, function_name);
+  // 05/09/16 load once
+  bool load(const char* function_name) {
+    unitex::elg::stack_dump(L);
 
-       // load once the script with the function implementation
-       if (!lua_istable(L,-1)) {
-         char script_name[MAX_TRANSDUCTION_VAR_LENGTH] = {};
-         char script_file[MAX_TRANSDUCTION_VAR_LENGTH] = {};
+    // the registry is a global table accessible from the Lua C-API
+    // we use it for both store extended functions and check if an
+    // extended function is already stored
 
-         // script name = function_name.upp
-         strcat(script_name,function_name);
-         strcat(script_name,ELG_FUNCTION_DEFAULT_EXTENSION);
+    // push onto the stack the value stored in the registry with key
+    // "foo" where foo is an extended function name
+    // [-0, +1] > (+2)
+    lua_getfield(L, LUA_REGISTRYINDEX, function_name);
 
-         // script_file = /default/path/function_name.upp
-         strcat(script_file,UNITEX_SCRIPT_PATH);
-         strcat(script_file,script_name);
+    // if the value at the top of the stack is not a table, then
+    // load once the file with the extended function implementation
+    if (!lua_istable(L, -1)) {
+      // pop the the LUA_TNIL at the top of the stack
+      lua_pop(L, 1);
 
-         // Load the script as a Lua chunk
-         if(luaL_loadfile(L, script_file)) {
-           fatal_error("Error loading @%s: %s\n", script_file, lua_tostring(L, -1));
-         }
+      // prepare script_name and script_file variables
+      char script_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
+      char script_file[MAX_TRANSDUCTION_VAR_LENGTH] = { };
 
-         // ENV for the script
-         lua_newtable(L);
+      // script name = function_name.upp
+      strcat(script_name, function_name);
+      strcat(script_name, ELG_FUNCTION_DEFAULT_EXTENSION);
 
-         // fallback global table
-         lua_newtable(L);
+      // script_file = /default/path/function_name.upp
+      strcat(script_file, UNITEX_SCRIPT_PATH);
+      strcat(script_file, script_name);
 
-         // to inherit global table
-         lua_getglobal(L, "_G");
-         lua_setfield(L, -2, "__index");
+      // load the script as a Lua chunk; it does not run it
+      // [-0, +1] > (+1)
+      if (luaL_loadfile(L, script_file)) {
+        fatal_error("Error loading @%s: %s\n", script_file,
+                    lua_tostring(L, -1));
+      }
 
-         // now the global table is the metatable
-         lua_setmetatable(L, -2);
+      // create a new empty table and pushes it onto the stack
+      // we use this table to holds the ENV for the script
+      // [-0, +1] > (+2)
+      lua_newtable(L);
 
-         // register the script using the function name
-         lua_setfield(L, LUA_REGISTRYINDEX, function_name);
+      // create another new empty table and pushes it onto the stack
+      // we use this table to holds the fallback global table
+      // [-0, +1] > (+3)
+      lua_newtable(L);
 
-         // set _ENV for the script
-         lua_setupvalue(L, 1, 1);
+      // now we try to inherit the global table
 
-         //  priming run: loads and runs script's main function
-         if (lua_pcall(L,0,LUA_MULTRET,0)) {
-           fatal_error("Error calling @%s: %s\n", function_name, lua_tostring(L, -1));
-         }
+      // first, push onto the stack the value of _G, a table called
+      // the environment which holds all the global variables defined on L
+      // [-0, +1] > (+4)
+      lua_getglobal(L, "_G");
 
-         // get the script environment from the register
-         lua_getfield(L, LUA_REGISTRYINDEX, function_name);
-       }  // if (!lua_istable(L,-1))
+      // do t[k] = v, where t is the value at index -2 in the stack
+      // and v is the value at the top of the stack, i.e.
+      // [-1, +0] > (+3)
+      lua_setfield(L, -2, "__index");
 
-       // set the function to run
-       lua_getfield(L, -1, function_name);
-       if (!lua_isfunction(L,-1)) {
-         lua_pop(L,1);
-         fatal_error("Error loading @%s, function doesn't exists\n",function_name);
-       }
+      // pops the table from the stack and sets it as the new metatable
+      // for the value at the index -2
+      // now the global table is the metatable
+      // [-1, +0] > (+2)
+      lua_setmetatable(L, -2);
 
-       return true;
-     }
+      // register the script using the function name
+      // [-1, +0] > (+1)
+      lua_setfield(L, LUA_REGISTRYINDEX, function_name);
 
-     //  0 : step back
-     //  1 : step forward
-     int call(const char* function_name, int nargs, struct stack_unichar* stack) {
-       int retval = 1;
+      // for Lua functions, upvalues are the external local variables that
+      // the function uses, and that are consequently included in its closure
+      // (L, 1, 1) = L, points to the closure in the stack,
+      // set _ENV for the script
+      // [-1, +0] > (+0)
+      lua_setupvalue(L, 1, 1);
 
-       // do the call (lua_State *L, int nargs, int nresults, int errfunc)
-       // nresults => 1, one result expected (boolean or string))
-       // errfunc  => 0, the error message returned on the stack is exactly
-       //                the original error message
-       if (lua_pcall(L, nargs, 1, 0) != 0) {
-           fatal_error("Error calling @%s: %s\n",function_name,lua_tostring(L, -1));
-       }
+      //  priming run: loads and runs script's main function
+      if (lua_pcall(L, 0, LUA_MULTRET, 0)) {
+        fatal_error("Error calling @%s: %s\n", function_name,
+                    lua_tostring(L, -1));
+      }
 
-       int type = lua_type(L, -1);
+      // get the script environment from the register
+      lua_getfield(L, LUA_REGISTRYINDEX, function_name);
+    }  // if (!lua_istable(L,-1))
 
-       // retrieve boolean or string result
-       if (!(type == LUA_TNIL            ||
-             type == LUA_TBOOLEAN        ||
-             type == LUA_TLIGHTUSERDATA  ||
-             type == LUA_TNUMBER         ||
-             type == LUA_TSTRING
-             )) {
-         fatal_error("Error calling @%s, function  must return a boolean, a number, a string or a null value\n",function_name,lua_tostring(L, -1));
-       }
+    // set the function to run
+    lua_getfield(L, -1, function_name);
+    if (!lua_isfunction(L, -1)) {
+      lua_pop(L, 1);
+      fatal_error("Error loading @%s, function doesn't exists\n",
+                  function_name);
+    }
 
-       // LUA_TTABLE     -> lua_topointer(L, -1)
-       // LUA_TFUNCTION  -> lua_topointer(L, -1)
-       // LUA_TUSERDATA  -> lua_touserdata(L, -1)
-       // LUA_TTHREAD    -> (void *)lua_tothread(L, -1)
+    return true;
+  }
 
-       if (type == LUA_TNIL) {
-           retval =  0;
-       } else if (type == LUA_TBOOLEAN) {
-         // if the function returns false
-         // there is not a following transition
-         // if the return value is equal to true,
-         // the output stack stays unchanged, this
-         // is equivalent to push an empty symbol
-         if(!lua_toboolean(L, -1)) {
-            retval =  0;
-         }
-       } else if (type == LUA_TLIGHTUSERDATA) {
-          const unichar* S = (const unichar*) lua_touserdata(L,-1);
-          // push to stack
-          for (int i=0; S[i]!='\0'; ++i) {
-           ::push(stack,S[i]);
-          }
-       } else if (type == LUA_TNUMBER) {
-          // convert the number returned to string
-          char n[LUAI_MAXNUMBER2STR];
-          size_t count = lua_number2str(n, lua_tonumber(L, -1));
-          // push to stack
-          push_array(stack,n,count);
+  //  0 : step back
+  //  1 : step forward
+  int call(const char* function_name, int nargs, struct stack_unichar* stack) {
+    int retval = 1;
+
+    // do the call (lua_State *L, int nargs, int nresults, int errfunc)
+    // nresults => 1, one result expected (boolean or string))
+    // errfunc  => 0, the error message returned on the stack is exactly
+    //                the original error message
+    if (lua_pcall(L, nargs, 1, 0) != 0) {
+      fatal_error("Error calling @%s: %s\n", function_name,
+                  lua_tostring(L, -1));
+    }
+
+    int type = lua_type(L, -1);
+
+    // retrieve boolean or string result
+    if (!(type == LUA_TNIL || type == LUA_TBOOLEAN || type == LUA_TLIGHTUSERDATA
+        || type == LUA_TNUMBER || type == LUA_TSTRING)) {
+      fatal_error(
+          "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
+          function_name, lua_tostring(L, -1));
+    }
+
+    // LUA_TTABLE     -> lua_topointer(L, -1)
+    // LUA_TFUNCTION  -> lua_topointer(L, -1)
+    // LUA_TUSERDATA  -> lua_touserdata(L, -1)
+    // LUA_TTHREAD    -> (void *)lua_tothread(L, -1)
+
+    if (type == LUA_TNIL) {
+      retval = 0;
+    } else if (type == LUA_TBOOLEAN) {
+      // if the function returns false
+      // there is not a following transition
+      // if the return value is equal to true,
+      // the output stack stays unchanged, this
+      // is equivalent to push an empty symbol
+      if (!lua_toboolean(L, -1)) {
+        retval = 0;
+      }
+    } else if (type == LUA_TLIGHTUSERDATA) {
+      const unichar* S = (const unichar*) lua_touserdata(L, -1);
+      // push to stack
+      for (int i = 0; S[i] != '\0'; ++i) {
+        ::push(stack, S[i]);
+      }
+    } else if (type == LUA_TNUMBER) {
+      // convert the number returned to string
+      char n[LUAI_MAXNUMBER2STR];
+      size_t count = lua_number2str(n, lua_tonumber(L, -1));
+      // push to stack
+      push_array(stack, n, count);
 //        12.09.16 return utf8
 //          for (int i=0; n[i]!='\0'; ++i) {
 //           ::push(stack,n[i]);
 //          }
-       } else if (type == LUA_TSTRING) {
-          const char* s = lua_tostring(L, -1);
-          unichar S[4096] = {0};
-          size_t count = u_decode_utf8(s,S);
-          // push to stack
-          push_array(stack,S,count);
+    } else if (type == LUA_TSTRING) {
+      const char* s = lua_tostring(L, -1);
+      unichar S[4096] = { 0 };
+      size_t count = u_decode_utf8(s, S);
+      // push to stack
+      push_array(stack, S, count);
 //        12.09.16 return utf8
 //          for (int i=0; s[i]!='\0'; ++i) {
 //            ::push(stack,s[i]);
 //          }
-       }
+    }
 
-       // remove the returned value from the top of the stack
-       lua_pop(L, 1);
+    // remove the returned value from the top of the stack
+    lua_pop(L, 1);
 
-       return retval;
-     }
+    return retval;
+  }
 
-     // push a function into table
-     void set(const char* name, lua_CFunction fn) {
-       lua_pushstring(L,name); // lua_pushliteral
-       lua_pushcfunction(L, fn);
-       lua_settable(L,-3);
-     }
+  // push a function into table
+  // [-0, +0, e]
+  void set(const char* name, lua_CFunction fn) {
+    // [-0, +1] > (+1)
+    lua_pushstring(L, name);  // lua_pushliteral
+    // [-0, +1] > (+2)
+    lua_pushcfunction(L, fn);
+    // [-2, +0] > (+0)
+    lua_settable(L, -3);
+  }
 
-     // push a string into table
-     void set(const char* name, const char* value) {
-       lua_pushstring(L,name);
-       lua_pushstring(L, value);
-       lua_settable(L,-3);
-     }
+  // push a string into table
+  // [-0, +0, e]
+  void set(const char* name, const char* value) {
+    // [-0, +1] > (+1)
+    lua_pushstring(L, name);
+    // [-0, +1] > (+2)
+    lua_pushstring(L, value);
+    // [-2, +0] > (+0)
+    lua_settable(L, -3);
+  }
 
-     // push a integer into table
-     void set(const char* name, int value) {
-       lua_pushstring(L,name);
-       lua_pushinteger(L, value);
-       lua_settable(L,-3);
-     }
+  // push a integer into table
+  // [-0, +0, e]
+  void set(const char* name, int value) {
+    // [-0, +1] > (+1)
+    lua_pushstring(L, name);
+    // [-0, +1] > (+2)
+    lua_pushinteger(L, value);
+    // [-2, +0] > (+0)
+    lua_settable(L, -3);
+  }
 
-     // push string into stack
-     void push(const char* value, size_t len) {
-       lua_pushlstring(L,value,len);
-     }
+  // push string into stack
+  // [-0, +1, m] > (+1)
+  void push(const char* value, size_t len) {
+    lua_pushlstring(L, value, len);
+  }
 
 //     problem with void push(void* p)
 //     can be solved with http://stackoverflow.com/q/4610503
@@ -358,43 +433,50 @@ class vm {
 //       lua_pushinteger(L, (lua_Integer) i);
 //     }
 
-     // push float into stack
-     void push(float f) {
-       lua_pushnumber(L, (lua_Number) f);
-     }
+  // push float into stack
+  // [-0, +1, -]
+  void push(float f) {
+    lua_pushnumber(L, (lua_Number) f);
+  }
 
-     // push boolean into stack
-     void push(bool b) {
-       lua_pushboolean(L, b);
-     }
+  // push boolean into stack
+  // [-0, +1, -]
+  void push(bool b) {
+    lua_pushboolean(L, b);
+  }
 
-     // push lua_pushlightuserdata or null
-     void push(void* p) {
-       if(p) {
-         lua_pushlightuserdata(L, p);
-       } else {
-         lua_pushnil(L);
-       }
-     }
+  // push null
+  // [-0, +1, -]
+  void push() {
+    lua_pushnil(L);
+  }
 
-     // push null
-     void push() {
-       lua_pushnil(L);
-     }
+  // push lua_pushlightuserdata or null
+  // [-0, +1, -]
+  void push(void* p) {
+    if (p) {
+      lua_pushlightuserdata(L, p);
+    } else {
+      push();
+    }
+  }
 
-     void setglobal(const char* name) {
-       lua_setglobal(L, name);
-     }
+  // pops a value from the stack and sets it as the new
+  // value of global name
+  // [-1, +0, e]
+  void setglobal(const char* name) {
+    lua_setglobal(L, name);
+  }
 
-     // UNITEX_EXPLICIT_CONVERSIONS
-     operator lua_State*() const {
-       return L;
-     }
+  // UNITEX_EXPLICIT_CONVERSIONS
+  operator lua_State*() const {
+    return L;
+  }
 
-  private:
+ private:
 
-  protected:
-     lua_State* L;
+ protected:
+  lua_State* L;
 };
 /* ************************************************************************** */
 }      // namespace unitex

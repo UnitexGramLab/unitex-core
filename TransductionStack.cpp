@@ -454,7 +454,7 @@ for (;;) {
               is_null_param = true;
             }
           case ')':
-            // case of an defined variable
+            // case of a defined variable
             if(!is_empty(parameter_stack)) {
               // TODO(martinec) handle nil(pushnil), number (pushnumber),
               // integer(lua_pushinteger), string (lua_pushstring)

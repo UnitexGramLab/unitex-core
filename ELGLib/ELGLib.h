@@ -43,7 +43,7 @@ namespace elg {
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-int luaopen_elglib(lua_State *L) {
+int openlibs(lua_State *L) {
   ustring::luaopen_ustring(L);
   return 1;
 }

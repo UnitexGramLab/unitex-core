@@ -265,7 +265,7 @@ endif
 
 CFLAGS   =  -Wall -D_POSIX_SOURCE #-pedantic
 ifeq ($(DEBUG), yes)
-CFLAGS += -g3 -O0
+CFLAGS += -g3 -O0 -DDEBUG=1
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 else
 CFLAGS += -O3
@@ -331,7 +331,7 @@ ifeq ($(UNITEX_EXPERIMENTAL_MSGLOGGER),yes)
 DEFFLAGS += -DUNITEX_EXPERIMENTAL_MSGLOGGER
 endif
 
-override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." -I"/usr/include/luajit-2.0" -I"../"
+override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." `pkg-config --cflags luajit` -I"../"
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread -lluajit-5.1 #-lunitex #-lboost_thread -lboost_system
@@ -406,7 +406,7 @@ CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g3 -O0 -Wl,--add-stdcall-alias
+CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
 else
 CFLAGS += -O3
 endif
@@ -552,7 +552,7 @@ CXXFLAGS = $(CXXINCS)  -Wall -D_JNI_IMPLEMENTATION_
 CFLAGS = $(INCS)  -Wall -D_JNI_IMPLEMENTATION_
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g3 -O0 -Wl,--add-stdcall-alias
+CFLAGS += -g3 -O0 -DDEBUG=1 -Wl,--add-stdcall-alias
 else
 CFLAGS += -O3
 endif

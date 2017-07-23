@@ -382,17 +382,26 @@ namespace {   // namespace elg::token::{unnamed}, enforce one-definition-rule
 int at(lua_State* L) {
   // get locate params
   struct locate_parameters* p = get_locate_params(L);
-  if(p && lua_gettop(L)>0) {
-    int pos   = lua_tointeger(L,1);
-    pos       = pos >= 0 ? pos : p->buffer_size + pos;
 
-    if(pos >= 0 && pos < p->buffer_size) {
-      lua_pushlightuserdata(L,p->tokens->value[p->buffer[pos]]);
+  // lua_gettop returns the index of the top element
+  // in the stack. Because indices start at 1, this
+  // result is equal to the number of elements in the
+  // stack (and so 0 means an empty stack)
+  // @see http://pgl.yoyo.org/luai/i/lua_gettop
+  if (p && lua_gettop(L) > 0) {
+    // luaL_checkint checks whether the function argument
+    // narg is a number and returns this number cast to an int
+    // http://pgl.yoyo.org/luai/i/luaL_checkint
+    int pos = luaL_checkint(L, 1);
+    pos = pos >= 0 ? pos : p->buffer_size + pos;
+
+    if (pos >= 0 && pos < p->buffer_size) {
+      lua_pushlightuserdata(L, p->tokens->value[p->buffer[pos]]);
     } else {
       lua_pushnil(L);
     }
   }
-
+  // number of results
   return 1;
 }
 
