@@ -111,8 +111,9 @@ class vm {
       // FIXME(martinec) Remove the hard-coded path
       // [-0, +0] > (+0)
       if (luaL_dofile(L,"/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/init.upp")) {
-        fatal_error("Error running the initialization script: %s\n",
-                    lua_tostring(L, -1));
+        const char* e =lua_tostring(L, -1);
+        lua_pop(L,1);
+        fatal_error("Error running the initialization script: %s\n",e);
       }
 
       // -------------------------------------------------------------------
