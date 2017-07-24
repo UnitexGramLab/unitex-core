@@ -276,13 +276,14 @@ class vm {
 //        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
       // [-1, +0] > (+1)
       if (lua_pcall(L, 0, 0, 0) != 0) {
-        // remove environment
-        lua_remove (L, -2);
+        const char* e = lua_tostring(L, -1);
+        elg_stack_dump(L);
+        lua_pop(L, 1); // error
         elg_stack_dump(L);
         fatal_error("Error loading @%s: %s:%s\n",
                     environment_name,
                     ELG_FUNCTION_ON_LOAD_NAME,
-                    lua_tostring(L, -1));
+                    e);
       }
     } else {
       // pop the return value that is not a function
@@ -312,12 +313,14 @@ class vm {
 //        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
       // [-1, +0] > (+1)
       if (lua_pcall(L, 0, 0, 0) != 0) {
-        lua_remove (L, -2); // remove environment
+        const char* e = lua_tostring(L, -1);
+        elg_stack_dump(L);
+        lua_pop(L, 1);
         elg_stack_dump(L);
         fatal_error("Error loading @%s: %s:%s\n",
                     environment_name,
                     ELG_FUNCTION_ON_LOAD_NAME,
-                    lua_tostring(L, -1));
+                    e);
       }
     } else {
       // pop the returned value
@@ -437,8 +440,11 @@ class vm {
       // load the script as a Lua chunk; it does not run it
       // [-0, +1] > (+1)
       if (luaL_loadfile(L, script_file)) {
-        fatal_error("Error loading @%s: %s\n", script_file,
-                    lua_tostring(L, -1));
+        const char* e = lua_tostring(L, -1);
+        elg_stack_dump(L);
+        lua_pop(L,1);
+        elg_stack_dump(L);
+        fatal_error("Error loading @%s: %s\n", script_file, e);
       }
 
       elg_stack_dump(L);
@@ -507,16 +513,19 @@ class vm {
       // uses, and that are consequently included in its closure
       // [-1, +0] > (+1)
       if (lua_setfenv(L, 1) == 0) {
-        fatal_error("Error calling @%s: %s\n", function_name,
-                    lua_tostring(L, -1));
+        elg_stack_dump(L);
+        const char* e = lua_tostring(L, -1);
+        lua_pop(L,1);
+        fatal_error("Error calling @%s: %s\n", function_name, e);
       }
       elg_stack_dump(L);
 
       //  priming run: loads and runs script's main function
       // [-1, +0] > (+0)
       if (lua_pcall(L, 0, 0, 0)) {  // LUA_MULTRET -> 0 ?
-        fatal_error("Error calling @%s: %s\n", function_name,
-                    lua_tostring(L, -1));
+        const char* e = lua_tostring(L, -1);
+        lua_pop(L,1);
+        fatal_error("Error calling @%s: %s\n", function_name, e);
       }
       elg_stack_dump(L);
 
@@ -564,10 +573,9 @@ class vm {
     //                the original error message
     // [-(n + 1), +1] > (+2) 1:environment, 2:returned value
     if (lua_pcall(L, nargs, 1, 0) != 0) {
-      lua_remove (L, -2); // remove environment
-      elg_stack_dump(L);
-      fatal_error("Error calling @%s: %s\n", function_name,
-                  lua_tostring(L, -1));
+      const char* e = lua_tostring(L, -1);
+      lua_pop(L,1); // error
+      fatal_error("Error calling @%s: %s\n", function_name,e);
     }
     elg_stack_dump(L);
     int type = lua_type(L, -1);
@@ -575,10 +583,11 @@ class vm {
     // retrieve boolean or string result
     if (!(type == LUA_TNIL || type == LUA_TBOOLEAN || type == LUA_TLIGHTUSERDATA
         || type == LUA_TNUMBER || type == LUA_TSTRING)) {
-      lua_pop(L, 2); // table + result
+      const char* e = lua_tostring(L, -1);
+      lua_pop(L, 1); // error
       fatal_error(
           "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
-          function_name, lua_tostring(L, -1));
+          function_name, e);
     }
 
     // LUA_TTABLE     -> lua_topointer(L, -1)
@@ -625,11 +634,10 @@ class vm {
 //          }
     }
 
-    // remove the returned value from the top of the stack
-    lua_pop(L, 1);
-    elg_stack_dump(L);
-    // remove the environment
-    lua_pop(L, 1);
+    // remove the the environment and returned value
+    // from the top of the stack
+    // [-2, +0] > (+0)
+    lua_pop(L, 2);
     elg_stack_dump(L);
 
     return retval;
