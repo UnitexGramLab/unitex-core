@@ -231,14 +231,14 @@ void free_standoff_info(standOffInfo *infos,int num) {
  *
  * \return 
  */
-void replace_variable(U_FILE *out, unichar *xml_line, unichar *type, unichar *subtype, unichar *term , \
-        unichar *typelower, int count) {
+void replace_variable(U_FILE* out, unichar* xml_line, unichar* type, unichar* subtype, unichar* term , 
+        unichar* typelower, int count) {
     const unichar VAR_TYPE[] = { 'T', 'Y', 'P', 'E',  0 };
     const unichar VAR_SUBTYPE[] = { 'S', 'U', 'B', 'T', 'Y', 'P', 'E',  0 };
     const unichar VAR_COUNT[] = { 'C', 'O', 'U', 'N', 'T',  0 };
     const unichar VAR_TYPELOWER[] = { 'T', 'Y', 'P', 'E', 'L', 'O', 'W', 'E', 'R', 0 };
     const unichar VAR_TERM[] = { 'T', 'E',  'R', 'M', 0 };
-    unichar *variable = (unichar *) malloc(sizeof(unichar) * u_strlen(xml_line));
+    unichar* variable = (unichar*) malloc(sizeof(unichar) * u_strlen(xml_line));
     int skip = -1;
     for (int i = 0; xml_line[i] != '\0'; i++) {
         if (xml_line[i] == '{') {
@@ -297,8 +297,8 @@ void replace_variable(U_FILE *out, unichar *xml_line, unichar *type, unichar *su
     free(variable);
 }
 
-void print_standoff(U_FILE *out,standOffInfo *infos, int num_info, unichar *list_line, unichar *end_line, \
-        unichar **block, int block_size, unichar **rest, int rest_size) {
+void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list_line, unichar* end_line, 
+        unichar** block, int block_size, unichar** rest, int rest_size) {
     for(int i=0; i<num_info; i++) {
         int count = 0;
         int capacity = infos[i].entList->capacity;
@@ -308,11 +308,11 @@ void print_standoff(U_FILE *out,standOffInfo *infos, int num_info, unichar *list
                     && count <infos[i].entList->number_of_elements; j++){
                 if(infos[i].entList->table[j] !=NULL) {
                     if(infos[i].entList->table[j]->ptr_key !=NULL) {
-                        int term_len = u_strlen((const unichar *)infos[i].entList->table[j]->ptr_key);
-                        unichar *term = (unichar *)malloc(sizeof(unichar)*(term_len+1));
-                        u_strcpy(term,(const unichar *)infos[i].entList->table[j]->ptr_key);
-                        unichar *type_lower;
-                        type_lower = (unichar *)malloc(sizeof(unichar) * (u_strlen(infos[i].type) + 1));
+                        int term_len = u_strlen((const unichar*)infos[i].entList->table[j]->ptr_key);
+                        unichar* term = (unichar*)malloc(sizeof(unichar)*(term_len+1));
+                        u_strcpy(term,(const unichar*)infos[i].entList->table[j]->ptr_key);
+                        unichar* type_lower;
+                        type_lower = (unichar*)malloc(sizeof(unichar) * (u_strlen(infos[i].type) + 1));
                         u_strcpy(type_lower, infos[i].type);
                         u_tolower(type_lower);
                         int idx = get_value_index((const unichar *)(infos[i].entList->table[j]->ptr_key),infos[i].entity_count,DONT_INSERT);
@@ -404,17 +404,17 @@ int findEntityList(standOffInfo *infos, int num,
     return found;
 }
 
-void construct_istex_standoff(const char *text_name,
-        VersatileEncodingConfig* vec, const char* original_file, const char* lang, const char* stdoff_file) {
+void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* vec, const char* original_file, 
+        const char* lang, const char* stdoff_file) {
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
     text_name_without_extension[0] = '\0';
     result_file[0] = '\0';
     size_t size_buffer_line = 0;
-    unichar *line = NULL;
+    unichar* line = NULL;
     struct standOffInfo *infos = NULL;
     int num_info = 0;
-    U_FILE *concord_file = u_fopen(vec, text_name, U_READ);
+    U_FILE* concord_file = u_fopen(vec, text_name, U_READ);
     if(concord_file != NULL) {
         while(u_fgets_dynamic_buffer(&line, &size_buffer_line,
                 concord_file) != EOF) {
@@ -429,13 +429,13 @@ void construct_istex_standoff(const char *text_name,
                     }
                 }
                 if (pos >= 0) {
-                    unichar *entity = (unichar*) malloc(sizeof(unichar)*limit);
+                    unichar* entity = (unichar*) malloc(sizeof(unichar)*limit);
                     for(int k=pos,i=0; k<limit; k++,i++) {
                         entity[i] = line[k];
                     }
                     entity[limit-pos] = '\0';
-                    unichar *type = NULL;
-                    unichar *subtype= NULL;
+                    unichar* type = NULL;
+                    unichar* subtype= NULL;
                     getMetaInfo(entity,&subtype,&type);
                     int found = findEntityList(infos,num_info,subtype,type);
                     if(found > -1 && found<num_info) {
@@ -488,17 +488,17 @@ void construct_istex_standoff(const char *text_name,
         u_fclose(concord_file);
         remove_extension(original_file, text_name_without_extension);
         sprintf(result_file,"%s_standoff.txt",text_name_without_extension);
-        U_FILE *out_file = u_fopen(vec, result_file, U_WRITE);
-        unichar *list_line = NULL;
-        unichar **block = NULL;
-        unichar *end = NULL;
-        unichar **rest = NULL;
+        U_FILE* out_file = u_fopen(vec, result_file, U_WRITE);
+        unichar* list_line = NULL;
+        unichar** block = NULL;
+        unichar* end = NULL;
+        unichar** rest = NULL;
         int block_size = 0;
         int rest_size = 0;
         if (stdoff_file !=NULL && strcmp("",stdoff_file)!=0) {
-            unichar *line_2 = NULL;
+            unichar* line_2 = NULL;
             size_t size_buffer_line_2 = 0;
-            U_FILE *header_file = u_fopen(vec,stdoff_file,U_READ);
+            U_FILE* header_file = u_fopen(vec,stdoff_file,U_READ);
             if(header_file != NULL) {
                 const unichar LINE_COMMAND[] = { '#', 'L', 'I', 'N', 'E',  0 };
                 const unichar BLOCK_COMMAND[] = { '#', 'B', 'L', 'O', 'C', 'K',  0 };
@@ -556,8 +556,18 @@ void construct_istex_standoff(const char *text_name,
         }
         print_standoff(out_file, infos, num_info, list_line, end, block, block_size, rest, rest_size);
         free(list_line);
+        for (int block_i = 0; block_i < block_size; block_i++) {
+            if (block[block_i] != NULL) {
+                free(block[block_i]);
+            }
+        }
         free(block);
         free(end);
+        for (int rest_i = 0; rest_i < rest_size; rest_i++) {
+            if (rest[rest_i] != NULL) {
+                free(rest[rest_i]);
+            }
+        }
         free(rest);
         u_fclose(out_file);
         free_standoff_info(infos,num_info);
