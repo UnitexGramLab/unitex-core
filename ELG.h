@@ -296,8 +296,8 @@ class vm {
     elg_stack_dump(L);
   }
 
-  // [-0, +1] the script environment from the register
-  void load_environment(const char* environment_name) {
+  // [-0, +0]
+  void call_onload(const char* environment_name) {
     // retrieve the script environment from the register
     // [-0, +1] > (+1)
     lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
@@ -320,30 +320,48 @@ class vm {
                     lua_tostring(L, -1));
       }
     } else {
-      lua_pop(L, 1); // pop the function name
+      // pop the function name
+      lua_pop(L, 1);
     }
 
-    // save the environment name
+    // pop the environment
+    lua_pop(L, 1);
+  }
+
+  // [-0, +1] the script environment from the register
+  void save_name(const char* environment_name) {
+    // retrieve e, the script environment from the register
+    // [-0, +1] > (+1)
+    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+    elg_stack_dump(L);
     // [-0, +1] > (+2)
+    // retrieve c, the ELG_GLOBAL_ENVIRONMENT table
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
     elg_stack_dump(L);
-    // the ELG_GLOBAL_ENVIRONMENT table should be at the top of the stack
+    // c should be at the top of the stack
     luaL_checktype(L, -1, LUA_TTABLE);
     elg_stack_dump(L);
-    // get ELG_ENVIRONMENT_LOADED
+    // retrieve o, ELG_ENVIRONMENT_LOADED table
+    // [-0, +1] > (+3)
     lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
     elg_stack_dump(L);
-    // put the key
+    // put i, a integer key equal to the number of environments
+    // [-0, +1] > (+4)
     lua_pushinteger(L,++env);
     elg_stack_dump(L);
-    // put the environment name
+    // put n, a string value equal to the environment name
+    // [-0, +1] > (+5)
     lua_pushstring(L, environment_name);
     elg_stack_dump(L);
-    // set uEnvironment.uLoaded[i] = environment_name
+    // set c.o[i] = n
+    // [-2, 0] > (+3)
     lua_settable(L,-3);
     elg_stack_dump(L);
-    // [n-1, 0] > (+1)
-    clean(-1);
+
+    // pop o, c and e
+    // [-3, 0] > (+0)
+    lua_pop(L, 3);
+    elg_stack_dump(L);
   }
 
   bool unload(const char* function_name) {
@@ -431,38 +449,36 @@ class vm {
       }
 
       elg_stack_dump(L);
-      // create a new empty table and pushes it onto the stack
+      // create a new empty table (e) and pushes it onto the stack
       // we will use this table to holds the environment of the script
       // [-0, +1] > (+2)
       lua_newtable(L);
       elg_stack_dump(L);
 
-      // create another new empty table and pushes it onto the stack
+      // create another new empty table (f) and pushes it onto the stack
       // we will use this table to holds the global table and use then
       // as fallback
       // [-0, +1] > (+3)
       lua_newtable(L);
       elg_stack_dump(L);
 
-      // now we try to inherit the global table
-
-      // first, push onto the stack the value of _G, i.e. the environment
+      // push onto the stack the value of _G, i.e. the environment
       // which holds all the global variables defined on L
       // [-0, +1] > (+4)
       lua_getglobal(L, "_G");
       elg_stack_dump(L);
 
-      // do t[k] = v, where t is the value at index -2 in the stack
-      // and v is the value at the top of the stack, i.e.
-      // __index is a versatile metamethod that allows us to use _G as
+      // do f[__index] = _G, where f is the table at index -2
+      // and _G is the value at the top of the stack.
+      // __index is the versatile metamethod that allows us to use _G as
       // a "fallback" table if a key in the environment table doesn't exist
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "__index");
       elg_stack_dump(L);
 
-      // pops the table from the stack and sets it as the new metatable
-      // for the value at the index -2
-      // now the global table is the metatable
+      // pops f from the stack and sets it as the new metatable
+      // for e (the environment table)  at index -2
+      // now f is the metatable of the environment table
       // setmetatable({}, {__index=_G})
       // [-1, +0] > (+2)
       lua_setmetatable(L, -2);
@@ -478,33 +494,29 @@ class vm {
       lua_pushvalue(L, -1);
       elg_stack_dump(L);
 
-      // register the script environment on the script environment
+      // register the environment table on the environment table
       // using _S(elf) as key
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "_S");
       elg_stack_dump(L);
+
       // register the script environment on the registry using the
       // environment_name as key
       // [-1, +0] > (+2)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
       elg_stack_dump(L);
 
-      // retrieve the script environment from the register
-      // [-0, +1] > (+2)
-      // lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-      elg_stack_dump(L);
-
-      // in Lua functions, upvalues are the external local variables that
-      // the function uses, and that are consequently included in its closure
-      // the environment is the first upvalue, the next instruction set
-      // as environment the script environment
-      // (L, 1, 1) = L, points to the closure in the stack,
+      // set the environment as e (our environment table)
+      // (L, 1, 1) = L, points to the closure in the stack.
+      // To understand this, take into account that in Lua (5.1),
+      // every chunk starts with the environment as its first upvalue,
+      // upvalues are the external local variables that the function
+      // uses, and that are consequently included in its closure
       // [-1, +0] > (+1)
       if (lua_setfenv(L, 1) == 0) {
         fatal_error("Error calling @%s: %s\n", function_name,
                     lua_tostring(L, -1));
       }
-
       elg_stack_dump(L);
 
       //  priming run: loads and runs script's main function
@@ -515,8 +527,18 @@ class vm {
       }
       elg_stack_dump(L);
 
+      // [-0, +0] > (+0)
+      call_onload(environment_name);
+      elg_stack_dump(L);
+
       // [-0, +1] > (+1)
-      load_environment(environment_name);
+      save_name(environment_name);
+      elg_stack_dump(L);
+
+      // retrieve e, the script environment from the register
+      // [-0, +1] > (+1)
+      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+      elg_stack_dump(L);
     }  // if (!lua_istable(L,-1))
 
     // using the script environment

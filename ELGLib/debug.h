@@ -53,7 +53,7 @@ namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-#if !UNITEX_BUILD_MODE(DEBUG)
+#if UNITEX_BUILD_MODE(DEBUG)
 void entryprint(lua_State *L, const int entry, const char *kv)
 {
 		if (lua_type(L, (entry)) == LUA_TSTRING)
@@ -91,7 +91,7 @@ void tableprint(lua_State *L, const int tindex, const char *ttype)
 	lua_pop(L, 1);	/* remove copied table */
 }
 
-void elg_stack_dump(lua_State *L,
+void stack_dump(lua_State *L,
 					const char *mark = "",		/* print after *** stackdump */
 					const bool listtable = "true")	/* show (meta)table contents */
 {
@@ -226,6 +226,7 @@ void elg_stack_dump(lua_State *L,
     //}
   //}
 //}
+# define elg_stack_dump(L) stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC)
 #else
 # define elg_stack_dump(L)
 #endif
