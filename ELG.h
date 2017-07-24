@@ -197,6 +197,7 @@ class vm {
 
   void stop() {
     if (is_running()) {
+      unload_all();
       lua_gc(L, LUA_GCCOLLECT, 0);
       lua_close(L);
       L = NULL;
@@ -216,9 +217,101 @@ class vm {
     return L;
   }
 
+  void unload_all() {
+    // save the environment name
+    // [-0, +1] > (+2)
+    lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // the ELG_GLOBAL_ENVIRONMENT table should be at the top of the stack
+    luaL_checktype(L, -1, LUA_TTABLE);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // get ELG_ENVIRONMENT_LOADED
+    lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    // put nil
+    lua_pushnil(L);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    const char* environment_name = {};
+    while (lua_next(L, -2)) {
+        unitex::elg::stack_dump(L,"lua_getfield");
+        // check if key is a number
+        if (lua_isnumber(L, -2)) {
+          // check if value is a integer
+          if (lua_isstring(L, -1)) {
+              environment_name = lua_tostring(L, -1);
+              unload_environment(environment_name);
+          }
+        }
+        unitex::elg::stack_dump(L,"lua_getfield");
+        lua_pop(L, 1);
+    }
+    unitex::elg::stack_dump(L,"lua_getfield");
+  }
+
   // [-0, +0]
-  void add_environment(const char* environment_name) {
-    // save environment name
+  void unload_environment(const char* environment_name) {
+    // retrieve the script environment from the register
+    // [-0, +1] > (+1)
+    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+    unitex::elg::stack_dump(L,"lua_getfield");
+
+    // if there are an onUnload() function, then run it
+    // [-0, +1] > (+2)
+    lua_getfield(L, -1, ELG_FUNCTION_ON_UNLOAD_NAME);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    if( lua_isfunction(L, -1) ) {
+//        push(p);
+//        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
+      // [-1, +0] > (+1)
+      if (lua_pcall(L, 0, 0, 0) != 0) {
+        // remove environment
+        lua_remove (L, -2);
+        unitex::elg::stack_dump(L);
+        fatal_error("Error loading @%s: %s:%s\n",
+                    environment_name,
+                    ELG_FUNCTION_ON_LOAD_NAME,
+                    lua_tostring(L, -1));
+      }
+    } else {
+      // pop the function name
+      lua_pop(L, 1);
+    }
+
+    // pop the the script environment
+    lua_pop(L, 1);
+
+    // delete the environment name
+    unitex::elg::stack_dump(L,"lua_getfield");
+  }
+
+  // [-0, +1] the script environment from the register
+  void load_environment(const char* environment_name) {
+    // retrieve the script environment from the register
+    // [-0, +1] > (+1)
+    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+    unitex::elg::stack_dump(L,"lua_getfield");
+
+    // if there are an onLoad() function, then run it
+    // [-0, +1] > (+2)
+    lua_getfield(L, -1, ELG_FUNCTION_ON_LOAD_NAME);
+    unitex::elg::stack_dump(L,"lua_getfield");
+    if( lua_isfunction(L, -1) ) {
+//        push(p);
+//        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
+      // [-1, +0] > (+1)
+      if (lua_pcall(L, 0, 0, 0) != 0) {
+        lua_remove (L, -2); // remove environment
+        unitex::elg::stack_dump(L);
+        fatal_error("Error loading @%s: %s:%s\n",
+                    environment_name,
+                    ELG_FUNCTION_ON_LOAD_NAME,
+                    lua_tostring(L, -1));
+      }
+    } else {
+      lua_pop(L, 1); // pop the function name
+    }
+
+    // save the environment name
     // [-0, +1] > (+2)
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
     unitex::elg::stack_dump(L,"lua_getfield");
@@ -410,33 +503,8 @@ class vm {
       }
       unitex::elg::stack_dump(L,"lua_pcall");
 
-      // retrieve the script environment from the register
       // [-0, +1] > (+1)
-      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-      unitex::elg::stack_dump(L,"lua_getfield");
-
-      // if there are an onLoad() function, then run it
-      // [-0, +1] > (+2)
-      lua_getfield(L, -1, ELG_FUNCTION_ON_LOAD_NAME);
-      unitex::elg::stack_dump(L,"lua_getfield");
-      if( lua_isfunction(L, -1) ) {
-//        push(p);
-//        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
-        // [-1, +0] > (+1)
-        if (lua_pcall(L, 0, 0, 0) != 0) {
-          lua_remove (L, -2); // remove environment
-          unitex::elg::stack_dump(L);
-          fatal_error("Error loading @%s: %s:%s\n", function_name,
-                      ELG_FUNCTION_ON_LOAD_NAME,
-                      lua_tostring(L, -1));
-        }
-      } else {
-        lua_pop(L, 1); // pop the function name
-      }
-
-      // push ...
-      add_environment(environment_name);
-
+      load_environment(environment_name);
     }  // if (!lua_istable(L,-1))
 
     // using the script environment

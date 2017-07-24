@@ -105,6 +105,7 @@ SYSTEM = linux-like
 
 ifeq ($(SYSTEM),linux)
 LINUX_LIKE = yes
+#LDFLAGS += -lstdc++
 endif
 
 ifeq ($(SYSTEM),linux-like)
@@ -204,8 +205,8 @@ ifeq ($(LINUX_LIKE),yes)
 ###################
 
 ifneq ($(COMPILER_DEFINED),yes)
-CC      = g++ #-std=c++11
-CC_GCC  = gcc
+CC      = ccache g++ #-std=c++11
+CC_GCC  = ccache gcc
 endif
 
 AR      = ar
@@ -265,7 +266,7 @@ endif
 
 CFLAGS   =  -Wall -D_POSIX_SOURCE #-pedantic
 ifeq ($(DEBUG), yes)
-CFLAGS += -g3 -O0 -DDEBUG=1
+CFLAGS += -g3 -O0 -DDEBUG=1 -fuse-ld=gold -Wl,--disable-new-dtags
 UNITEX_RELEASE_MEMORY_AT_EXIT=yes
 else
 CFLAGS += -O3
@@ -331,7 +332,7 @@ ifeq ($(UNITEX_EXPERIMENTAL_MSGLOGGER),yes)
 DEFFLAGS += -DUNITEX_EXPERIMENTAL_MSGLOGGER
 endif
 
-override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." `pkg-config --cflags luajit` -I"../"
+override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".." -Llibtre/lib `pkg-config --libs-only-L luajit` `pkg-config --cflags luajit` -I"../"
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib $(TRE_LINK_LIB) $(ADDITIONAL_LIB1) $(ADDITIONAL_LIB2) -lpthread -lluajit-5.1 #-lunitex #-lboost_thread -lboost_system
@@ -1561,7 +1562,7 @@ bin: $(LIBTRE) $(BINARIES)
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
 
-%.o: ../%.cpp
+%.o: ../%.cpp ../*.h
 	$(CC) -c $(CFLAGS) $<
 
 $(TRE_SRC): $(TRE_TGZ)
