@@ -198,6 +198,7 @@ class vm {
   void stop() {
     if (is_running()) {
       unload_all();
+      unitex::elg::stack_dump(L,"lua_getfield");
       lua_gc(L, LUA_GCCOLLECT, 0);
       lua_close(L);
       L = NULL;
@@ -217,21 +218,25 @@ class vm {
     return L;
   }
 
+  // [-0, +0]
   void unload_all() {
-    // save the environment name
-    // [-0, +1] > (+2)
+    // get the environment storage
+    // [-0, +1] > (+1)
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
     unitex::elg::stack_dump(L,"lua_getfield");
     // the ELG_GLOBAL_ENVIRONMENT table should be at the top of the stack
     luaL_checktype(L, -1, LUA_TTABLE);
     unitex::elg::stack_dump(L,"lua_getfield");
-    // get ELG_ENVIRONMENT_LOADED
+    // get the loaded table ELG_ENVIRONMENT_LOADED
+    // [-0, +1] > (+2)
     lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
     unitex::elg::stack_dump(L,"lua_getfield");
     // put nil
+    // [-0, +1] > (+3)
     lua_pushnil(L);
     unitex::elg::stack_dump(L,"lua_getfield");
     const char* environment_name = {};
+    // [-1, +(2|0)] > (+(4|2))
     while (lua_next(L, -2)) {
         unitex::elg::stack_dump(L,"lua_getfield");
         // check if key is a number
@@ -239,13 +244,20 @@ class vm {
           // check if value is a integer
           if (lua_isstring(L, -1)) {
               environment_name = lua_tostring(L, -1);
+              // [-0, +0] > (+4)
               unload_environment(environment_name);
           }
         }
         unitex::elg::stack_dump(L,"lua_getfield");
+        // remove value but keep key for next iteration
+        // [-1, +0] > (+3)
         lua_pop(L, 1);
     }
     unitex::elg::stack_dump(L,"lua_getfield");
+
+    // pop uEnvironment[uLoaded]
+    // [-2, +0] > (+0)
+    lua_pop(L, 2);
   }
 
   // [-0, +0]
@@ -273,7 +285,7 @@ class vm {
                     lua_tostring(L, -1));
       }
     } else {
-      // pop the function name
+      // pop the return value that is not a function
       lua_pop(L, 1);
     }
 
