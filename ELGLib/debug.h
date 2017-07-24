@@ -42,7 +42,18 @@ namespace elg {
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-#if UNITEX_BUILD_MODE(DEBUG)
+
+/* ************************************************************************** */
+}  // namespace unitex::elg::{unnamed
+/* ************************************************************************** */
+}  // namespace unitex::elg
+/* ************************************************************************** */
+
+/* ************************************************************************** */
+namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
+// anonymous namespaces in C++ are more versatile and superior to static.
+/* ************************************************************************** */
+#if !UNITEX_BUILD_MODE(DEBUG)
 void entryprint(lua_State *L, const int entry, const char *kv)
 {
 		if (lua_type(L, (entry)) == LUA_TSTRING)
@@ -80,7 +91,7 @@ void tableprint(lua_State *L, const int tindex, const char *ttype)
 	lua_pop(L, 1);	/* remove copied table */
 }
 
-void stack_dump(lua_State *L,
+void elg_stack_dump(lua_State *L,
 					const char *mark = "",		/* print after *** stackdump */
 					const bool listtable = "true")	/* show (meta)table contents */
 {
@@ -216,12 +227,10 @@ void stack_dump(lua_State *L,
   //}
 //}
 #else
-# define stack_dump(L)
+# define elg_stack_dump(L)
 #endif
 /* ************************************************************************** */
-}  // namespace unitex::elg::{unnamed
-/* ************************************************************************** */
-}  // namespace unitex::elg
+}  // namespace unitex::{unnamed
 /* ************************************************************************** */
 }  // namespace unitex
 /* ************************************************************************** */

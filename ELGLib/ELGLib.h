@@ -49,14 +49,14 @@ int openlibs(lua_State *L) {
   // create the module table
   // [-0, +1] > (+1)
   lua_newtable(L);
-  unitex::elg::stack_dump(L,"lua_getfield");
+  elg_stack_dump(L);
   // [-0+n, +1+n] > (+1)
   // ustring module
   ustring::luaopen_ustring(L);
-  unitex::elg::stack_dump(L,"lua_getfield");
+  elg_stack_dump(L);
   // [-1, +0] > (+0)
   lua_setglobal(L, ELG_LIBRARY_NAME);
-  unitex::elg::stack_dump(L,"lua_getfield");
+  elg_stack_dump(L);
   return 1;
 }
 /* ************************************************************************** */

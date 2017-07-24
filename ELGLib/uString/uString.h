@@ -65,13 +65,13 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 int luaopen_ustring(lua_State *L) {
   // create the module table
   lua_newtable(L);
-  unitex::elg::stack_dump(L,"lua_getfield");
+  elg_stack_dump(L);
   // register functions into the module table
   luaL_register(L, NULL, lua_lib);
-  unitex::elg::stack_dump(L,"lua_getfield");
+  elg_stack_dump(L);
   // add functions table to the module
   lua_setfield(L, -2,  "ustring");
-  unitex::elg::stack_dump(L,"lua_getfield");
+  elg_stack_dump(L);
   return 1;
 }
 /* ************************************************************************** */

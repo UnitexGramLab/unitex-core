@@ -95,12 +95,12 @@ class vm {
       // load the standard library
       // [-0, +0] > (+0)
       luaL_openlibs(L);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // load the elg library
       // [-0, +0]
       elg::openlibs(L);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // setup the panic handler
       // [-0, +0] > (+0)
@@ -165,22 +165,22 @@ class vm {
       // uEnvironment
       // [-0, +1] > (+1)
       lua_newtable(L);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
       // uLoaded
       // [-0, +1] > (+2)
       lua_newtable(L);
       // [-1, +0] > (+1)
       lua_setfield(L, -2,  ELG_ENVIRONMENT_LOADED);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
       // uCalled
       // [-0, +1] > (+2)
       lua_newtable(L);
       // [-1, +0] > (+1)
       lua_setfield(L, -2,  ELG_ENVIRONMENT_CALLED);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_ENVIRONMENT);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       //uMisc
       // isWindows
@@ -198,7 +198,7 @@ class vm {
   void stop() {
     if (is_running()) {
       unload_all();
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
       lua_gc(L, LUA_GCCOLLECT, 0);
       lua_close(L);
       L = NULL;
@@ -223,22 +223,22 @@ class vm {
     // get the environment storage
     // [-0, +1] > (+1)
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // the ELG_GLOBAL_ENVIRONMENT table should be at the top of the stack
     luaL_checktype(L, -1, LUA_TTABLE);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // get the loaded table ELG_ENVIRONMENT_LOADED
     // [-0, +1] > (+2)
     lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // put nil
     // [-0, +1] > (+3)
     lua_pushnil(L);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     const char* environment_name = {};
     // [-1, +(2|0)] > (+(4|2))
     while (lua_next(L, -2)) {
-        unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+        elg_stack_dump(L);
         // check if key is a number
         if (lua_isnumber(L, -2)) {
           // check if value is a integer
@@ -248,12 +248,12 @@ class vm {
               unload_environment(environment_name);
           }
         }
-        unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+        elg_stack_dump(L);
         // remove value but keep key for next iteration
         // [-1, +0] > (+3)
         lua_pop(L, 1);
     }
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
 
     // pop uEnvironment[uLoaded]
     // [-2, +0] > (+0)
@@ -265,12 +265,12 @@ class vm {
     // retrieve the script environment from the register
     // [-0, +1] > (+1)
     lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
 
     // if there are an onUnload() function, then run it
     // [-0, +1] > (+2)
     lua_getfield(L, -1, ELG_FUNCTION_ON_UNLOAD_NAME);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     if( lua_isfunction(L, -1) ) {
 //        push(p);
 //        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
@@ -278,7 +278,7 @@ class vm {
       if (lua_pcall(L, 0, 0, 0) != 0) {
         // remove environment
         lua_remove (L, -2);
-        unitex::elg::stack_dump(L);
+        elg_stack_dump(L);
         fatal_error("Error loading @%s: %s:%s\n",
                     environment_name,
                     ELG_FUNCTION_ON_LOAD_NAME,
@@ -293,7 +293,7 @@ class vm {
     lua_pop(L, 1);
 
     // delete the environment name
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
   }
 
   // [-0, +1] the script environment from the register
@@ -301,19 +301,19 @@ class vm {
     // retrieve the script environment from the register
     // [-0, +1] > (+1)
     lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
 
     // if there are an onLoad() function, then run it
     // [-0, +1] > (+2)
     lua_getfield(L, -1, ELG_FUNCTION_ON_LOAD_NAME);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     if( lua_isfunction(L, -1) ) {
 //        push(p);
 //        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
       // [-1, +0] > (+1)
       if (lua_pcall(L, 0, 0, 0) != 0) {
         lua_remove (L, -2); // remove environment
-        unitex::elg::stack_dump(L);
+        elg_stack_dump(L);
         fatal_error("Error loading @%s: %s:%s\n",
                     environment_name,
                     ELG_FUNCTION_ON_LOAD_NAME,
@@ -326,22 +326,22 @@ class vm {
     // save the environment name
     // [-0, +1] > (+2)
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // the ELG_GLOBAL_ENVIRONMENT table should be at the top of the stack
     luaL_checktype(L, -1, LUA_TTABLE);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // get ELG_ENVIRONMENT_LOADED
     lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // put the key
     lua_pushinteger(L,++env);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // put the environment name
     lua_pushstring(L, environment_name);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // set uEnvironment.uLoaded[i] = environment_name
     lua_settable(L,-3);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     // [n-1, 0] > (+1)
     clean(-1);
   }
@@ -379,7 +379,7 @@ class vm {
   // in:             (+0)
   // out: [-0, +2] > (+2)
   bool load(const char* function_name) {
-    unitex::elg::stack_dump(L);
+    elg_stack_dump(L);
 
     // prepare script environment_name
     char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
@@ -398,7 +398,7 @@ class vm {
     // "foo" where foo is the environment name
     // [-0, +1] > (+1)
     lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
 
     // if the retrieved value is not the script environment, then
     // load once the file with the extended function implementations
@@ -407,7 +407,7 @@ class vm {
       // of the stack
       // [-1, +0] > (+0)
       lua_pop(L, 1);
-      unitex::elg::stack_dump(L,"lua_pop");
+      elg_stack_dump(L);
 
       // prepare script_name and script_file variables
       char script_name[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
@@ -430,19 +430,19 @@ class vm {
                     lua_tostring(L, -1));
       }
 
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
       // create a new empty table and pushes it onto the stack
       // we will use this table to holds the environment of the script
       // [-0, +1] > (+2)
       lua_newtable(L);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // create another new empty table and pushes it onto the stack
       // we will use this table to holds the global table and use then
       // as fallback
       // [-0, +1] > (+3)
       lua_newtable(L);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // now we try to inherit the global table
 
@@ -450,7 +450,7 @@ class vm {
       // which holds all the global variables defined on L
       // [-0, +1] > (+4)
       lua_getglobal(L, "_G");
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // do t[k] = v, where t is the value at index -2 in the stack
       // and v is the value at the top of the stack, i.e.
@@ -458,7 +458,7 @@ class vm {
       // a "fallback" table if a key in the environment table doesn't exist
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "__index");
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // pops the table from the stack and sets it as the new metatable
       // for the value at the index -2
@@ -466,33 +466,33 @@ class vm {
       // setmetatable({}, {__index=_G})
       // [-1, +0] > (+2)
       lua_setmetatable(L, -2);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // [-0, +1] > (+3)
       // duplicate environment table
       lua_pushvalue(L, -1);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // [-0, +1] > (+4)
       // duplicate environment table
       lua_pushvalue(L, -1);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // register the script environment on the script environment
       // using _S(elf) as key
       // [-1, +0] > (+3)
       lua_setfield(L, -2, "_S");
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
       // register the script environment on the registry using the
       // environment_name as key
       // [-1, +0] > (+2)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // retrieve the script environment from the register
       // [-0, +1] > (+2)
       // lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       // in Lua functions, upvalues are the external local variables that
       // the function uses, and that are consequently included in its closure
@@ -505,7 +505,7 @@ class vm {
                     lua_tostring(L, -1));
       }
 
-      unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+      elg_stack_dump(L);
 
       //  priming run: loads and runs script's main function
       // [-1, +0] > (+0)
@@ -513,7 +513,7 @@ class vm {
         fatal_error("Error calling @%s: %s\n", function_name,
                     lua_tostring(L, -1));
       }
-      unitex::elg::stack_dump(L,"lua_pcall");
+      elg_stack_dump(L);
 
       // [-0, +1] > (+1)
       load_environment(environment_name);
@@ -523,7 +523,7 @@ class vm {
     // get the extended function to run
     // [-0, +1] > (+2)
     lua_getfield(L, -1, function_name);
-    unitex::elg::stack_dump(L,UNITEX_COMPILER_IDENTIFIER_FUNC);
+    elg_stack_dump(L);
     if (!lua_isfunction(L, -1)) {
       lua_pop(L, 2); // pop the environment + returned field
       fatal_error("Error loading @%s, function doesn't exists\n",
@@ -540,7 +540,7 @@ class vm {
   //  0 : step back
   //  1 : step forward
   int call(const char* function_name, int nargs, struct stack_unichar* stack) {
-    unitex::elg::stack_dump(L,function_name);
+    elg_stack_dump(L);
     int retval = 1;
 
     // do the call (lua_State *L, int nargs, int nresults, int errfunc)
@@ -550,11 +550,11 @@ class vm {
     // [-(n + 1), +1] > (+2) 1:environment, 2:returned value
     if (lua_pcall(L, nargs, 1, 0) != 0) {
       lua_remove (L, -2); // remove environment
-      unitex::elg::stack_dump(L);
+      elg_stack_dump(L);
       fatal_error("Error calling @%s: %s\n", function_name,
                   lua_tostring(L, -1));
     }
-    unitex::elg::stack_dump(L);
+    elg_stack_dump(L);
     int type = lua_type(L, -1);
 
     // retrieve boolean or string result
@@ -612,10 +612,10 @@ class vm {
 
     // remove the returned value from the top of the stack
     lua_pop(L, 1);
-    unitex::elg::stack_dump(L);
+    elg_stack_dump(L);
     // remove the environment
     lua_pop(L, 1);
-    unitex::elg::stack_dump(L);
+    elg_stack_dump(L);
 
     return retval;
   }
