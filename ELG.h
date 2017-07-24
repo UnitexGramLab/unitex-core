@@ -296,13 +296,13 @@ class vm {
     elg_stack_dump(L);
   }
 
-  // [-0, +0]
-  void call_onload(const char* environment_name) {
-    // retrieve the script environment from the register
-    // [-0, +1] > (+1)
-    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-    elg_stack_dump(L);
+  void call_unload(const char* environment_name) {
 
+  }
+
+  // -1: environment
+  // [-0, +0] > (+1)
+  void call_onload(const char* environment_name) {
     // if there are an onLoad() function, then run it
     // [-0, +1] > (+2)
     lua_getfield(L, -1, ELG_FUNCTION_ON_LOAD_NAME);
@@ -320,25 +320,19 @@ class vm {
                     lua_tostring(L, -1));
       }
     } else {
-      // pop the function name
+      // pop the returned value
       lua_pop(L, 1);
     }
-
-    // pop the environment
-    lua_pop(L, 1);
   }
 
-  // [-0, +1] the script environment from the register
+  // [-0, +0] > (+1)
   void save_name(const char* environment_name) {
-    // retrieve e, the script environment from the register
-    // [-0, +1] > (+1)
-    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
-    elg_stack_dump(L);
-    // [-0, +1] > (+2)
     // retrieve c, the ELG_GLOBAL_ENVIRONMENT table
+    // [-0, +1] > (+2)
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
     elg_stack_dump(L);
     // c should be at the top of the stack
+    // [-0, +0] > (+2)
     luaL_checktype(L, -1, LUA_TTABLE);
     elg_stack_dump(L);
     // retrieve o, ELG_ENVIRONMENT_LOADED table
@@ -357,10 +351,9 @@ class vm {
     // [-2, 0] > (+3)
     lua_settable(L,-3);
     elg_stack_dump(L);
-
-    // pop o, c and e
-    // [-3, 0] > (+0)
-    lua_pop(L, 3);
+    // pop o and c
+    // [-2, 0] > (+1)
+    lua_pop(L, 2);
     elg_stack_dump(L);
   }
 
@@ -527,17 +520,17 @@ class vm {
       }
       elg_stack_dump(L);
 
-      // [-0, +0] > (+0)
+      // retrieve the script environment from the register
+      // [-0, +1] > (+1)
+      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+      elg_stack_dump(L);
+
+      // [-0, +0] > (+1)
       call_onload(environment_name);
       elg_stack_dump(L);
 
-      // [-0, +1] > (+1)
+      // [-0, +0] > (+1)
       save_name(environment_name);
-      elg_stack_dump(L);
-
-      // retrieve e, the script environment from the register
-      // [-0, +1] > (+1)
-      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
       elg_stack_dump(L);
     }  // if (!lua_istable(L,-1))
 
