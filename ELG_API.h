@@ -205,9 +205,9 @@ int start_with_space(lua_State * L) {
   struct locate_parameters* p = get_locate_params(L);
   int start_with_space = 0;
 
-  if(p) {
+  if (p) {
     int pos = p->current_origin;
-    if(pos == 0 || (pos > 0 && p->buffer[pos-1] == p->SPACE)) {
+    if (pos == 0 || (pos > 0 && p->buffer[pos-1] == p->SPACE)) {
       start_with_space = 1;
     }
   }
@@ -222,7 +222,7 @@ int start_newline(lua_State * L) {
   struct locate_parameters* p = get_locate_params(L);
   int start_newline = 0;
 
-  if(p && p->enter_pos) {
+  if (p && p->enter_pos) {
     p->no_fail_fast=1;
     int pos = p->current_origin;
     if(pos == 0 ||

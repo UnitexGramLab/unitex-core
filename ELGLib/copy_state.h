@@ -58,31 +58,196 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 /* ************************************************************************** */
+#if defined(LUA_VERSION_NUM) &&\
+            LUA_VERSION_NUM == 501
+# ifndef  lua_isinteger
+# define lua_isinteger(L, index)\
+             ((lua_type(L, index) == LUA_TNUMBER) &&\
+              (lua_tointeger(L, index) == lua_tonumber(L, index)))
+#endif   // ifndef  lua_isintege
+#endif  // defined(LUA_VERSION_NUM)
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
-// to trace the copy beetween two states
+// to trace the copy between two states
 // @source lua-llthreads
 struct copy_state {
   lua_State* from;
   lua_State* to;
-  int  has_cache;
-  int  cache_idx;
+  int has_cache;
+  int cache_idx;
   copy_state(void)
       : from(NULL),
-        to(0),
+        to(NULL),
         has_cache(0),
         cache_idx(0) {
   }
 };
 /* ************************************************************************** */
-namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
-// anonymous namespaces in C++ are more versatile and superior to static.
+static int copy_number(lua_State* to, lua_State* from, int idx);
+static int copy_boolean(lua_State* to, lua_State* from, int idx);
+static int copy_string(lua_State* to, lua_State* from, int idx);
+static int copy_lightuserdata(lua_State* to, lua_State* from, int idx);
+static int copy_function(lua_State* to, lua_State* from, int idx);
+static int copy_table_from_cache(copy_state* state, int idx);
+static int copy_value(copy_state* state, int idx);
+static int copy_table(copy_state* state, int idx);
+static int copy_values(lua_State* to, lua_State* from,  int idx, int top);
 /* ************************************************************************** */
+static int copy_number(lua_State* to, lua_State* from, int idx) {
+  if (lua_isinteger(from, idx)) {
+    lua_pushinteger(to, lua_tointeger(from, idx));
+  } else {
+    lua_pushnumber(to, lua_tonumber(from, idx));
+  }
+  return 1;
+}
+/* ************************************************************************** */
+static int copy_boolean(lua_State* to, lua_State* from, int idx) {
+  lua_pushboolean(to, lua_toboolean(from, idx));
+  return 1;
+}
+/* ************************************************************************** */
+static int copy_string(lua_State* to, lua_State* from, int idx) {
+  size_t length;
+  const char* string = lua_tolstring(from, idx, &length);
+  if (string) {
+    lua_pushlstring(to, string, length);
+    return 1;
+  }
+  return 0;
+}
+/* ************************************************************************** */
+static int copy_lightuserdata(lua_State* to, lua_State* from, int idx) {
+  lua_pushlightuserdata(to, lua_touserdata(from, idx));
+  return 1;
+}
+/* ************************************************************************** */
+static int copy_function(lua_State* to, lua_State* from, int idx) {
+  lua_CFunction f = lua_tocfunction(from, idx);
+  if (f) {
+    lua_pushcfunction(to, f);
+    return 1;
+  }
+  return 0;
+}
+/* ************************************************************************** */
+// check if a table is cached; append to the cache if not
+// @source lua-llthreads
+static int copy_table_from_cache(copy_state* state, int idx) {
+  void* ptr;
 
+  // convert table to pointer for lookup in cache
+  ptr = (void *) lua_topointer(state->from, idx);
+
+  if (ptr == NULL) {
+    // can't convert pointer
+    return 0;
+  }
+
+  // check if we need to create the cache
+  if (!state->has_cache) {
+    lua_newtable(state->to);
+    lua_replace(state->to, state->cache_idx);
+    state->has_cache = 1;
+  }
+
+  lua_pushlightuserdata(state->to, ptr);
+  lua_rawget(state->to, state->cache_idx);
+
+  // check if the table was already cached
+  if (lua_isnil(state->to, -1)) {
+    // not in cache
+    lua_pop(state->to, 1);
+    // create new table and add to cache
+    lua_newtable(state->to);
+    lua_pushlightuserdata(state->to, ptr);
+    lua_pushvalue(state->to, -2);
+    lua_rawset(state->to, state->cache_idx);
+    return 0;
+  }
+
+  // found table in cache
+  return 1;
+}
 /* ************************************************************************** */
-}  // namespace unitex::elg::{unnamed
+// copy a single value between two states
+static int copy_value(copy_state* state, int idx) {
+  elg_stack_dump(state->from);
+  elg_stack_dump(state->to);
+  int value_type = lua_type(state->from, idx);
+  switch (value_type) {
+    //   LUA_TNIL:
+    case LUA_TBOOLEAN:        return copy_boolean(state->to, state->from, idx);       break;
+    case LUA_TLIGHTUSERDATA:  return copy_lightuserdata(state->to, state->from, idx); break;
+    case LUA_TNUMBER:         return copy_number(state->to, state->from, idx);        break;
+    case LUA_TSTRING:         return copy_string(state->to, state->from, idx);        break;
+    case LUA_TTABLE:          return copy_table(state, idx);                          break;
+    case LUA_TFUNCTION:       return copy_function(state->to, state->from, idx);      break;
+    //   LUA_TUSERDATA:
+    //   LUA_TTHREAD:
+    default:                  return 0;                                               break;
+  }
+  elg_stack_dump(state->to);
+  return 0;
+}
 /* ************************************************************************** */
+// copy a table between two states
+static int copy_table(copy_state* state, int idx) {
+  // only if it's not already on the exchange cache
+  if (!copy_table_from_cache(state, idx)) {
+    lua_pushnil(state->from);
+    while (lua_next(state->from, idx) != 0) {
+      elg_stack_dump(state->from);
+      elg_stack_dump(state->to);
+      int value_pos = lua_gettop(state->from);
+      int key_pos   = value_pos - 1;
+      int key_type  = lua_type(state->from, key_pos);
+      if (key_type == LUA_TNUMBER || key_type == LUA_TSTRING) {
+        if (copy_value(state, key_pos)) {
+          if (copy_value(state, value_pos)) {
+            lua_settable(state->to, -3);
+          } else {
+            lua_pop(state->to, 1);
+          }
+        }
+      }
+      // remove value but keep key for next iteration
+      lua_pop(state->from, 1);
+      elg_stack_dump(state->from);
+    }
+  }
+//    copy_key(to, from, idx - 1);
+  elg_stack_dump(state->to);
+  return 1;
+}
+/* ************************************************************************** */
+// copy all values between two states
+// @source lua-llthreads
+static int copy_values(lua_State* to, lua_State* from,  int idx, int top) {
+  copy_state  state;
+
+  int nvalues = top - idx + 1;
+  lua_checkstack(to, nvalues);
+
+  state.from = from;
+  state.to = to;
+  state.has_cache = 0;
+  lua_pushnil(to);
+  state.cache_idx = lua_gettop(to);
+
+  int ncopyvalues = 0;
+  for (; idx <= top; ++idx) {
+    if(copy_value(&state, idx)) {
+      ++ncopyvalues;
+    }
+  }
+
+  lua_remove(to, state.cache_idx);
+
+  return ncopyvalues;
+}
 /* ************************************************************************** */
 }  // namespace unitex
 /* ************************************************************************** */
-#endif // ELGLIB_COPY_STATE_H_
+#endif  // ELGLIB_COPY_STATE_H_
