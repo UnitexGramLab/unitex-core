@@ -43,8 +43,9 @@ namespace unitex {
 # define UNITEX_EXTENSIONS_PATH "path = 'extensions\\\\?.lua';cpath = 'extensions\\\\?.dll'\n"
 #endif
 /* ************************************************************************** */
-#define elg_error(L,message)                        \
-  return luaL_error(L,"[elg:%s:%d] %s",             \
+#define elg_error(message,...)                      \
+  return luaL_error(L,"[%s:%s:%d] Error: %s",       \
+                    ELG_ENVIRONMENT_PREFIX,          \
                     UNITEX_COMPILER_IDENTIFIER_FUNC, \
                     UNITEX_FILE_LINE,                \
                     message);
@@ -100,7 +101,7 @@ class vm {
 
     // create a new Lua environment
     if ((L = luaL_newstate()) == NULL) {
-      fatal_error("Failed to create a new environment\n");
+      elg_error("failed to create a new environment");
     }
 
     if (is_running()) {
@@ -125,7 +126,7 @@ class vm {
       if (luaL_dofile(L,"/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/init.upp")) {
         const char* e =lua_tostring(L, -1);
         lua_pop(L,1);
-        fatal_error("Error running the initialization script: %s\n",e);
+        luaL_error(L,"Error running the initialization script: %s\n",e);
       }
 
       // -------------------------------------------------------------------
@@ -236,8 +237,6 @@ class vm {
     lua_close(to);
     to = NULL;
 
-    elg_error(L, "To stack overflow!");
-
     return retval;
   }
 
@@ -330,10 +329,10 @@ class vm {
         elg_stack_dump(L);
         lua_pop(L, 1); // error
         elg_stack_dump(L);
-        fatal_error("Error loading @%s: %s:%s\n",
-                    environment_name,
-                    ELG_FUNCTION_ON_LOAD_NAME,
-                    e);
+        luaL_error(L,"Error loading @%s: %s:%s\n",
+                      environment_name,
+                      ELG_FUNCTION_ON_LOAD_NAME,
+                      e);
       }
     } else {
       // pop the return value that is not a function
@@ -367,10 +366,10 @@ class vm {
         elg_stack_dump(L);
         lua_pop(L, 1);
         elg_stack_dump(L);
-        fatal_error("Error loading @%s: %s:%s\n",
-                    environment_name,
-                    ELG_FUNCTION_ON_LOAD_NAME,
-                    e);
+        luaL_error(L,"Error loading @%s: %s:%s\n",
+                      environment_name,
+                      ELG_FUNCTION_ON_LOAD_NAME,
+                      e);
       }
     } else {
       // pop the returned value
@@ -494,7 +493,7 @@ class vm {
         elg_stack_dump(L);
         lua_pop(L,1);
         elg_stack_dump(L);
-        fatal_error("Error loading %s: %s\n", script_file, e);
+        luaL_error(L,"Error loading %s: %s\n", script_file, e);
       }
 
       elg_stack_dump(L);
@@ -566,7 +565,7 @@ class vm {
         elg_stack_dump(L);
         const char* e = lua_tostring(L, -1);
         lua_pop(L,1);
-        fatal_error("Error calling @%s: %s\n", function_name, e);
+        luaL_error(L, "Error calling @%s: %s\n", function_name, e);
       }
       elg_stack_dump(L);
 
@@ -575,7 +574,7 @@ class vm {
       if (lua_pcall(L, 0, 0, 0)) {  // LUA_MULTRET -> 0 ?
         const char* e = lua_tostring(L, -1);
         lua_pop(L,1);
-        fatal_error("Error calling @%s: %s\n", function_name, e);
+        luaL_error(L, "Error calling @%s: %s\n", function_name, e);
       }
       elg_stack_dump(L);
 
@@ -600,7 +599,7 @@ class vm {
     elg_stack_dump(L);
     if (!lua_isfunction(L, -1)) {
       lua_pop(L, 2); // pop the environment + returned field
-      fatal_error("Error loading @%s, function doesn't exists\n",
+      luaL_error(L, "Error loading @%s, function doesn't exists\n",
                   function_name);
     }
 
@@ -625,7 +624,7 @@ class vm {
     if (lua_pcall(L, nargs, 1, 0) != 0) {
       const char* e = lua_tostring(L, -1);
       lua_pop(L,1); // error
-      fatal_error("Error calling @%s: %s\n", function_name,e);
+      luaL_error(L, "Error calling @%s: %s\n", function_name,e);
     }
     elg_stack_dump(L);
     int type = lua_type(L, -1);
@@ -635,7 +634,7 @@ class vm {
         || type == LUA_TNUMBER || type == LUA_TSTRING)) {
       const char* e = lua_tostring(L, -1);
       lua_pop(L, 1); // error
-      fatal_error(
+      luaL_error(L,
           "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
           function_name, e);
     }
