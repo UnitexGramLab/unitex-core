@@ -497,8 +497,10 @@ for (;;) {
 
         // 17.06.16: send locate params
 //        lua_pushlightuserdata(L,p);
+        // [-0, +1] > (+1)
         p->elg->push(p);
 //        lua_setglobal(L, "u_params");
+        // [-1, +0] > (+0)
         p->elg->setglobal(ELG_GLOBAL_LOCATE_PARAMS);
 //        ++script_params_count;
 

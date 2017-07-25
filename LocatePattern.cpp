@@ -152,11 +152,12 @@ p->max_matches_at_token_pos=MAX_MATCHES_AT_TOKEN_POS;
 p->max_matches_per_subgraph=MAX_MATCHES_PER_SUBGRAPH;
 p->max_errors=MAX_ERRORS;
 
-p->elg = new vm();
-p->elg->restart();
-
 p->pos_in_tokens = -1;
 p->pos_in_chars = -1;
+
+// last of all
+p->elg = new vm();
+p->elg->restart();
 
 return p;
 }
@@ -167,6 +168,9 @@ return p;
  */
 void free_locate_parameters(struct locate_parameters* p) {
 if (p==NULL) return;
+// first of all
+delete(p->elg);
+
 if (p->recyclable_wchart_buffer!=NULL) {
     free(p->recyclable_wchart_buffer);
 }
@@ -681,7 +685,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
 free(p->morpho_dic);
 free(p->morpho_dic_inf_free);
 free(p->morpho_dic_bin_free);
-delete p->elg;
+//delete p->elg; free on free_locate_parameters(p)
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
 #endif

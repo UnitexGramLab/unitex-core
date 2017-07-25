@@ -36,6 +36,9 @@
 // Project's .h files. (order the includes alphabetically)
 #include "ELG_API.h"
 /* ************************************************************************** */
+#define EXTENSION_NAME_USTRING     "ustring"
+#define EXTENSION_VERSION_USTRING  "0.1.0"
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
@@ -64,14 +67,23 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 /* ************************************************************************** */
 int luaopen_ustring(lua_State *L) {
   // create the module table
+  // [-0, +1] > (+1)
   lua_newtable(L);
   elg_stack_dump(L);
   // register functions into the module table
   luaL_register(L, NULL, lua_lib);
   elg_stack_dump(L);
+
+  // set the name and version of the module
+  lua_pushliteral(L, EXTENSION_NAME_USTRING);
+  lua_setfield(L, -2, "_NAME");
+  lua_pushliteral(L, EXTENSION_VERSION_USTRING);
+  lua_setfield(L, -2, "_VERSION");
+
   // add functions table to the module
-  lua_setfield(L, -2,  "ustring");
+  lua_setfield(L, -2,  EXTENSION_NAME_USTRING);
   elg_stack_dump(L);
+
   return 1;
 }
 /* ************************************************************************** */

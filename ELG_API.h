@@ -45,9 +45,11 @@
 #include "TransductionStack.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
-#define ELG_FUNCTION_ON_LOAD_NAME       "onLoad"
-#define ELG_FUNCTION_ON_UNLOAD_NAME     "onUnload"
-#define ELG_FUNCTION_ON_FAIL_NAME       "onFail"
+/* ************************************************************************** */
+#define ELG_FUNCTION_ON_LOAD_NAME       "load_event"
+#define ELG_FUNCTION_ON_UNLOAD_NAME     "unload_event"
+#define ELG_FUNCTION_ON_FAIL_NAME       "fail_event"
+/* ************************************************************************** */
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
 #define ELG_GLOBAL_TOKEN                "uToken"
@@ -59,6 +61,7 @@
 #define ELG_GLOBAL_ENVIRONMENT          "uEnvironment"
 #define ELG_ENVIRONMENT_LOADED          "uLoaded"
 #define ELG_ENVIRONMENT_CALLED          "uCalled"
+#define ELG_ENVIRONMENT_VALUES          "uValues"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */

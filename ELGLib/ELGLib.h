@@ -36,7 +36,8 @@
 // Project's .h files. (order the includes alphabetically)
 #include "uString/uString.h"
 /* ************************************************************************** */
-#define ELG_LIBRARY_NAME  "elg"
+#define EXTENSION_NAME_ELG     "elg"
+#define EXTENSION_VERSION_ELG  "0.1.0"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -51,11 +52,19 @@ int openlibs(lua_State *L) {
   lua_newtable(L);
   elg_stack_dump(L);
   // [-0+n, +1+n] > (+1)
+  // register modules into the module table
   // ustring module
   ustring::luaopen_ustring(L);
   elg_stack_dump(L);
+  // set the name and version of the module
+  lua_pushliteral(L, EXTENSION_NAME_ELG);
+  lua_setfield(L, -2, "_NAME");
+  lua_pushliteral(L, EXTENSION_VERSION_ELG);
+  lua_setfield(L, -2, "_VERSION");
+  elg_stack_dump(L);
+  // register a global "elg" table
   // [-1, +0] > (+0)
-  lua_setglobal(L, ELG_LIBRARY_NAME);
+  lua_setglobal(L, EXTENSION_NAME_ELG);
   elg_stack_dump(L);
   return 1;
 }

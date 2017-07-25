@@ -37,21 +37,73 @@
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
+#if UNITEX_OS_IS(UNIX)
+# define UNITEX_EXTENSIONS_PATH "path = 'extensions/?.lua';cpath = 'extensions/?.so'\n"
+#else
+# define UNITEX_EXTENSIONS_PATH "path = 'extensions\\\\?.lua';cpath = 'extensions\\\\?.dll'\n"
+#endif
+/* ************************************************************************** */
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 501
+# define lua_isinteger(L,index) ((lua_type(L,index) == LUA_TNUMBER) &&\
+                (lua_tointeger(L, index) == lua_tonumber(L, index)))
+#endif
+/* ************************************************************************** */
 static const char* UNITEX_SCRIPT_PATH =
     "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
+/* ************************************************************************** */
+typedef struct state {
+  state(void)
+      : L(NULL) {
+  }
+
+  state(lua_State* L)
+      : L(L) {
+  }
+
+  ~state(void) {
+    lua_gc(L, LUA_GCCOLLECT, 0);
+    lua_close(L);
+    L = NULL;
+  }
+
+  //UNITEX_EXPLICIT_CONVERSIONS
+  operator lua_State*() const {
+    return L;
+  }
+
+  state& operator=(lua_State* rhs) {
+    L = rhs;
+    return *this;
+  }
+
+  lua_State* L;
+} state;
+/* ************************************************************************** */
+struct copy_state {
+  lua_State* from;
+  lua_State* to;
+  int  has_cache;
+  int  cache_idx;
+  copy_state(void)
+      : from(NULL),
+        to(0),
+        has_cache(0),
+        cache_idx(0) {
+  }
+};
 /* ************************************************************************** */
 class vm {
  public:
   vm(void)
-      : L(NULL), env(0) {
+      : L(), env(0) {
   }
 
   virtual ~vm(void) {
     stop();
   }
 
-//  // traceback function taken straight out of luajit.c
-//  static int trace(lua_State* L) {
+// // traceback function taken straight out of luajit.c
+//  static int traceback(lua_State* L) {
 //    if (!lua_isstring(L, 1)) { /* Non-string error object? Try metamethod. */
 //      if (lua_isnoneornil(L, 1) || !luaL_callmeta(L, 1, "__tostring")
 //          || !lua_isstring(L, -1))
@@ -167,18 +219,28 @@ class vm {
       // [-0, +1] > (+1)
       lua_newtable(L);
       elg_stack_dump(L);
+
       // uLoaded
       // [-0, +1] > (+2)
       lua_newtable(L);
       // [-1, +0] > (+1)
       lua_setfield(L, -2,  ELG_ENVIRONMENT_LOADED);
       elg_stack_dump(L);
+
       // uCalled
       // [-0, +1] > (+2)
       lua_newtable(L);
       // [-1, +0] > (+1)
       lua_setfield(L, -2,  ELG_ENVIRONMENT_CALLED);
       elg_stack_dump(L);
+
+      // uValues
+      // [-0, +1] > (+2)
+      lua_newtable(L);
+      // [-1, +0] > (+1)
+      lua_setfield(L, -2,  ELG_ENVIRONMENT_VALUES);
+      elg_stack_dump(L);
+
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_ENVIRONMENT);
       elg_stack_dump(L);
@@ -190,9 +252,30 @@ class vm {
       // end of register custom classes
       // -------------------------------------------------------------------
 
+      // lua_pushcfunction(L, traceback);
+
       // successful restart
       retval = true;
     }
+
+    state from = luaL_newstate();
+    state to = luaL_newstate();
+
+
+    lua_getglobal(L, "_G");
+    lua_pushliteral(from,"Test");
+    lua_pushstring(from,UNITEX_SCRIPT_PATH);
+    lua_pushboolean(from,false);
+    lua_pushinteger(from,6);
+    lua_pushnumber(from,8.8);
+    elg_stack_dump(from);
+
+    int top = lua_gettop(from);
+    copy_values(to,from,1,top);
+    elg_stack_dump(to);
+
+
+
     return retval;
   }
 
@@ -200,9 +283,6 @@ class vm {
     if (is_running()) {
       unload_all();
       elg_stack_dump(L);
-      lua_gc(L, LUA_GCCOLLECT, 0);
-      lua_close(L);
-      L = NULL;
     }
   }
 
@@ -214,6 +294,109 @@ class vm {
       lua_pop(L, n + top);
     }
   }
+
+  static void copy_number(lua_State* to, lua_State* from, int idx) {
+    if (lua_isinteger(from, idx)) {
+      lua_pushinteger(to, lua_tointeger(from, idx));
+    } else {
+      lua_pushnumber(to, lua_tonumber(from, idx));
+    }
+  }
+
+  static void copy_boolean(lua_State* to, lua_State* from, int idx) {
+    lua_pushboolean(to, lua_toboolean(from, idx));
+  }
+
+  static void copy_string(lua_State* to, lua_State* from, int idx) {
+    size_t length;
+    const char* string = lua_tolstring(from, idx, &length);
+    if (string) {
+      lua_pushlstring(to, string, length);
+    }
+  }
+
+  static void copy_lightuserdata(lua_State* to, lua_State* from, int idx) {
+    lua_pushlightuserdata(to, lua_touserdata(from, idx));
+  }
+
+  static void copy_function(lua_State* to, lua_State* from, int idx) {
+    lua_CFunction f = lua_tocfunction(from, idx);
+    if (f) {
+      lua_pushcfunction(to, f);
+    } else {
+      lua_pushnil(to);
+    }
+  }
+
+  static void copy_key(lua_State* to, lua_State* from, int idx) {
+    int key = lua_type(from, idx);
+    switch (key) {
+      case LUA_TSTRING:
+        lua_setfield(to, idx, lua_tostring(from, idx));
+        break;
+      default:
+        lua_rawseti(to, idx, (int) lua_tointeger(from, idx));
+        break;
+    }
+  }
+
+  static void copy_table(lua_State* to, lua_State* from) {
+    lua_newtable(to);
+    lua_pushnil(from);
+    while (lua_next(from, -2) != 0) {
+      int key = lua_type(from, -2);
+      switch (key) {
+        case LUA_TNUMBER:
+        case LUA_TSTRING:
+          copy_value(to, from, -1);
+          copy_key(to, from, -2);
+          break;
+        default:
+          break;
+      }
+      // remove value but keep key for next iteration
+      lua_pop(from, 1);
+    }
+    copy_key(to, from, -2);
+  }
+
+  static void copy_value(lua_State* to, lua_State* from, int idx) {
+    int value = lua_type(from, idx);
+    switch (value) {
+      case LUA_TNUMBER:         copy_number(to,from,idx);        break;
+      case LUA_TBOOLEAN:        copy_boolean(to,from,idx);       break;
+      case LUA_TSTRING:         copy_string(to,from,idx);        break;
+      case LUA_TLIGHTUSERDATA:  copy_lightuserdata(to,from,idx); break;
+      case LUA_TFUNCTION:       copy_function(to,from,idx);      break;
+      case LUA_TTABLE:          copy_table(to,from);             break;
+      case LUA_TNIL:
+      //   LUA_TUSERDATA:
+      //   LUA_TTHREAD:
+      default:                  lua_pushnil(to);                break;
+    }
+  }
+
+  // copies values from a state to another
+  // @source https://github.com/Neopallium/lua-llthreads
+  static void copy_values(lua_State* to, lua_State* from,  int idx, int top) {
+    struct copy_state  state;
+
+    int nvalues = top - idx + 1;
+    lua_checkstack(to, nvalues);
+
+    state.from = from;
+    state.to = to;
+    state.has_cache = 0;
+    lua_pushnil(to);
+    state.cache_idx = lua_gettop(to);
+
+    for (; idx <= top; ++idx) {
+      copy_value(state.to,state.from,idx);
+    }
+
+    lua_remove(to, state.cache_idx);
+  }
+
 
   bool is_running() {
     return L;
@@ -445,7 +628,7 @@ class vm {
         elg_stack_dump(L);
         lua_pop(L,1);
         elg_stack_dump(L);
-        fatal_error("Error loading @%s: %s\n", script_file, e);
+        fatal_error("Error loading %s: %s\n", script_file, e);
       }
 
       elg_stack_dump(L);
@@ -733,7 +916,7 @@ class vm {
  private:
 
  protected:
-  lua_State* L;
+  state L;
   int env;
 };
 /* ************************************************************************** */
