@@ -228,7 +228,9 @@ static int copy_values(lua_State* to, lua_State* from,  int idx, int top) {
   copy_state  state;
 
   int nvalues = top - idx + 1;
-  lua_checkstack(to, nvalues);
+  if (!lua_checkstack(to, nvalues)) {
+    //luaL_error(L,
+  }
 
   state.from = from;
   state.to = to;

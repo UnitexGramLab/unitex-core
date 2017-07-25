@@ -43,7 +43,7 @@ namespace unitex {
 # define UNITEX_EXTENSIONS_PATH "path = 'extensions\\\\?.lua';cpath = 'extensions\\\\?.dll'\n"
 #endif
 /* ************************************************************************** */
-#define elg_error(message,...)                      \
+#define elg_error(L,message,...)                    \
   return luaL_error(L,"[%s:%s:%d] Error: %s",       \
                     ELG_ENVIRONMENT_PREFIX,          \
                     UNITEX_COMPILER_IDENTIFIER_FUNC, \
@@ -101,7 +101,7 @@ class vm {
 
     // create a new Lua environment
     if ((L = luaL_newstate()) == NULL) {
-      elg_error("failed to create a new environment");
+      elg_error(L, "failed to create a new environment");
     }
 
     if (is_running()) {
