@@ -258,7 +258,7 @@ class vm {
       retval = true;
     }
 
-    state from = luaL_newstate();
+    state from = L; // luaL_newstate();
     state to = luaL_newstate();
 
 
@@ -329,8 +329,8 @@ class vm {
   }
 
   static void copy_key(lua_State* to, lua_State* from, int idx) {
-    int key = lua_type(from, idx);
-    switch (key) {
+    int key_type = lua_type(from, idx);
+    switch (key_type) {
       case LUA_TSTRING:
         lua_setfield(to, idx, lua_tostring(from, idx));
         break;
@@ -340,16 +340,20 @@ class vm {
     }
   }
 
-  static void copy_table(lua_State* to, lua_State* from) {
+  static void copy_table(lua_State* to, lua_State* from, int idx) {
+    elg_stack_dump(from);
+    elg_stack_dump(to);
     lua_newtable(to);
     lua_pushnil(from);
-    while (lua_next(from, -2) != 0) {
-      int key = lua_type(from, -2);
-      switch (key) {
+    while (lua_next(from, idx) != 0) {
+      int key_pos  = lua_gettop(from);
+      int key_type = lua_type(from, key_pos - 1);
+      switch (key_type) {
+        case LUA_TBOOLEAN:
         case LUA_TNUMBER:
         case LUA_TSTRING:
-          copy_value(to, from, -1);
-          copy_key(to, from, -2);
+            copy_value(to, from, key_pos);
+            copy_key(to, from, key_pos - 1);
           break;
         default:
           break;
@@ -358,22 +362,26 @@ class vm {
       lua_pop(from, 1);
     }
     copy_key(to, from, -2);
+    elg_stack_dump(from);
   }
 
   static void copy_value(lua_State* to, lua_State* from, int idx) {
-    int value = lua_type(from, idx);
-    switch (value) {
-      case LUA_TNUMBER:         copy_number(to,from,idx);        break;
+    elg_stack_dump(from);
+    elg_stack_dump(to);
+    int value_type = lua_type(from, idx);
+    switch (value_type) {
+      case LUA_TNIL:            lua_pushnil(to);                break;
       case LUA_TBOOLEAN:        copy_boolean(to,from,idx);       break;
-      case LUA_TSTRING:         copy_string(to,from,idx);        break;
       case LUA_TLIGHTUSERDATA:  copy_lightuserdata(to,from,idx); break;
-      case LUA_TFUNCTION:       copy_function(to,from,idx);      break;
-      case LUA_TTABLE:          copy_table(to,from);             break;
-      case LUA_TNIL:
+      case LUA_TNUMBER:         copy_number(to,from,idx);        break;
+      case LUA_TSTRING:         copy_string(to,from,idx);        break;
+      case LUA_TTABLE:          copy_table(to,from,idx);         break;
+      //   LUA_TFUNCTION:       copy_function(to,from,idx);      break;
       //   LUA_TUSERDATA:
       //   LUA_TTHREAD:
-      default:                  lua_pushnil(to);                break;
+      default:                                                   break;
     }
+    elg_stack_dump(to);
   }
 
   // copies values from a state to another
