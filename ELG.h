@@ -32,8 +32,8 @@
 // Project's .h files. (order the includes alphabetically)
 #include "ELG_API.h"
 #include "ELGLib/debug.h"
-// commented on 23/07/17. Do not preserve stack
 #include "ELGLib/ELGLib.h"
+#include "ELGLib/copy_state.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -53,44 +53,33 @@ static const char* UNITEX_SCRIPT_PATH =
 /* ************************************************************************** */
 typedef struct state {
   state(void)
-      : L(NULL) {
+      : L_(NULL) {
   }
 
   state(lua_State* L)
-      : L(L) {
+      : L_(L) {
   }
 
   ~state(void) {
-    lua_gc(L, LUA_GCCOLLECT, 0);
-    lua_close(L);
-    L = NULL;
+    lua_gc(L_, LUA_GCCOLLECT, 0);
+    lua_close(L_);
+    L_ = NULL;
   }
 
   //UNITEX_EXPLICIT_CONVERSIONS
   operator lua_State*() const {
-    return L;
+    return L_;
   }
 
   state& operator=(lua_State* rhs) {
-    L = rhs;
+    L_ = rhs;
     return *this;
   }
 
-  lua_State* L;
+  lua_State* L_;
 } state;
 /* ************************************************************************** */
-struct copy_state {
-  lua_State* from;
-  lua_State* to;
-  int  has_cache;
-  int  cache_idx;
-  copy_state(void)
-      : from(NULL),
-        to(0),
-        has_cache(0),
-        cache_idx(0) {
-  }
-};
+
 /* ************************************************************************** */
 class vm {
  public:
@@ -263,13 +252,15 @@ class vm {
 
 
     lua_getglobal(L, "_G");
-    lua_pushliteral(from,"Test");
-    lua_pushstring(from,UNITEX_SCRIPT_PATH);
-    lua_pushboolean(from,false);
-    lua_pushinteger(from,6);
-    lua_pushnumber(from,8.8);
-    elg_stack_dump(from);
-
+//    lua_pushliteral(from,"Test");
+//    lua_pushstring(from,UNITEX_SCRIPT_PATH);
+//    lua_pushboolean(from,false);
+//    lua_pushinteger(from,6);
+//    lua_pushnumber(from,8.8);
+//    elg_stack_dump(from);
+//
+//
+//    copy_values(to,from,1,top);
     int top = lua_gettop(from);
     copy_values(to,from,1,top);
     elg_stack_dump(to);
@@ -295,99 +286,205 @@ class vm {
     }
   }
 
-  static void copy_number(lua_State* to, lua_State* from, int idx) {
+  static int copy_number(lua_State* to, lua_State* from, int idx) {
     if (lua_isinteger(from, idx)) {
       lua_pushinteger(to, lua_tointeger(from, idx));
     } else {
       lua_pushnumber(to, lua_tonumber(from, idx));
     }
+    return 1;
   }
 
-  static void copy_boolean(lua_State* to, lua_State* from, int idx) {
+  static int copy_boolean(lua_State* to, lua_State* from, int idx) {
     lua_pushboolean(to, lua_toboolean(from, idx));
+    return 1;
   }
 
-  static void copy_string(lua_State* to, lua_State* from, int idx) {
+  static int copy_string(lua_State* to, lua_State* from, int idx) {
     size_t length;
     const char* string = lua_tolstring(from, idx, &length);
     if (string) {
       lua_pushlstring(to, string, length);
+      return 1;
     }
+    return 0;
   }
 
-  static void copy_lightuserdata(lua_State* to, lua_State* from, int idx) {
+  static int copy_lightuserdata(lua_State* to, lua_State* from, int idx) {
     lua_pushlightuserdata(to, lua_touserdata(from, idx));
+    return 1;
   }
 
-  static void copy_function(lua_State* to, lua_State* from, int idx) {
+  static int copy_function(lua_State* to, lua_State* from, int idx) {
     lua_CFunction f = lua_tocfunction(from, idx);
     if (f) {
       lua_pushcfunction(to, f);
-    } else {
-      lua_pushnil(to);
+      return 1;
     }
+    return 0;
   }
 
-  static void copy_key(lua_State* to, lua_State* from, int idx) {
-    int key_type = lua_type(from, idx);
-    switch (key_type) {
-      case LUA_TSTRING:
-        lua_setfield(to, idx, lua_tostring(from, idx));
-        break;
-      default:
-        lua_rawseti(to, idx, (int) lua_tointeger(from, idx));
-        break;
+//  static int copy_table(lua_State *to, lua_State *from, int idx)
+//  {
+//    lua_newtable(to);
+//    lua_pushnil(from);
+//    while (lua_next(from, -2) != 0) {
+//      elg_stack_dump(from);
+//      elg_stack_dump(to);
+//      int kt = lua_type(from, -2);
+//      int vt = lua_type(from, -1);
+//      switch (kt) {
+//      case LUA_TNUMBER:
+//      case LUA_TSTRING:
+//        switch (vt) {
+//        case LUA_TSTRING:
+//          {
+//            size_t len;
+//            const char *tmp = lua_tolstring(from, -1, &len);
+//            if (tmp) {
+//              lua_pushlstring(to, tmp, len);
+//              if (kt == LUA_TSTRING) {
+//                lua_setfield(to, -2, lua_tostring(from, -2));
+//              } else {
+//                lua_rawseti(to, -2, (int)lua_tointeger(from, -2));
+//              }
+//            }
+//          }
+//          break;
+//        case LUA_TNUMBER:
+//          lua_pushnumber(to, lua_tonumber(from, -1));
+//          if (kt == LUA_TSTRING) {
+//            lua_setfield(to, -2, lua_tostring(from, -2));
+//          } else {
+//            lua_rawseti(to, -2, (int)lua_tointeger(from, -2));
+//          }
+//          break;
+//        case LUA_TBOOLEAN:
+//          lua_pushboolean(to, lua_toboolean(from, -1));
+//          if (kt == LUA_TSTRING) {
+//            lua_setfield(to, -2, lua_tostring(from, -2));
+//          } else {
+//            lua_rawseti(to, -2, (int)lua_tointeger(from, -2));
+//          }
+//          break;
+//        case LUA_TTABLE:
+//          copy_table(to, from, 0);
+//          break;
+//        default:
+//          break;
+//        }
+//        break;
+//      default:
+//        break;
+//      }
+//      lua_pop(from, 1);
+//      elg_stack_dump(from);
+//      elg_stack_dump(to);
+//    }
+//
+//    elg_stack_dump(from);
+//    elg_stack_dump(to);
+//    switch (lua_type(from, -2)) {
+//    case LUA_TSTRING:
+//      lua_setfield(to, -2, lua_tostring(from, -2));
+//      break;
+//    case LUA_TNUMBER:
+//      lua_rawseti(to, -2, (int)lua_tointeger(from, -2));
+//      break;
+//    }
+//    elg_stack_dump(from);
+//    elg_stack_dump(to);
+//    return 1;
+//  }
+
+  static int copy_table_from_cache(copy_state* state, int idx) {
+    void* ptr;
+
+    /* convert table to pointer for lookup in cache */
+    ptr = (void *) lua_topointer(state->from, idx);
+
+    if (ptr == NULL) {
+      return 0; /* can't convert pointer */
     }
+
+    /* check if we need to create the cache */
+    if (!state->has_cache) {
+      lua_newtable(state->to);
+      lua_replace(state->to, state->cache_idx);
+      state->has_cache = 1;
+    }
+
+    lua_pushlightuserdata(state->to, ptr);
+    lua_rawget(state->to, state->cache_idx);
+    if (lua_isnil(state->to, -1)) {
+      /* not in cache */
+      lua_pop(state->to, 1);
+      /* create new table and add to cache */
+      lua_newtable(state->to);
+      lua_pushlightuserdata(state->to, ptr);
+      lua_pushvalue(state->to, -2);
+      lua_rawset(state->to, state->cache_idx);
+      return 0;
+    }
+
+    /* found table in cache */
+    return 1;
   }
 
-  static void copy_table(lua_State* to, lua_State* from, int idx) {
-    elg_stack_dump(from);
-    elg_stack_dump(to);
-    lua_newtable(to);
-    lua_pushnil(from);
-    while (lua_next(from, idx) != 0) {
-      int key_pos  = lua_gettop(from);
-      int key_type = lua_type(from, key_pos - 1);
-      switch (key_type) {
-        case LUA_TBOOLEAN:
-        case LUA_TNUMBER:
-        case LUA_TSTRING:
-            copy_value(to, from, key_pos);
-            copy_key(to, from, key_pos - 1);
-          break;
-        default:
-          break;
+  static int copy_table(copy_state* state, int idx) {
+    if (copy_table_from_cache(state, idx)) {
+      /* found in cache; don't need to copy table */
+      return 1;
+    }
+    lua_pushnil(state->from);
+    while (lua_next(state->from, idx) != 0) {
+      elg_stack_dump(state->from);
+      elg_stack_dump(state->to);
+      int value_pos = lua_gettop(state->from);
+      int key_pos   = value_pos - 1;
+      int key_type  = lua_type(state->from, key_pos);
+      if (key_type == LUA_TNUMBER || key_type == LUA_TSTRING) {
+        if(copy_value(state, key_pos)) {
+          if(copy_value(state, value_pos)) {
+            lua_settable(state->to, -3);
+          } else {
+            lua_pop(state->to,1);
+          }
+        }
       }
       // remove value but keep key for next iteration
-      lua_pop(from, 1);
+      lua_pop(state->from, 1);
+      elg_stack_dump(state->from);
     }
-    copy_key(to, from, -2);
-    elg_stack_dump(from);
+//    copy_key(to, from, idx - 1);
+    elg_stack_dump(state->to);
+    return 1;
   }
 
-  static void copy_value(lua_State* to, lua_State* from, int idx) {
-    elg_stack_dump(from);
-    elg_stack_dump(to);
-    int value_type = lua_type(from, idx);
+  static int copy_value(copy_state* state, int idx) {
+    elg_stack_dump(state->from);
+    elg_stack_dump(state->to);
+    int value_type = lua_type(state->from, idx);
     switch (value_type) {
-      case LUA_TNIL:            lua_pushnil(to);                break;
-      case LUA_TBOOLEAN:        copy_boolean(to,from,idx);       break;
-      case LUA_TLIGHTUSERDATA:  copy_lightuserdata(to,from,idx); break;
-      case LUA_TNUMBER:         copy_number(to,from,idx);        break;
-      case LUA_TSTRING:         copy_string(to,from,idx);        break;
-      case LUA_TTABLE:          copy_table(to,from,idx);         break;
-      //   LUA_TFUNCTION:       copy_function(to,from,idx);      break;
+      //   LUA_TNIL:
+      case LUA_TBOOLEAN:        return copy_boolean(state->to,state->from,idx);       break;
+      case LUA_TLIGHTUSERDATA:  return copy_lightuserdata(state->to,state->from,idx); break;
+      case LUA_TNUMBER:         return copy_number(state->to,state->from,idx);        break;
+      case LUA_TSTRING:         return copy_string(state->to,state->from,idx);        break;
+      case LUA_TTABLE:          return copy_table(state,idx);                         break;
+      //   LUA_TFUNCTION:
       //   LUA_TUSERDATA:
       //   LUA_TTHREAD:
-      default:                                                   break;
+      default:                  return 0;                                             break;
     }
-    elg_stack_dump(to);
+    elg_stack_dump(state->to);
+    return 0;
   }
 
   // copies values from a state to another
   // @source https://github.com/Neopallium/lua-llthreads
   static void copy_values(lua_State* to, lua_State* from,  int idx, int top) {
-    struct copy_state  state;
+    copy_state  state;
 
     int nvalues = top - idx + 1;
     lua_checkstack(to, nvalues);
@@ -399,12 +496,11 @@ class vm {
     state.cache_idx = lua_gettop(to);
 
     for (; idx <= top; ++idx) {
-      copy_value(state.to,state.from,idx);
+      copy_value(&state, idx);
     }
 
     lua_remove(to, state.cache_idx);
   }
-
 
   bool is_running() {
     return L;
