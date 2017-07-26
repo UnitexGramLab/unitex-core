@@ -35,6 +35,13 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 /* ************************************************************************** */
+#define elg_error(L,message,...)                    \
+  return luaL_error(L,"[%s:%s:%d] Error: %s",       \
+                    ELG_ENVIRONMENT_PREFIX,          \
+                    UNITEX_COMPILER_IDENTIFIER_FUNC, \
+                    UNITEX_FILE_LINE,                \
+                    message);
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {

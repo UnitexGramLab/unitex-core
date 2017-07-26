@@ -43,13 +43,6 @@ namespace unitex {
 # define UNITEX_EXTENSIONS_PATH "path = 'extensions\\\\?.lua';cpath = 'extensions\\\\?.dll'\n"
 #endif
 /* ************************************************************************** */
-#define elg_error(L,message,...)                    \
-  return luaL_error(L,"[%s:%s:%d] Error: %s",       \
-                    ELG_ENVIRONMENT_PREFIX,          \
-                    UNITEX_COMPILER_IDENTIFIER_FUNC, \
-                    UNITEX_FILE_LINE,                \
-                    message);
-/* ************************************************************************** */
 static const char* UNITEX_SCRIPT_PATH =
     "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 /* ************************************************************************** */
@@ -77,8 +70,14 @@ class vm {
 
   // panic handler
   static int panic(lua_State* L) {
-    const char* error = lua_tostring(L, 1);
-    fatal_error("%s\n", error);
+    elg_stack_dump(L);
+    const char* error = lua_tostring(L, -1);
+    if(error) {
+      fatal_error("%s\n", error);
+    } else {
+      fatal_error("unknown error on the elg engine\n");
+    }
+
     return 0;
   }
 
@@ -223,8 +222,7 @@ class vm {
     lua_State* from = L; // luaL_newstate();
     lua_State* to = luaL_newstate();
 
-
-    lua_getglobal(L, ELG_GLOBAL_MATCH);
+    lua_getglobal(L, "_G");
     int top = lua_gettop(from);
     copy_values(to,from,1,top);
     elg_stack_dump(L);

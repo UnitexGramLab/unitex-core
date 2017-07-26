@@ -19,7 +19,7 @@
  *
  */
 /* 
- * Portions of this code are based on lua-llthreads
+ * Portions of code are based on lua-llthreads
  * 
  * Copyright (c) 2011 by Robert G. Jakabosky <bobby@sharedrealm.com>
  *  
@@ -58,6 +58,8 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 /* ************************************************************************** */
+#define UNITEX_COPY_STATE_MAX_DEPTH 10
+/* ************************************************************************** */
 #if defined(LUA_VERSION_NUM) &&\
             LUA_VERSION_NUM == 501
 # ifndef  lua_isinteger
@@ -90,8 +92,8 @@ static int copy_string(lua_State* to, lua_State* from, int idx);
 static int copy_lightuserdata(lua_State* to, lua_State* from, int idx);
 static int copy_function(lua_State* to, lua_State* from, int idx);
 static int copy_table_from_cache(copy_state* state, int idx);
-static int copy_value(copy_state* state, int idx);
-static int copy_table(copy_state* state, int idx);
+static int copy_value(copy_state* state, int idx, int depth);
+static int copy_table(copy_state* state, int idx, int depth);
 static int copy_values(lua_State* to, lua_State* from,  int idx, int top);
 /* ************************************************************************** */
 static int copy_number(lua_State* to, lua_State* from, int idx) {
@@ -171,29 +173,8 @@ static int copy_table_from_cache(copy_state* state, int idx) {
   return 1;
 }
 /* ************************************************************************** */
-// copy a single value between two states
-static int copy_value(copy_state* state, int idx) {
-  elg_stack_dump(state->from);
-  elg_stack_dump(state->to);
-  int value_type = lua_type(state->from, idx);
-  switch (value_type) {
-    //   LUA_TNIL:
-    case LUA_TBOOLEAN:        return copy_boolean(state->to, state->from, idx);       break;
-    case LUA_TLIGHTUSERDATA:  return copy_lightuserdata(state->to, state->from, idx); break;
-    case LUA_TNUMBER:         return copy_number(state->to, state->from, idx);        break;
-    case LUA_TSTRING:         return copy_string(state->to, state->from, idx);        break;
-    case LUA_TTABLE:          return copy_table(state, idx);                          break;
-    case LUA_TFUNCTION:       return copy_function(state->to, state->from, idx);      break;
-    //   LUA_TUSERDATA:
-    //   LUA_TTHREAD:
-    default:                  return 0;                                               break;
-  }
-  elg_stack_dump(state->to);
-  return 0;
-}
-/* ************************************************************************** */
 // copy a table between two states
-static int copy_table(copy_state* state, int idx) {
+static int copy_table(copy_state* state, int idx, int depth) {
   // only if it's not already on the exchange cache
   if (!copy_table_from_cache(state, idx)) {
     lua_pushnil(state->from);
@@ -204,8 +185,8 @@ static int copy_table(copy_state* state, int idx) {
       int key_pos   = value_pos - 1;
       int key_type  = lua_type(state->from, key_pos);
       if (key_type == LUA_TNUMBER || key_type == LUA_TSTRING) {
-        if (copy_value(state, key_pos)) {
-          if (copy_value(state, value_pos)) {
+        if (copy_value(state, key_pos, depth)) {
+          if (copy_value(state, value_pos, depth)) {
             lua_settable(state->to, -3);
           } else {
             lua_pop(state->to, 1);
@@ -222,32 +203,68 @@ static int copy_table(copy_state* state, int idx) {
   return 1;
 }
 /* ************************************************************************** */
-// copy all values between two states
-// @source lua-llthreads
-static int copy_values(lua_State* to, lua_State* from,  int idx, int top) {
-  copy_state  state;
-
-  int nvalues = top - idx + 1;
-  if (!lua_checkstack(to, nvalues)) {
-    //luaL_error(L,
+// copy a single value between two states
+static int copy_value(copy_state* state, int idx, int depth) {
+  // check maximum recursive copy depth
+  // depth is passed by reference
+  // @see https://stackoverflow.com/a/16707247/2042871
+  if(++depth > UNITEX_COPY_STATE_MAX_DEPTH) {
+    return luaL_error(state->from,
+                      "Maximum copy depth reached (%d > %d).",
+                      depth,
+                      UNITEX_COPY_STATE_MAX_DEPTH);
   }
 
+  elg_stack_dump(state->from);
+  elg_stack_dump(state->to);
+  int value_type = lua_type(state->from, idx);
+  switch (value_type) {
+    //   LUA_TNIL:
+    case LUA_TBOOLEAN:        return copy_boolean(state->to, state->from, idx);       break;
+    case LUA_TLIGHTUSERDATA:  return copy_lightuserdata(state->to, state->from, idx); break;
+    case LUA_TNUMBER:         return copy_number(state->to, state->from, idx);        break;
+    case LUA_TSTRING:         return copy_string(state->to, state->from, idx);        break;
+    case LUA_TTABLE:          return copy_table(state, idx, depth);                   break;
+    case LUA_TFUNCTION:       return copy_function(state->to, state->from, idx);      break;
+    //   LUA_TUSERDATA:
+    //   LUA_TTHREAD:
+    default:                  return 0;                                               break;
+  }
+  elg_stack_dump(state->to);
+  return 0;
+}
+/* ************************************************************************** */
+// copy all values between two states
+// @source lua-llthreads
+static int copy_values(lua_State* to, lua_State* from, int idx, int top) {
+  copy_state  state;
+
+  int n_values = top - idx + 1;
+  // make sure there is room on the new state for the values
+  if (!lua_checkstack(to, n_values)) {
+    elg_error(from,"stack overflow!");
+  }
+
+  // setup copy_state
   state.from = from;
   state.to = to;
   state.has_cache = 0;
   lua_pushnil(to);
   state.cache_idx = lua_gettop(to);
 
-  int ncopyvalues = 0;
+  // copy values one by one
+  int n_copied_values = 0;
+  int depth = 0;
   for (; idx <= top; ++idx) {
-    if(copy_value(&state, idx)) {
-      ++ncopyvalues;
+    if (copy_value(&state, idx, depth)) {
+      ++n_copied_values;
     }
   }
 
+  // remove cache table
   lua_remove(to, state.cache_idx);
 
-  return ncopyvalues;
+  return n_copied_values;
 }
 /* ************************************************************************** */
 }  // namespace unitex
