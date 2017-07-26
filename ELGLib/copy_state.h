@@ -175,7 +175,7 @@ static int copy_table_from_cache(copy_state* state, int idx) {
 /* ************************************************************************** */
 // copy a table between two states
 static int copy_table(copy_state* state, int idx, int depth) {
-  // only if it's not already on the exchange cache
+  // only if it's not already on the cache
   if (!copy_table_from_cache(state, idx)) {
     lua_pushnil(state->from);
     while (lua_next(state->from, idx) != 0) {
@@ -184,11 +184,14 @@ static int copy_table(copy_state* state, int idx, int depth) {
       int value_pos = lua_gettop(state->from);
       int key_pos   = value_pos - 1;
       int key_type  = lua_type(state->from, key_pos);
+      // only for numeric and string keys
       if (key_type == LUA_TNUMBER || key_type == LUA_TSTRING) {
         if (copy_value(state, key_pos, depth)) {
           if (copy_value(state, value_pos, depth)) {
+            // do t[k] = v
             lua_settable(state->to, -3);
           } else {
+            // remove key from the stack
             lua_pop(state->to, 1);
           }
         }
@@ -198,7 +201,6 @@ static int copy_table(copy_state* state, int idx, int depth) {
       elg_stack_dump(state->from);
     }
   }
-//    copy_key(to, from, idx - 1);
   elg_stack_dump(state->to);
   return 1;
 }
@@ -206,13 +208,13 @@ static int copy_table(copy_state* state, int idx, int depth) {
 // copy a single value between two states
 static int copy_value(copy_state* state, int idx, int depth) {
   // check maximum recursive copy depth
-  // depth is passed by reference
+  // depth is not passed by reference
   // @see https://stackoverflow.com/a/16707247/2042871
   if(++depth > UNITEX_COPY_STATE_MAX_DEPTH) {
     return luaL_error(state->from,
-                      "Maximum copy depth reached (%d > %d).",
-                      depth,
-                      UNITEX_COPY_STATE_MAX_DEPTH);
+                       "Maximum copy depth reached (%d > %d)",
+                       depth,
+                       UNITEX_COPY_STATE_MAX_DEPTH);
   }
 
   elg_stack_dump(state->from);
@@ -234,7 +236,7 @@ static int copy_value(copy_state* state, int idx, int depth) {
   return 0;
 }
 /* ************************************************************************** */
-// copy all values between two states
+// copy values between two states
 // @source lua-llthreads
 static int copy_values(lua_State* to, lua_State* from, int idx, int top) {
   copy_state  state;

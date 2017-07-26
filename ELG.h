@@ -230,7 +230,6 @@ class vm {
     lua_pop(L,1);
     elg_stack_dump(L);
 
-
     lua_gc(to, LUA_GCCOLLECT, 0);
     lua_close(to);
     to = NULL;
