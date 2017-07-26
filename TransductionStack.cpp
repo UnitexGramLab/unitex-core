@@ -497,13 +497,14 @@ for (;;) {
 
         // 17.06.16: send locate params
 //        lua_pushlightuserdata(L,p);
-        // [-0, +1] > (+1)
-        p->elg->push(p);
-//        lua_setglobal(L, "u_params");
-        // [-1, +0] > (+0)
-        p->elg->setglobal(ELG_GLOBAL_LOCATE_PARAMS);
+        // 26.06.17: send only once while allocating p
+//        p->elg->push(p);
+////        lua_setglobal(L, "u_params");
+//        // [-1, +0] > (+0)
+//        p->elg->setglobal(ELG_GLOBAL_LOCATE_PARAMS);
 //        ++script_params_count;
-
+//        p->elg->push(p->graph_filename);
+//        p->elg->setglobal("stack_pointer");
         if(!p->elg->call(char_function_name,script_params_count,stack)) {
           stack->stack_pointer=old_stack_pointer;
           return 0;

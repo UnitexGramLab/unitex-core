@@ -372,7 +372,7 @@ class vm {
     // [-0, +1] > (+3)
     lua_getfield(L, -1, ELG_ENVIRONMENT_LOADED);
     elg_stack_dump(L);
-    // put i, a integer key equal to the number of environments
+    // put i, a integer key equal to the number of extensions environments
     // [-0, +1] > (+4)
     lua_pushinteger(L,++env);
     elg_stack_dump(L);
@@ -419,7 +419,8 @@ class vm {
 //       return true;
 //     }
 
-  static int setup_sandbox_envirnonment(lua_State* L) {
+  // receives a function chunk at the top of the stack
+  static int setup_sandboxed_environment(lua_State* L) {
     // create a new empty table (e) and pushes it onto the stack
     // we will use this table to holds the environment of the script
     // [-0, +1] > (+1)
@@ -460,6 +461,16 @@ class vm {
     lua_pushvalue(L, -1);
     elg_stack_dump(L);
 
+    // [-1, +0] > (+1)
+    // replaces L globals
+    lua_replace(L, LUA_GLOBALSINDEX);
+    elg_stack_dump(L);
+
+    // [-0, +1] > (+2)
+    // duplicate the environment table
+    lua_pushvalue(L, -1);
+    elg_stack_dump(L);
+
     // [-0, +1] > (+3)
     // duplicate the environment table
     lua_pushvalue(L, -1);
@@ -471,20 +482,19 @@ class vm {
     lua_setfield(L, -2, "_S");
     elg_stack_dump(L);
 
-    // set the environment as e (our environment table)
-    // (L, 1, 1) = L, points to the closure in the stack.
-    // To understand this, take into account that in Lua (5.1),
-    // every chunk starts with the environment as its first upvalue,
-    // upvalues are the external local variables that the function
-    // uses, and that are consequently included in its closure
+    // pops the environment table from the stack and sets it as
+    // the new environment of 1 . In this case, 1 is the chunk or
+    // function that we have at the index 1 on the stack.
+    // Take into account that every function starts with the
+    // environment as its first upvalue, upvalues are the external
+    // local variables that the function uses, and that are consequently
+    // included in its closure
     // [-1, +0] > (+1)
     if (lua_setfenv(L, 1) == 0) {
       elg_stack_dump(L);
-      const char* e = lua_tostring(L, -1);
-      lua_pop(L,1);
-      elg_error(L,"error setting environment");
+      elg_error(L,lua_tostring(L, -1));
     }
-
+    elg_stack_dump(L);
     return 1;
   }
 
@@ -514,7 +524,7 @@ class vm {
     elg_stack_dump(L);
 
     // if the retrieved value is not the script environment, then
-    // load once the file with the extended function implementations
+    // load once the file with the extended functions implementations
     if (!lua_istable(L, -1)) {
       // pop the previous result (normally a LUA_TNIL) from the top
       // of the stack
@@ -548,14 +558,13 @@ class vm {
 
       // setup a sandboxed envirnonment
       // [-0, +1] > (+2)
-      setup_sandbox_envirnonment(L);
+      setup_sandboxed_environment(L);
+      elg_stack_dump(L);
 
       // register the script environment on the registry using the
       // environment_name as key
       // [-1, +0] > (+1)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
-      elg_stack_dump(L);
-
       elg_stack_dump(L);
 
       //  priming run: loads and runs script's main function
@@ -592,18 +601,24 @@ class vm {
                   function_name);
     }
 
+    elg_stack_dump(L);
     return true;
   }
 
   // L is the main thread, lua_State represents this thread
   // this function creates a new thread in L
-  lua_State * create_mirror_state() {
+  static lua_State* create_mirror_state(lua_State* L) {
     // creates a new thread, pushes it on the stack, and returns a
     // pointer to a lua_State that represents this new thread
     // The new state returned by this function shares with the original
     // state all global objects (such as tables), but has an independent
     // execution stack
     lua_State* M = lua_newthread(L);
+
+    // anchor new thread
+    int m_refkey = luaL_ref(L, LUA_REGISTRYINDEX);
+    // lua_unref(M, m_refkey);
+    return M;
   }
 
   // call the function on the stack
@@ -729,6 +744,12 @@ class vm {
   // [-0, +1, m] > (+1)
   void push(const char* value, size_t len) {
     lua_pushlstring(L, value, len);
+  }
+
+  // push string into stack
+  // [-0, +1, m] > (+1)
+  void push(const char* value) {
+    lua_pushstring(L, value);
   }
 
 //     problem with void push(void* p)
