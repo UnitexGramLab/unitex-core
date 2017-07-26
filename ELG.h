@@ -501,7 +501,7 @@ class vm {
   // 05/09/16 load once
   // in:             (+0)
   // out: [-0, +2] > (+2)
-  bool load(const char* function_name) {
+  bool load_extension(const char* function_name) {
     elg_stack_dump(L);
 
     // prepare script environment_name

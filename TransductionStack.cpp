@@ -274,7 +274,7 @@ for (;;) {
 //          fatal_error("Error loading @%S, function doesn't exists\n",function_name);
 //        }
 
-        p->elg->load(char_function_name);
+        p->elg->load_extension(char_function_name);
 
         variable_name[0] = '\0';
         int16_t variable_lenght = 0;
