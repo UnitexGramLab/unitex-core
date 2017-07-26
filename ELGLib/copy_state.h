@@ -179,8 +179,6 @@ static int copy_table(copy_state* state, int idx, int depth) {
   if (!copy_table_from_cache(state, idx)) {
     lua_pushnil(state->from);
     while (lua_next(state->from, idx) != 0) {
-      elg_stack_dump(state->from);
-      elg_stack_dump(state->to);
       int value_pos = lua_gettop(state->from);
       int key_pos   = value_pos - 1;
       int key_type  = lua_type(state->from, key_pos);
@@ -198,10 +196,8 @@ static int copy_table(copy_state* state, int idx, int depth) {
       }
       // remove value but keep key for next iteration
       lua_pop(state->from, 1);
-      elg_stack_dump(state->from);
     }
   }
-  elg_stack_dump(state->to);
   return 1;
 }
 /* ************************************************************************** */
@@ -217,8 +213,6 @@ static int copy_value(copy_state* state, int idx, int depth) {
                        UNITEX_COPY_STATE_MAX_DEPTH);
   }
 
-  elg_stack_dump(state->from);
-  elg_stack_dump(state->to);
   int value_type = lua_type(state->from, idx);
   switch (value_type) {
     //   LUA_TNIL:
@@ -232,7 +226,6 @@ static int copy_value(copy_state* state, int idx, int depth) {
     //   LUA_TTHREAD:
     default:                  return 0;                                               break;
   }
-  elg_stack_dump(state->to);
   return 0;
 }
 /* ************************************************************************** */

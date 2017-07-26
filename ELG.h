@@ -218,22 +218,6 @@ class vm {
       retval = true;
     }
 
-    elg_stack_dump(L);
-    lua_State* from = L; // luaL_newstate();
-    lua_State* to = luaL_newstate();
-
-    lua_getglobal(L, ELG_GLOBAL_MATCH);
-    int top = lua_gettop(from);
-    copy_values(to,from,1,top);
-    elg_stack_dump(L);
-    elg_stack_dump(to);
-    lua_pop(L,1);
-    elg_stack_dump(L);
-
-    lua_gc(to, LUA_GCCOLLECT, 0);
-    lua_close(to);
-    to = NULL;
-
     return retval;
   }
 
@@ -435,6 +419,75 @@ class vm {
 //       return true;
 //     }
 
+  static int setup_sandbox_envirnonment(lua_State* L) {
+    // create a new empty table (e) and pushes it onto the stack
+    // we will use this table to holds the environment of the script
+    // [-0, +1] > (+1)
+    lua_newtable(L);
+    elg_stack_dump(L);
+
+    // create another new empty table (f) and pushes it onto the stack
+    // we will use this as the metatable that holds the original global
+    // table (_G)
+    // [-0, +1] > (+2)
+    lua_newtable(L);
+    elg_stack_dump(L);
+
+    // push onto the stack the value of _G, i.e. the environment
+    // which holds all the global variables defined on L
+    // [-0, +1] > (+3)
+    lua_getglobal(L, "_G");
+    elg_stack_dump(L);
+
+    // do f[__index] = _G, where f is the table at index -2
+    // and _G is the value at the top of the stack.
+    // __index is the versatile metamethod that allows us to use _G as
+    // a "fallback" table if a key in the environment table doesn't exist
+    // [-1, +0] > (+2)
+    lua_setfield(L, -2, "__index");
+    elg_stack_dump(L);
+
+    // pops f from the stack and sets it as the new metatable
+    // for e (the environment table)  at index -2
+    // now f is the metatable of the environment table
+    // setmetatable({}, {__index=_G})
+    // [-1, +0] > (+1)
+    lua_setmetatable(L, -2);
+    elg_stack_dump(L);
+
+    // [-0, +1] > (+2)
+    // duplicate the environment table
+    lua_pushvalue(L, -1);
+    elg_stack_dump(L);
+
+    // [-0, +1] > (+3)
+    // duplicate the environment table
+    lua_pushvalue(L, -1);
+    elg_stack_dump(L);
+
+    // register the environment table on the environment table
+    // using _S(elf) as key
+    // [-1, +0] > (+2)
+    lua_setfield(L, -2, "_S");
+    elg_stack_dump(L);
+
+    // set the environment as e (our environment table)
+    // (L, 1, 1) = L, points to the closure in the stack.
+    // To understand this, take into account that in Lua (5.1),
+    // every chunk starts with the environment as its first upvalue,
+    // upvalues are the external local variables that the function
+    // uses, and that are consequently included in its closure
+    // [-1, +0] > (+1)
+    if (lua_setfenv(L, 1) == 0) {
+      elg_stack_dump(L);
+      const char* e = lua_tostring(L, -1);
+      lua_pop(L,1);
+      elg_error(L,"error setting environment");
+    }
+
+    return 1;
+  }
+
   // 05/09/16 load once
   // in:             (+0)
   // out: [-0, +2] > (+2)
@@ -493,77 +546,16 @@ class vm {
         luaL_error(L,"Error loading %s: %s\n", script_file, e);
       }
 
-      elg_stack_dump(L);
-      // create a new empty table (e) and pushes it onto the stack
-      // we will use this table to holds the environment of the script
+      // setup a sandboxed envirnonment
       // [-0, +1] > (+2)
-      lua_newtable(L);
-      elg_stack_dump(L);
-
-      // create another new empty table (f) and pushes it onto the stack
-      // we will use this table to holds the global table and use then
-      // as fallback
-      // [-0, +1] > (+3)
-      lua_newtable(L);
-      elg_stack_dump(L);
-
-      // push onto the stack the value of _G, i.e. the environment
-      // which holds all the global variables defined on L
-      // [-0, +1] > (+4)
-      lua_getglobal(L, "_G");
-      elg_stack_dump(L);
-
-      // do f[__index] = _G, where f is the table at index -2
-      // and _G is the value at the top of the stack.
-      // __index is the versatile metamethod that allows us to use _G as
-      // a "fallback" table if a key in the environment table doesn't exist
-      // [-1, +0] > (+3)
-      lua_setfield(L, -2, "__index");
-      elg_stack_dump(L);
-
-      // pops f from the stack and sets it as the new metatable
-      // for e (the environment table)  at index -2
-      // now f is the metatable of the environment table
-      // setmetatable({}, {__index=_G})
-      // [-1, +0] > (+2)
-      lua_setmetatable(L, -2);
-      elg_stack_dump(L);
-
-      // [-0, +1] > (+3)
-      // duplicate environment table
-      lua_pushvalue(L, -1);
-      elg_stack_dump(L);
-
-      // [-0, +1] > (+4)
-      // duplicate environment table
-      lua_pushvalue(L, -1);
-      elg_stack_dump(L);
-
-      // register the environment table on the environment table
-      // using _S(elf) as key
-      // [-1, +0] > (+3)
-      lua_setfield(L, -2, "_S");
-      elg_stack_dump(L);
+      setup_sandbox_envirnonment(L);
 
       // register the script environment on the registry using the
       // environment_name as key
-      // [-1, +0] > (+2)
+      // [-1, +0] > (+1)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
       elg_stack_dump(L);
 
-      // set the environment as e (our environment table)
-      // (L, 1, 1) = L, points to the closure in the stack.
-      // To understand this, take into account that in Lua (5.1),
-      // every chunk starts with the environment as its first upvalue,
-      // upvalues are the external local variables that the function
-      // uses, and that are consequently included in its closure
-      // [-1, +0] > (+1)
-      if (lua_setfenv(L, 1) == 0) {
-        elg_stack_dump(L);
-        const char* e = lua_tostring(L, -1);
-        lua_pop(L,1);
-        luaL_error(L, "Error calling @%s: %s\n", function_name, e);
-      }
       elg_stack_dump(L);
 
       //  priming run: loads and runs script's main function
@@ -601,6 +593,17 @@ class vm {
     }
 
     return true;
+  }
+
+  // L is the main thread, lua_State represents this thread
+  // this function creates a new thread in L
+  lua_State * create_mirror_state() {
+    // creates a new thread, pushes it on the stack, and returns a
+    // pointer to a lua_State that represents this new thread
+    // The new state returned by this function shares with the original
+    // state all global objects (such as tables), but has an independent
+    // execution stack
+    lua_State* M = lua_newthread(L);
   }
 
   // call the function on the stack
