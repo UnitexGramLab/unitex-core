@@ -420,7 +420,11 @@ class vm {
 //     }
 
   // receives a function chunk at the top of the stack
-  static int setup_extension_environment(lua_State* L) {
+  static int setup_extension_environment(lua_State* L,
+                                          int fallback_index = LUA_GLOBALSINDEX,
+                                          int index = 1,
+                                          const char* fallback_name = "_G",
+                                          const char* self_name = "_S") {
     // create a new empty table (e) and pushes it onto the stack
     // we will use this table to holds the environment of the script
     // [-0, +1] > (+1)
@@ -437,7 +441,7 @@ class vm {
     // push onto the stack the value of _G, i.e. the environment
     // which holds all the global variables defined on L
     // [-0, +1] > (+3)
-    lua_getglobal(L, "_G");
+    lua_getfield(L, fallback_index, fallback_name);
     elg_stack_dump(L);
 
     // do f[__index] = _G, where f is the table at index -2
@@ -479,7 +483,7 @@ class vm {
     // register the environment table on the environment table
     // using _S(elf) as key
     // [-1, +0] > (+2)
-    lua_setfield(L, -2, "_S");
+    lua_setfield(L, -2, self_name);
     elg_stack_dump(L);
 
     // pops the environment table from the stack and sets it as
@@ -490,7 +494,7 @@ class vm {
     // local variables that the function uses, and that are consequently
     // included in its closure
     // [-1, +0] > (+1)
-    if (lua_setfenv(L, 1) == 0) {
+    if (lua_setfenv(L, index) == 0) {
       elg_stack_dump(L);
       elg_error(L,lua_tostring(L, -1));
     }
@@ -601,6 +605,10 @@ class vm {
                   function_name);
     }
 
+    // remove the extension environment from the stack,
+    // let only the function
+    // lua_remove(L, -2);
+
     elg_stack_dump(L);
     return true;
   }
@@ -622,8 +630,8 @@ class vm {
   }
 
   // call the function on the stack
-  // in:                 (+2+n) 1:environment, 2:function, n:params
-  // out: [-0, -(2+n)] > (+0)
+  // in:                 (+1+n) 2:function, n:params
+  // out: [-0, -(1+n)] > (+0)
   // returns:
   //  0 : step back
   //  1 : step forward
@@ -631,78 +639,14 @@ class vm {
     elg_stack_dump(L);
     int retval = 1;
 
-//    lua_pushvalue(L,2);
-//    // create a new empty table (e) and pushes it onto the stack
-//    // we will use this table to holds the environment of the script
-//    // [-0, +1] > (+1)
-//    lua_newtable(L);
-//    elg_stack_dump(L);
-//
-//    // create another new empty table (f) and pushes it onto the stack
-//    // we will use this as the metatable that holds the original global
-//    // table (_G)
-//    // [-0, +1] > (+2)
-//    lua_newtable(L);
-//    elg_stack_dump(L);
-//
-//    // push onto the stack the value of _G, i.e. the environment
-//    // which holds all the global variables defined on L
-//    // [-0, +1] > (+3)
-//    lua_getfield(L, 1, "_S");
-//    elg_stack_dump(L);
-//
-//    // do f[__index] = _G, where f is the table at index -2
-//    // and _G is the value at the top of the stack.
-//    // __index is the versatile metamethod that allows us to use _G as
-//    // a "fallback" table if a key in the environment table doesn't exist
-//    // [-1, +0] > (+2)
-//    lua_setfield(L, -2, "__index");
-//    elg_stack_dump(L);
-//
-//    // pops f from the stack and sets it as the new metatable
-//    // for e (the environment table)  at index -2
-//    // now f is the metatable of the environment table
-//    // setmetatable({}, {__index=_G})
-//    // [-1, +0] > (+1)
-//    lua_setmetatable(L, -2);
-//    elg_stack_dump(L);
-//
-//    // [-0, +1] > (+2)
-//    // duplicate the environment table
-//    lua_pushvalue(L, -1);
-//    elg_stack_dump(L);
-//
-//    // [-1, +0] > (+1)
-//    // replaces L globals
-//    lua_replace(L, LUA_GLOBALSINDEX);
-//    elg_stack_dump(L);
-//
-//    // pops the environment table from the stack and sets it as
-//    // the new environment of 1 . In this case, 1 is the chunk or
-//    // function that we have at the index 1 on the stack.
-//    // Take into account that every function starts with the
-//    // environment as its first upvalue, upvalues are the external
-//    // local variables that the function uses, and that are consequently
-//    // included in its closure
-//    // [-1, +0] > (+1)
-//    if (lua_setfenv(L, -2) == 0) {
-//      elg_stack_dump(L);
-//      elg_error(L,lua_tostring(L, -1));
-//    }
-//    elg_stack_dump(L);
-//    lua_pop(L,1);
-//    elg_stack_dump(L);
-//
-////    elg_stack_dump(L);
-////    setup_extension_environment(L);
-////    lua_pop(L,2);
-////    elg_stack_dump(L);
+    setup_extension_environment(L, 1, 2, "_S", "_T");
+    lua_pop(L,1);
 
     // do the call (lua_State *L, int nargs, int nresults, int errfunc)
     // nresults => 1, one result expected
     // errfunc  => 0, the error message returned on the stack is exactly
     //                the original error message
-    // [-(n + 1), +1] > (+2) 1:environment, 2:returned value
+    // [-(n + 1), +1] > (+1) 1:returned value
     if (lua_pcall(L, nargs, 1, 0) != 0) {
       const char* e = lua_tostring(L, -1);
       lua_pop(L,1); // error
@@ -765,8 +709,7 @@ class vm {
 //          }
     }
 
-    // remove the the environment and returned value
-    // from the top of the stack
+    // remove the returned value from the top of the stack
     // [-2, +0] > (+0)
     lua_pop(L, 2);
     elg_stack_dump(L);
