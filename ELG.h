@@ -222,7 +222,7 @@ class vm {
     lua_State* from = L; // luaL_newstate();
     lua_State* to = luaL_newstate();
 
-    lua_getglobal(L, "_G");
+    lua_getglobal(L, ELG_GLOBAL_MATCH);
     int top = lua_gettop(from);
     copy_values(to,from,1,top);
     elg_stack_dump(L);
