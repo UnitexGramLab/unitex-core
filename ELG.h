@@ -640,7 +640,13 @@ class vm {
     int retval = 1;
 
     setup_extension_environment(L, 1, 2, "_S", "_T");
-    lua_pop(L,1);
+    elg_stack_dump(L);
+
+    // register the function environment on the registry using the
+    // function_name as key
+    // [-1, +0] > (+1)
+    int function_reference = luaL_ref(L, LUA_REGISTRYINDEX);
+    elg_stack_dump(L);
 
     // do the call (lua_State *L, int nargs, int nresults, int errfunc)
     // nresults => 1, one result expected
@@ -709,7 +715,38 @@ class vm {
 //          }
     }
 
+    if(retval) {    // prepare script environment_name
+      char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
+
+      // environment name = ELG_ENVIRONMENT_PREFIX-function_name
+      strcat(environment_name, ELG_ENVIRONMENT_PREFIX);
+      strcat(environment_name, "-");
+      strcat(environment_name, function_name);
+      // retrieve the script environment from the register, for that
+      // push onto the stack the value stored in the registry with key
+      // "foo" where foo is the environment name
+      // [-0, +1] > (+1)
+      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+      elg_stack_dump(L);
+      lua_rawgeti(L, LUA_REGISTRYINDEX, function_reference);
+      elg_stack_dump(L);
+      // remove _T
+      lua_pushnil(L);
+      lua_setfield(L, -2, "_T");
+      elg_stack_dump(L);
+
+      lua_getfield(L,-1,"foo");
+      elg_stack_dump(L);
+      lua_setfield(L, -3, "foo");
+
+      elg_stack_dump(L);
+      lua_pop(L, 2);
+    }
+
+    luaL_unref(L, LUA_REGISTRYINDEX, function_reference);
+
     // remove the returned value from the top of the stack
+    // remove the extension environment
     // [-2, +0] > (+0)
     lua_pop(L, 2);
     elg_stack_dump(L);
