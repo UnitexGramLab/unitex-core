@@ -103,7 +103,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     OptimizedFst2State initial_state =
             p->optimized_states[p->fst2->initial_states[1]];
     p->current_origin = 0;
-	p->last_origin = 0;
+	  p->last_origin = 0;
     int n_read = 0;
     int unite;
     clock_t startTime = clock();
