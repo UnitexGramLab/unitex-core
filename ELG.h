@@ -520,6 +520,14 @@ class vm {
     return 1;
   }
 
+  int clear_local_environment() {
+    lua_newtable(L);
+    elg_stack_dump(L);
+    lua_setfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+    elg_stack_dump(L);
+    return 1;
+  }
+
   // 05/09/16 load once
   // in:             (+0)
   // out: [-0, +2] > (+2)

@@ -175,6 +175,9 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 int n_matches=0;
                 locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
 
+                p->elg->clear_local_environment();
+                p->elg->setup_local_environment();
+
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
 
