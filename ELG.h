@@ -630,6 +630,37 @@ class vm {
     return M;
   }
 
+  static int move_table_values(lua_State* to, lua_State* from, int to_idx) {
+    // iterate through the table
+    lua_pushnil(from);
+    while (lua_next(from, -2) != 0) {
+      elg_stack_dump(from);
+
+      // duplicate key
+      lua_pushvalue(from, -2);
+
+      // move key and value
+      lua_xmove(from, to, 2);
+      elg_stack_dump(to);
+      elg_stack_dump(from);
+
+      // swap key-value to value-key
+      lua_insert(to, -2);
+      elg_stack_dump(to);
+      elg_stack_dump(from);
+
+      //
+      lua_settable(to, to_idx);
+      elg_stack_dump(to);
+      elg_stack_dump(from);
+    }
+
+    // pop nil or the last key
+    lua_pop(from, 1);
+
+    return 1;
+  }
+
 //  static void unref_mirror_state(lua_State* L, int m_refkey) {
 //    luaL_unref(L, LUA_REGISTRYINDEX, m_refkey);
 //  }
@@ -727,7 +758,7 @@ class vm {
 //          }
     }
 
-    if(retval) {    // prepare script environment_name
+    if(retval) {
       elg_stack_dump(L);
       elg_stack_dump(M);
       char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
@@ -751,32 +782,11 @@ class vm {
       lua_setfield(M, -2, "_T");
       elg_stack_dump(M);
 
-      // iterate through the table
-      lua_pushnil(M);
-      while (lua_next(M, -2) != 0) {
-        elg_stack_dump(M);
-
-        // duplicate key
-        lua_pushvalue(M, -2);
-
-        // move key and value
-        lua_xmove(M, L, 2);
-        elg_stack_dump(L);
-        elg_stack_dump(M);
-
-        // swap key-value to value-key
-        lua_insert(L, -2);
-        elg_stack_dump(L);
-        elg_stack_dump(M);
-
-        lua_settable(L, 1);
-        elg_stack_dump(L);
-        elg_stack_dump(M);
-
-        elg_stack_dump(M);
-      }
-
-      lua_pop(M, 1);
+      // a table at the L
+      elg_stack_dump(L);
+      move_table_values(L, M, 1);
+      elg_stack_dump(M);
+      elg_stack_dump(L);
 
       lua_pop(L, 1);
     }
