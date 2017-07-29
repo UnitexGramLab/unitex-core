@@ -231,6 +231,7 @@ static int copy_value(copy_state* state, int idx, int depth) {
 /* ************************************************************************** */
 // copy values between two states
 // @source lua-llthreads
+UNITEX_UNUSED
 static int copy_values(lua_State* to, lua_State* from, int idx, int top) {
   copy_state  state;
 

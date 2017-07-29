@@ -49,7 +49,7 @@ static const char* UNITEX_SCRIPT_PATH =
 class vm {
  public:
   vm(void)
-      : L(), env(0) {
+      : L(), env(0), local_env_ref(0) {
   }
 
   virtual ~vm(void) {
@@ -91,8 +91,8 @@ class vm {
   // returns true if success; false otherwise
   // at the end the top of the stack is empty
   // [-0, +0] > (+0)
-  bool restart() {
-    bool retval = false;
+  int restart() {
+    int retval = 0;
 
     if (is_running()) {
       stop();
@@ -238,8 +238,8 @@ class vm {
     }
   }
 
-  bool is_running() {
-    return L;
+  int is_running() {
+    return L != NULL;
   }
 
   void free_state() {
@@ -390,9 +390,9 @@ class vm {
     elg_stack_dump(L);
   }
 
-  bool unload(const char* function_name) {
+  int unload(const char* function_name) {
 //    luaL_unref(L, LUA_REGISTRYINDEX, 0);
-    return true;
+    return 1;
   }
 
 //     bool load(const char* function_name) {
@@ -420,92 +420,110 @@ class vm {
 //     }
 
   // receives a function chunk at the top of the stack
-  static int setup_sandboxed_environment(lua_State* L,
-                                            int fallback_index = LUA_GLOBALSINDEX,
-                                            int index = 1,
-                                            const char* fallback_name = "_G",
-                                            const char* self_name = "_S") {
+  static int setup_sandboxed_environment(lua_State* state,
+                                            int fallback_index,
+                                            int index,
+                                            const char* fallback_name,
+                                            const char* self_name) {
     // create a new empty table (e) and pushes it onto the stack
     // we will use this table to holds the environment of the script
     // [-0, +1] > (+1)
-    lua_newtable(L);
-    elg_stack_dump(L);
+    lua_newtable(state);
+    elg_stack_dump(state);
 
     // create another new empty table (f) and pushes it onto the stack
     // we will use this as the metatable that holds the original global
     // table (_G)
     // [-0, +1] > (+2)
-    lua_newtable(L);
-    elg_stack_dump(L);
+    lua_newtable(state);
+    elg_stack_dump(state);
 
     // push onto the stack the value of _G, i.e. the environment
     // which holds all the global variables defined on L
     // [-0, +1] > (+3)
-    lua_getfield(L, fallback_index, fallback_name);
-    elg_stack_dump(L);
+    lua_getfield(state, fallback_index, fallback_name);
+    elg_stack_dump(state);
 
     // do f[__index] = _G, where f is the table at index -2
     // and _G is the value at the top of the stack.
     // __index is the versatile metamethod that allows us to use _G as
     // a "fallback" table if a key in the environment table doesn't exist
     // [-1, +0] > (+2)
-    lua_setfield(L, -2, "__index");
-    elg_stack_dump(L);
+    lua_setfield(state, -2, "__index");
+    elg_stack_dump(state);
 
     // pops f from the stack and sets it as the new metatable
     // for e (the environment table)  at index -2
     // now f is the metatable of the environment table
     // setmetatable({}, {__index=_G})
     // [-1, +0] > (+1)
-    lua_setmetatable(L, -2);
-    elg_stack_dump(L);
+    lua_setmetatable(state, -2);
+    elg_stack_dump(state);
 
     // [-0, +1] > (+2)
     // duplicate the environment table
-    lua_pushvalue(L, -1);
-    elg_stack_dump(L);
+    lua_pushvalue(state, -1);
+    elg_stack_dump(state);
 
     // [-1, +0] > (+1)
     // replaces L globals
-    lua_replace(L, LUA_GLOBALSINDEX);
-    elg_stack_dump(L);
+    lua_replace(state, LUA_GLOBALSINDEX);
+    elg_stack_dump(state);
 
     // [-0, +1] > (+2)
     // duplicate the environment table
-    lua_pushvalue(L, -1);
-    elg_stack_dump(L);
+    lua_pushvalue(state, -1);
+    elg_stack_dump(state);
 
-    // [-0, +1] > (+3)
-    // duplicate the environment table
-    lua_pushvalue(L, -1);
-    elg_stack_dump(L);
+    if (index != -1) {
+      // [-0, +1] > (+3)
+      // duplicate the environment table
+      lua_pushvalue(state, -1);
+      elg_stack_dump(state);
+    }
 
     // register the environment table on the environment table
-    // using _S(elf) as key
+    // using self_name as key
     // [-1, +0] > (+2)
-    lua_setfield(L, -2, self_name);
-    elg_stack_dump(L);
+    lua_setfield(state, -2, self_name);
+    elg_stack_dump(state);
 
     // pops the environment table from the stack and sets it as
-    // the new environment of 1 . In this case, 1 is the chunk or
-    // function that we have at the index 1 on the stack.
+    // the new environment of index . In this case, index is the chunk or
+    // function that we have at the given index on the stack.
     // Take into account that every function starts with the
     // environment as its first upvalue, upvalues are the external
     // local variables that the function uses, and that are consequently
     // included in its closure
     // [-1, +0] > (+1)
-    if (lua_setfenv(L, index) == 0) {
-      elg_stack_dump(L);
-      elg_error(L,lua_tostring(L, -1));
+    if (index != -1) {
+      if (lua_setfenv(state, index) == 0) {
+        elg_stack_dump(state);
+        elg_error(state,lua_tostring(state, -1));
+      }
     }
+    elg_stack_dump(state);
+    return 1;
+  }
+
+  int setup_local_environment() {
+    //
+    setup_sandboxed_environment(L, LUA_GLOBALSINDEX, -1, "_G", "_L");
     elg_stack_dump(L);
+
+    // register the script environment on the registry using the
+    // environment_name as key
+    // [-1, +0] > (+1)
+    lua_setfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+    elg_stack_dump(L);
+
     return 1;
   }
 
   // 05/09/16 load once
   // in:             (+0)
   // out: [-0, +2] > (+2)
-  bool load_extension(const char* function_name) {
+  int load_extension(const char* function_name) {
     elg_stack_dump(L);
 
     // prepare script environment_name
@@ -560,16 +578,24 @@ class vm {
         luaL_error(L,"Error loading %s: %s\n", script_file, e);
       }
 
-      // setup a sandboxed envirnonment
+      // get the local environement
+      lua_getfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+      elg_stack_dump(L);
+
+      // setup a sandboxed environment
       // [-0, +1] > (+2)
       elg_stack_dump(L);
-      setup_sandboxed_environment(L);
+      setup_sandboxed_environment(L, 2, 1, "_L", "_E");
       elg_stack_dump(L);
 
       // register the script environment on the registry using the
       // environment_name as key
       // [-1, +0] > (+1)
       lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
+      elg_stack_dump(L);
+
+      // pop the local environement
+      lua_pop(L, 1);
       elg_stack_dump(L);
 
       //  priming run: loads and runs script's main function
@@ -611,7 +637,7 @@ class vm {
     // lua_remove(L, -2);
 
     elg_stack_dump(L);
-    return true;
+    return 1;
   }
 
   // L is the main thread, lua_State represents this thread
@@ -681,12 +707,10 @@ class vm {
     lua_xmove(L, M, nargs+2);
     elg_stack_dump(M);
 
-
-    setup_sandboxed_environment(M, 1, 2, "_S", "_T");
+    setup_sandboxed_environment(M, 1, 2, "_E", "_F");
     elg_stack_dump(M);
 
-    // register the function environment on the registry using the
-    // function_name as key
+    // register the function environment on the registry
     // [-1, +0] > (+1)
     int function_reference = luaL_ref(M, LUA_REGISTRYINDEX);
     elg_stack_dump(M);
@@ -771,7 +795,8 @@ class vm {
       // push onto the stack the value stored in the registry with key
       // "foo" where foo is the environment name
       // [-0, +1] > (+1)
-      lua_getfield(L, LUA_GLOBALSINDEX, "_G");
+      lua_getfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+      //lua_getfield(L, LUA_GLOBALSINDEX, "_G");
       elg_stack_dump(L);
 
       lua_rawgeti(M, LUA_REGISTRYINDEX, function_reference);
@@ -779,7 +804,7 @@ class vm {
 
       // remove _T
       lua_pushnil(M);
-      lua_setfield(M, -2, "_T");
+      lua_setfield(M, -2, "_F");
       elg_stack_dump(M);
 
       // a table at the L
@@ -904,6 +929,7 @@ class vm {
  protected:
   lua_State* L;
   int env;
+  int local_env_ref;
 };
 /* ************************************************************************** */
 }      // namespace unitex

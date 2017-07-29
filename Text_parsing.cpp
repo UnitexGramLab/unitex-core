@@ -115,6 +115,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             create_variable_backup_memory_reserve(p->input_variables,1);
     p->backup_memory_reserve = backup_reserve;
     int current_token;
+    p->elg->setup_local_environment();
     while (p->current_origin < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
             p->number_of_matches != p->search_limit) {
