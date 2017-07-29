@@ -19,7 +19,7 @@
  *
  */
 /* 
- * Portions of code are based on lua-llthreads
+ * Portions of code based on lua-llthreads are marked as @source lua-llthreads
  * 
  * Copyright (c) 2011 by Robert G. Jakabosky <bobby@sharedrealm.com>
  *  
@@ -261,6 +261,8 @@ static int copy_values(lua_State* to, lua_State* from, int idx, int top) {
 
   return n_copied_values;
 }
+/* ************************************************************************** */
+#define copy_all_values(to, from, idx, top) copy_values(to, from, idx, top)
 /* ************************************************************************** */
 }  // namespace unitex
 /* ************************************************************************** */

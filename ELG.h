@@ -420,11 +420,11 @@ class vm {
 //     }
 
   // receives a function chunk at the top of the stack
-  static int setup_extension_environment(lua_State* L,
-                                          int fallback_index = LUA_GLOBALSINDEX,
-                                          int index = 1,
-                                          const char* fallback_name = "_G",
-                                          const char* self_name = "_S") {
+  static int setup_sandboxed_environment(lua_State* L,
+                                            int fallback_index = LUA_GLOBALSINDEX,
+                                            int index = 1,
+                                            const char* fallback_name = "_G",
+                                            const char* self_name = "_S") {
     // create a new empty table (e) and pushes it onto the stack
     // we will use this table to holds the environment of the script
     // [-0, +1] > (+1)
@@ -562,7 +562,8 @@ class vm {
 
       // setup a sandboxed envirnonment
       // [-0, +1] > (+2)
-      setup_extension_environment(L);
+      elg_stack_dump(L);
+      setup_sandboxed_environment(L);
       elg_stack_dump(L);
 
       // register the script environment on the registry using the
@@ -614,8 +615,8 @@ class vm {
   }
 
   // L is the main thread, lua_State represents this thread
-  // this function creates a new thread in L
-  static lua_State* create_mirror_state(lua_State* L) {
+  // this function creates a new thread (not at OS thread)
+  static lua_State* create_mirror_state(lua_State* L, int* m_refkey) {
     // creates a new thread, pushes it on the stack, and returns a
     // pointer to a lua_State that represents this new thread
     // The new state returned by this function shares with the original
@@ -624,10 +625,14 @@ class vm {
     lua_State* M = lua_newthread(L);
 
     // anchor new thread
-    int m_refkey = luaL_ref(L, LUA_REGISTRYINDEX);
+    *m_refkey = luaL_ref(L, LUA_REGISTRYINDEX);
     // lua_unref(M, m_refkey);
     return M;
   }
+
+//  static void unref_mirror_state(lua_State* L, int m_refkey) {
+//    luaL_unref(L, LUA_REGISTRYINDEX, m_refkey);
+//  }
 
   // call the function on the stack
   // in:                 (+1+n) 2:function, n:params
@@ -639,33 +644,40 @@ class vm {
     elg_stack_dump(L);
     int retval = 1;
 
-    setup_extension_environment(L, 1, 2, "_S", "_T");
-    elg_stack_dump(L);
+
+    int m_refkey = 0;
+    lua_State* M = create_mirror_state(L, &m_refkey);
+    lua_xmove(L, M, nargs+2);
+    elg_stack_dump(M);
+
+
+    setup_sandboxed_environment(M, 1, 2, "_S", "_T");
+    elg_stack_dump(M);
 
     // register the function environment on the registry using the
     // function_name as key
     // [-1, +0] > (+1)
-    int function_reference = luaL_ref(L, LUA_REGISTRYINDEX);
-    elg_stack_dump(L);
+    int function_reference = luaL_ref(M, LUA_REGISTRYINDEX);
+    elg_stack_dump(M);
 
     // do the call (lua_State *L, int nargs, int nresults, int errfunc)
     // nresults => 1, one result expected
     // errfunc  => 0, the error message returned on the stack is exactly
     //                the original error message
     // [-(n + 1), +1] > (+1) 1:returned value
-    if (lua_pcall(L, nargs, 1, 0) != 0) {
-      const char* e = lua_tostring(L, -1);
-      lua_pop(L,1); // error
-      luaL_error(L, "Error calling @%s: %s\n", function_name,e);
+    if (lua_pcall(M, nargs, 1, 0) != 0) {
+      const char* e = lua_tostring(M, -1);
+      lua_pop(M,1); // error
+      luaL_error(M, "Error calling @%s: %s\n", function_name,e);
     }
-    elg_stack_dump(L);
-    int type = lua_type(L, -1);
+    elg_stack_dump(M);
+    int type = lua_type(M, -1);
 
     // retrieve boolean or string result
     if (!(type == LUA_TNIL || type == LUA_TBOOLEAN || type == LUA_TLIGHTUSERDATA
         || type == LUA_TNUMBER || type == LUA_TSTRING)) {
-      const char* e = lua_tostring(L, -1);
-      lua_pop(L, 1); // error
+      const char* e = lua_tostring(M, -1);
+      lua_pop(M, 1); // error
       luaL_error(L,
           "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
           function_name, e);
@@ -684,11 +696,11 @@ class vm {
       // if the return value is equal to true,
       // the output stack stays unchanged, this
       // is equivalent to push an empty symbol
-      if (!lua_toboolean(L, -1)) {
+      if (!lua_toboolean(M, -1)) {
         retval = 0;
       }
     } else if (type == LUA_TLIGHTUSERDATA) {
-      const unichar* S = (const unichar*) lua_touserdata(L, -1);
+      const unichar* S = (const unichar*) lua_touserdata(M, -1);
       // push to stack
       for (int i = 0; S[i] != '\0'; ++i) {
         ::push(stack, S[i]);
@@ -696,7 +708,7 @@ class vm {
     } else if (type == LUA_TNUMBER) {
       // convert the number returned to string
       char n[LUAI_MAXNUMBER2STR];
-      size_t count = lua_number2str(n, lua_tonumber(L, -1));
+      size_t count = lua_number2str(n, lua_tonumber(M, -1));
       // push to stack
       push_array(stack, n, count);
 //        12.09.16 return utf8
@@ -704,7 +716,7 @@ class vm {
 //           ::push(stack,n[i]);
 //          }
     } else if (type == LUA_TSTRING) {
-      const char* s = lua_tostring(L, -1);
+      const char* s = lua_tostring(M, -1);
       unichar S[4096] = { 0 };
       size_t count = u_decode_utf8(s, S);
       // push to stack
@@ -716,6 +728,8 @@ class vm {
     }
 
     if(retval) {    // prepare script environment_name
+      elg_stack_dump(L);
+      elg_stack_dump(M);
       char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
 
       // environment name = ELG_ENVIRONMENT_PREFIX-function_name
@@ -726,29 +740,58 @@ class vm {
       // push onto the stack the value stored in the registry with key
       // "foo" where foo is the environment name
       // [-0, +1] > (+1)
-      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+      lua_getfield(L, LUA_GLOBALSINDEX, "_G");
       elg_stack_dump(L);
-      lua_rawgeti(L, LUA_REGISTRYINDEX, function_reference);
-      elg_stack_dump(L);
+
+      lua_rawgeti(M, LUA_REGISTRYINDEX, function_reference);
+      elg_stack_dump(M);
+
       // remove _T
-      lua_pushnil(L);
-      lua_setfield(L, -2, "_T");
-      elg_stack_dump(L);
+      lua_pushnil(M);
+      lua_setfield(M, -2, "_T");
+      elg_stack_dump(M);
 
-      lua_getfield(L,-1,"foo");
-      elg_stack_dump(L);
-      lua_setfield(L, -3, "foo");
+      // iterate through the table
+      lua_pushnil(M);
+      while (lua_next(M, -2) != 0) {
+        elg_stack_dump(M);
 
-      elg_stack_dump(L);
-      lua_pop(L, 2);
+        // duplicate key
+        lua_pushvalue(M, -2);
+
+        // move key and value
+        lua_xmove(M, L, 2);
+        elg_stack_dump(L);
+        elg_stack_dump(M);
+
+        // swap key-value to value-key
+        lua_insert(L, -2);
+        elg_stack_dump(L);
+        elg_stack_dump(M);
+
+        lua_settable(L, 1);
+        elg_stack_dump(L);
+        elg_stack_dump(M);
+
+        elg_stack_dump(M);
+      }
+
+      lua_pop(M, 1);
+
+      lua_pop(L, 1);
     }
 
-    luaL_unref(L, LUA_REGISTRYINDEX, function_reference);
-
-    // remove the returned value from the top of the stack
-    // remove the extension environment
+    // -1 : remove the returned value from the top of the stack
+    // -2 : remove the function environment
     // [-2, +0] > (+0)
-    lua_pop(L, 2);
+    lua_pop(M, 2);
+    elg_stack_dump(M);
+
+    // unref the function environment
+    luaL_unref(M, LUA_REGISTRYINDEX, function_reference);
+    elg_stack_dump(M);
+
+    luaL_unref(L, LUA_REGISTRYINDEX, m_refkey);
     elg_stack_dump(L);
 
     return retval;
