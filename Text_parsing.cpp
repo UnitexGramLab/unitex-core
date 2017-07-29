@@ -1043,7 +1043,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 }
                 break;
 
-                            case META_UPPER: case META_MAJ:
+             case META_UPPER: case META_MAJ:
                 if (token2 == -1)
                     break;
                 update_last_tested_position(p, pos2);
