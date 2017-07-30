@@ -532,7 +532,7 @@ class vm {
   }
 
   int save_local_environment() {
-    u_printf("######################save_local_environment\n");
+    u_printf("++++++++++++++++++ save_local_environment\n");
     // push local
     lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
     elg_stack_dump(L);
@@ -563,7 +563,7 @@ class vm {
   }
 
   int restore_local_environment() {
-    u_printf("######################undo_local_environment\n");
+    u_printf("------------------ undo_local_environment\n");
     lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
     elg_stack_dump(L);
     clear_table_values(L);
