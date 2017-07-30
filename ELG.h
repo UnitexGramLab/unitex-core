@@ -46,6 +46,10 @@ namespace unitex {
 static const char* UNITEX_SCRIPT_PATH =
     "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 /* ************************************************************************** */
+// LUA_REGISTRYINDEX  : interpreter environment
+// LUA_GLOBALSINDEX   : thread environment
+// LUA_ENVIRONINDEX   : function environment
+/* ************************************************************************** */
 class vm {
  public:
   vm(void)
@@ -265,7 +269,7 @@ class vm {
     // [-0, +1] > (+3)
     lua_pushnil(L);
     elg_stack_dump(L);
-    const char* environment_name = {};
+    const char* extension_env_name = {};
     // [-1, +(2|0)] > (+(4|2))
     while (lua_next(L, -2)) {
         elg_stack_dump(L);
@@ -273,9 +277,9 @@ class vm {
         if (lua_isnumber(L, -2)) {
           // check if value is a integer
           if (lua_isstring(L, -1)) {
-              environment_name = lua_tostring(L, -1);
+              extension_env_name = lua_tostring(L, -1);
               // [-0, +0] > (+4)
-              unload_environment(environment_name);
+              unload_environment(extension_env_name);
           }
         }
         elg_stack_dump(L);
@@ -291,15 +295,15 @@ class vm {
   }
 
   // [-0, +0]
-  void unload_environment(const char* environment_name) {
+  void unload_environment(const char* extension_env_name) {
     // retrieve the script environment from the register
     // [-0, +1] > (+1)
-    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+    lua_getfield(L, LUA_REGISTRYINDEX, extension_env_name);
     elg_stack_dump(L);
 
     // if there are an onUnload() function, then run it
     // [-0, +1] > (+2)
-    lua_getfield(L, -1, ELG_FUNCTION_ON_UNLOAD_NAME);
+    lua_getfield(L, -1, ELG_EXTENSION_ON_UNLOAD_NAME);
     elg_stack_dump(L);
     if( lua_isfunction(L, -1) ) {
 //        push(p);
@@ -311,8 +315,8 @@ class vm {
         lua_pop(L, 1); // error
         elg_stack_dump(L);
         luaL_error(L,"Error loading @%s: %s:%s\n",
-                      environment_name,
-                      ELG_FUNCTION_ON_LOAD_NAME,
+                      extension_env_name,
+                      ELG_EXTENSION_ON_UNLOAD_NAME,
                       e);
       }
     } else {
@@ -327,16 +331,16 @@ class vm {
     elg_stack_dump(L);
   }
 
-  void call_unload(const char* environment_name) {
+  void call_unload(const char* extension_env_name) {
 
   }
 
   // -1: environment
   // [-0, +0] > (+1)
-  void call_onload(const char* environment_name) {
+  void call_onload(const char* extension_env_name) {
     // if there are an onLoad() function, then run it
     // [-0, +1] > (+2)
-    lua_getfield(L, -1, ELG_FUNCTION_ON_LOAD_NAME);
+    lua_getfield(L, -1, ELG_EXTENSION_ON_LOAD_NAME);
     elg_stack_dump(L);
     if( lua_isfunction(L, -1) ) {
 //        push(p);
@@ -348,8 +352,8 @@ class vm {
         lua_pop(L, 1);
         elg_stack_dump(L);
         luaL_error(L,"Error loading @%s: %s:%s\n",
-                      environment_name,
-                      ELG_FUNCTION_ON_LOAD_NAME,
+                      extension_env_name,
+                      ELG_EXTENSION_ON_LOAD_NAME,
                       e);
       }
     } else {
@@ -359,7 +363,7 @@ class vm {
   }
 
   // [-0, +0] > (+1)
-  void save_name(const char* environment_name) {
+  void save_name(const char* extension_env_name) {
     // retrieve c, the ELG_GLOBAL_ENVIRONMENT table
     // [-0, +1] > (+2)
     lua_getglobal(L, ELG_GLOBAL_ENVIRONMENT);
@@ -378,7 +382,7 @@ class vm {
     elg_stack_dump(L);
     // put n, a string value equal to the environment name
     // [-0, +1] > (+5)
-    lua_pushstring(L, environment_name);
+    lua_pushstring(L, extension_env_name);
     elg_stack_dump(L);
     // set c.o[i] = n
     // [-2, 0] > (+3)
@@ -507,24 +511,65 @@ class vm {
   }
 
   int setup_local_environment() {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+    elg_stack_dump(L);
+    lua_pop(L,1);
+
     //
     setup_sandboxed_environment(L, LUA_GLOBALSINDEX, -1, "_G", "_L");
     elg_stack_dump(L);
 
-    // register the script environment on the registry using the
-    // environment_name as key
+    // register the function environment on the registry
     // [-1, +0] > (+1)
-    lua_setfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+    local_env_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    elg_stack_dump(L);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+    elg_stack_dump(L);
+    lua_pop(L,1);
+
+    return 1;
+  }
+
+  int save_local_environment() {
+    u_printf("######################save_local_environment\n");
+    // push local
+    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+    elg_stack_dump(L);
+
+    // get FOO
+    lua_getfield(L, -1, "foo");
+    elg_stack_dump(L);
+
+    // update FOO
+    lua_getfield(L,LUA_GLOBALSINDEX,"_G");
+    elg_stack_dump(L);
+    lua_insert(L,-2);
+    elg_stack_dump(L);
+    lua_pushliteral(L,"foo");
+    elg_stack_dump(L);
+    lua_insert(L,-2);
+    elg_stack_dump(L);
+    lua_settable(L,-3);
+    elg_stack_dump(L);
+    lua_pop(L,1);
+    elg_stack_dump(L);
+
+    // pop local
+    lua_pop(L,1);
     elg_stack_dump(L);
 
     return 1;
   }
 
-  int clear_local_environment() {
-    lua_newtable(L);
+  int restore_local_environment() {
+    u_printf("######################undo_local_environment\n");
+    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
     elg_stack_dump(L);
-    lua_setfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+    clear_table_values(L);
+    lua_pop(L,1);
     elg_stack_dump(L);
+
     return 1;
   }
 
@@ -534,13 +579,13 @@ class vm {
   int load_extension(const char* function_name) {
     elg_stack_dump(L);
 
-    // prepare script environment_name
-    char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
+    // prepare script extension_env_name
+    char extension_env_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
 
     // environment name = ELG_ENVIRONMENT_PREFIX-function_name
-    strcat(environment_name, ELG_ENVIRONMENT_PREFIX);
-    strcat(environment_name, "-");
-    strcat(environment_name, function_name);
+    strcat(extension_env_name, ELG_ENVIRONMENT_PREFIX);
+    strcat(extension_env_name, "-");
+    strcat(extension_env_name, function_name);
 
     // the registry is a global table accessible from the Lua C-API
     // we use it for both store extended functions and check if an
@@ -550,7 +595,7 @@ class vm {
     // push onto the stack the value stored in the registry with key
     // "foo" where foo is the environment name
     // [-0, +1] > (+1)
-    lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+    lua_getfield(L, LUA_REGISTRYINDEX, extension_env_name);
     elg_stack_dump(L);
 
     // if the retrieved value is not the script environment, then
@@ -587,7 +632,7 @@ class vm {
       }
 
       // get the local environement
-      lua_getfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
+      lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
       elg_stack_dump(L);
 
       // setup a sandboxed environment
@@ -597,9 +642,9 @@ class vm {
       elg_stack_dump(L);
 
       // register the script environment on the registry using the
-      // environment_name as key
+      // extension_env_name as key
       // [-1, +0] > (+1)
-      lua_setfield(L, LUA_REGISTRYINDEX, environment_name);
+      lua_setfield(L, LUA_REGISTRYINDEX, extension_env_name);
       elg_stack_dump(L);
 
       // pop the local environement
@@ -617,15 +662,15 @@ class vm {
 
       // retrieve the script environment from the register
       // [-0, +1] > (+1)
-      lua_getfield(L, LUA_REGISTRYINDEX, environment_name);
+      lua_getfield(L, LUA_REGISTRYINDEX, extension_env_name);
       elg_stack_dump(L);
 
       // [-0, +0] > (+1)
-      call_onload(environment_name);
+      call_onload(extension_env_name);
       elg_stack_dump(L);
 
       // [-0, +0] > (+1)
-      save_name(environment_name);
+      save_name(extension_env_name);
       elg_stack_dump(L);
     }  // if (!lua_istable(L,-1))
 
@@ -664,6 +709,37 @@ class vm {
     return M;
   }
 
+  static int clear_table_values(lua_State* state) {
+    assert(lua_type(state, -1) == LUA_TTABLE);
+    elg_stack_dump(state);
+    lua_pushnil(state);
+    while (lua_next(state, -2) != 0) {
+      elg_stack_dump(state);
+      int key_type  = lua_type(state, -2);
+      if (key_type == LUA_TSTRING) {
+        // pop value
+        lua_pop(state, 1);
+        elg_stack_dump(state);
+        const char* key = lua_tostring(state, -1);
+         if (key[0] && key[0] != '_') {
+           // duplicate key
+           lua_pushvalue(state, -1);
+           elg_stack_dump(state);
+           lua_pushnil(state);
+           // set t[v] = nil
+           lua_rawset(state, -4);
+         }
+      } else {
+        // pop value but keep key for next iteration
+        lua_pop(state, 1);
+      }
+      elg_stack_dump(state);
+    }
+
+    elg_stack_dump(state);
+    return 1;
+  }
+
   static int move_table_values(lua_State* to, lua_State* from, int to_idx) {
     // iterate through the table
     lua_pushnil(from);
@@ -683,7 +759,7 @@ class vm {
       elg_stack_dump(to);
       elg_stack_dump(from);
 
-      //
+      // assign to the destination table
       lua_settable(to, to_idx);
       elg_stack_dump(to);
       elg_stack_dump(from);
@@ -709,18 +785,18 @@ class vm {
     elg_stack_dump(L);
     int retval = 1;
 
-
     int m_refkey = 0;
     lua_State* M = create_mirror_state(L, &m_refkey);
     lua_xmove(L, M, nargs+2);
     elg_stack_dump(M);
+    elg_stack_dump(L);
 
     setup_sandboxed_environment(M, 1, 2, "_E", "_F");
     elg_stack_dump(M);
 
     // register the function environment on the registry
     // [-1, +0] > (+1)
-    int function_reference = luaL_ref(M, LUA_REGISTRYINDEX);
+    int local_func_ref = luaL_ref(M, LUA_REGISTRYINDEX);
     elg_stack_dump(M);
 
     // do the call (lua_State *L, int nargs, int nresults, int errfunc)
@@ -793,24 +869,24 @@ class vm {
     if(retval) {
       elg_stack_dump(L);
       elg_stack_dump(M);
-      char environment_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
+      char extension_env_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
 
       // environment name = ELG_ENVIRONMENT_PREFIX-function_name
-      strcat(environment_name, ELG_ENVIRONMENT_PREFIX);
-      strcat(environment_name, "-");
-      strcat(environment_name, function_name);
+      strcat(extension_env_name, ELG_ENVIRONMENT_PREFIX);
+      strcat(extension_env_name, "-");
+      strcat(extension_env_name, function_name);
       // retrieve the script environment from the register, for that
       // push onto the stack the value stored in the registry with key
       // "foo" where foo is the environment name
       // [-0, +1] > (+1)
-      lua_getfield(L, LUA_REGISTRYINDEX, ELG_LOCAL_ENVIRONMENT);
-      //lua_getfield(L, LUA_GLOBALSINDEX, "_G");
+      lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+      //lua_getfield(L, LUA_REGISTRYINDEX, extension_env_name);
       elg_stack_dump(L);
 
-      lua_rawgeti(M, LUA_REGISTRYINDEX, function_reference);
+      lua_rawgeti(M, LUA_REGISTRYINDEX, local_func_ref);
       elg_stack_dump(M);
 
-      // remove _T
+      // remove _F
       lua_pushnil(M);
       lua_setfield(M, -2, "_F");
       elg_stack_dump(M);
@@ -831,9 +907,10 @@ class vm {
     elg_stack_dump(M);
 
     // unref the function environment
-    luaL_unref(M, LUA_REGISTRYINDEX, function_reference);
+    luaL_unref(M, LUA_REGISTRYINDEX, local_func_ref);
     elg_stack_dump(M);
 
+    // unref the thread
     luaL_unref(L, LUA_REGISTRYINDEX, m_refkey);
     elg_stack_dump(L);
 

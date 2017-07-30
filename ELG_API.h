@@ -45,10 +45,9 @@
 #include "TransductionStack.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
-#define ELG_LOCAL_ENVIRONMENT           "elg_local"
 /* ************************************************************************** */
-#define ELG_FUNCTION_ON_LOAD_NAME       "load_event"
-#define ELG_FUNCTION_ON_UNLOAD_NAME     "unload_event"
+#define ELG_EXTENSION_ON_LOAD_NAME      "load_event"
+#define ELG_EXTENSION_ON_UNLOAD_NAME    "unload_event"
 #define ELG_FUNCTION_ON_FAIL_NAME       "fail_event"
 /* ************************************************************************** */
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"

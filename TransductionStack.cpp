@@ -507,6 +507,8 @@ for (;;) {
 //        p->elg->setglobal("stack_pointer");
         if(!p->elg->call(char_function_name,script_params_count,stack)) {
           stack->stack_pointer=old_stack_pointer;
+          p->elg->restore_local_environment();
+//          p->elg->setup_local_environment();
           return 0;
         }
 

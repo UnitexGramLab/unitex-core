@@ -115,7 +115,9 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             create_variable_backup_memory_reserve(p->input_variables,1);
     p->backup_memory_reserve = backup_reserve;
     int current_token;
+
     p->elg->setup_local_environment();
+
     while (p->current_origin < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
             p->number_of_matches != p->search_limit) {
@@ -174,9 +176,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->weight=-1;
                 int n_matches=0;
                 locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
-
-                p->elg->clear_local_environment();
-                p->elg->setup_local_environment();
 
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
@@ -538,6 +537,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         /* In we are in the top level graph, we have a match */
         if ((p->graph_depth) == 0) {
             (p->token_error_ctx.n_matches_at_token_pos__morphological_locate)++;
+
+            p->elg->save_local_environment();
+
             if (p->output_policy == IGNORE_OUTPUTS) {
                 if (pos > 0) {
                     add_match(pos + p->current_origin-1,NULL, p, p->al.prv_alloc_generic);

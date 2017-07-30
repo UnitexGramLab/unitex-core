@@ -60,13 +60,17 @@
 /* ************************************************************************** */
 #define UNITEX_COPY_STATE_MAX_DEPTH 10
 /* ************************************************************************** */
-#if defined(LUA_VERSION_NUM) &&\
-            LUA_VERSION_NUM == 501
+#if defined(LUA_VERSION_NUM) && LUA_VERSION_NUM == 501
+// lua_isinteger
 # ifndef  lua_isinteger
-# define lua_isinteger(L, index)\
+#  define lua_isinteger(L, index)\
              ((lua_type(L, index) == LUA_TNUMBER) &&\
               (lua_tointeger(L, index) == lua_tonumber(L, index)))
 #endif   // ifndef  lua_isintege
+// LUA_RIDX_MAINTHREAD
+# ifndef  LUA_RIDX_MAINTHREAD
+#  define LUA_RIDX_MAINTHREAD (-3)
+# endif
 #endif  // defined(LUA_VERSION_NUM)
 /* ************************************************************************** */
 namespace unitex {
