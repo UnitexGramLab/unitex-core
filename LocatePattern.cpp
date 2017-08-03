@@ -408,6 +408,9 @@ if (is_cancelling_requested() != 0) {
    return 0;
 }
 
+// load fst extensions
+p->elg->load_fst_extension(fst2_name, p->fst2);
+
 p->tags=p->fst2->tags;
 #ifdef REGEX_FACADE_ENGINE
 p->filters=new_FilterSet(p->fst2,p->alphabet);

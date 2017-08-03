@@ -34,6 +34,8 @@
 #include "ELGLib/debug.h"
 #include "ELGLib/ELGLib.h"
 #include "ELGLib/copy_state.h"
+#include "File.h"
+#include "base/unicode/utf8.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -130,6 +132,11 @@ class vm {
         const char* e =lua_tostring(L, -1);
         lua_pop(L,1);
         luaL_error(L,"Error running the initialization script: %s\n",e);
+      }
+
+      // run the graph extension
+      if (is_regular_file("SCRIPT")) {
+
       }
 
       // -------------------------------------------------------------------
@@ -569,6 +576,57 @@ class vm {
     clear_table_values(L);
     lua_pop(L,1);
     elg_stack_dump(L);
+
+    return 1;
+  }
+
+  // 03/07/17
+  int load_fst_extension(const char* fst_name, const Fst2* fst)  {
+    elg_stack_dump(L);
+
+    if (fst == NULL ||
+        fst->graph_names    == NULL ||
+        fst->graph_names[0] != NULL ||
+        fst->graph_names[1] == NULL) {
+      return 0;
+    }
+
+    // get the absolute path of the fst file
+    char fst_file[FILENAME_MAX] = {0};
+    get_real_path(fst_name, fst_file);
+
+    // remove the file name from the path
+    char fst_path[FILENAME_MAX] = {0};
+    get_path(fst_file, fst_path);
+
+    // get the main fst name
+    char graph_name[FILENAME_MAX] = {0};
+    u_encode_utf8(fst->graph_names[1], graph_name);
+
+    // convert the graph name to a file name
+    replace_colon_by_path_separator(graph_name);
+
+    // extension name = fst_path/graph_name.upp
+    char extension_name[FILENAME_MAX] = {0};
+    // extension_name = fst_path/
+    strcat(extension_name, fst_path);
+    // extension_name = fst_path/graph_name
+    strcat(extension_name, graph_name);
+    // extension name = fst_path/graph_name.upp
+    strcat(extension_name, ELG_FUNCTION_DEFAULT_EXTENSION);
+
+    // if graph_name.upp exists
+    if(is_regular_file(extension_name)) {
+      return 0;
+    }
+
+//    int number_of_graphs = fst->number_of_graphs;
+//    // graph names begin at pos 1
+//    for (int i = 1; i <= number_of_graphs; ++i) {
+//      if (fst->graph_names[i] != NULL) {
+//        u_printf("%S\n",fst->graph_names[i]);
+//      }
+//    }
 
     return 1;
   }

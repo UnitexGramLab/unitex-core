@@ -448,11 +448,14 @@ for (;;) {
             }
             break;
           case ',':
-            // 1O.09.16
+            // 10.09.16
             // Fix to allow empty arguments f(a,,b)
             if(is_empty(parameter_stack)) {
               is_null_param = true;
             }
+            // 03.07.17
+            // fix no breack at the end case
+            break;
           case ')':
             // case of a defined variable
             if(!is_empty(parameter_stack)) {
