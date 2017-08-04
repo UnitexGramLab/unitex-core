@@ -46,7 +46,7 @@
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
 /* ************************************************************************** */
-#define ELG_EXTENSION_ON_LOAD_NAME      "load_event"
+#define ELG_EXTENSION_EVENT_LOAD      "load_event"
 #define ELG_EXTENSION_EVENT_UNLOAD    "unload_event"
 #define ELG_FUNCTION_ON_FAIL_NAME       "fail_event"
 /* ************************************************************************** */

@@ -315,37 +315,6 @@ class vm {
     elg_stack_dump(L);
   }
 
-//  void call_unload(const char* extension_env_name) {
-//
-//  }
-
-//  // -1: environment
-//  // [-0, +0] > (+1)
-//  void call_onload(const char* extension_name) {
-//    // if there are an onLoad() function, then run it
-//    // [-0, +1] > (+2)
-//    lua_getfield(L, -1, ELG_EXTENSION_ON_LOAD_NAME);
-//    elg_stack_dump(L);
-//    if( lua_isfunction(L, -1) ) {
-////        push(p);
-////        setglobal(ELG_GLOBAL_LOCATE_PARAMS);
-//      // [-1, +0] > (+1)
-//      if (lua_pcall(L, 0, 0, 0) != 0) {
-//        const char* e = lua_tostring(L, -1);
-//        elg_stack_dump(L);
-//        lua_pop(L, 1);
-//        elg_stack_dump(L);
-//        luaL_error(L,"Error loading @%s: %s:%s\n",
-//                      extension_name,
-//                      ELG_EXTENSION_ON_LOAD_NAME,
-//                      e);
-//      }
-//    } else {
-//      // pop the returned value
-//      lua_pop(L, 1);
-//    }
-//  }
-
   // -1: environment
   // [-0, +0] > (+1)
   void call_event(const char* event_name) {
@@ -669,11 +638,6 @@ class vm {
     lua_rawset(L, -4);
     elg_stack_dump(L);
 
-//    // push a copy of the chunk
-//    // [-0, +1] > (+4)
-//    lua_pushvalue(L, -1);
-//    elg_stack_dump(L);
-
     //  priming run: loads the chunk and create variables
     // [-1, +0] > (+3)
     if (lua_pcall(L, 0, 0, 0)) {  // LUA_MULTRET -> 0 ?
@@ -689,7 +653,7 @@ class vm {
 
     // call the load event
     // [-0, +0] > (+1)
-    call_event(ELG_EXTENSION_ON_LOAD_NAME);
+    call_event(ELG_EXTENSION_EVENT_LOAD);
     elg_stack_dump(L);
 
     // -2: pop the table of graph extensions environments
@@ -799,7 +763,7 @@ class vm {
       elg_stack_dump(L);
 
       // [-0, +0] > (+1)
-      call_event(ELG_EXTENSION_ON_LOAD_NAME);
+      call_event(ELG_EXTENSION_EVENT_LOAD);
       elg_stack_dump(L);
 
       // [-0, +0] > (+1)
