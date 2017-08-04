@@ -55,7 +55,7 @@ static const char* UNITEX_SCRIPT_PATH =
 class vm {
  public:
   vm(void)
-      : L(), env(0), local_env_ref(0) {
+      : L(), env(0), local_env_ref(0), graph_env_ref(0) {
   }
 
   virtual ~vm(void) {
@@ -124,7 +124,7 @@ class vm {
       // [-0, +0] > (+0)
       lua_atpanic(L, panic);
 
-      // run the initialization script
+      // load and run the initialization script
       // custom classes are not available right now from here
       // FIXME(martinec) Remove the hard-coded path
       // [-0, +0] > (+0)
@@ -132,11 +132,6 @@ class vm {
         const char* e =lua_tostring(L, -1);
         lua_pop(L,1);
         luaL_error(L,"Error running the initialization script: %s\n",e);
-      }
-
-      // run the graph extension
-      if (is_regular_file("SCRIPT")) {
-
       }
 
       // -------------------------------------------------------------------
@@ -581,9 +576,8 @@ class vm {
   }
 
   // 03/07/17
-  int load_fst_extension(const char* fst_name, const Fst2* fst)  {
-    elg_stack_dump(L);
-
+  int load_graph_extension(const char* fst_name, const Fst2* fst)  {
+    // TODO(martinec) use assert()
     if (fst == NULL ||
         fst->graph_names    == NULL ||
         fst->graph_names[0] != NULL ||
@@ -599,9 +593,26 @@ class vm {
     char fst_path[FILENAME_MAX] = {0};
     get_path(fst_file, fst_path);
 
+    // create a new empty table and pushes it onto the stack
+    // we will use this table to holds all the graph extension chunks
+    // [-0, +1] > (+1)
+    lua_newtable(L);
+    elg_stack_dump(L);
+
+    //    // graph names begin at pos 1
+    //    for (int i = 1; i <= number_of_graphs; ++i) {
+    //      if (fst->graph_names[i] != NULL) {
+    //        u_printf("%S\n",fst->graph_names[i]);
+    //      }
+    //    }
+
+    // number of graphs referenced on the compiled fst
+    //int number_of_graphs = fst->number_of_graphs;
+    int graph_number = 1;
+
     // get the main fst name
     char graph_name[FILENAME_MAX] = {0};
-    u_encode_utf8(fst->graph_names[1], graph_name);
+    u_encode_utf8(fst->graph_names[graph_number], graph_name);
 
     // convert the graph name to a file name
     replace_colon_by_path_separator(graph_name);
@@ -615,20 +626,58 @@ class vm {
     // extension name = fst_path/graph_name.upp
     strcat(extension_name, ELG_FUNCTION_DEFAULT_EXTENSION);
 
-    // if graph_name.upp exists
-    if(is_regular_file(extension_name)) {
+    // return if graph_name.upp doesn't exists
+    if(!is_regular_file(extension_name)) {
       return 0;
     }
 
-//    int number_of_graphs = fst->number_of_graphs;
-//    // graph names begin at pos 1
-//    for (int i = 1; i <= number_of_graphs; ++i) {
-//      if (fst->graph_names[i] != NULL) {
-//        u_printf("%S\n",fst->graph_names[i]);
-//      }
-//    }
+    // push the graph number to the stack
+    // [-0, +1] > (+2)
+    lua_pushinteger(L, graph_number);
+    elg_stack_dump(L);
+
+    // load the graph_name.upp chunk
+    // [-0, +1] > (+3)
+    load_file(L,extension_name);
+    elg_stack_dump(L);
+
+    // push a copy of the chunk
+    // [-0, +1] > (+4)
+    lua_pushvalue(L, -1);
+    elg_stack_dump(L);
+
+    //  priming run: loads the chunk and create variables
+    // [-1, +0] > (+3)
+    if (lua_pcall(L, 0, 0, 0)) {  // LUA_MULTRET -> 0 ?
+      const char* e = lua_tostring(L, -1);
+      lua_pop(L,1);
+      luaL_error(L, "Error loading @%s: %s\n", extension_name, e);
+    }
+    elg_stack_dump(L);
+
+    // do table[graph_number] = graph_chunk
+    // [-2, +0] > (+1)
+    lua_settable(L, -3);
+    elg_stack_dump(L);
+
+    // register the graph chunks' table extension on the registry
+    // [-1, +0] > (+0)
+    graph_env_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    elg_stack_dump(L);
 
     return 1;
+  }
+
+  static int load_file(lua_State* state, const char* file_name) {
+    int retval = luaL_loadfile(state, file_name);
+    if (retval) {
+      const char* e = lua_tostring(state, -1);
+      elg_stack_dump(state);
+      lua_pop(state,1);
+      elg_stack_dump(state);
+      luaL_error(state,"Error loading %s: %s\n", file_name, e);
+    }
+    return retval;
   }
 
   // 05/09/16 load once
@@ -681,13 +730,7 @@ class vm {
 
       // load the script as a Lua chunk; it does not run it
       // [-0, +1] > (+1)
-      if (luaL_loadfile(L, script_file)) {
-        const char* e = lua_tostring(L, -1);
-        elg_stack_dump(L);
-        lua_pop(L,1);
-        elg_stack_dump(L);
-        luaL_error(L,"Error loading %s: %s\n", script_file, e);
-      }
+      load_file(L, script_file);
 
       // get the local environement
       lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
@@ -699,22 +742,22 @@ class vm {
       setup_sandboxed_environment(L, 2, 1, "_L", "_E");
       elg_stack_dump(L);
 
-      // register the script environment on the registry using the
+      // register the extension chunk on the registry using the
       // extension_env_name as key
       // [-1, +0] > (+1)
       lua_setfield(L, LUA_REGISTRYINDEX, extension_env_name);
       elg_stack_dump(L);
 
-      // pop the local environement
+      // pop the local environment
       lua_pop(L, 1);
       elg_stack_dump(L);
 
-      //  priming run: loads and runs script's main function
+      //  priming run: loads the script and create variables
       // [-1, +0] > (+0)
       if (lua_pcall(L, 0, 0, 0)) {  // LUA_MULTRET -> 0 ?
         const char* e = lua_tostring(L, -1);
         lua_pop(L,1);
-        luaL_error(L, "Error calling @%s: %s\n", function_name, e);
+        luaL_error(L, "Error loading @%s: %s\n", function_name, e);
       }
       elg_stack_dump(L);
 
@@ -1073,6 +1116,7 @@ class vm {
   lua_State* L;
   int env;
   int local_env_ref;
+  int graph_env_ref;
 };
 /* ************************************************************************** */
 }      // namespace unitex
