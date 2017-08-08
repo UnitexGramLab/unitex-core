@@ -137,7 +137,6 @@ double evaluate_ambiguity(SingleGraph,int*,int*);
 void count_paths(SingleGraph graph,int q1,int q2,int* min_path_length,int* max_path_length,
                  int* number_of_paths);
 void reverse_transition_lists(SingleGraph g);
-
 } // namespace unitex
 
 #endif

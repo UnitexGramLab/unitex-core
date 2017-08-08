@@ -1058,4 +1058,39 @@ for (int i=1;i<=fst2->number_of_graphs;i++) {
 return -1;
 }
 
+
+void fst2_output_dot(Fst2 * A) {
+
+
+  u_printf("# FST2 output\n\n");
+
+  for (int i = 1; i <= A->number_of_graphs; i++) {
+
+    int base = A->initial_states[i];
+
+    u_printf(
+      "digraph G%d {\n"
+      "  graph [ center = true, orientation = landscape, rankdir = LR ];\n"
+      "  node  [ shape  = circle ];\n\n", i);
+
+    for (int q = 0; q < A->number_of_states_per_graphs[i]; q++) {
+
+      int qq = base + q;
+
+      u_printf( "\n  %d [ label=\"%d\" ", q, q);
+      if (is_final_state(A->states[qq])) { u_printf("shape=\"doublecircle\" "); }
+      u_printf( "];\n");
+
+      for (Transition* trans = A->states[qq]->transitions; trans; trans = trans->next) {
+        if(A->tags[trans->tag_number]->output) {
+          u_printf( "  %d -> %d [ label=\"%S:%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input,A->tags[trans->tag_number]->output);
+        } else {
+          u_printf( "  %d -> %d [ label=\"%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input);
+        }
+      }
+    }
+    u_printf( "}\n\n");
+  }
+}
+
 } // namespace unitex

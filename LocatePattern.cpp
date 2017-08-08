@@ -351,6 +351,9 @@ if (is_cancelling_requested() != 0) {
 u_printf("Loading fst2...\n");
 struct FST2_free_info fst2load_free;
 Fst2* fst2load=load_abstract_fst2(vec,fst2_name,1,&fst2load_free);
+
+//fst2_output_dot(fst2load);
+
 if (fst2load==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);

@@ -453,9 +453,9 @@ for (;;) {
             if(is_empty(parameter_stack)) {
               is_null_param = true;
             }
-            // 03.07.17
-            // fix no breack at the end case
-            break;
+            // 03.07.17 -> 08.07.17
+            // fix no breack at the end case BAD BAD BAD BAD BAD BAD BAD
+            // break;
           case ')':
             // case of a defined variable
             if(!is_empty(parameter_stack)) {

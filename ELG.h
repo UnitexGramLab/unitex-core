@@ -310,8 +310,6 @@ class vm {
 
     // pop the the script environment
     lua_pop(L, 1);
-
-    // delete the environment name
     elg_stack_dump(L);
   }
 
@@ -492,9 +490,9 @@ class vm {
   }
 
   int setup_local_environment() {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
-    elg_stack_dump(L);
-    lua_pop(L,1);
+//    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+//    elg_stack_dump(L);
+//    lua_pop(L,1);
 
     //
     setup_sandboxed_environment(L, LUA_GLOBALSINDEX, -1, "_G", "_L");
@@ -505,56 +503,58 @@ class vm {
     local_env_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     elg_stack_dump(L);
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
-    elg_stack_dump(L);
-    lua_pop(L,1);
+//    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+//    elg_stack_dump(L);
+//    lua_pop(L,1);
 
     return 1;
   }
 
+  //
   int save_local_environment() {
     u_printf("++++++++++++++++++ save_local_environment\n");
-    // push local
-    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
-    elg_stack_dump(L);
-
-    // get FOO
-    lua_getfield(L, -1, "foo");
-    elg_stack_dump(L);
-
-    // update FOO
-    lua_getfield(L,LUA_GLOBALSINDEX,"_G");
-    elg_stack_dump(L);
-    lua_insert(L,-2);
-    elg_stack_dump(L);
-    lua_pushliteral(L,"foo");
-    elg_stack_dump(L);
-    lua_insert(L,-2);
-    elg_stack_dump(L);
-    lua_settable(L,-3);
-    elg_stack_dump(L);
-    lua_pop(L,1);
-    elg_stack_dump(L);
-
-    // pop local
-    lua_pop(L,1);
-    elg_stack_dump(L);
+//    // push local
+//    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+//    elg_stack_dump(L);
+//
+//    // get FOO
+//    lua_getfield(L, -1, "foo");
+//    elg_stack_dump(L);
+//
+//    // update FOO
+//    lua_getfield(L,LUA_GLOBALSINDEX,"_G");
+//    elg_stack_dump(L);
+//    lua_insert(L,-2);
+//    elg_stack_dump(L);
+//    lua_pushliteral(L,"foo");
+//    elg_stack_dump(L);
+//    lua_insert(L,-2);
+//    elg_stack_dump(L);
+//    lua_settable(L,-3);
+//    elg_stack_dump(L);
+//    lua_pop(L,1);
+//    elg_stack_dump(L);
+//
+//    // pop local
+//    lua_pop(L,1);
+//    elg_stack_dump(L);
 
     return 1;
   }
 
   int restore_local_environment() {
     u_printf("------------------ undo_local_environment\n");
-    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
-    elg_stack_dump(L);
-    clear_table_values(L);
-    lua_pop(L,1);
-    elg_stack_dump(L);
+//    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
+//    elg_stack_dump(L);
+//    clear_table_values(L);
+//    lua_pop(L,1);
+//    elg_stack_dump(L);
 
     return 1;
   }
 
   // 03/07/17
+  // [+0, +0] > (+0)
   int load_graph_extension(const char* fst_name, const Fst2* fst)  {
     // TODO(martinec) use assert()
     if (fst == NULL ||
@@ -615,6 +615,10 @@ class vm {
 
     // return if graph_name.upp doesn't exists
     if(!is_regular_file(extension_name)) {
+      // [-0, +1] > (+0)
+      // -2: pop the table of graph extensions environments
+      lua_pop(L,1);
+      elg_stack_dump(L);
       return 0;
     }
 
@@ -727,6 +731,7 @@ class vm {
       // load the script as a Lua chunk; it does not run it
       // [-0, +1] > (+1)
       load_file(L, script_file);
+      elg_stack_dump(L);
 
       // get the local environement
       lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
