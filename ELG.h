@@ -155,6 +155,7 @@ class vm {
       set("next", elg::token::next);
       set("at", elg::token::at);
       set("pos", elg::token::pos);
+      set("offset", elg::token::offset);
       set("is_space", elg::token::is_space);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_TOKEN);

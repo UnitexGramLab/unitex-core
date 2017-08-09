@@ -409,6 +409,7 @@ int at(lua_State* L) {
     // narg is a number and returns this number cast to an int
     // http://pgl.yoyo.org/luai/i/luaL_checkint
     int pos = luaL_checkint(L, 1);
+    // allow negative indices, -1 is p->buffer_size-1
     pos = pos >= 0 ? pos : p->buffer_size + pos;
 
     if (pos >= 0 && pos < p->buffer_size) {
@@ -468,6 +469,22 @@ int pos(lua_State * L) {
 
   if(p) {
     lua_pushinteger(L, p->current_origin + p->last_tested_position);
+  } else {
+    lua_pushnil(L);
+  }
+
+  return 1;
+}
+
+// gives the index at the text buffer whereas pos gives the pos at the token buffer
+int offset(lua_State * L) {
+  // get locate params
+  struct locate_parameters* p = get_locate_params(L);
+
+  if(p) {
+    int pos = p->pos_in_tokens;
+    int ofsset = pos > 0 ? pos + p->current_origin-1 : pos + p->current_origin;
+    lua_pushinteger(L, ofsset);
   } else {
     lua_pushnil(L);
   }
