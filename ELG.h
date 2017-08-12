@@ -513,7 +513,7 @@ class vm {
 
   //
   int save_local_environment() {
-    u_printf("++++++++++++++++++ save_local_environment\n");
+// u_printf("++++++++++++++++++ save_local_environment\n");
 //    // push local
 //    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
 //    elg_stack_dump(L);
@@ -544,7 +544,7 @@ class vm {
   }
 
   int restore_local_environment() {
-    u_printf("------------------ undo_local_environment\n");
+//    u_printf("------------------ undo_local_environment\n");
 //    lua_rawgeti(L, LUA_REGISTRYINDEX, local_env_ref);
 //    elg_stack_dump(L);
 //    clear_table_values(L);
@@ -684,16 +684,16 @@ class vm {
   // 05/09/16 load once
   // in:             (+0)
   // out: [-0, +2] > (+2)
-  int load_extension(const char* function_name) {
+  int load_extension(const char* extension_name, const char* function_name) {
     elg_stack_dump(L);
 
     // prepare script extension_env_name
     char extension_env_name[MAX_TRANSDUCTION_VAR_LENGTH] = { };
 
-    // environment name = ELG_ENVIRONMENT_PREFIX-function_name
+    // environment name = ELG_ENVIRONMENT_PREFIX-extension_name
     strcat(extension_env_name, ELG_ENVIRONMENT_PREFIX);
     strcat(extension_env_name, "-");
-    strcat(extension_env_name, function_name);
+    strcat(extension_env_name, extension_name);
 
     // the registry is a global table accessible from the Lua C-API
     // we use it for both store extended functions and check if an
@@ -719,11 +719,11 @@ class vm {
       char script_name[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
       char script_file[MAX_TRANSDUCTION_VAR_LENGTH]   = { };
 
-      // script name = function_name.upp
-      strcat(script_name, function_name);
+      // script name = extension_name.upp
+      strcat(script_name, extension_name);
       strcat(script_name, ELG_FUNCTION_DEFAULT_EXTENSION);
 
-      // script_file = /default/path/function_name.upp
+      // script_file = /default/path/extension_name.upp
       strcat(script_file, UNITEX_SCRIPT_PATH);
       strcat(script_file, script_name);
 
@@ -759,7 +759,7 @@ class vm {
       if (lua_pcall(L, 0, 0, 0)) {  // LUA_MULTRET -> 0 ?
         const char* e = lua_tostring(L, -1);
         lua_pop(L,1);
-        luaL_error(L, "Error loading @%s: %s\n", function_name, e);
+        luaL_error(L, "Error loading @%s: %s\n", extension_name, e);
       }
       elg_stack_dump(L);
 

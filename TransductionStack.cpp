@@ -183,9 +183,15 @@ if (s==NULL) {
 }
 
 //u_printf("######/[%S]\n",s);
-unichar function_name[MAX_TRANSDUCTION_VAR_LENGTH]   = {0};
 unichar variable_name[MAX_TRANSDUCTION_VAR_LENGTH]   = {0};
-char char_function_name[MAX_TRANSDUCTION_VAR_LENGTH] = {0};
+
+// function name
+unichar function_name[FILENAME_MAX]  = {0};
+char char_function_name[FILENAME_MAX] = {0};
+// extension name
+unichar extension_name[FILENAME_MAX]   = {0};
+char char_extension_name[FILENAME_MAX] = {0};
+
 char char_parameter_stack[4096*6] = {0};
 /* This is the stack used to process outputs */
 struct stack_unichar* parameter_stack = new_stack_unichar(4096);
@@ -218,22 +224,36 @@ for (;;) {
     /* Now we are sure to have s[i1]=='$' */
     {
 /* ************************************************************************** */
-      /* Case of an external script call $@foo()$ */
+      /* Case of an extended function call $@extension.function()$ */
       if (s[i1+1]=='@') {
         int name_length=0;
         i1 = i1+2 ;
-        function_name[0] = '\0';
+        extension_name[0] = '\0';
         while (is_variable_char(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
-           function_name[name_length++]=s[i1++];
+           extension_name[name_length++]=s[i1++];
         }
         if (name_length>=MAX_TRANSDUCTION_VAR_LENGTH) {
-           fatal_error("Too long function name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
+           fatal_error("Too long extension name (>%d chars) in following extended output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
         }
-        function_name[name_length]='\0';
+        extension_name[name_length]='\0';
 //        u_printf("%S\n",function_name);
 
+        // function name
+        function_name[0] = '\0';
+        if (s[i1]=='.') {
+          name_length=0;
+          i1 = i1+1 ;
+          while (is_variable_char(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
+             function_name[name_length++]=s[i1++];
+          }
+          if (name_length>=MAX_TRANSDUCTION_VAR_LENGTH) {
+             fatal_error("Too long extended function name (>%d chars) in following extended output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
+          }
+          function_name[name_length]='\0';
+        }
+
         if (s[i1]!='(') {
-          fatal_error("Function error: missing open parenthesis after @%S\n",function_name);
+          fatal_error("Function error: missing open parenthesis after @%S\n",extension_name);
         }
 
         i1++;
@@ -252,11 +272,16 @@ for (;;) {
 
         // load the file, compile it as a function,
         // and push the compiled function onto the lua stack
+        char_extension_name[0] = '\0';
         char_function_name[0] = '\0';
 //        char char_script_name[MAX_TRANSDUCTION_VAR_LENGTH] = {};
 //        char char_script_file[MAX_TRANSDUCTION_VAR_LENGTH] = {};
 
-        u_encode_utf8(function_name,char_function_name);
+        // convert the extension name to char
+        u_encode_utf8(extension_name,char_extension_name);
+        // convert the function name to char
+        // if function_name is null use the extension_name
+        u_encode_utf8(function_name[0] ? function_name : extension_name, char_function_name);
 //        strcat(char_script_name,char_function_name);
 //        strcat(char_script_name,".upp");
 //        strcat(char_script_file,UNITEX_SCRIPT_PATH);
@@ -274,7 +299,7 @@ for (;;) {
 //          fatal_error("Error loading @%S, function doesn't exists\n",function_name);
 //        }
 
-        p->elg->load_extension(char_function_name);
+        p->elg->load_extension(char_extension_name, char_function_name);
 
         variable_name[0] = '\0';
         int16_t variable_lenght = 0;
@@ -321,7 +346,7 @@ for (;;) {
                    fatal_error("Too long variable name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
                 }
                 if(s[i1] != '}') {
-                  fatal_error("Scripting variable %S without closing braces calling @%S\n",variable_name,function_name);
+                  fatal_error("Scripting variable %S without closing braces calling @%S\n",variable_name,extension_name);
                 }
                 ++i1;
                 variable_name[variable_lenght]='\0';
@@ -443,7 +468,7 @@ for (;;) {
                 /* ************************************************************************** */
               break;
               default:
-               fatal_error("Output error: bad parameter calling @%S\n",function_name);
+               fatal_error("Output error: bad parameter calling @%S\n",extension_name);
                break;
             }
             break;
@@ -485,7 +510,7 @@ for (;;) {
             ++i1;
             break;
           case '\0':
-            fatal_error("Output error: missing closing parenthesis after script @%S call \n",function_name);
+            fatal_error("Output error: missing closing parenthesis after script @%S call \n",extension_name);
             break;
           default:
             if (char_to_push_count!=0) {
@@ -562,7 +587,7 @@ for (;;) {
 
         // Closing function
         if(s[i1]!='$') {
-          fatal_error("Output error: missing closing $ after closing parentheses ) for function @%S\n",function_name); break;
+          fatal_error("Output error: missing closing $ after closing parentheses ) for function @%S\n",extension_name); break;
         }
 
         ++i1;
