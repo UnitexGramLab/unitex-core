@@ -60,9 +60,10 @@ typedef struct elg_Event {
 } elg_Event;
 /* ************************************************************************** */
 static const struct elg_Event elgMainEvents [] = {
-  {"load_event",   0, 0 },
-  {"unload_event", 0, 0 },
-  {"token_event",  1, 1 },
+/* name        ,  nargs, nresults */
+  {"load_event",      0, 0 },
+  {"unload_event",    0, 0 },
+  {"token_event",     2, 1 }, // (token, pos) = token
   {NULL, 0}  /* sentinel */
 };
 /* ************************************************************************** */
@@ -441,17 +442,21 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(int current_origin) {
+  int call_token_event(int token, int pos) {
     // only if the main extension was loaded and a token_event is available
     if (UNITEX_LIKELY(!main_env_loaded_[ELG_MAIN_EVENT_TOKEN])) {
-      return current_origin;
+      return token;
     }
 
     // load the event
     load_main_event(ELG_MAIN_EVENT_TOKEN);
 
-    // push arguments
-    lua_pushinteger(L, current_origin);
+    // push token integer
+    lua_pushinteger(L, token);
+    elg_stack_dump(L);
+
+    // push pos integer
+    lua_pushinteger(L, pos);
     elg_stack_dump(L);
 
     // perform the call
@@ -467,7 +472,7 @@ class vm {
     }
 
     // assign to the token buffer
-    current_origin = lua_tointeger(L, -1);
+    token = lua_tointeger(L, -1);
 
     // -3: pop the returned value
     // -2: pop the main extension environment
@@ -475,7 +480,7 @@ class vm {
     lua_pop(L, 3);
     elg_stack_dump(L);
 
-    return current_origin;
+    return token;
   }
 
   // [-0, +0] > (+1)
