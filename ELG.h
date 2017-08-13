@@ -177,6 +177,9 @@ class vm {
       set("pos", elg::token::pos);
       set("offset", elg::token::offset);
       set("is_space", elg::token::is_space);
+      set("is_word", elg::token::is_word);
+      set("is_unknown", elg::token::is_unknown);
+      set("tag", elg::token::tag);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_TOKEN);
 
@@ -408,29 +411,41 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(const int* current_token) {
+  int call_token_event(int current_token) {
     // only if the main extension was loaded and a token_event is available
     if (UNITEX_LIKELY(!main_env_loaded_[ELG_MAIN_EVENT_TOKEN])) {
-      return *current_token;
+      return current_token;
     }
 
     // load the event
     load_main_event(ELG_MAIN_EVENT_TOKEN);
 
     // push arguments
-    lua_pushinteger(L, *current_token);
+    lua_pushinteger(L, current_token);
     elg_stack_dump(L);
 
     // perform the call
     do_event(1,elgMainEvents[ELG_MAIN_EVENT_TOKEN].nargs,
                elgMainEvents[ELG_MAIN_EVENT_TOKEN].nresults);
-
-    // -2: pop the main extension environment
-    // -1: pop the main graph extension environment
-    lua_pop(L, 2);
     elg_stack_dump(L);
 
-    return *current_token;
+    // test if we have a token
+    if (lua_type(L, -1) != LUA_TNUMBER) {
+      const char* e = lua_tostring(L, -1);
+      lua_pop(L, 1); // error
+      luaL_error(L,"Error calling the token_event it must return a integer\n",e);
+    }
+
+    // assign to the token buffer
+    current_token = lua_tointeger(L, -1);
+
+    // -3: pop the returned value
+    // -2: pop the main extension environment
+    // -1: pop the main graph extension environment
+    lua_pop(L, 3);
+    elg_stack_dump(L);
+
+    return current_token;
   }
 
   // [-0, +0] > (+1)
