@@ -44,6 +44,7 @@
 #include "Text_parsing.h"
 #include "TransductionStack.h"
 #include "Fst2.h"
+#include "Text_parsing.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
 /* ************************************************************************** */
@@ -52,8 +53,18 @@
 #define ELG_FUNCTION_ON_FAIL_NAME     "fail_event"
 /* ************************************************************************** */
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"
+/* ************************************************************************** */
+#define ELG_GLOBAL_LOCATE_STATE         "uLocateState"
+#define ELG_GLOBAL_LOCATE_POS           "uLocatePos"
+#define ELG_GLOBAL_LOCATE_MATCHES       "uLocateMatches"
+#define ELG_GLOBAL_LOCATE_NUM_MATCHES   "uLocateNumMatches"
+#define ELG_GLOBAL_LOCATE_CONTEXT       "uLocateContext"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
+/* ************************************************************************** */
 #define ELG_GLOBAL_TOKEN                "uToken"
+#define ELG_GLOBAL_TOKEN_BIT_MASK       "kBitMask"
+#define ELG_GLOBAL_TOKEN_META           "kMeta"
+/* ************************************************************************** */
 #define ELG_GLOBAL_MATCH                "uMatch"
 //#define ELG_GLOBAL_TEXT                 "uText"
 #define ELG_GLOBAL_CONSTANT             "uConstant"
@@ -509,39 +520,33 @@ int is_space(lua_State * L) {
   return 1;
 }
 /* ************************************************************************** */
-#define is_token_property(name,test)                           \
-    struct locate_parameters* p = get_locate_params(L);        \
-    int is_##name = 0;                                         \
-    if(p && lua_gettop(L)>0) {                                  \
-      int pos = lua_tointeger(L,1);                             \
-      pos = pos >= 0 ? pos : p->buffer_size + pos;              \
-      if (pos >= 0 && pos < p->buffer_size &&                   \
-          test) {                                               \
-        is_##name = 1;                                          \
-      }                                                         \
-    }                                                           \
-    lua_pushboolean(L,is_##name)
-/* ************************************************************************** */
-//#define MOT_TOKEN_BIT_MASK 1
-int is_word(lua_State * L) {
-  is_token_property(word,(p->token_control[pos] & MOT_TOKEN_BIT_MASK));
-  return 1;
-}
+int bitmask(lua_State * L) {
+  struct locate_parameters* p = get_locate_params(L);
 
-//#define DIC_TOKEN_BIT_MASK 2
-//#define MAJ_TOKEN_BIT_MASK 4
-//#define MIN_TOKEN_BIT_MASK 8
-//#define PRE_TOKEN_BIT_MASK 16
-//#define CDIC_TOKEN_BIT_MASK 32
-//#define NOT_DIC_TOKEN_BIT_MASK 64
-//#define TDIC_TOKEN_BIT_MASK 128
-int is_unknown(lua_State * L) {
-  is_token_property(unknown,(p->token_control[pos] & NOT_DIC_TOKEN_BIT_MASK));
+  if (p && lua_gettop(L) > 0) {
+    int pos = lua_tointeger(L, 1);
+    pos = pos >= 0 ? pos : p->buffer_size + pos;
+    if (pos >= 0 && pos < p->buffer_size) {
+      lua_pushinteger(L, p->token_control[pos]);
+      return 1;
+    }
+  }
+
+  lua_pushnil(L);
   return 1;
 }
+/* ************************************************************************** */
 
 
 int tag(lua_State * L) {
+  // get locate params
+  struct locate_parameters* p = get_locate_params(L);
+
+  locate(/*graph_depth,*/
+          p->optimized_states[p->fst2->initial_states[1]],
+          p->current_origin + p->last_tested_position + 1, NULL,
+          NULL, NULL, p);
+
 //  // get locate params
 //  struct locate_parameters* p = get_locate_params(L);
 //  int is_tag = 0;
@@ -558,7 +563,7 @@ int tag(lua_State * L) {
 
 
 /* ************************************************************************** */
-#undef is_token_property
+#undef token_as_mask
 /* ************************************************************************** */
 }  // namespace elg::token::{unnamed}
 /* ************************************************************************** */

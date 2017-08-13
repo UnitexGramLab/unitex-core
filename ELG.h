@@ -177,11 +177,41 @@ class vm {
       set("pos", elg::token::pos);
       set("offset", elg::token::offset);
       set("is_space", elg::token::is_space);
-      set("is_word", elg::token::is_word);
-      set("is_unknown", elg::token::is_unknown);
+      set("bitmask", elg::token::bitmask);
       set("tag", elg::token::tag);
+
+      // uToken.kBitMask
+      lua_newtable(L);
+      set("WORD",    MOT_TOKEN_BIT_MASK);
+      set("DIC",     DIC_TOKEN_BIT_MASK);
+      set("UPPER",   MAJ_TOKEN_BIT_MASK);
+      set("LOWER",   MIN_TOKEN_BIT_MASK);
+      set("FIRST",   PRE_TOKEN_BIT_MASK);
+      set("CDIC",    CDIC_TOKEN_BIT_MASK);
+      set("NOT_DIC", NOT_DIC_TOKEN_BIT_MASK);
+      set("TDIC",    TDIC_TOKEN_BIT_MASK);
+      lua_setfield(L, -2,  ELG_GLOBAL_TOKEN_BIT_MASK);
+
+      // uToken.kMeta
+      lua_newtable(L);
+      set("SHARP",   META_SHARP);
+      set("SPACE",   META_SPACE);
+      set("EPSILON", META_EPSILON);
+      set("WORD",    META_MOT);
+      set("DIC",     META_DIC);
+      set("SDIC",    META_SDIC);
+      set("CDIC",    META_CDIC);
+      set("TDIC",    META_TDIC);
+      set("UPPER",   META_MAJ);
+      set("LOWER",   META_MIN);
+      set("FIRST",   META_PRE);
+      set("NB",      META_NB);
+      set("TOKEN",   META_TOKEN);
+      lua_setfield(L, -2,  ELG_GLOBAL_TOKEN_META);
+
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_TOKEN);
+      elg_stack_dump(L);
 
       //uMatch
       // [-0, +1] > (+1)

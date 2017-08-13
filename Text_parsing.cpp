@@ -130,17 +130,20 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                         / (float) text_size);
             }
         }
+
         current_token = p->elg->call_token_event(p->buffer[p->current_origin]);
         u_printf("%S\n",p->tokens->value[p->buffer[current_token]]);
+
         if (!(current_token == p->SPACE && p->space_policy
                 == DONT_START_WITH_SPACE) && !get_value(p->failfast,
                 current_token)) {
 
             int cache_found = 0;
-            if (p->useLocateCache)
+            if (p->useLocateCache) {
                 cache_found =  consult_cache(p->buffer, p->current_origin,
                     p->buffer_size, p->match_cache,
                     p->cached_match_vector);
+            }
             if (cache_found) {
                 /* If we have found matches in the cache, we use them */
                 for (int i=0;i<p->cached_match_vector->nbelems;i++) {
@@ -176,6 +179,20 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->no_fail_fast=0;
                 p->weight=-1;
                 int n_matches=0;
+
+                // add &matches to globals
+                // [-0, +1] > (+1)
+                p->elg->push(&matches);
+                // [-1, +0] > (+0)
+                p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
+
+                // add &n_matches to globals
+                // [-0, +1] > (+1)
+                p->elg->push(&n_matches);
+                // [-1, +0] > (+0)
+                p->elg->setglobal(ELG_GLOBAL_LOCATE_NUM_MATCHES);
+
+
                 locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
 
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
