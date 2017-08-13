@@ -441,17 +441,17 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(int current_token) {
+  int call_token_event(int current_origin) {
     // only if the main extension was loaded and a token_event is available
     if (UNITEX_LIKELY(!main_env_loaded_[ELG_MAIN_EVENT_TOKEN])) {
-      return current_token;
+      return current_origin;
     }
 
     // load the event
     load_main_event(ELG_MAIN_EVENT_TOKEN);
 
     // push arguments
-    lua_pushinteger(L, current_token);
+    lua_pushinteger(L, current_origin);
     elg_stack_dump(L);
 
     // perform the call
@@ -467,7 +467,7 @@ class vm {
     }
 
     // assign to the token buffer
-    current_token = lua_tointeger(L, -1);
+    current_origin = lua_tointeger(L, -1);
 
     // -3: pop the returned value
     // -2: pop the main extension environment
@@ -475,7 +475,7 @@ class vm {
     lua_pop(L, 3);
     elg_stack_dump(L);
 
-    return current_token;
+    return current_origin;
   }
 
   // [-0, +0] > (+1)
