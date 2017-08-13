@@ -412,7 +412,7 @@ if (is_cancelling_requested() != 0) {
 }
 
 // load fst extensions
-p->elg->load_graph_extension(fst2_name, p->fst2);
+p->elg->load_main_extension(fst2_name, p->fst2);
 
 p->tags=p->fst2->tags;
 #ifdef REGEX_FACADE_ENGINE

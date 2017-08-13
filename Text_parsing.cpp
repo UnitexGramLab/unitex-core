@@ -130,7 +130,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                         / (float) text_size);
             }
         }
-        current_token = p->buffer[p->current_origin];
+        current_token = p->elg->call_token_event(p->buffer[p->current_origin]);
+
         if (!(current_token == p->SPACE && p->space_policy
                 == DONT_START_WITH_SPACE) && !get_value(p->failfast,
                 current_token)) {

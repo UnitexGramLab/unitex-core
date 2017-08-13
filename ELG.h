@@ -35,6 +35,7 @@
 #include "ELGLib/ELGLib.h"
 #include "ELGLib/copy_state.h"
 #include "File.h"
+#include "DebugMode.h"
 #include "base/unicode/utf8.h"
 /* ************************************************************************** */
 namespace unitex {
@@ -55,7 +56,7 @@ static const char* UNITEX_SCRIPT_PATH =
 class vm {
  public:
   vm(void)
-      : L(), env(0), local_env_ref(0), graph_env_ref(0) {
+      : L(), env(0), local_env_ref(0), main_env_ref_(0) {
   }
 
   virtual ~vm(void) {
@@ -342,6 +343,34 @@ class vm {
     }
   }
 
+  void call_main_event(const char* event_name) {
+    // only if there are a main extension
+    if (UNITEX_LIKELY(!main_env_ref_)) return;
+
+    // get the main extension environment
+    lua_rawgeti(L, LUA_REGISTRYINDEX, main_env_ref_);
+    elg_stack_dump(L);
+
+    call_event(event_name);
+    elg_stack_dump(L);
+
+    // pop the main extension environment
+    lua_pop(L, 1);
+    elg_stack_dump(L);
+  }
+
+  int call_token_event(const int current_token) {
+    // only if the main extension was loaded and a token_event is available
+    if (UNITEX_LIKELY(!main_env_ref_ ||
+        !elgMainEvents[ELG_EXTENSION_EVENT_TOKEN].loaded)) {
+      return current_token;
+    }
+
+    //call_main_event(elgMainEvents[ELG_EXTENSION_EVENT_TOKEN].name);
+
+    return current_token;
+  }
+
   // [-0, +0] > (+1)
   void save_name(const char* extension_env_name) {
     // retrieve c, the ELG_GLOBAL_ENVIRONMENT table
@@ -556,7 +585,7 @@ class vm {
 
   // 03/07/17
   // [+0, +0] > (+0)
-  int load_graph_extension(const char* fst_name, const Fst2* fst)  {
+  int load_main_extension(const char* fst_name, const Fst2* fst)  {
     // TODO(martinec) use assert()
     if (fst == NULL ||
         fst->graph_names    == NULL ||
@@ -584,7 +613,7 @@ class vm {
 
     // register the graph chunks' table extension on the registry
     // [-1, +0] > (+0)
-    graph_env_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    main_env_ref_ = luaL_ref(L, LUA_REGISTRYINDEX);
     elg_stack_dump(L);
 
     //    // graph names begin at pos 1
@@ -601,6 +630,9 @@ class vm {
     // get the main fst name
     char graph_name[FILENAME_MAX] = {0};
     u_encode_utf8(fst->graph_names[graph_number], graph_name);
+    // if need remove the debug info from the graph name
+    char* pch = strchr(graph_name, DEBUG_INFO_OUTPUT_MARK);
+    if (pch)  *pch = '\0';
 
     // convert the graph name to a file name
     replace_colon_by_path_separator(graph_name);
@@ -661,9 +693,12 @@ class vm {
     call_event(ELG_EXTENSION_EVENT_LOAD);
     elg_stack_dump(L);
 
-    // -2: pop the table of graph extensions environments
     // -1: pop the graph extension environment
-    lua_pop(L,2);
+    lua_pop(L,1);
+    elg_stack_dump(L);
+
+    // -1: pop the table of graph extensions environments
+    lua_pop(L,1);
     elg_stack_dump(L);
 
     return 1;
@@ -1114,11 +1149,12 @@ class vm {
 
  private:
 
+
  protected:
   lua_State* L;
   int env;
   int local_env_ref;
-  int graph_env_ref;
+  int main_env_ref_;
 };
 /* ************************************************************************** */
 }      // namespace unitex
