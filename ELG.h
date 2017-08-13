@@ -53,10 +53,29 @@ static const char* UNITEX_SCRIPT_PATH =
 // LUA_GLOBALSINDEX   : thread environment
 // LUA_ENVIRONINDEX   : function environment
 /* ************************************************************************** */
+typedef struct elg_Event {
+  const char* name;
+  int nargs;
+  int nresults;
+} elg_Event;
+/* ************************************************************************** */
+static const struct elg_Event elgMainEvents [] = {
+  {"load_event",   0, 0 },
+  {"unload_event", 0, 0 },
+  {"token_event",  1, 1 },
+  {NULL, 0}  /* sentinel */
+};
+/* ************************************************************************** */
+#define ELG_MAIN_EVENTS_COUNT              3
+#define ELG_MAIN_EVENT_LOAD                0
+#define ELG_MAIN_EVENT_UNLOAD              1
+#define ELG_MAIN_EVENT_TOKEN               2
+/* ************************************************************************** */
 class vm {
  public:
   vm(void)
       : L(), env(0), local_env_ref(0), main_env_ref_(0) {
+    memset(main_env_loaded_, 0, sizeof(int) * ELG_MAIN_EVENTS_COUNT);
   }
 
   virtual ~vm(void) {
@@ -317,7 +336,25 @@ class vm {
 
   // -1: environment
   // [-0, +0] > (+1)
-  void call_event(const char* event_name) {
+  void register_main_events() {
+    int32_t i = 0;
+    while(elgMainEvents[i].name != NULL) {
+      load_event(elgMainEvents[i].name);
+      main_env_loaded_[i] = do_event(0, 0, 0);
+      ++i;
+    }
+  }
+
+  // -1: environment
+  // [-0, +0] > (+1)
+  int call_event(const char* event_name) {
+    load_event(event_name);
+    return do_event(1, 0, 0);
+  }
+
+  // -1: environment
+  // [-0, +0] > (+1)
+  int load_event(const char* event_name) {
     // if there are an onLoad() function, then run it
     // [-0, +1] > (+2)
     // TODO(martinec) use lua_pushliteral
@@ -329,21 +366,33 @@ class vm {
     lua_rawget(L, -2);
     elg_stack_dump(L);
 
-    if (lua_isfunction(L, -1)) {
-      // [-1, +0] > (+1)
-      if (lua_pcall(L, 0, 0, 0) != 0) {
-        const char* e = lua_tostring(L, -1);
-        elg_stack_dump(L);
-        lua_pop(L, 1); elg_stack_dump(L);
-        luaL_error(L, "Error loading @%s: %s\n", event_name, e);
+    return 1;
+  }
+
+  int do_event(int do_call, int nargs, int nresults) {
+    if (lua_isfunction(L, -1-nargs)) {
+      if (do_call) {
+        // [-1, +0] > (+1)
+        if (lua_pcall(L, nargs, nresults, 0) != 0) {
+          const char* e = lua_tostring(L, -1);
+          elg_stack_dump(L);
+          lua_pop(L, 1); elg_stack_dump(L);
+          luaL_error(L, "Error calling @%s: %s\n", "event", e);
+        }
+      } else {
+        // pop the function name
+        lua_pop(L, 1);
+        return 1;
       }
     } else {
       // pop the returned value
       lua_pop(L, 1);
+      return 0;
     }
+    return 1;
   }
 
-  void call_main_event(const char* event_name) {
+  void load_main_event(int event_number) {
     // only if there are a main extension
     if (UNITEX_LIKELY(!main_env_ref_)) return;
 
@@ -351,24 +400,37 @@ class vm {
     lua_rawgeti(L, LUA_REGISTRYINDEX, main_env_ref_);
     elg_stack_dump(L);
 
-    call_event(event_name);
+    // get the main graph extension environment
+    lua_rawgeti(L, -1, 1);
     elg_stack_dump(L);
 
-    // pop the main extension environment
-    lua_pop(L, 1);
+    load_event(elgMainEvents[event_number].name);
     elg_stack_dump(L);
   }
 
-  int call_token_event(const int current_token) {
+  int call_token_event(const int* current_token) {
     // only if the main extension was loaded and a token_event is available
-    if (UNITEX_LIKELY(!main_env_ref_ ||
-        !elgMainEvents[ELG_EXTENSION_EVENT_TOKEN].loaded)) {
-      return current_token;
+    if (UNITEX_LIKELY(!main_env_loaded_[ELG_MAIN_EVENT_TOKEN])) {
+      return *current_token;
     }
 
-    //call_main_event(elgMainEvents[ELG_EXTENSION_EVENT_TOKEN].name);
+    // load the event
+    load_main_event(ELG_MAIN_EVENT_TOKEN);
 
-    return current_token;
+    // push arguments
+    lua_pushinteger(L, *current_token);
+    elg_stack_dump(L);
+
+    // perform the call
+    do_event(1,elgMainEvents[ELG_MAIN_EVENT_TOKEN].nargs,
+               elgMainEvents[ELG_MAIN_EVENT_TOKEN].nresults);
+
+    // -2: pop the main extension environment
+    // -1: pop the main graph extension environment
+    lua_pop(L, 2);
+    elg_stack_dump(L);
+
+    return *current_token;
   }
 
   // [-0, +0] > (+1)
@@ -684,14 +746,19 @@ class vm {
     }
     elg_stack_dump(L);
 
-    // get the graph extension environment
+    // get the main extension environment
     lua_rawgeti(L, -1, graph_number);
     elg_stack_dump(L);
 
+    // keep track of the available events
+    register_main_events();
+
     // call the load event
     // [-0, +0] > (+1)
-    call_event(ELG_EXTENSION_EVENT_LOAD);
-    elg_stack_dump(L);
+    if (UNITEX_UNLIKELY(main_env_loaded_[ELG_MAIN_EVENT_LOAD])) {
+      call_event(ELG_EXTENSION_EVENT_LOAD);
+      elg_stack_dump(L);
+    }
 
     // -1: pop the graph extension environment
     lua_pop(L,1);
@@ -1155,6 +1222,7 @@ class vm {
   int env;
   int local_env_ref;
   int main_env_ref_;
+  int main_env_loaded_[ELG_MAIN_EVENTS_COUNT];
 };
 /* ************************************************************************** */
 }      // namespace unitex

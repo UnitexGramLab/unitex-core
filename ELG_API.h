@@ -50,18 +50,6 @@
 #define ELG_EXTENSION_EVENT_UNLOAD    "unload_event"
 #define ELG_FUNCTION_ON_FAIL_NAME     "fail_event"
 /* ************************************************************************** */
-typedef struct elg_Event {
-  const char* name;
-  int loaded;
-} elg_Event;
-
-static const struct elg_Event elgMainEvents [] = {
-  {"token_event", 0},
-  {NULL, 0}  /* sentinel */
-};
-/* ************************************************************************** */
-#define ELG_EXTENSION_EVENT_TOKEN       0
-/* ************************************************************************** */
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
 #define ELG_GLOBAL_TOKEN                "uToken"
