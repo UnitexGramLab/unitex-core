@@ -1214,10 +1214,10 @@ class vm {
 
 //     problem with void push(void* p)
 //     can be solved with http://stackoverflow.com/q/4610503
-//     // push integer into stack
-//     void push(int i) {
-//       lua_pushinteger(L, (lua_Integer) i);
-//     }
+  // push integer into stack
+  void pushinteger(int i) {
+   lua_pushinteger(L, (lua_Integer) i);
+  }
 
   // push float into stack
   // [-0, +1, -]

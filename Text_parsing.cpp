@@ -182,7 +182,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
                 // add &matches to globals
                 // [-0, +1] > (+1)
-                p->elg->push(&matches);
+                p->elg->push(matches);
                 // [-1, +0] > (+0)
                 p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
 
@@ -404,7 +404,7 @@ return ret;
  */
 void locate(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
 OptimizedFst2State current_state, /* current state in the grammar */
-int pos, /* position in the token buffer, relative to the current origin */
+const int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
 int *n_matches, /* number of sequences that have matched. It may be different from
@@ -424,6 +424,24 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     int old_weight1=p->weight;
     unichar* output;
     int captured_chars;
+
+    // add &current_state to globals
+    // [-0, +1] > (+1)
+    p->elg->push(&current_state);
+    // [-1, +0] > (+0)
+    p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
+
+    // add pos to globals
+    // [-0, +1] > (+1)
+    p->elg->pushinteger(pos);
+    // [-1, +0] > (+0)
+    p->elg->setglobal(ELG_GLOBAL_LOCATE_POS);
+
+    // add pos to globals
+    // [-0, +1] > (+1)
+    p->elg->push(ctx);
+    // [-1, +0] > (+0)
+    p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
 
     if ((p->counting_step.count_cancel_trying) == 0) {
 
