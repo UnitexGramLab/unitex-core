@@ -521,56 +521,30 @@ int bitmask(lua_State * L) {
 }
 /* ************************************************************************** */
 // adapted from locate() @see Text_parsing.cpp
-int match_meta(struct locate_parameters* p,
-              int pos,
-              int pos_shift,
-              char negation,
-              enum meta_symbol meta) {
+int match_meta(const struct locate_parameters* p,
+                int pos,
+                int pos_shift,
+                char negation,
+                enum meta_symbol meta) {
   // return value
   int has_meta = 0;
-
-  // auxiliary variables
-  int pos2 = -1;
 
   // we only use the current token at the current pos
   int token = -1;
 
-
-  int token2 = -1;
-
-  /* If we have reached the end of the token buffer, we indicate it by setting
-   * the current tokens to -1 */
-  if ((((pos + pos_shift) >= p->buffer_size)) || (pos == -1)) {
-    token = -1;
-    token2 = -1;
-  } else {
+  // if we have NOT reached the end of the token buffer
+  if (!(((pos + pos_shift) >= p->buffer_size)) || (pos == -1)) {
     token = p->buffer[pos + pos_shift];
-    if (token == p->SPACE) {
-      pos2 = pos + 1;
-    }
-    /* Now, we deal with the SPACE, if any. To do that, we use several variables:
-     * pos: current position in the token buffer, relative to the current origin
-     * pos2: position of the first non-space token from 'pos'.
-     * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
-    else {
-      pos2 = pos;
-    }
-    if ((pos2 + pos_shift) >= p->buffer_size) {
-      token2 = -1;
-    } else {
-      token2 = p->buffer[pos2 + pos_shift];
-    }
   }
 
-  int ctrl = 0;
-  if (token2 != -1) {
-    ctrl = p->token_control[token2];
-  }
+  // get the control byte of this token
+  int ctrl = (token != -1) ? p->token_control[token] : 0;
 
+  // process meta
   switch (meta) {
     case META_SHARP:
       if (token == -1 || token != p->SPACE) {
-        // true
+        return 1;
       }
       break;
 
@@ -586,187 +560,133 @@ int match_meta(struct locate_parameters* p,
 
     case META_TEXT_START:
       if (pos == 0 || (pos == 1 && p->buffer[0] == p->SPACE)) {
-        // true
+        return 1;
       }
       break;
 
     case META_TEXT_END:
-      if ((pos + pos_shift == p->buffer_size) ||
-          ((pos + pos_shift + 1 == p->buffer_size) &&
-            p->buffer[pos + pos_shift] == p->SPACE)) {
-        // true
+      if ((pos + pos_shift == p->buffer_size)
+          || ((pos + pos_shift + 1 == p->buffer_size)
+              && p->buffer[pos + pos_shift] == p->SPACE)) {
+        return 1;
       }
       break;
 
     case META_WORD:
     case META_MOT:
-      if (token2 == p->SENTENCE || token2 == p->STOP) {
+      if (token == p->SENTENCE || token == p->STOP) {
         return 0;
-        break;
       }
       /* If we want to catch a space with <!MOT> */
-      if ((p->space_policy == START_WITH_SPACE) && (token2 == p->SPACE)
-          && negation) {
+      if (token == p->SPACE && negation) {
         return 1;
-      // this differs from Locate, because we're dealing with the tokens
-      // outside of the window analysis
-      } else if (token2 != p->SPACE && XOR(negation, ctrl & MOT_TOKEN_BIT_MASK)) {
+        // this differs from Locate, because we're dealing with tokens
+        // outside of the window of analysis
+      } else if (token != p->SPACE
+          && XOR(negation, ctrl & MOT_TOKEN_BIT_MASK)) {
         return 1;
       }
       break;
 
     case META_DIC:
-      if (token2 == -1) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
-      if (token2 == p->STOP) {
-        // false
-        break;
+      if (!negation)  {
+        // only for simple words
+        return (ctrl & DIC_TOKEN_BIT_MASK);
       }
-      if (!negation) {
-        /* Now, we look for a simple word */
-        if ((ctrl & DIC_TOKEN_BIT_MASK) && (1)) {
-          // true
-        }
-        break;
-      }
-      /* We have the meta <!DIC> */
-      if ((ctrl & NOT_DIC_TOKEN_BIT_MASK) && (1)) {
-        // true
+      // we have the meta <!DIC>
+      if ((ctrl & NOT_DIC_TOKEN_BIT_MASK)) {
+        return 1;
       }
       break;
 
     case META_SDIC:
-      if (token2 == -1) {
-        // false
-        break;
+      if (token == -1 && token == p->STOP) {
+        return 1;
       }
-      if (token2 == p->STOP) {
-        // false
-        break;
-      }
-      if ((1) && (ctrl & DIC_TOKEN_BIT_MASK) && !(ctrl & CDIC_TOKEN_BIT_MASK)) {
-        // true
+      if ((ctrl & DIC_TOKEN_BIT_MASK) && !(ctrl & CDIC_TOKEN_BIT_MASK)) {
+        return 1;
       }
       break;
 
     case META_CDIC:
-      if (token2 == -1) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
-      if (token2 == p->STOP) {
-        // false
-        break;
-      }
-      if ((1) && (ctrl & CDIC_TOKEN_BIT_MASK)) {
-        // true
+      if (ctrl & CDIC_TOKEN_BIT_MASK) {
+        return 1;
       }
       break;
 
     case META_TDIC:
-      if (token2 == -1) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
-      if (token2 == p->STOP) {
-        // false
-        break;
-      }
-      if ((1) && (ctrl & TDIC_TOKEN_BIT_MASK)) {
-        // true
+      if (ctrl & TDIC_TOKEN_BIT_MASK) {
+        return 1;
       }
       break;
 
     case META_UPPER:
     case META_MAJ:
-      if (token2 == -1) {
-        // false
-        break;
-      }
-      if (token2 == p->STOP) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
       if (!negation) {
-        if (ctrl & MAJ_TOKEN_BIT_MASK) {
-          // true
-        }
-        break;
+        return (ctrl & MAJ_TOKEN_BIT_MASK);
       }
       if (!(ctrl & MAJ_TOKEN_BIT_MASK) && (ctrl & MOT_TOKEN_BIT_MASK)) {
         /* If we have <!MAJ>, the matching token must be matched by <MOT> */
-        // true
+        return 1;
       }
       break;
 
     case META_LOWER:
     case META_MIN:
-      if (token2 == -1) {
-        // false
-        break;
-      }
-      if (token2 == p->STOP) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
       if (!negation) {
-        if (ctrl & MIN_TOKEN_BIT_MASK) {
-          // true
-        }
-        break;
+        return (ctrl & MIN_TOKEN_BIT_MASK);
       }
       if (!(ctrl & MIN_TOKEN_BIT_MASK) && (ctrl & MOT_TOKEN_BIT_MASK)) {
         /* If we have <!MIN>, the matching token must be matched by <MOT> */
-        // true
+        return 1;
       }
       break;
 
     case META_FIRST:
     case META_PRE:
-      if (token2 == -1) {
-        // false
-        break;
-      }
-      if (token2 == p->STOP) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
       if (!negation) {
-        if (ctrl & PRE_TOKEN_BIT_MASK) {
-          // true
-        }
-        break;
+        return (ctrl & PRE_TOKEN_BIT_MASK);
       }
       if (!(ctrl & PRE_TOKEN_BIT_MASK) && (ctrl & MOT_TOKEN_BIT_MASK)) {
         /* If we have <!PRE>, the matching token must be matched by <MOT> */
-        // true
+        return 1;
       }
       break;
 
     case META_NB:
-      if (token2 == -1) {
-        // false
-        break;
-      }
-      if (token2 == p->STOP) {
-        // false
-        break;
+      if (token == -1 || token == p->STOP) {
+        return 0;
       }
       { /* This block avoids visibility problem about 'z' */
         // local_is_not_a_digit_token return 1 if s is a digit sequence, 0 else
-        if (!(pos2 + pos_shift < p->buffer_size
-            && (u_test_flag(p->tokens->value[p->buffer[pos2 + pos_shift]],
+        if (!(pos + pos_shift < p->buffer_size
+            && (u_test_flag(p->tokens->value[p->buffer[pos + pos_shift]],
                             U_FLAG_DIGIT) == 0))) {
-
-          // false
+          return 0;
           break;
         }
 
         /* If we have found a contiguous digit sequence */
 
-        int z = pos2 + 1;
+        int z = pos + 1;
         int pos_limit = p->buffer_size - pos_shift;
 
         int next_pos_add = 0;
@@ -778,40 +698,33 @@ int match_meta(struct locate_parameters* p,
 
         // If we have stopped because of the end of the buffer, next_pos_add = 0
         // If we have stopped because of a non matching token, next_pos_add = 1
-        // true
+        return 1;
       }
       break;
 
     case META_LETTER:
-      if (token2 == p->SENTENCE || token2 == p->STOP) {
-        // false
-        break;
+      if (token == p->SENTENCE || token == p->STOP) {
+        return 0;
       }
-      // len = length(token2)
-      if ((p->space_policy == START_WITH_SPACE) && (token2 == p->SPACE)
-          && negation) {
-        // true
-      } else if (XOR(negation, ctrl & MOT_TOKEN_BIT_MASK)) {
-        // true
+      /* If we want to catch a space with <!MOT> */
+      if (token == p->SPACE && negation) {
+        return 1;
+        // this differs from Locate, because we're dealing with tokens
+        // outside of the window of analysis
+      } else if (token != p->SPACE
+          && XOR(negation, ctrl & MOT_TOKEN_BIT_MASK)) {
+        return 1;
       }
       break;
 
     case META_TOKEN:
-      if (token2 == -1) {
-        // false
-        break;
-      }
-      if (token2 == p->STOP) {
-        // false
-        /* The {STOP} tag must NEVER be matched by any pattern */
-        break;
-      }
-      // true
+      return (token != -1 && token != p->STOP);
       break;
 
     case META_BEGIN_MORPHO:
     case META_END_MORPHO:
     case META_LEFT_CONTEXT:
+      return 0;
       break;
   }
 
