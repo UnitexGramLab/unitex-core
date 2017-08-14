@@ -670,7 +670,7 @@ int match_meta(const struct locate_parameters* p,
         // local_is_not_a_digit_token return 1 if s is a digit sequence, 0 else
         if (!(pos + pos_shift < p->buffer_size
             && (u_test_flag(p->tokens->value[p->buffer[pos + pos_shift]],
-                            U_FLAG_DIGIT) == 0))) {
+                            U_FLAG_DIGIT) != 0))) {
           return 0;
           break;
         }
@@ -683,7 +683,7 @@ int match_meta(const struct locate_parameters* p,
         int next_pos_add = 0;
         while (z < pos_limit
             && ((next_pos_add = u_test_flag(
-                p->tokens->value[p->buffer[z + pos_shift]], U_FLAG_DIGIT)) == 0)) {
+                p->tokens->value[p->buffer[z + pos_shift]], U_FLAG_DIGIT)) != 0)) {
           z++;
         }
 
