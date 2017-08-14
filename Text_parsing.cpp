@@ -132,7 +132,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
         }
 
         current_token = p->elg->call_token_event(p->buffer[p->current_origin], p->current_origin);
-        u_printf("%S\n",p->tokens->value[p->buffer[current_token]]);
+        u_printf("[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 
         if (!(current_token == p->SPACE && p->space_policy
                 == DONT_START_WITH_SPACE) && !get_value(p->failfast,
@@ -379,7 +379,7 @@ static inline void update_last_tested_position(struct locate_parameters* p, int 
 
 //
 // return 1 if s is a digit sequence, 0 else
-//
+// TODO(martinec) replace with u_test_flag(s,U_FLAG_DIGIT)
 static inline int local_is_not_a_digit_token(const unichar* s) {
 int i=0;
 while (s[i]!='\0') {
@@ -1246,9 +1246,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 fatal_error("Unexpected morphological mode end tag $>\n");
                 break;
 
-            // avoid ‘META_LETTER’ and ‘META_LETTRE’ not handled in switch warning
+            // avoid ‘META_LETTER’ not handled in switch warning
             case META_LETTER:
-            case META_LETTRE:
               // do nothing
               break;
 

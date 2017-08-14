@@ -177,6 +177,8 @@ class vm {
       set("at", elg::token::at);
       set("pos", elg::token::pos);
       set("offset", elg::token::offset);
+      set("meta", elg::token::meta);
+      set("negmeta", elg::token::negmeta);
       set("is_space", elg::token::is_space);
       set("bitmask", elg::token::bitmask);
       set("tag", elg::token::tag);
@@ -208,6 +210,7 @@ class vm {
       set("FIRST",   META_PRE);
       set("NB",      META_NB);
       set("TOKEN",   META_TOKEN);
+      set("LETTER",  META_LETTER);
       lua_setfield(L, -2,  ELG_GLOBAL_TOKEN_META);
 
       // [-1, +0] > (+0)
@@ -388,6 +391,13 @@ class vm {
 
   // -1: environment
   // [-0, +0] > (+1)
+  int call_main_event(int event_number) {
+    load_main_event(event_number);
+    return do_event(1, 0, elgMainEvents[event_number].nresults);
+  }
+
+  // -1: environment
+  // [-0, +0] > (+1)
   int load_event(const char* event_name) {
     // if there are an onLoad() function, then run it
     // [-0, +1] > (+2)
@@ -403,7 +413,19 @@ class vm {
     return 1;
   }
 
+  int call_event(int nargs, int nresults) {
+    // [-1, +0] > (+1)
+    if (lua_pcall(L, nargs, nresults, 0) != 0) {
+      const char* e = lua_tostring(L, -1);
+      elg_stack_dump(L);
+      lua_pop(L, 1); elg_stack_dump(L);
+      luaL_error(L, "Error calling @%s: %s\n", "event", e);
+    }
+    return 1;
+  }
+
   int do_event(int do_call, int nargs, int nresults) {
+    elg_stack_dump(L);
     if (lua_isfunction(L, -1-nargs)) {
       if (do_call) {
         // [-1, +0] > (+1)
@@ -460,7 +482,7 @@ class vm {
     elg_stack_dump(L);
 
     // perform the call
-    do_event(1,elgMainEvents[ELG_MAIN_EVENT_TOKEN].nargs,
+    call_event(elgMainEvents[ELG_MAIN_EVENT_TOKEN].nargs,
                elgMainEvents[ELG_MAIN_EVENT_TOKEN].nresults);
     elg_stack_dump(L);
 
@@ -714,6 +736,39 @@ class vm {
     char fst_path[FILENAME_MAX] = {0};
     get_path(fst_file, fst_path);
 
+    // number of graphs referenced on the compiled fst
+    //int number_of_graphs = fst->number_of_graphs;
+    int graph_number = 1;
+
+    // get the main fst name
+    char graph_name[FILENAME_MAX] = {0};
+    u_encode_utf8(fst->graph_names[graph_number], graph_name);
+    // if need, remove the debug info from the graph name
+    char* pch = strchr(graph_name, DEBUG_INFO_OUTPUT_MARK);
+    if (pch)  *pch = '\0';
+
+    // convert the graph name to a file name
+    replace_colon_by_path_separator(graph_name);
+
+    // extension name = fst_path/graph_name.upp
+    char extension_name[FILENAME_MAX] = {0};
+    // extension_name = fst_path/
+    strcat(extension_name, fst_path);
+    // extension_name = fst_path/graph_name
+    strcat(extension_name, graph_name);
+    // extension name = fst_path/graph_name.upp
+    strcat(extension_name, ELG_FUNCTION_DEFAULT_EXTENSION);
+
+    // return if graph_name.upp doesn't exists
+    if(!is_regular_file(extension_name)) {
+      // [-0, +1] > (+0)
+      // -2: pop the table of graph extensions environments
+      // commented because for now is there only 1 main extension allowed
+      // lua_pop(L,1);
+      elg_stack_dump(L);
+      return 0;
+    }
+
     // create a new empty table and pushes it onto the stack
     // we will use this table to holds all the graph extension chunks
     // [-0, +1] > (+1)
@@ -734,38 +789,6 @@ class vm {
     //        u_printf("%S\n",fst->graph_names[i]);
     //      }
     //    }
-
-    // number of graphs referenced on the compiled fst
-    //int number_of_graphs = fst->number_of_graphs;
-    int graph_number = 1;
-
-    // get the main fst name
-    char graph_name[FILENAME_MAX] = {0};
-    u_encode_utf8(fst->graph_names[graph_number], graph_name);
-    // if need remove the debug info from the graph name
-    char* pch = strchr(graph_name, DEBUG_INFO_OUTPUT_MARK);
-    if (pch)  *pch = '\0';
-
-    // convert the graph name to a file name
-    replace_colon_by_path_separator(graph_name);
-
-    // extension name = fst_path/graph_name.upp
-    char extension_name[FILENAME_MAX] = {0};
-    // extension_name = fst_path/
-    strcat(extension_name, fst_path);
-    // extension_name = fst_path/graph_name
-    strcat(extension_name, graph_name);
-    // extension name = fst_path/graph_name.upp
-    strcat(extension_name, ELG_FUNCTION_DEFAULT_EXTENSION);
-
-    // return if graph_name.upp doesn't exists
-    if(!is_regular_file(extension_name)) {
-      // [-0, +1] > (+0)
-      // -2: pop the table of graph extensions environments
-      lua_pop(L,1);
-      elg_stack_dump(L);
-      return 0;
-    }
 
     // load the graph_name.upp chunk
     // [-0, +1] > (+3)
@@ -806,7 +829,7 @@ class vm {
     // call the load event
     // [-0, +0] > (+1)
     if (UNITEX_UNLIKELY(main_env_loaded_[ELG_MAIN_EVENT_LOAD])) {
-      call_event(ELG_EXTENSION_EVENT_LOAD);
+      call_event(elgMainEvents[ELG_MAIN_EVENT_LOAD].name);
       elg_stack_dump(L);
     }
 
@@ -818,6 +841,14 @@ class vm {
     lua_pop(L,1);
     elg_stack_dump(L);
 
+    return 1;
+  }
+
+  // 14/07/17
+  // [+0, +0] > (+0)
+  int unload_main_extension()  {
+    call_main_event(ELG_MAIN_EVENT_UNLOAD);
+    elg_stack_dump(L);
     return 1;
   }
 

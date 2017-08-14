@@ -411,7 +411,7 @@ if (is_cancelling_requested() != 0) {
    return 0;
 }
 
-// load fst extensions
+// load main extension
 p->elg->load_main_extension(fst2_name, p->fst2);
 
 p->tags=p->fst2->tags;
@@ -617,6 +617,10 @@ p->lti->jamo=NULL;
 p->lti->pos_in_jamo=0;
 
 launch_locate(out,text_size,info,p);
+
+// unload main extension
+p->elg->unload_main_extension();
+
 
 if (allow_trace!=0) {
    close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
