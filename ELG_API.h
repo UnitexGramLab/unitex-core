@@ -524,7 +524,7 @@ int bitmask(lua_State * L) {
 int match_meta(const struct locate_parameters* p,
                 int pos,
                 int pos_shift,
-                char negation,
+                int negation,
                 enum meta_symbol meta) {
   // return value
   int has_meta = 0;
@@ -543,15 +543,11 @@ int match_meta(const struct locate_parameters* p,
   // process meta
   switch (meta) {
     case META_SHARP:
-      if (token == -1 || token != p->SPACE) {
-        return 1;
-      }
+      return (token == -1 || token != p->SPACE);
       break;
 
     case META_SPACE:
-      if (token != -1 && token == p->SPACE) {
-        return 1;
-      }
+      return (token != -1 && token == p->SPACE) ;
       break;
 
     case META_EPSILON:
@@ -559,17 +555,13 @@ int match_meta(const struct locate_parameters* p,
       break;
 
     case META_TEXT_START:
-      if (pos == 0 || (pos == 1 && p->buffer[0] == p->SPACE)) {
-        return 1;
-      }
+      return (pos == 0 || (pos == 1 && p->buffer[0] == p->SPACE));
       break;
 
     case META_TEXT_END:
-      if ((pos + pos_shift == p->buffer_size)
+      return ((pos + pos_shift == p->buffer_size)
           || ((pos + pos_shift + 1 == p->buffer_size)
-              && p->buffer[pos + pos_shift] == p->SPACE)) {
-        return 1;
-      }
+              && p->buffer[pos + pos_shift] == p->SPACE));
       break;
 
     case META_WORD:
@@ -577,13 +569,12 @@ int match_meta(const struct locate_parameters* p,
       if (token == p->SENTENCE || token == p->STOP) {
         return 0;
       }
-      /* If we want to catch a space with <!MOT> */
-      if (token == p->SPACE && negation) {
-        return 1;
+      if (token == p->SPACE) {
+        // we catch a space with <!MOT>
+        return (negation != 0);
         // this differs from Locate, because we're dealing with tokens
-        // outside of the window of analysis
-      } else if (token != p->SPACE
-          && XOR(negation, ctrl & MOT_TOKEN_BIT_MASK)) {
+        // outside of the analysis window
+      } else if (XOR(negation, ctrl & MOT_TOKEN_BIT_MASK)) {
         return 1;
       }
       break;
@@ -741,7 +732,7 @@ int meta(lua_State * L) {
     int pos = luaL_checkint(L, -2);
     // return the meta from the stack and cast it to a meta symbol
     enum meta_symbol meta = (enum meta_symbol) luaL_checkint(L, -1);
-    has_meta = match_meta(p, pos, 0, (char) 0, meta);
+    has_meta = match_meta(p, pos, 0, 0, meta);
   }
 
   lua_pushboolean(L ,has_meta);
