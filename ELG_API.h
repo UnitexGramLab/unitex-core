@@ -666,31 +666,9 @@ int match_meta(const struct locate_parameters* p,
       if (token == -1 || token == p->STOP) {
         return 0;
       }
-      { /* This block avoids visibility problem about 'z' */
-        // local_is_not_a_digit_token return 1 if s is a digit sequence, 0 else
-        if (!(pos + pos_shift < p->buffer_size
-            && (u_test_flag(p->tokens->value[p->buffer[pos + pos_shift]],
-                            U_FLAG_DIGIT) != 0))) {
-          return 0;
-          break;
-        }
-
-        /* If we have found a contiguous digit sequence */
-
-        int z = pos + 1;
-        int pos_limit = p->buffer_size - pos_shift;
-
-        int next_pos_add = 0;
-        while (z < pos_limit
-            && ((next_pos_add = u_test_flag(
-                p->tokens->value[p->buffer[z + pos_shift]], U_FLAG_DIGIT)) != 0)) {
-          z++;
-        }
-
-        // If we have stopped because of the end of the buffer, next_pos_add = 0
-        // If we have stopped because of a non matching token, next_pos_add = 1
-        return 1;
-      }
+      return (u_test_flag(
+               p->tokens->value[p->buffer[pos + pos_shift]],
+               U_FLAG_DIGIT) != 0);
       break;
 
     case META_LETTER:
@@ -736,7 +714,7 @@ int meta(lua_State * L) {
   }
 
   lua_pushboolean(L ,has_meta);
-  // number of results
+
   return 1;
 }
 
