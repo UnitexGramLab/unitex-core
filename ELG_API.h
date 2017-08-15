@@ -70,6 +70,8 @@
 #define ELG_GLOBAL_U_SENTENCE           "U_SENTENCE"
 #define ELG_GLOBAL_U_STOP               "U_STOP"
 /* ************************************************************************** */
+#define ELG_GLOBAL_PARSER               "uParser"
+/* ************************************************************************** */
 #define ELG_GLOBAL_MATCH                "uMatch"
 //#define ELG_GLOBAL_TEXT                 "uText"
 #define ELG_GLOBAL_CONSTANT             "uConstant"
@@ -105,6 +107,35 @@ struct locate_parameters* get_locate_params(lua_State * L) {
 
 /* ************************************************************************** */
 }    // namespace elg::{unnamed}
+/* ************************************************************************** */
+namespace parser {
+/* ************************************************************************** */
+namespace {   // namespace elg::match::{unnamed}, enforce one-definition-rule
+// anonymous namespaces in C++ are more versatile and superior to static.
+int setpos(lua_State * L) {
+  // get locate parameters
+  struct locate_parameters* p = get_locate_params(L);
+
+  // check if there is a single argument on the stack
+  if (p && lua_gettop(L) == 1) {
+    // check if the argument is an integer and cast it
+    int pos = luaL_checkint(L, 1);
+    // allow negative indices, -1 is p->buffer_size-1
+    pos = pos >= 0 ? pos : p->buffer_size + pos;
+    // only if is a valid range
+    if (pos >= 0 && pos < p->buffer_size) {
+      p->current_origin = pos;
+    }
+  }
+  // number of results
+  return 1;
+}
+/* ************************************************************************** */
+}  // namespace elg:parser::{unnamed}
+/* ************************************************************************** */
+}  // namespace elg:parser
+/* ************************************************************************** */
+
 /* ************************************************************************** */
 namespace match {
 /* ************************************************************************** */
@@ -524,6 +555,27 @@ int value(lua_State* L) {
       char char_token[MAX_TOKEN_LENGTH] = {0};
       int char_token_length = u_encode_utf8(p->tokens->value[p->buffer[pos]], char_token);
       lua_pushlstring(L, char_token, char_token_length);
+    } else {
+      lua_pushnil(L);
+    }
+  }
+  // number of results
+  return 1;
+}
+/* ************************************************************************** */
+int reference(lua_State* L) {
+  // get locate parameters
+  struct locate_parameters* p = get_locate_params(L);
+
+  // check if there is a single argument on the stack
+  if (p && lua_gettop(L) == 1) {
+    // check if the argument is an integer and cast it
+    int pos = luaL_checkint(L, 1);
+    // allow negative indices, -1 is p->buffer_size-1
+    pos = pos >= 0 ? pos : p->buffer_size + pos;
+    // only if is a valid range
+    if (pos >= 0 && pos < p->buffer_size) {
+      lua_pushinteger(L, p->buffer[pos]);
     } else {
       lua_pushnil(L);
     }

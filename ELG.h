@@ -181,6 +181,7 @@ class vm {
       set("negmeta", elg::token::negmeta);
       set("is_space", elg::token::is_space);
       set("value", elg::token::value);
+      set("reference", elg::token::reference);
       set("bitmask", elg::token::bitmask);
       set("tag", elg::token::tag);
 
@@ -217,6 +218,12 @@ class vm {
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_TOKEN);
       elg_stack_dump(L);
+
+      //uParser
+      // [-0, +1] > (+1)
+      lua_newtable(L);
+      set("setpos", elg::parser::setpos);
+      lua_setglobal(L, ELG_GLOBAL_PARSER);
 
       //uMatch
       // [-0, +1] > (+1)
