@@ -45,6 +45,7 @@
 #include "TransductionStack.h"
 #include "Fst2.h"
 #include "Text_parsing.h"
+#include "Tokenization.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX          "elg"
 /* ************************************************************************** */
@@ -64,6 +65,10 @@
 #define ELG_GLOBAL_TOKEN                "uToken"
 #define ELG_GLOBAL_TOKEN_BIT_MASK       "kBitMask"
 #define ELG_GLOBAL_TOKEN_META           "kMeta"
+/* ************************************************************************** */
+#define ELG_GLOBAL_U_SPACE              "U_SPACE"
+#define ELG_GLOBAL_U_SENTENCE           "U_SENTENCE"
+#define ELG_GLOBAL_U_STOP               "U_STOP"
 /* ************************************************************************** */
 #define ELG_GLOBAL_MATCH                "uMatch"
 //#define ELG_GLOBAL_TEXT                 "uText"
@@ -504,6 +509,29 @@ int offset(lua_State * L) {
   return 1;
 }
 /* ************************************************************************** */
+int value(lua_State* L) {
+  // get locate parameters
+  struct locate_parameters* p = get_locate_params(L);
+
+  // check if there is a single argument on the stack
+  if (p && lua_gettop(L) == 1) {
+    // check if the argument is an integer and cast it
+    int pos = luaL_checkint(L, 1);
+    // allow negative indices, -1 is p->buffer_size-1
+    pos = pos >= 0 ? pos : p->buffer_size + pos;
+    // only if is a valid range
+    if (pos >= 0 && pos < p->buffer_size) {
+      char char_token[MAX_TOKEN_LENGTH] = {0};
+      int char_token_length = u_encode_utf8(p->tokens->value[p->buffer[pos]], char_token);
+      lua_pushlstring(L, char_token, char_token_length);
+    } else {
+      lua_pushnil(L);
+    }
+  }
+  // number of results
+  return 1;
+}
+/* ************************************************************************** */
 int bitmask(lua_State * L) {
   struct locate_parameters* p = get_locate_params(L);
 
@@ -547,11 +575,12 @@ int match_meta(const struct locate_parameters* p,
       break;
 
     case META_SPACE:
-      return (token != -1 && token == p->SPACE) ;
+      return ((!negation && (token != -1 && token == p->SPACE)) ||
+                (negation && token != p->SPACE));
       break;
 
     case META_EPSILON:
-      return 0;
+      return negation;
       break;
 
     case META_TEXT_START:
@@ -713,32 +742,44 @@ int meta(lua_State * L) {
     has_meta = match_meta(p, pos, 0, 0, meta);
   }
 
-  lua_pushboolean(L ,has_meta);
+  lua_pushboolean(L, has_meta);
 
   return 1;
 }
-
 
 int negmeta(lua_State * L) {
-
-  return 1;
-}
-
-int is_space(lua_State * L) {
   // get locate params
   struct locate_parameters* p = get_locate_params(L);
-  int is_space = 0;
-
-  if(p && lua_gettop(L)>0) {
-    int pos = lua_tointeger(L,1);
-    if(pos >= 0 && p->buffer[pos] == p->SPACE) {
-       is_space = 1;
-    }
+  int has_meta = 0;
+  // if p is not null and the stack isn't empty
+  if (p && lua_gettop(L) == 2) {
+    // returns the position from the stack and cast to an integer
+    int pos = luaL_checkint(L, -2);
+    // return the meta from the stack and cast it to a meta symbol
+    enum meta_symbol meta = (enum meta_symbol) luaL_checkint(L, -1);
+    has_meta = match_meta(p, pos, 0, NEGATION_TAG_BIT_MASK, meta);
   }
-
-  lua_pushboolean(L,is_space);
+  // push the return value to the stack
+  lua_pushboolean(L, has_meta);
   return 1;
 }
+/* ************************************************************************** */
+#define U__DECLARE__ELG__FUNCTION__META_TEST__(_name, _function)     \
+int _name(lua_State * L) {                                           \
+  struct locate_parameters* p = get_locate_params(L);                \
+  int _name = 0;                                                     \
+  if(p && lua_gettop(L) == 1) {                                      \
+    int pos = luaL_checkint(L, -1);                                  \
+    _name = _function;                                               \
+  }                                                                  \
+  lua_pushboolean(L,_name);                                          \
+  return 1;                                                          \
+}
+/* ************************************************************************** */
+U__DECLARE__ELG__FUNCTION__META_TEST__(is_space,match_meta(p, pos, 0, 0, META_SPACE))
+
+/* ************************************************************************** */
+#undef U__DECLARE__ELG__FUNCTION__META_TEST__
 /* ************************************************************************** */
 
 int tag(lua_State * L) {

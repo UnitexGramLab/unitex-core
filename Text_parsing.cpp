@@ -116,7 +116,11 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     p->backup_memory_reserve = backup_reserve;
     int current_token;
 
+    // setup local environment
     p->elg->setup_local_environment();
+
+    // add special token constants
+    p->elg->setup_special_constants(p);
 
     while (p->current_origin < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
@@ -132,7 +136,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
         }
 
         current_token = p->elg->call_token_event(p->buffer[p->current_origin], p->current_origin);
-        u_printf("[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 
         if (!(current_token == p->SPACE && p->space_policy
                 == DONT_START_WITH_SPACE) && !get_value(p->failfast,

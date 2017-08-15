@@ -180,6 +180,7 @@ class vm {
       set("meta", elg::token::meta);
       set("negmeta", elg::token::negmeta);
       set("is_space", elg::token::is_space);
+      set("value", elg::token::value);
       set("bitmask", elg::token::bitmask);
       set("tag", elg::token::tag);
 
@@ -464,7 +465,7 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(int token, int pos) {
+  int call_token_event(int token, int index) {
     // only if the main extension was loaded and a token_event is available
     if (UNITEX_LIKELY(!main_env_loaded_[ELG_MAIN_EVENT_TOKEN])) {
       return token;
@@ -473,12 +474,12 @@ class vm {
     // load the event
     load_main_event(ELG_MAIN_EVENT_TOKEN);
 
-    // push token integer
-    lua_pushinteger(L, token);
+    // push pos integer
+    lua_pushinteger(L, index);
     elg_stack_dump(L);
 
-    // push pos integer
-    lua_pushinteger(L, pos);
+    // push token integer
+    lua_pushinteger(L, token);
     elg_stack_dump(L);
 
     // perform the call
@@ -650,6 +651,27 @@ class vm {
       }
     }
     elg_stack_dump(state);
+    return 1;
+  }
+
+  int setup_special_constants(const struct locate_parameters* p) {
+    // add space index to globals
+    // [-0, +1] > (+1)
+    pushinteger(p->SPACE);
+    // [-1, +0] > (+0)
+    setglobal(ELG_GLOBAL_U_SPACE);
+
+    // add space index to globals
+    // [-0, +1] > (+1)
+    pushinteger(p->SENTENCE);
+    // [-1, +0] > (+0)
+    setglobal(ELG_GLOBAL_U_SENTENCE);
+
+    // add space index to globals
+    // [-0, +1] > (+1)
+    pushinteger(p->STOP);
+    // [-1, +0] > (+0)
+    setglobal(ELG_GLOBAL_U_STOP);
     return 1;
   }
 

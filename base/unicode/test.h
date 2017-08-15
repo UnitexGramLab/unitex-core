@@ -330,7 +330,7 @@ U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
 #define u_has_bidi_first_strong_isolate(c)                             u_test_bidi(c,U_BIDI_FIRST_STRONG_ISOLATE)
 #define u_has_bidi_pop_directional_isolate(c)                          u_test_bidi(c,U_BIDI_POP_DIRECTIONAL_ISOLATE)
 /* *********************************************************************************************************************** */
-#undef U__DECLARE__FUNCTION__TEST
+#undef U__DECLARE__FUNCTION__TEST__
 #undef U__PARAMS__8
 #undef U__PARAMS__7
 #undef U__PARAMS__6
