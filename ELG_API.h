@@ -62,6 +62,9 @@
 #define ELG_GLOBAL_LOCATE_CONTEXT       "uLocateContext"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
 /* ************************************************************************** */
+#define ELG_GLOBAL_LOCATE_MODE          "uLocateMode"
+
+/* ************************************************************************** */
 #define ELG_GLOBAL_TOKEN                "uToken"
 #define ELG_GLOBAL_TOKEN_BIT_MASK       "kBitMask"
 #define ELG_GLOBAL_TOKEN_META           "kMeta"

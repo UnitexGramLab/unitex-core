@@ -78,6 +78,7 @@ p->last_origin=-1;
 p->max_count_call=0;
 p->max_count_call_warning=0;
 p->buffer=NULL;
+p->locate_mode=TOKENIZED_MODE;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
 p->matching_units=0;
@@ -136,13 +137,8 @@ p->counting_step.count_cancel_trying=0;
 p->explore_depth=0;
 p->backup_memory_reserve=NULL;
 p->cached_match_vector=new_vector_ptr(16);
-p->fnc_locate_trace_step=NULL;
-p->private_param_locate_trace=NULL;
-p->lti= NULL;
 memset(&(p->arabic),0,sizeof(ArabicTypoRules));
 p->is_in_cancel_state = 0;
-p->is_in_trace_state = 0;
-p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
 p->debug=0;
 p->weight=-1;
 p->graph_depth_backup_nested=0;
@@ -510,9 +506,6 @@ if (p->filter_match_index==NULL) {
 }
 #endif
 
-if (allow_trace!=0) {
-   open_locate_trace(p,&p->fnc_locate_trace_step,&p->private_param_locate_trace,trace_params);
-}
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");
 load_morphological_dictionaries(vec,morpho_dic_list,p,morpho_bin);
@@ -621,11 +614,6 @@ launch_locate(out,text_size,info,p);
 
 // unload main extension
 p->elg->unload_main_extension();
-
-
-if (allow_trace!=0) {
-   close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
-}
 
 //  commented on 08/17/17 to use instead elg events feature
 //free_cb(p->lti,p->al.prv_alloc_trace_info_allocator);

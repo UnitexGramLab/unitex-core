@@ -70,6 +70,13 @@ typedef enum {
    DONT_START_WITH_SPACE
 } SpacePolicy;
 
+/* Locate Mode */
+typedef enum {
+  /* The character is the minimal unit of analysis */
+  MORPHOLOGICAL_MODE,
+  /* The token is the minimal unit of analysis */
+  TOKENIZED_MODE,
+} LocateMode;
 
 /* Tokenization policy */
 typedef enum {

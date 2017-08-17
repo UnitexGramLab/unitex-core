@@ -94,11 +94,6 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     p->token_error_ctx.n_matches_at_token_pos__locate = 0;
     p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
-
-    p->is_in_trace_state = 0;
-    if ((p->fnc_locate_trace_step != NULL))
-        p->is_in_trace_state = 1;
-
     //fill_buffer(p->token_buffer, f);
     OptimizedFst2State initial_state =
             p->optimized_states[p->fst2->initial_states[1]];
@@ -177,9 +172,9 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->explore_depth=-1;
                 p->token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
-                if (p->is_in_cancel_state == 1)
+                if (p->is_in_cancel_state == 1) {
                   p->is_in_cancel_state = 0;
-                p->counting_step_count_cancel_trying_real_in_debug_or_trace = 0;
+                }
                 p->no_fail_fast=0;
                 p->weight=-1;
                 int n_matches=0;
@@ -201,10 +196,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
-
-                int count_call_real = p->counting_step.count_call;
-                count_call_real -= (p->is_in_trace_state == 0) ? (p->counting_step.count_cancel_trying) : (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
-
+                int count_call_real = p->counting_step.count_call - p->counting_step.count_cancel_trying;
 
 //u_printf("token number %d : %d step\n",p->current_origin,count_call_real,p->tokens);
 
@@ -410,7 +402,6 @@ static inline int at_text_end(struct locate_parameters* p,int pos) {
 }
 
 
-
 /**
  * This is the core function of the Locate program.
  */
@@ -426,9 +417,11 @@ int *n_matches, /* number of sequences that have matched. It may be different fr
 struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 ) {
+    // put the locate configuration on the global environment
+
     // add &current_state to globals
     // [-0, +1] > (+1)
-    p->elg->push(&current_state);
+    p->elg->push(current_state);
     // [-1, +0] > (+0)
     p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
 
@@ -444,90 +437,79 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     // [-1, +0] > (+0)
     p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
 
+
+    // the minimal unit of analysis is the token
+    p->locate_mode = TOKENIZED_MODE;
+
+//    int size_struct_locate_trace_info;
+//    int is_on_morphlogical;
+//
+//    OptimizedFst2State current_state;
+//
+//    int current_state_index;
+//    int pos_in_tokens;
+//    int pos_in_chars;
+//
+//    int n_matches;
+//    struct parsing_info** matches; /* current match list. Irrelevant if graph_depth==0 */
+//    struct list_context* ctx; /* information about the current context, if any */
+//    struct locate_parameters* p; /* miscellaneous parameters needed by the function */
+//    unichar* jamo;
+//    int pos_in_jamo;
+//
+//    int step_number;
+
+//    p->lti->is_on_morphlogical = 0;
+//
+//    p->lti->pos_in_tokens=pos;
+//
+//    p->lti->current_state=current_state;
+//
+//    p->lti->current_state_index=0;
+//    p->lti->pos_in_chars=0;
+//
+//    p->lti->matches=matches;
+//    p->lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
+//    p->lti->ctx=ctx;
+//    //p->lti->p=p;
+//
+//    p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+//
+//    p->lti->jamo=NULL;
+//    p->lti->pos_in_jamo=0;
+//
+//    p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(p->lti,p->private_param_locate_trace);
+
     if ((p->counting_step.count_cancel_trying) == 0) {
 
-        if (p->is_in_cancel_state != 0)
-            return;
+      if (p->is_in_cancel_state != 0) {
+        return;
+      }
 
-        if (p->is_in_trace_state == 0) {
-
-            if ((p->max_count_call) > 0) {
-                if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 1;
-                    return;
-                }
-            }
-
-            p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
-            if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                    +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
-            }
-
-            if (is_cancelling_requested() != 0) {
-                p->counting_step.count_cancel_trying = 0;
-                p->is_in_cancel_state = 2;
-                return;
-            }
-            (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
+      if ((p->max_count_call) > 0) {
+        if ((p->counting_step.count_call) >= (p->max_count_call)) {
+          p->counting_step.count_cancel_trying = 0;
+          p->is_in_cancel_state = 1;
+          return;
         }
-        else
-        {
-            if ((p->fnc_locate_trace_step != NULL)) {
-                p->lti->is_on_morphlogical = 0;
+      }
 
-                p->lti->pos_in_tokens=pos;
+      p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+      if (((p->max_count_call) > 0)
+          && (((p->counting_step.count_call) + COUNT_CANCEL_TRYING_INIT_CONST)
+              > (p->max_count_call))) {
+        p->counting_step.count_cancel_trying = (p->max_count_call)
+            - (p->counting_step.count_call);
+      }
 
-                p->lti->current_state=current_state;
-
-                p->lti->current_state_index=0;
-                p->lti->pos_in_chars=0;
-
-                p->lti->matches=matches;
-                p->lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
-                p->lti->ctx=ctx;
-                //p->lti->p=p;
-
-                p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
-
-                p->lti->jamo=NULL;
-                p->lti->pos_in_jamo=0;
-
-                p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(p->lti,p->private_param_locate_trace);
-            }
-
-            p->pos_in_tokens=pos;
-            p->pos_in_chars=0;
-
-            if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
-                if ((p->max_count_call) > 0) {
-                    if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                        p->counting_step.count_cancel_trying = 0;
-                        p->is_in_cancel_state = 1;
-                        return;
-                    }
-                }
-
-                p->counting_step_count_cancel_trying_real_in_debug_or_trace = COUNT_CANCEL_TRYING_INIT_CONST;
-                if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                        +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                    p->counting_step_count_cancel_trying_real_in_debug_or_trace = (p->max_count_call) - (p->counting_step.count_call);
-                }
-
-                if (is_cancelling_requested() != 0) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 2;
-                    return;
-                }
-                (p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
-            }
-
-            p->counting_step_count_cancel_trying_real_in_debug_or_trace --;
-            //  prepare now to be at 0 after the "--" (we don't want another test for performance */
-            (p->counting_step.count_cancel_trying)++;
-        }
+      if (is_cancelling_requested() != 0) {
+        p->counting_step.count_cancel_trying = 0;
+        p->is_in_cancel_state = 2;
+        return;
+      }
+      (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
     }
+
     (p->counting_step.count_cancel_trying)--;
 
     /* The following static variable holds the number of matches at

@@ -284,90 +284,57 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 //,variable_backup_memory_reserve* backup_reserve
 ) {
 
+  // the minimal unit of analysis is the character
+  p->locate_mode = MORPHOLOGICAL_MODE;
+
+//      p->lti->pos_in_tokens=pos_in_tokens;
+//
+//      p->lti->current_state=NULL;
+//
+//      p->lti->current_state_index=current_state_index;
+//      p->lti->pos_in_chars=pos_in_chars;
+//
+//      p->lti->matches=matches;
+//      p->lti->n_matches=n_matches;
+//      p->lti->ctx=ctx;
+//
+//      p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+//
+//      p->lti->jamo=jamo;
+//      p->lti->pos_in_jamo=pos_in_jamo;
+
+
     int old_weight=p->weight;
+
     if ((p->counting_step.count_cancel_trying) == 0) {
+      if (p->is_in_cancel_state != 0) {
+        return;
+      }
 
-        if (p->is_in_cancel_state != 0)
-            return;
-
-        if (p->is_in_trace_state == 0) {
-
-            if ((p->max_count_call) > 0) {
-                if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 1;
-                    return;
-                }
-            }
-
-            p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
-            if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                    +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                p->counting_step.count_cancel_trying = (p->max_count_call) - (p->counting_step.count_call);
-            }
-
-            if (is_cancelling_requested() != 0) {
-                p->counting_step.count_cancel_trying = 0;
-                p->is_in_cancel_state = 2;
-                return;
-            }
-            (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
+      if ((p->max_count_call) > 0) {
+        if ((p->counting_step.count_call) >= (p->max_count_call)) {
+          p->counting_step.count_cancel_trying = 0;
+          p->is_in_cancel_state = 1;
+          return;
         }
-        else
-        {
-            if ((p->fnc_locate_trace_step != NULL)) {
-                p->lti->is_on_morphlogical = 1;
+      }
 
-                p->lti->pos_in_tokens=pos_in_tokens;
+      p->counting_step.count_cancel_trying = COUNT_CANCEL_TRYING_INIT_CONST;
+      if (((p->max_count_call) > 0)
+          && (((p->counting_step.count_call) + COUNT_CANCEL_TRYING_INIT_CONST)
+              > (p->max_count_call))) {
+        p->counting_step.count_cancel_trying = (p->max_count_call)
+            - (p->counting_step.count_call);
+      }
 
-                p->lti->current_state=NULL;
-
-                p->lti->current_state_index=current_state_index;
-                p->lti->pos_in_chars=pos_in_chars;
-
-                p->lti->matches=matches;
-                p->lti->n_matches=n_matches;
-                p->lti->ctx=ctx;
-
-                p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
-
-                p->lti->jamo=jamo;
-                p->lti->pos_in_jamo=pos_in_jamo;
-
-//              p->lti->is_in_cancel_state = (*(p->fnc_locate_trace_step))(lti,p->private_param_locate_trace);
-            }
-
-			p->pos_in_tokens=pos_in_tokens;
-			p->pos_in_chars=pos_in_chars;
-
-            if ((p->counting_step_count_cancel_trying_real_in_debug_or_trace) == 0) {
-                if ((p->max_count_call) > 0) {
-                    if ((p->counting_step.count_call) >= (p->max_count_call)) {
-                        p->counting_step.count_cancel_trying = 0;
-                        p->is_in_cancel_state = 1;
-                        return;
-                    }
-                }
-
-                p->counting_step_count_cancel_trying_real_in_debug_or_trace = COUNT_CANCEL_TRYING_INIT_CONST;
-                if (((p->max_count_call) > 0) && (((p->counting_step.count_call)
-                        +COUNT_CANCEL_TRYING_INIT_CONST) > (p->max_count_call))) {
-                    p->counting_step_count_cancel_trying_real_in_debug_or_trace = (p->max_count_call) - (p->counting_step.count_call);
-                }
-
-                if (is_cancelling_requested() != 0) {
-                    p->counting_step.count_cancel_trying = 0;
-                    p->is_in_cancel_state = 2;
-                    return;
-                }
-                (p->counting_step.count_call) += (p->counting_step_count_cancel_trying_real_in_debug_or_trace);
-            }
-
-            p->counting_step_count_cancel_trying_real_in_debug_or_trace --;
-            //  prepare now to be at 0 after the "--" (we don't want another test for performance */
-            (p->counting_step.count_cancel_trying)++;
-        }
+      if (is_cancelling_requested() != 0) {
+        p->counting_step.count_cancel_trying = 0;
+        p->is_in_cancel_state = 2;
+        return;
+      }
+      (p->counting_step.count_call) += (p->counting_step.count_cancel_trying);
     }
+
     (p->counting_step.count_cancel_trying)--;
 
 

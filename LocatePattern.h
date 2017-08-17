@@ -221,7 +221,6 @@ struct locate_parameters {
    int max_count_call_warning;
 
    int is_in_cancel_state;
-   int is_in_trace_state;
 
    /* The token buffer used to parse the text. This is a pointer
     * that must be initialized after mapping the 'text.cod' file */
@@ -231,6 +230,8 @@ struct locate_parameters {
    /* A system-dependent object that represents the mapped' text.cod' file */
    ABSTRACTMAPFILE* text_cod;
 
+   /* Indicates if we are on the tokenized or morphological locate */
+   LocateMode locate_mode;
 
    /* Indicates if we work char by char or not */
    TokenizationPolicy tokenization_policy;
