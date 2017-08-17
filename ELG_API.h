@@ -69,6 +69,7 @@
 #define ELG_GLOBAL_U_SPACE              "U_SPACE"
 #define ELG_GLOBAL_U_SENTENCE           "U_SENTENCE"
 #define ELG_GLOBAL_U_STOP               "U_STOP"
+#define ELG_GLOBAL_U_BUFFER_SIZE        "U_BUFFER_SIZE"
 /* ************************************************************************** */
 #define ELG_GLOBAL_PARSER               "uParser"
 /* ************************************************************************** */

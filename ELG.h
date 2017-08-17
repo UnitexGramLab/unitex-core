@@ -61,10 +61,10 @@ typedef struct elg_Event {
 /* ************************************************************************** */
 static const struct elg_Event elgMainEvents [] = {
 /* name        ,  nargs, nresults */
-  {"load_event",      0, 0 },
-  {"unload_event",    0, 0 },
-  {"token_event",     2, 1 }, // (token, pos) = token
-  {NULL, 0}  /* sentinel */
+  {"load_event",      0, 0 }, /* (load_event)   =         */
+  {"unload_event",    0, 0 }, /* (unload_event) =         */
+  {"token_event",     1, 1 }, /* (index)        = index   */
+  {NULL, 0}                   /* sentinel                 */
 };
 /* ************************************************************************** */
 #define ELG_MAIN_EVENTS_COUNT              3
@@ -464,7 +464,7 @@ class vm {
     lua_rawgeti(L, LUA_REGISTRYINDEX, main_env_ref_);
     elg_stack_dump(L);
 
-    // get the main graph extension environment
+    // get the first extension (main graph) environment
     lua_rawgeti(L, -1, 1);
     elg_stack_dump(L);
 
@@ -472,37 +472,41 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(int token, int index) {
+  int call_token_event(const struct locate_parameters* p, int event_number, int index) {
     // only if the main extension was loaded and a token_event is available
-    if (UNITEX_LIKELY(!main_env_loaded_[ELG_MAIN_EVENT_TOKEN])) {
-      return token;
+    if (UNITEX_LIKELY(!main_env_loaded_[event_number])) {
+      return p->buffer[index];
     }
 
     // load the event
-    load_main_event(ELG_MAIN_EVENT_TOKEN);
+    load_main_event(event_number);
 
-    // push pos integer
+    // push index integer
     lua_pushinteger(L, index);
     elg_stack_dump(L);
 
-    // push token integer
-    lua_pushinteger(L, token);
-    elg_stack_dump(L);
-
     // perform the call
-    call_event(elgMainEvents[ELG_MAIN_EVENT_TOKEN].nargs,
-               elgMainEvents[ELG_MAIN_EVENT_TOKEN].nresults);
+    call_event(elgMainEvents[event_number].nargs,
+               elgMainEvents[event_number].nresults);
     elg_stack_dump(L);
 
-    // test if we have a token
+    // test if we have a valid integer index
     if (lua_type(L, -1) != LUA_TNUMBER) {
       const char* e = lua_tostring(L, -1);
       lua_pop(L, 1); // error
       luaL_error(L,"Error calling the token_event it must return a integer\n",e);
     }
 
-    // assign to the token buffer
-    token = lua_tointeger(L, -1);
+    // we have a valid integer
+    int new_index = lua_tointeger(L, -1);
+
+    // check if the new index is in the bounds
+    if (UNITEX_UNLIKELY((new_index < 0 || new_index >= p->buffer_size)
+        || (p->buffer[new_index] < 0 || p->buffer[new_index] >= p->tokens->size))) {
+      // TODO(martinec) throw a warning from here
+      // use the original index as fallback
+      new_index = index;
+    }
 
     // -3: pop the returned value
     // -2: pop the main extension environment
@@ -510,7 +514,7 @@ class vm {
     lua_pop(L, 3);
     elg_stack_dump(L);
 
-    return token;
+    return p->buffer[new_index];
   }
 
   // [-0, +0] > (+1)
@@ -668,17 +672,24 @@ class vm {
     // [-1, +0] > (+0)
     setglobal(ELG_GLOBAL_U_SPACE);
 
-    // add space index to globals
+    // add sentence index to globals
     // [-0, +1] > (+1)
     pushinteger(p->SENTENCE);
     // [-1, +0] > (+0)
     setglobal(ELG_GLOBAL_U_SENTENCE);
 
-    // add space index to globals
+    // add stop index to globals
     // [-0, +1] > (+1)
     pushinteger(p->STOP);
     // [-1, +0] > (+0)
     setglobal(ELG_GLOBAL_U_STOP);
+
+    // add buffer size to globals
+    // [-0, +1] > (+1)
+    pushinteger(p->buffer_size);
+    // [-1, +0] > (+0)
+    setglobal(ELG_GLOBAL_U_BUFFER_SIZE);
+
     return 1;
   }
 

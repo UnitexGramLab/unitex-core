@@ -135,7 +135,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             }
         }
 
-        current_token = p->elg->call_token_event(p->buffer[p->current_origin], p->current_origin);
+        current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_TOKEN, p->current_origin);
         //u_printf(">>>[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 
         if (!(current_token == p->SPACE && p->space_policy
@@ -402,13 +402,21 @@ int ret=pos == 0 && (p->current_origin == 0
 return ret;
 }
 
+static inline int at_text_end(struct locate_parameters* p,int pos) {
+  int ret = (pos + p->current_origin     == p->buffer_size) ||
+            (pos + p->current_origin + 1 == p->buffer_size  &&
+   p->buffer[pos + p->current_origin]    == p->SPACE);
+  return ret;
+}
+
+
 
 /**
  * This is the core function of the Locate program.
  */
 void locate(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
 OptimizedFst2State current_state, /* current state in the grammar */
-const int pos, /* position in the token buffer, relative to the current origin */
+int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
 struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
 int *n_matches, /* number of sequences that have matched. It may be different from
@@ -418,17 +426,6 @@ int *n_matches, /* number of sequences that have matched. It may be different fr
 struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 ) {
-#ifdef REGEX_FACADE_ENGINE
-    int filter_number;
-#endif
-    int pos2 = -1, ctrl = 0, end_of_compound;
-    int token, token2;
-    Transition* t1;
-    int stack_top = p->stack->stack_pointer;
-    int old_weight1=p->weight;
-    unichar* output;
-    int captured_chars;
-
     // add &current_state to globals
     // [-0, +1] > (+1)
     p->elg->push(&current_state);
@@ -546,8 +543,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
     }
 */
-
-
     if ((p->explore_depth) > p->stack_max) {
         /* If there are too much recursive calls */
         error_at_token_pos("\nMaximal stack size reached!\n"
@@ -565,6 +560,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->explore_depth -- ;
         return;
     }
+
+    int stack_top = p->stack->stack_pointer;
+
     if (current_state->control & 1) {
         /* If we are in a final state... */
         if (ctx != NULL) {
@@ -627,34 +625,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
             }
         }
     }
-    int end_of_text = pos + p->current_origin == p->buffer_size;
-    /* The same, but tolerant if there is a remaining space */
-    int end_of_text2 = pos + p->current_origin + 1 == p->buffer_size
-            && p->buffer[pos + p->current_origin] == p->SPACE;
 
-    /* If we have reached the end of the token buffer, we indicate it by setting
-     * the current tokens to -1 */
-    if ((((pos + p->current_origin) >= p->buffer_size)) || (pos==-1)) {
-        token = -1;
-        token2 = -1;
-    } else {
-        token = p->buffer[pos + p->current_origin];
-        if (token == p->SPACE) {
-            pos2 = pos + 1;
-        }
-        /* Now, we deal with the SPACE, if any. To do that, we use several variables:
-         * pos: current position in the token buffer, relative to the current origin
-         * pos2: position of the first non-space token from 'pos'.
-         * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
-        else {
-            pos2 = pos;
-        }
-        if ((pos2 + p->current_origin) >= p->buffer_size) {
-            token2 = -1;
-        } else {
-            token2 = p->buffer[pos2 + p->current_origin];
-        }
-    }
+    Transition* t1;
 
     /**
      * SUBGRAPHS
@@ -818,18 +790,48 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->dic_variables = dic_variables_backup;
     } /* End of processing subgraphs */
 
+    /* If we have reached the end of the token buffer, we indicate it by setting
+     * the current tokens to -1 */
+    int token, token2, pos2 = -1;
+    if ((((pos + p->current_origin) >= p->buffer_size)) || (pos==-1)) {
+        token = -1;
+        token2 = -1;
+    } else {
+        token = p->buffer[pos + p->current_origin];
+        if (token == p->SPACE) {
+            pos2 = pos + 1;
+        }
+        /* Now, we deal with the SPACE, if any. To do that, we use several variables:
+         * pos: current position in the token buffer, relative to the current origin
+         * pos2: position of the first non-space token from 'pos'.
+         * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
+        else {
+            pos2 = pos;
+        }
+        if ((pos2 + p->current_origin) >= p->buffer_size) {
+            token2 = -1;
+        } else {
+            token2 = p->buffer[pos2 + p->current_origin];
+        }
+    }
+
+    unichar* output;
+    int captured_chars;
+    int old_weight1=p->weight;
+#ifdef REGEX_FACADE_ENGINE
+    int filter_number;
+#endif
+
     /**
      * METAS
      */
     struct opt_meta* meta_list = current_state->metas;
-    if (meta_list != NULL) {
-        /* We cache the control bytes of the pos2 token. The pos token has not interest,
-         * because it is 1) a space or 2) equal to the pos2 one. */
-        if (token2 != -1)
-            ctrl = p->token_control[token2];
-        else
-            ctrl = 0;
-    }
+    /* We cache the control bytes of the pos2 token. The pos token has not interest,
+     * because it is 1) a space or 2) equal to the pos2 one. */
+    int ctrl = meta_list != NULL && token2 != -1 ? p->token_control[token2] : 0;
+
+    int end_of_compound = -1;
+
     while (meta_list != NULL) {
         /* We process all the meta of the list */
         t1 = meta_list->transition;
@@ -901,12 +903,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
             case META_TEXT_END:
                 p->no_fail_fast=1;
-                if (end_of_text || end_of_text2) {
+                if (at_text_end(p,pos)) {
                     start = pos;
                     end = pos;
                 }
                 break;
-
             case META_WORD:
             case META_MOT:
                 update_last_tested_position(p, pos2);

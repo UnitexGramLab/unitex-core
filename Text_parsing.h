@@ -67,7 +67,7 @@ namespace unitex {
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,const struct optimizedFst2State*);
 void launch_locate(U_FILE*,long int,U_FILE*,struct locate_parameters*);
-void locate(/*int,*/OptimizedFst2State,const int,/*int,*/struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
+void locate(/*int,*/OptimizedFst2State,int,/*int,*/struct parsing_info**,int*,struct list_context*,struct locate_parameters*);
 unichar* get_token_sequence(struct locate_parameters*, int, int);
 
 /**

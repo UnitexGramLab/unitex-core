@@ -600,21 +600,22 @@ p->al.pa.prv_alloc_backup_growing_recycle=locate_recycle_backup_abstract_allocat
 p->al.prv_alloc_trace_info_allocator=locate_recycle_locate_trace_info_allocator;
 p->al.prv_alloc_context=locate_recycle_context_abstract_allocator;
 
-p->fnc_locate_trace_step = locate_trace;
-p->lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
-p->lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
-p->lti->is_on_morphlogical=0;
-p->lti->pos_in_tokens=-1;
-p->lti->current_state=NULL;
-p->lti->current_state_index=0;
-p->lti->pos_in_chars=0;
-p->lti->matches=NULL;
-p->lti->n_matches=0;
-p->lti->ctx=NULL;
-p->lti->p=p;
-p->lti->step_number=-1;
-p->lti->jamo=NULL;
-p->lti->pos_in_jamo=0;
+//  commented on 08/17/17 to use instead elg events feature
+//p->fnc_locate_trace_step = locate_trace;
+//p->lti = (locate_trace_info*)malloc_cb(sizeof(locate_trace_info),p->al.prv_alloc_trace_info_allocator);
+//p->lti->size_struct_locate_trace_info = (int)sizeof(locate_trace_info);
+//p->lti->is_on_morphlogical=0;
+//p->lti->pos_in_tokens=-1;
+//p->lti->current_state=NULL;
+//p->lti->current_state_index=0;
+//p->lti->pos_in_chars=0;
+//p->lti->matches=NULL;
+//p->lti->n_matches=0;
+//p->lti->ctx=NULL;
+//p->lti->p=p;
+//p->lti->step_number=-1;
+//p->lti->jamo=NULL;
+//p->lti->pos_in_jamo=0;
 
 launch_locate(out,text_size,info,p);
 
@@ -626,7 +627,9 @@ if (allow_trace!=0) {
    close_locate_trace(p,p->fnc_locate_trace_step,p->private_param_locate_trace);
 }
 
-free_cb(p->lti,p->al.prv_alloc_trace_info_allocator);
+//  commented on 08/17/17 to use instead elg events feature
+//free_cb(p->lti,p->al.prv_alloc_trace_info_allocator);
+
 free_bit_array(p->failfast);
 free_bit_array(p->enter_pos);
 free_Variables(p->input_variables);
