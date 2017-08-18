@@ -63,14 +63,16 @@ static const struct elg_Event elgMainEvents [] = {
 /* name        ,  nargs, nresults */
   {"load_event",      0, 0 }, /* (load_event)   =         */
   {"unload_event",    0, 0 }, /* (unload_event) =         */
+  {"slide_event",     1, 1 }, /* (index)        = index   */
   {"token_event",     1, 1 }, /* (index)        = index   */
   {NULL, 0}                   /* sentinel                 */
 };
 /* ************************************************************************** */
-#define ELG_MAIN_EVENTS_COUNT              3
+#define ELG_MAIN_EVENTS_COUNT              4
 #define ELG_MAIN_EVENT_LOAD                0
 #define ELG_MAIN_EVENT_UNLOAD              1
-#define ELG_MAIN_EVENT_TOKEN               2
+#define ELG_MAIN_EVENT_SLIDE               2
+#define ELG_MAIN_EVENT_TOKEN               3
 /* ************************************************************************** */
 // push a nil into table
 // [-0, +0, e]
@@ -571,7 +573,7 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(const struct locate_parameters* p, int event_number, int index) {
+  int call_token_event(struct locate_parameters* p, int event_number, int* pos, int index) {
     // only if the main extension was loaded and a token_event is available
     if (UNITEX_LIKELY(!main_env_loaded_[event_number])) {
       return p->buffer[index];
@@ -605,6 +607,12 @@ class vm {
       // TODO(martinec) throw a warning from here
       // use the original index as fallback
       new_index = index;
+    }
+
+    if(new_index != index) {
+      p->current_origin = new_index;
+      if(new_index + 1 < p->buffer_size && p->buffer[new_index + 1] == p->SPACE) new_index++;
+      if(new_index + 1 < p->buffer_size ) new_index++;
     }
 
     // -3: pop the returned value

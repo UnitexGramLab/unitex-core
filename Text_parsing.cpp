@@ -117,6 +117,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     // setup local environment
     p->elg->setup_local_environment();
 
+    int pos = 0;
+
     while (p->current_origin < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
             p->number_of_matches != p->search_limit) {
@@ -130,7 +132,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             }
         }
 
-        current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_TOKEN, p->current_origin);
+        current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_SLIDE, &pos, p->current_origin);
         //u_printf(">>>[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 
         if (!(current_token == p->SPACE && p->space_policy
@@ -179,7 +181,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->weight=-1;
                 int n_matches=0;
 
-                locate(initial_state, 0, &matches, &n_matches, NULL, p);
+                locate(initial_state, pos, &matches, &n_matches, NULL, p);
 
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
@@ -742,7 +744,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         if ((pos2 + p->current_origin) >= p->buffer_size) {
             token2 = -1;
         } else {
-            token2 = p->buffer[pos2 + p->current_origin];
+            token2 = p->elg->call_token_event(p, ELG_MAIN_EVENT_TOKEN, &pos2, pos2 + p->current_origin);
         }
     }
 
