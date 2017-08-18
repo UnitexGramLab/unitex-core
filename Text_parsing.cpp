@@ -388,6 +388,7 @@ static inline int at_text_end(struct locate_parameters* p,int pos) {
   return ret;
 }
 
+
 /**
  * This is the core function of the Locate program.
  */
@@ -398,84 +399,19 @@ void locate(OptimizedFst2State current_state,
              struct list_context* ctx,
              struct locate_parameters* p) {
   // put the arguments of the locate call on the global environment
-
-  // add the current state to globals
-  // [-0, +1] > (+1)
-  p->elg->push(current_state);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
-
-  // add pos to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_POS);
-
-  // add matches to globals
-  // [-0, +1] > (+1)
-  p->elg->push(matches);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
-
-  // add n_matches to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger((n_matches == NULL) ? (-1) : (*n_matches));
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_NUM_MATCHES);
-
-  // add pos to globals
-  // [-0, +1] > (+1)
-  p->elg->push(ctx);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
-
-  // set the arguments of the locate call
+  //p->elg->set_locate_call_params(current_state, pos, matches, n_matches, ctx, p);
 
   // save the minimal unit of analysis
   LocateMode locate_mode = p->locate_mode;
 
   // call locate
-  core_tokenized_locate(current_state,
-                        pos,
-                        matches,
-                        n_matches,
-                        ctx,
-                        p);
-
-  // restore the arguments of the locate call
+  core_tokenized_locate(current_state, pos, matches, n_matches, ctx, p);
 
   // restore the minimal unit of analysis
   p->locate_mode = locate_mode;
 
-  // add the current state to globals
-  // [-0, +1] > (+1)
-  p->elg->push(current_state);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
-
-  // add pos to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_POS);
-
-  // add matches to globals
-  // [-0, +1] > (+1)
-  p->elg->push(matches);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
-
-  // add n_matches to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger((n_matches == NULL) ? (-1) : (*n_matches));
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_NUM_MATCHES);
-
-  // add pos to globals
-  // [-0, +1] > (+1)
-  p->elg->push(ctx);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
+  // put the arguments of the locate call on the global environment
+  //p->elg->set_locate_call_params(current_state, pos, matches, n_matches, ctx, p);
 }
 
 /**

@@ -72,34 +72,72 @@ static const struct elg_Event elgMainEvents [] = {
 #define ELG_MAIN_EVENT_UNLOAD              1
 #define ELG_MAIN_EVENT_TOKEN               2
 /* ************************************************************************** */
-// push a function into table
+// push a nil into table
 // [-0, +0, e]
-#define set_function(name, fn)                           \
-         lua_pushliteral(L, name);                        \
-         lua_pushcfunction(L, fn);                        \
-         lua_settable(L, -3);
+#define set_nil(field)                                    \
+    lua_pushliteral(L, field);                             \
+    lua_pushnil(L);                                        \
+    lua_settable(L, -3);
+
+// push a number into table
+// [-0, +0, e]
+#define set_number(field, n)                              \
+    lua_pushliteral(L, field);                             \
+    lua_pushnumber(L, (lua_Number) n);                     \
+    lua_settable(L, -3);
 
 // push a integer into table
 // [-0, +0, e]
-#define set_integer(name, i)                             \
-         lua_pushliteral(L, name);                        \
-         lua_pushinteger(L, (lua_Integer) i);             \
-         lua_settable(L, -3);
-
-// push a string into table
-// [-0, +0, e]
-#define set_string(name, s)                              \
-    lua_pushliteral(L, name);                             \
-    lua_pushstring(L, s);                                 \
+#define set_integer(field, i)                             \
+    lua_pushliteral(L, field);                             \
+    lua_pushinteger(L, (lua_Integer) i);                   \
     lua_settable(L, -3);
 
 // push a literal into table
 // [-0, +0, e]
-#define set_literal(name, l)                             \
-    lua_pushliteral(L, name);                             \
-    lua_pushliteral(L, l);                                \
+#define set_literal(field, l)                             \
+    lua_pushliteral(L, field);                             \
+    lua_pushliteral(L, l);                                 \
     lua_settable(L, -3);
 
+// push a string into table
+// [-0, +0, e]
+#define set_lstring(field, s, len)                        \
+    lua_pushliteral(L, field);                             \
+    lua_pushlstring(L, s, (size_t) len);                   \
+    lua_settable(L, -3);
+
+// push a string into table
+// [-0, +0, e]
+#define set_string(field, s)                              \
+    lua_pushliteral(L, field);                             \
+    lua_pushstring(L, s);                                  \
+    lua_settable(L, -3);
+
+// push a function into table
+// [-0, +0, e]
+#define set_function(field, fn)                           \
+    lua_pushliteral(L, field);                             \
+    lua_pushcfunction(L, fn);                              \
+    lua_settable(L, -3);
+
+// push a boolean into table
+// [-0, +0, e]
+#define set_boolean(field, b)                             \
+    lua_pushliteral(L, field);                             \
+    lua_pushboolean(L, b);                                 \
+    lua_settable(L, -3);
+
+// push a lightuserdata into table
+// [-0, +0, e]
+#define set_lightuserdata(field, p)                       \
+    lua_pushliteral(L, field);                             \
+    if (p) {                                               \
+      lua_pushlightuserdata(L, (void *) p);                \
+    } else {                                               \
+      lua_pushnil(L);                                       \
+    }                                                       \
+    lua_settable(L, -3);
 /* ************************************************************************** */
 class vm {
  public:
@@ -195,26 +233,30 @@ class vm {
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_CONSTANT);
 
-//      lua_createtable(L,0,6);
-//      lua_pushliteral(L,"a");
-//      lua_pushnil(L);
-//      lua_rawset(L,-3);
-//      lua_pushliteral(L,"b");
-//      lua_pushnil(L);
-//      lua_rawset(L,-3);
-//      lua_pushliteral(L,"c");
-//      lua_pushnil(L);
-//      lua_rawset(L,-3);
-//      lua_pushliteral(L,"d");
-//      lua_pushnil(L);
-//      lua_rawset(L,-3);
-//      lua_pushliteral(L,"e");
-//      lua_pushnil(L);
-//      lua_rawset(L,-3);
-//      lua_pushliteral(L,"f");
-//      lua_pushnil(L);
-//      lua_rawset(L,-3);
-//      lua_setfield(L,LUA_ENVIRONINDEX,"i");
+      // uLocate
+      lua_createtable(L, 0, ELG_GLOBAL_LOCATE_PARAMS_SIZE);
+      set_nil(ELG_GLOBAL_LOCATE_STATE);
+      set_nil(ELG_GLOBAL_LOCATE_POS);
+      set_nil(ELG_GLOBAL_LOCATE_MATCHES);
+      set_nil(ELG_GLOBAL_LOCATE_NUM_MATCHES);
+      set_nil(ELG_GLOBAL_LOCATE_CONTEXT);
+      // [-1, +0] > (+0)
+      lua_setglobal(L, ELG_GLOBAL_LOCATE);
+
+      // uMorphoLocate
+      lua_createtable(L, 0, ELG_GLOBAL_MORPHO_LOCATE_PARAMS_SIZE);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_MATCHES);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_CONTEXT);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_PARAMS);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_JAMO);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO);
+      set_nil(ELG_GLOBAL_MORPHO_LOCATE_CONTENT);
+      // [-1, +0] > (+0)
+      lua_setglobal(L, ELG_GLOBAL_MORPHO_LOCATE);
 
       // Functions
 
@@ -234,6 +276,13 @@ class vm {
       set_function("reference", elg::token::reference);
       set_function("bitmask", elg::token::bitmask);
       set_function("tag", elg::token::tag);
+
+      // uToken.U_SPACE
+      set_integer(ELG_GLOBAL_TOKEN_U_SPACE, -1);
+      // uToken.U_SENTENCE
+      set_integer(ELG_GLOBAL_TOKEN_U_SENTENCE, -1);
+      // uToken.U_STOP
+      set_integer(ELG_GLOBAL_TOKEN_U_STOP, -1);
 
       // uToken.kBitMask
       lua_newtable(L);
@@ -716,23 +765,26 @@ class vm {
   }
 
   int setup_special_constants(const struct locate_parameters* p) {
-    // add space index to globals
+    // get the global table
     // [-0, +1] > (+1)
-    pushinteger(p->SPACE);
-    // [-1, +0] > (+0)
-    setglobal(ELG_GLOBAL_U_SPACE);
+    lua_getglobal(L, "_G");
 
-    // add sentence index to globals
-    // [-0, +1] > (+1)
-    pushinteger(p->SENTENCE);
-    // [-1, +0] > (+0)
-    setglobal(ELG_GLOBAL_U_SENTENCE);
+    // get the uToken table
+    // [-0, +1] > (+2)
+    lua_pushliteral(L, ELG_GLOBAL_TOKEN);
+    lua_gettable(L, -2);
 
-    // add stop index to globals
-    // [-0, +1] > (+1)
-    pushinteger(p->STOP);
-    // [-1, +0] > (+0)
-    setglobal(ELG_GLOBAL_U_STOP);
+    // uToken.U_SPACE
+    set_integer(ELG_GLOBAL_TOKEN_U_SPACE, p->SPACE);
+    // uToken.U_SENTENCE
+    set_integer(ELG_GLOBAL_TOKEN_U_SENTENCE, p->SENTENCE);
+    // uToken.U_STOP
+    set_integer(ELG_GLOBAL_TOKEN_U_STOP, p->STOP);
+
+    // -2 pop the uToken table
+    // -1 pop the global table
+    // [-2, +0] > (+0)
+    lua_pop(L,2);
 
     // add buffer size to globals
     // [-0, +1] > (+1)
@@ -1346,6 +1398,111 @@ class vm {
   void setglobal(const char* name) {
     lua_setglobal(L, name);
   }
+
+  // [-0, +0]
+  void set_locate_call_params(OptimizedFst2State current_state,
+                                int pos,
+                                struct parsing_info** matches,
+                                int *n_matches,
+                                struct list_context* ctx,
+                                struct locate_parameters* p) {
+    // get the global table
+    // [-0, +1] > (+1)
+    lua_getglobal(L,"_G");
+
+    // get the locate table
+    // [-0, +1] > (+2)
+    lua_pushliteral(L,ELG_GLOBAL_LOCATE);
+    lua_gettable(L,-2);
+
+    // add the current state to globals
+    // [-0, +0] > (+2)
+    set_lightuserdata(ELG_GLOBAL_LOCATE_STATE, current_state);
+
+    // add pos to globals
+    // [-0, +0] > (+2)
+    set_integer(ELG_GLOBAL_LOCATE_POS, pos);
+
+    // add matches to globals
+    // [-0, +0] > (+2)
+    set_lightuserdata(ELG_GLOBAL_LOCATE_MATCHES, matches);
+
+    // add n_matches to globals
+    // [-0, +0] > (+2)
+    set_integer(ELG_GLOBAL_LOCATE_NUM_MATCHES,
+                (n_matches == NULL) ? (-1) : (*n_matches));
+
+    // add context to globals
+    // [-0, +0] > (+2)
+    set_lightuserdata(ELG_GLOBAL_LOCATE_CONTEXT, ctx);
+
+    // -2 pop the locate table
+    // -1 pop the global table
+    // [-2, +0] > (+0)
+    lua_pop(L,2);
+  }
+
+  // [-0, +0]
+   void set_morphological_locate_call_params(int current_state_index,
+                                                 int pos_in_tokens,
+                                                 int pos_in_chars,
+                                                 struct parsing_info** matches,
+                                                 int n_matches,
+                                                 struct list_context* ctx,
+                                                 struct locate_parameters* p,
+                                                 unichar* jamo,
+                                                 int pos_in_jamo,
+                                                 unichar* content_buffer) {
+     // get the global table
+     // [-0, +1] > (+1)
+     lua_getglobal(L, "_G");
+
+     // get the locate table
+     // [-0, +1] > (+2)
+     lua_pushliteral(L, ELG_GLOBAL_MORPHO_LOCATE);
+     lua_gettable(L, -2);
+
+     // add the current state to globals
+     // [-0, +0] > (+2)
+     set_integer(ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX, current_state_index);
+
+     // add pos in tokens to globals
+     // [-0, +0] > (+2)
+     set_integer(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS, pos_in_tokens);
+
+     // add pos in chars to globals
+     // [-0, +0] > (+2)
+     set_integer(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS, pos_in_chars);
+
+     // add matches to globals
+     // [-0, +0] > (+2)
+     set_lightuserdata(ELG_GLOBAL_MORPHO_LOCATE_MATCHES, matches);
+
+     // add n_matches to globals
+     // [-0, +0] > (+2)
+     set_integer(ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES, n_matches);
+
+     // add ctx to globals
+     // [-0, +0] > (+2)
+     set_lightuserdata(ELG_GLOBAL_MORPHO_LOCATE_CONTEXT, ctx);
+
+     // add jamo to globals
+     // [-0, +0] > (+2)
+     set_lightuserdata(ELG_GLOBAL_MORPHO_LOCATE_JAMO, jamo);
+
+     // add pos in jamo to globals
+     // [-0, +0] > (+2)
+     set_integer(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO, pos_in_jamo);
+
+     // add content to globals
+     // [-0, +0] > (+2)
+     set_lightuserdata(ELG_GLOBAL_MORPHO_LOCATE_CONTENT, content_buffer);
+
+     // -2 pop the locate table
+     // -1 pop the global table
+     // [-2, +0] > (+0)
+     lua_pop(L,2);
+   }
 
   // UNITEX_EXPLICIT_CONVERSIONS
   operator lua_State*() const {

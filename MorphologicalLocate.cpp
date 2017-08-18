@@ -283,136 +283,25 @@ static void morphological_locate(int current_state_index,
                                     int pos_in_jamo,
                                     unichar* content_buffer) {
   // put the arguments of the locate call on the global environment
-
-  // add the current state to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(current_state_index);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX);
-
-  // add pos in tokens to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos_in_tokens);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS);
-
-  // add pos in chars to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos_in_chars);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS);
-
-  // add matches to globals
-  // [-0, +1] > (+1)
-  p->elg->push(matches);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_MATCHES);
-
-  // add n_matches to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(n_matches);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES);
-
-  // add ctx to globals
-  // [-0, +1] > (+1)
-  p->elg->push(ctx);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTEXT);
-
-  // add jamo to globals
-  // [-0, +1] > (+1)
-  p->elg->push(jamo);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_JAMO);
-
-  // add pos in jamo to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos_in_jamo);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO);
-
-  // add content to globals
-  // [-0, +1] > (+1)
-  p->elg->push(content_buffer);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTENT);
-
-  // set the arguments of the locate call
+//  p->elg->set_morphological_locate_call_params(
+//      current_state_index, pos_in_tokens, pos_in_chars, matches,
+//      n_matches, ctx, p, jamo, pos_in_jamo, content_buffer);
 
   // save the minimal unit of analysis
   LocateMode locate_mode = p->locate_mode;
 
   // call the morphological locate
-  core_morphological_locate(current_state_index,
-                            pos_in_tokens,
-                            pos_in_chars,
-                            matches,
-                            n_matches,
-                            ctx,
-                            p,
-                            jamo,
-                            pos_in_jamo,
-                            content_buffer);
-
-  // restore the arguments of the locate call
+  core_morphological_locate(
+      current_state_index, pos_in_tokens, pos_in_chars, matches,
+      n_matches, ctx, p, jamo, pos_in_jamo, content_buffer);
 
   // restore the minimal unit of analysis
   p->locate_mode = locate_mode;
 
-  // add the current state to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(current_state_index);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX);
-
-  // add pos in tokens to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos_in_tokens);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS);
-
-  // add pos in chars to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos_in_chars);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS);
-
-  // add matches to globals
-  // [-0, +1] > (+1)
-  p->elg->push(matches);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_MATCHES);
-
-  // add n_matches to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(n_matches);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES);
-
-  // add ctx to globals
-  // [-0, +1] > (+1)
-  p->elg->push(ctx);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTEXT);
-
-  // add jamo to globals
-  // [-0, +1] > (+1)
-  p->elg->push(jamo);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_JAMO);
-
-  // add pos in jamo to globals
-  // [-0, +1] > (+1)
-  p->elg->pushinteger(pos_in_jamo);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO);
-
-  // add content to globals
-  // [-0, +1] > (+1)
-  p->elg->push(content_buffer);
-  // [-1, +0] > (+0)
-  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTENT);
+//  // add the current state to globals
+//  p->elg->set_morphological_locate_call_params(
+//      current_state_index, pos_in_tokens, pos_in_chars, matches,
+//      n_matches, ctx, p, jamo, pos_in_jamo, content_buffer);
 }
 /**
  * This is the core function of the morphological mode.
