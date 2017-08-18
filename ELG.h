@@ -72,6 +72,35 @@ static const struct elg_Event elgMainEvents [] = {
 #define ELG_MAIN_EVENT_UNLOAD              1
 #define ELG_MAIN_EVENT_TOKEN               2
 /* ************************************************************************** */
+// push a function into table
+// [-0, +0, e]
+#define set_function(name, fn)                           \
+         lua_pushliteral(L, name);                        \
+         lua_pushcfunction(L, fn);                        \
+         lua_settable(L, -3);
+
+// push a integer into table
+// [-0, +0, e]
+#define set_integer(name, i)                             \
+         lua_pushliteral(L, name);                        \
+         lua_pushinteger(L, (lua_Integer) i);             \
+         lua_settable(L, -3);
+
+// push a string into table
+// [-0, +0, e]
+#define set_string(name, s)                              \
+    lua_pushliteral(L, name);                             \
+    lua_pushstring(L, s);                                 \
+    lua_settable(L, -3);
+
+// push a literal into table
+// [-0, +0, e]
+#define set_literal(name, l)                             \
+    lua_pushliteral(L, name);                             \
+    lua_pushliteral(L, l);                                \
+    lua_settable(L, -3);
+
+/* ************************************************************************** */
 class vm {
  public:
   vm(void)
@@ -162,57 +191,78 @@ class vm {
       // Constants
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set("API_VERSION", "0.1.0");
+      set_literal("API_VERSION", "0.1.0");
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_CONSTANT);
+
+//      lua_createtable(L,0,6);
+//      lua_pushliteral(L,"a");
+//      lua_pushnil(L);
+//      lua_rawset(L,-3);
+//      lua_pushliteral(L,"b");
+//      lua_pushnil(L);
+//      lua_rawset(L,-3);
+//      lua_pushliteral(L,"c");
+//      lua_pushnil(L);
+//      lua_rawset(L,-3);
+//      lua_pushliteral(L,"d");
+//      lua_pushnil(L);
+//      lua_rawset(L,-3);
+//      lua_pushliteral(L,"e");
+//      lua_pushnil(L);
+//      lua_rawset(L,-3);
+//      lua_pushliteral(L,"f");
+//      lua_pushnil(L);
+//      lua_rawset(L,-3);
+//      lua_setfield(L,LUA_ENVIRONINDEX,"i");
 
       // Functions
 
       //uToken
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set("current", elg::token::current);
-      set("previous", elg::token::previous);
-      set("next", elg::token::next);
-      set("at", elg::token::at);
-      set("pos", elg::token::pos);
-      set("offset", elg::token::offset);
-      set("meta", elg::token::meta);
-      set("negmeta", elg::token::negmeta);
-      set("is_space", elg::token::is_space);
-      set("value", elg::token::value);
-      set("reference", elg::token::reference);
-      set("bitmask", elg::token::bitmask);
-      set("tag", elg::token::tag);
+      set_function("current", elg::token::current);
+      set_function("previous", elg::token::previous);
+      set_function("next", elg::token::next);
+      set_function("at", elg::token::at);
+      set_function("pos", elg::token::pos);
+      set_function("offset", elg::token::offset);
+      set_function("meta", elg::token::meta);
+      set_function("negmeta", elg::token::negmeta);
+      set_function("is_space", elg::token::is_space);
+      set_function("value", elg::token::value);
+      set_function("reference", elg::token::reference);
+      set_function("bitmask", elg::token::bitmask);
+      set_function("tag", elg::token::tag);
 
       // uToken.kBitMask
       lua_newtable(L);
-      set("WORD",    MOT_TOKEN_BIT_MASK);
-      set("DIC",     DIC_TOKEN_BIT_MASK);
-      set("UPPER",   MAJ_TOKEN_BIT_MASK);
-      set("LOWER",   MIN_TOKEN_BIT_MASK);
-      set("FIRST",   PRE_TOKEN_BIT_MASK);
-      set("CDIC",    CDIC_TOKEN_BIT_MASK);
-      set("NOT_DIC", NOT_DIC_TOKEN_BIT_MASK);
-      set("TDIC",    TDIC_TOKEN_BIT_MASK);
+      set_integer("WORD",    MOT_TOKEN_BIT_MASK);
+      set_integer("DIC",     DIC_TOKEN_BIT_MASK);
+      set_integer("UPPER",   MAJ_TOKEN_BIT_MASK);
+      set_integer("LOWER",   MIN_TOKEN_BIT_MASK);
+      set_integer("FIRST",   PRE_TOKEN_BIT_MASK);
+      set_integer("CDIC",    CDIC_TOKEN_BIT_MASK);
+      set_integer("NOT_DIC", NOT_DIC_TOKEN_BIT_MASK);
+      set_integer("TDIC",    TDIC_TOKEN_BIT_MASK);
       lua_setfield(L, -2,  ELG_GLOBAL_TOKEN_BIT_MASK);
 
       // uToken.kMeta
       lua_newtable(L);
-      set("SHARP",   META_SHARP);
-      set("SPACE",   META_SPACE);
-      set("EPSILON", META_EPSILON);
-      set("WORD",    META_MOT);
-      set("DIC",     META_DIC);
-      set("SDIC",    META_SDIC);
-      set("CDIC",    META_CDIC);
-      set("TDIC",    META_TDIC);
-      set("UPPER",   META_MAJ);
-      set("LOWER",   META_MIN);
-      set("FIRST",   META_PRE);
-      set("NB",      META_NB);
-      set("TOKEN",   META_TOKEN);
-      set("LETTER",  META_LETTER);
+      set_integer("SHARP",   META_SHARP);
+      set_integer("SPACE",   META_SPACE);
+      set_integer("EPSILON", META_EPSILON);
+      set_integer("WORD",    META_MOT);
+      set_integer("DIC",     META_DIC);
+      set_integer("SDIC",    META_SDIC);
+      set_integer("CDIC",    META_CDIC);
+      set_integer("TDIC",    META_TDIC);
+      set_integer("UPPER",   META_MAJ);
+      set_integer("LOWER",   META_MIN);
+      set_integer("FIRST",   META_PRE);
+      set_integer("NB",      META_NB);
+      set_integer("TOKEN",   META_TOKEN);
+      set_integer("LETTER",  META_LETTER);
       lua_setfield(L, -2,  ELG_GLOBAL_TOKEN_META);
 
       // [-1, +0] > (+0)
@@ -222,28 +272,28 @@ class vm {
       //uParser
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set("setpos", elg::parser::setpos);
+      set_function("setpos", elg::parser::setpos);
       lua_setglobal(L, ELG_GLOBAL_PARSER);
 
       //uMatch
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set("begin", elg::match::begin);
-      set("fend", elg::match::end);
-      set("length", elg::match::length);
-      set("content", elg::match::content);
-      set("start_with_space", elg::match::start_with_space);
-      set("start_sentence", elg::match::start_sentence);
-      set("end_sentence", elg::match::end_sentence);
-      set("start_newline", elg::match::start_newline);
-      set("end_newline", elg::match::end_newline);
+      set_function("begin", elg::match::begin);
+      set_function("fend", elg::match::end);
+      set_function("length", elg::match::length);
+      set_function("content", elg::match::content);
+      set_function("start_with_space", elg::match::start_with_space);
+      set_function("start_sentence", elg::match::start_sentence);
+      set_function("end_sentence", elg::match::end_sentence);
+      set_function("start_newline", elg::match::start_newline);
+      set_function("end_newline", elg::match::end_newline);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_MATCH);
 
       //uString
       // [-0, +1] > (+1)
       lua_newtable(L);
-      set("format", elg::string::format);
+      set_function("format", elg::string::format);
       // [-1, +0] > (+0)
       lua_setglobal(L, ELG_GLOBAL_STRING);
 
@@ -1241,39 +1291,6 @@ class vm {
     elg_stack_dump(L);
 
     return retval;
-  }
-
-  // push a function into table
-  // [-0, +0, e]
-  void set(const char* name, lua_CFunction fn) {
-    // [-0, +1] > (+1)
-    lua_pushstring(L, name);  // lua_pushliteral
-    // [-0, +1] > (+2)
-    lua_pushcfunction(L, fn);
-    // [-2, +0] > (+0)
-    lua_settable(L, -3);
-  }
-
-  // push a string into table
-  // [-0, +0, e]
-  void set(const char* name, const char* value) {
-    // [-0, +1] > (+1)
-    lua_pushstring(L, name);
-    // [-0, +1] > (+2)
-    lua_pushstring(L, value);
-    // [-2, +0] > (+0)
-    lua_settable(L, -3);
-  }
-
-  // push a integer into table
-  // [-0, +0, e]
-  void set(const char* name, int value) {
-    // [-0, +1] > (+1)
-    lua_pushstring(L, name);
-    // [-0, +1] > (+2)
-    lua_pushinteger(L, value);
-    // [-2, +0] > (+0)
-    lua_settable(L, -3);
   }
 
   // push string into stack

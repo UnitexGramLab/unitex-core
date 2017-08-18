@@ -55,6 +55,8 @@
 /* ************************************************************************** */
 #define ELG_FUNCTION_DEFAULT_EXTENSION  ".upp"
 /* ************************************************************************** */
+#define ELG_GLOBAL_LOCATE_MODE          "uLocateMode"
+/* ************************************************************************** */
 #define ELG_GLOBAL_LOCATE_STATE         "uLocateState"
 #define ELG_GLOBAL_LOCATE_POS           "uLocatePos"
 #define ELG_GLOBAL_LOCATE_MATCHES       "uLocateMatches"
@@ -62,8 +64,16 @@
 #define ELG_GLOBAL_LOCATE_CONTEXT       "uLocateContext"
 #define ELG_GLOBAL_LOCATE_PARAMS        "uLocateParams"
 /* ************************************************************************** */
-#define ELG_GLOBAL_LOCATE_MODE          "uLocateMode"
-
+#define ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX   "uMorphoLocateStateIndex"
+#define ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS "uMorphoLocatePosInTokens"
+#define ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS  "uMorphoLocatePosInChars"
+#define ELG_GLOBAL_MORPHO_LOCATE_MATCHES       "uMorphoLocateMatches"
+#define ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES   "uMorphoLocateNumMatches"
+#define ELG_GLOBAL_MORPHO_LOCATE_CONTEXT       "uMorphoLocateContext"
+#define ELG_GLOBAL_MORPHO_LOCATE_PARAMS        "uMorphoLocateParams"
+#define ELG_GLOBAL_MORPHO_LOCATE_JAMO          "uMorphoLocateJamo"
+#define ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO   "uMorphoLocatePosInJamo"
+#define ELG_GLOBAL_MORPHO_LOCATE_CONTENT       "uMorphoLocateContent"
 /* ************************************************************************** */
 #define ELG_GLOBAL_TOKEN                "uToken"
 #define ELG_GLOBAL_TOKEN_BIT_MASK       "kBitMask"
@@ -842,10 +852,9 @@ int tag(lua_State * L) {
   // get locate params
   struct locate_parameters* p = get_locate_params(L);
 
-  locate(/*graph_depth,*/
-          p->optimized_states[p->fst2->initial_states[1]],
-          p->current_origin + p->last_tested_position + 1, NULL,
-          NULL, NULL, p);
+  locate(p->optimized_states[p->fst2->initial_states[1]],
+         p->current_origin + p->last_tested_position + 1, NULL,
+         NULL, NULL, p);
 
 //  // get locate params
 //  struct locate_parameters* p = get_locate_params(L);

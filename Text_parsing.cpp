@@ -179,20 +179,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                 p->weight=-1;
                 int n_matches=0;
 
-                // add &matches to globals
-                // [-0, +1] > (+1)
-                p->elg->push(matches);
-                // [-1, +0] > (+0)
-                p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
-
-                // add &n_matches to globals
-                // [-0, +1] > (+1)
-                p->elg->push(&n_matches);
-                // [-1, +0] > (+0)
-                p->elg->setglobal(ELG_GLOBAL_LOCATE_NUM_MATCHES);
-
-
-                locate(/*0,*/ initial_state, 0,/* 0,*/ &matches, &n_matches, NULL, p);
+                locate(initial_state, 0, &matches, &n_matches, NULL, p);
 
                 clean_allocator(p->al.pa.prv_alloc_vector_int_inside_token);
 
@@ -401,11 +388,100 @@ static inline int at_text_end(struct locate_parameters* p,int pos) {
   return ret;
 }
 
+/**
+ * This is the core function of the Locate program.
+ */
+void locate(OptimizedFst2State current_state,
+             int pos,
+             struct parsing_info** matches,
+             int *n_matches,
+             struct list_context* ctx,
+             struct locate_parameters* p) {
+  // put the arguments of the locate call on the global environment
+
+  // add the current state to globals
+  // [-0, +1] > (+1)
+  p->elg->push(current_state);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
+
+  // add pos to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_POS);
+
+  // add matches to globals
+  // [-0, +1] > (+1)
+  p->elg->push(matches);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
+
+  // add n_matches to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger((n_matches == NULL) ? (-1) : (*n_matches));
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_NUM_MATCHES);
+
+  // add pos to globals
+  // [-0, +1] > (+1)
+  p->elg->push(ctx);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
+
+  // set the arguments of the locate call
+
+  // save the minimal unit of analysis
+  LocateMode locate_mode = p->locate_mode;
+
+  // call locate
+  core_tokenized_locate(current_state,
+                        pos,
+                        matches,
+                        n_matches,
+                        ctx,
+                        p);
+
+  // restore the arguments of the locate call
+
+  // restore the minimal unit of analysis
+  p->locate_mode = locate_mode;
+
+  // add the current state to globals
+  // [-0, +1] > (+1)
+  p->elg->push(current_state);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
+
+  // add pos to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_POS);
+
+  // add matches to globals
+  // [-0, +1] > (+1)
+  p->elg->push(matches);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_MATCHES);
+
+  // add n_matches to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger((n_matches == NULL) ? (-1) : (*n_matches));
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_NUM_MATCHES);
+
+  // add pos to globals
+  // [-0, +1] > (+1)
+  p->elg->push(ctx);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
+}
 
 /**
  * This is the core function of the Locate program.
  */
-void locate(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
+void core_tokenized_locate(/*int graph_depth,*/ /* 0 means that we are in the top level graph */
 OptimizedFst2State current_state, /* current state in the grammar */
 int pos, /* position in the token buffer, relative to the current origin */
 //int depth, /* number of nested calls to 'locate' */
@@ -417,68 +493,8 @@ int *n_matches, /* number of sequences that have matched. It may be different fr
 struct list_context* ctx, /* information about the current context, if any */
 struct locate_parameters* p /* miscellaneous parameters needed by the function */
 ) {
-    // put the locate configuration on the global environment
-
-    // add &current_state to globals
-    // [-0, +1] > (+1)
-    p->elg->push(current_state);
-    // [-1, +0] > (+0)
-    p->elg->setglobal(ELG_GLOBAL_LOCATE_STATE);
-
-    // add pos to globals
-    // [-0, +1] > (+1)
-    p->elg->pushinteger(pos);
-    // [-1, +0] > (+0)
-    p->elg->setglobal(ELG_GLOBAL_LOCATE_POS);
-
-    // add pos to globals
-    // [-0, +1] > (+1)
-    p->elg->push(ctx);
-    // [-1, +0] > (+0)
-    p->elg->setglobal(ELG_GLOBAL_LOCATE_CONTEXT);
-
-
     // the minimal unit of analysis is the token
     p->locate_mode = TOKENIZED_MODE;
-
-//    int size_struct_locate_trace_info;
-//    int is_on_morphlogical;
-//
-//    OptimizedFst2State current_state;
-//
-//    int current_state_index;
-//    int pos_in_tokens;
-//    int pos_in_chars;
-//
-//    int n_matches;
-//    struct parsing_info** matches; /* current match list. Irrelevant if graph_depth==0 */
-//    struct list_context* ctx; /* information about the current context, if any */
-//    struct locate_parameters* p; /* miscellaneous parameters needed by the function */
-//    unichar* jamo;
-//    int pos_in_jamo;
-//
-//    int step_number;
-
-//    p->lti->is_on_morphlogical = 0;
-//
-//    p->lti->pos_in_tokens=pos;
-//
-//    p->lti->current_state=current_state;
-//
-//    p->lti->current_state_index=0;
-//    p->lti->pos_in_chars=0;
-//
-//    p->lti->matches=matches;
-//    p->lti->n_matches=(n_matches == NULL) ? (-1) : (*n_matches);
-//    p->lti->ctx=ctx;
-//    //p->lti->p=p;
-//
-//    p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
-//
-//    p->lti->jamo=NULL;
-//    p->lti->pos_in_jamo=0;
-//
-//    p->is_in_cancel_state = (*(p->fnc_locate_trace_step))(p->lti,p->private_param_locate_trace);
 
     if ((p->counting_step.count_cancel_trying) == 0) {
 
@@ -512,11 +528,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
     (p->counting_step.count_cancel_trying)--;
 
-    /* The following static variable holds the number of matches at
-     * one position in text. */
-    //static int n_matches_at_token_pos;
-
-
     p->explore_depth ++ ;
 
 /*
@@ -542,6 +553,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         p->explore_depth -- ;
         return;
     }
+
+    int old_weight1=p->weight;
 
     int stack_top = p->stack->stack_pointer;
 
@@ -799,7 +812,6 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
     unichar* output;
     int captured_chars;
-    int old_weight1=p->weight;
 #ifdef REGEX_FACADE_ENGINE
     int filter_number;
 #endif

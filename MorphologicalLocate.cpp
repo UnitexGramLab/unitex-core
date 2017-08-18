@@ -54,6 +54,11 @@ namespace unitex {
 static void morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
         struct list_context*, struct locate_parameters*,
         unichar*, int, unichar*);
+
+static void core_morphological_locate(/*int, */int, int, int, /*int, */struct parsing_info**, int,
+        struct list_context*, struct locate_parameters*,
+        unichar*, int, unichar*);
+
 int input_is_token(Fst2Tag tag);
 void explore_dic_in_morpho_mode(struct locate_parameters* p, int pos,
         int pos_in_token, struct parsing_info* *matches,
@@ -267,7 +272,152 @@ static void update_last_position(struct locate_parameters* p, int pos) {
 /**
  * This is the core function of the morphological mode.
  */
-static void morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
+static void morphological_locate(int current_state_index,
+                                    int pos_in_tokens,
+                                    int pos_in_chars,
+                                    struct parsing_info** matches,
+                                    int n_matches,
+                                    struct list_context* ctx,
+                                    struct locate_parameters* p,
+                                    unichar* jamo,
+                                    int pos_in_jamo,
+                                    unichar* content_buffer) {
+  // put the arguments of the locate call on the global environment
+
+  // add the current state to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(current_state_index);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX);
+
+  // add pos in tokens to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos_in_tokens);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS);
+
+  // add pos in chars to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos_in_chars);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS);
+
+  // add matches to globals
+  // [-0, +1] > (+1)
+  p->elg->push(matches);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_MATCHES);
+
+  // add n_matches to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(n_matches);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES);
+
+  // add ctx to globals
+  // [-0, +1] > (+1)
+  p->elg->push(ctx);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTEXT);
+
+  // add jamo to globals
+  // [-0, +1] > (+1)
+  p->elg->push(jamo);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_JAMO);
+
+  // add pos in jamo to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos_in_jamo);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO);
+
+  // add content to globals
+  // [-0, +1] > (+1)
+  p->elg->push(content_buffer);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTENT);
+
+  // set the arguments of the locate call
+
+  // save the minimal unit of analysis
+  LocateMode locate_mode = p->locate_mode;
+
+  // call the morphological locate
+  core_morphological_locate(current_state_index,
+                            pos_in_tokens,
+                            pos_in_chars,
+                            matches,
+                            n_matches,
+                            ctx,
+                            p,
+                            jamo,
+                            pos_in_jamo,
+                            content_buffer);
+
+  // restore the arguments of the locate call
+
+  // restore the minimal unit of analysis
+  p->locate_mode = locate_mode;
+
+  // add the current state to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(current_state_index);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_STATE_INDEX);
+
+  // add pos in tokens to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos_in_tokens);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_TOKENS);
+
+  // add pos in chars to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos_in_chars);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_CHARS);
+
+  // add matches to globals
+  // [-0, +1] > (+1)
+  p->elg->push(matches);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_MATCHES);
+
+  // add n_matches to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(n_matches);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_NUM_MATCHES);
+
+  // add ctx to globals
+  // [-0, +1] > (+1)
+  p->elg->push(ctx);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTEXT);
+
+  // add jamo to globals
+  // [-0, +1] > (+1)
+  p->elg->push(jamo);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_JAMO);
+
+  // add pos in jamo to globals
+  // [-0, +1] > (+1)
+  p->elg->pushinteger(pos_in_jamo);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_POS_IN_JAMO);
+
+  // add content to globals
+  // [-0, +1] > (+1)
+  p->elg->push(content_buffer);
+  // [-1, +0] > (+0)
+  p->elg->setglobal(ELG_GLOBAL_MORPHO_LOCATE_CONTENT);
+}
+/**
+ * This is the core function of the morphological mode.
+ */
+static void core_morphological_locate(/*int graph_depth, */ /* 0 means that we are in the top level graph */
 int current_state_index, /* current state in the grammar */
 int pos_in_tokens, /* position in the token buffer, relative to the current origin */
 int pos_in_chars, /* position in the token in characters */
@@ -283,28 +433,11 @@ unichar* jamo, int pos_in_jamo,
 unichar* content_buffer /* reusable unichar 4096 buffer for content */
 //,variable_backup_memory_reserve* backup_reserve
 ) {
+    // the minimal unit of analysis is the character
+    p->locate_mode = MORPHOLOGICAL_MODE;
 
-  // the minimal unit of analysis is the character
-  p->locate_mode = MORPHOLOGICAL_MODE;
-
-//      p->lti->pos_in_tokens=pos_in_tokens;
-//
-//      p->lti->current_state=NULL;
-//
-//      p->lti->current_state_index=current_state_index;
-//      p->lti->pos_in_chars=pos_in_chars;
-//
-//      p->lti->matches=matches;
-//      p->lti->n_matches=n_matches;
-//      p->lti->ctx=ctx;
-//
-//      p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
-//
-//      p->lti->jamo=jamo;
-//      p->lti->pos_in_jamo=pos_in_jamo;
-
-
-    int old_weight=p->weight;
+    // set the current state
+    OptimizedFst2State current_state = p->optimized_states[current_state_index];
 
     if ((p->counting_step.count_cancel_trying) == 0) {
       if (p->is_in_cancel_state != 0) {
@@ -337,17 +470,8 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
     (p->counting_step.count_cancel_trying)--;
 
-
-    OptimizedFst2State current_state = p->optimized_states[current_state_index];
-    Fst2State current_state_old = p->fst2->states[current_state_index];
-    int token;
-    Transition* t;
-    int stack_top = p->stack->stack_pointer;
-    int captured_chars;
-    /* The following static variable holds the number of matches at
-     * one position in text. */
-
     p->explore_depth ++ ;
+
     /*
     if (depth == 0) {
         // We reset if this is first call to 'locate' from a given position in the text
@@ -362,6 +486,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         p->explore_depth -- ;
         return;
     }
+
     if ((p->token_error_ctx.n_matches_at_token_pos__morphological_locate)
             > p->max_matches_at_token_pos) {
         /* If there are too much matches from the current origin in the text */
@@ -371,6 +496,27 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         p->explore_depth -- ;
         return;
     }
+
+    //      p->lti->pos_in_tokens=pos_in_tokens;
+    //
+    //      p->lti->current_state=NULL;
+    //
+    //      p->lti->current_state_index=current_state_index;
+    //      p->lti->pos_in_chars=pos_in_chars;
+    //
+    //      p->lti->matches=matches;
+    //      p->lti->n_matches=n_matches;
+    //      p->lti->ctx=ctx;
+    //
+    //      p->lti->step_number=p->counting_step.count_call-p->counting_step_count_cancel_trying_real_in_debug_or_trace;
+    //
+    //      p->lti->jamo=jamo;
+    //      p->lti->pos_in_jamo=pos_in_jamo;
+
+    int old_weight=p->weight;
+
+    int stack_top = p->stack->stack_pointer;
+
     if (current_state->control & 1) {
         /* If we are in a final state... */
         /* In we are in the top level graph, it's an error, since we are not supposed
@@ -410,22 +556,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         }
     }
 
-    /* If we have reached the end of the token buffer, we indicate it by setting
-     * the current tokens to -1 */
-    if (pos_in_tokens + p->current_origin >= p->buffer_size) {
-        token = -1;
-    } else {
-        token = p->buffer[pos_in_tokens + p->current_origin];
-    }
-    unichar* current_token;
-    int current_token_length = 0;
-    if (token == -1 || token == p->STOP) {
-        current_token = NULL;
-        jamo = NULL;
-    } else {
-        current_token = p->tokens->value[p->buffer[p->current_origin + pos_in_tokens]];
-        current_token_length = u_strlen(current_token);
-    }
+    Transition* t;
 
     /**
      * SUBGRAPHS
@@ -565,7 +696,24 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
             }
     } /* End of processing subgraphs */
 
-
+    int token;
+    int captured_chars;
+    /* If we have reached the end of the token buffer, we indicate it by setting
+     * the current tokens to -1 */
+    if (pos_in_tokens + p->current_origin >= p->buffer_size) {
+        token = -1;
+    } else {
+        token = p->buffer[pos_in_tokens + p->current_origin];
+    }
+    unichar* current_token;
+    int current_token_length = 0;
+    if (token == -1 || token == p->STOP) {
+        current_token = NULL;
+        jamo = NULL;
+    } else {
+        current_token = p->tokens->value[p->buffer[p->current_origin + pos_in_tokens]];
+        current_token_length = u_strlen(current_token);
+    }
 
     /* This variable will be used to store the results provided by <DIC>. It
      * is useful to cache the exploration of the morphological dictionaries,
@@ -1104,7 +1252,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
     /**
      * TOKENS
      */
-    Transition* trans = current_state_old->transitions;
+    Transition* trans = p->fst2->states[current_state_index]->transitions;
     while (trans != NULL) {
         if (trans->tag_number < 0) {
             /* We don't take subgraph transitions into account */
