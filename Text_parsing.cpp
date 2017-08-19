@@ -132,12 +132,11 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             }
         }
 
-        current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_SLIDE, &pos, p->current_origin);
+        current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_SLIDE, &pos, &p->current_origin);
         //u_printf(">>>[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 
-        if (!(current_token == p->SPACE && p->space_policy
-                == DONT_START_WITH_SPACE) && !get_value(p->failfast,
-                current_token)) {
+        if (!(current_token == p->SPACE && p->space_policy == DONT_START_WITH_SPACE) &&
+            !get_value(p->failfast,current_token)) {
 
             int cache_found = 0;
             if (p->useLocateCache) {
@@ -744,7 +743,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         if ((pos2 + p->current_origin) >= p->buffer_size) {
             token2 = -1;
         } else {
-            token2 = p->elg->call_token_event(p, ELG_MAIN_EVENT_TOKEN, &pos2, pos2 + p->current_origin);
+            token2 = p->elg->call_token_event(p, ELG_MAIN_EVENT_TOKEN, &pos2, &p->current_origin);
         }
     }
 
@@ -1844,7 +1843,7 @@ static void add_match(int end, unichar* output, struct locate_parameters* p, Abs
     if (end > p->last_matched_position) {
         p->last_matched_position = end;
     }
-    int start = p->current_origin + p->left_ctx_shift;
+    int start =  p->current_origin + p->left_ctx_shift;
     unichar* z=output;
     if (p->debug && p->left_ctx_base!=0) {
         /* In debug mode, we always use the whole output. It will be

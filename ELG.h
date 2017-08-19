@@ -573,17 +573,17 @@ class vm {
     elg_stack_dump(L);
   }
 
-  int call_token_event(struct locate_parameters* p, int event_number, int* pos, int index) {
+  int call_token_event(struct locate_parameters* p, int event_number, int* pos, int* current_origin) {
     // only if the main extension was loaded and a token_event is available
     if (UNITEX_LIKELY(!main_env_loaded_[event_number])) {
-      return p->buffer[index];
+      return p->buffer[*pos + *current_origin];
     }
 
     // load the event
     load_main_event(event_number);
 
     // push index integer
-    lua_pushinteger(L, index);
+    lua_pushinteger(L, *pos + *current_origin);
     elg_stack_dump(L);
 
     // perform the call
@@ -601,18 +601,15 @@ class vm {
     // we have a valid integer
     int new_index = lua_tointeger(L, -1);
 
-    // check if the new index is in the bounds
-    if (UNITEX_UNLIKELY((new_index < 0 || new_index >= p->buffer_size)
-        || (p->buffer[new_index] < 0 || p->buffer[new_index] >= p->tokens->size))) {
-      // TODO(martinec) throw a warning from here
-      // use the original index as fallback
-      new_index = index;
-    }
-
-    if(new_index != index) {
-      p->current_origin = new_index;
-      if(new_index + 1 < p->buffer_size && p->buffer[new_index + 1] == p->SPACE) new_index++;
-      if(new_index + 1 < p->buffer_size ) new_index++;
+    // if the index was modified
+    if(new_index != *pos + *current_origin) {
+      // check if the new index is in the bounds
+      if (UNITEX_LIKELY((new_index >= 0 && new_index < p->buffer_size)
+          && (p->buffer[new_index] >= 0 && p->buffer[new_index] < p->tokens->size))) {
+        *pos = new_index;
+      } else {
+        // TODO(martinec) throw a warning from here
+      }
     }
 
     // -3: pop the returned value
@@ -621,7 +618,7 @@ class vm {
     lua_pop(L, 3);
     elg_stack_dump(L);
 
-    return p->buffer[new_index];
+    return p->buffer[*pos + *current_origin];
   }
 
   // [-0, +0] > (+1)
