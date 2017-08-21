@@ -487,15 +487,15 @@ for (;;) {
             }
             break;
           case ',':
+          case ')':
             // 10.09.16
             // Fix to allow empty arguments f(a,,b)
-            if(is_empty(parameter_stack)) {
+            if(s[i1]==',' && is_empty(parameter_stack)) {
               is_null_param = true;
             }
             // 03.07.17 -> 08.07.17
             // fix no break at the end case DO NOT UNCOMMENT THIS
             // break;
-          case ')':
             // case of a defined variable
             if(!is_empty(parameter_stack)) {
               // TODO(martinec) handle nil(pushnil), number (pushnumber),
