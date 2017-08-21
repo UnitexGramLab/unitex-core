@@ -98,6 +98,21 @@ if (n==-1) {
 return &(v->variables[n]);
 }
 
+/**
+ * Returns a pointer on the range of the variable whose name is 'name',
+ * or NULL if the variable in not in the given variable set.
+ * value_index is set to the index value associated to the given key or -1
+ * if the variable in not in the given variable set.
+ */
+struct transduction_variable* get_transduction_variable(
+    Variables* v, const unichar* name, int* value_index) {
+  *value_index = get_value_index(name, v->variable_index, DONT_INSERT);
+  if (*value_index == -1) {
+    return NULL;
+  }
+  return &(v->variables[*value_index]);
+}
+
 
 /*
  * the function below are replaced by macro for performance

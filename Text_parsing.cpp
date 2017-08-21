@@ -119,7 +119,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
     int pos = 0;
 
-    while (p->current_origin + pos < p->buffer_size &&
+    while (p->current_origin < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
             p->number_of_matches != p->search_limit) {
 
@@ -133,9 +133,14 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
             }
         }
 
+        // we always set pos as 0 from here to force call_token_event to update
+        // the current_origin if the index changes
         pos = 0;
+
+        // the current token is equal to p->buffer[pos + current_origin] or equal
+        // to p->buffer[index] when there is a function implementing call_token_event
+        // that returns a valid index position
         current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_SLIDE, &pos, &p->current_origin);
-        //u_printf(">>>[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 
         if (!(current_token == p->SPACE && p->space_policy == DONT_START_WITH_SPACE) &&
             !get_value(p->failfast,current_token)) {
@@ -1253,51 +1258,52 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         meta_list = meta_list->next;
     }
 
-/**
- * OUTPUT VARIABLE STARTS
- */
-struct opt_variable* output_variable_list = current_state->output_variable_starts;
-Ustring* recycle_Ustring=NULL;
-while (output_variable_list != NULL) {
+    /**
+     * OUTPUT VARIABLE STARTS
+     */
+    struct opt_variable* output_variable_list = current_state->output_variable_starts;
+    Ustring* recycle_Ustring=NULL;
+    while (output_variable_list != NULL) {
 
-    if (recycle_Ustring==NULL) {
-        recycle_Ustring=new_Ustring();
+        if (recycle_Ustring==NULL) {
+            recycle_Ustring=new_Ustring();
+        }
+        else {
+            empty(recycle_Ustring);
+        }
+        swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
+
+        set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+        locate(/*graph_depth,*/
+                p->optimized_states[output_variable_list->transition->state_number],
+                pos, matches, n_matches, ctx, p);
+        p->weight=old_weight1;
+        unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+
+        swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
+
+        p->stack->stack_pointer = stack_top;
+        output_variable_list=output_variable_list->next;
     }
-    else {
-        empty(recycle_Ustring);
+    if (recycle_Ustring!=NULL) {
+        free_Ustring(recycle_Ustring);
+        recycle_Ustring=NULL;
     }
-    swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
 
-    set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-    locate(/*graph_depth,*/
-            p->optimized_states[output_variable_list->transition->state_number],
-            pos, matches, n_matches, ctx, p);
-    p->weight=old_weight1;
-    unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-
-    swap_output_variable_content(p->output_variables, output_variable_list->variable_number, recycle_Ustring);
-
-    p->stack->stack_pointer = stack_top;
-    output_variable_list=output_variable_list->next;
-}
-if (recycle_Ustring!=NULL) {
-    free_Ustring(recycle_Ustring);
-    recycle_Ustring=NULL;
-}
-/**
- * OUTPUT VARIABLE ENDS
- */
-output_variable_list = current_state->output_variable_ends;
-while (output_variable_list != NULL) {
-    unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-    locate(/*graph_depth,*/
-            p->optimized_states[output_variable_list->transition->state_number],
-            pos, matches, n_matches, ctx, p);
-    p->weight=old_weight1;
-    set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
-    p->stack->stack_pointer = stack_top;
-    output_variable_list=output_variable_list->next;
-}
+    /**
+     * OUTPUT VARIABLE ENDS
+     */
+    output_variable_list = current_state->output_variable_ends;
+    while (output_variable_list != NULL) {
+        unset_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+        locate(/*graph_depth,*/
+                p->optimized_states[output_variable_list->transition->state_number],
+                pos, matches, n_matches, ctx, p);
+        p->weight=old_weight1;
+        set_output_variable_pending(p->output_variables,output_variable_list->variable_number);
+        p->stack->stack_pointer = stack_top;
+        output_variable_list=output_variable_list->next;
+    }
 
     /**
      * VARIABLE STARTS

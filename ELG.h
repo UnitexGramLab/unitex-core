@@ -53,6 +53,24 @@ static const char* UNITEX_SCRIPT_PATH =
 // LUA_GLOBALSINDEX   : thread environment
 // LUA_ENVIRONINDEX   : function environment
 /* ************************************************************************** */
+enum variable_pass_type_t {
+  VARIABLE_PASS_BY_VALUE,
+  VARIABLE_PASS_BY_REFERENCE
+};
+
+enum param_type_t {
+  PARAM_TNONE           = -1,
+  PARAM_TNIL            =  0,
+  PARAM_TBOOLEAN        =  1,
+  PARAM_TLIGHTUSERDATA  =  2,
+  PARAM_TNUMBER         =  3,
+  PARAM_TSTRING         =  4,
+  PARAM_TTABLE          =  5,
+  PARAM_TFUNCTION       =  6,
+  PARAM_TUSERDATA       =  7,
+  PARAM_TTHREAD         =  8
+};
+/* ************************************************************************** */
 typedef struct elg_Event {
   const char* name;
   int nargs;

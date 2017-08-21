@@ -184,6 +184,7 @@ if (s==NULL) {
 
 //u_printf("######/[%S]\n",s);
 unichar variable_name[MAX_TRANSDUCTION_VAR_LENGTH]   = {0};
+int variable_index = -1;
 
 // function name
 unichar function_name[FILENAME_MAX]  = {0};
@@ -302,17 +303,19 @@ for (;;) {
         p->elg->load_extension(char_extension_name, char_function_name);
 
         variable_name[0] = '\0';
-        int16_t variable_lenght = 0;
+        variable_index   = -1;
+        int variable_lenght = 0;
 
         // reset parameter_stack
-        int16_t script_params_count = 0;
+        int script_params_count = 0;
         empty(parameter_stack);
         char_parameter_stack[0] = '\0';
 
-        bool   is_null_param  = false;
+        bool is_null_param = false;
+        param_type_t param_type = PARAM_TSTRING;
+        variable_pass_type_t variable_pass_type = VARIABLE_PASS_BY_VALUE;
 
         struct transduction_variable* v=NULL;
-
 
         // Save function params
         read_script_param:
@@ -324,15 +327,20 @@ for (;;) {
 //        }
 
         char_to_push_count=0;
-        while ((s[i1+char_to_push_count]!='\0') && (s[i1+char_to_push_count]!='$')
+        while ((s[i1+char_to_push_count]!='\0') &&
+               (s[i1+char_to_push_count]!='$')  && (s[i1+char_to_push_count]!='&')
             && (s[i1+char_to_push_count]!=')')  && (s[i1+char_to_push_count]!=',')) {
             char_to_push_count++;
         }
 
         switch(s[i1]) {
+          // 21.07.17 add varrefs
+          case '&':
           case '$':
+            variable_pass_type = s[i1] == '&' ? VARIABLE_PASS_BY_REFERENCE : VARIABLE_PASS_BY_VALUE;
             ++i1;
             switch(s[i1]) {
+              case '&':
               case '$':
                 push_array(parameter_stack,&s[i1],1);
               break;
@@ -346,33 +354,39 @@ for (;;) {
                    fatal_error("Too long variable name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
                 }
                 if(s[i1] != '}') {
-                  fatal_error("Scripting variable %S without closing braces calling @%S\n",variable_name,extension_name);
+                  fatal_error("Scripting variable %S without closing braces calling @%S\n",variable_name,function_name);
                 }
                 ++i1;
                 variable_name[variable_lenght]='\0';
 
                 /* ************************************************************************** */
-                /* Case of a script variable like ${a} that can be either a normal one or an output one */
-                v=get_transduction_variable(p->input_variables,variable_name);
+                /* Case of a script variable like ${a} or &{a} that can be either a
+                 * normal one or an output one, passed by value ($) or reference (&) */
+                v=get_transduction_variable(p->input_variables, variable_name, &variable_index);
+                // the variable is not an input one
                 if (v==NULL) {
                   /* Not a normal one ? Maybe an output one */
-                  const Ustring* output=get_output_variable(p->output_variables,variable_name);
-                  // output variable doesn't exist
+                  const Ustring* output=get_output_variable(p->output_variables, variable_name, &variable_index);
+                  // neither input nor output variable exists
                   if (output==NULL) {
-//                    switch (p->variable_error_policy) {
-//                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",variable_name); break;
-//                    case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-//                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
-//                    }
-                    // 01.08.15 : to handle nil params
-                    // if the referenced variable is part of other arguments
-                    // e.g func(a,b${c},d)
-                    if(!is_empty(parameter_stack)) {
-                      push_output_string(parameter_stack,"");
-                      is_null_param = false;
+                      if (variable_pass_type == VARIABLE_PASS_BY_VALUE) {
+  //                    switch (p->variable_error_policy) {
+  //                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",variable_name); break;
+  //                    case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
+  //                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+  //                    }
+                      // 01.08.15 : to handle nil params
+                      // if the referenced variable is part of other arguments
+                      // e.g func(a,b${c},d)
+                      if(!is_empty(parameter_stack)) {
+                        push_output_string(parameter_stack,"");
+                        is_null_param = false;
+                      } else {
+                        // isolated parameter treat as nil
+                        is_null_param = true;
+                      }
                     } else {
-                      // isolated parameter treat as nil
-                      is_null_param = true;
+                      fatal_error("Variable error calling @%S with &{%S}: there is not possible to get a reference of an undefined variable\n", function_name, variable_name);
                     }
                   } else {
                     // 10.09.16 : fix a bug when dealing with a null parameter
@@ -386,7 +400,7 @@ for (;;) {
                       is_null_param = true;
                     }
                   }
-
+                // the variable is an input one
                 } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
                   // 01.08.15 : to handle nil params
 //                   switch (p->variable_error_policy) {
@@ -479,7 +493,7 @@ for (;;) {
               is_null_param = true;
             }
             // 03.07.17 -> 08.07.17
-            // fix no breack at the end case BAD BAD BAD BAD BAD BAD BAD
+            // fix no break at the end case DO NOT UNCOMMENT THIS
             // break;
           case ')':
             // case of a defined variable
