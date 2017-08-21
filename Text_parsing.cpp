@@ -119,9 +119,10 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
     int pos = 0;
 
-    while (p->current_origin  < p->buffer_size &&
+    while (p->current_origin + pos < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
             p->number_of_matches != p->search_limit) {
+
         if (unite != 0) {
             n_read = p->current_origin % unite;
             if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY)) {
@@ -131,7 +132,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
                         / (float) text_size);
             }
         }
-        //pos = 0;
+
+        pos = 0;
         current_token = p->elg->call_token_event(p, ELG_MAIN_EVENT_SLIDE, &pos, &p->current_origin);
         //u_printf(">>>[%d] [%d] [%S]\n", current_token, p->current_origin, p->tokens->value[current_token]);
 

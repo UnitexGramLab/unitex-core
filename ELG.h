@@ -607,13 +607,13 @@ class vm {
       if (UNITEX_LIKELY((index >= 0 && index < p->buffer_size)
           && (p->buffer[index] >= 0 && p->buffer[index] < p->tokens->size))) {
 
-        // we used the next non-space token from the index
+        // from a non-space token we always use the next one
         index += (p->buffer[index] != p->SPACE && index + 1 < p->buffer_size) ?
                  1 : 0;
 
-        // we require that the token at the index position is not a space
-        int shift = (p->buffer[index] == p->SPACE && index + 1 < p->buffer_size) ?
-                     1 : 0;
+        // now we require that the token at the index position is not a space
+        index += (p->buffer[index] == p->SPACE && index + 1 < p->buffer_size) ?
+                 1 : 0;
 
         // index is equal to pos + current_origin
         if(*pos == 0) {
@@ -623,10 +623,10 @@ class vm {
           // we modified the current_origin to be equal to the index of
           // the last character in the skipped range
           *current_origin = index;
-          *pos = shift;
+          *pos = 0;
         } else {
           // we update the position relative to the current origin
-          *pos = index - *current_origin + shift;
+          *pos = index - *current_origin + 0;
         }
       } else {
         // TODO(martinec) throw a warning "index out of the bounds" from here
