@@ -344,6 +344,10 @@ class vm {
       set_function("setpos", elg::parser::setpos);
       lua_setglobal(L, ELG_GLOBAL_PARSER);
 
+      //uVariable
+      lua_newtable(L);
+      lua_setglobal(L, ELG_GLOBAL_VARIABLE);
+
       //uMatch
       // [-0, +1] > (+1)
       lua_newtable(L);

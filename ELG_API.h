@@ -89,6 +89,8 @@
 /* ************************************************************************** */
 #define ELG_GLOBAL_PARSER                      "uParser"
 /* ************************************************************************** */
+#define ELG_GLOBAL_VARIABLE                    "uVariable"
+/* ************************************************************************** */
 #define ELG_GLOBAL_MATCH                       "uMatch"
 //#define ELG_GLOBAL_TEXT                        "uText"
 #define ELG_GLOBAL_CONSTANT                    "uConstant"
