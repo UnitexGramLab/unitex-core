@@ -119,7 +119,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
     int pos = 0;
 
-    while (p->current_origin + pos < p->buffer_size &&
+    while (p->current_origin  < p->buffer_size &&
             p->buffer[p->current_origin] < p->tokens->size &&
             p->number_of_matches != p->search_limit) {
         if (unite != 0) {
