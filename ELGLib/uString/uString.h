@@ -60,8 +60,24 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   return 0;
 }
 /* ************************************************************************** */
+/* static */ int print(lua_State* L) {
+  // check if there is at least an argument on the stack
+  if(lua_gettop(L) >= 1) {
+    // returns the light userdata pointer. Otherwise, returns NULL
+    Ustring* output= (Ustring*) lua_touserdata(L, 1);
+    const char* second = lua_tostring(L, 2);
+    u_strcat(output,second);
+    u_printf("%S%s\n",output->str,second);
+    // the number of results is equal to 1
+    return 0;
+  }
+  // the number of results is equal to 0
+  return 0;
+}
+/* ************************************************************************** */
 /* static */ const struct luaL_Reg lua_lib[] = {
   {"format", elg::ustring::format},
+  {"print", elg::ustring::print},
   {NULL, NULL}
 };
 /* ************************************************************************** */

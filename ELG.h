@@ -1436,7 +1436,7 @@ class vm {
     if (p) {
       lua_pushlightuserdata(L, p);
     } else {
-      push();
+      lua_pushnil(L);
     }
   }
 

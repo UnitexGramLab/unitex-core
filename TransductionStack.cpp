@@ -197,6 +197,9 @@ char char_extension_name[FILENAME_MAX] = {0};
 // a number parameter
 int tnumber_parameter = -1;
 
+// a lightuserdata parameter
+void* tlightuserdata  = NULL;
+
 // a string parameter
 char tstring_parameter_stack[4096*6] = {0};
 
@@ -421,12 +424,13 @@ for (;;) {
                           param_type = PARAM_TNIL;
                         }
                       }
-                    // variable will be passed by reference
+                    // the variable is an output one and will be passed by reference
                     } else {
                       if(!is_empty(parameter_stack)) {
                         fatal_error("Error calling @%S, parameter %d, variable &{%S}: attempt to concatenate a string to a variable reference\n", function_name, script_params_count+1, variable_name);
                       } else {
-                        param_type = PARAM_TNUMBER;
+                        param_type = PARAM_TLIGHTUSERDATA;
+                        tlightuserdata    = (void*) output;
                         tnumber_parameter = variable_index;
                       }
                     }
@@ -553,8 +557,12 @@ for (;;) {
               case PARAM_TBOOLEAN:
                 break;
               case PARAM_TLIGHTUSERDATA:
+                // push a light user data
+                p->elg->push(tlightuserdata);
+                ++script_params_count;
                 break;
               case PARAM_TNUMBER:
+                // push a number
                 p->elg->pushinteger(tnumber_parameter);
                 ++script_params_count;
                 break;

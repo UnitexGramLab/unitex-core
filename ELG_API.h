@@ -46,6 +46,7 @@
 #include "Fst2.h"
 #include "Text_parsing.h"
 #include "Tokenization.h"
+#include "Ustring.h"
 /* ************************************************************************** */
 #define ELG_ENVIRONMENT_PREFIX                 "elg"
 /* ************************************************************************** */
