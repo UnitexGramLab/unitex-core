@@ -8035,13 +8035,7 @@ return is_modified;
 
 #else
 
-void u_toupper (unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-    *s=u_toupper(*s);
-    s++;
-}
-}
+
 
 int u_toupper_ismodified (unichar* s) {
 if (s==NULL) return 0;

@@ -38,6 +38,7 @@
 /* ************************************************************************** */
 #include "base/unicode/table.h"
 #include "base/unicode/test.h"
+#include "base/unicode/case.h"
 #include "base/unicode/utf8.h"
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_UNICODE_UNICODE_H_                           // NOLINT

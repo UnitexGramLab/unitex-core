@@ -404,47 +404,18 @@ int u_parse_int(const unichar * str, const unichar ** next = NULL);
 
 
 // Sebastian Nagel's functions
-void u_toupper (unichar* s);
 void u_tolower (unichar* s);
 void u_deaccentuate(unichar* s);
 int u_toupper_ismodified (unichar* s);
 int u_tolower_ismodified (unichar* s);
 int u_deaccentuate_ismodified(unichar* s);
 #if !UNITEX_USE(BASE_UNICODE)
+void u_toupper (unichar* s);
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
 unichar u_deaccentuate(unichar);
 #else
-UNITEX_FORCE_INLINE
-unichar u_toupper(unichar c) {
-  const u_info_t* u_info = u_info(c);
-
-  int index = u_info->variant[U_CASE_UPPER];
-
-  if (UNITEX_LIKELY(!u_has_flag_upper_expands(u_info))) {
-    return c + index;
-  }
-
-  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];
-}
-
-UNITEX_FORCE_INLINE
-unichar u_tolower(unichar c) {
-  const u_info_t* u_info = u_info(c);
-
-  int index = u_info->variant[U_CASE_LOWER];
-
-  if (UNITEX_LIKELY(!u_has_flag_upper_expands(u_info))) {
-    return c + index;
-  }
-
-  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];
-}
-UNITEX_FORCE_INLINE
-unichar u_deaccentuate(unichar c) {
-  unichar unnacent = u_info(c)->variant[U_CHAR_UNACCENT];
-  return UNITEX_UNLIKELY(unnacent>0) ? unnacent : c;
-}
+// @see base/unicode/case.h
 #endif
 // end of Sebastian Nagel's functions
 

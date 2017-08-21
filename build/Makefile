@@ -809,7 +809,7 @@ endif
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o \
-                     table.o utf8.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o \
+                     table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Error.o UnitexGetOpt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o \
                      Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o Fst2.o \
                      Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o \
                      Ustring.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o \
@@ -820,7 +820,7 @@ BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Copyright.o
                      $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CASSYS      = Cassys
-CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o UnitexGetOpt.o table.o utf8.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o \
+CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o UnitexGetOpt.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o Af_stdio.o ActivityLogger.o AbstractAllocator.o ProgramInvoker.o \
             FIFO.o Concord.o Locate.o Concordance.o Snt.o Text_tokens.o File.o Buffer.o LocateMatches.o LocatePattern.o LocateTrace.o Thai.o NewLineShifts.o \
             String_hash.o SortTxt.o StringParsing.o DELA.o List_int.o Alphabet.o BitMasks.o Tokenization.o LemmaTree.o PatternTree.o \
             BitArray.o List_pointer.o CompoundWordTree.o AbstractDelaLoad.o Korean.o UserCancelling.o Stack_unichar.o AbstractFst2Load.o \
@@ -833,12 +833,12 @@ CASSYS_OBJS = Main_Cassys.o $(CASSYS_FILE_OBJS) IOBuffer.o Copyright.o Error.o U
 
 
 CHECKDIC      = CheckDic
-CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o table.o utf8.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o \
+CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o File.o DELA.o Alphabet.o String_hash.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o AbstractDelaLoad.o CompressedDic.o \
                 LoadInf.o Ustring.o VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 COMPRESS      = Compress
-COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o table.o utf8.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
+COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o \
                 AbstractAllocator.o DELA.o DictionaryTree.o Alphabet.o \
                 String_hash.o AutomatonDictionary2Bin.o File.o List_int.o \
                 List_ustring.o Error.o StringParsing.o UnitexGetOpt.o ProgramInvoker.o \
@@ -846,7 +846,7 @@ COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Copyright.o Af_stdio.o Act
                 VirtualFiles.o Persistence.o UnitexRevisionInfo.o $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORD      = Concord
-CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o table.o utf8.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Text_tokens.o String_hash.o \
+CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o ActivityLogger.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Text_tokens.o String_hash.o \
                 List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o \
                 Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o \
                 TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o \
@@ -862,7 +862,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Copyright.o Af_stdio.o Activi
                 $(TRE_LINK_OBJS) $(ADDITIONAL_OBJECT) $(SYSLIBMAPPED) $(SYSLIBSYNCTOOL) $(SYSLIBDIRIO)
 
 CONCORDIFF      = ConcorDiff
-CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o Concord.o Af_stdio.o ActivityLogger.o table.o utf8.o table.o utf8.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o \
+CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Copyright.o Diff.o Concord.o Af_stdio.o ActivityLogger.o table.o utf8.o case.o Unicode.o safe_bool.o chrono.o severity_level.o MsgLogger.o UnitexRevisionInfo.o safe_bool.o chrono.o severity_level.o MsgLogger.o AbstractAllocator.o Text_tokens.o String_hash.o List_int.o \
                 Alphabet.o LocateMatches.o Match.o Concordance.o File.o \
                 Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o LocateTrace.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o \
                 CompoundWordTree.o MorphologicalFilters.o \
@@ -2073,6 +2073,9 @@ table.o: ../base/unicode/table.cpp
 
 utf8.o: ../base/unicode/utf8.cpp
 	$(CC) -c ../base/unicode/utf8.cpp $(OPTIONS)
+	
+case.o: ../base/unicode/case.cpp
+	$(CC) -c ../base/unicode/case.cpp $(OPTIONS)	
 
 severity_level.o: ../base/unilog/severity_level.cpp
 	$(CC) -c ../base/unilog/severity_level.cpp $(OPTIONS)

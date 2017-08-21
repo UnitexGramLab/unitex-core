@@ -113,9 +113,6 @@ U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
                             ((u_info->bidi & bidi) != 0),
                             bidi)
 /* *********************************************************************************************************************** */
-#define u_is_digit(c)               u_test_flag(c,U_FLAG_DIGIT)  // #
-#define u_is_letter(c)              u_test_flag(c,U_FLAG_LETTER) // #
-/* *********************************************************************************************************************** */
 #define u_has_flag_letter(c)                                           u_test_flag(c,U_FLAG_LETTER)
 #define u_has_flag_uppercase(c)                                        u_test_flag(c,U_FLAG_UPPERCASE)
 #define u_has_flag_lowercase(c)                                        u_test_flag(c,U_FLAG_LOWERCASE)
@@ -133,6 +130,9 @@ U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
 #define u_has_flag_lower_expands(c)                                    u_test_flag(c,U_FLAG_LOWER_EXPANDS)
 #define u_has_flag_title_expands(c)                                    u_test_flag(c,U_FLAG_TITLE_EXPANDS)
 #define u_has_flag_fold_expands(c)                                     u_test_flag(c,U_FLAG_FOLD_EXPANDS)
+/* *********************************************************************************************************************** */
+#define u_is_digit(c)                                                  u_has_flag_digit(c)  // #
+#define u_is_letter(c)                                                 u_has_flag_letter(c) // #
 /* *********************************************************************************************************************** */
 #define u_in_category_invalid(c)                                       u_test_category(c,U_CATEGORY_INVALID)
 #define u_in_category_letter_uppercase(c)                              u_test_category(c,U_CATEGORY_LETTER_UPPERCASE)
