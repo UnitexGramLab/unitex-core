@@ -599,16 +599,37 @@ class vm {
     }
 
     // we have a valid integer
-    int new_index = lua_tointeger(L, -1);
+    int index = lua_tointeger(L, -1);
 
     // if the index was modified
-    if(new_index != *pos + *current_origin) {
+    if(index != *pos + *current_origin) {
       // check if the new index is in the bounds
-      if (UNITEX_LIKELY((new_index >= 0 && new_index < p->buffer_size)
-          && (p->buffer[new_index] >= 0 && p->buffer[new_index] < p->tokens->size))) {
-        *pos = new_index;
+      if (UNITEX_LIKELY((index >= 0 && index < p->buffer_size)
+          && (p->buffer[index] >= 0 && p->buffer[index] < p->tokens->size))) {
+
+        // we used the next non-space token from the index
+        index += (p->buffer[index] != p->SPACE && index + 1 < p->buffer_size) ?
+                 1 : 0;
+
+        // we require that the token at the index position is not a space
+        int shift = (p->buffer[index] == p->SPACE && index + 1 < p->buffer_size) ?
+                     1 : 0;
+
+        // index is equal to pos + current_origin
+        if(*pos == 0) {
+          // if pos is equal to 0, the curren_origin is equal to the
+          // first skipped character and there is not possible to have
+          // any match starting before the skipped range, in this case,
+          // we modified the current_origin to be equal to the index of
+          // the last character in the skipped range
+          *current_origin = index;
+          *pos = shift;
+        } else {
+          // we update the position relative to the current origin
+          *pos = index - *current_origin + shift;
+        }
       } else {
-        // TODO(martinec) throw a warning from here
+        // TODO(martinec) throw a warning "index out of the bounds" from here
       }
     }
 
