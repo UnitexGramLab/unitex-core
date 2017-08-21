@@ -35,6 +35,7 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 #include "ELG_API.h"
+#include "UnitexString.h"
 /* ************************************************************************** */
 #define EXTENSION_NAME_USTRING     "ustring"
 #define EXTENSION_VERSION_USTRING  "0.1.0"
@@ -65,6 +66,9 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   if(lua_gettop(L) >= 1) {
     // returns the light userdata pointer. Otherwise, returns NULL
     Ustring* output= (Ustring*) lua_touserdata(L, 1);
+    UnitexString X = "Hello World";
+    X.toupper();
+    u_printf("%S\n",X.c_unichar());
     const char* second = lua_tostring(L, 2);
     if(output->str && (*output->str) != U_NULL ) {
       u_printf("%S%s\n",output->str,second);

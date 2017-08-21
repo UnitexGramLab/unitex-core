@@ -91,6 +91,7 @@ int u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NU
 
 
 int u_strnicmp(const unichar* s1, const unichar* s2, size_t n);
+
 int u_stricmp(const unichar* s1,const unichar* s2);
 /* ************************************************************************** */
 namespace {   // namespace unitex::{unnamed}, enforce one-definition-rule

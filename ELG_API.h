@@ -102,6 +102,8 @@
 #define ELG_ENVIRONMENT_CALLED                 "uCalled"
 #define ELG_ENVIRONMENT_VALUES                 "uValues"
 /* ************************************************************************** */
+//#define lua_castudata(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
