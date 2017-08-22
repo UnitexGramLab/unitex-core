@@ -1156,7 +1156,7 @@ class UnitexString {
    * @return *this
    */
   UnitexString& totitle() {
-    unitex::u_totitle(data_->str);
+    unitex::u_totitle_first(data_->str);
     return *this;
   }
 

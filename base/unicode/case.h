@@ -47,6 +47,26 @@ namespace {   // namespace unitex::{unnamed}, enforce one-definition-rule
 /* ************************************************************************** */
 // all U__* macros must be undefined at the end of this file
 /* ************************************************************************** */
+#define U__DECLARE__FUNCTION__CASE__ITERATE__FIRST__(_name, _true, _false)  \
+UNITEX_FORCE_INLINE                                                         \
+void u_to##_name##_first(unichar* s) UNITEX_PARAMS_NON_NULL;                \
+                                                                            \
+UNITEX_FORCE_INLINE                                                         \
+void u_to##_name##_first(unichar* s) {                                      \
+  register unichar* it = s;                                                 \
+  const u_info_t* info =  u_info(*it);                                      \
+  if (*it != '\0') { _true; ++it; } else { return; }                        \
+  while (*it != '\0') {                                                     \
+    info = u_info(*(it-1));                                                 \
+    if (u_has_flag_space(info)) {                                           \
+      _true;                                                                \
+    } else {                                                                \
+      _false;                                                               \
+    }                                                                       \
+    ++it;                                                                   \
+  }                                                                         \
+}
+/* ************************************************************************** */
 #define U__DECLARE__FUNCTION__CASE__ITERATE__ALL__(_name)                   \
 UNITEX_FORCE_INLINE                                                         \
 void _name(unichar* s) UNITEX_PARAMS_NON_NULL;                              \
@@ -77,10 +97,22 @@ void _name##_n(unichar* s, size_t n) {                                      \
   }                                                                         \
 }
 /* ************************************************************************** */
-#define U__DECLARE__FUNCTION__CASE__(_name,_u_variant_t)                    \
+#define U__DECLARE__FUNCTION__CASE__(_name, _u_variant_t)                   \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 unichar u_to##_name(unichar c);                                             \
+                                                                            \
+UNITEX_FORCE_INLINE                                                         \
+unichar u_to##_name(unichar c, const u_info_t* u_info);                     \
+                                                                            \
+UNITEX_FORCE_INLINE                                                         \
+unichar u_to##_name(unichar c, const u_info_t* u_info) {                    \
+  int index = u_info->variant[_u_variant_t];                                \
+  if (UNITEX_LIKELY(!u_has_flag_##_name##_expands(u_info))) {               \
+    return c + index;                                                       \
+  }                                                                         \
+  return kUSpecialVariants[index + kUSpecialVariants[index] + 1];           \
+}                                                                           \
                                                                             \
 UNITEX_FORCE_INLINE                                                         \
 unichar u_to##_name(unichar c) {                                            \
@@ -93,12 +125,15 @@ unichar u_to##_name(unichar c) {                                            \
 }                                                                           \
 U__DECLARE__FUNCTION__CASE__ITERATE__ALL__(u_to##_name)                     \
 U__DECLARE__FUNCTION__CASE__ITERATE__N__(u_to##_name)
-
 /* ************************************************************************** */
 U__DECLARE__FUNCTION__CASE__(upper, U_CASE_UPPER)
 U__DECLARE__FUNCTION__CASE__(lower, U_CASE_LOWER)
 U__DECLARE__FUNCTION__CASE__(title, U_CASE_TITLE)
 U__DECLARE__FUNCTION__CASE__(fold,  U_CASE_FOLD)
+/* ************************************************************************** */
+U__DECLARE__FUNCTION__CASE__ITERATE__FIRST__(title,
+                                             *it = u_totitle(*it),
+                                             *it = u_tolower(*it))
 /* ************************************************************************** */
 UNITEX_FORCE_INLINE
 unichar u_deaccentuate(unichar c) {
@@ -108,15 +143,12 @@ unichar u_deaccentuate(unichar c) {
 /* ************************************************************************** */
 U__DECLARE__FUNCTION__CASE__ITERATE__ALL__(u_deaccentuate)
 U__DECLARE__FUNCTION__CASE__ITERATE__N__(u_deaccentuate)
-
 /* ************************************************************************** */
-
-
-
 /* ************************************************************************** */
-#undef U__DECLARE__FUNCTION__CASE__ITERATE__ALL__
-#undef U__DECLARE__FUNCTION__CASE__ITERATE__N__
 #undef U__DECLARE__FUNCTION__CASE__
+#undef U__DECLARE__FUNCTION__CASE__ITERATE__N__
+#undef U__DECLARE__FUNCTION__CASE__ITERATE__ALL__
+#undef U__DECLARE__FUNCTION__CASE__ITERATE__FIRST__
 /* ************************************************************************** */
 }  // namespace unitex::unnamed
 /* ************************************************************************** */

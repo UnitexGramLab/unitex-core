@@ -67,7 +67,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
     // returns the light userdata pointer. Otherwise, returns NULL
     Ustring* output= (Ustring*) lua_touserdata(L, 1);
     UnitexString X(output);
-    X.tofold();
+    X.totitle();
     u_printf("%S\n",X.c_unichar());
     const char* second = lua_tostring(L, 2);
     if(output->str && (*output->str) != U_NULL ) {
