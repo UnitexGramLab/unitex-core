@@ -80,7 +80,7 @@ Ustring* new_Ustring(const unichar* str) {
   }
 
   // avoid trying to copy a null string
-  if (res->len > 0) {
+  if (res->len > 0u) {
     // make a byte-for-byte copy of the string
     for (unsigned int i = 0u; i < res->len; ++i) {
       res->str[i] = str[i];

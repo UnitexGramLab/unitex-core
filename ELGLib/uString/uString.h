@@ -94,13 +94,16 @@ int luaopen_ustring(lua_State *L) {
   // [-0, +1] > (+1)
   lua_newtable(L);
   elg_stack_dump(L);
+
   // register functions into the module table
   luaL_register(L, NULL, lua_lib);
   elg_stack_dump(L);
 
-  // set the name and version of the module
+  // set the name of the module
   lua_pushliteral(L, EXTENSION_NAME_USTRING);
   lua_setfield(L, -2, "_NAME");
+
+  // set the version of the module
   lua_pushliteral(L, EXTENSION_VERSION_USTRING);
   lua_setfield(L, -2, "_VERSION");
 

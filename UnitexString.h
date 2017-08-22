@@ -184,7 +184,7 @@ class UnitexString {
    * @param  string Source string
    */
   UnitexString(const UnitexString& string) :
-        data_(new_Ustring(string.data_->str)) {
+    data_(new_Ustring(string.data_->str)) {
   }
 
   /**
@@ -1231,6 +1231,7 @@ class UnitexString {
    * @see    UnitexString::compare(const char* string) const
    */
   int compare(const Ustring* string) const {
+    // TODO(martinec) use data_len to perform the compare
     return this->compare(string->str);
   }
 
