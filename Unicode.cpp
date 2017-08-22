@@ -8035,8 +8035,6 @@ return is_modified;
 
 #else
 
-
-
 int u_toupper_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
@@ -8084,14 +8082,6 @@ return is_modified;
 
 #else
 
-void u_tolower (unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-    *s=u_tolower(*s);
-    s++;
-}
-}
-
 int u_tolower_ismodified (unichar* s) {
 if (s==NULL) return 0;
 int is_modified = 0;
@@ -8137,14 +8127,6 @@ return is_modified;
 }
 
 #else
-
-void u_deaccentuate(unichar* s) {
-if (s==NULL) return;
-while (*s!='\0') {
-    *s=u_deaccentuate(*s);
-    s++;
-}
-}
 
 int u_deaccentuate_ismodified (unichar* s) {
 if (s==NULL) return 0;

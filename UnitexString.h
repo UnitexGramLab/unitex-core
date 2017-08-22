@@ -1134,7 +1134,7 @@ class UnitexString {
   }
 
   /**
-   * @brief  Uppercase the characters in the string
+   * @brief  Upper case the characters in the string
    * @return *this
    */
   UnitexString& toupper() {
@@ -1142,15 +1142,33 @@ class UnitexString {
     return *this;
   }
 
-//  /**
-//   * @brief  Titlecase the characters in the string
-//   * @return *this
-//   */
-//  UnitexString& totitle() {
-//    // TODO(martinec) implement unitex::u_totitle
-//    unitex::u_totitle(data_->str);
-//    return *this;
-//  }
+  /**
+   * @brief  Fold case the characters in the string
+   * @return *this
+   */
+  UnitexString& tofold() {
+    unitex::u_tofold(data_->str);
+    return *this;
+  }
+
+  /**
+   * @brief  Title case the characters in the string
+   * @return *this
+   */
+  UnitexString& totitle() {
+    unitex::u_totitle(data_->str);
+    return *this;
+  }
+
+  /**
+   * @brief  Deaccentuate the characters in the string
+   * @return *this
+   */
+  UnitexString& deaccentuate() {
+    unitex::u_deaccentuate(data_->str);
+    return *this;
+  }
+
 
   /**
    * @brief  Append character to string

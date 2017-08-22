@@ -404,12 +404,12 @@ int u_parse_int(const unichar * str, const unichar ** next = NULL);
 
 
 // Sebastian Nagel's functions
-void u_tolower (unichar* s);
-void u_deaccentuate(unichar* s);
 int u_toupper_ismodified (unichar* s);
 int u_tolower_ismodified (unichar* s);
 int u_deaccentuate_ismodified(unichar* s);
 #if !UNITEX_USE(BASE_UNICODE)
+void u_deaccentuate(unichar* s);
+void u_tolower (unichar* s);
 void u_toupper (unichar* s);
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
