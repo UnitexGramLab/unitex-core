@@ -76,7 +76,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
       u_printf("%s\n",second);
     }
     u_strcat(output,second);
-    // the number of results is equal to 1
+    // the number of results is equal to 0
     return 0;
   }
   // the number of results is equal to 0

@@ -173,7 +173,7 @@ class UnitexString {
    * characters
    */
   UnitexString() :
-      data_(new_Ustring()) {
+      data_(acquire()) {
   }
 
   /**
@@ -184,7 +184,7 @@ class UnitexString {
    * @param  string Source string
    */
   UnitexString(const UnitexString& string) :
-    data_(new_Ustring(string.data_->str)) {
+    data_(acquire(string.data_->str)) {
   }
 
   /**
@@ -203,10 +203,10 @@ class UnitexString {
       if (n > (string.length() - pos)) {
         n = string.length() - pos;
       }
-      data_ = new_Ustring(n);
+      data_ = acquire(n);
       this->append(string.data() + pos, n);
     } else {
-      data_ = new_Ustring();
+      data_ = acquire();
     }
   }
 
@@ -219,7 +219,7 @@ class UnitexString {
    * @param  string A null-terminated character sequence (C-string)
    */
   /*explicit*/ UnitexString(const char* string) :                   // NOLINT
-      data_(new_Ustring()) {
+      data_(acquire()) {
     this->append(string);
   }
 
@@ -232,7 +232,7 @@ class UnitexString {
    * @param  n      Number of characters to copy
    */
   UnitexString(const char* string, size_type n) :
-        data_(new_Ustring(n)) {
+        data_(acquire(n)) {
     this->append(string, n);
   }
 
@@ -247,7 +247,7 @@ class UnitexString {
    *                   copy of this value.
    */
   UnitexString(size_type n, char character) :
-      data_(new_Ustring(n)) {
+      data_(acquire(n)) {
     // sets the first num bytes of the block of memory pointed by
     // data_->str to the specified value (interpreted as a char)
     // we avoid to use memset(data_->str, character, n);
@@ -271,10 +271,10 @@ class UnitexString {
   UnitexString(const char* first, const char* last) {
     if (first < last) {
       const size_t distance = last - first;
-      data_ = new_Ustring(distance);
+      data_ = acquire(distance);
       this->append(first, distance);
     } else {
-      data_ = new_Ustring();
+      data_ = acquire();
     }
   }
 
@@ -287,7 +287,7 @@ class UnitexString {
    * @param  string A null-terminated character sequence (unichar-string)
    */
   explicit UnitexString(const unichar* string) :
-      data_(new_Ustring(string)) {
+      data_(acquire(string)) {
   }
 
   /**
@@ -299,7 +299,7 @@ class UnitexString {
    * @param  n      Number of characters to copy
    */
   UnitexString(const unichar* string, size_type n) :
-        data_(new_Ustring(n)) {
+        data_(acquire(n)) {
     this->append(string, n);
   }
 
@@ -314,7 +314,7 @@ class UnitexString {
    *                   copy of this value.
    */
   UnitexString(size_type n, unichar character) :
-      data_(new_Ustring(n)) {
+      data_(acquire(n)) {
     // sets the first num bytes of the block of memory pointed by
     // data_->str to the specified value (interpreted as a char)
     // we avoid to use memset(data_->str, character, n);
@@ -338,10 +338,10 @@ class UnitexString {
   UnitexString(const unichar* first, const unichar* last) {
     if (first < last) {
       const size_t distance = last - first;
-      data_ = new_Ustring(distance);
+      data_ = acquire(distance);
       this->append(first, distance);
     } else {
-      data_ = new_Ustring();
+      data_ = acquire();
     }
   }
 
@@ -354,7 +354,19 @@ class UnitexString {
    * @param  string A null-terminated character sequence (Ustring-string)
    */
   explicit UnitexString(const Ustring* string) :
-        data_(new_Ustring(string->str)) {
+        data_(acquire(string->str)) {
+  }
+
+  /**
+   * @brief  Constructor from unitex Ustring
+   *
+   * Allocates and initializes a string from a null-terminated character
+   * sequence (Ustring-string)
+   *
+   * @param  string A null-terminated character sequence (Ustring-string)
+   */
+  explicit UnitexString(Ustring* string) :
+      data_(attach(string)) {
   }
 
   /**
@@ -366,7 +378,7 @@ class UnitexString {
    * @param  n      Number of characters to copy
    */
   UnitexString(const Ustring* string, size_type n) :
-        data_(new_Ustring(n)) {
+        data_(acquire(n)) {
     this->append(string, n);
   }
 
@@ -1583,11 +1595,46 @@ class UnitexString {
   // Methods, including static
 
   /**
+   * @brief  Attach an already allocated Ustring representing the given string
+   * @see    data_
+   */
+  Ustring* attach(Ustring* string) {
+    engaged_ = 0;
+    return string;
+  }
+
+  /**
+   * @brief  Allocate an empty Ustring
+   * @see    data_
+   */
+  Ustring* acquire() {
+    engaged_ = 1;
+    return new_Ustring();
+  }
+
+  /**
+   * @brief  Allocate an Ustring representing the given string
+   * @see    data_
+   */
+  Ustring* acquire(const unichar* string) {
+    engaged_ = 1;
+    return new_Ustring(string);
+  }
+
+  /**
+   * @brief  Allocate an empty Ustring with a buffer set to the given size
+   * @see    data_
+   */
+  Ustring* acquire(size_type size) {
+    engaged_ = 1;
+    return new_Ustring(size);
+  }
+  /**
    * @brief  Free the memory allocated to the internal Ustring
    * @see    data_
    */
   void release() {
-    if (!is_null()) {
+    if (engaged_) {
       this->clear();
       free_Ustring(data_);
     }
@@ -1608,6 +1655,12 @@ class UnitexString {
   }
 
   // Data Members (except static const data members)
+
+  /**
+   * @brief  underline Ustring container
+   */
+  int8_t engaged_;
+
   /**
    * @brief  underline Ustring container
    */
