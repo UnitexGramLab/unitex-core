@@ -75,6 +75,13 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
     } else {
       u_printf("%s\n",second);
     }
+
+    for(unichar c = 0; c < U_MAX_VALUE ; ++c) {
+      if(u_in_script_latin(c)) {
+        u_printf("[%C][%d]\n", c, c);
+      }
+    }
+
     u_strcat(output,second);
     // the number of results is equal to 0
     return 0;

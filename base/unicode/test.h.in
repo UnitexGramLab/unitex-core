@@ -167,7 +167,7 @@ U__DECLARE__FUNCTION__TEST__(u_test_decomposition_tag,,
 ##test_has_decomposition_tag
 {endif:}
 /* *********************************************************************************************************************** */
-#undef U__DECLARE__FUNCTION__TEST
+#undef U__DECLARE__FUNCTION__TEST__
 #undef U__PARAMS__8
 #undef U__PARAMS__7
 #undef U__PARAMS__6

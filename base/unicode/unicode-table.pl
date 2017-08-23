@@ -1611,15 +1611,9 @@ open my $hdrnormout, ">$hdrNormFile" or die "File '$hdrNormFile' not found";
 
 # normalization.cpp
 open my $srcnormin,  "<$srcNormFileIn" or die "File '$srcNormFileIn' not found";
-open my $srcout, ">$srcNormFile" or die "File '$srcNormFile' not found";
+open my $srcnorout,  ">$srcNormFile" or die "File '$srcNormFile' not found";
 
-
-my $normName      = "normalization";
-my $hdrNormFile   = "$normName.h";
-my $hdrNormFileIn = "$normName.h.in";
-my $srcNormFile   = "$normName.cpp";
-my $srcNormFileIn = "$normName.cpp.in";
-
+# test.h
 open my $testin,  "<$testFileIn" or die "File '$testFileIn' not found";
 open my $testout, ">$testFile" or die "File '$testFile' not found";
 
