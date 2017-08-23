@@ -115,13 +115,14 @@ use constant moNumberGlyphInfo         => 1 << 8;
 use constant moFractionGlyphInfo       => 1 << 9;
 use constant moControlGlyphInfo        => 1 << 10;
 use constant moSymbolGlyphInfo         => 1 << 11;
-use constant moOtherGlyphInfo          => 1 << 12;
-use constant moMapExpandsGlyphInfo     => 1 << 13;
-use constant moUpperExpandsGlyphInfo   => 1 << 14;
-use constant moLowerExpandsGlyphInfo   => 1 << 15;
-use constant moTitleExpandsGlyphInfo   => 1 << 16;
-use constant moFoldExpandsGlyphInfo    => 1 << 17;
-use constant moAsciifyExpandsGlyphInfo => 1 << 18;
+use constant moIdentifierGlyphInfo     => 1 << 12;
+use constant moOtherGlyphInfo          => 1 << 13;
+use constant moMapExpandsGlyphInfo     => 1 << 14;
+use constant moUpperExpandsGlyphInfo   => 1 << 15;
+use constant moLowerExpandsGlyphInfo   => 1 << 16;
+use constant moTitleExpandsGlyphInfo   => 1 << 17;
+use constant moFoldExpandsGlyphInfo    => 1 << 18;
+use constant moAsciifyExpandsGlyphInfo => 1 << 19;
 # use constant moHexaDigitGlyphInfo    => 1 << 8;
 
 use constant caseUpper   => 0;
@@ -144,6 +145,7 @@ my %flagIndexes = (
  'Fraction'       => moFractionGlyphInfo,
  'Control'        => moControlGlyphInfo,
  'Symbol'         => moSymbolGlyphInfo,
+ 'Identifier'     => moIdentifierGlyphInfo,
  'Other'          => moOtherGlyphInfo,
  'MapExpands'     => moMapExpandsGlyphInfo,
  'UpperExpands'   => moUpperExpandsGlyphInfo,
@@ -166,6 +168,7 @@ my %flagInUse = (
  'Fraction'       => 1,
  'Control'        => 1,
  'Symbol'         => 1,
+ 'Identifier'     => 1,
  'Other'          => 1,
  'MapExpands'     => 0,
  'UpperExpands'   => 0,
@@ -188,6 +191,7 @@ my %flagDescription = (
  'Fraction'       => '-',
  'Control'        => 'Cc',
  'Symbol'         => 'Sm, Sc, Sk, So',
+ 'Identifier'     => '0-9, A-Z, a-z, _',
  'Other'          => 'Mn, Mc, Me, Cf, Cs, Co, Cn',
  'MapExpands'     => 'decomposition mapping consist of 4 or more code points',
  'UpperExpands'   => 'uppercase expands to multiple characters',
@@ -680,7 +684,7 @@ if (exists $infoFormat {'flags'}) {
 }
 
 if (exists $infoFormat {'blocks'}) {
-  push @infoFormat, '%2$3d';
+  push @infoFormat, '%2$4d';
   $conditionalFlags {'addBlocks'} = 1;
 }
 
@@ -1478,6 +1482,15 @@ while (<DATA>) {
 		if (exists $specialChars {$code}) {
 			$info |= $specialChars {$code};
 		}
+    
+    # identifier
+    if (($code >= 0x0030 && $code <= 0x0039) || # 0-9
+        ($code >= 0x0041 && $code <= 0x005A) || # A-Z
+        ($code >= 0x0061 && $code <= 0x007A) || # a-z
+         $code == 0x005F ) {                    # _
+      $info |= moIdentifierGlyphInfo;
+    }
+
 
 		$pages [$code >> 8] = 1;
 

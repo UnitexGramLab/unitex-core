@@ -246,7 +246,7 @@ for (;;) {
         i1 = i1+2 ;
         extension_name[0] = '\0';
 
-        while (is_variable_char(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
+        while (u_is_identifier(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
            extension_name[name_length++]=s[i1++];
         }
 
@@ -262,7 +262,7 @@ for (;;) {
         if (s[i1]=='.') {
           name_length=0;
           i1 = i1+1 ;
-          while (is_variable_char(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
+          while (u_is_identifier(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
              function_name[name_length++]=s[i1++];
           }
           if (name_length>=MAX_TRANSDUCTION_VAR_LENGTH) {
@@ -368,7 +368,7 @@ for (;;) {
               case '{':
                 ++i1;
                 variable_lenght = 0;
-                while (is_variable_char(s[i1]) && variable_lenght<MAX_TRANSDUCTION_VAR_LENGTH) {
+                while (u_is_identifier(s[i1]) && variable_lenght<MAX_TRANSDUCTION_VAR_LENGTH) {
                   variable_name[variable_lenght++]=s[i1++];
                 }
                 if (variable_lenght == 0) {
@@ -759,7 +759,7 @@ for (;;) {
       i1++;
       /* Case of a variable name */
       unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
-      while (is_variable_char(s[i1]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
+      while (u_is_identifier(s[i1]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
          name[l++]=s[i1++];
       }
       if (l==MAX_TRANSDUCTION_VAR_LENGTH) {

@@ -35,7 +35,7 @@
  * @note      Use cpplint.py tool to detect style errors:
  *            `cpplint.py --linelength=120 `table`
  *
- * @date      October 2016
+ * @date      août 2017
  *
  * This file was automatically generated using an enhanced version of unicode-table 0.3.2
  * @see https://github.com/UnitexGramLab/unitex-core/tree/master/base/unicode
@@ -124,11 +124,12 @@ typedef enum {
   U_FLAG_FRACTION        = 1 << 9 ,  ///< -
   U_FLAG_CONTROL         = 1 << 10,  ///< Cc
   U_FLAG_SYMBOL          = 1 << 11,  ///< Sm, Sc, Sk, So
-  U_FLAG_OTHER           = 1 << 12,  ///< Mn, Mc, Me, Cf, Cs, Co, Cn
-  U_FLAG_UPPER_EXPANDS   = 1 << 14,  ///< uppercase expands to multiple characters
-  U_FLAG_LOWER_EXPANDS   = 1 << 15,  ///< lowercase expands to multiple characters
-  U_FLAG_TITLE_EXPANDS   = 1 << 16,  ///< titlecase expands to multiple characters
-  U_FLAG_FOLD_EXPANDS    = 1 << 17,  ///< foldcase expands to multiple characters
+  U_FLAG_IDENTIFIER      = 1 << 12,  ///< 0-9, A-Z, a-z, _
+  U_FLAG_OTHER           = 1 << 13,  ///< Mn, Mc, Me, Cf, Cs, Co, Cn
+  U_FLAG_UPPER_EXPANDS   = 1 << 15,  ///< uppercase expands to multiple characters
+  U_FLAG_LOWER_EXPANDS   = 1 << 16,  ///< lowercase expands to multiple characters
+  U_FLAG_TITLE_EXPANDS   = 1 << 17,  ///< titlecase expands to multiple characters
+  U_FLAG_FOLD_EXPANDS    = 1 << 18,  ///< foldcase expands to multiple characters
 } u_flag_t;
 
 /**

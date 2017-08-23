@@ -104,14 +104,18 @@ U__DECLARE__FUNCTION__TEST__(u_test_flag,,
                             ((u_info->flags & flags) != 0),
                             flags)
 U__DECLARE__FUNCTION__TEST__(u_test_category,,
-                            ((u_info->category & category) != 0),
+                            (u_info->category == category),
                             category)
 U__DECLARE__FUNCTION__TEST__(u_test_script,,
-                            ((u_info->script & script) != 0),
+                            (u_info->script == script),
                             script)
 U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
-                            ((u_info->bidi & bidi) != 0),
+                            (u_info->bidi == bidi),
                             bidi)
+/* *********************************************************************************************************************** */
+#define u_is_digit(c)               u_test_flag(c,U_FLAG_DIGIT)       // #
+#define u_is_letter(c)              u_test_flag(c,U_FLAG_LETTER)      // #
+#define u_is_identifier(c)          u_test_flag(c,U_FLAG_IDENTIFIER)  // #
 /* *********************************************************************************************************************** */
 #define u_has_flag_letter(c)                                           u_test_flag(c,U_FLAG_LETTER)
 #define u_has_flag_uppercase(c)                                        u_test_flag(c,U_FLAG_UPPERCASE)
@@ -125,14 +129,12 @@ U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
 #define u_has_flag_fraction(c)                                         u_test_flag(c,U_FLAG_FRACTION)
 #define u_has_flag_control(c)                                          u_test_flag(c,U_FLAG_CONTROL)
 #define u_has_flag_symbol(c)                                           u_test_flag(c,U_FLAG_SYMBOL)
+#define u_has_flag_identifier(c)                                       u_test_flag(c,U_FLAG_IDENTIFIER)
 #define u_has_flag_other(c)                                            u_test_flag(c,U_FLAG_OTHER)
 #define u_has_flag_upper_expands(c)                                    u_test_flag(c,U_FLAG_UPPER_EXPANDS)
 #define u_has_flag_lower_expands(c)                                    u_test_flag(c,U_FLAG_LOWER_EXPANDS)
 #define u_has_flag_title_expands(c)                                    u_test_flag(c,U_FLAG_TITLE_EXPANDS)
 #define u_has_flag_fold_expands(c)                                     u_test_flag(c,U_FLAG_FOLD_EXPANDS)
-/* *********************************************************************************************************************** */
-#define u_is_digit(c)                                                  u_has_flag_digit(c)  // #
-#define u_is_letter(c)                                                 u_has_flag_letter(c) // #
 /* *********************************************************************************************************************** */
 #define u_in_category_invalid(c)                                       u_test_category(c,U_CATEGORY_INVALID)
 #define u_in_category_letter_uppercase(c)                              u_test_category(c,U_CATEGORY_LETTER_UPPERCASE)

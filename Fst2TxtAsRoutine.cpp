@@ -234,7 +234,7 @@ static void push_output_string(struct fst2txt_parameters* p, unichar s[]) {
             unichar name[100];
             int L = 0;
             i++;
-            while (is_variable_char(s[i])) {
+            while (u_is_identifier(s[i])) {
                 name[L++] = s[i++];
             }
             name[L] = '\0';

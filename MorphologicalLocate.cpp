@@ -100,7 +100,7 @@ static int is_morpho_variable_output(unichar* s, unichar* var_name) {
         return 0;
     int i, j = 0;
     for (i = 1; s[i] != '$' && s[i] != '\0'; i++) {
-        if (!is_variable_char(s[i]))
+        if (!u_is_identifier(s[i]))
             return 0;
         var_name[j++] = s[i];
     }
@@ -131,7 +131,7 @@ static int is_debug_mode_morpho_variable_output(unichar* s, unichar* var_name) {
     for (i = 2; s[i] != '$' &&
                 s[i] != DEBUG_INFO_COORD_MARK &&
 				s[i] != '\0'; ++i) {
-        if (!is_variable_char(s[i])) return 0;
+        if (!u_is_identifier(s[i])) return 0;
         var_name[j++] = s[i];
     }
 

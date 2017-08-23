@@ -107,22 +107,22 @@ U__DECLARE__FUNCTION__TEST__(u_test_flag,,
 {endif:}
 {if:addBlocks}
 U__DECLARE__FUNCTION__TEST__(u_test_block,,
-                            ((u_info->block & block) != 0),
+                            (u_info->block == block),
                             block)
 {endif:}
 {if:addCategories}
 U__DECLARE__FUNCTION__TEST__(u_test_category,,
-                            ((u_info->category & category) != 0),
+                            (u_info->category == category),
                             category)
 {endif:}
 {if:addScripts}
 U__DECLARE__FUNCTION__TEST__(u_test_script,,
-                            ((u_info->script & script) != 0),
+                            (u_info->script == script),
                             script)
 {endif:}
 {if:addBidiClasses}
 U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
-                            ((u_info->bidi & bidi) != 0),
+                            (u_info->bidi == bidi),
                             bidi)
 {endif:}
 {if:addNormalization}
@@ -136,8 +136,9 @@ U__DECLARE__FUNCTION__TEST__(u_test_decomposition_tag,,
                             tag)
 {endif:}
 /* *********************************************************************************************************************** */
-#define u_is_digit(c)               u_test_flag(c,U_FLAG_DIGIT)  // #
-#define u_is_letter(c)              u_test_flag(c,U_FLAG_LETTER) // #
+#define u_is_digit(c)               u_test_flag(c,U_FLAG_DIGIT)       // #
+#define u_is_letter(c)              u_test_flag(c,U_FLAG_LETTER)      // #
+#define u_is_identifier(c)          u_test_flag(c,U_FLAG_IDENTIFIER)  // #
 {if:addFlags}
 /* *********************************************************************************************************************** */
 ##test_has_flag
