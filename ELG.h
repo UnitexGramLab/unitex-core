@@ -1395,13 +1395,13 @@ class vm {
 
   // push string into stack
   // [-0, +1, m] > (+1)
-  void push(const char* value, size_t len) {
+  void pushlstring(const char* value, size_t len) {
     lua_pushlstring(L, value, len);
   }
 
   // push string into stack
   // [-0, +1, m] > (+1)
-  void push(const char* value) {
+  void pushstring(const char* value) {
     lua_pushstring(L, value);
   }
 
@@ -1414,25 +1414,25 @@ class vm {
 
   // push float into stack
   // [-0, +1, -]
-  void push(float f) {
+  void pushnumber(float f) {
     lua_pushnumber(L, (lua_Number) f);
   }
 
   // push boolean into stack
   // [-0, +1, -]
-  void push(bool b) {
+  void pushboolean(int b) {
     lua_pushboolean(L, b);
   }
 
   // push null
   // [-0, +1, -]
-  void push() {
+  void pushnil() {
     lua_pushnil(L);
   }
 
   // push lua_pushlightuserdata or null
   // [-0, +1, -]
-  void push(void* p) {
+  void pushlightuserdata(void* p) {
     if (p) {
       lua_pushlightuserdata(L, p);
     } else {

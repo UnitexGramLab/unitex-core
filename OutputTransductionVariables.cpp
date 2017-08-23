@@ -345,16 +345,15 @@ return &v->variables_[n];
 }
 
 /**
- * Returns a pointer on the Ustring associated the variable whose name is 'name',
+ * Returns a non const pointer on the Ustring associated the variable whose name is 'name',
  * or NULL if the variable in not in the given variable set.
  */
-const Ustring* get_output_variable(OutputVariables* v, const unichar* name,
-                                   int* variable_index) {
-  *variable_index = get_value_index(name, v->variable_index, DONT_INSERT);
-  if (*variable_index == -1) {
+Ustring* get_mutable_output_variable(OutputVariables* v, const unichar* name) {
+  int variable_index = get_value_index(name, v->variable_index, DONT_INSERT);
+  if (variable_index == -1) {
     return NULL;
   }
-  return &v->variables_[*variable_index];
+  return &v->variables_[variable_index];
 }
 
 

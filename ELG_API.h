@@ -102,6 +102,17 @@
 #define ELG_ENVIRONMENT_CALLED                 "uCalled"
 #define ELG_ENVIRONMENT_VALUES                 "uValues"
 /* ************************************************************************** */
+static const unichar ELG_FUNCTION_KEYWORD_NIL[]    = { 'n' , 'i' , 'l',          };
+static const unichar ELG_FUNCTION_KEYWORD_TRUE[]   = { 't' , 'r' , 'u', 'e'      };
+static const unichar ELG_FUNCTION_KEYWORD_FALSE[]  = { 'f' , 'a' , 'l', 's', 'e' };
+#define ELG_FUNCTION_KEYWORD_NIL_SIZE    3
+#define ELG_FUNCTION_KEYWORD_TRUE_SIZE   4
+#define ELG_FUNCTION_KEYWORD_FALSE_SIZE  5
+#define ELG_FUNCTION_KEYWORD_MATCH(_keyword, _str, _length)          \
+        ((_length == ELG_FUNCTION_KEYWORD_##_keyword##_SIZE)       &&\
+         (!memcmp(_str, ELG_FUNCTION_KEYWORD_##_keyword,             \
+          ELG_FUNCTION_KEYWORD_##_keyword##_SIZE * sizeof(unichar))))
+/* ************************************************************************** */
 //#define lua_castudata(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
 /* ************************************************************************** */
 namespace unitex {

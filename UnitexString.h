@@ -1596,6 +1596,7 @@ class UnitexString {
 
   /**
    * @brief  Attach an already allocated Ustring representing the given string
+   * @note   Only to be used from a constructor
    * @see    data_
    */
   Ustring* attach(Ustring* string) {
@@ -1634,7 +1635,8 @@ class UnitexString {
    * @see    data_
    */
   void release() {
-    if (engaged_) {
+    if (engaged_ == 1) {
+      engaged_ = 0;
       this->clear();
       free_Ustring(data_);
     }

@@ -79,7 +79,7 @@ void swap_output_variable_content(OutputVariables*v, int index, Ustring* swap_st
 OutputVariables* new_OutputVariables(struct list_ustring*,int* p_nbvar,vector_ptr* injected);
 void free_OutputVariables(OutputVariables*);
 const Ustring* get_output_variable(OutputVariables*,const unichar*);
-const Ustring* get_output_variable(OutputVariables* v, const unichar* name,int* variable_index);
+Ustring* get_mutable_output_variable(OutputVariables* v, const unichar* name);
 
 typedef struct
 {

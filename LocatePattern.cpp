@@ -157,7 +157,7 @@ p->elg->restart();
 
 // add p to globals
 // [-0, +1] > (+1)
-p->elg->push(p);
+p->elg->pushlightuserdata(p);
 // [-1, +0] > (+0)
 p->elg->setglobal(ELG_GLOBAL_LOCATE_PARAMS);
 

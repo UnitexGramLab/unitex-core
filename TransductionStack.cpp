@@ -194,13 +194,16 @@ char char_function_name[FILENAME_MAX] = {0};
 unichar extension_name[FILENAME_MAX]   = {0};
 char char_extension_name[FILENAME_MAX] = {0};
 
+// a boolean parameter
+int tboolean_parameter = 0;
+
 // a number parameter
 int tnumber_parameter = -1;
 
 // a lightuserdata parameter
 void* tlightuserdata  = NULL;
 
-// a string parameter
+// a char string parameter
 char tstring_parameter_stack[4096*6] = {0};
 
 // a unichar parameter stack
@@ -209,11 +212,13 @@ StackClose stack_closer(parameter_stack);
 
 for (;;) {
     /* First, we push all chars before '\0' or '$' */
-    int char_to_push_count=0;
-    while ((s[i1+char_to_push_count]!='\0') && (s[i1+char_to_push_count]!='$')
-            && (s[i1+char_to_push_count]!=DEBUG_INFO_COORD_MARK)) {
-        char_to_push_count++;
+    int char_to_push_count = 0;
+    while ((s[i1 + char_to_push_count] != '\0')
+        && (s[i1 + char_to_push_count] != '$')
+        && (s[i1 + char_to_push_count] != DEBUG_INFO_COORD_MARK)) {
+      char_to_push_count++;
     }
+
     if (char_to_push_count!=0) {
         push_array(stack,&s[i1],char_to_push_count);
         i1+=char_to_push_count;
@@ -222,6 +227,7 @@ for (;;) {
     if (s[i1]=='\0') {
         return 1;
     }
+
     if (s[i1]==DEBUG_INFO_COORD_MARK) {
         /* If we have found the debug mark indicating the end of the real output,
          * we rawly copy the end of the output without interpreting it,
@@ -239,12 +245,15 @@ for (;;) {
         int name_length=0;
         i1 = i1+2 ;
         extension_name[0] = '\0';
+
         while (is_variable_char(s[i1]) && name_length<MAX_TRANSDUCTION_VAR_LENGTH) {
            extension_name[name_length++]=s[i1++];
         }
+
         if (name_length>=MAX_TRANSDUCTION_VAR_LENGTH) {
            fatal_error("Too long extension name (>%d chars) in following extended output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
         }
+
         extension_name[name_length]='\0';
 //        u_printf("%S\n",function_name);
 
@@ -336,9 +345,11 @@ for (;;) {
 
         char_to_push_count=0;
         while ((s[i1+char_to_push_count]!='\0') &&
-               (s[i1+char_to_push_count]!='$')  && (s[i1+char_to_push_count]!='&')
-            && (s[i1+char_to_push_count]!=')')  && (s[i1+char_to_push_count]!=',')) {
-            char_to_push_count++;
+               (s[i1+char_to_push_count]!='$')  &&
+               (s[i1+char_to_push_count]!='&')  &&
+               (s[i1+char_to_push_count]!=')')  &&
+               (s[i1+char_to_push_count]!=',')) {
+          char_to_push_count++;
         }
 
         switch(s[i1]) {
@@ -379,40 +390,16 @@ for (;;) {
                 // the variable is not an input one
                 if (v==NULL) {
                   /* Not a normal one ? Maybe an output one */
-                  const Ustring* output=get_output_variable(p->output_variables, variable_name, &variable_index);
+                  Ustring* output = get_mutable_output_variable(p->output_variables, variable_name);
                   // neither input nor output variable exists
                   if (output==NULL) {
                       if (variable_pass_type == VARIABLE_PASS_BY_VALUE) {
+                        if(param_type == PARAM_TNONE || param_type == PARAM_TSTRING) {
   //                    switch (p->variable_error_policy) {
   //                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",variable_name); break;
   //                    case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
   //                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
   //                    }
-                      // 01.08.15 : to handle nil params
-                      // if the referenced variable is part of other arguments
-                      // e.g func(a,b${c},d)
-                      if(!is_empty(parameter_stack)) {
-                        param_type = PARAM_TSTRING;
-                        push_output_string(parameter_stack,"");
-                      } else {
-                        // isolated parameter treat as nil
-                        param_type = PARAM_TNIL;
-                      }
-                    } else {
-                      fatal_error("Variable error calling @%S with &{%S}: there is not possible to get a reference of an undefined variable\n", function_name, variable_name);
-                    }
-                  // output variable exists
-                  } else {
-                    if (variable_pass_type == VARIABLE_PASS_BY_VALUE) {
-                      // 10.09.16 : fix a bug when dealing with a null parameter
-                      // after an argument
-                      // e.g func(a,${b},c) with b => nil
-                      if(output->str && (*output->str) != U_NULL ) {
-                        param_type = PARAM_TSTRING;
-                        push_output_string(parameter_stack,output->str);
-                      } else {
-                        // 21.08.17 : to handle empty output within literal arguments
-                        // isolated parameter treat as nil if is alone
                         // 01.08.15 : to handle nil params
                         // if the referenced variable is part of other arguments
                         // e.g func(a,b${c},d)
@@ -423,15 +410,46 @@ for (;;) {
                           // isolated parameter treat as nil
                           param_type = PARAM_TNIL;
                         }
+                      } else {
+                        fatal_error("Error calling @%S, parameter %d: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1);
+                      }
+                    } else {
+                      fatal_error("Variable error calling @%S with &{%S}: it is not possible to get a reference of an undefined variable\n", function_name, variable_name);
+                    }
+                  // output variable exists
+                  } else {
+                    if (variable_pass_type == VARIABLE_PASS_BY_VALUE) {
+                      if(param_type == PARAM_TNONE || param_type == PARAM_TSTRING) {
+                        // 10.09.16 : fix a bug when dealing with a null parameter
+                        // after an argument
+                        // e.g func(a,${b},c) with b => nil
+                        if(output->str && (*output->str) != U_NULL ) {
+                          param_type = PARAM_TSTRING;
+                          push_output_string(parameter_stack,output->str);
+                        } else {
+                          // 21.08.17 : to handle empty output within literal arguments
+                          // isolated parameter treat as nil if is alone
+                          // 01.08.15 : to handle nil params
+                          // if the referenced variable is part of other arguments
+                          // e.g func(a,b${c},d)
+                          if(!is_empty(parameter_stack)) {
+                            param_type = PARAM_TSTRING;
+                            push_output_string(parameter_stack,"");
+                          } else {
+                            // isolated parameter treat as nil
+                            param_type = PARAM_TNIL;
+                          }
+                        }
+                      } else {
+                        fatal_error("Error calling @%S, parameter %d: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1);
                       }
                     // the variable is an output one and will be passed by reference
                     } else {
-                      if(!is_empty(parameter_stack)) {
-                        fatal_error("Error calling @%S, parameter %d, variable &{%S}: attempt to concatenate a string to a variable reference\n", function_name, script_params_count+1, variable_name);
+                      if(param_type != PARAM_TNONE) {
+                        fatal_error("Error calling @%S, parameter %d, variable &{%S}: attempt to concatenate a value to a variable reference\n", function_name, script_params_count+1, variable_name);
                       } else {
                         param_type = PARAM_TLIGHTUSERDATA;
                         tlightuserdata    = (void*) output;
-                        tnumber_parameter = variable_index;
                       }
                     }
                   }
@@ -540,7 +558,7 @@ for (;;) {
               param_type = PARAM_TNIL;
             }
 
-            // TODO(martinec) handle nil(pushnil), number (pushnumber),
+            // TODO(martinec) number (pushnumber),
             // integer(lua_pushinteger), string (lua_pushstring)
             switch(param_type) {
               case PARAM_TNONE:
@@ -551,14 +569,17 @@ for (;;) {
                 break;
               case PARAM_TNIL:
                 // push a nil value
-                p->elg->push();
+                p->elg->pushnil();
                 ++script_params_count;
                 break;
               case PARAM_TBOOLEAN:
+                // push a boolean
+                p->elg->pushboolean(tboolean_parameter);
+                ++script_params_count;
                 break;
               case PARAM_TLIGHTUSERDATA:
                 // push a light user data
-                p->elg->push(tlightuserdata);
+                p->elg->pushlightuserdata(tlightuserdata);
                 ++script_params_count;
                 break;
               case PARAM_TNUMBER:
@@ -572,7 +593,7 @@ for (;;) {
                   parameter_stack->stack[parameter_stack->stack_pointer+1]='\0';
                   // 12.09.16 add u_encode_utf8 to allow send unicode chars
                   int tstring_parameter_length = u_encode_utf8(parameter_stack->stack,tstring_parameter_stack);
-                  p->elg->push(tstring_parameter_stack, tstring_parameter_length);
+                  p->elg->pushlstring(tstring_parameter_stack, tstring_parameter_length);
                   empty(parameter_stack);
                   tstring_parameter_stack[0] = '\0';
                   ++script_params_count;
@@ -598,18 +619,46 @@ for (;;) {
 
             ++i1;
             break;
+
           case '\0':
             fatal_error("Output error: missing closing parenthesis after script @%S call \n",function_name);
             break;
+
           default:
             if (char_to_push_count != 0) {
-              if (param_type == PARAM_TSTRING || param_type == PARAM_TNONE) {
-                param_type = PARAM_TSTRING;
-                push_array(parameter_stack, &s[i1], char_to_push_count);
-                i1 += char_to_push_count;
-              } else {
-               fatal_error("Error calling @%S, parameter %d, character %C: attempt to concatenate incompatible types as a single parameter\n", function_name, script_params_count+1, s[i1]);
+              // test for a function keyword: true, false, nil
+              if (param_type == PARAM_TNONE) {
+                // nil
+                if (ELG_FUNCTION_KEYWORD_MATCH(NIL, &s[i1], char_to_push_count)) {
+                  param_type = PARAM_TNIL;
+                  i1 += char_to_push_count;
+                  break;
+                // true
+                } else if (ELG_FUNCTION_KEYWORD_MATCH(TRUE, &s[i1], char_to_push_count)) {
+                  param_type = PARAM_TBOOLEAN;
+                  tboolean_parameter = 1;
+                  i1 += char_to_push_count;
+                  break;
+                // false
+                } else if (ELG_FUNCTION_KEYWORD_MATCH(FALSE, &s[i1], char_to_push_count)) {
+                  param_type = PARAM_TBOOLEAN;
+                  tboolean_parameter = 0;
+                  i1 += char_to_push_count;
+                  break;
+                }
               }
+              // a common string
+              // FIXME(martinec) foo(${b}false)
+              if (param_type == PARAM_TNONE   ||
+                  param_type == PARAM_TSTRING ||
+                  param_type == PARAM_TNIL) {
+                  param_type = PARAM_TSTRING;
+                  push_array(parameter_stack, &s[i1], char_to_push_count);
+                  i1 += char_to_push_count;
+                  break;
+              }
+              // two incompatible types
+              fatal_error("Error calling @%S, parameter %d, character %C: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1, s[i1]);
             }
             break;
         }
