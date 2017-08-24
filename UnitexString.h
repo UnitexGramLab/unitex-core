@@ -61,7 +61,7 @@ namespace unitex {
 # define HAS_UNITEX_NAMESPACE 1
 #endif  // !defined(HAS_UNITEX_NAMESPACE)
 /* ************************************************************************** */
-
+#define UNITEX_STRING_IS_NULL       (data_->str == U_EMPTY)
 /* ************************************************************************** */
 /**
  * @class    UnitexString
@@ -360,8 +360,8 @@ class UnitexString {
   /**
    * @brief  Constructor from unitex Ustring
    *
-   * Allocates and initializes a string from a null-terminated character
-   * sequence (Ustring-string)
+   * Initializes an already allocate string representing a null-terminated
+   * character sequence (Ustring-string)
    *
    * @param  string A null-terminated character sequence (Ustring-string)
    */
@@ -814,8 +814,8 @@ class UnitexString {
    */
   reference at(size_type pos) {
     // FIXME(martinec) throws unitex::out_of_range
-    // if (!is_null() &&  pos <= length())
-    assert(!is_null() &&  pos <= length());
+    // if (!UNITEX_STRING_IS_NULL &&  pos <= length())
+    assert(!UNITEX_STRING_IS_NULL &&  pos <= length());
     return *(begin() + pos);
   }
 
@@ -829,7 +829,7 @@ class UnitexString {
    * @return Read-only (const) reference to the character.
    */
   const_reference at(size_type pos) const {
-    assert(!is_null() && pos <= length());
+    assert(!UNITEX_STRING_IS_NULL && pos <= length());
     return *(begin() + pos);
   }
 
@@ -1351,7 +1351,7 @@ class UnitexString {
    * @attention The caller should not delete the return value
    */
   const unichar* data() const {
-    return is_null() ? '\0' : begin();
+    return UNITEX_STRING_IS_NULL ? '\0' : begin();
   }
 
   /**
@@ -1384,7 +1384,7 @@ class UnitexString {
    * @note   NULL and the empty string are different
    */
   bool is_null() const {
-    return data_->str == U_EMPTY;
+    return UNITEX_STRING_IS_NULL;
   }
 
   /**
@@ -1400,7 +1400,7 @@ class UnitexString {
    * @see    is_null() const
    */
   bool is_empty() const {
-    return (!is_null() && length() == 0);
+    return (!UNITEX_STRING_IS_NULL && length() == 0);
   }
 
   /**

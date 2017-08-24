@@ -38,20 +38,17 @@
 #include "DebugMode.h"
 #include "base/unicode/utf8.h"
 /* ************************************************************************** */
-//// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-//#define lua_userdata_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
-//
-//// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-//void* operator new(size_t size, lua_State* L, const char* metatableName)
-//{
-//    void* ptr = lua_newuserdata(L, size);
-//    luaL_getmetatable(L, metatableName);
-//    lua_setmetatable(L, -2);
-//    return ptr;
-//}
-//
-//// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-//#define lua_pushobject(L, T) new(L, #T) T
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+void* operator new(size_t size, lua_State* L, const char* metatableName);
+
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+#define lua_userdata_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
+
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+#define lua_pushobject(L, T) new(L, #T) T
+
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+#define lua_pushlightobject(L, T, N) new(L, N) T
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -84,7 +81,7 @@ enum param_type_t {
   PARAM_TFUNCTION       =  6,
   PARAM_TUSERDATA       =  7,
   PARAM_TTHREAD         =  8,
-  PARAM_TUSTRING        =  9,
+  PARAM_TLIGHTUSTRING   =  9,
 };
 /* ************************************************************************** */
 typedef struct elg_Event {
@@ -1468,13 +1465,13 @@ class vm {
 
   // push a Ustring or or null
   // Ustring is wrapped into a UnitexString object
-  void* pushustring(Ustring* p) {
-//    if (p) {
-//      return lua_pushobject(L, UnitexString)(p);
-//    } else {
-//      lua_pushnil(L);
+  void* pushlightustring(Ustring* p) {
+    if (p) {
+      return lua_pushlightobject(L, UnitexString, EXTENSION_NAME_USTRING)(p);
+    } else {
+      lua_pushnil(L);
       return NULL;
-//    }
+    }
   }
 
   // pops a value from the stack and sets it as the new

@@ -37,12 +37,19 @@
 #include "ELG_API.h"
 #include "UnitexString.h"
 /* ************************************************************************** */
-#define EXTENSION_NAME_USTRING     "ustring"
-#define EXTENSION_VERSION_USTRING  "0.1.0"
+#define EXTENSION_NAME_USTRING        "ustring"
+#define EXTENSION_VERSION_USTRING     "0.1.0"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
+/* ************************************************************************** */
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+template<typename T>
+int GCMethod(lua_State* L) {
+  static_cast<T*>(lua_touserdata(L, 1))->~T();
+  return 0;
+}
 /* ************************************************************************** */
 namespace ustring {
 /* ************************************************************************** */
@@ -65,18 +72,19 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   // check if there is at least an argument on the stack
   if(lua_gettop(L) >= 1) {
     // returns the light userdata pointer. Otherwise, returns NULL
-    Ustring* output= (Ustring*) lua_touserdata(L, 1);
-    UnitexString X(output);
-    X.totitle();
-    u_printf("%S\n",X.c_unichar());
+    UnitexString* output= (UnitexString*) lua_touserdata(L, 1);
+    output->totitle();
+    u_printf("%S\n",output->c_unichar());
     const char* second = lua_tostring(L, 2);
-    if(output->str && (*output->str) != U_NULL ) {
-      u_printf("%S%s\n",output->str,second);
+    if(!output->is_null()) {
+      u_printf("%S%s\n",output->c_unichar(),second);
     } else {
       u_printf("%s\n",second);
     }
 
-    u_strcat(output,second);
+    *output += "YES";
+    output->append(second);
+
     // the number of results is equal to 0
     return 0;
   }
@@ -90,7 +98,12 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   {NULL, NULL}
 };
 /* ************************************************************************** */
+/* static */  const struct luaL_Reg lua_lib_meta[] = {
+  {"__gc", GCMethod<UnitexString>},
+  {NULL, NULL}};
+/* ************************************************************************** */
 int luaopen_ustring(lua_State *L) {
+  // -------------------------------------------
   // create the module table
   // [-0, +1] > (+1)
   lua_newtable(L);
@@ -103,12 +116,32 @@ int luaopen_ustring(lua_State *L) {
   // set the name of the module
   lua_pushliteral(L, EXTENSION_NAME_USTRING);
   lua_setfield(L, -2, "_NAME");
+  elg_stack_dump(L);
 
   // set the version of the module
   lua_pushliteral(L, EXTENSION_VERSION_USTRING);
   lua_setfield(L, -2, "_VERSION");
+  elg_stack_dump(L);
 
-  // add functions table to the module
+  // -------------------------------------------
+  // create the module metatable
+  luaL_newmetatable(L, EXTENSION_NAME_USTRING);
+  elg_stack_dump(L);
+
+  lua_pushvalue(L, -1);
+  elg_stack_dump(L);
+
+  lua_setfield(L, -2, "__index");
+  elg_stack_dump(L);
+
+  luaL_register(L, NULL, lua_lib_meta);
+  elg_stack_dump(L);
+
+  lua_setmetatable(L, -2);
+  elg_stack_dump(L);
+
+  // -------------------------------------------
+  // add functions table to the elg module
   lua_setfield(L, -2,  EXTENSION_NAME_USTRING);
   elg_stack_dump(L);
 

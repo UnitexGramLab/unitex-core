@@ -454,7 +454,7 @@ for (;;) {
                       if(param_type != PARAM_TNONE) {
                         fatal_error("Error calling @%S, parameter %d, variable &{%S}: attempt to concatenate a value to a variable reference\n", function_name, script_params_count+1, variable_name);
                       } else {
-                        param_type = PARAM_TUSTRING;
+                        param_type = PARAM_TLIGHTUSTRING;
                         tustring   = output;
                       }
                     }
@@ -616,9 +616,9 @@ for (;;) {
                 break;
               case PARAM_TTHREAD:
                 break;
-              case PARAM_TUSTRING:
+              case PARAM_TLIGHTUSTRING:
                 // push a ustring data
-                p->elg->pushustring(tustring);
+                p->elg->pushlightustring(tustring);
                 ++script_params_count;
                 break;
             }

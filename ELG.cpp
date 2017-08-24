@@ -36,7 +36,24 @@
 // Header for this file
 #include "ELG.h"
 /* ************************************************************************** */
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+void* operator new(size_t size, lua_State* L, const char* metatableName) {
+  void* ptr = lua_newuserdata(L, size);
+  elg_stack_dump(L);
+  luaL_getmetatable(L, metatableName);
+  elg_stack_dump(L);
+  lua_setmetatable(L, -2);
+  elg_stack_dump(L);
+  return ptr;
+}
 
+// This placement delete matches the placement new above, it will be called only
+// from the placement new, placement delete functions are defined as no-operations
+// by the Standard C++ library.
+void operator delete(void* pMem, lua_State* L, const char* metatableName) {
+  // do nothing as lua is supposed to handle this.
+  fatal_error("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+}
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
