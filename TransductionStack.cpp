@@ -366,12 +366,20 @@ for (;;) {
             variable_pass_type = s[i1] == '&' ? VARIABLE_PASS_BY_REFERENCE : VARIABLE_PASS_BY_VALUE;
             ++i1;
             switch(s[i1]) {
+              // $$ or &&
               case '&':
               case '$':
-                param_type = PARAM_TSTRING;
-                push_array(parameter_stack,&s[i1],1);
-                ++i1;
-              break;
+                // $$ => $, && => &
+                if(s[i1-1] == s[i1]) {
+                  param_type = PARAM_TSTRING;
+                  ::push(parameter_stack,s[i1]);
+                  ++i1;
+                } else {
+                // &$ or $&
+                  fatal_error("ELG error: bad string sequence %C%C found when calling @%S\n", s[i1-1], s[i1], function_name);
+                }
+                break;
+              // &{foo} or ${foo}
               case '{':
                 ++i1;
                 variable_lenght = 0;
@@ -379,13 +387,13 @@ for (;;) {
                   variable_name[variable_lenght++]=s[i1++];
                 }
                 if (variable_lenght == 0) {
-                   fatal_error("${%C} is an invalid variable name calling @%S\n", s[i1], function_name);
+                   fatal_error("ELG error: ${%C} is an invalid variable name calling @%S\n", s[i1], function_name);
                 }
                 if (variable_lenght >= MAX_TRANSDUCTION_VAR_LENGTH) {
-                   fatal_error("Too long variable name (%d chars) calling @%S\n", variable_lenght, function_name);
+                   fatal_error("ELG error: too long variable name (%d chars) calling @%S\n", variable_lenght, function_name);
                 }
                 if(s[i1] != '}') {
-                  fatal_error("Variable %S without closing braces calling @%S\n", variable_name, function_name);
+                  fatal_error("ELG error: variable %S without closing braces calling @%S\n", variable_name, function_name);
                 }
                 ++i1;
                 variable_name[variable_lenght]='\0';
@@ -418,10 +426,10 @@ for (;;) {
                           param_type = PARAM_TNIL;
                         }
                       } else {
-                        fatal_error("Error calling @%S, parameter %d: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1);
+                        fatal_error("ELG error: calling @%S, parameter %d: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1);
                       }
                     } else {
-                      fatal_error("Variable error calling @%S with &{%S}: it is not possible to get a reference of an undefined variable\n", function_name, variable_name);
+                      fatal_error("ELG error: calling @%S with variable &{%S}: it is not possible to get a reference of an undefined variable\n", function_name, variable_name);
                     }
                   // output variable exists
                   } else {
@@ -463,7 +471,7 @@ for (;;) {
                 // the variable is an input one and will be passed by reference
                 } else if (variable_pass_type == VARIABLE_PASS_BY_REFERENCE) {
                   if(!is_empty(parameter_stack)) {
-                    fatal_error("Error calling @%S, parameter %d, variable &{%S}: attempt to concatenate a string to a variable reference\n", function_name, script_params_count+1, variable_name);
+                    fatal_error("ELG error: calling @%S, parameter %d, variable &{%S}: attempt to concatenate a string to a variable reference\n", function_name, script_params_count+1, variable_name);
                   } else {
                     param_type = PARAM_TNUMBER;
                     tnumber_parameter = variable_index;
@@ -551,7 +559,7 @@ for (;;) {
                 /* ************************************************************************** */
               break;
               default:
-               fatal_error("Output error: bad parameter calling @%S\n",function_name);
+               fatal_error("ELG error: missing opening braces after %C, parameter %d, while calling @%S\n", s[i1-1], script_params_count+1, function_name);
                break;
             }
             break;
@@ -636,7 +644,7 @@ for (;;) {
             break;
 
           case '\0':
-            fatal_error("Output error: missing closing parenthesis after script @%S call \n",function_name);
+            fatal_error("ELG error: missing closing parenthesis after script @%S call \n",function_name);
             break;
 
           default:
@@ -673,13 +681,19 @@ for (;;) {
                   break;
               }
               // two incompatible types
-              fatal_error("Error calling @%S, parameter %d, character %C: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1, s[i1]);
+              fatal_error("ELG error: calling @%S, parameter %d, character %C: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1, s[i1]);
             }
             break;
         }
 
         goto read_script_param;
         script_call:
+
+        // 25.08.17 check before execute
+        // Closing function
+        if(s[i1]!='$') {
+          fatal_error("ELG error: missing $ after closing parentheses ) while calling @%S\n",function_name); break;
+        }
 
         // 17.06.16: send locate params
 //        lua_pushlightuserdata(L,p);
@@ -742,11 +756,6 @@ for (;;) {
 //        /* Remove the returned value from the top of the stack. */
 //        lua_pop(L, 1);
 
-
-        // Closing function
-        if(s[i1]!='$') {
-          fatal_error("Output error: missing closing $ after closing parentheses ) for function @%S\n",function_name); break;
-        }
 
         ++i1;
         continue;
