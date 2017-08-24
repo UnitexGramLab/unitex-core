@@ -113,8 +113,6 @@ static const unichar ELG_FUNCTION_KEYWORD_FALSE[]  = { 'f' , 'a' , 'l', 's', 'e'
          (!memcmp(_str, ELG_FUNCTION_KEYWORD_##_keyword,             \
           ELG_FUNCTION_KEYWORD_##_keyword##_SIZE * sizeof(unichar))))
 /* ************************************************************************** */
-//#define lua_castudata(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
-/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {

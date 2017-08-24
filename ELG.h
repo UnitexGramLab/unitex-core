@@ -38,6 +38,21 @@
 #include "DebugMode.h"
 #include "base/unicode/utf8.h"
 /* ************************************************************************** */
+//// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+//#define lua_userdata_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
+//
+//// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+//void* operator new(size_t size, lua_State* L, const char* metatableName)
+//{
+//    void* ptr = lua_newuserdata(L, size);
+//    luaL_getmetatable(L, metatableName);
+//    lua_setmetatable(L, -2);
+//    return ptr;
+//}
+//
+//// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+//#define lua_pushobject(L, T) new(L, #T) T
+/* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 #if UNITEX_OS_IS(UNIX)
@@ -68,7 +83,8 @@ enum param_type_t {
   PARAM_TTABLE          =  5,
   PARAM_TFUNCTION       =  6,
   PARAM_TUSERDATA       =  7,
-  PARAM_TTHREAD         =  8
+  PARAM_TTHREAD         =  8,
+  PARAM_TUSTRING        =  9,
 };
 /* ************************************************************************** */
 typedef struct elg_Event {
@@ -94,69 +110,69 @@ static const struct elg_Event elgMainEvents [] = {
 /* ************************************************************************** */
 // push a nil into table
 // [-0, +0, e]
-#define set_nil(field)                                    \
+#define set_nil(field)                                     \
     lua_pushliteral(L, field);                             \
     lua_pushnil(L);                                        \
     lua_settable(L, -3);
 
 // push a number into table
 // [-0, +0, e]
-#define set_number(field, n)                              \
+#define set_number(field, n)                               \
     lua_pushliteral(L, field);                             \
     lua_pushnumber(L, (lua_Number) n);                     \
     lua_settable(L, -3);
 
 // push a integer into table
 // [-0, +0, e]
-#define set_integer(field, i)                             \
+#define set_integer(field, i)                              \
     lua_pushliteral(L, field);                             \
     lua_pushinteger(L, (lua_Integer) i);                   \
     lua_settable(L, -3);
 
 // push a literal into table
 // [-0, +0, e]
-#define set_literal(field, l)                             \
+#define set_literal(field, l)                              \
     lua_pushliteral(L, field);                             \
     lua_pushliteral(L, l);                                 \
     lua_settable(L, -3);
 
 // push a string into table
 // [-0, +0, e]
-#define set_lstring(field, s, len)                        \
+#define set_lstring(field, s, len)                         \
     lua_pushliteral(L, field);                             \
     lua_pushlstring(L, s, (size_t) len);                   \
     lua_settable(L, -3);
 
 // push a string into table
 // [-0, +0, e]
-#define set_string(field, s)                              \
+#define set_string(field, s)                               \
     lua_pushliteral(L, field);                             \
     lua_pushstring(L, s);                                  \
     lua_settable(L, -3);
 
 // push a function into table
 // [-0, +0, e]
-#define set_function(field, fn)                           \
+#define set_function(field, fn)                            \
     lua_pushliteral(L, field);                             \
     lua_pushcfunction(L, fn);                              \
     lua_settable(L, -3);
 
 // push a boolean into table
 // [-0, +0, e]
-#define set_boolean(field, b)                             \
+#define set_boolean(field, b)                              \
     lua_pushliteral(L, field);                             \
     lua_pushboolean(L, b);                                 \
     lua_settable(L, -3);
 
 // push a lightuserdata into table
 // [-0, +0, e]
-#define set_lightuserdata(field, p)                       \
+#define set_lightuserdata(field, p)                        \
     lua_pushliteral(L, field);                             \
     if (p) {                                               \
       lua_pushlightuserdata(L, (void *) p);                \
     } else {                                               \
-      lua_pushnil(L);                                       \
-    }                                                       \
+      lua_pushnil(L);                                      \
+    }                                                      \
     lua_settable(L, -3);
 /* ************************************************************************** */
 class vm {
@@ -1438,6 +1454,27 @@ class vm {
     } else {
       lua_pushnil(L);
     }
+  }
+
+  // push lua_pushuserdata or null
+  // [-0, +1, -]
+  void pushuserdata(void* p) {
+    if (p) {
+      lua_pushlightuserdata(L, p);
+    } else {
+      lua_pushnil(L);
+    }
+  }
+
+  // push a Ustring or or null
+  // Ustring is wrapped into a UnitexString object
+  void* pushustring(Ustring* p) {
+//    if (p) {
+//      return lua_pushobject(L, UnitexString)(p);
+//    } else {
+//      lua_pushnil(L);
+      return NULL;
+//    }
   }
 
   // pops a value from the stack and sets it as the new

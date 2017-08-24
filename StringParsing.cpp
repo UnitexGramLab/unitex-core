@@ -96,6 +96,7 @@ for (;;) {
     if ((*(s + 3)) == 0) return 0;
     s += 4;
 }
+ return 0;
 }
 
 

@@ -200,8 +200,14 @@ int tboolean_parameter = 0;
 // a number parameter
 int tnumber_parameter = -1;
 
+// a userdata parameter
+void* tuserdata  = NULL;
+
 // a lightuserdata parameter
 void* tlightuserdata  = NULL;
+
+// a Ustring parameter
+Ustring* tustring  = NULL;
 
 // a char string parameter
 char tstring_parameter_stack[4096*6] = {0};
@@ -443,13 +449,13 @@ for (;;) {
                       } else {
                         fatal_error("Error calling @%S, parameter %d: attempt to concatenate incompatible types into a single parameter\n", function_name, script_params_count+1);
                       }
-                    // the variable is an output one and will be passed by reference
+                    // the variable is an output one and their content will be passed by reference
                     } else {
                       if(param_type != PARAM_TNONE) {
                         fatal_error("Error calling @%S, parameter %d, variable &{%S}: attempt to concatenate a value to a variable reference\n", function_name, script_params_count+1, variable_name);
                       } else {
-                        param_type = PARAM_TLIGHTUSERDATA;
-                        tlightuserdata    = (void*) output;
+                        param_type = PARAM_TUSTRING;
+                        tustring   = output;
                       }
                     }
                   }
@@ -604,8 +610,16 @@ for (;;) {
               case PARAM_TFUNCTION:
                 break;
               case PARAM_TUSERDATA:
+                // push a user data
+                p->elg->pushuserdata(tuserdata);
+                ++script_params_count;
                 break;
               case PARAM_TTHREAD:
+                break;
+              case PARAM_TUSTRING:
+                // push a ustring data
+                p->elg->pushustring(tustring);
+                ++script_params_count;
                 break;
             }
 
