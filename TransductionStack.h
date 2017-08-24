@@ -36,7 +36,9 @@ extern const int TRANSDUCTION_STACK_SIZE;
 //#define TRANSDUCTION_STACK_SIZE 10000
 
 // replaced by is_variable_char
-//int is_variable_char(unichar);
+#if !UNITEX_USE(BASE_UNICODE)
+int is_variable_char(unichar);
+#endif
 
 /* Every character or string that comes from the input text must be
  * pushed with the following functions, because some characters like dots

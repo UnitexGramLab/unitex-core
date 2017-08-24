@@ -43,10 +43,11 @@ const int TRANSDUCTION_STACK_SIZE = 10000;
  * This function returns a non zero value if c can be a part of a variable name;
  * 0 otherwise.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int is_variable_char(unichar c) {
 return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_');
 }
-
+#endif
 
 /**
  * Pushes the given character.
