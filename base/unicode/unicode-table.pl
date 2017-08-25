@@ -249,7 +249,6 @@ my %extraPropertyFlags = (
   'White_Space' => moSpaceGlyphInfo,
 );
 
-
 my %categoryIndexes = (
 	''   => 0,
 	'Lu' => 1,
@@ -1382,7 +1381,7 @@ while (<DERIVED_CORE_PROPERTIES>) {
   my @line = split /;/, $_;
     
   # ignore unwanted properties
-  next if not ($line[1] =~ /^\sDefault_Ignorable_Code_Point/);
+  next if not ($line[1] =~ /^\s(Default_Ignorable_Code_Point)/);
  
   # property range
   $line[0] =~ s/^\s+//g;   # ltrim
@@ -1423,7 +1422,7 @@ while (<PROP_LIST>) {
   my @line = split /;/, $_;
 
   # ignore unwanted properties
-  next if not ($line[1] =~ /^\sWhite_Space/);
+  next if not ($line[1] =~ /^\s(White_Space)/);
  
   # property range
   $line[0] =~ s/^\s+//g;   # ltrim
@@ -1448,16 +1447,8 @@ close PROP_LIST;
 #-------------------------------------------------------------------------------
 
 my %specialChars = (
-  # 0009..000D    ; White_Space # Cc   [5] <control-0009>..<control-000D>
-	0x0009 => moSpaceGlyphInfo,                         # CHARACTER TABULATION
-	0x000A => moSpaceGlyphInfo | moLinebreakGlyphInfo,  # LINE FEED (LF)
-	0x000B => moSpaceGlyphInfo,                         # LINE TABULATION
-	0x000C => moSpaceGlyphInfo,                         # FORM FEED (FF)
-	0x000D => moSpaceGlyphInfo | moLinebreakGlyphInfo,  # CARRIAGE RETURN (CR)
-  # 0085          ; White_Space # Cc       <control-0085>
-  0x0085 => moSpaceGlyphInfo,                         # LINE, NEXT
-	# the UTF-16 BOM is not a space glyph according to PropList-9.0.0.txt
-  # 0xFEFF => moSpaceGlyphInfo,                         # ZERO WIDTH NO-BREAK SPACE (BYTE ORDER MARK)
+	0x000A => moLinebreakGlyphInfo,  # LINE FEED (LF)
+	0x000D => moLinebreakGlyphInfo,  # CARRIAGE RETURN (CR)
 );
 
 #-------------------------------------------------------------------------------
