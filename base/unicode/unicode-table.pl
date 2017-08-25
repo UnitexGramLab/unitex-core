@@ -246,6 +246,7 @@ my %categoryFlags = (
 my %extraPropertyFlags = (
 	''   => 0,
 	'Default_Ignorable_Code_Point' => moIgnorableGlyphInfo,
+  'White_Space' => moSpaceGlyphInfo,
 );
 
 
@@ -773,7 +774,7 @@ $infoFormat = "{$infoFormat},";
 #
 #-------------------------------------------------------------------------------
 
-if (($#ARGV + 1) < 8) {
+if (($#ARGV + 1) < 9) {
 	print "usage $0 " . unicodeVersion . "/UnicodeData.txt "   .
 	                    unicodeVersion . "/SpecialCasing.txt " .
 	                    unicodeVersion . "/Blocks.txt "        .
@@ -781,6 +782,7 @@ if (($#ARGV + 1) < 8) {
                       unicodeVersion . "/CaseFolding.txt "   .
                       unicodeVersion . "/DerivedNormalizationProps.txt " .
                       unicodeVersion . "/DerivedCoreProperties.txt "     .
+                      unicodeVersion . "/PropList.txt "                  .
 	                    unicodeVersion . "/extra/Asciify.txt "             .
 	                    "\n";
 	exit 1;
@@ -1231,7 +1233,7 @@ if(exists $conditionalFlags {'addNormalization'} &&
 #-------------------------------------------------------------------------------
 if(exists $conditionalFlags {'addVariantAsciify'} &&
   $conditionalFlags {'addVariantAsciify'} == 1) {
-  open ASCIIFY, "<$ARGV[7]" or die "File '$ARGV[7]' not found";
+  open ASCIIFY, "<$ARGV[8]" or die "File '$ARGV[8]' not found";
 
   while (<ASCIIFY>) {
     chomp;
@@ -1370,8 +1372,6 @@ close SCRIPT;
 #-------------------------------------------------------------------------------
 open DERIVED_CORE_PROPERTIES, "<$ARGV[6]" or die "File '$ARGV[6]' not found";
 
-my $property_number = 1;
-
 while (<DERIVED_CORE_PROPERTIES>) {
   chomp;
 
@@ -1404,6 +1404,47 @@ while (<DERIVED_CORE_PROPERTIES>) {
 }
 
 close DERIVED_CORE_PROPERTIES;
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#
+# Read PropList
+#
+#-------------------------------------------------------------------------------
+open PROP_LIST, "<$ARGV[7]" or die "File '$ARGV[7]' not found";
+
+while (<PROP_LIST>) {
+  chomp;
+
+  # ignore empty lines and comments
+  next if ($_ =~ /^$|^#/);
+  
+  # parse the line
+  my @line = split /;/, $_;
+
+  # ignore unwanted properties
+  next if not ($line[1] =~ /^\sWhite_Space/);
+ 
+  # property range
+  $line[0] =~ s/^\s+//g;   # ltrim
+  $line[0] =~ s/\s+$//g;   # rtrim
+  my @range = split /\.\./, $line[0];
+  $range[0] = defined($range[0]) ? hex ($range[0]) : 0;
+  $range[1] = defined($range[1]) ? hex ($range[1]) : $range[0];
+  
+  my $property_name  = $line[1];
+  $property_name =~ s/^\s+//g;   # ltrim
+  $property_name =~ s/\s+$//g;   # rtrim
+  $property_name =~ s/ #.*$//g;  # clean name
+  
+  for (my $i = $range[0]; $i <= $range[1]; $i ++) {
+    # ignore code points beyond $maxHexValue
+    next if ($i > $maxHexValue);
+    $extraProperty[$i] |= $extraPropertyFlags{$property_name};
+  }
+}
+
+close PROP_LIST;
 #-------------------------------------------------------------------------------
 
 my %specialChars = (

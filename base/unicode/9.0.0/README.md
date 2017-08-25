@@ -7,6 +7,7 @@
 - http://www.unicode.org/Public/9.0.0/ucd/Blocks.txt
 - http://www.unicode.org/Public/9.0.0/ucd/Scripts.txt
 - http://www.unicode.org/Public/9.0.0/ucd/DerivedCoreProperties.txt
+- http://www.unicode.org/Public/9.0.0/ucd/PropList.txt
 
 ## Related documentation
 
