@@ -357,22 +357,22 @@ typedef enum {
  * be located between kUSpecialVariants[index+1] and kUSpecialVariants[index+n]
  */
 typedef enum {
-	U_CASE_UPPER    = 0,  ///< value to be added to `c` to get its uppercase variant
-	U_CASE_LOWER    = 1,  ///< value to be added to `c` to get its lowercase variant
-	U_CASE_TITLE    = 2,  ///< value to be added to `c` to get its titlecase variant
+  U_CASE_UPPER    = 0,  ///< value to be added to `c` to get its uppercase variant
+  U_CASE_LOWER    = 1,  ///< value to be added to `c` to get its lowercase variant
+  U_CASE_TITLE    = 2,  ///< value to be added to `c` to get its titlecase variant
   U_CASE_FOLD     = 3,  ///< value to be added to `c` to get its foldcase variant
-	U_CHAR_UNACCENT = 4,  ///< unaccent variant of  `c` (no arithmetic performed)
+  U_CHAR_UNACCENT = 4,  ///< unaccent variant of  `c` (no arithmetic performed)
 } u_variant_t;
 
 /**
  * Character info
  */
 typedef struct {
-	u_flags_int_t    flags;       ///< flags: 0 or more flags listed in `u_flag`
-	u_category_int_t category;    ///< category: One of the categories listed in `u_category_t`
-	u_script_int_t   script;      ///< script: One of the scripts listed in `u_script_t`
+  u_flags_int_t    flags;       ///< flags: 0 or more flags listed in `u_flag`
+  u_category_int_t category;    ///< category: One of the categories listed in `u_category_t`
+  u_script_int_t   script;      ///< script: One of the scripts listed in `u_script_t`
   u_bidi_int_t     bidi;        ///< bidi class: one of the classes listed in `u_bidi_t`
-	u_variants_int_t variant[5];  ///< indexable with `u_variant_t`
+  u_variants_int_t variant[5];  ///< indexable with `u_variant_t`
 } u_info_t;
 
 /**
@@ -430,17 +430,17 @@ namespace {   // namespace unitex::{unnamed}, enforce one-definition-rule
  */
 UNITEX_FORCE_INLINE
 const u_info_t* u_lookup(const unichar c) {
-	uint16_t page;
+  uint16_t page;
   uint16_t offset;
 
-	if (u_is_invalid(c)) {
-		return &kUInfo[0];
-	}
+  if (u_is_invalid(c)) {
+    return &kUInfo[0];
+  }
 
-	page = kUPageIndex[c >> 8u];
-	offset = kUInfoIndex[page][c & 0xFF];
+  page = kUPageIndex[c >> 8u];
+  offset = kUInfoIndex[page][c & 0xFF];
 
-	return &kUInfo[offset];
+  return &kUInfo[offset];
 }
 /* ************************************************************************** */
 }  // namespace unitex::unnamed
