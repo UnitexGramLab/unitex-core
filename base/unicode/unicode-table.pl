@@ -57,7 +57,7 @@
 # - new cache char sequences on makeCharSequence
 # - new add Canonical_Combining_Class Values  (using data from UnicodeData.txt)
 # - add 'moIdentifierGlyphInfo' flag (a-z,A-z,_)
-# - update specialChars: 0x0085 (LINE, NEXT)
+# - update specialChars: now White_Space is on $extraProperty (computed using PropList.txt)
 # - add 'moIgnorableGlyphInfo' flag (computed using data from DerivedCoreProperties.txt)
 # Templates:
 # - replace #pragma once by macro guards
