@@ -31,34 +31,26 @@
 
 /* ************************************************************************** */
 // Other libraries' .h files (order the includes alphabetically)
-#include <lua.hpp>
+
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
-#include "ELGLib/ELGLib.h"
+#include "ELGLib/common.h"
 #include "UnitexString.h"
 /* ************************************************************************** */
-#define EXTENSION_NAME_USTRING        "elg.ustring"
+#define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG,USTRING)
+#define FUNCTION_PREFIX_USTRING       FUNCTION_PREFIX_2(ELG,USTRING)
 #define EXTENSION_VERSION_USTRING     "0.1.0"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
 namespace elg {
 /* ************************************************************************** */
-// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-template<typename T>
-int GCMethod(lua_State* L) {
-  static_cast<T*>(lua_touserdata(L, 1))->~T();
-  return 0;
-}
-/* ************************************************************************** */
-#define NullEntry(_table) (_table + ((sizeof _table/sizeof _table[0]) - 1))
-/* ************************************************************************** */
 namespace ustring {
 /* ************************************************************************** */
 namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-/* static */ int format(lua_State* L) {
+/* static */ int elg_ustring_format(lua_State* L) {
   // get locate params
   struct locate_parameters* p = get_locate_params(L);
   if(p) {
@@ -70,7 +62,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   return 0;
 }
 /* ************************************************************************** */
-/* static */ int print(lua_State* L) {
+/* static */ int elg_ustring_print(lua_State* L) {
   // check if there is at least an argument on the stack
   if(lua_gettop(L) >= 1) {
     // returns the light userdata pointer. Otherwise, returns NULL
@@ -94,26 +86,26 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   return 0;
 }
 /* ************************************************************************** */
-/* static */ const struct luaL_Reg lua_lib[] = {
-  {"format", elg::ustring::format},
-  {"print", elg::ustring::print},
+/* static */ const struct luaL_Reg lua_lib_functions[] = {
   {NULL, NULL}
 };
 /* ************************************************************************** */
-/* static */  const struct luaL_Reg lua_lib_meta[] = {
-  {"__gc", GCMethod<UnitexString>},
+/* static */  const struct luaL_Reg lua_lib_methods[] = {
+  DeclFuncEntry(USTRING, format),
+  DeclFuncEntry(USTRING, print),
+  DeclGCEntry(UnitexString),
   {NULL, NULL}};
 /* ************************************************************************** */
 int luaopen_ustring(lua_State *L) {
   // -------------------------------------------
-  // create the module table
+  // create the lib table
   // [-0, +1] > (+1)
   //lua_newtable(L);
-  //  luaL_register(L, EXTENSION_FULL_NAME_USTRING, NullEntry(lua_lib));
+  //  luaL_register(L, EXTENSION_FULL_NAME_USTRING, NullReference(lua_lib));
   //  elg_stack_dump(L);
 
-  // register functions into the module table
-  luaL_register(L, EXTENSION_NAME_USTRING, lua_lib);
+  // register functions into the lib table
+  luaL_register(L, EXTENSION_NAME_USTRING, lua_lib_functions);
   elg_stack_dump(L);
 
   // set the name of the module
@@ -131,20 +123,24 @@ int luaopen_ustring(lua_State *L) {
   luaL_newmetatable(L, EXTENSION_NAME_USTRING);
   elg_stack_dump(L);
 
+  // duplicate the metatable
   lua_pushvalue(L, -1);
   elg_stack_dump(L);
 
+  // mt.__index = mt
   lua_setfield(L, -2, "__index");
   elg_stack_dump(L);
 
-  luaL_register(L, NULL, lua_lib_meta);
+  // register metamethods
+  luaL_register(L, NULL, lua_lib_methods);
   elg_stack_dump(L);
 
+  // assign the metatable to the lib table
   lua_setmetatable(L, -2);
   elg_stack_dump(L);
 
   // -------------------------------------------
-  // add functions table to the elg module
+  // add the lib table to the elg lib table
   lua_setfield(L, -2,  EXTENSION_NAME_USTRING);
   elg_stack_dump(L);
 

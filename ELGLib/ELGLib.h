@@ -31,12 +31,13 @@
 
 /* ************************************************************************** */
 // Other libraries' .h files (order the includes alphabetically)
-#include <lua.hpp>
+
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
-#include "uString/uString.h"
+#include "ELGLib/common.h"
+#include "ELGLib/uString/uString.h"
 /* ************************************************************************** */
-#define EXTENSION_NAME_ELG     "elg"
+#define EXTENSION_NAME_ELG     EXTENSION_NAME_1(ELG)
 #define EXTENSION_VERSION_ELG  "0.1.0"
 /* ************************************************************************** */
 namespace unitex {
