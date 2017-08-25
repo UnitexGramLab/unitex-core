@@ -1463,8 +1463,9 @@ class vm {
     }
   }
 
-  // push a Ustring or or null
+  // push a Ustring or null
   // Ustring is wrapped into a UnitexString object
+  // No memory is allocated for p
   void* pushlightustring(Ustring* p) {
     if (p) {
       return lua_pushlightobject(L, UnitexString, EXTENSION_NAME_USTRING)(p);

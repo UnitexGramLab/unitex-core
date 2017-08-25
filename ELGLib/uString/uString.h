@@ -34,10 +34,10 @@
 #include <lua.hpp>
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
-#include "ELG_API.h"
+#include "ELGLib/ELGLib.h"
 #include "UnitexString.h"
 /* ************************************************************************** */
-#define EXTENSION_NAME_USTRING        "ustring"
+#define EXTENSION_NAME_USTRING        "elg.ustring"
 #define EXTENSION_VERSION_USTRING     "0.1.0"
 /* ************************************************************************** */
 namespace unitex {
@@ -50,6 +50,8 @@ int GCMethod(lua_State* L) {
   static_cast<T*>(lua_touserdata(L, 1))->~T();
   return 0;
 }
+/* ************************************************************************** */
+#define NullEntry(_table) (_table + ((sizeof _table/sizeof _table[0]) - 1))
 /* ************************************************************************** */
 namespace ustring {
 /* ************************************************************************** */
@@ -106,11 +108,12 @@ int luaopen_ustring(lua_State *L) {
   // -------------------------------------------
   // create the module table
   // [-0, +1] > (+1)
-  lua_newtable(L);
-  elg_stack_dump(L);
+  //lua_newtable(L);
+  //  luaL_register(L, EXTENSION_FULL_NAME_USTRING, NullEntry(lua_lib));
+  //  elg_stack_dump(L);
 
   // register functions into the module table
-  luaL_register(L, NULL, lua_lib);
+  luaL_register(L, EXTENSION_NAME_USTRING, lua_lib);
   elg_stack_dump(L);
 
   // set the name of the module

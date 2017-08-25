@@ -470,12 +470,12 @@ for (;;) {
                   }
                 // the variable is an input one and will be passed by reference
                 } else if (variable_pass_type == VARIABLE_PASS_BY_REFERENCE) {
-                  if(!is_empty(parameter_stack)) {
-                    fatal_error("ELG error: calling @%S, parameter %d, variable &{%S}: attempt to concatenate a string to a variable reference\n", function_name, script_params_count+1, variable_name);
-                  } else {
-                    param_type = PARAM_TNUMBER;
-                    tnumber_parameter = variable_index;
-                  }
+                    if(!is_empty(parameter_stack)) {
+                      fatal_error("ELG error: calling @%S, parameter %d, variable &{%S}: attempt to concatenate a string to a variable reference\n", function_name, script_params_count+1, variable_name);
+                    } else {
+                      param_type = PARAM_TNUMBER;
+                      tnumber_parameter = variable_index;
+                    }
                 // the variable is an input one and will be passed by value
                 } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
                   // 01.08.15 : to handle nil params
