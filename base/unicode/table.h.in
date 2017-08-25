@@ -226,13 +226,13 @@ typedef enum {
  * be located between {k:SpecialVariants}[index+1] and {k:SpecialVariants}[index+n]
  */
 typedef enum {
-	{c:CaseUpper}    = 0,  ///< value to be added to `c` to get its uppercase variant
-	{c:CaseLower}    = 1,  ///< value to be added to `c` to get its lowercase variant
-	{c:CaseTitle}    = 2,  ///< value to be added to `c` to get its titlecase variant
+  {c:CaseUpper}    = 0,  ///< value to be added to `c` to get its uppercase variant
+  {c:CaseLower}    = 1,  ///< value to be added to `c` to get its lowercase variant
+  {c:CaseTitle}    = 2,  ///< value to be added to `c` to get its titlecase variant
   {c:CaseFold}     = 3,  ///< value to be added to `c` to get its foldcase variant
 {endif:}
 {if:addVariantUnnacent}
-	{c:CharUnaccent} = 4,  ///< unaccent variant of  `c` (no arithmetic performed)
+  {c:CharUnaccent} = 4,  ///< unaccent variant of  `c` (no arithmetic performed)
 {endif:}
 {if:addVariantAsciify}
   {c:CharAsciify}  = 5,  ///< value to be added to `c` to get its asciify variant
@@ -246,16 +246,16 @@ typedef enum {
  */
 typedef struct {
 {if:addFlags}
-	{n:FlagsIntT}    flags;       ///< flags: 0 or more flags listed in `{n:flag}`
+  {n:FlagsIntT}    flags;       ///< flags: 0 or more flags listed in `{n:flag}`
 {endif:}
 {if:addBlocks}
-	{n:BlockIntT}    block;       ///< block: one of the Unicode blocks listed in `{n:BlockT}`
+  {n:BlockIntT}    block;       ///< block: one of the Unicode blocks listed in `{n:BlockT}`
 {endif:}
 {if:addCategories}
-	{n:CategoryIntT} category;    ///< category: One of the categories listed in `{n:CategoryT}`
+  {n:CategoryIntT} category;    ///< category: One of the categories listed in `{n:CategoryT}`
 {endif:}
 {if:addScripts}
-	{n:ScriptIntT}   script;      ///< script: One of the scripts listed in `{n:ScriptT}`
+  {n:ScriptIntT}   script;      ///< script: One of the scripts listed in `{n:ScriptT}`
 {endif:}
 {if:addBidiClasses}
   {n:BidiIntT}     bidi;        ///< bidi class: one of the classes listed in `{n:BidiT}`
@@ -273,13 +273,13 @@ typedef struct {
   } decomposition;
 {endif:}
 {if:addVariants}
-	{n:VariantsIntT} variant[{v:variantsSize}];  ///< indexable with `{n:VariantT}`
+  {n:VariantsIntT} variant[{v:variantsSize}];  ///< indexable with `{n:VariantT}`
 {endif:}
 {if:addNumbers}
-	union {
-		{n:NumbersIntT} num;  ///< number value if `flags & {c:FlagNumber}`
-		const char* frac;    ///< fraction string if `flags & {c:FlagFraction}`
-	};
+  union {
+    {n:NumbersIntT} num;  ///< number value if `flags & {c:FlagNumber}`
+    const char* frac;    ///< fraction string if `flags & {c:FlagFraction}`
+  };
 {endif:}
 } {n:InfoT};
 
@@ -347,17 +347,17 @@ namespace {   // namespace unitex::{unnamed}, enforce one-definition-rule
  */
 UNITEX_FORCE_INLINE
 const {n:InfoT}* {n:Lookup}(const {v:charName} c) {
-	{v:pagesType} page;
+  {v:pagesType} page;
   {v:infoType} offset;
 
-	if ({n:IsInvalid}(c)) {
-		return &{k:Info}[0];
-	}
+  if ({n:IsInvalid}(c)) {
+    return &{k:Info}[0];
+  }
 
-	page = {k:PageIndex}[c >> 8u];
-	offset = {k:InfoIndex}[page][c & 0xFF];
+  page = {k:PageIndex}[c >> 8u];
+  offset = {k:InfoIndex}[page][c & 0xFF];
 
-	return &{k:Info}[offset];
+  return &{k:Info}[offset];
 }
 /* ************************************************************************** */
 }  // namespace unitex::unnamed

@@ -1062,7 +1062,7 @@ class vm {
       elg_stack_dump(state);
       lua_pop(state,1);
       elg_stack_dump(state);
-      luaL_error(state,"Error loading %s: %s\n", file_name, e);
+      luaL_error(state,"ELG error: %s\n", e);
     }
     return retval;
   }
