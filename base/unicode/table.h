@@ -125,11 +125,12 @@ typedef enum {
   U_FLAG_CONTROL         = 1 << 10,  ///< Cc
   U_FLAG_SYMBOL          = 1 << 11,  ///< Sm, Sc, Sk, So
   U_FLAG_IDENTIFIER      = 1 << 12,  ///< 0-9, A-Z, a-z, _
-  U_FLAG_OTHER           = 1 << 13,  ///< Mn, Mc, Me, Cf, Cs, Co, Cn
-  U_FLAG_UPPER_EXPANDS   = 1 << 15,  ///< uppercase expands to multiple characters
-  U_FLAG_LOWER_EXPANDS   = 1 << 16,  ///< lowercase expands to multiple characters
-  U_FLAG_TITLE_EXPANDS   = 1 << 17,  ///< titlecase expands to multiple characters
-  U_FLAG_FOLD_EXPANDS    = 1 << 18,  ///< foldcase expands to multiple characters
+  U_FLAG_IGNORABLE       = 1 << 13,  ///< character should be ignored in processing
+  U_FLAG_OTHER           = 1 << 14,  ///< Mn, Mc, Me, Cf, Cs, Co, Cn
+  U_FLAG_UPPER_EXPANDS   = 1 << 16,  ///< uppercase expands to multiple characters
+  U_FLAG_LOWER_EXPANDS   = 1 << 17,  ///< lowercase expands to multiple characters
+  U_FLAG_TITLE_EXPANDS   = 1 << 18,  ///< titlecase expands to multiple characters
+  U_FLAG_FOLD_EXPANDS    = 1 << 19,  ///< foldcase expands to multiple characters
 } u_flag_t;
 
 /**

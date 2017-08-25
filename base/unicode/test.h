@@ -130,6 +130,7 @@ U__DECLARE__FUNCTION__TEST__(u_test_bidi,,
 #define u_has_flag_control(c)                                          u_test_flag(c,U_FLAG_CONTROL)
 #define u_has_flag_symbol(c)                                           u_test_flag(c,U_FLAG_SYMBOL)
 #define u_has_flag_identifier(c)                                       u_test_flag(c,U_FLAG_IDENTIFIER)
+#define u_has_flag_ignorable(c)                                        u_test_flag(c,U_FLAG_IGNORABLE)
 #define u_has_flag_other(c)                                            u_test_flag(c,U_FLAG_OTHER)
 #define u_has_flag_upper_expands(c)                                    u_test_flag(c,U_FLAG_UPPER_EXPANDS)
 #define u_has_flag_lower_expands(c)                                    u_test_flag(c,U_FLAG_LOWER_EXPANDS)

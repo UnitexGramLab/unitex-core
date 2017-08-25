@@ -3,9 +3,9 @@
 # Copyright (c) 2016 Cristian Martinez
 # https://github.com/UnitexGramLab/unitex-core/tree/master/base/unicode
 #
-# Copyright (c) 2016 Simon Schoenenberger
-# https://github.com/detomon/unicode-table (v0.3.2)
+# Based on https://github.com/detomon/unicode-table (v0.3.2)
 # https://github.com/detomon/unicode-table/blob/773e2d13/src/generate.pl
+# Copyright (c) 2016 Simon Schoenenberger
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the "Software"),
@@ -55,9 +55,10 @@
 # - new Unicode Bidi classes (using data from UnicodeData.txt)
 # - new '{k:Foo}' constant style to create const 'kFoo' variables
 # - new cache char sequences on makeCharSequence
-# - new add Canonical_Combining_Class Values  (using data from UnicodeData.txt
-# - add 'moIdentifierGlyphInfo' flag
+# - new add Canonical_Combining_Class Values  (using data from UnicodeData.txt)
+# - add 'moIdentifierGlyphInfo' flag (a-z,A-z,_)
 # - update specialChars: 0x0085 (LINE, NEXT)
+# - add 'moIgnorableGlyphInfo' flag (computed using data from DerivedCoreProperties.txt)
 # Templates:
 # - replace #pragma once by macro guards
 # - replace #include 'stdint.h' by 'base/integer/types.h'
@@ -113,19 +114,21 @@ use constant moSpaceGlyphInfo          => 1 << 4;
 use constant moLinebreakGlyphInfo      => 1 << 5;
 use constant moPunctuationGlyphInfo    => 1 << 6;
 use constant moDigitGlyphInfo          => 1 << 7;
+# use constant moHexDigitGlyphInfo    => 1 << 8;
 use constant moNumberGlyphInfo         => 1 << 8;
 use constant moFractionGlyphInfo       => 1 << 9;
 use constant moControlGlyphInfo        => 1 << 10;
 use constant moSymbolGlyphInfo         => 1 << 11;
 use constant moIdentifierGlyphInfo     => 1 << 12;
-use constant moOtherGlyphInfo          => 1 << 13;
-use constant moMapExpandsGlyphInfo     => 1 << 14;
-use constant moUpperExpandsGlyphInfo   => 1 << 15;
-use constant moLowerExpandsGlyphInfo   => 1 << 16;
-use constant moTitleExpandsGlyphInfo   => 1 << 17;
-use constant moFoldExpandsGlyphInfo    => 1 << 18;
-use constant moAsciifyExpandsGlyphInfo => 1 << 19;
-# use constant moHexaDigitGlyphInfo    => 1 << 8;
+use constant moIgnorableGlyphInfo      => 1 << 13;
+use constant moOtherGlyphInfo          => 1 << 14;
+use constant moMapExpandsGlyphInfo     => 1 << 15;
+use constant moUpperExpandsGlyphInfo   => 1 << 16;
+use constant moLowerExpandsGlyphInfo   => 1 << 17;
+use constant moTitleExpandsGlyphInfo   => 1 << 18;
+use constant moFoldExpandsGlyphInfo    => 1 << 19;
+use constant moAsciifyExpandsGlyphInfo => 1 << 20;
+
 
 use constant caseUpper   => 0;
 use constant caseLower   => 1;
@@ -148,6 +151,7 @@ my %flagIndexes = (
  'Control'        => moControlGlyphInfo,
  'Symbol'         => moSymbolGlyphInfo,
  'Identifier'     => moIdentifierGlyphInfo,
+ 'Ignorable'      => moIgnorableGlyphInfo,
  'Other'          => moOtherGlyphInfo,
  'MapExpands'     => moMapExpandsGlyphInfo,
  'UpperExpands'   => moUpperExpandsGlyphInfo,
@@ -171,6 +175,7 @@ my %flagInUse = (
  'Control'        => 1,
  'Symbol'         => 1,
  'Identifier'     => 1,
+ 'Ignorable'      => 1,
  'Other'          => 1,
  'MapExpands'     => 0,
  'UpperExpands'   => 0,
@@ -194,6 +199,7 @@ my %flagDescription = (
  'Control'        => 'Cc',
  'Symbol'         => 'Sm, Sc, Sk, So',
  'Identifier'     => '0-9, A-Z, a-z, _',
+ 'Ignorable'      => 'character should be ignored in processing',
  'Other'          => 'Mn, Mc, Me, Cf, Cs, Co, Cn',
  'MapExpands'     => 'decomposition mapping consist of 4 or more code points',
  'UpperExpands'   => 'uppercase expands to multiple characters',
@@ -236,6 +242,12 @@ my %categoryFlags = (
 	'Co' => moOtherGlyphInfo,
 	'Cn' => moOtherGlyphInfo,
 );
+
+my %extraPropertyFlags = (
+	''   => 0,
+	'Default_Ignorable_Code_Point' => moIgnorableGlyphInfo,
+);
+
 
 my %categoryIndexes = (
 	''   => 0,
@@ -761,13 +773,14 @@ $infoFormat = "{$infoFormat},";
 #
 #-------------------------------------------------------------------------------
 
-if (($#ARGV + 1) < 7) {
+if (($#ARGV + 1) < 8) {
 	print "usage $0 " . unicodeVersion . "/UnicodeData.txt "   .
 	                    unicodeVersion . "/SpecialCasing.txt " .
 	                    unicodeVersion . "/Blocks.txt "        .
 	                    unicodeVersion . "/Scripts.txt "       .
                       unicodeVersion . "/SpecialCasing.txt " .
                       unicodeVersion . "/DerivedNormalizationProps.txt " .
+                      unicodeVersion . "/DerivedCoreProperties.txt "     .
 	                    unicodeVersion . "/extra/Asciify.txt "             .
 	                    "\n";
 	exit 1;
@@ -784,6 +797,7 @@ my @block         = (0 .. (tableSize - 1));
 my @script        = (0 .. (tableSize - 1));
 my @casefold      = (0 .. (tableSize - 1));
 my @asciify       = (0 .. (tableSize - 1));
+my @extraProperty = (0 .. (tableSize - 1));
 my @quickCheck    = (0 .. (tableSize - 1));
 my %special       = ();
 my %simple        = ();
@@ -797,8 +811,9 @@ for (my $i = 0; $i < tableSize; $i ++) {
 	$data [$i] = 0;
 	$block[$i] = 0;
 	$script[$i] = 0;
+ 	$casefold[$i] = 0;
 	$asciify[$i] = 0;
-	$casefold[$i] = 0;
+  $extraProperty[$i] = 0;
 	$quickCheck[$i] = $normalizationQuickCheckIndexes{'Yes'};
 }
 
@@ -1216,7 +1231,7 @@ if(exists $conditionalFlags {'addNormalization'} &&
 #-------------------------------------------------------------------------------
 if(exists $conditionalFlags {'addVariantAsciify'} &&
   $conditionalFlags {'addVariantAsciify'} == 1) {
-  open ASCIIFY, "<$ARGV[6]" or die "File '$ARGV[6]' not found";
+  open ASCIIFY, "<$ARGV[7]" or die "File '$ARGV[7]' not found";
 
   while (<ASCIIFY>) {
     chomp;
@@ -1349,7 +1364,47 @@ while (<SCRIPT>) {
 close SCRIPT;
 
 #-------------------------------------------------------------------------------
+#
+# Read DerivedCoreProperties
+#
+#-------------------------------------------------------------------------------
+open DERIVED_CORE_PROPERTIES, "<$ARGV[6]" or die "File '$ARGV[6]' not found";
 
+my $property_number = 1;
+
+while (<DERIVED_CORE_PROPERTIES>) {
+  chomp;
+
+  # ignore empty lines and comments
+  next if ($_ =~ /^$|^#/);
+  
+  # parse the line
+  my @line = split /;/, $_;
+    
+  # ignore unwanted properties
+  next if not ($line[1] =~ /^\sDefault_Ignorable_Code_Point/);
+ 
+  # property range
+  $line[0] =~ s/^\s+//g;   # ltrim
+  $line[0] =~ s/\s+$//g;   # rtrim
+  my @range = split /\.\./, $line[0];
+  $range[0] = defined($range[0]) ? hex ($range[0]) : 0;
+  $range[1] = defined($range[1]) ? hex ($range[1]) : $range[0];
+  
+  my $property_name  = $line[1];
+  $property_name =~ s/^\s+//g;   # ltrim
+  $property_name =~ s/\s+$//g;   # rtrim
+  $property_name =~ s/ #.*$//g;  # clean name
+  
+  for (my $i = $range[0]; $i <= $range[1]; $i ++) {
+    # ignore code points beyond $maxHexValue
+    next if ($i > $maxHexValue);
+    $extraProperty[$i] = $extraPropertyFlags{$property_name};
+  }
+}
+
+close DERIVED_CORE_PROPERTIES;
+#-------------------------------------------------------------------------------
 
 my %specialChars = (
   # 0009..000D    ; White_Space # Cc   [5] <control-0009>..<control-000D>
@@ -1496,7 +1551,6 @@ while (<DATA>) {
          $code == 0x005F ) {                    # _
       $info |= moIdentifierGlyphInfo;
     }
-
 
 		$pages [$code >> 8] = 1;
 
