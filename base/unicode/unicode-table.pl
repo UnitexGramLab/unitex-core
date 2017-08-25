@@ -55,7 +55,9 @@
 # - new Unicode Bidi classes (using data from UnicodeData.txt)
 # - new '{k:Foo}' constant style to create const 'kFoo' variables
 # - new cache char sequences on makeCharSequence
-# - new add Canonical_Combining_Class Values  (using data from UnicodeData.txt)
+# - new add Canonical_Combining_Class Values  (using data from UnicodeData.txt
+# - add 'moIdentifierGlyphInfo' flag
+# - update specialChars: 0x0085 (LINE, NEXT)
 # Templates:
 # - replace #pragma once by macro guards
 # - replace #include 'stdint.h' by 'base/integer/types.h'
@@ -1350,12 +1352,16 @@ close SCRIPT;
 
 
 my %specialChars = (
+  # 0009..000D    ; White_Space # Cc   [5] <control-0009>..<control-000D>
 	0x0009 => moSpaceGlyphInfo,                         # CHARACTER TABULATION
 	0x000A => moSpaceGlyphInfo | moLinebreakGlyphInfo,  # LINE FEED (LF)
 	0x000B => moSpaceGlyphInfo,                         # LINE TABULATION
 	0x000C => moSpaceGlyphInfo,                         # FORM FEED (FF)
 	0x000D => moSpaceGlyphInfo | moLinebreakGlyphInfo,  # CARRIAGE RETURN (CR)
-	0xFEFF => moSpaceGlyphInfo,                         # ZERO WIDTH NO-BREAK SPACE (BYTE ORDER MARK)
+  # 0085          ; White_Space # Cc       <control-0085>
+  0x0085 => moSpaceGlyphInfo,                         # LINE, NEXT
+	# the UTF-16 BOM is not a space glyph according to PropList-9.0.0.txt
+  # 0xFEFF => moSpaceGlyphInfo,                         # ZERO WIDTH NO-BREAK SPACE (BYTE ORDER MARK)
 );
 
 #-------------------------------------------------------------------------------
