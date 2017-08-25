@@ -23,7 +23,6 @@
  * @brief     Functions to lookup Unicode v9.0.0 code points
  *
  * @author    cristian.martinez@univ-paris-est.fr (martinec)
- *            simon.schoenenberger (detomon)
  *
  * @attention Do not include this file directly, rather include the
  *            base/common.h header file to gain this file's functionality
@@ -39,7 +38,6 @@
  *
  * This file was automatically generated using an enhanced version of unicode-table 0.3.2
  * @see https://github.com/UnitexGramLab/unitex-core/tree/master/base/unicode
- * The original version is available at @see https://github.com/detomon/unicode-table
  */
 /* ************************************************************************** */
 #ifndef UNITEX_BASE_UNICODE_TABLE_H_                                // NOLINT

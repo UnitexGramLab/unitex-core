@@ -1399,7 +1399,7 @@ while (<DERIVED_CORE_PROPERTIES>) {
   for (my $i = $range[0]; $i <= $range[1]; $i ++) {
     # ignore code points beyond $maxHexValue
     next if ($i > $maxHexValue);
-    $extraProperty[$i] = $extraPropertyFlags{$property_name};
+    $extraProperty[$i] |= $extraPropertyFlags{$property_name};
   }
 }
 
@@ -1550,6 +1550,11 @@ while (<DATA>) {
         ($code >= 0x0061 && $code <= 0x007A) || # a-z
          $code == 0x005F ) {                    # _
       $info |= moIdentifierGlyphInfo;
+    }
+
+    #extraProperties
+    if ($extraProperty[$code] > 0) {
+      $info |= $extraProperty[$code];
     }
 
 		$pages [$code >> 8] = 1;
@@ -1718,7 +1723,6 @@ my %printMethods = (
     print $out " * \@brief     Functions to lookup Unicode v" . unicodeVersion ." code points\n";
     print $out " *\n";
     print $out " * \@author    cristian.martinez\@univ-paris-est.fr (martinec)\n";
-    print $out " *            simon.schoenenberger (detomon)\n";
     print $out " *\n";
     print $out " * \@attention Do not include this file directly, rather include the\n";
     print $out " *            base/common.h header file to gain this file's functionality\n";
@@ -1734,7 +1738,6 @@ my %printMethods = (
     print $out " *\n";
     print $out " * This file was automatically generated using an enhanced version of unicode-table 0.3.2\n";
     print $out " * \@see https://github.com/UnitexGramLab/unitex-core/tree/master/base/unicode\n";
-    print $out " * The original version is available at \@see https://github.com/detomon/unicode-table\n";
 	},
 	'categories' => sub {
 		my $out = shift;
