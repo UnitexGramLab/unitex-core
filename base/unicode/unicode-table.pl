@@ -778,7 +778,7 @@ if (($#ARGV + 1) < 8) {
 	                    unicodeVersion . "/SpecialCasing.txt " .
 	                    unicodeVersion . "/Blocks.txt "        .
 	                    unicodeVersion . "/Scripts.txt "       .
-                      unicodeVersion . "/SpecialCasing.txt " .
+                      unicodeVersion . "/CaseFolding.txt "   .
                       unicodeVersion . "/DerivedNormalizationProps.txt " .
                       unicodeVersion . "/DerivedCoreProperties.txt "     .
 	                    unicodeVersion . "/extra/Asciify.txt "             .
