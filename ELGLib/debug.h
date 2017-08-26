@@ -34,6 +34,8 @@
 #include <lua.hpp>
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
+#include "Unicode.h"
+#include "base/debug/build_mode.h"
 /* ************************************************************************** */
 #define elg_error(L,message)                        \
   return luaL_error(L,"[%s:%s:%d] Error: %s",       \

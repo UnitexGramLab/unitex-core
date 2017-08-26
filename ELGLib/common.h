@@ -38,24 +38,29 @@
 #include "ELGLib/debug.h"
 #include "base/preprocessor/stringify.h"
 /* ************************************************************************** */
-#define EXTENSION_ID_ELG       elg
-#define EXTENSION_ID_USTRING   ustring
+#define EXTENSION_ID_ELG          elg
+#define EXTENSION_ID_USTRING      ustring
 /* ************************************************************************** */
-#define EXTENSION_NAME_1(_1)     UNITEX_PP_STRINGIFY_VALUE(UNITEX_PP_TOKEN_PASTE(\
-                                 EXTENSION_ID_,_1))
-#define EXTENSION_NAME_2(_1,_2)  UNITEX_PP_STRINGIFY_VALUE(UNITEX_PP_TOKEN_PASTE(\
-                                 EXTENSION_ID_,_1).UNITEX_PP_TOKEN_PASTE(        \
-                                 EXTENSION_ID_,_2))
-#define FUNCTION_PREFIX_2(_1,_2) UNITEX_PP_TOKEN_PASTE(UNITEX_PP_TOKEN_PASTE(    \
-                                 UNITEX_PP_TOKEN_PASTE(UNITEX_PP_TOKEN_PASTE(    \
-                                 EXTENSION_ID_,_1),_),UNITEX_PP_TOKEN_PASTE(     \
-                                 EXTENSION_ID_,_2)),_)
+#define EXTENSION_NAME_1(_1)      UNITEX_PP_STRINGIFY_VALUE(UNITEX_PP_TOKEN_PASTE(\
+                                  EXTENSION_ID_,_1))
+#define EXTENSION_NAME_2(_1,_2)   UNITEX_PP_STRINGIFY_VALUE(UNITEX_PP_TOKEN_PASTE(\
+                                  EXTENSION_ID_,_1).UNITEX_PP_TOKEN_PASTE(        \
+                                  EXTENSION_ID_,_2))
+#define FUNCTION_PREFIX_2(_1,_2)  UNITEX_PP_TOKEN_PASTE(UNITEX_PP_TOKEN_PASTE(    \
+                                  UNITEX_PP_TOKEN_PASTE(UNITEX_PP_TOKEN_PASTE(    \
+                                  EXTENSION_ID_,_1),_),UNITEX_PP_TOKEN_PASTE(     \
+                                  EXTENSION_ID_,_2)),_)
 /* ************************************************************************** */
 #define DeclFuncEntry(_id,_func) \
   {UNITEX_PP_STRINGIFY_NAME(_func), UNITEX_PP_TOKEN_PASTE(FUNCTION_PREFIX_##_id,_func)}
 #define DeclGCEntry(_class)      {"__gc", GCMethod<_class>}
 /* ************************************************************************** */
 #define NullReference(_table)    (_table + ((sizeof _table/sizeof _table[0]) - 1))
+/* ************************************************************************** */
+#define LIGHTOBJECT_UnitexString EXTENSION_NAME_2(ELG,USTRING)
+/* ************************************************************************** */
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+void* operator new(size_t size, lua_State* L, const char* metatableName);
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -67,6 +72,18 @@ int GCMethod(lua_State* L) {
   static_cast<T*>(lua_touserdata(L, 1))->~T();
   return 0;
 }
+
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+#define lua_pushobject(L, T) new(L, #T) T
+
+// @source http://lua-users.org/wiki/DoItYourselfCppBinding
+#define lua_userdata_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
+
+//
+#define lua_pushlightobject(L, T) new(L, LIGHTOBJECT_##T) T
+
+//
+#define lua_lightobject_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), LIGHTOBJECT_##T))
 /* ************************************************************************** */
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.

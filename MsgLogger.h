@@ -2052,7 +2052,7 @@ UnitexString release_name() {
   }
 
   // return release name in lowercase format
-  return os_release_name.tolower();
+  return os_release_name.lower();
 }  // release_name()
 /* ************************************************************************** */
 }  // namespace info::host::os_linux::{unnamed}
@@ -2112,7 +2112,7 @@ UnitexString kernel_name() {
      return UnitexString("<unknown>");
   }
 
-  return UnitexString(info.sysname).tolower();
+  return UnitexString(info.sysname).lower();
 }
 
 /**

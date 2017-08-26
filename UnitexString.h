@@ -1140,7 +1140,7 @@ class UnitexString {
    * @brief  Lowercase the characters in the string
    * @return *this
    */
-  UnitexString& tolower() {
+  UnitexString& lower() {
     unitex::u_tolower(data_->str);
     return *this;
   }
@@ -1149,7 +1149,7 @@ class UnitexString {
    * @brief  Upper case the characters in the string
    * @return *this
    */
-  UnitexString& toupper() {
+  UnitexString& upper() {
     unitex::u_toupper(data_->str);
     return *this;
   }
@@ -1158,7 +1158,7 @@ class UnitexString {
    * @brief  Fold case the characters in the string
    * @return *this
    */
-  UnitexString& tofold() {
+  UnitexString& fold() {
     unitex::u_tofold(data_->str);
     return *this;
   }
@@ -1167,7 +1167,7 @@ class UnitexString {
    * @brief  Title case the characters in the string
    * @return *this
    */
-  UnitexString& totitle() {
+  UnitexString& title() {
     unitex::u_totitle_first(data_->str);
     return *this;
   }
@@ -1401,6 +1401,17 @@ class UnitexString {
    */
   bool is_empty() const {
     return (!UNITEX_STRING_IS_NULL && length() == 0);
+  }
+
+  /**
+   * @brief  Test whether the underline data_ is attached
+   *
+   * @return True if the data_ allocation is managed outside. False otherwise
+   *
+   * @see    attach()
+   */
+  bool is_attached() const {
+    return !engaged_;
   }
 
   /**

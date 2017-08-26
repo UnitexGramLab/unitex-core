@@ -31,24 +31,12 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 #include "ELG_API.h"
-#include "ELGLib/debug.h"
+#include "ELGLib/common.h"
 #include "ELGLib/ELGLib.h"
 #include "ELGLib/copy_state.h"
 #include "File.h"
 #include "DebugMode.h"
 #include "base/unicode/utf8.h"
-/* ************************************************************************** */
-// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-void* operator new(size_t size, lua_State* L, const char* metatableName);
-
-// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-#define lua_userdata_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), #T))
-
-// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-#define lua_pushobject(L, T) new(L, #T) T
-
-// @source http://lua-users.org/wiki/DoItYourselfCppBinding
-#define lua_pushlightobject(L, T, N) new(L, N) T
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -1468,7 +1456,7 @@ class vm {
   // No memory is allocated for p
   void* pushlightustring(Ustring* p) {
     if (p) {
-      return lua_pushlightobject(L, UnitexString, EXTENSION_NAME_USTRING)(p);
+      return lua_pushlightobject(L, UnitexString)(p);
     } else {
       lua_pushnil(L);
       return NULL;

@@ -50,16 +50,19 @@ namespace ustring {
 namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-/* static */ int elg_ustring_format(lua_State* L) {
-  // get locate params
-  struct locate_parameters* p = get_locate_params(L);
-  if(p) {
-    lua_pushstring(L,"Hello World");
-    // the number of results is equal to 1
-    return 1;
+/* static */ int elg_ustring_upper(lua_State* L) {
+  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
+
+  if(str->is_attached()) {
+     str->upper();
+     lua_pushlightobject(L, UnitexString)(const_cast<Ustring*>(str->c_ustring()));
+  } else {
+
   }
-  // the number of results is equal to 0
-  return 0;
+
+  //lua_pushlightobject(L, UnitexString)(p)
+
+  return 1;
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_print(lua_State* L) {
@@ -67,7 +70,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   if(lua_gettop(L) >= 1) {
     // returns the light userdata pointer. Otherwise, returns NULL
     UnitexString* output= (UnitexString*) lua_touserdata(L, 1);
-    output->totitle();
+    output->title();
     u_printf("%S\n",output->c_unichar());
     const char* second = lua_tostring(L, 2);
     if(!output->is_null()) {
@@ -91,7 +94,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 };
 /* ************************************************************************** */
 /* static */  const struct luaL_Reg lua_lib_methods[] = {
-  DeclFuncEntry(USTRING, format),
+  DeclFuncEntry(USTRING, upper),
   DeclFuncEntry(USTRING, print),
   DeclGCEntry(UnitexString),
   {NULL, NULL}};
