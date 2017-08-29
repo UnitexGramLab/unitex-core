@@ -370,16 +370,20 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
             int annot_len = u_strlen(infos[k].annotation);
         if (line != NULL && line[0] == '{' && line_len > annot_len) {
             int j = 0;
+            int additional_length = 0;
             while(line[j] != '\0') {
             int i = 0;
+            additional_length = 0;
             while(line[j] != '\0' && line[j] != infos[k].annotation[i])
                 j++;
             while(line[j] != '\0' && infos[k].annotation[i] != '\0' && line[j] == infos[k].annotation[i]) {
                 i++;
                 j++;
                 if(line[j]=='\\' && j+1<line_len) { //in case the annotation is protected
-                    if(infos[k].annotation[i] == line[j+1])
+                    if(infos[k].annotation[i] == line[j+1]) {
                         j++;
+                        additional_length++;
+                    }
                 }
             }
             if(infos[k].annotation[i] == '\0') {
@@ -405,7 +409,7 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 unichar *prev_char = NULL;
                 unichar *entity_whole = NULL; // test on reverse_i is a quick fix to pass valgrind validation
                 if (infos[k].ignore == NULL && infos[k].accept == NULL) {
-                    end = j-annot_len;
+                    end = j - (annot_len + additional_length);
                     entity_whole = (unichar*) malloc(sizeof(unichar) * (end - reverse_i+1));
                     int entity_i = 0; 
                     for(int x = (reverse_i > 0) ? reverse_i : 0; x < end; x++) {
@@ -429,27 +433,19 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                 }
                 else {
                 for(int x = (reverse_i > 0) ? reverse_i : 0; x < j; x++) {
-                    if(line[x] == '{') {
-                        start = x+1;
-                        if (x > 0) {
-                            if (prev_char!=NULL) free(prev_char);
-                            prev_char = (unichar*) malloc(sizeof(unichar) * 2);
-                            prev_char[0] = line[x - 1];
-                            if(line[x - 1] == '\\')
-                                prev_char[0] = line[x - 2];
-                            prev_char[1] = '\0';
-                        }
-                    }
-                    else if(line[x] == ',') {
+                    if(line[x] == ',') {
                         annot = 0;
                         end = x;
+                        if (x-1 > 0 && line[x-1] == '\\') {
+                            end = x-1;
+                        }
                     }
                     else if(annot == 0 && line[x] == '.') {
                         annot = -1;
                         annot_start = x + 1;
                     }
                     else if(line[x] == '\\' || line[x] == '+' || line[x] == '}') {
-                        if(annot_start > 0 && start > 0) {
+                        if(annot_start > 0 ) {
                             annot = -1;
                             int matches = 0;
                             unichar *annot_ = (unichar*) malloc(sizeof(unichar) * ((x - annot_start)+1));
@@ -468,10 +464,36 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                             }
                             if(infos[k].accept != NULL) {
                                 matches = 1;
-                                for(int m = 0; m < infos[k].accept_count; m++)
-                                if(u_strncmp(annot_,infos[k].accept[m],u_strlen(infos[k].accept[m])) == 0) {
-                                    matches = 0;
-                                    break;
+                                for(int m = 0; m < infos[k].accept_count; m++) {
+                                    if(u_strncmp(annot_,infos[k].accept[m],u_strlen(infos[k].accept[m])) == 0) {
+                                        matches = 0;
+                                        //search for the start of the word form
+                                        num_paren = 1;
+                                        int reverse_j = end;
+                                        for(  ; reverse_j > reverse_i; reverse_j--) {
+                                            if(line[reverse_j] =='{' && num_paren == 1) {
+                                                break;
+                                            }
+                                            else if(line[reverse_j] =='{' && num_paren > 0 ) {
+                                                num_paren--;
+                                            }
+                                            else if(line[reverse_j] =='}') {
+                                                num_paren++;
+                                            }
+                                        }
+                                        start = reverse_j + 1;
+                                        if (reverse_j > 0) {
+                                            if (prev_char!=NULL) {
+                                                free(prev_char);
+                                            }
+                                            prev_char = (unichar*) malloc(sizeof(unichar) * 2);
+                                            prev_char[0] = line[reverse_j - 1];
+                                            if(line[reverse_j - 1] == '\\')
+                                                prev_char[0] = line[reverse_j - 2];
+                                            prev_char[1] = '\0';
+                                        }
+                                        break;
+                                    }
                                 }
                             }
                             if(matches == 0) {
@@ -480,13 +502,25 @@ unichar **extract_entities(const char *token_list, const char *token_list_backup
                                 z = 0;
                                 int nb_expand=0;
                                 for(int y = start; y < end; y++) {
-                                    if(line[y] != '\\') {
+                                    if(line[y] != '\\' && line[y] != '{') {
+                                        if(line[y] == ',') {
+                                            if((y + 1 < end && line[y+1] == '.') ||
+                                                    (y + 2 < end && line[y+1]=='\\' && line[y+2] == '.')) {
+                                                y += 2;
+                                                while(line[y] !='}') {
+                                                    y++;
+                                                }
+                                                y++;
+                                            }
+                                        }
                                         if(line[y] == '/') {
                                            nb_expand++;
                                            entity = (unichar*) realloc(entity,sizeof(unichar) * ((end - start)+1+nb_expand));
                                            entity[z++] = '\\';
                                         }
-                                        entity[z++] = line[y];
+                                        if (y < end) {
+                                            entity[z++] = line[y];
+                                        }
                                     }
                                 }
                                 entity[z] = '\0';
