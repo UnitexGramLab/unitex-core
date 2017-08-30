@@ -139,9 +139,16 @@ return res;
  * Frees all the memory associated to the given Ustring.
  */
 void free_Ustring(Ustring* ustr) {
-if (ustr==NULL) return;
-if (ustr->str!=NULL) free(ustr->str);
-free(ustr);
+  if (ustr == NULL) return;
+  if (ustr->str != NULL) {
+    ustr->str[0] = 0;
+    ustr->len = 0;
+    ustr->size = 0;
+    free(ustr->str);
+    ustr->str = NULL;
+  }
+  free(ustr);
+  ustr = NULL;
 }
 
 

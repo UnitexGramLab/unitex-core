@@ -44,6 +44,7 @@
 #include "base/compiler/intrinsic/likely.h"
 #include "base/compiler/intrinsic/support.h"
 #include "base/compiler/intrinsic/popcount.h"
+#include "base/compiler/intrinsic/unreachable.h"
 /* ************************************************************************** */
 /**
  * @brief  Query if a compiler builtin is avalaible

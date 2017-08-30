@@ -61,7 +61,7 @@ namespace unitex {
 # define HAS_UNITEX_NAMESPACE 1
 #endif  // !defined(HAS_UNITEX_NAMESPACE)
 /* ************************************************************************** */
-#define UNITEX_STRING_IS_NULL       (data_->str == U_EMPTY)
+#define UNITEX_STRING_IS_NULL       (data_->str == NULL)
 /* ************************************************************************** */
 /**
  * @class    UnitexString
@@ -390,7 +390,8 @@ class UnitexString {
    * Free the memory allocated to the internal string
    */
   ~UnitexString() {
-    release();
+    // if data_ is acquired release, detach otherwise
+    release() || detach();
   }
 
   // Iterators
@@ -1425,8 +1426,19 @@ class UnitexString {
    * @see    attach()
    */
   bool is_attached() const {
-    return !engaged_;
+    return engaged_ == 0;
   }
+
+  /**
+   * @brief  Test whether the underline data_ is acquired
+   *
+   * @return True if the data_ allocation is done by this class. False otherwise
+   *
+   * @see    attach()
+   */
+  bool is_acquired() const {
+     return engaged_ == 1;
+   }
 
   /**
    * @brief  Clear string
@@ -1438,6 +1450,10 @@ class UnitexString {
    */
   void clear() {
     unitex::empty(data_);
+  }
+
+  void cleary() {
+    free_Ustring(data_);
   }
 
   /**
@@ -1620,13 +1636,27 @@ class UnitexString {
   // Methods, including static
 
   /**
-   * @brief  Attach an already allocated Ustring representing the given string
-   * @note   Only to be used from a constructor
+   * @brief  Attach an Ustring
+   * @note   To be used only from a constructor
    * @see    data_
    */
   Ustring* attach(Ustring* string) {
     engaged_ = 0;
     return string;
+  }
+
+  /**
+   * @brief  Detach data_ from an attached Ustring
+   * @note   To be used only from a destructor
+   * @see    data_
+   */
+  int detach() {
+    if (is_attached()) {
+      engaged_ = 2;
+      data_ = NULL;
+      return 1;
+    }
+    return 0;
   }
 
   /**
@@ -1659,12 +1689,14 @@ class UnitexString {
    * @brief  Free the memory allocated to the internal Ustring
    * @see    data_
    */
-  void release() {
-    if (engaged_ == 1) {
+  int release() {
+    if (is_acquired()) {
       engaged_ = 0;
       this->clear();
       free_Ustring(data_);
+      return 1;
     }
+    return 0;
   }
 
   /**

@@ -51,7 +51,11 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
 /* static */ int elg_ustring_upper(lua_State* L) {
-  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
+  //UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
+  UnitexString* str = new  UnitexString("Hello World");
+  str->cleary();
+  int x = str->is_null();
+  const Ustring* Y = str->c_ustring();
   if (str->is_attached()) {
     str->upper();
     lua_pushlightobject(L, UnitexString)(str->c_ustring());
@@ -163,7 +167,6 @@ int luaopen_ustring(lua_State *L) {
   // add the lib table to the elg lib table
   lua_setfield(L, -2,  EXTENSION_NAME_USTRING);
   elg_stack_dump(L);
-
   return 1;
 }
 /* ************************************************************************** */
