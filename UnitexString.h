@@ -1137,6 +1137,20 @@ class UnitexString {
   }
 
   /**
+   * @brief  Encode the UnitexString into a UTF-8 char string
+   *
+   * Appends a copy of the first n characters in the array of characters
+   * pointed by a UnitexString object
+   *
+   * @param  An already allocated buffer destination (C-string)
+   *
+   * @return length of the destination string
+   */
+  int encode(char* destination) {
+    return u_encode_utf8(data_->str, destination);
+  }
+
+  /**
    * @brief  Lowercase the characters in the string
    * @return *this
    */
@@ -1338,7 +1352,7 @@ class UnitexString {
    *
    * @see  c_unichar() const
    */
-  // UNITEX_EXPLICIT_CONVERSIONS
+  UNITEX_EXPLICIT_CONVERSIONS
   operator const unichar*() const {
     return data();
   }
@@ -1371,7 +1385,7 @@ class UnitexString {
    *
    * @see  c_ustring() const
    */
-  // UNITEX_EXPLICIT_CONVERSIONS
+  UNITEX_EXPLICIT_CONVERSIONS
   operator const Ustring*() const {
     return data_;
   }

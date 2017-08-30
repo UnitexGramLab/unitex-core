@@ -52,16 +52,32 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 /* ************************************************************************** */
 /* static */ int elg_ustring_upper(lua_State* L) {
   UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
-
-  if(str->is_attached()) {
-     str->upper();
-     lua_pushlightobject(L, UnitexString)(const_cast<Ustring*>(str->c_ustring()));
+  if (str->is_attached()) {
+    str->upper();
+    lua_pushlightobject(L, UnitexString)(str->c_ustring());
+    return 1;
   } else {
 
   }
-
   //lua_pushlightobject(L, UnitexString)(p)
-
+  return 1;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring___tostring(lua_State* L) {
+  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
+  // buffer used to prepare strings
+  luaL_Buffer lb;
+  // initialize the buffer
+  luaL_buffinit(L, &lb);
+  // get the underlying buffer area
+  char* cb = luaL_prepbuffer(&lb);
+  // encode the ustring as a utf-8 string
+  int cb_length = str->encode(cb);
+  // if length == 0 push empty
+  // add to the buffer lb the string copied to the buffer area
+  luaL_addsize(&lb, cb_length);
+  // leave the final string on the top of the stack
+  luaL_pushresult(&lb);
   return 1;
 }
 /* ************************************************************************** */
@@ -96,6 +112,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 /* static */  const struct luaL_Reg lua_lib_methods[] = {
   DeclFuncEntry(USTRING, upper),
   DeclFuncEntry(USTRING, print),
+  DeclFuncEntry(USTRING, __tostring),
   DeclGCEntry(UnitexString),
   {NULL, NULL}};
 /* ************************************************************************** */

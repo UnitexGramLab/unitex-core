@@ -38,13 +38,11 @@
 #include "ELGLib/common.h"
 /* ************************************************************************** */
 // @source http://lua-users.org/wiki/DoItYourselfCppBinding
+// never call a stack_dump from here or use luaL_* functions
 void* operator new(size_t size, lua_State* L, const char* metatableName) {
   void* ptr = lua_newuserdata(L, size);
-  elg_stack_dump(L);
   luaL_getmetatable(L, metatableName);
-  elg_stack_dump(L);
   lua_setmetatable(L, -2);
-  elg_stack_dump(L);
   return ptr;
 }
 

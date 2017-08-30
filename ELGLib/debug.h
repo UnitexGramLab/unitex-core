@@ -164,11 +164,11 @@ void stack_dump(lua_State *L,
 			case LUA_TUSERDATA:	   /* print description if tostring function */
 				if (lua_getmetatable(L, i))
 				{
-					meta = "(has mt)";
-					if (luaL_callmeta(L, i, "__tostring")) {
-						metastr = (char *)lua_tostring(L, -1);
-						lua_pop(L, 1);						 /* pop function */
-					}
+//					meta = "(has mt)";
+//					if (luaL_callmeta(L, i, "__tostring")) {
+//						metastr = (char *)lua_tostring(L, -1);
+//						lua_pop(L, 1);						 /* pop function */
+//					}
 					u_printf("%p %s %s\n", lua_touserdata(L, i), meta, metastr);
 					if (listtable) tableprint(L, lua_gettop(L), "metatable");
 					lua_pop(L,1);							/* pop metatable */
