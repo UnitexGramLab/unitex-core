@@ -108,6 +108,14 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(length);
   return 1;
 }
 /* ************************************************************************** */
+/* static */ int elg_ustring___call(lua_State* L) {
+  // __call treat a table, in this case a elg.ustring, like a function,
+  // the first argument is the table itself, we remove it from the stack
+  lua_remove(L,1);
+  // the remain argument is expected to be a UTF-8 encoded string to decode
+  return elg_ustring_decode(L);
+}
+/* ************************************************************************** */
 /* static */ int elg_ustring_print(lua_State* L) {
   // check if there is at least an argument on the stack
   if(lua_gettop(L) >= 1) {
@@ -148,11 +156,12 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(length);
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
   //
-  U__DECLARE__FUNCTION__ENTRY__(USTRING, encode),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, decode),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, encode),
 
   //
-  U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, encode,__tostring),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, __call),
+  U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, encode, __tostring),
   //
   U__DECLARE__GC__ENTRY__(UnitexString),
   {NULL, NULL}};
