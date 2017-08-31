@@ -85,7 +85,7 @@ int GCMethod(lua_State* L) {
 #define lua_pushlightobject(L, T) new(L, LIGHTOBJECT_##T) T
 
 //
-#define lua_lightobject_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), LIGHTOBJECT_##T))
+#define lua_checkudata_cast(L, pos, T) static_cast<T*>(luaL_checkudata((L), (pos), LIGHTOBJECT_##T))
 /* ************************************************************************** */
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.

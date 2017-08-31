@@ -318,11 +318,27 @@ class UnitexString {
     // sets the first num bytes of the block of memory pointed by
     // data_->str to the specified value (interpreted as a char)
     // we avoid to use memset(data_->str, character, n);
-    for (unsigned int i = 0; i < n; i++) {
+    for (unsigned int i = 0; i < n; ++i) {
       data_->str[data_->len + i] = character;
     }
     data_->len = n;
     data_->str[data_->len] = '\0';
+  }
+
+  /**
+   * @brief  Fill constructor from an UnitexString
+   *
+   * Fills the string with n consecutive copies of a string
+   *
+   * @param  n         Number of times to fill
+   * @param  string    String to fill the string with.
+   */
+  UnitexString(size_type n, const UnitexString& string) :
+      data_(acquire(n * string.len())) {
+    // sets the first num bytes of the block of memory pointed by
+    for (unsigned int i = 0; i < n; ++i) {
+      this->append(string, string.len());
+    }
   }
 
   /**

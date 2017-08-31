@@ -51,9 +51,9 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
 // all U__* macros must be undefined before the end of this file
-#define U__DECLARE__FUNCTION__ELG__USTRING__(_func)                         \
+#define U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(_func)                         \
 /* static */ int elg_ustring_##_func(lua_State* L) {                        \
-  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);             \
+  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);             \
   if (str->is_attached()) {                                                 \
     lua_pushlightobject(L, UnitexString)(str->_func());                     \
   } else {                                                                  \
@@ -62,24 +62,30 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   return 1;                                                                 \
 }
 /* ************************************************************************** */
-U__DECLARE__FUNCTION__ELG__USTRING__(deaccentuate);
-U__DECLARE__FUNCTION__ELG__USTRING__(fold);
-U__DECLARE__FUNCTION__ELG__USTRING__(lower);
-U__DECLARE__FUNCTION__ELG__USTRING__(title);
-U__DECLARE__FUNCTION__ELG__USTRING__(upper);
+U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(deaccentuate);
+U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(fold);
+U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(lower);
+U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(title);
+U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(upper);
 /* ************************************************************************** */
 #define U__DECLARE__FUNCTION__ELG__USTRING__INT__(_func)                         \
 /* static */ int elg_ustring_##_func(lua_State* L) {                        \
-  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);             \
+  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);             \
   lua_pushinteger(L, (lua_Integer) str->_func());                                                                       \
   return 1;                                                                 \
 }
 /* ************************************************************************** */
 U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
-
+/* ************************************************************************** */
+/* static */ int elg_ustring_rep(lua_State* L) {
+  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
+  int n = luaL_checkint(L, 2);
+  lua_pushlightobject(L, UnitexString)(n, *str);
+  return 1;
+}
 /* ************************************************************************** */
 /* static */ int elg_ustring_encode(lua_State* L) {
-  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
+  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
   // buffer used to prepare strings
   luaL_Buffer lb;
   // initialize the buffer
@@ -154,6 +160,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   // U__DECLARE__FUNCTION__ELG__USTRING__INT__
   U__DECLARE__FUNCTION__ENTRY__(USTRING, len),
   //
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, rep),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, decode),
@@ -216,7 +223,8 @@ int luaopen_ustring(lua_State *L) {
   return 1;
 }
 /* ************************************************************************** */
-#undef U__DECLARE__FUNCTION__ELG__USTRING__
+#undef U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__
+#undef U__DECLARE__FUNCTION__ELG__USTRING__INT__
 /* ************************************************************************** */
 }  // namespace unitex::elg::ustring::{unnamed}
 /* ************************************************************************** */
