@@ -337,7 +337,7 @@ class UnitexString {
       data_(acquire(n * string.len())) {
     // sets the first num bytes of the block of memory pointed by
     for (unsigned int i = 0; i < n; ++i) {
-      this->append(string, string.len());
+      unitex::u_strcat(data_,  string.data_);
     }
   }
 
