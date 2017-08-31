@@ -75,7 +75,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__(upper);
   return 1;                                                                 \
 }
 /* ************************************************************************** */
-U__DECLARE__FUNCTION__ELG__USTRING__INT__(length);
+U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 
 /* ************************************************************************** */
 /* static */ int elg_ustring_encode(lua_State* L) {
@@ -152,7 +152,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(length);
   U__DECLARE__FUNCTION__ENTRY__(USTRING, title),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, upper),
   // U__DECLARE__FUNCTION__ELG__USTRING__INT__
-  U__DECLARE__FUNCTION__ENTRY__(USTRING, length),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, len),
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
   //

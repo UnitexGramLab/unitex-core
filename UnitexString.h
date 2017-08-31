@@ -199,9 +199,9 @@ class UnitexString {
    * @param  n      Number of characters to copy (default remainder)
    */
   UnitexString(const UnitexString& string, size_t pos, size_type n = npos) {
-    if (pos < string.length()) {
-      if (n > (string.length() - pos)) {
-        n = string.length() - pos;
+    if (pos < string.len()) {
+      if (n > (string.len() - pos)) {
+        n = string.len() - pos;
       }
       data_ = acquire(n);
       this->append(string.data() + pos, n);
@@ -473,7 +473,7 @@ class UnitexString {
    * @return An iterator to the past-the-end of the string
    */
   iterator end() {
-    return iterator(begin() + length());
+    return iterator(begin() + len());
   }
 
   /**
@@ -486,7 +486,7 @@ class UnitexString {
    * @return A constant iterator to the past-the-end of the string
    */
   const_iterator end() const {
-    return const_iterator(begin() + length());
+    return const_iterator(begin() + len());
   }
 
   /**
@@ -500,7 +500,7 @@ class UnitexString {
    * @return A constant iterator to the past-the-end of the string
    */
   const_iterator cend() const {
-     return const_iterator(begin() + length());
+     return const_iterator(begin() + len());
   }
 
   // assignment operators =
@@ -848,7 +848,7 @@ class UnitexString {
   reference at(size_type pos) {
     // FIXME(martinec) throws unitex::out_of_range
     // if (!UNITEX_STRING_IS_NULL &&  pos <= length())
-    assert(!UNITEX_STRING_IS_NULL &&  pos <= length());
+    assert(!UNITEX_STRING_IS_NULL &&  pos <= len());
     return *(begin() + pos);
   }
 
@@ -862,7 +862,7 @@ class UnitexString {
    * @return Read-only (const) reference to the character.
    */
   const_reference at(size_type pos) const {
-    assert(!UNITEX_STRING_IS_NULL && pos <= length());
+    assert(!UNITEX_STRING_IS_NULL && pos <= len());
     return *(begin() + pos);
   }
 
@@ -883,7 +883,7 @@ class UnitexString {
    */
   unichar back() const {
     assert(!this->is_empty());
-    return this->at(this->length()-1);
+    return this->at(this->len()-1);
   }
 
   /**
@@ -905,7 +905,7 @@ class UnitexString {
    *
    * Returns the length of the string, in terms of number of characters
    */
-  size_type length() const {
+  size_type len() const {
     return static_cast<size_type>(data_->len);
   }
 
@@ -915,7 +915,7 @@ class UnitexString {
    * Returns the length of the string, in terms of number of characters
    */
   size_type size() const {
-    return length();
+    return len();
   }
 
   /**
@@ -924,7 +924,7 @@ class UnitexString {
    * Returns the length of the string, in terms of bytes.
    */
   size_type bytes() const {
-    return (length() * sizeof(value_type));
+    return (len() * sizeof(value_type));
   }
 
   /**
@@ -1163,7 +1163,7 @@ class UnitexString {
     assert(size <= kMaxBufferSize);
 
     // resize to fit
-    this->resize(this->length() + size + 1);
+    this->resize(this->len() + size + 1);
 
     // append string_buffer
     return this->append(string_buffer, size);
@@ -1444,7 +1444,7 @@ class UnitexString {
    * @see    is_null() const
    */
   bool is_empty() const {
-    return (!UNITEX_STRING_IS_NULL && length() == 0);
+    return (!UNITEX_STRING_IS_NULL && len() == 0);
   }
 
   /**
