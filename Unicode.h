@@ -306,6 +306,7 @@ int u_strcmp_ignore_case(const unichar*, const unichar*);
 #endif
 int u_strcmp_ignore_case(const unichar*, const char*);
 unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr);
+typedef int (*EQUAL_UNICHAR_FUNCTION)(const unichar*,const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_equal_ignore_case(const unichar*, const unichar*);
 unichar* u_strdup(const unichar*);

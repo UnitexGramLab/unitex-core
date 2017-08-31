@@ -326,7 +326,7 @@ vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
 vector_int* snt_offsets=new_vector_int(4096);
-struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
                                             (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 if (token_file[0]!='\0') {
    int load_token_file_return_value = load_token_file(token_file,

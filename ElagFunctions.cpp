@@ -90,7 +90,7 @@ void remove_ambiguities(const char* input_tfst,vector_ptr* gramms,const char* ou
    Tfst* tfst=input->tfst;
 
    /* We use this hash table to rebuild files tfst_tags_by_freq/alph.txt */
-   hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+   hash_table* form_frequencies=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),
            (FREE_FUNCTION)free,NULL,(KEYCOPY_FUNCTION)keycopy);
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {

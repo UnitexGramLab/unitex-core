@@ -229,9 +229,9 @@ void free_standoff_info(standOffInfo *infos,int num) {
  * \param[in] out is the output file, xml_line is the line containing the
  * variable, rest the are the value of the variables to be replaced
  *
- * \return 
+ * \return
  */
-void replace_variable(U_FILE* out, unichar* xml_line, unichar* type, unichar* subtype, unichar* term , 
+void replace_variable(U_FILE* out, unichar* xml_line, unichar* type, unichar* subtype, unichar* term ,
         unichar* typelower, int count) {
     const unichar VAR_TYPE[] = { 'T', 'Y', 'P', 'E',  0 };
     const unichar VAR_SUBTYPE[] = { 'S', 'U', 'B', 'T', 'Y', 'P', 'E',  0 };
@@ -289,7 +289,7 @@ void replace_variable(U_FILE* out, unichar* xml_line, unichar* type, unichar* su
             skip = -1;
             i++;
         }
-        else { 
+        else {
             u_fprintf(out,"%C",xml_line[i]);
         }
     }
@@ -297,7 +297,7 @@ void replace_variable(U_FILE* out, unichar* xml_line, unichar* type, unichar* su
     free(variable);
 }
 
-void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list_line, unichar* end_line, 
+void print_standoff(U_FILE* out,standOffInfo* infos, int num_info, unichar* list_line, unichar* end_line,
         unichar** block, int block_size, unichar** rest, int rest_size) {
     for(int i=0; i<num_info; i++) {
         int count = 0;
@@ -404,7 +404,7 @@ int findEntityList(standOffInfo *infos, int num,
     return found;
 }
 
-void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* vec, const char* original_file, 
+void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* vec, const char* original_file,
         const char* lang, const char* stdoff_file) {
     char text_name_without_extension[FILENAME_MAX];
     char result_file[FILENAME_MAX];
@@ -457,7 +457,7 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                     else {
                         infos = (standOffInfo*)realloc(infos, (num_info + 1) * sizeof(standOffInfo));
                         infos[num_info].entList = new_hash_table((HASH_FUNCTION)hash_unichar,
-                                    (EQUAL_FUNCTION)u_equal,(FREE_FUNCTION)free,
+                                    (EQUAL_FUNCTION)((EQUAL_UNICHAR_FUNCTION)u_equal),(FREE_FUNCTION)free,
                                     NULL,(KEYCOPY_FUNCTION)keycopy);
                         infos[num_info].type = (unichar*)malloc(sizeof(unichar) * (u_strlen(type) + 1));
                         u_strcpy(infos[num_info].type,type);
@@ -528,7 +528,7 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                         list_line = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
                         u_strcpy(list_line, line_2);
                         copy_line = 0;
-                    } 
+                    }
                     else if (copy_end_line == 1) {
                         end = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
                         u_strcpy(end, line_2);
@@ -545,7 +545,7 @@ void construct_istex_standoff(const char* text_name, VersatileEncodingConfig* ve
                         rest[rest_size] = (unichar*) malloc(sizeof(unichar) * (u_strlen(line_2) + 1));
                         u_strcpy(rest[rest_size], line_2);
                         rest_size++ ;
-                    } 
+                    }
                     else {
                         u_fprintf(out_file,"%S\n",line_2);
                     }
