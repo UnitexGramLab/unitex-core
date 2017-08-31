@@ -79,7 +79,9 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 /* ************************************************************************** */
 /* static */ int elg_ustring_rep(lua_State* L) {
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
+  // number of copies
   int n = luaL_checkint(L, 2);
+  // push a new string representing a concatenation of n copies of str
   lua_pushlightobject(L, UnitexString)(n, *str);
   return 1;
 }

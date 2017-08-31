@@ -335,9 +335,9 @@ class UnitexString {
    */
   UnitexString(size_type n, const UnitexString& string) :
       data_(acquire(n * string.len())) {
-    // sets the first num bytes of the block of memory pointed by
+    // sets n consecutive copies of the string
     for (unsigned int i = 0; i < n; ++i) {
-      unitex::u_strcat(data_,  string.data_);
+      unitex::u_strcat(data_,  string.data_->str, string.data_->len);
     }
   }
 
