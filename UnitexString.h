@@ -764,10 +764,10 @@ class UnitexString {
    * @brief  Test equivalence between two UnitexString objects
    *
    * @param  rhs    A UnitexString object
-   * @return True if this->compare(rhs) == 0.  False otherwise
+   * @return True if both strings are equals.  False otherwise
    */
   bool operator==(const UnitexString& rhs) const {
-    return this->compare(rhs) == 0;
+    return u_equal(this->data_, rhs.data_);
   }
 
   // boolean not equal operands
@@ -1303,7 +1303,6 @@ class UnitexString {
    * @see    UnitexString::compare(const char* string) const
    */
   int compare(const Ustring* string) const {
-    // TODO(martinec) use data_len to perform the compare
     return this->compare(string->str);
   }
 

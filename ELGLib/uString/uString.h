@@ -51,11 +51,11 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
 // all U__* macros must be undefined before the end of this file
-#define U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(_func)                         \
+#define U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(_func)                \
 /* static */ int elg_ustring_##_func(lua_State* L) {                        \
-  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);             \
+  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);              \
   if (str->is_attached()) {                                                 \
-    lua_pushlightobject(L, UnitexString)(str->_func());                     \
+    str->_func();                                                           \
   } else {                                                                  \
     (lua_pushlightobject(L, UnitexString)(*str))->_func();                  \
   }                                                                         \
@@ -68,10 +68,10 @@ U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(lower);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(title);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(upper);
 /* ************************************************************************** */
-#define U__DECLARE__FUNCTION__ELG__USTRING__INT__(_func)                         \
+#define U__DECLARE__FUNCTION__ELG__USTRING__INT__(_func)                    \
 /* static */ int elg_ustring_##_func(lua_State* L) {                        \
-  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);             \
-  lua_pushinteger(L, (lua_Integer) str->_func());                                                                       \
+  UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);              \
+  lua_pushinteger(L, (lua_Integer) str->_func());                           \
   return 1;                                                                 \
 }
 /* ************************************************************************** */

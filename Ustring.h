@@ -37,6 +37,7 @@ namespace unitex {
  *
  * Author: Olivier Blanc
  * Modified by Sébastien Paumier
+ * Modified by Cristian Martinez
  */
 
 /**
@@ -115,6 +116,13 @@ if (ustr==NULL) {
 }
 if (str==NULL || str[0]=='\0') return;
 u_strcat(ustr,str,u_strlen(str));
+}
+
+/*
+ * Returns 1 if a is equal to b, 0 otherwise
+ */
+static inline int u_equal(const Ustring* a,const Ustring* b) {
+  return (a->len == b->len && !u_strcmp(a->str, b->str));
 }
 
 
