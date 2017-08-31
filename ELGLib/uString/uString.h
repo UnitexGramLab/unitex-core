@@ -149,6 +149,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 }
 /* ************************************************************************** */
 /* static */ const struct luaL_Reg lua_lib_functions[] = {
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, rep),
   {NULL, NULL}
 };
 /* ************************************************************************** */
@@ -159,17 +160,20 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   U__DECLARE__FUNCTION__ENTRY__(USTRING, lower),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, title),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, upper),
+
   // U__DECLARE__FUNCTION__ELG__USTRING__INT__
   U__DECLARE__FUNCTION__ENTRY__(USTRING, len),
+
   //
-  U__DECLARE__FUNCTION__ENTRY__(USTRING, rep),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
+
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, decode),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, encode),
 
-  //
+  // methamethods
   U__DECLARE__FUNCTION__ENTRY__(USTRING, __call),
+  U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, len, __len),
   U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, encode, __tostring),
   //
   U__DECLARE__GC__ENTRY__(UnitexString),
