@@ -37,8 +37,8 @@
 #include "ELGLib/common.h"
 #include "UnitexString.h"
 /* ************************************************************************** */
-#define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG,USTRING)
-#define FUNCTION_PREFIX_USTRING       FUNCTION_PREFIX_2(ELG,USTRING)
+#define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG, USTRING)
+#define FUNCTION_PREFIX_USTRING       FUNCTION_PREFIX_2(ELG, USTRING)
 #define EXTENSION_VERSION_USTRING     "0.1.0"
 /* ************************************************************************** */
 namespace unitex {
@@ -50,24 +50,35 @@ namespace ustring {
 namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-/* static */ int elg_ustring_upper(lua_State* L) {
-  //UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
-  UnitexString* str = new  UnitexString("Hello World");
-  str->cleary();
-  int x = str->is_null();
-  const Ustring* Y = str->c_ustring();
-  if (str->is_attached()) {
-    str->upper();
-    lua_pushlightobject(L, UnitexString)(str->c_ustring());
-    return 1;
-  } else {
-
-  }
-  //lua_pushlightobject(L, UnitexString)(p)
-  return 1;
+// all U__* macros must be undefined before the end of this file
+#define U__DECLARE__FUNCTION__ELG__USTRING__(_func)                         \
+/* static */ int elg_ustring_##_func(lua_State* L) {                        \
+  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);             \
+  if (str->is_attached()) {                                                 \
+    lua_pushlightobject(L, UnitexString)(str->_func());                     \
+  } else {                                                                  \
+    (lua_pushlightobject(L, UnitexString)(*str))->_func();                  \
+  }                                                                         \
+  return 1;                                                                 \
 }
 /* ************************************************************************** */
-/* static */ int elg_ustring___tostring(lua_State* L) {
+U__DECLARE__FUNCTION__ELG__USTRING__(deaccentuate);
+U__DECLARE__FUNCTION__ELG__USTRING__(fold);
+U__DECLARE__FUNCTION__ELG__USTRING__(lower);
+U__DECLARE__FUNCTION__ELG__USTRING__(title);
+U__DECLARE__FUNCTION__ELG__USTRING__(upper);
+/* ************************************************************************** */
+#define U__DECLARE__FUNCTION__ELG__USTRING__INT__(_func)                         \
+/* static */ int elg_ustring_##_func(lua_State* L) {                        \
+  UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);             \
+  lua_pushinteger(L, (lua_Integer) str->_func());                                                                       \
+  return 1;                                                                 \
+}
+/* ************************************************************************** */
+U__DECLARE__FUNCTION__ELG__USTRING__INT__(length);
+
+/* ************************************************************************** */
+/* static */ int elg_ustring_encode(lua_State* L) {
   UnitexString* str = lua_lightobject_cast(L, 1, UnitexString);
   // buffer used to prepare strings
   luaL_Buffer lb;
@@ -82,6 +93,18 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
   luaL_addsize(&lb, cb_length);
   // leave the final string on the top of the stack
   luaL_pushresult(&lb);
+  // number of values returned
+  return 1;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring_decode(lua_State* L) {
+  // length of the source string
+  size_t length;
+  // return the string at the top of stack if any
+  const char* source = luaL_checklstring(L, 1, &length);
+  // decode source as UTF-8
+  lua_pushlightobject(L, UnitexString)(UTF8, source, length);
+  // number of values returned
   return 1;
 }
 /* ************************************************************************** */
@@ -114,10 +137,24 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 };
 /* ************************************************************************** */
 /* static */  const struct luaL_Reg lua_lib_methods[] = {
-  DeclFuncEntry(USTRING, upper),
-  DeclFuncEntry(USTRING, print),
-  DeclFuncEntry(USTRING, __tostring),
-  DeclGCEntry(UnitexString),
+  // U__DECLARE__FUNCTION__ELG__USTRING__
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, deaccentuate),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, fold),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, lower),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, title),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, upper),
+  // U__DECLARE__FUNCTION__ELG__USTRING__INT__
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, length),
+  //
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
+  //
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, encode),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, decode),
+
+  //
+  U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, encode,__tostring),
+  //
+  U__DECLARE__GC__ENTRY__(UnitexString),
   {NULL, NULL}};
 /* ************************************************************************** */
 int luaopen_ustring(lua_State *L) {
@@ -125,7 +162,7 @@ int luaopen_ustring(lua_State *L) {
   // create the lib table
   // [-0, +1] > (+1)
   //lua_newtable(L);
-  //  luaL_register(L, EXTENSION_FULL_NAME_USTRING, NullReference(lua_lib));
+  //  luaL_register(L, EXTENSION_FULL_NAME_USTRING, ARRAY_LAST_ELEMENT(lua_lib));
   //  elg_stack_dump(L);
 
   // register functions into the lib table
@@ -169,6 +206,8 @@ int luaopen_ustring(lua_State *L) {
   elg_stack_dump(L);
   return 1;
 }
+/* ************************************************************************** */
+#undef U__DECLARE__FUNCTION__ELG__USTRING__
 /* ************************************************************************** */
 }  // namespace unitex::elg::ustring::{unnamed}
 /* ************************************************************************** */

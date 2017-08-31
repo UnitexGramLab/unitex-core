@@ -346,6 +346,38 @@ class UnitexString {
   }
 
   /**
+   * @brief  Constructor from a encoded c-string
+   *
+   * Allocates and initializes a string from a null-terminated and encoded
+   * character sequence (C-string)
+   *
+   * @param  string A null-terminated character sequence (C-string)
+   */
+  UnitexString(Encoding encoding, const char* string,
+               size_type buffer_size = kMaxBufferSize) :  // NOLINT
+      data_(acquire(buffer_size)) {
+    size_type length = 0;
+    switch (encoding) {
+      case UTF16_LE:
+        break;
+      case BIG_ENDIAN_UTF16:
+        break;
+      case PLATFORM_DEPENDENT_UTF16:
+        break;
+      case ASCII:
+        // same as binary
+        this->append(string);
+        return;
+      case UTF8:
+        // decode from UTF-8
+        length = unitex::u_decode_utf8(string, data_->str);
+        break;
+    }
+    // set the length of the resulting string
+    data_->len = length;
+  }
+
+  /**
    * @brief  Constructor from unitex Ustring
    *
    * Allocates and initializes a string from a null-terminated character
@@ -1138,10 +1170,7 @@ class UnitexString {
   }
 
   /**
-   * @brief  Encode the UnitexString into a UTF-8 char string
-   *
-   * Appends a copy of the first n characters in the array of characters
-   * pointed by a UnitexString object
+   * @brief  Encode the UnitexString into a UTF-8 C-string
    *
    * @param  An already allocated buffer destination (C-string)
    *
@@ -1450,10 +1479,6 @@ class UnitexString {
    */
   void clear() {
     unitex::empty(data_);
-  }
-
-  void cleary() {
-    free_Ustring(data_);
   }
 
   /**

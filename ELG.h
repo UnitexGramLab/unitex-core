@@ -1332,6 +1332,7 @@ class vm {
 //           ::push(stack,n[i]);
 //          }
     } else if (type == LUA_TSTRING) {
+      // TODO(martinec) use instead luaL_checklstring
       const char* s = lua_tostring(M, -1);
       unichar S[4096] = { 0 };
       size_t count = u_decode_utf8(s, S);

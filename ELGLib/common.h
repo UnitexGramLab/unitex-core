@@ -51,11 +51,13 @@
                                   EXTENSION_ID_,_1),_),UNITEX_PP_TOKEN_PASTE(     \
                                   EXTENSION_ID_,_2)),_)
 /* ************************************************************************** */
-#define DeclFuncEntry(_id,_func) \
+#define U__DECLARE__FUNCTION__ENTRY__(_id,_func) \
   {UNITEX_PP_STRINGIFY_NAME(_func), UNITEX_PP_TOKEN_PASTE(FUNCTION_PREFIX_##_id,_func)}
-#define DeclGCEntry(_class)      {"__gc", GCMethod<_class>}
+#define U__DECLARE__FUNCTION__ENTRY__ALIAS__(_id,_func,_alias) \
+  {UNITEX_PP_STRINGIFY_NAME(_alias), UNITEX_PP_TOKEN_PASTE(FUNCTION_PREFIX_##_id,_func)}
+#define U__DECLARE__GC__ENTRY__(_class)      {"__gc", GCMethod<_class>}
 /* ************************************************************************** */
-#define NullReference(_table)    (_table + ((sizeof _table/sizeof _table[0]) - 1))
+#define ARRAY_LAST_ELEMENT(_array)    (_array + ((sizeof _array/sizeof _array[0]) - 1))
 /* ************************************************************************** */
 #define LIGHTOBJECT_UnitexString EXTENSION_NAME_2(ELG,USTRING)
 /* ************************************************************************** */
