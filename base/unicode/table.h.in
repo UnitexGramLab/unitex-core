@@ -73,6 +73,12 @@ namespace unitex {
 #define {c:ReplacementChar} 0xFFFD
 
 /**
+ * @def      {c:Size}
+ * @brief    This is the size in bits of a unicode character
+ */
+# define {c:Size} 16;
+
+/**
  * @def      {v:charName}
  * @brief    This is the type of a unicode character. Note that it is a
  *           {v:charSize}-bits type and it cannot handle characters beyond {v:maxValue}

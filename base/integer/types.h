@@ -56,7 +56,7 @@
 #include "base/compiler/intrinsics.h" // __uint128_t, __m128
 /* ************************************************************************** */
 // C system files                  (try to order the includes alphabetically)
-#include <stdlib.h>                // size_t
+#include <stdlib.h>                   // size_t
 /* ************************************************************************** */
 // Portable integer types (for uint64_t, uint32_t types and literal macros)
 #if   UNITEX_COMPILER_COMPLIANT(CXX11)    ||\

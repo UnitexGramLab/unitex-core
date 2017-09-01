@@ -91,6 +91,12 @@ namespace unitex {
 #define U_REPLACEMENT_CHAR 0xFFFD
 
 /**
+ * @def      U_SIZE
+ * @brief    This is the size in bits of a unicode character
+ */
+# define U_SIZE 16;
+
+/**
  * @def      unichar
  * @brief    This is the type of a unicode character. Note that it is a
  *           16-bits type and it cannot handle characters beyond 0xFFFF

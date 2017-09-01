@@ -35,6 +35,7 @@
 /* ************************************************************************** */
 // Header for this file
 #include "base/unicode/utf8.h"
+#include "base/integer/integer.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -220,27 +221,24 @@ int u_decode_utf8(const char* source, unichar* destination) {
  *                match but the compared string is longer.
  *
  * @note   Null strings are allowed
- * @author Markus Grönholm
- * @see    http://mgronhol.github.io/fast-strcmp/
+ * @see    adapted from http://mgronhol.github.io/fast-strcmp/
  */
 int u_strxncmp(const unichar* s1, const unichar* s2, int n) {
-  int fast = n / sizeof(size_t) + 1;
-  int offset = (fast - 1) * sizeof(size_t);
-  int current_block = 0;
+  size_t total_bytes = sizeof(unichar) * n;
+  size_t block_bytes = sizeof(uintmax_t);
 
-  if (n <= sizeof(size_t)) {
-    fast = 0;
-  }
+  size_t n_blocks = total_bytes < block_bytes ? 0 :  total_bytes / block_bytes;
+  size_t current_block = 0;
 
-  size_t *lptr0 = (size_t*) s1;
-  size_t *lptr1 = (size_t*) s2;
+  uintmax_t *lptr0 = (uintmax_t*) s1;
+  uintmax_t *lptr1 = (uintmax_t*) s2;
 
-  while (current_block < fast) {
+  while (current_block < n_blocks) {
     if ((lptr0[current_block] ^ lptr1[current_block])) {
       int pos;
-      for (pos = current_block * sizeof(size_t); pos < n; ++pos) {
+      for (pos = current_block * sizeof(uintmax_t); pos < n; ++pos) {
         if ((s1[pos] ^ s2[pos]) || (s1[pos] == 0) || (s2[pos] == 0)) {
-          return (int) (s1[pos] - s2[pos]);
+          return ((const unsigned int)s1[pos] - (const unsigned int)s2[pos]);
         }
       }
     }
@@ -248,9 +246,11 @@ int u_strxncmp(const unichar* s1, const unichar* s2, int n) {
     ++current_block;
   }
 
+  int offset = (n_blocks - sizeof(unichar)) * sizeof(uintmax_t);
+
   while (n > offset) {
     if ((s1[offset] ^ s2[offset])) {
-      return (int) (s1[offset] - s2[offset]);
+      return ((const unsigned int)s1[offset] - (const unsigned int)s2[offset]);
     }
     ++offset;
   }
@@ -369,7 +369,7 @@ int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
     --n;
   }
 
-  return n == 0 ? 0 : (int) (*it1 - *it2);
+  return n == 0 ? 0 : (*(const unsigned int *)it1 - *(const unsigned int *)it2);
 }
 
 /**
@@ -445,7 +445,7 @@ int u_stricmp(const unichar* s1, const unichar* s2) {
     ++it2;
   }
 
-  return (int) (*it1 - *it2);
+  return (*(const unsigned int *)it1 - *(const unsigned int *)it2);
 }
 /* ************************************************************************** */
 }  // namespace unitex
