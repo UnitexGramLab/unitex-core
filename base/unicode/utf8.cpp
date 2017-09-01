@@ -203,7 +203,123 @@ int u_decode_utf8(const char* source, unichar* destination) {
   return pos;
 }
 
+/**
+ * @brief  Compares the specified number of characters of two strings
+ *
+ * @param  s1 A null-terminated character sequence (unichar-string)
+ * @param  s2 A null-terminated character sequence (unichar-string)
+ * @param  n  Number of characters to compare
+ * @return Returns a signed integral indicating the relation between
+ *         the strings:
+ *         -  0 : They compare equal
+ *         - <0 : Either the value of the first character that does not match
+ *                is lower in the compared string, or all compared characters
+ *                match but the compared string is shorter
+ *         - >0 : Either the value of the first character that does not match
+ *                is greater in the compared string, or all compared characters
+ *                match but the compared string is longer.
+ *
+ * @note   Null strings are allowed
+ * @author Markus Grönholm
+ * @see    http://mgronhol.github.io/fast-strcmp/
+ */
+int u_strxncmp(const unichar* s1, const unichar* s2, int n) {
+  int fast = n / sizeof(size_t) + 1;
+  int offset = (fast - 1) * sizeof(size_t);
+  int current_block = 0;
+
+  if (n <= sizeof(size_t)) {
+    fast = 0;
+  }
+
+  size_t *lptr0 = (size_t*) s1;
+  size_t *lptr1 = (size_t*) s2;
+
+  while (current_block < fast) {
+    if ((lptr0[current_block] ^ lptr1[current_block])) {
+      int pos;
+      for (pos = current_block * sizeof(size_t); pos < n; ++pos) {
+        if ((s1[pos] ^ s2[pos]) || (s1[pos] == 0) || (s2[pos] == 0)) {
+          return (int) (s1[pos] - s2[pos]);
+        }
+      }
+    }
+
+    ++current_block;
+  }
+
+  while (n > offset) {
+    if ((s1[offset] ^ s2[offset])) {
+      return (int) (s1[offset] - s2[offset]);
+    }
+    ++offset;
+  }
+
+  return 0;
+}
+
+int fast_compare( const char *ptr0, const char *ptr1, int len ){
+  int fast = len/sizeof(size_t) + 1;
+  int offset = (fast-1)*sizeof(size_t);
+  int current_block = 0;
+
+  if( len <= sizeof(size_t)){ fast = 0; }
+
+
+  size_t *lptr0 = (size_t*)ptr0;
+  size_t *lptr1 = (size_t*)ptr1;
+
+  while( current_block < fast ){
+    if( (lptr0[current_block] ^ lptr1[current_block] )){
+      int pos;
+      for(pos = current_block*sizeof(size_t); pos < len ; ++pos ){
+        if( (ptr0[pos] ^ ptr1[pos]) || (ptr0[pos] == 0) || (ptr1[pos] == 0) ){
+          return  (int)((unsigned char)ptr0[pos] - (unsigned char)ptr1[pos]);
+          }
+        }
+      }
+
+    ++current_block;
+    }
+
+  while( len > offset ){
+    if( (ptr0[offset] ^ ptr1[offset] )){
+      return (int)((unsigned char)ptr0[offset] - (unsigned char)ptr1[offset]);
+      }
+    ++offset;
+    }
+
+
+  return 0;
+}
+
+/**
+ * @brief  Compares the specified number of characters of two strings without
+ *         regard to case
+ *
+ * @param  s1 A null-terminated character sequence (unichar-string)
+ * @param  s2 A null-terminated character sequence (unichar-string)
+ * @param  n  Number of characters to compare
+ * @return Returns a signed integral indicating the relation between
+ *         the strings:
+ *         -  0 : They compare equal
+ *         - <0 : Either the value of the first character that does not match
+ *                is lower in the compared string, or all compared characters
+ *                match but the compared string is shorter
+ *         - >0 : Either the value of the first character that does not match
+ *                is greater in the compared string, or all compared characters
+ *                match but the compared string is longer.
+ *
+ * @note   Null strings are allowed
+ */
 int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
+  // if any of the two strings is equal to null
+  if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) {
+    if ((s1 == NULL) && (s2 == NULL)) return  0;
+    if  (s1 == NULL)                  return  1;
+    else                              return -1;
+  }
+
   const unichar*  it1 = s1;
   const unichar*  it2 = s2;
   const u_info_t* info1 = '\0';
@@ -253,10 +369,34 @@ int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
     --n;
   }
 
-  return n == 0 ? 0 : ((int32_t) *it1 - (int32_t) *it2);
+  return n == 0 ? 0 : (int) (*it1 - *it2);
 }
 
+/**
+ * @brief  Compares two strings without regard to case
+ *
+ * @param  s1 A null-terminated character sequence (unichar-string)
+ * @param  s2 A null-terminated character sequence (unichar-string)
+ * @return Returns a signed integral indicating the relation between
+ *         the strings:
+ *         -  0 : They compare equal
+ *         - <0 : Either the value of the first character that does not match
+ *                is lower in the compared string, or all compared characters
+ *                match but the compared string is shorter
+ *         - >0 : Either the value of the first character that does not match
+ *                is greater in the compared string, or all compared characters
+ *                match but the compared string is longer.
+ *
+ * @note   Null strings are allowed
+ */
 int u_stricmp(const unichar* s1, const unichar* s2) {
+  // if any of the two strings is equal to null
+  if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) {
+    if ((s1 == NULL) && (s2 == NULL)) return  0;
+    if  (s1 == NULL)                  return  1;
+    else                              return -1;
+  }
+
   const unichar*  it1 = s1;
   const unichar*  it2 = s2;
   const u_info_t* info1 = '\0';
@@ -305,7 +445,7 @@ int u_stricmp(const unichar* s1, const unichar* s2) {
     ++it2;
   }
 
-  return ((int32_t) *it1 - (int32_t) *it2);
+  return (int) (*it1 - *it2);
 }
 /* ************************************************************************** */
 }  // namespace unitex

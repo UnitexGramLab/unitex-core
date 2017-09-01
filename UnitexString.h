@@ -757,7 +757,7 @@ class UnitexString {
    * @return True if this->compare(rhs) == 0.  False otherwise
    */
   bool operator==(const Ustring* rhs) const {
-    return this->compare(rhs) == 0;
+    return u_equal(this->data_,rhs);
   }
 
   /**
