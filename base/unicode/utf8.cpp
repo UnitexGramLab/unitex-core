@@ -221,24 +221,58 @@ size_t u_strlen(const unichar* s) {
       else                              return -1;       \
     }
 
+#define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                               \
+  const s1_t* it1 = s1;                                                           \
+  const s2_t* it2 = s2;                                                           \
+  s1_t c1 = '\0';                                                                 \
+  s2_t c2 = '\0';                                                                 \
+  size_t pos = init;                                                              \
+  for (; cond ; pos += 4) {                                                       \
+    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1^c2) || (c1 == '\0')) { break; } \
+    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1^c2) || (c1 == '\0')) { break; } \
+    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1^c2) || (c1 == '\0')) { break; } \
+    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1^c2) || (c1 == '\0')) { break; } \
+  }                                                                               \
+  return (c1 == '\0') ? -(const unsigned int)c2 :                                 \
+                        ((const unsigned int)c1 - (const unsigned int)c2)
+
+
+#define U__BLOCKSTRCMP__(s1, s2, n)                                                       \
+  const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1,16)); \
+  const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2,16)); \
+  const size_t number_of_blocks   = sizeof(unichar) * n / sizeof(uintptr_t);              \
+  const size_t unichars_per_block = sizeof(uintptr_t)   / sizeof(unichar);                \
+  size_t block = 0;                                                                       \
+  do {                                                                                    \
+    if ((*(r0+block)   ^ *(r1+block)))   {           break; }                             \
+    if ((*(r0+block+1) ^ *(r1+block+1))) { block+=1; break; }                             \
+    if ((*(r0+block+2) ^ *(r1+block+2))) { block+=2; break; }                             \
+    if ((*(r0+block+3) ^ *(r1+block+3))) { block+=3; break; }                             \
+    block += 4;                                                                           \
+  } while(block < number_of_blocks)
+
+/**
+ * @brief  Compares two strings
+ *
+ * @param  s1 A null-terminated character sequence (unichar-string)
+ * @param  s2 A null-terminated character sequence (unichar-string)
+ * @return Returns a signed integral indicating the relation between
+ *         the strings:
+ *         -  0 : They compare equal
+ *         - <0 : Either the value of the first character that does not match
+ *                is lower in the compared string, or all compared characters
+ *                match but the compared string is shorter
+ *         - >0 : Either the value of the first character that does not match
+ *                is greater in the compared string, or all compared characters
+ *                match but the compared string is longer.
+ *
+ * @note   Null strings are allowed
+ */
 int u_strcmp(const unichar* s1, const unichar* s2) {
   // if any of the two strings is equal to null
   U__STRCMP__NULL__(s1, s2);
-
-  const unichar* it1 = s1;
-  const unichar* it2 = s2;
-  unichar c1 = '\0';
-  unichar c2 = '\0';
-  size_t pos = 0;
-  for (pos = 0;;pos += 4) {
-    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1^c2) || (c1 == '\0')) { break; }
-    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1^c2) || (c1 == '\0')) { break; }
-    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1^c2) || (c1 == '\0')) { break; }
-    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1^c2) || (c1 == '\0')) { break; }
-  }
-
-  // return 0 if we reached the length of the string without found a difference
-  return (c1 == '\0') ? -c2 : (c1 - c2);
+  // compare the two non-null strings
+  U__STRCMP__(unichar, s1, unichar, s2, 0,);
 }
 
 /**
@@ -262,41 +296,11 @@ int u_strcmp(const unichar* s1, const unichar* s2) {
 int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT s2, size_t n) {
   // if any of the two strings is equal to null
   U__STRCMP__NULL__(s1, s2);
-
-  size_t block_bytes = sizeof(uintptr_t);
-  size_t n_blocks    = sizeof(unichar) * n / block_bytes;
-  size_t unichars_per_block = block_bytes / sizeof(unichar);
-
-  const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1,16));
-  const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2,16));
-
-  // find on which block there is a difference
-  size_t block = 0;
-  do {
-    if ((*(r0+block)   ^ *(r1+block)))   {           break; }
-    if ((*(r0+block+1) ^ *(r1+block+1))) { block+=1; break; }
-    if ((*(r0+block+2) ^ *(r1+block+2))) { block+=2; break; }
-    if ((*(r0+block+3) ^ *(r1+block+3))) { block+=3; break; }
-    block += 4;
-  } while(block < n_blocks);
-
+  // find on which block there are a difference
+  U__BLOCKSTRCMP__(s1, s2, n);
   // find the first character that is different inside the block
-  const unichar* it1 = s1;
-  const unichar* it2 = s2;
-  unichar c1 = '\0';
-  unichar c2 = '\0';
-  size_t pos = 0;
-  for (pos = block * unichars_per_block; pos < n; pos += 4 ) {
-    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1^c2) || (c1 == '\0')) { break; }
-    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1^c2) || (c1 == '\0')) { break; }
-    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1^c2) || (c1 == '\0')) { break; }
-    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1^c2) || (c1 == '\0')) { break; }
-  }
-
-  // return 0 if we reached the length of the string without found a difference
-  return (c1 == '\0') ? -c2 : (c1 - c2);
+  U__STRCMP__(unichar, s1, unichar, s2, block * unichars_per_block, pos < n);
 }
-
 
 /**
  * @brief  Compares the specified number of characters of two strings without

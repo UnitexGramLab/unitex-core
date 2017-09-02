@@ -86,7 +86,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 
   UnitexString str2("1234567800123456789012345678901234567890");
   //int z = u_strcmp(str->c_unichar(),str2.c_unichar());
-  int x = u_strncmp(str->c_unichar(),str2.c_unichar(),(size_t) 7);
+  int x = u_strncmp(str->c_unichar(),str2.c_unichar(),(size_t) 9);
 
 
   return 1;
