@@ -34,7 +34,7 @@
  * @note      Use cpplint.py tool to detect style errors:
  *            `cpplint.py --linelength=120 `table`
  *
- * @date      août 2017
+ * @date      septembre 2017
  *
  * This file was automatically generated using an enhanced version of unicode-table 0.3.2
  * @see https://github.com/UnitexGramLab/unitex-core/tree/master/base/unicode
@@ -94,7 +94,7 @@ namespace unitex {
  * @def      U_SIZE
  * @brief    This is the size in bits of a unicode character
  */
-# define U_SIZE 16;
+#define U_SIZE 16
 
 /**
  * @def      unichar

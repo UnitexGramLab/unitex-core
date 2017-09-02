@@ -38,6 +38,7 @@
 # - set unicodeVersion to '9.0.0'
 # - set outName to 'table'
 # - add 'charType' variable
+# - add 'charSize' variable
 # - add variantsSize variable
 # - print 2 spaces instead of a tabulation
 # - fix 'Use of uninitialized value' calculating the hex value of upper, lower, title

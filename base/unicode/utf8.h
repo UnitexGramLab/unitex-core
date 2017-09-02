@@ -90,7 +90,7 @@ int u_encode_utf8(const unichar* source, char* destination) UNITEX_PARAMS_NON_NU
  */
 int u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NULL;
 
-int u_strxncmp(const unichar* s1, const unichar* s2, int n);
+int u_strxncmp(const unichar* __restrict s1, const unichar* __restrict s2, size_t n);
 int fast_compare( const char *ptr0, const char *ptr1, int len );
 
 int u_strnicmp(const unichar* s1, const unichar* s2, size_t n);

@@ -85,7 +85,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   lua_pushlightobject(L, UnitexString)(n, *str);
 
   UnitexString str2("1234567890123456788012345678901234567890");
-  int x = u_strxncmp(str->c_unichar(),str2.c_unichar(),40);
+  int x = u_strxncmp(str->c_unichar(),str2.c_unichar(),str->len());
 
   const char* a = "1234567890123456789012345678901234567890";
   const char* b = "1234567890123456788012345678901234567890";

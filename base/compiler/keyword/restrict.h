@@ -19,40 +19,41 @@
  *
  */
 /**
- * @file      keywords.h
- * @brief     Portable standard language keywords
+ * @file      restrict.h
+ * @brief     `restrict` keyword
  *
  * @author    cristian.martinez@univ-paris-est.fr (martinec)
  *
  * @attention Do not include this file directly, rather include the
- *            base/common.h header file to gain this file's functionality
+ *            base/compiler/common.h header file to gain this file's
+ *            functionality
  *
  * @note      Use cpplint.py tool to detect style errors:
  *            `cpplint.py --linelength=120 cpu.h`
  *
- * @date      February 2015
+ * @date      September 2017
  *
- * This file was contributed as part of the [DataMaTex](http://www.amabis.com)
- * project developed by [Amabis SARL](http://www.amabis.fr) with the collaboration
- * of the [LIGM](http://infolingu.univ-mlv.fr/). For further information on this,
- * please contact unitex-ws@amabis.fr
  */
 /* ************************************************************************** */
-#ifndef UNITEX_BASE_COMPILER_KEYWORDS_H_                            // NOLINT
-#define UNITEX_BASE_COMPILER_KEYWORDS_H_                            // NOLINT
+#ifndef UNITEX_BASE_COMPILER_KEYWORD_RESTRICT_H_                    // NOLINT
+#define UNITEX_BASE_COMPILER_KEYWORD_RESTRICT_H_                    // NOLINT
 /* ************************************************************************** */
-#include "base/compiler/keyword/alignof.h"
-#include "base/compiler/keyword/constexpr.h"
-#include "base/compiler/keyword/eq_default.h"
-#include "base/compiler/keyword/eq_delete.h"
-#include "base/compiler/keyword/explicit.h"
-#include "base/compiler/keyword/extension.h"
-#include "base/compiler/keyword/final.h"
-#include "base/compiler/keyword/noexcept.h"
-#include "base/compiler/keyword/nullptr.h"
-#include "base/compiler/keyword/override.h"
-#include "base/compiler/keyword/restrict.h"
-#include "base/compiler/keyword/static_assert.h"
-#include "base/compiler/keyword/thread_local.h"
+#include "base/compiler/compliance.h"     // COMPILER_COMPLIANT
+#include "base/compiler/version.h"        // COMPILER_AT_LEAST_*, COMPILER_IS
 /* ************************************************************************** */
-#endif  // UNITEX_BASE_COMPILER_KEYWORDS_H_                         // NOLINT
+/**
+ * @brief `restrict` keyword
+ */
+// C99       restrict
+// GCC     __restrict
+// MSVC    __restrict
+// CLANG   __restrict__
+#if   UNITEX_COMPILER_COMPLIANT(C99)
+# define UNITEX_RESTRICT                 restrict
+#elif UNITEX_COMPILER_IS(GCC)            // GNU Compiler
+# define UNITEX_RESTRICT                 __restrict
+#else                                    // no restrict support
+# define UNITEX_RESTRICT                 /* nothing */
+#endif
+/* ************************************************************************** */
+#endif  // UNITEX_BASE_COMPILER_KEYWORD_RESTRICT_H_                 // NOLINT

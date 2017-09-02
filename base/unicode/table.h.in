@@ -76,7 +76,7 @@ namespace unitex {
  * @def      {c:Size}
  * @brief    This is the size in bits of a unicode character
  */
-# define {c:Size} 16;
+#define {c:Size} {v:charSize}
 
 /**
  * @def      {v:charName}

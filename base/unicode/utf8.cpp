@@ -223,20 +223,21 @@ int u_decode_utf8(const char* source, unichar* destination) {
  * @note   Null strings are allowed
  * @see    adapted from http://mgronhol.github.io/fast-strcmp/
  */
-int u_strxncmp(const unichar* s1, const unichar* s2, int n) {
-  size_t total_bytes = sizeof(unichar) * n;
-  size_t block_bytes = sizeof(uintmax_t);
+int u_strxncmp(const unichar* __restrict s1, const unichar* __restrict s2, size_t n) {
+  size_t unichar_bytes = sizeof(unichar);
+  size_t total_bytes   = unichar_bytes * n;
+  size_t block_bytes   = sizeof(uintptr_t);
 
   size_t n_blocks = total_bytes < block_bytes ? 0 :  total_bytes / block_bytes;
   size_t current_block = 0;
 
-  uintmax_t *lptr0 = (uintmax_t*) s1;
-  uintmax_t *lptr1 = (uintmax_t*) s2;
+  const uintptr_t* lptr0 = reinterpret_cast<const uintptr_t*>(__builtin_assume_aligned (s1,16));
+  const uintptr_t* lptr1 = reinterpret_cast<const uintptr_t*>(__builtin_assume_aligned (s2,16));
 
   while (current_block < n_blocks) {
     if ((lptr0[current_block] ^ lptr1[current_block])) {
-      int pos;
-      for (pos = current_block * sizeof(uintmax_t); pos < n; ++pos) {
+      size_t pos;
+      for (pos = current_block * sizeof(uintptr_t); pos < n; ++pos) {
         if ((s1[pos] ^ s2[pos]) || (s1[pos] == 0) || (s2[pos] == 0)) {
           return ((const unsigned int)s1[pos] - (const unsigned int)s2[pos]);
         }
@@ -246,7 +247,7 @@ int u_strxncmp(const unichar* s1, const unichar* s2, int n) {
     ++current_block;
   }
 
-  int offset = (n_blocks - sizeof(unichar)) * sizeof(uintmax_t);
+  size_t offset = (n_blocks - sizeof(unichar)) * sizeof(uintptr_t);
 
   while (n > offset) {
     if ((s1[offset] ^ s2[offset])) {
