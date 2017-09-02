@@ -84,12 +84,11 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   // push a new string representing a concatenation of n copies of str
   lua_pushlightobject(L, UnitexString)(n, *str);
 
-  UnitexString str2("1234567890123456788012345678901234567890");
-  int x = u_strxncmp(str->c_unichar(),str2.c_unichar(),str->len());
+  //UnitexString str2("1034567890123456789012345678901234567890");
+  //int z = u_strcmp(str->c_unichar(),str2.c_unichar());
+  //int x = u_strncmp(str->c_unichar(),str2.c_unichar(),(size_t) 40);
 
-  const char* a = "1234567890123456789012345678901234567890";
-  const char* b = "1234567890123456788012345678901234567890";
-  int y = fast_compare(a, b, 40);
+
   return 1;
 }
 /* ************************************************************************** */

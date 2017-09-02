@@ -46,7 +46,7 @@
 #include "base/compiler/features.h"       // UNITEX_HAS_FEATURE
 #include "base/compiler/version.h"        // COMPILER_AT_LEAST_*, COMPILER_IS
 #include "base/compiler/identifiers.h"    // UNITEX_COUNTER, UNITEX_FILE_LINE
-#include "base/macro/macro.h"       // UNITEX_HAS
+#include "base/macro/macro.h"             // UNITEX_HAS
 #include "base/preprocessor/stringify.h"  // UNITEX_PP_STRINGIFY_NAME
 /* ************************************************************************** */
 // C++ system files                (try to order the includes alphabetically)

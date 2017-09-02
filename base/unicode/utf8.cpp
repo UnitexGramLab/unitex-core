@@ -221,78 +221,49 @@ int u_decode_utf8(const char* source, unichar* destination) {
  *                match but the compared string is longer.
  *
  * @note   Null strings are allowed
- * @see    adapted from http://mgronhol.github.io/fast-strcmp/
  */
-int u_strxncmp(const unichar* __restrict s1, const unichar* __restrict s2, size_t n) {
+int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT s2, size_t n) {
+  // if any of the two strings is equal to null
+  if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) {
+    if ((s1 == NULL) && (s2 == NULL)) return  0;
+    if  (s1 == NULL)                  return  1;
+    else                              return -1;
+  }
+
   size_t unichar_bytes = sizeof(unichar);
   size_t total_bytes   = unichar_bytes * n;
   size_t block_bytes   = sizeof(uintptr_t);
+  size_t unichars_per_block = block_bytes / unichar_bytes;
+  size_t n_blocks = total_bytes / block_bytes;
 
-  size_t n_blocks = total_bytes < block_bytes ? 0 :  total_bytes / block_bytes;
-  size_t current_block = 0;
+  const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1,16));
+  const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2,16));
 
-  const uintptr_t* lptr0 = reinterpret_cast<const uintptr_t*>(__builtin_assume_aligned (s1,16));
-  const uintptr_t* lptr1 = reinterpret_cast<const uintptr_t*>(__builtin_assume_aligned (s2,16));
+  // find on which block there is a difference
+  size_t block = 0;
+  do {
+    if ((*(r0+block)   ^ *(r1+block)))   {           break; }
+    if ((*(r0+block+1) ^ *(r1+block+1))) { block+=1; break; }
+    if ((*(r0+block+2) ^ *(r1+block+2))) { block+=2; break; }
+    if ((*(r0+block+3) ^ *(r1+block+3))) { block+=3; break; }
+    block += 4;
+  } while(block < n_blocks);
 
-  while (current_block < n_blocks) {
-    if ((lptr0[current_block] ^ lptr1[current_block])) {
-      size_t pos;
-      for (pos = current_block * sizeof(uintptr_t); pos < n; ++pos) {
-        if ((s1[pos] ^ s2[pos]) || (s1[pos] == 0) || (s2[pos] == 0)) {
-          return ((const unsigned int)s1[pos] - (const unsigned int)s2[pos]);
-        }
-      }
-    }
-
-    ++current_block;
+  // find the first character that is different inside the block
+  size_t pos;
+  const unichar* it1 = s1;
+  const unichar* it2 = s2;
+  for (pos = block * unichars_per_block; pos < n; pos += 4 ) {
+    if ((*(it1+pos)   ^ *(it2+pos))   || (*(it1+pos)   == '\0')) {         break; }
+    if ((*(it1+pos+1) ^ *(it2+pos+1)) || (*(it1+pos+1) == '\0')) { pos+=1; break; }
+    if ((*(it1+pos+2) ^ *(it2+pos+2)) || (*(it1+pos+2) == '\0')) { pos+=2; break; }
+    if ((*(it1+pos+3) ^ *(it2+pos+3)) || (*(it1+pos+3) == '\0')) { pos+=3; break; }
   }
 
-  size_t offset = (n_blocks - sizeof(unichar)) * sizeof(uintptr_t);
-
-  while (n > offset) {
-    if ((s1[offset] ^ s2[offset])) {
-      return ((const unsigned int)s1[offset] - (const unsigned int)s2[offset]);
-    }
-    ++offset;
-  }
-
-  return 0;
+  // return 0 if we reached the length of the string without found a difference
+  return n < pos ? 0 : ((const unsigned int)*(it1+pos) - (const unsigned int)*(it2+pos));
 }
 
-int fast_compare( const char *ptr0, const char *ptr1, int len ){
-  int fast = len/sizeof(size_t) + 1;
-  int offset = (fast-1)*sizeof(size_t);
-  int current_block = 0;
-
-  if( len <= sizeof(size_t)){ fast = 0; }
-
-
-  size_t *lptr0 = (size_t*)ptr0;
-  size_t *lptr1 = (size_t*)ptr1;
-
-  while( current_block < fast ){
-    if( (lptr0[current_block] ^ lptr1[current_block] )){
-      int pos;
-      for(pos = current_block*sizeof(size_t); pos < len ; ++pos ){
-        if( (ptr0[pos] ^ ptr1[pos]) || (ptr0[pos] == 0) || (ptr1[pos] == 0) ){
-          return  (int)((unsigned char)ptr0[pos] - (unsigned char)ptr1[pos]);
-          }
-        }
-      }
-
-    ++current_block;
-    }
-
-  while( len > offset ){
-    if( (ptr0[offset] ^ ptr1[offset] )){
-      return (int)((unsigned char)ptr0[offset] - (unsigned char)ptr1[offset]);
-      }
-    ++offset;
-    }
-
-
-  return 0;
-}
 
 /**
  * @brief  Compares the specified number of characters of two strings without

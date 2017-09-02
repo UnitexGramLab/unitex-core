@@ -3628,6 +3628,7 @@ if ((a!=NULL) && (b!=NULL)) {
 }
 #endif
 
+#if !UNITEX_USE(BASE_UNICODE)
 /**
  * unicode version of strncmp
  */
@@ -3638,6 +3639,7 @@ int u_strncmp(const unichar* s1, const unichar* s2, size_t n)
         return (int)(*(const unichar*)(s1 - 1) - *(const unichar*)(s2 - 1));
     return 0;
 }
+#endif
 
 
 /**

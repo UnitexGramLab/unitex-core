@@ -298,7 +298,9 @@ int is_str_mono_unichar_string(const unichar*, unichar);
 #define is_str_mono_unichar_string(str,c) (((str)!=NULL) && (*(str)==(c)) && (*((str)+1)==0))
 int u_strcmp(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strncmp(const unichar*, const unichar*,size_t num);
+#endif
 #if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp_ignore_case(const unichar*, const unichar*);
 #else

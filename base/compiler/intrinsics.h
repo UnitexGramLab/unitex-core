@@ -41,6 +41,7 @@
 #ifndef UNITEX_BASE_COMPILER_INTRINSICS_H_                          // NOLINT
 #define UNITEX_BASE_COMPILER_INTRINSICS_H_                          // NOLINT
 /* ************************************************************************** */
+#include "base/compiler/intrinsic/assume_aligned.h"
 #include "base/compiler/intrinsic/likely.h"
 #include "base/compiler/intrinsic/support.h"
 #include "base/compiler/intrinsic/popcount.h"

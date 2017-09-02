@@ -20,7 +20,7 @@
  */
 /**
  * @file      restrict.h
- * @brief     `restrict` keyword
+ * @brief     C99 `restrict` keyword
  *
  * @author    cristian.martinez@univ-paris-est.fr (martinec)
  *
@@ -42,18 +42,24 @@
 #include "base/compiler/version.h"        // COMPILER_AT_LEAST_*, COMPILER_IS
 /* ************************************************************************** */
 /**
- * @brief `restrict` keyword
+ * @brief C99 `restrict` keyword
  */
 // C99       restrict
 // GCC     __restrict
 // MSVC    __restrict
 // CLANG   __restrict__
-#if   UNITEX_COMPILER_COMPLIANT(C99)
-# define UNITEX_RESTRICT                 restrict
-#elif UNITEX_COMPILER_IS(GCC)            // GNU Compiler
-# define UNITEX_RESTRICT                 __restrict
-#else                                    // no restrict support
-# define UNITEX_RESTRICT                 /* nothing */
-#endif
+#if   UNITEX_COMPILER_COMPLIANT(C99)  // C99 compliant compiler
+# define UNITEX_RESTRICT              restrict
+#elif defined(restrict)               // restrict defined elsewhere
+# define UNITEX_RESTRICT              restrict
+#elif UNITEX_COMPILER_IS(CLANG)       // Clang Compiler
+# define UNITEX_RESTRICT              __restrict__
+#elif UNITEX_COMPILER_IS(MSVC)        // Microsoft Visual Studio Compiler
+# define UNITEX_RESTRICT              __restrict
+#elif UNITEX_COMPILER_IS(GCC)         // GNU Compiler
+# define UNITEX_RESTRICT              __restrict
+#else  // no restrict keyword support
+# define UNITEX_RESTRICT              /* nothing */
+#endif  // UNITEX_COMPILER_COMPLIANT(C99)
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_COMPILER_KEYWORD_RESTRICT_H_                 // NOLINT
