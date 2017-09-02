@@ -3312,12 +3312,6 @@ register int i=0;
 while (s[i++]) {}
 return (i-1);
 }
-#else
-size_t u_strlen(const unichar* s) {
-  register const unichar *it;
-  for (it = s; *it; ++it) {}
-  return (it - s);
-}
 #endif
 
 /**
@@ -3528,6 +3522,7 @@ return dest;
 /**
  * Unicode version of strcmp that tolerates NULL strings.
  */
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp(const unichar* a,const unichar* b) {
 if ((a!=NULL) && (b!=NULL)) {
     const unichar *a_p=a;
@@ -3574,7 +3569,7 @@ if ((a!=NULL) && (b!=NULL)) {
   return -1;
   }
 }
-
+#endif
 
 /**
  * Unicode version of strcmp that tolerates NULL strings and ignores case.

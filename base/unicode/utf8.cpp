@@ -205,6 +205,43 @@ int u_decode_utf8(const char* source, unichar* destination) {
 }
 
 /**
+ * @brief  Returns the length of the string s
+ */
+size_t u_strlen(const unichar* s) {
+  register const unichar *it;
+  for (it = s; *it; ++it) {}
+  return (it - s);
+}
+
+// all U__* macros must be undefined at the end of this file
+#define U__STRCMP__NULL__(s1, s2)                        \
+    if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) { \
+      if ((s1 == NULL) && (s2 == NULL)) return  0;       \
+      if  (s1 == NULL)                  return  1;       \
+      else                              return -1;       \
+    }
+
+int u_strcmp(const unichar* s1, const unichar* s2) {
+  // if any of the two strings is equal to null
+  U__STRCMP__NULL__(s1, s2);
+
+  const unichar* it1 = s1;
+  const unichar* it2 = s2;
+  unichar c1 = '\0';
+  unichar c2 = '\0';
+  size_t pos = 0;
+  for (pos = 0;;pos += 4) {
+    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1^c2) || (c1 == '\0')) { break; }
+    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1^c2) || (c1 == '\0')) { break; }
+    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1^c2) || (c1 == '\0')) { break; }
+    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1^c2) || (c1 == '\0')) { break; }
+  }
+
+  // return 0 if we reached the length of the string without found a difference
+  return (c1 == '\0') ? -c2 : (c1 - c2);
+}
+
+/**
  * @brief  Compares the specified number of characters of two strings
  *
  * @param  s1 A null-terminated character sequence (unichar-string)
@@ -224,17 +261,11 @@ int u_decode_utf8(const char* source, unichar* destination) {
  */
 int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT s2, size_t n) {
   // if any of the two strings is equal to null
-  if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) {
-    if ((s1 == NULL) && (s2 == NULL)) return  0;
-    if  (s1 == NULL)                  return  1;
-    else                              return -1;
-  }
+  U__STRCMP__NULL__(s1, s2);
 
-  size_t unichar_bytes = sizeof(unichar);
-  size_t total_bytes   = unichar_bytes * n;
-  size_t block_bytes   = sizeof(uintptr_t);
-  size_t unichars_per_block = block_bytes / unichar_bytes;
-  size_t n_blocks = total_bytes / block_bytes;
+  size_t block_bytes = sizeof(uintptr_t);
+  size_t n_blocks    = sizeof(unichar) * n / block_bytes;
+  size_t unichars_per_block = block_bytes / sizeof(unichar);
 
   const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1,16));
   const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2,16));
@@ -250,18 +281,20 @@ int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT 
   } while(block < n_blocks);
 
   // find the first character that is different inside the block
-  size_t pos;
   const unichar* it1 = s1;
   const unichar* it2 = s2;
+  unichar c1 = '\0';
+  unichar c2 = '\0';
+  size_t pos = 0;
   for (pos = block * unichars_per_block; pos < n; pos += 4 ) {
-    if ((*(it1+pos)   ^ *(it2+pos))   || (*(it1+pos)   == '\0')) {         break; }
-    if ((*(it1+pos+1) ^ *(it2+pos+1)) || (*(it1+pos+1) == '\0')) { pos+=1; break; }
-    if ((*(it1+pos+2) ^ *(it2+pos+2)) || (*(it1+pos+2) == '\0')) { pos+=2; break; }
-    if ((*(it1+pos+3) ^ *(it2+pos+3)) || (*(it1+pos+3) == '\0')) { pos+=3; break; }
+    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1^c2) || (c1 == '\0')) { break; }
+    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1^c2) || (c1 == '\0')) { break; }
+    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1^c2) || (c1 == '\0')) { break; }
+    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1^c2) || (c1 == '\0')) { break; }
   }
 
   // return 0 if we reached the length of the string without found a difference
-  return n < pos ? 0 : ((const unsigned int)*(it1+pos) - (const unsigned int)*(it2+pos));
+  return (c1 == '\0') ? -c2 : (c1 - c2);
 }
 
 
@@ -286,11 +319,7 @@ int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT 
  */
 int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
   // if any of the two strings is equal to null
-  if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) {
-    if ((s1 == NULL) && (s2 == NULL)) return  0;
-    if  (s1 == NULL)                  return  1;
-    else                              return -1;
-  }
+  U__STRCMP__NULL__(s1, s2);
 
   const unichar*  it1 = s1;
   const unichar*  it2 = s2;
@@ -363,11 +392,7 @@ int u_strnicmp(const unichar* s1, const unichar* s2, size_t n) {
  */
 int u_stricmp(const unichar* s1, const unichar* s2) {
   // if any of the two strings is equal to null
-  if (UNITEX_UNLIKELY((s1 == NULL) || (s2 == NULL))) {
-    if ((s1 == NULL) && (s2 == NULL)) return  0;
-    if  (s1 == NULL)                  return  1;
-    else                              return -1;
-  }
+  U__STRCMP__NULL__(s1, s2);
 
   const unichar*  it1 = s1;
   const unichar*  it2 = s2;

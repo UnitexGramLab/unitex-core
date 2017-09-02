@@ -296,15 +296,22 @@ void free_string_optional_buffer(unichar** allocated_buffer, Abstract_allocator 
 
 int is_str_mono_unichar_string(const unichar*, unichar);
 #define is_str_mono_unichar_string(str,c) (((str)!=NULL) && (*(str)==(c)) && (*((str)+1)==0))
+
+#if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp(const unichar*, const unichar*);
+#endif
+
 int u_strcmp(const unichar*,const char*);
+
 #if !UNITEX_USE(BASE_UNICODE)
 int u_strncmp(const unichar*, const unichar*,size_t num);
 #endif
+
 #if !UNITEX_USE(BASE_UNICODE)
 int u_strcmp_ignore_case(const unichar*, const unichar*);
 #else
 #define u_strcmp_ignore_case u_stricmp
+
 #endif
 int u_strcmp_ignore_case(const unichar*, const char*);
 unichar *u_strtok_r(unichar *str, const unichar *delim, unichar **saveptr);
