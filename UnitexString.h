@@ -187,6 +187,23 @@ class UnitexString {
     data_(acquire(string.data_->str)) {
   }
 
+  UNITEX_EXPLICIT_CONVERSIONS
+  UnitexString(int x, const char* format, ...) :
+    data_(acquire()) {
+    va_list args;
+    va_start(args, format);
+
+    unichar string_buffer[kMaxBufferSize];
+
+    const size_type size = unitex::u_vsprintf(string_buffer, format, args);
+
+    va_end(args);
+
+    assert(size < kMaxBufferSize);
+
+    append(string_buffer,size);
+  }
+
   /**
    * @brief  Capacity constructor
    *

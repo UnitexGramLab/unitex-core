@@ -97,6 +97,17 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   return 1;
 }
 /* ************************************************************************** */
+/* static */ int elg_ustring_format(lua_State* L) {
+  stack_dump(L);
+  int top = lua_gettop(L);
+  int arg = 1;
+  size_t sfl;
+  const char* strfrmt = luaL_checklstring(L, arg, &sfl);
+  const char* strfrmt_end = strfrmt+sfl;
+  lua_pushlightobject(L, UnitexString)(0, strfrmt, "Hello World");
+  return 1;
+}
+/* ************************************************************************** */
 // based on the string_byte function of LuaJIT/lib_string.c
 /* static */ int elg_ustring_byte(lua_State* L) {
   UnitexString* s =  lua_checkudata_cast(L, 1, UnitexString);
@@ -195,6 +206,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 /* ************************************************************************** */
 /* static */ const struct luaL_Reg lua_lib_functions[] = {
   U__DECLARE__FUNCTION__ENTRY__(USTRING, rep),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, format),
   {NULL, NULL}
 };
 /* ************************************************************************** */
