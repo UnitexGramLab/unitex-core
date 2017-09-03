@@ -221,19 +221,19 @@ size_t u_strlen(const unichar* s) {
       else                              return -1;       \
     }
 
-#define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                               \
-  const s1_t* it1 = s1;                                                           \
-  const s2_t* it2 = s2;                                                           \
-  s1_t c1 = '\0';                                                                 \
-  s2_t c2 = '\0';                                                                 \
-  size_t pos = init;                                                              \
-  for (; cond ; pos += 4) {                                                       \
-    c1 = *(it1+pos);   c2= *(it2+pos)   ; if (((c1-c2)!=0) || (c1 == '\0')) { break; } \
-    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if (((c1-c2)!=0) || (c1 == '\0')) { break; } \
-    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if (((c1-c2)!=0) || (c1 == '\0')) { break; } \
-    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if (((c1-c2)!=0) || (c1 == '\0')) { break; } \
-  }                                                                               \
-  return (c1 == '\0') ? -(const unsigned int)c2 :                                 \
+#define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                                    \
+  const s1_t* it1 = s1;                                                                \
+  const s2_t* it2 = s2;                                                                \
+  s1_t c1 = '\0';                                                                      \
+  s2_t c2 = '\0';                                                                      \
+  size_t pos = init;                                                                   \
+  for (; cond ; pos += 4) {                                                            \
+    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
+    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
+    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
+    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
+  }                                                                                    \
+  return (c1 == '\0') ? -(const unsigned int)c2 :                                      \
                         ((const unsigned int)c1 - (const unsigned int)c2)
 
 
@@ -246,9 +246,72 @@ size_t u_strlen(const unichar* s) {
     const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1, 16)); \
     const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2, 16)); \
     while (repeat--) {                                                                       \
+      if ((*(r0+block)   - *(r1+block))   != 0) {           break; }                         \
+      if ((*(r0+block+1) - *(r1+block+1)) != 0) { block+=1; break; }                         \
+      block += 2;                                                                            \
+    }                                                                                        \
+  }
+
+#define U__BLOCKSTRCMP__R(s1, s2, n)                                                          \
+  size_t block = 0;                                                                          \
+  const size_t elements_per_block = sizeof(uintptr_t)   / sizeof(unichar);                   \
+  const size_t number_of_blocks   = sizeof(unichar) * n / sizeof(uintptr_t);                 \
+  size_t repeat = number_of_blocks / 2;                                                      \
+  if(repeat) {                                                                               \
+    const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1, 16)); \
+    const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2, 16)); \
+    while (repeat--) {                                                                       \
       if ((*(r0+block)   - *(r1+block))   != 0) {           break; }                              \
       if ((*(r0+block+1) - *(r1+block+1)) != 0) { block+=1; break; }                              \
       block += 2;                                                                            \
+    }                                                                                        \
+    if(number_of_blocks % 2 && ((*(r0+block) - *(r1+block))   != 0)) { block+=1;}            \
+  }
+
+#define U__BLOCKSTRCMP__3(s1, s2, n)                                                          \
+  size_t block = 0;                                                                          \
+  const size_t elements_per_block = sizeof(uintptr_t)   / sizeof(unichar);                   \
+  const size_t number_of_blocks   = sizeof(unichar) * n / sizeof(uintptr_t);                 \
+  size_t repeat = number_of_blocks / 3;                                                      \
+  if(repeat) {                                                                               \
+    const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1, 16)); \
+    const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2, 16)); \
+    while (repeat--) {                                                                       \
+      if ((*(r0+block)   - *(r1+block))   != 0) {           break; }                              \
+      if ((*(r0+block+1) - *(r1+block+1)) != 0) { block+=1; break; }                              \
+      if ((*(r0+block+2) - *(r1+block+2)) != 0) { block+=2; break; }                              \
+      block += 3;                                                                            \
+    }                                                                                        \
+  }
+
+#define U__BLOCKSTRCMP__4(s1, s2, n)                                                          \
+  size_t block = 0;                                                                          \
+  const size_t elements_per_block = sizeof(uintptr_t)   / sizeof(unichar);                   \
+  const size_t number_of_blocks   = sizeof(unichar) * n / sizeof(uintptr_t);                 \
+  size_t repeat = number_of_blocks / 4;                                                      \
+  if(repeat) {                                                                               \
+    const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1, 16)); \
+    const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2, 16)); \
+    while (repeat--) {                                                                       \
+      if ((*(r0+block)   - *(r1+block))   != 0) {           break; }                              \
+      if ((*(r0+block+1) - *(r1+block+1)) != 0) { block+=1; break; }                              \
+      if ((*(r0+block+2) - *(r1+block+2)) != 0) { block+=2; break; }                              \
+      if ((*(r0+block+3) - *(r1+block+3)) != 0) { block+=3; break; }                              \
+      block += 4;                                                                            \
+    }                                                                                        \
+  }
+
+#define U__BLOCKSTRCMP__1(s1, s2, n)                                                          \
+  size_t block = 0;                                                                          \
+  const size_t elements_per_block = sizeof(uintptr_t)   / sizeof(unichar);                   \
+  const size_t number_of_blocks   = sizeof(unichar) * n / sizeof(uintptr_t);                 \
+  size_t repeat = number_of_blocks / 1;                                                      \
+  if(repeat) {                                                                               \
+    const uintptr_t* r0 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s1, 16)); \
+    const uintptr_t* r1 = reinterpret_cast<const uintptr_t*>(UNITEX_ASSUME_ALIGNED(s2, 16)); \
+    while (repeat--) {                                                                       \
+      if ((*(r0+block)   - *(r1+block))   != 0) {           break; }                              \
+      block += 1;                                                                            \
     }                                                                                        \
   }
 

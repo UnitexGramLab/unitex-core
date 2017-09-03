@@ -87,7 +87,22 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   UnitexString str2("1234567890123456789012345678901234567890");
   //int z = u_strcmp(str->c_unichar(),str2.c_unichar());
   for(int i=0; i<200000000; ++i) {
-  int x = u_strncmp(str->c_unichar(),str2.c_unichar(),(size_t) 37);
+   u_strcmp(str->c_unichar(),str2.c_unichar());
+  }
+
+  UnitexString str3("123456");
+  for(int i=0; i<200000000; ++i) {
+   u_strcmp(str->c_unichar(),str3.c_unichar());
+  }
+
+  UnitexString str4("123456789012345678");
+  for(int i=0; i<200000000; ++i) {
+    u_strcmp(str->c_unichar(),str4.c_unichar());
+  }
+
+  UnitexString str5("123456789");
+  for(int i=0; i<200000000; ++i) {
+    u_strcmp(str->c_unichar(),str5.c_unichar());
   }
 
   return 1;
