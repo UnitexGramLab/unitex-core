@@ -450,4 +450,29 @@ int u_stricmp(const unichar* s1, const unichar* s2) {
   return (*(const unsigned int *)it1 - *(const unsigned int *)it2);
 }
 /* ************************************************************************** */
+#define U__REVERSE__(s_t, s, l)      \
+  if (s == NULL || !(*s)) return;    \
+  s_t tmp = '\0';                    \
+  size_t length = l;                 \
+  s_t*  it_end = s + length - 1;     \
+  while (it_end > s) {               \
+    tmp = *s;                        \
+    *s = *it_end;                    \
+    *it_end = tmp;                   \
+    s++;                             \
+    it_end--;                        \
+  }
+
+/**
+ * @brief  Reverse a string
+ */
+void u_reverse(unichar* s) {
+  U__REVERSE__(unichar, s, u_strlen(s));
+}
+/* ************************************************************************** */
+#undef U__REVERSE__
+/* ************************************************************************** */
+
+
+/* ************************************************************************** */
 }  // namespace unitex

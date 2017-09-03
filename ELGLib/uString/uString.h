@@ -66,6 +66,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(deaccentuate);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(fold);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(lower);
+U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(reverse);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(title);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(upper);
 /* ************************************************************************** */
@@ -163,6 +164,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   U__DECLARE__FUNCTION__ENTRY__(USTRING, deaccentuate),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, fold),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, lower),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, reverse),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, title),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, upper),
 

@@ -1197,6 +1197,15 @@ class UnitexString {
   }
 
   /**
+   * @brief  Reverse the string
+   * @return *this
+   */
+  UnitexString& reverse() {
+    unitex::u_reverse(data_->str);
+    return *this;
+  }
+
+  /**
    * @brief  Lowercase the characters in the string
    * @return *this
    */

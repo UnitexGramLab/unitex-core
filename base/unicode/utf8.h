@@ -99,12 +99,8 @@ int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT 
 int u_strnicmp(const unichar* s1, const unichar* s2, size_t n);
 
 int u_stricmp(const unichar* s1,const unichar* s2);
-/* ************************************************************************** */
-namespace {   // namespace unitex::{unnamed}, enforce one-definition-rule
-/* ************************************************************************** */
 
-/* ************************************************************************** */
-}  // namespace unitex::unnamed
+void u_reverse(const unichar* s);
 /* ************************************************************************** */
 }  // namespace unitex
 /* ************************************************************************** */
