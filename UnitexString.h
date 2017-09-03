@@ -188,6 +188,23 @@ class UnitexString {
   }
 
   /**
+   * @brief  Capacity constructor
+   *
+   * Requests that the string capacity be adapted to a planned size
+   * to a length of *up to* n characters.
+   *
+   * @param  n      Planned length for the string, expressed in number of
+   *                characters
+   *
+   * @note          The resulting string capacity may be equal or greater
+   *                than @e n.
+   */
+  UNITEX_EXPLICIT_CONVERSIONS
+  UnitexString(size_type n) :
+    data_(acquire(n)) {
+  }
+
+  /**
    * @brief  Substring constructor
    *
    * Copies the portion of str that begins at the character position pos and
@@ -218,7 +235,8 @@ class UnitexString {
    *
    * @param  string A null-terminated character sequence (C-string)
    */
-  /*explicit*/ UnitexString(const char* string) :                   // NOLINT
+  UNITEX_EXPLICIT_CONVERSIONS
+  UnitexString(const char* string) :                   // NOLINT
       data_(acquire()) {
     this->append(string);
   }
@@ -1201,7 +1219,7 @@ class UnitexString {
    * @return *this
    */
   UnitexString& reverse() {
-    u_reverse(data_->str);
+    u_reverse(data_->str, data_->len);
     return *this;
   }
 

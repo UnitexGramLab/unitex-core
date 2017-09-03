@@ -90,10 +90,44 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   // push a new string representing a concatenation of n copies of str
   lua_pushlightobject(L, UnitexString)(n, *str);
 
-  for (int i = 0; i< 2000000000; ++i) {
-    str->reverse();
-  }
+//  for (int i = 0; i< 20000000; ++i) {
+//    str->reverse();
+//  }
 
+  return 1;
+}
+/* ************************************************************************** */
+// based on the string_byte function of LuaJIT/lib_string.c
+/* static */ int elg_ustring_byte(lua_State* L) {
+  UnitexString* s =  lua_checkudata_cast(L, 1, UnitexString);
+  int32_t len = (int32_t) s->len();
+  int32_t start = luaL_optint(L, 2, 1);
+  int32_t stop = luaL_optint(L, 3, start);
+  int32_t n, i;
+  if (stop < 0) stop += len+1;
+  if (start < 0) start += len+1;
+  if (start <= 0) start = 1;
+  if (stop > len) stop = len;
+  if (start > stop) return 0;  /* Empty interval: return no results. */
+  start--;
+  n = stop - start;
+  luaL_checkstack(L, n, "string slice too long");
+  const unichar* p = ((unichar *)(s->c_unichar())) + start;
+  for (i = 0; i < n; i++)
+    lua_pushinteger(L, p[i]);
+  return n;
+}
+/* ************************************************************************** */
+/* static */ int elg_ustring_char(lua_State* L) {
+  int n = lua_gettop(L);
+  // push a new string with a capacity of n codepoints
+  UnitexString* s=  lua_pushlightobject(L, UnitexString)(n);
+  // push back each numerical argument as a character
+  for (int i=1; i<=n; i++) {
+    unichar c = luaL_checkint(L, i);
+    luaL_argcheck(L, (unsigned int) c == c, i, "invalid value");
+    s->append(c);
+  }
   return 1;
 }
 /* ************************************************************************** */
@@ -178,6 +212,10 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
+
+  //
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, byte),
+  U__DECLARE__FUNCTION__ENTRY__(USTRING, char),
 
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, decode),

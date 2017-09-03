@@ -100,7 +100,9 @@ int u_strnicmp(const unichar* s1, const unichar* s2, size_t n);
 
 int u_stricmp(const unichar* s1,const unichar* s2);
 
-void u_reverse(const unichar* s);
+void u_reverse(unichar* s);
+
+void u_reverse(unichar* s, size_t n);
 
 /* ************************************************************************** */
 }  // namespace unitex
