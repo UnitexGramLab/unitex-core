@@ -21,7 +21,7 @@
 
 #include "Ustring.h"
 #include "Error.h"
-#include "base/compiler/intrinsic/clz.h"
+#include "base/integer/operation/round.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -29,72 +29,15 @@
 
 namespace unitex {
 
-
-# if UNITEX_HAS_BUILTIN(XCLZ)
-# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, DECAY)                  \
-  return (N != 0) ? (UINT##SIZE##_C(1) << (sizeof(uint##SIZE##_t) *                \
-                     CHAR_BIT - unitex_builtin_clz_##SIZE(N + DECAY))) : MIN
-# else
-# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, DECAY)                  \
-  if (N == 0) return MIN;                                                          \
-  N += DECAY;                                                                      \
-  for (size_t i = 1; i <  sizeof(uint##SIZE##_t) * CHAR_BIT; i *= 2) {             \
-    N |= N >> i;                                                                   \
-  }                                                                                \
-  ++N;                                                                             \
-  return N
-# endif
-
-UNITEX_FORCE_INLINE
-uint32_t unitex_round_up_greater_power_of_two_32(uint32_t n,
-                                                 uint32_t min = UINT32_C(2)) {
-  UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, 0);
-}
-
-UNITEX_FORCE_INLINE
-uint32_t unitex_round_up_smallest_power_of_two_32(uint32_t n,
-                                                  uint32_t min = UINT32_C(2)) {
-  UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, -1);
-}
-
 /**
  * calculate the buffersize for a string len
- * @author martinec
  */
-static unsigned int buffer_size_for_len(unsigned int string_len)
-{
-    unsigned int  z= unitex_round_up_smallest_power_of_two_32(string_len, MINBUF);
-
-    unsigned int buffer_size = MINBUF;
-    while (buffer_size <= string_len) {
-        buffer_size *= 2;
-    }
-
-    unsigned int  v=31;
-    v =  (v == 0) ? (MINBUF-1) : v - 1;
-    for (size_t i = 1; i < sizeof(uint32_t) * CHAR_BIT; i *= 2) {
-      v |= v >> i;
-    }
-    ++v;
-
-    // for (power2 = 1; value > 0; value >>= 1, power2 <<= 1) ;
-
-    return buffer_size;
-}
-
+#define buffer_size_for_len(n) unitex_round_up_greater_power_of_two_32(n)
 
 /**
 * calculate the rounded buffersize
 */
-static unsigned int buffer_size_rounded(unsigned int give_len)
-{
-    unsigned int buffer_size = MINBUF;
-    while (buffer_size < give_len) {
-        buffer_size *= 2;
-    }
-    return buffer_size;
-}
-
+#define buffer_size_rounded(n) unitex_round_up_smallest_power_of_two_32(n)
 
 /**
  * Allocates, initializes and returns a Ustring representing the given string.

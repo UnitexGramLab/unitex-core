@@ -35,6 +35,7 @@
 /* ************************************************************************** */
 // Project's .h files. (order the includes alphabetically)
 #include "ELGLib/common.h"
+#include "ELGLib/debug.h"
 #include "UnitexString.h"
 /* ************************************************************************** */
 #define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG, USTRING)
@@ -98,54 +99,53 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_format(lua_State* L) {
-  stack_dump(L);
-  size_t len;
-  const char* format = luaL_checklstring(L, 1, &len);
-  int n = lua_gettop(L);
-  // push a new string with a capacity of len + 8n codepoints
-  UnitexString* s=  lua_pushlightobject(L, UnitexString)(len + MINBUF * n);
-
-  for (int arg = 2; arg <= n; ++arg) {
-    int t = lua_type(L, arg);
-
-    switch (t) {
-      case LUA_TNIL:
-        break;
-
-      case LUA_TBOOLEAN:
-        lua_toboolean(L, arg);
-        break;
-
-      case LUA_TLIGHTUSERDATA:
-        break;
-
-      case LUA_TNUMBER:
-        lua_tonumber(L, arg);
-        break;
-
-      case LUA_TSTRING:
-        lua_tolstring(L, arg, &len);
-        break;
-
-      case LUA_TTABLE:
-        break;
-
-      case LUA_TFUNCTION:
-        lua_topointer(L, arg);
-        break;
-
-      case LUA_TUSERDATA:
-        break;
-
-      case LUA_TTHREAD:
-        lua_topointer(L, arg);
-        break;
-
-      default:
-        "(null)";
-        break;
-    }
-  }
+//  size_t len;
+//  const char* format = luaL_checklstring(L, 1, &len);
+//  int n = lua_gettop(L);
+//  // push a new string with a capacity of len + 8n codepoints
+//  UnitexString* s=  lua_pushlightobject(L, UnitexString)(len + MINBUF * n);
+//
+//  for (int arg = 2; arg <= n; ++arg) {
+//    int t = lua_type(L, arg);
+//
+//    switch (t) {
+//      case LUA_TNIL:
+//        break;
+//
+//      case LUA_TBOOLEAN:
+//        lua_toboolean(L, arg);
+//        break;
+//
+//      case LUA_TLIGHTUSERDATA:
+//        break;
+//
+//      case LUA_TNUMBER:
+//        lua_tonumber(L, arg);
+//        break;
+//
+//      case LUA_TSTRING:
+//        lua_tolstring(L, arg, &len);
+//        break;
+//
+//      case LUA_TTABLE:
+//        break;
+//
+//      case LUA_TFUNCTION:
+//        lua_topointer(L, arg);
+//        break;
+//
+//      case LUA_TUSERDATA:
+//        break;
+//
+//      case LUA_TTHREAD:
+//        lua_topointer(L, arg);
+//        break;
+//
+//      default:
+//        "(null)";
+//        break;
+//    }
+//  }
 
   //lua_pushlightobject(L, UnitexString)(0, format, "Hello World");
   return 1;

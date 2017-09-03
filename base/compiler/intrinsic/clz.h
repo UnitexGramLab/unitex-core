@@ -37,13 +37,13 @@
 #define UNITEX_BASE_COMPILER_INTRINSICS_CLZ_H_                      // NOLINT
 /* ************************************************************************** */
 // Unitex headers
+#include "base/compiler/attribute/inline.h"   // UNITEX_FORCE_INLINE
+#include "base/compiler/intrinsic/likely.h"   // UNITEX_LIKELY
+#include "base/compiler/intrinsic/support.h"  // common intrinsic functions
 #include "base/compiler/version.h"            // UNITEX_COMPILER_AT_LEAST
 #include "base/cpu/version.h"                 // UNITEX_CPU_IS
 #include "base/integer/types.h"               // uint32_t, uint64_t
 #include "base/integer/wordsize.h"            // UNITEX_WORDSIZE_IS()
-#include "base/compiler/attribute/inline.h"   // UNITEX_FORCE_INLINE
-#include "base/compiler/intrinsic/support.h"  // common intrinsic functions
-#include "base/compiler/intrinsic/likely.h"   // UNITEX_LIKELY
 /* ************************************************************************** */
 /**
  * @def    unitex_builtin_clz_32
