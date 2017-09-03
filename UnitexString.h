@@ -1241,7 +1241,6 @@ class UnitexString {
     return *this;
   }
 
-
   /**
    * @brief  Append character to string
    *

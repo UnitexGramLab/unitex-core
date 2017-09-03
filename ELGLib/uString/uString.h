@@ -51,6 +51,7 @@ namespace {   // namespace elg::ustring::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
 // all U__* macros must be undefined before the end of this file
+/* ************************************************************************** */
 #define U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(_func)                \
 /* static */ int elg_ustring_##_func(lua_State* L) {                        \
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);              \
@@ -68,6 +69,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(lower);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(title);
 U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(upper);
 /* ************************************************************************** */
+#undef U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__
+/* ************************************************************************** */
 #define U__DECLARE__FUNCTION__ELG__USTRING__INT__(_func)                    \
 /* static */ int elg_ustring_##_func(lua_State* L) {                        \
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);              \
@@ -77,34 +80,14 @@ U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__(upper);
 /* ************************************************************************** */
 U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 /* ************************************************************************** */
+#undef U__DECLARE__FUNCTION__ELG__USTRING__INT__
+/* ************************************************************************** */
 /* static */ int elg_ustring_rep(lua_State* L) {
   UnitexString* str = lua_checkudata_cast(L, 1, UnitexString);
   // number of copies
   int n = luaL_checkint(L, 2);
   // push a new string representing a concatenation of n copies of str
   lua_pushlightobject(L, UnitexString)(n, *str);
-
-  UnitexString str2("1234567890123456789012345678901234567890");
-  //int z = u_strcmp(str->c_unichar(),str2.c_unichar());
-  for(int i=0; i<200000000; ++i) {
-   u_strcmp(str->c_unichar(),str2.c_unichar());
-  }
-
-  UnitexString str3("123456");
-  for(int i=0; i<200000000; ++i) {
-   u_strcmp(str->c_unichar(),str3.c_unichar());
-  }
-
-  UnitexString str4("123456789012345678");
-  for(int i=0; i<200000000; ++i) {
-    u_strcmp(str->c_unichar(),str4.c_unichar());
-  }
-
-  UnitexString str5("123456789");
-  for(int i=0; i<200000000; ++i) {
-    u_strcmp(str->c_unichar(),str5.c_unichar());
-  }
-
   return 1;
 }
 /* ************************************************************************** */
@@ -250,9 +233,6 @@ int luaopen_ustring(lua_State *L) {
   elg_stack_dump(L);
   return 1;
 }
-/* ************************************************************************** */
-#undef U__DECLARE__FUNCTION__ELG__USTRING__VARIANT__
-#undef U__DECLARE__FUNCTION__ELG__USTRING__INT__
 /* ************************************************************************** */
 }  // namespace unitex::elg::ustring::{unnamed}
 /* ************************************************************************** */
