@@ -30,27 +30,49 @@
 namespace unitex {
 
 
+# if UNITEX_HAS_BUILTIN(XCLZ)
+# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, DECAY)                  \
+  return (N != 0) ? (UINT##SIZE##_C(1) << (sizeof(uint##SIZE##_t) *                \
+                     CHAR_BIT - unitex_builtin_clz_##SIZE(N + DECAY))) : MIN
+# else
+# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, DECAY)                  \
+  if (N == 0) return MIN;                                                          \
+  N += DECAY;                                                                      \
+  for (size_t i = 1; i <  sizeof(uint##SIZE##_t) * CHAR_BIT; i *= 2) {             \
+    N |= N >> i;                                                                   \
+  }                                                                                \
+  ++N;                                                                             \
+  return N
+# endif
+
+UNITEX_FORCE_INLINE
+uint32_t unitex_round_up_greater_power_of_two_32(uint32_t n,
+                                                 uint32_t min = UINT32_C(2)) {
+  UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, 0);
+}
+
+UNITEX_FORCE_INLINE
+uint32_t unitex_round_up_smallest_power_of_two_32(uint32_t n,
+                                                  uint32_t min = UINT32_C(2)) {
+  UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, -1);
+}
+
 /**
  * calculate the buffersize for a string len
  * @author martinec
  */
 static unsigned int buffer_size_for_len(unsigned int string_len)
 {
-    unsigned int  z=string_len;
-    z += (z == 0) * (MINBUF-1);
-    uint32_t u = UINT32_C(1) << (sizeof(uint32_t) * CHAR_BIT - __builtin_clz(z));
-    u = unitex_builtin_clz_64(z);
-
+    unsigned int  z= unitex_round_up_smallest_power_of_two_32(string_len, MINBUF);
 
     unsigned int buffer_size = MINBUF;
     while (buffer_size <= string_len) {
         buffer_size *= 2;
     }
 
-    unsigned int  v=string_len;
-    v =  (v == 0) ? (MINBUF-1) : v++;
-    for (size_t i = 1; i < sizeof(v) * CHAR_BIT; i *= 2)
-    {
+    unsigned int  v=31;
+    v =  (v == 0) ? (MINBUF-1) : v - 1;
+    for (size_t i = 1; i < sizeof(uint32_t) * CHAR_BIT; i *= 2) {
       v |= v >> i;
     }
     ++v;
