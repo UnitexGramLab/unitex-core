@@ -54,6 +54,8 @@ typedef struct {
    unsigned int len;
 } Ustring;
 
+#define MAXBUF    1024
+#define MINBUF      16
 
 void resize(Ustring* ustr,unsigned int size);
 

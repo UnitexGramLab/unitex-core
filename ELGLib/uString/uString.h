@@ -99,12 +99,55 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 /* ************************************************************************** */
 /* static */ int elg_ustring_format(lua_State* L) {
   stack_dump(L);
-  int top = lua_gettop(L);
-  int arg = 1;
-  size_t sfl;
-  const char* strfrmt = luaL_checklstring(L, arg, &sfl);
-  const char* strfrmt_end = strfrmt+sfl;
-  lua_pushlightobject(L, UnitexString)(0, strfrmt, "Hello World");
+  size_t len;
+  const char* format = luaL_checklstring(L, 1, &len);
+  int n = lua_gettop(L);
+  // push a new string with a capacity of len + 8n codepoints
+  UnitexString* s=  lua_pushlightobject(L, UnitexString)(len + MINBUF * n);
+
+  for (int arg = 2; arg <= n; ++arg) {
+    int t = lua_type(L, arg);
+
+    switch (t) {
+      case LUA_TNIL:
+        break;
+
+      case LUA_TBOOLEAN:
+        lua_toboolean(L, arg);
+        break;
+
+      case LUA_TLIGHTUSERDATA:
+        break;
+
+      case LUA_TNUMBER:
+        lua_tonumber(L, arg);
+        break;
+
+      case LUA_TSTRING:
+        lua_tolstring(L, arg, &len);
+        break;
+
+      case LUA_TTABLE:
+        break;
+
+      case LUA_TFUNCTION:
+        lua_topointer(L, arg);
+        break;
+
+      case LUA_TUSERDATA:
+        break;
+
+      case LUA_TTHREAD:
+        lua_topointer(L, arg);
+        break;
+
+      default:
+        "(null)";
+        break;
+    }
+  }
+
+  //lua_pushlightobject(L, UnitexString)(0, format, "Hello World");
   return 1;
 }
 /* ************************************************************************** */
@@ -114,7 +157,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   int32_t len = (int32_t) s->len();
   int32_t start = luaL_optint(L, 2, 1);
   int32_t stop = luaL_optint(L, 3, start);
-  int32_t n, i;
+  int32_t n, arg;
   if (stop < 0) stop += len+1;
   if (start < 0) start += len+1;
   if (start <= 0) start = 1;
@@ -124,8 +167,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   n = stop - start;
   luaL_checkstack(L, n, "string slice too long");
   const unichar* p = ((unichar *)(s->c_unichar())) + start;
-  for (i = 0; i < n; i++)
-    lua_pushinteger(L, p[i]);
+  for (arg = 0; arg < n; arg++)
+    lua_pushinteger(L, p[arg]);
   return n;
 }
 /* ************************************************************************** */
@@ -134,9 +177,9 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   // push a new string with a capacity of n codepoints
   UnitexString* s=  lua_pushlightobject(L, UnitexString)(n);
   // push back each numerical argument as a character
-  for (int i=1; i<=n; i++) {
-    unichar c = luaL_checkint(L, i);
-    luaL_argcheck(L, (unsigned int) c == c, i, "invalid value");
+  for (int arg=1; arg<=n; arg++) {
+    unichar c = luaL_checkint(L, arg);
+    luaL_argcheck(L, (unsigned int) c == c, arg, "invalid value");
     s->append(c);
   }
   return 1;

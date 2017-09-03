@@ -21,6 +21,7 @@
 
 #include "Ustring.h"
 #include "Error.h"
+#include "base/compiler/intrinsic/clz.h"
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
@@ -28,18 +29,34 @@
 
 namespace unitex {
 
-#define MAXBUF 1024
-
 
 /**
  * calculate the buffersize for a string len
+ * @author martinec
  */
 static unsigned int buffer_size_for_len(unsigned int string_len)
 {
-    unsigned int buffer_size = 0x10;
+    unsigned int  z=string_len;
+    z += (z == 0) * (MINBUF-1);
+    uint32_t u = UINT32_C(1) << (sizeof(uint32_t) * CHAR_BIT - __builtin_clz(z));
+    u = unitex_builtin_clz_64(z);
+
+
+    unsigned int buffer_size = MINBUF;
     while (buffer_size <= string_len) {
         buffer_size *= 2;
     }
+
+    unsigned int  v=string_len;
+    v =  (v == 0) ? (MINBUF-1) : v++;
+    for (size_t i = 1; i < sizeof(v) * CHAR_BIT; i *= 2)
+    {
+      v |= v >> i;
+    }
+    ++v;
+
+    // for (power2 = 1; value > 0; value >>= 1, power2 <<= 1) ;
+
     return buffer_size;
 }
 
@@ -49,7 +66,7 @@ static unsigned int buffer_size_for_len(unsigned int string_len)
 */
 static unsigned int buffer_size_rounded(unsigned int give_len)
 {
-    unsigned int buffer_size = 0x10;
+    unsigned int buffer_size = MINBUF;
     while (buffer_size < give_len) {
         buffer_size *= 2;
     }
