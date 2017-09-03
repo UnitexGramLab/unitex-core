@@ -89,6 +89,11 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   int n = luaL_checkint(L, 2);
   // push a new string representing a concatenation of n copies of str
   lua_pushlightobject(L, UnitexString)(n, *str);
+
+  for (int i = 0; i< 2000000000; ++i) {
+    str->reverse();
+  }
+
   return 1;
 }
 /* ************************************************************************** */

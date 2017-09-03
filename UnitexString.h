@@ -1201,7 +1201,7 @@ class UnitexString {
    * @return *this
    */
   UnitexString& reverse() {
-    unitex::u_reverse(data_->str);
+    u_reverse(data_->str);
     return *this;
   }
 
