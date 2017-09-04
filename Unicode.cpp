@@ -4693,7 +4693,7 @@ int JSONize(const unichar* source,unichar* destination) {
  * @return the length of the destination string
  */
 template <typename T>
-int Quotize(const T* source, T* destination) {
+size_t u_quotize(const T* source, T* destination) {
   if (!source) {
      fatal_error("NULL error in Quotize\n");
   }
@@ -4744,10 +4744,10 @@ int Quotize(const T* source, T* destination) {
 }
 
 // Quote-escapes a unicode string
-template int Quotize(const unichar* source, unichar* destination);
+template size_t u_quotize(const unichar* source, unichar* destination);
 
 // Quote-escapes a C-string
-template int Quotize(const char* source, char* destination);
+template size_t u_quotize(const char* source, char* destination);
 #endif
 
 /**

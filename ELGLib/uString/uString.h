@@ -148,7 +148,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
  *
  *  %C    a unicode character with the given number
  *  %S    a unicode string
- *  %Q    a string in a form suitable to be safely read back by the Lua interpreter
+ *  %>Q   a string in a form suitable to be safely read back by the Lua interpreter
  *  %>R   a reversed unicode string
  *  %>H   a HTML escaped unicode string
  *  %>U   a URL escaped unicode string
@@ -197,9 +197,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               if (us==NULL) {
                  if (b) b->append("(nil)");
               } else {
-                 unichar quoted[U_MAX_FMTITEM];
-                 int l=Quotize(us->c_unichar(),quoted);
-                 if (b) b->append(quoted,l);
+                if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_quotize);
               }
               break;
            }
@@ -229,7 +227,13 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                }
 
                case 'H': {
+                 if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) htmlize);
+                 break;
+               }
 
+               case 'U': {
+                 if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) URLize);
+                 break;
                }
 
                default:
@@ -239,44 +243,6 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                  break;
              }
              break;
-           }
-
-           case 'H':
-           case 'U': {
-              int (*XXXize)(const unichar*,unichar*);
-              if (*strfrmt=='H') {
-                  XXXize=htmlize;
-              } else {
-                  XXXize=URLize;
-              }
-              /* If we have a '%H', it means that we have to print HTML things */
-              strfrmt++;
-              if (*strfrmt=='S') {
-                 /* If we have to print a HTML string */
-                 us=lua_checkudata_cast(L, arg, UnitexString);
-                 if (us==NULL) {
-                    if (b) b->append("(nil)");
-                 } else {
-                    unichar html[U_MAX_FMTITEM];
-                    int l=XXXize(us->c_unichar(),html);
-                    if (b) b->append(html,l);
-                 }
-              } else if (*strfrmt=='R') {
-                 /* If we have to print a HTML reversed string */
-                 us=lua_checkudata_cast(L, arg, UnitexString);
-                 if (us==NULL) {
-                    if (b) b->append("(nil)");
-                 } else {
-                    unichar reversed[U_MAX_FMTITEM];
-                    u_reverse(us->c_unichar(),reversed,us->len());
-                    unichar html[U_MAX_FMTITEM];
-                    int l=XXXize(reversed,html);
-                    if (b) b->append(html,l);
-                 }
-              } else {
-
-              }
-              break;
            }
 
            // not supported for now
@@ -321,7 +287,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                  }
                  case 'q': {
                    s=luaL_checkstring(L, arg);
-                   l=Quotize(s,buff);
+                   l=u_quotize(s,buff);
                    break;
                  }
                  case 'c': {

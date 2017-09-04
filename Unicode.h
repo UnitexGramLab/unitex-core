@@ -351,7 +351,7 @@ template <typename T>
 int u_escape(const unichar* source, T* destination);
 
 template <typename T>
-int Quotize(const T* source, T* destination);
+size_t u_quotize(const T* source, T* destination);
 #endif
 
 
