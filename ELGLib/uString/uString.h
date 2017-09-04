@@ -148,6 +148,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
  *
  *  %C    a unicode character with the given number
  *  %S    a unicode string
+ *  %Q    a string in a form suitable to be safely read back by the Lua interpreter
+ *
  *  %>Q   a string in a form suitable to be safely read back by the Lua interpreter
  *  %>R   a reversed unicode string
  *  %>H   a HTML escaped unicode string
@@ -165,13 +167,13 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   // create a new string with a capacity of len + 16n and push on the stack
   UnitexString* b = lua_pushlightobject(L, UnitexString)(fmt->len() + UnitexString::kMinBufferSize * top);
 
-  lua_Integer i = 0;
-  double d;
-  char c = '\0';
-  const void* p = NULL;
-  unichar uc = '\0';
-  const char* s = NULL;
-  const UnitexString* us = NULL;
+  double d;                           //
+  char c = '\0';                      //
+  unichar uc = '\0';                  //
+  lua_Integer i = 0;                  //
+  const void* p = NULL;               //
+  const char* s = NULL;               //
+  const UnitexString* us = NULL;      //
 
   while (strfrmt < strfrmt_end) {
      if (*strfrmt=='%') {
@@ -197,7 +199,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               if (us==NULL) {
                  if (b) b->append("(nil)");
               } else {
-                if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_quotize);
+                if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_quotize, 2 * us->len());
               }
               break;
            }
