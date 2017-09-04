@@ -163,6 +163,17 @@ class UnitexString {
    */
   static const size_type  kMaxBufferSize = MAXBUF;
 
+  /**
+   * @brief  Min buffer size
+   *
+   * Min buffer size, expressed in number of characters, used in
+   * UnitexString::format and UnitexString::append_format functions
+   *
+   * @see    format
+   * @see    append_format
+   */
+  static const size_type  kMinBufferSize = MINBUF;
+
   /// @}
 
   // Constructors

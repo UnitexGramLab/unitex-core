@@ -37,6 +37,7 @@
 #include "ELGLib/common.h"
 #include "ELGLib/debug.h"
 #include "UnitexString.h"
+#include "Unicode.h"
 #include "base/integer/operation/round.h"
 
 /* ************************************************************************** */
@@ -101,22 +102,182 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_format(lua_State* L) {
+  int arg = 1;
+  int top = lua_gettop(L);
+  UnitexString* fmt = lua_checkudata_cast(L, arg, UnitexString);
+  const unichar* strfrmt      = fmt->begin();
+  const unichar* strfrmt_end  = fmt->end();
 
-  int x = 0;
-  x = next_greater_power_of_two_32(8);
-  x = next_smallest_power_of_two_32(8);
-  x = next_greater_power_of_two_32(7);
-  x = next_smallest_power_of_two_32(7);
-  x = next_greater_power_of_two_32(15);
-  x = next_smallest_power_of_two_32(15);
-  x = next_greater_power_of_two_32(16);
-  x = next_smallest_power_of_two_32(16);
+  // create a new string with a capacity of len + 16n and push on the stack
+  UnitexString* b = lua_pushlightobject(L, UnitexString)(fmt->len() + UnitexString::kMinBufferSize * top);
 
-//  size_t len;
-//  const char* format = luaL_checklstring(L, 1, &len);
-//  int n = lua_gettop(L);
-//  // push a new string with a capacity of len + 8n codepoints
-//  UnitexString* s=  lua_pushlightobject(L, UnitexString)(len + MINBUF * n);
+  int n_printed = 0;
+  int i = 0;
+  double d;
+  char c = '\0';
+  const void* p = NULL;
+  unichar uc = '\0';
+  const char* s = NULL;
+  const UnitexString* us = NULL;
+
+  while (strfrmt < strfrmt_end) {
+     if (*strfrmt=='%') {
+        /* If we have a special sequence introduced by '%' */
+        strfrmt++;
+        if(*strfrmt!='%' && ++arg > top) luaL_argerror(L, arg, "no value");
+        switch (*strfrmt) {
+           /* If we have %% we must print a '%' */
+           case '%': if (b) b->append('%'); n_printed++; break;
+
+           /* If we have %C we must print an unicode character */
+           case 'C': {
+              uc=(unichar)luaL_checkint(L, arg);
+              if (b) b->append(uc);
+              n_printed++;
+              break;
+           }
+
+           case 'H':
+           case 'U': {
+              int (*XXXize)(const unichar*,unichar*);
+              if (*strfrmt=='H') {
+                  XXXize=htmlize;
+              } else {
+                  XXXize=URLize;
+              }
+              /* If we have a '%H', it means that we have to print HTML things */
+              strfrmt++;
+              if (*strfrmt=='S') {
+                 /* If we have to print a HTML string */
+                 us=lua_checkudata_cast(L, arg, UnitexString);
+                 if (us==NULL) {
+                    if (b) b->append("(null)");
+                    n_printed=n_printed+6;
+                 } else {
+                    unichar html[4096];
+                    int l=XXXize(us->c_unichar(),html);
+                    if (b) b->append(html,l);
+                    n_printed=n_printed+l;
+                 }
+              } else if (*strfrmt=='R') {
+                 /* If we have to print a HTML reversed string */
+                 us=lua_checkudata_cast(L, arg, UnitexString);
+                 if (us==NULL) {
+                    if (b) b->append("(null)");
+                    n_printed=n_printed+6;
+                 } else {
+                    unichar reversed[4096];
+                    mirror(us->c_unichar(),reversed);
+                    unichar html[4096];
+                    int l=XXXize(reversed,html);
+                    if (b) b->append(html,l);
+                    n_printed=n_printed+l;
+                 }
+              } else {
+                char msg[64];
+                sprintf(msg, "invalid format option %c%c",*(strfrmt-1),*strfrmt);
+                luaL_argerror(L, arg, msg);
+              }
+              break;
+           }
+
+           /* If we have %S we must print an unicode string */
+           case 'S': {
+              us=lua_checkudata_cast(L, arg, UnitexString);
+              if (us==NULL) {
+                 if (b) b->append("(null)");
+                 n_printed=n_printed+6;
+              } else {
+                 if (b) b->append(us->c_ustring());
+                 n_printed=n_printed+us->len();
+              }
+              break;
+           }
+
+           /* If we have %R we must print a reversed unicode string */
+           case 'R': {
+              us=lua_checkudata_cast(L, arg, UnitexString);
+              if (us==NULL) {
+                 /* We don't want to print ")llun(" when the string to reverse is NULL */
+                 if (b) b->append("(null)");
+                 n_printed=n_printed+6;
+                 break;
+              }
+              unichar reversed[4096];
+              int old=n_printed;
+              n_printed=n_printed+mirror(us->c_unichar(),reversed);
+              if (b) b->append(reversed, us->len());
+              break;
+           }
+
+           // not supported for now
+           // case 'n':
+
+           /* If we have '%???', we let sprintf do the job */
+           default: {
+              /* We get back on the '%' */
+              strfrmt--;
+              int z=0;
+              char format2[64];
+              char result[4096];
+              do {
+                 format2[z++]=*strfrmt;
+                 strfrmt++;
+              } while (format2[z-1]!='\0' && !strchr("diouxXeEfgcsp",format2[z-1]));
+              /* We get back one character */
+              strfrmt--;
+              if (format2[z-1]=='\0') {
+                char msg[64];
+                sprintf(msg, "invalid format option %s",format2);
+                luaL_argerror(L, arg, msg);
+              }
+              format2[z]='\0';
+              int n_printed_old=n_printed;
+              int l=0;
+              switch (format2[z-1]) {
+                 case 'd': case 'i': case 'o': case 'u': case 'x': case 'X': {
+                    i=luaL_checkint(L, arg);
+                    l=sprintf(result,format2,i);
+                    n_printed+=l;
+                    break;
+                 }
+                 case 'e':  case 'E': case 'f':  case 'g': {
+                    d=(double)luaL_checknumber(L, arg);
+                    l=sprintf(result,format2,d);
+                    n_printed+=l;
+                    break;
+                 }
+                 case 'c': {
+                    c=(char)luaL_checkint(L, arg);
+                    l=sprintf(result,format2,c);
+                    n_printed+=l;
+                    break;
+                 }
+                 case 's': {
+                    s=luaL_checkstring(L, arg);
+                    l=sprintf(result,format2,s);
+                    n_printed+=l;
+                    break;
+                 }
+                 case 'p': {
+                    p=(void*)lua_topointer(L, arg);
+                    l=sprintf(result,format2,p);
+                    n_printed+=l;
+                    break;
+                 }
+              }
+              if (b) b->append(result,l);
+              break;
+           }
+        }
+     } else {
+        /* If we have a normal character, we print it */
+        if (b) b->append(*strfrmt);
+        n_printed++;
+     }
+     strfrmt++;
+  }
+
 //
 //  for (int arg = 2; arg <= n; ++arg) {
 //    int t = lua_type(L, arg);
@@ -160,7 +321,6 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 //    }
 //  }
 
-  //lua_pushlightobject(L, UnitexString)(0, format, "Hello World");
   return 1;
 }
 /* ************************************************************************** */

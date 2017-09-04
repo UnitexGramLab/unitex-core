@@ -2642,10 +2642,10 @@ int n_printed=0;
 int i;
 double d;
 char c;
-void* p;
+const void* p;
 unichar uc;
-char* s;
-unichar* us;
+const char* s;
+const unichar* us;
 while (*format) {
    if (*format=='%') {
       /* If we have a special sequence introduced by '%' */
