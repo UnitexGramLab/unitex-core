@@ -487,11 +487,11 @@ size_t u_reverse(unichar* s, size_t n) {
 #define U__REVERSE__DEST__(s_t, s, d_t, d, l)   \
   if (s == NULL || !(*s)) return 0;             \
   const s_t*  it_end = s + l - 1;               \
-  while (it_end > s) {                          \
+  while (it_end >= s) {                         \
     *d = *it_end;                               \
     d++;                                        \
     it_end--;                                   \
-  }
+  }                                             \
 
 size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d) {
   size_t len = u_strlen(s);

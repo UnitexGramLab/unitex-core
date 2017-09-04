@@ -1102,7 +1102,7 @@ class UnitexString {
         break;
     }
     // set the length of the resulting string
-    data_->len = length;
+    data_->len = data_->len + length;
     return *this;
   }
 
@@ -1118,7 +1118,7 @@ class UnitexString {
     // transform the input string and append it at the end
     size_type length = translate(string->str, end());
     // set the new length of the resulting string
-    data_->len = length;
+    data_->len = data_->len + length;
     return *this;
   }
 
@@ -1598,6 +1598,7 @@ class UnitexString {
    */
   void swap(UnitexString& string) {
     if (this != &string) {
+       this->swap(engaged_,    string.engaged_);
        this->swap(data_->str,  string.data_->str);
        this->swap(data_->size, string.data_->size);
        this->swap(data_->len,  string.data_->len);                  // NOLINT
