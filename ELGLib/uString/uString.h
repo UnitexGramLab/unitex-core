@@ -218,16 +218,20 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
            case '>': {
              strfrmt++;
              us=lua_checkudata_cast(L, arg, UnitexString);
+             if (us==NULL) {
+                if (b) b->append("(nil)");
+                break;
+             }
              switch (*strfrmt) {
                case 'R': {
-                 if (us==NULL) {
-                    /* We don't want to print ")llun(" when the string to reverse is NULL */
-                    if (b) b->append("(nil)");
-                    break;
-                 }
-                 b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse);
+                 if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse);
                  break;
                }
+
+               case 'H': {
+
+               }
+
                default:
                    char msg[64];
                    sprintf(msg, "invalid format option %c%c",*(strfrmt-1),*strfrmt);
@@ -236,16 +240,6 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
              }
              break;
            }
-
-//           /* If we have %>R we must print a reversed unicode string */
-//           case 'R': {
-//
-//              unichar reversed[U_MAX_FMTITEM];
-//              int old=n_printed;
-//              n_printed=n_printed+u_reverse(us->c_unichar(),reversed,us->len());
-//              if (b) b->append(reversed, us->len());
-//              break;
-//           }
 
            case 'H':
            case 'U': {
