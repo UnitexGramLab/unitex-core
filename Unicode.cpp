@@ -2628,8 +2628,8 @@ return n;
  * It also supports:
  * - %C for printing a unicode character
  * - %S for printing a unicode string
- * - %HS for printing a unicode string in HTML (see htmlize)
  * - %R for printing the reversed of a unicode string
+ * - %HS for printing a unicode string in HTML (see htmlize)
  * - %HR for printing the reversed of a unicode string in HTML (see htmlize)
  * - %US for printing a unicode string as a URL (see URLize)
  * - %UR for printing the reversed of a unicode string as a URL (see URLize)
@@ -3398,7 +3398,14 @@ unichar* u_strcpy(unichar* dst,const unichar* src)
     return s;
 }
 
-
+/**
+ * unicode version of strncpy
+ */
+unichar* u_strcpy(unichar *dest,const unichar c) {
+  unichar *s = dest; // backup pointer to start of destination string
+  *dest++ = c;
+  return s;
+}
 
 /**
  * unicode version of strncpy
@@ -3484,6 +3491,19 @@ do {
    *dest++=c;
 } while (c!='\0');
 return s;
+}
+
+/**
+ * Unicode version of strcpy that takes a non unicode source string.
+ */
+char* u_strcpy(char* dest, const char* src) {
+ return strcpy(dest, src);
+}
+
+char* u_strcpy(char* dest, const char c) {
+  char *s = dest; // backup pointer to start of destination string
+  *dest++ = c;
+  return s;
 }
 
 
@@ -4603,7 +4623,6 @@ template int u_escape(const unichar* source, char* destination);
 
 #endif
 
-
 /**
  * @brief JSON-escapes a unichar string
  *
@@ -4658,6 +4677,78 @@ int JSONize(const unichar* source,unichar* destination) {
   return pos;
 }
 
+#ifndef NO_CPP_TEMPLATE_SUPPORT
+/**
+ * @brief Quote-escapes a unichar string
+ *
+ * Quote-escapes a source string before copy it into destination
+ *
+ * - Puts a backslash in front of the double quote character (hex 22),
+ *   backslash (hex 5C), and newline (hex 0A)
+ * - The nul character (hex 00) becomes \000
+ * - Carriage return (hex 0D) becomes \r
+ * - The string itself is surrounded by double quotes
+ *
+ * @param[in]  source unichar string to be escaped
+ * @param[out] destination unichar array where the escaped string is to be copied
+ * @return the length of the destination string
+ */
+template <typename T>
+int Quotize(const T* source, T* destination) {
+  if (!source) {
+     fatal_error("NULL error in Quotize\n");
+  }
+
+  const T* it = source;
+  int pos = 0;
+
+// U_STRCPY_LITERAL macro copies a literal string, starting at pos position,
+// into a destination unichar buffer, then it increments the pos variable by
+// the length of the literal. In this case the length is computed at compile
+// time
+#define U_STRCPY_LITERAL(destination, pos, literal) \
+        u_strcpy(&*(destination+pos),literal);      \
+        pos+=sizeof(literal)-1
+  // add opening quote
+  U_STRCPY_LITERAL(destination,pos,"\"");
+  // loop till the end of string
+  while (*it != '\0') {
+    if (*it == '"' || *it == '\\' || *it == '\n') {
+      U_STRCPY_LITERAL(destination,pos,"\\");
+      U_STRCPY_LITERAL(destination,pos,*it);
+    } else if (u_has_flag_control(*it)) {
+      char buff[10];
+      int len;
+      if (!u_is_digit(*(it + 1))) {
+        len = sprintf(buff, "\\%d",   (int) *it);
+      } else {
+        len = sprintf(buff, "\\%03d", (int) *it);
+      }
+      u_strcpy(&*(destination+pos),buff);
+      pos+=len;
+    } else {
+      destination[pos++] = *it;
+    }
+    // advance the character pointer
+    ++it;
+  }
+  // add closing quote
+  U_STRCPY_LITERAL(destination,pos,"\"");
+// undefines U_STRCPY_LITERAL macro right before we use them
+#undef U_STRCPY_LITERAL
+  // indicate the end of the string
+  destination[pos] = '\0';
+
+  // return the length of the destination string
+  return pos;
+}
+
+// Quote-escapes a unicode string
+template int Quotize(const unichar* source, unichar* destination);
+
+// Quote-escapes a C-string
+template int Quotize(const char* source, char* destination);
+#endif
 
 /**
  * Puts a copy of 'src' into 'dst', replacing:

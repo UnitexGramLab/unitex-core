@@ -98,7 +98,7 @@ return new_Ustring((unichar*)NULL);
 //(2^32-1). Maybe the best is avoid using unsigned ints here
 Ustring* new_Ustring(unsigned int size) {
 // it is only a temporary fix for the above problem
-if (!(size > 0 && size + 1 > size)) {
+if (!(size >= 0 && size + 1 > size)) {
   fatal_error("new_Ustring called with a negative size");
 }
 

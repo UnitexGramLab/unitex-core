@@ -101,6 +101,47 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   return 1;
 }
 /* ************************************************************************** */
+/**
+ * Lua's elg.ustring sprintf version
+ * based on Unitex's u_vsprintf() function @see Unicode.cpp
+ *
+ * @brief Returns a formatted version of its variable number of arguments
+ *        following the description given in its first argument (which must
+ *        be a unicode string)
+ *
+ * The format string follows the same rules as the printf family of standard C
+ * functions. It supports the next specifiers:
+ *
+ *  %%    a percent sign
+ *  %c    a character with the given number
+ *  %d    a signed integer, in decimal
+ *  %e    a floating-point number, in scientific notation
+ *  %E    like %e, but using an upper-case "E"
+ *  %f    a floating-point number, in fixed decimal notation
+ *  %g    a floating-point number, in %e or %f notation
+ *  %G    like %g, but with an upper-case "E" (if applicable)
+ *  %i    signed integer, in decimal
+ *  %o    an unsigned integer, in octal
+ *  %p    a pointer (outputs the Lua value's address in hexadecimal or nil)
+ *  %s    a string
+ *  %u    an unsigned integer, in decimal
+ *  %x    an unsigned integer, in hexadecimal
+ *  %X    like %x, but using upper-case letters
+ *
+ * Similarly to Lua's string.format(), it also supports the next specifier:
+ *
+ *  %q    a string in a form suitable to be safely read back by the Lua interpreter
+ *
+ * Additionally, for Unicode strings, it also supports the additional specifiers:
+ *
+ *  %C    a unicode character with the given number
+ *  %S    a unicode string
+ *  %:R   a reversed unicode string
+ *  %:H   a HTML escaped unicode string
+ *  %:U   a URL escaped unicode string
+ *
+ * The options/modifiers *, l, L, n, and h are not supported
+ */
 /* static */ int elg_ustring_format(lua_State* L) {
   int arg = 1;
   int top = lua_gettop(L);
@@ -124,7 +165,9 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
      if (*strfrmt=='%') {
         /* If we have a special sequence introduced by '%' */
         strfrmt++;
-        if(*strfrmt!='%' && ++arg > top) luaL_argerror(L, arg, "no value");
+        if(*strfrmt!='%' && ++arg > top) {
+          luaL_argerror(L, arg, "no value");
+        }
         switch (*strfrmt) {
            /* If we have %% we must print a '%' */
            case '%': if (b) b->append('%'); n_printed++; break;
@@ -151,8 +194,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                  /* If we have to print a HTML string */
                  us=lua_checkudata_cast(L, arg, UnitexString);
                  if (us==NULL) {
-                    if (b) b->append("(null)");
-                    n_printed=n_printed+6;
+                    if (b) b->append("(nil)");
+                    n_printed=n_printed+5;
                  } else {
                     unichar html[4096];
                     int l=XXXize(us->c_unichar(),html);
@@ -163,11 +206,11 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                  /* If we have to print a HTML reversed string */
                  us=lua_checkudata_cast(L, arg, UnitexString);
                  if (us==NULL) {
-                    if (b) b->append("(null)");
-                    n_printed=n_printed+6;
+                    if (b) b->append("(nil)");
+                    n_printed=n_printed+5;
                  } else {
                     unichar reversed[4096];
-                    mirror(us->c_unichar(),reversed);
+                    u_reverse(us->c_unichar(),reversed,us->len());
                     unichar html[4096];
                     int l=XXXize(reversed,html);
                     if (b) b->append(html,l);
@@ -185,8 +228,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
            case 'S': {
               us=lua_checkudata_cast(L, arg, UnitexString);
               if (us==NULL) {
-                 if (b) b->append("(null)");
-                 n_printed=n_printed+6;
+                 if (b) b->append("(nil)");
+                 n_printed=n_printed+5;
               } else {
                  if (b) b->append(us->c_ustring());
                  n_printed=n_printed+us->len();
@@ -199,13 +242,13 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               us=lua_checkudata_cast(L, arg, UnitexString);
               if (us==NULL) {
                  /* We don't want to print ")llun(" when the string to reverse is NULL */
-                 if (b) b->append("(null)");
-                 n_printed=n_printed+6;
+                 if (b) b->append("(nil)");
+                 n_printed=n_printed+5;
                  break;
               }
               unichar reversed[4096];
               int old=n_printed;
-              n_printed=n_printed+mirror(us->c_unichar(),reversed);
+              n_printed=n_printed+u_reverse(us->c_unichar(),reversed,us->len());
               if (b) b->append(reversed, us->len());
               break;
            }
@@ -223,7 +266,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               do {
                  format2[z++]=*strfrmt;
                  strfrmt++;
-              } while (format2[z-1]!='\0' && !strchr("diouxXeEfgcsp",format2[z-1]));
+              } while (format2[z-1]!='\0' && !strchr("diouxXeEfgGqcsp",format2[z-1]));
               /* We get back one character */
               strfrmt--;
               if (format2[z-1]=='\0') {
@@ -235,17 +278,30 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               int n_printed_old=n_printed;
               int l=0;
               switch (format2[z-1]) {
-                 case 'd': case 'i': case 'o': case 'u': case 'x': case 'X': {
+                 case 'd': case 'i': {
                     i=luaL_checkint(L, arg);
-                    l=sprintf(result,format2,i);
+                    l=sprintf(result,format2,(LUA_INTFRM_T)i);
                     n_printed+=l;
                     break;
                  }
-                 case 'e':  case 'E': case 'f':  case 'g': {
+                 case 'o': case 'u': case 'x': case 'X': {
+                   i=luaL_checknumber(L, arg);
+                   l=sprintf(result,format2,(unsigned LUA_INTFRM_T)i);
+                   n_printed+=l;
+                   break;
+                 }
+                 case 'e': case 'E': case 'f':
+                 case 'g': case 'G': {
                     d=(double)luaL_checknumber(L, arg);
                     l=sprintf(result,format2,d);
                     n_printed+=l;
                     break;
+                 }
+                 case 'q': {
+                   s=luaL_checkstring(L, arg);
+                   l=Quotize(s,result);
+                   n_printed+=l;
+                   break;
                  }
                  case 'c': {
                     c=(char)luaL_checkint(L, arg);
@@ -316,7 +372,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 //        break;
 //
 //      default:
-//        "(null)";
+//        "(nil)";
 //        break;
 //    }
 //  }
@@ -448,6 +504,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, decode),
   U__DECLARE__FUNCTION__ENTRY__(USTRING, encode),
+  U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, encode, string),
 
   // methamethods
   U__DECLARE__FUNCTION__ENTRY__(USTRING, __call),

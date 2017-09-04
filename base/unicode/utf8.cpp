@@ -455,31 +455,60 @@ int u_stricmp(const unichar* s1, const unichar* s2) {
   return (*(const unsigned int *)it1 - *(const unsigned int *)it2);
 }
 
-#define U__REVERSE__(s_t, s, l)   \
-  if (s == NULL || !(*s)) return; \
-  s_t tmp = '\0';                 \
-  s_t*  it_end = s + l - 1;       \
-  while (it_end > s) {            \
-    tmp = *s;                     \
-    *s = *it_end;                 \
-    *it_end = tmp;                \
-    s++;                          \
-    it_end--;                     \
+#define U__REVERSE__(s_t, s, l)     \
+  if (s == NULL || !(*s)) return 0; \
+  s_t tmp = '\0';                   \
+  s_t*  it_end = s + l - 1;         \
+  while (it_end > s) {              \
+    tmp = *s;                       \
+    *s = *it_end;                   \
+    *it_end = tmp;                  \
+    s++;                            \
+    it_end--;                       \
   }
 
 /**
  * @brief  Reverse a string
  */
-void u_reverse(unichar* s) {
-  U__REVERSE__(unichar, s, u_strlen(s));
+size_t u_reverse(unichar* s) {
+  size_t len = u_strlen(s);
+  U__REVERSE__(unichar, s, len);
+  return len;
 }
 
 /**
  * @brief  Reverse a string
  */
-void u_reverse(unichar* s, size_t n) {
+size_t u_reverse(unichar* s, size_t n) {
   U__REVERSE__(unichar, s, n);
+  return n;
 }
+
+#define U__REVERSE__DEST__(s_t, s, d_t, d, l)   \
+  if (s == NULL || !(*s)) return 0;             \
+  const s_t*  it_end = s + l - 1;               \
+  while (it_end > s) {                          \
+    *d = *it_end;                               \
+    d++;                                        \
+    it_end--;                                   \
+  }
+
+size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d) {
+  size_t len = u_strlen(s);
+  U__REVERSE__DEST__(unichar, s, unichar, d, len);
+  return len;
+}
+
+size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d, size_t n) {
+  U__REVERSE__DEST__(unichar, s, unichar, d, n);
+  return n;
+}
+
+
+#undef U__REVERSE__
+#undef U__REVERSE__DEST__
+
+
 
 /* ************************************************************************** */
 }  // namespace unitex
