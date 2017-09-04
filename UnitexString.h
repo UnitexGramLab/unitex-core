@@ -393,7 +393,7 @@ class UnitexString {
   /**
    * @brief  Constructor from a encoded c-string
    *
-   * Allocates and initializes a string from a null-terminated and encoded
+   * Allocates and initializes a string from a null-terminated encoded
    * character sequence (C-string)
    *
    * @param  string A null-terminated character sequence (C-string)
@@ -1065,6 +1065,42 @@ class UnitexString {
    */
   UnitexString& append(const char* string, size_type n) {
     unitex::u_strcat(data_, string, n);
+    return *this;
+  }
+
+  /**
+   * @brief  Append a encoded c-string
+   *
+   * Appends a string from a null-terminated encoded
+   * character sequence (C-string)
+   *
+   * @param  string A null-terminated character sequence (C-string)
+   */
+  UnitexString& append(Encoding encoding, const char* string,
+                       size_type buffer_size = kMaxBufferSize) {
+    // request that the string capacity be adapted to the planned change
+    // in size to a length of *up to* buffer_size characters
+    reserve(buffer_size);
+    size_type length = 0;
+    //
+    switch (encoding) {
+      case UTF16_LE:
+        break;
+      case BIG_ENDIAN_UTF16:
+        break;
+      case PLATFORM_DEPENDENT_UTF16:
+        break;
+      case ASCII:
+        // same as binary
+        this->append(string);
+        return *this;
+      case UTF8:
+        // decode from UTF-8
+        length = unitex::u_decode_utf8(string, end());
+        break;
+    }
+    // set the length of the resulting string
+    data_->len = length;
     return *this;
   }
 

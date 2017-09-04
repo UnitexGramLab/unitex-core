@@ -101,6 +101,18 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   return 1;
 }
 /* ************************************************************************** */
+// This constants are from @see LuaJIT/lib_string.c
+/* maximum size of each formatted item (> len(format('%99.99f', -1e308))) */
+#define U_MAX_FMTITEM 512
+/* valid flags in a format specification */
+#define U_FMT_FLAGS "-+ #0"
+/*
+ * maximum size of each format specification (such as '%-099.99d')
+ * (+10 accounts for %99.99x plus margin of error)
+ */
+#define U_MAX_FMTSPEC (sizeof(U_FMT_FLAGS) + sizeof(LUA_INTFRMLEN) + 10)
+/* ************************************************************************** */
+
 /**
  * Lua's elg.ustring sprintf version
  * based on Unitex's u_vsprintf() function @see Unicode.cpp
@@ -153,7 +165,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   UnitexString* b = lua_pushlightobject(L, UnitexString)(fmt->len() + UnitexString::kMinBufferSize * top);
 
   int n_printed = 0;
-  int i = 0;
+  lua_Integer i = 0;
   double d;
   char c = '\0';
   const void* p = NULL;
@@ -261,68 +273,70 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               /* We get back on the '%' */
               strfrmt--;
               int z=0;
-              char format2[64];
-              char result[4096];
+              char form[U_MAX_FMTSPEC];  /* to store the format (`%...') */
+              char buff[U_MAX_FMTITEM];  /* to store the formatted item */
               do {
-                 format2[z++]=*strfrmt;
+                 form[z++]=*strfrmt;
                  strfrmt++;
-              } while (format2[z-1]!='\0' && !strchr("diouxXeEfgGqcsp",format2[z-1]));
+              } while (form[z-1]!='\0' && !strchr("diouxXeEfgGqcsp",form[z-1]));
               /* We get back one character */
               strfrmt--;
-              if (format2[z-1]=='\0') {
+              if (form[z-1]=='\0') {
                 char msg[64];
-                sprintf(msg, "invalid format option %s",format2);
+                sprintf(msg, "invalid format option %s",form);
                 luaL_argerror(L, arg, msg);
               }
-              format2[z]='\0';
+              form[z]='\0';
               int n_printed_old=n_printed;
               int l=0;
-              switch (format2[z-1]) {
+              switch (form[z-1]) {
                  case 'd': case 'i': {
-                    i=luaL_checkint(L, arg);
-                    l=sprintf(result,format2,(LUA_INTFRM_T)i);
+                    i=luaL_checkinteger(L, arg);
+                    l=sprintf(buff,form,(LUA_INTFRM_T)i);
                     n_printed+=l;
                     break;
                  }
                  case 'o': case 'u': case 'x': case 'X': {
                    i=luaL_checknumber(L, arg);
-                   l=sprintf(result,format2,(unsigned LUA_INTFRM_T)i);
+                   l=sprintf(buff,form,(unsigned LUA_INTFRM_T)i);
                    n_printed+=l;
                    break;
                  }
                  case 'e': case 'E': case 'f':
                  case 'g': case 'G': {
                     d=(double)luaL_checknumber(L, arg);
-                    l=sprintf(result,format2,d);
+                    l=sprintf(buff,form,d);
                     n_printed+=l;
                     break;
                  }
                  case 'q': {
                    s=luaL_checkstring(L, arg);
-                   l=Quotize(s,result);
+                   l=Quotize(s,buff);
                    n_printed+=l;
                    break;
                  }
                  case 'c': {
                     c=(char)luaL_checkint(L, arg);
-                    l=sprintf(result,format2,c);
+                    l=sprintf(buff,form,c);
                     n_printed+=l;
                     break;
                  }
                  case 's': {
                     s=luaL_checkstring(L, arg);
-                    l=sprintf(result,format2,s);
+                    l=sprintf(buff,form,s);
                     n_printed+=l;
                     break;
                  }
                  case 'p': {
                     p=(void*)lua_topointer(L, arg);
-                    l=sprintf(result,format2,p);
+                    l=sprintf(buff,form,p);
                     n_printed+=l;
                     break;
                  }
               }
-              if (b) b->append(result,l);
+              if (b) {
+                b->append(UTF8, buff, l);
+              }
               break;
            }
         }

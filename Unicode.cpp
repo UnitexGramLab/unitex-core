@@ -3506,7 +3506,6 @@ char* u_strcpy(char* dest, const char c) {
   return s;
 }
 
-
 /**
  * Unicode version of strcat.
  */
@@ -4715,7 +4714,8 @@ int Quotize(const T* source, T* destination) {
   while (*it != '\0') {
     if (*it == '"' || *it == '\\' || *it == '\n') {
       U_STRCPY_LITERAL(destination,pos,"\\");
-      U_STRCPY_LITERAL(destination,pos,*it);
+      u_strcpy(&*(destination+pos),*it);
+      pos+=1;
     } else if (u_has_flag_control(*it)) {
       char buff[10];
       int len;
@@ -4727,7 +4727,7 @@ int Quotize(const T* source, T* destination) {
       u_strcpy(&*(destination+pos),buff);
       pos+=len;
     } else {
-      destination[pos++] = *it;
+      destination[pos++] = (unsigned) *it;
     }
     // advance the character pointer
     ++it;
