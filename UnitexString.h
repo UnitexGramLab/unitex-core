@@ -1106,6 +1106,44 @@ class UnitexString {
     return *this;
   }
 
+
+  /**
+   * @brief  Append a encoded c-string
+   *
+   * Appends a string from a null-terminated encoded
+   * character sequence (C-string)
+   *
+   * @param  string A null-terminated character sequence (C-string)
+   */
+  UnitexString& append(Encoding encoding, const char* string,
+                       size_type length, size_type& readed) {
+    // request to adapt the underline string capacity with a
+    // size to a length of *up to* the desired length of characters
+    reserve(length);
+    //
+    switch (encoding) {
+      case UTF16_LE:
+        break;
+      case BIG_ENDIAN_UTF16:
+        break;
+      case PLATFORM_DEPENDENT_UTF16:
+        break;
+      case ASCII:
+        // same as binary
+        this->append(string, length);
+        readed = length;
+        return *this;
+      case UTF8:
+          // u_decode_utf8_n returns the number of bytes consumed from
+          // string
+        readed = unitex::u_decode_utf8_n(string, end(), length);
+        break;
+    }
+    // set the length of the resulting string
+    data_->len = data_->len + length;
+    return *this;
+  }
+
   /**
    * @brief  Append and translate a string
    */

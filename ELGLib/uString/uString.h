@@ -161,9 +161,9 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 /* static */ int elg_ustring_format(lua_State* L) {
   int top = lua_gettop(L);
   int arg = 1;
-  UnitexString* fmt = lua_checkudata_cast(L, arg, UnitexString);
-  const unichar* strfrmt      = fmt->begin();
-  const unichar* strfrmt_end  = fmt->end();
+  size_t sfl;
+  const char *strfrmt = luaL_checklstring(L, arg, &sfl);
+  const char *strfrmt_end = strfrmt + sfl;
 
   // main buffer to build the final string
   UnitexString* b = lua_pushlightobject(L, UnitexString)(U_MAX_FMTITEM);
@@ -365,8 +365,10 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
            }
         }
      } else {
+        size_t readed = 0;
         // a normal character, we append it
-        b->append(*strfrmt);
+        b->append(UTF8, strfrmt, 1, readed);
+        strfrmt = strfrmt + readed - 1;
      }
      strfrmt++;
   }

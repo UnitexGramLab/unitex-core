@@ -205,6 +205,47 @@ size_t u_decode_utf8(const char* source, unichar* destination) {
   return pos;
 }
 
+size_t u_decode_utf8_n(const char* source, unichar* destination, size_t n) {
+  const char* it = source;
+  register int pos = 0;
+
+  // loop till the end of string
+  while (*it != '\0' && n--) {
+    // 1-byte encodes UTF-8 information
+    uint8_t encoded_index  = kUTF8ByteInfoIndex[static_cast<uint8_t>(*it)];
+    //
+    uint8_t encoded_width  = kUTF8ByteInfo[encoded_index].width;
+    //
+    uint8_t encoded_offset = encoded_width - 1u;
+    // set the replacement char (0xFFFD) as default value
+    unichar value = U_REPLACEMENT_CHAR;
+
+    if (u_has_valid_utf8_width(encoded_width)) {
+      // 1-byte unicode codepoint
+      value = *it & kUTF8ByteInfo[encoded_index].mask;
+
+      // n-byte following unicode codepoints
+      for (uint8_t i=0u; i < encoded_offset && *(it+1) != '\0'; ++i, ++it) {
+         value = (value<<6) | ((*(it+1)) & 0x3F);
+      }
+    } else {
+      it += encoded_offset;
+    }
+
+    // unichar = decoded value
+    destination[pos++] = u_replace_if_invalid(value);
+
+    // advance the character pointer
+    ++it;
+  }
+
+  // indicate the end of the string
+  destination[pos] = '\0';
+
+  // return the number of bytes that were read from source
+  return (it - source);
+}
+
 /**
  * @brief  Returns the length of the string s
  */

@@ -90,6 +90,8 @@ int u_encode_utf8(const unichar* source, char* destination) UNITEX_PARAMS_NON_NU
  */
 size_t u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NULL;
 
+size_t u_decode_utf8_n(const char* source, unichar* destination, size_t n) UNITEX_PARAMS_NON_NULL;
+
 size_t u_strlen(const unichar* s);
 
 int u_strcmp(const unichar* s1, const unichar* s2);
