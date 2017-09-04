@@ -165,15 +165,15 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   const unichar* strfrmt      = fmt->begin();
   const unichar* strfrmt_end  = fmt->end();
 
-  // create a new string with a capacity of U_MAX_FMTITEM and push on the stack
+  // main buffer to build the final string
   UnitexString* b = lua_pushlightobject(L, UnitexString)(U_MAX_FMTITEM);
+  // temporal buffer to contain the append/modify operations
   UnitexString* a = lua_pushlightobject(L, UnitexString)(U_MAX_FMTITEM);
 
-
-  double d;                           //
+  lua_Number d;                       //
   char c = '\0';                      //
   unichar uc = '\0';                  //
-  lua_Integer i = 0;                  //
+  lua_Integer n = 0;                  //
   const void* p = NULL;               //
   const char* s = NULL;               //
   const UnitexString* us = NULL;      //
@@ -187,7 +187,9 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
         }
         switch (*strfrmt) {
            // %% a percent sign
-           case '%': b->append('%'); break;
+           case '%':
+             b->append('%');
+             break;
 
            // %C a unicode character with the given number
            case 'C': {
@@ -221,8 +223,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
              switch (*strfrmt) {
                // %>R
                case 'R':
-                  if (appender) a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse, 0);
-                  else          appender=2;
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse, 0);
+                  else           a->reverse();
                  break;
 
                // %>H
@@ -251,8 +253,32 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 
                // %>L
                case 'L':
-                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_toupper, 2 * us->len());
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_toupper, 0);
                   else           a->upper();
+                 break;
+
+               // %>l
+               case 'l':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_tolower, 0);
+                  else           a->lower();
+                 break;
+
+               // %>t
+               case 't':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_totitle, 0);
+                  else           a->title();
+                 break;
+
+               // %>f
+               case 'f':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_tofold, 0);
+                  else           a->title();
+                 break;
+
+               // %>u
+               case 'u':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_deaccentuate, 0);
+                  else           a->deaccentuate();
                  break;
 
                default:
@@ -296,18 +322,18 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               int l=0;
               switch (form[z-1]) {
                  case 'd': case 'i': {
-                    i=luaL_checkinteger(L, arg);
-                    l=sprintf(buff,form,(LUA_INTFRM_T)i);
+                    n=luaL_checkinteger(L, arg);
+                    l=sprintf(buff,form,(LUA_INTFRM_T)n);
                     break;
                  }
                  case 'o': case 'u': case 'x': case 'X': {
-                   i=luaL_checknumber(L, arg);
-                   l=sprintf(buff,form,(unsigned LUA_INTFRM_T)i);
+                   n=luaL_checknumber(L, arg);
+                   l=sprintf(buff,form,(unsigned LUA_INTFRM_T)n);
                    break;
                  }
                  case 'e': case 'E': case 'f':
                  case 'g': case 'G': {
-                    d=(double)luaL_checknumber(L, arg);
+                    d=luaL_checknumber(L, arg);
                     l=sprintf(buff,form,d);
                     break;
                  }
@@ -421,6 +447,14 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   return elg_ustring_decode(L);
 }
 /* ************************************************************************** */
+/* static */ int elg_ustring_self_format(lua_State* L) {
+  stack_dump(L);
+  // swap the first argument, the caller itself
+  lua_insert(L, -2);
+  stack_dump(L);
+  return elg_ustring_format(L);
+}
+/* ************************************************************************** */
 /* static */ int elg_ustring_print(lua_State* L) {
   // check if there is at least an argument on the stack
   if(lua_gettop(L) >= 1) {
@@ -465,6 +499,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, print),
+  U__DECLARE__FUNCTION__ENTRY__ALIAS__(USTRING, self_format, format),
 
   //
   U__DECLARE__FUNCTION__ENTRY__(USTRING, byte),

@@ -86,7 +86,7 @@ UNITEX_FORCE_INLINE                                                         \
 size_t _name(const unichar* s, unichar* d) {                                \
   const register unichar* it = s;                                           \
   while (*it != '\0') {                                                     \
-    *++d = _name(*it);                                                      \
+    *d++ = _name(*it);                                                      \
     ++it;                                                                   \
   }                                                                         \
   return (it - s);                                                          \
