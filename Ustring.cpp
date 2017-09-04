@@ -32,12 +32,12 @@ namespace unitex {
 /**
  * calculate the buffersize for a string len
  */
-#define buffer_size_for_len(n) util::round_up_greater_power_of_two(n)
+#define buffer_size_for_len(n) next_greater_power_of_two_32(n, MINBUF)
 
 /**
 * calculate the rounded buffersize
 */
-#define buffer_size_rounded(n) unitex_round_up_smallest_power_of_two_32(n)
+#define buffer_size_rounded(n) next_smallest_power_of_two_32(n, MINBUF)
 
 /**
  * Allocates, initializes and returns a Ustring representing the given string.
@@ -54,7 +54,9 @@ Ustring* new_Ustring(const unichar* str) {
   res->len  = (str == NULL) ? 0u : u_strlen(str);
 
   // minor buffer enlarging
-  res->size = buffer_size_for_len(res->len);
+  res->size = res->len < MAXBUF ? buffer_size_for_len(res->len) :
+                                  buffer_size_rounded(res->len);
+
   res->str  = (unichar*) malloc(res->size * sizeof(unichar));
 
   if (res->str == NULL) {
@@ -107,7 +109,7 @@ if (res==NULL) {
 
 res->len=0u;
 // minor buffer enlarging
-res->size=buffer_size_for_len(size);
+res->size=buffer_size_rounded(size);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");

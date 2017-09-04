@@ -102,9 +102,15 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 /* ************************************************************************** */
 /* static */ int elg_ustring_format(lua_State* L) {
 
-  int x = util::round_up_greater_power_of_two(8);
-  x = x;
-
+  int x = 0;
+  x = next_greater_power_of_two_32(8);
+  x = next_smallest_power_of_two_32(8);
+  x = next_greater_power_of_two_32(7);
+  x = next_smallest_power_of_two_32(7);
+  x = next_greater_power_of_two_32(15);
+  x = next_smallest_power_of_two_32(15);
+  x = next_greater_power_of_two_32(16);
+  x = next_smallest_power_of_two_32(16);
 
 //  size_t len;
 //  const char* format = luaL_checklstring(L, 1, &len);

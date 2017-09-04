@@ -42,15 +42,16 @@
 #include "base/bits/size.h"              // size_in_bits
 /* ************************************************************************** */
 # if UNITEX_HAS_BUILTIN(CLZ)
-# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, DECAY)            \
-  return (N != 0) ? (UINT##SIZE##_C(1) << (sizeof(uint##SIZE##_t) *          \
-                     CHAR_BIT - unitex_builtin_clz_##SIZE(N + DECAY))) : MIN
+# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, FIT)               \
+  return (N <= MIN + FIT) ? MIN :                                             \
+                            (UINT##SIZE##_C(1) << (sizeof(uint##SIZE##_t) *   \
+                             CHAR_BIT - unitex_builtin_clz_##SIZE(N + FIT)))
 # else
 // Based on Bit Twiddling Hacks, Round up to the next highest power of 2
 // @see https://graphics.stanford.edu/~seander/bithacks.html
-# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, DECAY)            \
-  if (N == 0) return MIN;                                                    \
-  N += DECAY;                                                                \
+# define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, FIT)              \
+  if (N <= MIN + FIT) return MIN;                                            \
+  N += FIT;                                                                  \
   for (size_t i = 1; i <  sizeof(uint##SIZE##_t) * CHAR_BIT; i *= 2) {       \
     N |= N >> i;                                                             \
   }                                                                          \
@@ -58,147 +59,48 @@
   return N
 # endif
 /* ************************************************************************** */
+/**
+ * @brief  Round up to the next highest power of 2
+ * @param  n a 32-bits number
+ * @param  min value to return if n is equal to zero, default is 2
+ */
 UNITEX_FORCE_INLINE
-uint32_t unitex_round_up_greater_power_of_two_32(uint32_t n,
-                                                 uint32_t min = UINT32_C(2)) {
+uint32_t next_greater_power_of_two_32(uint32_t n,
+                                      uint32_t min = UINT32_C(2)) {
   UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, 0);
 }
 
+/**
+ * @brief  Round up to the next lowest power of 2
+ * @param  n a 32-bits number
+ * @param  min value to return if n is equal to zero, default is 2
+ */
 UNITEX_FORCE_INLINE
-uint32_t unitex_round_up_smallest_power_of_two_32(uint32_t n,
-                                                  uint32_t min = UINT32_C(2)) {
+uint32_t next_smallest_power_of_two_32(uint32_t n,
+                                       uint32_t min = UINT32_C(2)) {
   UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, -1);
 }
 
+/**
+ * @brief  Round up to the next highest power of 2
+ * @param  n a 64-bits number
+ * @param  min value to return if n is equal to zero, default is 2
+ */
 UNITEX_FORCE_INLINE
-uint32_t unitex_round_up_greater_power_of_two_64(uint64_t n,
-                                                 uint32_t min = UINT32_C(2)) {
+uint32_t next_greater_power_of_two_64(uint64_t n,
+                                      uint32_t min = UINT32_C(2)) {
   UNITEX__ROUND__UP__POWER__OF__TWO__(64, n, min, 0);
 }
 
+/**
+ * @brief  Round up to the next lowest power of 2
+ * @param  n a 64-bits number
+ * @param  min value to return if n is equal to zero, default is 2
+ */
 UNITEX_FORCE_INLINE
-uint32_t unitex_round_up_smallest_power_of_two_64(uint64_t n,
-                                                  uint32_t min = UINT32_C(2)) {
+uint32_t next_smallest_power_of_two_64(uint64_t n,
+                                       uint32_t min = UINT32_C(2)) {
   UNITEX__ROUND__UP__POWER__OF__TWO__(64, n, min, -1);
 }
-/* ************************************************************************** */
-namespace unitex {
-/* ************************************************************************** */
-namespace details {  // details
-/* ************************************************************************** */
-// Partial specialization of function templates is not allowed, we use
-// round_up_power_of_two_impl as a workaround
-/**
- * round_up_power_of_two_impl
- */
-template <typename T, int32_t d, uint32_t n>
-struct round_up_power_of_two_impl;
-
-///**
-// * specialization to round up to power of two a 0 bits data type
-// */
-//template<typename T, int32_t d>
-//struct round_up_power_of_two_impl<T, d, 0> {
-//  /**
-//   * @brief  The number of bits in the 0-bit n that have the value 1 are
-//   *         counted, and the resulting sum is returned
-//   */
-//  UNITEX_FORCE_INLINE
-//  static uint32_t round_up_power_of_two(T n, uint32_t min = UINT32_C(2)) {
-//    return static_cast<uint32_t>(0);
-//  }
-//};
-//
-///**
-// * @brief  Count the number of bits set to one in a 1-byte data type
-// */
-//// specialization to round up to power of two a 1 byte data type
-//template<typename T>
-//struct round_up_power_of_two_impl<T, 8> {
-//  /**
-//   * @brief  The number of bits in the 8-bit n that have the value 1 are
-//   *         counted, and the resulting sum is returned
-//   */
-//  UNITEX_FORCE_INLINE
-//  static uint32_t round_up_power_of_two(T n, uint32_t min = UINT32_C(2)) {
-//    UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, 0);
-//  }
-//};
-//
-///**
-// * @brief  Count the number of bits set to one in a 2-byte data type
-// */
-//// specialization to round up to power of two a 2 bytes data type
-//template<typename T>
-//struct round_up_power_of_two_impl<T, 16> {
-//  /**
-//   * @brief  The number of bits in the 16-bit n that have the value 1 are
-//   *         counted, and the resulting sum is returned
-//   */
-//  UNITEX_FORCE_INLINE
-//  static uint32_t round_up_power_of_two(T n, uint32_t min = UINT32_C(2)) {
-//    UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, 0);
-//  }
-//};
-
-/**
- * @brief  Count the number of bits set to one in a 4-byte data type
- */
-// specialization to round up to power of two a 4 bytes data type
-template<typename T, int32_t d>
-struct round_up_power_of_two_impl<T, d, 32> {
-    /**
-     * @brief  The number of bits in the 32-bit n that have the value 1 are
-     *         counted, and the resulting sum is returned
-     */
-   UNITEX_FORCE_INLINE
-   static uint32_t round_up_power_of_two(T n, uint32_t min = UINT32_C(2)) {
-    UNITEX__ROUND__UP__POWER__OF__TWO__(32, n, min, d);
-  }
-};
-
-/**
- * @brief  Count the number of bits set to one in a 8-byte data type
- */
-// specialization to round up to power of two a 8 bytes data type
-template<typename T, int32_t d>
-struct round_up_power_of_two_impl<T, d, 64> {
-  /**
-   * @brief  The number of bits in the 64-bit n that have the value 1 are
-   *         counted, and the resulting sum is returned
-   */
-  UNITEX_FORCE_INLINE
-  static uint32_t round_up_power_of_two(T n, uint32_t min = UINT32_C(2)) {
-    UNITEX__ROUND__UP__POWER__OF__TWO__(64, n, min, d);
-  }
-};
-/* ************************************************************************** */
-}  // namespace details
-/* ************************************************************************** */
-namespace util {  // util
-/* ************************************************************************** */
-/**
- * @brief  Count the number of bits in the n that have the value 1
- * @param  n
- *
- *
- * @code{.cpp}
- *   int32_t pow2 = unitex::util::round_up_power_of_two(); // n<=4
- *   int32_t pow2 = unitex::util::round_up_power_of_two(); // n<=4
- * @endcode
- *
- * @return uint32_t number of bits in n
- */
-template<typename T>
-UNITEX_FORCE_INLINE
-uint32_t round_up_greater_power_of_two(T n, uint32_t min = UINT32_C(2)) {
-  return details::round_up_power_of_two_impl<T, 0, util::size_in_bits<T>::value>::round_up_power_of_two(n, min);
-}
-/* ************************************************************************** */
-#undef UNITEX__ROUND__UP__POWER__OF__TWO__
-/* ************************************************************************** */
-}  // namespace util
-/* ************************************************************************** */
-}  // namespace unitex
 /* ************************************************************************** */
 #endif  // UNITEX_BASE_INTEGER_OPERATION_ROUND_H_                   // NOLINT
