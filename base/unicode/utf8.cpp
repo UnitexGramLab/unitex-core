@@ -222,20 +222,18 @@ size_t u_strlen(const unichar* s) {
       else                              return -1;       \
     }
 
-#define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                                    \
-  const s1_t* it1 = s1;                                                                \
-  const s2_t* it2 = s2;                                                                \
-  s1_t c1 = '\0';                                                                      \
-  s2_t c2 = '\0';                                                                      \
-  size_t pos = init;                                                                   \
-  for (; cond ; pos += 4) {                                                            \
-    c1 = *(it1+pos);   c2= *(it2+pos)   ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
-    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
-    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
-    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if ((c1 == '\0') || ((c1-c2)!=0)) { break; } \
-  }                                                                                    \
-  return (c1 == '\0') ? -(const unsigned int)c2 :                                      \
-                        ((const unsigned int)c1 - (const unsigned int)c2)
+#define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                                        \
+  register const s1_t* it1 = s1;                                                                    \
+  register const s2_t* it2 = s2;                                                                    \
+  s1_t c1 = '\0';                                                                          \
+  s2_t c2 = '\0';                                                                          \
+  size_t pos = init;                                                                       \
+  for (; cond ; pos += 4) {                                                                \
+    c1 = *(it1+pos);   c2= *(it2+pos)   ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
+    c1 = *(it1+pos+1); c2= *(it2+pos+1) ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
+    c1 = *(it1+pos+2); c2= *(it2+pos+2) ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
+    c1 = *(it1+pos+3); c2= *(it2+pos+3) ; if (c1=='\0'){ break; } if ((c1-c2)) { break; }  \
+  }
 
 
 #define U__BLOCKSTRCMP__(s1, s2, n)                                                          \
@@ -275,6 +273,9 @@ int u_strcmp(const unichar* s1, const unichar* s2) {
   U__STRCMP__NULL__(s1, s2);
   // compare the two non-null strings
   U__STRCMP__(unichar, s1, unichar, s2, 0,);
+  // return a signed integral indicating the relation between the strings
+  return (c1 == '\0') ? -(const unsigned int)c2 :
+                        ((const unsigned int)c1 - (const unsigned int)c2);
 }
 
 /**
@@ -298,10 +299,13 @@ int u_strcmp(const unichar* s1, const unichar* s2) {
 int u_strncmp(const unichar* UNITEX_RESTRICT s1, const unichar* UNITEX_RESTRICT s2, size_t n) {
   // if any of the two strings is equal to null
   U__STRCMP__NULL__(s1, s2);
-  // find on which block there are a difference
+  // find on which block of bytes there are a difference
   U__BLOCKSTRCMP__(s1, s2, n);
   // find the first character that is different inside the detected block
   U__STRCMP__(unichar, s1, unichar, s2, block * elements_per_block, pos < n);
+  // return a signed integral indicating the relation between the strings
+  return (c1 == '\0') ? -(const unsigned int)c2 :
+                        ((const unsigned int)c1 - (const unsigned int)c2);
 }
 
 /**
