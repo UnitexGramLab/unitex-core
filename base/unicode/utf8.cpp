@@ -223,8 +223,8 @@ size_t u_strlen(const unichar* s) {
     }
 
 #define U__STRCMP__(s1_t, s1, s2_t, s2, init, cond)                                        \
-  register const s1_t* it1 = s1;                                                                    \
-  register const s2_t* it2 = s2;                                                                    \
+  const s1_t* it1 = s1;                                                                    \
+  const s2_t* it2 = s2;                                                                    \
   s1_t c1 = '\0';                                                                          \
   s2_t c2 = '\0';                                                                          \
   size_t pos = init;                                                                       \
