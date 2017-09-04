@@ -1068,6 +1068,7 @@ class UnitexString {
     return *this;
   }
 
+
   /**
    * @brief  Append a encoded c-string
    *

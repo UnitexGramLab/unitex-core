@@ -142,7 +142,7 @@ void free_Ustring(Ustring* ustr) {
  */
 void resize(Ustring* ustr,unsigned int size) {
 if (size<1) {
-   size=1;
+   size=MINBUF;
 }
 if (size<=ustr->size) {
    return;

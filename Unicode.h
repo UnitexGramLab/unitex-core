@@ -359,7 +359,6 @@ void u_to_char(char*,unichar*);
 void u_to_char_n(char *, const unichar *, unsigned int);
 void u_chomp_new_line(unichar*);
 int JSONize(const unichar* source,unichar* destination);
-int Quotize(const unichar* source,unichar* destination);
 int URLize(const unichar*,unichar*);
 int htmlize(const unichar*,unichar*);
 int mirror(const unichar*,unichar*);

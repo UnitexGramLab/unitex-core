@@ -155,8 +155,8 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
  * The options/modifiers *, l, L, n, and h are not supported
  */
 /* static */ int elg_ustring_format(lua_State* L) {
-  int arg = 1;
   int top = lua_gettop(L);
+  int arg = 1;
   UnitexString* fmt = lua_checkudata_cast(L, arg, UnitexString);
   const unichar* strfrmt      = fmt->begin();
   const unichar* strfrmt_end  = fmt->end();
@@ -245,6 +245,21 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               } else {
                  if (b) b->append(us->c_ustring());
                  n_printed=n_printed+us->len();
+              }
+              break;
+           }
+
+           /* If we have %Q we must print a quoted unicode string */
+           case 'Q': {
+              us=lua_checkudata_cast(L, arg, UnitexString);
+              if (us==NULL) {
+                 if (b) b->append("(nil)");
+                 n_printed=n_printed+5;
+              } else {
+                 unichar quoted[4096];
+                 int l=Quotize(us->c_unichar(),quoted);
+                 if (b) b->append(quoted,l);
+                 n_printed=n_printed+l;
               }
               break;
            }
@@ -341,7 +356,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
            }
         }
      } else {
-        /* If we have a normal character, we print it */
+        /* If we have a normal character, we append it */
         if (b) b->append(*strfrmt);
         n_printed++;
      }

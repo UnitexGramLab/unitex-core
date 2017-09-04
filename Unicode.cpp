@@ -4727,7 +4727,7 @@ int Quotize(const T* source, T* destination) {
       u_strcpy(&*(destination+pos),buff);
       pos+=len;
     } else {
-      destination[pos++] = (unsigned) *it;
+      destination[pos++] = *it;
     }
     // advance the character pointer
     ++it;
