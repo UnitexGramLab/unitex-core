@@ -43,14 +43,14 @@
 /* ************************************************************************** */
 # if UNITEX_HAS_BUILTIN(CLZ)
 # define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, FIT)               \
-  return (N <= MIN + FIT) ? MIN :                                             \
+  return (N < MIN + FIT) ? MIN :                                              \
                             (UINT##SIZE##_C(1) << (sizeof(uint##SIZE##_t) *   \
                              CHAR_BIT - unitex_builtin_clz_##SIZE(N + FIT)))
 # else
 // Based on Bit Twiddling Hacks, Round up to the next highest power of 2
 // @see https://graphics.stanford.edu/~seander/bithacks.html
 # define UNITEX__ROUND__UP__POWER__OF__TWO__(SIZE, N, MIN, FIT)              \
-  if (N <= MIN + FIT) return MIN;                                            \
+  if (N < MIN + FIT) return MIN;                                             \
   N += FIT;                                                                  \
   for (size_t i = 1; i <  sizeof(uint##SIZE##_t) * CHAR_BIT; i *= 2) {       \
     N |= N >> i;                                                             \

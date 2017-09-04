@@ -88,7 +88,7 @@ int u_encode_utf8(const unichar* source, char* destination) UNITEX_PARAMS_NON_NU
  * @param destination
  * @return
  */
-int u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NULL;
+size_t u_decode_utf8(const char* source, unichar* destination) UNITEX_PARAMS_NON_NULL;
 
 size_t u_strlen(const unichar* s);
 

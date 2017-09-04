@@ -4562,7 +4562,7 @@ if (l>0 && s[l-1]=='\n') {
  * @return the length of the destination string
  */
 template <typename T>
-int u_escape(const unichar* source, T* destination) {
+size_t u_escape(const unichar* source, T* destination) {
   if (!source) {
      fatal_error("NULL error in ASCIIize\n");
   }
@@ -4614,11 +4614,11 @@ int u_escape(const unichar* source, T* destination) {
 
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
 // destination is a unichar buffer
-template int u_escape(const unichar* source, unichar* destination);
+template size_t u_escape(const unichar* source, unichar* destination);
 
 // Converts all non-ASCII Unicode characters to Unicode escape-sequences
 // destination is a char buffer
-template int u_escape(const unichar* source, char* destination);
+template size_t u_escape(const unichar* source, char* destination);
 
 #endif
 
@@ -4633,7 +4633,7 @@ template int u_escape(const unichar* source, char* destination);
  * @param[out] destination unichar array where the escaped string is to be copied
  * @return the length of the destination string
  */
-int JSONize(const unichar* source,unichar* destination) {
+size_t u_jsonize(const unichar* source,unichar* destination) {
   if (!source) {
      fatal_error("NULL error in JSONize\n");
   }

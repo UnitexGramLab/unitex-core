@@ -37,6 +37,7 @@
 #include "base/unicode/utf8.h"
 #include "base/integer/integer.h"
 #include "base/compiler/intrinsic/assume_aligned.h"
+#include "Unicode.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -164,9 +165,11 @@ int u_encode_utf8(const unichar* source, char* destination) {
   return pos;
 }
 
-int u_decode_utf8(const char* source, unichar* destination) {
+size_t u_decode_utf8(const char* source, unichar* destination) {
   const char* it = source;
   register int pos = 0;
+  u_printf("=========================%s\n", source);
+
 
   // loop till the end of string
   while (*it != '\0') {
@@ -200,6 +203,7 @@ int u_decode_utf8(const char* source, unichar* destination) {
 
   // indicate the end of the string
   destination[pos] = '\0';
+  u_printf("%S\n", destination);
 
   // return the length of the destination string
   return pos;
@@ -507,8 +511,5 @@ size_t u_reverse(const unichar* UNITEX_RESTRICT s, unichar* UNITEX_RESTRICT d, s
 
 #undef U__REVERSE__
 #undef U__REVERSE__DEST__
-
-
-
 /* ************************************************************************** */
 }  // namespace unitex

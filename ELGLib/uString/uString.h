@@ -112,10 +112,11 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
  */
 #define U_MAX_FMTSPEC (sizeof(U_FMT_FLAGS) + sizeof(LUA_INTFRMLEN) + 10)
 /* ************************************************************************** */
-
 /**
- * Lua's elg.ustring sprintf version
- * based on Unitex's u_vsprintf() function @see Unicode.cpp
+ * Lua's elg.ustring sprintf
+ * based on Unitex's 3.2 u_vsprintf()    @see 3.2/Unicode.cpp
+ * based on Lua's 5.3 str_format()       @see 5.3/lstrlib.c
+ * based on LuaJIT's 2.1 string_format() @see 2.1/lib_string.c
  *
  * @brief Returns a formatted version of its variable number of arguments
  *        following the description given in its first argument (which must
@@ -164,8 +165,10 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
   const unichar* strfrmt      = fmt->begin();
   const unichar* strfrmt_end  = fmt->end();
 
-  // create a new string with a capacity of len + 16n and push on the stack
-  UnitexString* b = lua_pushlightobject(L, UnitexString)(fmt->len() + UnitexString::kMinBufferSize * top);
+  // create a new string with a capacity of U_MAX_FMTITEM and push on the stack
+  UnitexString* b = lua_pushlightobject(L, UnitexString)(U_MAX_FMTITEM);
+  UnitexString* a = lua_pushlightobject(L, UnitexString)(U_MAX_FMTITEM);
+
 
   double d;                           //
   char c = '\0';                      //
@@ -183,66 +186,87 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
           luaL_argerror(L, arg, "no value");
         }
         switch (*strfrmt) {
-           /* If we have %% we must print a '%' */
-           case '%': if (b) b->append('%'); break;
+           // %% a percent sign
+           case '%': b->append('%'); break;
 
-           /* If we have %C we must print an unicode character */
+           // %C a unicode character with the given number
            case 'C': {
               uc=(unichar)luaL_checkint(L, arg);
-              if (b) b->append(uc);
+              b->append(uc);
               break;
            }
 
-           /* If we have %Q we must print a quoted unicode string */
+           // %Q a string in a form suitable to be safely read back by the Lua interpreter
            case 'Q': {
               us=lua_checkudata_cast(L, arg, UnitexString);
-              if (us==NULL) {
-                 if (b) b->append("(nil)");
-              } else {
-                if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_quotize, 2 * us->len());
-              }
+              b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_quotize, 2 * us->len());
               break;
            }
 
-           /* If we have %S we must print an unicode string */
+           // %S a unicode string
            case 'S': {
               us=lua_checkudata_cast(L, arg, UnitexString);
-              if (us==NULL) {
-                 if (b) b->append("(nil)");
-              } else {
-                 if (b) b->append(us->c_ustring());
-              }
+              b->append(us->c_ustring());
               break;
            }
 
+           // %> an appender/modifier
            case '>': {
-             strfrmt++;
+             int appender = 1;
              us=lua_checkudata_cast(L, arg, UnitexString);
-             if (us==NULL) {
-                if (b) b->append("(nil)");
-                break;
-             }
+             a->clear();
+             next_strfrm_modifier:
+             strfrmt++;
+             // %>?
              switch (*strfrmt) {
-               case 'R': {
-                 if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse);
+               // %>R
+               case 'R':
+                  if (appender) a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse, 0);
+                  else          appender=2;
                  break;
-               }
 
-               case 'H': {
-                 if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) htmlize);
+               // %>H
+               case 'H':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) htmlize, 0);
+                  else           a->reverse();
                  break;
-               }
 
-               case 'U': {
-                 if (b) b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) URLize);
+               // %>U
+               case 'U':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) URLize, 0);
+                  else           a->reverse();
                  break;
-               }
+
+               // %>J
+               case 'J':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_jsonize, 0);
+                  else           a->reverse();
+                 break;
+
+               // %>X
+               case 'X':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_escape, 0) ;
+                  else           a->reverse();
+                 break;
+
+               // %>L
+               case 'L':
+                  if (appender)  a->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_toupper, 2 * us->len());
+                  else           a->upper();
+                 break;
 
                default:
                    char msg[64];
                    sprintf(msg, "invalid format option %c%c",*(strfrmt-1),*strfrmt);
                    luaL_argerror(L, arg, msg);
                  break;
+             }
+             if(strfrmt < strfrmt_end && *(strfrmt+1) == '>') {
+               strfrmt++;
+               appender = 0;
+               goto next_strfrm_modifier;
+             } else if (!a->is_empty()) {
+               b->append(a->c_ustring());
              }
              break;
            }
@@ -308,62 +332,20 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                     break;
                  }
               }
-              if (b && l) {
+              if (l) {
                 b->append(UTF8, buff, l);
               }
               break;
            }
         }
      } else {
-        /* If we have a normal character, we append it */
-        if (b) b->append(*strfrmt);
+        // a normal character, we append it
+        b->append(*strfrmt);
      }
      strfrmt++;
   }
 
-//
-//  for (int arg = 2; arg <= n; ++arg) {
-//    int t = lua_type(L, arg);
-//
-//    switch (t) {
-//      case LUA_TNIL:
-//        break;
-//
-//      case LUA_TBOOLEAN:
-//        lua_toboolean(L, arg);
-//        break;
-//
-//      case LUA_TLIGHTUSERDATA:
-//        break;
-//
-//      case LUA_TNUMBER:
-//        lua_tonumber(L, arg);
-//        break;
-//
-//      case LUA_TSTRING:
-//        lua_tolstring(L, arg, &len);
-//        break;
-//
-//      case LUA_TTABLE:
-//        break;
-//
-//      case LUA_TFUNCTION:
-//        lua_topointer(L, arg);
-//        break;
-//
-//      case LUA_TUSERDATA:
-//        break;
-//
-//      case LUA_TTHREAD:
-//        lua_topointer(L, arg);
-//        break;
-//
-//      default:
-//        "(nil)";
-//        break;
-//    }
-//  }
-
+  lua_pop(L,1);
   return 1;
 }
 /* ************************************************************************** */

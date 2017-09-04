@@ -109,7 +109,7 @@ if (res==NULL) {
 
 res->len=0u;
 // minor buffer enlarging
-res->size=buffer_size_rounded(size);
+res->size=buffer_size_for_len(size);
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
    fatal_alloc_error("new_Ustring");

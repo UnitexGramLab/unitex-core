@@ -348,7 +348,7 @@ size_t convert_utf8_to_unichar(unichar*dest, size_t nb_unichar_alloc_walk, size_
 // define NO_CPP_TEMPLATE_SUPPORT if you archeological C++ compiler don't support template
 #ifndef NO_CPP_TEMPLATE_SUPPORT
 template <typename T>
-int u_escape(const unichar* source, T* destination);
+size_t u_escape(const unichar* source, T* destination);
 
 template <typename T>
 size_t u_quotize(const T* source, T* destination);
@@ -358,7 +358,7 @@ size_t u_quotize(const T* source, T* destination);
 void u_to_char(char*,unichar*);
 void u_to_char_n(char *, const unichar *, unsigned int);
 void u_chomp_new_line(unichar*);
-int JSONize(const unichar* source,unichar* destination);
+size_t u_jsonize(const unichar* source,unichar* destination);
 int URLize(const unichar*,unichar*);
 int htmlize(const unichar*,unichar*);
 int mirror(const unichar*,unichar*);

@@ -78,6 +78,18 @@ void _name(unichar* s) {                                                    \
     *it = _name(*it);                                                       \
     ++it;                                                                   \
   }                                                                         \
+}                                                                           \
+                                                                            \
+size_t _name(const unichar* s, unichar* d) UNITEX_PARAMS_NON_NULL;          \
+                                                                            \
+UNITEX_FORCE_INLINE                                                         \
+size_t _name(const unichar* s, unichar* d) {                                \
+  const register unichar* it = s;                                           \
+  while (*it != '\0') {                                                     \
+    *++d = _name(*it);                                                      \
+    ++it;                                                                   \
+  }                                                                         \
+  return (it - s);                                                          \
 }
 /* ************************************************************************** */
 #define U__DECLARE__FUNCTION__CASE__ITERATE__N__(_name)                     \
