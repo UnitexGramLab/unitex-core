@@ -36,6 +36,7 @@
 // Header for this file
 #include "base/unicode/utf8.h"
 #include "base/integer/integer.h"
+#include "base/compiler/intrinsic/assume_aligned.h"
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */

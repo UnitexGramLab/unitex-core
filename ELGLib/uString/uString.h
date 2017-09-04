@@ -37,6 +37,8 @@
 #include "ELGLib/common.h"
 #include "ELGLib/debug.h"
 #include "UnitexString.h"
+#include "base/integer/operation/round.h"
+
 /* ************************************************************************** */
 #define EXTENSION_NAME_USTRING        EXTENSION_NAME_2(ELG, USTRING)
 #define FUNCTION_PREFIX_USTRING       FUNCTION_PREFIX_2(ELG, USTRING)
@@ -99,6 +101,11 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_format(lua_State* L) {
+
+  int x = util::round_up_greater_power_of_two(8);
+  x = x;
+
+
 //  size_t len;
 //  const char* format = luaL_checklstring(L, 1, &len);
 //  int n = lua_gettop(L);

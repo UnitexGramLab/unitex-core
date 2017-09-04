@@ -32,7 +32,7 @@ namespace unitex {
 /**
  * calculate the buffersize for a string len
  */
-#define buffer_size_for_len(n) unitex_round_up_greater_power_of_two_32(n)
+#define buffer_size_for_len(n) util::round_up_greater_power_of_two(n)
 
 /**
 * calculate the rounded buffersize
