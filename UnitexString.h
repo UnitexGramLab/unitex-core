@@ -63,6 +63,8 @@ namespace unitex {
 /* ************************************************************************** */
 #define UNITEX_STRING_IS_NULL       (data_->str == NULL)
 /* ************************************************************************** */
+typedef size_t (*U_TRANSLATE_FUNCTION)(const unichar*, unichar*);
+/* ************************************************************************** */
 /**
  * @class    UnitexString
  *
@@ -1068,7 +1070,6 @@ class UnitexString {
     return *this;
   }
 
-
   /**
    * @brief  Append a encoded c-string
    *
@@ -1078,10 +1079,10 @@ class UnitexString {
    * @param  string A null-terminated character sequence (C-string)
    */
   UnitexString& append(Encoding encoding, const char* string,
-                       size_type buffer_size = kMaxBufferSize) {
-    // request that the string capacity be adapted to the planned change
-    // in size to a length of *up to* buffer_size characters
-    reserve(buffer_size);
+                       size_type increase_length = kMaxBufferSize) {
+    // request to adapt the underline string capacity with a
+    // size to a length of *up to* the desired length of characters
+    reserve(increase_length);
     size_type length = 0;
     //
     switch (encoding) {
@@ -1101,6 +1102,22 @@ class UnitexString {
         break;
     }
     // set the length of the resulting string
+    data_->len = length;
+    return *this;
+  }
+
+  /**
+   * @brief  Append and translate a string
+   */
+  UnitexString& append(const Ustring* string,
+                       U_TRANSLATE_FUNCTION translate,
+                       size_type increase_length = kMaxBufferSize) {
+    // request to adapt the underline string capacity with a
+    // size to a length of *up to* the desired length of characters
+    reserve(increase_length);
+    // transform the input string and append it at the end
+    size_type length = translate(string->str, end());
+    // set the new length of the resulting string
     data_->len = length;
     return *this;
   }

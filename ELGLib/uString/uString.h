@@ -148,9 +148,10 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
  *
  *  %C    a unicode character with the given number
  *  %S    a unicode string
- *  %:R   a reversed unicode string
- *  %:H   a HTML escaped unicode string
- *  %:U   a URL escaped unicode string
+ *  %Q    a string in a form suitable to be safely read back by the Lua interpreter
+ *  %>R   a reversed unicode string
+ *  %>H   a HTML escaped unicode string
+ *  %>U   a URL escaped unicode string
  *
  * The options/modifiers *, l, L, n, and h are not supported
  */
@@ -192,46 +193,17 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               break;
            }
 
-           case 'H':
-           case 'U': {
-              int (*XXXize)(const unichar*,unichar*);
-              if (*strfrmt=='H') {
-                  XXXize=htmlize;
+           /* If we have %Q we must print a quoted unicode string */
+           case 'Q': {
+              us=lua_checkudata_cast(L, arg, UnitexString);
+              if (us==NULL) {
+                 if (b) b->append("(nil)");
+                 n_printed=n_printed+5;
               } else {
-                  XXXize=URLize;
-              }
-              /* If we have a '%H', it means that we have to print HTML things */
-              strfrmt++;
-              if (*strfrmt=='S') {
-                 /* If we have to print a HTML string */
-                 us=lua_checkudata_cast(L, arg, UnitexString);
-                 if (us==NULL) {
-                    if (b) b->append("(nil)");
-                    n_printed=n_printed+5;
-                 } else {
-                    unichar html[4096];
-                    int l=XXXize(us->c_unichar(),html);
-                    if (b) b->append(html,l);
-                    n_printed=n_printed+l;
-                 }
-              } else if (*strfrmt=='R') {
-                 /* If we have to print a HTML reversed string */
-                 us=lua_checkudata_cast(L, arg, UnitexString);
-                 if (us==NULL) {
-                    if (b) b->append("(nil)");
-                    n_printed=n_printed+5;
-                 } else {
-                    unichar reversed[4096];
-                    u_reverse(us->c_unichar(),reversed,us->len());
-                    unichar html[4096];
-                    int l=XXXize(reversed,html);
-                    if (b) b->append(html,l);
-                    n_printed=n_printed+l;
-                 }
-              } else {
-                char msg[64];
-                sprintf(msg, "invalid format option %c%c",*(strfrmt-1),*strfrmt);
-                luaL_argerror(L, arg, msg);
+                 unichar quoted[U_MAX_FMTITEM];
+                 int l=Quotize(us->c_unichar(),quoted);
+                 if (b) b->append(quoted,l);
+                 n_printed=n_printed+l;
               }
               break;
            }
@@ -249,34 +221,80 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
               break;
            }
 
-           /* If we have %Q we must print a quoted unicode string */
-           case 'Q': {
-              us=lua_checkudata_cast(L, arg, UnitexString);
-              if (us==NULL) {
-                 if (b) b->append("(nil)");
-                 n_printed=n_printed+5;
-              } else {
-                 unichar quoted[4096];
-                 int l=Quotize(us->c_unichar(),quoted);
-                 if (b) b->append(quoted,l);
-                 n_printed=n_printed+l;
-              }
-              break;
+           case '>': {
+             strfrmt++;
+             us=lua_checkudata_cast(L, arg, UnitexString);
+             unichar buff[U_MAX_FMTITEM];  /* to store the formatted item */
+             int l=0;
+             switch (*strfrmt) {
+               case 'R': {
+                 if (us==NULL) {
+                    /* We don't want to print ")llun(" when the string to reverse is NULL */
+                    if (b) b->append("(nil)");
+                    n_printed=n_printed+5;
+                    break;
+                 }
+                 b->append(us->c_ustring(), (U_TRANSLATE_FUNCTION) u_reverse);
+                 break;
+               }
+               default:
+                   char msg[64];
+                   sprintf(msg, "invalid format option %c%c",*(strfrmt-1),*strfrmt);
+                   luaL_argerror(L, arg, msg);
+                 break;
+             }
+             break;
            }
 
-           /* If we have %R we must print a reversed unicode string */
-           case 'R': {
-              us=lua_checkudata_cast(L, arg, UnitexString);
-              if (us==NULL) {
-                 /* We don't want to print ")llun(" when the string to reverse is NULL */
-                 if (b) b->append("(nil)");
-                 n_printed=n_printed+5;
-                 break;
+//           /* If we have %>R we must print a reversed unicode string */
+//           case 'R': {
+//
+//              unichar reversed[U_MAX_FMTITEM];
+//              int old=n_printed;
+//              n_printed=n_printed+u_reverse(us->c_unichar(),reversed,us->len());
+//              if (b) b->append(reversed, us->len());
+//              break;
+//           }
+
+           case 'H':
+           case 'U': {
+              int (*XXXize)(const unichar*,unichar*);
+              if (*strfrmt=='H') {
+                  XXXize=htmlize;
+              } else {
+                  XXXize=URLize;
               }
-              unichar reversed[4096];
-              int old=n_printed;
-              n_printed=n_printed+u_reverse(us->c_unichar(),reversed,us->len());
-              if (b) b->append(reversed, us->len());
+              /* If we have a '%H', it means that we have to print HTML things */
+              strfrmt++;
+              if (*strfrmt=='S') {
+                 /* If we have to print a HTML string */
+                 us=lua_checkudata_cast(L, arg, UnitexString);
+                 if (us==NULL) {
+                    if (b) b->append("(nil)");
+                    n_printed=n_printed+5;
+                 } else {
+                    unichar html[U_MAX_FMTITEM];
+                    int l=XXXize(us->c_unichar(),html);
+                    if (b) b->append(html,l);
+                    n_printed=n_printed+l;
+                 }
+              } else if (*strfrmt=='R') {
+                 /* If we have to print a HTML reversed string */
+                 us=lua_checkudata_cast(L, arg, UnitexString);
+                 if (us==NULL) {
+                    if (b) b->append("(nil)");
+                    n_printed=n_printed+5;
+                 } else {
+                    unichar reversed[U_MAX_FMTITEM];
+                    u_reverse(us->c_unichar(),reversed,us->len());
+                    unichar html[U_MAX_FMTITEM];
+                    int l=XXXize(reversed,html);
+                    if (b) b->append(html,l);
+                    n_printed=n_printed+l;
+                 }
+              } else {
+
+              }
               break;
            }
 
@@ -349,7 +367,7 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
                     break;
                  }
               }
-              if (b) {
+              if (b && l) {
                 b->append(UTF8, buff, l);
               }
               break;
