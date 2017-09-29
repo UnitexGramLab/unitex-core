@@ -450,10 +450,10 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
 }
 /* ************************************************************************** */
 /* static */ int elg_ustring_self_format(lua_State* L) {
-  stack_dump(L);
+  elg_stack_dump(L);
   // swap the first argument, the caller itself
   lua_insert(L, -2);
-  stack_dump(L);
+  elg_stack_dump(L);
   return elg_ustring_format(L);
 }
 /* ************************************************************************** */

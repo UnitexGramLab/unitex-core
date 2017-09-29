@@ -62,7 +62,7 @@ namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 namespace {   // namespace elg::{unnamed}, enforce one-definition-rule
 // anonymous namespaces in C++ are more versatile and superior to static.
 /* ************************************************************************** */
-#if UNITEX_BUILD_MODE(DEBUG)
+#if !UNITEX_BUILD_MODE(DEBUG)
 void entryprint(lua_State *L, const int entry, const char *kv)
 {
 		if (lua_type(L, (entry)) == LUA_TSTRING)
