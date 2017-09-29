@@ -155,6 +155,13 @@ U__DECLARE__FUNCTION__ELG__USTRING__INT__(len);
  *  %>R   a reversed unicode string
  *  %>H   a HTML escaped unicode string
  *  %>U   a URL escaped unicode string
+ *  %>J
+ *  %>X
+ *  %>L
+ *  %>l
+ *  %>t
+ *  %>u
+ *  %>f
  *
  * The options/modifiers *, l, L, n, and h are not supported
  */

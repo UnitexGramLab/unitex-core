@@ -295,6 +295,7 @@ class vm {
       set_function("is_space", elg::token::is_space);
       set_function("value", elg::token::value);
       set_function("reference", elg::token::reference);
+      set_function("lookup", elg::token::lookup);
       set_function("bitmask", elg::token::bitmask);
       set_function("tag", elg::token::tag);
 

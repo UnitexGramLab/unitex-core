@@ -621,9 +621,6 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         t = meta_list->transition;
         int match_one_letter;
         while (t != NULL) {
-            if (t->tag_number==203 && t->state_number==4000) {
-                //error("Looking at tag 203 for i=%d\n",i);
-            }
             match_one_letter = 0;
             switch (meta_list->meta) {
 

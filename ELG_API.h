@@ -615,6 +615,75 @@ int reference(lua_State* L) {
   return 1;
 }
 /* ************************************************************************** */
+int lookup(lua_State * L) {
+  // get locate params
+  struct locate_parameters* p = get_locate_params(L);
+  if(p) {
+    // length of the input string
+    size_t input_length;
+    // return the first argument
+    const char* c_input = luaL_checklstring(L, 1, &input_length);
+    // convert to unicode string
+    UnitexString u_input(UTF8, c_input, input_length);
+
+    // length of the pattern string
+    size_t pattern_length;
+    // return the second argument if any
+    const char* c_pattern = luaL_optlstring(L, 2, NULL, &pattern_length);
+    // convert to unicode string
+    UnitexString u_pattern(UTF8, c_pattern, pattern_length);
+
+    struct pattern*  pattern = build_pattern(u_pattern.c_unichar(),
+                                             NULL,
+                                             p->tilde_negation_operator,
+                                             p->al.prv_alloc_generic);
+
+    p->elg_stack->stack_pointer = -1;
+
+    struct parsing_info* matches = NULL;
+    struct parsing_info* it = NULL;
+
+    explore_dic_in_morpho_mode_with_token(p,
+                                          u_input.c_unichar(),
+                                          0,
+                                          &matches,
+                                          pattern,
+                                          1,
+                                          NULL,
+                                          0);
+    free_pattern(pattern);
+
+    unichar* S = NULL;
+    it = matches;
+    if (it != NULL) {
+      do {
+//        for (int i=0; S[i]!='\0'; ++i) {
+//         ::push(p->elg_stack,S[i]);
+//        }
+        S = it->dic_entry->semantic_codes[4];
+//        u_printf("%S\n",S);
+        for (int i=0; S[i]!='\0'; ++i) {
+         ::push(p->elg_stack,S[i]);
+        }
+        it = it->next;
+      } while(it != NULL);
+
+      p->elg_stack->stack[p->elg_stack->stack_pointer + 1] = '\0';
+
+      free_parsing_info(matches, &p->al.pa);
+
+//      p->elg_stack->stack[p->elg_stack->stack_pointer+1]='\0';
+
+      lua_pushlightuserdata(L,p->elg_stack->stack);
+    } else {
+      lua_pushnil(L);
+    }
+
+  }
+
+  return 1;
+}
+/* ************************************************************************** */
 int bitmask(lua_State * L) {
   struct locate_parameters* p = get_locate_params(L);
 
