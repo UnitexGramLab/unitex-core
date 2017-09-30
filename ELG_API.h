@@ -658,7 +658,7 @@ int lookup(lua_State * L) {
                                           0,
                                           &matches,
                                           pattern,
-                                          1,
+                                          u_variable.is_empty() ? 0 : 1,
                                           NULL,
                                           0);
     free_pattern(pattern);
@@ -678,6 +678,12 @@ int lookup(lua_State * L) {
     }
 
   }
+
+//  8474 matches
+//  81636 recognized units
+//  (28.160% of the text is covered)
+//  2515018 exploration step
+//  Done.
 
   return 1;
 }
