@@ -123,7 +123,7 @@ struct locate_allocators {
 struct locate_parameters {
    struct locate_allocators al;
    /* The transduction variables of the fst2 */
-   Variables* input_variables;
+   InputVariables* input_variables;
    OutputVariables* output_variables;
 
 

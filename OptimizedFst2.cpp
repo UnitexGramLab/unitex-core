@@ -434,7 +434,7 @@ while (list!=NULL) {
  * No tests is done to check if there is already a transition with the
  * given variable, because it cannot happen if the grammar is deterministic.
  */
-static void add_input_variable(Variables* var,unichar* variable,Transition* transition,
+static void add_input_variable(InputVariables* var,unichar* variable,Transition* transition,
         struct opt_variable** variable_list,Abstract_allocator prv_alloc) {
 int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition,prv_alloc);
@@ -498,7 +498,7 @@ state->contexts->end_mark=new_Transition(transition->tag_number,transition->stat
 /**
  * This function optimizes the given transition.
  */
-static void optimize_transition(Variables* v,OutputVariables* output,Fst2* fst2,Transition* transition,
+static void optimize_transition(InputVariables* v,OutputVariables* output,Fst2* fst2,Transition* transition,
                         OptimizedFst2State state,Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (transition->tag_number<0) {
    /* If the transition is a graph call */
@@ -690,7 +690,7 @@ free_cb(state,prv_alloc);
  * and returns an equivalent optimized state, or NULL if the given state
  * was NULL.
  */
-static OptimizedFst2State optimize_state(Variables* v,OutputVariables* output,Fst2* fst2,Fst2State state,
+static OptimizedFst2State optimize_state(InputVariables* v,OutputVariables* output,Fst2* fst2,Fst2State state,
                                     Fst2Tag* tags,Abstract_allocator prv_alloc) {
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state(prv_alloc);
@@ -1036,7 +1036,7 @@ return empty_graph(graph,optimized_states,fst2);
  * This function takes a fst2 and returns an array containing the corresponding
  * optimized states.
  */
-OptimizedFst2State* build_optimized_fst2_states(Variables* v,OutputVariables* output,Fst2* fst2,
+OptimizedFst2State* build_optimized_fst2_states(InputVariables* v,OutputVariables* output,Fst2* fst2,
         Abstract_allocator prv_alloc) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc_cb(fst2->number_of_states*sizeof(OptimizedFst2State),prv_alloc);
 if (optimized_states==NULL) {

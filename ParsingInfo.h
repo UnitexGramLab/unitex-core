@@ -115,13 +115,13 @@ struct parsing_allocator {
 };
 
 
-struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,OutputVariables*,
+struct parsing_info* new_parsing_info(int,int,int,int,unichar*,InputVariables*,OutputVariables*,
                                         struct dela_entry* dic_entry,struct dic_variable*,
                                         int,int,unichar*,int,vector_int*,int weight,struct parsing_allocator* pa);
 void free_parsing_info(struct parsing_info*,struct parsing_allocator* pa);
-struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,OutputVariables*,
+struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,InputVariables*,OutputVariables*,
                                       struct dic_variable*,int,int,unichar*,int,vector_int*,int, struct parsing_allocator* pa);
-struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,OutputVariables*,
+struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,InputVariables*,OutputVariables*,
                                          struct dic_variable*,int,int,unichar*,int,vector_int*,int, struct parsing_allocator* pa);
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,
                                                 struct parsing_info* list,struct dela_entry*,

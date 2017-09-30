@@ -161,7 +161,7 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Variables*,OutputVariables*,Fst2*,Abstract_allocator);
+OptimizedFst2State* build_optimized_fst2_states(InputVariables*,OutputVariables*,Fst2*,Abstract_allocator);
 void free_optimized_states(OptimizedFst2State*,int,Abstract_allocator);
 
 } // namespace unitex

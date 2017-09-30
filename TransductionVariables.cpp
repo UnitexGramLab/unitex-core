@@ -32,11 +32,11 @@ namespace unitex {
  * Allocates and returns a structure representing the variables
  * whose names are in 'list'. The variable ranges are initialized with [-1;-1[
  */
-Variables* new_Variables(const struct list_ustring* list,int *p_nb_variable) {
+InputVariables* new_Variables(const struct list_ustring* list,int *p_nb_variable) {
 if (p_nb_variable!=NULL) {
     *p_nb_variable=0;
 }
-Variables* v=(Variables*)malloc(sizeof(Variables));
+InputVariables* v=(InputVariables*)malloc(sizeof(InputVariables));
 if (v==NULL) {
    fatal_alloc_error("new_Variables");
 }
@@ -64,7 +64,7 @@ return v;
 }
 
 
-void reset_Variables(Variables* v) {
+void reset_Variables(InputVariables* v) {
 if (v==NULL) return;
 int n=v->variable_index->size;
 for (int i=0;i<n;i++) {
@@ -78,7 +78,7 @@ for (int i=0;i<n;i++) {
 /**
  * Frees the memory associated to the given variables.
  */
-void free_Variables(Variables* v) {
+void free_Variables(InputVariables* v) {
 if (v==NULL) return;
 free_string_hash(v->variable_index);
 free(v->variables);
@@ -90,7 +90,7 @@ free(v);
  * Returns a pointer on the range of the variable whose name is 'name',
  * or NULL if the variable in not in the given variable set.
  */
-struct transduction_variable* get_transduction_variable(Variables* v,const unichar* name) {
+struct transduction_variable* get_transduction_variable(InputVariables* v,const unichar* name) {
 int n=get_value_index(name,v->variable_index,DONT_INSERT);
 if (n==-1) {
    return NULL;
@@ -105,7 +105,7 @@ return &(v->variables[n]);
  * if the variable in not in the given variable set.
  */
 struct transduction_variable* get_transduction_variable(
-    Variables* v, const unichar* name, int* value_index) {
+    InputVariables* v, const unichar* name, int* value_index) {
   *value_index = get_value_index(name, v->variable_index, DONT_INSERT);
   if (*value_index == -1) {
     return NULL;
@@ -205,7 +205,7 @@ size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb)
 }
 
 
-size_t get_variable_backup_size_in_byte(const Variables* v)
+size_t get_variable_backup_size_in_byte(const InputVariables* v)
 {
 if (v==NULL || v->variable_index==NULL) return 0;
 int l=v->variable_index->size;
@@ -216,7 +216,7 @@ return (sizeof(int)*NB_INT_BY_VARIABLES*l);
  * Allocates, initializes and returns an integer array that is a copy of
  * the variable ranges.
  */
-int* create_variable_backup(const Variables* v,Abstract_allocator prv_alloc_recycle) {
+int* create_variable_backup(const InputVariables* v,Abstract_allocator prv_alloc_recycle) {
 if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
 int* backup=(int*)malloc_cb(sizeof(int)*NB_INT_BY_VARIABLES*l,prv_alloc_recycle);
@@ -235,7 +235,7 @@ return backup;
  * initializes an integer array that is a copy of
  * the variable ranges.
  */
-void init_variable_backup(int* backup,const Variables* v) {
+void init_variable_backup(int* backup,const InputVariables* v) {
 if (v==NULL || v->variable_index==NULL) return ;
 int l=v->variable_index->size;
 
@@ -255,7 +255,7 @@ if (backup!=NULL) free_cb(backup,prv_alloc_recycle);
 /**
  * Sets the variable ranges with the values of the given backup.
  */
-void install_variable_backup(Variables* v,const int* backup) {
+void install_variable_backup(InputVariables* v,const int* backup) {
 if (backup==NULL) {
     fatal_error("NULL error in install_variable_backup\n");
 }
@@ -270,7 +270,7 @@ memcpy((void*)(&(v->variables[0])),(const void*)&backup[0],sizeof(int)*NB_INT_BY
 /**
  * Sets the variable ranges with the values of the given backup.
  */
-void update_variable_backup(int* backup,const Variables* v) {
+void update_variable_backup(int* backup,const InputVariables* v) {
 if (backup==NULL) {
     fatal_error("NULL error in install_variable_backup\n");
 }
@@ -328,7 +328,7 @@ if (suggested_size < size_one_backup)
 return suggested_size;
 }
 
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables* v,int is_first)
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(const InputVariables* v,int is_first)
 {
 int size_variable_index = v->variable_index->size;
 int size_unaligned = (size_variable_index*NB_INT_BY_VARIABLES);
@@ -374,7 +374,7 @@ free(r);
  * This function select a new content for the set of variable, and return a
  * pointer to restore current set using restore_variable_array
  */
-int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,const int* data)
+int* install_variable_backup_preserving(InputVariables* v,variable_backup_memory_reserve* r,const int* data)
 {
 int *save = (int*)&(v->variables[0]);
 int* newptr = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
@@ -390,7 +390,7 @@ return save;
 }
 
 
-void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* rest)
+void restore_variable_array(InputVariables* v,variable_backup_memory_reserve* r,int* rest)
 {
     r->pos_used --;
 
@@ -402,7 +402,7 @@ void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* 
  * Returns 1 if the given backup and the given variables correspond to the same
  * values.
  */
-int same_input_variables(int* input_variable_backup,Variables* v) {
+int same_input_variables(int* input_variable_backup,InputVariables* v) {
   // Variables is a structure to associate ranges to variable names,
   // it has two members: variable_index and variables. The variables
   // member is a structure used to define the range of a variable, it

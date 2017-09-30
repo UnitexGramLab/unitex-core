@@ -51,7 +51,7 @@ typedef struct {
    struct string_hash* variable_index;
    /* variables[a] gives the range associated to the variable #a */
    struct transduction_variable* variables;
-} Variables;
+} InputVariables;
 
 
 
@@ -78,10 +78,10 @@ struct transduction_variable {
 
 
 
-Variables* new_Variables(const struct list_ustring*,int* p_nb_variable=NULL);
-void free_Variables(Variables*);
-struct transduction_variable* get_transduction_variable(Variables*,const unichar*);
-struct transduction_variable* get_transduction_variable(Variables* v, const unichar* name, int* value_index);
+InputVariables* new_Variables(const struct list_ustring*,int* p_nb_variable=NULL);
+void free_Variables(InputVariables*);
+struct transduction_variable* get_transduction_variable(InputVariables*,const unichar*);
+struct transduction_variable* get_transduction_variable(InputVariables* v, const unichar* name, int* value_index);
 
 /*
  * the function below are replaced by macro for performance
@@ -109,18 +109,18 @@ int get_variable_end_in_chars(const Variables*,int);
 #define get_variable_end_in_chars(v,n) ((v)->variables[(n)].end_in_chars)
 
 size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb);
-size_t get_variable_backup_size_in_byte(const Variables* v);
-void init_variable_backup(int* backup,const Variables* v);
-int* create_variable_backup(const Variables*,Abstract_allocator);
+size_t get_variable_backup_size_in_byte(const InputVariables* v);
+void init_variable_backup(int* backup,const InputVariables* v);
+int* create_variable_backup(const InputVariables*,Abstract_allocator);
 void free_variable_backup(int*,Abstract_allocator);
 
 size_t get_expected_variable_backup_size_in_byte_for_nb_variable(int nb);
 
-void install_variable_backup(Variables*,const int*);
-void update_variable_backup(int*,const Variables*);
-void reset_Variables(Variables* v);
+void install_variable_backup(InputVariables*,const int*);
+void update_variable_backup(int*,const InputVariables*);
+void reset_Variables(InputVariables* v);
 
-int same_input_variables(int* input_variable_backup,Variables* v);
+int same_input_variables(int* input_variable_backup,InputVariables* v);
 
 /* to limit number of malloc, we define a pool of memory
    we use this thing : free will be done in reverse order than alloc
@@ -147,7 +147,7 @@ typedef struct {
  * create_variable_backup_memory_reserve : build a reserve of memory
  * with space for nb_item_allocated int
  */
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(const Variables*,int is_first);
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(const InputVariables*,int is_first);
 
 /*
  * clear the reserve from memory
@@ -166,7 +166,7 @@ void free_reserve(variable_backup_memory_reserve*r);
 /*
  * check if the reserve contain space and is correct to save variable v
  */
-static inline int is_enough_memory_in_reserve_for_transduction_variable_set(const Variables* v,const variable_backup_memory_reserve* r)
+static inline int is_enough_memory_in_reserve_for_transduction_variable_set(const InputVariables* v,const variable_backup_memory_reserve* r)
 {
     return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
 }
@@ -177,7 +177,7 @@ static inline int is_enough_memory_in_reserve_for_transduction_variable_set(cons
  * create the backup, taking memory from reserve
  * we assume is_enough_memory_in_reserve_for_Variable was already called to verify
  */
-static inline int* create_variable_backup_using_reserve(const Variables* v,variable_backup_memory_reserve* r) {
+static inline int* create_variable_backup_using_reserve(const InputVariables* v,variable_backup_memory_reserve* r) {
 
 /* DIRTY==0 mean :
    - there is a least one backup
@@ -260,8 +260,8 @@ void dec_dirty(variable_backup_memory_reserve* r) ;
 }
 
 
-int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,const int*);
-void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int*);
+int* install_variable_backup_preserving(InputVariables* v,variable_backup_memory_reserve* r,const int*);
+void restore_variable_array(InputVariables* v,variable_backup_memory_reserve* r,int*);
 
 } // namespace unitex
 

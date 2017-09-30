@@ -46,7 +46,7 @@ static int binary_search(int, int*, int);
 static int find_compound_word(int, int, struct DLC_tree_info*,
         struct locate_parameters*);
 unichar* get_token_sequence(struct locate_parameters*, int, int);
-void shift_variable_bounds(Variables*, int);
+void shift_variable_bounds(InputVariables*, int);
 static void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
 static void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
 static struct match_list* eliminate_longer_matches(struct match_list*, int, int,
@@ -2266,7 +2266,7 @@ struct match_list* ptr;
 /**
  * Apply the given shift to all variable bounds in the given variable set.
  */
-void shift_variable_bounds(Variables* v, int shift) {
+void shift_variable_bounds(InputVariables* v, int shift) {
     if (v == NULL) {
         return;
     }
