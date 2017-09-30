@@ -2405,7 +2405,8 @@ void explore_dic_in_morpho_mode_with_token(
 //            save_dic_entry, line_buffer, NOTHING_EXPECTED, '\0', ustr,0);
       } else {
         explore_dic_in_morpho_mode_standard_with_token(
-            p, p->morpho_dic[i],
+            p,
+            p->morpho_dic[i],
             p->morpho_dic[i]->initial_state_offset,
             token,
             inflected,

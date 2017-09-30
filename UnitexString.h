@@ -404,6 +404,7 @@ class UnitexString {
                size_type buffer_size = kMaxBufferSize) :  // NOLINT
       data_(acquire(buffer_size)) {
     size_type length = 0;
+    if(string) {
     switch (encoding) {
       case UTF16_LE:
         break;
@@ -419,6 +420,7 @@ class UnitexString {
         // decode from UTF-8
         length = unitex::u_decode_utf8(string, data_->str);
         break;
+    }
     }
     // set the length of the resulting string
     data_->len = length;
