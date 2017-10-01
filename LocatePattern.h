@@ -126,7 +126,6 @@ struct locate_parameters {
    InputVariables* input_variables;
    OutputVariables* output_variables;
 
-
    int graph_depth;
    int explore_depth;
 
@@ -289,6 +288,10 @@ struct locate_parameters {
 
    /* Size of previous arrays */
    int n_morpho_dics;
+
+   /* For a given dictionary name, this array gives an index a to be used in
+    * the 'morpho_dic' array */
+   struct string_hash* morpho_dic_index;
 
    /* The DELAF entry variables filled in morphological mode */
    struct dic_variable* dic_variables;

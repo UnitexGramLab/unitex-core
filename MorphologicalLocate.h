@@ -65,7 +65,8 @@ void explore_dic_in_morpho_mode_with_token(
         struct pattern* pattern,
         int save_dic_entry,
         unichar* jamo,
-        int pos_in_jamo);
+        int pos_in_jamo,
+        const char* morpho_dic_list);
 
 void get_content(unichar* content, struct locate_parameters* p, int pos,
     int pos_in_token, int pos2, int pos_in_token2);

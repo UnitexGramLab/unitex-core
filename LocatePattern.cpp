@@ -42,7 +42,6 @@ void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locat
 void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p);
 void load_morphological_dictionaries(const VersatileEncodingConfig*,const char* morpho_dic_list,struct locate_parameters* p,const char* local_morpho_dic);
 
-
 /**
  * Allocates, initializes and returns a new locate_parameters structure.
  */
@@ -103,6 +102,7 @@ p->morpho_dic=NULL;
 p->morpho_dic_inf_free=NULL;
 p->morpho_dic_bin_free=NULL;
 p->n_morpho_dics=0;
+p->morpho_dic_index=NULL;
 p->dic_variables=NULL;
 p->left_ctx_shift=0;
 p->left_ctx_base=0;
@@ -692,6 +692,8 @@ for (int i=0;i<p->n_morpho_dics;i++) {
 free(p->morpho_dic);
 free(p->morpho_dic_inf_free);
 free(p->morpho_dic_bin_free);
+free_string_hash(p->morpho_dic_index);
+
 //delete p->elg; free on free_locate_parameters(p)
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
@@ -711,7 +713,6 @@ for (int i=0;s[i]!='\0';i++) {
 return n;
 }
 
-
 /**
  * Takes a string containing .bin names separated with semi-colons and
  * loads the corresponding dictionaries.
@@ -727,6 +728,9 @@ p->morpho_dic_inf_free=(struct INF_free_info*)malloc(p->n_morpho_dics*sizeof(str
 if (p->morpho_dic==NULL || p->morpho_dic_bin_free==NULL || p->morpho_dic_inf_free==NULL) {
    fatal_alloc_error("load_morphological_dictionaries");
 }
+
+p->morpho_dic_index = new_string_hash(p->n_morpho_dics);
+
 char bin[FILENAME_MAX];
 int pos;
 for (int i=0;i<p->n_morpho_dics;i++) {
@@ -741,6 +745,12 @@ for (int i=0;i<p->n_morpho_dics;i++) {
    }
    char inf[FILENAME_MAX];
    remove_extension(bin,inf);
+
+   // if "/path/to/dic/foo.dic" is a morphological dictionary, then
+   // do p->morpho_dic_index[i] = "foo"
+   UnitexString u_name(filename_without_path(inf));
+   get_value_index(u_name.c_unichar(), p->morpho_dic_index);
+
    strcat(inf,".inf");
    p->morpho_dic[i]=new_Dictionary(vec,bin,inf);
 }

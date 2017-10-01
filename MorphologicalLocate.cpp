@@ -2370,6 +2370,48 @@ offset=read_dictionary_state(d,offset,&is_final_state,&n_transitions,&inf_number
   }
 }
 
+// if the loaded morphological dictionaries are 0=zaz, 1=bar and 2=foo; and
+// if morpho_dic_list == "foo;zaz" then morpho_dic_indices = {2, 0}; or
+// if morpho_dic_list == "*"       then morpho_dic_indices = {0, 1, 2}
+void get_morphological_dictionaries_indices(const char* morpho_dic_list,
+                                            const struct locate_parameters* p,
+                                            struct list_int* *morpho_dic_indices) {
+  // when morpho_dic_list is equal to NULL or '*', then use all the
+  // morphological dictionaries
+  if (morpho_dic_list == NULL   || morpho_dic_list[0] == '\0' ||
+     (morpho_dic_list[0] == '*' && morpho_dic_list[1] == '\0')) {
+    for (int i = p->n_morpho_dics - 1; i >= 0; --i) {
+      *morpho_dic_indices = head_insert(i, *morpho_dic_indices);
+    }
+    return;
+  }
+
+  char name[FILENAME_MAX];
+  int pos = 0;
+  int index = -1;
+
+  // push dictionary indices on morpho_dic_indices
+  while (*morpho_dic_list != '\0') {
+    pos = 0;
+
+    while (*morpho_dic_list != '\0' && *morpho_dic_list != ';') {
+       name[pos++] = *morpho_dic_list;
+       ++morpho_dic_list;
+    }
+
+    name[pos]='\0';
+    if (*morpho_dic_list==';') {
+       morpho_dic_list++;
+    }
+
+    index = get_value_index(UnitexString(name).c_unichar(), p->morpho_dic_index, DONT_INSERT);
+
+    if(index > -1 && index < p->n_morpho_dics) {
+      *morpho_dic_indices = head_insert(index, *morpho_dic_indices);
+    }
+  }
+}
+
 /**
  * This function tries to find something in p's morphological dictionary that
  * matches the given token and pattern. If 'pattern' is NULL, anything found
@@ -2383,17 +2425,24 @@ void explore_dic_in_morpho_mode_with_token(
         struct pattern* pattern,
         int save_dic_entry,
         unichar* jamo,
-        int pos_in_jamo) {
-  unichar* buffer_line_buffer_inflected;
-  buffer_line_buffer_inflected = (unichar*) malloc(sizeof(unichar) * (4096
-      + DIC_LINE_SIZE));
+        int pos_in_jamo,
+        const char* morpho_dic_list) {
+  unichar* buffer_line_buffer_inflected = (unichar*) malloc(sizeof(unichar) * (4096 + DIC_LINE_SIZE));
+
   if (buffer_line_buffer_inflected == NULL) {
     fatal_alloc_error("explore_dic_in_morpho_mode");
   }
+
   unichar* inflected = buffer_line_buffer_inflected;
   Ustring* line_buffer=new_Ustring(4096);
   Ustring* ustr=new_Ustring();
-  for (int i = 0; i < p->n_morpho_dics; i++) {
+
+  struct list_int* morpho_dic_indices = NULL;
+  get_morphological_dictionaries_indices(morpho_dic_list, p, &morpho_dic_indices);
+
+  int i = 0;
+  while (morpho_dic_indices != NULL) {
+    i = morpho_dic_indices->n;
     if (p->morpho_dic[i] != NULL) {
       /* Can't match anything in an empty dictionary */
       if (p->arabic.rules_enabled) {
@@ -2422,7 +2471,9 @@ void explore_dic_in_morpho_mode_with_token(
             0);
       }
     }
+    morpho_dic_indices = morpho_dic_indices->next;
   }
+
   free_Ustring(ustr);
   free_Ustring(line_buffer);
   free(buffer_line_buffer_inflected);

@@ -225,7 +225,8 @@ int content(lua_State * L) {
                                           NULL,
                                           1,
                                           NULL,
-                                          0);
+                                          0,
+                                          NULL);
 
     it = matches;
     if (it != NULL) {
@@ -620,24 +621,27 @@ int lookup(lua_State * L) {
   struct locate_parameters* p = get_locate_params(L);
 
   if(p) {
+    // return the list of dictionaries to use
+    const char* c_dicos = luaL_checkstring(L, 1);
+
     // length of the input string
     size_t input_length = 0;
-    // return the first argument
-    const char* c_input = luaL_checklstring(L, 1, &input_length);
+    // return the input
+    const char* c_input = luaL_checklstring(L, 2, &input_length);
     // convert to unicode string
     UnitexString u_input(UTF8, c_input, input_length);
 
     // length of the pattern string
     size_t pattern_length = 0;
-    // return the second argument if any
-    const char* c_pattern = luaL_optlstring(L, 2, NULL, &pattern_length);
+    // return the pattern if any
+    const char* c_pattern = luaL_optlstring(L, 3, NULL, &pattern_length);
     // convert to unicode string
     UnitexString u_pattern(UTF8, c_pattern, pattern_length);
 
     // length of the variable string
     size_t variable_length = 0;
-    // return the third argument if any
-    const char* c_variable = luaL_optlstring(L, 3, NULL, &variable_length);
+    // return the variable if any
+    const char* c_variable = luaL_optlstring(L, 4, NULL, &variable_length);
     // convert to unicode string
     UnitexString u_variable(UTF8, c_variable, variable_length);
 
@@ -660,7 +664,8 @@ int lookup(lua_State * L) {
                                           pattern,
                                           u_variable.is_empty() ? 0 : 1,
                                           NULL,
-                                          0);
+                                          0,
+                                          c_dicos);
     free_pattern(pattern);
 
     //unichar* S = NULL;
