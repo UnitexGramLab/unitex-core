@@ -136,8 +136,10 @@ struct locate_parameters {
    int stack_base;
 
    /* This is the stack used to process outputs */
-   struct stack_unichar* stack;
+   struct stack_unichar* stack_output;
 
+   /* This is the auxiliary stack used to process outputs */
+   struct stack_unichar* stack_aux;
 
    /**
     * This array is used to associate a control byte to each token.
@@ -401,7 +403,7 @@ struct locate_parameters {
    const char* graph_filename;
 
    vm* elg;
-   struct stack_unichar* elg_stack;
+   struct stack_unichar* stack_elg;
    // position in the token buffer, relative to the current origin
    int pos_in_tokens;
    // position in the token in characters

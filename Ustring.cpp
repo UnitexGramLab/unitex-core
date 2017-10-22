@@ -30,12 +30,12 @@
 namespace unitex {
 
 /**
- * calculate the buffersize for a string len
+ * calculate the buffer size for a given length
  */
 #define buffer_size_for_len(n) next_greater_power_of_two_32(n, MINBUF)
 
 /**
-* calculate the rounded buffersize
+* calculate the rounded buffer size for a given length
 */
 #define buffer_size_rounded(n) next_smallest_power_of_two_32(n, MINBUF)
 
@@ -137,28 +137,34 @@ void free_Ustring(Ustring* ustr) {
 
 
 /**
- * Resizes the internal buffer of the given Ustring to the given size.
+ * Resizes the internal buffer of the given Ustring to the given minimum size.
  * The buffer size is never decreased. Note that you cannot set a size<1.
  */
 void resize(Ustring* ustr,unsigned int size) {
-if (size<1) {
-   size=MINBUF;
-}
-if (size<=ustr->size) {
-   return;
-}
-// minor buffer enlarging
-unsigned int buffer_size = buffer_size_rounded(size);
-ustr->str=(unichar*)realloc(ustr->str, buffer_size*sizeof(unichar));
-if (ustr->str==NULL) {
-   fatal_alloc_error("resize");
-}
-if (size<ustr->len) {
-   /* If we truncate the string */
-   ustr->len=size-1;
-   ustr->str[ustr->len]='\0';
-}
-ustr->size=buffer_size;
+  if (size < 1) {
+    size = MINBUF;
+  }
+
+  if (size <= ustr->size) {
+    return;
+  }
+
+  // minor buffer enlarging
+  unsigned int buffer_size = buffer_size_rounded(size);
+
+  ustr->str = (unichar*) realloc(ustr->str, buffer_size * sizeof(unichar));
+
+  if (ustr->str == NULL) {
+    fatal_alloc_error("resize Ustring");
+  }
+
+  if (size < ustr->len) {
+    /* If we truncate the string */
+    ustr->len = size - 1;
+    ustr->str[ustr->len] = '\0';
+  }
+
+  ustr->size = buffer_size;
 }
 
 
@@ -180,45 +186,40 @@ ustr->str[length]='\0';
  * 'length' is the number of chars of 'str' to be copied.
  */
 void u_strcat(Ustring* ustr,const unichar* str,unsigned int length) {
-if (str==NULL || length==0 || str[0]=='\0') {
-   /* If there is nothing to concatenate */
-   return;
-}
-unsigned int newlen=ustr->len+length;
-if (ustr->size<newlen+1) {
-   /* If necessary, we enlarge the internal buffer */
-    unsigned int n=ustr->size;
-    if (n==0) n=1;
-   while (n<=newlen+1) {
-      n=n*2;
-   }
-   resize(ustr,n);
-}
-for (unsigned int i=0;i<length;i++) {
-   ustr->str[ustr->len+i]=str[i];
-}
-ustr->str[newlen]='\0';
-ustr->len=newlen;
-}
+  if (str == NULL || length == 0 || str[0] == '\0') {
+    /* If there is nothing to concatenate */
+    return;
+  }
 
+  unsigned int newlen = ustr->len + length;
+
+  // if necessary, we enlarge the internal buffer
+  if (ustr->size < newlen + 1) {
+    resize(ustr, newlen + 1);
+  }
+
+  for (unsigned int i = 0; i < length; i++) {
+    ustr->str[ustr->len + i] = str[i];
+  }
+
+  ustr->str[newlen] = '\0';
+  ustr->len = newlen;
+}
 
 /**
  * Concatenates the given unicode character to the given Ustring.
  */
 void u_strcat(Ustring* ustr,unichar c) {
-unsigned int newlen=ustr->len+1;
-if (ustr->size<newlen+1) {
-    /* If necessary, we enlarge the internal buffer */
-    unsigned int n=ustr->size;
-    if (n==0) n=1;
-    while (n<=newlen+1) {
-        n=n*2;
-    }
-    resize(ustr,n);
-}
-ustr->str[ustr->len]=c;
-ustr->str[ustr->len+1]='\0';
-ustr->len++;
+  unsigned int newlen = ustr->len + 1;
+
+  // if necessary, we enlarge the internal buffer
+  if (ustr->size < newlen + 1) {
+    resize(ustr, newlen + 1);
+  }
+
+  ustr->str[ustr->len] = c;
+  ustr->str[ustr->len + 1] = '\0';
+  ustr->len++;
 }
 
 
@@ -227,63 +228,56 @@ ustr->len++;
  * 'length' is the number of chars of 'str' to be copied.
  */
 void u_strcat(Ustring* ustr,const char* str,unsigned int length) {
-if (str==NULL || str[0]=='\0' || length==0) {
-   /* If there is nothing to concatenate */
-   return;
-}
-unsigned int newlen=ustr->len+length;
-if (ustr->size<newlen+1) {
-   /* If necessary, we enlarge the internal buffer */
-    unsigned int n=ustr->size;
-    if (n==0) n=1;
-   while (n<=newlen+1) {
-       n=n*2;
-   }
-   resize(ustr,n);
-}
-for (unsigned int i=0;i<length;i++) {
-   ustr->str[ustr->len+i]=str[i];
-}
-ustr->str[newlen]='\0';
-ustr->len=newlen;
+  if (str == NULL || str[0] == '\0' || length == 0) {
+    /* If there is nothing to concatenate */
+    return;
+  }
+
+  unsigned int newlen = ustr->len + length;
+
+  // if necessary, we enlarge the internal buffer
+  if (ustr->size < newlen + 1) {
+    resize(ustr, newlen + 1);
+  }
+
+  for (unsigned int i = 0; i < length; i++) {
+    ustr->str[ustr->len + i] = str[i];
+  }
+
+  ustr->str[newlen] = '\0';
+  ustr->len = newlen;
 }
 
 void u_strcpy(Ustring* ustr,const char* str,unsigned int length) {
-  unsigned int newlen=length;
-  if (ustr->size<newlen+1) {
-    /* If necessary, we enlarge the internal buffer */
-    unsigned int n=ustr->size;
-    if (n==0) n=1;
-    while (n<=newlen+1) {
-      n=n*2;
-    }
-    resize(ustr,n);
-    }
-    for (unsigned int i=0;i<length;i++) {
-       ustr->str[i]=str[i];
+  unsigned int newlen = length;
+
+  // if necessary, we enlarge the internal buffer
+  if (ustr->size < newlen + 1) {
+    resize(ustr, newlen + 1);
+  }
+
+  for (unsigned int i = 0; i < length; i++) {
+    ustr->str[i] = str[i];
   }
 
   ustr->str[newlen] = 0;
-  ustr->len=newlen;
+  ustr->len = newlen;
 }
 
 void u_strcpy(Ustring* ustr,const unichar* str,unsigned int length) {
-  unsigned int newlen=length;
-  if (ustr->size<newlen+1) {
-    /* If necessary, we enlarge the internal buffer */
-    unsigned int n=ustr->size;
-    if (n==0) n=1;
-    while (n<=newlen+1) {
-      n=n*2;
-    }
-    resize(ustr,n);
-    }
-    for (unsigned int i=0;i<length;i++) {
-       ustr->str[i]=str[i];
+  unsigned int newlen = length;
+
+  // if necessary, we enlarge the internal buffer
+  if (ustr->size < newlen + 1) {
+    resize(ustr, newlen + 1);
+  }
+
+  for (unsigned int i = 0; i < length; i++) {
+    ustr->str[i] = str[i];
   }
 
   ustr->str[newlen] = 0;
-  ustr->len=newlen;
+  ustr->len = newlen;
 }
 
 /**

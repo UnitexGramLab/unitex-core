@@ -178,9 +178,9 @@ static int push_debug_mode_tag_without_output(unichar* s,
 	if (s[i] != DEBUG_INFO_COORD_MARK) return 0;
 
 	// push OUTPUT_MARK
-	push_output_char(p->stack, DEBUG_INFO_OUTPUT_MARK);
+	push_output_char(p->stack_output, DEBUG_INFO_OUTPUT_MARK);
 	// push COORD_MARK graph:box:line INPUT_MARK input END_MARK
-	push_output_string(p->stack, s+i);
+	push_output_string(p->stack_output, s+i);
 
 	return 1;
 }
@@ -404,7 +404,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
 
     int old_weight=p->weight;
 
-    int stack_top = p->stack->stack_pointer;
+    int stack_top = p->stack_output->stack_pointer;
 
     if (current_state->control & 1) {
         /* If we are in a final state... */
@@ -427,17 +427,17 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 /* If everything is fine, we add this match to the match list of the
                  * current graph level */
                 n_matches++;
-                p->stack->stack[stack_top + 1] = '\0';
+                p->stack_output->stack[stack_top + 1] = '\0';
                 if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
                     (*matches) = insert_if_different(pos_in_tokens, pos_in_chars, -1,
-                            (*matches), p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            (*matches), p->stack_output->stack_pointer,
+                            &(p->stack_output->stack[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 } else {
                     (*matches) = insert_if_absent(pos_in_tokens, pos_in_chars, -1,
-                            (*matches), p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            (*matches), p->stack_output->stack_pointer,
+                            &(p->stack_output->stack[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 }
@@ -495,7 +495,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
             }
             while (t != NULL) {
                 struct parsing_info* L = NULL;
-                p->stack_base = p->stack->stack_pointer;
+                p->stack_base = p->stack_output->stack_pointer;
 
                 p->graph_depth ++ ;
 
@@ -520,9 +520,9 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                     do {
                         /* We restore the settings that we had at the end of the subgraph exploration */
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            u_strcpy(&(p->stack->stack[stack_top + 1]),
+                            u_strcpy(&(p->stack_output->stack[stack_top + 1]),
                                     L->stack);
-                            p->stack->stack_pointer = L->stack_pointer;
+                            p->stack_output->stack_pointer = L->stack_pointer;
                             p->dic_variables = clone_dic_variable_list(L->dic_variable_backup);
                             if (p->nb_output_variables != 0) {
                                 install_output_variable_backup(p->output_variables,L->output_variable_backup);
@@ -545,7 +545,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                 matches, n_matches, ctx, p,
                                 L->jamo, L->pos_in_jamo, content_buffer);
                         clear_dic_variable_list(&(p->dic_variables));
-                        p->stack->stack_pointer = stack_top;
+                        p->stack_output->stack_pointer = stack_top;
                         L = L->next;
                     } while (L != NULL);
                     /* We free all subgraph matches */
@@ -556,7 +556,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         } while ((graph_call_list = graph_call_list->next) != NULL);
         /* Finally, we have to restore the stack and other backup stuff */
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->stack_output->stack_pointer = stack_top;
         p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
         if (p->nb_output_variables != 0) {
             install_output_variable_backup(p->output_variables,output_variable_backup);
@@ -630,7 +630,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 /* We could have an output associated to an epsilon or a #, so we handle this case */
                 captured_chars=0;
                 if (p->output_policy != IGNORE_OUTPUTS) {
-                    if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
                         break;
                     }
                 }
@@ -639,7 +639,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         matches, n_matches, ctx, p,
                         jamo, pos_in_jamo, content_buffer);
                 p->weight=old_weight;
-                p->stack->stack_pointer = stack_top;
+                p->stack_output->stack_pointer = stack_top;
                 remove_chars_from_output_variables(p->output_variables,captured_chars);
                 break;
 
@@ -726,7 +726,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                         filter_number,
                                         p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
                         if (!morpho_filter_OK) {
-                            p->stack->stack_pointer = stack_top;
+                            p->stack_output->stack_pointer = stack_top;
                             L2 = L2->next;
                             continue;
                         }
@@ -739,7 +739,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         captured_chars=0;
                         if(p->output_policy != IGNORE_OUTPUTS) {
                           if (!save_dic_entry) {
-                            if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                            if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
                               break;
                             }
                           } else if (p->debug & save_dic_entry) {
@@ -750,7 +750,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         }
 
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_string(p->stack, content1,
+                            push_input_string(p->stack_output, content1,
                                     p->protect_dic_chars);
                         }
                         unichar* reached_token =
@@ -784,7 +784,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                             set_dic_variable(var_name, old_value,
                                     &(p->dic_variables),0);
                         }
-                        p->stack->stack_pointer = stack_top;
+                        p->stack_output->stack_pointer = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
                         L2 = L2->next;
                     } while (L2 != NULL);
@@ -909,19 +909,19 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                  * then we have a match. We note the state number that corresponds to the state
                  * that follows the current $> tag transition, so that we know where to continue
                  * the exploration in the 'enter_morphological_mode' function. */
-                p->stack->stack[stack_top + 1] = '\0';
+                p->stack_output->stack[stack_top + 1] = '\0';
                 if (p->ambiguous_output_policy == ALLOW_AMBIGUOUS_OUTPUTS) {
                     (*matches) = insert_if_different(pos_in_tokens, pos_in_chars,
                             t->state_number, (*matches),
-                            p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            p->stack_output->stack_pointer,
+                            &(p->stack_output->stack[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 } else {
                     (*matches) = insert_if_absent(pos_in_tokens, pos_in_chars,
                             t->state_number, (*matches),
-                            p->stack->stack_pointer,
-                            &(p->stack->stack[p->stack_base + 1]),
+                            p->stack_output->stack_pointer,
+                            &(p->stack_output->stack[p->stack_base + 1]),
                             p->input_variables, p->output_variables, p->dic_variables, -1, -1, jamo,
                             pos_in_jamo, NULL, p->weight,&p->al.pa);
                 }
@@ -933,13 +933,13 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                  * to matching one letter */
                 captured_chars=0;
                 if (p->output_policy != IGNORE_OUTPUTS) {
-                    if (!deal_with_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
                         goto next;
                     }
                 }
                 if (p->output_policy == MERGE_OUTPUTS) {
                     /* If needed, we push the character that was matched */
-                    push_input_char(p->stack, current_token[pos_in_chars],
+                    push_input_char(p->stack_output, current_token[pos_in_chars],
                             p->protect_dic_chars);
                 }
                 int new_pos;
@@ -997,7 +997,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         p, new_jamo, new_pos_in_jamo,
                         content_buffer);
                 p->weight=old_weight;
-                p->stack->stack_pointer = stack_top;
+                p->stack_output->stack_pointer = stack_top;
                 remove_chars_from_output_variables(p->output_variables,captured_chars);
             }
             next: t = t->next;
@@ -1025,7 +1025,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
         p->weight=old_weight;
     unset_output_variable_pending(p->output_variables,variable_list->variable_number);
     swap_output_variable_content(p->output_variables, variable_list->variable_number, recycle_Ustring);
-        p->stack->stack_pointer = stack_top;
+        p->stack_output->stack_pointer = stack_top;
         variable_list=variable_list->next;
     }
 
@@ -1040,7 +1040,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 p, jamo, pos_in_jamo,
                 content_buffer);
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->stack_output->stack_pointer = stack_top;
         set_output_variable_pending(p->output_variables,variable_list->variable_number);
         variable_list=variable_list->next;
     }
@@ -1063,7 +1063,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         p, jamo, pos_in_jamo,
                         content_buffer);
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->stack_output->stack_pointer = stack_top;
         if (ctx == NULL) {
             /* We do not restore previous value if we are inside a context, in order
              * to allow extracting things from contexts (see the
@@ -1106,7 +1106,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         p, jamo, pos_in_jamo,
                         content_buffer);
         p->weight=old_weight;
-        p->stack->stack_pointer = stack_top;
+        p->stack_output->stack_pointer = stack_top;
         if (ctx == NULL) {
             /* We do not restore previous value if we are inside a context, in order
              * to allow extracting things from contexts (see the
@@ -1189,7 +1189,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         /* If we can match the tag's token, we process the output, if we have to */
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(tag->output,p,&captured_chars)) {
+                            if (!deal_with_extended_output(tag->output,p,&captured_chars)) {
                                 continue;
                             }
                         }
@@ -1204,7 +1204,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                 new_pos_in_jamo, content_buffer);
                         p->weight=old_weight;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
-                        p->stack->stack_pointer = stack_top;
+                        p->stack_output->stack_pointer = stack_top;
                     }
                     /* End of KOREAN token matching */
                 } else {
@@ -1223,12 +1223,12 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         /* If we can match the tag's token, we process the output, if we have to */
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_output(tag->output,p,&captured_chars)) {
+                            if (!deal_with_extended_output(tag->output,p,&captured_chars)) {
                                 continue;
                             }
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_substring(p->stack, current_token
+                            push_input_substring(p->stack_output, current_token
                                     + pos_in_chars, prefix_length,
                                     p->protect_dic_chars);
                         }
@@ -1247,7 +1247,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                 n_matches, ctx, p, jamo,
                                 pos_in_jamo, content_buffer);
                         p->weight=old_weight;
-                        p->stack->stack_pointer = stack_top;
+                        p->stack_output->stack_pointer = stack_top;
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
                     } else {
                         /* No else here, because a grammar tag is not supposed to match a sequence that
@@ -1297,7 +1297,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         if (!is_entry_compatible_with_pattern(L->dic_entry,tag->pattern)) {
                             /* We take all <DIC> entries from the cache, and we compare them
                              * with the actual <X> pattern of the current tag */
-                            p->stack->stack_pointer = stack_top;
+                            p->stack_output->stack_pointer = stack_top;
                             L = L->next;
                             continue;
                         }
@@ -1311,7 +1311,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                         filter_number,
                                         p->recyclable_wchart_buffer, SIZE_RECYCLABLE_WCHAR_T_BUFFER));
                         if (!morpho_filter_OK) {
-                            p->stack->stack_pointer = stack_top;
+                            p->stack_output->stack_pointer = stack_top;
                             L = L->next;
                             continue;
                         }
@@ -1323,7 +1323,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         captured_chars=0;
                         if(p->output_policy != IGNORE_OUTPUTS) {
                           if (!save_dic_entry) {
-                            if (!deal_with_output(tag->output,p,&captured_chars)) {
+                            if (!deal_with_extended_output(tag->output,p,&captured_chars)) {
                               continue;
                             }
                           } else if (p->debug & save_dic_entry) {
@@ -1334,7 +1334,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         }
 
                         if (p->output_policy == MERGE_OUTPUTS) {
-                            push_input_string(p->stack, content2,
+                            push_input_string(p->stack_output, content2,
                                     p->protect_dic_chars);
                         }
                         unichar* reached_token =
@@ -1373,7 +1373,7 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                                     &(p->dic_variables),0);
                         }
                         remove_chars_from_output_variables(p->output_variables,captured_chars);
-                        p->stack->stack_pointer = stack_top;
+                        p->stack_output->stack_pointer = stack_top;
                         L = L->next;
                     } while (L != NULL);
                     /* No free, because of the cache system
@@ -1425,7 +1425,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     int* var_backup = NULL;
     OutputVariablesBackup* output_variable_backup=NULL;
     int old_StackBase;
-    int stack_top = p->stack->stack_pointer;
+    int stack_top = p->stack_output->stack_pointer;
     old_StackBase = p->stack_base;
     if (p->output_policy != IGNORE_OUTPUTS) {
         /* For better performance when ignoring outputs */
@@ -1435,7 +1435,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         }
     }
     struct parsing_info* L = NULL;
-    p->stack_base = p->stack->stack_pointer;
+    p->stack_base = p->stack_output->stack_pointer;
     struct dic_variable* dic_variable_backup = NULL;
     if (p->dic_variables != NULL) {
         dic_variable_backup = clone_dic_variable_list(p->dic_variables);
@@ -1460,8 +1460,8 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
         do {
             /* We restore the settings that we had at the end of the exploration in morphological mode */
             if (p->output_policy != IGNORE_OUTPUTS) {
-                u_strcpy(&(p->stack->stack[stack_top + 1]), L->stack);
-                p->stack->stack_pointer = L->stack_pointer;
+                u_strcpy(&(p->stack_output->stack[stack_top + 1]), L->stack);
+                p->stack_output->stack_pointer = L->stack_pointer;
                 install_variable_backup(p->input_variables, L->input_variable_backup);
                 if (p->nb_output_variables != 0) {
                     install_output_variable_backup(p->output_variables,L->output_variable_backup);
@@ -1511,7 +1511,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
 
 
 
-            p->stack->stack_pointer = stack_top;
+            p->stack_output->stack_pointer = stack_top;
             if (p->graph_depth == 0) {
                 /* If we are at the top graph level, we restore the variables */
                 if (p->output_policy != IGNORE_OUTPUTS) {
@@ -1530,7 +1530,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
     }
     /* Finally, we have to restore the stack and other backup stuff */
     p->weight=old_weight;
-    p->stack->stack_pointer = stack_top;
+    p->stack_output->stack_pointer = stack_top;
     p->stack_base = old_StackBase; /* May be changed by recursive subgraph calls */
     if (p->output_policy != IGNORE_OUTPUTS) { /* For better performance (see above) */
         install_variable_backup(p->input_variables, var_backup);

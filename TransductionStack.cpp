@@ -36,7 +36,7 @@
 
 namespace unitex {
 
-const int TRANSDUCTION_STACK_SIZE = 10000;
+const int TRANSDUCTION_STACK_SIZE = 16383;
 //static const char* UNITEX_SCRIPT_PATH = "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 
 /**
@@ -162,16 +162,23 @@ public:
 //}
 
 /**
- * This function processes the given output string.
- * Returns 1 if OK; 0 otherwise (for instance, if a variable is
- * not correctly defined).
+ * This function processes the given extended output string.
+ *
+ * Returns
+ *
+ * 0: output error or not satisfied
+ *    for instance, if a variable is not correctly defined or
+ *    an extended function isn't satisfied
+ * 1: output it's OK
  *
  * IMPORTANT: every new feature added here to handle new things in outputs
  *            should also be reported into Grf2Fst2_lib->check_dollar_sequence
- *
  */
-int process_output(unichar* s,struct locate_parameters* p,struct stack_unichar* stack,
-        int capture_in_debug_mode) {
+int process_extended_output(unichar* s,
+                   struct locate_parameters* p,
+                   struct stack_unichar* stack,
+                   int capture_in_debug_mode,
+                   int& n_extended_functions) {
 int old_stack_pointer=stack->stack_pointer;
 int i1=0;
 if (capture_in_debug_mode) {
@@ -705,6 +712,7 @@ for (;;) {
 //        ++script_params_count;
 //        p->elg->push(p->graph_filename);
 //        p->elg->setglobal("stack_pointer");
+        n_extended_functions++;
         if(!p->elg->call(char_function_name,script_params_count,stack)) {
           stack->stack_pointer=old_stack_pointer;
           p->elg->restore_local_environment();
@@ -1515,38 +1523,53 @@ return 0;
 
 
 /**
- * This function deals with an output sequence, regardless there are pending
- * output variables or not.
+ * This function deals with an extended output sequence,
+ * regardless there are pending output variables or not.
  */
-int deal_with_output(unichar* output,struct locate_parameters* p,int *captured_chars) {
-struct stack_unichar* stack=p->stack;
-int capture=capture_mode(p->output_variables);
-if (capture) {
-    stack=new_stack_unichar(4096);
-    if (p->debug) {
-        /* In debug mode, an output to be captured must still be
-         * added to the normal stack, to trace the explored grammar
-         * path. But, in this case, we remove the actual output part,
-         * since no output is really produced there */
-        push_output_char(p->stack,DEBUG_INFO_OUTPUT_MARK);
-        int i;
-        for (i=0;output[i]!=DEBUG_INFO_COORD_MARK;i++) {
-        }
-        push_output_string(p->stack,output+i);
-    }
-}
-if (!process_output(output,p,stack,capture && p->debug)) {
-    if (capture) {
-        free_stack_unichar(stack);
-    }
+int deal_with_extended_output(unichar* output,
+                              struct locate_parameters* p,
+                              int *captured_chars) {
+  // use the auxiliary stack
+  struct stack_unichar* stack_aux = p->stack_aux;
+
+  // empty the auxiliary stack
+  stack_aux->stack_pointer = -1;
+
+  // check if there are pending variables
+  int capture = capture_mode(p->output_variables);
+
+  // In debug mode, an output to be captured must still be
+  // added to the normal stack, to trace the explored grammar
+  // path. But, in this case, we remove the actual output part,
+  // since no output is really produced there
+  if (capture && p->debug) {
+      push_output_char(p->stack_output, DEBUG_INFO_OUTPUT_MARK);
+      int i;
+      for (i = 0; output[i] != DEBUG_INFO_COORD_MARK; ++i) {}
+      push_output_string(p->stack_output, output + i);
+  }
+
+  int n_extended_functions = 0;
+
+  // process the extended output
+  if (!process_extended_output(output, p, stack_aux, capture && p->debug, n_extended_functions)) {
     return 0;
-}
-if (capture) {
-    stack->stack[stack->stack_pointer+1]='\0';
-    *captured_chars=add_raw_string_to_output_variables(p->output_variables,stack->stack);
-    free_stack_unichar(stack);
-}
-return 1;
+  }
+
+  // mark the end of the internal string pointed by the auxiliary stack
+  push(stack_aux, '\0');
+
+  // on normal mode
+  if (!capture) {
+    push_stack(p->stack_output, stack_aux, stack_aux->stack_pointer);
+  } else {
+  // on capture mode
+    *captured_chars = add_raw_string_to_output_variables(p->output_variables,
+                                                         stack_aux->stack,
+                                                         stack_aux->stack_pointer);
+  }
+
+  return 1;
 }
 
 } // namespace unitex

@@ -24,12 +24,27 @@
 
 #include <stdio.h>
 #include "Unicode.h"
+#include "base/integer/operation/round.h"
+
 
 #ifndef HAS_UNITEX_NAMESPACE
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
 namespace unitex {
+
+#define STACK_MIN_CAPACITY      16
+
+/**
+ * calculate the stack size for a given length
+ */
+#define stack_capacity_for_size(n) next_greater_power_of_two_32(n, STACK_MIN_CAPACITY)
+
+/**
+* calculate the rounded stack size for a given length
+*/
+#define stack_rounded_capacity_for_size(n) next_smallest_power_of_two_32(n, STACK_MIN_CAPACITY)
+
 
 /**
  * This structure represents a stack of unicode characters.
@@ -52,31 +67,42 @@ void fatal_error_NULL_push();
 void fatal_error_full_stack_push();
 void push_array(struct stack_unichar*,const unichar*,unsigned int);
 void push_array(struct stack_unichar*, const char*, unsigned int);
+void push_stack(struct stack_unichar*,const struct stack_unichar*, unsigned int size);
 unichar pop(struct stack_unichar*);
 
+/**
+ * Resizes the internal buffer of the given stack_unichar to the given minimum size.
+ * The buffer size is never decreased. Note that you cannot set a size<1.
+ */
+static inline void resize(struct stack_unichar* stack, int size) {
+  if (size < 1) {
+    size = STACK_MIN_CAPACITY;
+  }
 
-static inline void resize(struct stack_unichar* stack,int minimum_new_size) {
-int new_size=stack->capacity;
-if (new_size==0) new_size=1;
-while (new_size<minimum_new_size) {
-    new_size=new_size*2;
-}
-if (new_size==stack->capacity) return;
-stack->stack=(unichar*)realloc(stack->stack,new_size*sizeof(unichar));
-if (stack->stack==NULL) {
-    fatal_alloc_error("resize");
-}
-stack->capacity=new_size;
+  if (size <= stack->capacity) {
+    return;
+  }
+
+  // minor capacity enlarging
+  unsigned int stack_capacity = stack_rounded_capacity_for_size(size);
+
+  stack->stack = (unichar*) realloc(stack->stack, stack_capacity * sizeof(unichar));
+
+  if (stack->stack == NULL) {
+    fatal_alloc_error("resize stack_unichar");
+  }
+
+  stack->capacity = stack_capacity;
 }
 
-static inline void push(struct stack_unichar* stack,unichar c) {
-if (stack==NULL) {
-   fatal_error_NULL_push();
-}
-if (stack->stack_pointer==stack->capacity-1) {
-    resize(stack,stack->capacity+1);
-}
-stack->stack[++(stack->stack_pointer)]=c;
+static inline void push(struct stack_unichar* stack, unichar c) {
+  if (stack == NULL) {
+    fatal_error_NULL_push();
+  }
+  if (stack->stack_pointer == stack->capacity - 1) {
+    resize(stack, stack->capacity + 1);
+  }
+  stack->stack[++(stack->stack_pointer)] = c;
 }
 
 } // namespace unitex

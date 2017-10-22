@@ -109,6 +109,37 @@ void fatal_error_full_stack_push()
 
 
 /**
+ * Pushes the given source stack on the given destination stack.
+ */
+void push_stack(struct stack_unichar* stack_dst,const struct stack_unichar* stack_src, unsigned int size) {
+  if (stack_dst == NULL || stack_src == NULL) {
+    fatal_error("NULL error in push_stack\n");
+  }
+
+  // if the source stack is empty there is nothing to do
+  if (is_empty(stack_src)) {
+    return;
+  }
+
+  // avoid to push more characters than the capacity of the given source stack
+  if (stack_src->capacity < (int) size ) {
+    size = (unsigned int) stack_src->capacity;
+  }
+
+  // if necessary, we enlarge the internal buffer
+  if ((stack_dst->stack_pointer + (int) size + 1) >= stack_dst->capacity) {
+    resize(stack_dst, stack_dst->stack_pointer + (int) size + 1);
+  }
+
+  // push the source stack into the destination one
+  unsigned int i;
+  for (i = 0; i < size; ++i) {
+    stack_dst->stack[++(stack_dst->stack_pointer)] = *(stack_src->stack + i);
+  }
+}
+
+
+/**
  * Pushes the given characters from an array on the given stack.
  */
 void push_array(struct stack_unichar* stack,const unichar *array,unsigned int size) {

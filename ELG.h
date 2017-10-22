@@ -1288,61 +1288,76 @@ class vm {
       luaL_error(M, "Error calling @%s: %s\n", function_name,e);
     }
     elg_stack_dump(M);
-    int type = lua_type(M, -1);
 
-    // retrieve boolean or string result
-    if (!(type == LUA_TNIL || type == LUA_TBOOLEAN || type == LUA_TLIGHTUSERDATA
-        || type == LUA_TNUMBER || type == LUA_TSTRING)) {
-      const char* e = lua_tostring(M, -1);
-      lua_pop(M, 1); // error
-      luaL_error(L,
-          "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
-          function_name, e);
-    }
+    int type = lua_type(M, -1);
 
     // LUA_TTABLE     -> lua_topointer(L, -1)
     // LUA_TFUNCTION  -> lua_topointer(L, -1)
     // LUA_TUSERDATA  -> lua_touserdata(L, -1)
     // LUA_TTHREAD    -> (void *)lua_tothread(L, -1)
 
-    if (type == LUA_TNIL) {
-      retval = 0;
-    } else if (type == LUA_TBOOLEAN) {
-      // if the function returns false
-      // there is not a following transition
-      // if the return value is equal to true,
-      // the output stack stays unchanged, this
-      // is equivalent to push an empty symbol
-      if (!lua_toboolean(M, -1)) {
+    // retrieve boolean or string result
+    switch(type) {
+      // nil
+      case LUA_TNIL: {
         retval = 0;
-      }
-    } else if (type == LUA_TLIGHTUSERDATA) {
-      const unichar* S = (const unichar*) lua_touserdata(M, -1);
-      // push to stack
-      for (int i = 0; S[i] != '\0'; ++i) {
-        ::push(stack, S[i]);
-      }
-    } else if (type == LUA_TNUMBER) {
-      // convert the number returned to string
-      char n[LUAI_MAXNUMBER2STR];
-      size_t count = lua_number2str(n, lua_tonumber(M, -1));
-      // push to stack
-      push_array(stack, n, count);
-//        12.09.16 return utf8
-//          for (int i=0; n[i]!='\0'; ++i) {
-//           ::push(stack,n[i]);
-//          }
-    } else if (type == LUA_TSTRING) {
-      // TODO(martinec) use instead luaL_checklstring
-      const char* s = lua_tostring(M, -1);
-      unichar S[4096] = { 0 };
-      size_t count = u_decode_utf8(s, S);
-      // push to stack
-      push_array(stack, S, count);
-//        12.09.16 return utf8
-//          for (int i=0; s[i]!='\0'; ++i) {
-//            ::push(stack,s[i]);
-//          }
+      } break;
+
+      // bool
+      case LUA_TBOOLEAN: {
+        // if the function returns false
+        // there is not a following transition
+        // if the return value is equal to true,
+        // the output stack stays unchanged, this
+        // is equivalent to push an empty symbol
+        if (!lua_toboolean(M, -1)) {
+          retval = 0;
+        }
+      } break;
+
+      // number
+      case LUA_TNUMBER: {
+        // convert the number returned to string
+        char n[LUAI_MAXNUMBER2STR];
+        size_t count = lua_number2str(n, lua_tonumber(M, -1));
+        // push to stack
+        push_array(stack, n, count);
+      } break;
+
+      // string
+      case LUA_TSTRING: {
+        // TODO(martinec) use instead luaL_checklstring
+        const char* s = lua_tostring(M, -1);
+        unichar S[4096] = { 0 };
+        size_t count = u_decode_utf8(s, S);
+        // push to stack
+        push_array(stack, S, count);
+      } break;
+
+      // light unichar
+      case LUA_TLIGHTUSERDATA: {
+        const unichar* S = (const unichar*) lua_touserdata(M, -1);
+        // push to stack
+        for (int i = 0; S[i] != '\0'; ++i) {
+          ::push(stack, S[i]);
+        }
+      } break;
+
+      // UnitexString
+      case LUA_TUSERDATA: {
+        UnitexString* S =  lua_checkudata_cast(M, -1, UnitexString);
+        size_t count = S->len();
+        push_array(stack, S->c_unichar(), count);
+      } break;
+
+      // fail
+      default:
+        const char* e = lua_tostring(M, -1);
+        lua_pop(M, 1); // error
+        luaL_error(L,
+            "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
+            function_name, e);
+        break;
     }
 
     if(retval) {

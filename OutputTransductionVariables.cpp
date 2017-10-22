@@ -671,7 +671,7 @@ fatal_error("Non-existent Ustring pointer in remove_output_variable\n");
  * Concatenates the given string to all strings of the given list.
  * Returns the length of 's'.
  */
-unsigned int add_raw_string_to_output_variables(OutputVariables* var,unichar* s) {
+unsigned int add_raw_string_to_output_variables(OutputVariables* var,unichar* s, unsigned int length) {
 OutputVarList* list=var->pending;
 if (list==NULL) {
     fatal_error("Should not invoke add_string_to_output_variables on an empty list\n");
@@ -680,7 +680,7 @@ if (s==NULL || s[0]=='\0') return 0;
 unsigned int old=list->var->len;
 OutputVarList* first=list;
 while (list!=NULL) {
-    u_strcat(list->var,s);
+    u_strcat(list->var,s, length);
     list=list->next;
 }
 return first->var->len-old;
