@@ -50,9 +50,9 @@ namespace unitex {
  * This structure represents a stack of unicode characters.
  */
 struct stack_unichar {
-   unichar* stack;
+   unichar* buffer;
    /* Pointer on the top element, -1 if the stack is empty */
-   int stack_pointer;
+   int top;
    /* Maximum capacity of the stack */
    int capacity;
 };
@@ -86,9 +86,9 @@ static inline void resize(struct stack_unichar* stack, int size) {
   // minor capacity enlarging
   unsigned int stack_capacity = stack_rounded_capacity_for_size(size);
 
-  stack->stack = (unichar*) realloc(stack->stack, stack_capacity * sizeof(unichar));
+  stack->buffer = (unichar*) realloc(stack->buffer, stack_capacity * sizeof(unichar));
 
-  if (stack->stack == NULL) {
+  if (stack->buffer == NULL) {
     fatal_alloc_error("resize stack_unichar");
   }
 
@@ -99,10 +99,10 @@ static inline void push(struct stack_unichar* stack, unichar c) {
   if (stack == NULL) {
     fatal_error_NULL_push();
   }
-  if (stack->stack_pointer == stack->capacity - 1) {
+  if (stack->top == stack->capacity - 1) {
     resize(stack, stack->capacity + 1);
   }
-  stack->stack[++(stack->stack_pointer)] = c;
+  stack->buffer[++(stack->top)] = c;
 }
 
 } // namespace unitex

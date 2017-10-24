@@ -34,6 +34,8 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
+#define EXTENDED_OUTPUT_PLACEHOLDER "%S"
+
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 16383;
@@ -179,7 +181,7 @@ int process_extended_output(unichar* s,
                    struct stack_unichar* stack,
                    int capture_in_debug_mode,
                    int& n_extended_functions) {
-int old_stack_pointer=stack->stack_pointer;
+int old_stack_pointer=stack->top;
 int i1=0;
 if (capture_in_debug_mode) {
     /* If we have a capture in debug mode, we must skip the initial char #1 */
@@ -504,14 +506,14 @@ for (;;) {
                    switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",variable_name); break;
                       case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                    }
                 } else if (v->start_in_tokens>v->end_in_tokens
                     || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                    switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",variable_name); break;
                       case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                    }
                 } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
                    if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {
@@ -525,7 +527,7 @@ for (;;) {
                    switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",variable_name); break;
                       case IGNORE_VARIABLE_ERRORS:  /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                    }
                 } else {
                   param_type = PARAM_TSTRING;
@@ -612,9 +614,9 @@ for (;;) {
               case PARAM_TSTRING:
                 // push the content of the paramater stack as an encoded utf8 string
                 if(!is_empty(parameter_stack)) {
-                  parameter_stack->stack[parameter_stack->stack_pointer+1]='\0';
+                  parameter_stack->buffer[parameter_stack->top+1]='\0';
                   // 12.09.16 add u_encode_utf8 to allow send unicode chars
-                  int tstring_parameter_length = u_encode_utf8(parameter_stack->stack,tstring_parameter_stack);
+                  int tstring_parameter_length = u_encode_utf8(parameter_stack->buffer,tstring_parameter_stack);
                   p->elg->pushlstring(tstring_parameter_stack, tstring_parameter_length);
                   empty(parameter_stack);
                   tstring_parameter_stack[0] = '\0';
@@ -714,7 +716,7 @@ for (;;) {
 //        p->elg->setglobal("stack_pointer");
         n_extended_functions++;
         if(!p->elg->call(char_function_name,script_params_count,stack)) {
-          stack->stack_pointer=old_stack_pointer;
+          stack->top=old_stack_pointer;
           p->elg->restore_local_environment();
 //          p->elg->setup_local_environment();
           return 0;
@@ -802,7 +804,7 @@ for (;;) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
          }
       }
       if (s[i1]=='.') {
@@ -821,14 +823,14 @@ for (;;) {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
             }
          }
          if (field[0]=='\0') {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
             }
          }
          i1++;
@@ -838,7 +840,7 @@ for (;;) {
                  continue;
              }
              if (n==VAR_CMP_DIFF) {
-                 stack->stack_pointer=old_stack_pointer;
+                 stack->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -846,7 +848,7 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"EQUALcC=")) {
              int n=compare_variables(name,field+8,p,0); // strlen("EQUALcC=") == 8
@@ -854,7 +856,7 @@ for (;;) {
                  continue;
              }
              if (n==VAR_CMP_DIFF) {
-                 stack->stack_pointer=old_stack_pointer;
+                 stack->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -862,13 +864,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"UNEQUAL=")) {
              int n=compare_variables(name,field+8,p,1); // strlen("UNEQUAL=") == 8
              if (n==VAR_CMP_DIFF) continue;
              if (n==VAR_CMP_EQUAL) {
-                 stack->stack_pointer=old_stack_pointer;
+                 stack->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -876,13 +878,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"UNEQUALcC=")) {
              int n=compare_variables(name,field+10,p,0); // strlen("UNEQUALcC=") == 10
              if (n==VAR_CMP_DIFF) continue;
              if (n==VAR_CMP_EQUAL) {
-                 stack->stack_pointer=old_stack_pointer;
+                 stack->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -890,13 +892,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"SUBSTR.")) {
              int n=compare_variables_substr(name,field+7,p,0); // strlen("UNEQUALcC=") == 10
              if (n==VAR_CMP_EQUAL) continue;
              if (n==VAR_CMP_DIFF) {
-                 stack->stack_pointer=old_stack_pointer;
+                 stack->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -904,13 +906,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"NOT_SUBSTR.")) {
              int n=compare_variables_substr(name,field+11,p,0); // strlen("UNEQUALcC=") == 10
              if (n==VAR_CMP_DIFF) continue;
              if (n==VAR_CMP_EQUAL) {
-                 stack->stack_pointer=old_stack_pointer;
+                 stack->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -918,7 +920,7 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
          }
       }
 
@@ -933,7 +935,7 @@ for (;;) {
                   switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                       case IGNORE_VARIABLE_ERRORS: continue;
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                   }
               }
               unichar* tmp = u_strdup(output->str);
@@ -944,20 +946,20 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
               } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
               } else if (v->start_in_tokens>v->end_in_tokens
                           || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
 
 
@@ -979,7 +981,7 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
 
                  /* end of GV fix */
@@ -1037,7 +1039,7 @@ for (;;) {
                   switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                       case IGNORE_VARIABLE_ERRORS: continue;
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                   }
               }
               unichar* tmp = u_strdup(output->str);
@@ -1048,20 +1050,20 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
               } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
               } else if (v->start_in_tokens>v->end_in_tokens
                           || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
 
 
@@ -1083,7 +1085,7 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
 
                  /* end of GV fix */
@@ -1141,7 +1143,7 @@ for (;;) {
                   switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                       case IGNORE_VARIABLE_ERRORS: continue;
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                   }
               }
               unichar* tmp = u_strdup(output->str);
@@ -1153,20 +1155,20 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
               } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
               } else if (v->start_in_tokens>v->end_in_tokens
                           || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
 
 
@@ -1188,7 +1190,7 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                  }
 
                  /* end of GV fix */
@@ -1255,7 +1257,7 @@ for (;;) {
                   /* If the variable is not defined properly */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
-                     stack->stack_pointer=old_stack_pointer; return 0;
+                     stack->top=old_stack_pointer; return 0;
                   } else {
                      /* $a.UNSET$ is true, we go on */
                      continue;
@@ -1267,7 +1269,7 @@ for (;;) {
                      continue;
                   } else {
                      /* $a.UNSET$ is false, we backtrack */
-                     stack->stack_pointer=old_stack_pointer; return 0;
+                     stack->top=old_stack_pointer; return 0;
                   }
                }
             }
@@ -1281,7 +1283,7 @@ for (;;) {
                   /* If the variable is empty */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
-                     stack->stack_pointer=old_stack_pointer; return 0;
+                     stack->top=old_stack_pointer; return 0;
                   } else {
                      /* $a.UNSET$ is true, we go on */
                      continue;
@@ -1293,7 +1295,7 @@ for (;;) {
                      continue;
                   } else {
                      /* $a.UNSET$ is false, we backtrack */
-                     stack->stack_pointer=old_stack_pointer; return 0;
+                     stack->top=old_stack_pointer; return 0;
                   }
                }
             }
@@ -1305,7 +1307,7 @@ for (;;) {
                /* If the variable is not defined properly */
                if (field[0]=='S') {
                   /* $a.SET$ is false, we backtrack */
-                  stack->stack_pointer=old_stack_pointer; return 0;
+                  stack->top=old_stack_pointer; return 0;
                } else {
                   /* $a.UNSET$ is true, we go on */
                   continue;
@@ -1317,7 +1319,7 @@ for (;;) {
                continue;
             } else {
                /* $a.UNSET$ is false, we backtrack */
-               stack->stack_pointer=old_stack_pointer; return 0;
+               stack->top=old_stack_pointer; return 0;
             }
          }
 
@@ -1326,7 +1328,7 @@ for (;;) {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
             }
          }
          if (u_starts_with(field,"EQ=")) {
@@ -1344,7 +1346,7 @@ for (;;) {
                continue;
             } else {
                /* Otherwise, we backtrack */
-               stack->stack_pointer=old_stack_pointer; return 0;
+               stack->top=old_stack_pointer; return 0;
             }
          } else if (!u_strcmp(field,"INFLECTED")) {
             /* We use push_input_string because it can protect special chars */
@@ -1405,14 +1407,14 @@ for (;;) {
                   switch (p->variable_error_policy) {
                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name); break;
                      case IGNORE_VARIABLE_ERRORS: continue;
-                     case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                     case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
                   }
               }
            } else {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
             }
          }
          continue;
@@ -1432,7 +1434,7 @@ for (;;) {
               switch (p->variable_error_policy) {
                   case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                   case IGNORE_VARIABLE_ERRORS: continue;
-                  case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+                  case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
               }
           }
           push_output_string(stack,output->str);
@@ -1440,20 +1442,20 @@ for (;;) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
          }
       } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
          }
       } else if (v->start_in_tokens>v->end_in_tokens
                   || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
          }
 
 
@@ -1475,7 +1477,7 @@ for (;;) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
          }
 
          /* end of GV fix */
@@ -1524,16 +1526,14 @@ return 0;
 
 /**
  * This function deals with an extended output sequence,
- * regardless there are pending output variables or not.
+ * regardless is formed only by terminal symbols or nor,
+ * and regardless there are pending output variables or not.
  */
-int deal_with_extended_output(unichar* output,
+int deal_with_extended_output(unichar* extended_output,
                               struct locate_parameters* p,
                               int *captured_chars) {
-  // use the auxiliary stack
-  struct stack_unichar* stack_aux = p->stack_aux;
-
   // empty the auxiliary stack
-  stack_aux->stack_pointer = -1;
+  p->extended_output->top = -1;
 
   // check if there are pending variables
   int capture = capture_mode(p->output_variables);
@@ -1543,30 +1543,34 @@ int deal_with_extended_output(unichar* output,
   // path. But, in this case, we remove the actual output part,
   // since no output is really produced there
   if (capture && p->debug) {
-      push_output_char(p->stack_output, DEBUG_INFO_OUTPUT_MARK);
+      push_output_char(p->literal_output, DEBUG_INFO_OUTPUT_MARK);
       int i;
-      for (i = 0; output[i] != DEBUG_INFO_COORD_MARK; ++i) {}
-      push_output_string(p->stack_output, output + i);
+      for (i = 0; extended_output[i] != DEBUG_INFO_COORD_MARK; ++i) {}
+      push_output_string(p->literal_output, extended_output + i);
   }
 
   int n_extended_functions = 0;
 
   // process the extended output
-  if (!process_extended_output(output, p, stack_aux, capture && p->debug, n_extended_functions)) {
+  if (!process_extended_output(extended_output, p, p->extended_output, capture && p->debug, n_extended_functions)) {
     return 0;
   }
 
-  // mark the end of the internal string pointed by the auxiliary stack
-  push(stack_aux, '\0');
+  // if p->extended_output->top > -1
+
+  // mark the end of the internal string containing the extended output
+  push(p->extended_output, '\0');
 
   // on normal mode
   if (!capture) {
-    push_stack(p->stack_output, stack_aux, stack_aux->stack_pointer);
-  } else {
+    // copy the extended output into the literal one
+    push_stack(p->literal_output, p->extended_output, p->extended_output->top);
   // on capture mode
+  } else {
+    // append the extended output to the pending output variables
     *captured_chars = add_raw_string_to_output_variables(p->output_variables,
-                                                         stack_aux->stack,
-                                                         stack_aux->stack_pointer);
+                                                         p->extended_output->buffer,
+                                                         p->extended_output->top);
   }
 
   return 1;

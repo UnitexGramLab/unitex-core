@@ -135,11 +135,18 @@ struct locate_parameters {
     * the current subgraph. */
    int stack_base;
 
-   /* This is the stack used to process outputs */
-   struct stack_unichar* stack_output;
+   /* This is the stack used to process literal outputs,
+    * literal outputs consists only of terminal symbols
+    */
+   struct stack_unichar* literal_output;
 
-   /* This is the auxiliary stack used to process outputs */
-   struct stack_unichar* stack_aux;
+   /* This is the stack used to process extended outputs,
+    * extended outputs are constituted by terminal and nonterminal symbols,
+    * nonterminal symbols, including extended functions, are enclosed
+    * by dollars ($), and replaced by groups of terminal symbols after
+    * being evaluated
+    */
+   struct stack_unichar* extended_output;
 
    /**
     * This array is used to associate a control byte to each token.

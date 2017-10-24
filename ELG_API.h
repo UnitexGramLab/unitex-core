@@ -205,7 +205,7 @@ int content(lua_State * L) {
   if(p) {
 //    struct parsing_info* DIC_consultation = NULL;
 //    int start = p->current_origin;
-    p->stack_elg->stack_pointer = -1;
+    p->stack_elg->top = -1;
 
     struct parsing_info* matches = NULL;
     struct parsing_info* it = NULL;
@@ -242,13 +242,13 @@ int content(lua_State * L) {
         it = it->next;
       } while(it != NULL);
 
-      p->stack_elg->stack[p->stack_elg->stack_pointer + 1] = '\0';
+      p->stack_elg->buffer[p->stack_elg->top + 1] = '\0';
 
       free_parsing_info(matches, &p->al.pa);
 
 //      p->elg_stack->stack[p->elg_stack->stack_pointer+1]='\0';
 
-      lua_pushlightuserdata(L,p->stack_elg->stack);
+      lua_pushlightuserdata(L,p->stack_elg->buffer);
     } else {
 //      u_printf("%S\n",get_token_sequence(p,p->current_origin,p->current_origin + p->pos_in_tokens-1));
       lua_pushnil(L);
