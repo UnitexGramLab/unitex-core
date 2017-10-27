@@ -3409,6 +3409,7 @@ unichar* u_strcpy(unichar *dest,const unichar c) {
 
 /**
  * unicode version of strncpy
+ * TODO(xxx) fails with n==0
  */
 unichar* u_strncpy(unichar *dest,const unichar *src,unsigned int n) {
 register unichar c;
@@ -3428,6 +3429,7 @@ return s;
 
 /**
  * unicode version of strncpy
+ * TODO(xxx) fails with n==0
  */
 unichar* u_strncpy(unichar *dest,const char *src,unsigned int n) {
 register unichar c;
@@ -4218,7 +4220,9 @@ unichar* res=(unichar*)malloc(buflen);
 if (res==NULL) {
    fatal_alloc_error("u_strndup");
 }
-u_strncpy(res,str,n);
+if(n > 0) {
+  u_strncpy(res,str,n);
+}
 res[size]='\0';
 return res;
 }

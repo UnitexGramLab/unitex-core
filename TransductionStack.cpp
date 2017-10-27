@@ -34,8 +34,6 @@
 #define HAS_UNITEX_NAMESPACE 1
 #endif
 
-#define EXTENDED_OUTPUT_PLACEHOLDER "%S"
-
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 16383;
@@ -1594,7 +1592,7 @@ int deal_with_extended_output(unichar* output,
 
 
 //  for(int i=0; i < r.cardinality; ++i) {
-    append_literal_output(r.render(0),
+    append_literal_output(r.render(1),
                           p,
                           captured_chars);
 //  }

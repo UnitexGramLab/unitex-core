@@ -163,6 +163,7 @@ static const struct elg_Event elgMainEvents [] = {
 /* ************************************************************************** */
 #define EXTENDED_OUTPUT_STACK_SIZE            4095
 #define EXTENDED_FUNCTIONS_PER_TRANSDUCTION   3
+#define EXTENDED_OUTPUT_PLACEHOLDER           6
 /* ************************************************************************** */
 struct ExtendedOutputRender {
   int cardinality;
@@ -173,7 +174,8 @@ struct ExtendedOutputRender {
   vector_int* divisors;
 
   int new_output_set(int n_elements, int placeholder) const {
-    vector_int_add(placeholders,placeholder);
+  ::push(stack_template, EXTENDED_OUTPUT_PLACEHOLDER);
+    vector_int_add(placeholders,placeholder + 1);
     vector_int_add(divisors,0);
     return vector_ptr_add(output_sets, new_vector_ptr(n_elements));
   }
@@ -243,7 +245,7 @@ struct ExtendedOutputRender {
     // if there are no output sets (cardinality <= 1)  or the
     // given combination number (n) is out-of-bounds (0 <= n < cardinality)
     // then return the template without render it
-    if (cardinality <= 1 || (n < 0 || n > cardinality)) {
+    if (UNITEX_LIKELY(output_sets->nbelems == 0) || (n < 0 || n > cardinality)) {
       return stack_template;
     }
 
@@ -353,11 +355,11 @@ namespace details {  // details
 /* ************************************************************************** */
 namespace {
 /* ************************************************************************** */
-int process_return_type(int type,
-                        int set_number,
-                        lua_State* L,
-                        struct ExtendedOutputRender* r,
-                        const char* function_name) {
+int process_extended_function_return_type(int type,
+                                          int set_number,
+                                          lua_State* L,
+                                          struct ExtendedOutputRender* r,
+                                          const char* function_name) {
   int retval = 1;
   // retrieve boolean or string result
   switch(type) {
@@ -370,11 +372,17 @@ int process_return_type(int type,
     case LUA_TBOOLEAN: {
       // if the function returns false
       // there is not a following transition
-      // if the return value is equal to true,
-      // the output stack stays unchanged, this
-      // is equivalent to push an empty symbol
       if (!lua_toboolean(L, -1)) {
         retval = 0;
+      } else {
+        // if the return value is equal to true,
+        // the output stack stays unchanged, this
+        // is equivalent to push an empty symbol
+        // However, if we are dealing with a set
+        // of outputs we need to push an empty string
+        if (UNITEX_UNLIKELY(set_number >= 0)) {
+          r->add_output(set_number, "");
+        }
       }
     } break;
 
@@ -439,7 +447,7 @@ int process_return_type(int type,
       lua_pop(L, 1);
       // trown an error
       luaL_error(L,
-          "Error: function @%s must return a boolean, a number, a string, an array or a null value: %s\n",
+          "Error: function @%s must return a boolean, a number, a string, an array or a null value\n",
           function_name);
       break;
   }
@@ -1584,22 +1592,49 @@ class vm {
 
     // the extened function did not return an array
     if (type != LUA_TTABLE) {
-      retval = unitex::details::process_return_type(type, -1, M, r, function_name);
+      retval = unitex::details::process_extended_function_return_type(type, -1, M, r, function_name);
     } else {
     // the extended function returned an array
       int n_elements = lua_objlen(M, -1);
       // only if the array isn't empty
       if (n_elements) {
-        int set_number = r->new_output_set(n_elements,r->stack_template->top);
+        int set_number  = r->new_output_set(n_elements, r->stack_template->top);
+        retval = 1;
         // iterate through the table
+        elg_stack_dump(M);
+        // first key
         lua_pushnil(M);
 
-        do {
-          retval = unitex::details::process_return_type(type, set_number, M, r, function_name);
-        } while (retval && lua_next(M, -2) != 0);
+        while (retval && lua_next(M, -2) != 0) {
+          elg_stack_dump(M);
+          // check if the key is an integer
+          // arrays in Lua are indexing with integers
+          if (lua_type(M, -2) != LUA_TNUMBER) {
+            luaL_error(L,
+                "Error: function @%s must return a table indexed only by integers\n",
+                function_name);
+          }
 
-        // pop nil or the last key
-        lua_pop(M, 1);
+          // get the type of the returned value
+          type  = lua_type(M, -1);
+
+          // process the returned value
+          retval = unitex::details::process_extended_function_return_type(type, set_number, M, r, function_name);
+
+          // pop value but keep key for next iteration
+          lua_pop(M, 1);
+          elg_stack_dump(M);
+        }
+
+        elg_stack_dump(M);
+
+        // if the loop above was broken by a retval equal to 0,
+        // then the last key
+        if(!retval) {
+          // pop the last key
+          lua_pop(M, 1);
+        }
+
       }
     }
 
