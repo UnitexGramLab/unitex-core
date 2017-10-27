@@ -126,6 +126,17 @@ struct ExtendedOutputRender {
     return cardinality;
   }
 
+  // Renders a template stack into a render stack
+  // n is a combination number among the total number of allowed combinations
+  // 0 <= n < cardinality.
+  // e.g., if the template is equal to "foo % bar % baz" and there are two output
+  // sets A = {#,&,+} and B= {1,2} this function will returns:
+  // for n = 0, "foo # bar 1 baz"
+  // for n = 1, "foo # bar 2 baz"
+  // for n = 2, "foo & bar 1 baz"
+  // for n = 3, "foo & bar 2 baz"
+  // for n = 4, "foo + bar 1 baz"
+  // for n = 5, "foo + bar 2 baz"
   struct stack_unichar* render(int n) {
     // if there are no output sets (cardinality <= 1)  or the
     // given combination number (n) is out-of-bounds (0 <= n < cardinality)
@@ -133,6 +144,43 @@ struct ExtendedOutputRender {
     if (cardinality <= 1 || (n < 0 || n > cardinality)) {
       return stack_template;
     }
+
+    // empty the render stack
+    stack_render->top = -1;
+
+    // auxiliary variables
+    int divisor = 0;
+    int cardinal = 0;
+    int placeholder = 0;
+    int index = 0;
+    int top = 0;
+    unichar* literal = NULL;
+    unichar* variable = NULL;
+
+    // render loop
+    for (int i = 0; i < output_sets->nbelems; ++i) {
+      placeholder = placeholders->tab[i];
+      literal = &stack_template->buffer[top];
+      push_array(stack_render, literal, placeholder - top);
+      divisor = divisors->tab[i];
+      cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+      index = (int) (n / divisor) % cardinal;
+      variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
+      push_array(stack_render, variable, u_strlen(variable));
+      top = placeholder + 1;
+    }
+
+    // process the remaing template
+    if (top < stack_template->top) {
+      literal = &stack_template->buffer[top];
+      push_array(stack_render, literal, stack_template->top - top);
+    }
+
+    // there is no more chars to add to the render stack,
+    // hence we put a mark to indicate the end of the string
+    push(stack_render, '\0');
+
+    u_printf("%S\n", stack_render->buffer);
 
     return stack_render;
   }

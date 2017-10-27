@@ -1575,20 +1575,29 @@ int deal_with_extended_output(unichar* output,
   // if p->extended_output->top > -1
 
 
-  int n = r.new_output_set(3,25);
-
-  r.add_output(n,"happy");
-  r.add_output(n,"sad");
-  r.add_output(n,"lonely");
-
-  n = r.new_output_set(2,50);
-
-  r.add_output(n,"nice");
-  r.add_output(n,"mean");
-
-  r.prepare();
-
-  struct stack_unichar* literal_output = r.render(0);
+//  int n = r.new_output_set(3,0);
+//
+//  r.add_output(n,"happy");
+//  r.add_output(n,"sad");
+//  r.add_output(n,"lonely");
+//
+//  n = r.new_output_set(2,2);
+//
+//  r.add_output(n,"nice");
+//  r.add_output(n,"mean");
+//
+//  n = r.new_output_set(3,4);
+//
+//  r.add_output(n,"cats");
+//  r.add_output(n,"dogs");
+//  r.add_output(n,"hogs");
+//
+    r.prepare();
+//
+//
+//  for(int i=0; i<r.cardinality; ++i) {
+//    r.render(i);
+//  }
 
   append_literal_output(r.stack_template,
                         p,
