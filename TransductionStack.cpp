@@ -39,8 +39,6 @@
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 16383;
-const int EXTENDED_OUTPUT_STACK_SIZE = 4095;
-const int EXTENDED_FUNCTIONS_PER_TRANSDUCTION = 3;
 //static const char* UNITEX_SCRIPT_PATH = "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 
 /**
@@ -181,7 +179,7 @@ public:
 int process_extended_output(unichar* s,
                    struct locate_parameters* p,
                    int capture_in_debug_mode,
-                   ExtendedOutputRender* r) {
+                   struct ExtendedOutputRender* r) {
 int old_stack_pointer=r->stack_template->top;
 int i1=0;
 if (capture_in_debug_mode) {
@@ -715,7 +713,7 @@ for (;;) {
 //        ++script_params_count;
 //        p->elg->push(p->graph_filename);
 //        p->elg->setglobal("stack_pointer");
-        if(!p->elg->call(char_function_name,script_params_count,r->stack_template)) {
+        if(!p->elg->call(char_function_name,script_params_count,r)) {
           r->stack_template->top=old_stack_pointer;
           p->elg->restore_local_environment();
 //          p->elg->setup_local_environment();
@@ -1593,15 +1591,15 @@ int deal_with_extended_output(unichar* output,
 //  r.add_output(n,"hogs");
 //
     r.prepare();
-//
-//
-//  for(int i=0; i<r.cardinality; ++i) {
-//    r.render(i);
+
+
+//  for(int i=0; i < r.cardinality; ++i) {
+    append_literal_output(r.render(0),
+                          p,
+                          captured_chars);
 //  }
 
-  append_literal_output(r.stack_template,
-                        p,
-                        captured_chars);
+
 
   return 1;
 }

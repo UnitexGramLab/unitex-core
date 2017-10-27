@@ -37,6 +37,7 @@
 #include "File.h"
 #include "DebugMode.h"
 #include "base/unicode/utf8.h"
+#include "TransductionStack.h" // ExtendedOutputRender
 /* ************************************************************************** */
 namespace unitex {
 /* ************************************************************************** */
@@ -159,6 +160,296 @@ static const struct elg_Event elgMainEvents [] = {
       lua_pushnil(L);                                      \
     }                                                      \
     lua_settable(L, -3);
+/* ************************************************************************** */
+#define EXTENDED_OUTPUT_STACK_SIZE            4095
+#define EXTENDED_FUNCTIONS_PER_TRANSDUCTION   3
+/* ************************************************************************** */
+struct ExtendedOutputRender {
+  int cardinality;
+  struct stack_unichar* stack_template;
+  struct stack_unichar* stack_render;
+  vector_ptr* output_sets;
+  vector_int* placeholders;
+  vector_int* divisors;
+
+  int new_output_set(int n_elements, int placeholder) const {
+    vector_int_add(placeholders,placeholder);
+    vector_int_add(divisors,0);
+    return vector_ptr_add(output_sets, new_vector_ptr(n_elements));
+  }
+
+  // const char*, length
+  int add_output(int set_number, const char* output, int length) const {
+    return vector_ptr_add((vector_ptr*) output_sets->tab[set_number],
+                          u_strndup(output, length));
+  }
+
+  // unichar, length
+  int add_output(int set_number, const unichar* output, int length) const {
+    return vector_ptr_add((vector_ptr*) output_sets->tab[set_number],
+                          u_strndup(output, length));
+  }
+
+  // const char*
+  int add_output(int set_number, const char* output) const {
+    return add_output(set_number, output, strlen(output));
+  }
+
+  // unichar
+  int add_output(int set_number, const unichar* output) const {
+    return add_output(set_number, output, u_strlen(output));
+  }
+
+  // prepare the template to be rendered
+  int prepare() {
+    // there is no more chars to add to the output template,
+    // hence we put a mark to indicate the end of the string
+    push(stack_template, '\0');
+
+    cardinality = 1;
+    int i = output_sets->nbelems;
+
+    // if output_sets contains 4 sets, e.g. A, B, C, D
+    // the code below fills the "divisors" vector with the
+    // cardinal product (the cardinality of the Cartesian product)
+    // of the later sets of each set
+    // D =          1   -> divisors[0]
+    // C =         |D|  -> divisors[1]
+    // B =     |C|x|D|  -> divisors[2]
+    // A = |B|x|C|x|D|  -> divisors[3]
+    while(i > 0) {
+      --i;
+      divisors->tab[i] = cardinality;
+      cardinality = ((vector_ptr*) output_sets->tab[i])->nbelems * cardinality;
+    }
+
+    // will be equal to the cardinal product of all sets
+    // e.g. the cardinal obtained from |A|x|B|x|C|x|D|
+    return cardinality;
+  }
+
+  // Renders a templated output into a literal output
+  // n is a combination number among the total number of allowed combinations
+  // 0 <= n < cardinality.
+  // e.g., if the template is equal to "foo % bar % baz" and there are two output
+  // sets A = {#,&,+} and B= {1,2} this function will returns:
+  // for n = 0, "foo # bar 1 baz"
+  // for n = 1, "foo # bar 2 baz"
+  // for n = 2, "foo & bar 1 baz"
+  // for n = 3, "foo & bar 2 baz"
+  // for n = 4, "foo + bar 1 baz"
+  // for n = 5, "foo + bar 2 baz"
+  struct stack_unichar* render(int n) {
+    // if there are no output sets (cardinality <= 1)  or the
+    // given combination number (n) is out-of-bounds (0 <= n < cardinality)
+    // then return the template without render it
+    if (cardinality <= 1 || (n < 0 || n > cardinality)) {
+      return stack_template;
+    }
+
+    // empty the render stack
+    stack_render->top = -1;
+
+    // auxiliary variables
+    int divisor = 0;
+    int cardinal = 0;
+    int placeholder = 0;
+    int index = 0;
+    int top = 0;
+    unichar* literal = NULL;
+    unichar* variable = NULL;
+
+    // rendering loop
+    for (int i = 0; i < output_sets->nbelems; ++i) {
+      literal = &stack_template->buffer[top];
+      placeholder = placeholders->tab[i];
+      divisor = divisors->tab[i];
+      cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
+      index = (int) (n / divisor) % cardinal;
+      variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
+      push_array(stack_render, literal, placeholder - top);
+      push_array(stack_render, variable, u_strlen(variable));
+      top = placeholder + 1;
+    }
+
+    // process the remaing template
+    if (top < stack_template->top) {
+      literal = &stack_template->buffer[top];
+      push_array(stack_render, literal, stack_template->top - top);
+    }
+
+    // there is no more chars to add to the render stack,
+    // hence we put a mark to indicate the end of the string
+    push(stack_render, '\0');
+
+
+    return stack_render;
+  }
+
+  ExtendedOutputRender()
+      : cardinality(0),
+        stack_template(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
+        stack_render(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
+        output_sets(new_vector_ptr(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
+        placeholders(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
+        divisors(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)) {
+  }
+
+  ~ExtendedOutputRender() {
+    free_stack_unichar(stack_template);
+    free_stack_unichar(stack_render);
+    free_vector_int(placeholders);
+    free_vector_int(divisors);
+    free_vector_ptr_element(output_sets,
+                            (release_p) free_vector_ptr,
+                            (release_f) free);
+  }
+
+ private:
+  UNITEX_DISALLOW_COPY_AND_ASSIGN(ExtendedOutputRender);
+};
+
+//struct {
+//  int32_t length; // number of elemements
+//  UnitexString extended_template;
+//  UnitexString extended_output[length][];
+//  int32_t dm[length][3]; // div, size, placeholder
+//  int32_t total; // total of combinations
+//  int32_t max_output_length;
+//
+//  UnitexString generate_literal_output(int32_t n) {
+//    if (total == 0) return extended_template;
+//
+//    UnitexString literal_output(max_output_length);
+//
+//    int index = 0;
+//
+//    // 0 1 2 3 4 5 6 7
+//    // f o o ? b a r 0
+//    int32_t i;
+//
+//    for (i=0;i < length; i++) {
+//      literal_output.append(extended_template.c_unichar()+index, dm[i][2]-index);
+//      literal_output.append(extended_output[i][(int)(n/dm[i][0]) % dm[i][1]]);
+//      index = dm[i][2] + 1;
+//    }
+//
+//    literal_output.append(extended_template.c_unichar()+index, extended_template.len()-index);
+//
+//    return literal_output;
+//  }
+//};
+
+// in:
+// template
+// sets
+// n=number of sets
+// [x_i,y_i] -> divisor_i, number of elements in set_i
+// total=total of combinations
+// out:
+// literal_output
+/* ************************************************************************** */
+namespace details {  // details
+/* ************************************************************************** */
+namespace {
+/* ************************************************************************** */
+int process_return_type(int type,
+                        int set_number,
+                        lua_State* L,
+                        struct ExtendedOutputRender* r,
+                        const char* function_name) {
+  int retval = 1;
+  // retrieve boolean or string result
+  switch(type) {
+    // nil
+    case LUA_TNIL: {
+      retval = 0;
+    } break;
+
+    // bool
+    case LUA_TBOOLEAN: {
+      // if the function returns false
+      // there is not a following transition
+      // if the return value is equal to true,
+      // the output stack stays unchanged, this
+      // is equivalent to push an empty symbol
+      if (!lua_toboolean(L, -1)) {
+        retval = 0;
+      }
+    } break;
+
+    // number
+    case LUA_TNUMBER: {
+      // convert the number returned to string
+      char number[LUAI_MAXNUMBER2STR];
+      size_t count = lua_number2str(number, lua_tonumber(L, -1));
+      if (UNITEX_LIKELY(set_number < 0)) {
+        // push to stack
+        push_array(r->stack_template, number, count);
+      } else {
+       // add to the output set
+       r->add_output(set_number, number, count);
+      }
+    } break;
+
+    // string
+    case LUA_TSTRING: {
+      // TODO(martinec) use instead luaL_checklstring
+      const char* s = lua_tostring(L, -1);
+      unichar S[MAXBUF] = { 0 };
+      size_t count = u_decode_utf8(s, S);
+      if (UNITEX_LIKELY(set_number < 0)) {
+        // push to stack
+        push_array(r->stack_template, S, count);
+      } else {
+        // add to the output set
+        r->add_output(set_number, S, count);
+      }
+    } break;
+
+    // light unichar
+    case LUA_TLIGHTUSERDATA: {
+      const unichar* S = (const unichar*) lua_touserdata(L, -1);
+      size_t count = u_strlen(S);
+      if (UNITEX_LIKELY(set_number < 0)) {
+        // push to stack
+        push_array(r->stack_template, S, count);
+      } else {
+        // add output to set
+        r->add_output(set_number, S, count);
+      }
+    } break;
+
+    // UnitexString
+    case LUA_TUSERDATA: {
+      UnitexString* S =  lua_checkudata_cast(L, -1, UnitexString);
+      size_t count = S->len();
+      if (UNITEX_LIKELY(set_number < 0)) {
+        // push to stack
+        push_array(r->stack_template, S->c_unichar(), count);
+      } else {
+        // add output to set
+        r->add_output(set_number, S->c_unichar(), count);
+      }
+    } break;
+
+    // fail
+    default:
+      // pop the invalid return type
+      lua_pop(L, 1);
+      // trown an error
+      luaL_error(L,
+          "Error: function @%s must return a boolean, a number, a string, an array or a null value: %s\n",
+          function_name);
+      break;
+  }
+
+  return retval;
+}
+/* ************************************************************************** */
+}
+/* ************************************************************************** */
+}  // namespace details
 /* ************************************************************************** */
 class vm {
  public:
@@ -1259,9 +1550,8 @@ class vm {
   // returns:
   //  0 : step back
   //  1 : step forward
-  int call(const char* function_name, int nargs, struct stack_unichar* stack) {
+  int call(const char* function_name, int nargs, struct ExtendedOutputRender* r) {
     elg_stack_dump(L);
-    int retval = 1;
 
     int m_refkey = 0;
     lua_State* M = create_mirror_state(L, &m_refkey);
@@ -1289,76 +1579,34 @@ class vm {
     }
     elg_stack_dump(M);
 
+    int retval =  0;
     int type = lua_type(M, -1);
+
+    // the extened function did not return an array
+    if (type != LUA_TTABLE) {
+      retval = unitex::details::process_return_type(type, -1, M, r, function_name);
+    } else {
+    // the extended function returned an array
+      int n_elements = lua_objlen(M, -1);
+      // only if the array isn't empty
+      if (n_elements) {
+        int set_number = r->new_output_set(n_elements,r->stack_template->top);
+        // iterate through the table
+        lua_pushnil(M);
+
+        do {
+          retval = unitex::details::process_return_type(type, set_number, M, r, function_name);
+        } while (retval && lua_next(M, -2) != 0);
+
+        // pop nil or the last key
+        lua_pop(M, 1);
+      }
+    }
 
     // LUA_TTABLE     -> lua_topointer(L, -1)
     // LUA_TFUNCTION  -> lua_topointer(L, -1)
     // LUA_TUSERDATA  -> lua_touserdata(L, -1)
     // LUA_TTHREAD    -> (void *)lua_tothread(L, -1)
-
-    // retrieve boolean or string result
-    switch(type) {
-      // nil
-      case LUA_TNIL: {
-        retval = 0;
-      } break;
-
-      // bool
-      case LUA_TBOOLEAN: {
-        // if the function returns false
-        // there is not a following transition
-        // if the return value is equal to true,
-        // the output stack stays unchanged, this
-        // is equivalent to push an empty symbol
-        if (!lua_toboolean(M, -1)) {
-          retval = 0;
-        }
-      } break;
-
-      // number
-      case LUA_TNUMBER: {
-        // convert the number returned to string
-        char n[LUAI_MAXNUMBER2STR];
-        size_t count = lua_number2str(n, lua_tonumber(M, -1));
-        // push to stack
-        push_array(stack, n, count);
-      } break;
-
-      // string
-      case LUA_TSTRING: {
-        // TODO(martinec) use instead luaL_checklstring
-        const char* s = lua_tostring(M, -1);
-        unichar S[MAXBUF] = { 0 };
-        size_t count = u_decode_utf8(s, S);
-        // push to stack
-        push_array(stack, S, count);
-      } break;
-
-      // light unichar
-      case LUA_TLIGHTUSERDATA: {
-        const unichar* S = (const unichar*) lua_touserdata(M, -1);
-        // push to stack
-        for (int i = 0; S[i] != '\0'; ++i) {
-          ::push(stack, S[i]);
-        }
-      } break;
-
-      // UnitexString
-      case LUA_TUSERDATA: {
-        UnitexString* S =  lua_checkudata_cast(M, -1, UnitexString);
-        size_t count = S->len();
-        push_array(stack, S->c_unichar(), count);
-      } break;
-
-      // fail
-      default:
-        const char* e = lua_tostring(M, -1);
-        lua_pop(M, 1); // error
-        luaL_error(L,
-            "Error calling @%s, function  must return a boolean, a number, a string or a null value\n",
-            function_name, e);
-        break;
-    }
 
     if(retval) {
       elg_stack_dump(L);
