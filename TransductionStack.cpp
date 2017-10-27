@@ -39,6 +39,8 @@
 namespace unitex {
 
 const int TRANSDUCTION_STACK_SIZE = 16383;
+const int EXTENDED_OUTPUT_STACK_SIZE = 4095;
+const int EXTENDED_FUNCTIONS_PER_TRANSDUCTION = 3;
 //static const char* UNITEX_SCRIPT_PATH = "/data/devel/projects/UnitexGramLab/unitex-core-elg/unitex-core/bin/Scripts/";
 
 /**
@@ -178,10 +180,9 @@ public:
  */
 int process_extended_output(unichar* s,
                    struct locate_parameters* p,
-                   struct stack_unichar* stack,
                    int capture_in_debug_mode,
-                   int& n_extended_functions) {
-int old_stack_pointer=stack->top;
+                   ExtendedOutputRender* r) {
+int old_stack_pointer=r->stack_template->top;
 int i1=0;
 if (capture_in_debug_mode) {
     /* If we have a capture in debug mode, we must skip the initial char #1 */
@@ -236,7 +237,7 @@ for (;;) {
     }
 
     if (char_to_push_count!=0) {
-        push_array(stack,&s[i1],char_to_push_count);
+        push_array(r->stack_template,&s[i1],char_to_push_count);
         i1+=char_to_push_count;
     }
 
@@ -250,7 +251,7 @@ for (;;) {
          * or return if we were in capture mode */
         if (capture_in_debug_mode) return 1;
         char_to_push_count=u_strlen(s+i1);
-        push_array(stack,&s[i1],char_to_push_count);
+        push_array(r->stack_template,&s[i1],char_to_push_count);
         return 1;
     }
     /* Now we are sure to have s[i1]=='$' */
@@ -422,7 +423,7 @@ for (;;) {
   //                    switch (p->variable_error_policy) {
   //                    case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",variable_name); break;
   //                    case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-  //                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+  //                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack->stack_pointer=old_stack_pointer; return 0;
   //                    }
                         // 01.08.15 : to handle nil params
                         // if the referenced variable is part of other arguments
@@ -491,7 +492,7 @@ for (;;) {
 //                   switch (p->variable_error_policy) {
 //                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",variable_name); break;
 //                      case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-//                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->stack_pointer=old_stack_pointer; return 0;
+//                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack->stack_pointer=old_stack_pointer; return 0;
 //                   }
                   // 01.08.15 : to handle nil params
                   // if the referenced variable is part of other arguments
@@ -506,14 +507,14 @@ for (;;) {
                    switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",variable_name); break;
                       case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                    }
                 } else if (v->start_in_tokens>v->end_in_tokens
                     || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                    switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",variable_name); break;
                       case IGNORE_VARIABLE_ERRORS: /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                    }
                 } else if (v->end_in_tokens+p->current_origin > p->buffer_size) {
                    if (p->variable_error_policy != EXIT_ON_VARIABLE_ERRORS) {
@@ -527,7 +528,7 @@ for (;;) {
                    switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",variable_name); break;
                       case IGNORE_VARIABLE_ERRORS:  /* same as BACKTRACK_ON_VARIABLE_ERRORS */
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                    }
                 } else {
                   param_type = PARAM_TSTRING;
@@ -714,9 +715,8 @@ for (;;) {
 //        ++script_params_count;
 //        p->elg->push(p->graph_filename);
 //        p->elg->setglobal("stack_pointer");
-        n_extended_functions++;
-        if(!p->elg->call(char_function_name,script_params_count,stack)) {
-          stack->top=old_stack_pointer;
+        if(!p->elg->call(char_function_name,script_params_count,r->stack_template)) {
+          r->stack_template->top=old_stack_pointer;
           p->elg->restore_local_environment();
 //          p->elg->setup_local_environment();
           return 0;
@@ -741,7 +741,7 @@ for (;;) {
 //          lua_pop(L, 1);
 //
 //          if(!continue_to_explore) {
-//             stack->stack_pointer=old_stack_pointer;
+//             r->stack->stack_pointer=old_stack_pointer;
 //             return 0;
 //           } else {
 //             continue;
@@ -754,12 +754,12 @@ for (;;) {
 //        }
 //
 //        if (lua_type(L, -1) == LUA_TSTRING) {
-//          push_output_string(stack,lua_tostring(L, -1));
+//          push_output_string(r->stack,lua_tostring(L, -1));
 //        }else{
 //          // convert the number to
 //          char buffer[LUAI_MAXNUMBER2STR];
 //          lua_number2str(buffer, lua_tonumber(L, -1));
-//          push_output_string(stack,buffer);
+//          push_output_string(r->stack,buffer);
 //        }
 //
 //
@@ -772,7 +772,7 @@ for (;;) {
         }
 
         //unichar parameter[MAX_TRANSDUCTION_VAR_LENGTH];
-//      push_array(stack,&s[i1],parameter_length);
+//      push_array(r->stack,&s[i1],parameter_length);
 //      i1+=parameter_length;
 
 /* ************************************************************************** */
@@ -804,7 +804,7 @@ for (;;) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
          }
       }
       if (s[i1]=='.') {
@@ -823,14 +823,14 @@ for (;;) {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
             }
          }
          if (field[0]=='\0') {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
             }
          }
          i1++;
@@ -840,7 +840,7 @@ for (;;) {
                  continue;
              }
              if (n==VAR_CMP_DIFF) {
-                 stack->top=old_stack_pointer;
+                 r->stack_template->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -848,7 +848,7 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"EQUALcC=")) {
              int n=compare_variables(name,field+8,p,0); // strlen("EQUALcC=") == 8
@@ -856,7 +856,7 @@ for (;;) {
                  continue;
              }
              if (n==VAR_CMP_DIFF) {
-                 stack->top=old_stack_pointer;
+                 r->stack_template->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -864,13 +864,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"UNEQUAL=")) {
              int n=compare_variables(name,field+8,p,1); // strlen("UNEQUAL=") == 8
              if (n==VAR_CMP_DIFF) continue;
              if (n==VAR_CMP_EQUAL) {
-                 stack->top=old_stack_pointer;
+                 r->stack_template->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -878,13 +878,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"UNEQUALcC=")) {
              int n=compare_variables(name,field+10,p,0); // strlen("UNEQUALcC=") == 10
              if (n==VAR_CMP_DIFF) continue;
              if (n==VAR_CMP_EQUAL) {
-                 stack->top=old_stack_pointer;
+                 r->stack_template->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -892,13 +892,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"SUBSTR.")) {
              int n=compare_variables_substr(name,field+7,p,0); // strlen("UNEQUALcC=") == 10
              if (n==VAR_CMP_EQUAL) continue;
              if (n==VAR_CMP_DIFF) {
-                 stack->top=old_stack_pointer;
+                 r->stack_template->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -906,13 +906,13 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
              }
          } else if (u_starts_with(field,"NOT_SUBSTR.")) {
              int n=compare_variables_substr(name,field+11,p,0); // strlen("UNEQUALcC=") == 10
              if (n==VAR_CMP_DIFF) continue;
              if (n==VAR_CMP_EQUAL) {
-                 stack->top=old_stack_pointer;
+                 r->stack_template->top=old_stack_pointer;
                  return 0;
              }
              /* n==VAR_CMP_ERROR means an error while accessing variables */
@@ -920,7 +920,7 @@ for (;;) {
                 case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name); break;
                 case IGNORE_VARIABLE_ERRORS: /* This mode is not relevant for variable comparison,
                                               * so we consider it to be equivalent to backtrack */
-                case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
          }
       }
 
@@ -935,31 +935,31 @@ for (;;) {
                   switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                       case IGNORE_VARIABLE_ERRORS: continue;
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                   }
               }
               unichar* tmp = u_strdup(output->str);
               u_tolower(tmp);
-              push_output_string(stack,tmp);
+              push_output_string(r->stack_template,tmp);
               free(tmp);
               } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
               } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
               } else if (v->start_in_tokens>v->end_in_tokens
                           || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
 
 
@@ -981,7 +981,7 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
 
                  /* end of GV fix */
@@ -994,7 +994,7 @@ for (;;) {
                       unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
                       int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
                       for (int k=v->start_in_chars;k<=last;k++) {
-                          push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+                          push_input_char(r->stack_template,u_tolower(tok[k]),p->protect_dic_chars);
                       }
                   } else if (v->start_in_tokens==v->end_in_tokens) {
                       /* If the variable is empty, do nothing */
@@ -1003,13 +1003,13 @@ for (;;) {
                       unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
                       unichar* tmp = u_strdup(tok+v->start_in_chars);
                       u_tolower(tmp);
-                      push_input_string(stack,tmp,p->protect_dic_chars);
+                      push_input_string(r->stack_template,tmp,p->protect_dic_chars);
                       free(tmp);
                       /* Then we copy all tokens until the last one */
                       for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
                           unichar* tmp2 = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
                           u_tolower(tmp2);
-                          push_input_string(stack,tmp2,p->protect_dic_chars);
+                          push_input_string(r->stack_template,tmp2,p->protect_dic_chars);
                           free(tmp2);
                       }
 
@@ -1023,7 +1023,7 @@ for (;;) {
                           tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
                           int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
                           for (int k=0;k<=last;k++) {
-                            push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+                            push_input_char(r->stack_template,u_tolower(tok[k]),p->protect_dic_chars);
                         }
                       }
                   }
@@ -1039,31 +1039,31 @@ for (;;) {
                   switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                       case IGNORE_VARIABLE_ERRORS: continue;
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                   }
               }
               unichar* tmp = u_strdup(output->str);
               u_toupper(tmp);
-              push_output_string(stack,tmp);
+              push_output_string(r->stack_template,tmp);
               free(tmp);
               } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
               } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
               } else if (v->start_in_tokens>v->end_in_tokens
                           || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
 
 
@@ -1085,7 +1085,7 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
 
                  /* end of GV fix */
@@ -1098,7 +1098,7 @@ for (;;) {
                       unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
                       int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
                       for (int k=v->start_in_chars;k<=last;k++) {
-                          push_input_char(stack,u_toupper(tok[k]),p->protect_dic_chars);
+                          push_input_char(r->stack_template,u_toupper(tok[k]),p->protect_dic_chars);
                       }
                   } else if (v->start_in_tokens==v->end_in_tokens) {
                       /* If the variable is empty, do nothing */
@@ -1107,13 +1107,13 @@ for (;;) {
                       unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
                       unichar* tmp = u_strdup(tok+v->start_in_chars);
                       u_toupper(tmp);
-                      push_input_string(stack,tmp,p->protect_dic_chars);
+                      push_input_string(r->stack_template,tmp,p->protect_dic_chars);
                       free(tmp);
                       /* Then we copy all tokens until the last one */
                       for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
                           unichar *tmp2 = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
                           u_toupper(tmp2);
-                          push_input_string(stack,tmp2,p->protect_dic_chars);
+                          push_input_string(r->stack_template,tmp2,p->protect_dic_chars);
                           free(tmp2);
                       }
 
@@ -1127,7 +1127,7 @@ for (;;) {
                           tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
                           int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
                           for (int k=0;k<=last;k++) {
-                            push_input_char(stack,u_toupper(tok[k]),p->protect_dic_chars);
+                            push_input_char(r->stack_template,u_toupper(tok[k]),p->protect_dic_chars);
                         }
                       }
                   }
@@ -1143,32 +1143,32 @@ for (;;) {
                   switch (p->variable_error_policy) {
                       case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                       case IGNORE_VARIABLE_ERRORS: continue;
-                      case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                      case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                   }
               }
               unichar* tmp = u_strdup(output->str);
-              push_output_char(stack,u_toupper(tmp[0]));
+              push_output_char(r->stack_template,u_toupper(tmp[0]));
               u_tolower(tmp);
-              push_output_string(stack,tmp+1);
+              push_output_string(r->stack_template,tmp+1);
               free(tmp);
               } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
               } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
               } else if (v->start_in_tokens>v->end_in_tokens
                           || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
 
 
@@ -1190,7 +1190,7 @@ for (;;) {
                  switch (p->variable_error_policy) {
                     case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
                     case IGNORE_VARIABLE_ERRORS: continue;
-                    case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                    case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                  }
 
                  /* end of GV fix */
@@ -1202,9 +1202,9 @@ for (;;) {
                   if (v->start_in_tokens==v->end_in_tokens-1) {
                       unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
                       int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
-                      push_input_char(stack,u_toupper(tok[v->start_in_chars]),p->protect_dic_chars);
+                      push_input_char(r->stack_template,u_toupper(tok[v->start_in_chars]),p->protect_dic_chars);
                       for (int k=v->start_in_chars+1;k<=last;k++) {
-                          push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+                          push_input_char(r->stack_template,u_tolower(tok[k]),p->protect_dic_chars);
                       }
                   } else if (v->start_in_tokens==v->end_in_tokens) {
                       /* If the variable is empty, do nothing */
@@ -1212,15 +1212,15 @@ for (;;) {
                       /* Case 2: first we deal with first token */
                       unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
                       unichar* tmp = u_strdup(tok+v->start_in_chars);
-                      push_input_char(stack,u_toupper(tmp[0]),p->protect_dic_chars);
+                      push_input_char(r->stack_template,u_toupper(tmp[0]),p->protect_dic_chars);
                       u_tolower(tmp);
-                      push_input_string(stack,tmp+1,p->protect_dic_chars);
+                      push_input_string(r->stack_template,tmp+1,p->protect_dic_chars);
                       free(tmp);
                       /* Then we copy all tokens until the last one */
                       for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
                           unichar* tmp2 = u_strdup(p->tokens->value[p->buffer[k+p->current_origin]]);
                           u_tolower(tmp2);
-                          push_input_string(stack,tmp2,p->protect_dic_chars);
+                          push_input_string(r->stack_template,tmp2,p->protect_dic_chars);
                           free(tmp2);
                       }
 
@@ -1234,7 +1234,7 @@ for (;;) {
                           tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
                           int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
                           for (int k=0;k<=last;k++) {
-                            push_input_char(stack,u_tolower(tok[k]),p->protect_dic_chars);
+                            push_input_char(r->stack_template,u_tolower(tok[k]),p->protect_dic_chars);
                         }
                       }
                   }
@@ -1257,7 +1257,7 @@ for (;;) {
                   /* If the variable is not defined properly */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
-                     stack->top=old_stack_pointer; return 0;
+                     r->stack_template->top=old_stack_pointer; return 0;
                   } else {
                      /* $a.UNSET$ is true, we go on */
                      continue;
@@ -1269,7 +1269,7 @@ for (;;) {
                      continue;
                   } else {
                      /* $a.UNSET$ is false, we backtrack */
-                     stack->top=old_stack_pointer; return 0;
+                     r->stack_template->top=old_stack_pointer; return 0;
                   }
                }
             }
@@ -1283,7 +1283,7 @@ for (;;) {
                   /* If the variable is empty */
                   if (field[0]=='S') {
                      /* $a.SET$ is false, we backtrack */
-                     stack->top=old_stack_pointer; return 0;
+                     r->stack_template->top=old_stack_pointer; return 0;
                   } else {
                      /* $a.UNSET$ is true, we go on */
                      continue;
@@ -1295,7 +1295,7 @@ for (;;) {
                      continue;
                   } else {
                      /* $a.UNSET$ is false, we backtrack */
-                     stack->top=old_stack_pointer; return 0;
+                     r->stack_template->top=old_stack_pointer; return 0;
                   }
                }
             }
@@ -1307,7 +1307,7 @@ for (;;) {
                /* If the variable is not defined properly */
                if (field[0]=='S') {
                   /* $a.SET$ is false, we backtrack */
-                  stack->top=old_stack_pointer; return 0;
+                  r->stack_template->top=old_stack_pointer; return 0;
                } else {
                   /* $a.UNSET$ is true, we go on */
                   continue;
@@ -1319,7 +1319,7 @@ for (;;) {
                continue;
             } else {
                /* $a.UNSET$ is false, we backtrack */
-               stack->top=old_stack_pointer; return 0;
+               r->stack_template->top=old_stack_pointer; return 0;
             }
          }
 
@@ -1328,7 +1328,7 @@ for (;;) {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
             }
          }
          if (u_starts_with(field,"EQ=")) {
@@ -1346,7 +1346,7 @@ for (;;) {
                continue;
             } else {
                /* Otherwise, we backtrack */
-               stack->top=old_stack_pointer; return 0;
+               r->stack_template->top=old_stack_pointer; return 0;
             }
          } else if (!u_strcmp(field,"INFLECTED")) {
             /* We use push_input_string because it can protect special chars */
@@ -1354,38 +1354,38 @@ for (;;) {
                /* If we work in Korean mode, we must convert text into Hanguls */
                unichar z[1024];
                convert_jamo_to_hangul(entry->inflected,z,p->korean);
-               push_input_string(stack,z,p->protect_dic_chars);
+               push_input_string(r->stack_template,z,p->protect_dic_chars);
             } else {
-               push_input_string(stack,entry->inflected,p->protect_dic_chars);
+               push_input_string(r->stack_template,entry->inflected,p->protect_dic_chars);
             }
          } else if (!u_strcmp(field,"LEMMA")) {
-             push_input_string(stack,entry->lemma,p->protect_dic_chars);
+             push_input_string(r->stack_template,entry->lemma,p->protect_dic_chars);
          } else if (!u_strcmp(field,"CODE")) {
-            push_output_string(stack,entry->semantic_codes[0]);
+            push_output_string(r->stack_template,entry->semantic_codes[0]);
             for (int i=1;i<entry->n_semantic_codes;i++) {
-                push_output_char(stack,'+');
-               push_output_string(stack,entry->semantic_codes[i]);
+                push_output_char(r->stack_template,'+');
+               push_output_string(r->stack_template,entry->semantic_codes[i]);
             }
             for (int i=0;i<entry->n_inflectional_codes;i++) {
-               push_output_char(stack,':');
-               push_output_string(stack,entry->inflectional_codes[i]);
+               push_output_char(r->stack_template,':');
+               push_output_string(r->stack_template,entry->inflectional_codes[i]);
             }
          } else if (!u_strcmp(field,"CODE.GRAM")) {
-            push_output_string(stack,entry->semantic_codes[0]);
+            push_output_string(r->stack_template,entry->semantic_codes[0]);
          } else if (!u_strcmp(field,"CODE.SEM")) {
             if (entry->n_semantic_codes>1) {
-               push_output_string(stack,entry->semantic_codes[1]);
+               push_output_string(r->stack_template,entry->semantic_codes[1]);
                for (int i=2;i<entry->n_semantic_codes;i++) {
-                  push_output_char(stack,'+');
-                  push_output_string(stack,entry->semantic_codes[i]);
+                  push_output_char(r->stack_template,'+');
+                  push_output_string(r->stack_template,entry->semantic_codes[i]);
                }
             }
          } else if (!u_strcmp(field,"CODE.FLEX")) {
              if (entry->n_inflectional_codes>0) {
-                push_output_string(stack,entry->inflectional_codes[0]);
+                push_output_string(r->stack_template,entry->inflectional_codes[0]);
                 for (int i=1;i<entry->n_inflectional_codes;i++) {
-                   push_output_char(stack,':');
-                   push_output_string(stack,entry->inflectional_codes[i]);
+                   push_output_char(r->stack_template,':');
+                   push_output_string(r->stack_template,entry->inflectional_codes[i]);
                 }
              }
           } else if (u_starts_with(field,"CODE.ATTR=")) {
@@ -1398,7 +1398,7 @@ for (;;) {
                               || entry->semantic_codes[i][attr_len+1]=='\0') {
                           continue;
                       }
-                      push_output_string(stack,entry->semantic_codes[i]+attr_len+1);
+                      push_output_string(r->stack_template,entry->semantic_codes[i]+attr_len+1);
                       break;
                   }
               }
@@ -1407,14 +1407,14 @@ for (;;) {
                   switch (p->variable_error_policy) {
                      case EXIT_ON_VARIABLE_ERRORS: fatal_error("Attribute %S not found in a captured entry\n",attr_name); break;
                      case IGNORE_VARIABLE_ERRORS: continue;
-                     case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                     case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
                   }
               }
            } else {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field); break;
                case IGNORE_VARIABLE_ERRORS: continue;
-               case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
             }
          }
          continue;
@@ -1422,7 +1422,7 @@ for (;;) {
       i1++;
       if (l==0) {
          /* Case of $$ in order to print a $ */
-          push_output_char(stack,'$');
+          push_output_char(r->stack_template,'$');
          continue;
       }
       /* Case of a variable like $a$ that can be either a normal one or an output one */
@@ -1434,28 +1434,28 @@ for (;;) {
               switch (p->variable_error_policy) {
                   case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name); break;
                   case IGNORE_VARIABLE_ERRORS: continue;
-                  case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+                  case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
               }
           }
-          push_output_string(stack,output->str);
+          push_output_string(r->stack_template,output->str);
       } else if (v->start_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
          }
       } else if (v->end_in_tokens==UNDEF_VAR_BOUND) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
          }
       } else if (v->start_in_tokens>v->end_in_tokens
                   || (v->start_in_tokens==v->end_in_tokens && v->end_in_chars==-1 && v->end_in_chars<v->start_in_chars)) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
          }
 
 
@@ -1477,7 +1477,7 @@ for (;;) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end variable position after end of text for variable $%S$\n",name); break;
             case IGNORE_VARIABLE_ERRORS: continue;
-            case BACKTRACK_ON_VARIABLE_ERRORS: stack->top=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: r->stack_template->top=old_stack_pointer; return 0;
          }
 
          /* end of GV fix */
@@ -1490,17 +1490,17 @@ for (;;) {
               unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
               int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
               for (int k=v->start_in_chars;k<=last;k++) {
-                  push_input_char(stack,tok[k],p->protect_dic_chars);
+                  push_input_char(r->stack_template,tok[k],p->protect_dic_chars);
               }
           } else if (v->start_in_tokens==v->end_in_tokens) {
               /* If the variable is empty, do nothing */
           } else {
               /* Case 2: first we deal with first token */
               unichar* tok=p->tokens->value[p->buffer[v->start_in_tokens+p->current_origin]];
-              push_input_string(stack,tok+v->start_in_chars,p->protect_dic_chars);
+              push_input_string(r->stack_template,tok+v->start_in_chars,p->protect_dic_chars);
               /* Then we copy all tokens until the last one */
               for (int k=v->start_in_tokens+1;k<v->end_in_tokens-1;k++) {
-                  push_input_string(stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
+                  push_input_string(r->stack_template,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
               }
 
               /* Finally, we copy the last token */
@@ -1513,7 +1513,7 @@ for (;;) {
                   tok=p->tokens->value[p->buffer[v->end_in_tokens-1+p->current_origin]];
                   int last=(v->end_in_chars!=-1) ? (v->end_in_chars) : (((int)u_strlen(tok))-1);
                   for (int k=0;k<=last;k++) {
-                    push_input_char(stack,tok[k],p->protect_dic_chars);
+                    push_input_char(r->stack_template,tok[k],p->protect_dic_chars);
                 }
               }
           }
@@ -1523,18 +1523,33 @@ for (;;) {
 return 0;
 }
 
+void append_literal_output(struct stack_unichar* output,
+                           struct locate_parameters* p,
+                           int *captured_chars) {
+  // check if there are pending variables
+  int capture = capture_mode(p->output_variables);
+
+  // on normal mode
+  if (!capture) {
+    // copy the passed output into the literal output stack
+    push_array(p->literal_output, output->buffer, output->top);
+  // on capture mode
+  } else {
+    // append the passed output to the pending output variables
+    *captured_chars = add_raw_string_to_output_variables(p->output_variables,
+                                                         output->buffer,
+                                                         output->top);
+  }
+}
 
 /**
  * This function deals with an extended output sequence,
  * regardless is formed only by terminal symbols or nor,
  * and regardless there are pending output variables or not.
  */
-int deal_with_extended_output(unichar* extended_output,
+int deal_with_extended_output(unichar* output,
                               struct locate_parameters* p,
                               int *captured_chars) {
-  // empty the auxiliary stack
-  p->extended_output->top = -1;
-
   // check if there are pending variables
   int capture = capture_mode(p->output_variables);
 
@@ -1545,35 +1560,42 @@ int deal_with_extended_output(unichar* extended_output,
   if (capture && p->debug) {
       push_output_char(p->literal_output, DEBUG_INFO_OUTPUT_MARK);
       int i;
-      for (i = 0; extended_output[i] != DEBUG_INFO_COORD_MARK; ++i) {}
-      push_output_string(p->literal_output, extended_output + i);
+      for (i = 0; output[i] != DEBUG_INFO_COORD_MARK; ++i) {}
+      push_output_string(p->literal_output, output + i);
   }
 
-  int n_extended_functions = 0;
+  ExtendedOutputRender r;
+
 
   // process the extended output
-  if (!process_extended_output(extended_output, p, p->extended_output, capture && p->debug, n_extended_functions)) {
+  if (!process_extended_output(output, p, capture && p->debug, &r)) {
     return 0;
   }
 
   // if p->extended_output->top > -1
 
-  // mark the end of the internal string containing the extended output
-  push(p->extended_output, '\0');
 
-  // on normal mode
-  if (!capture) {
-    // copy the extended output into the literal one
-    push_stack(p->literal_output, p->extended_output, p->extended_output->top);
-  // on capture mode
-  } else {
-    // append the extended output to the pending output variables
-    *captured_chars = add_raw_string_to_output_variables(p->output_variables,
-                                                         p->extended_output->buffer,
-                                                         p->extended_output->top);
-  }
+  int n = r.new_output_set(3,25);
+
+  r.add_output(n,"happy");
+  r.add_output(n,"sad");
+  r.add_output(n,"lonely");
+
+  n = r.new_output_set(2,50);
+
+  r.add_output(n,"nice");
+  r.add_output(n,"mean");
+
+  r.prepare();
+
+  struct stack_unichar* literal_output = r.render(0);
+
+  append_literal_output(r.stack_template,
+                        p,
+                        captured_chars);
 
   return 1;
 }
+
 
 } // namespace unitex

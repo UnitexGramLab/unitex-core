@@ -3426,6 +3426,24 @@ while (--n > 0);
 return s;
 }
 
+/**
+ * unicode version of strncpy
+ */
+unichar* u_strncpy(unichar *dest,const char *src,unsigned int n) {
+register unichar c;
+unichar *s = dest; // backup pointer to start of destination string
+do {
+   c = (unsigned char) *src++;
+   *dest++ = c;
+   if (--n == 0)
+     return s;
+} while (c != 0);
+// null-padding
+do
+  *dest++ = 0;
+while (--n > 0);
+return s;
+}
 
 /**
  * unicode version of a secure strcpy : like u_strncpy, but add 0 at end of string
@@ -4186,6 +4204,23 @@ if (res==NULL) {
    fatal_alloc_error("u_strdup");
 }
 return u_strcpy(res,str);
+}
+
+/**
+ * Copy at most n chars.
+ */
+unichar* u_strndup(const char* str, int n) {
+if (str==NULL) return NULL;
+int size=0;
+while (size<n && str[size]) size++;
+size_t buflen=(size+1)*sizeof(unichar);
+unichar* res=(unichar*)malloc(buflen);
+if (res==NULL) {
+   fatal_alloc_error("u_strndup");
+}
+u_strncpy(res,str,n);
+res[size]='\0';
+return res;
 }
 
 

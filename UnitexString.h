@@ -471,7 +471,7 @@ class UnitexString {
    * Free the memory allocated to the internal string
    */
   ~UnitexString() {
-    // if data_ is acquired release, detach otherwise
+    // if data_ is acquired then release, detach otherwise
     release() || detach();
   }
 

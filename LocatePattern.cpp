@@ -96,7 +96,6 @@ p->input_variables=NULL;
 p->output_variables=NULL;
 p->nb_output_variables=0;
 p->literal_output=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
-p->extended_output=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 p->stack_elg=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 p->alphabet=NULL;
 p->morpho_dic=NULL;
@@ -300,7 +299,6 @@ if (out==NULL) {
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
    free_stack_unichar(p->literal_output);
-   free_stack_unichar(p->extended_output);
    free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    u_fclose(out);
@@ -319,7 +317,6 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
       af_release_mapfile_pointer(p->text_cod,p->buffer);
       af_close_mapfile(p->text_cod);
       free_stack_unichar(p->literal_output);
-      free_stack_unichar(p->extended_output);
       free_stack_unichar(p->stack_elg);
       free_locate_parameters(p);
       if (info!=NULL) u_fclose(info);
@@ -339,7 +336,6 @@ if (is_cancelling_requested() != 0) {
        af_release_mapfile_pointer(p->text_cod,p->buffer);
        af_close_mapfile(p->text_cod);
        free_stack_unichar(p->literal_output);
-       free_stack_unichar(p->extended_output);
        free_stack_unichar(p->stack_elg);
        free_locate_parameters(p);
        if (info!=NULL) u_fclose(info);
@@ -361,7 +357,6 @@ if (fst2load==NULL) {
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
    free_stack_unichar(p->literal_output);
-   free_stack_unichar(p->extended_output);
    free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
@@ -404,7 +399,6 @@ if (is_cancelling_requested() != 0) {
    af_release_mapfile_pointer(p->text_cod,p->buffer);
    af_close_mapfile(p->text_cod);
    free_stack_unichar(p->literal_output);
-   free_stack_unichar(p->extended_output);
    free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
@@ -426,7 +420,6 @@ if (p->filters==NULL) {
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
    free_stack_unichar(p->literal_output);
-   free_stack_unichar(p->extended_output);
    free_stack_unichar(p->stack_elg);
    free_locate_parameters(p);
    af_release_mapfile_pointer(p->text_cod,p->buffer);
@@ -646,7 +639,6 @@ if (free_abstract_allocator_item) {
   free_optimized_states(p->optimized_states,p->fst2->number_of_states,locate_abstract_allocator);
 }
 free_stack_unichar(p->literal_output);
-free_stack_unichar(p->extended_output);
 free_stack_unichar(p->stack_elg);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
