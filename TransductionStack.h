@@ -157,15 +157,15 @@ struct ExtendedOutputRender {
     unichar* literal = NULL;
     unichar* variable = NULL;
 
-    // render loop
+    // rendering loop
     for (int i = 0; i < output_sets->nbelems; ++i) {
-      placeholder = placeholders->tab[i];
       literal = &stack_template->buffer[top];
-      push_array(stack_render, literal, placeholder - top);
+      placeholder = placeholders->tab[i];
       divisor = divisors->tab[i];
       cardinal = ((vector_ptr*) output_sets->tab[i])->nbelems;
       index = (int) (n / divisor) % cardinal;
       variable = (unichar*) ((vector_ptr*) output_sets->tab[i])->tab[index];
+      push_array(stack_render, literal, placeholder - top);
       push_array(stack_render, variable, u_strlen(variable));
       top = placeholder + 1;
     }
