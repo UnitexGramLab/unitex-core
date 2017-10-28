@@ -2286,6 +2286,13 @@ struct match_list* ptr;
         }
         p->start_position_last_printed_match = l->m.start_pos_in_token;
         p->end_position_last_printed_match = l->m.end_pos_in_token;
+
+        // suppose a single match with 3 ambiguous outputs, if the search limit
+        // is equal to 1, the code below will suppress 2 of the ambigous outputs,
+        // taking in account that the search limitation is related to matches and
+        // not to the ouputs, this behavior is not appropriate. The search_limit
+        // policy is still tested by the launch_locate() function and this is
+        // enough to have the desired behavior
 //        if (p->number_of_matches == p->search_limit) {
 //            /* If we have reached the search limitation, we free the remaining
 //             * matches and return */
@@ -2296,6 +2303,7 @@ struct match_list* ptr;
 //            }
 //            return NULL;
 //        }
+
         ptr = l->next;
         free_match_list_element(l, prv_alloc);
         return save_matches(ptr, current_position, f, p, prv_alloc);
