@@ -177,7 +177,7 @@ public:
 int process_extended_output(unichar* s,
                    struct locate_parameters* p,
                    int capture_in_debug_mode,
-                   struct ExtendedOutputRender* r) {
+                   struct extended_output_render* r) {
 int old_stack_pointer=r->stack_template->top;
 int i1=0;
 if (capture_in_debug_mode) {
@@ -1522,6 +1522,9 @@ return 0;
 void append_literal_output(struct stack_unichar* output,
                            struct locate_parameters* p,
                            int *captured_chars) {
+  // if there is nothing to append then return
+  if(!output) return;
+
   // check if there are pending variables
   int capture = capture_mode(p->output_variables);
 
@@ -1545,7 +1548,7 @@ void append_literal_output(struct stack_unichar* output,
  */
 int deal_with_extended_output(unichar* output,
                               struct locate_parameters* p,
-                              int *captured_chars) {
+                              struct extended_output_render* r) {
   // check if there are pending variables
   int capture = capture_mode(p->output_variables);
 
@@ -1560,44 +1563,13 @@ int deal_with_extended_output(unichar* output,
       push_output_string(p->literal_output, output + i);
   }
 
-  ExtendedOutputRender r;
-
-
   // process the extended output
-  if (!process_extended_output(output, p, capture && p->debug, &r)) {
+  if (!process_extended_output(output, p, capture && p->debug, r)) {
     return 0;
   }
 
-  // if p->extended_output->top > -1
-
-
-//  int n = r.new_output_set(3,0);
-//
-//  r.add_output(n,"happy");
-//  r.add_output(n,"sad");
-//  r.add_output(n,"lonely");
-//
-//  n = r.new_output_set(2,2);
-//
-//  r.add_output(n,"nice");
-//  r.add_output(n,"mean");
-//
-//  n = r.new_output_set(3,4);
-//
-//  r.add_output(n,"cats");
-//  r.add_output(n,"dogs");
-//  r.add_output(n,"hogs");
-//
-    r.prepare();
-
-
-//  for(int i=0; i < r.cardinality; ++i) {
-    append_literal_output(r.render(1),
-                          p,
-                          captured_chars);
-//  }
-
-
+  // prepare the output template to be rendered
+  r->prepare();
 
   return 1;
 }

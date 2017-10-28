@@ -165,7 +165,7 @@ static const struct elg_Event elgMainEvents [] = {
 #define EXTENDED_FUNCTIONS_PER_TRANSDUCTION   3
 #define EXTENDED_OUTPUT_PLACEHOLDER           6
 /* ************************************************************************** */
-struct ExtendedOutputRender {
+struct extended_output_render {
   int cardinality;
   struct stack_unichar* stack_template;
   struct stack_unichar* stack_render;
@@ -204,6 +204,9 @@ struct ExtendedOutputRender {
 
   // prepare the template to be rendered
   int prepare() {
+    // if there are not a template to render return 0 as cardinal
+    if(is_empty(stack_template)) return 0;
+
     // there is no more chars to add to the output template,
     // hence we put a mark to indicate the end of the string
     push(stack_template, '\0');
@@ -242,6 +245,11 @@ struct ExtendedOutputRender {
   // for n = 4, "foo + bar 1 baz"
   // for n = 5, "foo + bar 2 baz"
   struct stack_unichar* render(int n) {
+    // if there are nothing to render then return NULL
+    if (cardinality == 0) {
+      return NULL;
+    }
+
     // if there are no output sets (cardinality <= 1)  or the
     // given combination number (n) is out-of-bounds (0 <= n < cardinality)
     // then return the template without render it
@@ -284,11 +292,11 @@ struct ExtendedOutputRender {
     // hence we put a mark to indicate the end of the string
     push(stack_render, '\0');
 
-
+    u_printf("[\%S]\n",stack_render->buffer);
     return stack_render;
   }
 
-  ExtendedOutputRender()
+  extended_output_render()
       : cardinality(0),
         stack_template(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
         stack_render(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
@@ -297,7 +305,7 @@ struct ExtendedOutputRender {
         divisors(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)) {
   }
 
-  ~ExtendedOutputRender() {
+  ~extended_output_render() {
     free_stack_unichar(stack_template);
     free_stack_unichar(stack_render);
     free_vector_int(placeholders);
@@ -308,7 +316,7 @@ struct ExtendedOutputRender {
   }
 
  private:
-  UNITEX_DISALLOW_COPY_AND_ASSIGN(ExtendedOutputRender);
+  UNITEX_DISALLOW_COPY_AND_ASSIGN(extended_output_render);
 };
 
 //struct {
@@ -358,9 +366,15 @@ namespace {
 int process_extended_function_return_type(int type,
                                           int set_number,
                                           lua_State* L,
-                                          struct ExtendedOutputRender* r,
+                                          struct extended_output_render* r,
                                           const char* function_name) {
   int retval = 1;
+
+  // LUA_TTABLE     -> lua_topointer(L, -1)
+  // LUA_TFUNCTION  -> lua_topointer(L, -1)
+  // LUA_TUSERDATA  -> lua_touserdata(L, -1)
+  // LUA_TTHREAD    -> (void *)lua_tothread(L, -1)
+
   // retrieve boolean or string result
   switch(type) {
     // nil
@@ -1558,7 +1572,7 @@ class vm {
   // returns:
   //  0 : step back
   //  1 : step forward
-  int call(const char* function_name, int nargs, struct ExtendedOutputRender* r) {
+  int call(const char* function_name, int nargs, struct extended_output_render* r) {
     elg_stack_dump(L);
 
     int m_refkey = 0;
@@ -1637,11 +1651,6 @@ class vm {
 
       }
     }
-
-    // LUA_TTABLE     -> lua_topointer(L, -1)
-    // LUA_TFUNCTION  -> lua_topointer(L, -1)
-    // LUA_TUSERDATA  -> lua_touserdata(L, -1)
-    // LUA_TTHREAD    -> (void *)lua_tothread(L, -1)
 
     if(retval) {
       elg_stack_dump(L);

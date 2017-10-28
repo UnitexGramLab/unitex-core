@@ -900,9 +900,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                             }
                             captured_chars=0;
                             if (p->output_policy != IGNORE_OUTPUTS) {
-                                if (!deal_with_extended_output(output,p,&captured_chars)) {
+                                extended_output_render r;
+                                if (!deal_with_extended_output(output,p,&r)) {
                                     break;
                                 }
+                                append_literal_output(r.render(0), p, &captured_chars);
                             }
                             if (p->output_policy == MERGE_OUTPUTS) {
                                 for (int x = pos2; x <= end_of_compound; x++) {
@@ -985,9 +987,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_extended_output(output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(output,p,&r)) {
                                 break;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             for (int x = pos2; x <= end_of_compound; x++) {
@@ -1226,31 +1230,58 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2!=pos) {
                     push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                 }
-                captured_chars=0;
+
+                //
+                extended_output_render r;
+
                 if (p->output_policy != IGNORE_OUTPUTS) {
                     /* We process its output */
-                    if (!deal_with_extended_output(output,p,&captured_chars)) {
+                    if (!deal_with_extended_output(output,p,&r)) {
                         goto next;
                     }
                 }
-                if (p->output_policy == MERGE_OUTPUTS) {
-                    /* Then, if we are in merge mode, we push the tokens that have
-                     * been read to the output */
-                    for (int y = start; y < end; y++) {
-                        push_input_string(p->literal_output,
-                                p->tokens->value[p->buffer[y
-                                        + p->current_origin]],
-                                p->protect_dic_chars);
-                    }
-                }
-                /* Then, we continue the exploration of the grammar */
-                locate(/*graph_depth,*/ p->optimized_states[t1->state_number], end,
-                        matches, n_matches, ctx, p);
-                /* Once we have finished, we restore the stack */
-                p->weight=old_weight1;
-                p->literal_output->top = stack_top;
-                if (p->nb_output_variables != 0) {
-                  remove_chars_from_output_variables(p->output_variables,captured_chars);
+
+                //
+                int count = r.cardinality == 0 ? 1 : r.cardinality;
+
+                //
+                for (int i = 0 ; i < count; ++i) {
+                  captured_chars=0;
+
+                  // when output_policy == IGNORE_OUTPUTS r.cardinality is
+                  // equal to 0, if r.cardinality is zero then r.render(i)
+                  // returns NULL and append_literal_output() does nothing
+                  append_literal_output(r.render(i), p, &captured_chars);
+
+                  if (p->output_policy == MERGE_OUTPUTS) {
+                      /* Then, if we are in merge mode, we push the tokens that have
+                       * been read to the output */
+                      for (int y = start; y < end; y++) {
+                        push_input_string(
+                            p->literal_output,
+                            p->tokens->value[p->buffer[y + p->current_origin]],
+                            p->protect_dic_chars);
+                      }
+                  }
+
+                  /* Then, we continue the exploration of the grammar */
+                  locate(/*graph_depth,*/
+                          p->optimized_states[t1->state_number],
+                          end,
+                          matches,
+                          n_matches,
+                          ctx,
+                          p);
+
+                  /* Once we have finished, we restore the stack */
+                  p->weight = old_weight1;
+
+                  p->literal_output->top = stack_top;
+
+                  if (p->nb_output_variables != 0) {
+                    remove_chars_from_output_variables(p->output_variables,
+                                                       captured_chars);
+                  }
                 }
             }
             next: t1 = t1->next;
@@ -1508,9 +1539,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     }
                     captured_chars=0;
                     if (p->output_policy != IGNORE_OUTPUTS) {
-                        if (!deal_with_extended_output(output,p,&captured_chars)) {
+                        extended_output_render r;
+                        if (!deal_with_extended_output(output,p,&r)) {
                             goto next4;
                         }
+                        append_literal_output(r.render(0), p, &captured_chars);
                     }
                     if (p->output_policy == MERGE_OUTPUTS) {
                         for (int x = pos2; x <= end_of_compound; x++) {
@@ -1568,9 +1601,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     }
                     captured_chars=0;
                     if (p->output_policy != IGNORE_OUTPUTS) {
-                        if (!deal_with_extended_output(output,p,&captured_chars)) {
+                        extended_output_render r;
+                        if (!deal_with_extended_output(output,p,&r)) {
                             goto next6;
                         }
+                        append_literal_output(r.render(0), p, &captured_chars);
                     }
                     if (p->output_policy == MERGE_OUTPUTS) {
                         for (int x = pos2; x <= end_of_compound; x++) {
@@ -1608,9 +1643,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_extended_output(output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(output,p,&r)) {
                                 goto next2;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             push_input_string(p->literal_output,
@@ -1634,9 +1671,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                         }
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_extended_output(output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(output,p,&r)) {
                                 goto next2;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             push_input_string(p->literal_output,
@@ -1679,9 +1718,11 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     }
                     captured_chars=0;
                     if (p->output_policy != IGNORE_OUTPUTS) {
-                        if (!deal_with_extended_output(output,p,&captured_chars)) {
+                        extended_output_render r;
+                        if (!deal_with_extended_output(output,p,&r)) {
                             goto next3;
                         }
+                        append_literal_output(r.render(0), p, &captured_chars);
                     }
                     if (p->output_policy == MERGE_OUTPUTS) {
                         push_input_string(p->literal_output, p->tokens->value[token2],

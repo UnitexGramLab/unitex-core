@@ -630,9 +630,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                 /* We could have an output associated to an epsilon or a #, so we handle this case */
                 captured_chars=0;
                 if (p->output_policy != IGNORE_OUTPUTS) {
-                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                    extended_output_render r;
+                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&r)) {
                         break;
                     }
+                    append_literal_output(r.render(0), p, &captured_chars);
                 }
                 morphological_locate(/*graph_depth,*/
                         t->state_number, pos_in_tokens, pos_in_chars,
@@ -739,9 +741,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         captured_chars=0;
                         if(p->output_policy != IGNORE_OUTPUTS) {
                           if (!save_dic_entry) {
-                            if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&r)) {
                               break;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                           } else if (p->debug & save_dic_entry) {
                             if (!push_debug_mode_tag_without_output(p->tags[t->tag_number]->output,p)) {
                               break;
@@ -933,9 +937,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                  * to matching one letter */
                 captured_chars=0;
                 if (p->output_policy != IGNORE_OUTPUTS) {
-                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&captured_chars)) {
+                    extended_output_render r;
+                    if (!deal_with_extended_output(p->tags[t->tag_number]->output,p,&r)) {
                         goto next;
                     }
+                    append_literal_output(r.render(0), p, &captured_chars);
                 }
                 if (p->output_policy == MERGE_OUTPUTS) {
                     /* If needed, we push the character that was matched */
@@ -1189,9 +1195,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         /* If we can match the tag's token, we process the output, if we have to */
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_extended_output(tag->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(tag->output,p,&r)) {
                                 continue;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             fatal_error(
@@ -1223,9 +1231,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         /* If we can match the tag's token, we process the output, if we have to */
                         captured_chars=0;
                         if (p->output_policy != IGNORE_OUTPUTS) {
-                            if (!deal_with_extended_output(tag->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(tag->output,p,&r)) {
                                 continue;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                         }
                         if (p->output_policy == MERGE_OUTPUTS) {
                             push_input_substring(p->literal_output, current_token
@@ -1323,9 +1333,11 @@ unichar* content_buffer /* reusable unichar 4096 buffer for content */
                         captured_chars=0;
                         if(p->output_policy != IGNORE_OUTPUTS) {
                           if (!save_dic_entry) {
-                            if (!deal_with_extended_output(tag->output,p,&captured_chars)) {
+                            extended_output_render r;
+                            if (!deal_with_extended_output(tag->output,p,&r)) {
                               continue;
                             }
+                            append_literal_output(r.render(0), p, &captured_chars);
                           } else if (p->debug & save_dic_entry) {
                             if (!push_debug_mode_tag_without_output(tag->output,p)) {
                               continue;
