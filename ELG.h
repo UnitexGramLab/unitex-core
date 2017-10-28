@@ -292,7 +292,6 @@ struct extended_output_render {
     // hence we put a mark to indicate the end of the string
     push(stack_render, '\0');
 
-    u_printf("[\%S]\n",stack_render->buffer);
     return stack_render;
   }
 

@@ -2286,16 +2286,16 @@ struct match_list* ptr;
         }
         p->start_position_last_printed_match = l->m.start_pos_in_token;
         p->end_position_last_printed_match = l->m.end_pos_in_token;
-        if (p->number_of_matches == p->search_limit) {
-            /* If we have reached the search limitation, we free the remaining
-             * matches and return */
-            while (l != NULL) {
-                ptr = l;
-                l = l->next;
-                free_match_list_element(ptr, prv_alloc);
-            }
-            return NULL;
-        }
+//        if (p->number_of_matches == p->search_limit) {
+//            /* If we have reached the search limitation, we free the remaining
+//             * matches and return */
+//            while (l != NULL) {
+//                ptr = l;
+//                l = l->next;
+//                free_match_list_element(ptr, prv_alloc);
+//            }
+//            return NULL;
+//        }
         ptr = l->next;
         free_match_list_element(l, prv_alloc);
         return save_matches(ptr, current_position, f, p, prv_alloc);
