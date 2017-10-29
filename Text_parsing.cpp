@@ -120,8 +120,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     int pos = 0;
 
     while (p->current_origin < p->buffer_size &&
-            p->buffer[p->current_origin] < p->tokens->size &&
-            p->number_of_matches != p->search_limit) {
+           p->buffer[p->current_origin] < p->tokens->size &&
+           p->number_of_matches != p->search_limit) {
 
         if (unite != 0) {
             n_read = p->current_origin % unite;
@@ -275,7 +275,10 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     free_reserve(backup_reserve);
     p->backup_memory_reserve = NULL;
 
-    p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
+    if (p->number_of_matches != p->search_limit) {
+      p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
+    }
+
     u_printf("100%% done      \n\n");
     u_printf("%d match%s\n", p->number_of_matches,
             (p->number_of_matches == 1) ? "" : "es");
@@ -1225,15 +1228,17 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 break;
             } /* End of the switch */
 
+            // if the transition has matched
             if (start != -1) {
-                /* If the transition has matched */
                 if (p->output_policy == MERGE_OUTPUTS && start == pos2 && pos2!=pos) {
                     push_input_char(p->literal_output, ' ', p->protect_dic_chars);
                 }
 
-                //
+                // to store extended outputs and render literal outputs
                 extended_output_render r;
 
+                // when outputs are not ignored the current extended output
+                // is processed
                 if (p->output_policy != IGNORE_OUTPUTS) {
                     /* We process its output */
                     if (!deal_with_extended_output(output,p,&r)) {
@@ -1241,15 +1246,28 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                     }
                 }
 
-                //
-                int count = r.cardinality == 0 ? 1 : r.cardinality;
+                // when we're capturing output variables in debug mode,
+                // deal_with_extended_output() can push characters to the
+                // literal stack, we use this variable to keep the current
+                // stack top during processing an extended output with
+                // with multiple values ​​returned
+                int stack_top_extended_output = p->literal_output->top;
 
-                //
-                for (int i = 0 ; i < count; ++i) {
+                // if the cardinality is equal to zero this means no output,
+                // this happens, e.g., when the p->output_policy is equal
+                // to IGNORE_OUTPUTS or when the current output is empty,
+                // a cardinality equal or greater than 1 means that there
+                // are at least n literals outputs associated to the
+                // current extended output
+                int count = r.cardinality == 0 ? 1 : r.cardinality;
+                int i = 0;
+
+                // loop over all possible literal outputs
+                while (i < count) {
                   captured_chars=0;
 
                   // when output_policy == IGNORE_OUTPUTS r.cardinality is
-                  // equal to 0, if r.cardinality is zero then r.render(i)
+                  // equal to 0, if r.cardinality is 0 then r.render(i)
                   // returns NULL and append_literal_output() does nothing
                   append_literal_output(r.render(i), p, &captured_chars);
 
@@ -1264,25 +1282,34 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                       }
                   }
 
-                  /* Then, we continue the exploration of the grammar */
-                  locate(/*graph_depth,*/
-                          p->optimized_states[t1->state_number],
-                          end,
-                          matches,
-                          n_matches,
-                          ctx,
-                          p);
+                  //  we continue the exploration of the grammar
+                  locate(p->optimized_states[t1->state_number],
+                         end,
+                         matches,
+                         n_matches,
+                         ctx,
+                         p);
 
-                  /* Once we have finished, we restore the stack */
+                  // once we have finished, we restore the previous state
+
+                  // we restore the weight
                   p->weight = old_weight1;
 
-                  p->literal_output->top = stack_top;
+                  // we restore the stack
+                  p->literal_output->top = stack_top_extended_output;
 
+                  // we restore the output variables
                   if (p->nb_output_variables != 0) {
                     remove_chars_from_output_variables(p->output_variables,
                                                        captured_chars);
                   }
-                }
+
+                  // next literal output
+                  i++;
+                } // while (i < count)
+
+                // we restore the stack
+                p->literal_output->top = stack_top;
             }
             next: t1 = t1->next;
         }
@@ -2228,11 +2255,9 @@ struct match_list* ptr;
              *  - if the range differs (start and/or end position are different),
              *    a new match is counted
              */
-            if (!(p->start_position_last_printed_match
-                    == l->m.start_pos_in_token
-                    && p->end_position_last_printed_match
-                            == l->m.end_pos_in_token)) {
-                (p->number_of_matches)++;
+            if (!(p->start_position_last_printed_match == l->m.start_pos_in_token &&
+                  p->end_position_last_printed_match   == l->m.end_pos_in_token)) {
+              (p->number_of_matches)++;
             }
         } else {
             /* If we don't allow ambiguous outputs, we count the matches */
@@ -2288,11 +2313,9 @@ struct match_list* ptr;
         p->end_position_last_printed_match = l->m.end_pos_in_token;
 
         // suppose a single match with 3 ambiguous outputs, if the search limit
-        // is equal to 1, the code below will suppress 2 of the ambigous outputs,
+        // is equal to 1, the code below will suppress 2 of the ambiguous outputs,
         // taking in account that the search limitation is related to matches and
-        // not to the ouputs, this behavior is not appropriate. The search_limit
-        // policy is still tested by the launch_locate() function and this is
-        // enough to have the desired behavior
+        // not to the outputs, this behavior is not appropriate.
 //        if (p->number_of_matches == p->search_limit) {
 //            /* If we have reached the search limitation, we free the remaining
 //             * matches and return */
@@ -2303,6 +2326,33 @@ struct match_list* ptr;
 //            }
 //            return NULL;
 //        }
+        // this is an experimental change to avoid the issue described above
+        if (p->number_of_matches == p->search_limit) {
+          // if no ambiguous outputs are allowed and we have reached the search
+          // limitation, we free the remaining matches and return
+          if (p->ambiguous_output_policy != ALLOW_AMBIGUOUS_OUTPUTS) {
+            while (l != NULL) {
+                ptr = l;
+                l = l->next;
+                free_match_list_element(ptr, prv_alloc);
+            }
+            return NULL;
+          } else {
+          // if ambiguous outputs are allowed and we have reached the search
+          // limitation, we only free the non-ambiguous remaining matches
+            struct match_list* ptr_aux = l;
+            while (l != NULL) {
+              ptr = l;
+              l = l->next;
+              if (l && !(p->start_position_last_printed_match == l->m.start_pos_in_token &&
+                         p->end_position_last_printed_match   == l->m.end_pos_in_token)) {
+                fatal_error("XXXXXXXXXXXXXXXXx");
+                u_printf("xxxxx\n");
+              }
+            }
+            l = ptr_aux;
+          }
+        }
 
         ptr = l->next;
         free_match_list_element(l, prv_alloc);
