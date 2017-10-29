@@ -121,7 +121,7 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 
     while (p->current_origin < p->buffer_size &&
            p->buffer[p->current_origin] < p->tokens->size &&
-           p->number_of_matches != p->search_limit) {
+          (p->search_limit == -1 || p->number_of_matches < p->search_limit)) {
 
         if (unite != 0) {
             n_read = p->current_origin % unite;
@@ -275,7 +275,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
     free_reserve(backup_reserve);
     p->backup_memory_reserve = NULL;
 
-    if (p->number_of_matches != p->search_limit) {
+    if ((p->search_limit == -1 ||
+         p->number_of_matches < p->search_limit)) {
       p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, p->al.prv_alloc_generic);
     }
 
@@ -2327,7 +2328,8 @@ struct match_list* ptr;
 //            return NULL;
 //        }
         // this is an experimental change to avoid the issue described above
-        if (p->number_of_matches == p->search_limit) {
+        if ((p->search_limit != -1 &&
+             p->number_of_matches == p->search_limit)) {
           // if no ambiguous outputs are allowed and we have reached the search
           // limitation, we free the remaining matches and return
           if (p->ambiguous_output_policy != ALLOW_AMBIGUOUS_OUTPUTS) {
@@ -2337,7 +2339,8 @@ struct match_list* ptr;
                 free_match_list_element(ptr, prv_alloc);
             }
             return NULL;
-          } else {
+          }
+          else {
           // if ambiguous outputs are allowed and we have reached the search
           // limitation, we only free the non-ambiguous remaining matches
             struct match_list* ptr_aux = l;
@@ -2346,8 +2349,9 @@ struct match_list* ptr;
               l = l->next;
               if (l && !(p->start_position_last_printed_match == l->m.start_pos_in_token &&
                          p->end_position_last_printed_match   == l->m.end_pos_in_token)) {
-                fatal_error("XXXXXXXXXXXXXXXXx");
-                u_printf("xxxxx\n");
+                ptr->next = l->next;
+                free_match_list_element(l, prv_alloc);
+                l = ptr;
               }
             }
             l = ptr_aux;
