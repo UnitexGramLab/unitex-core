@@ -295,7 +295,8 @@ void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
         u_printf("(%2.3f%% of the text is covered)\n", (float) (((float)per_halfhundred)
                 / (float) 1000.0));
     }
-    u_printf("%u exploration step\n",(unsigned int)total_count_step);
+    u_printf("%u exploration step%s\n",(unsigned int)total_count_step, (p->number_of_outputs
+            == 1) ? "" : "s");
 
     /*
     {
