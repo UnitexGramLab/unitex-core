@@ -49,6 +49,12 @@ typedef enum {
    ALL_MATCHES
 } MatchPolicy;
 
+/* Loop stop after policy for the extended functions with multiple outputs */
+typedef enum {
+  STOP_AFTER_N_FAILURES = -1,
+  STOP_AFTER_EXHAUSTIVELY_CHECK = 0,
+  STOP_AFTER_N_MATCHES = 1
+} StopAfterPolicy;
 
 /* Here are the different output policies for the Locate program */
 typedef enum {

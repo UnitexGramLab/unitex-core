@@ -1263,6 +1263,9 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                 int count = r.cardinality == 0 ? 1 : r.cardinality;
                 int i = 0;
 
+                int loop_matches = 0;
+                int loop_fails = 0;
+
                 // this is to track if the exploration of the grammar reaches
                 // a final state
                 struct match_list* latest_match = p->match_cache_last;
@@ -1295,7 +1298,7 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                          ctx,
                          p);
 
-                  // once we have finished, we restore the previous state
+                  // once we have finished, we restore to the previous status
 
                   // we restore the weight
                   p->weight = old_weight1;
@@ -1309,9 +1312,22 @@ struct locate_parameters* p /* miscellaneous parameters needed by the function *
                                                        captured_chars);
                   }
 
-                  // if the exploration of the grammar reached a final state
-                  if (latest_match != p->match_cache_last) {
-                    latest_match = p->match_cache_last;
+                  // if we have at least two outputs we can apply the
+                  // stop after policy
+                  if (count > 1 && r.stops_after->tab[0] !=
+                      STOP_AFTER_EXHAUSTIVELY_CHECK) {
+                    // if the exploration of the grammar reached a final state
+                    if (latest_match != p->match_cache_last) {
+                      latest_match = p->match_cache_last;
+                      loop_matches++;
+                    } else {
+                      loop_fails--;
+                    }
+
+                    if (r.stops_after->tab[0] >= loop_fails ||
+                        r.stops_after->tab[0] >= loop_matches) {
+                      break;
+                    }
                   }
 
                   // next literal output

@@ -695,9 +695,18 @@ for (;;) {
         goto read_script_param;
         script_call:
 
-        // 30.10.17 add cut predicate to have the control on match/fail
+        // 30.10.17 add a stop-after operator to have the control over checking
+        // the set of outputs of an extended function
+        int stop_after = STOP_AFTER_EXHAUSTIVELY_CHECK;
+
         if (s[i1] == '!') {
           ++i1;
+          if (s[i1] == '!') {
+            ++i1;
+            stop_after = STOP_AFTER_N_FAILURES * 1;
+          } else {
+            stop_after = STOP_AFTER_N_MATCHES * 1;
+          }
         }
 
         // 25.08.17 check before execute
@@ -716,7 +725,7 @@ for (;;) {
 //        ++script_params_count;
 //        p->elg->push(p->graph_filename);
 //        p->elg->setglobal("stack_pointer");
-        if(!p->elg->call(char_function_name,script_params_count,r)) {
+        if(!p->elg->call(char_function_name,script_params_count,stop_after,r)) {
           r->stack_template->top=old_stack_pointer;
           p->elg->restore_local_environment();
 //          p->elg->setup_local_environment();

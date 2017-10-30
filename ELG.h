@@ -171,12 +171,14 @@ struct extended_output_render {
   struct stack_unichar* stack_render;
   vector_int* placeholders;
   vector_int* divisors;
+  vector_int* stops_after;
   vector_ptr* output_sets;
 
-  int new_output_set(int n_elements, int placeholder) const {
+  int new_output_set(int n_elements, int stop_after, int placeholder) const {
   ::push(stack_template, EXTENDED_OUTPUT_PLACEHOLDER);
     vector_int_add(placeholders,placeholder + 1);
     vector_int_add(divisors,0);
+    vector_int_add(stops_after,stop_after);
     return vector_ptr_add(output_sets, new_vector_ptr(n_elements));
   }
 
@@ -301,6 +303,7 @@ struct extended_output_render {
         stack_render(new_stack_unichar(EXTENDED_OUTPUT_STACK_SIZE)),
         placeholders(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
         divisors(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
+        stops_after(new_vector_int(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)),
         output_sets(new_vector_ptr(EXTENDED_FUNCTIONS_PER_TRANSDUCTION)) {
   }
 
@@ -309,6 +312,7 @@ struct extended_output_render {
     free_stack_unichar(stack_render);
     free_vector_int(placeholders);
     free_vector_int(divisors);
+    free_vector_int(stops_after);
     free_vector_ptr_element(output_sets,
                             (release_p) free_vector_ptr,
                             (release_f) free);
@@ -1571,7 +1575,7 @@ class vm {
   // returns:
   //  0 : step back
   //  1 : step forward
-  int call(const char* function_name, int nargs, struct extended_output_render* r) {
+  int call(const char* function_name, int nargs, int stop_after, struct extended_output_render* r) {
     elg_stack_dump(L);
 
     int m_refkey = 0;
@@ -1611,7 +1615,7 @@ class vm {
       int n_elements = lua_objlen(M, -1);
       // only if the array isn't empty
       if (n_elements) {
-        int set_number  = r->new_output_set(n_elements, r->stack_template->top);
+        int set_number  = r->new_output_set(n_elements, stop_after, r->stack_template->top);
         retval = 1;
         // iterate through the table
         elg_stack_dump(M);
